@@ -10,6 +10,8 @@
 
 ## Scope
 
+## Security Tooling Impact
+
 ## Out Of Scope
 
 ## Target Files
@@ -19,6 +21,8 @@
 ## Tests
 
 ## Deferred Items Added/Updated/Resolved
+
+## Deferred Security/Tooling Items Updated
 
 ## Acceptance Criteria
 
