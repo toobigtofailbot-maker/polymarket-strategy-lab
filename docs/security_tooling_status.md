@@ -41,9 +41,14 @@ python -m pytest
 ## Limitations
 
 - This status reflects the local WP5 environment only.
+- WP6 removed the generated local `.venv-security/` directory during allowlisted artifact cleanup, so current local availability may show `semgrep` and `pip-audit` as unavailable until `tools/security/setup_project_security_tools.py` is rerun with ignore protection active.
 - Unavailable tools are not passing results.
 - Not-applicable ecosystem scans do not resolve deferred items for future runtime work.
 - Passing scans still do not authorize live trading.
+
+## WP6 Generated Artifact Cleanup Note
+
+WP6 added `tools/git/cleanup_generated_artifacts.py` and `tools/git/preflight_generated_artifact_guard.py`, then hardened `tools/security/setup_project_security_tools.py` to refuse `.venv-security/` creation unless ignore protection is active and no generated artifact files are tracked or staged.
 
 ## Deferred Item Impact
 

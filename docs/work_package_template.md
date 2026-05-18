@@ -21,6 +21,9 @@
 - Required previous WP commit present: yes/no
 - Required previous WP files present: yes/no
 - Remote Main Sync Gate result:
+- Generated artifact guard result:
+- Generated artifacts cleaned: yes/no
+- Any generated artifacts visible in final git status: yes/no
 
 ## Out Of Scope
 

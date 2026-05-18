@@ -5,6 +5,10 @@
 - [ ] Remote Main Sync Gate passed?
 - [ ] Local `main` equals `origin/main` before branch creation?
 - [ ] Previous WP merge commit/files verified?
+- [ ] Generated artifact guard passed?
+- [ ] `.venv-security/` absent from changed files?
+- [ ] `tools/.bin/` absent from changed files?
+- [ ] No generated dependency files committed?
 - [ ] No stacked WP branch?
 - [ ] No manual local merge of prior WP branch?
 - [ ] `docs/source_repo_registry.md` updated if relevant?

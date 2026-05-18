@@ -73,6 +73,31 @@ def require_files_present(required_files: list[str]) -> None:
         print(f"required previous WP file present: {path}")
 
 
+def run_generated_artifact_guard_if_available() -> None:
+    guard = ROOT / "tools" / "git" / "preflight_generated_artifact_guard.py"
+    if not guard.is_file():
+        print("Generated artifact guard not present on this revision; skipping.")
+        return
+    command = [sys.executable, str(guard)]
+    print(f"$ {' '.join(command)}")
+    completed = subprocess.run(
+        command,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=120,
+        check=False,
+    )
+    if completed.stdout.strip():
+        print(completed.stdout.strip())
+    if completed.stderr.strip():
+        print(completed.stderr.strip(), file=sys.stderr)
+    if completed.returncode != 0:
+        raise RuntimeError("generated artifact guard failed")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--required-commit", action="append", default=[], help="Required previous WP commit hash.")
@@ -83,6 +108,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     try:
+        run_generated_artifact_guard_if_available()
         require_clean_worktree()
         run_git(["fetch", "origin", "--prune"])
         run_git(["switch", "main"])

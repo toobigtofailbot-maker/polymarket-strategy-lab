@@ -3,6 +3,8 @@
 - Read `AGENTS.md` before every WP.
 - Run `git status --short` and `git branch --show-current` before starting.
 - Stop and report if the working tree is dirty before WP work begins.
+- Before creating any WP branch, run `python tools/git/preflight_generated_artifact_guard.py`.
+- If `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/` are visible, verify they are untracked and unstaged, then run `python tools/git/cleanup_generated_artifacts.py --apply`.
 - Before creating any WP branch, run the Remote Main Sync Gate or this equivalent sequence:
   - `git fetch origin --prune`
   - `git switch main`
