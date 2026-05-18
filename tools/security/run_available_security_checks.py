@@ -5,12 +5,18 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
+SECURITY_VENV = ROOT / ".venv-security"
+LOCAL_BIN = ROOT / "tools" / ".bin"
 INCLUDE_TEMP_CLONES_ENV = "SECURITY_SCAN_INCLUDE_TEMP_CLONES"
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 KNOWN_TEMP_DIRS = [
     ROOT / "tmp",
     ROOT / "temp",
@@ -26,6 +32,23 @@ class CheckResult:
     result: str
     detail: str
     exit_code: int = 0
+
+
+def venv_python() -> Path:
+    if sys.platform.startswith("win"):
+        return SECURITY_VENV / "Scripts" / "python.exe"
+    return SECURITY_VENV / "bin" / "python"
+
+
+def local_binary(name: str) -> Path:
+    suffix = ".exe" if sys.platform.startswith("win") else ""
+    return LOCAL_BIN / f"{name}{suffix}"
+
+
+def venv_binary(name: str) -> Path:
+    suffix = ".exe" if sys.platform.startswith("win") else ""
+    folder = "Scripts" if sys.platform.startswith("win") else "bin"
+    return SECURITY_VENV / folder / f"{name}{suffix}"
 
 
 def has_temp_clone_dirs() -> bool:
@@ -52,6 +75,8 @@ def run_command(tool: str, command: list[str]) -> CheckResult:
             cwd=ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=300,
             check=False,
         )
@@ -64,24 +89,59 @@ def run_command(tool: str, command: list[str]) -> CheckResult:
     return CheckResult(tool, " ".join(command), result, detail, completed.returncode)
 
 
-def semgrep_command() -> list[str] | None:
-    if shutil.which("semgrep"):
-        return ["semgrep", "scan", "--config", "auto", "."]
-    return ["python", "-m", "semgrep", "scan", "--config", "auto", "."]
-
-
-def semgrep_available() -> bool:
-    if shutil.which("semgrep"):
-        return True
-    completed = subprocess.run(
-        ["python", "-m", "semgrep", "--version"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        timeout=30,
-        check=False,
-    )
+def command_succeeds(command: list[str]) -> bool:
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=60,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
     return completed.returncode == 0
+
+
+def gitleaks_command() -> list[str] | None:
+    local_tool = local_binary("gitleaks")
+    if local_tool.is_file() and command_succeeds([str(local_tool), "version"]):
+        return [str(local_tool), "detect", "--source", ".", "--redact"]
+    if shutil.which("gitleaks") and command_succeeds(["gitleaks", "version"]):
+        return ["gitleaks", "detect", "--source", ".", "--redact"]
+    return None
+
+
+def semgrep_command() -> list[str] | None:
+    venv_tool = venv_binary("semgrep")
+    local_tool = local_binary("semgrep")
+    if venv_tool.is_file() and command_succeeds([str(venv_tool), "--version"]):
+        return [str(venv_tool), "scan", "--config", "auto", "."]
+    if local_tool.is_file() and command_succeeds([str(local_tool), "--version"]):
+        return [str(local_tool), "scan", "--config", "auto", "."]
+    if shutil.which("semgrep") and command_succeeds(["semgrep", "--version"]):
+        return ["semgrep", "scan", "--config", "auto", "."]
+    if command_succeeds(["python", "-m", "semgrep", "--version"]):
+        return ["python", "-m", "semgrep", "scan", "--config", "auto", "."]
+    return None
+
+
+def pip_audit_command() -> list[str] | None:
+    python_path = venv_python()
+    venv_tool = venv_binary("pip-audit")
+    local_tool = local_binary("pip-audit")
+    if venv_tool.is_file() and command_succeeds([str(venv_tool), "--version"]):
+        return [str(venv_tool), "--progress-spinner", "off"]
+    if python_path.is_file() and command_succeeds([str(python_path), "-m", "pip_audit", "--version"]):
+        return [str(python_path), "-m", "pip_audit", "--progress-spinner", "off"]
+    if local_tool.is_file() and command_succeeds([str(local_tool), "--version"]):
+        return [str(local_tool), "--progress-spinner", "off"]
+    if shutil.which("pip-audit") and command_succeeds(["pip-audit", "--version"]):
+        return ["pip-audit", "--progress-spinner", "off"]
+    return None
 
 
 def build_checks() -> list[CheckResult]:
@@ -90,20 +150,22 @@ def build_checks() -> list[CheckResult]:
     guard = temp_clone_guard("gitleaks")
     if guard:
         results.append(guard)
-    elif shutil.which("gitleaks"):
-        results.append(run_command("gitleaks", ["gitleaks", "detect", "--source", ".", "--redact"]))
     else:
-        results.append(CheckResult("gitleaks", "gitleaks detect --source . --redact", "SKIPPED_NOT_AVAILABLE", "gitleaks not found on PATH"))
+        command = gitleaks_command()
+        if command:
+            results.append(run_command("gitleaks", command))
+        else:
+            results.append(CheckResult("gitleaks", "gitleaks detect --source . --redact", "SKIPPED_NOT_AVAILABLE", "gitleaks not found in project-local path or PATH"))
 
     guard = temp_clone_guard("semgrep")
     if guard:
         results.append(guard)
-    elif semgrep_available():
-        command = semgrep_command()
-        assert command is not None
-        results.append(run_command("semgrep", command))
     else:
-        results.append(CheckResult("semgrep", "semgrep scan --config auto .", "SKIPPED_NOT_AVAILABLE", "semgrep not found as CLI or Python module"))
+        command = semgrep_command()
+        if command:
+            results.append(run_command("semgrep", command))
+        else:
+            results.append(CheckResult("semgrep", "semgrep scan --config auto .", "SKIPPED_NOT_AVAILABLE", "semgrep not found in project-local path or PATH"))
 
     if (ROOT / "package.json").exists():
         if shutil.which("npm"):
@@ -115,10 +177,11 @@ def build_checks() -> list[CheckResult]:
 
     python_dependency_files = [(ROOT / "pyproject.toml"), (ROOT / "requirements.txt")]
     if any(path.exists() for path in python_dependency_files):
-        if shutil.which("pip-audit"):
-            results.append(run_command("pip-audit", ["pip-audit"]))
+        command = pip_audit_command()
+        if command:
+            results.append(run_command("pip-audit", command))
         else:
-            results.append(CheckResult("pip-audit", "pip-audit", "SKIPPED_NOT_AVAILABLE", "pip-audit not found on PATH"))
+            results.append(CheckResult("pip-audit", "pip-audit", "SKIPPED_NOT_AVAILABLE", "pip-audit not found in project-local path or PATH"))
     else:
         results.append(CheckResult("pip-audit", "pip-audit", "SKIPPED_NOT_APPLICABLE", "Python dependency files not present"))
 

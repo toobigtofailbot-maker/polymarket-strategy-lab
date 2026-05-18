@@ -13,6 +13,10 @@ Codex must read this file before every work package.
 
 - One WP = one branch = one PR.
 - Do not work on `main`.
+- Before any WP branch is created, Codex must run the Remote Main Sync Gate or equivalent commands proving local `main` equals `origin/main`, the working tree is clean, and previous WP merge evidence exists.
+- If local `main` is stale, diverged, dirty, or missing required previous WP files, stop before branch creation.
+- Do not stack a new WP on a prior WP branch.
+- Do not manually merge prior WP branches locally.
 - Do not expand scope inside a WP.
 - If `git status --short` is dirty before starting a WP, stop and report.
 - Never delete or overwrite user files without explicit instruction.

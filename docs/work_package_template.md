@@ -12,6 +12,16 @@
 
 ## Security Tooling Impact
 
+## Base Verification
+
+- Base branch:
+- Local main commit:
+- Origin/main commit:
+- Local main equals origin/main: yes/no
+- Required previous WP commit present: yes/no
+- Required previous WP files present: yes/no
+- Remote Main Sync Gate result:
+
 ## Out Of Scope
 
 ## Target Files
@@ -44,6 +54,7 @@
 - Branch name
 - Commit hash
 - PR review link
+- Base verification
 - Files changed
 - Tests run
 - Test results

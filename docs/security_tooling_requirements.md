@@ -18,6 +18,11 @@ This document defines security and dependency-audit tooling gates for future run
 
 - Documentation-only work packages may proceed without these tools if no runtime dependencies, venue clients, copied code, or live/API execution paths are added.
 - Detection and scan wrapper scripts live under `tools/security/`.
+- Project-local `.venv-security/` is allowed for security tools only.
+- `tools/security/setup_project_security_tools.py` may install only approved security tools into `.venv-security/`.
+- Project-local security tool installation is not runtime dependency integration.
+- Project-local tool environments and portable binaries must remain ignored and uncommitted.
+- The Remote Main Sync Gate is separate from security scanning but mandatory before future WP branch creation.
 - Before installing, vendoring, forking, or copying external runtime code, the relevant tool must be installed and run, or an approved equivalent must be documented in repo truth.
 - Runtime dependency integration cannot proceed unless relevant checks have been run and documented, or an approved equivalent or explicit user deferral is documented in repo truth.
 - Audit output must be documented in the relevant work package artifacts before runtime use is approved.

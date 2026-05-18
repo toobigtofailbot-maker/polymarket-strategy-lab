@@ -58,6 +58,25 @@ python tools/security/check_security_tools.py
 
 `semgrep --version` and `python -m semgrep --version` are alternatives. One successful Semgrep invocation is enough for local detection.
 
+## Project-Local Installation Path
+
+WP5 approves a project-local security tooling environment for security tools only:
+
+```powershell
+python tools/security/setup_project_security_tools.py
+python tools/security/verify_project_security_tools.py
+python tools/security/check_security_tools.py
+python tools/security/run_available_security_checks.py
+```
+
+The setup script creates or reuses `.venv-security/` and installs only `semgrep` and `pip-audit` there. This is not runtime dependency integration and does not approve venue clients, copied external code, or live/API execution.
+
+Do not commit `.venv-security/`, `tools/.bin/`, scan output, binaries, or local reports.
+
+## Gitleaks Handling
+
+WP5 does not globally install gitleaks. If gitleaks is unavailable on PATH and no approved project-local binary is present under ignored `tools/.bin/`, WP3-D001 remains deferred. A future WP may add a transparent project-local gitleaks acquisition path only if binaries remain ignored and uncommitted.
+
 ## When Each Tool Becomes Mandatory
 
 | Tool | Mandatory before |

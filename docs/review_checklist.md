@@ -2,6 +2,11 @@
 
 - [ ] Repo-truth updated?
 - [ ] `docs/project_status.md` updated?
+- [ ] Remote Main Sync Gate passed?
+- [ ] Local `main` equals `origin/main` before branch creation?
+- [ ] Previous WP merge commit/files verified?
+- [ ] No stacked WP branch?
+- [ ] No manual local merge of prior WP branch?
 - [ ] `docs/source_repo_registry.md` updated if relevant?
 - [ ] `docs/deferred_items_log.md` added or updated for deferred material issues?
 - [ ] Security tooling status updated?
