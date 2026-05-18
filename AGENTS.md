@@ -16,6 +16,7 @@ Codex must read this file before every work package.
 - Do not expand scope inside a WP.
 - If `git status --short` is dirty before starting a WP, stop and report.
 - Never delete or overwrite user files without explicit instruction.
+- If Codex defers a material issue, unavailable tool, unresolved dependency, blocked security check, or postponed decision, it must add or update an entry in `docs/deferred_items_log.md` in the same WP.
 - Whenever Codex completes a WP, it must create or prepare a pull request and provide the PR review link in the final report, unless the user explicitly says no PR should be created.
 
 ## Trading Safety

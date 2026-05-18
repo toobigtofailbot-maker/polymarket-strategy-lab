@@ -10,4 +10,7 @@
 - TypeScript is likely preferred for the live execution gateway pending WP2 and architecture decisions.
 - Python is likely preferred for research, wallet analytics, Streamlit dashboards, and batch jobs pending final architecture decision.
 - Rust and Java repositories are to be studied first, not adopted in MVP core without explicit decision.
+- `docs/architecture_skeleton.md` records the WP3 non-runtime architecture skeleton.
+- `docs/runtime_boundaries.md` records protected boundaries that future runtime work must preserve.
+- WP3 architecture scaffolding is documentation-only and does not approve API integration, copied external code, or live execution.
 
