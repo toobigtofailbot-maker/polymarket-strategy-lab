@@ -1,19 +1,11 @@
-# Source Repo Audits
+# Source Repository Audits
 
-Candidate external repositories will be audited in WP2. No external repo is approved yet.
+This directory stores committed due-diligence reports for external repositories considered by the project.
 
-Audit files will be created in `audits/source_repos/`. Temporary clone, worktree, and scratch folders must not be committed.
+WP2 created one audit markdown file per audited or blocked registry entry. Temporary clones belong only under ignored folders such as `audits/source_repos/tmp/`, `audits/source_repos/temp/`, `audits/source_repos/worktrees/`, or `audits/source_repos/clones/`. They must not be committed.
 
-## Audit Template Sections
+An audited repository is not production-approved. Future reuse still requires license review, dependency/security review, API compatibility review, and explicit promotion through an approved work package.
 
-- Repo name and URL
-- Commit or release audited
-- License
-- Maintainer and activity notes
-- Dependency review
-- Security concerns
-- Live trading logic review
-- API compatibility
-- Reuse recommendation
-- Required follow-up
+Research/workbench artifacts and external repositories have no execution authority in this project unless a later approved work package explicitly promotes them through protected runtime boundaries.
 
+Audit files created: `polymarket_clob-client-v2.md`, `polymarket_py-clob-client-v2.md`, `polymarket_rs-clob-client.md`, `polymarket_builder-relayer-client.md`, `polymarket_py-builder-relayer-client.md`, `polymarket_poly-market-maker.md`, `warproxxx_poly-maker.md`, `ent0n29_polybot.md`, `chainstacklabs_polymarket-alpha-bot.md`, `toptrendev_polymarket-kalshi-arbitrage-bot.md`, `sanzoi-tech_polymarket-kalshi-arbitrage-bot.md`, `carlosibcu_polymarket-kalshi-btc-arbitrage-bot.md`, `mrfadiai_polymarket-bot.md`, `dexorynlabs_polymarket-trading-bot-python.md`, and `archived_old_polymarket_v1_clients.md`.
