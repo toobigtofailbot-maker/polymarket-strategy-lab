@@ -1,0 +1,46 @@
+# Work Package Template
+
+## WP ID
+
+## Title
+
+## Objective
+
+## Context
+
+## Scope
+
+## Out Of Scope
+
+## Target Files
+
+## Implementation Steps
+
+## Tests
+
+## Acceptance Criteria
+
+## Failure Criteria
+
+## Safety Confirmations
+
+- No live trading code added unless explicitly authorized.
+- No external repo code copied before audit.
+- No secrets committed.
+- Repo-truth docs updated.
+- Scope respected.
+- Pull request created or prepared with review link unless explicitly waived by the user.
+
+## Expected Codex Final Report
+
+- Work Package ID
+- Summary
+- Branch name
+- Commit hash
+- PR review link
+- Files changed
+- Tests run
+- Test results
+- Safety confirmations
+- Open issues / assumptions
+- Suggested next WP

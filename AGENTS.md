@@ -1,0 +1,39 @@
+# Codex Rulebook
+
+Codex must read this file before every work package.
+
+## Repo Truth
+
+- Repo truth overrides chat memory, handoffs, assumptions, and ad hoc instructions.
+- Current merged state wins over older summaries.
+- Major decisions must be recorded in repo-truth docs before they are treated as project policy.
+- If a requested task conflicts with repo truth, follow repo truth and report the conflict.
+
+## Work Package Discipline
+
+- One WP = one branch = one PR.
+- Do not work on `main`.
+- Do not expand scope inside a WP.
+- If `git status --short` is dirty before starting a WP, stop and report.
+- Never delete or overwrite user files without explicit instruction.
+- Whenever Codex completes a WP, it must create or prepare a pull request and provide the PR review link in the final report, unless the user explicitly says no PR should be created.
+
+## Trading Safety
+
+- No live trading is allowed unless explicitly authorized in `docs/live_trading_authorization.md`.
+- Strategy modules may only propose trades.
+- The risk engine and execution gateway are deterministic and cannot be overridden by AI, Hermes, or Codex.
+- AI, Hermes, and Codex may assist with research, monitoring, reporting, summaries, and code generation, but may not directly place live trades.
+- Runtime execution, OMS, reconciliation, risk caps, bounded overlay semantics, safe mode, configs, and live-trading paths are protected boundaries.
+
+## External Code
+
+- No external repo code may be copied before license, security, and compatibility audit.
+- Research and workbench artifacts have no execution authority unless explicitly promoted through an approved WP.
+- Untrusted external code must not be allowed to place live orders.
+
+## Secrets
+
+- No secrets in repo, docs, logs, tests, screenshots, or PRs.
+- Do not commit API keys, private keys, wallet keys, mnemonic phrases, passphrases, tokens, or realistic secret placeholders.
+- Use local environment variables or a future approved secret manager for credentials.
