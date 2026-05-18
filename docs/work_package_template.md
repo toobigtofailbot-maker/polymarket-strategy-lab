@@ -18,6 +18,8 @@
 
 ## Tests
 
+## Deferred Items Added/Updated/Resolved
+
 ## Acceptance Criteria
 
 ## Failure Criteria
@@ -42,5 +44,6 @@
 - Tests run
 - Test results
 - Safety confirmations
+- Deferred items added/updated/resolved
 - Open issues / assumptions
 - Suggested next WP
