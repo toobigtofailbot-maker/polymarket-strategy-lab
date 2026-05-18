@@ -30,6 +30,7 @@ Codex must read this file before every work package.
 ## External Code
 
 - No external repo code may be copied before license, security, and compatibility audit.
+- Before any work package adds runtime dependencies, external code, venue API clients, trading execution paths, or copied source from an audited repo, Codex must check `docs/deferred_items_log.md` and `docs/security_tooling_status.md` and confirm relevant security-tooling gates are satisfied or explicitly deferred by the user.
 - Research and workbench artifacts have no execution authority unless explicitly promoted through an approved WP.
 - Untrusted external code must not be allowed to place live orders.
 

@@ -17,7 +17,9 @@ This document defines security and dependency-audit tooling gates for future run
 ## Rules
 
 - Documentation-only work packages may proceed without these tools if no runtime dependencies, venue clients, copied code, or live/API execution paths are added.
+- Detection and scan wrapper scripts live under `tools/security/`.
 - Before installing, vendoring, forking, or copying external runtime code, the relevant tool must be installed and run, or an approved equivalent must be documented in repo truth.
+- Runtime dependency integration cannot proceed unless relevant checks have been run and documented, or an approved equivalent or explicit user deferral is documented in repo truth.
 - Audit output must be documented in the relevant work package artifacts before runtime use is approved.
 - A passing scan does not grant live execution authority. Live execution still requires `docs/live_trading_authorization.md` to be explicitly updated in a future approved work package.
-- If a required tool is unavailable, add or update an entry in `docs/deferred_items_log.md`.
+- If a required tool is unavailable, add or update an entry in `docs/deferred_items_log.md` and record the current status in `docs/security_tooling_status.md`.
