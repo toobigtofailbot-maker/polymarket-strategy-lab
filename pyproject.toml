@@ -1,0 +1,16 @@
+[project]
+name = "polymarket-strategy-lab"
+version = "0.1.0"
+description = "Repo-first governance foundation for a deterministic Polymarket and Kalshi strategy lab."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
