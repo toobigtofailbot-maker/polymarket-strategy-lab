@@ -19,15 +19,16 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 13. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
 14. `docs/security_tooling_status.md` - current security-tool availability and scan status.
 15. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
-16. `docs/data_semantics.md` - shared data definitions.
-17. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
-18. `docs/risk_semantics.md` - risk definitions and initial posture.
-19. `docs/live_trading_authorization.md` - live trading gate and authorization table.
-20. `docs/security_and_secrets.md` - credential and incident rules.
-21. `docs/codex_execution_guidelines.md` - work-package execution process.
-22. `docs/work_package_template.md` - reusable WP template.
-23. `docs/review_checklist.md` - review readiness checklist.
-24. `docs/testing_requirements.md` - current and future test requirements.
+16. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
+17. `docs/data_semantics.md` - shared data definitions.
+18. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
+19. `docs/risk_semantics.md` - risk definitions and initial posture.
+20. `docs/live_trading_authorization.md` - live trading gate and authorization table.
+21. `docs/security_and_secrets.md` - credential and incident rules.
+22. `docs/codex_execution_guidelines.md` - work-package execution process.
+23. `docs/work_package_template.md` - reusable WP template.
+24. `docs/review_checklist.md` - review readiness checklist.
+25. `docs/testing_requirements.md` - current and future test requirements.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
 

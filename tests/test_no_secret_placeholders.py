@@ -35,8 +35,13 @@ FORBIDDEN_REGEXES = [
 
 
 def iter_project_text_files():
+    ignored_parts = {".git", ".venv-security", "security-scan-output"}
+    ignored_paths = {("tools", ".bin"), ("tools", "security", ".cache")}
     for path in ROOT.rglob("*"):
-        if ".git" in path.parts:
+        if any(part in ignored_parts for part in path.parts):
+            continue
+        relative_parts = path.relative_to(ROOT).parts
+        if any(relative_parts[: len(ignored_path)] == ignored_path for ignored_path in ignored_paths):
             continue
         if path.is_file() and path.suffix.lower() in TEXT_SUFFIXES:
             yield path

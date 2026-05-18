@@ -17,6 +17,7 @@ pnpm-debug.log*
 
 # Virtual environments
 .venv/
+.venv-security/
 venv/
 env/
 ENV/
@@ -50,6 +51,15 @@ audits/**/tmp/
 audits/**/temp/
 audits/**/worktrees/
 audits/**/clones/
+
+# Local security tooling and scan output
+tools/.bin/
+tools/security/.cache/
+security-scan-output/
+*.sarif
+*.scan-report
+*.scan.json
+*.scan.txt
 
 # OS and editor artifacts
 .DS_Store

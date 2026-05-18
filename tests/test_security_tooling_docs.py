@@ -42,7 +42,7 @@ def test_security_tooling_status_uses_allowed_availability_values():
     assert rows
     for row in rows:
         columns = [column.strip() for column in row.strip().strip("|").split("|")]
-        assert len(columns) == 7
+        assert len(columns) == 8
         assert columns[1] in ALLOWED_AVAILABILITY_VALUES
 
 
@@ -52,4 +52,8 @@ def test_security_tooling_status_does_not_falsely_claim_all_tools_resolved():
     evidence_markers = ["version", "PASS", "AVAILABLE"]
     if resolved_count:
         assert all(marker in text for marker in evidence_markers)
-    assert "WP3-D001 through WP3-D005 remain `DEFERRED`" in text
+    assert "WP3-D001" in text
+    assert "WP3-D003" in text
+    assert "WP3-D005" in text
+    assert "remain `DEFERRED`" in text
+    assert "READY_FOR_WP" in text
