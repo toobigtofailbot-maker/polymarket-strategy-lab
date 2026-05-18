@@ -39,6 +39,7 @@ This document records WP5 security-tooling completion work and Remote Main Sync 
 - Local environment: `.venv-security/`
 - Local portable binary path reserved: `tools/.bin/`
 - Both paths are ignored and must not be committed.
+- WP6 added generated-artifact cleanup and guard scripts so ignored local security-tool artifacts are cleaned safely and never staged or committed.
 - The environment is for security tools only and has no runtime trading authority.
 
 ## Commands Run

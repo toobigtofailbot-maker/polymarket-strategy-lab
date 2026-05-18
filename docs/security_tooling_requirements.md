@@ -20,6 +20,7 @@ This document defines security and dependency-audit tooling gates for future run
 - Detection and scan wrapper scripts live under `tools/security/`.
 - Project-local `.venv-security/` is allowed for security tools only.
 - `tools/security/setup_project_security_tools.py` may install only approved security tools into `.venv-security/`.
+- `tools/security/setup_project_security_tools.py` must verify `.venv-security/` ignore protection before creating or reusing the project-local environment.
 - Project-local security tool installation is not runtime dependency integration.
 - Project-local tool environments and portable binaries must remain ignored and uncommitted.
 - The Remote Main Sync Gate is separate from security scanning but mandatory before future WP branch creation.

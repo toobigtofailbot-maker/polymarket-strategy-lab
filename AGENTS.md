@@ -15,6 +15,9 @@ Codex must read this file before every work package.
 - Do not work on `main`.
 - Before any WP branch is created, Codex must run the Remote Main Sync Gate or equivalent commands proving local `main` equals `origin/main`, the working tree is clean, and previous WP merge evidence exists.
 - If local `main` is stale, diverged, dirty, or missing required previous WP files, stop before branch creation.
+- Generated local environments and security-tool artifacts must never be committed.
+- If `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/` appear in `git status`, Codex must stop and run the generated-artifact investigation and cleanup workflow before starting a WP.
+- Codex must not use GitHub Desktop or equivalent GUI staging for generated artifact folders.
 - Do not stack a new WP on a prior WP branch.
 - Do not manually merge prior WP branches locally.
 - Do not expand scope inside a WP.

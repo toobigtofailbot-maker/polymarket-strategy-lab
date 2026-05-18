@@ -14,5 +14,7 @@
 - Security tooling script tests must verify tooling wrappers do not authorize live trading.
 - Remote main sync gate tests must verify the gate script exists, contains fetch, fast-forward pull, clean-worktree, `HEAD` to `origin/main`, previous-WP commit, and previous-WP file checks, and that repo-truth docs require the gate before WP branch creation.
 - Security tooling completion tests must verify project-local security setup and verification scripts exist, local security-tool paths are ignored, forbidden global/system/user install commands are absent, and WP5 status docs record actual outcomes.
+- Generated artifact guard tests must verify cleanup scripts are allowlist-only and refuse tracked or staged generated files.
+- Security setup tests must verify `.venv-security/` ignore protection is checked before environment creation.
 - All tests must be runnable locally.
 
