@@ -10,11 +10,11 @@ All terms here describe read-only observations. No term in this document grants 
 
 | Term | Definition |
 |---|---|
-| `market_id` | A Polymarket-internal integer or string identifier for a market question. Used in Gamma API paths. May differ from `condition_id`. |
-| `condition_id` | A hex-encoded Ethereum condition identifier (e.g. `0xabc...`) used in the CLOB and on-chain. The primary stable identifier for a market. |
-| `token_id` | A numeric string (large integer) identifying a specific outcome token within a market. Used in CLOB order-book requests. Each market has one token per outcome (typically two). |
-| `asset_id` | Synonym for `token_id` in some API surfaces. |
-| `outcome_label` | A human-readable string for an outcome (e.g. `"Yes"`, `"No"`). |
+| `market_id` | A Polymarket-internal integer or string identifier for a market question. Used in Gamma API paths. **WP9:** The Gamma API returns this as the `id` field (a string-encoded integer, e.g. `"540817"`). This is the correct path parameter for `GET /markets/{id}`. |
+| `condition_id` | A hex-encoded Ethereum condition identifier (e.g. `0xabc...`). **WP9:** Present in Gamma API responses as `conditionId`. Not usable as the `/markets/{id}` path parameter — using it returns HTTP 422. |
+| `token_id` | A numeric string (large integer) identifying a specific outcome token within a market. Used in CLOB order-book requests. **WP9:** The Gamma API returns token IDs as a JSON-encoded string in the `clobTokenIds` field (e.g. `'["token1","token2"]'`). Must be parsed with `json.loads()` before use. |
+| `asset_id` | Synonym for `token_id` in some API surfaces. **WP9:** Appears as `asset_id` in CLOB `/book` responses. |
+| `outcome_label` | A human-readable string for an outcome (e.g. `"Yes"`, `"No"`). **WP9:** The `outcomes` field in the Gamma API is a JSON-encoded string (e.g. `'["Yes","No"]'`). Must be parsed with `json.loads()`. |
 
 ## Market Metadata
 

@@ -158,6 +158,31 @@ python tools/polymarket/readonly_smoke_test.py --allow-network --markets-limit 3
 
 The smoke test is not run by `pytest`. It is safe to skip in CI.
 
+## WP9 Addendum — Endpoint Contract Validation
+
+### Endpoints validated
+
+WP9 ran a controlled GET-only probe (`tools/polymarket/readonly_contract_probe.py --allow-network --markets-limit 3`) against all four WP8 endpoint candidates.
+
+| Endpoint | WP9 Result |
+|---|---|
+| Gamma `GET /markets` | **Confirmed** — HTTP 200, JSON list |
+| Gamma `GET /markets/{id}` | **Confirmed** — HTTP 200, requires integer `id` not `conditionId` |
+| CLOB `GET /book?token_id=...` | **Confirmed** — HTTP 200, bids/asks present |
+| CLOB `GET /health` | **Not confirmed** — HTTP 404 |
+
+### stdlib adapter sufficiency
+
+The Python standard-library adapter (`urllib`, `json`) is sufficient for the three confirmed endpoints. The parser was updated in WP9 to handle `clobTokenIds` and `outcomes` as JSON-encoded strings (observed in actual API responses; WP8 assumed Python lists).
+
+### Official Python client
+
+Still deferred. WP3-D007 unchanged. The stdlib adapter provides sufficient coverage for read-only market data and order-book snapshot use. The official Python V2 client is not needed until authenticated or trading-capable use cases are approved.
+
+### Next step
+
+WP10 — Polymarket Market Metadata Snapshot Persistence. The three confirmed endpoints are sufficient for dev-read-only local snapshot storage. Snapshot persistence can proceed without the official client SDK.
+
 ## Next WP Recommendation
 
 **WP9 — Polymarket Market Metadata Snapshot Persistence** (if endpoint contract is confirmed)
