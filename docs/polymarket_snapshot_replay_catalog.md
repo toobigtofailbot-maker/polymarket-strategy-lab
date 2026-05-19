@@ -147,6 +147,14 @@ WP11 is JSONL-only and in-memory-only. If a future WP requires queryable, persis
 - **WP12 — Snapshot Quality Gates And Local Research Reports**: add schema validation on load, coverage metrics, JSONL deduplication logic, and exportable research reports (Markdown or CSV) to `local_data/`.
 - Or **WP12 — Snapshot Replay Follow-Up**: if reader/catalog/replay issues surface during local testing of WP11.
 
+## WP12 Addendum
+
+WP12 adds offline snapshot quality gates and local research reports on top of the WP11 reader/catalog/replay layer. Snapshot replay/catalog data can now be evaluated through structured quality issues, catalog quality metrics, and sanitized Markdown/JSON reports.
+
+Reports remain offline-only and local-data-only. They read WP10/WP11 local snapshot files, make no network calls, and write only under ignored `local_data/polymarket/reports/` when explicitly requested.
+
+WP12 adds no database, no backtesting, no strategy signals, no trade proposals, no scheduler, no bot loop, no authenticated client, and no execution authority.
+
 ## Safety Statement
 
 The WP11 snapshot replay and catalog layer:

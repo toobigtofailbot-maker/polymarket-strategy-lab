@@ -29,6 +29,18 @@ WP8 adds the first approved executable source under the data layer:
 
 WP8 does not change the status of any other layer. All other layers remain documentation-only. The execution gateway and paper trading engine remain absent.
 
+## WP12 Data Layer Update
+
+WP12 extends the read-only data layer with offline snapshot quality gates and local report rendering:
+
+| Path | Purpose | WP12 status |
+|---|---|---|
+| `src/data_layer/polymarket/snapshot_quality.py` | Validates loaded local snapshot records and summarizes in-memory catalog quality. No network, no database, no strategy or execution authority. | Research-only local quality infrastructure. |
+| `src/data_layer/polymarket/local_reports.py` | Renders sanitized local Markdown/JSON quality reports and writes only to ignored `local_data/` when explicitly requested. | Local reports only. |
+| `tools/polymarket/generate_snapshot_quality_report.py` | Manual offline CLI for local snapshot quality reports. | Manual inspection tool only. |
+
+WP12 does not change the status of strategy modules, backtesting, paper trading, monitoring dashboards, databases, schedulers, bot loops, risk, OMS, reconciliation, or execution. Those remain absent unless explicitly approved in a future work package.
+
 ## Authority Rules
 
 - Strategies produce proposals only.
@@ -38,4 +50,5 @@ WP8 does not change the status of any other layer. All other layers remain docum
 - The read-only data adapter (WP8) has no order-placement authority, no wallet authority, and no live-trading authority.
 - Strategies must not import venue clients directly; all data flows through `src/data_layer/`.
 - No API client, venue adapter, wallet signer, bot loop, database, or dashboard implementation exists beyond WP8's read-only GET adapter.
-- No external repo code is approved for runtime use by WP3 or WP8.
+- WP12 quality/reporting code is allowed only as offline read-only data-layer research infrastructure and has no trading, strategy, backtest, database, scheduler, bot-loop, or execution authority.
+- No external repo code is approved for runtime use by WP3, WP8, WP10, WP11, or WP12.

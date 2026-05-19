@@ -78,3 +78,21 @@ WP11 adds offline snapshot replay and normalized market catalog under `src/data_
 - Optional catalog summary output goes to git-ignored `local_data/polymarket/catalog/` only.
 
 All boundaries from WP3, WP8, and WP10 remain in effect.
+
+## WP12 Boundary Update
+
+WP12 adds offline snapshot quality gates and local research reports under `src/data_layer/polymarket/` and `tools/polymarket/`. This layer:
+
+- Reads local JSONL snapshot files and manifests produced by WP10 and loaded by WP11 tooling.
+- Builds quality summaries and sanitized local reports for offline research inspection.
+- Writes reports only when explicitly requested and only under git-ignored `local_data/polymarket/reports/`.
+- Has no order-placement authority.
+- Has no wallet or private-key authority.
+- Has no live-trading path.
+- Does not authenticate.
+- Does not read credentials from any source.
+- Does not make network calls.
+- Uses Python standard library only.
+- Is not a strategy module, backtest, paper-trading engine, database, scheduler, bot loop, execution system, or production service.
+
+All boundaries from WP3, WP8, WP10, and WP11 remain in effect.

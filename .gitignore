@@ -46,6 +46,9 @@ secrets/
 local_data/
 *.local.snapshot.jsonl
 *.local.manifest.json
+local_data/polymarket/reports/
+*.local.report.md
+*.local.report.json
 
 # Logs
 logs/
