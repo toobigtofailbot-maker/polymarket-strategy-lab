@@ -57,3 +57,24 @@ WP10 adds local file-based snapshot persistence under `src/data_layer/polymarket
 `local_data/` is git-ignored. Snapshot files must never be committed.
 
 All boundaries from WP3 and WP8 remain in effect.
+
+## WP11 Boundary Update
+
+WP11 adds offline snapshot replay and normalized market catalog under `src/data_layer/polymarket/`. This layer:
+
+- Reads local JSONL snapshot files produced by WP10 snapshot capture.
+- Builds an in-memory market catalog for offline research and inspection.
+- Provides deterministic finite replay iterators over snapshot records.
+- Provides a manual CLI inspection tool (no `--allow-network` required).
+- Has no order-placement authority.
+- Has no wallet or private-key authority.
+- Has no live-trading path.
+- Does not authenticate.
+- Does not read credentials from any source.
+- Does not make network calls.
+- Uses Python standard library only.
+- Is not a database, scheduler, or bot loop.
+- Does not run continuously or schedule repeated requests.
+- Optional catalog summary output goes to git-ignored `local_data/polymarket/catalog/` only.
+
+All boundaries from WP3, WP8, and WP10 remain in effect.

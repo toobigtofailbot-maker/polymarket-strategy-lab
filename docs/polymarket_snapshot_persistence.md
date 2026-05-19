@@ -168,6 +168,19 @@ Rate-limit policy for public Gamma and CLOB endpoints is not confirmed (WP8-D002
 
 WP10 uses JSONL files only. A future work package may migrate snapshots to a local database (e.g., SQLite) or a structured catalog. The snapshot record schema is designed to be stable enough to parse into a database table. Migration would require a separate approved work package with explicit scope, dependency audit, and schema mapping.
 
+## WP11 Addendum — Snapshot Replay And Catalog
+
+WP11 adds offline tooling that reads WP10 snapshot JSONL files and builds an in-memory market catalog:
+
+- `src/data_layer/polymarket/snapshot_reader.py` — reads market metadata and order-book JSONL files and manifests.
+- `src/data_layer/polymarket/market_catalog.py` — builds a normalized in-memory market catalog for offline research.
+- `src/data_layer/polymarket/snapshot_replay.py` — offline replay/iteration helpers; deterministic and finite.
+- `tools/polymarket/inspect_snapshot_catalog.py` — manual CLI inspection tool; offline-only, no `--allow-network` needed.
+
+The WP11 replay/catalog layer is offline-only. It reads WP10 snapshot files. It does not call Polymarket APIs. It does not capture new network data. It does not create strategy signals. It does not create trade proposals. It does not place, cancel, sign, or simulate orders. It does not authenticate. It does not read credentials. It does not write outside ignored local paths. It is not a database, scheduler, bot loop, or production service.
+
+WP10-D001 (snapshot schema not stable) and WP10-D002 (no database) remain OPEN. WP11 does not resolve either item. WP11-D001 (catalog not database-backed) and WP11-D002 (replay is inspection-only) are added in WP11.
+
 ## Next WP Recommendation
 
 If WP10 succeeds and snapshots are verified as usable research data:
