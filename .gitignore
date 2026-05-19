@@ -42,6 +42,11 @@ secrets/
 *.sqlite
 *.sqlite3
 
+# Local snapshot data (WP10+) — read-only research artifacts, never committed
+local_data/
+*.local.snapshot.jsonl
+*.local.manifest.json
+
 # Logs
 logs/
 *.log
