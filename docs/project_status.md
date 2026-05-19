@@ -1,17 +1,17 @@
 # Project Status
 
-- Current phase: WP6 - Local Generated Artifact Cleanup + Ignore Enforcement Guard
-- Repo state: generated-artifact cleanup and guardrails on branch
-- Merged WPs: WP1, WP2, WP3, WP4, WP5
-- Current branch: `wp6-local-artifact-cleanup-guard`
-- Next intended WP: WP7 - Gitleaks Project-Local Secret Scan Gate Completion
+- Current phase: WP7 - Gitleaks Project-Local Secret Scan Gate Completion
+- Repo state: gitleaks secret scan gate on branch
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6
+- Current branch: `wp7-gitleaks-secret-scan-gate`
+- Next intended WP: WP8 - Read-Only Polymarket Client Adapter Evaluation (gitleaks is READY_FOR_WP; all security tools must be rerun before runtime dependency integration, copied code, or live/API work)
 - Live trading status: DISABLED
 - API integration status: NOT STARTED
 - Runtime dependency integration status: NOT STARTED
 - External repo audit status: WP2 COMPLETE - 14 concrete repositories audited; 1 non-specific legacy placeholder marked BLOCKED_OR_UNAVAILABLE
 - Architecture status: WP3 documentation-only skeleton merged
-- Deferred items status: WP5 marks semgrep and pip-audit READY_FOR_WP; gitleaks, npm audit, and cargo audit remain deferred.
-- Generated artifact status: WP6 cleanup completed locally; guardrails added to prevent `.venv-security/`, `tools/.bin/`, local security caches, or scan output from being committed.
+- Deferred items status: WP7 marks gitleaks READY_FOR_WP (scan passed, no findings); semgrep and pip-audit remain READY_FOR_WP (require `.venv-security/` restoration); npm audit and cargo audit remain DEFERRED.
+- Generated artifact status: WP6 guardrails active; WP7 gitleaks binary in ignored `tools/.bin/` (not committed).
 
 ## Open Decisions
 

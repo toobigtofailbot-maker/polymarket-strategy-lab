@@ -5,7 +5,8 @@
 - [ ] Remote Main Sync Gate passed?
 - [ ] Local `main` equals `origin/main` before branch creation?
 - [ ] Previous WP merge commit/files verified?
-- [ ] Generated artifact guard passed?
+- [ ] Generated artifact guard passed before branch work?
+- [ ] Generated artifact guard passed after setup?
 - [ ] `.venv-security/` absent from changed files?
 - [ ] `tools/.bin/` absent from changed files?
 - [ ] No generated dependency files committed?
@@ -25,4 +26,10 @@
 - [ ] Scope respected?
 - [ ] PR template completed?
 - [ ] Human review required before merge?
+- [ ] Gitleaks status updated in `docs/security_tooling_status.md`?
+- [ ] Gitleaks scan result documented in `docs/gitleaks_secret_scan_gate.md`?
+- [ ] `tools/.bin/` confirmed absent from staged/committed files?
+- [ ] `security-scan-output/` confirmed absent from staged/committed files?
+- [ ] WP3-D001 status accurately reflects actual scan evidence?
+- [ ] No broad gitleaks suppressions added?
 

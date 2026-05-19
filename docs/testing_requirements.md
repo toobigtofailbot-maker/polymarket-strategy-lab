@@ -16,5 +16,7 @@
 - Security tooling completion tests must verify project-local security setup and verification scripts exist, local security-tool paths are ignored, forbidden global/system/user install commands are absent, and WP5 status docs record actual outcomes.
 - Generated artifact guard tests must verify cleanup scripts are allowlist-only and refuse tracked or staged generated files.
 - Security setup tests must verify `.venv-security/` ignore protection is checked before environment creation.
+- Gitleaks gate tests must verify: `setup_project_gitleaks.py` and `verify_project_gitleaks.py` exist; `docs/gitleaks_secret_scan_gate.md` exists; `.gitignore` protects `tools/.bin/` and `security-scan-output/`; setup script checks ignore protection before writing; setup script contains no forbidden install commands (winget, choco, brew, apt, npm install -g, cargo install, pip install --user); setup script contains no trading/API/secret terms; `verify_project_gitleaks.py` exits 0; `run_available_security_checks.py` detects gitleaks project-local binary; `docs/security_tooling_status.md` references WP7; `docs/deferred_items_log.md` contains WP7 Gitleaks Secret Scan Gate Update.
+- WP3-D001 may only be marked READY_FOR_WP in tests if scan evidence exists in the deferred items log or security tooling status.
 - All tests must be runnable locally.
 

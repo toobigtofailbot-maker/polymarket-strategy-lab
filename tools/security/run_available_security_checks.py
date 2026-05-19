@@ -107,11 +107,16 @@ def command_succeeds(command: list[str]) -> bool:
 
 
 def gitleaks_command() -> list[str] | None:
+    """Return the gitleaks scan command if available.
+
+    Prefers 'gitleaks git --redact' (v8+ git-history scan).
+    Falls back to checking PATH after project-local binary.
+    """
     local_tool = local_binary("gitleaks")
     if local_tool.is_file() and command_succeeds([str(local_tool), "version"]):
-        return [str(local_tool), "detect", "--source", ".", "--redact"]
+        return [str(local_tool), "git", "--redact"]
     if shutil.which("gitleaks") and command_succeeds(["gitleaks", "version"]):
-        return ["gitleaks", "detect", "--source", ".", "--redact"]
+        return ["gitleaks", "git", "--redact"]
     return None
 
 
