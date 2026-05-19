@@ -47,8 +47,11 @@ local_data/
 *.local.snapshot.jsonl
 *.local.manifest.json
 local_data/polymarket/reports/
+local_data/polymarket/exports/
 *.local.report.md
 *.local.report.json
+*.local.export.json
+*.local.export.csv
 
 # Logs
 logs/

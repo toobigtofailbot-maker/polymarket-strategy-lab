@@ -41,6 +41,18 @@ WP12 extends the read-only data layer with offline snapshot quality gates and lo
 
 WP12 does not change the status of strategy modules, backtesting, paper trading, monitoring dashboards, databases, schedulers, bot loops, risk, OMS, reconciliation, or execution. Those remain absent unless explicitly approved in a future work package.
 
+## WP13 Data Layer Update
+
+WP13 extends the read-only data layer with offline snapshot deduplication and sanitized local catalog export rendering:
+
+| Path | Purpose | WP13 status |
+|---|---|---|
+| `src/data_layer/polymarket/snapshot_deduplication.py` | Deduplicates loaded local market and order-book snapshot records and reports conflicts. No network, no database, no strategy or execution authority. | Research-only local data hygiene infrastructure. |
+| `src/data_layer/polymarket/catalog_exports.py` | Renders sanitized local JSON/CSV catalog exports and writes only to ignored `local_data/` when explicitly requested. | Local exports only. |
+| `tools/polymarket/export_snapshot_catalog.py` | Manual offline CLI for local deduplication and catalog exports. | Manual inspection/export tool only. |
+
+WP13 does not change the status of strategy modules, backtesting, paper trading, monitoring dashboards, databases, schedulers, bot loops, risk, OMS, reconciliation, or execution. Those remain absent unless explicitly approved in a future work package.
+
 ## Authority Rules
 
 - Strategies produce proposals only.
@@ -51,4 +63,5 @@ WP12 does not change the status of strategy modules, backtesting, paper trading,
 - Strategies must not import venue clients directly; all data flows through `src/data_layer/`.
 - No API client, venue adapter, wallet signer, bot loop, database, or dashboard implementation exists beyond WP8's read-only GET adapter.
 - WP12 quality/reporting code is allowed only as offline read-only data-layer research infrastructure and has no trading, strategy, backtest, database, scheduler, bot-loop, or execution authority.
-- No external repo code is approved for runtime use by WP3, WP8, WP10, WP11, or WP12.
+- WP13 dedup/export code is allowed only as offline read-only data-layer research infrastructure and has no trading, strategy, backtest, database, scheduler, bot-loop, or execution authority.
+- No external repo code is approved for runtime use by WP3, WP8, WP10, WP11, WP12, or WP13.

@@ -96,3 +96,22 @@ WP12 adds offline snapshot quality gates and local research reports under `src/d
 - Is not a strategy module, backtest, paper-trading engine, database, scheduler, bot loop, execution system, or production service.
 
 All boundaries from WP3, WP8, WP10, and WP11 remain in effect.
+
+## WP13 Boundary Update
+
+WP13 adds offline snapshot deduplication and sanitized local catalog exports under `src/data_layer/polymarket/` and `tools/polymarket/`. This layer:
+
+- Reads local JSONL snapshot files and in-memory catalog data produced by WP10/WP11/WP12 tooling.
+- Deduplicates local market and order-book snapshot records deterministically.
+- Reports conflicting records instead of silently merging them.
+- Writes catalog exports only when explicitly requested and only under git-ignored `local_data/polymarket/exports/`.
+- Has no order-placement authority.
+- Has no wallet or private-key authority.
+- Has no live-trading path.
+- Does not authenticate.
+- Does not read credentials from any source.
+- Does not make network calls.
+- Uses Python standard library only.
+- Is not a strategy module, backtest, paper-trading engine, database, scheduler, bot loop, execution system, monitoring service, or production service.
+
+All boundaries from WP3, WP8, WP10, WP11, and WP12 remain in effect.
