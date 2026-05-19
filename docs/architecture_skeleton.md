@@ -53,6 +53,12 @@ WP13 extends the read-only data layer with offline snapshot deduplication and sa
 
 WP13 does not change the status of strategy modules, backtesting, paper trading, monitoring dashboards, databases, schedulers, bot loops, risk, OMS, reconciliation, or execution. Those remain absent unless explicitly approved in a future work package.
 
+## WP14 Official Client Boundary Update
+
+WP14 is documentation and tests only. The official Python V2 client is classified as `CANDIDATE_FOR_FUTURE_DEV_ONLY_EVALUATION`; it is not installed and not integrated. The archived old Python client is classified as `DO_NOT_USE_ARCHIVED`.
+
+The existing stdlib public adapter remains the only active public Polymarket data path. Future official client work must begin behind a read-only adapter boundary and must remain isolated, dev-only, explicit-network, no-credential, and no-private-key until a later approved work package changes repo truth.
+
 ## Authority Rules
 
 - Strategies produce proposals only.
@@ -64,4 +70,5 @@ WP13 does not change the status of strategy modules, backtesting, paper trading,
 - No API client, venue adapter, wallet signer, bot loop, database, or dashboard implementation exists beyond WP8's read-only GET adapter.
 - WP12 quality/reporting code is allowed only as offline read-only data-layer research infrastructure and has no trading, strategy, backtest, database, scheduler, bot-loop, or execution authority.
 - WP13 dedup/export code is allowed only as offline read-only data-layer research infrastructure and has no trading, strategy, backtest, database, scheduler, bot-loop, or execution authority.
-- No external repo code is approved for runtime use by WP3, WP8, WP10, WP11, WP12, or WP13.
+- No external repo code is approved for runtime use by WP3, WP8, WP10, WP11, WP12, WP13, or WP14.
+- Official client integration remains absent in WP14; authenticated client setup remains forbidden.

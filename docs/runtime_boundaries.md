@@ -115,3 +115,13 @@ WP13 adds offline snapshot deduplication and sanitized local catalog exports und
 - Is not a strategy module, backtest, paper-trading engine, database, scheduler, bot loop, execution system, monitoring service, or production service.
 
 All boundaries from WP3, WP8, WP10, WP11, and WP12 remain in effect.
+
+## WP14 Official Client Boundary Update
+
+WP14 adds documentation and tests for the official Python CLOB client decision. It adds no runtime source, dependency, network call, credential handling, signing, order placement, order cancellation, account query, trade query, database, scheduler, bot loop, backtest, paper trading, strategy signal, or trade proposal.
+
+The official client integration remains absent. The authenticated client remains forbidden. Future official client work must be behind the read-only adapter boundary first, must be isolated from runtime paths, must be dev-only and read-only first, and must be reviewed through a dedicated approved work package and PR.
+
+`src/data_layer/polymarket/public_client.py` remains the only active public Polymarket data path. The official `py-clob-client-v2` package is candidate-only, not installed, and not integrated.
+
+All boundaries from WP3, WP8, WP10, WP11, WP12, and WP13 remain in effect.

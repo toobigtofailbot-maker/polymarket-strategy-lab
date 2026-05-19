@@ -68,6 +68,21 @@ tools/.bin/gitleaks.exe git --redact
 
 ## Scan Result
 
+### WP14 Rerun
+
+| Item | Value |
+|---|---|
+| Tool | gitleaks |
+| Version | 8.27.2 |
+| Source | PROJECT_LOCAL_BIN |
+| Command | `tools/.bin/gitleaks.exe git --redact` |
+| Result | PASS |
+| Findings | None |
+| False positives | None |
+| Broad suppressions added | No |
+
+### WP7 Initial Gate
+
 | Item | Value |
 |---|---|
 | Tool | gitleaks |
