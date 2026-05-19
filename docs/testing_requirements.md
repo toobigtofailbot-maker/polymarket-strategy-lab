@@ -50,4 +50,8 @@
 - No test may require actual Polymarket network access for dedup/export tests. (WP13+)
 - Dedup/export code must not import execution, strategy, authenticated client, or network modules. (WP13+)
 - Deduplication must retain and report conflicts rather than silently merging them. (WP13+)
+- Tests must assert no official client dependency is added in WP14. (WP14+)
+- Tests must assert no `py_clob_client_v2` imports exist in source/runtime files. (WP14+)
+- Tests must assert no credential/private-key/auth/order method names are introduced. (WP14+)
+- Future official-client evaluation tests must be explicit-network only and no-credential until a later approved WP. (WP14+)
 
