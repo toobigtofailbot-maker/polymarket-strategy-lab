@@ -145,6 +145,10 @@ A future database or dashboard-backed reporting stack may be considered only aft
 
 If WP12 succeeds, the next intended WP is WP13 - Snapshot Deduplication And Catalog Export Hardening. If quality/reporting issues remain, the next intended WP should be WP13 - Snapshot Quality Follow-Up.
 
+## WP13 Addendum
+
+WP13 can combine quality/report data with deduplicated local catalog exports. Exports remain offline-only and local_data-only. WP13 does not add a database, dashboard, backtesting, strategy signals, trade proposals, order handling, scheduler, bot loop, or production reporting service.
+
 ## Safety Statement
 
 WP12:

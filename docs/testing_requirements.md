@@ -44,4 +44,10 @@
 - CLI quality report tests must not require live network. (WP12+)
 - No test may require actual Polymarket network access for quality/reporting tests. (WP12+)
 - Quality/reporting code must not import execution, strategy, authenticated client, or network modules. (WP12+)
+- Dedup/export tests must use tmp_path fixtures or synthetic local records. (WP13+)
+- Export output tests must not write to real local_data/. (WP13+)
+- CLI export tests must not require live network. (WP13+)
+- No test may require actual Polymarket network access for dedup/export tests. (WP13+)
+- Dedup/export code must not import execution, strategy, authenticated client, or network modules. (WP13+)
+- Deduplication must retain and report conflicts rather than silently merging them. (WP13+)
 
