@@ -27,4 +27,11 @@
 - Network validation tools must require `--allow-network` before making any network call. (WP9+)
 - Response-shape parser changes must include offline fixtures or mocks covering both JSON-encoded string inputs and plain Python list inputs. (WP9+)
 - Endpoint verification metadata tests must confirm: only WP9-probed endpoints are marked verified; CLOB /health remains unverified; verified entries carry verified_in_wp and verified_at_utc fields. (WP9+)
+- Snapshot persistence tests must use tmp_path or temporary directories; no test may write to real local_data/. (WP10+)
+- Snapshot capture CLI tests must not make live network calls; --allow-network gate must be tested offline. (WP10+)
+- Snapshot files must be git-ignored and absent from all commits; tests must verify .gitignore includes local_data/. (WP10+)
+- Snapshot writer must reject output paths not under local_data/; path validation must be tested with forbidden paths. (WP10+)
+- No test may require actual Polymarket network access; all snapshot capture tests must use mocked adapter clients. (WP10+)
+- Snapshot record tests must confirm read_only_provenance field is present and correct. (WP10+)
+- No large raw API payload may be written to snapshot files; tests must verify raw_field_names is a list of strings, not a full dict. (WP10+)
 

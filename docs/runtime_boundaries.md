@@ -38,3 +38,22 @@ WP8 adds a strictly read-only public data adapter under `src/data_layer/polymark
 - Strategies must not import this adapter directly; data access must flow through approved data-layer boundaries.
 
 All other boundaries from WP3 remain in effect.
+
+## WP10 Boundary Update
+
+WP10 adds local file-based snapshot persistence under `src/data_layer/polymarket/`. This persistence layer:
+
+- Reads public market data via the WP8/WP9 read-only adapter (GET-only).
+- Writes normalized JSONL records and JSON manifests to `local_data/polymarket/snapshots/` only.
+- Has no order-placement authority.
+- Has no wallet or private-key authority.
+- Has no live-trading path.
+- Does not authenticate.
+- Does not read credentials from any source.
+- Uses Python standard library only.
+- Is not a database, scheduler, or bot loop.
+- Does not run continuously or schedule repeated requests.
+
+`local_data/` is git-ignored. Snapshot files must never be committed.
+
+All boundaries from WP3 and WP8 remain in effect.
