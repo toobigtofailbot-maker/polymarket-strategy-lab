@@ -128,6 +128,14 @@ class TestGetMarketsMethod:
         with pytest.raises(PolymarketResponseError):
             client.get_markets()
 
+    @patch("urllib.request.urlopen")
+    def test_get_markets_url_error_raises_readonly_error(self, mock_urlopen):
+        import urllib.error
+        mock_urlopen.side_effect = urllib.error.URLError("connection refused")
+        client = PolymarketPublicClient(gamma_base_url="http://fake-gamma")
+        with pytest.raises(PolymarketReadOnlyError):
+            client.get_markets()
+
 
 class TestGetMarketMethod:
     @patch("urllib.request.urlopen")

@@ -27,6 +27,7 @@ from typing import Optional
 from .errors import (
     PolymarketEndpointNotVerifiedError,
     PolymarketHTTPError,
+    PolymarketReadOnlyError,
     PolymarketResponseError,
 )
 from .models import (
