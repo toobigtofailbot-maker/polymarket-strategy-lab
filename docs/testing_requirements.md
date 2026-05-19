@@ -18,5 +18,9 @@
 - Security setup tests must verify `.venv-security/` ignore protection is checked before environment creation.
 - Gitleaks gate tests must verify: `setup_project_gitleaks.py` and `verify_project_gitleaks.py` exist; `docs/gitleaks_secret_scan_gate.md` exists; `.gitignore` protects `tools/.bin/` and `security-scan-output/`; setup script checks ignore protection before writing; setup script contains no forbidden install commands (winget, choco, brew, apt, npm install -g, cargo install, pip install --user); setup script contains no trading/API/secret terms; `verify_project_gitleaks.py` exits 0; `run_available_security_checks.py` detects gitleaks project-local binary; `docs/security_tooling_status.md` references WP7; `docs/deferred_items_log.md` contains WP7 Gitleaks Secret Scan Gate Update.
 - WP3-D001 may only be marked READY_FOR_WP in tests if scan evidence exists in the deferred items log or security tooling status.
+- Read-only adapter tests (WP8+) must mock network; no automated test may require live network access.
+- Network smoke tests must require explicit `--allow-network` opt-in; they must not be collected or run by pytest.
+- Adapter boundary tests must confirm: no POST/PUT/PATCH/DELETE methods, no credentials, no private-key fields, no disallowed method names (place_order, create_order, post_order, submit_order, cancel_order, sign_order, execute_trade, trade, buy, sell), and no signing imports.
+- Approved executable source scope under `src/data_layer/polymarket/` must not weaken tests blocking trading/execution code in other src/ directories.
 - All tests must be runnable locally.
 

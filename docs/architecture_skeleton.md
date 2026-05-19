@@ -19,11 +19,23 @@ No external repo code is approved for runtime use by WP3.
 | Monitoring/dashboard layer | Future read-only operational visibility, reports, and alerts. | Documentation-only; no control authority. |
 | Deferred live execution | Future live path gated by authorization, risk controls, kill-switches, and security review. | Disabled. |
 
+## WP8 Data Layer Update
+
+WP8 adds the first approved executable source under the data layer:
+
+| Path | Purpose | WP8 status |
+|---|---|---|
+| `src/data_layer/polymarket/` | Read-only public data adapter for market metadata and order-book snapshots. GET-only. No credentials. No trading authority. | First implementation — evaluation scope. |
+
+WP8 does not change the status of any other layer. All other layers remain documentation-only. The execution gateway and paper trading engine remain absent.
+
 ## Authority Rules
 
 - Strategies produce proposals only.
 - The risk engine decides deterministically.
 - The execution gateway is the only future order authority.
-- No module has live execution authority in WP3.
-- No API client, venue adapter, wallet signer, bot loop, database, or dashboard implementation exists in WP3.
-- No external repo code is approved for runtime use by WP3.
+- No module has live execution authority in WP3 or WP8.
+- The read-only data adapter (WP8) has no order-placement authority, no wallet authority, and no live-trading authority.
+- Strategies must not import venue clients directly; all data flows through `src/data_layer/`.
+- No API client, venue adapter, wallet signer, bot loop, database, or dashboard implementation exists beyond WP8's read-only GET adapter.
+- No external repo code is approved for runtime use by WP3 or WP8.
