@@ -39,4 +39,9 @@
 - CLI inspection tests must not require live network; CLI must run cleanly with missing/empty input dir. (WP11+)
 - No test may require actual Polymarket network access for replay/catalog tests. (WP11+)
 - Catalog code must not import execution, strategy, or authenticated client modules. (WP11+)
+- Quality/report tests must use tmp_path fixtures. (WP12+)
+- Report output tests must not write to real local_data/. (WP12+)
+- CLI quality report tests must not require live network. (WP12+)
+- No test may require actual Polymarket network access for quality/reporting tests. (WP12+)
+- Quality/reporting code must not import execution, strategy, authenticated client, or network modules. (WP12+)
 
