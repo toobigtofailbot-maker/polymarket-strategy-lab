@@ -32,4 +32,10 @@
 - [ ] `security-scan-output/` confirmed absent from staged/committed files?
 - [ ] WP3-D001 status accurately reflects actual scan evidence?
 - [ ] No broad gitleaks suppressions added?
-
+- [ ] Read-only adapter only? (WP8+)
+- [ ] No authenticated client added? (WP8+)
+- [ ] No credentials added? (WP8+)
+- [ ] No POST/PUT/PATCH/DELETE in adapter? (WP8+)
+- [ ] No order placement/cancellation/signing method added? (WP8+)
+- [ ] Offline tests cover adapter behavior and boundaries? (WP8+)
+- [ ] Optional network smoke test gated by `--allow-network`? (WP8+)

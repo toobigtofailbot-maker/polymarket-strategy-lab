@@ -23,3 +23,18 @@ Runtime boundaries protect safety-critical execution, risk, credentials, and mod
 - No risk-cap implementation exists.
 - No venue API integration exists.
 - No live-trading path exists.
+
+## WP8 Boundary Update
+
+WP8 adds a strictly read-only public data adapter under `src/data_layer/polymarket/`. This adapter:
+
+- Performs public GET requests only.
+- Has no order-placement authority.
+- Has no wallet or private-key authority.
+- Has no live-trading path.
+- Uses Python standard library only.
+- Is the only approved executable source in `src/` as of WP8.
+- Does not change the status of the execution gateway, risk engine, or paper-trading engine (all remain absent).
+- Strategies must not import this adapter directly; data access must flow through approved data-layer boundaries.
+
+All other boundaries from WP3 remain in effect.

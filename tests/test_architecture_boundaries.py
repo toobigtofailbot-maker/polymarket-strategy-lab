@@ -33,15 +33,36 @@ def test_required_src_readmes_exist():
     assert missing == []
 
 
-def test_no_executable_files_exist_under_src():
+
+# WP8 approves executable source files under src/data_layer/polymarket/ only.
+# All other src/ directories must remain README-only.
+WP8_APPROVED_SRC_SCOPE = "src/data_layer/polymarket"
+
+
+def test_no_executable_files_exist_under_src_except_approved_scope():
+    """Executable files under src/ are forbidden except in WP8-approved scope.
+
+    WP8 explicitly permits .py files under src/data_layer/polymarket/ for the
+    read-only public data adapter. All other src/ subdirectories must remain
+    README-only. This test enforces that boundary without weakening trading safety.
+    """
     src = ROOT / "src"
     executable_suffixes = {".py", ".ts", ".tsx", ".js", ".jsx", ".rs", ".sh", ".ps1"}
-    findings = [
-        path.relative_to(ROOT).as_posix()
-        for path in src.rglob("*")
-        if path.is_file() and (path.name != "README.md" or path.suffix.lower() in executable_suffixes)
-    ]
-    assert findings == []
+    findings = []
+    for path in src.rglob("*"):
+        if not path.is_file():
+            continue
+        if path.name == "README.md":
+            continue
+        # Allow approved WP8 read-only data-layer scope.
+        rel = path.relative_to(ROOT).as_posix()
+        if rel.startswith(WP8_APPROVED_SRC_SCOPE + "/") or rel == WP8_APPROVED_SRC_SCOPE:
+            continue
+        if path.suffix.lower() in executable_suffixes:
+            findings.append(rel)
+    assert findings == [], (
+        f"Unexpected executable files outside approved scope ({WP8_APPROVED_SRC_SCOPE}): {findings}"
+    )
 
 
 def test_architecture_docs_forbid_direct_strategy_order_placement():
