@@ -18,6 +18,7 @@ PROHIBITED — this module must never contain:
 
 from __future__ import annotations
 
+import dataclasses
 from pathlib import Path
 from typing import List, Optional
 
@@ -122,6 +123,10 @@ class SnapshotWriter:
 
         Writes market JSONL and order-book JSONL only when records are present.
         Always writes manifest.
+
+        The manifest written to disk has output_files populated with the paths
+        of all files produced during this call. The caller-provided manifest
+        is not mutated; a rebuilt copy is written instead.
         """
         try:
             markets_file: Optional[str] = None
@@ -131,7 +136,18 @@ class SnapshotWriter:
                 markets_file = str(self.write_market_snapshots(market_records))
             if order_book_records:
                 ob_file = str(self.write_order_book_snapshots(order_book_records))
-            manifest_file = str(self.write_manifest(manifest))
+
+            # Compute manifest path (same logic as write_manifest) so it can be
+            # included in output_files before the manifest is written.
+            self._ensure_dir()
+            safe_id = manifest.snapshot_id.replace("/", "_").replace("\\", "_")
+            manifest_path = str(self._output_dir / f"manifest_{safe_id}.json")
+
+            # Rebuild manifest with populated output_files. Does not mutate
+            # the caller-provided manifest object.
+            output_files = [f for f in [markets_file, ob_file, manifest_path] if f is not None]
+            updated_manifest = dataclasses.replace(manifest, output_files=output_files)
+            manifest_file = str(self.write_manifest(updated_manifest))
 
             return SnapshotWriteResult(
                 output_dir=str(self._output_dir),

@@ -264,3 +264,83 @@ class TestSnapshotWriterWriteAll:
         )
         assert result.success is True
         assert nested.is_dir()
+
+    # --- output_files population fix (WP10 follow-up) ---
+
+    def test_manifest_output_files_includes_market_jsonl(self, tmp_path):
+        """Manifest written to disk must list the market JSONL file produced."""
+        writer = SnapshotWriter(output_dir=tmp_path, _allow_any_output_dir=True)
+        writer.write_all(
+            market_records=[_make_market_record()],
+            order_book_records=[],
+            manifest=_make_manifest(),
+        )
+        manifest_files = list(tmp_path.glob("manifest_*.json"))
+        assert len(manifest_files) == 1
+        parsed = json.loads(manifest_files[0].read_text(encoding="utf-8"))
+        output_files = parsed["output_files"]
+        assert isinstance(output_files, list)
+        assert any(MARKETS_JSONL_NAME in f for f in output_files), (
+            f"Expected {MARKETS_JSONL_NAME} in output_files, got {output_files}"
+        )
+
+    def test_manifest_output_files_includes_order_book_jsonl_when_written(self, tmp_path):
+        """Manifest must list the order-book JSONL file when order books are written."""
+        writer = SnapshotWriter(output_dir=tmp_path, _allow_any_output_dir=True)
+        writer.write_all(
+            market_records=[_make_market_record()],
+            order_book_records=[_make_order_book_record()],
+            manifest=_make_manifest(),
+        )
+        manifest_files = list(tmp_path.glob("manifest_*.json"))
+        assert len(manifest_files) == 1
+        parsed = json.loads(manifest_files[0].read_text(encoding="utf-8"))
+        output_files = parsed["output_files"]
+        assert any(ORDER_BOOKS_JSONL_NAME in f for f in output_files), (
+            f"Expected {ORDER_BOOKS_JSONL_NAME} in output_files, got {output_files}"
+        )
+
+    def test_manifest_output_files_includes_manifest_path(self, tmp_path):
+        """Manifest written to disk must include its own path in output_files."""
+        writer = SnapshotWriter(output_dir=tmp_path, _allow_any_output_dir=True)
+        writer.write_all(
+            market_records=[_make_market_record()],
+            order_book_records=[],
+            manifest=_make_manifest("snap_test_001"),
+        )
+        manifest_files = list(tmp_path.glob("manifest_*.json"))
+        assert len(manifest_files) == 1
+        parsed = json.loads(manifest_files[0].read_text(encoding="utf-8"))
+        output_files = parsed["output_files"]
+        assert any("manifest_snap_test_001" in f for f in output_files), (
+            f"Expected manifest path in output_files, got {output_files}"
+        )
+
+    def test_manifest_output_files_empty_when_no_records(self, tmp_path):
+        """When no market or order-book records are written, output_files
+        still includes at least the manifest path itself."""
+        writer = SnapshotWriter(output_dir=tmp_path, _allow_any_output_dir=True)
+        writer.write_all(
+            market_records=[],
+            order_book_records=[],
+            manifest=_make_manifest("snap_empty_001"),
+        )
+        manifest_files = list(tmp_path.glob("manifest_*.json"))
+        parsed = json.loads(manifest_files[0].read_text(encoding="utf-8"))
+        output_files = parsed["output_files"]
+        assert any("manifest_snap_empty_001" in f for f in output_files)
+        assert not any(MARKETS_JSONL_NAME in f for f in output_files)
+
+    def test_caller_manifest_not_mutated(self, tmp_path):
+        """The caller-provided manifest object must not be mutated by write_all."""
+        writer = SnapshotWriter(output_dir=tmp_path, _allow_any_output_dir=True)
+        original_manifest = _make_manifest()
+        original_output_files = list(original_manifest.output_files)
+        writer.write_all(
+            market_records=[_make_market_record()],
+            order_book_records=[],
+            manifest=original_manifest,
+        )
+        assert original_manifest.output_files == original_output_files, (
+            "write_all must not mutate the caller-provided manifest.output_files"
+        )
