@@ -2,7 +2,47 @@
 
 ## Purpose
 
-This document records WP5 local security-tool availability and scan results. It is status evidence only; it does not authorize runtime dependency integration, copied external code, venue API integration, or live trading.
+This document records local security-tool availability and scan results through WP7. It is status evidence only; it does not authorize runtime dependency integration, copied external code, venue API integration, or live trading.
+
+## WP7 Status Summary
+
+WP7 added a project-local gitleaks acquisition path under ignored `tools/.bin/` and downloaded gitleaks v8.27.2 with checksum verification. The `gitleaks git --redact` scan ran and passed with no findings. WP3-D001 is updated from DEFERRED to READY_FOR_WP. No global or system installation was performed. No runtime trading dependencies were added.
+
+Semgrep and pip-audit are NOT currently available locally because `.venv-security/` was removed during WP6 cleanup. Rerun `tools/security/setup_project_security_tools.py` to restore them before any semgrep or pip-audit work.
+
+## WP7 Tool Status Table
+
+| Tool | Availability | Source | Version command | Scan command attempted | Result | Deferred item impact | Notes |
+|---|---|---|---|---|---|---|---|
+| gitleaks | AVAILABLE | PROJECT_LOCAL_BIN | `tools/.bin/gitleaks.exe version` | `tools/.bin/gitleaks.exe git --redact` | PASS | WP3-D001 updated to READY_FOR_WP | Version 8.27.2; checksum verified; scan passed with no findings. |
+| semgrep | NOT_AVAILABLE | NOT_AVAILABLE | `.venv-security/Scripts/semgrep.exe --version` | Not run | SKIPPED_NOT_AVAILABLE | WP3-D002 remains READY_FOR_WP | `.venv-security/` absent; rerun setup_project_security_tools.py to restore. |
+| npm audit | NOT_APPLICABLE | NOT_APPLICABLE | `npm --version` | Not run | SKIPPED_NOT_APPLICABLE | WP3-D003 remains DEFERRED | No `package.json` exists; npm was not installed. |
+| pip-audit | NOT_AVAILABLE | NOT_AVAILABLE | `.venv-security/Scripts/pip-audit.exe --version` | Not run | SKIPPED_NOT_AVAILABLE | WP3-D004 remains READY_FOR_WP | `.venv-security/` absent; rerun setup_project_security_tools.py to restore. |
+| cargo audit | NOT_APPLICABLE | NOT_APPLICABLE | `cargo audit --version` | Not run | SKIPPED_NOT_APPLICABLE | WP3-D005 remains DEFERRED | No `Cargo.lock` exists; Rust/cargo-audit were not installed. |
+
+## WP7 Commands Run
+
+```powershell
+python tools/security/setup_project_gitleaks.py
+python tools/security/verify_project_gitleaks.py
+python tools/security/check_security_tools.py
+python tools/security/run_available_security_checks.py
+python tools/git/preflight_generated_artifact_guard.py
+```
+
+Scan command executed:
+
+```
+tools/.bin/gitleaks.exe git --redact
+```
+
+## WP7 Results
+
+- `gitleaks`: AVAILABLE from PROJECT_LOCAL_BIN; version 8.27.2; checksum verified; `gitleaks git --redact` scan PASSED with no findings.
+- `semgrep`: NOT_AVAILABLE (`.venv-security/` absent after WP6 cleanup).
+- `npm audit`: NOT_APPLICABLE (no `package.json`).
+- `pip-audit`: NOT_AVAILABLE (`.venv-security/` absent after WP6 cleanup).
+- `cargo audit`: NOT_APPLICABLE (no `Cargo.lock`).
 
 ## WP5 Status Summary
 
@@ -52,8 +92,13 @@ WP6 added `tools/git/cleanup_generated_artifacts.py` and `tools/git/preflight_ge
 
 ## Deferred Item Impact
 
-WP3-D002 and WP3-D004 are `READY_FOR_WP` because project-local tools are available and scans passed. WP3-D001, WP3-D003, and WP3-D005 remain `DEFERRED`.
+WP3-D001 is `READY_FOR_WP` because gitleaks v8.27.2 was verified from PROJECT_LOCAL_BIN and the scan passed. WP3-D002 and WP3-D004 remain `READY_FOR_WP` (semgrep and pip-audit require `.venv-security/` to be restored). WP3-D003 and WP3-D005 remain `DEFERRED`.
 
 ## Next Required Action
 
-Before runtime dependency integration, copied external code, venue API integration, or live/API execution, provide gitleaks or an approved equivalent, rerun the wrappers in `tools/security/`, update this status document, and update `docs/deferred_items_log.md`.
+Before runtime dependency integration, copied external code, venue API integration, or live/API execution:
+
+1. Rerun `tools/security/setup_project_gitleaks.py` if the binary is absent.
+2. Rerun `tools/security/setup_project_security_tools.py` to restore semgrep and pip-audit.
+3. Rerun `tools/security/run_available_security_checks.py`.
+4. Update this status document and `docs/deferred_items_log.md` with results.

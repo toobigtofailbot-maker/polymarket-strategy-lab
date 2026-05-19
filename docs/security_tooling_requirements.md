@@ -21,11 +21,16 @@ This document defines security and dependency-audit tooling gates for future run
 - Project-local `.venv-security/` is allowed for security tools only.
 - `tools/security/setup_project_security_tools.py` may install only approved security tools into `.venv-security/`.
 - `tools/security/setup_project_security_tools.py` must verify `.venv-security/` ignore protection before creating or reusing the project-local environment.
+- Project-local `tools/.bin/` may hold ignored security binaries only. The directory must be ignored and verified as such before any binary is written there.
+- `tools/security/setup_project_gitleaks.py` may download the pinned gitleaks binary into `tools/.bin/` only if ignore protection is verified, no tracked/staged files exist under `tools/.bin/`, and the resulting binary version check passes.
 - Project-local security tool installation is not runtime dependency integration.
 - Project-local tool environments and portable binaries must remain ignored and uncommitted.
-- The Remote Main Sync Gate is separate from security scanning but mandatory before future WP branch creation.
+- The Remote Main Sync Gate is mandatory before WP branch creation.
+- Security scans must be rerun before relevant future work: runtime dependency integration, vendoring, copied external code, venue API integration, or live/API execution. A prior scan result does not carry forward indefinitely.
+- gitleaks or an approved equivalent is required before external dependency runtime integration, vendoring, copied code, or live/API execution. A project-local binary under `tools/.bin/` satisfies this requirement if the binary is verified and the scan passes.
 - Before installing, vendoring, forking, or copying external runtime code, the relevant tool must be installed and run, or an approved equivalent must be documented in repo truth.
 - Runtime dependency integration cannot proceed unless relevant checks have been run and documented, or an approved equivalent or explicit user deferral is documented in repo truth.
 - Audit output must be documented in the relevant work package artifacts before runtime use is approved.
 - A passing scan does not grant live execution authority. Live execution still requires `docs/live_trading_authorization.md` to be explicitly updated in a future approved work package.
 - If a required tool is unavailable, add or update an entry in `docs/deferred_items_log.md` and record the current status in `docs/security_tooling_status.md`.
+- The generated artifact guard (`tools/git/preflight_generated_artifact_guard.py`) is mandatory before branch work and before final review for any WP that touches security tooling.

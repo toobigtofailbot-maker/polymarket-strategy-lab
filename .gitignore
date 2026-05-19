@@ -61,6 +61,9 @@ security-scan-output/
 *.scan.json
 *.scan.txt
 
+# Claude Code local state (worktrees, settings, session data)
+.claude/
+
 # OS and editor artifacts
 .DS_Store
 Thumbs.db
