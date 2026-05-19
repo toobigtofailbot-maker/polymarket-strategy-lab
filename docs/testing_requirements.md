@@ -34,4 +34,9 @@
 - No test may require actual Polymarket network access; all snapshot capture tests must use mocked adapter clients. (WP10+)
 - Snapshot record tests must confirm read_only_provenance field is present and correct. (WP10+)
 - No large raw API payload may be written to snapshot files; tests must verify raw_field_names is a list of strings, not a full dict. (WP10+)
+- Snapshot reader/catalog/replay tests must use tmp_path fixtures; no test may write to real local_data/. (WP11+)
+- Replay tests must be finite and must not use sleep or time delays. (WP11+)
+- CLI inspection tests must not require live network; CLI must run cleanly with missing/empty input dir. (WP11+)
+- No test may require actual Polymarket network access for replay/catalog tests. (WP11+)
+- Catalog code must not import execution, strategy, or authenticated client modules. (WP11+)
 
