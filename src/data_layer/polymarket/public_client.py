@@ -41,33 +41,64 @@ from .models import (
 # Endpoint map with verification status.
 # UNVERIFIED = endpoint path is derived from public documentation and repo audit
 # but has not been confirmed against a live production response in this project.
+# WP9 updated: three endpoints confirmed via controlled GET-only probes (2026-05-18).
+# CLOB /health returned HTTP 404 and remains unverified.
 _ENDPOINT_MAP = {
     "gamma_markets": {
         "base_url_key": "gamma_base_url",
         "path": "/markets",
-        "verified": False,
+        "verified": True,
+        "verified_in_wp": "WP9",
+        "verified_at_utc": "2026-05-18",
+        "notes": (
+            "HTTP 200. Returns a JSON list of market dicts. "
+            "clobTokenIds field is a JSON-encoded string (not a Python list). "
+            "outcomes and outcomePrices fields are also JSON-encoded strings. "
+            "Correct identifier for /markets/{id} is the integer id field."
+        ),
     },
     "gamma_market_by_id": {
         "base_url_key": "gamma_base_url",
         "path": "/markets/{identifier}",
-        "verified": False,
+        "verified": True,
+        "verified_in_wp": "WP9",
+        "verified_at_utc": "2026-05-18",
+        "notes": (
+            "HTTP 200. Returns a single market dict (same shape as list items). "
+            "Identifier must be the integer id field (e.g. '540817'), not the conditionId hash. "
+            "Using conditionId returns HTTP 422."
+        ),
     },
     "clob_book": {
         "base_url_key": "clob_base_url",
         "path": "/book",
-        "verified": False,
+        "verified": True,
+        "verified_in_wp": "WP9",
+        "verified_at_utc": "2026-05-18",
+        "notes": (
+            "HTTP 200. Returns a dict with keys: asks, asset_id, bids, hash, "
+            "last_trade_price, market, min_order_size, neg_risk, tick_size, timestamp. "
+            "bids and asks are lists of {price, size} dicts (string values). "
+            "token_id must be obtained by JSON-parsing the clobTokenIds field from /markets."
+        ),
     },
     "clob_health": {
         "base_url_key": "clob_base_url",
         "path": "/health",
         "verified": False,
+        "verified_in_wp": None,
+        "verified_at_utc": None,
+        "notes": (
+            "WP9 probe returned HTTP 404. Endpoint does not respond at /health. "
+            "Not confirmed for any production use. Kept in map as unverified candidate."
+        ),
     },
 }
 
 DEFAULT_GAMMA_BASE_URL = "https://gamma-api.polymarket.com"
 DEFAULT_CLOB_BASE_URL = "https://clob.polymarket.com"
 DEFAULT_TIMEOUT_SECONDS = 10
-DEFAULT_USER_AGENT = "polymarket-strategy-lab/wp8-readonly-adapter"
+DEFAULT_USER_AGENT = "polymarket-strategy-lab/wp9-contract-validation"
 
 
 class PolymarketPublicClient:
@@ -215,18 +246,50 @@ class PolymarketPublicClient:
         return AdapterResult(data=data, request_info=info)
 
     @staticmethod
+    def _parse_json_string_or_list(value: object) -> list:
+        """Parse a value that may be a JSON-encoded string or already a list.
+
+        WP9 finding: Gamma API returns clobTokenIds and outcomes as
+        JSON-encoded strings (e.g. '["a","b"]'), not Python lists.
+        """
+        if isinstance(value, list):
+            return value
+        if isinstance(value, str):
+            stripped = value.strip()
+            if stripped.startswith("["):
+                try:
+                    parsed = json.loads(stripped)
+                    if isinstance(parsed, list):
+                        return parsed
+                except json.JSONDecodeError:
+                    pass
+        return []
+
+    @staticmethod
     def parse_market_summary(raw: object) -> MarketSummary:
         """Parse a raw market dict into a MarketSummary.
 
         Raises PolymarketResponseError if required fields are missing.
-        Field names are based on WP2 audit; may differ from actual API response.
+
+        WP9 notes on actual field shapes:
+        - clobTokenIds is a JSON-encoded string (e.g. '["token1","token2"]')
+        - outcomes is a JSON-encoded string (e.g. '["Yes","No"]')
+        - id is a string representation of an integer (e.g. '540817')
+        - Use id (not conditionId) as the identifier for /markets/{id} lookups
         """
         if not isinstance(raw, dict):
             raise PolymarketResponseError(f"Expected dict, got {type(raw).__name__}")
         try:
-            tokens = raw.get("tokens", raw.get("clobTokenIds", []))
-            token_ids = tuple(str(t) if isinstance(t, str) else str(t.get("token_id", "")) for t in tokens)
-            outcomes = raw.get("outcomes", raw.get("outcomeLabels", []))
+            # WP9: clobTokenIds arrives as a JSON-encoded string
+            raw_tokens = raw.get("tokens") or raw.get("clobTokenIds", [])
+            token_list = PolymarketPublicClient._parse_json_string_or_list(raw_tokens)
+            token_ids = tuple(
+                str(t) if isinstance(t, str) else str(t.get("token_id", ""))
+                for t in token_list
+            )
+            # WP9: outcomes also arrives as a JSON-encoded string
+            raw_outcomes = raw.get("outcomes") or raw.get("outcomeLabels", [])
+            outcomes = PolymarketPublicClient._parse_json_string_or_list(raw_outcomes)
             return MarketSummary(
                 market_id=str(raw.get("id", raw.get("marketId", ""))),
                 condition_id=str(raw.get("conditionId", raw.get("condition_id", ""))),

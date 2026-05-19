@@ -23,4 +23,8 @@
 - Adapter boundary tests must confirm: no POST/PUT/PATCH/DELETE methods, no credentials, no private-key fields, no disallowed method names (place_order, create_order, post_order, submit_order, cancel_order, sign_order, execute_trade, trade, buy, sell), and no signing imports.
 - Approved executable source scope under `src/data_layer/polymarket/` must not weaken tests blocking trading/execution code in other src/ directories.
 - All tests must be runnable locally.
+- Contract probe tool tests must be offline; no pytest test may require live network. (WP9+)
+- Network validation tools must require `--allow-network` before making any network call. (WP9+)
+- Response-shape parser changes must include offline fixtures or mocks covering both JSON-encoded string inputs and plain Python list inputs. (WP9+)
+- Endpoint verification metadata tests must confirm: only WP9-probed endpoints are marked verified; CLOB /health remains unverified; verified entries carry verified_in_wp and verified_at_utc fields. (WP9+)
 
