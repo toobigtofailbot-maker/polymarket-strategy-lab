@@ -1,5 +1,22 @@
 # Review Checklist
 
+## WP19 Guard-Aware Snapshot Quality Reports
+
+- Quality reports are offline-only?
+- Guarded-capture manifest counts are reported?
+- Network-used unguarded manifests are warnings, not errors?
+- Local WP16 policy caveat appears in reports?
+- No network/client/auth/trading imports added to quality/reporting code?
+- Deferred items remain open?
+- WP8-D002 remains OPEN?
+- WP16-D002 remains OPEN?
+- WP17-D001 remains OPEN?
+- WP17-D002 remains OPEN?
+- WP10-D001 remains OPEN?
+- WP10-D002 remains OPEN?
+- WP12-D001 remains OPEN?
+- WP12-D002 remains OPEN?
+
 ## WP18 Guarded Manual Snapshot Capture
 
 - Snapshot capture requires `--allow-network`?
