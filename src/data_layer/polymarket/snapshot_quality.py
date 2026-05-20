@@ -21,6 +21,10 @@ WARNING = "WARNING"
 ERROR = "ERROR"
 SEVERITIES = (INFO, WARNING, ERROR)
 PUBLIC_GET_PROVENANCE_FRAGMENT = "public-get-only"
+GUARD_ENFORCED_FRAGMENT = "guard enforced: yes"
+LOCAL_WP16_POLICY_FRAGMENT = "local wp16 policy"
+WP8_D002_OPEN_FRAGMENT = "wp8-d002 remains open"
+UNCONFIRMED_LIMITS_FRAGMENT = "not confirmed venue limits"
 
 
 @dataclasses.dataclass
@@ -76,6 +80,10 @@ class SnapshotQualitySummary:
     manifest_network_used_true_count: int
     manifest_network_used_false_count: int
     manifest_output_files_empty_count: int
+    guard_enforced_manifest_count: int
+    unguarded_network_manifest_count: int
+    guard_provenance_unknown_manifest_count: int
+    local_budget_policy_manifest_count: int
 
     def to_dict(self) -> dict:
         return dataclasses.asdict(self)
@@ -216,6 +224,14 @@ def _build_snapshot_summary(
     manifest_result: SnapshotLoadResult,
 ) -> SnapshotQualitySummary:
     manifests = list(manifest_result.records)
+    guard_enforced_count = sum(1 for m in manifests if _manifest_is_guard_enforced(m))
+    unguarded_network_count = sum(
+        1
+        for m in manifests
+        if getattr(m, "network_used", None) is True and not _manifest_is_guard_enforced(m)
+    )
+    guard_unknown_count = sum(1 for m in manifests if not _manifest_is_guard_enforced(m))
+    local_budget_count = sum(1 for m in manifests if _manifest_has_local_budget_policy(m))
     return SnapshotQualitySummary(
         input_dir=file_summary.input_dir,
         markets_file_present=file_summary.markets_file_present,
@@ -233,6 +249,10 @@ def _build_snapshot_summary(
         manifest_network_used_true_count=sum(1 for m in manifests if m.network_used is True),
         manifest_network_used_false_count=sum(1 for m in manifests if m.network_used is False),
         manifest_output_files_empty_count=sum(1 for m in manifests if not m.output_files),
+        guard_enforced_manifest_count=guard_enforced_count,
+        unguarded_network_manifest_count=unguarded_network_count,
+        guard_provenance_unknown_manifest_count=guard_unknown_count,
+        local_budget_policy_manifest_count=local_budget_count,
     )
 
 
@@ -379,6 +399,41 @@ def _validate_manifests(manifests: list) -> List[QualityIssue]:
                     **context,
                 )
             )
+        if getattr(manifest, "network_used", None) is True and not _manifest_is_guard_enforced(manifest):
+            issues.append(
+                QualityIssue(
+                    severity=WARNING,
+                    code="NETWORK_USED_WITHOUT_GUARD_PROVENANCE",
+                    message=(
+                        "Network-used manifest does not show guard enforcement provenance; "
+                        "this may be an older pre-WP18 snapshot or an unguarded capture and "
+                        "should not be used for guard-dependent research without review."
+                    ),
+                    field="notes",
+                    remediation_hint=(
+                        "Review the local manifest provenance before using it for "
+                        "guard-dependent research."
+                    ),
+                    **context,
+                )
+            )
+        if _manifest_is_guard_enforced(manifest) and not _manifest_has_local_budget_policy(manifest):
+            issues.append(
+                QualityIssue(
+                    severity=WARNING,
+                    code="GUARD_PROVENANCE_INCOMPLETE",
+                    message=(
+                        "Guard provenance is incomplete; local-budget and rate-limit "
+                        "uncertainty should remain explicit."
+                    ),
+                    field="notes",
+                    remediation_hint=(
+                        "Prefer WP18-style notes that mention local WP16 policy, "
+                        "WP8-D002, or unconfirmed venue limits."
+                    ),
+                    **context,
+                )
+            )
     return issues
 
 
@@ -518,6 +573,36 @@ def _require_public_get_provenance(obj: object, **context: object) -> List[Quali
             **context,
         )
     ]
+
+
+def _manifest_is_guard_enforced(manifest: object) -> bool:
+    notes = _manifest_notes(manifest)
+    return any(
+        fragment in notes
+        for fragment in (
+            GUARD_ENFORCED_FRAGMENT,
+            LOCAL_WP16_POLICY_FRAGMENT,
+            WP8_D002_OPEN_FRAGMENT,
+            UNCONFIRMED_LIMITS_FRAGMENT,
+        )
+    )
+
+
+def _manifest_has_local_budget_policy(manifest: object) -> bool:
+    notes = _manifest_notes(manifest)
+    return any(
+        fragment in notes
+        for fragment in (
+            LOCAL_WP16_POLICY_FRAGMENT,
+            WP8_D002_OPEN_FRAGMENT,
+            UNCONFIRMED_LIMITS_FRAGMENT,
+        )
+    )
+
+
+def _manifest_notes(manifest: object) -> str:
+    notes = getattr(manifest, "notes", "")
+    return notes.casefold() if isinstance(notes, str) else ""
 
 
 def _is_iso_like(value: str) -> bool:

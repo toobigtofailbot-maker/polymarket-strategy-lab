@@ -75,6 +75,7 @@ def _manifest(
     snapshot_id: str = "snap_001",
     output_files: list | None = None,
     network_used: bool = True,
+    notes: str | None = None,
 ) -> SnapshotManifest:
     return SnapshotManifest(
         snapshot_id=snapshot_id,
@@ -87,7 +88,13 @@ def _manifest(
         order_books_written=0,
         network_used=network_used,
         output_files=output_files if output_files is not None else ["market_metadata_snapshots.jsonl"],
-        notes="test",
+        notes=notes
+        if notes is not None
+        else (
+            "Read-only research snapshot. Guard enforced: yes. "
+            "Endpoint budgets used: local WP16 policy, not confirmed venue limits. "
+            "WP8-D002 remains OPEN."
+        ),
     )
 
 
@@ -216,6 +223,56 @@ def test_manifest_output_files_empty_detected_and_network_summarized(tmp_path):
     assert any(issue.code == "MANIFEST_OUTPUT_FILES_EMPTY" for issue in report.issues)
     assert report.snapshot_summary.manifest_network_used_true_count == 1
     assert report.snapshot_summary.manifest_output_files_empty_count == 1
+
+
+def test_guard_enforced_manifest_is_counted(tmp_path):
+    report = _report(tmp_path, markets=[_market_record()], manifests=[_manifest()])
+
+    assert report.snapshot_summary.guard_enforced_manifest_count == 1
+    assert report.snapshot_summary.local_budget_policy_manifest_count == 1
+    assert report.snapshot_summary.unguarded_network_manifest_count == 0
+    assert report.snapshot_summary.guard_provenance_unknown_manifest_count == 0
+
+
+def test_network_used_without_guard_provenance_is_warning_not_error(tmp_path):
+    report = _report(
+        tmp_path,
+        markets=[_market_record()],
+        manifests=[_manifest(notes="Older local snapshot capture.")],
+    )
+
+    issues = [
+        issue
+        for issue in report.issues
+        if issue.code == "NETWORK_USED_WITHOUT_GUARD_PROVENANCE"
+    ]
+    assert len(issues) == 1
+    assert issues[0].severity == WARNING
+    assert report.gate_result.error_count == 0
+    assert report.gate_result.passed is True
+    assert report.snapshot_summary.unguarded_network_manifest_count == 1
+    assert report.snapshot_summary.guard_provenance_unknown_manifest_count == 1
+
+
+def test_guard_enforced_manifest_without_uncertainty_caveat_warns(tmp_path):
+    report = _report(
+        tmp_path,
+        markets=[_market_record()],
+        manifests=[_manifest(notes="Guard enforced: yes.")],
+    )
+
+    issues = [issue for issue in report.issues if issue.code == "GUARD_PROVENANCE_INCOMPLETE"]
+    assert len(issues) == 1
+    assert issues[0].severity == WARNING
+    assert report.gate_result.passed is True
+
+
+def test_complete_guarded_manifest_has_no_guard_warning_codes(tmp_path):
+    report = _report(tmp_path, markets=[_market_record()], manifests=[_manifest()])
+
+    codes = {issue.code for issue in report.issues}
+    assert "NETWORK_USED_WITHOUT_GUARD_PROVENANCE" not in codes
+    assert "GUARD_PROVENANCE_INCOMPLETE" not in codes
 
 
 def test_catalog_summary_fields_present(tmp_path):

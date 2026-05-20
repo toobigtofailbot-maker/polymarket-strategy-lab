@@ -55,6 +55,21 @@ WP12 uses three severities:
 - `WARNING`: quality concern that does not fail the default gate.
 - `ERROR`: quality failure that makes snapshot data unsafe for quality-dependent research use.
 
+## WP19 Guarded-Capture Provenance Summary
+
+WP19 adds offline guard-aware reporting for WP18 guarded snapshot captures. Quality reports now summarize:
+
+- Guard-enforced manifests.
+- Unguarded `network_used=True` manifests.
+- Guard-provenance-unknown manifests.
+- Manifests that include local WP16 policy / local-budget provenance.
+
+The detection uses local manifest notes already loaded from disk. It does not call Polymarket APIs, does not capture new data, and does not inspect raw API payloads.
+
+Network-used manifests without guard provenance are reported as WARNING, not ERROR, because older local WP10/WP11/WP12 snapshot data may predate WP18. Guard-enforced manifests with incomplete local-budget/rate-limit caveats are also reported as WARNING.
+
+Reports must keep the caveat explicit: WP8-D002 remains OPEN and WP16 local budgets are not confirmed venue limits. This remains offline/local research infrastructure only. No automated, scheduled, frequent, or production scanning is authorized by WP19.
+
 ## Snapshot-Level Checks
 
 WP12 checks:
@@ -76,6 +91,7 @@ WP12 checks:
 - `read_only_provenance` contains `public-get-only`.
 - Manifest `output_files` is populated.
 - Manifest `network_used` values are summarized as provenance, not treated as WP12 network use.
+- Guarded-capture manifest provenance from WP18-style local manifest notes.
 - Malformed lines from `snapshot_reader.py` are included as quality issues.
 
 ## Catalog-Level Checks

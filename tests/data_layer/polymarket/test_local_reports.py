@@ -54,9 +54,25 @@ def test_markdown_contains_gate_status_and_safety_statement(tmp_path):
     assert "does not call Polymarket APIs" in markdown
 
 
+def test_markdown_contains_guarded_capture_counts_and_caveat(tmp_path):
+    markdown = render_quality_report_markdown(_report(tmp_path))
+
+    assert "Guard-enforced manifests" in markdown
+    assert "Unguarded network-used manifests" in markdown
+    assert "Guard-provenance-unknown manifests" in markdown
+    assert "Local WP16 policy provenance count" in markdown
+    assert "WP8-D002 remains OPEN" in markdown
+    assert "local budgets are not confirmed venue limits" in markdown
+
+
 def test_json_report_is_sanitized_and_has_no_raw_payload(tmp_path):
     data = render_quality_report_json(_report(tmp_path))
 
+    snapshot_summary = data["snapshot_summary"]
+    assert snapshot_summary["guard_enforced_manifest_count"] == 1
+    assert snapshot_summary["unguarded_network_manifest_count"] == 0
+    assert snapshot_summary["guard_provenance_unknown_manifest_count"] == 0
+    assert snapshot_summary["local_budget_policy_manifest_count"] == 1
     assert data["sanitization"]["large_source_payloads_included"] is False
     assert data["sanitization"]["credentials_included"] is False
     assert "raw_payload" not in json.dumps(data).lower()

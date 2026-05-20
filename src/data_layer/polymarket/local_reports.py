@@ -12,17 +12,19 @@ from .snapshot_quality import SnapshotQualityReport
 SAFETY_STATEMENT = (
     "Offline quality/reporting infrastructure only. It reads WP10/WP11 local "
     "snapshot data, does not call Polymarket APIs, does not capture new data, "
-    "does not create strategy signals or trade proposals, does not backtest, "
-    "does not simulate fills, does not place, cancel, sign, or simulate orders, "
-    "does not authenticate, does not read credentials, and is not a database, "
-    "scheduler, bot loop, or production service."
+    "does not create strategy signals or trade proposals, does not run "
+    "historical trading simulations, does not model fills, does not place, "
+    "cancel, sign, or simulate orders, does not authenticate, does not read "
+    "credentials, and is not a database, scheduler, bot loop, or production "
+    "service."
 )
 
 DEFERRED_CONSTRAINTS = (
     "WP8-D002 remains open, so these reports must not be used for automated "
-    "or frequent market scanning. WP10-D001, WP10-D002, WP11-D001, and "
-    "WP11-D002 remain open for schema stability, database backing, catalog "
-    "persistence, and backtest readiness."
+    "or frequent market scanning. WP16 local budgets are not confirmed venue "
+    "limits. WP10-D001, WP10-D002, WP11-D001, and WP11-D002 remain open for "
+    "schema stability, database backing, catalog persistence, and historical "
+    "simulation readiness."
 )
 
 _LOCAL_DATA_PART = "local_data"
@@ -60,6 +62,11 @@ def render_quality_report_markdown(
         f"- Malformed manifest files: `{snap.malformed_manifest_files}`",
         f"- Manifests with network_used true: `{snap.manifest_network_used_true_count}`",
         f"- Manifests with empty output_files: `{snap.manifest_output_files_empty_count}`",
+        f"- Guard-enforced manifests: `{snap.guard_enforced_manifest_count}`",
+        f"- Unguarded network-used manifests: `{snap.unguarded_network_manifest_count}`",
+        f"- Guard-provenance-unknown manifests: `{snap.guard_provenance_unknown_manifest_count}`",
+        f"- Local WP16 policy provenance count: `{snap.local_budget_policy_manifest_count}`",
+        "- Guard caveat: `WP8-D002 remains OPEN; local budgets are not confirmed venue limits.`",
         "",
         "## Catalog Summary",
         "",

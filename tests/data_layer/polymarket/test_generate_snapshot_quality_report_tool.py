@@ -53,6 +53,21 @@ def test_default_run_writes_no_files(tmp_path):
     assert not list(tmp_path.glob("*.report.json"))
 
 
+def test_console_summary_includes_guarded_capture_counts(tmp_path, capsys):
+    _write_jsonl(tmp_path / "market_metadata_snapshots.jsonl", [_market_record().to_dict()])
+    _write_manifest(tmp_path / "manifest_snap_001.json", _manifest())
+
+    result = main(["--input-dir", str(tmp_path)])
+    out = capsys.readouterr().out
+
+    assert result == 0
+    assert "Guard-enforced manifests:" in out
+    assert "Unguarded network manifests:" in out
+    assert "Guard provenance unknown:" in out
+    assert "Local WP16 policy count:" in out
+    assert "Safety: offline quality/reporting only; no network, credentials, orders, or automation." in out
+
+
 def test_explicit_outputs_write_under_local_data(tmp_path):
     _write_jsonl(tmp_path / "market_metadata_snapshots.jsonl", [_market_record().to_dict()])
     _write_manifest(tmp_path / "manifest_snap_001.json", _manifest())
@@ -180,6 +195,45 @@ class TestSourceSafety:
         ):
             found = self._function_names(self._source(relative)) & disallowed
             assert found == set(), f"Disallowed function names in {relative}: {found}"
+
+    def test_quality_report_sources_have_no_forbidden_runtime_terms(self):
+        forbidden_terms = {
+            "py_clob_client_v2",
+            "PolymarketPublicClient",
+            "PRIVATE_KEY",
+            "CLOB_API_KEY",
+            "CLOB_SECRET",
+            "CLOB_PASS_PHRASE",
+            "mnemonic",
+            "create_and_post_order",
+            "create_order",
+            "post_order",
+            "submit_order",
+            "cancel_order",
+            "sign_order",
+            "execute_trade",
+            "generate_signal",
+            "create_trade_proposal",
+            "backtest",
+            "fill_order",
+            "simulate_fill",
+            "apscheduler",
+            "celery",
+            "while True",
+            "time.sleep",
+            "requests",
+            "httpx",
+            "aiohttp",
+            "websockets",
+        }
+        for relative in (
+            "tools/polymarket/generate_snapshot_quality_report.py",
+            "src/data_layer/polymarket/snapshot_quality.py",
+            "src/data_layer/polymarket/local_reports.py",
+        ):
+            source = self._source(relative)
+            found = sorted(term for term in forbidden_terms if term in source)
+            assert found == [], f"Forbidden terms in {relative}: {found}"
 
     def test_sources_have_no_http_mutation_method_literals(self):
         for relative in (

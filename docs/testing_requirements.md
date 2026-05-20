@@ -1,5 +1,16 @@
 # Testing Requirements
 
+## WP19 Guard-Aware Snapshot Quality Report Tests
+
+- Tests must use local fake manifests only.
+- No test may call the Polymarket network.
+- No test may require credentials, authentication, or the official-client package.
+- Markdown and JSON report outputs must include guard provenance summaries.
+- Default quality CLI behavior must remain offline and write no files unless explicit output paths are provided.
+- Network-used manifests without guard provenance must produce WARNING, not ERROR.
+- Complete WP18-style guarded manifests must avoid the new guard warning codes.
+- Source-boundary tests must keep network/client/auth/trading terms out of quality/reporting code.
+
 ## WP18 Guarded Manual Snapshot Capture Tests
 
 - Guarded snapshot capture tests must use fake clients and injected clocks or guards.
