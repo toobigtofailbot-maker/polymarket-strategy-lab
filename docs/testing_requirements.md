@@ -1,5 +1,16 @@
 # Testing Requirements
 
+## WP18 Guarded Manual Snapshot Capture Tests
+
+- Guarded snapshot capture tests must use fake clients and injected clocks or guards.
+- Default snapshot capture CLI tests must prove no network calls are made.
+- Tests must prove `RateLimitGuard` is consulted before Gamma and optional CLOB reads.
+- Tests must prove guard denial prevents fake client calls.
+- Tests must prove market and order-book request counts are bounded by WP16 policy.
+- No test may call the Polymarket network.
+- No test may require credentials, authentication, or the official-client package.
+- Source-boundary tests must keep scheduler, bot-loop, trading, auth, private endpoint, and non-stdlib network client terms out of the guarded capture path.
+
 ## WP17 Manual Read-Only Polling Runner Tests
 
 - Runner tests must be offline by default using fake clients.

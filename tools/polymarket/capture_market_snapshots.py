@@ -1,6 +1,6 @@
 """Manual read-only snapshot capture tool for Polymarket market metadata.
 
-Requires --allow-network to make any network request.
+Requires --allow-network to make any network call.
 Without --allow-network, exits 0 and prints usage guidance.
 
 Writes to local_data/polymarket/snapshots/ by default.
@@ -10,7 +10,7 @@ PROHIBITED — this tool must never:
 - Make any network call without --allow-network being passed explicitly.
 - Accept, read, print, or log credentials, API keys, private keys, or secrets.
 - Place, cancel, sign, submit, post, or simulate orders.
-- Run continuously or schedule repeated requests.
+- Run continuously or schedule repeated calls.
 - Write outside the approved local_data/ directory.
 
 See docs/polymarket_snapshot_persistence.md for design and safety record.
@@ -48,7 +48,8 @@ def _build_parser() -> argparse.ArgumentParser:
             "Fetches public market data via GET-only endpoints and writes\n"
             "normalized JSONL snapshots to an ignored local directory.\n"
             "\n"
-            "Requires --allow-network to make any network request.\n"
+            "Requires --allow-network to make any network call.\n"
+            "Capture is guard-enforced by the WP16 local policy.\n"
             "No credentials are used. No orders are placed.\n"
             "Rate-limit policy not confirmed (WP8-D002 OPEN) — do not\n"
             "use for automated or frequent scanning.\n"
@@ -60,7 +61,7 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help=(
-            "Explicitly allow GET-only network requests to public Polymarket endpoints. "
+            "Explicitly allow GET-only network calls to public Polymarket endpoints. "
             "Without this flag the tool exits 0 with no network calls made."
         ),
     )
@@ -122,11 +123,13 @@ def main(argv=None) -> int:
             "    --allow-network --markets-limit 3 --include-order-books --max-order-books 2\n"
             "\n"
             "Default output: local_data/polymarket/snapshots/ (git-ignored).\n"
+            "Guard enforced: WP16 local policy; budgets are not confirmed venue limits.\n"
             "No credentials used. No orders placed.\n"
             "Run with --help for full usage.\n"
         )
         return 0
 
+    print("[capture] Guard enforced: WP16 local policy (not confirmed venue limits).")
     print(f"[capture] Fetching up to {args.markets_limit} markets from public Gamma API ...")
     if args.include_order_books:
         print(
