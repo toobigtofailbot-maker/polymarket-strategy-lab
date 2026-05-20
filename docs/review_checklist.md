@@ -1,5 +1,19 @@
 # Review Checklist
 
+## WP20 AI-Agent Read-Only Boundary And Hermes Integration Policy
+
+- Agent docs are policy-only?
+- Hermes is not installed?
+- Hermes is not a runtime dependency?
+- No agent runtime, CLI, scheduler, daemon, memory store, context exporter, or report generator added?
+- Fully autonomous trading agent is excluded for now?
+- No credentials, authenticated client, account connection, order placement, order cancellation, signing, scheduler, bot loop, or dependency added?
+- Allowed advisory roles are clear: read-only analysis, performance review, market research, strategy suggestion, and Codex / WP support?
+- Manual user setup requirements are clear?
+- Accepted agent suggestions require human review, approved config changes, or normal Codex work packages?
+- No dependency file or lock file changed?
+- No runtime source under `src/` added for agents?
+
 ## WP19 Guard-Aware Snapshot Quality Reports
 
 - Quality reports are offline-only?

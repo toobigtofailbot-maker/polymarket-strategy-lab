@@ -32,6 +32,7 @@ Codex must read this file before every work package.
 - Strategy modules may only propose trades.
 - The risk engine and execution gateway are deterministic and cannot be overridden by AI, Hermes, or Codex.
 - AI, Hermes, and Codex may assist with research, monitoring, reporting, summaries, and code generation, but may not directly place live trades.
+- Accepted AI/Hermes/Codex suggestions must flow through human review, approved config changes, or normal Codex work packages before they change repo or runtime behavior.
 - Runtime execution, OMS, reconciliation, risk caps, bounded overlay semantics, safe mode, configs, and live-trading paths are protected boundaries.
 
 ## External Code
