@@ -1,5 +1,18 @@
 # Testing Requirements
 
+## WP20 AI-Agent Boundary Policy Tests
+
+- AI-agent policy docs must exist.
+- Hermes boundary doc must exist.
+- Agent model registry must exist if created.
+- Tests must enforce no AI-agent or Hermes execution authority.
+- Tests must enforce Hermes is not installed as a dependency.
+- Tests must enforce the fully autonomous trading agent is excluded for now.
+- Tests must enforce allowed advisory roles are documented: read-only analysis, performance review, market research, strategy suggestion, and Codex / WP support.
+- Tests must enforce forbidden capabilities are documented: autonomous order placement, autonomous order cancellation, autonomous parameter application, agent-controlled credentials, agent-controlled execution, and scheduler or bot loop.
+- Tests must enforce no runtime/source agent implementation files are added.
+- Tests must enforce accepted agent suggestions require human review, approved config changes, or normal Codex work-package flow.
+
 ## WP19 Guard-Aware Snapshot Quality Report Tests
 
 - Tests must use local fake manifests only.
