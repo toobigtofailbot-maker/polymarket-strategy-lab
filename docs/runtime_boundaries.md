@@ -1,5 +1,11 @@
 # Runtime Boundaries
 
+## WP17 Manual Read-Only Polling Runner Boundary
+
+The WP17 runner is a manual dev-only read-only tool. It has no strategy, execution, risk, OMS, reconciliation, dashboard, scheduler, bot-loop, backtesting, paper-trading, or live-trading authority.
+
+The runner may not bypass the WP16 `RateLimitGuard`. It may not be converted into a scheduler or daemon without a future approved WP.
+
 ## Purpose
 
 Runtime boundaries protect safety-critical execution, risk, credentials, and mode separation. WP3 documents these boundaries only and does not implement runtime behavior.
