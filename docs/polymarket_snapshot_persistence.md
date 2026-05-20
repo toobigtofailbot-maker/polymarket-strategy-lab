@@ -153,6 +153,16 @@ WP10 snapshot persistence is research infrastructure only. It is not production-
 
 Rate-limit policy for public Gamma and CLOB endpoints is not confirmed (WP8-D002 OPEN). A single low-volume WP9 probe returned no 429 responses, but this does not confirm sustained rate limits. WP10 snapshot capture must not be used for automated or frequent scanning until WP8-D002 is resolved. Default limits are conservative: `--markets-limit 3`, no order books by default.
 
+## WP18 Addendum - Guard-Enforced Manual Capture
+
+WP18 connects manual snapshot capture to the WP16 local rate-limit guard discipline. When `--allow-network` is passed, snapshot capture now calls `RateLimitGuard.record_allowed("gamma_markets", now=...)` before the Gamma market metadata read and `RateLimitGuard.record_allowed("clob_book", now=...)` before each optional CLOB order-book read. If the guard denies a call, the public adapter is not called for that endpoint attempt and the run manifest notes the denial.
+
+Capture remains manual, finite, explicit-network, bounded, and dev/local only. Default CLI behavior remains offline with no network calls unless `--allow-network` is explicitly passed. Gamma market capture is bounded by the lower of the CLI value and WP16 `gamma_markets.max_markets_per_run`; optional order-book capture is bounded by the lower of the CLI value and WP16 `clob_book.max_tokens_per_run`.
+
+WP16 budgets are local safety policy, not confirmed Polymarket venue limits. WP8-D002 remains OPEN. No automated, scheduled, frequent, or production scanning is authorized by WP18.
+
+Snapshot output remains restricted to ignored `local_data/polymarket/snapshots/`. WP18 does not add a database, dashboard, scheduler, strategy logic, execution path, credentials, authenticated client, official-client runtime dependency, or production polling.
+
 ## Deferred Item Impact
 
 | Item | Status | Impact on WP10 |

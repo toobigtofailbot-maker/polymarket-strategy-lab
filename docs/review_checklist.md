@@ -1,5 +1,21 @@
 # Review Checklist
 
+## WP18 Guarded Manual Snapshot Capture
+
+- Snapshot capture requires `--allow-network`?
+- Default snapshot capture behavior is offline?
+- Guard consulted before Gamma market reads?
+- Guard consulted before optional CLOB order-book reads?
+- Guard denial prevents public client call?
+- Capture remains finite, bounded, manual, and dev/local only?
+- No scheduler/bot loop/daemon added?
+- No strategy/trading/auth behavior added?
+- Snapshot output remains under ignored `local_data/polymarket/snapshots/`?
+- WP8-D002 remains OPEN?
+- WP16-D002 remains OPEN?
+- WP17-D001 remains OPEN?
+- WP17-D002 remains OPEN?
+
 ## WP17 Manual Read-Only Polling Runner
 
 - Manual runner requires `--allow-network`?
