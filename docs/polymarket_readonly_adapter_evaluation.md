@@ -190,3 +190,7 @@ or
 **WP9 — Official Python Client Dependency Decision** (if the stdlib adapter proves insufficient for market scanning)
 
 The recommended next step depends on whether the smoke test or manual review confirms the Gamma API endpoint contract. If endpoints respond as expected, WP9 should add minimal snapshot persistence (local JSON files) under `src/data_layer/polymarket/`. If the endpoint contract is uncertain, WP9 should formally evaluate and pin the official Python client after a full pip-audit and semgrep run.
+
+## WP16 Polling Policy Note
+
+Future repeated polling must use the WP16 local rate-limit guard and polling policy. One-off endpoint probes do not confirm venue rate limits and must not be treated as authorization for automated scanning or higher-frequency polling.

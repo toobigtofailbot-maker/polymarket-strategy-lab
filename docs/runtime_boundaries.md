@@ -134,3 +134,13 @@ It has no runtime authority. It may not be imported by strategy modules, executi
 The sandbox may inspect or optionally probe public read-only market data only when explicit flags are used. Network access must remain gated by `--allow-network`.
 
 The existing stdlib public adapter remains the active runtime public Polymarket data path.
+
+## WP16 Polling Policy And Guard Boundary
+
+WP16 adds a local rate-limit guard and polling policy under `src/data_layer/polymarket/`.
+
+The rate-limit guard and polling policy have no runtime request authority by themselves. They may be used by future read-only polling tools only after explicit WP approval.
+
+They have no strategy, execution, risk, OMS, reconciliation, dashboard, scheduler, bot-loop, backtesting, paper-trading, or live-trading authority.
+
+Future polling runner may not bypass the WP16 rate-limit guard.

@@ -1,31 +1,35 @@
 # Project Status
 
-- Current phase: WP15 - Official Client Read-Only Sandbox Audit
-- Repo state: official client dev-only read-only sandbox audit on branch
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14
-- Current branch: `wp15-official-client-readonly-sandbox-audit`
-- API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; OFFICIAL_CLIENT_SANDBOX_DEV_ONLY
-- Runtime dependency integration status: NOT_STARTED_FOR_OFFICIAL_CLIENT_RUNTIME
+- Current phase: WP16 - Read-Only Live Market Data Polling Policy And Rate-Limit Guard
+- Repo state: read-only polling policy and local rate-limit guard on branch
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15
+- Current branch: `wp16-readonly-polling-policy-rate-limit-guard`
+- API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; POLLING_POLICY_ONLY_NO_NETWORK
+- Runtime dependency integration status: NOT_STARTED_FOR_POLLING_RUNTIME
+- Official client runtime dependency status: NOT_STARTED_FOR_OFFICIAL_CLIENT_RUNTIME
 - Live trading status: DISABLED
 - Credentials status: NOT_USED
 - Execution status: NOT_STARTED
 - Official Python client status: SANDBOX_CANDIDATE_ONLY_NOT_PROJECT_DEPENDENCY
 - Authenticated client status: FORBIDDEN_UNTIL_APPROVED_WP
-- Sandbox status: DEV_ONLY_READ_ONLY_NO_CREDENTIALS
+- Polling status: POLICY_AND_GUARD_ONLY_NO_RUNNER
+- Scheduler status: NOT_STARTED
+- Bot loop status: NOT_STARTED
+- Sandbox status: OFFICIAL_CLIENT_SANDBOX_DEV_ONLY; DEV_ONLY_READ_ONLY_NO_CREDENTIALS
 - Storage status: LOCAL_FILE_SNAPSHOTS_ONLY
 - Catalog status: IN_MEMORY_LOCAL_ONLY
 - Reporting status: LOCAL_REPORTS_ONLY
 - Export status: LOCAL_EXPORTS_ONLY
 - External repo audit status: WP2 COMPLETE - 14 concrete repositories audited; 1 non-specific legacy placeholder marked BLOCKED_OR_UNAVAILABLE
-- Architecture status: WP3 documentation-only skeleton merged; WP8 adds approved read-only data-layer source under src/data_layer/polymarket/; WP9 adds contract probe tooling and validates three of four endpoint candidates; WP10 adds local file-based snapshot persistence (JSONL) under src/data_layer/polymarket/ and manual capture tool under tools/polymarket/; WP11 adds offline snapshot reader, in-memory market catalog, replay helpers, and manual inspection CLI under src/data_layer/polymarket/ and tools/polymarket/; WP12 adds offline snapshot quality gates, catalog quality metrics, and local report generation under src/data_layer/polymarket/ and tools/polymarket/; WP13 adds offline snapshot deduplication and sanitized local catalog exports under src/data_layer/polymarket/ and tools/polymarket/; WP14 adds official Python client dependency decision and boundary review docs/tests only; WP15 adds official-client sandbox tooling under tools/polymarket/official_client_sandbox/ only.
-- Deferred items status: WP9 marks WP8-D001 READY_FOR_WP (three endpoints confirmed, CLOB /health unconfirmed); WP8-D002 remains OPEN (rate-limit not confirmed); WP9-D001 OPEN (CLOB /health path unknown); WP9-D002 READY_FOR_WP (parser updated, snapshot writer uses it); WP10-D001 OPEN (snapshot schema not production-stable); WP10-D002 OPEN (snapshot output not database-backed); WP11-D001 OPEN (catalog not yet database-backed); WP11-D002 OPEN (replay is inspection-only, not backtest-ready); WP12-D001 OPEN (quality gates research-only); WP12-D002 OPEN (reports not dashboard-backed); WP13-D001 OPEN (catalog exports local-file only); WP13-D002 OPEN (deduplication policy research-only); WP14-D001 OPEN (official Python V2 client not installed or audited as dependency); WP14-D002 BLOCKED (authenticated CLOB client integration blocked pending credential/key/security boundary WP); WP14-D003 READY_FOR_WP (isolated read-only sandbox exists and is tested); WP15-D001 OPEN (sandbox API shape not fully confirmed); WP15-D002 OPEN (official client package not audited as project dependency); gitleaks READY_FOR_WP (scan passed in WP15 after narrow documentation false-positive allowlist); semgrep and pip-audit READY_FOR_WP (require .venv-security/ restoration).
-- Generated artifact status: WP6 guardrails active; WP7 gitleaks binary in ignored tools/.bin/ (not committed); WP10 local_data/ added to .gitignore (snapshot files must not be committed); WP11 catalog output also under ignored local_data/; WP12 local reports output under ignored local_data/polymarket/reports/ only; WP13 local catalog exports output under ignored local_data/polymarket/exports/ only; WP15 adds ignored .venv-official-client/, official-client-sandbox-output/, and local_data/polymarket/official_client_sandbox/.
-- Next intended WP: WP16 - Official Client Sandbox Follow-Up, if sandbox setup/probe fails or boundary issues remain. Or WP16 - Read-Only Live Market Data Polling Policy And Rate-Limit Guard, if sandbox audit confirms we should continue with existing stdlib adapter or official client remains only optional.
+- Architecture status: WP3 documentation-only skeleton merged; WP8 adds approved read-only data-layer source under src/data_layer/polymarket/; WP9 adds contract probe tooling and validates three of four endpoint candidates; WP10 adds local file-based snapshot persistence (JSONL) under src/data_layer/polymarket/ and manual capture tool under tools/polymarket/; WP11 adds offline snapshot reader, in-memory market catalog, replay helpers, and manual inspection CLI under src/data_layer/polymarket/ and tools/polymarket/; WP12 adds offline snapshot quality gates, catalog quality metrics, and local report generation under src/data_layer/polymarket/ and tools/polymarket/; WP13 adds offline snapshot deduplication and sanitized local catalog exports under src/data_layer/polymarket/ and tools/polymarket/; WP14 adds official Python client dependency decision and boundary review docs/tests only; WP15 adds official-client sandbox tooling under tools/polymarket/official_client_sandbox/ only; WP16 adds offline polling policy and local rate-limit guard only.
+- Deferred items status: WP9 marks WP8-D001 READY_FOR_WP (three endpoints confirmed, CLOB /health unconfirmed); WP8-D002 remains OPEN (rate-limit not confirmed); WP9-D001 OPEN (CLOB /health path unknown); WP9-D002 READY_FOR_WP (parser updated, snapshot writer uses it); WP10-D001 OPEN (snapshot schema not production-stable); WP10-D002 OPEN (snapshot output not database-backed); WP11-D001 OPEN (catalog not yet database-backed); WP11-D002 OPEN (replay is inspection-only, not backtest-ready); WP12-D001 OPEN (quality gates research-only); WP12-D002 OPEN (reports not dashboard-backed); WP13-D001 OPEN (catalog exports local-file only); WP13-D002 OPEN (deduplication policy research-only); WP14-D001 OPEN (official Python V2 client not installed or audited as dependency); WP14-D002 BLOCKED (authenticated CLOB client integration blocked pending credential/key/security boundary WP); WP14-D003 READY_FOR_WP (isolated read-only sandbox exists and is tested); WP15-D001 OPEN (sandbox API shape not fully confirmed); WP15-D002 OPEN (official client package not audited as project dependency); WP16-D001 OPEN (read-only polling runner not yet implemented); WP16-D002 OPEN (rate-limit budgets are conservative local policy, not confirmed venue limits); gitleaks READY_FOR_WP (scan passed in WP16); semgrep and pip-audit READY_FOR_WP (require .venv-security/ restoration).
+- Generated artifact status: WP6 guardrails active; WP7 gitleaks binary in ignored tools/.bin/ (not committed); WP10 local_data/ added to .gitignore (snapshot files must not be committed); WP11 catalog output also under ignored local_data/; WP12 local reports output under ignored local_data/polymarket/reports/ only; WP13 local catalog exports output under ignored local_data/polymarket/exports/ only; WP15 adds ignored .venv-official-client/, official-client-sandbox-output/, and local_data/polymarket/official_client_sandbox/; WP16 optional polling policy output remains under ignored local_data/polymarket/polling_policy/.
+- Next intended WP: WP17 - Controlled Read-Only Market Data Polling Runner, if WP16 succeeds and the runner remains manual/explicit-network/bounded. Or WP17 - Polling Policy Follow-Up, if rate-limit guard or policy issues remain.
 
 ## Open Decisions
 
 - Final live execution language and service boundaries remain undecided.
-- Whether future architecture uses the official Python V2 client, TypeScript V2 client, or both behind internal adapters. The Python V2 client is candidate-only and not installed in WP14.
+- Whether future architecture uses the official Python V2 client, TypeScript V2 client, or both behind internal adapters. The Python V2 client is candidate-only and not installed in WP14/WP15/WP16.
 - Whether relayer clients are needed; they remain study-only until license and protected-boundary review.
 - Whether cross-market/Kalshi work belongs in a later research-only WP.
 - VPS or cloud deployment jurisdiction and operational model.
@@ -33,3 +37,4 @@
 - Security tooling setup must run before runtime dependency integration, copied code, vendoring, or live/API execution.
 - CLOB /health correct endpoint path unknown (WP9-D001).
 - Rate-limit policy not confirmed (WP8-D002).
+- Repeated public market-data polling requires a future approved explicit-network bounded runner with WP16 guard enforcement.

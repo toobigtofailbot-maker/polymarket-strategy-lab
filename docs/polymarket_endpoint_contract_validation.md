@@ -211,6 +211,10 @@ WP10 should:
 
 WP10 should NOT proceed to the official Python client dependency decision unless the stdlib adapter proves insufficient for the snapshot use case.
 
+## WP16 Polling Policy Note
+
+Future repeated polling must use the WP16 local rate-limit guard and polling policy. One-off endpoint probes do not confirm venue rate limits and cannot be used as authorization for automated scanning or higher-frequency polling.
+
 ## Safety Statement
 
 WP9:
