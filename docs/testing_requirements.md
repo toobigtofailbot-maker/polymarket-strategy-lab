@@ -1,5 +1,16 @@
 # Testing Requirements
 
+## WP21 Agent Context Export Schema Tests
+
+- Schema doc `docs/agent_context_export_schema.md` must exist.
+- Tests must enforce required top-level schema sections are documented.
+- Tests must enforce forbidden-use statements exist for credentials, account connection, private endpoints, order placement, signing, execution, scheduler, bot loop, network scanning, and autonomous parameter application.
+- Tests must enforce provenance, redaction, staleness, and human-review statements.
+- Tests must enforce no runtime/source/exporter paths are added.
+- Tests must enforce no dependency files add Hermes, OpenAI, Anthropic, or other agent runtime dependencies.
+- Tests must enforce repo-truth index records the new schema doc.
+- No test may call the Polymarket network, AI-provider network, or Hermes network.
+
 ## WP20 AI-Agent Boundary Policy Tests
 
 - AI-agent policy docs must exist.

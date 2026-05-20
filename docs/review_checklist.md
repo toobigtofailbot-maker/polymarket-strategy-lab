@@ -1,5 +1,20 @@
 # Review Checklist
 
+## WP21 Read-Only Agent Context Export Schema
+
+- Schema docs are policy/schema-only?
+- No exporter implementation added?
+- No Hermes runtime or dependency added?
+- No agent CLI, runtime, or report generator added?
+- Schema includes provenance, redaction, staleness, and human-review fields?
+- Schema forbids credentials, account data, order data, private endpoints, execution, scheduler, and bot-loop use?
+- WP20-D002 resolved only for schema-contract scope?
+- WP20-D001 remains OPEN?
+- WP20-D003 remains OPEN?
+- No runtime source under `src/` added for agents?
+- No tools under `tools/agents/`, `tools/hermes/`, or agent context exporter paths added?
+- No dependency file or lock file changed?
+
 ## WP20 AI-Agent Read-Only Boundary And Hermes Integration Policy
 
 - Agent docs are policy-only?

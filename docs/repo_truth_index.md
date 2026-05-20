@@ -16,24 +16,25 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 10. `docs/ai_agent_integration_policy.md` - WP20 AI-agent advisory-only integration policy.
 11. `docs/hermes_readonly_boundary.md` - WP20 Hermes read-only boundary and manual setup policy.
 12. `docs/agent_model_registry.md` - WP20 allowed advisory agent role registry.
-13. `docs/architecture_principles.md` - platform architecture principles.
-14. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
-15. `docs/runtime_boundaries.md` - protected runtime boundary rules.
-16. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
-17. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
-18. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
-19. `docs/security_tooling_status.md` - current security-tool availability and scan status.
-20. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
-21. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
-22. `docs/data_semantics.md` - shared data definitions.
-23. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
-24. `docs/risk_semantics.md` - risk definitions and initial posture.
-25. `docs/live_trading_authorization.md` - live trading gate and authorization table.
-26. `docs/security_and_secrets.md` - credential and incident rules.
-27. `docs/codex_execution_guidelines.md` - work-package execution process.
-28. `docs/work_package_template.md` - reusable WP template.
-29. `docs/review_checklist.md` - review readiness checklist.
-30. `docs/testing_requirements.md` - current and future test requirements.
+13. `docs/agent_context_export_schema.md` - WP21 read-only advisory agent context export schema contract.
+14. `docs/architecture_principles.md` - platform architecture principles.
+15. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
+16. `docs/runtime_boundaries.md` - protected runtime boundary rules.
+17. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
+18. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
+19. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
+20. `docs/security_tooling_status.md` - current security-tool availability and scan status.
+21. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
+22. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
+23. `docs/data_semantics.md` - shared data definitions.
+24. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
+25. `docs/risk_semantics.md` - risk definitions and initial posture.
+26. `docs/live_trading_authorization.md` - live trading gate and authorization table.
+27. `docs/security_and_secrets.md` - credential and incident rules.
+28. `docs/codex_execution_guidelines.md` - work-package execution process.
+29. `docs/work_package_template.md` - reusable WP template.
+30. `docs/review_checklist.md` - review readiness checklist.
+31. `docs/testing_requirements.md` - current and future test requirements.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
 
