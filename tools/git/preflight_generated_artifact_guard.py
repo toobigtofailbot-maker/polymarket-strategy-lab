@@ -10,9 +10,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 GENERATED_ARTIFACT_PATHS = [
     ".venv-security",
+    ".venv-official-client",
     "tools/.bin",
     "tools/security/.cache",
     "security-scan-output",
+    "official-client-sandbox-output",
+    "local_data/polymarket/official_client_sandbox",
 ]
 REMEDIATION_COMMAND = "python tools/git/cleanup_generated_artifacts.py --apply"
 if hasattr(sys.stdout, "reconfigure"):

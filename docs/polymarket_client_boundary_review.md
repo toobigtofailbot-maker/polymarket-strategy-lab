@@ -52,6 +52,14 @@ Any future official-client experiment must be isolated from runtime paths, dev-o
 
 The first acceptable evaluation shape is a sandbox that can inspect public market data only, behind an adapter boundary, with tests proving that authenticated methods are not reachable.
 
+## WP15 Sandbox Boundary Addendum
+
+WP15 adds the first official-client sandbox under `tools/polymarket/official_client_sandbox/`.
+
+Official client imports remain forbidden under `src/`. Sandbox imports are permitted only under `tools/polymarket/official_client_sandbox/` and only for dev-only package inspection or explicitly gated public read-only probing.
+
+The sandbox must remain dev-only, no-credential, read-only-first, and explicit-network. It must not create authenticated clients, read `.env`, handle credentials or private keys, sign, place orders, cancel orders, query private account/trade/order endpoints, or add runtime authority.
+
 ## Future execution gateway boundary
 
 The future execution gateway remains the only possible order authority, and it does not exist in WP14. Official client code must not bypass the execution gateway, OMS, reconciliation, risk caps, bounded overlay semantics, safe mode, configs, or live-trading authorization rules.

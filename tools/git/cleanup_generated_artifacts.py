@@ -12,9 +12,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 GENERATED_ARTIFACT_PATHS = [
     ".venv-security",
+    ".venv-official-client",
     "tools/.bin",
     "tools/security/.cache",
     "security-scan-output",
+    "official-client-sandbox-output",
+    "local_data/polymarket/official_client_sandbox",
 ]
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
