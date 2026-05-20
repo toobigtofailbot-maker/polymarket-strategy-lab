@@ -6,7 +6,7 @@
 - Current branch: `wp16-readonly-polling-policy-rate-limit-guard`
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; POLLING_POLICY_ONLY_NO_NETWORK
 - Runtime dependency integration status: NOT_STARTED_FOR_POLLING_RUNTIME
-- Runtime dependency integration status: NOT_STARTED_FOR_OFFICIAL_CLIENT_RUNTIME
+- Official client runtime dependency status: NOT_STARTED_FOR_OFFICIAL_CLIENT_RUNTIME
 - Live trading status: DISABLED
 - Credentials status: NOT_USED
 - Execution status: NOT_STARTED
