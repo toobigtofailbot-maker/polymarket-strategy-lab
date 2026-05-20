@@ -98,11 +98,11 @@ The scan completed with exit code 0 and reported no findings.
 
 ## Findings
 
-None. The gitleaks git scan reported no secrets, credentials, tokens, or key material in the repository git history.
+WP15 note: a later gitleaks git scan reported a documentation false positive in `docs/deferred_items_log.md` for the exact phrase "credential/key/security boundary". WP15 added a narrow `.gitleaks.toml` allowlist scoped to that file and exact phrase. The scan was rerun and reported no leaks found.
 
 ## False-Positive Handling
 
-No false positives were observed. No `.gitleaks.toml` was created. If a future scan reports a false positive from documentation or test patterns (such as test regex patterns that contain keyword tokens), a minimal `.gitleaks.toml` with a documented, narrowly-scoped allowlist rule should be created in that work package.
+WP15 observed one documentation false positive and added a minimal `.gitleaks.toml` allowlist rule scoped to one file and one exact phrase. No broad suppressions added.
 
 ## Deferred Item Impact
 

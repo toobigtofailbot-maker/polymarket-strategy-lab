@@ -134,6 +134,16 @@ WP14 does not resolve the official CLOB client dependency security review. It na
 - The V2 Python client remains candidate-only.
 - Dependency installation and authenticated client integration remain deferred.
 
+## WP15 Addendum
+
+WP15 performs a dev-only read-only sandbox audit under `tools/polymarket/official_client_sandbox/`.
+
+Project-level package installation status remains `NOT_INSTALLED`. WP15 does not add `py-clob-client-v2` to `pyproject.toml`, requirements files, lock files, runtime source paths, or any project dependency file.
+
+Sandbox status: `DEV_ONLY_READ_ONLY_NO_CREDENTIALS`. The sandbox may create an ignored local `.venv-official-client/` only with an explicit setup flag and may install `py-clob-client-v2` only into that ignored venv when an explicit package version is supplied. That sandbox-only install does not resolve project dependency audit status.
+
+Read-only public methods are useful enough to continue evaluating only as an isolated future dev-only experiment. They are not approved for runtime use, and the existing stdlib public adapter remains the active runtime public data path.
+
 ## Next WP recommendation
 
 Recommended next WP:

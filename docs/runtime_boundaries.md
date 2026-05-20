@@ -125,3 +125,12 @@ The official client integration remains absent. The authenticated client remains
 `src/data_layer/polymarket/public_client.py` remains the only active public Polymarket data path. The official `py-clob-client-v2` package is candidate-only, not installed, and not integrated.
 
 All boundaries from WP3, WP8, WP10, WP11, WP12, and WP13 remain in effect.
+## Official Client Sandbox Boundary
+
+The WP15 official-client sandbox is tools-only, development-only, no-credential, and read-only-first.
+
+It has no runtime authority. It may not be imported by strategy modules, execution code, risk code, storage code, data-layer runtime code, dashboards, schedulers, bot loops, backtesting, paper trading, or trade proposal paths.
+
+The sandbox may inspect or optionally probe public read-only market data only when explicit flags are used. Network access must remain gated by `--allow-network`.
+
+The existing stdlib public adapter remains the active runtime public Polymarket data path.

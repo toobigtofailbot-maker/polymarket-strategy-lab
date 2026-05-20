@@ -32,6 +32,13 @@
 - [ ] `security-scan-output/` confirmed absent from staged/committed files?
 - [ ] WP3-D001 status accurately reflects actual scan evidence?
 - [ ] No broad gitleaks suppressions added?
+- [ ] Official-client sandbox isolated under `tools/polymarket/official_client_sandbox/` only?
+- [ ] `.venv-official-client/` ignored and not committed?
+- [ ] No official client dependency added to project files?
+- [ ] No official client import under `src/`?
+- [ ] No credentials/private keys/signing/authenticated methods?
+- [ ] Optional network probe gated by `--allow-network`?
+- [ ] Sandbox outputs ignored and not committed?
 - [ ] Read-only adapter only? (WP8+)
 - [ ] No authenticated client added? (WP8+)
 - [ ] No credentials added? (WP8+)

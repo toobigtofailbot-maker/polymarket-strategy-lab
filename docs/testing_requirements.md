@@ -17,6 +17,13 @@
 - Generated artifact guard tests must verify cleanup scripts are allowlist-only and refuse tracked or staged generated files.
 - Security setup tests must verify `.venv-security/` ignore protection is checked before environment creation.
 - Gitleaks gate tests must verify: `setup_project_gitleaks.py` and `verify_project_gitleaks.py` exist; `docs/gitleaks_secret_scan_gate.md` exists; `.gitignore` protects `tools/.bin/` and `security-scan-output/`; setup script checks ignore protection before writing; setup script contains no forbidden install commands (winget, choco, brew, apt, npm install -g, cargo install, pip install --user); setup script contains no trading/API/secret terms; `verify_project_gitleaks.py` exits 0; `run_available_security_checks.py` detects gitleaks project-local binary; `docs/security_tooling_status.md` references WP7; `docs/deferred_items_log.md` contains WP7 Gitleaks Secret Scan Gate Update.
+- Official-client sandbox tests must be offline by default.
+- Official-client sandbox tests must not require live network or package installation.
+- Official-client sandbox tests must assert official client imports are absent from `src/`.
+- Official-client sandbox tests must allow official client import strings only under sandbox tools, docs, and tests.
+- Official-client sandbox tests must assert no project dependency file adds `py-clob-client-v2`.
+- Official-client sandbox tests must assert setup script does not perform global/system install.
+- Official-client sandbox tests must assert the network probe requires `--allow-network`.
 - WP3-D001 may only be marked READY_FOR_WP in tests if scan evidence exists in the deferred items log or security tooling status.
 - Read-only adapter tests (WP8+) must mock network; no automated test may require live network access.
 - Network smoke tests must require explicit `--allow-network` opt-in; they must not be collected or run by pytest.

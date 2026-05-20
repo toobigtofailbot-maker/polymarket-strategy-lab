@@ -141,8 +141,9 @@ def test_reuse_docs_mark_old_client_avoid_and_v2_candidate_only() -> None:
 def test_project_status_records_candidate_only_not_installed_status() -> None:
     status = _read(ROOT / "docs" / "project_status.md")
 
-    assert "Official Python client status: CANDIDATE_ONLY_NOT_INSTALLED" in status
-    assert "official client NOT_INSTALLED" in status
+    assert "Official Python client status: SANDBOX_CANDIDATE_ONLY_NOT_PROJECT_DEPENDENCY" in status
+    assert "OFFICIAL_CLIENT_SANDBOX_DEV_ONLY" in status
+    assert "Runtime dependency integration status: NOT_STARTED_FOR_OFFICIAL_CLIENT_RUNTIME" in status
     assert "Authenticated client status: FORBIDDEN_UNTIL_APPROVED_WP" in status
 
 

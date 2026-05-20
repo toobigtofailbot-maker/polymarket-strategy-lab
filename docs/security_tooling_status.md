@@ -2,7 +2,33 @@
 
 ## Purpose
 
-This document records local security-tool availability and scan results through WP14. It is status evidence only; it does not authorize runtime dependency integration, copied external code, venue API integration, or live trading.
+This document records local security-tool availability and scan results through WP15. It is status evidence only; it does not authorize runtime dependency integration, copied external code, venue API integration, or live trading.
+
+## WP15 Status Summary
+
+WP15 reran the project-local security baseline before implementation. Gitleaks v8.27.2 was available from ignored `tools/.bin/`. The first scan reported a documentation false positive in `docs/deferred_items_log.md` for the exact phrase "credential/key/security boundary"; WP15 added a narrow `.gitleaks.toml` allowlist scoped to that file and exact phrase, then reran the scan successfully. Semgrep and pip-audit were unavailable because `.venv-security/` is absent after generated artifact cleanup. WP15 adds no runtime dependency, no external repo code, no copied source, no venue API client in runtime paths, and no live/API execution path.
+
+No pip-audit run was performed against `.venv-official-client/` because the official-client sandbox package was not installed during the required default command path.
+
+## WP15 Tool Status Table
+
+| Tool | Availability | Source | Version command | Scan command attempted | Result | Deferred item impact | Notes |
+|---|---|---|---|---|---|---|---|
+| gitleaks | AVAILABLE | PROJECT_LOCAL_BIN | `tools/.bin/gitleaks.exe version` | `tools/.bin/gitleaks.exe git --redact` | PASS | WP3-D001 remains READY_FOR_WP | Version 8.27.2; scan passed after a narrow documentation false-positive allowlist. |
+| semgrep | NOT_AVAILABLE | NOT_AVAILABLE | project-local or PATH semgrep | Not run | SKIPPED_NOT_AVAILABLE | WP3-D002 remains READY_FOR_WP | `.venv-security/` absent; no runtime dependency added. |
+| npm audit | NOT_APPLICABLE | NOT_APPLICABLE | `npm --version` | Not run | SKIPPED_NOT_APPLICABLE | WP3-D003 remains DEFERRED | No `package.json` exists. |
+| pip-audit | NOT_AVAILABLE | NOT_AVAILABLE | project-local or PATH pip-audit | Not run | SKIPPED_NOT_AVAILABLE | WP3-D004 remains READY_FOR_WP | `.venv-security/` absent; no project dependency added; sandbox package not installed in required default path. |
+| cargo audit | NOT_APPLICABLE | NOT_APPLICABLE | `cargo audit --version` | Not run | SKIPPED_NOT_APPLICABLE | WP3-D005 remains DEFERRED | No `Cargo.lock` exists. |
+
+## WP15 Commands Run
+
+```powershell
+python tools/security/verify_project_gitleaks.py
+python tools/security/check_security_tools.py
+python tools/security/run_available_security_checks.py
+tools/.bin/gitleaks.exe git --redact --verbose
+python tools/security/run_available_security_checks.py
+```
 
 ## WP14 Status Summary
 

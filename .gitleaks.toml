@@ -1,0 +1,9 @@
+[allowlist]
+description = "Repository documentation false positives only."
+regexTarget = "line"
+paths = [
+  '''docs/deferred_items_log\.md''',
+]
+regexes = [
+  '''Authenticated CLOB client integration remains blocked pending credential/key/security boundary WP''',
+]
