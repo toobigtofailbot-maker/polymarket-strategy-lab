@@ -1,5 +1,18 @@
 # Review Checklist
 
+## WP17 Manual Read-Only Polling Runner
+
+- Manual runner requires `--allow-network`?
+- Default runner behavior is offline?
+- Runner is finite and exits?
+- Runner uses WP16 `RateLimitGuard` before requests?
+- Runner enforces per-run market/token bounds?
+- Runner logs guard decisions and outcomes?
+- No scheduler/bot loop/daemon added?
+- No strategy/trade proposal/backtest/paper trading added?
+- No credentials/auth/official-client runtime dependency added?
+- WP8-D002 not falsely resolved?
+
 - [ ] Repo-truth updated?
 - [ ] `docs/project_status.md` updated?
 - [ ] Remote Main Sync Gate passed?

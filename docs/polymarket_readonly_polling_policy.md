@@ -1,5 +1,9 @@
 # Polymarket Read-Only Polling Policy
 
+## WP17 Runner Note
+
+WP17 implements the first manual bounded runner using this policy. Policy budgets remain local safety budgets, not confirmed venue limits. WP8-D002 remains OPEN. Any future scheduled or higher-frequency polling needs a separate approved WP.
+
 ## Purpose
 
 WP16 defines a conservative, local, deterministic policy and rate-limit guard for future public market-data polling. It prepares the repo for a later bounded read-only runner without adding that runner in this work package.

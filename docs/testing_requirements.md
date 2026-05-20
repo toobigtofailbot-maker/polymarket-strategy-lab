@@ -1,5 +1,14 @@
 # Testing Requirements
 
+## WP17 Manual Read-Only Polling Runner Tests
+
+- Runner tests must be offline by default using fake clients.
+- CLI tests must prove default command makes no network calls.
+- Tests must prove `--allow-network` is required before any public request path.
+- Tests must prove guard denial prevents client calls.
+- Tests must prove finite bounds are enforced.
+- Tests must prove source contains no scheduler, while-true loop, time.sleep, official-client import, credentials, or trading/order behavior.
+
 - Governance tests must verify required repo-truth files exist.
 - No-live-default tests must verify live trading remains disabled unless explicitly authorized.
 - Secret placeholder tests must flag real-looking credentials, private keys, mnemonic labels, and committed `.env` files.
