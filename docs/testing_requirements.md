@@ -61,4 +61,10 @@
 - Tests must assert no `py_clob_client_v2` imports exist in source/runtime files. (WP14+)
 - Tests must assert no credential/private-key/auth/order method names are introduced. (WP14+)
 - Future official-client evaluation tests must be explicit-network only and no-credential until a later approved WP. (WP14+)
+- Rate-limit guard tests must use injected clocks. (WP16+)
+- Polling policy tests must be offline. (WP16+)
+- No test may call Polymarket network. (WP16+)
+- No test may require official-client sandbox package installation. (WP16+)
+- Polling CLI tests must not use network. (WP16+)
+- Any future polling runner must be explicit-network and bounded. (WP16+)
 
