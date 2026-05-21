@@ -17,6 +17,8 @@ WP25 adds deterministic local analyst report generation from a WP23-compatible c
 
 The generator is local, offline, read-only, and non-LLM. It summarizes export metadata, source commit, repo-truth safety status, safety boundaries, included local artifact counts, deferred items, staleness policy, human-review requirements, and explicit no-trading/no-execution caveats.
 
+Operator instructions for safe repeatable manual use are in `docs/agent_context_report_operator_runbook.md`.
+
 ## Non-Goals
 
 The generator does not add:
