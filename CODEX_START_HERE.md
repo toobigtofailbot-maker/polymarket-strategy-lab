@@ -23,6 +23,12 @@ It gives the concise startup sequence for this repository. It does not authorize
 3. Actual changed files and live GitHub PR state beat summaries.
 4. Chat memory and handoffs are supplementary only.
 
+## Context Hygiene And Token Efficiency
+
+After completing the mandatory startup sequence, read only files relevant to the active WP. Avoid re-reading large docs unless the WP directly modifies or depends on them. Prefer targeted file reads and exact line references over full-file reproduction. See `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` for the full operating model.
+
+Token efficiency rules must never be used to skip required checks, shorten validation, or omit failure evidence.
+
 ## Stop And Report Rules
 
 Stop and report before branch creation or implementation if:

@@ -31,6 +31,15 @@
 - Full pytest.
 - No runtime/source changes unless explicitly scoped.
 
+## Validation-Output Summarization
+
+Apply the summarization rules from `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md`:
+
+- Report exact command, exit code (if available), pass/fail, test counts, warning count, and output path for each validation step.
+- Include failure snippets when any check fails.
+- Do not summarize away failure evidence.
+- Do not report unavailable tools as passed.
+
 ## Read-Only Public-Data WPs
 
 - Offline tests.

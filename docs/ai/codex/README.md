@@ -26,6 +26,16 @@ Use Code Mode for one locked work package on one branch. Confirm preflight gates
 
 Use Review Mode for PR review. Inspect PR metadata, changed files, comments, checks, validation evidence, and boundary drift. PR body text alone is not evidence that final report discipline was satisfied.
 
+## Token Efficiency And Concise Reporting
+
+All Codex and Claude Code execution must follow the token-efficiency operating model:
+
+- `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` — context hygiene, summarization, and design gates.
+- `docs/ai/codex/CONCISE_REPORTING_RULES.md` — mandatory final report format and omission rules.
+- `docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md` — standard blocks for preflight, security, validation, reporting, and safety.
+
+Token efficiency must never weaken validation, skip required checks, or omit failure evidence from final reports.
+
 ## Operating Rule
 
 Active work package forbidden scope wins. Nested or supporting docs do not authorize protected runtime work. If a safe implementation would require protected runtime paths, dependencies, credentials, live trading behavior, or scope expansion, Codex must stop and report instead of improvising.

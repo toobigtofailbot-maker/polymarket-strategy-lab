@@ -66,6 +66,22 @@
 
 ## Tests
 
+## Token Efficiency And Reusable Blocks
+
+This WP may reference the following reusable blocks from `docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md`:
+
+- Standard Preflight Block
+- Standard Security Check Block
+- Standard Validation Block
+- Standard Final Report Block
+- Standard Safety Boundary Block
+- Standard Generated Artifact Block
+- Standard Stop/Escalation Block
+
+Reusable blocks reduce boilerplate; they do not replace package-specific fields, forbidden scope, or acceptance/failure criteria.
+
+See `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` and `docs/ai/codex/CONCISE_REPORTING_RULES.md` for concise report-back format.
+
 ## Post-Final-Commit Validation
 
 - Generated Artifact Guard after final commit:

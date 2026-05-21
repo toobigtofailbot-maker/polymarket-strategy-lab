@@ -46,6 +46,12 @@ After this file, Codex must read `CODEX_START_HERE.md` and the relevant Codex wo
 - Research and workbench artifacts have no execution authority unless explicitly promoted through an approved WP.
 - Untrusted external code must not be allowed to place live orders.
 
+## Token Efficiency
+
+- Codex and Claude Code must apply the token-efficiency operating model defined in `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md`.
+- Context hygiene, validation-output summarization, concise reporting, and reusable prompt-block rules are binding on all WPs.
+- Token efficiency must never weaken validation, skip required checks, or omit failure evidence.
+
 ## Secrets
 
 - No secrets in repo, docs, logs, tests, screenshots, or PRs.
