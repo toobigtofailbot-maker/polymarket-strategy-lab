@@ -3,7 +3,7 @@
 ## Status
 
 - Agent context export schema status: POLICY_SCHEMA_DEFINED_EXPORTER_IMPLEMENTED_LOCAL_OFFLINE_READ_ONLY
-- Agent context exporter status: LOCAL_OFFLINE_READ_ONLY_EXPORTER_ON_BRANCH
+- Agent context exporter status: LOCAL_OFFLINE_READ_ONLY_EXPORTER
 - Hermes runtime dependency status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent execution authority: FORBIDDEN
 - Network access: FORBIDDEN_FOR_EXPORTER
@@ -14,6 +14,8 @@
 WP21 defined the schema contract. WP23 implements the first local/offline/read-only exporter for that contract. WP23 does not implement an agent runtime, Hermes setup, report generator, scheduler, network polling, account connection, credential path, strategy signal, trade proposal, backtest, paper trading, or live trading path.
 
 WP24 adds the operator runbook for safe manual exporter use in `docs/agent_context_exporter_operator_runbook.md`.
+
+WP25 adds deterministic local/offline/read-only report generation from WP23-compatible exports in `docs/agent_context_report_generator.md`. The report generator has no execution authority and does not produce strategy signals, trade proposals, recommendations, backtests, paper trading, or live-trading decisions.
 
 ## Purpose
 

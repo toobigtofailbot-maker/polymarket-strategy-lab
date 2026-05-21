@@ -1,5 +1,18 @@
 # Testing Requirements
 
+## WP25 Local Read-Only Analyst Report Generator Tests
+
+- Report output must contain required report schema fields.
+- Report mode must be `local_offline_read_only_report`.
+- Input path validation must accept only `local_data/agent_context_exports/`.
+- Output path validation must accept only `local_data/agent_context_reports/`.
+- Default CLI behavior must write no file.
+- Explicit Markdown and JSON output must stay under ignored `local_data/agent_context_reports/`.
+- Tests must prove no network/client/auth/trading/Hermes/LLM dependency is added.
+- Tests must prove no secret, credential, account, private endpoint, or raw forbidden material is included in report JSON.
+- Tests must prove no strategy signal, trade proposal, recommendation, historical strategy evaluation, paper trading, or execution behavior is produced.
+- Generated output must not be committed.
+
 ## WP24 Agent Context Exporter Operator Runbook Tests
 
 - Runbook must exist.

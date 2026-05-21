@@ -19,6 +19,8 @@ WP23 adds a local/offline/read-only context exporter that writes JSON only under
 
 WP24 adds `docs/agent_context_exporter_operator_runbook.md` for safe manual exporter operation. Hermes remains not installed, not configured, and not a runtime dependency.
 
+WP25 adds deterministic local/offline/read-only analyst reports under `local_data/agent_context_reports/` only when explicit output paths are provided. Hermes may later consume local reports only after future manual setup and an approved work package. WP25 does not install, configure, or depend on Hermes.
+
 ## Future Work Codex Can Likely Handle Automatically
 
 In future approved work packages, Codex can likely handle:
