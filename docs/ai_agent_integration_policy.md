@@ -5,15 +5,17 @@
 - AI-agent layer status: POLICY_ONLY_NOT_IMPLEMENTED
 - Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
-- Agent context export status: NOT_STARTED
-- Agent context export schema status: POLICY_SCHEMA_ONLY_NOT_IMPLEMENTED
+- Agent context export status: LOCAL_OFFLINE_READ_ONLY_EXPORTER_ON_BRANCH
+- Agent context export schema status: POLICY_SCHEMA_DEFINED_EXPORTER_IMPLEMENTED_LOCAL_OFFLINE_READ_ONLY
 - Agent report generation status: NOT_STARTED
 - Agent execution authority: FORBIDDEN
 - Fully autonomous trading agent status: EXCLUDED_FOR_NOW
 
 WP20 records policy only. It does not install Hermes, add an agent runtime, add an agent context exporter, add report generation, add scheduling, add network polling, add credentials, or connect to any account.
 
-WP21 adds `docs/agent_context_export_schema.md` as a schema-only contract for a future local read-only context export. The exporter, runtime, Hermes setup, and report generation remain NOT_STARTED. The advisory-only boundary is unchanged.
+WP21 adds `docs/agent_context_export_schema.md` as a schema contract for a local read-only context export. WP23 adds a local/offline/read-only exporter that reads only allowlisted local inputs and writes only under ignored `local_data/agent_context_exports/` when explicitly requested. Agent runtime, Hermes setup, and report generation remain NOT_STARTED. The advisory-only boundary is unchanged.
+
+WP23 does not add Hermes runtime or dependency, report generation, strategy proposals, account connection, network calls, credentials, execution authority, scheduler, daemon, or bot loop.
 
 ## Core Principle
 
@@ -60,8 +62,8 @@ The following are FORBIDDEN unless a later repo-truth decision explicitly change
 ## Staging
 
 - WP20: policy, docs, and tests only.
-- WP21: local read-only agent context export schema, still no runtime Hermes dependency and no exporter implementation.
-- Future WP22 candidate: local read-only agent context exporter, if WP21 succeeds and remains local/offline/no-Hermes-runtime.
+- WP21: local read-only agent context export schema, still no runtime Hermes dependency.
+- WP23: local/offline/read-only context exporter, still no runtime Hermes dependency and no report generation.
 - Later: performance review after paper, strategy, or live logs exist and are authorized.
 - Later: market research after rate-limit and data policy is stronger.
 - Later: strategy suggestion only with evidence, replay, and paper review.

@@ -15,6 +15,8 @@ WP20 records boundary policy only. Hermes is not required for the repository, is
 
 WP21 adds a schema-only contract for future local read-only agent context exports in `docs/agent_context_export_schema.md`. Hermes may later consume compliant local context exports only after a future approved setup and human review path. WP21 adds no Hermes runtime, dependency, setup, config, account connection, network permission, memory store, or command authority.
 
+WP23 adds a local/offline/read-only context exporter that writes JSON only under ignored `local_data/agent_context_exports/` when explicitly requested. Hermes may later consume exported local JSON only after future manual setup and an approved work package. WP23 does not install, configure, or depend on Hermes and adds no Hermes network permission, memory store, account connection, runtime, or command authority.
+
 ## Future Work Codex Can Likely Handle Automatically
 
 In future approved work packages, Codex can likely handle:
