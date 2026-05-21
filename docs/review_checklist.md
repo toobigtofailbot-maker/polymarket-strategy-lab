@@ -1,5 +1,18 @@
 # Review Checklist
 
+## WP23 Local Read-Only Agent Context Exporter
+
+- Exporter is local/offline/read-only?
+- Default CLI writes nothing?
+- Output is restricted to `local_data/agent_context_exports/`?
+- No network/client/auth/trading/Hermes dependency added?
+- No secrets, credentials, account exports, or `.env` reads?
+- Required WP21 schema fields are present?
+- Included artifacts have provenance, size, checksum, and generated-at metadata?
+- Generated output is not committed?
+- WP21-D001 resolved only for the tested local exporter scope?
+- WP21-D002 remains OPEN?
+
 ## WP22 Codex Workflow Hardening And Report-Back Discipline
 
 - Codex workflow docs exist and are indexed?

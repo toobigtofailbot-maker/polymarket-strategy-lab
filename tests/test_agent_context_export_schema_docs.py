@@ -32,7 +32,7 @@ FORBIDDEN_AGENT_DEPENDENCY_TERMS = (
     "autogen",
 )
 
-FORBIDDEN_RUNTIME_OR_EXPORTER_PATHS = (
+FORBIDDEN_UNAPPROVED_RUNTIME_OR_EXPORTER_PATHS = (
     "src/agents",
     "src/agent_layer",
     "tools/agents",
@@ -68,8 +68,8 @@ def test_schema_doc_contains_required_status_phrases() -> None:
     text = _read(SCHEMA_DOC)
 
     for expected in (
-        "POLICY_SCHEMA_ONLY_NOT_IMPLEMENTED",
-        "NOT_STARTED",
+        "POLICY_SCHEMA_DEFINED_EXPORTER_IMPLEMENTED_LOCAL_OFFLINE_READ_ONLY",
+        "LOCAL_OFFLINE_READ_ONLY_EXPORTER",
         "NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY",
         "FORBIDDEN",
         "EXCLUDED_FOR_NOW",
@@ -134,9 +134,9 @@ def test_schema_doc_contains_required_provenance_and_safety_statements() -> None
         assert expected in text
 
 
-def test_no_runtime_or_exporter_implementation_paths_are_tracked_or_present() -> None:
+def test_no_unapproved_runtime_or_exporter_implementation_paths_are_tracked_or_present() -> None:
     tracked = _git_ls_files()
-    for forbidden in FORBIDDEN_RUNTIME_OR_EXPORTER_PATHS:
+    for forbidden in FORBIDDEN_UNAPPROVED_RUNTIME_OR_EXPORTER_PATHS:
         assert not any(path == forbidden or path.startswith(f"{forbidden}/") for path in tracked)
         assert not (ROOT / forbidden).exists(), f"unexpected path exists: {forbidden}"
 

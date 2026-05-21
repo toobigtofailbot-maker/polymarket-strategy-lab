@@ -34,17 +34,21 @@ def test_required_src_readmes_exist():
 
 
 
-# WP8 approves executable source files under src/data_layer/polymarket/ only.
-# All other src/ directories must remain README-only.
-WP8_APPROVED_SRC_SCOPE = "src/data_layer/polymarket"
+# WP8 approves executable source files under src/data_layer/polymarket/.
+# WP23 approves executable local/offline exporter source under src/data_layer/agent_context/.
+APPROVED_SRC_SCOPES = (
+    "src/data_layer/polymarket",
+    "src/data_layer/agent_context",
+)
 
 
 def test_no_executable_files_exist_under_src_except_approved_scope():
-    """Executable files under src/ are forbidden except in WP8-approved scope.
+    """Executable files under src/ are forbidden except in approved scopes.
 
     WP8 explicitly permits .py files under src/data_layer/polymarket/ for the
-    read-only public data adapter. All other src/ subdirectories must remain
-    README-only. This test enforces that boundary without weakening trading safety.
+    read-only public data adapter. WP23 permits .py files under
+    src/data_layer/agent_context/ for the local/offline/read-only exporter.
+    All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
     executable_suffixes = {".py", ".ts", ".tsx", ".js", ".jsx", ".rs", ".sh", ".ps1"}
@@ -54,14 +58,13 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
             continue
         if path.name == "README.md":
             continue
-        # Allow approved WP8 read-only data-layer scope.
         rel = path.relative_to(ROOT).as_posix()
-        if rel.startswith(WP8_APPROVED_SRC_SCOPE + "/") or rel == WP8_APPROVED_SRC_SCOPE:
+        if any(rel.startswith(scope + "/") or rel == scope for scope in APPROVED_SRC_SCOPES):
             continue
         if path.suffix.lower() in executable_suffixes:
             findings.append(rel)
     assert findings == [], (
-        f"Unexpected executable files outside approved scope ({WP8_APPROVED_SRC_SCOPE}): {findings}"
+        f"Unexpected executable files outside approved scopes ({APPROVED_SRC_SCOPES}): {findings}"
     )
 
 

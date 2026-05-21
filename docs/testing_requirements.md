@@ -1,5 +1,20 @@
 # Testing Requirements
 
+## WP23 Local Read-Only Agent Context Exporter Tests
+
+- Export dictionary must contain all WP21 top-level schema fields.
+- Export mode must be `local_offline_read_only`.
+- Safety boundaries must confirm no live trading, no credentials, no execution, no Hermes runtime dependency, and no autonomous trading agent.
+- Default exporter must read only fixed allowlisted tracked docs.
+- Optional local report metadata must be metadata-only by default and limited to allowlisted ignored local paths.
+- Output writer must accept only `local_data/agent_context_exports/`.
+- Output writer must reject path traversal, arbitrary repo-root output, and non-allowed directories.
+- CLI default must exit cleanly, write no file, use no network, and print the safety summary.
+- CLI explicit output must write parseable JSON only under ignored `local_data/agent_context_exports/`.
+- Tests must prove no secret, credential, account, wallet, token, or `.env` content is read.
+- Source-boundary tests must keep network clients, official clients, AI-provider SDKs, scheduler libraries, and trading/execution functions out of the exporter and CLI.
+- Generated output must not be committed.
+
 ## WP22 Codex Workflow Hardening Tests
 
 - Workflow docs must exist.
