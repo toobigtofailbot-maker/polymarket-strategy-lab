@@ -250,6 +250,18 @@ WP20-D002 is resolved for schema-contract scope only because WP21 defines and te
 
 WP8-D002 remains OPEN because no authoritative public endpoint rate-limit policy was added. WP16-D002 remains OPEN because local budgets remain conservative policy, not confirmed venue limits. WP17-D001 remains OPEN because no automated or scheduled polling is implemented. WP17-D002 remains OPEN because public-data runners and guarded capture remain dev-only/manual until venue rate limits are confirmed. WP10-D001 remains OPEN because WP21 does not declare snapshot schema production-stable. WP10-D002 remains OPEN because WP21 does not add database-backed snapshot storage. WP11-D001 and WP11-D002 remain OPEN. WP12-D001 remains OPEN because quality gates remain research-only. WP12-D002 remains OPEN because reports remain local files only and not dashboard-backed. WP13-D001 and WP13-D002 remain OPEN.
 
+## WP22 Codex Workflow Hardening And Report-Back Discipline Update
+
+WP22 adds `CODEX_START_HERE.md`, Codex workflow guidance under `docs/ai/codex/`, stricter PR/work-package templates, review/testing guidance, repo-truth updates, and tests for the workflow docs.
+
+WP22 is documentation/test-only. It adds no local agent context exporter, agent report generator, Hermes installation, Hermes runtime dependency, agent runtime, agent CLI, scheduler, daemon, memory store, network polling, credential handling, provider SDK, account connection, strategy signal, trade proposal, paper trading, backtesting, live trading, execution, risk, OMS, reconciliation, database, dashboard, dependency file, or lock file.
+
+WP21-D001 remains OPEN because the local agent context exporter is not implemented. WP21-D002 remains OPEN because the agent context report generator is not implemented. WP20-D001 remains OPEN because Hermes installation/setup is not performed. WP20-D003 remains OPEN because performance and strategy logs remain unavailable for performance-review agents.
+
+WP8-D002 remains OPEN because no authoritative public endpoint rate-limit policy was added. WP16-D002 remains OPEN because local budgets remain conservative policy, not confirmed venue limits. WP17-D001 remains OPEN because no automated or scheduled polling is implemented. WP17-D002 remains OPEN because public-data runners and guarded capture remain dev-only/manual until venue rate limits are confirmed. WP10-D001 remains OPEN because WP22 does not declare snapshot schema production-stable. WP10-D002 remains OPEN because WP22 does not add database-backed snapshot storage. WP11-D001 and WP11-D002 remain OPEN. WP12-D001 remains OPEN because quality gates remain research-only. WP12-D002 remains OPEN because reports remain local files only and not dashboard-backed. WP13-D001 and WP13-D002 remain OPEN.
+
+WP3-D001 (gitleaks): rerun this WP - gitleaks scan PASS, no findings. WP3-D002 (semgrep): READY_FOR_WP; `.venv-security/` not restored this WP and semgrep was unavailable/skipped. WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit was unavailable/skipped.
+
 ## WP10 Snapshot Persistence Update
 
 WP10 adds `src/data_layer/polymarket/snapshot_models.py`, `src/data_layer/polymarket/snapshot_writer.py`, `src/data_layer/polymarket/snapshot_capture.py`, `tools/polymarket/capture_market_snapshots.py`, and `docs/polymarket_snapshot_persistence.md`.

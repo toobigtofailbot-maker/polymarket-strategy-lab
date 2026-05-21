@@ -1,5 +1,19 @@
 # Review Checklist
 
+## WP22 Codex Workflow Hardening And Report-Back Discipline
+
+- Codex workflow docs exist and are indexed?
+- `CODEX_START_HERE.md` exists and points to startup repo-truth files?
+- PR template requires final report comment?
+- PR body is not accepted as the only final report?
+- Work package template has package class, exact changed-file set, stop triggers, and final report format?
+- Validation matrix defines package-class validation?
+- Project status update rules prevent stale WP wording?
+- PR review checklist requires validation after final commit and generated-artifact guard after final commit?
+- No runtime/exporter/Hermes/trading/dependency changes?
+- No dependency or lock file changed?
+- Deferred items remain accurate?
+
 ## WP21 Read-Only Agent Context Export Schema
 
 - Schema docs are policy/schema-only?

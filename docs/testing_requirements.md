@@ -1,5 +1,15 @@
 # Testing Requirements
 
+## WP22 Codex Workflow Hardening Tests
+
+- Workflow docs must exist.
+- Workflow docs must contain mandatory sections.
+- PR template must contain mandatory final-report, validation, generated-artifact, and project-status checkboxes.
+- Work package template must contain package identity, package class, authorization basis, expected repo truth, exact changed-file set, stop triggers, final PR comment, and Ready for review fields.
+- Tests must enforce new workflow docs are indexed in `docs/repo_truth_index.md`.
+- Tests must enforce no runtime source, agent implementation, exporter implementation, Hermes tools, or report output paths are added.
+- Tests must enforce no dependency or lock files add Hermes, OpenAI, Anthropic, or agent runtime dependencies.
+
 ## WP21 Agent Context Export Schema Tests
 
 - Schema doc `docs/agent_context_export_schema.md` must exist.
