@@ -19,6 +19,10 @@ WP24 adds `docs/agent_context_exporter_operator_runbook.md` for safe manual expo
 
 WP25 adds deterministic local analyst report generation from WP23-compatible context exports. The report generator is advisory-only, local/offline/read-only, and does not add Hermes runtime/dependency, strategy proposals, signals, recommendations, or execution authority.
 
+WP26 adds `docs/agent_context_report_operator_runbook.md` for safe manual analyst report operation. It does not authorize Hermes runtime use, agent runtime use, or any execution authority.
+
+WP27 adds `docs/agent_hermes_manual_setup_decision_record.md` — a decision record defining the manual setup gates, user decisions, and approval steps required before any future Hermes or agent runtime work. Hermes remains not installed, not configured, and not a runtime dependency. Agent runtime status remains NOT_STARTED. Agent execution authority remains FORBIDDEN. Decision state: DECISION_DEFERRED_PENDING_USER_SELECTION.
+
 WP23 does not add Hermes runtime or dependency, report generation, strategy proposals, account connection, network calls, credentials, execution authority, scheduler, daemon, or bot loop.
 
 ## Core Principle

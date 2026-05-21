@@ -1,5 +1,24 @@
 # Review Checklist
 
+## WP27 Agent/Hermes Manual Setup Decision Record
+
+- Decision record exists and is indexed in `docs/repo_truth_index.md`?
+- Decision state is explicit (DECISION_DEFERRED_PENDING_USER_SELECTION or equivalent)?
+- Hermes remains not installed, not configured, and not a runtime dependency?
+- Agent runtime remains not started?
+- Manual user decisions are listed in the decision record?
+- Future approval gates are listed in the decision record?
+- Codex-safe future preparation items are listed?
+- Forbidden automatic actions are listed?
+- No runtime source under `src/` is added or modified?
+- No `tools/agents/`, `tools/hermes/`, `agent_runtime/`, or `agent_memory/` directory is added?
+- No dependency file, package manager file, or lock file is changed?
+- No credentials, `.env`, API keys, private keys, or tokens are added?
+- No network access, provider SDK, or LLM dependency is added?
+- No memory/persistence, command execution, or scheduler/bot loop is added?
+- WP20-D001 is updated to READY_FOR_MANUAL_SETUP_DECISION but not marked RESOLVED?
+- WP20-D003, WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain OPEN?
+
 ## WP26 Read-Only Analyst Report Operator Runbook
 
 - Report operator runbook exists and is indexed?

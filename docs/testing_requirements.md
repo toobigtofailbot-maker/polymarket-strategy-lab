@@ -1,5 +1,23 @@
 # Testing Requirements
 
+## WP27 Agent/Hermes Manual Setup Decision Record Tests
+
+- Decision record `docs/agent_hermes_manual_setup_decision_record.md` must exist.
+- Decision record must contain required status fields: MANUAL_SETUP_DECISION_RECORD, NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY, NOT_STARTED, FORBIDDEN, DISABLED, NOT_USED, NOT_GRANTED_FOR_AGENT_RUNTIME, NOT_GRANTED, DECISION_DEFERRED_PENDING_USER_SELECTION.
+- Decision record must list current local advisory assets (WP23–WP26).
+- Decision record must list candidate future runtime choices including Hermes, alternative runtime, no runtime, and deferred.
+- Decision record must list manual user decisions required before any runtime setup.
+- Decision record must list what Codex can safely prepare automatically in later WPs.
+- Decision record must list what Codex must not do automatically.
+- Decision record must list required future approval gates.
+- Decision record must state the live-trading gate is separate and not satisfied by agent setup.
+- `docs/repo_truth_index.md` must index the decision record.
+- `docs/ai_agent_integration_policy.md` must reference the decision record or WP27.
+- `docs/hermes_readonly_boundary.md` must reference the decision record or WP27.
+- No `src/agents/`, `src/agent_layer/`, `tools/agents/`, `tools/hermes/`, `agent_runtime/`, or `agent_memory/` directory may exist.
+- No dependency file may add Hermes, OpenAI, Anthropic, LangChain, or other agent runtime dependencies.
+- No runtime/source/dependency/lock changes are expected for WP27.
+
 ## WP26 Read-Only Analyst Report Operator Runbook Tests
 
 - Runbook must exist.
