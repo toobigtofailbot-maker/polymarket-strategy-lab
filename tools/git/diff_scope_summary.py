@@ -336,22 +336,38 @@ def get_diff_check(base: str, head: str) -> tuple[list[str], str | None]:
 _ALLOWED_OUTPUT_PREFIX = "local_data/diff_scope_summaries/"
 
 
+def _is_absolute_path(path: str) -> bool:
+    """Return True if path is absolute on any supported platform.
+
+    os.path.isabs('/foo') returns False on Windows (no drive letter), so we
+    also check for Unix-style leading slash and Windows drive-letter patterns.
+    """
+    if os.path.isabs(path):
+        return True
+    norm = _norm(path)
+    # Unix-style absolute: starts with /
+    if norm.startswith("/"):
+        return True
+    # Windows drive-letter absolute: C:/ or C:\
+    if len(norm) >= 3 and norm[1] == ":" and norm[2] in ("/", "\\"):
+        return True
+    return False
+
+
 def validate_output_path(output: str) -> str | None:
     """Return error string if output path is not acceptable, else None."""
     if not output:
         return None
-    # Reject absolute paths not under local_data/diff_scope_summaries/
-    if os.path.isabs(output):
-        # On Windows, normalise drive letter
-        norm = _norm(output).lower()
-        if _ALLOWED_OUTPUT_PREFIX not in norm:
-            return (
-                f"--output must be under {_ALLOWED_OUTPUT_PREFIX!r}, "
-                f"got absolute path: {output!r}"
-            )
-        return None
-    # Reject path traversal
+    # Reject all absolute paths — only repo-relative paths are allowed.
+    # An absolute path like /tmp/local_data/diff_scope_summaries/... would pass
+    # a substring check but writes outside the repo; reject unconditionally.
+    if _is_absolute_path(output):
+        return (
+            f"--output must be a repo-relative path under {_ALLOWED_OUTPUT_PREFIX!r}, "
+            f"got absolute path: {output!r}"
+        )
     norm = _norm(output)
+    # Reject path traversal
     if ".." in norm.split("/"):
         return f"--output must not use path traversal: {output!r}"
     # Must start with the allowed prefix

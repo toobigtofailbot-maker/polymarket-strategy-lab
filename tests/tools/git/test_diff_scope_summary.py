@@ -387,8 +387,37 @@ def test_no_output_path_accepted():
     err = dss.validate_output_path(None)
     assert err is None
 
+
 def test_empty_output_path_accepted():
     err = dss.validate_output_path("")
+    assert err is None
+
+
+def test_absolute_path_containing_allowed_prefix_rejected():
+    # An absolute path that contains the allowed prefix string should still be rejected
+    # because it writes outside the repo-local directory.
+    err = dss.validate_output_path("/tmp/local_data/diff_scope_summaries/out.json")
+    assert err is not None
+    assert "absolute" in err.lower() or "repo-relative" in err.lower()
+
+
+def test_windows_absolute_path_containing_allowed_prefix_rejected():
+    # Windows-style absolute path that contains the allowed prefix should be rejected.
+    err = dss.validate_output_path(r"C:\some\path\local_data\diff_scope_summaries\out.json")
+    assert err is not None
+    assert "absolute" in err.lower() or "repo-relative" in err.lower()
+
+
+def test_absolute_path_at_repo_root_rejected():
+    # A plain absolute path (no allowed prefix) must also be rejected.
+    err = dss.validate_output_path("/home/user/output.json")
+    assert err is not None
+    assert "absolute" in err.lower() or "repo-relative" in err.lower()
+
+
+def test_relative_valid_path_still_accepted():
+    # A correct repo-relative path must remain accepted after the fix.
+    err = dss.validate_output_path("local_data/diff_scope_summaries/follow_up.json")
     assert err is None
 
 
