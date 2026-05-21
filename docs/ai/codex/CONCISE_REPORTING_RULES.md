@@ -49,3 +49,7 @@ Failure output must be detailed enough to diagnose the root cause. Do not trunca
 ## PR Body
 
 The PR body contains the review checklist, summary, files changed, safety confirmations, and known limitations. It is a complement to the final report comment, not a replacement.
+
+## Future Validation-Output Summary Helper
+
+A future local validation-output summary helper (designed in `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md`) may support concise reporting by producing structured command-result summaries. However, the helper must not replace command execution, required validation evidence, or the mandatory final PR comment. Using the helper does not waive any section of this document.
