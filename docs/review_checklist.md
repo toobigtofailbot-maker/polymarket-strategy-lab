@@ -1,5 +1,32 @@
 # Review Checklist
 
+## WP30 Local Diff And Scope Summary Helper Implementation
+
+- Helper exists under `tools/git/diff_scope_summary.py`?
+- Helper is stdlib-only, local, offline, and read-only?
+- Helper has text and JSON output (`--format text|json`)?
+- Helper default writes no file?
+- Optional output restricted to `local_data/diff_scope_summaries/`?
+- Output path traversal and outside-directory output are rejected with exit 2?
+- Helper does not replace validation (validation reminder in all output)?
+- Dependency/lock-file changes are flagged?
+- Generated-artifact/local output paths are flagged?
+- Protected-path hits (builtin + `--forbidden-prefix`) are flagged?
+- Out-of-scope files are flagged (when allowed scope is declared)?
+- Package-class warnings are emitted for misalignment patterns?
+- Default exit 0 with warnings present; `--fail-on-warning` exits 1?
+- Usage/config errors exit 2?
+- 79 focused tests pass in `tests/tools/git/test_diff_scope_summary.py`?
+- No runtime source under `src/` added or modified?
+- No unrelated `tools/` files modified?
+- No dependency or lock files changed?
+- No generated artifacts committed?
+- No Hermes/LLM/agent runtime/credentials/network/trading behavior added?
+- `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md` exists and is indexed in `docs/repo_truth_index.md`?
+- `docs/repo_truth_index.md` has no duplicate numeric prefixes?
+- WP29-D001 resolved; WP28-D001 remains OPEN?
+- WP20-D001, WP27-D001, WP20-D003, WP8-D002, WP16-D002, WP17-D001, WP17-D002 unchanged?
+
 ## WP29 Local Diff And Scope Summary Helper Design
 
 - Design doc `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md` exists and is indexed in `docs/repo_truth_index.md`?

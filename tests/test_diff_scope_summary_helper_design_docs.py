@@ -211,11 +211,13 @@ def test_codex_readme_references_design_doc():
     )
 
 
-# --- 14. No implementation paths exist ---
+# --- 14. Implementation paths check ---
+# WP30 implemented the helper at the designed location.
+# The design-approved path tools/git/diff_scope_summary.py is now expected to exist.
+# Other implementation paths outside the approved location remain forbidden.
 
-def test_no_diff_scope_helper_implementation():
+def test_no_diff_scope_helper_implementation_at_wrong_paths():
     for pattern in [
-        "tools/git/diff_scope_summary.py",
         "tools/diff_scope_summary.py",
         "tools/diff_summary*",
         "tools/scope_summary*",
@@ -224,6 +226,15 @@ def test_no_diff_scope_helper_implementation():
         assert not matches, (
             f"No implementation may exist for forbidden path pattern: {pattern}"
         )
+
+
+def test_approved_diff_scope_helper_implementation_path():
+    approved = REPO_ROOT / "tools/git/diff_scope_summary.py"
+    # WP30: implementation is expected at this path.
+    # If absent, a future WP may have removed it — update accordingly.
+    assert approved.exists(), (
+        "tools/git/diff_scope_summary.py should exist after WP30 implementation"
+    )
 
 
 def test_no_agent_runtime_dirs():
