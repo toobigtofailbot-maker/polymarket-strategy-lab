@@ -386,6 +386,14 @@ def test_repo_truth_index_no_duplicate_numeric_prefixes():
     )
 
 
+def test_repo_truth_index_sequential_numeric_prefixes():
+    content = _read(REPO_TRUTH_INDEX)
+    numbers = [int(n) for n in re.findall(r"^(\d+)\. ", content, re.MULTILINE)]
+    assert numbers == list(range(1, len(numbers) + 1)), (
+        f"Authority Hierarchy numbering is not sequential. Got: {numbers}"
+    )
+
+
 # ---------------------------------------------------------------------------
 # 12-15. Cross-reference checks in existing docs
 # ---------------------------------------------------------------------------
