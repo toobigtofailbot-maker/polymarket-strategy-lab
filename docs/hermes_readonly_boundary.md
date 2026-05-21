@@ -21,6 +21,10 @@ WP24 adds `docs/agent_context_exporter_operator_runbook.md` for safe manual expo
 
 WP25 adds deterministic local/offline/read-only analyst reports under `local_data/agent_context_reports/` only when explicit output paths are provided. Hermes may later consume local reports only after future manual setup and an approved work package. WP25 does not install, configure, or depend on Hermes.
 
+WP26 adds `docs/agent_context_report_operator_runbook.md` for safe manual analyst report operation. Hermes remains not installed, not configured, and not a runtime dependency.
+
+WP27 adds `docs/agent_hermes_manual_setup_decision_record.md` — a decision record defining the manual setup gates, user decisions, and approval steps required before any Hermes runtime work begins. Future Hermes setup requires explicit user decision on runtime, provider, environment, command allowlist, network permission, memory/persistence, and data-sharing, followed by an approved work package. Hermes remains NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY. Decision state: DECISION_DEFERRED_PENDING_USER_SELECTION. See `docs/agent_hermes_manual_setup_decision_record.md` for the full gate list.
+
 ## Future Work Codex Can Likely Handle Automatically
 
 In future approved work packages, Codex can likely handle:

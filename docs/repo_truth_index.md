@@ -28,24 +28,25 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 22. `docs/agent_context_exporter_operator_runbook.md` - WP24 local operator runbook for safe manual exporter use.
 23. `docs/agent_context_report_generator.md` - WP25 local/offline/read-only analyst report generator boundary and usage.
 24. `docs/agent_context_report_operator_runbook.md` - WP26 local operator runbook for safe manual analyst report generation.
-25. `docs/architecture_principles.md` - platform architecture principles.
-26. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
-27. `docs/runtime_boundaries.md` - protected runtime boundary rules.
-28. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
-29. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
-30. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
-31. `docs/security_tooling_status.md` - current security-tool availability and scan status.
-32. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
-33. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
-34. `docs/data_semantics.md` - shared data definitions.
-35. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
-36. `docs/risk_semantics.md` - risk definitions and initial posture.
-37. `docs/live_trading_authorization.md` - live trading gate and authorization table.
-38. `docs/security_and_secrets.md` - credential and incident rules.
-39. `docs/codex_execution_guidelines.md` - work-package execution process.
-40. `docs/work_package_template.md` - reusable WP template.
-41. `docs/review_checklist.md` - review readiness checklist.
-42. `docs/testing_requirements.md` - current and future test requirements.
+25. `docs/agent_hermes_manual_setup_decision_record.md` - WP27 decision record defining manual setup gates and approval steps before any future Hermes or agent runtime work.
+26. `docs/architecture_principles.md` - platform architecture principles.
+27. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
+28. `docs/runtime_boundaries.md` - protected runtime boundary rules.
+29. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
+30. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
+31. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
+32. `docs/security_tooling_status.md` - current security-tool availability and scan status.
+33. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
+34. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
+35. `docs/data_semantics.md` - shared data definitions.
+36. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
+37. `docs/risk_semantics.md` - risk definitions and initial posture.
+38. `docs/live_trading_authorization.md` - live trading gate and authorization table.
+39. `docs/security_and_secrets.md` - credential and incident rules.
+40. `docs/codex_execution_guidelines.md` - work-package execution process.
+41. `docs/work_package_template.md` - reusable WP template.
+42. `docs/review_checklist.md` - review readiness checklist.
+43. `docs/testing_requirements.md` - current and future test requirements.
 
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
