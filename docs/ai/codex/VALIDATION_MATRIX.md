@@ -40,6 +40,8 @@ Apply the summarization rules from `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MOD
 - Do not summarize away failure evidence.
 - Do not report unavailable tools as passed.
 
+A future validation-output summary helper (designed in `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md`) may summarize validation results in a compact format. However, all mandatory validation commands remain mandatory regardless of whether the helper is used. The helper summarizes evidence; it does not replace it. Design docs do not authorize implementation until a separate approved implementation WP.
+
 ## Read-Only Public-Data WPs
 
 - Offline tests.

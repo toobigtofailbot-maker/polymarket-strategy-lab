@@ -1,5 +1,26 @@
 # Testing Requirements
 
+## WP31 Validation Output Summary Helper Design Tests
+
+- `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md` must exist.
+- Design doc must contain required status fields: `DESIGN_ONLY`, `NOT_IMPLEMENTED`, `Claude Code and Codex`, `NO_RUNTIME_CHANGE`, `NO_TOOL_IMPLEMENTATION`, `NO_DEPENDENCY_CHANGE`, `NO_NETWORK`, `NO_VALIDATION_WEAKENING`, `NO_PROTECTED_BOUNDARY_CHANGE`.
+- Design doc must contain intended future modes: parser mode, metadata mode, future runner mode, first implementation should prefer parser/metadata mode.
+- Design doc must contain intended future CLI shape: `tools/validation/validation_output_summary.py`, `--command`, `--exit-code`, `--check-type`, `--stdout-file`, `--stderr-file`, `--from-stdin`, `--format text|json`, `--max-failure-lines`, `--tool-availability`, `--output`, `--fail-on-missing-required-evidence`.
+- Design doc must contain intended input sources: explicit command string, exit code, stdout/stderr snippets or files, pytest result lines, generated artifact guard output, Remote Main Sync Gate output, security tool availability output, diff/scope helper output.
+- Design doc must contain output fields: command, check type, exit code, status, pass count, warning count, unavailable tools list, generated output paths, failure snippet, truncation indicator, validation reminder, raw log retention note.
+- Design doc must contain status classification rules: PASS, FAIL, SKIPPED, UNAVAILABLE, PARTIAL, ERROR; unavailable tools must not be summarized as passed; missing command result must not be summarized as passed.
+- Design doc must contain validation preservation rules: focused tests, full pytest, generated artifact guard, Remote Main Sync Gate, security checks, git diff --check, human review, final PR comment; helper cannot authorize merge-ready status by itself.
+- Design doc must contain future implementation test plan: pytest parser tests, artifact guard parser tests, sync gate parser tests, security tool state tests, status classification tests, truncation tests, secret-like output handling tests, JSON/text output tests, output path restriction tests, Windows path handling tests.
+- Design doc must contain open design questions and a recommended next WP referencing WP32.
+- `docs/repo_truth_index.md` must index the design doc; Authority Hierarchy must have no duplicate numeric prefixes.
+- `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` must reference the design doc.
+- `docs/ai/codex/CONCISE_REPORTING_RULES.md` must reference the design doc.
+- `docs/ai/codex/VALIDATION_MATRIX.md` must reference the design doc.
+- `docs/ai/codex/README.md` must reference the design doc.
+- No implementation paths may exist: no `tools/validation/validation_output_summary.py`, no `tools/validation_output_summary.py`, no `tools/validation_summary*`, no `tools/command_output*`, no `tools/output_compression*`.
+- No forbidden agent/runtime directories may exist: no `src/agents/`, no `src/agent_layer/`, no `tools/hermes/`, no `agent_runtime/`, no `agent_memory/`.
+- Dependency files must not add forbidden dependencies: RTK, OpenAI, Anthropic, LangChain, Hermes, token-savior, code-review-graph, tree-sitter, rich, click, typer.
+
 ## WP30 Local Diff And Scope Summary Helper Implementation Tests
 
 - Parser tests: added/modified/deleted/renamed files counted and grouped from `git diff --name-status` output.

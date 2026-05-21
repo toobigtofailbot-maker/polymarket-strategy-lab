@@ -349,6 +349,43 @@ no project dependency added and pip-audit was unavailable/skipped.
 | WP30-D001 | Command-output compression helper not implemented | OPEN | P3 | WP30 implements only the diff/scope summary helper. Command-output compression is part of the WP28-D001 token-efficiency helper set but was not scoped into WP30. | Any implementation of command-output compression helper tooling. | Future approved design WP defines the helper, scope, stdlib-only constraints, and safety gates; implementation WP follows after design approval. |
 | WP30-D002 | Code indexing / blast-radius helper not implemented | OPEN | P3 | WP30 implements only the diff/scope summary helper. Code indexing and blast-radius analysis are part of the WP28-D001 token-efficiency helper set but were not scoped into WP30. | Any implementation of code indexing or blast-radius helper tooling. | Future approved design WP defines the helper, scope, stdlib-only constraints, and safety gates; implementation WP follows after design approval. |
 
+## WP31 Validation Output Summary Helper Design Update
+
+WP31 adds `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md`,
+`tests/test_validation_output_summary_helper_design_docs.py`, and repo-truth updates for the
+design of a future local/offline/read-only validation-output summary helper.
+
+WP31 is documentation/design/test-only. It adds no helper implementation, no command runner,
+no command-output compression, no code indexing, no memory store, no Hermes installation,
+no Hermes runtime dependency, no agent runtime, no scheduler, no daemon, no network polling,
+no credentials, no provider SDK, no strategy signal, no trade proposal, no paper trading,
+no live trading, no execution, no risk, no OMS, no reconciliation, no database, no dashboard,
+no dependency file, and no lock file.
+
+WP28-D001 remains OPEN because token-efficiency helper tooling (command-output compression,
+validation-output summary, code indexing, memory snapshot) is still not implemented. WP31
+contributes the validation-output summary design to the design-first gate, but does not
+implement it.
+
+WP30-D001 remains OPEN because command-output/validation-output compression tooling is still
+not implemented.
+
+WP30-D002 remains OPEN because code indexing helper is still not implemented.
+
+WP31-D001 is added because the validation-output summary helper implementation is not started;
+it requires a separate approved implementation WP.
+
+WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION — not changed by WP31. WP27-D001 remains
+OPEN — not changed by WP31. WP20-D003, WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain
+OPEN and unchanged.
+
+WP3-D001 (gitleaks): rerun/assessed in WP31; binary absent in this environment, UNAVAILABLE/SKIPPED.
+WP3-D002 (semgrep): READY_FOR_WP; `.venv-security/` not restored this WP and semgrep was
+unavailable/skipped. WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and
+pip-audit was unavailable/skipped.
+
+| WP31-D001 | Validation-output summary helper implementation not started | OPEN | P3 | WP31 defines the design for a future local/offline/read-only validation-output summary helper but does not implement it. An approved implementation WP is required before any code is written. | Any implementation of the validation-output summary helper. | Future approved implementation WP adds stdlib-only helper under `tools/validation/validation_output_summary.py` after design is accepted and open design questions in WP31 Section 15 resolved. |
+
 ## WP29 Local Diff And Scope Summary Helper Design Update
 
 WP29 adds `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md`, `tests/test_diff_scope_summary_helper_design_docs.py`, and repo-truth updates for the design of a future local/offline/read-only diff scope summary helper.

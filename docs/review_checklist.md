@@ -1,5 +1,27 @@
 # Review Checklist
 
+## WP31 Validation Output Summary Helper Design
+
+- Design doc `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md` exists and is indexed in `docs/repo_truth_index.md`?
+- Design doc states design status `DESIGN_ONLY` and future helper status `NOT_IMPLEMENTED`?
+- Design doc explicitly applies to Claude Code and Codex?
+- Design doc states stdlib/local/offline/read-only/no-network future implementation constraints?
+- Design doc includes intended modes (parser, metadata, future runner), with first implementation preferring parser/metadata?
+- Design doc includes intended future CLI shape (`--command`, `--exit-code`, `--check-type`, `--stdout-file`, `--stderr-file`, `--from-stdin`, `--format text|json`, `--max-failure-lines`, `--tool-availability`, `--output`, `--fail-on-missing-required-evidence`)?
+- Design doc includes intended input sources (command string, exit code, stdout/stderr, pytest lines, artifact guard, sync gate, security tool availability, diff/scope helper)?
+- Design doc includes intended output structure (all required fields)?
+- Design doc includes status classification rules (PASS/FAIL/UNAVAILABLE/SKIPPED/PARTIAL/ERROR)?
+- Design doc includes failure-snippet and truncation rules?
+- Design doc explicitly says no validation weakening and no validation replacement?
+- Design doc includes security and sensitive-output model?
+- Design doc includes package-class usage guidance?
+- Design doc includes future implementation test plan?
+- Design doc includes open design questions and recommended next WP?
+- `TOKEN_EFFICIENCY_OPERATING_MODEL.md`, `CONCISE_REPORTING_RULES.md`, `VALIDATION_MATRIX.md`, and `docs/ai/codex/README.md` cross-reference the new design doc?
+- No helper implementation added (no `tools/validation/validation_output_summary.py` or any impl)?
+- No tools/source/dependency/lock files changed?
+- WP31-D001 added; WP28-D001, WP30-D001, WP30-D002 remain OPEN?
+
 ## WP30 Local Diff And Scope Summary Helper Implementation
 
 - Helper exists under `tools/git/diff_scope_summary.py`?
