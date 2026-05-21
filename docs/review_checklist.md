@@ -1,5 +1,20 @@
 # Review Checklist
 
+## WP24 Read-Only Agent Context Exporter Operator Runbook
+
+- Runbook exists and is indexed?
+- Commands match existing exporter CLI?
+- Default command is no-write?
+- Explicit output stays under `local_data/agent_context_exports/`?
+- Runbook has git hygiene steps?
+- Runbook has JSON validation steps?
+- Runbook states no Hermes runtime?
+- Runbook states no report generator?
+- Runbook states no network?
+- Runbook states no credentials?
+- Runbook states no execution authority?
+- No runtime/exporter code changed unless explicitly justified?
+
 ## WP23 Local Read-Only Agent Context Exporter
 
 - Exporter is local/offline/read-only?

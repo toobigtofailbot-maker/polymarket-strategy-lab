@@ -1,5 +1,17 @@
 # Testing Requirements
 
+## WP24 Agent Context Exporter Operator Runbook Tests
+
+- Runbook must exist.
+- Runbook must contain required exporter commands.
+- Runbook must contain output validation guidance.
+- Runbook must contain git hygiene guidance.
+- Runbook must contain safety, non-goals, and stop conditions.
+- Runbook docs must be indexed in `docs/repo_truth_index.md`.
+- `docs/agent_context_exporter.md` must reference the runbook.
+- No runtime source, dependency file, package manager file, or lock file changes are expected for WP24.
+- Tests must enforce no new Hermes, OpenAI, Anthropic, or agent runtime dependency markers in dependency files.
+
 ## WP23 Local Read-Only Agent Context Exporter Tests
 
 - Export dictionary must contain all WP21 top-level schema fields.

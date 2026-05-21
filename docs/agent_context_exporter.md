@@ -10,6 +10,8 @@
 
 WP23 adds a local/offline/read-only JSON exporter only. It does not install Hermes, add an agent runtime, generate analyst reports, call network services, connect accounts, read credentials, create strategy signals, create trade proposals, backtest, paper trade, or touch live execution paths.
 
+Operator instructions for safe manual use are in `docs/agent_context_exporter_operator_runbook.md`.
+
 ## Allowed Inputs
 
 Default inputs are fixed, tracked repo-truth and policy docs:

@@ -15,6 +15,8 @@ WP20 records policy only. It does not install Hermes, add an agent runtime, add 
 
 WP21 adds `docs/agent_context_export_schema.md` as a schema contract for a local read-only context export. WP23 adds a local/offline/read-only exporter that reads only allowlisted local inputs and writes only under ignored `local_data/agent_context_exports/` when explicitly requested. Agent runtime, Hermes setup, and report generation remain NOT_STARTED. The advisory-only boundary is unchanged.
 
+WP24 adds `docs/agent_context_exporter_operator_runbook.md` for safe manual exporter operation. It does not authorize Hermes runtime use, agent runtime use, or report generation.
+
 WP23 does not add Hermes runtime or dependency, report generation, strategy proposals, account connection, network calls, credentials, execution authority, scheduler, daemon, or bot loop.
 
 ## Core Principle

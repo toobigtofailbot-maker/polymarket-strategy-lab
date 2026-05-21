@@ -13,6 +13,8 @@
 
 WP21 defined the schema contract. WP23 implements the first local/offline/read-only exporter for that contract. WP23 does not implement an agent runtime, Hermes setup, report generator, scheduler, network polling, account connection, credential path, strategy signal, trade proposal, backtest, paper trading, or live trading path.
 
+WP24 adds the operator runbook for safe manual exporter use in `docs/agent_context_exporter_operator_runbook.md`.
+
 ## Purpose
 
 This document defines the allowed shape of a local read-only context package for advisory AI or Hermes consumption. The context package is intended to summarize repo-approved local evidence so a future advisory agent can observe, summarize, research, or propose items for human review.

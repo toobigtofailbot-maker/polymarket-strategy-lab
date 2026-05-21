@@ -17,6 +17,8 @@ WP21 adds a schema-only contract for future local read-only agent context export
 
 WP23 adds a local/offline/read-only context exporter that writes JSON only under ignored `local_data/agent_context_exports/` when explicitly requested. Hermes may later consume exported local JSON only after future manual setup and an approved work package. WP23 does not install, configure, or depend on Hermes and adds no Hermes network permission, memory store, account connection, runtime, or command authority.
 
+WP24 adds `docs/agent_context_exporter_operator_runbook.md` for safe manual exporter operation. Hermes remains not installed, not configured, and not a runtime dependency.
+
 ## Future Work Codex Can Likely Handle Automatically
 
 In future approved work packages, Codex can likely handle:
