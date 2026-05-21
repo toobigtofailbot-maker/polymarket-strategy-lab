@@ -75,7 +75,7 @@ Reusable blocks reduce repeated boilerplate. They do not:
 Before implementing any token-efficiency helper tool, the following design discipline applies:
 
 - **Command-output compression helper**: a design-first or narrow stdlib helper WP is required before any implementation. Must be stdlib-only with no external dependency.
-- **Diff/scope summary helper**: safe as a local helper if stdlib-only and no runtime. Design doc or narrow WP first.
+- **Diff/scope summary helper**: safe as a local helper if stdlib-only and no runtime. Design doc or narrow WP first. See `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md` for the approved WP29 design.
 - **Code indexing / blast-radius helper**: design-first WP required before implementation. No external indexing tools without explicit approved WP.
 - **Memory / status snapshot helper**: design-first WP required. No persistence layer without explicit approval.
 - **External tools (RTK, code-review-graph, token-savior, or similar)**: design and security review WP required before any dependency addition or vendoring. No installation or import without explicit approved WP.

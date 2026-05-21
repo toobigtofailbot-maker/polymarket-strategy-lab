@@ -317,6 +317,22 @@ WP8-D002 remains OPEN because no authoritative public endpoint rate-limit policy
 
 WP3-D001 (gitleaks): rerun/assessed in WP26. WP3-D002 (semgrep): READY_FOR_WP; `.venv-security/` not restored this WP unless explicitly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit availability must be honestly reported by validation.
 
+## WP29 Local Diff And Scope Summary Helper Design Update
+
+WP29 adds `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md`, `tests/test_diff_scope_summary_helper_design_docs.py`, and repo-truth updates for the design of a future local/offline/read-only diff scope summary helper.
+
+WP29 is documentation/design/test-only. It adds no helper implementation, no command-output compression, no code indexing, no memory store, no Hermes installation, no Hermes runtime dependency, no agent runtime, no scheduler, no daemon, no network polling, no credentials, no provider SDK, no strategy signal, no trade proposal, no paper trading, no live trading, no execution, no risk, no OMS, no reconciliation, no database, no dashboard, no dependency file, and no lock file.
+
+WP28-D001 remains OPEN because token-efficiency helper tooling (command-output compression, diff/scope summary, code indexing, memory snapshot) is still not implemented. WP29 contributes the diff/scope summary design to the design-first gate, but does not implement it.
+
+WP29-D001 is added because the diff/scope summary helper implementation is not started; it requires a separate approved implementation WP.
+
+WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION — not changed by WP29. WP27-D001 remains OPEN — not changed by WP29. WP20-D003 remains OPEN. WP8-D002 remains OPEN. WP16-D002 remains OPEN. WP17-D001 remains OPEN. WP17-D002 remains OPEN.
+
+WP3-D001 (gitleaks): rerun/assessed in WP29. WP3-D002 (semgrep): READY_FOR_WP; `.venv-security/` not restored this WP and semgrep was unavailable/skipped. WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit was unavailable/skipped.
+
+| WP29-D001 | Diff/scope summary helper implementation not started | OPEN | P3 | WP29 defines the design for a future local/offline/read-only diff/scope summary helper but does not implement it. An approved implementation WP is required before any code is written. | Any implementation of the diff/scope summary helper. | Future approved implementation WP adds stdlib-only helper under `tools/git/diff_scope_summary.py` after design is accepted and open design questions resolved. |
+
 ## WP28 Codex/Claude Code Token Efficiency Operating Model Lock Update
 
 WP28 adds `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md`, `docs/ai/codex/CONCISE_REPORTING_RULES.md`, `docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md`, `tests/test_codex_token_efficiency_docs.py`, and repo-truth updates locking token-efficiency discipline into existing Codex workflow docs.

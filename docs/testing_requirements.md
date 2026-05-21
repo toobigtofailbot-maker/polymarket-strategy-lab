@@ -1,5 +1,24 @@
 # Testing Requirements
 
+## WP29 Diff Scope Summary Helper Design Tests
+
+- `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md` must exist.
+- Design doc must contain required status fields: `DESIGN_ONLY`, `NOT_IMPLEMENTED`, `Claude Code and Codex`, `NO_RUNTIME_CHANGE`, `NO_DEPENDENCY_CHANGE`, `NO_NETWORK`, `NO_VALIDATION_WEAKENING`, `NO_PROTECTED_BOUNDARY_CHANGE`.
+- Design doc must contain future helper constraints: standard-library only, local/offline/read-only, no dependency/lock-file changes, no network calls, no repo mutation, stdout summary by default.
+- Design doc must contain intended future CLI shape: `tools/git/diff_scope_summary.py`, `--base`, `--head`, `--package-class`, `--allowed-file`, `--allowed-prefix`, `--forbidden-prefix`.
+- Design doc must contain intended input sources: `git diff --name-status`, `git diff --stat`, `git diff --check`, allowed/forbidden path lists, repo-truth protected-path docs.
+- Design doc must contain output fields: changed file count, files outside allowed scope, protected-path hits, dependency/lock-file changes, generated-artifact/local_data hits, package-class warnings, validation reminder.
+- Design doc must contain package-class warnings: docs-only policy WP touching runtime source, design WP adding tools/source files, read-only public-data WP touching private/auth/client files, future live-trading package without live authorization update.
+- Design doc must contain exit status design: `0`, `1`, `2`, and an explicit statement that exit status cannot bypass required validation.
+- Design doc must contain future implementation test plan: fixture-based tests, protected path detection, dependency/lock-file detection, generated artifact detection, Windows path handling.
+- Design doc must contain open design questions and a recommended next WP referencing WP30.
+- `docs/repo_truth_index.md` must index the design doc; Authority Hierarchy must have no duplicate numeric prefixes.
+- `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` must reference the design doc.
+- `docs/ai/codex/README.md` must reference the design doc.
+- No implementation paths may exist: no `tools/git/diff_scope_summary.py`, no `tools/diff_scope_summary.py`, no `tools/diff_summary*`, no `tools/scope_summary*`.
+- No forbidden agent/runtime directories may exist: no `src/agents/`, no `src/agent_layer/`, no `tools/hermes/`, no `agent_runtime/`, no `agent_memory/`.
+- Dependency files must not add forbidden dependencies: RTK, OpenAI, Anthropic, LangChain, Hermes, token-savior, code-review-graph, tree-sitter, rich, click, typer.
+
 ## WP28 Token Efficiency Operating Model Lock Tests
 
 - `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` must exist.
