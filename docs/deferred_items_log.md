@@ -276,6 +276,18 @@ WP8-D002 remains OPEN because no authoritative public endpoint rate-limit policy
 
 WP3-D001 (gitleaks): rerun/assessed this WP. WP3-D002 (semgrep): READY_FOR_WP; `.venv-security/` not restored this WP unless explicitly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit availability must be honestly reported by validation.
 
+## WP24 Read-Only Agent Context Exporter Operator Runbook Update
+
+WP24 adds `docs/agent_context_exporter_operator_runbook.md`, doc tests, and repo-truth cross-references for safe manual operation of the WP23 local/offline/read-only exporter.
+
+WP24 is documentation/test-only. It adds no exporter runtime behavior change, Hermes installation, Hermes runtime dependency, agent runtime, agent report generator, scheduler, daemon, memory store, network polling, credentials, account connection, provider SDK, strategy signal, trade proposal, paper trading, backtesting, live trading, execution, risk, OMS, reconciliation, database, dashboard, dependency file, or lock file.
+
+WP21-D002 remains OPEN because no agent context report generator is implemented. WP20-D001 remains OPEN because Hermes installation/setup is not performed. WP20-D003 remains OPEN because performance and strategy logs remain unavailable for performance-review agents.
+
+WP8-D002 remains OPEN because no authoritative public endpoint rate-limit policy was added. WP16-D002 remains OPEN because local budgets remain conservative policy, not confirmed venue limits. WP17-D001 remains OPEN because no automated or scheduled polling is implemented. WP17-D002 remains OPEN because public-data runners and guarded capture remain dev-only/manual until venue rate limits are confirmed.
+
+WP3-D001 (gitleaks): rerun in WP24; available-check wrapper reports PASS. WP3-D002 (semgrep): READY_FOR_WP; `.venv-security/` not restored this WP and semgrep was unavailable/skipped. WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit was unavailable/skipped.
+
 ## WP10 Snapshot Persistence Update
 
 WP10 adds `src/data_layer/polymarket/snapshot_models.py`, `src/data_layer/polymarket/snapshot_writer.py`, `src/data_layer/polymarket/snapshot_capture.py`, `tools/polymarket/capture_market_snapshots.py`, and `docs/polymarket_snapshot_persistence.md`.
