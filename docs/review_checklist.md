@@ -1,5 +1,24 @@
 # Review Checklist
 
+## WP29 Local Diff And Scope Summary Helper Design
+
+- Design doc `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md` exists and is indexed in `docs/repo_truth_index.md`?
+- Design doc states design status `DESIGN_ONLY` and future helper status `NOT_IMPLEMENTED`?
+- Design doc is explicitly stdlib-only, local, offline, and read-only?
+- Design doc includes intended CLI shape (`--base`, `--head`, `--package-class`, `--allowed-file`, `--allowed-prefix`, `--forbidden-prefix`)?
+- Design doc includes intended input sources (git diff commands, protected-path docs, WP-provided path lists)?
+- Design doc includes intended output modes (stdout default, optional JSON, no file by default)?
+- Design doc includes protected-path model (flag not modify; no automatic failure; dependency/lock/generated artifact highlights)?
+- Design doc includes package-class warnings (docs-only, design, read-only public-data, live-trading)?
+- Design doc includes exit status design (0/1/2; cannot bypass validation)?
+- Design doc includes future implementation test plan (fixture-based, protected path, dependency/lock, generated artifact, Windows path)?
+- Design doc includes open design questions and recommended next WP?
+- No helper implementation added (no `tools/git/diff_scope_summary.py`, no helper source under `tools/` or `src/`)?
+- No tools/source/dependency/lock files added or modified beyond allowed WP29 scope?
+- `TOKEN_EFFICIENCY_OPERATING_MODEL.md` and `docs/ai/codex/README.md` cross-reference the new design doc?
+- WP28-D001 remains OPEN; WP29-D001 added?
+- WP20-D001, WP27-D001, WP20-D003, WP8-D002, WP16-D002, WP17-D001, WP17-D002 remain unchanged?
+
 ## WP28 Codex/Claude Code Token Efficiency Operating Model Lock
 
 - Token-efficiency operating model doc exists at `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md`?
