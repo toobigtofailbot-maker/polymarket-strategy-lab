@@ -1,0 +1,234 @@
+from __future__ import annotations
+
+import subprocess
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+WORKFLOW_DOCS = (
+    ROOT / "CODEX_START_HERE.md",
+    ROOT / "docs" / "ai" / "codex" / "README.md",
+    ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md",
+    ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md",
+    ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md",
+    ROOT / "docs" / "ai" / "codex" / "PROJECT_STATUS_UPDATE_RULES.md",
+    ROOT / "docs" / "ai" / "codex" / "PROTECTED_PATHS.md",
+)
+
+DEPENDENCY_FILE_NAMES = {
+    "pyproject.toml",
+    "requirements.txt",
+    "requirements-dev.txt",
+    "requirements.lock",
+    "poetry.lock",
+    "uv.lock",
+    "pdm.lock",
+    "Pipfile.lock",
+    "package.json",
+    "package-lock.json",
+}
+
+FORBIDDEN_AGENT_DEPENDENCY_TERMS = (
+    "hermes",
+    "openai",
+    "anthropic",
+    "langchain",
+    "llama-index",
+    "crewai",
+    "autogen",
+)
+
+FORBIDDEN_IMPLEMENTATION_PATHS = (
+    "src/agents",
+    "src/agent_layer",
+    "tools/agents",
+    "tools/hermes",
+    "tools/agent_context_export",
+    "tools/agent_context_export.py",
+    "agent_reports",
+)
+
+
+def _read(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def _git_ls_files() -> list[str]:
+    result = subprocess.run(
+        ["git", "ls-files"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    return [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+
+
+def test_required_workflow_docs_exist() -> None:
+    for path in WORKFLOW_DOCS:
+        assert path.is_file(), f"missing {path.relative_to(ROOT)}"
+
+
+def test_codex_start_here_contains_required_startup_and_stop_language() -> None:
+    text = _read(ROOT / "CODEX_START_HERE.md")
+    lower = text.lower()
+
+    for expected in (
+        "AGENTS.md",
+        "docs/project_status.md",
+        "docs/repo_truth_index.md",
+        "docs/deferred_items_log.md",
+        "docs/ai/codex/README.md",
+    ):
+        assert expected in text
+
+    assert "stop and report" in lower
+
+
+def test_wp_execution_report_contains_required_final_report_sections() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md")
+
+    for expected in (
+        "full final report",
+        "PR body does not replace",
+        "Branch / base",
+        "Repo-truth discovery",
+        "Delivered changes",
+        "Validation results",
+        "Validation gates",
+        "Forbidden-scope check",
+        "Generated-artifact check",
+        "Ready for review",
+    ):
+        assert expected in text
+
+
+def test_validation_matrix_contains_required_package_classes() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md").lower()
+
+    for expected in (
+        "docs-only policy",
+        "schema-only",
+        "workflow/governance",
+        "local report/export",
+        "read-only public-data",
+        "official-client sandbox",
+        "security/tooling",
+        "runtime dependency",
+        "future live-trading",
+    ):
+        assert expected in text
+
+
+def test_pr_review_checklist_contains_recurring_missing_checks() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md")
+
+    for expected in (
+        "final report PR comment",
+        "`docs/project_status.md` security wording uses the current WP number",
+        "Tests were rerun after the final commit",
+        "Generated-artifact guard was rerun after the final commit",
+        "dependency or lock files",
+        "Deferred items",
+    ):
+        assert expected in text
+
+
+def test_project_status_rules_prevent_stale_security_wording() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PROJECT_STATUS_UPDATE_RULES.md")
+
+    for expected in (
+        "current WP",
+        "unavailable or skipped, not passed",
+        "branch-state phrasing",
+        "Merged WPs list must include only already merged WPs",
+        "conservative and conditional",
+    ):
+        assert expected in text
+
+
+def test_protected_paths_doc_contains_required_boundaries() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PROTECTED_PATHS.md").lower()
+
+    for expected in (
+        "live trading",
+        "credentials",
+        "authenticated clients",
+        "order, execution, signing",
+        "scheduler, daemon",
+        "bot loop",
+        "database, dashboard, deployment",
+        "runtime dependencies",
+        "generated artifacts",
+    ):
+        assert expected in text
+
+
+def test_pr_template_contains_mandatory_workflow_checkboxes() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md")
+
+    for expected in (
+        "Full WP final report posted as PR comment",
+        "PR body is not the only final report",
+        "Remote Main Sync Gate",
+        "Generated Artifact Guard passed after final commit",
+        "Full pytest passed after final commit",
+        "`docs/project_status.md` security wording updated to current WP",
+        "Unavailable semgrep/pip-audit or other tools not called passed",
+        "Ready for review",
+    ):
+        assert expected in text
+
+
+def test_work_package_template_contains_required_codex_ready_fields() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+
+    for expected in (
+        "Package Identity",
+        "Package Class",
+        "Authorization Basis",
+        "Current Expected Repo Truth",
+        "Required Discovery Before Editing",
+        "Exact Changed-File Set",
+        "Stop/Report Triggers",
+        "Final PR Comment",
+        "Ready for review",
+    ):
+        assert expected in text
+
+
+def test_repo_truth_index_records_new_codex_workflow_docs() -> None:
+    text = _read(ROOT / "docs" / "repo_truth_index.md")
+
+    for path in (
+        "CODEX_START_HERE.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/codex/WP_EXECUTION_REPORT.md",
+        "docs/ai/codex/VALIDATION_MATRIX.md",
+        "docs/ai/codex/PR_REVIEW_CHECKLIST.md",
+        "docs/ai/codex/PROJECT_STATUS_UPDATE_RULES.md",
+        "docs/ai/codex/PROTECTED_PATHS.md",
+    ):
+        assert path in text
+
+
+def test_no_runtime_exporter_or_report_paths_are_added() -> None:
+    tracked = _git_ls_files()
+    for forbidden in FORBIDDEN_IMPLEMENTATION_PATHS:
+        assert not any(path == forbidden or path.startswith(f"{forbidden}/") for path in tracked)
+        assert not (ROOT / forbidden).exists(), f"unexpected path exists: {forbidden}"
+
+
+def test_dependency_files_do_not_add_agent_runtime_dependencies() -> None:
+    dependency_files = [
+        ROOT / tracked
+        for tracked in _git_ls_files()
+        if Path(tracked).name in DEPENDENCY_FILE_NAMES
+    ]
+
+    for path in dependency_files:
+        text = _read(path).lower()
+        for term in FORBIDDEN_AGENT_DEPENDENCY_TERMS:
+            assert term not in text, f"{term} found in {path.relative_to(ROOT)}"

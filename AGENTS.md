@@ -2,6 +2,8 @@
 
 Codex must read this file before every work package.
 
+After this file, Codex must read `CODEX_START_HERE.md` and the relevant Codex workflow guidance under `docs/ai/codex/`.
+
 ## Repo Truth
 
 - Repo truth overrides chat memory, handoffs, assumptions, and ad hoc instructions.
@@ -25,6 +27,8 @@ Codex must read this file before every work package.
 - Never delete or overwrite user files without explicit instruction.
 - If Codex defers a material issue, unavailable tool, unresolved dependency, blocked security check, or postponed decision, it must add or update an entry in `docs/deferred_items_log.md` in the same WP.
 - Whenever Codex completes a WP, it must create or prepare a pull request and provide the PR review link in the final report, unless the user explicitly says no PR should be created.
+- A full final report PR comment is mandatory before requesting review unless the WP explicitly waives PR creation. The PR body does not replace this final report comment.
+- If the final validation environment cannot run required tests or checks, Codex must report blocked/not merge-ready rather than imply readiness.
 
 ## Trading Safety
 

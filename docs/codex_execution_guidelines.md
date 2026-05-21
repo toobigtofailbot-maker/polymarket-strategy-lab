@@ -1,6 +1,7 @@
 # Codex Execution Guidelines
 
 - Read `AGENTS.md` before every WP.
+- Read `CODEX_START_HERE.md` and `docs/ai/codex/README.md` before WP execution.
 - Run `git status --short` and `git branch --show-current` before starting.
 - Stop and report if the working tree is dirty before WP work begins.
 - Before creating any WP branch, run `python tools/git/preflight_generated_artifact_guard.py`.
@@ -20,6 +21,14 @@
 - Do not continue from stale local `main`.
 - Do not expand scope beyond the WP.
 - Run required tests before final report.
+- The PR body does not replace the final report comment.
+- Post the full WP final report as a top-level PR comment before requesting review.
+- Rerun pytest after the final commit unless the active WP explicitly defines and justifies a narrower validation gate.
+- Rerun `python tools/git/preflight_generated_artifact_guard.py` after the final commit.
+- Update `docs/project_status.md` security wording to the current WP when checks are run or assessed in the current WP.
+- Do not use "passed" wording for unavailable tools such as semgrep or pip-audit.
+- Include exact base verification fields: base branch, local main commit, origin/main commit, whether local main equals origin/main, required previous WP commit presence, required previous WP files presence, Remote Main Sync Gate result, and Generated Artifact Guard result.
+- Include `Ready for review: YES/NO`.
 - Whenever Codex completes a WP, create or prepare a pull request and provide the PR review link in the final report, unless the user explicitly says no PR should be created.
 - Never delete user files without explicit instruction.
 - Do not copy external repo code before audit.
