@@ -1,5 +1,28 @@
 # Testing Requirements
 
+## WP32 Validation Output Summary Helper Implementation Tests
+
+- `tools/validation/validation_output_summary.py` must exist and be stdlib-only.
+- CLI help test: `python tools/validation/validation_output_summary.py --help` exits 0.
+- Metadata mode test: command + exit-code + check-type + stdout-text "878 passed, 1 warning" produces PASS with pass_count=878 and warning_count=1.
+- Parser/stdin mode test: `--from-stdin` with pytest failure text produces FAIL summary and failure snippet.
+- JSON output test: `--format json` produces parseable JSON containing `summary_schema_version`, status, counts, and validation reminder.
+- Text output test: contains command, check type, status, counts, validation reminder, and raw log retention note; does not dump raw full logs.
+- Pytest parser tests: parses passed/failed/error/warning counts from common lines; handles combined lines like "878 passed, 1 warning".
+- Artifact guard parser tests: "Generated artifact guard passed" produces pass marker; failed/blocked output produces fail marker.
+- Remote Main Sync Gate parser tests: passed output produces pass marker; stale/dirty/missing-required output produces fail marker.
+- Security tool availability tests: all unavailable classifies as UNAVAILABLE; mixed passed + unavailable classifies as PARTIAL; any failed classifies as FAIL; all passed classifies as PASS; unavailable tools are never classified as PASS; invalid status exits 2.
+- Missing evidence tests: no exit code and no output is ERROR; with `--fail-on-missing-required-evidence`, exit is nonzero.
+- Failure snippet tests: includes meaningful failure lines; respects `--max-failure-lines`; sets truncated when truncated.
+- Secret-like output tests: detects API_KEY, PRIVATE_KEY, Bearer token, PEM key; redacts matching values; does not echo raw secret; sets `secret_like_output_detected`; with `--fail-on-secret`, exits nonzero.
+- Generated output path detection tests: detects `local_data/...`, `.json`, `.sarif` paths mentioned in output.
+- Input path validation tests: accepts repo-relative `local_data/validation_summaries/inputs/<file>`; rejects absolute paths; rejects traversal; rejects paths outside allowed prefix; rejects `.env` and credential-like filenames.
+- Output path validation tests: accepts repo-relative `local_data/validation_summaries/<file>.json`; rejects absolute paths; rejects traversal; rejects output outside `local_data/validation_summaries/`.
+- No-network/no-command-execution/no-forbidden import tests: source must not import subprocess, requests, httpx, aiohttp, websockets, socket, openai, anthropic, langchain, hermes, py_clob_client; must not contain os.system, subprocess.run, eval(, exec(; must not contain trading execution terms.
+- CLI smoke tests: metadata smoke exits 0; JSON smoke exits 0 and produces parseable JSON; stdin failure smoke exits 0 by default but status FAIL in summary; invalid output path exits 2; no output file written when `--output` not provided.
+- All tests runnable locally with no live network.
+- No test may write to real `local_data/` outside `tmp_path` fixtures.
+
 ## WP31 Validation Output Summary Helper Design Tests
 
 - `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md` must exist.

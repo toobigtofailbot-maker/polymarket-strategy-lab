@@ -419,12 +419,28 @@ def test_readme_doc_references_design_doc():
 
 
 # ---------------------------------------------------------------------------
-# 16. No implementation paths exist
+# 16. Implementation paths (WP32: implementation now exists under tools/validation/)
 # ---------------------------------------------------------------------------
 
-def test_no_validation_output_summary_implementation():
+def test_validation_output_summary_implementation_exists():
+    """WP32 implements the helper; verify it exists and is stdlib-only."""
     impl = REPO_ROOT / "tools/validation/validation_output_summary.py"
-    assert not impl.exists(), f"Forbidden implementation file exists: {impl}"
+    assert impl.exists(), f"WP32 implementation file missing: {impl}"
+
+
+def test_validation_output_summary_no_subprocess_import():
+    impl = REPO_ROOT / "tools/validation/validation_output_summary.py"
+    if impl.exists():
+        source = impl.read_text(encoding="utf-8")
+        assert "import subprocess" not in source, "subprocess must not be imported"
+
+
+def test_validation_output_summary_no_forbidden_network_imports():
+    impl = REPO_ROOT / "tools/validation/validation_output_summary.py"
+    if impl.exists():
+        source = impl.read_text(encoding="utf-8")
+        for lib in ("requests", "httpx", "aiohttp", "websockets", "openai", "anthropic"):
+            assert f"import {lib}" not in source, f"Forbidden import: {lib}"
 
 
 def test_no_validation_output_summary_at_tools_root():

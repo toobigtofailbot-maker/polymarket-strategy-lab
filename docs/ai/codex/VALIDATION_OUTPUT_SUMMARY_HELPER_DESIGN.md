@@ -296,6 +296,45 @@ The following questions must be resolved by a future implementation WP before wr
    output (e.g., a matrix where gitleaks is unavailable, semgrep is unavailable, pip-audit is
    unavailable) without hiding any of the unavailable states?
 
+## 17. WP32 Implementation Decisions
+
+WP32 implemented the local validation output summary helper resolving the open design questions
+from Section 15. Implementation is at `tools/validation/validation_output_summary.py`.
+User-facing documentation is at `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER.md`.
+
+Resolved choices:
+
+- **First implementation mode**: parser + metadata mode implemented. Accepts `--stdout-text`,
+  `--stderr-text`, `--from-stdin`, and (under restricted path) `--stdout-file` / `--stderr-file`.
+  Runner mode remains forbidden and unimplemented.
+
+- **JSON output**: `--format text|json` implemented. Default format is `text`. JSON prints to
+  stdout or to the optional restricted output file.
+
+- **Output files**: default behavior writes no file. `--output` may write text or JSON only
+  under repo-relative `local_data/validation_summaries/`. Absolute paths, path traversal,
+  and paths outside this prefix are rejected with exit code 2.
+
+- **Input files**: `--stdout-file` and `--stderr-file` accepted only under repo-relative
+  `local_data/validation_summaries/inputs/`. Absolute paths, traversal, and credential-like
+  filenames are rejected.
+
+- **Secret-like output handling**: detection and redaction implemented. Matching values are
+  replaced with `[REDACTED]` in returned output. `secret_like_output_detected: true` is set
+  in the summary. A safety warning is included in text output. `--fail-on-secret` forces
+  nonzero exit when secrets are detected.
+
+- **Security subtool matrix**: `--tool-availability name=status` flag is repeatable. Valid
+  statuses: `available`, `passed`, `failed`, `unavailable`, `skipped`, `skipped_not_available`,
+  `skipped_not_applicable`. Mixed states classify as PASS / FAIL / PARTIAL / UNAVAILABLE
+  per Section 9 rules. Invalid status strings exit 2.
+
+- **Exit behavior**: exit 0 when summary generated (even if summarised status is FAIL).
+  Exit 1 when `--fail-on-missing-required-evidence` or `--fail-on-secret` is triggered.
+  Exit 2 for usage/config errors.
+
+Historical design content above is preserved intact.
+
 ## 16. Recommended Next WP
 
 The user may choose one of the following for WP32:

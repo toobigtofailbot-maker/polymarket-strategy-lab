@@ -384,7 +384,47 @@ WP3-D002 (semgrep): READY_FOR_WP; `.venv-security/` not restored this WP and sem
 unavailable/skipped. WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and
 pip-audit was unavailable/skipped.
 
-| WP31-D001 | Validation-output summary helper implementation not started | OPEN | P3 | WP31 defines the design for a future local/offline/read-only validation-output summary helper but does not implement it. An approved implementation WP is required before any code is written. | Any implementation of the validation-output summary helper. | Future approved implementation WP adds stdlib-only helper under `tools/validation/validation_output_summary.py` after design is accepted and open design questions in WP31 Section 15 resolved. |
+| WP31-D001 | Validation-output summary helper implementation not started | RESOLVED | P3 | WP31 defines the design for a future local/offline/read-only validation-output summary helper but does not implement it. An approved implementation WP is required before any code is written. | Any implementation of the validation-output summary helper. | RESOLVED by WP32: stdlib-only helper implemented at `tools/validation/validation_output_summary.py`; 73 focused tests pass; open design questions from WP31 Section 15 resolved. |
+| WP32-D001 | Runner mode remains forbidden and unimplemented | OPEN | P3 | WP32 implements parser + metadata mode only. Runner mode (subprocess-based command execution) remains forbidden and is not implemented in WP32 or any prior WP. | Any future implementation of runner mode in the validation output summary helper. | Future approved implementation WP explicitly scopes runner mode, defines safety constraints, and adds subprocess execution guards before any runner-mode code is written. |
+
+## WP32 Validation Output Summary Helper Implementation Update
+
+WP32 adds `tools/validation/validation_output_summary.py`,
+`tests/tools/validation/test_validation_output_summary.py`,
+`docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER.md`, and repo-truth updates implementing the
+local/offline/read-only validation output summary helper designed in WP31.
+
+WP32 is local-tooling/implementation-only. It adds no command runner, no subprocess execution,
+no Hermes installation, no Hermes runtime dependency, no LLM dependency, no agent runtime,
+no report generator, no scheduler, no daemon, no memory store, no network polling,
+no credentials, no account connection, no provider SDK, no strategy signal, no trade proposal,
+no paper trading, no live trading, no execution, no risk, no OMS, no reconciliation,
+no database, no dashboard, no dependency file, and no lock file.
+
+WP31-D001 is RESOLVED for the tested local/offline/read-only stdlib helper scope. The helper
+exists at `tools/validation/validation_output_summary.py`, 73 focused tests pass, all open
+design questions from WP31 Section 15 are resolved in Section 17 of the design doc.
+
+WP28-D001 remains OPEN because command-output compression, code indexing, and memory snapshot
+helpers are not implemented. WP32 implements only the validation-output summary helper.
+
+WP30-D001 remains OPEN. WP32 implements validation-output summary (narrowing part of the
+token-efficiency helper scope), but broader command-output compression tooling remains not
+implemented.
+
+WP30-D002 remains OPEN because code indexing / blast-radius helper is still not implemented.
+
+WP32-D001 is added because runner mode (subprocess-based command execution) is forbidden
+and remains unimplemented.
+
+WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION — not changed by WP32. WP27-D001 remains
+OPEN — not changed by WP32. WP20-D003, WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain
+OPEN and unchanged.
+
+WP3-D001 (gitleaks): rerun/assessed in WP32; binary absent in this environment, UNAVAILABLE/SKIPPED.
+WP3-D002 (semgrep): READY_FOR_WP; `.venv-security/` not restored this WP and semgrep was
+unavailable/skipped. WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and
+pip-audit was unavailable/skipped.
 
 ## WP29 Local Diff And Scope Summary Helper Design Update
 

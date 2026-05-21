@@ -1,5 +1,37 @@
 # Review Checklist
 
+## WP32 Validation Output Summary Helper Implementation
+
+- Helper exists under `tools/validation/validation_output_summary.py`?
+- Helper is stdlib-only (no subprocess, requests, httpx, aiohttp, websockets, openai, anthropic, hermes imports)?
+- Helper is local, offline, and read-only (no network calls, no file mutation, no command execution)?
+- Helper does not execute `--command` (display/evidence only)?
+- Helper has text and JSON output (`--format text|json`)?
+- Helper default writes no file?
+- Optional output restricted to repo-relative `local_data/validation_summaries/`?
+- Input files restricted to repo-relative `local_data/validation_summaries/inputs/`?
+- Input/output absolute paths and traversal (`..`) are rejected with exit 2?
+- Helper does not replace validation (validation reminder in all output)?
+- Helper parses pytest pass/fail/error/warning output?
+- Helper parses artifact guard output (PASS/FAIL)?
+- Helper parses Remote Main Sync Gate output (PASS/FAIL)?
+- Helper handles security tool availability without treating unavailable/skipped as PASS?
+- Helper classifies PASS/FAIL/SKIPPED/UNAVAILABLE/PARTIAL/ERROR correctly?
+- Helper detects and redacts obvious secret-like output?
+- Helper produces concise failure snippets and truncation flags?
+- Helper includes validation reminder and raw log retention note in all output?
+- 73+ focused tests pass in `tests/tools/validation/test_validation_output_summary.py`?
+- No runtime source under `src/` added or modified?
+- No unrelated `tools/` files modified?
+- No dependency or lock files changed?
+- No generated artifacts committed?
+- No Hermes/LLM/agent runtime/credentials/network/trading behavior added?
+- `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER.md` exists and is indexed in `docs/repo_truth_index.md`?
+- `docs/repo_truth_index.md` has no duplicate numeric prefixes and numbering is sequential?
+- WP31-D001 resolved; WP28-D001, WP30-D001, WP30-D002 remain OPEN?
+- WP32-D001 added (runner mode forbidden/unimplemented)?
+- WP20-D001, WP27-D001, WP20-D003, WP8-D002, WP16-D002, WP17-D001, WP17-D002 unchanged?
+
 ## WP31 Validation Output Summary Helper Design
 
 - Design doc `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md` exists and is indexed in `docs/repo_truth_index.md`?
