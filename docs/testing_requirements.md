@@ -1,5 +1,22 @@
 # Testing Requirements
 
+## WP30 Local Diff And Scope Summary Helper Implementation Tests
+
+- Parser tests: added/modified/deleted/renamed files counted and grouped from `git diff --name-status` output.
+- Scope classification tests: files matching `--allowed-file` and `--allowed-prefix` are in scope; files outside are warnings; no scope declared means no out-of-scope warning.
+- Protected path tests: explicit `--forbidden-prefix` flags changed paths; built-in `tools/hermes/`, `.env`, credential/token-like names are flagged.
+- Dependency/lock tests: `pyproject.toml`, `requirements.txt`, `uv.lock`, `package-lock.json`, `Cargo.lock`, and `*.lock` files are flagged.
+- Generated artifact tests: `local_data/...`, `.venv-security/...`, `tools/.bin/...`, `security-scan-output/...`, `.sarif`, `__pycache__/...` are flagged.
+- Package-class warning tests: docs-only/design WP touching `src/` warns; design WP touching `tools/` warns unless implementation/tooling package class; live-trading without `docs/live_trading_authorization.md` warns.
+- Text output tests: includes changed file count, warnings, validation reminder, suggested review attention areas; does not include raw diffs.
+- JSON output tests: parseable JSON; contains stable schema/version, base/head refs, counts, changed files, warnings, validation reminder.
+- Output path restriction tests: accepts `local_data/diff_scope_summaries/<file>.json`; rejects outside allowed directory; rejects path traversal; rejects absolute path outside allowed directory.
+- Exit code tests: default exits 0 with warnings; `--fail-on-warning` exits 1 with warnings; invalid CLI usage/config exits 2.
+- No-network/no-forbidden import tests: source must not import requests, httpx, aiohttp, websockets, openai, anthropic, langchain, hermes, py_clob_client, socket; source must not contain trading execution terms.
+- CLI help/smoke tests: `--help` exits 0; patched-git CLI test exits 0 and prints summary; JSON CLI smoke test produces parseable JSON with schema version.
+- All tests runnable locally with no live network.
+- No test may write to real `local_data/`.
+
 ## WP29 Diff Scope Summary Helper Design Tests
 
 - `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md` must exist.

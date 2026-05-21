@@ -190,3 +190,34 @@ The user may choose one of the following for WP30:
 - **WP30 - Local Advisory Handoff Package**: if the user chooses to resume the advisory handoff plan instead of implementing helper tooling at this time.
 
 No follow-on WP is authorized by this design document. Authorization requires a separate explicit work package instruction.
+
+## 14. WP30 Implementation Decisions
+
+WP30 implemented the local helper at `tools/git/diff_scope_summary.py` and resolved all open
+design questions from Section 12. The historical design content above is preserved intact.
+
+### Resolved design choices
+
+1. **Warning exit status**: Default behavior is exit `0` even when warnings are present (review-
+   assistive, non-blocking). `--fail-on-warning` exits `1` when any warning is present.
+   Usage/config errors exit `2`.
+
+2. **JSON support**: Implemented as `--format text|json` (default: `text`). JSON output
+   includes a `summary_schema_version` field and all structured fields. JSON may be written to
+   stdout or to an optional output file under `local_data/diff_scope_summaries/`.
+
+3. **Metadata sourcing**: CLI flags only in WP30. No config file.
+
+4. **Protected-path parsing**: Conservative built-in protected-pattern set plus explicit
+   `--forbidden-prefix`. Markdown docs are not parsed at runtime in WP30.
+
+5. **Base ref strategy**: Explicit `--base` and `--head` flags with defaults `main` and `HEAD`.
+   A PR base commit may be passed explicitly as `--base <commit>`.
+
+### Implementation reference
+
+- Implementation: `tools/git/diff_scope_summary.py`
+- Tests: `tests/tools/git/test_diff_scope_summary.py`
+- User-facing helper doc: `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md`
+
+The helper is local, offline, read-only, stdlib-only, and does not replace validation.
