@@ -6,11 +6,14 @@
 - Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
 - Agent context export status: NOT_STARTED
+- Agent context export schema status: POLICY_SCHEMA_ONLY_NOT_IMPLEMENTED
 - Agent report generation status: NOT_STARTED
 - Agent execution authority: FORBIDDEN
 - Fully autonomous trading agent status: EXCLUDED_FOR_NOW
 
 WP20 records policy only. It does not install Hermes, add an agent runtime, add an agent context exporter, add report generation, add scheduling, add network polling, add credentials, or connect to any account.
+
+WP21 adds `docs/agent_context_export_schema.md` as a schema-only contract for a future local read-only context export. The exporter, runtime, Hermes setup, and report generation remain NOT_STARTED. The advisory-only boundary is unchanged.
 
 ## Core Principle
 
@@ -57,8 +60,8 @@ The following are FORBIDDEN unless a later repo-truth decision explicitly change
 ## Staging
 
 - WP20: policy, docs, and tests only.
-- Future WP21 candidate: local read-only agent context export schema, still no runtime Hermes dependency.
-- Future WP22 candidate: read-only analyst report generator, local and offline only.
+- WP21: local read-only agent context export schema, still no runtime Hermes dependency and no exporter implementation.
+- Future WP22 candidate: local read-only agent context exporter, if WP21 succeeds and remains local/offline/no-Hermes-runtime.
 - Later: performance review after paper, strategy, or live logs exist and are authorized.
 - Later: market research after rate-limit and data policy is stronger.
 - Later: strategy suggestion only with evidence, replay, and paper review.
