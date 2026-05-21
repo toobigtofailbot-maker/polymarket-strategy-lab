@@ -23,6 +23,10 @@
 - [ ] Safety confirmations included
 - [ ] Files changed listed
 - [ ] Known limitations documented
+- [ ] Validation summary includes exact commands and result counts
+- [ ] Unavailable security tools reported as UNAVAILABLE/SKIPPED (not passed)
+- [ ] Final PR comment is concise but evidence-complete (see `docs/ai/codex/CONCISE_REPORTING_RULES.md`)
+- [ ] No raw full test logs in PR comment unless needed to diagnose failure
 
 ## Summary
 

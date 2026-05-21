@@ -29,6 +29,9 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 23. `docs/agent_context_report_generator.md` - WP25 local/offline/read-only analyst report generator boundary and usage.
 24. `docs/agent_context_report_operator_runbook.md` - WP26 local operator runbook for safe manual analyst report generation.
 25. `docs/agent_hermes_manual_setup_decision_record.md` - WP27 decision record defining manual setup gates and approval steps before any future Hermes or agent runtime work.
+26. `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` - WP28 token-efficiency operating model: context hygiene, validation-output summarization, concise reporting, reusable prompt-block rules, and future helper-tool design gates.
+27. `docs/ai/codex/CONCISE_REPORTING_RULES.md` - WP28 mandatory concise final-report format and omission rules for Codex and Claude Code.
+28. `docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md` - WP28 reusable standard blocks for preflight, security, validation, reporting, safety, generated artifacts, and stop/escalation.
 26. `docs/architecture_principles.md` - platform architecture principles.
 27. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
 28. `docs/runtime_boundaries.md` - protected runtime boundary rules.

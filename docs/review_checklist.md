@@ -1,5 +1,22 @@
 # Review Checklist
 
+## WP28 Codex/Claude Code Token Efficiency Operating Model Lock
+
+- Token-efficiency operating model doc exists at `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md`?
+- Concise reporting rules doc exists at `docs/ai/codex/CONCISE_REPORTING_RULES.md`?
+- Reusable WP prompt blocks doc exists at `docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md`?
+- New docs indexed in `docs/repo_truth_index.md`?
+- Token-efficiency doc explicitly applies to Codex and Claude Code?
+- Token-efficiency doc explicitly prohibits validation weakening?
+- Token-efficiency doc explicitly preserves protected boundaries?
+- Concise reporting keeps mandatory final PR comment and validation evidence?
+- Reusable prompt blocks do not replace package-specific WP fields?
+- Existing workflow docs (`AGENTS.md`, `CODEX_START_HERE.md`, `docs/ai/codex/README.md`, `docs/codex_execution_guidelines.md`, `docs/work_package_template.md`) cross-reference the new guidance?
+- PR template retains all existing required checks?
+- No runtime/source/tooling implementation added?
+- No dependency or lock files changed?
+- WP20-D001, WP27-D001, WP20-D003, WP8-D002, WP16-D002, WP17-D001, WP17-D002 remain unchanged?
+
 ## WP27 Agent/Hermes Manual Setup Decision Record
 
 - Decision record exists and is indexed in `docs/repo_truth_index.md`?

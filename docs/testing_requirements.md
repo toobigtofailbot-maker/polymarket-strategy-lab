@@ -1,5 +1,24 @@
 # Testing Requirements
 
+## WP28 Token Efficiency Operating Model Lock Tests
+
+- `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` must exist.
+- `docs/ai/codex/CONCISE_REPORTING_RULES.md` must exist.
+- `docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md` must exist.
+- Token-efficiency doc must contain: `ACTIVE_REPO_TRUTH_GUIDANCE`, `Codex and Claude Code`, `NO_VALIDATION_WEAKENING`, `NO_RUNTIME_CHANGE`, `NO_DEPENDENCY_CHANGE`, `NO_PROTECTED_BOUNDARY_CHANGE`, `context hygiene`, `validation-output summarization`, `reusable prompt blocks`, `future helper-tool design gates`.
+- Concise-reporting doc must contain: `final PR comment remains mandatory`, `PR body does not replace final report`, `validation summary`, `Boundary check`, `Deferred items`, `Ready for review: YES/NO`, `unavailable tools`.
+- Reusable prompt-blocks doc must contain: `Standard Preflight Block`, `Standard Security Check Block`, `Standard Validation Block`, `Standard Final Report Block`, `Standard Safety Boundary Block`, `Standard Generated Artifact Block`, `Standard Stop/Escalation Block`, `previous merge commit`, `forbidden scope`, `acceptance`, `failure criteria`.
+- `AGENTS.md` must reference the token-efficiency operating model.
+- `CODEX_START_HERE.md` must reference the token-efficiency operating model.
+- `docs/ai/codex/README.md` must reference the new docs.
+- `docs/codex_execution_guidelines.md` must reference the token-efficiency operating model.
+- `docs/work_package_template.md` must reference the reusable prompt blocks.
+- PR template must include concise-reporting / validation-summary checks without removing existing required checks.
+- `docs/repo_truth_index.md` must index all three new docs.
+- No `tools/token*`, `tools/diff_summary*`, `tools/code_index*` paths may exist.
+- No `src/agents/`, `src/agent_layer/`, `tools/hermes/`, `agent_runtime/`, `agent_memory/` directory may exist.
+- Dependency files must not add RTK, OpenAI, Anthropic, LangChain, Hermes, or similar dependencies.
+
 ## WP27 Agent/Hermes Manual Setup Decision Record Tests
 
 - Decision record `docs/agent_hermes_manual_setup_decision_record.md` must exist.

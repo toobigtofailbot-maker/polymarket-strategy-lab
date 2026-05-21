@@ -34,6 +34,17 @@
 - Do not copy external repo code before audit.
 - Do not add live trading code unless the WP explicitly authorizes it and `docs/live_trading_authorization.md` is updated.
 
+## Token Efficiency Discipline
+
+Apply the token-efficiency operating model (`docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md`) on every WP:
+
+- After completing the mandatory startup sequence, read only files relevant to the active WP.
+- Prefer targeted file reads and exact line references over full-file reproduction.
+- Summarize validation output (command, exit code, counts) without hiding failure evidence.
+- Use reusable prompt blocks by reference (`docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md`) to reduce boilerplate.
+- Keep final reports concise but evidence-complete; see `docs/ai/codex/CONCISE_REPORTING_RULES.md`.
+- Token efficiency must never skip, shorten, or omit required validation, security checks, or failure evidence.
+
 ## Stop Conditions
 
 Stop if required work needs protected runtime boundaries, secrets, external code reuse, or live-trading paths not authorized by the WP.

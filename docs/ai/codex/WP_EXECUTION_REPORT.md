@@ -44,3 +44,14 @@ O. Ready for review: YES/NO
 - If validation cannot be run, do not claim merge-ready.
 - Do not use "passed" wording for unavailable tools.
 - PR body alone is not sufficient; the full final report PR comment is mandatory unless PR creation itself is explicitly waived by the active work package.
+
+## Concise Reporting
+
+Apply the concise-reporting format from `docs/ai/codex/CONCISE_REPORTING_RULES.md`:
+
+- Report validation summary counts (command, exit code, pass/fail, test counts, warnings).
+- Include failure snippets when any check fails; do not truncate failure evidence.
+- Do not paste full raw test logs unless needed to diagnose a failure.
+- Report unavailable security tools as UNAVAILABLE/SKIPPED, never as passed.
+
+Concise reporting must not reduce required evidence. If in doubt, include more evidence, not less.
