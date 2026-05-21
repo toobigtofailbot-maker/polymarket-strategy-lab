@@ -5,12 +5,14 @@
 - Agent context exporter status: LOCAL_OFFLINE_READ_ONLY_EXPORTER
 - Hermes runtime dependency status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
-- Agent report generation status: NOT_STARTED
+- Agent report generation status: LOCAL_OFFLINE_READ_ONLY_REPORT_GENERATOR_ON_BRANCH
 - Agent execution authority: FORBIDDEN
 
-WP23 adds a local/offline/read-only JSON exporter only. It does not install Hermes, add an agent runtime, generate analyst reports, call network services, connect accounts, read credentials, create strategy signals, create trade proposals, backtest, paper trade, or touch live execution paths.
+WP23 adds a local/offline/read-only JSON exporter only. WP25 adds a separate deterministic local/offline/read-only report generator for completed exports. Neither path installs Hermes, adds an agent runtime, calls network services, connects accounts, reads credentials, creates strategy signals, creates trade proposals, backtests, paper trades, or touches live execution paths.
 
 Operator instructions for safe manual use are in `docs/agent_context_exporter_operator_runbook.md`.
+
+WP25 adds a deterministic local/offline/read-only report generator for previously generated context exports. It is documented in `docs/agent_context_report_generator.md` and writes only under ignored `local_data/agent_context_reports/` when explicit output paths are provided.
 
 ## Allowed Inputs
 

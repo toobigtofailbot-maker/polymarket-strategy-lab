@@ -159,6 +159,10 @@ Review output before sharing or feeding it into future advisory tooling. Do not 
 
 Future Hermes or AI consumption requires a separate approved work package or manual setup decision. This runbook does not install, configure, or authorize Hermes; Hermes remains NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY.
 
+## Local Report Generation
+
+After a context export is generated, WP25 allows a deterministic local/offline/read-only report with `python tools/polymarket/generate_agent_context_report.py --context local_data/agent_context_exports/<name>.local.json`. Report outputs are optional and must be explicit paths under `local_data/agent_context_reports/`. See `docs/agent_context_report_generator.md`.
+
 ## Troubleshooting
 
 - Path rejected because it is not under `local_data/agent_context_exports/`: rerun with an explicit `--out local_data/agent_context_exports/<name>.local.json` path.

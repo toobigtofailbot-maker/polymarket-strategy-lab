@@ -5,9 +5,9 @@
 - AI-agent layer status: POLICY_ONLY_NOT_IMPLEMENTED
 - Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
-- Agent context export status: LOCAL_OFFLINE_READ_ONLY_EXPORTER_ON_BRANCH
+- Agent context export status: LOCAL_OFFLINE_READ_ONLY_EXPORTER
 - Agent context export schema status: POLICY_SCHEMA_DEFINED_EXPORTER_IMPLEMENTED_LOCAL_OFFLINE_READ_ONLY
-- Agent report generation status: NOT_STARTED
+- Agent report generation status: LOCAL_OFFLINE_READ_ONLY_REPORT_GENERATOR_ON_BRANCH
 - Agent execution authority: FORBIDDEN
 - Fully autonomous trading agent status: EXCLUDED_FOR_NOW
 
@@ -16,6 +16,8 @@ WP20 records policy only. It does not install Hermes, add an agent runtime, add 
 WP21 adds `docs/agent_context_export_schema.md` as a schema contract for a local read-only context export. WP23 adds a local/offline/read-only exporter that reads only allowlisted local inputs and writes only under ignored `local_data/agent_context_exports/` when explicitly requested. Agent runtime, Hermes setup, and report generation remain NOT_STARTED. The advisory-only boundary is unchanged.
 
 WP24 adds `docs/agent_context_exporter_operator_runbook.md` for safe manual exporter operation. It does not authorize Hermes runtime use, agent runtime use, or report generation.
+
+WP25 adds deterministic local analyst report generation from WP23-compatible context exports. The report generator is advisory-only, local/offline/read-only, and does not add Hermes runtime/dependency, strategy proposals, signals, recommendations, or execution authority.
 
 WP23 does not add Hermes runtime or dependency, report generation, strategy proposals, account connection, network calls, credentials, execution authority, scheduler, daemon, or bot loop.
 

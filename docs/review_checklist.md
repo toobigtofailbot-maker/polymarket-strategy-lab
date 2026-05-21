@@ -1,5 +1,18 @@
 # Review Checklist
 
+## WP25 Local Read-Only Analyst Report Generator
+
+- Report generator is local/offline/read-only?
+- Input is restricted to `local_data/agent_context_exports/`?
+- Output is restricted to `local_data/agent_context_reports/`?
+- Default CLI writes nothing?
+- No network/client/auth/trading/Hermes/LLM dependency added?
+- No signals, strategy proposals, recommendations, or execution authority added?
+- Markdown and JSON reports contain safety caveats and human-review requirements?
+- Generated report output is not committed?
+- WP21-D002 resolved only for the tested local/offline/read-only generator scope?
+- WP20-D001, WP20-D003, WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain OPEN?
+
 ## WP24 Read-Only Agent Context Exporter Operator Runbook
 
 - Runbook exists and is indexed?
