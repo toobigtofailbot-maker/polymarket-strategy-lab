@@ -1,5 +1,16 @@
 # Testing Requirements
 
+## WP26 Read-Only Analyst Report Operator Runbook Tests
+
+- Runbook must exist.
+- Runbook must contain required exporter/report-generator commands.
+- Runbook must contain output validation and git hygiene guidance.
+- Runbook must contain safety, non-goals, and stop conditions.
+- Runbook docs must be indexed in `docs/repo_truth_index.md`.
+- `docs/agent_context_report_generator.md` must reference the runbook.
+- No runtime/source/dependency/lock changes are expected for WP26.
+- Tests must enforce no new Hermes, OpenAI, Anthropic, or agent runtime dependency markers in dependency files.
+
 ## WP25 Local Read-Only Analyst Report Generator Tests
 
 - Report output must contain required report schema fields.

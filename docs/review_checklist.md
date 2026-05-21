@@ -1,5 +1,18 @@
 # Review Checklist
 
+## WP26 Read-Only Analyst Report Operator Runbook
+
+- Report operator runbook exists and is indexed?
+- Commands match existing exporter/report-generator CLIs?
+- Default report command is no-write?
+- Explicit outputs stay under `local_data/agent_context_reports/`?
+- Runbook has JSON and Markdown validation steps?
+- Runbook has git hygiene steps?
+- Runbook states no Hermes runtime, no LLM, no agent runtime, no strategy recommendations, no trade proposals, no signals, no network, no credentials, no execution authority?
+- No runtime code changed unless explicitly justified?
+- WP25-D001 resolved only for the tested local/offline/read-only report runbook scope?
+- WP20-D001, WP20-D003, WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain OPEN?
+
 ## WP25 Local Read-Only Analyst Report Generator
 
 - Report generator is local/offline/read-only?
