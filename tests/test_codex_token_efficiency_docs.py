@@ -200,6 +200,20 @@ def test_repo_truth_index_includes_new_docs():
         assert doc in text, f"docs/repo_truth_index.md must index: {doc}"
 
 
+# --- 7b. Repo-truth index Authority Hierarchy has no duplicate numeric prefixes ---
+
+def test_repo_truth_index_no_duplicate_numbers():
+    import re
+    text = REPO_TRUTH_INDEX.read_text(encoding="utf-8")
+    # Extract all lines that start a numbered list entry (e.g. "26. `...`")
+    numbers = re.findall(r"^\s*(\d+)\.", text, re.MULTILINE)
+    numbers = [int(n) for n in numbers]
+    assert len(numbers) == len(set(numbers)), (
+        f"docs/repo_truth_index.md Authority Hierarchy has duplicate numeric prefixes: "
+        f"{[n for n in numbers if numbers.count(n) > 1]}"
+    )
+
+
 # --- 8. No runtime/helper implementation paths added ---
 
 def test_no_token_tools_added():
