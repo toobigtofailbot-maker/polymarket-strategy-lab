@@ -1,5 +1,35 @@
 # Testing Requirements
 
+## WP34 Code Index / Blast-Radius Helper Implementation Tests
+
+- `tools/git/code_blast_radius.py` must exist and be stdlib-only.
+- CLI help exits 0 and mentions advisory/blast-radius behavior.
+- Input validation: missing changed inputs → exit 2; absolute changed paths → exit 2; traversal → exit 2; invalid `--max-results` ≤ 0 → exit 2.
+- Output path validation: `local_data/code_blast_radius/` → accepted; absolute path → exit 2; traversal → exit 2; outside dir → exit 2.
+- Excluded paths (`.git/`, `local_data/`, `.venv-security/`, `.pytest_cache/`, `__pycache__/`, `.coverage`, `.claude/`) are skipped in filesystem scan.
+- Sensitive files (`.env`, `.env.*`, `private_key`, `mnemonic`, `id_rsa`, `.pem`, etc.) are not read.
+- Direct reference detection: path string and stem mentions in local text files detected correctly.
+- Naming heuristic tests: `test_<module>.py` patterns suggested for changed files.
+- Naming heuristic docs: docs files with matching stem suggested.
+- Repo-truth relationship rules: `docs/repo_truth_index.md` → `docs/project_status.md`; `docs/project_status.md` → `docs/deferred_items_log.md`; `docs/ai/codex/` → README + TOKEN_EFFICIENCY_OPERATING_MODEL.md; `tools/git/` → `tests/tools/git/`; `tools/validation/` → `tests/tools/validation/`; `src/data_layer/` → tests + `docs/runtime_boundaries.md`.
+- Protected/sensitive attention: `src/` flagged as protected-prefix; `tools/hermes/` flagged; `.env` flagged as sensitive; credential-like names flagged; `requirements.txt` flagged as dependency-lock.
+- Generated output attention: `local_data/`, `.sarif`, `.coverage`, `security-scan-output/` flagged.
+- Package-class warnings: docs-only touching `src/` → warning; local-tooling touching unrelated runtime → warning; dependency/lock change without dep class → warning; live-trading without auth file → warning.
+- Text output: includes advisory-only note, validation reminder, human-review reminder, mode, schema version; no raw file dumps.
+- JSON output: parseable, contains `summary_schema_version`, `mode`, `stale_index_status`, `changed_files`, `likely_tests`, `likely_docs`, `repo_truth_files_to_inspect`, `protected_boundary_attention`, `validation_reminder`, `human_review_reminder`, `advisory_only_note`.
+- `--max-results` caps sections and records truncation notes.
+- Exit 0: success (with or without protected hits unless `--fail-on-protected-hit`).
+- Exit 1: protected hit + `--fail-on-protected-hit`.
+- Exit 2: usage or config error.
+- Optional output writes under `local_data/code_blast_radius/` only; JSON parseable after write.
+- No `subprocess` import in helper source; no network library imports; no `os.system`.
+- No network calls in tests.
+- CLI smoke tests: basic text, JSON, prefix mode, strict protected-hit (exit 1), no output by default.
+- AST import parsing: imports detected from .py files; syntax errors handled gracefully.
+- `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER.md` must exist.
+- `docs/repo_truth_index.md` must include both helper and design doc; numbering unique and sequential.
+- WP30-D002 resolved; WP28-D001, WP30-D001, WP32-D001 remain OPEN; WP34-D001 added.
+
 ## WP33 Code Index / Blast-Radius Helper Design Tests
 
 - `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md` must exist.

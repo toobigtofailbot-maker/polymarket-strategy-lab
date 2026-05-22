@@ -36,25 +36,26 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 30. `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md` - WP30 user-facing reference for the implemented local/offline/read-only diff scope summary helper (`tools/git/diff_scope_summary.py`).
 31. `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md` - WP31 design document for the local/offline/read-only validation-output summary helper; WP32 added implementation decisions in Section 17.
 32. `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER.md` - WP32 user-facing reference for the implemented local/offline/read-only validation output summary helper (`tools/validation/validation_output_summary.py`).
-33. `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md` - WP33 design-only document for a future advisory code-index / blast-radius helper; implementation requires a separate approved WP.
-34. `docs/architecture_principles.md` - platform architecture principles.
-35. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
-36. `docs/runtime_boundaries.md` - protected runtime boundary rules.
-37. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
-38. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
-39. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
-40. `docs/security_tooling_status.md` - current security-tool availability and scan status.
-41. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
-42. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
-43. `docs/data_semantics.md` - shared data definitions.
-44. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
-45. `docs/risk_semantics.md` - risk definitions and initial posture.
-46. `docs/live_trading_authorization.md` - live trading gate and authorization table.
-47. `docs/security_and_secrets.md` - credential and incident rules.
-48. `docs/codex_execution_guidelines.md` - work-package execution process.
-49. `docs/work_package_template.md` - reusable WP template.
-50. `docs/review_checklist.md` - review readiness checklist.
-51. `docs/testing_requirements.md` - current and future test requirements.
+33. `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md` - WP33 design document for the advisory code-index / blast-radius helper; WP34 added implementation decisions in Section 19.
+34. `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER.md` - WP34 user-facing reference for the implemented local/offline/read-only code-index / blast-radius advisory helper (`tools/git/code_blast_radius.py`).
+35. `docs/architecture_principles.md` - platform architecture principles.
+36. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
+37. `docs/runtime_boundaries.md` - protected runtime boundary rules.
+38. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
+39. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
+40. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
+41. `docs/security_tooling_status.md` - current security-tool availability and scan status.
+42. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
+43. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
+44. `docs/data_semantics.md` - shared data definitions.
+45. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
+46. `docs/risk_semantics.md` - risk definitions and initial posture.
+47. `docs/live_trading_authorization.md` - live trading gate and authorization table.
+48. `docs/security_and_secrets.md` - credential and incident rules.
+49. `docs/codex_execution_guidelines.md` - work-package execution process.
+50. `docs/work_package_template.md` - reusable WP template.
+51. `docs/review_checklist.md` - review readiness checklist.
+52. `docs/testing_requirements.md` - current and future test requirements.
 
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 

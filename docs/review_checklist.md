@@ -1,5 +1,33 @@
 # Review Checklist
 
+## WP34 Code Index / Blast-Radius Helper Implementation
+
+- Helper exists under `tools/git/code_blast_radius.py`?
+- Helper is standard-library only (no subprocess, no requests/httpx/aiohttp/socket/openai/anthropic/langchain)?
+- Helper is local/offline/read-only (no network calls, no command execution, no file mutation by default)?
+- Helper does not import subprocess or os.system?
+- Helper implements text and JSON output (`--format text|json`)?
+- Helper default writes no file?
+- Optional `--output` restricted to repo-relative `local_data/code_blast_radius/`?
+- Absolute and traversal output paths rejected with exit 2?
+- No persistent index is implemented?
+- Excluded/sensitive paths (`.git/`, `local_data/`, `.venv-*`, `.env`, credential files) are skipped?
+- Protected/dependency/generated/package-class warnings are present and tested?
+- `--fail-on-protected-hit` exits 1 when protected hits detected?
+- Exit 0 for success, 1 for protected hit + flag, 2 for usage error?
+- `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER.md` exists and is indexed in `docs/repo_truth_index.md`?
+- `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md` updated with WP34 implementation decision section?
+- `docs/repo_truth_index.md` numbering is unique and sequential?
+- `docs/deferred_items_log.md`, `docs/project_status.md`, `docs/review_checklist.md`, and `docs/testing_requirements.md` are updated?
+- WP30-D002 resolved; WP28-D001, WP30-D001, WP32-D001 remain OPEN; WP34-D001 added?
+- 123+ focused tests pass in `tests/tools/git/test_code_blast_radius.py`?
+- Full pytest passes after final commit?
+- No runtime source under `src/` added or modified?
+- No dependency or lock files changed?
+- No Hermes/LLM/provider/network/credential behavior added?
+- No strategy/trading/execution behavior added?
+- No generated artifacts committed?
+
 ## WP33 Code Index / Blast-Radius Helper Design
 
 - Design doc `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md` exists and is indexed in `docs/repo_truth_index.md`?

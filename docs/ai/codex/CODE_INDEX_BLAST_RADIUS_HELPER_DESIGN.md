@@ -2,18 +2,18 @@
 
 ## 1. Status
 
-- Design status: DESIGN_ONLY
-- Future helper status: NOT_IMPLEMENTED
+- Design status: DESIGN_MERGED
+- Helper status: LOCAL_OFFLINE_READ_ONLY_TOOLING_IMPLEMENTED (WP34)
 - Applies to: Claude Code and Codex
 - Runtime impact: NO_RUNTIME_CHANGE
-- Tooling impact: NO_TOOL_IMPLEMENTATION
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
 - Validation impact: NO_VALIDATION_WEAKENING
 - Protected-boundary impact: NO_PROTECTED_BOUNDARY_CHANGE
 
-No helper is implemented in WP33. This document describes a future helper only.
-Implementation requires a separate approved implementation work package.
+WP33 was design-only. WP34 implemented the approved helper. See Section 19 for
+WP34 implementation decisions. See `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER.md`
+for the user-facing reference.
 
 ## 2. Purpose
 
@@ -306,3 +306,63 @@ No implementation is authorized by this design document. No generated code
 index, AST summary, symbol index, dependency graph, blast-radius tool,
 validation wrapper, memory file, runtime integration, or protected-path
 authority is created here.
+
+## 19. WP34 Implementation Decision Record
+
+WP34 implemented the local/offline/read-only advisory code-index / blast-radius
+helper at `tools/git/code_blast_radius.py`. The following design choices were
+resolved in WP34:
+
+### Mode
+
+- **On-demand scan only.** No persistent snapshot or index file mode.
+- **No query mode over stored snapshots.** Each invocation scans fresh.
+
+### Output
+
+- **Text and JSON output implemented.** `--format text|json` (default `text`).
+- **No output file written by default.** Optional `--output` restricted to
+  repo-relative `local_data/code_blast_radius/`.
+
+### Relationship Detection
+
+- **Path-string and stem reference detection** in local text files.
+- **Naming heuristics** for `test_<module>.py` patterns and doc-name
+  similarity.
+- **Repo-truth relationship rules** for known cross-file relationships.
+- **Optional stdlib `ast` import parsing** for `.py` files (disable with
+  `--no-ast`).
+- No Tree-sitter, no external indexer, no network, no LLM inference.
+
+### Protected Boundaries
+
+- `--include-protected-boundaries` reports matched protected path names and
+  category reason. It does not read protected file contents.
+- Protected hits default to exit 0 with warnings.
+- `--fail-on-protected-hit` exits 1 when protected hits are detected.
+
+### Stale Index
+
+- **Not applicable.** No persistent index is implemented. Each run is a fresh
+  on-demand scan. `stale_index_status` is always `not_applicable_on_demand_scan`.
+
+### Result Capping
+
+- `--max-results` (default 25) caps advisory path lists per section.
+- Truncation notes appear in `truncated_sections` when capped.
+
+### Advisory Boundary
+
+The helper remains advisory only. It does not replace validation commands,
+security checks, direct file inspection, or human review. It cannot authorize
+merge-ready status. These constraints apply to all future uses of this helper.
+
+Design questions 1–5 in Section 14 are resolved as:
+
+1. On-demand scan only. Optional output file allowed but not a reusable index.
+2. `--include-protected-boundaries` reports matched path names and category;
+   does not cite the protected-boundary doc explicitly in the output fields.
+3. Protected hits default to exit 0 with warnings; `--fail-on-protected-hit`
+   makes them exit 1.
+4. Confidence is rule-based only (high/medium/low). No configurable scoring.
+5. Query mode deferred; no snapshot/index file mode exists to query.

@@ -347,7 +347,7 @@ not restored this WP and semgrep was unavailable/skipped. WP3-D004 (pip-audit): 
 no project dependency added and pip-audit was unavailable/skipped.
 
 | WP30-D001 | Command-output compression helper not implemented | OPEN | P3 | WP30 implements only the diff/scope summary helper. Command-output compression is part of the WP28-D001 token-efficiency helper set but was not scoped into WP30. | Any implementation of command-output compression helper tooling. | Future approved design WP defines the helper, scope, stdlib-only constraints, and safety gates; implementation WP follows after design approval. |
-| WP30-D002 | Code indexing / blast-radius helper not implemented | OPEN | P3 | WP30 implements only the diff/scope summary helper. Code indexing and blast-radius analysis are part of the WP28-D001 token-efficiency helper set but were not scoped into WP30. | Any implementation of code indexing or blast-radius helper tooling. | Future approved design WP defines the helper, scope, stdlib-only constraints, and safety gates; implementation WP follows after design approval. |
+| WP30-D002 | Code indexing / blast-radius helper not implemented | RESOLVED (WP34) | P3 | WP30 implements only the diff/scope summary helper. Code indexing and blast-radius analysis are part of the WP28-D001 token-efficiency helper set but were not scoped into WP30. | Resolved by WP34: local/offline/read-only stdlib helper implemented at tools/git/code_blast_radius.py with focused tests. | Resolved in WP34. Persistent index mode remains deferred (WP34-D001). |
 
 ## WP31 Validation Output Summary Helper Design Update
 
@@ -449,6 +449,47 @@ WP27-D001 remains OPEN — not changed by WP33. WP20-D003, WP8-D002, WP16-D002,
 WP17-D001, and WP17-D002 remain OPEN and unchanged.
 
 WP3-D001 (gitleaks): rerun/assessed in WP33. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
+## WP34 Code Index / Blast-Radius Helper Implementation Update
+
+WP34 adds `tools/git/code_blast_radius.py` (local/offline/read-only stdlib
+helper), `tests/tools/git/test_code_blast_radius.py` (focused tests),
+`docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER.md` (user-facing reference),
+and repo-truth updates.
+
+WP34 is a local-tooling implementation WP. It adds no runtime source under
+`src/`, no dependency or lock file, no Hermes/LLM/provider behavior, no network
+behavior, no credentials, no strategy/trading/execution behavior, and no
+generated artifact.
+
+WP30-D002 is RESOLVED for the tested local/offline/read-only stdlib code-index
+/ blast-radius helper scope. The helper is implemented at
+`tools/git/code_blast_radius.py` with focused tests.
+
+WP28-D001 remains OPEN because command-output compression and memory/status
+snapshot helpers are still not implemented. Code indexing is now implemented
+(WP34), but the full token-efficiency helper set is not complete.
+
+WP30-D001 remains OPEN because broader command-output compression tooling is
+still not implemented.
+
+WP32-D001 remains OPEN because runner mode remains forbidden/unimplemented.
+
+WP34-D001 is added because persistent snapshot/index file mode is not
+implemented. On-demand scan only is the implemented mode.
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP34-D001 | Persistent snapshot/index file mode not implemented | OPEN | P4 | WP34 implements on-demand scan mode only. Snapshot/index file mode was deferred by design in WP33 Section 4 and confirmed as out of scope for WP34. | Future approved WP explicitly scopes persistent snapshot mode with staleness detection, output path isolation, and advisory-only guards. | Not expected in near term; on-demand mode is sufficient for current token-efficiency goals. |
+
+WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION — not changed by WP34.
+WP27-D001 remains OPEN — not changed by WP34. WP20-D003, WP8-D002, WP16-D002,
+WP17-D001, and WP17-D002 remain OPEN and unchanged.
+
+WP3-D001 (gitleaks): rerun/assessed in WP34. WP3-D002 (semgrep):
 READY_FOR_WP; semgrep availability must be honestly reported by validation.
 WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
 availability must be honestly reported by validation.
