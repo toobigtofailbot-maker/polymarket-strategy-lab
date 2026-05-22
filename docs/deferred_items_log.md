@@ -426,6 +426,33 @@ WP3-D002 (semgrep): READY_FOR_WP; `.venv-security/` not restored this WP and sem
 unavailable/skipped. WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and
 pip-audit was unavailable/skipped.
 
+## WP33 Code Index / Blast-Radius Helper Design Update
+
+WP33 adds `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md`,
+`tests/test_code_index_blast_radius_helper_design_docs.py`, and repo-truth
+updates for a future advisory code-index / blast-radius helper.
+
+WP33 is documentation/design/test-only. It adds no helper implementation, no
+generated index, no code-index generator, no AST or Tree-sitter indexer, no
+external indexing tool, no runtime source, no dependency file, no lock file, no
+Hermes/LLM/provider behavior, no network behavior, no credentials behavior, no
+strategy/trading/execution behavior, and no generated artifact.
+
+WP30-D002 remains OPEN because WP33 provides only design guidance; code-index /
+blast-radius helper implementation is not started. WP28-D001 remains OPEN
+because memory/status snapshot tooling is not implemented and broader
+token-efficiency helper work remains incomplete. WP30-D001 remains OPEN.
+WP32-D001 remains OPEN.
+
+WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION — not changed by WP33.
+WP27-D001 remains OPEN — not changed by WP33. WP20-D003, WP8-D002, WP16-D002,
+WP17-D001, and WP17-D002 remain OPEN and unchanged.
+
+WP3-D001 (gitleaks): rerun/assessed in WP33. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
 ## WP29 Local Diff And Scope Summary Helper Design Update
 
 WP29 adds `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md`, `tests/test_diff_scope_summary_helper_design_docs.py`, and repo-truth updates for the design of a future local/offline/read-only diff scope summary helper.

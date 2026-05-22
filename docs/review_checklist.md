@@ -1,5 +1,30 @@
 # Review Checklist
 
+## WP33 Code Index / Blast-Radius Helper Design
+
+- Design doc `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md` exists and is indexed in `docs/repo_truth_index.md`?
+- Design doc states design status `DESIGN_ONLY` and future helper status `NOT_IMPLEMENTED`?
+- Design doc explicitly applies to Claude Code and Codex?
+- Design doc states `NO_RUNTIME_CHANGE`, `NO_TOOL_IMPLEMENTATION`, `NO_DEPENDENCY_CHANGE`, `NO_NETWORK`, `NO_VALIDATION_WEAKENING`, and `NO_PROTECTED_BOUNDARY_CHANGE`?
+- Design doc includes intended future modes: on-demand scan, snapshot/index file, query, and design-only?
+- Design doc says first implementation should prefer on-demand scan?
+- Design doc includes intended future CLI shape for `tools/git/code_blast_radius.py` and required flags?
+- Design doc includes relationship model: direct references, naming heuristics, repo-truth relationships, protected/sensitive relationships, and confidence high/medium/low?
+- Design doc includes package-class awareness warnings?
+- Design doc includes stale-index model?
+- Design doc includes excluded paths and sensitive-content model?
+- Design doc preserves validation and direct inspection?
+- Design doc includes future implementation test plan, open design questions, and recommended next WP?
+- Focused design doc test exists at `tests/test_code_index_blast_radius_helper_design_docs.py`?
+- `docs/repo_truth_index.md` numbering is unique and sequential?
+- `docs/deferred_items_log.md`, `docs/review_checklist.md`, and `docs/testing_requirements.md` are updated?
+- No implementation path exists: no `tools/git/code_blast_radius.py`, no `tools/git/code_index.py`, no `tools/code_index*`, no `tools/blast_radius*`?
+- No tracked `local_data/code_index/` path exists?
+- No dependency or lock files changed?
+- No Hermes/LLM/provider/network/credential behavior added?
+- No strategy/trading/execution behavior added?
+- No generated artifacts committed?
+
 ## WP32 Validation Output Summary Helper Implementation
 
 - Helper exists under `tools/validation/validation_output_summary.py`?

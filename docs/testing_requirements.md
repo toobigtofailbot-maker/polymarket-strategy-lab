@@ -1,5 +1,22 @@
 # Testing Requirements
 
+## WP33 Code Index / Blast-Radius Helper Design Tests
+
+- `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md` must exist.
+- Design doc must contain required status fields: `DESIGN_ONLY`, `NOT_IMPLEMENTED`, `Claude Code and Codex`, `NO_RUNTIME_CHANGE`, `NO_TOOL_IMPLEMENTATION`, `NO_DEPENDENCY_CHANGE`, `NO_NETWORK`, `NO_VALIDATION_WEAKENING`, `NO_PROTECTED_BOUNDARY_CHANGE`.
+- Design doc must contain intended future modes: On-demand scan mode, Snapshot/index file mode, Query mode, Design-only mode, and first implementation should prefer on-demand scan.
+- Design doc must contain intended future CLI shape: `tools/git/code_blast_radius.py`, `--changed-file`, `--changed-prefix`, `--package-class`, `--include-tests`, `--include-docs`, `--include-protected-boundaries`, `--format text|json`, `--output`, `--max-results`, `--fail-on-protected-hit`, `--repo-root`.
+- Design doc must contain relationship model terms: Direct references, Naming heuristics, Repo-truth relationships, Protected/sensitive relationships, confidence high/medium/low.
+- Design doc must contain package-class awareness warnings.
+- Design doc must contain stale-index model.
+- Design doc must contain excluded paths and sensitive-content model.
+- Design doc must contain validation-preservation rules.
+- Design doc must contain future implementation test plan.
+- Design doc must contain open design questions and recommended next WP.
+- `docs/repo_truth_index.md` must index the design doc; Authority Hierarchy must have no duplicate numeric prefixes and numbering must be sequential.
+- No implementation paths may exist: no `tools/git/code_blast_radius.py`, no `tools/git/code_index.py`, no `tools/code_index*`, no `tools/blast_radius*`, no tracked `local_data/code_index/`.
+- Dependency files must not add forbidden indexing/dependency packages: RTK, OpenAI, Anthropic, LangChain, Hermes, token-savior, code-review-graph, tree-sitter.
+
 ## WP32 Validation Output Summary Helper Implementation Tests
 
 - `tools/validation/validation_output_summary.py` must exist and be stdlib-only.
