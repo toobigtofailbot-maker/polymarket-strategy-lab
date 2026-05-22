@@ -26,6 +26,7 @@ EXCLUDED_DIR_PREFIXES = [
     ".venv-official-client/",
     "tools/.bin/",
     "tools/security/.cache/",
+    "tools/hermes/",
     "security-scan-output/",
     "official-client-sandbox-output/",
     ".pytest_cache/",
@@ -33,6 +34,12 @@ EXCLUDED_DIR_PREFIXES = [
     ".mypy_cache/",
     ".ruff_cache/",
     ".claude/",
+    # Protected runtime/boundary paths — contents must not be read during scanning.
+    # These paths are still flagged as protected boundary attention when supplied
+    # as --changed-file or --changed-prefix inputs.
+    "src/",
+    "agent_runtime/",
+    "agent_memory/",
 ]
 
 EXCLUDED_EXACT = [".coverage"]

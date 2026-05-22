@@ -214,6 +214,79 @@ def test_walk_excludes_git_dir(tmp_path):
     assert not any(".git" in f for f in files)
 
 
+def test_walk_excludes_src_dir(tmp_path):
+    src_dir = tmp_path / "src"
+    src_dir.mkdir()
+    (src_dir / "runtime.py").write_text("# protected runtime source")
+    (tmp_path / "normal.py").write_text("x = 1")
+    files = cbr.walk_repo_files(tmp_path)
+    assert not any(f.startswith("src/") for f in files)
+    assert "normal.py" in files
+
+
+def test_walk_excludes_tools_hermes(tmp_path):
+    hermes_dir = tmp_path / "tools" / "hermes"
+    hermes_dir.mkdir(parents=True)
+    (hermes_dir / "client.py").write_text("# hermes client")
+    (tmp_path / "normal.py").write_text("x = 1")
+    files = cbr.walk_repo_files(tmp_path)
+    assert not any("hermes" in f for f in files)
+
+
+def test_walk_excludes_agent_runtime(tmp_path):
+    ar_dir = tmp_path / "agent_runtime"
+    ar_dir.mkdir()
+    (ar_dir / "main.py").write_text("# agent runtime")
+    (tmp_path / "normal.py").write_text("x = 1")
+    files = cbr.walk_repo_files(tmp_path)
+    assert not any(f.startswith("agent_runtime/") for f in files)
+    assert "normal.py" in files
+
+
+def test_walk_excludes_agent_memory(tmp_path):
+    am_dir = tmp_path / "agent_memory"
+    am_dir.mkdir()
+    (am_dir / "store.json").write_text("{}")
+    (tmp_path / "normal.py").write_text("x = 1")
+    files = cbr.walk_repo_files(tmp_path)
+    assert not any(f.startswith("agent_memory/") for f in files)
+    assert "normal.py" in files
+
+
+def test_direct_references_does_not_read_src(tmp_path):
+    src_dir = tmp_path / "src"
+    src_dir.mkdir()
+    (src_dir / "runtime.py").write_text("docs/project_status.md is mentioned here")
+    (tmp_path / "normal.py").write_text("# see docs/project_status.md")
+    repo_files = cbr.walk_repo_files(tmp_path)
+    refs = cbr.find_direct_references(repo_files, ["docs/project_status.md"], tmp_path)
+    ref_files = [r["file"] for r in refs]
+    assert not any(f.startswith("src/") for f in ref_files), \
+        "find_direct_references must not include src/ files (walk excludes them)"
+    assert "normal.py" in ref_files
+
+
+def test_protected_boundary_still_flagged_when_changed_input(tmp_path):
+    # src/ excluded from scanning, but still flagged as protected attention
+    # when supplied as a --changed-file input
+    hits = cbr.find_protected_hits(["src/data_layer/adapter.py"])
+    assert len(hits) >= 1
+    assert any("protected-prefix" in h["category"] for h in hits)
+
+
+def test_protected_boundary_exit1_still_works_after_exclusion():
+    # --fail-on-protected-hit should still exit 1 even though src/ is excluded
+    # from scanning, because the changed-file is supplied explicitly
+    code = cbr.main([
+        "--changed-file", "src/example.py",
+        "--package-class", "docs-only",
+        "--include-protected-boundaries",
+        "--fail-on-protected-hit",
+        "--repo-root", str(REPO_ROOT),
+    ])
+    assert code == 1
+
+
 # ── 5. Direct reference detection ───────────────────────────────────────────
 
 def test_direct_reference_detects_path_mention(tmp_path):
