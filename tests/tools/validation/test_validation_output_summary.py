@@ -448,6 +448,137 @@ def test_detect_pem_key():
     assert detected is True
 
 
+# ── 12b. Full multi-line PEM block redaction (follow-up fix) ─────────────────
+
+def _make_pem_block(key_type: str, body: str) -> str:
+    """Helper: build a fake PEM block without literal header in one place."""  # EXAMPLE_ONLY
+    begin = f"-----BEGIN {key_type}-----"  # EXAMPLE_ONLY
+    end = f"-----END {key_type}-----"      # EXAMPLE_ONLY
+    return f"{begin}\n{body}\n{end}"
+
+
+_FAKE_PEM_BODY = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC7EXAMPLE"
+
+
+def test_full_pem_block_detected():
+    block = _make_pem_block("PRIVATE KEY", _FAKE_PEM_BODY)
+    _, detected = vos.detect_and_redact_secrets(block)
+    assert detected is True
+
+
+def test_full_pem_block_body_not_in_redacted_text():
+    block = _make_pem_block("PRIVATE KEY", _FAKE_PEM_BODY)
+    redacted, _ = vos.detect_and_redact_secrets(block)
+    assert _FAKE_PEM_BODY not in redacted
+
+
+def test_rsa_pem_block_body_not_echoed():
+    block = _make_pem_block("RSA PRIVATE KEY", _FAKE_PEM_BODY)
+    redacted, detected = vos.detect_and_redact_secrets(block)
+    assert detected is True
+    assert _FAKE_PEM_BODY not in redacted
+
+
+def test_ec_pem_block_body_not_echoed():
+    block = _make_pem_block("EC PRIVATE KEY", _FAKE_PEM_BODY)
+    redacted, detected = vos.detect_and_redact_secrets(block)
+    assert detected is True
+    assert _FAKE_PEM_BODY not in redacted
+
+
+def test_openssh_pem_block_body_not_echoed():
+    block = _make_pem_block("OPENSSH PRIVATE KEY", _FAKE_PEM_BODY)
+    redacted, detected = vos.detect_and_redact_secrets(block)
+    assert detected is True
+    assert _FAKE_PEM_BODY not in redacted
+
+
+def test_pem_block_body_not_in_text_output():
+    """Full summary render must not contain PEM body lines."""
+    block = _make_pem_block("PRIVATE KEY", _FAKE_PEM_BODY)
+    # Embed the PEM block in a larger output (like a test log that leaked a key)
+    combined = f"some output line\n{block}\nanother output line\n1 failed"
+    summary = vos.build_summary(
+        command="some command",
+        check_type="focused-pytest",
+        exit_code=1,
+        combined_text=combined,
+        tool_availability={},
+        max_failure_lines=30,
+        fail_on_missing_evidence=False,
+        fail_on_secret=False,
+        secret_detected_in_input=False,
+    )
+    text_out = vos.render_text(summary)
+    assert _FAKE_PEM_BODY not in text_out
+
+
+def test_pem_block_body_not_in_json_output():
+    """JSON summary must not contain PEM body lines."""
+    block = _make_pem_block("PRIVATE KEY", _FAKE_PEM_BODY)
+    combined = f"some output line\n{block}\n1 failed"
+    summary = vos.build_summary(
+        command="some command",
+        check_type="focused-pytest",
+        exit_code=1,
+        combined_text=combined,
+        tool_availability={},
+        max_failure_lines=30,
+        fail_on_missing_evidence=False,
+        fail_on_secret=False,
+        secret_detected_in_input=False,
+    )
+    import json as _json
+    json_out = vos.render_json(summary)
+    assert _FAKE_PEM_BODY not in json_out
+
+
+def test_pem_block_sets_secret_detected_flag():
+    block = _make_pem_block("PRIVATE KEY", _FAKE_PEM_BODY)
+    summary = vos.build_summary(
+        command="cmd",
+        check_type="other",
+        exit_code=0,
+        combined_text=block,
+        tool_availability={},
+        max_failure_lines=30,
+        fail_on_missing_evidence=False,
+        fail_on_secret=False,
+        secret_detected_in_input=False,
+    )
+    assert summary["secret_like_output_detected"] is True
+
+
+def test_pem_block_fail_on_secret_exits_nonzero():
+    pem_header = "-----BEGIN PRIVATE KEY-----"  # EXAMPLE_ONLY
+    stdin_input = pem_header + "\n" + _FAKE_PEM_BODY + "\n-----END PRIVATE KEY-----"
+    result = subprocess.run(
+        [PYTHON, str(_HELPER_PATH),
+         "--check-type", "other",
+         "--exit-code", "0",
+         "--from-stdin",
+         "--fail-on-secret"],
+        input=stdin_input, capture_output=True, text=True,
+    )
+    assert result.returncode != 0
+
+
+def test_pem_block_multiline_redact_marker_present():
+    """After redaction the output should contain the redact marker, not the body."""
+    block = _make_pem_block("PRIVATE KEY", _FAKE_PEM_BODY)
+    redacted, _ = vos.detect_and_redact_secrets(block)
+    assert "REDACTED" in redacted
+    assert _FAKE_PEM_BODY not in redacted
+
+
+def test_normal_output_not_affected_by_pem_fix():
+    """Non-secret output is unchanged by the PEM redaction logic."""
+    text = "878 passed, 1 warning"
+    redacted, detected = vos.detect_and_redact_secrets(text)
+    assert detected is False
+    assert redacted == text
+
+
 def test_secret_not_echoed_in_summary():
     text = "API_KEY=sk-supersecret12345"
     summary = vos.build_summary(

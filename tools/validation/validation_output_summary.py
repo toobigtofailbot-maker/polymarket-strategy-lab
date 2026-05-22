@@ -57,6 +57,17 @@ _ALLOWED_OUTPUT_PREFIX = "local_data/validation_summaries/"
 _ALLOWED_INPUT_PREFIX = "local_data/validation_summaries/inputs/"
 
 # ── Secret-like patterns ─────────────────────────────────────────────────────
+# Multi-line PEM block patterns: match entire block from BEGIN to END (including body lines).
+# Applied before single-line patterns to prevent body lines leaking into snippets.
+_SECRET_PEM_PATTERNS = [
+    re.compile(
+        r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"
+        r".*?"
+        r"-----END (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
+        re.DOTALL | re.IGNORECASE,
+    ),
+]
+
 _SECRET_PATTERNS = [
     re.compile(r"PRIVATE_KEY\s*=\s*\S+", re.IGNORECASE),
     re.compile(r"API_KEY\s*=\s*\S+", re.IGNORECASE),
@@ -65,7 +76,8 @@ _SECRET_PATTERNS = [
     re.compile(r"MNEMONIC\s*=\s*\S+", re.IGNORECASE),
     re.compile(r"\bTOKEN\s*=\s*\S+", re.IGNORECASE),
     re.compile(r"Bearer\s+[A-Za-z0-9\-._~+/]+=*", re.IGNORECASE),
-    re.compile(r"-----BEGIN\s+(PRIVATE|RSA|EC|OPENSSH)\s+KEY-----"),
+    # Single-line fallback for orphan BEGIN header (no matching END present).
+    re.compile(r"-----BEGIN\s+(?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
 ]
 
 _CREDENTIAL_FILENAME_PATTERNS = [
@@ -172,8 +184,18 @@ def detect_and_redact_secrets(text: str) -> tuple[str, bool]:
     """
     Scan text for secret-like patterns. Return (redacted_text, was_detected).
     Replaces matched secret values with [REDACTED].
+
+    Multi-line PEM block patterns are applied first so that body lines (base64
+    key material) are replaced before single-line patterns or snippet extraction
+    can observe them.
     """
     detected = False
+    # Apply multi-line PEM block patterns first — replaces entire BEGIN…END block.
+    for pat in _SECRET_PEM_PATTERNS:
+        if pat.search(text):
+            detected = True
+            text = pat.sub("[REDACTED PEM PRIVATE KEY BLOCK]", text)
+    # Apply remaining single-line patterns.
     for pat in _SECRET_PATTERNS:
         if pat.search(text):
             detected = True
@@ -182,14 +204,15 @@ def detect_and_redact_secrets(text: str) -> tuple[str, bool]:
 
 
 def _redact_secret_match(match: str) -> str:
-    """Redact the value portion of a secret-like match."""
+    """Redact the value portion of a single-line secret-like match."""
     if "=" in match:
         key, _ = match.split("=", 1)
         return f"{key}=[REDACTED]"
     if match.startswith("Bearer "):
         return "Bearer [REDACTED]"
     if "BEGIN" in match and "KEY" in match:
-        return "-----BEGIN PRIVATE KEY----- [REDACTED] -----END PRIVATE KEY-----"
+        # Orphan header with no matching END — replace the header only.
+        return "[REDACTED PEM HEADER]"
     return "[REDACTED]"
 
 
