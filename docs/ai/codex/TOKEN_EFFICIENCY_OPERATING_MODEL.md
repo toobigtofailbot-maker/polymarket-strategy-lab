@@ -77,8 +77,8 @@ Before implementing any token-efficiency helper tool, the following design disci
 - **Command-output compression helper**: a design-first or narrow stdlib helper WP is required before any implementation. Must be stdlib-only with no external dependency.
 - **Diff/scope summary helper**: safe as a local helper if stdlib-only and no runtime. Design doc or narrow WP first. See `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md` for the approved WP29 design.
 - **Validation-output summary helper**: design-first WP required before implementation. Must be stdlib-only, local/offline/read-only, no command execution unless a future implementation WP explicitly scopes runner mode. See `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md` for the approved WP31 design. Must not weaken required validation or hide unavailable tools.
-- **Code indexing / blast-radius helper**: design-first WP required before implementation. No external indexing tools without explicit approved WP.
-- **Memory / status snapshot helper**: design-first WP required. No persistence layer without explicit approval.
+- **Code indexing / blast-radius helper**: design-only guidance is recorded in `docs/ai/codex/CODE_INDEX_DESIGN.md`. Implementation remains not implemented and requires a separate approved WP. Any future helper must remain advisory only and must not replace package scope, raw logs, command execution, direct changed-file inspection, integrity views, registry validators, scoped pytest, full pytest, repo-truth file inspection, or semantic review. No external indexing tools without explicit approved WP.
+- **Memory / status snapshot helper**: future/unimplemented. Design-first WP required. No persistence layer without explicit approval.
 - **External tools (RTK, code-review-graph, token-savior, or similar)**: design and security review WP required before any dependency addition or vendoring. No installation or import without explicit approved WP.
 
 Helper tools added without an approved design WP violate this operating model and must be reverted.
