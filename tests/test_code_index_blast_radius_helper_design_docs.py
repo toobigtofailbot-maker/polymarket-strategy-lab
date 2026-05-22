@@ -21,18 +21,26 @@ def test_required_design_doc_exists():
 
 def test_required_status_phrases_exist():
     content = _read(DESIGN_DOC)
+    # WP34 updated the design doc status to reflect implementation.
+    # Original WP33 design-only phrases are preserved in historical content;
+    # WP34 Section 19 adds implementation decision record.
     for phrase in [
-        "DESIGN_ONLY",
-        "NOT_IMPLEMENTED",
+        # WP34 updated status (DESIGN_MERGED replaces DESIGN_ONLY)
+        "DESIGN_MERGED",
         "Claude Code and Codex",
         "NO_RUNTIME_CHANGE",
-        "NO_TOOL_IMPLEMENTATION",
         "NO_DEPENDENCY_CHANGE",
         "NO_NETWORK",
         "NO_VALIDATION_WEAKENING",
         "NO_PROTECTED_BOUNDARY_CHANGE",
     ]:
-        assert phrase in content
+        assert phrase in content, f"Expected phrase missing: {phrase!r}"
+    # Historical design-only phrases still appear in historical sections
+    for phrase in [
+        "Design-only mode",
+        "WP33 is design-only mode",
+    ]:
+        assert phrase in content, f"Historical design phrase missing: {phrase!r}"
 
 
 def test_intended_future_modes_exist():
@@ -134,12 +142,14 @@ def test_repo_truth_index_numeric_prefixes_unique_and_sequential():
 
 
 def test_no_code_index_or_blast_radius_implementation_paths_exist():
-    forbidden_paths = [
-        REPO_ROOT / "tools/git/code_blast_radius.py",
+    # WP34 implemented the approved helper at tools/git/code_blast_radius.py.
+    # The check is updated to allow that single approved path.
+    # Alternate/duplicate implementation paths remain forbidden.
+    alternate_forbidden = [
         REPO_ROOT / "tools/git/code_index.py",
     ]
-    for path in forbidden_paths:
-        assert not path.exists(), f"Forbidden implementation path exists: {path}"
+    for path in alternate_forbidden:
+        assert not path.exists(), f"Forbidden alternate implementation path exists: {path}"
 
     forbidden_globs = [
         REPO_ROOT / "tools/code_index*",
@@ -148,6 +158,12 @@ def test_no_code_index_or_blast_radius_implementation_paths_exist():
     for pattern in forbidden_globs:
         matches = list(pattern.parent.glob(pattern.name))
         assert not matches, f"Forbidden implementation paths found: {matches}"
+
+    # Verify the approved implementation path exists (WP34 requirement)
+    approved = REPO_ROOT / "tools/git/code_blast_radius.py"
+    assert approved.exists(), (
+        "WP34 approved helper tools/git/code_blast_radius.py must exist"
+    )
 
 
 def test_no_tracked_local_data_code_index_path_exists():
