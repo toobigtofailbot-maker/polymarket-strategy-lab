@@ -1,5 +1,27 @@
 # Testing Requirements
 
+## WP35 Memory / Status Snapshot Helper Design Tests
+
+- `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER_DESIGN.md` must exist.
+- Design doc must contain required status fields: `DESIGN_ONLY`, `NOT_IMPLEMENTED`, `Claude Code and Codex`, `NO_RUNTIME_CHANGE`, `NO_TOOL_IMPLEMENTATION`, `NO_DEPENDENCY_CHANGE`, `NO_NETWORK`, `NO_VALIDATION_WEAKENING`, `NO_PROTECTED_BOUNDARY_CHANGE`, `ADVISORY_ONLY_NOT_REPO_TRUTH`.
+- Design doc must contain authority model: repo truth wins, snapshot is advisory, stale until compared with main, cannot override `AGENTS.md` or `docs/project_status.md`, cannot approve work, cannot authorize merge-ready status.
+- Design doc must contain intended future modes: Stdout orientation mode, Snapshot file mode, Compare/staleness mode, Design-only mode, and default mode writes no file.
+- Design doc must contain intended future CLI shape: `tools/git/status_snapshot.py`, `--format text|json|markdown`, `--output`, `--repo-root`, `--include-deferred`, `--include-helper-inventory`, `--include-next-wp-candidates`, `--include-protected-boundaries`, `--max-deferred-items`, `--check-stale`, `--fail-on-stale`, `--fail-on-sensitive-hit`.
+- Design doc must contain safe input sources: `AGENTS.md`, `CODEX_START_HERE.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`, `docs/review_checklist.md`, `docs/testing_requirements.md`, `docs/security_and_secrets.md`, `docs/runtime_boundaries.md`, `docs/live_trading_authorization.md`.
+- Design doc must contain prohibited input sources: `.env`, credential/private-key/wallet/mnemonic/token files, local account data, private endpoint responses, `local_data/` contents by default, generated reports/exports by default, arbitrary filesystem paths, network or GitHub API responses, chat history or user memory outside repo truth.
+- Design doc must contain intended output fields: summary schema version, generated timestamp, repo commit SHA, branch, source repo-truth files used, current phase, latest merged WP, protected boundary status block, helper inventory, open deferred item digest, next WP candidate digest, stale snapshot warning, advisory-only note, repo-truth verification reminder, validation/human-review reminder.
+- Design doc must contain sanitization model: `API_KEY`, `PRIVATE_KEY`, `CLOB_SECRET`, `CLOB_PASS_PHRASE`, `MNEMONIC`, `TOKEN`, `Bearer`, private-key blocks, redaction, not a replacement for gitleaks/semgrep.
+- Design doc must contain staleness model: commit SHA, branch, generated timestamp, helper version/schema, input file list, current HEAD differs, required repo-truth files changed, schema unsupported.
+- Design doc must contain snapshot lifecycle and storage policy: default no file generated, ignored `local_data/status_snapshots/`, never staged or committed, no tracked memory file, no durable project memory outside repo truth.
+- Design doc must contain relationship to existing helpers: Diff/scope helper, Validation-output helper, Code blast-radius helper, none replace mandatory validation or review.
+- Design doc must contain future implementation test plan sections for safe/prohibited input, output path restriction, status parsing, deferred item digest, helper inventory, next WP candidate extraction, stale snapshot metadata, sensitive-output redaction, no-network/no-command-execution/no-forbidden import, and Windows path handling.
+- Design doc must contain open design questions and recommended next WP referencing WP36.
+- `docs/repo_truth_index.md` must index the design doc; Authority Hierarchy must have no duplicate numeric prefixes and numbering must be sequential.
+- `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` must reference the design doc.
+- `docs/ai/codex/README.md` must reference the design doc.
+- No implementation paths may exist: no `tools/git/status_snapshot.py`, no `tools/git/memory_snapshot.py`, no `tools/status_snapshot*`, no `tools/memory_snapshot*`, no tracked `local_data/status_snapshots/`, no `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md`, no `src/agents/`, no `src/agent_layer/`, no `tools/hermes/`, no `agent_runtime/`, no `agent_memory/`.
+- Dependency files must not add forbidden packages: OpenAI, Anthropic, LangChain, Hermes, token-savior, code-review-graph, tree-sitter, networkx, graphviz, chromadb, llama-index, mem0, rich, click, typer.
+
 ## WP34 Code Index / Blast-Radius Helper Implementation Tests
 
 - `tools/git/code_blast_radius.py` must exist and be stdlib-only.

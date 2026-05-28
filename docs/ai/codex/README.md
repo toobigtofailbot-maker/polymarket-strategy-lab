@@ -35,6 +35,7 @@ All Codex and Claude Code execution must follow the token-efficiency operating m
 - `docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md` — standard blocks for preflight, security, validation, reporting, and safety.
 - `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md` — WP29 design-only document for a future local/offline/read-only diff scope summary helper. This document does not authorize implementation; a future approved implementation WP is required.
 - `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md` — WP31 design-only document for a future local/offline/read-only validation-output summary helper. This document does not authorize implementation; a future approved implementation WP is required.
+- `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER_DESIGN.md` — WP35 design-only document for a future local/offline/read-only memory/status snapshot helper. This document does not authorize implementation; a future approved implementation WP is required. Design docs do not authorize implementation until a future approved implementation WP.
 
 Token efficiency must never weaken validation, skip required checks, or omit failure evidence from final reports.
 
