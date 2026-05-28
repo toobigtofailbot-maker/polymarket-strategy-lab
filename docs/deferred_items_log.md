@@ -494,6 +494,49 @@ READY_FOR_WP; semgrep availability must be honestly reported by validation.
 WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
 availability must be honestly reported by validation.
 
+## WP35 Memory / Status Snapshot Helper Design Update
+
+WP35 adds `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER_DESIGN.md`,
+`tests/test_memory_status_snapshot_helper_design_docs.py`, and repo-truth
+updates for the design of a future local/offline/read-only memory/status
+snapshot helper.
+
+WP35 is documentation/design/test-only. It adds no helper implementation, no
+snapshot generator, no persistent memory file, no command runner, no network
+calls, no Hermes installation, no Hermes runtime dependency, no agent runtime,
+no scheduler, no daemon, no credentials, no provider SDK, no strategy signal,
+no trade proposal, no paper trading, no live trading, no execution, no risk,
+no OMS, no reconciliation, no database, no dashboard, no dependency file, and
+no lock file.
+
+WP28-D001 remains OPEN because command-output compression and memory/status
+snapshot helpers are not implemented. WP35 contributes the memory/status
+snapshot design to the design-first gate, but does not implement it.
+
+WP30-D001 remains OPEN because broader command-output compression tooling is
+still not implemented.
+
+WP32-D001 remains OPEN because runner mode remains forbidden/unimplemented.
+
+WP34-D001 remains OPEN because persistent snapshot/index file mode is not
+implemented.
+
+WP35-D001 is added because the memory/status snapshot helper implementation
+is not started; it requires a separate approved implementation WP.
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP35-D001 | Memory/status snapshot helper implementation not started | OPEN | P3 | WP35 defines the design for a future local/offline/read-only memory/status snapshot helper but does not implement it. An approved implementation WP is required before any code is written. | Any implementation of the memory/status snapshot helper. | Future approved implementation WP scopes and implements the helper per WP35 design constraints; full pytest and advisory-only guards required. |
+
+WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION — not changed by WP35.
+WP27-D001 remains OPEN — not changed by WP35. WP20-D003, WP8-D002, WP16-D002,
+WP17-D001, and WP17-D002 remain OPEN and unchanged.
+
+WP3-D001 (gitleaks): rerun/assessed in WP35. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
 ## WP29 Local Diff And Scope Summary Helper Design Update
 
 WP29 adds `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md`, `tests/test_diff_scope_summary_helper_design_docs.py`, and repo-truth updates for the design of a future local/offline/read-only diff scope summary helper.

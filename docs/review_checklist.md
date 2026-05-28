@@ -1,5 +1,35 @@
 # Review Checklist
 
+## WP35 Memory / Status Snapshot Helper Design
+
+- Design doc `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER_DESIGN.md` exists and is indexed in `docs/repo_truth_index.md`?
+- Design doc states design status `DESIGN_ONLY` and future helper status `NOT_IMPLEMENTED`?
+- Design doc explicitly states `Applies to: Claude Code and Codex`?
+- Design doc states `NO_RUNTIME_CHANGE`, `NO_TOOL_IMPLEMENTATION`, `NO_DEPENDENCY_CHANGE`, `NO_NETWORK`, `NO_VALIDATION_WEAKENING`, `NO_PROTECTED_BOUNDARY_CHANGE`, and `ADVISORY_ONLY_NOT_REPO_TRUTH`?
+- Design doc includes authority model with explicit repo-truth-wins rule and cannot-override list?
+- Design doc includes safe input sources allowlist?
+- Design doc includes prohibited input sources list?
+- Design doc includes intended future modes (stdout, snapshot file, compare/staleness, design-only)?
+- Design doc includes intended future CLI shape (`tools/git/status_snapshot.py` and proposed flags)?
+- Design doc includes intended output structure fields?
+- Design doc includes sanitization and sensitive-output model?
+- Design doc includes staleness model?
+- Design doc includes snapshot lifecycle and storage policy?
+- Design doc includes relationship to existing helpers?
+- Design doc includes future implementation test plan?
+- Design doc includes open design questions and recommended next WP?
+- Design doc explicitly states the helper cannot replace repo truth, validation, security checks, human review, or final PR comment?
+- No helper implementation added (`tools/git/status_snapshot.py` must not exist)?
+- No tools/source/dependency/lock files changed?
+- No generated snapshot output committed?
+- `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` cross-references the design?
+- `docs/ai/codex/README.md` cross-references the design?
+- `docs/repo_truth_index.md` numbering is unique and sequential?
+- `docs/deferred_items_log.md`, `docs/project_status.md`, `docs/review_checklist.md`, and `docs/testing_requirements.md` are updated?
+- WP35-D001 added; WP28-D001, WP30-D001, WP32-D001, WP34-D001 remain OPEN?
+- Focused tests pass (`tests/test_memory_status_snapshot_helper_design_docs.py`)?
+- Full pytest passes after final commit?
+
 ## WP34 Code Index / Blast-Radius Helper Implementation
 
 - Helper exists under `tools/git/code_blast_radius.py`?
