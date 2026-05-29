@@ -1,5 +1,36 @@
 # Testing Requirements
 
+## WP36 Memory / Status Snapshot Helper Implementation Tests
+
+- `tools/git/status_snapshot.py` must exist and be stdlib-only.
+- CLI help exits 0 and mentions advisory/snapshot behavior.
+- Repo-root validation: all required files present → exit 0; missing AGENTS.md, docs/project_status.md, or docs/repo_truth_index.md → exit 2.
+- Safe input allowlist enforced: `source_files_used` contains only allowlisted files; no `--input-file` or arbitrary-file flag exists.
+- Prohibited input paths rejected: `.env`, `.env.*`, credential files, private-key files, `local_data/`, `src/`, arbitrary paths flagged by `_is_prohibited_input`.
+- Output path validation: `local_data/status_snapshots/<file>.json` → accepted; absolute path → exit 2; traversal → exit 2; outside dir → exit 2.
+- Text output: contains current phase, advisory-only note, repo-truth verification reminder, validation/human-review reminder, source files section, header.
+- JSON output: parseable, contains all required schema fields including `summary_schema_version`, `generated_timestamp_utc`, `repo_commit_sha`, `repo_branch`, `source_files_used`, `missing_source_files`, `current_phase`, `latest_merged_wp`, `protected_boundary_status`, `helper_inventory`, `open_deferred_item_digest`, `next_wp_candidates`, `advisory_only_note`, `repo_truth_verification_reminder`, `validation_human_review_reminder`, `sensitive_content_detected`, `redaction_applied`, `warnings`.
+- JSON output: sorted keys, trailing newline.
+- `--format markdown` exits 2 with error message.
+- Project status parsing: extracts current phase, current branch, merged WPs, latest merged WP, live trading status, hermes status, next intended WP line.
+- `--include-deferred`: returns OPEN deferred items with id/item/status/priority fields; `--max-deferred-items` cap enforced; values < 1 → exit 2.
+- `--include-helper-inventory`: reports diff_scope_summary, validation_output_summary, code_blast_radius, and status_snapshot helpers with path/status/exists fields.
+- `--include-protected-boundaries`: includes boundary status block with advisory note that does not authorize protected work.
+- Staleness metadata: commit SHA is 40-char hex or "unknown"; branch is non-empty; timestamp includes T and timezone; schema version is "1.0"; source file list is non-empty list.
+- `--check-stale`: detects current, stale commit, stale branch, missing timestamp, unsupported schema; rejects absolute path, traversal, outside-dir path (exit 2).
+- `--fail-on-stale` exits 1 when stale snapshot detected.
+- Secret redaction: API_KEY, PRIVATE_KEY, CLOB_SECRET, CLOB_PASS_PHRASE, MNEMONIC, TOKEN, long Bearer tokens, PEM blocks detected and redacted; raw values absent from output; `sensitive_content_detected` set.
+- `--fail-on-sensitive-hit` exits 1 when sensitive content detected.
+- Default writes no file; JSON default writes no file.
+- Optional output: `--output local_data/status_snapshots/test.local.json` → file created, parseable JSON with `summary_schema_version`.
+- No forbidden imports: `import subprocess`, `from subprocess`, `import requests`, `import httpx`, `import aiohttp`, `import websockets`, `import socket`, `import openai`, `import anthropic`, `import langchain`, `import hermes`, `from hermes`, `import py_clob_client`, `import chromadb`, `import llama_index`, `import mem0` must not appear.
+- No forbidden calls: `os.system(`, `subprocess.run(`, `subprocess.Popen(`, `check_output(`, `eval(`, `exec(`, `post_order(`, `submit_order(`, `sign_order(`, `execute_trade(`, `create_trade_proposal(`, `generate_signal(` must not appear.
+- CLI smoke: basic text, JSON, all optional flags, output+check-stale round-trip.
+- Windows path handling: backslash normalized, prohibited Windows paths detected, Windows absolute output path rejected.
+- `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md` must exist.
+- `docs/repo_truth_index.md` must include both helper and design doc; numbering unique and sequential.
+- WP35-D001 resolved; WP28-D001, WP30-D001, WP32-D001, WP34-D001 remain OPEN; WP36-D001 and WP36-D002 added.
+
 ## WP35 Memory / Status Snapshot Helper Design Tests
 
 - `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER_DESIGN.md` must exist.

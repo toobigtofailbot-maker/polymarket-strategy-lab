@@ -526,13 +526,61 @@ is not started; it requires a separate approved implementation WP.
 
 | Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
 |---|---|---|---|---|---|---|
-| WP35-D001 | Memory/status snapshot helper implementation not started | OPEN | P3 | WP35 defines the design for a future local/offline/read-only memory/status snapshot helper but does not implement it. An approved implementation WP is required before any code is written. | Any implementation of the memory/status snapshot helper. | Future approved implementation WP scopes and implements the helper per WP35 design constraints; full pytest and advisory-only guards required. |
+| WP35-D001 | Memory/status snapshot helper implementation not started | RESOLVED (WP36) | P3 | WP35 defines the design for a future local/offline/read-only memory/status snapshot helper but does not implement it. | WP36 implements the local/offline/read-only stdlib helper at tools/git/status_snapshot.py with focused tests and advisory-only guards. | Resolved for local/offline/read-only stdlib helper scope only. Markdown output (WP36-D001) and input file hashes (WP36-D002) remain deferred. |
 
 WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION — not changed by WP35.
 WP27-D001 remains OPEN — not changed by WP35. WP20-D003, WP8-D002, WP16-D002,
 WP17-D001, and WP17-D002 remain OPEN and unchanged.
 
 WP3-D001 (gitleaks): rerun/assessed in WP35. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
+## WP36 Memory / Status Snapshot Helper Implementation Update
+
+WP36 implements `tools/git/status_snapshot.py`, the local/offline/read-only
+memory/status snapshot helper designed in WP35. It adds focused tests at
+`tests/tools/git/test_status_snapshot.py` and the user-facing reference at
+`docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md`.
+
+WP36 is a local-tooling implementation WP. It adds no command runner, no
+network calls, no Hermes installation, no agent runtime, no scheduler, no
+daemon, no credentials, no provider SDK, no strategy signal, no trade proposal,
+no paper trading, no live trading, no execution, no risk, no database, no
+dashboard, no dependency file, and no lock file.
+
+WP35-D001 is resolved for the tested local/offline/read-only stdlib helper
+scope. The helper reads only allowlisted repo-truth files, runs no commands,
+makes no network calls, writes no file by default, and includes mandatory
+advisory-only and repo-truth-verification reminders.
+
+WP28-D001 remains OPEN because command-output compression helper tooling is
+not yet implemented. The memory/status snapshot helper narrows WP28-D001 but
+does not resolve it.
+
+WP30-D001 remains OPEN because broader command-output compression tooling is
+still not implemented.
+
+WP32-D001 remains OPEN because runner mode remains forbidden/unimplemented.
+
+WP34-D001 remains OPEN because persistent snapshot/index file mode is not
+implemented for the blast-radius helper.
+
+WP36-D001 is added because Markdown snapshot output is not implemented.
+WP36-D002 is added because input file hashes are not implemented.
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP35-D001 | Memory/status snapshot helper implementation not started | RESOLVED (WP36) | P3 | WP35 defines the design for a future local/offline/read-only memory/status snapshot helper but does not implement it. | WP36 implements the helper per WP35 design constraints with full pytest and advisory-only guards. | Resolved for local/offline/read-only stdlib helper scope only. |
+| WP36-D001 | Markdown snapshot output deferred | OPEN | P4 | WP36 implements text and JSON output only. `--format markdown` exits 2. Markdown output is out of scope for WP36. | Future approved WP explicitly scopes and implements Markdown output. | Not expected in near term. |
+| WP36-D002 | Input file hashes deferred | OPEN | P4 | WP36 staleness metadata includes commit SHA, branch, timestamp, schema, and source file list, but not file-level hashes. | Future approved WP implements per-file hash staleness check. | Not expected in near term. |
+
+WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION — not changed by WP36.
+WP27-D001 remains OPEN — not changed by WP36. WP20-D003, WP8-D002, WP16-D002,
+WP17-D001, and WP17-D002 remain OPEN and unchanged.
+
+WP3-D001 (gitleaks): rerun/assessed in WP36. WP3-D002 (semgrep):
 READY_FOR_WP; semgrep availability must be honestly reported by validation.
 WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
 availability must be honestly reported by validation.
