@@ -1,5 +1,41 @@
 # Review Checklist
 
+## WP36 Memory / Status Snapshot Helper Implementation
+
+- Helper exists under `tools/git/status_snapshot.py`?
+- Helper is standard-library only (no subprocess import, no requests/httpx/aiohttp/socket/openai/anthropic/langchain/hermes imports)?
+- Helper is local/offline/read-only (no network calls, no command execution, no file mutation by default)?
+- Helper does not import subprocess or call os.system?
+- Helper reads only allowlisted safe repo-truth files?
+- Helper does not read prohibited input sources (`.env`, credential files, `local_data/`, `src/`, arbitrary paths)?
+- No CLI flag reads arbitrary input files?
+- Helper implements text output (`--format text`)?
+- Helper implements JSON output (`--format json`) with sorted keys, indent 2, UTF-8, trailing newline?
+- `--format markdown` exits 2?
+- Default behavior writes no file?
+- Optional `--output` restricted to repo-relative `local_data/status_snapshots/`?
+- Absolute and traversal output paths rejected with exit 2?
+- `--check-stale` implemented and restricted to `local_data/status_snapshots/`?
+- `--fail-on-stale` exits 1 when stale?
+- Sensitive content (API_KEY, PRIVATE_KEY, CLOB_SECRET, CLOB_PASS_PHRASE, MNEMONIC, TOKEN, Bearer, PEM blocks) detected and redacted?
+- `--fail-on-sensitive-hit` exits 1 when sensitive content detected?
+- Snapshot includes advisory-only note, repo-truth verification reminder, and validation/human-review reminder?
+- Helper does not replace repo truth or validation?
+- Helper extracts current phase and key repo status from `docs/project_status.md`?
+- Exit 0 for success, 1 for stale/sensitive-hit strict flag, 2 for usage/config error?
+- `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md` exists and is indexed in `docs/repo_truth_index.md`?
+- `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER_DESIGN.md` updated with WP36 implementation decision section?
+- `docs/repo_truth_index.md` numbering is unique and sequential?
+- `docs/deferred_items_log.md`, `docs/project_status.md`, `docs/review_checklist.md`, and `docs/testing_requirements.md` are updated?
+- WP35-D001 resolved; WP28-D001, WP30-D001, WP32-D001, WP34-D001 remain OPEN; WP36-D001 and WP36-D002 added?
+- 100+ focused tests pass in `tests/tools/git/test_status_snapshot.py`?
+- Full pytest passes after final commit?
+- No runtime source under `src/` added or modified?
+- No dependency or lock files changed?
+- No Hermes/LLM/provider/network/credential behavior added?
+- No strategy/trading/execution behavior added?
+- No generated artifacts committed?
+
 ## WP35 Memory / Status Snapshot Helper Design
 
 - Design doc `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER_DESIGN.md` exists and is indexed in `docs/repo_truth_index.md`?

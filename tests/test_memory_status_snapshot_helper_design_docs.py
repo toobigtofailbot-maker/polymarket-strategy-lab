@@ -516,20 +516,22 @@ class TestCrossReferenceDocs:
 
 
 class TestNoImplementationPaths:
-    """No implementation files may exist."""
+    """WP35 was design-only; WP36 added the implementation.
 
-    def test_no_status_snapshot_py(self):
-        assert not (REPO_ROOT / "tools/git/status_snapshot.py").exists(), \
-            "tools/git/status_snapshot.py must not exist in WP35"
+    The implementation helper (tools/git/status_snapshot.py) and user-facing
+    reference (docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md) now exist.
+    Tests below are updated to reflect the WP36 implementation state while
+    preserving all other design-doc integrity checks.
+    """
+
+    def test_status_snapshot_py_is_present_in_wp36(self):
+        # WP36 implemented tools/git/status_snapshot.py — it must now exist.
+        assert (REPO_ROOT / "tools/git/status_snapshot.py").exists(), \
+            "tools/git/status_snapshot.py must exist after WP36 implementation"
 
     def test_no_memory_snapshot_py(self):
         assert not (REPO_ROOT / "tools/git/memory_snapshot.py").exists(), \
-            "tools/git/memory_snapshot.py must not exist in WP35"
-
-    def test_no_tools_status_snapshot_glob(self):
-        matches = list((REPO_ROOT / "tools").glob("status_snapshot*")) if \
-            (REPO_ROOT / "tools").exists() else []
-        assert len(matches) == 0, f"Unexpected status_snapshot files in tools/: {matches}"
+            "tools/git/memory_snapshot.py must not exist"
 
     def test_no_tools_memory_snapshot_glob(self):
         matches = list((REPO_ROOT / "tools").glob("memory_snapshot*")) if \
@@ -537,14 +539,20 @@ class TestNoImplementationPaths:
         assert len(matches) == 0, f"Unexpected memory_snapshot files in tools/: {matches}"
 
     def test_no_local_data_status_snapshots_tracked(self):
-        snapshots_dir = REPO_ROOT / "local_data/status_snapshots"
-        if snapshots_dir.exists():
-            assert False, \
-                "local_data/status_snapshots/ must not be a tracked path"
-        # If it does not exist, that is the expected state.
+        # local_data/ is git-ignored; snapshots must not be tracked
+        # Directory may exist from optional smoke tests but must not be committed
+        import subprocess
+        result = subprocess.run(
+            ["git", "ls-files", "local_data/status_snapshots"],
+            capture_output=True, text=True, cwd=str(REPO_ROOT),
+        )
+        # git ls-files returns empty if the path is untracked (git-ignored)
+        assert result.stdout.strip() == "", \
+            f"local_data/status_snapshots/ must not contain tracked files: {result.stdout}"
 
-    def test_no_memory_status_snapshot_helper_md(self):
-        assert not (REPO_ROOT / "docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md").exists(), \
+    def test_memory_status_snapshot_helper_md_is_present_in_wp36(self):
+        # WP36 added docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md
+        assert (REPO_ROOT / "docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md").exists(), \
             "docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md must not exist in WP35"
 
     def test_no_src_agents(self):

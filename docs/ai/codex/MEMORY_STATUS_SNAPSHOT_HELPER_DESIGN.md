@@ -391,3 +391,49 @@ A future implementation WP must include tests covering at minimum:
 
 No follow-on WP is authorized by this design document. Authorization requires
 a separate explicit work package instruction.
+
+## 19. WP36 Implementation Decision
+
+WP36 implemented the local/offline/read-only helper at `tools/git/status_snapshot.py`.
+The implementation is advisory only. It does not replace repo truth, validation,
+security checks, or human review.
+
+Resolved design choices from Section 17:
+
+1. **Output formats**: text and JSON only. `--format markdown` is not implemented
+   and exits 2. Markdown output remains deferred.
+
+2. **Staleness metadata**: commit SHA, branch, generated timestamp, schema version,
+   and input file list. Input file hashes deferred (not implemented in WP36).
+   Git metadata is read from local `.git/HEAD` and referenced files only.
+   No git commands are executed. Worktrees are handled by following the `gitdir:`
+   pointer in the `.git` file.
+
+3. **Staleness check**: `--check-stale` implemented. Compares saved snapshot
+   commit/branch/schema/timestamp to current local repo metadata.
+   `--fail-on-stale` exits 1 if stale; otherwise stale is reported and exit
+   remains 0 if the check completed.
+
+4. **Deferred item digest**: implemented with cap of 20 by default.
+   `--max-deferred-items` controls the cap and rejects values below 1 with exit 2.
+
+5. **Security tool status**: repo-truth-derived status wording only.
+   Security checks still need to run separately.
+
+6. **Snapshot files**: default is no file generated (stdout only).
+   Optional output under `local_data/status_snapshots/` via `--output`.
+   `.local.json` naming is recommended in docs but not enforced in code.
+
+7. **Safe input allowlist**: only the allowlisted repo-truth files listed in
+   Section 8 are read. No arbitrary input flag exists.
+
+8. **Sensitive redaction**: implemented for `API_KEY`, `PRIVATE_KEY`,
+   `CLOB_SECRET`, `CLOB_PASS_PHRASE`, `MNEMONIC`, `TOKEN`, long Bearer tokens,
+   and PEM private-key blocks. Bearer redaction requires ≥ 20 chars to avoid
+   false positives on the English word "token".
+
+9. **Snapshot remains advisory only**: snapshot output is never repo truth.
+   All output includes advisory-only note, repo-truth verification reminder,
+   and validation/human-review reminder.
+
+User-facing reference: `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md`.
