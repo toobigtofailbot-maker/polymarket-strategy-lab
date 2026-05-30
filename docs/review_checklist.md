@@ -1,5 +1,26 @@
 # Review Checklist
 
+## WP37 Token Efficiency Sequence Closeout / Repo Truth Consolidation
+
+- Closeout doc `docs/ai/codex/TOKEN_EFFICIENCY_SEQUENCE_CLOSEOUT.md` exists?
+- Closeout doc is indexed in `docs/repo_truth_index.md`?
+- Closeout doc covers WP28-WP36 sequence summary?
+- Helper inventory covers diff/scope, validation-output, code blast-radius, and status snapshot helpers?
+- Helper inventory lists tool, doc, test, purpose, and advisory limit for each helper?
+- Closeout doc preserves advisory-only limits?
+- Closeout doc says helpers do not replace repo truth, tests, security checks, direct file inspection, final PR comments, or merge-ready decisions?
+- Protected boundaries are unchanged?
+- Deferred helper items remain accurately open: WP30-D001, WP32-D001, WP34-D001, WP36-D001, WP36-D002?
+- WP28-D001 is narrowed carefully and not fully resolved unless broader command-output compression is implemented?
+- Next-WP gate is explicit?
+- Next intended WP does not jump to database, dashboard, strategy, paper trading, live trading, official-client runtime integration, scheduler, wallet/copy-trading, production polling, Hermes install, or agent runtime?
+- No helper/tool/source/runtime/dependency/lock changes?
+- No generated outputs committed?
+- Focused closeout doc tests pass?
+- Full pytest passes after final commit?
+- Security checks are honestly reported with unavailable tools marked unavailable/skipped, not passed?
+- Final PR comment is posted before review request?
+
 ## WP36 Memory / Status Snapshot Helper Implementation
 
 - Helper exists under `tools/git/status_snapshot.py`?

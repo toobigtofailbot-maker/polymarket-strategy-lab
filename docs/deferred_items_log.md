@@ -61,7 +61,8 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP21-D001 | Local agent context exporter not implemented | RESOLVED | P3 | WP23 implements and tests a local/offline/read-only context exporter using allowlisted repo-truth docs and optional allowlisted local report metadata only. It adds no scheduler, runtime, network polling, Hermes dependency, credentials, execution authority, or generated committed context package. | Any actual local agent context export generation. | Resolved for WP23 local/offline/read-only exporter scope only. |
 | WP21-D002 | Agent context report generator not implemented | RESOLVED | P3 | WP25 implements and tests a deterministic local/offline/read-only report generator that reads only WP23-compatible local context exports and writes reports only under ignored `local_data/agent_context_reports/` when explicit output paths are provided. It adds no Hermes runtime dependency, LLM dependency, strategy suggestion, signal, or execution authority. | Any agent report generation or analyst report handoff. | Resolved for WP25 deterministic local/offline/read-only report-generator scope only; future runtime or Hermes consumption remains separate. |
 | WP25-D001 | Analyst report operator runbook not implemented | RESOLVED | P3 | WP26 adds and tests `docs/agent_context_report_operator_runbook.md` for repeatable human operation of deterministic local/offline/read-only report generation. | Routine operator use of local analyst report generation. | Resolved for WP26 local/offline/read-only operator runbook scope only; future Hermes, AI runtime, or advisory consumption remains separate. |
-| WP28-D001 | Token-efficiency helper tooling not implemented | OPEN | P3 | WP28 locks operating-model discipline for future helper tools but does not implement any helper. Design-first WPs required before implementation. | Any implementation of command-output compression, diff/scope summary, code indexing, or memory snapshot helper. | Future approved design WP defines the helper, scope, stdlib-only constraints, and safety gates; implementation WP follows after design approval. |
+| WP28-D001 | Token-efficiency helper tooling not fully closed | OPEN | P3 | WP30, WP32, WP34, and WP36 implemented the approved local/offline/read-only helper stack for diff/scope, validation-output, code blast-radius, and status snapshot use. WP37 consolidates the sequence but broader command-output compression remains unimplemented. | Any implementation of broader command-output compression helper tooling or any expansion beyond the implemented advisory helper stack. | Future approved design/implementation WP explicitly scopes broader command-output compression or repo truth declares the item superseded. |
+| WP37-D001 | Advisory/product work not resumed after token-efficiency closeout | OPEN | P3 | WP37 is docs/test-only closeout and does not resume advisory-agent, Hermes, product, runtime, database, dashboard, scheduler, polling, strategy, paper-trading, live-trading, wallet/copy-trading, or official-client runtime work. | Any future advisory/product/runtime continuation. | User explicitly selects the next WP after WP37 merge and repo truth is updated through that approved WP. |
 | WP3-D008 | Archived old Polymarket V1 clients unresolved placeholder | DEFERRED | P3 | WP2 blocked the placeholder because no concrete repo URL exists. | Any legacy-client research. | Add exact repo URLs or explicitly drop legacy clients from scope. |
 | WP3-D009 | Deployment jurisdiction / geoblocking decision | DEFERRED | P1 before live trading | Deployment location affects compliance and order placement. | Live execution. | Document deployment jurisdiction and compliance decision. |
 | WP3-D010 | Incident response document not yet created | DEFERRED | P2 | WP1 marked it as needed before live. | Live execution. | Create and review `docs/incident_response.md`. |
@@ -581,6 +582,58 @@ WP27-D001 remains OPEN — not changed by WP36. WP20-D003, WP8-D002, WP16-D002,
 WP17-D001, and WP17-D002 remain OPEN and unchanged.
 
 WP3-D001 (gitleaks): rerun/assessed in WP36. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
+## WP37 Token Efficiency Sequence Closeout / Repo Truth Consolidation Update
+
+WP37 adds `docs/ai/codex/TOKEN_EFFICIENCY_SEQUENCE_CLOSEOUT.md`,
+`tests/test_token_efficiency_sequence_closeout_docs.py`, and narrow repo-truth
+updates that consolidate the WP28-WP36 token-efficiency sequence.
+
+WP37 is docs/test-only closeout. It adds no helper implementation, no changes to
+`tools/git/diff_scope_summary.py`, `tools/validation/validation_output_summary.py`,
+`tools/git/code_blast_radius.py`, or `tools/git/status_snapshot.py`, no runtime
+source, no dependency or lock-file change, no generated output, no command
+runner, no network behavior, no Hermes installation, no agent runtime, no
+scheduler, no database/dashboard work, no credentials, no provider SDK, no
+strategy signal, no trade proposal, no paper trading, no live trading, no
+execution, no risk, no OMS, and no reconciliation.
+
+WP28-D001 remains OPEN but is narrowed to broader command-output compression
+helper tooling. The implemented helper stack now covers diff/scope,
+validation-output summarization, code blast-radius, and memory/status snapshot
+orientation, but broader command-output compression is still not implemented.
+
+WP30-D001 remains OPEN because broader command-output compression tooling is
+still not implemented.
+
+WP32-D001 remains OPEN because validation-output runner mode remains
+forbidden/unimplemented.
+
+WP34-D001 remains OPEN because persistent code-index snapshot/index mode is not
+implemented.
+
+WP36-D001 remains OPEN because Markdown snapshot output remains deferred.
+WP36-D002 remains OPEN because input file hashes for status snapshots remain
+deferred.
+
+WP37-D001 is added because WP37 does not resume advisory/product/runtime work.
+Any Local Advisory Handoff Package, Hermes, advisory-agent, database, dashboard,
+scheduler, polling, strategy, paper-trading, live-trading, wallet/copy-trading,
+or official-client runtime continuation requires an explicit user-selected
+future WP.
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP37-D001 | Advisory/product work not resumed after token-efficiency closeout | OPEN | P3 | WP37 is docs/test-only closeout and does not resume advisory-agent, Hermes, product, runtime, database, dashboard, scheduler, polling, strategy, paper-trading, live-trading, wallet/copy-trading, or official-client runtime work. | User explicitly selects the next WP after WP37 merge and repo truth is updated through that approved WP. | Candidate: WP38 - Local Advisory Handoff Package, WP38 - Token Efficiency Closeout Follow-Up, or another explicitly approved safe repo-truth WP. |
+
+WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION — not changed by WP37.
+WP27-D001 remains OPEN — not changed by WP37. WP20-D003, WP8-D002, WP16-D002,
+WP17-D001, and WP17-D002 remain OPEN and unchanged.
+
+WP3-D001 (gitleaks): rerun/assessed in WP37. WP3-D002 (semgrep):
 READY_FOR_WP; semgrep availability must be honestly reported by validation.
 WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
 availability must be honestly reported by validation.
