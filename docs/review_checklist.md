@@ -1,5 +1,24 @@
 # Review Checklist
 
+## WP40 Local Advisory Consumer Prototype
+
+- Prototype script exists under `tools/advisory/local_advisory_consumer.py`?
+- Prototype is standard-library-only, local, offline, and read-only?
+- No network, subprocess, or command execution is added?
+- Explicit input files only?
+- Context export paths restricted to `local_data/agent_context_exports/`?
+- Analyst report paths restricted to `local_data/agent_context_reports/`?
+- Optional output restricted to `local_data/advisory_outputs/`?
+- Default behavior writes no file?
+- Text and JSON output work?
+- Outputs are advisory-only and human-review-required?
+- No executable signals, orders, position sizing, liquidation-sensitive bot parameters, or copy-trading instructions are produced?
+- Sensitive-like output is redacted?
+- `--fail-on-sensitive-hit` exits 1 when sensitive content is detected?
+- No runtime/source/dependency/lock changes?
+- No Hermes/LLM/provider/network/credential/account behavior added?
+- No generated outputs committed?
+
 ## WP39 Advisory Runtime Boundary And Consumption Design
 
 - Design doc `docs/advisory_runtime_boundary_consumption_design.md` exists and is indexed?
