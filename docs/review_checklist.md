@@ -1,5 +1,19 @@
 # Review Checklist
 
+## WP38 Local Advisory Handoff Package
+
+- Handoff doc `docs/local_advisory_handoff_package.md` exists and is indexed?
+- Approved advisory capability set is documented?
+- Forbidden capability list is documented?
+- Parameter recommendation boundary is documented?
+- Hermes/manual setup status is documented?
+- Codex-automatic vs manual/external steps are documented?
+- Next implementation sequence is documented?
+- Recommended next WP is WP39 - Advisory Runtime Boundary And Consumption Design?
+- Protected boundaries unchanged?
+- No runtime/source/tools/dependency/lock changes?
+- No generated outputs committed?
+
 ## WP37 Token Efficiency Sequence Closeout / Repo Truth Consolidation
 
 - Closeout doc `docs/ai/codex/TOKEN_EFFICIENCY_SEQUENCE_CLOSEOUT.md` exists?

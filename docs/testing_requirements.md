@@ -1,5 +1,21 @@
 # Testing Requirements
 
+## WP38 Local Advisory Handoff Package Tests
+
+- `docs/local_advisory_handoff_package.md` must exist.
+- Handoff doc must contain status phrases: `DOCS_ONLY_LOCAL_ADVISORY_HANDOFF`, `Codex and Claude Code`, `NO_RUNTIME_CHANGE`, `NO_NEW_TOOLING`, `NO_DEPENDENCY_CHANGE`, `NO_NETWORK`, `NO_VALIDATION_WEAKENING`, `NO_PROTECTED_BOUNDARY_CHANGE`, `NO_AGENT_RUNTIME`, `NO_HERMES_INSTALL_OR_RUNTIME`, and `NO_TRADING_EXECUTION`.
+- Handoff doc must reference existing advisory components and helper stack docs/tools.
+- Handoff doc must define approved advisory capabilities.
+- Handoff doc must define forbidden capabilities.
+- Handoff doc must define the parameter recommendation boundary.
+- Handoff doc must define Hermes/manual setup status.
+- Handoff doc must define what Codex can handle and what remains manual/external.
+- Handoff doc must define recommended next WPs.
+- `docs/repo_truth_index.md` must index the handoff doc.
+- Repo-truth index numeric prefixes must remain unique and sequential.
+- No implementation paths may be added for agent runtime, Hermes runtime, advisory-agent tooling, tracked `local_data/advisory_agent/`, or forbidden runtime/source/tooling paths.
+- Dependency files must not add OpenAI, Anthropic, LangChain, Hermes, py-clob-client, py_clob_client, web3, ccxt, fastapi, streamlit, plotly, sqlalchemy, chromadb, llama-index, mem0, rich, click, or typer.
+
 ## WP37 Token Efficiency Sequence Closeout Tests
 
 - `docs/ai/codex/TOKEN_EFFICIENCY_SEQUENCE_CLOSEOUT.md` must exist.
