@@ -1,5 +1,21 @@
 # Testing Requirements
 
+## WP37 Token Efficiency Sequence Closeout Tests
+
+- `docs/ai/codex/TOKEN_EFFICIENCY_SEQUENCE_CLOSEOUT.md` must exist.
+- Closeout doc must contain status fields: `DOCS_ONLY_CLOSEOUT`, `Codex and Claude Code`, `NO_RUNTIME_CHANGE`, `NO_NEW_TOOLING`, `NO_DEPENDENCY_CHANGE`, `NO_NETWORK`, `NO_VALIDATION_WEAKENING`, and `NO_PROTECTED_BOUNDARY_CHANGE`.
+- Closeout doc must contain sequence summary references for WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, and WP36.
+- Closeout doc must contain helper inventory for diff/scope, validation-output, code blast-radius, and status snapshot helpers.
+- Closeout doc must contain advisory-only limits saying helpers do not replace repo truth, tests, security checks, direct file inspection, final PR comments, or merge-ready decisions.
+- Closeout doc must contain deferred helper items: WP30-D001, WP32-D001, WP34-D001, WP36-D001, WP36-D002, broader command-output compression, runner mode, persistent snapshot/index mode, Markdown snapshot output, and input file hashes.
+- Closeout doc must contain protected-boundary reaffirmation.
+- Closeout doc must contain resumption gate and recommended next WP options.
+- `docs/repo_truth_index.md` must index the closeout doc.
+- Repo-truth index numeric prefixes must remain unique and sequential.
+- `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md`, `docs/ai/codex/README.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, `docs/review_checklist.md`, and `docs/testing_requirements.md` must reference the closeout scope accurately.
+- No implementation paths may be added: no `tools/git/token_efficiency_closeout.py`, no `tools/token_efficiency*`, no `src/agents/`, no `src/agent_layer/`, no `tools/hermes/`, no `agent_runtime/`, no `agent_memory/`, and no tracked `local_data/token_efficiency/`.
+- Dependency files must not add forbidden dependencies: OpenAI, Anthropic, LangChain, Hermes, token-savior, code-review-graph, tree-sitter, networkx, graphviz, chromadb, llama-index, mem0, rich, click, or typer.
+
 ## WP36 Memory / Status Snapshot Helper Implementation Tests
 
 - `tools/git/status_snapshot.py` must exist and be stdlib-only.

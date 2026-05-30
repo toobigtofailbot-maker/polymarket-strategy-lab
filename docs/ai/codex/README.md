@@ -37,6 +37,11 @@ All Codex and Claude Code execution must follow the token-efficiency operating m
 - `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md` — WP31 design-only document for a future local/offline/read-only validation-output summary helper. This document does not authorize implementation; a future approved implementation WP is required.
 - `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER_DESIGN.md` — WP35 design document for the local/offline/read-only memory/status snapshot helper; WP36 added implementation decisions in Section 19.
 - `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md` — WP36 user-facing reference for the implemented local/offline/read-only memory/status snapshot helper (`tools/git/status_snapshot.py`). Advisory only. Does not replace repo truth, validation, or human review.
+- `docs/ai/codex/TOKEN_EFFICIENCY_SEQUENCE_CLOSEOUT.md` — WP37 docs-only
+  closeout for the WP28-WP36 helper sequence. It defines operational helper
+  usage order and remaining deferred items; it does not authorize product,
+  advisory-agent, Hermes, runtime, database, dashboard, scheduler, polling, or
+  trading work.
 
 Token efficiency must never weaken validation, skip required checks, or omit failure evidence from final reports.
 

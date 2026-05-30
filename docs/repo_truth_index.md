@@ -40,24 +40,25 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 34. `docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER.md` - WP34 user-facing reference for the implemented local/offline/read-only code-index / blast-radius advisory helper (`tools/git/code_blast_radius.py`).
 35. `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER_DESIGN.md` - WP35 design document for the local/offline/read-only memory/status snapshot helper; WP36 added implementation decisions in Section 19.
 36. `docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER.md` - WP36 user-facing reference for the implemented local/offline/read-only memory/status snapshot helper (`tools/git/status_snapshot.py`).
-37. `docs/architecture_principles.md` - platform architecture principles.
-38. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
-39. `docs/runtime_boundaries.md` - protected runtime boundary rules.
-40. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
-41. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
-42. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
-43. `docs/security_tooling_status.md` - current security-tool availability and scan status.
-44. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
-45. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
-46. `docs/data_semantics.md` - shared data definitions.
-47. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
-48. `docs/risk_semantics.md` - risk definitions and initial posture.
-49. `docs/live_trading_authorization.md` - live trading gate and authorization table.
-50. `docs/security_and_secrets.md` - credential and incident rules.
-51. `docs/codex_execution_guidelines.md` - work-package execution process.
-52. `docs/work_package_template.md` - reusable WP template.
-53. `docs/review_checklist.md` - review readiness checklist.
-54. `docs/testing_requirements.md` - current and future test requirements.
+37. `docs/ai/codex/TOKEN_EFFICIENCY_SEQUENCE_CLOSEOUT.md` - WP37 docs-only closeout for the WP28-WP36 token-efficiency helper sequence; defines advisory helper usage order, deferred helper gaps, protected-boundary reaffirmation, and the next-WP resumption gate.
+38. `docs/architecture_principles.md` - platform architecture principles.
+39. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
+40. `docs/runtime_boundaries.md` - protected runtime boundary rules.
+41. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
+42. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
+43. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
+44. `docs/security_tooling_status.md` - current security-tool availability and scan status.
+45. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
+46. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
+47. `docs/data_semantics.md` - shared data definitions.
+48. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
+49. `docs/risk_semantics.md` - risk definitions and initial posture.
+50. `docs/live_trading_authorization.md` - live trading gate and authorization table.
+51. `docs/security_and_secrets.md` - credential and incident rules.
+52. `docs/codex_execution_guidelines.md` - work-package execution process.
+53. `docs/work_package_template.md` - reusable WP template.
+54. `docs/review_checklist.md` - review readiness checklist.
+55. `docs/testing_requirements.md` - current and future test requirements.
 
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
