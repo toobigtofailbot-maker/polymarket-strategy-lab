@@ -63,8 +63,10 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP25-D001 | Analyst report operator runbook not implemented | RESOLVED | P3 | WP26 adds and tests `docs/agent_context_report_operator_runbook.md` for repeatable human operation of deterministic local/offline/read-only report generation. | Routine operator use of local analyst report generation. | Resolved for WP26 local/offline/read-only operator runbook scope only; future Hermes, AI runtime, or advisory consumption remains separate. |
 | WP28-D001 | Token-efficiency helper tooling not fully closed | OPEN | P3 | WP30, WP32, WP34, and WP36 implemented the approved local/offline/read-only helper stack for diff/scope, validation-output, code blast-radius, and status snapshot use. WP37 consolidates the sequence but broader command-output compression remains unimplemented. | Any implementation of broader command-output compression helper tooling or any expansion beyond the implemented advisory helper stack. | Future approved design/implementation WP explicitly scopes broader command-output compression or repo truth declares the item superseded. |
 | WP37-D001 | Advisory/product work not resumed after token-efficiency closeout | RESOLVED (WP38 docs-only handoff selection) | P3 | WP37 is docs/test-only closeout and did not resume advisory-agent, Hermes, product, runtime, database, dashboard, scheduler, polling, strategy, paper-trading, live-trading, wallet/copy-trading, or official-client runtime work. | Runtime/product implementation remains future-only. | Resolved only for selecting and documenting the local advisory handoff path in WP38; no runtime/product work is implemented or authorized. |
-| WP38-D001 | Advisory runtime boundary and consumption design not implemented | OPEN | P3 | WP38 is docs/test-only handoff and does not design a future advisory consumer boundary in detail. | Any advisory consumer implementation or runtime-adjacent consumption design. | Future approved WP39 designs how advisory consumers may read existing local exports/reports without runtime, LLM, Hermes, network, account, or trading execution. |
+| WP38-D001 | Advisory runtime boundary and consumption design not implemented | RESOLVED (WP39 docs-only design completion) | P3 | WP38 is docs/test-only handoff and does not design a future advisory consumer boundary in detail. WP39 adds the docs-only advisory runtime boundary and consumption design. | Any advisory consumer implementation or runtime-adjacent consumption design. | Resolved only for design completion. No advisory consumer, runtime, LLM, Hermes, network, account, or trading implementation is authorized. |
 | WP38-D002 | Local advisory consumer prototype not implemented | OPEN | P3 | WP38 does not implement a local advisory consumer prototype. | Any local advisory consumer prototype. | Future approved WP implements an optional local/offline/read-only deterministic consumer with no LLM, network, Hermes, account, trading, scheduler, database, dashboard, or runtime behavior. |
+| WP39-D001 | Local advisory consumer prototype not implemented after boundary design | OPEN | P3 | WP39 defines the advisory runtime boundary and consumption design only. It does not implement the consumer. | Any local advisory consumer prototype. | Future approved WP40 implements a local/offline/read-only deterministic advisory consumer prototype within the WP39 boundary. |
+| WP39-D002 | Advisory prompt/runbook package not implemented | OPEN | P3 | WP39 does not create advisory prompt templates or an operator runbook package for human advisory review. | Any advisory prompt/runbook package. | Future approved WP creates docs/tests for an advisory prompt/runbook package without runtime, LLM/Hermes authorization, credentials, account access, or trading authority. |
 | WP3-D008 | Archived old Polymarket V1 clients unresolved placeholder | DEFERRED | P3 | WP2 blocked the placeholder because no concrete repo URL exists. | Any legacy-client research. | Add exact repo URLs or explicitly drop legacy clients from scope. |
 | WP3-D009 | Deployment jurisdiction / geoblocking decision | DEFERRED | P1 before live trading | Deployment location affects compliance and order placement. | Live execution. | Document deployment jurisdiction and compliance decision. |
 | WP3-D010 | Incident response document not yet created | DEFERRED | P2 | WP1 marked it as needed before live. | Live execution. | Create and review `docs/incident_response.md`. |
@@ -669,10 +671,52 @@ WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain OPEN and unchanged.
 | Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
 |---|---|---|---|---|---|---|
 | WP37-D001 | Advisory/product work not resumed after token-efficiency closeout | RESOLVED (WP38 docs-only handoff selection) | P3 | WP37 did not resume advisory/product/runtime work. WP38 selects and documents the safe local advisory handoff path only. | No runtime/product implementation is authorized by this resolution. | Resolved only for docs-only handoff selection; future runtime/product work requires separate approved WPs. |
-| WP38-D001 | Advisory runtime boundary and consumption design not implemented | OPEN | P3 | WP38 records the handoff path but does not design a consumer boundary in detail. | Future approved WP39 designs how advisory consumers may read existing local exports/reports without runtime, LLM, Hermes, network, account, or trading execution. | Recommended next WP: WP39 - Advisory Runtime Boundary And Consumption Design. |
+| WP38-D001 | Advisory runtime boundary and consumption design not implemented | RESOLVED (WP39 docs-only design completion) | P3 | WP38 records the handoff path but does not design a consumer boundary in detail. WP39 adds the docs-only advisory runtime boundary and consumption design. | No implementation authority is authorized by this resolution. | Resolved only for design completion; future consumer implementation requires a separate approved WP. |
 | WP38-D002 | Local advisory consumer prototype not implemented | OPEN | P3 | WP38 does not implement a local advisory consumer prototype. | Future approved WP implements an optional local/offline/read-only deterministic consumer with no LLM, network, Hermes, account, trading, scheduler, database, dashboard, or runtime behavior. | Candidate later WP: WP40 - Local Advisory Consumer Prototype. |
 
 WP3-D001 (gitleaks): rerun/assessed in WP38. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
+## WP39 Advisory Runtime Boundary And Consumption Design Update
+
+WP39 adds `docs/advisory_runtime_boundary_consumption_design.md`,
+`tests/test_advisory_runtime_boundary_consumption_design_docs.py`, and narrow
+repo-truth updates defining the future advisory consumer boundary and local
+advisory consumption model.
+
+WP39 is docs/test-only design work. It adds no advisory consumer
+implementation, agent runtime, Hermes runtime or installation, LLM/provider SDK,
+credentials, network polling, paper trading, live trading, order placement or
+cancellation, signing, account connection, scheduler/daemon/bot loop, database,
+dashboard, deployment, runtime source, helper/tool implementation, dependency
+file, lock file, or generated output.
+
+WP38-D001 is RESOLVED only for docs-only design completion. It is not resolved
+for advisory consumer implementation or runtime/product implementation.
+
+WP38-D002 remains OPEN because a local advisory consumer prototype is not
+implemented in WP39.
+
+WP39-D001 is added because the local advisory consumer prototype is not
+implemented after boundary design.
+
+WP39-D002 is added because the advisory prompt/runbook package is not
+implemented.
+
+WP28-D001, WP30-D001, WP32-D001, WP34-D001, WP36-D001, and WP36-D002 remain
+OPEN. WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION. WP27-D001, WP20-D003,
+WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain OPEN and unchanged.
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP38-D001 | Advisory runtime boundary and consumption design not implemented | RESOLVED (WP39 docs-only design completion) | P3 | WP38 recorded the handoff path but did not design a consumer boundary in detail. WP39 defines it in repo truth. | No implementation authority is authorized by this resolution. | Resolved only for docs-only design completion. |
+| WP38-D002 | Local advisory consumer prototype not implemented | OPEN | P3 | WP39 defines the boundary but does not implement a prototype. | Future approved WP implements an optional local/offline/read-only deterministic consumer with no LLM, network, Hermes, account, trading, scheduler, database, dashboard, or runtime behavior. | Candidate next WP: WP40 - Local Advisory Consumer Prototype. |
+| WP39-D001 | Local advisory consumer prototype not implemented after boundary design | OPEN | P3 | WP39 is design-only and does not implement the consumer. | Future approved WP40 implements a local/offline/read-only deterministic advisory consumer prototype within the WP39 boundary. | Candidate next WP: WP40 - Local Advisory Consumer Prototype. |
+| WP39-D002 | Advisory prompt/runbook package not implemented | OPEN | P3 | WP39 does not create advisory prompts or operator runbooks. | Future approved WP creates docs/tests for advisory prompts/runbooks without runtime, LLM/Hermes authorization, credentials, account access, or trading authority. | Candidate later WP: WP41 - Advisory Prompt/Runbook Package. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP39. WP3-D002 (semgrep):
 READY_FOR_WP; semgrep availability must be honestly reported by validation.
 WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
 availability must be honestly reported by validation.

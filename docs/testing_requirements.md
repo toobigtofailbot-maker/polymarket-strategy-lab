@@ -1,5 +1,25 @@
 # Testing Requirements
 
+## WP39 Advisory Runtime Boundary And Consumption Design Tests
+
+- `docs/advisory_runtime_boundary_consumption_design.md` must exist.
+- Design doc must contain status phrases: `DOCS_ONLY_ADVISORY_RUNTIME_BOUNDARY_DESIGN`, `Codex and Claude Code`, `NO_RUNTIME_CHANGE`, `NO_NEW_TOOLING`, `NO_DEPENDENCY_CHANGE`, `NO_NETWORK`, `NO_VALIDATION_WEAKENING`, `NO_PROTECTED_BOUNDARY_CHANGE`, `NO_AGENT_RUNTIME`, `NO_HERMES_INSTALL_OR_RUNTIME`, `NO_LLM_PROVIDER_RUNTIME`, and `NO_TRADING_EXECUTION`.
+- Design doc must reference existing advisory components and helper stack docs/tools.
+- Design doc must define advisory consumer boundary.
+- Design doc must define allowed input sources.
+- Design doc must define forbidden input sources.
+- Design doc must define allowed output types.
+- Design doc must define forbidden output types.
+- Design doc must define deterministic local advisory model.
+- Design doc must define LLM/Hermes separation.
+- Design doc must define security/sanitization requirements.
+- Design doc must define human review/advisory framing.
+- Design doc must define future WP40 prototype requirements.
+- `docs/repo_truth_index.md` must index the design doc.
+- Repo-truth index numeric prefixes must remain unique and sequential.
+- No implementation paths may be added for agent runtime, Hermes runtime, advisory-agent tooling, advisory consumer tooling, tracked `local_data/advisory_agent/`, tracked `local_data/advisory_outputs/`, or forbidden runtime/source/tooling paths.
+- Dependency files must not add OpenAI, Anthropic, LangChain, Hermes, py-clob-client, py_clob_client, web3, ccxt, fastapi, streamlit, plotly, sqlalchemy, chromadb, llama-index, mem0, rich, click, or typer.
+
 ## WP38 Local Advisory Handoff Package Tests
 
 - `docs/local_advisory_handoff_package.md` must exist.
