@@ -1,5 +1,20 @@
 # Review Checklist
 
+## WP39 Advisory Runtime Boundary And Consumption Design
+
+- Design doc `docs/advisory_runtime_boundary_consumption_design.md` exists and is indexed?
+- Advisory consumer boundary is defined?
+- Allowed input sources are documented?
+- Forbidden input sources are documented?
+- Allowed output types are documented?
+- Forbidden output types are documented?
+- Deterministic local advisory model is documented?
+- LLM/Hermes separation is documented?
+- Future WP40 prototype requirements are documented?
+- Protected boundaries unchanged?
+- No runtime/source/tools/dependency/lock changes?
+- No generated outputs committed?
+
 ## WP38 Local Advisory Handoff Package
 
 - Handoff doc `docs/local_advisory_handoff_package.md` exists and is indexed?
