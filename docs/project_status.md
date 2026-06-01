@@ -1,9 +1,9 @@
 # Project Status
 
-- Current phase: WP40 - Local Advisory Consumer Prototype
-- Repo state: Local advisory consumer prototype on branch
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39
-- Current branch: `wp40-local-advisory-consumer-prototype`
+- Current phase: WP41 - Advisory Prompt/Runbook Package
+- Repo state: Advisory prompt/runbook package on branch
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40
+- Current branch: `wp41-advisory-prompt-runbook-package`
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; MANUAL_EXPLICIT_NETWORK_POLLING_RUNNER_DEV_ONLY; MANUAL_GUARD_ENFORCED_SNAPSHOT_CAPTURE_DEV_ONLY
 - Runtime dependency integration status: NOT_STARTED_FOR_NEW_RUNTIME_DEPENDENCIES
 - Official client runtime dependency status: NOT_STARTED_FOR_OFFICIAL_CLIENT_RUNTIME
@@ -31,7 +31,8 @@
 - Token-efficiency sequence closeout status: DOCS_ONLY_CLOSEOUT_MERGED
 - Local advisory handoff package status: DOCS_ONLY_LOCAL_ADVISORY_HANDOFF_MERGED
 - Advisory runtime boundary and consumption design status: DOCS_ONLY_ADVISORY_RUNTIME_BOUNDARY_DESIGN_MERGED
-- Local advisory consumer prototype status: LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER_ON_BRANCH
+- Local advisory consumer prototype status: LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER_MERGED
+- Advisory prompt/runbook package status: DOCS_ONLY_ADVISORY_PROMPT_RUNBOOK_ON_BRANCH
 - Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
 - Agent execution authority: FORBIDDEN
@@ -45,17 +46,20 @@
 - Reporting status: LOCAL_REPORTS_ONLY
 - Export status: LOCAL_EXPORTS_ONLY
 - External repo audit status: WP2 COMPLETE - 14 concrete repositories audited; 1 non-specific legacy placeholder marked BLOCKED_OR_UNAVAILABLE
-- Architecture status: WP3 documentation-only skeleton merged; WP8 adds approved read-only data-layer source under src/data_layer/polymarket/; WP9 adds contract probe tooling and validates three of four endpoint candidates; WP10 adds local file-based snapshot persistence (JSONL) under src/data_layer/polymarket/ and manual capture tool under tools/polymarket/; WP11 adds offline snapshot reader, in-memory market catalog, replay helpers, and manual inspection CLI under src/data_layer/polymarket/ and tools/polymarket/; WP12 adds offline snapshot quality gates, catalog quality metrics, and local report generation under src/data_layer/polymarket/ and tools/polymarket/; WP13 adds offline snapshot deduplication and sanitized local catalog exports under src/data_layer/polymarket/ and tools/polymarket/; WP14 adds official Python client dependency decision and boundary review docs/tests only; WP15 adds official-client sandbox tooling under tools/polymarket/official_client_sandbox/ only; WP16 adds offline polling policy and local rate-limit guard only; WP17 adds a manual finite explicit-network read-only polling runner only; WP18 adds guard-enforced manual snapshot capture using WP16 policy before Gamma and optional CLOB reads; WP19 adds offline guard-aware quality/reporting for WP18 guarded capture manifests; WP20 adds policy/docs/tests only for advisory AI-agent and Hermes read-only boundaries; WP21 adds schema/docs/tests only for a future local read-only agent context export; WP22 adds persistent Codex workflow guidance, templates, checklists, and tests only; WP23 adds a local/offline/read-only agent context JSON exporter only under src/data_layer/agent_context/ and tools/polymarket/; WP24 adds the local operator runbook and doc tests for safe manual exporter use only; WP25 adds deterministic local/offline/read-only report generation from WP23-compatible exports only; WP26 adds operator runbook docs/tests only for safe manual report-generator use; WP27 adds Agent/Hermes manual setup decision record docs/tests only; WP28 adds token-efficiency operating model, concise reporting rules, and reusable WP prompt blocks docs/tests only; WP29 adds design/docs/tests only for the local/offline/read-only diff/scope summary helper; WP30 adds the local/offline/read-only stdlib helper implementation at tools/git/diff_scope_summary.py, focused tests, and user-facing helper doc; WP31 adds design/docs/tests only for a future local/offline/read-only validation-output summary helper; WP32 adds the local/offline/read-only stdlib helper implementation at tools/validation/validation_output_summary.py, focused tests, and user-facing helper doc; WP33 adds docs-only design guidance at docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md for a future advisory code-index / blast-radius helper; WP34 adds the local/offline/read-only stdlib helper implementation at tools/git/code_blast_radius.py, focused tests, and user-facing helper doc; WP35 adds design/docs/tests only for a future local/offline/read-only memory/status snapshot helper at docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER_DESIGN.md; WP36 adds the local/offline/read-only stdlib helper implementation at tools/git/status_snapshot.py, focused tests, and user-facing helper doc; WP37 adds docs/tests only to consolidate the WP28-WP36 token-efficiency sequence, helper usage order, advisory-only limits, deferred helper gaps, protected-boundary reaffirmation, and next-WP gate; WP38 adds docs/tests only to resume advisory-agent planning through a local advisory handoff package with no runtime, Hermes, LLM, credential, trading, database, dashboard, scheduler, polling, or product behavior; WP39 adds docs/tests only to define the future local advisory consumer boundary and consumption model with no runtime, Hermes, LLM, network, account, trading, database, dashboard, scheduler, polling, dependency, source, tools, or product behavior; WP40 adds a local/offline/read-only deterministic advisory consumer prototype under tools/advisory/local_advisory_consumer.py with explicit local_data inputs only, stdout by default, optional ignored advisory output, and no runtime, LLM, Hermes, network, account, trading, database, dashboard, scheduler, polling, dependency, lock-file, or src/ changes.
-- Deferred items status: WP9 marks WP8-D001 READY_FOR_WP (three endpoints confirmed, CLOB /health unconfirmed); long-running runtime/data deferred items remain unchanged unless explicitly listed later; WP38 resolves WP37-D001 only for selecting and documenting the local advisory handoff path, not for runtime/product implementation; WP39 resolves WP38-D001 only for docs-only advisory runtime boundary and consumption design completion, not for advisory consumer implementation; WP40 resolves WP38-D002 and WP39-D001 only for the deterministic local/offline/read-only advisory consumer prototype scope, not for runtime/LLM/Hermes/trading implementation; WP39-D002 remains OPEN because the advisory prompt/runbook package is not implemented; WP40 adds WP40-D001 for advisory prompt/runbook package not implemented after prototype and WP40-D002 for LLM/Hermes/provider integration not designed or implemented; WP28-D001, WP30-D001, WP32-D001, WP34-D001, WP36-D001, and WP36-D002 remain OPEN; WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION; WP27-D001, WP20-D003, WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain OPEN and unchanged; security checks are run/assessed in WP40.
+- Architecture status: WP3 documentation-only skeleton merged; WP8 adds approved read-only data-layer source under src/data_layer/polymarket/; WP9 adds contract probe tooling and validates three of four endpoint candidates; WP10 adds local file-based snapshot persistence (JSONL) under src/data_layer/polymarket/ and manual capture tool under tools/polymarket/; WP11 adds offline snapshot reader, in-memory market catalog, replay helpers, and manual inspection CLI under src/data_layer/polymarket/ and tools/polymarket/; WP12 adds offline snapshot quality gates, catalog quality metrics, and local report generation under src/data_layer/polymarket/ and tools/polymarket/; WP13 adds offline snapshot deduplication and sanitized local catalog exports under src/data_layer/polymarket/ and tools/polymarket/; WP14 adds official Python client dependency decision and boundary review docs/tests only; WP15 adds official-client sandbox tooling under tools/polymarket/official_client_sandbox/ only; WP16 adds offline polling policy and local rate-limit guard only; WP17 adds a manual finite explicit-network read-only polling runner only; WP18 adds guard-enforced manual snapshot capture using WP16 policy before Gamma and optional CLOB reads; WP19 adds offline guard-aware quality/reporting for WP18 guarded capture manifests; WP20 adds policy/docs/tests only for advisory AI-agent and Hermes read-only boundaries; WP21 adds schema/docs/tests only for a future local read-only agent context export; WP22 adds persistent Codex workflow guidance, templates, checklists, and tests only; WP23 adds a local/offline/read-only agent context JSON exporter only under src/data_layer/agent_context/ and tools/polymarket/; WP24 adds the local operator runbook and doc tests for safe manual exporter use only; WP25 adds deterministic local/offline/read-only report generation from WP23-compatible exports only; WP26 adds operator runbook docs/tests only for safe manual report-generator use; WP27 adds Agent/Hermes manual setup decision record docs/tests only; WP28 adds token-efficiency operating model, concise reporting rules, and reusable WP prompt blocks docs/tests only; WP29 adds design/docs/tests only for the local/offline/read-only diff/scope summary helper; WP30 adds the local/offline/read-only stdlib helper implementation at tools/git/diff_scope_summary.py, focused tests, and user-facing helper doc; WP31 adds design/docs/tests only for a future local/offline/read-only validation-output summary helper; WP32 adds the local/offline/read-only stdlib helper implementation at tools/validation/validation_output_summary.py, focused tests, and user-facing helper doc; WP33 adds docs-only design guidance at docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md for a future advisory code-index / blast-radius helper; WP34 adds the local/offline/read-only stdlib helper implementation at tools/git/code_blast_radius.py, focused tests, and user-facing helper doc; WP35 adds design/docs/tests only for a future local/offline/read-only memory/status snapshot helper at docs/ai/codex/MEMORY_STATUS_SNAPSHOT_HELPER_DESIGN.md; WP36 adds the local/offline/read-only stdlib helper implementation at tools/git/status_snapshot.py, focused tests, and user-facing helper doc; WP37 adds docs/tests only to consolidate the WP28-WP36 token-efficiency sequence, helper usage order, advisory-only limits, deferred helper gaps, protected-boundary reaffirmation, and next-WP gate; WP38 adds docs/tests only to resume advisory-agent planning through a local advisory handoff package with no runtime, Hermes, LLM, credential, trading, database, dashboard, scheduler, polling, or product behavior; WP39 adds docs/tests only to define the future local advisory consumer boundary and consumption model with no runtime, Hermes, LLM, network, account, trading, database, dashboard, scheduler, polling, dependency, source, tools, or product behavior; WP40 adds a local/offline/read-only deterministic advisory consumer prototype under tools/advisory/local_advisory_consumer.py with explicit local_data inputs only, stdout by default, optional ignored advisory output, and no runtime, LLM, Hermes, network, account, trading, database, dashboard, scheduler, polling, dependency, lock-file, or src/ changes; WP41 adds docs/tests only for human-operated advisory prompt/runbook templates and operator review steps with no runtime, prompt runner, LLM, Hermes, network, account, trading, database, dashboard, scheduler, polling, dependency, lock-file, tools/, or src/ changes.
+- Deferred items status: WP9 marks WP8-D001 READY_FOR_WP (three endpoints confirmed, CLOB /health unconfirmed); long-running runtime/data deferred items remain unchanged unless explicitly listed later; WP38 resolves WP37-D001 only for selecting and documenting the local advisory handoff path, not for runtime/product implementation; WP39 resolves WP38-D001 only for docs-only advisory runtime boundary and consumption design completion, not for advisory consumer implementation; WP40 resolves WP38-D002 and WP39-D001 only for the deterministic local/offline/read-only advisory consumer prototype scope, not for runtime/LLM/Hermes/trading implementation; WP41 resolves WP39-D002 and WP40-D001 only for docs-only advisory prompt/runbook package scope, not for runtime/LLM/Hermes/provider/account/trading implementation; WP40-D002 remains OPEN because LLM/Hermes/provider integration is not designed or implemented; WP41-D001 and WP41-D002 are OPEN; WP28-D001, WP30-D001, WP32-D001, WP34-D001, WP36-D001, and WP36-D002 remain OPEN; WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION; WP27-D001, WP20-D003, WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain OPEN and unchanged; security checks are run/assessed in WP41.
 - Generated artifact status: WP6 guardrails active; WP7 gitleaks binary in ignored tools/.bin/ (not committed); local_data/ is ignored and generated outputs must not be committed; WP23 agent context exports output remains under ignored local_data/agent_context_exports/; WP25 agent context report output remains under ignored local_data/agent_context_reports/; WP40 optional advisory consumer output remains under ignored local_data/advisory_outputs/ only.
-- Next intended WP: after WP40, the next intended WP is WP41 - Advisory Prompt/Runbook Package, if the WP40 prototype is accepted; or WP41 - Local Advisory Consumer Prototype Follow-Up, if gaps remain; or another explicitly approved safe repo-truth WP. Do not suggest database, dashboard, strategy runtime, paper trading, live trading, official-client runtime integration, scheduler, wallet/copy-trading, production polling, Hermes install, LLM provider runtime, or agent runtime as next WP.
+- Next intended WP: after WP41, candidate next WPs are WP42 - Advisory Prompt/Runbook Package Follow-Up, if gaps remain; WP42 - Advisory Consumer Integration Review / Operator Workflow Hardening, if the user wants to improve the local human-operated workflow without LLM/Hermes/runtime; WP42 - Provider/Hermes Decision Refresh, only if explicitly approved by the user; or another explicitly approved safe repo-truth WP. Do not suggest database, dashboard, strategy runtime, paper trading, live trading, official-client runtime integration, scheduler, wallet/copy-trading, production polling, Hermes install, LLM provider runtime, or agent runtime as next WP.
 
 ## WP40 Local Advisory Consumer Prototype Update
 
-WP40 - Local Advisory Consumer Prototype is on branch.
+WP40 - Local Advisory Consumer Prototype is merged.
 It adds `tools/advisory/local_advisory_consumer.py`,
 `docs/local_advisory_consumer_prototype.md`, and focused tests for a
 deterministic local/offline/read-only advisory consumer prototype.
+Historical WP40 branch status before merge was
+LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER_ON_BRANCH; current WP40 status is
+LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER_MERGED.
 
 The prototype consumes only explicitly provided local files under
 `local_data/agent_context_exports/` and `local_data/agent_context_reports/`.
@@ -72,12 +76,36 @@ no trading or paper trading, no database/dashboard/scheduler/polling/product
 behavior, and no generated outputs committed.
 
 WP38-D002 and WP39-D001 are resolved only for this deterministic
-local/offline/read-only advisory consumer prototype scope. WP39-D002 remains
-OPEN because the advisory prompt/runbook package is not implemented. WP40 adds
-WP40-D001 and WP40-D002 for the remaining advisory prompt/runbook and
-LLM/Hermes/provider integration gaps.
+local/offline/read-only advisory consumer prototype scope. WP39-D002 and
+WP40-D001 are resolved by WP41 only for docs-only advisory prompt/runbook
+package scope. WP40-D002 remains OPEN for the remaining LLM/Hermes/provider
+integration gap.
 
-Security checks are run/assessed in WP40.
+Security checks were run/assessed in WP40.
+
+## WP41 Advisory Prompt/Runbook Package Update
+
+WP41 - Advisory Prompt/Runbook Package is on branch.
+It adds `docs/advisory_prompt_runbook_package.md` and focused docs tests for
+human-operated advisory prompt templates and operator review steps.
+
+The package covers read-only market-state analysis, performance review from
+local reports/exports, market research question planning, strategy hypothesis
+narrative, and Codex / WP planning support. All outputs remain
+ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED.
+
+WP41 is docs/test-only. It adds no implementation, prompt runner, runtime
+source, tools implementation, dependency or lock-file changes, LLM/Hermes
+provider integration, credentials, network/account access, trading or paper
+trading, database/dashboard/scheduler/polling/product behavior, and no
+generated outputs committed.
+
+WP39-D002 and WP40-D001 are resolved only for docs-only advisory prompt/runbook
+package scope. WP40-D002 remains OPEN because LLM/Hermes/provider integration is
+not designed or implemented. WP41 adds WP41-D001 and WP41-D002 for the remaining
+advisory consumer workflow-hardening and provider/Hermes decision-refresh gaps.
+
+Security checks are run/assessed in WP41.
 
 ## WP39 Advisory Runtime Boundary And Consumption Design Update
 

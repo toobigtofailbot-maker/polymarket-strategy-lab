@@ -66,9 +66,11 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP38-D001 | Advisory runtime boundary and consumption design not implemented | RESOLVED (WP39 docs-only design completion) | P3 | WP38 is docs/test-only handoff and does not design a future advisory consumer boundary in detail. WP39 adds the docs-only advisory runtime boundary and consumption design. | Any advisory consumer implementation or runtime-adjacent consumption design. | Resolved only for design completion. No advisory consumer, runtime, LLM, Hermes, network, account, or trading implementation is authorized. |
 | WP38-D002 | Local advisory consumer prototype implemented for deterministic local/offline/read-only scope | RESOLVED (WP40 local/offline/read-only prototype) | P3 | WP40 implements `tools/advisory/local_advisory_consumer.py` as an explicit-input-only local advisory consumer prototype. | Any local advisory consumer prototype. | Resolved only for deterministic local/offline/read-only advisory consumer prototype scope; no LLM, network, Hermes, account, trading, scheduler, database, dashboard, or runtime behavior is authorized. |
 | WP39-D001 | Local advisory consumer prototype implemented after boundary design | RESOLVED (WP40 local/offline/read-only prototype) | P3 | WP40 implements a deterministic local/offline/read-only advisory consumer prototype within the WP39 boundary. | Any local advisory consumer prototype. | Resolved only for the tested local/offline/read-only prototype under `tools/advisory/local_advisory_consumer.py`; runtime, LLM, Hermes, account, trading, scheduler, database, and dashboard work remain unauthorized. |
-| WP39-D002 | Advisory prompt/runbook package not implemented | OPEN | P3 | WP39 does not create advisory prompt templates or an operator runbook package for human advisory review. | Any advisory prompt/runbook package. | Future approved WP creates docs/tests for an advisory prompt/runbook package without runtime, LLM/Hermes authorization, credentials, account access, or trading authority. |
-| WP40-D001 | Advisory prompt/runbook package not implemented after prototype | OPEN | P3 | WP40 implements the deterministic local advisory consumer prototype only; it does not create advisory prompt templates or an operator runbook package. | Any advisory prompt/runbook package. | Future approved WP creates docs/tests for advisory prompts/runbooks without runtime, LLM/Hermes authorization, credentials, account access, or trading authority. |
+| WP39-D002 | Advisory prompt/runbook package implemented for docs-only scope | RESOLVED (WP41 docs-only prompt/runbook package) | P3 | WP41 creates human-operated advisory prompt templates and an operator runbook package. | Any advisory prompt/runbook package. | Resolved only for docs-only advisory prompt/runbook package scope; no runtime, LLM/Hermes authorization, credentials, account access, trading authority, prompt runner, or implementation authority is authorized. |
+| WP40-D001 | Advisory prompt/runbook package implemented after prototype for docs-only scope | RESOLVED (WP41 docs-only prompt/runbook package) | P3 | WP41 creates advisory prompt templates and an operator runbook package after the deterministic local advisory consumer prototype. | Any advisory prompt/runbook package. | Resolved only for docs-only advisory prompt/runbook package scope; no runtime, LLM/Hermes authorization, credentials, account access, trading authority, prompt runner, or implementation authority is authorized. |
 | WP40-D002 | LLM/Hermes/provider integration not designed or implemented | OPEN | P3 | WP40 remains deterministic, local/offline/read-only, and non-LLM. It does not select or integrate Hermes, providers, credentials, network permissions, memory, or command authority. | Any LLM, Hermes, provider, runtime, network, memory, or command integration. | Future approved WP records explicit user decisions, security/dependency review, data-sharing boundaries, and repo-truth authorization before any integration work. |
+| WP41-D001 | Advisory consumer integration review / operator workflow hardening not implemented | OPEN | P3 | WP41 creates docs-only prompts/runbooks but does not harden the local human-operated workflow or integration review around the WP40 consumer. | Any advisory consumer workflow-hardening or integration review. | Future approved WP reviews and hardens the local human-operated advisory workflow without runtime, LLM/Hermes, credentials, account access, trading, database, dashboard, scheduler, or dependency changes unless separately authorized. |
+| WP41-D002 | Provider/Hermes decision refresh not performed after prompt/runbook package | OPEN | P3 | WP41 does not revisit provider, Hermes, runtime, network, memory, command, credential, or data-sharing decisions. | Any provider/Hermes decision refresh or setup path. | Future approved WP records explicit user selection and repo-truth approval before any provider/Hermes/runtime integration or setup work. |
 | WP3-D008 | Archived old Polymarket V1 clients unresolved placeholder | DEFERRED | P3 | WP2 blocked the placeholder because no concrete repo URL exists. | Any legacy-client research. | Add exact repo URLs or explicitly drop legacy clients from scope. |
 | WP3-D009 | Deployment jurisdiction / geoblocking decision | DEFERRED | P1 before live trading | Deployment location affects compliance and order placement. | Live execution. | Document deployment jurisdiction and compliance decision. |
 | WP3-D010 | Incident response document not yet created | DEFERRED | P2 | WP1 marked it as needed before live. | Live execution. | Create and review `docs/incident_response.md`. |
@@ -745,14 +747,18 @@ account, trading, scheduler, database, dashboard, or product implementation.
 WP39-D001 is RESOLVED only for the deterministic local/offline/read-only local
 advisory consumer prototype scope implemented within the WP39 boundary.
 
-WP39-D002 remains OPEN because the advisory prompt/runbook package is not
+WP39-D002 is RESOLVED only for docs-only advisory prompt/runbook package scope.
+
+WP40-D001 is RESOLVED only for docs-only advisory prompt/runbook package scope.
+
+WP40-D002 remains OPEN because LLM/Hermes/provider integration is not designed or
 implemented.
 
-WP40-D001 is added because the advisory prompt/runbook package remains
-unimplemented after the prototype.
+WP41-D001 is added because advisory consumer integration review / operator
+workflow hardening is not implemented.
 
-WP40-D002 is added because LLM/Hermes/provider integration is not designed or
-implemented.
+WP41-D002 is added because provider/Hermes decision refresh is not performed
+after the prompt/runbook package.
 
 WP28-D001, WP30-D001, WP32-D001, WP34-D001, WP36-D001, and WP36-D002 remain
 OPEN. WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION. WP27-D001,
@@ -763,11 +769,62 @@ unchanged.
 |---|---|---|---|---|---|---|
 | WP38-D002 | Local advisory consumer prototype implemented for deterministic local/offline/read-only scope | RESOLVED (WP40 local/offline/read-only prototype) | P3 | WP40 implements `tools/advisory/local_advisory_consumer.py` as an explicit-input-only local advisory consumer prototype. | No runtime/product implementation is authorized by this resolution. | Resolved only for deterministic local/offline/read-only advisory consumer prototype scope; future runtime/product work requires separate approved WPs. |
 | WP39-D001 | Local advisory consumer prototype implemented after boundary design | RESOLVED (WP40 local/offline/read-only prototype) | P3 | WP40 implements a deterministic local/offline/read-only advisory consumer prototype within the WP39 boundary. | No runtime/product implementation is authorized by this resolution. | Resolved only for the tested local/offline/read-only prototype under `tools/advisory/local_advisory_consumer.py`; runtime, LLM, Hermes, account, trading, scheduler, database, and dashboard work remain unauthorized. |
-| WP39-D002 | Advisory prompt/runbook package not implemented | OPEN | P3 | WP40 implements the prototype only and does not create advisory prompts or operator runbooks. | Future approved WP creates docs/tests for advisory prompts/runbooks without runtime, LLM/Hermes authorization, credentials, account access, or trading authority. | Candidate later WP: WP41 - Advisory Prompt/Runbook Package. |
-| WP40-D001 | Advisory prompt/runbook package not implemented after prototype | OPEN | P3 | WP40 implements the deterministic local advisory consumer prototype only. | Future approved WP creates docs/tests for advisory prompts/runbooks without runtime, LLM/Hermes authorization, credentials, account access, or trading authority. | Candidate later WP: WP41 - Advisory Prompt/Runbook Package. |
+| WP39-D002 | Advisory prompt/runbook package implemented for docs-only scope | RESOLVED (WP41 docs-only prompt/runbook package) | P3 | WP41 creates human-operated advisory prompt templates and an operator runbook package. | No implementation authority is authorized by this resolution. | Resolved only for docs-only prompt/runbook package scope. |
+| WP40-D001 | Advisory prompt/runbook package implemented after prototype for docs-only scope | RESOLVED (WP41 docs-only prompt/runbook package) | P3 | WP41 creates advisory prompt templates and an operator runbook package after the WP40 prototype. | No implementation authority is authorized by this resolution. | Resolved only for docs-only prompt/runbook package scope. |
 | WP40-D002 | LLM/Hermes/provider integration not designed or implemented | OPEN | P3 | WP40 remains deterministic, local/offline/read-only, and non-LLM. | Future approved WP records explicit user decisions, security/dependency review, data-sharing boundaries, and repo-truth authorization before any integration work. | Candidate later WP only after explicit user selection and repo-truth approval. |
+| WP41-D001 | Advisory consumer integration review / operator workflow hardening not implemented | OPEN | P3 | WP41 is docs-only prompt/runbook work and does not harden the local human-operated workflow around the WP40 consumer. | Future approved WP reviews and hardens local advisory consumer/operator workflow boundaries. | Candidate next WP: WP42 - Advisory Consumer Integration Review / Operator Workflow Hardening. |
+| WP41-D002 | Provider/Hermes decision refresh not performed after prompt/runbook package | OPEN | P3 | WP41 does not revisit provider, Hermes, runtime, network, memory, command, credential, or data-sharing decisions. | Future approved WP records explicit user decisions and repo-truth approval before any provider/Hermes/runtime integration or setup work. | Candidate later WP only after explicit user approval. |
 
 WP3-D001 (gitleaks): rerun/assessed in WP40. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
+## WP41 Advisory Prompt/Runbook Package Update
+
+WP41 adds `docs/advisory_prompt_runbook_package.md`,
+`tests/test_advisory_prompt_runbook_package_docs.py`, and narrow repo-truth
+updates for human-operated advisory prompt templates and operator review steps.
+
+WP41 is docs/test-only. It adds no implementation, prompt runner, runtime
+source, tools implementation, dependency file, lock file, generated output,
+Hermes runtime or installation, LLM/provider SDK, credentials, network polling,
+paper trading, live trading, order placement or cancellation, signing, account
+connection, scheduler/daemon/bot loop, database, dashboard, deployment, or
+product behavior.
+
+WP39-D002 is RESOLVED only for docs-only advisory prompt/runbook package scope.
+It is not resolved for runtime, LLM, Hermes, provider, credential, account,
+trading, scheduler, database, dashboard, or product implementation.
+
+WP40-D001 is RESOLVED only for docs-only advisory prompt/runbook package scope.
+It is not resolved for implementation, prompt execution, LLM/Hermes/provider
+integration, account access, trading, scheduler, database, dashboard, or product
+work.
+
+WP40-D002 remains OPEN because LLM/Hermes/provider integration is not designed
+or implemented.
+
+WP41-D001 is added because advisory consumer integration review / operator
+workflow hardening is not implemented.
+
+WP41-D002 is added because provider/Hermes decision refresh is not performed
+after the prompt/runbook package.
+
+WP28-D001, WP30-D001, WP32-D001, WP34-D001, WP36-D001, and WP36-D002 remain
+OPEN. WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION. WP27-D001,
+WP20-D003, WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain OPEN and
+unchanged.
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP39-D002 | Advisory prompt/runbook package implemented for docs-only scope | RESOLVED (WP41 docs-only prompt/runbook package) | P3 | WP41 creates human-operated advisory prompt templates and an operator runbook package. | No runtime/product implementation is authorized by this resolution. | Resolved only for docs-only prompt/runbook package scope. |
+| WP40-D001 | Advisory prompt/runbook package implemented after prototype for docs-only scope | RESOLVED (WP41 docs-only prompt/runbook package) | P3 | WP41 creates advisory prompt templates and an operator runbook package after the deterministic local advisory consumer prototype. | No runtime/product implementation is authorized by this resolution. | Resolved only for docs-only prompt/runbook package scope. |
+| WP40-D002 | LLM/Hermes/provider integration not designed or implemented | OPEN | P3 | WP41 remains docs-only and does not select or integrate Hermes, providers, credentials, network permissions, memory, or command authority. | Future approved WP records explicit user decisions, security/dependency review, data-sharing boundaries, and repo-truth authorization before any integration work. | Candidate later WP only after explicit user selection and repo-truth approval. |
+| WP41-D001 | Advisory consumer integration review / operator workflow hardening not implemented | OPEN | P3 | WP41 creates prompt/runbook docs but does not harden the local human-operated workflow around the WP40 consumer. | Future approved WP reviews and hardens the local advisory consumer/operator workflow without runtime, LLM/Hermes, credentials, account access, trading, database, dashboard, scheduler, or dependency changes unless separately authorized. | Candidate next WP: WP42 - Advisory Consumer Integration Review / Operator Workflow Hardening. |
+| WP41-D002 | Provider/Hermes decision refresh not performed after prompt/runbook package | OPEN | P3 | WP41 does not revisit provider, Hermes, runtime, network, memory, command, credential, or data-sharing decisions. | Future approved WP records explicit user decisions and repo-truth approval before any provider/Hermes/runtime integration or setup work. | Candidate later WP only after explicit user approval. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP41. WP3-D002 (semgrep):
 READY_FOR_WP; semgrep availability must be honestly reported by validation.
 WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
 availability must be honestly reported by validation.
