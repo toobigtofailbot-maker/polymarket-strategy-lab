@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-- Prototype status: LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER
+- Prototype status: LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER_PROTOTYPE
 - Script: `tools/advisory/local_advisory_consumer.py`
 - Package class: local tooling / advisory prototype
 - Runtime impact: NO_RUNTIME_CHANGE

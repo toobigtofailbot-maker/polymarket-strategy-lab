@@ -183,6 +183,25 @@ def test_json_context_export_parsing(tmp_path):
     assert "included_local_artifacts" in parsed["metadata"]
 
 
+def test_invalid_json_context_export_exits_two_without_brief(tmp_path):
+    root = _make_repo(tmp_path)
+    context_dir = root / "local_data" / "agent_context_exports"
+    context_dir.mkdir(parents=True, exist_ok=True)
+    invalid_context = context_dir / "invalid.local.json"
+    invalid_context.write_text('{"schema_version": ', encoding="utf-8")
+
+    result = _run_cli(
+        "--repo-root",
+        str(root),
+        "--context-export",
+        _rel(invalid_context, root),
+    )
+
+    assert result.returncode == 2
+    assert "context export JSON is invalid" in result.stderr
+    assert "LOCAL ADVISORY CONSUMER BRIEF" not in result.stdout
+
+
 def test_analyst_report_parsing(tmp_path):
     root = _make_repo(tmp_path)
     report = _write_report(root)
@@ -413,7 +432,7 @@ def test_wp40_docs_and_repo_truth_updates_present():
         encoding="utf-8"
     )
     for phrase in [
-        "LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER",
+        "LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER_PROTOTYPE",
         "NO_NETWORK",
         "NO_COMMAND_EXECUTION",
         "ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED",

@@ -226,17 +226,7 @@ def _extract_context_summary(
     try:
         payload = json.loads(text)
     except json.JSONDecodeError as exc:
-        return (
-            {
-                "path": rel_path,
-                "input_type": "context_export_json",
-                "parse_status": "invalid_json",
-                "truncated": truncated,
-                "metadata": {},
-                "summary_points": [],
-            },
-            [f"{rel_path}: context export JSON parse failed: {exc.msg}"],
-        )
+        raise UsageError(f"{rel_path}: context export JSON is invalid: {exc.msg}") from exc
     if not isinstance(payload, dict):
         return (
             {
