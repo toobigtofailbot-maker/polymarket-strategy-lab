@@ -69,8 +69,10 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP39-D002 | Advisory prompt/runbook package implemented for docs-only scope | RESOLVED (WP41 docs-only prompt/runbook package) | P3 | WP41 creates human-operated advisory prompt templates and an operator runbook package. | Any advisory prompt/runbook package. | Resolved only for docs-only advisory prompt/runbook package scope; no runtime, LLM/Hermes authorization, credentials, account access, trading authority, prompt runner, or implementation authority is authorized. |
 | WP40-D001 | Advisory prompt/runbook package implemented after prototype for docs-only scope | RESOLVED (WP41 docs-only prompt/runbook package) | P3 | WP41 creates advisory prompt templates and an operator runbook package after the deterministic local advisory consumer prototype. | Any advisory prompt/runbook package. | Resolved only for docs-only advisory prompt/runbook package scope; no runtime, LLM/Hermes authorization, credentials, account access, trading authority, prompt runner, or implementation authority is authorized. |
 | WP40-D002 | LLM/Hermes/provider integration not designed or implemented | OPEN | P3 | WP40 remains deterministic, local/offline/read-only, and non-LLM. It does not select or integrate Hermes, providers, credentials, network permissions, memory, or command authority. | Any LLM, Hermes, provider, runtime, network, memory, or command integration. | Future approved WP records explicit user decisions, security/dependency review, data-sharing boundaries, and repo-truth authorization before any integration work. |
-| WP41-D001 | Advisory consumer integration review / operator workflow hardening not implemented | OPEN | P3 | WP41 creates docs-only prompts/runbooks but does not harden the local human-operated workflow or integration review around the WP40 consumer. | Any advisory consumer workflow-hardening or integration review. | Future approved WP reviews and hardens the local human-operated advisory workflow without runtime, LLM/Hermes, credentials, account access, trading, database, dashboard, scheduler, or dependency changes unless separately authorized. |
+| WP41-D001 | Advisory consumer integration review / operator workflow hardening completed for docs-only scope | RESOLVED (WP42 docs-only operator workflow hardening) | P3 | WP42 documents the local human-operated advisory workflow around WP40 and WP41 with evidence, stop/reject, decision-log, and future-WP conversion rules. | No runtime/product implementation is authorized by this resolution. | Resolved only for docs-only advisory consumer integration review / operator workflow hardening scope. |
 | WP41-D002 | Provider/Hermes decision refresh not performed after prompt/runbook package | OPEN | P3 | WP41 does not revisit provider, Hermes, runtime, network, memory, command, credential, or data-sharing decisions. | Any provider/Hermes decision refresh or setup path. | Future approved WP records explicit user selection and repo-truth approval before any provider/Hermes/runtime integration or setup work. |
+| WP42-D001 | Provider/Hermes decision refresh not performed after operator workflow hardening | OPEN | P3 | WP42 is docs-only operator workflow hardening and does not revisit provider, Hermes, runtime, network, memory, command, credential, or data-sharing decisions. | Any provider/Hermes decision refresh, setup, or integration path. | Future approved WP records explicit user decisions, security/dependency review, data-sharing boundaries, and repo-truth authorization before any provider/Hermes/runtime work. |
+| WP42-D002 | No runtime or prompt runner implemented after operator workflow hardening | OPEN | P3 | WP42 intentionally adds no runtime behavior, workflow runner, prompt runner, LLM/Hermes/provider integration, scheduler, database, dashboard, polling, or trading behavior. | Any runtime, workflow runner, prompt runner, LLM/Hermes/provider integration, or protected product behavior. | Future approved WP explicitly scopes and authorizes the design first; implementation requires separate protected-boundary, security, dependency, and human-review gates. |
 | WP3-D008 | Archived old Polymarket V1 clients unresolved placeholder | DEFERRED | P3 | WP2 blocked the placeholder because no concrete repo URL exists. | Any legacy-client research. | Add exact repo URLs or explicitly drop legacy clients from scope. |
 | WP3-D009 | Deployment jurisdiction / geoblocking decision | DEFERRED | P1 before live trading | Deployment location affects compliance and order placement. | Live execution. | Document deployment jurisdiction and compliance decision. |
 | WP3-D010 | Incident response document not yet created | DEFERRED | P2 | WP1 marked it as needed before live. | Live execution. | Create and review `docs/incident_response.md`. |
@@ -825,6 +827,55 @@ unchanged.
 | WP41-D002 | Provider/Hermes decision refresh not performed after prompt/runbook package | OPEN | P3 | WP41 does not revisit provider, Hermes, runtime, network, memory, command, credential, or data-sharing decisions. | Future approved WP records explicit user decisions and repo-truth approval before any provider/Hermes/runtime integration or setup work. | Candidate later WP only after explicit user approval. |
 
 WP3-D001 (gitleaks): rerun/assessed in WP41. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
+## WP42 Advisory Consumer Operator Workflow Hardening Update
+
+WP42 adds `docs/advisory_consumer_operator_workflow.md`,
+`tests/test_advisory_consumer_operator_workflow_docs.py`, and narrow repo-truth
+updates for docs-only advisory consumer integration review / operator workflow
+hardening.
+
+WP42 is docs/test-only. It adds no implementation, workflow runner, prompt
+runner, runtime source, tools implementation, dependency file, lock file,
+generated output, Hermes runtime or installation, LLM/provider SDK, credentials,
+network polling, paper trading, live trading, order placement or cancellation,
+signing, account connection, scheduler/daemon/bot loop, database, dashboard,
+deployment, or product behavior.
+
+WP41-D001 is RESOLVED only for docs-only advisory consumer integration review /
+operator workflow hardening scope. It is not resolved for runtime, LLM, Hermes,
+provider, credential, account, trading, scheduler, database, dashboard, prompt
+runner, workflow runner, or product implementation.
+
+WP40-D002 remains OPEN because LLM/Hermes/provider integration is not designed
+or implemented.
+
+WP41-D002 remains OPEN because provider/Hermes decision refresh is not
+performed.
+
+WP42-D001 is added because provider/Hermes decision refresh is not performed
+after operator workflow hardening.
+
+WP42-D002 is added because no runtime or prompt runner is implemented after
+operator workflow hardening.
+
+WP28-D001, WP30-D001, WP32-D001, WP34-D001, WP36-D001, and WP36-D002 remain
+OPEN. WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION. WP27-D001,
+WP20-D003, WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain OPEN and
+unchanged.
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP41-D001 | Advisory consumer integration review / operator workflow hardening completed for docs-only scope | RESOLVED (WP42 docs-only operator workflow hardening) | P3 | WP42 documents the local human-operated advisory workflow around WP40 and WP41 with evidence, stop/reject, decision-log, and future-WP conversion rules. | No runtime/product implementation is authorized by this resolution. | Resolved only for docs-only advisory consumer integration review / operator workflow hardening scope. |
+| WP40-D002 | LLM/Hermes/provider integration not designed or implemented | OPEN | P3 | WP42 remains docs-only and does not select or integrate Hermes, providers, credentials, network permissions, memory, or command authority. | Future approved WP records explicit user decisions, security/dependency review, data-sharing boundaries, and repo-truth authorization before any integration work. | Candidate later WP only after explicit user selection and repo-truth approval. |
+| WP41-D002 | Provider/Hermes decision refresh not performed after prompt/runbook package | OPEN | P3 | WP42 does not revisit provider, Hermes, runtime, network, memory, command, credential, or data-sharing decisions. | Future approved WP records explicit user decisions and repo-truth approval before any provider/Hermes/runtime integration or setup work. | Candidate later WP only after explicit user approval. |
+| WP42-D001 | Provider/Hermes decision refresh not performed after operator workflow hardening | OPEN | P3 | WP42 does not perform the provider/Hermes decision refresh. | Future approved WP records explicit user decisions, security/dependency review, data-sharing boundaries, and repo-truth authorization before any provider/Hermes/runtime work. | Candidate later WP: WP43 - Provider/Hermes Decision Refresh, only if explicitly approved. |
+| WP42-D002 | No runtime or prompt runner implemented after operator workflow hardening | OPEN | P3 | WP42 intentionally adds no runtime behavior, workflow runner, prompt runner, LLM/Hermes/provider integration, scheduler, database, dashboard, polling, or trading behavior. | Future approved WP explicitly scopes and authorizes design first; implementation requires separate protected-boundary, security, dependency, and human-review gates. | Candidate later WP only after explicit user approval and repo-truth authorization. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP42. WP3-D002 (semgrep):
 READY_FOR_WP; semgrep availability must be honestly reported by validation.
 WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
 availability must be honestly reported by validation.
