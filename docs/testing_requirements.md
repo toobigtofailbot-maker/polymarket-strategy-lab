@@ -1,5 +1,25 @@
 # Testing Requirements
 
+## WP41 Advisory Prompt/Runbook Package Tests
+
+- `docs/advisory_prompt_runbook_package.md` must exist.
+- Status phrases must be present.
+- Approved advisory use cases must be present.
+- Required input package must be present.
+- Forbidden inputs must be present.
+- Mandatory output rules must be present.
+- Forbidden outputs must be present.
+- All five prompt templates must be present.
+- Operator runbook must be present.
+- Stop/escalation conditions must be present.
+- WP40 relationship must be present.
+- LLM/Hermes separation must be present.
+- Docs must be indexed.
+- Repo-truth index numeric prefixes must remain unique and sequential.
+- No implementation paths may be added.
+- No runtime/source/tools/dependency/lock files may change.
+- No generated advisory output may be committed.
+
 ## WP40 Local Advisory Consumer Prototype Tests
 
 - `tools/advisory/local_advisory_consumer.py` must exist and be standard-library-only.

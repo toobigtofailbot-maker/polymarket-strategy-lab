@@ -1,5 +1,21 @@
 # Review Checklist
 
+## WP41 Advisory Prompt/Runbook Package
+
+- Prompt/runbook doc `docs/advisory_prompt_runbook_package.md` exists and is indexed?
+- Approved advisory use cases are documented?
+- Required input package is documented?
+- Forbidden inputs are documented?
+- Mandatory output rules are documented?
+- Forbidden outputs are documented?
+- Five prompt templates are present?
+- Operator runbook is present?
+- Stop/escalation conditions are present?
+- WP40 relationship is documented?
+- LLM/Hermes separation is documented?
+- No runtime/source/tools/dependency/lock changes?
+- No generated outputs committed?
+
 ## WP40 Local Advisory Consumer Prototype
 
 - Prototype script exists under `tools/advisory/local_advisory_consumer.py`?
