@@ -1,5 +1,29 @@
 # Testing Requirements
 
+## WP40 Local Advisory Consumer Prototype Tests
+
+- `tools/advisory/local_advisory_consumer.py` must exist and be standard-library-only.
+- CLI help must exit 0.
+- At least one `--context-export` or `--analyst-report` must be required.
+- Context export input paths must be repo-relative, non-absolute, non-traversal, existing files under `local_data/agent_context_exports/`, and JSON only.
+- Analyst report input paths must be repo-relative, non-absolute, non-traversal, existing files under `local_data/agent_context_reports/`, and Markdown/text only.
+- `--repo-root` must require `AGENTS.md`, `docs/project_status.md`, and `docs/repo_truth_index.md`.
+- The prototype must not crawl `local_data/` or auto-discover inputs.
+- JSON context export parsing must tolerate unknown fields and extract bounded metadata.
+- Analyst report parsing must extract headings, short bullets, warnings/risk lines, and provenance lines without dumping raw content.
+- Text output must include advisory-only, repo-truth, validation, boundary, provenance, research question, risk/uncertainty, warning, and human-review content.
+- JSON output must be parseable and include all required summary fields.
+- Default behavior must write no file.
+- Optional `--output` must be restricted to `local_data/advisory_outputs/`.
+- Sensitive-like content must be redacted from text and JSON output.
+- `--fail-on-sensitive-hit` must exit 1 when sensitive content is detected.
+- Trading/execution-like input language must be converted to a neutral warning without raw executable phrase output.
+- `--max-input-bytes` and `--max-items` lower bounds must be enforced.
+- Source tests must prove no network, no command execution, no forbidden imports, and no project runtime imports.
+- CLI smoke tests must cover text and JSON output.
+- No runtime/source/dependency/lock files may change.
+- No generated advisory output may be committed.
+
 ## WP39 Advisory Runtime Boundary And Consumption Design Tests
 
 - `docs/advisory_runtime_boundary_consumption_design.md` must exist.

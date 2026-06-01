@@ -256,7 +256,28 @@ Do not jump to database, dashboard, strategy runtime, paper trading, live
 trading, official-client runtime integration, scheduler, wallet/copy-trading,
 production polling, Hermes install, LLM provider runtime, or agent runtime.
 
-## 15. Non-Goals
+## 15. WP40 Implementation Decision
+
+WP40 implements the deterministic local advisory consumer prototype at
+`tools/advisory/local_advisory_consumer.py`.
+
+Resolved implementation choices:
+
+- the prototype is local/offline/read-only and standard-library only;
+- input files must be explicit paths only;
+- context exports are allowed only under `local_data/agent_context_exports/`;
+- analyst reports are allowed only under `local_data/agent_context_reports/`;
+- default output is stdout only;
+- optional output is restricted to `local_data/advisory_outputs/`;
+- text and JSON output are supported;
+- no LLM, Hermes, network, account, or trading behavior is added;
+- generated advisory outputs are ignored local data and must not be committed.
+
+WP40 does not grant runtime, agent, LLM, Hermes, account, trading, scheduler,
+database, dashboard, or execution authority. Historical design content above
+remains intact and authoritative for future advisory-consumer boundaries.
+
+## 16. WP39 Non-Goals
 
 - no implementation;
 - no runtime;

@@ -43,24 +43,25 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 37. `docs/ai/codex/TOKEN_EFFICIENCY_SEQUENCE_CLOSEOUT.md` - WP37 docs-only closeout for the WP28-WP36 token-efficiency helper sequence; defines advisory helper usage order, deferred helper gaps, protected-boundary reaffirmation, and the next-WP resumption gate.
 38. `docs/local_advisory_handoff_package.md` - WP38 docs-only local advisory handoff package defining allowed advisory capabilities, forbidden runtime/trading capabilities, manual setup status, and the recommended post-WP38 path.
 39. `docs/advisory_runtime_boundary_consumption_design.md` - WP39 docs-only advisory runtime boundary and local advisory consumption design for future local/offline/read-only advisory consumers.
-40. `docs/architecture_principles.md` - platform architecture principles.
-41. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
-42. `docs/runtime_boundaries.md` - protected runtime boundary rules.
-43. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
-44. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
-45. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
-46. `docs/security_tooling_status.md` - current security-tool availability and scan status.
-47. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
-48. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
-49. `docs/data_semantics.md` - shared data definitions.
-50. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
-51. `docs/risk_semantics.md` - risk definitions and initial posture.
-52. `docs/live_trading_authorization.md` - live trading gate and authorization table.
-53. `docs/security_and_secrets.md` - credential and incident rules.
-54. `docs/codex_execution_guidelines.md` - work-package execution process.
-55. `docs/work_package_template.md` - reusable WP template.
-56. `docs/review_checklist.md` - review readiness checklist.
-57. `docs/testing_requirements.md` - current and future test requirements.
+40. `docs/local_advisory_consumer_prototype.md` - WP40 local/offline/read-only deterministic advisory consumer prototype usage and boundary reference.
+41. `docs/architecture_principles.md` - platform architecture principles.
+42. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
+43. `docs/runtime_boundaries.md` - protected runtime boundary rules.
+44. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
+45. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
+46. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
+47. `docs/security_tooling_status.md` - current security-tool availability and scan status.
+48. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
+49. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
+50. `docs/data_semantics.md` - shared data definitions.
+51. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
+52. `docs/risk_semantics.md` - risk definitions and initial posture.
+53. `docs/live_trading_authorization.md` - live trading gate and authorization table.
+54. `docs/security_and_secrets.md` - credential and incident rules.
+55. `docs/codex_execution_guidelines.md` - work-package execution process.
+56. `docs/work_package_template.md` - reusable WP template.
+57. `docs/review_checklist.md` - review readiness checklist.
+58. `docs/testing_requirements.md` - current and future test requirements.
 
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
