@@ -1,5 +1,20 @@
 # Review Checklist
 
+## WP42 Advisory Consumer Operator Workflow Hardening
+
+- Operator workflow doc `docs/advisory_consumer_operator_workflow.md` exists and is indexed?
+- Component chain is documented?
+- End-to-end workflow stages are documented?
+- Evidence package checklist is documented?
+- Allowed local artifact paths are documented?
+- Forbidden inputs and stop conditions are documented?
+- Forbidden output checklist is documented?
+- Decision log template is documented?
+- Conversion rules from advisory output to repo WP are documented?
+- Relationship to WP41 is documented?
+- No runtime/source/tools/dependency/lock changes?
+- No generated outputs committed?
+
 ## WP41 Advisory Prompt/Runbook Package
 
 - Prompt/runbook doc `docs/advisory_prompt_runbook_package.md` exists and is indexed?

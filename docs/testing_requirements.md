@@ -1,5 +1,23 @@
 # Testing Requirements
 
+## WP42 Advisory Consumer Operator Workflow Hardening Tests
+
+- `docs/advisory_consumer_operator_workflow.md` must exist.
+- Status phrases must be present.
+- Component chain must be present.
+- Workflow stages must be present.
+- Evidence package checklist must be present.
+- Allowed artifact paths must be present.
+- Forbidden inputs and outputs must be present.
+- Decision log template must be present.
+- Conversion rules must be present.
+- Relationship to WP41 must be present.
+- Docs must be indexed.
+- Repo-truth index numeric prefixes must remain unique and sequential.
+- No implementation paths may be added.
+- No runtime/source/tools/dependency/lock files may change.
+- No generated outputs may be committed.
+
 ## WP41 Advisory Prompt/Runbook Package Tests
 
 - `docs/advisory_prompt_runbook_package.md` must exist.
