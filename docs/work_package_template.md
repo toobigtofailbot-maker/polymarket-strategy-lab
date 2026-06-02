@@ -77,10 +77,24 @@ This WP may reference the following reusable blocks from `docs/ai/codex/REUSABLE
 - Standard Safety Boundary Block
 - Standard Generated Artifact Block
 - Standard Stop/Escalation Block
+- Standard PR Evidence Reporting Discipline Block
 
 Reusable blocks reduce boilerplate; they do not replace package-specific fields, forbidden scope, or acceptance/failure criteria.
 
 See `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` and `docs/ai/codex/CONCISE_REPORTING_RULES.md` for concise report-back format.
+
+## PR Evidence Reporting Discipline
+
+Every WP must satisfy the Standard PR Evidence Reporting Discipline Block before Ready for review: YES. This means:
+
+- PR body contains exact full validation command invocations (no ellipses, no abbreviated commands).
+- Final top-level PR comment contains exact full validation command invocations.
+- Network usage wording accurately distinguishes workflow network use from runtime/API/product/account network behavior.
+- PR body and final PR comment are consistent on all counts, commands, and results.
+- Stale counts corrected before Ready for review: YES.
+- Unavailable tools reported as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT, not as passed.
+
+See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` for the full policy and `docs/ai/codex/PR_REVIEW_CHECKLIST.md` for reviewer-facing checks.
 
 ## Post-Final-Commit Validation
 
@@ -120,9 +134,10 @@ See `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` and `docs/ai/codex/CONCI
 - Package class
 - Files changed
 - Safety boundary confirmations
-- Tests run with exact result counts
-- Security checks and results
-- Network usage
+- Tests run with exact result counts and exact full commands (no ellipses)
+- Helper validation results with exact full commands and all flags
+- Security checks and results with exact commands
+- Network usage (use standard distinction wording if git/PR network used)
 - Generated artifact status
 - Dependency and lock-file status
 - Deferred items changed

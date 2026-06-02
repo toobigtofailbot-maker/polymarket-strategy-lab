@@ -176,12 +176,13 @@ def test_project_status_file_exists():
     assert PROJECT_STATUS.is_file()
 
 
-def test_project_status_wp44_current_phase():
+def test_project_status_wp44_in_merged_wps():
+    # WP44 is merged; verify it appears in merged WPs list
     text = _read_status()
-    phase_line = next(
-        line for line in text.splitlines() if line.startswith("- Current phase:")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP44" in phase_line
+    assert "WP44" in merged_line
 
 
 def test_project_status_wp43_in_merged_wps():
@@ -192,18 +193,19 @@ def test_project_status_wp43_in_merged_wps():
     assert "WP43" in merged_line
 
 
-def test_project_status_wp44_branch_is_current():
+def test_project_status_wp44_branch_not_current():
+    # WP44 branch should no longer be the current branch after merge
     text = _read_status()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp44-market-research-priority-scoring-layer-design" in branch_line
+    assert "wp44-market-research-priority-scoring-layer-design" not in branch_line
 
 
 def test_project_status_market_research_priority_scoring_status():
     text = _read_status()
     assert "Market research priority scoring layer status" in text
-    assert "DOCS_ONLY_DESIGN_ON_BRANCH" in text
+    assert "DOCS_ONLY_DESIGN_MERGED" in text
 
 
 # ── Protected boundary preservation in project_status.md ─────────────────────
