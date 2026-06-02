@@ -1,5 +1,46 @@
 # Review Checklist
 
+## WP45 Codex / Claude PR Evidence Reporting Hardening
+
+- `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` exists and is indexed in `docs/repo_truth_index.md`?
+- `AGENTS.md` states evidence reporting discipline is mandatory for Codex and Claude Code?
+- `docs/ai/codex/WP_EXECUTION_REPORT.md` has a "PR Body And Final Comment Evidence Discipline" section?
+- `WP_EXECUTION_REPORT.md` requires exact full validation commands (no ellipses)?
+- `WP_EXECUTION_REPORT.md` forbids abbreviated helper command invocations?
+- `WP_EXECUTION_REPORT.md` requires network usage distinction wording?
+- `WP_EXECUTION_REPORT.md` requires PR body and final comment consistency?
+- `WP_EXECUTION_REPORT.md` requires stale count correction before Ready for review: YES?
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md` has "PR Evidence Reporting Discipline Checks" section?
+- `PR_REVIEW_CHECKLIST.md` requires reviewers to check exact full helper commands?
+- `PR_REVIEW_CHECKLIST.md` requires reviewers to check for no ellipses in validation evidence?
+- `PR_REVIEW_CHECKLIST.md` requires reviewers to check network usage distinction?
+- `PR_REVIEW_CHECKLIST.md` requires reviewers to check PR body and final comment consistency?
+- `PR_REVIEW_CHECKLIST.md` states follow-up required (not merge-ready) if evidence is defective?
+- `docs/ai/codex/CONCISE_REPORTING_RULES.md` states concise reporting must not abbreviate command invocations?
+- `CONCISE_REPORTING_RULES.md` states "compress the output, never the command"?
+- `CONCISE_REPORTING_RULES.md` has a "Network Usage Wording Rule" section?
+- `docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md` contains "Standard PR Evidence Reporting Discipline Block"?
+- `REUSABLE_WP_PROMPT_BLOCKS.md` block requires exact full commands in PR body and final comment?
+- `REUSABLE_WP_PROMPT_BLOCKS.md` block forbids ellipses and abbreviated commands?
+- `REUSABLE_WP_PROMPT_BLOCKS.md` block requires network distinction wording?
+- `REUSABLE_WP_PROMPT_BLOCKS.md` block requires stale count correction before YES?
+- `docs/ai/codex/VALIDATION_MATRIX.md` "All Work Packages" section includes PR evidence reporting check?
+- `VALIDATION_MATRIX.md` workflow/governance WP row includes exact PR evidence reporting check?
+- `docs/work_package_template.md` references "Standard PR Evidence Reporting Discipline Block"?
+- `work_package_template.md` has a "PR Evidence Reporting Discipline" section?
+- `work_package_template.md` PR body required sections list exact full commands requirement?
+- `docs/review_checklist.md` has WP45 PR body / final comment consistency check?
+- `docs/project_status.md` shows WP45 as current phase?
+- `docs/project_status.md` includes WP44 in merged WPs list?
+- `docs/project_status.md` has PR evidence reporting discipline status line?
+- Protected boundary statuses in `docs/project_status.md` are unchanged?
+- No `src/` changes?
+- No `tools/` changes?
+- No dependency or lock-file changes?
+- No generated artifacts committed?
+- Focused tests in `tests/test_pr_evidence_reporting_discipline_docs.py` pass?
+- Full pytest passes after final commit?
+
 ## WP42 Advisory Consumer Operator Workflow Hardening
 
 - Operator workflow doc `docs/advisory_consumer_operator_workflow.md` exists and is indexed?

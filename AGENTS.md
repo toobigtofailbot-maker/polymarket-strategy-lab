@@ -52,6 +52,14 @@ After this file, Codex must read `CODEX_START_HERE.md` and the relevant Codex wo
 - Context hygiene, validation-output summarization, concise reporting, and reusable prompt-block rules are binding on all WPs.
 - Token efficiency must never weaken validation, skip required checks, or omit failure evidence.
 
+## PR Evidence Reporting Discipline
+
+- Codex and Claude Code must use exact PR body and final PR comment evidence discipline before requesting review on any WP. See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`.
+- Abbreviated validation commands, ellipses in command evidence, stale counts, and inaccurate network usage wording must all be corrected before Ready for review: YES.
+- The PR body and the final top-level PR comment must not contradict each other on test counts, command results, files changed, or network usage.
+- Network usage wording must accurately distinguish workflow network use (Remote Main Sync Gate, git fetch/pull/push, PR publication) from runtime/API/product/account network behavior. Do not say "no network" if git remote synchronization or PR publication ran.
+- Ready for review: YES is forbidden if any evidence defect remains uncorrected.
+
 ## Secrets
 
 - No secrets in repo, docs, logs, tests, screenshots, or PRs.

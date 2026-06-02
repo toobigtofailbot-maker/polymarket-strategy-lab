@@ -120,3 +120,39 @@ Stop and report (do not continue) if:
 - PR cannot be created.
 
 See `CODEX_START_HERE.md` stop rules and `AGENTS.md` escalation rules.
+
+## Standard PR Evidence Reporting Discipline Block
+
+Applies to: Codex and Claude Code. Mandatory for every WP.
+
+Before setting Ready for review: YES, verify all of the following:
+
+**Exact validation commands:**
+- Every validation step in the PR body must use the exact full command invocation — all flags, arguments, and paths. No ellipses (`...`). No abbreviated helper commands. No placeholder text.
+- Every validation step in the final top-level PR comment must use the same exact full command invocations.
+- Example of required form: `python -m pytest tests/test_foo.py -v` (not `python -m pytest tests/test_foo.py ...`).
+
+**Exact result counts:**
+- State the exact numbers: passed, failed, errors, skipped, warnings, exit code.
+- Do not use approximate wording such as "tests passed" without counts.
+- If the suite count changed after a re-run, update both PR body and final comment.
+
+**Network usage wording:**
+- If Remote Main Sync Gate, `git fetch`, `git pull`, `git push`, or PR publication ran, do not write "no network was used."
+- Use: "Network was used only for Remote Main Sync Gate / git remote synchronization and PR push/publication. This WP adds no runtime network behavior, no API polling, no account access, and no product network behavior."
+
+**PR body and final PR comment consistency:**
+- Test counts, command results, files changed, and network wording must match between the PR body and the final PR comment.
+- Update both before requesting review if a re-run produces new counts.
+
+**Stale counts:**
+- Correct any stale count before Ready for review: YES.
+
+**Unavailable tools:**
+- Report unavailable security tools as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT with exact reason.
+- Do not describe unavailable tools as passed.
+
+**Ready for review gate:**
+- Ready for review: YES is forbidden if any evidence defect listed above remains uncorrected.
+
+See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` for the full policy, examples, and reviewer guidance.

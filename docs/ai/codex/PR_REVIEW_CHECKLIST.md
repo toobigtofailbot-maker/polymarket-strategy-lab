@@ -18,3 +18,21 @@ Reviewers and Codex Review Mode must verify:
 - Repo-truth docs were updated accurately.
 - Safety boundaries remain intact.
 - Ready for review: YES/NO is stated.
+
+## PR Evidence Reporting Discipline Checks
+
+Reviewers must also verify the following evidence discipline checks. If any item fails, the PR is not merge-ready; mark follow-up required rather than merging.
+
+- All validation commands in the PR body use exact full invocations (no ellipses, no placeholder text, no abbreviated flags).
+- All validation commands in the final PR comment use exact full invocations (no ellipses, no placeholder text, no abbreviated flags).
+- Helper validation commands (`status_snapshot.py`, `diff_scope_summary.py`, `code_blast_radius.py`, `preflight_sync_main.py`, `preflight_generated_artifact_guard.py`) appear with all flags used, not abbreviated.
+- No `...` appears after any command name in validation evidence sections.
+- Network usage wording accurately distinguishes git/PR workflow network use from runtime/API/product/account network behavior.
+- If `git fetch`, `git pull`, `git push`, or PR publication ran, the PR does not claim "no network was used."
+- PR body and final PR comment are consistent: test counts, command results, files changed, and network wording must match.
+- No stale counts appear in the PR body or final PR comment (counts must reflect the actual last run after the final commit).
+- Unavailable security tools are reported as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT, not as passed.
+- Final top-level PR comment is present (not only the PR body).
+- Ready for review: YES is not set if any evidence defect remains uncorrected.
+
+See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` for the full policy, examples, and remediation guidance.
