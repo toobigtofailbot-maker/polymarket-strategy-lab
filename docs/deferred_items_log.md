@@ -77,6 +77,8 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP3-D009 | Deployment jurisdiction / geoblocking decision | DEFERRED | P1 before live trading | Deployment location affects compliance and order placement. | Live execution. | Document deployment jurisdiction and compliance decision. |
 | WP3-D010 | Incident response document not yet created | DEFERRED | P2 | WP1 marked it as needed before live. | Live execution. | Create and review `docs/incident_response.md`. |
 | WP3-D011 | Live trading authorization remains disabled | DEFERRED | P0 before live execution | Live trading is intentionally blocked. | Any real order path. | Future work package updates `docs/live_trading_authorization.md` with explicit human approval and tested risk controls. |
+| WP44-D001 | Market Research Priority Scoring implementation not started | OPEN | P3 | WP44 defines docs-only design for a future Market Research Priority Scoring Layer but adds no schema, source, CLI, report, export, or advisory integration implementation. | Any scoring implementation, schema, CLI, report/export, or advisory integration. | Future approved WP defines schema/output contract first (WP45 or equivalent), then implementation in a later WP. |
+| WP44-D002 | Score laundering mitigation not enforced by implementation | OPEN | P3 | WP44 documents score-laundering risk and mitigations in design-only form, but no implementation exists to enforce advisory-only labels, caps, missing-data penalties, or forbidden-output checks. | Any scoring implementation or report/export output. | Future approved WP adds tests and output constraints enforcing advisory-only, non-signal, provenance/staleness, and forbidden-output rules. |
 
 ## Rules For Adding Items
 
@@ -962,6 +964,49 @@ WP8 adds WP8-D001 (endpoint contract unconfirmed) and WP8-D002 (rate-limit polic
 WP3-D001 (gitleaks): rerun this WP — gitleaks scan PASS, no findings.
 WP3-D002 (semgrep): READY_FOR_WP; `.venv-security/` not restored this WP (no new Python dependency added).
 WP3-D004 (pip-audit): READY_FOR_WP; no new Python dependency added, pip-audit not rerun.
+
+## WP44 Market Research Priority Scoring Layer Design Update
+
+WP44 adds `docs/market_research_priority_scoring_layer.md` (docs-only design for
+a future local/offline/read-only Market Research Priority Scoring Layer),
+`tests/test_market_research_priority_scoring_layer_docs.py` (focused docs test),
+and narrow repo-truth updates to `docs/project_status.md`,
+`docs/repo_truth_index.md`, and `docs/deferred_items_log.md`.
+
+WP44 is docs/test-only. It adds no schema, source implementation, CLI,
+report writer, scoring logic, workflow runner, prompt runner, runtime source,
+tools implementation, dependency file, lock file, generated output,
+Hermes runtime or installation, LLM/provider SDK, credentials, network polling,
+paper trading, live trading, order placement or cancellation, signing, account
+connection, scheduler/daemon/bot loop, database, dashboard, deployment, or
+product behavior.
+
+WP44 resolves no existing deferred items. WP40-D002, WP41-D002, WP42-D001,
+WP42-D002, WP28-D001, WP30-D001, WP32-D001, WP34-D001, WP36-D001, and
+WP36-D002 remain OPEN. WP20-D001 remains READY_FOR_MANUAL_SETUP_DECISION.
+WP27-D001, WP20-D003, WP8-D002, WP16-D002, WP17-D001, and WP17-D002 remain
+OPEN and unchanged.
+
+WP44-D001 is added: Market Research Priority Scoring implementation not started
+(OPEN, P3). Any scoring implementation, schema, CLI, report/export, or advisory
+integration is deferred to a future approved WP.
+
+WP44-D002 is added: Score laundering mitigation not enforced by implementation
+(OPEN, P3). No implementation exists to enforce advisory-only labels, caps,
+missing-data penalties, or forbidden-output checks. A future approved WP adds
+tests and output constraints enforcing advisory-only, non-signal,
+provenance/staleness, and forbidden-output rules.
+
+| Item | Status | Priority | Why Deferred | Resolution Condition |
+|---|---|---|---|---|
+| WP44-D001 | OPEN | P3 | WP44 defines design-only; no schema or implementation added. | Future approved WP (WP45 schema WP or later) defines schema/output contract first, then implementation in a later WP. |
+| WP44-D002 | OPEN | P3 | WP44 documents score-laundering mitigations but no implementation enforces them. | Future approved WP adds tests and output constraints. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP44; results reported in WP44 PR.
+WP3-D002 (semgrep): READY_FOR_WP; semgrep availability must be honestly
+reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
 
 ## WP6 Generated Artifact Incident Update
 
