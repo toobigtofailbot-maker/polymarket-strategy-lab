@@ -89,8 +89,8 @@ Security checks are run/assessed in WP45.
 
 ## WP44 Market Research Priority Scoring Layer Design
 
-WP44 - Market Research Priority Scoring Layer Design is on branch
-(`wp44-market-research-priority-scoring-layer-design`).
+WP44 - Market Research Priority Scoring Layer Design is merged
+(historical branch: `wp44-market-research-priority-scoring-layer-design`).
 It adds `docs/market_research_priority_scoring_layer.md` as a docs-only design
 for a future local/offline/read-only Market Research Priority Scoring Layer,
 updates `docs/repo_truth_index.md` and `docs/deferred_items_log.md`, and adds

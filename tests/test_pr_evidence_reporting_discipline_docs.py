@@ -539,6 +539,44 @@ def test_project_status_protected_boundaries_agent_execution_forbidden():
     )
 
 
+def test_project_status_wp44_historical_section_not_on_branch():
+    text = PROJECT_STATUS.read_text(encoding="utf-8")
+    # The historical WP44 section must say "is merged", not "is on branch"
+    lines = text.splitlines()
+    wp44_section_lines = []
+    in_wp44 = False
+    for line in lines:
+        if line.startswith("## WP44"):
+            in_wp44 = True
+        elif line.startswith("## WP") and in_wp44:
+            break
+        if in_wp44:
+            wp44_section_lines.append(line)
+    wp44_text = "\n".join(wp44_section_lines)
+    assert "is on branch" not in wp44_text, (
+        "docs/project_status.md WP44 historical section must not say 'is on branch' "
+        "(WP44 is merged; use 'is merged' or mark branch name as historical)"
+    )
+
+
+def test_project_status_wp44_historical_section_says_merged():
+    text = PROJECT_STATUS.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    wp44_section_lines = []
+    in_wp44 = False
+    for line in lines:
+        if line.startswith("## WP44"):
+            in_wp44 = True
+        elif line.startswith("## WP") and in_wp44:
+            break
+        if in_wp44:
+            wp44_section_lines.append(line)
+    wp44_text = "\n".join(wp44_section_lines)
+    assert "is merged" in wp44_text or "merged" in wp44_text.lower(), (
+        "docs/project_status.md WP44 historical section must indicate WP44 is merged"
+    )
+
+
 # ---------------------------------------------------------------------------
 # 12. docs/repo_truth_index.md — new central doc indexed
 # ---------------------------------------------------------------------------
