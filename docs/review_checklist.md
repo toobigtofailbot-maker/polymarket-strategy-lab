@@ -1,5 +1,44 @@
 # Review Checklist
 
+## WP46 PR Evidence Consistency Guard Helper
+
+- `tools/git/pr_evidence_consistency_guard.py` exists and is stdlib-only?
+- Helper makes no network calls?
+- Helper reads local PR body and final comment draft files only?
+- Helper returns exit code 0 on PASS, 1 on validation failure, 2 on usage error?
+- Helper detects ellipses in command lines and helper names?
+- Helper detects required command missing from PR body or final comment?
+- Helper detects `status_snapshot.py` in one surface but not the other?
+- Helper detects head SHA mismatch when `--expected-head` supplied?
+- Helper detects test count mismatch (68 vs 66 and 1583 vs 1581)?
+- Helper detects standard network wording missing when `--require-standard-network-wording` set?
+- Helper detects "no network was used" when standard wording required?
+- Helper detects Ready for review mismatch when `--require-ready-yes` set?
+- Helper detects security tool honesty conflicts (passed + unavailable)?
+- JSON output mode emits valid JSON with status/errors/warnings/checked_categories?
+- `tests/tools/git/test_pr_evidence_consistency_guard.py` exists?
+- Focused tests pass (28 tests)?
+- `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` exists and is indexed in `docs/repo_truth_index.md`?
+- Guard doc includes limitations section (no GitHub fetch, no proof of execution)?
+- `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` updated with Rule 8 and guard gate?
+- `docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md` updated with guard in Standard PR Evidence block?
+- `docs/ai/codex/VALIDATION_MATRIX.md` "All Work Packages" section includes guard requirement?
+- `docs/ai/codex/WP_EXECUTION_REPORT.md` updated with guard in evidence discipline section?
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md` updated with guard check?
+- `docs/work_package_template.md` updated with guard in PR Evidence Reporting Discipline section?
+- `docs/project_status.md` shows WP46 as current phase?
+- `docs/project_status.md` includes WP45 in merged WPs list?
+- `docs/project_status.md` has PR evidence consistency guard status line?
+- Protected boundary statuses in `docs/project_status.md` are unchanged?
+- No `src/` changes?
+- No dependency or lock-file changes?
+- No generated artifacts committed?
+- No runtime/product/network behavior added?
+- Focused tests pass?
+- Related workflow docs tests (`test_pr_evidence_reporting_discipline_docs.py`) pass?
+- Full pytest passes after final commit?
+- WP46-D001 deferred item added (guard validates local drafts only, not live GitHub data)?
+
 ## WP45 Codex / Claude PR Evidence Reporting Hardening
 
 - `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` exists and is indexed in `docs/repo_truth_index.md`?

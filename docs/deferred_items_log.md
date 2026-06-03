@@ -1008,6 +1008,67 @@ reported by validation.
 WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
 availability must be honestly reported by validation.
 
+## WP45 Codex / Claude PR Evidence Reporting Hardening Update
+
+WP45 adds `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` (central
+workflow reference), `tests/test_pr_evidence_reporting_discipline_docs.py`
+(focused docs test), and updates to `AGENTS.md`,
+`docs/ai/codex/WP_EXECUTION_REPORT.md`,
+`docs/ai/codex/PR_REVIEW_CHECKLIST.md`,
+`docs/ai/codex/VALIDATION_MATRIX.md`,
+`docs/ai/codex/CONCISE_REPORTING_RULES.md`,
+`docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md`,
+`docs/work_package_template.md`, `docs/review_checklist.md`,
+`docs/repo_truth_index.md`, and `docs/project_status.md`.
+
+WP45 is docs/test-only workflow/governance hardening. It adds no implementation,
+helper tooling, runtime source, tools implementation, dependency file, lock file,
+generated output, Hermes runtime or installation, LLM/provider SDK, credentials,
+network polling, paper trading, live trading, order placement or cancellation,
+signing, account connection, scheduler/daemon/bot loop, database, dashboard,
+deployment, or product behavior.
+
+WP45 resolves no existing deferred items. All WP44-forward deferred items remain
+unchanged.
+
+WP3-D001 (gitleaks): rerun/assessed in WP45. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
+## WP46 PR Evidence Consistency Guard Helper Update
+
+WP46 adds `tools/git/pr_evidence_consistency_guard.py` (local/offline/stdlib
+CLI guard helper), `tests/tools/git/test_pr_evidence_consistency_guard.py`
+(focused tests), and `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`
+(user-facing reference). It updates `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`,
+`docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md`, `docs/ai/codex/VALIDATION_MATRIX.md`,
+`docs/ai/codex/WP_EXECUTION_REPORT.md`, `docs/ai/codex/PR_REVIEW_CHECKLIST.md`,
+`docs/work_package_template.md`, `docs/review_checklist.md`,
+`docs/project_status.md`, `docs/repo_truth_index.md`, and
+`docs/deferred_items_log.md`.
+
+WP46 is a local/offline stdlib governance helper WP. It adds no runtime source
+under `src/`, no dependency or lock-file changes, no Hermes/LLM/provider
+integration, no credentials, no network/account access, no trading or paper
+trading, no database/dashboard/scheduler/polling/product behavior, and no
+generated outputs committed.
+
+WP46 resolves no existing deferred items. All WP45-forward deferred items remain
+unchanged.
+
+WP46-D001 is added: guard validates local PR body/final comment drafts only,
+not live GitHub PR data (OPEN, P4). See table below.
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP46-D001 | PR evidence guard does not fetch live GitHub PR data | OPEN | P4 | WP46 intentionally validates local PR body/final comment drafts only and does not call GitHub. | Any future requirement to validate already-posted GitHub PR body/comments automatically. | Future approved GitHub/API-aware WP, only if explicitly authorized. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP46. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.

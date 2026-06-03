@@ -451,18 +451,21 @@ def test_validation_matrix_references_discipline_doc():
 
 
 # ---------------------------------------------------------------------------
-# 11. docs/project_status.md — WP45 active, WP44 merged
+# 11. docs/project_status.md — WP46 active, WP44 and WP45 merged
 # ---------------------------------------------------------------------------
 
 def test_project_status_wp45_current_phase():
+    """WP45 is now merged; the current phase must be a subsequent WP (WP46+)."""
     text = PROJECT_STATUS.read_text(encoding="utf-8")
     phase_line = next(
         (l for l in text.splitlines() if l.startswith("- Current phase:")),
         None,
     )
     assert phase_line is not None, "docs/project_status.md must have a Current phase line"
-    assert "WP45" in phase_line, (
-        "docs/project_status.md Current phase must show WP45"
+    # WP45 is merged; current phase is WP46 or later
+    assert "WP46" in phase_line or "WP47" in phase_line or "WP48" in phase_line, (
+        "docs/project_status.md Current phase must show a WP after WP45 merge "
+        f"(got: {phase_line!r})"
     )
 
 
@@ -478,15 +481,30 @@ def test_project_status_wp44_in_merged_wps():
     )
 
 
+def test_project_status_wp45_in_merged_wps():
+    """WP45 is merged; it must appear in the merged WPs list."""
+    text = PROJECT_STATUS.read_text(encoding="utf-8")
+    merged_line = next(
+        (l for l in text.splitlines() if l.startswith("- Merged WPs:")),
+        None,
+    )
+    assert merged_line is not None, "docs/project_status.md must have a Merged WPs line"
+    assert "WP45" in merged_line, (
+        "docs/project_status.md merged WPs must include WP45 (now merged)"
+    )
+
+
 def test_project_status_wp45_current_branch():
+    """WP45 is merged; the current branch must be a subsequent WP branch."""
     text = PROJECT_STATUS.read_text(encoding="utf-8")
     branch_line = next(
         (l for l in text.splitlines() if l.startswith("- Current branch:")),
         None,
     )
     assert branch_line is not None, "docs/project_status.md must have a Current branch line"
-    assert "wp45" in branch_line.lower(), (
-        "docs/project_status.md Current branch must reference wp45"
+    assert "wp46" in branch_line.lower() or "wp47" in branch_line.lower(), (
+        "docs/project_status.md Current branch must reference a branch after WP45 merge "
+        f"(got: {branch_line!r})"
     )
 
 

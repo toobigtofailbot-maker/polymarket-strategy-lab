@@ -152,7 +152,26 @@ Before setting Ready for review: YES, verify all of the following:
 - Report unavailable security tools as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT with exact reason.
 - Do not describe unavailable tools as passed.
 
+**PR evidence consistency guard:**
+- Before setting Ready for review: YES, run `tools/git/pr_evidence_consistency_guard.py` on local PR body and final comment drafts.
+- If the guard fails, fix all failures and re-run before marking Ready for review: YES.
+- Report the exact guard invocation and result (PASS/FAIL) in both the PR body and final comment.
+- State whether local draft files were used (not already-posted GitHub content). Do not commit local draft files.
+
+```
+python tools/git/pr_evidence_consistency_guard.py \
+  --pr-body local_pr_body.md \
+  --final-comment local_final_comment.md \
+  --expected-head <HEAD_SHA> \
+  --required-command "<FULL_STATUS_SNAPSHOT_COMMAND>" \
+  --required-command "<FULL_DIFF_SCOPE_COMMAND>" \
+  --required-command "<FULL_CODE_BLAST_RADIUS_COMMAND>" \
+  --require-standard-network-wording \
+  --require-ready-yes
+```
+
 **Ready for review gate:**
 - Ready for review: YES is forbidden if any evidence defect listed above remains uncorrected.
+- Ready for review: YES is forbidden if `pr_evidence_consistency_guard.py` fails on local drafts.
 
-See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` for the full policy, examples, and reviewer guidance.
+See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` and `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
