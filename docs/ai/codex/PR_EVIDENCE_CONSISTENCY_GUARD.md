@@ -146,10 +146,16 @@ Checked categories: A:missing_files, B:empty_evidence, ...
 Fix the above issues in the PR body and/or final comment before setting Ready for review: YES.
 ```
 
-**On usage error / missing file (exit code 2):**
+**On usage error / missing file / unreadable input (exit code 2):**
 
-File missing errors use exit code 1 (validation failure, category A).
-Argument parser errors use exit code 2.
+At the CLI level:
+- Missing PR body file → exit 2
+- Missing final comment file → exit 2
+- PR body or final comment path is a directory (not a regular file) → exit 2
+- File exists but is unreadable (OSError) → exit 2
+- Argument parser errors → exit 2
+
+The `run_guard()` API (for direct Python callers) still returns `[A]` category errors in its `errors` list when files are not found, and `passed=False`. The CLI translates these to exit 2 before `run_guard` is called.
 
 ## How Claude Code / Codex Should Use This Guard
 

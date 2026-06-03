@@ -342,6 +342,18 @@ def test_fail_full_suite_count_mismatch_1583_vs_1581(tmp_path: pathlib.Path) -> 
     assert any("[F]" in e for e in errors)
 
 
+def test_fail_warning_count_mismatch(tmp_path: pathlib.Path) -> None:
+    body = "# PR Body\n1583 passed, 0 failed, 0 errors, 1 warning\n"
+    comment = "# Comment\n1583 passed, 0 failed, 0 errors, 2 warnings\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False,
+        require_ready=False,
+    )
+    assert not passed
+    assert any("[F]" in e for e in errors)
+
+
 # ── Fail cases: network wording ──────────────────────────────────────────────
 
 
@@ -448,6 +460,59 @@ def test_fail_json_output_structured(tmp_path: pathlib.Path) -> None:
     assert isinstance(data["checked_categories"], list)
 
 
+# ── CLI-level exit code 2 tests ───────────────────────────────────────────────
+
+
+def test_cli_exit2_missing_pr_body(tmp_path: pathlib.Path) -> None:
+    comment_file = tmp_path / "final_comment.md"
+    comment_file.write_text("some content", encoding="utf-8")
+    missing = tmp_path / "nonexistent_body.md"
+
+    rc = guard.main([
+        "--pr-body", str(missing),
+        "--final-comment", str(comment_file),
+    ])
+    assert rc == 2, f"Expected exit 2 for missing PR body file, got {rc}"
+
+
+def test_cli_exit2_missing_final_comment(tmp_path: pathlib.Path) -> None:
+    body_file = tmp_path / "pr_body.md"
+    body_file.write_text("some content", encoding="utf-8")
+    missing = tmp_path / "nonexistent_comment.md"
+
+    rc = guard.main([
+        "--pr-body", str(body_file),
+        "--final-comment", str(missing),
+    ])
+    assert rc == 2, f"Expected exit 2 for missing final comment file, got {rc}"
+
+
+def test_cli_exit2_pr_body_is_directory(tmp_path: pathlib.Path) -> None:
+    dir_path = tmp_path / "a_directory"
+    dir_path.mkdir()
+    comment_file = tmp_path / "final_comment.md"
+    comment_file.write_text("some content", encoding="utf-8")
+
+    rc = guard.main([
+        "--pr-body", str(dir_path),
+        "--final-comment", str(comment_file),
+    ])
+    assert rc == 2, f"Expected exit 2 for directory as PR body path, got {rc}"
+
+
+def test_cli_exit2_final_comment_is_directory(tmp_path: pathlib.Path) -> None:
+    body_file = tmp_path / "pr_body.md"
+    body_file.write_text("some content", encoding="utf-8")
+    dir_path = tmp_path / "a_directory"
+    dir_path.mkdir()
+
+    rc = guard.main([
+        "--pr-body", str(body_file),
+        "--final-comment", str(dir_path),
+    ])
+    assert rc == 2, f"Expected exit 2 for directory as final comment path, got {rc}"
+
+
 # ── Unit tests for extraction helpers ────────────────────────────────────────
 
 
@@ -460,7 +525,7 @@ def test_extract_test_counts_basic() -> None:
 def test_extract_test_counts_with_warning() -> None:
     text = "1583 passed, 0 failed, 0 errors, 1 warning"
     counts = guard._extract_test_counts(text)
-    assert counts == ["1583 passed, 0 failed, 0 errors"]
+    assert counts == ["1583 passed, 0 failed, 0 errors, 1 warning(s)"]
 
 
 def test_extract_labeled_shas() -> None:

@@ -60,8 +60,10 @@ _NO_NETWORK_PATTERN = re.compile(r"no network was used", re.IGNORECASE)
 # ── Test count line pattern ───────────────────────────────────────────────────
 # Matches lines like: 68 passed, 0 failed, 0 errors
 #                     1583 passed, 0 failed, 0 errors, 1 warning
+# Warning count is captured when present and included in the normalized output.
 _TEST_COUNT_PATTERN = re.compile(
-    r"(\d+)\s+passed[\s,].*?(\d+)\s+failed[\s,].*?(\d+)\s+error",
+    r"(\d+)\s+passed[\s,].*?(\d+)\s+failed[\s,].*?(\d+)\s+errors?"
+    r"(?:[,\s]+(\d+)\s+warnings?)?",
     re.IGNORECASE,
 )
 
@@ -117,13 +119,21 @@ _SECURITY_UNAVAILABLE_PATTERNS = [
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 def _extract_test_counts(text: str) -> list[str]:
-    """Return normalized test count strings found in the text."""
+    """Return normalized test count strings found in the text.
+
+    Warning counts are included in the normalized string when present so that
+    mismatched warning counts between PR body and final comment are detected.
+    """
     results = []
     for m in _TEST_COUNT_PATTERN.finditer(text):
         passed = int(m.group(1))
         failed = int(m.group(2))
         errors = int(m.group(3))
-        results.append(f"{passed} passed, {failed} failed, {errors} errors")
+        warning_count = int(m.group(4)) if m.group(4) is not None else 0
+        base = f"{passed} passed, {failed} failed, {errors} errors"
+        if warning_count > 0:
+            base += f", {warning_count} warning(s)"
+        results.append(base)
     return results
 
 
@@ -601,6 +611,37 @@ def main(argv: list[str] | None = None) -> int:
 
     pr_body_path = pathlib.Path(args.pr_body)
     final_comment_path = pathlib.Path(args.final_comment)
+
+    # Exit 2 for missing files, non-file paths, or unreadable input.
+    usage_errors: list[str] = []
+    if not pr_body_path.exists():
+        usage_errors.append(f"PR body file not found: {pr_body_path}")
+    elif not pr_body_path.is_file():
+        usage_errors.append(f"PR body path is not a regular file: {pr_body_path}")
+
+    if not final_comment_path.exists():
+        usage_errors.append(f"Final comment file not found: {final_comment_path}")
+    elif not final_comment_path.is_file():
+        usage_errors.append(
+            f"Final comment path is not a regular file: {final_comment_path}"
+        )
+
+    if usage_errors:
+        for msg in usage_errors:
+            print(f"ERROR: {msg}", file=sys.stderr)
+        return 2
+
+    try:
+        pr_body_path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        print(f"ERROR: Cannot read PR body file: {exc}", file=sys.stderr)
+        return 2
+
+    try:
+        final_comment_path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        print(f"ERROR: Cannot read final comment file: {exc}", file=sys.stderr)
+        return 2
 
     passed, errors, warnings, checked = run_guard(
         pr_body_path=pr_body_path,
