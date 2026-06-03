@@ -105,13 +105,20 @@ _INLINE_TEST_COUNT_PATTERN = re.compile(
 )
 
 # ── Placeholder evidence patterns (L) ─────────────────────────────────────────
+# Simple substring tokens that are unambiguous placeholder evidence everywhere.
 _PLACEHOLDER_LITERAL_TOKENS = [
     "<HEAD_SHA>",
-    "placeholder",
     "actual:",
     "TBD",
     "TODO",
 ]
+# "placeholder" is detected only when it appears as a standalone word and is NOT
+# embedded in compound identifiers like "--forbid-placeholder-evidence" or
+# "L:placeholder_evidence".  The pattern excludes occurrences immediately
+# preceded or followed by alphanumeric chars, hyphens, or underscores.
+_STANDALONE_PLACEHOLDER_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9_\-])placeholder(?![A-Za-z0-9_\-])",
+)
 # Detect long runs of the same repeated character that signal fake SHA filler.
 _FAKE_SHA_FILLER_PATTERN = re.compile(r"a{8,}", re.IGNORECASE)
 
@@ -518,6 +525,16 @@ def check_placeholder_evidence(
                     f"[L] Placeholder evidence token {token!r} found in {label}. "
                     "Replace with actual evidence before marking Ready for review: YES."
                 )
+        # "placeholder" as a standalone word (not part of compound identifiers
+        # such as "--forbid-placeholder-evidence" or "L:placeholder_evidence").
+        if _STANDALONE_PLACEHOLDER_PATTERN.search(text):
+            m = _STANDALONE_PLACEHOLDER_PATTERN.search(text)
+            assert m is not None
+            errors.append(
+                f"[L] Standalone 'placeholder' token found in {label} "
+                f"(at: {m.group(0)!r}). "
+                "Replace with actual evidence before marking Ready for review: YES."
+            )
         if _FAKE_SHA_FILLER_PATTERN.search(text):
             m = _FAKE_SHA_FILLER_PATTERN.search(text)
             assert m is not None
