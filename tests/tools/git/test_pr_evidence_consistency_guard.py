@@ -535,6 +535,16 @@ def test_extract_labeled_shas() -> None:
     assert sha in shas
 
 
+def test_extract_labeled_shas_does_not_match_merge_commit() -> None:
+    """Required previous merge commit lines must NOT be treated as head SHA labels."""
+    sha = "b" * 40
+    text = f"- Required previous merge commit: `{sha}` (WP45)\n"
+    shas = guard._extract_labeled_shas(text)
+    assert sha not in shas, (
+        "merge commit lines must not match the head SHA label pattern"
+    )
+
+
 def test_extract_all_shas() -> None:
     sha = "deadbeef" * 5
     text = f"some text {sha} more text"

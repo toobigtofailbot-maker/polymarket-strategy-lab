@@ -71,8 +71,11 @@ _TEST_COUNT_PATTERN = re.compile(
 _SHA_FULL_PATTERN = re.compile(r"\b([0-9a-f]{40})\b", re.IGNORECASE)
 
 # ── Head SHA label patterns ───────────────────────────────────────────────────
+# Only match "Head commit", "Head SHA", or "head:" labels — not generic "commit:"
+# which would incorrectly match "Required previous merge commit: SHA" lines.
+# The :? allows both "Head commit SHA" and "Head commit: SHA" forms.
 _SHA_LABEL_PATTERN = re.compile(
-    r"(?:head\s+commit|head\s+sha|head:|commit:)\s*[`\s]*([0-9a-f]{40})\b",
+    r"(?:head\s+commit|head\s+sha|head:)\s*:?\s*[`\s]*([0-9a-f]{40})\b",
     re.IGNORECASE,
 )
 
