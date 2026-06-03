@@ -69,6 +69,9 @@ If Remote Main Sync Gate, `git fetch`, `git pull`, `git push`, or PR publication
 
 > Network was used only for Remote Main Sync Gate / git remote synchronization and PR push/publication. This WP adds no runtime network behavior, no API polling, no account access, and no product network behavior.
 
+**PR evidence consistency guard:**
+Run `tools/git/pr_evidence_consistency_guard.py` on local PR body and final comment drafts before Ready for review: YES. Report the exact guard invocation and result (PASS/FAIL) in both the PR body and final comment. If the guard fails, correct all failures before requesting review. Do not commit local draft files. See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
+
 **Ready for review gate:**
 Ready for review: YES is forbidden if any of the following remain:
 - Ellipses or abbreviated commands in validation evidence.
@@ -77,6 +80,7 @@ Ready for review: YES is forbidden if any of the following remain:
 - PR body and final PR comment inconsistency.
 - Missing final top-level PR comment.
 - Unavailable tools described as passed.
+- `pr_evidence_consistency_guard.py` fails on local drafts.
 
 ## Concise Reporting
 

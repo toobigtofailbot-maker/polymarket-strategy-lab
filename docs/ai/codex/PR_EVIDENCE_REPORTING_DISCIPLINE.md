@@ -91,6 +91,24 @@ Unavailable security tools must be reported as UNAVAILABLE/SKIPPED or SKIPPED_NO
 
 Required helper commands that do not exist must be reported as SKIPPED_NOT_PRESENT with exact reason. Do not imply they were run.
 
+## Rule 8 — Run PR Evidence Consistency Guard Before Ready for Review
+
+When local PR body and final comment drafts are available, run
+`tools/git/pr_evidence_consistency_guard.py` before setting Ready for review: YES.
+
+The guard checks consistency between the two evidence surfaces and detects the
+most common defects: ellipses in commands, required commands missing from one
+surface, head SHA mismatch, test count mismatch, network wording gaps, and
+security tool honesty conflicts.
+
+**If the guard fails, Ready for review must be NO until all failures are corrected and the guard passes.**
+
+Report the exact guard invocation and result (PASS/FAIL) in both the PR body and final comment.
+
+If local draft files are used (not the already-posted GitHub content), state that fact. Do not commit local draft files.
+
+See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` for full CLI reference.
+
 ## Ready-for-Review Gate
 
 Ready for review: YES requires all of the following to be true:
@@ -102,6 +120,7 @@ Ready for review: YES requires all of the following to be true:
 - [ ] No stale counts or stale summary text.
 - [ ] Unavailable tools reported honestly.
 - [ ] Final top-level PR comment is posted (not only the PR body).
+- [ ] `pr_evidence_consistency_guard.py` run on local drafts and result reported (where local drafts available).
 
 If any item is NO, set Ready for review: NO and correct the evidence before requesting review.
 

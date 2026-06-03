@@ -25,6 +25,7 @@
 - `docs/project_status.md` current-WP wording check.
 - Dependency and lock-file preservation unless explicitly scoped.
 - Exact PR evidence reporting discipline: exact full validation commands in PR body and final PR comment (no ellipses, no abbreviated commands, no placeholder text), accurate network usage wording, consistent counts between PR body and final comment, and stale counts corrected before Ready for review: YES. See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`.
+- PR evidence consistency guard: run `tools/git/pr_evidence_consistency_guard.py` on local PR body and final comment drafts before Ready for review: YES. If the guard fails, Ready for review must be NO. Report exact guard invocation and result in both PR body and final comment. See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
 
 ## Docs, Schema, And Workflow WPs
 

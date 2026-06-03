@@ -34,5 +34,6 @@ Reviewers must also verify the following evidence discipline checks. If any item
 - Unavailable security tools are reported as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT, not as passed.
 - Final top-level PR comment is present (not only the PR body).
 - Ready for review: YES is not set if any evidence defect remains uncorrected.
+- `pr_evidence_consistency_guard.py` was run on local drafts before Ready for review: YES (where local drafts available), and the exact guard invocation and PASS result appear in both PR body and final comment.
 
-See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` for the full policy, examples, and remediation guidance.
+See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` and `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` for the full policy, examples, and remediation guidance.

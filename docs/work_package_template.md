@@ -93,8 +93,9 @@ Every WP must satisfy the Standard PR Evidence Reporting Discipline Block before
 - PR body and final PR comment are consistent on all counts, commands, and results.
 - Stale counts corrected before Ready for review: YES.
 - Unavailable tools reported as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT, not as passed.
+- `tools/git/pr_evidence_consistency_guard.py` run on local PR body and final comment drafts before Ready for review: YES. If guard fails, Ready for review must be NO. Report exact guard invocation and result in both PR body and final comment.
 
-See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` for the full policy and `docs/ai/codex/PR_REVIEW_CHECKLIST.md` for reviewer-facing checks.
+See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`, and `docs/ai/codex/PR_REVIEW_CHECKLIST.md` for the full policy and reviewer-facing checks.
 
 ## Post-Final-Commit Validation
 
