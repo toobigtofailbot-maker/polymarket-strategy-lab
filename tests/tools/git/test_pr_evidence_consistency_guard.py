@@ -85,6 +85,11 @@ def _run(
     require_network: bool = True,
     require_ready: bool = True,
     fmt: str = "text",
+    forbid_inline_test_counts: bool = False,
+    forbid_placeholder_evidence: bool = False,
+    require_current_final_marker: bool = False,
+    stale_count_tokens: list[str] | None = None,
+    require_posted_evidence_note: bool = False,
 ) -> tuple[bool, list[str], list[str], list[str]]:
     body_file = tmp_path / "pr_body.md"
     comment_file = tmp_path / "final_comment.md"
@@ -97,6 +102,11 @@ def _run(
         required_commands=required_commands or [],
         require_standard_network_wording=require_network,
         require_ready_yes=require_ready,
+        forbid_inline_test_counts=forbid_inline_test_counts,
+        forbid_placeholder_evidence=forbid_placeholder_evidence,
+        require_current_final_marker=require_current_final_marker,
+        stale_count_tokens=stale_count_tokens or [],
+        require_posted_evidence_note=require_posted_evidence_note,
     )
 
 
@@ -558,3 +568,273 @@ def test_standard_network_wording_constant() -> None:
     assert "no API polling" in STANDARD_NETWORK_WORDING
     assert "no account access" in STANDARD_NETWORK_WORDING
     assert "no product network behavior" in STANDARD_NETWORK_WORDING
+
+
+# ── WP47 new flag tests: K — inline test counts ───────────────────────────────
+
+
+def test_fail_forbid_inline_test_counts_focused_tests_phrase(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\nfocused tests (33 tests)\n"
+    comment = "# Comment\nsome text\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        forbid_inline_test_counts=True,
+    )
+    assert not passed
+    assert any("[K]" in e and "PR body" in e for e in errors)
+
+
+def test_fail_forbid_inline_test_counts_tests_paren(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\nfoo tests (34 tests) bar\n"
+    comment = "# Comment\n34 passed, 0 failed, 0 errors\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        forbid_inline_test_counts=True,
+    )
+    assert not passed
+    assert any("[K]" in e for e in errors)
+
+
+def test_pass_forbid_inline_test_counts_only_in_validation(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\n34 passed, 0 failed, 0 errors\n"
+    comment = "# Comment\n34 passed, 0 failed, 0 errors\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        forbid_inline_test_counts=True,
+    )
+    assert passed, f"Expected PASS but got errors: {errors}"
+
+
+# ── WP47 new flag tests: L — placeholder evidence ─────────────────────────────
+
+
+def test_fail_forbid_placeholder_evidence_head_sha(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\nHead commit: <HEAD_SHA>\n"
+    comment = "# Comment\nsome text\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        forbid_placeholder_evidence=True,
+    )
+    assert not passed
+    assert any("[L]" in e and "<HEAD_SHA>" in e for e in errors)
+
+
+def test_fail_forbid_placeholder_evidence_placeholder_token(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\nplaceholder\n"
+    comment = "# Comment\nsome text\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        forbid_placeholder_evidence=True,
+    )
+    assert not passed
+    assert any("[L]" in e for e in errors)
+
+
+def test_fail_forbid_placeholder_evidence_actual_colon(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\nsome text\n"
+    comment = "# Comment\nactual: something\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        forbid_placeholder_evidence=True,
+    )
+    assert not passed
+    assert any("[L]" in e and "final comment" in e for e in errors)
+
+
+def test_fail_forbid_placeholder_evidence_fake_sha_filler(
+    tmp_path: pathlib.Path,
+) -> None:
+    fake_sha = "a" * 40
+    body = "# PR Body\nsome text\n"
+    comment = f"# Comment\nHead commit: {fake_sha}\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        forbid_placeholder_evidence=True,
+    )
+    assert not passed
+    assert any("[L]" in e and "final comment" in e for e in errors)
+
+
+# ── WP47 new flag tests: M — current final marker ────────────────────────────
+
+
+def test_fail_require_current_final_marker_missing(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\nsome text\n"
+    comment = "# Comment\nsome text without the marker\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        require_current_final_marker=True,
+    )
+    assert not passed
+    assert any("[M]" in e for e in errors)
+
+
+def test_pass_require_current_final_marker_present(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\nsome text\n"
+    comment = (
+        "CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments\n\n"
+        "some evidence text\n"
+    )
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        require_current_final_marker=True,
+    )
+    assert passed, f"Expected PASS but got errors: {errors}"
+
+
+# ── WP47 new flag tests: N — stale count tokens ───────────────────────────────
+
+
+def test_fail_forbid_stale_count_tokens_in_pr_body(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\n1612 passed, 0 failed, 0 errors\n"
+    comment = "# Comment\nsome text\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        stale_count_tokens=["1612 passed"],
+    )
+    assert not passed
+    assert any("[N]" in e and "PR body" in e for e in errors)
+
+
+def test_fail_forbid_stale_count_tokens_in_final_comment(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\nsome text\n"
+    comment = "# Comment\n28 passed, 0 failed, 0 errors\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        stale_count_tokens=["28 passed"],
+    )
+    assert not passed
+    assert any("[N]" in e and "final comment" in e for e in errors)
+
+
+# ── WP47 new flag tests: O — posted evidence note ────────────────────────────
+
+
+def test_fail_require_posted_evidence_note_missing(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\nsome text\n"
+    comment = "# Comment\nsome text\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        require_posted_evidence_note=True,
+    )
+    assert not passed
+    assert any("[O]" in e for e in errors)
+
+
+def test_pass_require_posted_evidence_note_present(
+    tmp_path: pathlib.Path,
+) -> None:
+    note = "Guard input source: exact local drafts intended for posting"
+    body = f"# PR Body\n{note}\n"
+    comment = f"# Comment\n{note}\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_network=False, require_ready=False,
+        require_posted_evidence_note=True,
+    )
+    assert passed, f"Expected PASS but got errors: {errors}"
+
+
+# ── WP47: JSON output includes new categories ─────────────────────────────────
+
+
+def test_json_output_includes_new_categories(tmp_path: pathlib.Path) -> None:
+    body = "# PR Body\nsome text\n"
+    comment = "# Comment\nsome text\n"
+    body_file = tmp_path / "pr_body.md"
+    comment_file = tmp_path / "final_comment.md"
+    body_file.write_text(body, encoding="utf-8")
+    comment_file.write_text(comment, encoding="utf-8")
+
+    import io
+    from contextlib import redirect_stdout
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        guard.main([
+            "--pr-body", str(body_file),
+            "--final-comment", str(comment_file),
+            "--format", "json",
+            "--forbid-inline-test-counts",
+            "--forbid-placeholder-evidence",
+            "--require-current-final-marker",
+            "--forbid-stale-count-tokens", "stale token",
+            "--require-posted-evidence-note",
+        ])
+
+    data = json.loads(buf.getvalue())
+    categories = data["checked_categories"]
+    assert "K:inline_test_counts" in categories
+    assert "L:placeholder_evidence" in categories
+    assert "M:current_final_marker" in categories
+    assert "N:stale_count_tokens" in categories
+    assert "O:posted_evidence_note" in categories
+
+
+def test_json_output_errors_include_new_category_errors(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = "# PR Body\nfocused tests (33 tests)\nHead commit: <HEAD_SHA>\n"
+    comment = "# Comment\nsome content without marker\nactual: foo\n"
+    body_file = tmp_path / "pr_body.md"
+    comment_file = tmp_path / "final_comment.md"
+    body_file.write_text(body, encoding="utf-8")
+    comment_file.write_text(comment, encoding="utf-8")
+
+    import io
+    from contextlib import redirect_stdout
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        rc = guard.main([
+            "--pr-body", str(body_file),
+            "--final-comment", str(comment_file),
+            "--format", "json",
+            "--forbid-inline-test-counts",
+            "--forbid-placeholder-evidence",
+            "--require-current-final-marker",
+            "--require-posted-evidence-note",
+        ])
+
+    assert rc == 1
+    data = json.loads(buf.getvalue())
+    assert data["status"] == "FAIL"
+    error_text = " ".join(data["errors"])
+    assert "[K]" in error_text
+    assert "[L]" in error_text
+    assert "[M]" in error_text
+    assert "[O]" in error_text

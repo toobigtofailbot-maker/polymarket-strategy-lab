@@ -93,7 +93,14 @@ Every WP must satisfy the Standard PR Evidence Reporting Discipline Block before
 - PR body and final PR comment are consistent on all counts, commands, and results.
 - Stale counts corrected before Ready for review: YES.
 - Unavailable tools reported as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT, not as passed.
-- `tools/git/pr_evidence_consistency_guard.py` run on local PR body and final comment drafts before Ready for review: YES. If guard fails, Ready for review must be NO. Report exact guard invocation and result in both PR body and final comment.
+- `tools/git/pr_evidence_consistency_guard.py` run with WP47 hardening flags on exact local drafts or copied posted content before Ready for review: YES. If guard fails, Ready for review must be NO. Report exact guard invocation and result in both PR body and final comment.
+
+## Posted PR Evidence Discipline (mandatory, WP47)
+
+- **Forbidden: file-list parenthetical test counts.** Do not write test counts in file-list descriptions or summary parentheticals such as "focused tests (34 tests)". Test counts belong only in validation result sections.
+- **Required: current final evidence marker.** The final top-level PR comment must start with or contain "CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments" when it supersedes earlier evidence comments.
+- **Required: Guard input source line.** Both PR body and final comment must include "Guard input source: exact local drafts intended for posting" or equivalent.
+- **Forbidden: placeholder evidence tokens.** `<HEAD_SHA>`, `TBD`, `placeholder`, `actual:`, `TODO`, or fake SHA filler must not appear in PR body or final comment.
 
 See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`, and `docs/ai/codex/PR_REVIEW_CHECKLIST.md` for the full policy and reviewer-facing checks.
 

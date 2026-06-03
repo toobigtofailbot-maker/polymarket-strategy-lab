@@ -25,7 +25,11 @@
 - `docs/project_status.md` current-WP wording check.
 - Dependency and lock-file preservation unless explicitly scoped.
 - Exact PR evidence reporting discipline: exact full validation commands in PR body and final PR comment (no ellipses, no abbreviated commands, no placeholder text), accurate network usage wording, consistent counts between PR body and final comment, and stale counts corrected before Ready for review: YES. See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`.
-- PR evidence consistency guard: run `tools/git/pr_evidence_consistency_guard.py` on local PR body and final comment drafts before Ready for review: YES. If the guard fails, Ready for review must be NO. Report exact guard invocation and result in both PR body and final comment. See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
+- PR evidence consistency guard: run `tools/git/pr_evidence_consistency_guard.py` on exact local drafts intended for posting (or on copied posted GitHub content if evidence was posted before the guard ran). Include WP47 hardening flags where local PR body/final comment drafts are available:
+  ```
+  python tools/git/pr_evidence_consistency_guard.py --pr-body <FINAL_PR_BODY_TEXT> --final-comment <CURRENT_FINAL_EVIDENCE_COMMENT_TEXT> --expected-head <HEAD_SHA> --required-command "python tools/git/status_snapshot.py --format text --include-deferred --include-helper-inventory --include-next-wp-candidates --include-protected-boundaries" --required-command "python tools/git/diff_scope_summary.py --base main --head HEAD --package-class local-offline-stdlib-governance-helper-hardening --allowed-prefix docs/ --allowed-prefix tests/ --allowed-prefix tools/git/pr_evidence_consistency_guard.py --forbidden-prefix src/" --require-standard-network-wording --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-current-final-marker --require-posted-evidence-note
+  ```
+  If the guard fails, Ready for review must be NO. Report exact guard invocation and result in both PR body and final comment. See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
 
 ## Docs, Schema, And Workflow WPs
 

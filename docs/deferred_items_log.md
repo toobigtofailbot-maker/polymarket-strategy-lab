@@ -1069,6 +1069,32 @@ READY_FOR_WP; semgrep availability must be honestly reported by validation.
 WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
 availability must be honestly reported by validation.
 
+## WP47 Posted PR Evidence Review Hardening Deferred Items
+
+WP47 hardens the guard with five new optional flags and updates workflow docs
+to require current-final evidence markers, forbid inline test counts in file
+lists, and require Guard input source notes. WP47 adds no runtime source,
+no dependency or lock-file changes, no Hermes/LLM/provider integration, no
+credentials, no network/account access, no trading or paper trading, no
+database/dashboard/scheduler/polling/product behavior, and no generated outputs
+committed.
+
+WP47 resolves no existing deferred items. All WP46-forward deferred items remain
+unchanged.
+
+WP47-D001 is added: guard still does not fetch live GitHub PR body/comments
+(OPEN, P4). WP47 hardens local posted-evidence discipline and current-final
+markers but intentionally avoids GitHub API/network/auth behavior. See table below.
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP47-D001 | Guard still does not fetch live GitHub PR body/comments | OPEN | P4 | WP47 hardens local posted-evidence discipline and current-final markers but intentionally avoids GitHub API/network/auth behavior. | Any future requirement to validate already-posted GitHub content automatically. | Future approved GitHub-aware helper WP with explicit network/auth boundary, only if explicitly approved. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP47. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.

@@ -34,6 +34,13 @@ Reviewers must also verify the following evidence discipline checks. If any item
 - Unavailable security tools are reported as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT, not as passed.
 - Final top-level PR comment is present (not only the PR body).
 - Ready for review: YES is not set if any evidence defect remains uncorrected.
-- `pr_evidence_consistency_guard.py` was run on local drafts before Ready for review: YES (where local drafts available), and the exact guard invocation and PASS result appear in both PR body and final comment.
+- `pr_evidence_consistency_guard.py` was run with WP47 hardening flags on exact local drafts or on copied posted content before Ready for review: YES, and the exact guard invocation and PASS result appear in both PR body and final comment.
+
+**WP47 additional reviewer checks (posted evidence hardening):**
+- Identify the current final evidence comment by the marker "CURRENT FINAL WP EVIDENCE". Do not treat older stale comments as current if a newer comment with this marker explicitly supersedes them.
+- Verify that the reviewer is reading the latest live PR body (or clearly state if using a PDF/export/screenshot of the PR body at a specific point in time).
+- No parenthetical test counts appear in file lists or summary lines (e.g., "tests (34 tests)" is forbidden outside validation result sections).
+- The final PR body and current final evidence comment guard invocation includes WP47 hardening flags where practical: `--forbid-inline-test-counts`, `--forbid-placeholder-evidence`, `--require-current-final-marker`, `--require-posted-evidence-note`.
+- Both PR body and final comment include a "Guard input source:" line.
 
 See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` and `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` for the full policy, examples, and remediation guidance.

@@ -1,5 +1,40 @@
 # Review Checklist
 
+## WP47 Posted PR Evidence Review Hardening
+
+- `tools/git/pr_evidence_consistency_guard.py` updated with five new optional flags?
+- `--forbid-inline-test-counts` fails on "(33 tests)" parenthetical phrases?
+- `--forbid-placeholder-evidence` fails on `<HEAD_SHA>`, `placeholder`, `actual:`, `TBD`, `TODO`, fake SHA filler?
+- `--require-current-final-marker` fails when final comment lacks "CURRENT FINAL WP EVIDENCE" marker?
+- `--forbid-stale-count-tokens` fails on user-supplied stale token in either file?
+- `--require-posted-evidence-note` fails when "Guard input source:" missing from either file?
+- JSON output includes new categories: K, L, M, N, O?
+- `tests/tools/git/test_pr_evidence_consistency_guard.py` updated with focused tests for all new flags?
+- All 15 new focused tests pass?
+- `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` updated with new flags, workflow, and limitations?
+- `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` updated with Rules 8–12?
+- `docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md` Standard PR Evidence block updated with new flags and current-final marker?
+- `docs/ai/codex/WP_EXECUTION_REPORT.md` updated with current-final marker requirement, guard input source, and no inline test counts?
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md` updated with WP47 reviewer checks (find current-final marker, no stale comment reliance, live PR body verification, no parenthetical test counts)?
+- `docs/ai/codex/VALIDATION_MATRIX.md` updated with WP47 hardening flags in guard invocation?
+- `docs/work_package_template.md` updated with "Posted PR Evidence Discipline" section?
+- `docs/project_status.md` shows WP47 as current phase and WP46 in merged WPs?
+- `docs/project_status.md` has posted PR evidence review hardening status line?
+- `docs/project_status.md` PR evidence consistency guard status shows MERGED?
+- Protected boundary statuses in `docs/project_status.md` are unchanged?
+- `docs/ai/codex/POSTED_PR_EVIDENCE_REVIEW_HARDENING.md` added (optional new doc)?
+- Reviewer must identify current final evidence comment by marker and not treat old stale comments as current?
+- Reviewer must verify latest live PR body or clearly state if using a PDF/export?
+- No parenthetical test counts in file lists anywhere in WP47 PR body or final comment?
+- No `src/` changes?
+- No dependency or lock-file changes?
+- No generated artifacts committed?
+- No runtime/product/network behavior added?
+- Focused tests pass (49 total)?
+- Related workflow docs tests (`test_pr_evidence_reporting_discipline_docs.py`) pass?
+- Full pytest passes after final commit?
+- WP47-D001 deferred item added (guard does not fetch live GitHub data)?
+
 ## WP46 PR Evidence Consistency Guard Helper
 
 - `tools/git/pr_evidence_consistency_guard.py` exists and is stdlib-only?

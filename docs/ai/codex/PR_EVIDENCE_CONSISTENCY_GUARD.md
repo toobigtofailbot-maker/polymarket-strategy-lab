@@ -2,10 +2,10 @@
 
 ## Status
 
-- PR evidence consistency guard status: LOCAL_OFFLINE_STDLIB_GUARD
+- PR evidence consistency guard status: LOCAL_OFFLINE_STDLIB_GUARD_HARDENED (WP47)
 - Runtime impact: NO_RUNTIME_CHANGE
 - Dependency impact: NO_DEPENDENCY_CHANGE
-- Network access: NONE
+- Network access: NONE — the guard is local/offline and does not fetch GitHub
 - Applies to: Codex and Claude Code
 - Enforcement: run before Ready for review: YES when local PR body and final comment drafts are available
 
@@ -21,12 +21,14 @@ not manually during review.
 
 ## Non-Goals
 
-- Does not fetch or parse live GitHub PR data.
+- Does not fetch or parse live GitHub PR data. The guard is local/offline only.
 - Does not post, edit, or comment on GitHub PRs or issues.
 - Does not prove that validation commands actually ran or that tests passed.
 - Does not replace human review.
 - Does not validate that file paths, commit SHAs, or test counts are correct — only that both surfaces are consistent with each other and contain required evidence structure.
 - Does not mutate PR bodies, comments, branches, files, or GitHub state.
+
+**Important limitation:** Running the guard only on intermediate drafts is insufficient if the posted PR body or posted evidence comment later changes. If any evidence is updated after posting, copy the final posted text back into local temporary files and re-run the guard before marking Ready for review: YES.
 
 ## Inputs
 
@@ -39,6 +41,11 @@ not manually during review.
 | `--require-standard-network-wording` | No | Require standard network wording in both files |
 | `--require-ready-yes` | No | Require "Ready for review: YES" in both files |
 | `--format text\|json` | No | Output format (default: text) |
+| `--forbid-inline-test-counts` | No | Fail if parenthetical test-count phrases like "(33 tests)" appear outside validation sections |
+| `--forbid-placeholder-evidence` | No | Fail if placeholder tokens like `<HEAD_SHA>`, `TBD`, `placeholder`, `actual:`, or fake SHA filler appear |
+| `--require-current-final-marker` | No | Fail unless final comment contains "CURRENT FINAL WP EVIDENCE" marker |
+| `--forbid-stale-count-tokens TEXT` | No, repeatable | Fail if the supplied stale token appears in either file |
+| `--require-posted-evidence-note` | No | Fail unless both files contain a "Guard input source:" line |
 
 ## CLI Usage
 
@@ -50,7 +57,7 @@ python tools/git/pr_evidence_consistency_guard.py \
   --final-comment local_final_comment.md
 ```
 
-### Full WP invocation pattern
+### Full WP invocation pattern (with WP47 hardening flags)
 
 ```
 python tools/git/pr_evidence_consistency_guard.py \
@@ -61,7 +68,11 @@ python tools/git/pr_evidence_consistency_guard.py \
   --required-command "python tools/git/diff_scope_summary.py --base main --head HEAD --package-class <PACKAGE_CLASS> --allowed-prefix docs/ --allowed-prefix tests/ --forbidden-prefix src/ --forbidden-prefix tools/" \
   --required-command "python tools/git/code_blast_radius.py <FULL_ARGUMENTS>" \
   --require-standard-network-wording \
-  --require-ready-yes
+  --require-ready-yes \
+  --forbid-inline-test-counts \
+  --forbid-placeholder-evidence \
+  --require-current-final-marker \
+  --require-posted-evidence-note
 ```
 
 ### JSON output
@@ -120,6 +131,11 @@ The guard checks for this exact string when `--require-standard-network-wording`
 | H — Ready status | "Ready for review: YES" must appear in both files; YES vs NO mismatch flagged |
 | I — File counts | Changed-file counts must match if present in both files |
 | J — Security honesty | Tool described as "passed" must not also be described as NOT_AVAILABLE/SKIPPED |
+| K — Inline test counts | (--forbid-inline-test-counts) Parenthetical test-count phrases like "(33 tests)" are forbidden outside validation sections |
+| L — Placeholder evidence | (--forbid-placeholder-evidence) Tokens like `<HEAD_SHA>`, `TBD`, `placeholder`, `actual:`, `TODO`, or fake SHA filler are forbidden |
+| M — Current final marker | (--require-current-final-marker) Final comment must contain "CURRENT FINAL WP EVIDENCE" marker |
+| N — Stale count tokens | (--forbid-stale-count-tokens) User-supplied stale tokens must not appear in either file |
+| O — Posted evidence note | (--require-posted-evidence-note) Both files must contain a "Guard input source:" line |
 
 ## Pass/Fail Behavior
 
@@ -159,13 +175,22 @@ The `run_guard()` API (for direct Python callers) still returns `[A]` category e
 
 ## How Claude Code / Codex Should Use This Guard
 
-1. Write the PR body draft locally (e.g., `local_pr_body.md`).
-2. Write the final comment draft locally (e.g., `local_final_comment.md`).
-3. Run the guard with all applicable flags before marking Ready for review: YES.
+Required workflow:
+
+1. Prepare final PR body text locally (e.g., `local_pr_body.md`).
+2. Prepare current final evidence comment text locally (e.g., `local_final_comment.md`).
+3. Run the guard on exact final texts with all applicable flags including WP47 hardening flags.
 4. If the guard fails, fix the PR body and/or final comment and re-run.
-5. Report the exact guard invocation and result (PASS/FAIL) in both the PR body and final comment.
-6. Do not commit local draft files unless they are test fixtures under `tests/`.
-7. If local drafts were used (not the already-posted GitHub content), state that fact in the PR body and final comment.
+5. Post or update the PR body and the current final evidence comment.
+6. If any posted evidence changes afterward, copy the final posted text back into local temporary files and re-run the guard.
+7. Mark Ready for review: YES only after final evidence passes the guard.
+8. Report the exact guard invocation and result (PASS/FAIL) in both the PR body and final comment.
+9. Include a "Guard input source:" line in both files identifying whether the guard ran on exact local drafts intended for posting or on copied posted GitHub content.
+10. Do not commit local draft files unless they are test fixtures under `tests/`.
+
+**Old final comments warning:** If previous evidence comments exist, the new current final evidence comment must start with "CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments" so reviewers know which comment is current.
+
+**No inline test counts in file lists:** Do not put test counts in file list descriptions or summary parentheticals (e.g., "focused tests (34 tests)"). Put counts only in validation result sections.
 
 ## Relationship to WP45 PR Evidence Reporting Discipline
 

@@ -97,6 +97,41 @@ _FILE_COUNT_PATTERNS = [
     re.compile(r"Modified\s+\((\d+)\)", re.IGNORECASE),
 ]
 
+# ── Inline test-count patterns (K) ────────────────────────────────────────────
+# Matches parenthetical test-count phrases like "(33 tests)", "(34 focused tests)",
+# "focused tests (34 tests)". These belong in validation sections, not file lists.
+_INLINE_TEST_COUNT_PATTERN = re.compile(
+    r"\(\s*\d+\s+(?:focused\s+)?tests?\s*\)", re.IGNORECASE
+)
+
+# ── Placeholder evidence patterns (L) ─────────────────────────────────────────
+# Simple substring tokens that are unambiguous placeholder evidence everywhere.
+_PLACEHOLDER_LITERAL_TOKENS = [
+    "<HEAD_SHA>",
+    "actual:",
+    "TBD",
+    "TODO",
+]
+# "placeholder" is detected only when it appears as a standalone word and is NOT
+# embedded in compound identifiers like "--forbid-placeholder-evidence" or
+# "L:placeholder_evidence".  The pattern excludes occurrences immediately
+# preceded or followed by alphanumeric chars, hyphens, or underscores.
+_STANDALONE_PLACEHOLDER_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9_\-])placeholder(?![A-Za-z0-9_\-])",
+)
+# Detect long runs of the same repeated character that signal fake SHA filler.
+_FAKE_SHA_FILLER_PATTERN = re.compile(r"a{8,}", re.IGNORECASE)
+
+# ── Current final evidence marker patterns (M) ────────────────────────────────
+_CURRENT_FINAL_MARKER_PATTERN = re.compile(
+    r"CURRENT\s+FINAL\s+WP\s+EVIDENCE", re.IGNORECASE
+)
+
+# ── Posted evidence note pattern (O) ──────────────────────────────────────────
+_POSTED_EVIDENCE_NOTE_PATTERN = re.compile(
+    r"Guard\s+input\s+source\s*:", re.IGNORECASE
+)
+
 # ── Security tool honesty patterns ───────────────────────────────────────────
 _SECURITY_PASSED_PATTERNS = [
     re.compile(r"gitleaks\s+passed", re.IGNORECASE),
@@ -459,6 +494,112 @@ def check_security_honesty(
     return errors
 
 
+# ── New guard checks (WP47) ───────────────────────────────────────────────────
+
+def check_inline_test_counts(
+    pr_body: str,
+    final_comment: str,
+) -> list[str]:
+    """K — Fail if parenthetical test-count phrases appear in either file."""
+    errors = []
+    for label, text in [("PR body", pr_body), ("final comment", final_comment)]:
+        for m in _INLINE_TEST_COUNT_PATTERN.finditer(text):
+            errors.append(
+                f"[K] Inline test count found in {label}: {m.group(0)!r}. "
+                "Move test counts to validation evidence only; remove parenthetical "
+                "count from file list / summary."
+            )
+    return errors
+
+
+def check_placeholder_evidence(
+    pr_body: str,
+    final_comment: str,
+) -> list[str]:
+    """L — Fail if obvious placeholder evidence tokens appear in either file."""
+    errors = []
+    for label, text in [("PR body", pr_body), ("final comment", final_comment)]:
+        for token in _PLACEHOLDER_LITERAL_TOKENS:
+            if token in text:
+                errors.append(
+                    f"[L] Placeholder evidence token {token!r} found in {label}. "
+                    "Replace with actual evidence before marking Ready for review: YES."
+                )
+        # "placeholder" as a standalone word (not part of compound identifiers
+        # such as "--forbid-placeholder-evidence" or "L:placeholder_evidence").
+        if _STANDALONE_PLACEHOLDER_PATTERN.search(text):
+            m = _STANDALONE_PLACEHOLDER_PATTERN.search(text)
+            assert m is not None
+            errors.append(
+                f"[L] Standalone 'placeholder' token found in {label} "
+                f"(at: {m.group(0)!r}). "
+                "Replace with actual evidence before marking Ready for review: YES."
+            )
+        if _FAKE_SHA_FILLER_PATTERN.search(text):
+            m = _FAKE_SHA_FILLER_PATTERN.search(text)
+            assert m is not None
+            errors.append(
+                f"[L] Fake SHA filler (repeated 'a' characters: {m.group(0)!r}) "
+                f"found in {label}. Replace with the actual head commit SHA."
+            )
+    return errors
+
+
+def check_current_final_marker(
+    final_comment: str,
+) -> list[str]:
+    """M — Fail if final comment lacks the CURRENT FINAL WP EVIDENCE marker."""
+    if _CURRENT_FINAL_MARKER_PATTERN.search(final_comment):
+        return []
+    return [
+        "[M] Final comment is missing the required current-final evidence marker. "
+        "The final comment must start with or contain: "
+        "'CURRENT FINAL WP EVIDENCE' or "
+        "'CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments'. "
+        "This marker tells reviewers which evidence comment is current."
+    ]
+
+
+def check_stale_count_tokens(
+    pr_body: str,
+    final_comment: str,
+    stale_tokens: list[str],
+) -> list[str]:
+    """N — Fail if any supplied stale token appears in either file."""
+    errors = []
+    for token in stale_tokens:
+        for label, text in [("PR body", pr_body), ("final comment", final_comment)]:
+            if token in text:
+                errors.append(
+                    f"[N] Stale count token {token!r} found in {label}. "
+                    "Remove or replace with the current accurate count."
+                )
+    return errors
+
+
+def check_posted_evidence_note(
+    pr_body: str,
+    final_comment: str,
+) -> list[str]:
+    """O — Fail unless both files contain a 'Guard input source:' note."""
+    errors = []
+    if not _POSTED_EVIDENCE_NOTE_PATTERN.search(pr_body):
+        errors.append(
+            "[O] PR body is missing the required 'Guard input source:' note. "
+            "Add a line such as: "
+            "'Guard input source: exact local drafts intended for posting' or "
+            "'Guard input source: copied posted PR body and current final evidence comment'."
+        )
+    if not _POSTED_EVIDENCE_NOTE_PATTERN.search(final_comment):
+        errors.append(
+            "[O] Final comment is missing the required 'Guard input source:' note. "
+            "Add a line such as: "
+            "'Guard input source: exact local drafts intended for posting' or "
+            "'Guard input source: copied posted PR body and current final evidence comment'."
+        )
+    return errors
+
+
 # ── Main guard ────────────────────────────────────────────────────────────────
 
 def run_guard(
@@ -468,6 +609,11 @@ def run_guard(
     required_commands: list[str],
     require_standard_network_wording: bool,
     require_ready_yes: bool,
+    forbid_inline_test_counts: bool = False,
+    forbid_placeholder_evidence: bool = False,
+    require_current_final_marker: bool = False,
+    stale_count_tokens: list[str] | None = None,
+    require_posted_evidence_note: bool = False,
 ) -> tuple[bool, list[str], list[str], list[str]]:
     """
     Returns (passed, errors, warnings, checked_categories).
@@ -537,6 +683,31 @@ def run_guard(
     checked.append("J:security_honesty")
     errors.extend(check_security_honesty(pr_body, final_comment))
 
+    # K — Inline test counts (optional)
+    checked.append("K:inline_test_counts")
+    if forbid_inline_test_counts:
+        errors.extend(check_inline_test_counts(pr_body, final_comment))
+
+    # L — Placeholder evidence (optional)
+    checked.append("L:placeholder_evidence")
+    if forbid_placeholder_evidence:
+        errors.extend(check_placeholder_evidence(pr_body, final_comment))
+
+    # M — Current final marker (optional, final comment only)
+    checked.append("M:current_final_marker")
+    if require_current_final_marker:
+        errors.extend(check_current_final_marker(final_comment))
+
+    # N — Stale count tokens (optional)
+    checked.append("N:stale_count_tokens")
+    if stale_count_tokens:
+        errors.extend(check_stale_count_tokens(pr_body, final_comment, stale_count_tokens))
+
+    # O — Posted evidence note (optional)
+    checked.append("O:posted_evidence_note")
+    if require_posted_evidence_note:
+        errors.extend(check_posted_evidence_note(pr_body, final_comment))
+
     passed = len(errors) == 0
     return passed, errors, warnings, checked
 
@@ -602,6 +773,57 @@ def build_parser() -> argparse.ArgumentParser:
         default="text",
         help="Output format: text (default) or json.",
     )
+    p.add_argument(
+        "--forbid-inline-test-counts",
+        action="store_true",
+        default=False,
+        help=(
+            "Fail if PR body or final comment contains parenthetical test-count "
+            "phrases such as '(33 tests)' or 'focused tests (34 tests)' outside "
+            "validation evidence. Move test counts to validation sections only."
+        ),
+    )
+    p.add_argument(
+        "--forbid-placeholder-evidence",
+        action="store_true",
+        default=False,
+        help=(
+            "Fail if either file contains obvious placeholder evidence tokens: "
+            "'<HEAD_SHA>', 'placeholder', 'actual:', 'TBD', 'TODO', or fake SHA "
+            "filler (long repeated 'a' characters)."
+        ),
+    )
+    p.add_argument(
+        "--require-current-final-marker",
+        action="store_true",
+        default=False,
+        help=(
+            "Fail unless the final comment contains the required current-final "
+            "evidence marker: 'CURRENT FINAL WP EVIDENCE' or "
+            "'CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments'."
+        ),
+    )
+    p.add_argument(
+        "--forbid-stale-count-tokens",
+        metavar="TEXT",
+        action="append",
+        default=[],
+        dest="stale_count_tokens",
+        help=(
+            "Fail if the supplied stale token appears in either PR body or final "
+            "comment. Repeatable. Example: --forbid-stale-count-tokens '1612 passed'."
+        ),
+    )
+    p.add_argument(
+        "--require-posted-evidence-note",
+        action="store_true",
+        default=False,
+        help=(
+            "Fail unless both PR body and final comment contain a 'Guard input "
+            "source:' line identifying whether the guard was run on exact local "
+            "drafts intended for posting or on copied posted GitHub content."
+        ),
+    )
     return p
 
 
@@ -653,6 +875,11 @@ def main(argv: list[str] | None = None) -> int:
         required_commands=args.required_commands,
         require_standard_network_wording=args.require_standard_network_wording,
         require_ready_yes=args.require_ready_yes,
+        forbid_inline_test_counts=args.forbid_inline_test_counts,
+        forbid_placeholder_evidence=args.forbid_placeholder_evidence,
+        require_current_final_marker=args.require_current_final_marker,
+        stale_count_tokens=args.stale_count_tokens,
+        require_posted_evidence_note=args.require_posted_evidence_note,
     )
 
     if args.format == "json":
