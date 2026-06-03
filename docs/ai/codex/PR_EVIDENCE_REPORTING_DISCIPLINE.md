@@ -91,10 +91,60 @@ Unavailable security tools must be reported as UNAVAILABLE/SKIPPED or SKIPPED_NO
 
 Required helper commands that do not exist must be reported as SKIPPED_NOT_PRESENT with exact reason. Do not imply they were run.
 
-## Rule 8 — Run PR Evidence Consistency Guard Before Ready for Review
+## Rule 8 — Current Final Evidence Comments Must Be Marked
+
+When posting a new final evidence comment that supersedes older comments, the new
+comment must start with:
+
+> CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments
+
+Old evidence comments may remain visible on the PR. Reviewers must identify the
+current final evidence comment by this marker, not by scroll position or date.
+
+If the posted final evidence changes after the initial comment (e.g., a re-run
+corrects counts), the updated comment must include the current-final marker.
+
+## Rule 9 — Inline Test Counts in File Lists Are Forbidden
+
+Do not write test counts in parenthetical file-list descriptions or summary
+phrases such as "focused tests (34 tests)" or "tests (33 tests)". These counts
+drift when the test suite changes and are not treated as validation evidence.
+
+**Acceptable:** Put test counts only in the validation result section:
+
+```
+python -m pytest tests/tools/git/test_pr_evidence_consistency_guard.py -v
+→ 49 passed, 0 failed, 0 errors; exit 0
+```
+
+**Not acceptable:** `tests/tools/git/test_pr_evidence_consistency_guard.py (49 focused tests)`
+
+## Rule 10 — Exact Posted Evidence or Exact Local-to-Be-Posted Evidence Must Be Checked
+
+The PR evidence consistency guard must be run on:
+- The exact local draft text intended for posting as the PR body and current final evidence comment; or
+- The exact text that was copied from the already-posted GitHub PR body and current final evidence comment.
+
+Running the guard only on intermediate or earlier drafts is insufficient if
+the posted content later changed. Intermediate draft checks do not count as
+verification of posted evidence.
+
+## Rule 11 — Supersede Stale Older Comments Explicitly
+
+If an earlier evidence comment contains stale counts, stale SHA, or incorrect
+evidence, the current final evidence comment must explicitly state that it
+supersedes earlier comments. Use the required marker:
+
+> CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments
+
+Reviewers must not treat stale earlier comments as current if a newer comment
+with this marker explicitly supersedes them.
+
+## Rule 12 — Run PR Evidence Consistency Guard Before Ready for Review (with WP47 Flags)
 
 When local PR body and final comment drafts are available, run
-`tools/git/pr_evidence_consistency_guard.py` before setting Ready for review: YES.
+`tools/git/pr_evidence_consistency_guard.py` with WP47 hardening flags before
+setting Ready for review: YES.
 
 The guard checks consistency between the two evidence surfaces and detects the
 most common defects: ellipses in commands, required commands missing from one
@@ -120,7 +170,11 @@ Ready for review: YES requires all of the following to be true:
 - [ ] No stale counts or stale summary text.
 - [ ] Unavailable tools reported honestly.
 - [ ] Final top-level PR comment is posted (not only the PR body).
-- [ ] `pr_evidence_consistency_guard.py` run on local drafts and result reported (where local drafts available).
+- [ ] Final top-level PR comment starts with "CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments" if it supersedes older comments.
+- [ ] No parenthetical test counts in file lists or summary sections.
+- [ ] No placeholder evidence tokens in PR body or final comment.
+- [ ] Both PR body and final comment include a "Guard input source:" line.
+- [ ] `pr_evidence_consistency_guard.py` run with WP47 hardening flags on exact local drafts or on copied posted content, and result reported.
 
 If any item is NO, set Ready for review: NO and correct the evidence before requesting review.
 

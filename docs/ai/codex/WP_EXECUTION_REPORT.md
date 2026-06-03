@@ -72,6 +72,23 @@ If Remote Main Sync Gate, `git fetch`, `git pull`, `git push`, or PR publication
 **PR evidence consistency guard:**
 Run `tools/git/pr_evidence_consistency_guard.py` on local PR body and final comment drafts before Ready for review: YES. Report the exact guard invocation and result (PASS/FAIL) in both the PR body and final comment. If the guard fails, correct all failures before requesting review. Do not commit local draft files. See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
 
+**Current final evidence marker requirement:**
+The final top-level PR comment must start with or contain:
+
+> CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments
+
+This marker is required when the comment supersedes earlier evidence comments so
+reviewers can identify the current evidence.
+
+**Guard input source requirement:**
+Both PR body and final comment must include a "Guard input source:" line such as:
+- `Guard input source: exact local drafts intended for posting`
+- `Guard input source: copied posted PR body and current final evidence comment`
+
+**No inline test counts in file lists:**
+Do not write test counts in file-list descriptions or summary parentheticals.
+Test counts belong only in validation result sections.
+
 **Ready for review gate:**
 Ready for review: YES is forbidden if any of the following remain:
 - Ellipses or abbreviated commands in validation evidence.
@@ -81,6 +98,10 @@ Ready for review: YES is forbidden if any of the following remain:
 - Missing final top-level PR comment.
 - Unavailable tools described as passed.
 - `pr_evidence_consistency_guard.py` fails on local drafts.
+- Final comment missing the current-final evidence marker (when superseding old comments).
+- Parenthetical test counts appearing in file lists or summaries.
+- Placeholder evidence tokens in either PR body or final comment.
+- "Guard input source:" note missing from either PR body or final comment.
 
 ## Concise Reporting
 
