@@ -964,9 +964,11 @@ def test_project_status_wp48_in_merged_wps():
     assert "WP48" in merged_line
 
 
-def test_project_status_core_scorer_on_branch():
+def test_project_status_core_scorer_merged():
+    # WP49 is merged; project_status.md must reflect CORE_SCORER_MERGED (not ON_BRANCH)
     text = PROJECT_STATUS.read_text(encoding="utf-8")
-    assert "CORE_SCORER_ON_BRANCH" in text
+    assert "CORE_SCORER_MERGED" in text
+    assert "CORE_SCORER_ON_BRANCH" not in text
 
 
 def test_project_status_live_trading_disabled():
