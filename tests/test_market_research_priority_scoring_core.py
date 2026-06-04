@@ -666,6 +666,19 @@ def test_validation_fails_missing_market_advisory_label():
 
 # ── Validation: score bounds ──────────────────────────────────────────────────
 
+def test_validation_fails_score_none():
+    out = build_market_research_priority_output(
+        _valid_run_context(), _valid_market_context()
+    )
+    out["markets"][0]["research_priority_score"] = None
+    errors = validate_market_research_priority_output(out)
+    assert errors, "Expected validation errors when research_priority_score is None"
+    assert any(
+        "research_priority_score" in e and ("None" in e or "not a number" in e or "invalid" in e)
+        for e in errors
+    ), f"Expected error mentioning score is None or invalid; got: {errors}"
+
+
 def test_validation_fails_score_below_zero():
     out = build_market_research_priority_output(
         _valid_run_context(), _valid_market_context()

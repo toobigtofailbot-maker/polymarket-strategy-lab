@@ -339,19 +339,25 @@ def _validate_market_object(market: object, index: int = 0) -> list[str]:
             errors.append(f"{prefix}: missing required field '{field}'")
 
     score = market.get("research_priority_score")
-    if score is not None:
-        try:
-            score_f = float(score)
-            if score_f < 0.0:
-                errors.append(
-                    f"{prefix}: research_priority_score {score_f} < 0.0"
-                )
-            if score_f > 1.0:
-                errors.append(
-                    f"{prefix}: research_priority_score {score_f} > 1.0"
-                )
-        except (TypeError, ValueError):
+    if "research_priority_score" in market:
+        if score is None:
             errors.append(
+                f"{prefix}: research_priority_score is None; "
+                "must be a float in [0.0, 1.0]"
+            )
+        else:
+            try:
+                score_f = float(score)
+                if score_f < 0.0:
+                    errors.append(
+                        f"{prefix}: research_priority_score {score_f} < 0.0"
+                    )
+                if score_f > 1.0:
+                    errors.append(
+                        f"{prefix}: research_priority_score {score_f} > 1.0"
+                    )
+            except (TypeError, ValueError):
+                errors.append(
                 f"{prefix}: research_priority_score is not a number: {score!r}"
             )
 
