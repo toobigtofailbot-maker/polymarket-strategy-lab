@@ -2,21 +2,21 @@
 
 ## 1. Status
 
-- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_ON_BRANCH
-- WP: WP44 (design merged); WP48 (schema/contract merged); WP49 (core scorer on branch)
+- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_ON_BRANCH
+- WP: WP44 (design merged); WP48 (schema/contract merged); WP49 (core scorer merged); WP50 (direction lock merged); WP51 (feature extraction foundation on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
 - Tooling impact: NO_NEW_TOOLING
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
-- Source impact: WP44 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED
+- Source impact: WP44 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_ADDED
 - Validation impact: NO_VALIDATION_WEAKENING
 - Protected-boundary impact: NO_PROTECTED_BOUNDARY_CHANGE
 - Agent runtime impact: NO_AGENT_RUNTIME
 - Hermes impact: NO_HERMES_INSTALL_OR_RUNTIME
 - LLM/provider impact: NO_LLM_PROVIDER_RUNTIME
 - Trading impact: NO_TRADING_EXECUTION
-- Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ON_BRANCH
-- Feature extraction implementation: NOT_STARTED
+- Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_MERGED
+- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_ON_BRANCH
 - CLI/export/report implementation: NOT_STARTED
 - Advisory consumer integration: NOT_STARTED
 
@@ -25,6 +25,16 @@ contract. WP49 adds the local/offline/read-only core scorer at
 `src/data_layer/market_research_priority_scoring.py` (stdlib-only, in-memory
 output only, no network, no file writes, no CLI, no export, no feature
 extraction, no advisory consumer integration, no runtime behavior).
+
+WP51 adds the local/offline/read-only feature extraction foundation at
+`src/data_layer/market_research_priority_features.py` (stdlib-only, in-memory
+only, no network, no file writes, no CLI, no export/report writer). It bridges
+existing local snapshot artifacts (MarketMetadataSnapshotRecord,
+OrderBookSnapshotRecord, SnapshotManifest) into prepared in-memory run_context
+and market_context dicts compatible with the WP49 core scorer. Feature
+extraction produces basic metadata/provenance/staleness/missing-data features.
+Non-signal boundary is preserved. Advanced feature groups (provenance hardening,
+resolution-rule ambiguity, microstructure quality) remain deferred.
 
 The formal schema and output contract for this layer is defined in
 `docs/market_research_priority_scoring_output_contract.md` (WP48, merged).

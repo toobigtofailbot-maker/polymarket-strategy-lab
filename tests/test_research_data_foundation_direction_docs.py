@@ -253,14 +253,24 @@ def test_project_status_file_exists():
     assert PROJECT_STATUS.is_file()
 
 
-def test_project_status_wp50_current_phase():
+def test_project_status_wp50_in_merged_wps():
+    text = _read_status()
+    merged_line = next(
+        (l for l in text.splitlines() if l.startswith("- Merged WPs:")),
+        None,
+    )
+    assert merged_line is not None
+    assert "WP50" in merged_line
+
+
+def test_project_status_wp51_current_phase():
     text = _read_status()
     phase_line = next(
         (l for l in text.splitlines() if l.startswith("- Current phase:")),
         None,
     )
     assert phase_line is not None
-    assert "WP50" in phase_line
+    assert "WP51" in phase_line
 
 
 def test_project_status_wp49_in_merged_wps():
@@ -278,9 +288,9 @@ def test_project_status_core_scorer_merged():
     assert "CORE_SCORER_MERGED" in text
 
 
-def test_project_status_research_data_foundation_direction_on_branch():
+def test_project_status_research_data_foundation_direction_merged():
     text = _read_status()
-    assert "RESEARCH_DATA_FOUNDATION_DIRECTION_ON_BRANCH" in text
+    assert "RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED" in text
 
 
 # ── Protected boundary preservation in project_status.md ─────────────────────
