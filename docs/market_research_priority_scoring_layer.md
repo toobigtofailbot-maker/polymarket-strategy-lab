@@ -2,26 +2,32 @@
 
 ## 1. Status
 
-- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_ON_BRANCH
-- WP: WP44 (design); WP48 (schema/output contract on branch)
+- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_ON_BRANCH
+- WP: WP44 (design merged); WP48 (schema/contract merged); WP49 (core scorer on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
 - Tooling impact: NO_NEW_TOOLING
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
-- Source impact: NO_SRC_CHANGE
+- Source impact: WP44 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED
 - Validation impact: NO_VALIDATION_WEAKENING
 - Protected-boundary impact: NO_PROTECTED_BOUNDARY_CHANGE
 - Agent runtime impact: NO_AGENT_RUNTIME
 - Hermes impact: NO_HERMES_INSTALL_OR_RUNTIME
 - LLM/provider impact: NO_LLM_PROVIDER_RUNTIME
 - Trading impact: NO_TRADING_EXECUTION
-- Scoring implementation: NOT_STARTED
+- Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ON_BRANCH
+- Feature extraction implementation: NOT_STARTED
+- CLI/export/report implementation: NOT_STARTED
+- Advisory consumer integration: NOT_STARTED
 
-This document is design-only. No implementation, schema, CLI, report writer,
-JSON output, scoring logic, or source code is added in WP44.
+WP44 added this design doc (docs-only). WP48 defined the binding output
+contract. WP49 adds the local/offline/read-only core scorer at
+`src/data_layer/market_research_priority_scoring.py` (stdlib-only, in-memory
+output only, no network, no file writes, no CLI, no export, no feature
+extraction, no advisory consumer integration, no runtime behavior).
 
 The formal schema and output contract for this layer is defined in
-`docs/market_research_priority_scoring_output_contract.md` (WP48).
+`docs/market_research_priority_scoring_output_contract.md` (WP48, merged).
 Any future implementation must follow that contract.
 
 ## 2. Purpose

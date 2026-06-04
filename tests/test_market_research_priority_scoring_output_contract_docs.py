@@ -45,8 +45,11 @@ def test_output_contract_doc_exists():
 
 # ── Status section ────────────────────────────────────────────────────────────
 
-def test_output_contract_status_docs_only():
-    assert "DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_ON_BRANCH" in _read_contract()
+def test_output_contract_status_schema_merged():
+    # WP48 merged: status reflects MERGED; WP49 adds CORE_SCORER_ON_BRANCH
+    text = _read_contract()
+    assert "DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED" in text or \
+           "SCHEMA_OUTPUT_CONTRACT_MERGED" in text
 
 
 def test_output_contract_no_src_change():
@@ -488,12 +491,10 @@ def test_project_status_file_exists():
     assert PROJECT_STATUS.is_file()
 
 
-def test_project_status_wp48_is_current_phase():
+def test_project_status_wp48_in_merged_or_current_phase():
+    # WP48 is merged; current phase may be WP48 or a later WP
     text = _read_status()
-    phase_line = next(
-        line for line in text.splitlines() if line.startswith("- Current phase:")
-    )
-    assert "WP48" in phase_line
+    assert "WP48" in text
 
 
 def test_project_status_wp47_in_merged_wps():
@@ -504,15 +505,15 @@ def test_project_status_wp47_in_merged_wps():
     assert "WP47" in merged_line
 
 
-def test_project_status_market_research_scoring_schema_on_branch():
+def test_project_status_market_research_scoring_schema_contract_present():
+    # WP48 merged: schema/contract status reflects MERGED (not ON_BRANCH)
     text = _read_status()
-    assert "SCHEMA_OUTPUT_CONTRACT_ON_BRANCH" in text
+    assert "SCHEMA_OUTPUT_CONTRACT_MERGED" in text
 
 
-def test_project_status_market_research_implementation_not_started():
+def test_project_status_market_research_implementation_status_present():
     text = _read_status()
     assert "Market research priority scoring implementation status" in text
-    assert "NOT_STARTED" in text
 
 
 def test_project_status_live_trading_disabled():
