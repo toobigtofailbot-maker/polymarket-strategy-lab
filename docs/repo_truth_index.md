@@ -51,27 +51,28 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 45. `src/data_layer/market_research_priority_scoring.py` - WP49 local/offline/read-only core scorer for the Market Research Priority Scoring Layer; stdlib-only, in-memory output only, no network, no file writes, no CLI, no export, no feature extraction, no advisory consumer integration, no runtime/product/trading behavior; implements compute_research_priority_score, build_market_research_priority_output, validate_market_research_priority_output, assert_market_research_priority_output, and contains_forbidden_output_fields per the WP48 contract.
 46. `docs/research_data_foundation_direction.md` - WP50 docs-only direction lock recording final research-phase decisions after WP49 merge; authoritative for: final research-phase direction, approved near-term research-data foundation candidate sequence, blocked directions and non-signal boundaries, and onboarding future chats for scoring/research-foundation work. It does not override docs/project_status.md for current state, docs/deferred_items_log.md for deferred items, or docs/market_research_priority_scoring_output_contract.md for schema/output contract. Updated in WP51 to reflect WP50 merge and WP51 feature extraction foundation on branch.
 47. `src/data_layer/market_research_priority_features.py` - WP51 local/offline/read-only feature extraction foundation; stdlib-only, in-memory output only, no network, no file writes, no CLI, no export/report; bridges MarketMetadataSnapshotRecord, OrderBookSnapshotRecord, and SnapshotManifest objects into prepared run_context and market_context dicts compatible with the WP49 core scorer; implements build_manifest_index, index_order_books_by_token_id, extract_market_research_priority_context, extract_market_research_priority_contexts, build_market_research_priority_run_context, and extract_from_snapshot_dir per the WP48 output contract and WP51 scope.
-48. `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` - WP45 mandatory PR evidence reporting discipline for Codex and Claude Code; defines exact validation command requirements, no-ellipsis rule, network usage wording distinction, PR body and final comment consistency requirements, stale count correction gate, and reviewer action for evidence defects.
-49. `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` - WP46 user-facing reference for the local/offline/stdlib PR evidence consistency guard (`tools/git/pr_evidence_consistency_guard.py`); defines purpose, non-goals, CLI usage, guard checks, pass/fail behavior, limitations, and relationship to WP45 evidence reporting discipline. Updated in WP47 with new flags (K–O), required workflow, and WP47 hardening limitations.
-50. `docs/ai/codex/POSTED_PR_EVIDENCE_REVIEW_HARDENING.md` - WP47 optional reference doc describing the failure pattern from PR #47, current-final evidence marker, posted evidence vs draft evidence, why inline test counts are forbidden, reviewer workflow, Claude Code / Codex workflow, known limitation (no GitHub API fetch), and deferred WP47-D001.
-51. `docs/architecture_principles.md` - platform architecture principles.
-52. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
-53. `docs/runtime_boundaries.md` - protected runtime boundary rules.
-54. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
-55. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
-56. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
-57. `docs/security_tooling_status.md` - current security-tool availability and scan status.
-58. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
-59. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
-60. `docs/data_semantics.md` - shared data definitions.
-61. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
-62. `docs/risk_semantics.md` - risk definitions and initial posture.
-63. `docs/live_trading_authorization.md` - live trading gate and authorization table.
-64. `docs/security_and_secrets.md` - credential and incident rules.
-65. `docs/codex_execution_guidelines.md` - work-package execution process.
-66. `docs/work_package_template.md` - reusable WP template.
-67. `docs/review_checklist.md` - review readiness checklist.
-68. `docs/testing_requirements.md` - current and future test requirements.
+48. `docs/long_term_bot_completion_roadmap.md` - WP52 docs-only long-term bot-completion roadmap and Side 4.0 onboarding lock; authoritative for: long-term bot-completion roadmap, milestone and WP-range planning estimates, Side 4.0 onboarding context, and phase sequencing at planning level. Does not override `docs/project_status.md` for current state, `docs/deferred_items_log.md` for deferred items, `docs/research_data_foundation_direction.md` for locked near-term research-data direction, `docs/market_research_priority_scoring_output_contract.md` for score/output schema, or any future approved implementation WP. Planning guidance only — not authorization for any future phase.
+49. `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` - WP45 mandatory PR evidence reporting discipline for Codex and Claude Code; defines exact validation command requirements, no-ellipsis rule, network usage wording distinction, PR body and final comment consistency requirements, stale count correction gate, and reviewer action for evidence defects.
+50. `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` - WP46 user-facing reference for the local/offline/stdlib PR evidence consistency guard (`tools/git/pr_evidence_consistency_guard.py`); defines purpose, non-goals, CLI usage, guard checks, pass/fail behavior, limitations, and relationship to WP45 evidence reporting discipline. Updated in WP47 with new flags (K–O), required workflow, and WP47 hardening limitations.
+51. `docs/ai/codex/POSTED_PR_EVIDENCE_REVIEW_HARDENING.md` - WP47 optional reference doc describing the failure pattern from PR #47, current-final evidence marker, posted evidence vs draft evidence, why inline test counts are forbidden, reviewer workflow, Claude Code / Codex workflow, known limitation (no GitHub API fetch), and deferred WP47-D001.
+52. `docs/architecture_principles.md` - platform architecture principles.
+53. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
+54. `docs/runtime_boundaries.md` - protected runtime boundary rules.
+55. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
+56. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
+57. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
+58. `docs/security_tooling_status.md` - current security-tool availability and scan status.
+59. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
+60. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
+61. `docs/data_semantics.md` - shared data definitions.
+62. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
+63. `docs/risk_semantics.md` - risk definitions and initial posture.
+64. `docs/live_trading_authorization.md` - live trading gate and authorization table.
+65. `docs/security_and_secrets.md` - credential and incident rules.
+66. `docs/codex_execution_guidelines.md` - work-package execution process.
+67. `docs/work_package_template.md` - reusable WP template.
+68. `docs/review_checklist.md` - review readiness checklist.
+69. `docs/testing_requirements.md` - current and future test requirements.
 
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 

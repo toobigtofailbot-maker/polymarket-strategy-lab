@@ -89,6 +89,7 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP51-D002 | Resolution-rule ambiguity extraction not started | OPEN | P3 | WP51 implements only basic metadata/staleness/provenance feature extraction. Resolution-rule ambiguity taxonomy, manual-label workflow, and ambiguity feature extraction are not started. | Any resolution-rule ambiguity extraction or taxonomy WP. | Future approved WP explicitly scopes resolution-rule ambiguity work after WP51 is merged and user explicitly approves. |
 | WP51-D003 | Microstructure quality feature extraction beyond basic availability not started | OPEN | P3 | WP51 determines only basic order book availability and two-sided structure. Spread bps, depth buckets, slippage, tradability, fill probability, order size, and execution confidence are not computed. | Any microstructure quality feature extraction WP. | Future approved WP explicitly scopes microstructure quality extraction after WP51 is merged, local artifact schema is confirmed, and user explicitly approves. |
 | WP51-D004 | CLI/export/report writer not started | OPEN | P3 | WP51 adds no CLI, no JSON writer/exporter, no report writer, no local output file generation, and no advisory consumer integration. | Any CLI-driven scoring, report generation, or advisory handoff. | Future approved WP implements CLI/export/report integration only after WP51 is merged and user explicitly approves. |
+| WP52-D001 | Long-term roadmap locked but milestone implementation remains gated by explicit future WPs | OPEN | P3 | WP52 locks the long-term bot-completion roadmap in docs/long_term_bot_completion_roadmap.md but does not draft, approve, or schedule any future implementation WP. Each milestone phase requires separate explicit user approval before a WP is drafted. | Any implementation WP beyond docs/tests-only roadmap/onboarding lock. | Future approved WP explicitly selected by user after WP52 is merged; milestone implementation sequencing remains user-gated. |
 
 ## Rules For Adding Items
 
@@ -1215,6 +1216,37 @@ UNAVAILABLE/SKIPPED. WP3-D002 (semgrep): READY_FOR_WP; semgrep availability
 must be honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP;
 no project dependency added and pip-audit availability must be honestly reported
 by validation.
+
+## WP52 Long-Term Bot Roadmap And Side 4 Onboarding Lock-In Update
+
+WP52 adds `docs/long_term_bot_completion_roadmap.md` and focused tests at
+`tests/test_long_term_bot_completion_roadmap_docs.py`. It updates
+`docs/project_status.md`, `docs/repo_truth_index.md`,
+`docs/research_data_foundation_direction.md`, and `docs/deferred_items_log.md`.
+
+WP52 is docs/test-only. It adds no source under `src/`, no tools implementation,
+no runtime, no network, no dependency or lock-file changes, no
+Hermes/LLM/provider integration, no credentials, no account access, no trading
+or paper trading, no database/dashboard/scheduler/polling/product behavior, and
+no generated outputs committed.
+
+WP52 resolves no existing deferred items.
+
+WP49-D002, WP49-D003, WP50-D001, WP51-D001, WP51-D002, WP51-D003, and
+WP51-D004 remain OPEN.
+
+WP52-D001 is added: long-term roadmap locked, but milestone implementation
+remains gated by explicit future WPs (OPEN, P3).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP52-D001 | Long-term roadmap locked but milestone implementation remains gated by explicit future WPs | OPEN | P3 | WP52 locks the long-term bot-completion roadmap in docs/long_term_bot_completion_roadmap.md but does not draft, approve, or schedule any future implementation WP. Each milestone phase requires separate explicit user approval before a WP is drafted. | Future approved WP explicitly selected by user after WP52 is merged; milestone implementation sequencing remains user-gated. | Candidate: any explicitly approved safe next WP after WP52 is merged. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP52; availability reported honestly in
+validation. WP3-D002 (semgrep): READY_FOR_WP; semgrep availability must be
+honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project
+dependency added and pip-audit availability must be honestly reported by
+validation.
 
 ## WP6 Generated Artifact Incident Update
 

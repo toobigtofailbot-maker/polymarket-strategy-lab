@@ -2,9 +2,10 @@
 
 ## A. Status
 
-- WP: WP50 (direction lock merged); WP51 (feature extraction foundation on branch)
-- Package class: DOCS_ONLY_DIRECTION_LOCK_MERGED; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_ON_BRANCH
+- WP: WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap on branch)
+- Package class: DOCS_ONLY_DIRECTION_LOCK_MERGED; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_ON_BRANCH
 - WP50 merge commit: 180a6547114824890851d6ba7e34ab96e7ddd4b8
+- WP51 merge commit: c57b9c0adcc044f8bd9ed01a6368f2fafdbe222f
 - Runtime impact: NO_RUNTIME_CHANGE
 - Source impact: NO_SOURCE_CHANGE_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_ADDED_IN_WP51
 - Tools impact: NO_TOOLS_CHANGE
@@ -14,8 +15,27 @@
 - Paper trading impact: NO_PAPER_TRADING
 - Hermes impact: NO_HERMES_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
-- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_ON_BRANCH_IN_WP51
+- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED_IN_WP51
 - WP51 scope: local/offline/read-only feature extraction foundation only; no CLI/export/report; no microstructure depth/slippage; no resolution ambiguity parser; no strategy/paper/live/execution
+- WP52 scope: docs/tests-only long-term bot roadmap and Side 4.0 onboarding lock; no source/tools/runtime/dependency changes
+
+## A1. Long-Term Roadmap Cross-Reference
+
+Long-term bot-completion planning and Side 4.0 onboarding context are now
+locked in `docs/long_term_bot_completion_roadmap.md` (added in WP52).
+
+That document contains:
+- Current simple-state summary and self-driving-car analogy
+- Current repo-built components
+- Missing major capabilities
+- Four milestone labels and planning WP-range estimates
+- Ten-phase roadmap with analogies
+- What the roadmap does not approve
+- Side 4.0 onboarding summary
+
+**The roadmap does not approve implementation beyond the current direction.**
+The research-data foundation remains the immediate approved track. Each future
+phase in the roadmap requires its own explicitly approved work package.
 
 ## B. Purpose
 
