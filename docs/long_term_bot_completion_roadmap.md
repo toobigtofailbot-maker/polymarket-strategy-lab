@@ -188,15 +188,17 @@ metadata extraction, metadata-only cross-market relationship graph.
 
 ### Phase 3: Microstructure and Liquidity Quality
 
-**What:** Check whether each market is liquid enough to trade — spread, depth,
-slippage, fill probability.
+**What:** Check the microstructure quality indicators of each market — spread,
+depth, slippage. These are data-quality inputs, not trade-readiness signals.
 
 **Analogy:** Check whether the road is drivable.
 
 **Estimated range:** 8-14 WPs
 
-Includes: spread bps, depth buckets, slippage estimates, tradability signals
-(research-quality only, not trade signals), fill probability estimates.
+Includes: spread bps, depth buckets, slippage estimates as microstructure
+quality indicators and execution realism inputs for later approved simulation
+work only. Not tradability. Not execution confidence. No fill-probability
+implementation is approved by this roadmap. No trade-readiness signal.
 
 ### Phase 4: Scoring Output, Reporting, and Human Workflow
 
