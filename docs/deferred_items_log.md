@@ -81,10 +81,14 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP44-D002 | Score laundering mitigation not enforced by implementation | RESOLVED (WP49 core scorer scope) | P3 | WP44 documents score-laundering mitigations in design-only form; WP48 defines contract-level forbidden fields and advisory labels. WP49 enforces advisory-only, non-signal, staleness/provenance/missing-data penalties, forbidden-output checks, and human-review-required enforcement via implementation tests. | Any scoring implementation or report/export output. | Resolved only for local/offline/read-only core scorer scope by WP49; feature extraction, export, and advisory consumer integration mitigations remain to be added. |
 | WP48-D001 | Market Research Priority Scoring implementation not started after schema/output contract | RESOLVED (WP49 core scorer scope) | P3 | WP48 defines the schema/output contract only. WP49 implements the local/offline/read-only core scorer. | Any scoring implementation, CLI, report/export, or advisory integration. | Resolved only for local/offline/read-only core scorer scope by WP49. Feature extraction, CLI/export/report, and advisory consumer integration remain not started (see WP49-D001, WP49-D002, WP49-D003). |
 | WP48-D002 | Schema/output contract not enforced by implementation yet | RESOLVED (WP49 core scorer scope) | P3 | WP48 adds a docs-only contract. WP49 adds implementation tests enforcing required top-level fields, required market fields, advisory label, human_review_required, score bounds [0.0, 1.0], forbidden fields (recursive), staleness caps, missing-provenance caps, missing-data caps, and quality-gate caps. | Any scoring implementation or scored output generation. | Resolved only for local/offline/read-only core scorer scope by WP49. Contract enforcement for future exporters, report writers, and advisory consumers remains to be added. |
-| WP49-D001 | Feature extraction from local/offline artifacts not started | OPEN | P3 | WP49 implements only the local/offline/read-only core scorer with already-prepared in-memory inputs. No feature extraction from real local Polymarket snapshot/catalog/export artifacts is implemented. | Any scoring run that reads real local artifact files (snapshots, catalogs, exports). | Future approved WP implements feature extraction from existing local/offline artifacts only, after WP49 is merged and user explicitly approves. |
+| WP49-D001 | Feature extraction from local/offline artifacts not started | RESOLVED (WP51 basic feature extraction foundation scope) | P3 | WP49 implements only the local/offline/read-only core scorer with already-prepared in-memory inputs. No feature extraction from real local Polymarket snapshot/catalog/export artifacts is implemented. | Any scoring run that reads real local artifact files (snapshots, catalogs, exports). | Resolved only for the narrow WP51 basic feature extraction foundation scope: src/data_layer/market_research_priority_features.py implements basic metadata/provenance/staleness/missing-data feature extraction from MarketMetadataSnapshotRecord, OrderBookSnapshotRecord, and SnapshotManifest objects. Advanced feature groups remain deferred (WP51-D001, WP51-D002, WP51-D003). |
 | WP49-D002 | CLI/export/report writer not started | OPEN | P3 | WP49 adds no CLI, no JSON writer/exporter, no report writer, no local output file generation, and no advisory consumer integration. | Any CLI-driven scoring, report generation, or advisory handoff. | Future approved WP implements CLI/export/report integration only, after WP49 is merged and user explicitly approves. |
 | WP49-D003 | Core scorer not integrated with advisory consumer or market catalog | OPEN | P3 | WP49 core scorer is standalone and in-memory only. It is not wired to the local advisory consumer (tools/advisory/local_advisory_consumer.py) or the local market catalog (src/data_layer/polymarket/market_catalog.py). | Any advisory consumer use of scoring output or automated catalog-driven scoring. | Future approved WP integrates core scorer with advisory consumer or catalog only after feature extraction is implemented and user explicitly approves. |
 | WP50-D001 | Research direction locked but implementation sequencing still requires explicit future WPs | OPEN | P3 | WP50 locks the research-phase direction in docs/research_data_foundation_direction.md but does not draft, approve, or schedule any future implementation WP. Each item in the approved near-term sequence requires separate explicit user approval before a WP is drafted. | Any feature extraction, CLI/export/report, advisory integration, calibration, wallet-attention, official-source latency, paper-trading, live-trading, or execution WP. | Future approved WP explicitly selected by user after WP50 is merged; implementation sequencing remains user-gated. |
+| WP51-D001 | Provenance/staleness enforcement hardening beyond foundation not started | OPEN | P3 | WP51 implements basic staleness and provenance detection only. Non-compensatory caps, cross-session provenance audit, and full guard-policy version tracking remain not implemented. | Any provenance/staleness enforcement hardening WP. | Future approved WP explicitly scopes and implements provenance/staleness hardening after WP51 is merged and user explicitly approves. |
+| WP51-D002 | Resolution-rule ambiguity extraction not started | OPEN | P3 | WP51 implements only basic metadata/staleness/provenance feature extraction. Resolution-rule ambiguity taxonomy, manual-label workflow, and ambiguity feature extraction are not started. | Any resolution-rule ambiguity extraction or taxonomy WP. | Future approved WP explicitly scopes resolution-rule ambiguity work after WP51 is merged and user explicitly approves. |
+| WP51-D003 | Microstructure quality feature extraction beyond basic availability not started | OPEN | P3 | WP51 determines only basic order book availability and two-sided structure. Spread bps, depth buckets, slippage, tradability, fill probability, order size, and execution confidence are not computed. | Any microstructure quality feature extraction WP. | Future approved WP explicitly scopes microstructure quality extraction after WP51 is merged, local artifact schema is confirmed, and user explicitly approves. |
+| WP51-D004 | CLI/export/report writer not started | OPEN | P3 | WP51 adds no CLI, no JSON writer/exporter, no report writer, no local output file generation, and no advisory consumer integration. | Any CLI-driven scoring, report generation, or advisory handoff. | Future approved WP implements CLI/export/report integration only after WP51 is merged and user explicitly approves. |
 
 ## Rules For Adding Items
 
@@ -1153,9 +1157,64 @@ market catalog (OPEN, P3).
 
 | Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
 |---|---|---|---|---|---|---|
-| WP49-D001 | Feature extraction from local/offline artifacts not started | OPEN | P3 | WP49 implements only the in-memory core scorer; no feature extraction from real local Polymarket snapshot/catalog/export artifacts. | Future approved WP implements feature extraction from existing local/offline artifacts only, after WP49 merged and user approval. | Candidate: Market Research Priority Scoring feature extraction WP, local/offline/read-only only. |
+| WP49-D001 | Feature extraction from local/offline artifacts not started | RESOLVED (WP51 basic feature extraction foundation scope) | P3 | WP49 implements only the in-memory core scorer; no feature extraction from real local Polymarket snapshot/catalog/export artifacts. | Resolved for narrow WP51 basic scope only; advanced feature groups remain deferred (WP51-D001, WP51-D002, WP51-D003). | WP51 adds src/data_layer/market_research_priority_features.py. |
 | WP49-D002 | CLI/export/report writer not started | OPEN | P3 | WP49 adds no CLI, no JSON writer/exporter, no report writer, no local output file generation. | Future approved WP implements CLI/export/report integration only, after WP49 merged and user approval. | Candidate: Market Research Priority Scoring CLI/export WP, local/offline/read-only only. |
 | WP49-D003 | Core scorer not integrated with advisory consumer or market catalog | OPEN | P3 | WP49 core scorer is standalone and in-memory only; not wired to advisory consumer or catalog. | Future approved WP integrates core scorer after feature extraction is implemented and user explicitly approves. | Candidate: follow-on integration WP after feature extraction WP. |
+
+## WP50 Research Data Foundation Direction Lock-In Deferred Items
+
+WP50 adds `docs/research_data_foundation_direction.md` as a docs-only direction
+lock. WP50 is docs/tests-only and adds no runtime source, no feature extraction,
+no CLI/export/report, no dependency or lock-file changes, no Hermes/LLM/provider
+integration, no credentials, no network/account access, no trading or paper
+trading, no database/dashboard/scheduler/polling/product behavior, and no
+generated outputs committed.
+
+WP50 resolves no existing deferred items. WP50 adds WP50-D001 (research
+direction locked, but implementation sequencing still requires explicit future
+WPs, OPEN, P3). WP49-D001, WP49-D002, and WP49-D003 remain OPEN at WP50 merge.
+
+WP3-D001 (gitleaks): rerun/assessed in WP50. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
+## WP51 Market Research Priority Feature Extraction Foundation Deferred Items
+
+WP51 adds the local/offline/read-only feature extraction foundation at
+src/data_layer/market_research_priority_features.py. WP51 is stdlib-only,
+in-memory output only, no network, no file writes, no CLI, no export/report
+writer, no advisory consumer integration, no runtime/product/trading behavior,
+no Hermes/LLM/provider integration, no credentials, no account access, no
+trading or paper trading, no database/dashboard/scheduler/polling/product
+behavior, and no generated outputs committed.
+
+WP51 resolves WP49-D001 only for the narrow basic feature extraction foundation
+scope: basic metadata/provenance/staleness/missing-data features from
+MarketMetadataSnapshotRecord, OrderBookSnapshotRecord, and SnapshotManifest.
+Advanced feature groups remain deferred.
+
+WP49-D002 and WP49-D003 remain OPEN. WP50-D001 remains OPEN.
+
+WP51-D001 is added: provenance/staleness enforcement hardening beyond foundation
+not started (OPEN, P3).
+WP51-D002 is added: resolution-rule ambiguity extraction not started (OPEN, P3).
+WP51-D003 is added: microstructure quality feature extraction beyond basic
+availability not started (OPEN, P3).
+WP51-D004 is added: CLI/export/report writer not started (OPEN, P3).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP51-D001 | Provenance/staleness enforcement hardening beyond foundation not started | OPEN | P3 | WP51 implements basic staleness and provenance detection only. Non-compensatory caps, cross-session provenance audit, and full guard-policy version tracking remain not implemented. | Future approved WP explicitly scopes and implements provenance/staleness hardening after WP51 is merged and user explicitly approves. | Candidate: provenance/staleness hardening WP, local/offline/read-only only. |
+| WP51-D002 | Resolution-rule ambiguity extraction not started | OPEN | P3 | WP51 implements only basic metadata/staleness/provenance feature extraction. Resolution-rule ambiguity taxonomy, manual-label workflow, and ambiguity feature extraction are not started. | Future approved WP explicitly scopes resolution-rule ambiguity work after WP51 is merged and user explicitly approves. | Candidate: resolution-rule ambiguity taxonomy and manual-label workflow WP. |
+| WP51-D003 | Microstructure quality feature extraction beyond basic availability not started | OPEN | P3 | WP51 determines only basic order book availability and two-sided structure. Spread bps, depth buckets, slippage, tradability, fill probability, order size, and execution confidence are not computed. | Future approved WP explicitly scopes microstructure quality extraction after WP51 is merged, local artifact schema is confirmed, and user explicitly approves. | Candidate: microstructure quality feature extraction WP, local/offline/read-only only. |
+| WP51-D004 | CLI/export/report writer not started | OPEN | P3 | WP51 adds no CLI, no JSON writer/exporter, no report writer, no local output file generation, and no advisory consumer integration. | Future approved WP implements CLI/export/report integration only after WP51 is merged and user explicitly approves. | Candidate: Market Research Priority Scoring CLI/export WP, local/offline/read-only only. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP51; binary absent in this environment,
+UNAVAILABLE/SKIPPED. WP3-D002 (semgrep): READY_FOR_WP; semgrep availability
+must be honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP;
+no project dependency added and pip-audit availability must be honestly reported
+by validation.
 
 ## WP6 Generated Artifact Incident Update
 

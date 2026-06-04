@@ -37,10 +37,12 @@ def test_required_src_readmes_exist():
 # WP8 approves executable source files under src/data_layer/polymarket/.
 # WP23 approves executable local/offline exporter source under src/data_layer/agent_context/.
 # WP49 approves the local/offline/read-only core scorer at src/data_layer/market_research_priority_scoring.py.
+# WP51 approves the local/offline/read-only feature extraction foundation at src/data_layer/market_research_priority_features.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
     "src/data_layer/market_research_priority_scoring.py",
+    "src/data_layer/market_research_priority_features.py",
 )
 
 

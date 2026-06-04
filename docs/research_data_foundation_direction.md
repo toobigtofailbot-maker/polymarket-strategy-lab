@@ -2,10 +2,11 @@
 
 ## A. Status
 
-- WP: WP50
-- Package class: DOCS_ONLY_DIRECTION_LOCK_ON_BRANCH
+- WP: WP50 (direction lock merged); WP51 (feature extraction foundation on branch)
+- Package class: DOCS_ONLY_DIRECTION_LOCK_MERGED; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_ON_BRANCH
+- WP50 merge commit: 180a6547114824890851d6ba7e34ab96e7ddd4b8
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: NO_SOURCE_CHANGE
+- Source impact: NO_SOURCE_CHANGE_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_ADDED_IN_WP51
 - Tools impact: NO_TOOLS_CHANGE
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
@@ -13,7 +14,8 @@
 - Paper trading impact: NO_PAPER_TRADING
 - Hermes impact: NO_HERMES_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
-- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50
+- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_ON_BRANCH_IN_WP51
+- WP51 scope: local/offline/read-only feature extraction foundation only; no CLI/export/report; no microstructure depth/slippage; no resolution ambiguity parser; no strategy/paper/live/execution
 
 ## B. Purpose
 
@@ -30,16 +32,23 @@ Any future session, agent, or reviewer must read this document alongside
 
 ## C. Repo-Truth Basis
 
+- WP50 is merged at commit `180a6547114824890851d6ba7e34ab96e7ddd4b8`.
 - WP49 is merged at commit `3ee02a7c31a1d4f5d599fdb1d5ffa83d6fca1d6d`.
 - WP49 core scorer (`src/data_layer/market_research_priority_scoring.py`) is
   merged: stdlib-only, in-memory output only, no network, no file writes, no
   CLI, no export, no feature extraction, no advisory consumer integration, no
   runtime/product/trading behavior.
-- Feature extraction from local/offline artifacts is not started (WP49-D001
-  OPEN).
-- CLI/export/report writer is not started (WP49-D002 OPEN).
-- Advisory consumer / market catalog integration is not started (WP49-D003
-  OPEN).
+- WP51 adds the first local/offline/read-only feature extraction foundation at
+  `src/data_layer/market_research_priority_features.py` on branch
+  `wp51-market-research-priority-feature-extraction-foundation`. It bridges
+  existing local snapshot artifacts into prepared scorer input dicts. No network,
+  no writes, no CLI, no export/report, no trading/execution behavior.
+- WP49-D001 (feature extraction from local/offline artifacts) is resolved for
+  the narrow WP51 basic feature extraction foundation scope only. Advanced
+  feature groups (provenance hardening, resolution-rule ambiguity, microstructure
+  quality) remain deferred (WP51-D001, WP51-D002, WP51-D003).
+- CLI/export/report writer is not started (WP49-D002 OPEN, WP51-D004 OPEN).
+- Advisory consumer / market catalog integration is not started (WP49-D003 OPEN).
 - Protected boundaries remain unchanged: live trading DISABLED, credentials
   NOT_USED, execution NOT_STARTED, authenticated client
   FORBIDDEN_UNTIL_APPROVED_WP, Hermes NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY,
