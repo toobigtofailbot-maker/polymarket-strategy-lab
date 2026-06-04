@@ -2,8 +2,8 @@
 
 ## 1. Status
 
-- Package status: DOCS_ONLY_DESIGN_ON_BRANCH
-- WP: WP44
+- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_ON_BRANCH
+- WP: WP44 (design); WP48 (schema/output contract on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
 - Tooling impact: NO_NEW_TOOLING
 - Dependency impact: NO_DEPENDENCY_CHANGE
@@ -19,6 +19,10 @@
 
 This document is design-only. No implementation, schema, CLI, report writer,
 JSON output, scoring logic, or source code is added in WP44.
+
+The formal schema and output contract for this layer is defined in
+`docs/market_research_priority_scoring_output_contract.md` (WP48).
+Any future implementation must follow that contract.
 
 ## 2. Purpose
 
@@ -357,10 +361,10 @@ Any future output from the Market Research Priority Scoring Layer:
 Any future work package proposing to implement the Market Research Priority
 Scoring Layer must satisfy all of the following before implementation begins:
 
-1. WP45 or equivalent approved WP defines the formal schema and output contract
-   for `research_priority_score` and all component features.
-2. The schema WP is reviewed and merged.
-3. The implementation WP is explicitly approved by the user after WP45 merge.
+1. WP48 defines the formal schema and output contract for `research_priority_score`
+   and all component features. See `docs/market_research_priority_scoring_output_contract.md`.
+2. The schema WP (WP48) is reviewed and merged.
+3. The implementation WP is explicitly approved by the user after WP48 merge.
 4. The implementation is local/offline/read-only and does not add runtime
    dependencies, network calls, authenticated requests, or external data sources.
 5. The implementation adds tests enforcing advisory-only labels, forbidden-name
@@ -444,5 +448,5 @@ implementation:
 - Providing real-time or near-real-time market data access.
 - Consuming authenticated or account-level data.
 - Producing outputs consumed directly by strategy modules or risk engines.
-- Implementing scoring logic without a separate schema-definition WP (WP45 or
-  equivalent) approved first.
+- Implementing scoring logic without WP48 (schema/output contract) merged and
+  without explicit user approval of an implementation WP.

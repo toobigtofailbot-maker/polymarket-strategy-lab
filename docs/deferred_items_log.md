@@ -77,8 +77,10 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP3-D009 | Deployment jurisdiction / geoblocking decision | DEFERRED | P1 before live trading | Deployment location affects compliance and order placement. | Live execution. | Document deployment jurisdiction and compliance decision. |
 | WP3-D010 | Incident response document not yet created | DEFERRED | P2 | WP1 marked it as needed before live. | Live execution. | Create and review `docs/incident_response.md`. |
 | WP3-D011 | Live trading authorization remains disabled | DEFERRED | P0 before live execution | Live trading is intentionally blocked. | Any real order path. | Future work package updates `docs/live_trading_authorization.md` with explicit human approval and tested risk controls. |
-| WP44-D001 | Market Research Priority Scoring implementation not started | OPEN | P3 | WP44 defines docs-only design for a future Market Research Priority Scoring Layer but adds no schema, source, CLI, report, export, or advisory integration implementation. | Any scoring implementation, schema, CLI, report/export, or advisory integration. | Future approved WP defines schema/output contract first (WP45 or equivalent), then implementation in a later WP. |
-| WP44-D002 | Score laundering mitigation not enforced by implementation | OPEN | P3 | WP44 documents score-laundering risk and mitigations in design-only form, but no implementation exists to enforce advisory-only labels, caps, missing-data penalties, or forbidden-output checks. | Any scoring implementation or report/export output. | Future approved WP adds tests and output constraints enforcing advisory-only, non-signal, provenance/staleness, and forbidden-output rules. |
+| WP44-D001 | Market Research Priority Scoring implementation not started | OPEN | P3 | WP44 defines docs-only design; WP48 defines schema/output contract. Neither adds scoring implementation, source, CLI, report, or export. | Any scoring implementation, CLI, report/export, or advisory integration. | Future approved WP implements scoring logic only after WP48 is merged and user explicitly approves implementation WP. |
+| WP44-D002 | Score laundering mitigation not enforced by implementation | OPEN | P3 | WP44 documents score-laundering mitigations in design-only form; WP48 defines contract-level forbidden fields and advisory labels. No implementation exists to enforce them. | Any scoring implementation or report/export output. | Future approved implementation WP adds tests enforcing advisory-only, non-signal, provenance/staleness, and forbidden-output rules per WP48 contract. |
+| WP48-D001 | Market Research Priority Scoring implementation not started after schema/output contract | OPEN | P3 | WP48 defines the schema/output contract only. No implementation, scoring logic, CLI, report writer, or JSON writer is added. | Any scoring implementation, CLI, report/export, or advisory integration. | Future approved WP implements scoring logic only after WP48 is merged and the user explicitly approves an implementation WP. |
+| WP48-D002 | Schema/output contract not enforced by implementation yet | OPEN | P3 | WP48 adds a docs-only contract. No implementation exists to enforce required fields, labels, bounds, forbidden fields, staleness, or provenance rules. | Any scoring implementation or scored output generation. | Future approved implementation WP adds tests enforcing all WP48 contract requirements before any scored output is produced. |
 
 ## Rules For Adding Items
 
@@ -1091,6 +1093,36 @@ markers but intentionally avoids GitHub API/network/auth behavior. See table bel
 | WP47-D001 | Guard still does not fetch live GitHub PR body/comments | OPEN | P4 | WP47 hardens local posted-evidence discipline and current-final markers but intentionally avoids GitHub API/network/auth behavior. | Any future requirement to validate already-posted GitHub content automatically. | Future approved GitHub-aware helper WP with explicit network/auth boundary, only if explicitly approved. |
 
 WP3-D001 (gitleaks): rerun/assessed in WP47. WP3-D002 (semgrep):
+READY_FOR_WP; semgrep availability must be honestly reported by validation.
+WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
+availability must be honestly reported by validation.
+
+## WP48 Market Research Priority Scoring Schema / Output Contract Deferred Items
+
+WP48 defines the formal schema and output contract for the future local/offline/
+read-only Market Research Priority Scoring Layer. WP48 adds no runtime source,
+no scoring implementation, no CLI tooling, no JSON writer, no report writer,
+no dependency or lock-file changes, no Hermes/LLM/provider integration, no
+credentials, no network/account access, no trading or paper trading, no
+database/dashboard/scheduler/polling/product behavior, and no generated outputs
+committed.
+
+WP48 resolves no existing deferred items. WP44-D001 and WP44-D002 remain OPEN
+because implementation is still not started and no implementation exists to
+enforce the schema/output contract. All WP47-forward deferred items remain
+unchanged.
+
+WP48-D001 is added: Market Research Priority Scoring implementation not started
+after schema/output contract (OPEN, P3).
+WP48-D002 is added: schema/output contract not enforced by implementation yet
+(OPEN, P3).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP48-D001 | Market Research Priority Scoring implementation not started after schema/output contract | OPEN | P3 | WP48 defines the schema/output contract only. No implementation, scoring logic, CLI, report writer, or JSON writer is added. | Future approved WP implements scoring logic only after WP48 is merged and the user explicitly approves an implementation WP. | Candidate later WP: Market Research Priority Scoring implementation, local/offline/read-only only, if explicitly approved. |
+| WP48-D002 | Schema/output contract not enforced by implementation yet | OPEN | P3 | WP48 adds a docs-only contract. No implementation exists to enforce required fields, labels, bounds, forbidden fields, staleness, or provenance rules. | Future approved implementation WP adds tests enforcing all contract requirements before any scored output is produced. | Candidate later WP: Market Research Priority Scoring implementation, only after WP48 merged and user approval. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP48. WP3-D002 (semgrep):
 READY_FOR_WP; semgrep availability must be honestly reported by validation.
 WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
 availability must be honestly reported by validation.

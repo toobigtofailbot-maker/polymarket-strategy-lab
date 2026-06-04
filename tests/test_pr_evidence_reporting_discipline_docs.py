@@ -502,7 +502,7 @@ def test_project_status_wp45_current_branch():
         None,
     )
     assert branch_line is not None, "docs/project_status.md must have a Current branch line"
-    assert "wp46" in branch_line.lower() or "wp47" in branch_line.lower(), (
+    assert any(f"wp{n}" in branch_line.lower() for n in range(46, 100)), (
         "docs/project_status.md Current branch must reference a branch after WP45 merge "
         f"(got: {branch_line!r})"
     )

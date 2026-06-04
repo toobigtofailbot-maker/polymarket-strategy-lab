@@ -147,7 +147,9 @@ def test_design_requires_missing_data_warning():
 # ── Status is design-only ─────────────────────────────────────────────────────
 
 def test_design_status_is_docs_only():
-    assert "DOCS_ONLY_DESIGN_ON_BRANCH" in _read_design()
+    # WP48 updates status from ON_BRANCH to MERGED; SCHEMA_OUTPUT_CONTRACT_ON_BRANCH
+    text = _read_design()
+    assert "DOCS_ONLY_DESIGN_MERGED" in text or "DOCS_ONLY_DESIGN_ON_BRANCH" in text
 
 
 def test_design_no_src_change():
