@@ -77,10 +77,13 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP3-D009 | Deployment jurisdiction / geoblocking decision | DEFERRED | P1 before live trading | Deployment location affects compliance and order placement. | Live execution. | Document deployment jurisdiction and compliance decision. |
 | WP3-D010 | Incident response document not yet created | DEFERRED | P2 | WP1 marked it as needed before live. | Live execution. | Create and review `docs/incident_response.md`. |
 | WP3-D011 | Live trading authorization remains disabled | DEFERRED | P0 before live execution | Live trading is intentionally blocked. | Any real order path. | Future work package updates `docs/live_trading_authorization.md` with explicit human approval and tested risk controls. |
-| WP44-D001 | Market Research Priority Scoring implementation not started | OPEN | P3 | WP44 defines docs-only design; WP48 defines schema/output contract. Neither adds scoring implementation, source, CLI, report, or export. | Any scoring implementation, CLI, report/export, or advisory integration. | Future approved WP implements scoring logic only after WP48 is merged and user explicitly approves implementation WP. |
-| WP44-D002 | Score laundering mitigation not enforced by implementation | OPEN | P3 | WP44 documents score-laundering mitigations in design-only form; WP48 defines contract-level forbidden fields and advisory labels. No implementation exists to enforce them. | Any scoring implementation or report/export output. | Future approved implementation WP adds tests enforcing advisory-only, non-signal, provenance/staleness, and forbidden-output rules per WP48 contract. |
-| WP48-D001 | Market Research Priority Scoring implementation not started after schema/output contract | OPEN | P3 | WP48 defines the schema/output contract only. No implementation, scoring logic, CLI, report writer, or JSON writer is added. | Any scoring implementation, CLI, report/export, or advisory integration. | Future approved WP implements scoring logic only after WP48 is merged and the user explicitly approves an implementation WP. |
-| WP48-D002 | Schema/output contract not enforced by implementation yet | OPEN | P3 | WP48 adds a docs-only contract. No implementation exists to enforce required fields, labels, bounds, forbidden fields, staleness, or provenance rules. | Any scoring implementation or scored output generation. | Future approved implementation WP adds tests enforcing all WP48 contract requirements before any scored output is produced. |
+| WP44-D001 | Market Research Priority Scoring implementation not started | RESOLVED (WP49 core scorer scope) | P3 | WP44 defines docs-only design; WP48 defines schema/output contract. WP49 implements the local/offline/read-only core scorer at src/data_layer/market_research_priority_scoring.py. | Any scoring implementation, CLI, report/export, or advisory integration. | Resolved only for local/offline/read-only core scorer scope by WP49. Feature extraction, CLI/export/report, and advisory consumer integration remain not started. |
+| WP44-D002 | Score laundering mitigation not enforced by implementation | RESOLVED (WP49 core scorer scope) | P3 | WP44 documents score-laundering mitigations in design-only form; WP48 defines contract-level forbidden fields and advisory labels. WP49 enforces advisory-only, non-signal, staleness/provenance/missing-data penalties, forbidden-output checks, and human-review-required enforcement via implementation tests. | Any scoring implementation or report/export output. | Resolved only for local/offline/read-only core scorer scope by WP49; feature extraction, export, and advisory consumer integration mitigations remain to be added. |
+| WP48-D001 | Market Research Priority Scoring implementation not started after schema/output contract | RESOLVED (WP49 core scorer scope) | P3 | WP48 defines the schema/output contract only. WP49 implements the local/offline/read-only core scorer. | Any scoring implementation, CLI, report/export, or advisory integration. | Resolved only for local/offline/read-only core scorer scope by WP49. Feature extraction, CLI/export/report, and advisory consumer integration remain not started (see WP49-D001, WP49-D002, WP49-D003). |
+| WP48-D002 | Schema/output contract not enforced by implementation yet | RESOLVED (WP49 core scorer scope) | P3 | WP48 adds a docs-only contract. WP49 adds implementation tests enforcing required top-level fields, required market fields, advisory label, human_review_required, score bounds [0.0, 1.0], forbidden fields (recursive), staleness caps, missing-provenance caps, missing-data caps, and quality-gate caps. | Any scoring implementation or scored output generation. | Resolved only for local/offline/read-only core scorer scope by WP49. Contract enforcement for future exporters, report writers, and advisory consumers remains to be added. |
+| WP49-D001 | Feature extraction from local/offline artifacts not started | OPEN | P3 | WP49 implements only the local/offline/read-only core scorer with already-prepared in-memory inputs. No feature extraction from real local Polymarket snapshot/catalog/export artifacts is implemented. | Any scoring run that reads real local artifact files (snapshots, catalogs, exports). | Future approved WP implements feature extraction from existing local/offline artifacts only, after WP49 is merged and user explicitly approves. |
+| WP49-D002 | CLI/export/report writer not started | OPEN | P3 | WP49 adds no CLI, no JSON writer/exporter, no report writer, no local output file generation, and no advisory consumer integration. | Any CLI-driven scoring, report generation, or advisory handoff. | Future approved WP implements CLI/export/report integration only, after WP49 is merged and user explicitly approves. |
+| WP49-D003 | Core scorer not integrated with advisory consumer or market catalog | OPEN | P3 | WP49 core scorer is standalone and in-memory only. It is not wired to the local advisory consumer (tools/advisory/local_advisory_consumer.py) or the local market catalog (src/data_layer/polymarket/market_catalog.py). | Any advisory consumer use of scoring output or automated catalog-driven scoring. | Future approved WP integrates core scorer with advisory consumer or catalog only after feature extraction is implemented and user explicitly approves. |
 
 ## Rules For Adding Items
 
@@ -1126,6 +1129,32 @@ WP3-D001 (gitleaks): rerun/assessed in WP48. WP3-D002 (semgrep):
 READY_FOR_WP; semgrep availability must be honestly reported by validation.
 WP3-D004 (pip-audit): READY_FOR_WP; no project dependency added and pip-audit
 availability must be honestly reported by validation.
+
+## WP49 Market Research Priority Scoring Core Implementation Deferred Items
+
+WP49 adds the local/offline/read-only core scorer at
+src/data_layer/market_research_priority_scoring.py. WP49 is stdlib-only,
+in-memory output only, no network, no file writes, no CLI, no export, no
+feature extraction, no advisory consumer integration, no runtime/product/
+trading behavior, no Hermes/LLM/provider integration, no credentials, no
+account access, no trading or paper trading, no database/dashboard/scheduler/
+polling/product behavior, and no generated outputs committed.
+
+WP49 resolves WP44-D001, WP44-D002, WP48-D001, and WP48-D002 only for the
+local/offline/read-only core scorer scope. Feature extraction, CLI/export/
+report, and advisory consumer integration remain not started.
+
+WP49-D001 is added: feature extraction from local/offline artifacts not
+started (OPEN, P3).
+WP49-D002 is added: CLI/export/report writer not started (OPEN, P3).
+WP49-D003 is added: core scorer not integrated with advisory consumer or
+market catalog (OPEN, P3).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP49-D001 | Feature extraction from local/offline artifacts not started | OPEN | P3 | WP49 implements only the in-memory core scorer; no feature extraction from real local Polymarket snapshot/catalog/export artifacts. | Future approved WP implements feature extraction from existing local/offline artifacts only, after WP49 merged and user approval. | Candidate: Market Research Priority Scoring feature extraction WP, local/offline/read-only only. |
+| WP49-D002 | CLI/export/report writer not started | OPEN | P3 | WP49 adds no CLI, no JSON writer/exporter, no report writer, no local output file generation. | Future approved WP implements CLI/export/report integration only, after WP49 merged and user approval. | Candidate: Market Research Priority Scoring CLI/export WP, local/offline/read-only only. |
+| WP49-D003 | Core scorer not integrated with advisory consumer or market catalog | OPEN | P3 | WP49 core scorer is standalone and in-memory only; not wired to advisory consumer or catalog. | Future approved WP integrates core scorer after feature extraction is implemented and user explicitly approves. | Candidate: follow-on integration WP after feature extraction WP. |
 
 ## WP6 Generated Artifact Incident Update
 
