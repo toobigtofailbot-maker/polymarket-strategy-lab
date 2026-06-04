@@ -2,12 +2,13 @@
 
 ## A. Status
 
-- WP: WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap on branch)
-- Package class: DOCS_ONLY_DIRECTION_LOCK_MERGED; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_ON_BRANCH
+- WP: WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening on branch)
+- Package class: DOCS_ONLY_DIRECTION_LOCK_MERGED; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_ON_BRANCH
 - WP50 merge commit: 180a6547114824890851d6ba7e34ab96e7ddd4b8
 - WP51 merge commit: c57b9c0adcc044f8bd9ed01a6368f2fafdbe222f
+- WP52 merge commit: 259fac091a3b8d0d22aaab13345f440d5a958af2
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: NO_SOURCE_CHANGE_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_ADDED_IN_WP51
+- Source impact: NO_SOURCE_CHANGE_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_ADDED_IN_WP51; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_HARDENED_IN_WP53
 - Tools impact: NO_TOOLS_CHANGE
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
@@ -15,9 +16,10 @@
 - Paper trading impact: NO_PAPER_TRADING
 - Hermes impact: NO_HERMES_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
-- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED_IN_WP51
+- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED_IN_WP51; DATA_INTEGRITY_HARDENING_ON_BRANCH_IN_WP53
 - WP51 scope: local/offline/read-only feature extraction foundation only; no CLI/export/report; no microstructure depth/slippage; no resolution ambiguity parser; no strategy/paper/live/execution
 - WP52 scope: docs/tests-only long-term bot roadmap and Side 4.0 onboarding lock; no source/tools/runtime/dependency changes
+- WP53 scope: local/offline/read-only data-integrity hardening only; provenance/staleness/missing-data enforcement; no CLI/export/report; no advisory consumer; no strategy/paper/live/execution
 
 ## A1. Long-Term Roadmap Cross-Reference
 
