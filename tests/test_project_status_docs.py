@@ -95,3 +95,55 @@ def test_authenticated_client_status_forbidden():
 def test_official_client_runtime_dependency_status_not_started():
     text = _read()
     assert "Official client runtime dependency status: NOT_STARTED_FOR_OFFICIAL_CLIENT_RUNTIME" in text
+
+
+def test_wp54_in_merged_wps_list():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP54" in merged_line
+
+
+def test_wp55_is_current_phase():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    assert "WP55" in current_phase_line
+
+
+def test_wp55_branch_is_current_branch():
+    text = _read()
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp55-resolution-ambiguity-taxonomy-manual-label-workflow" in branch_line
+
+
+def test_wp54_bundled_wp_policy_status_is_merged():
+    text = _read()
+    assert "WORKFLOW_GOVERNANCE_MERGED" in text
+
+
+def test_wp54_guard_flag_status_is_merged():
+    text = _read()
+    assert "LOCAL_OFFLINE_STDLIB_GUARD_HARDENING_MERGED" in text
+
+
+def test_resolution_ambiguity_taxonomy_status_on_branch():
+    text = _read()
+    assert "DOCS_SCHEMA_TESTS_ONLY_ON_BRANCH" in text or \
+           "Resolution ambiguity taxonomy" in text
+
+
+def test_protected_boundaries_unchanged():
+    text = _read()
+    assert "Live trading status: DISABLED" in text
+    assert "Credentials status: NOT_USED" in text
+    assert "Execution status: NOT_STARTED" in text
+    assert "Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY" in text
+    assert "Agent runtime status: NOT_STARTED" in text
+    assert "Agent execution authority: FORBIDDEN" in text
+    assert "Scheduler status: NOT_STARTED" in text
+    assert "Bot loop status: NOT_STARTED" in text

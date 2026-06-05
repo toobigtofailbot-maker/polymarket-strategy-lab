@@ -2,24 +2,28 @@
 
 ## A. Status
 
-- WP: WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening on branch)
-- Package class: DOCS_ONLY_DIRECTION_LOCK_MERGED; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_ON_BRANCH
+- WP: WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow on branch)
+- Package class: DOCS_ONLY_DIRECTION_LOCK_MERGED; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; GOVERNANCE_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_ON_BRANCH
 - WP50 merge commit: 180a6547114824890851d6ba7e34ab96e7ddd4b8
 - WP51 merge commit: c57b9c0adcc044f8bd9ed01a6368f2fafdbe222f
 - WP52 merge commit: 259fac091a3b8d0d22aaab13345f440d5a958af2
+- WP53 merge commit: 7514b1aded39c5f1ca0c5abae4fdae86b6c4f1d6
+- WP54 merge commit: fb45fb849b0641e2007ef66f50bfd5725354b8f0
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: NO_SOURCE_CHANGE_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_ADDED_IN_WP51; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_HARDENED_IN_WP53
-- Tools impact: NO_TOOLS_CHANGE
+- Source impact: NO_SOURCE_CHANGE_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_ADDED_IN_WP51; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_HARDENED_IN_WP53; NO_SRC_CHANGE_IN_WP54; NO_SRC_CHANGE_IN_WP55
+- Tools impact: NO_TOOLS_CHANGE_IN_WP55
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
 - Trading impact: NO_TRADING_EXECUTION
 - Paper trading impact: NO_PAPER_TRADING
 - Hermes impact: NO_HERMES_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
-- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED_IN_WP51; DATA_INTEGRITY_HARDENING_ON_BRANCH_IN_WP53
+- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED_IN_WP51; DATA_INTEGRITY_HARDENING_MERGED_IN_WP53; NO_FEATURE_EXTRACTION_IN_WP54; NO_FEATURE_EXTRACTION_IN_WP55
 - WP51 scope: local/offline/read-only feature extraction foundation only; no CLI/export/report; no microstructure depth/slippage; no resolution ambiguity parser; no strategy/paper/live/execution
 - WP52 scope: docs/tests-only long-term bot roadmap and Side 4.0 onboarding lock; no source/tools/runtime/dependency changes
 - WP53 scope: local/offline/read-only data-integrity hardening only; provenance/staleness/missing-data enforcement; no CLI/export/report; no advisory consumer; no strategy/paper/live/execution
+- WP54 scope: local/offline/stdlib workflow-governance helper hardening; --require-guard-result flag; bundled-WP execution policy docs; no source/runtime/dependency changes
+- WP55 scope: docs/tests-only resolution ambiguity taxonomy and manual-label workflow; 14 taxonomy categories; 17-field label schema; local/offline/read-only human review workflow; no parser; no feature extraction; no scorer integration; no source/runtime/dependency changes
 
 ## A1. Long-Term Roadmap Cross-Reference
 
@@ -60,15 +64,24 @@ Any future session, agent, or reviewer must read this document alongside
   merged: stdlib-only, in-memory output only, no network, no file writes, no
   CLI, no export, no feature extraction, no advisory consumer integration, no
   runtime/product/trading behavior.
-- WP51 adds the first local/offline/read-only feature extraction foundation at
-  `src/data_layer/market_research_priority_features.py` on branch
-  `wp51-market-research-priority-feature-extraction-foundation`. It bridges
-  existing local snapshot artifacts into prepared scorer input dicts. No network,
-  no writes, no CLI, no export/report, no trading/execution behavior.
+- WP51 is merged: local/offline/read-only feature extraction foundation at
+  `src/data_layer/market_research_priority_features.py`. Bridges existing local
+  snapshot artifacts into prepared scorer input dicts. No network, no writes,
+  no CLI, no export/report, no trading/execution behavior.
+- WP53 is merged: data-integrity hardening to `src/data_layer/market_research_priority_features.py`
+  (provenance_degraded flag, provenance_weakness_reasons, future-timestamp detection,
+  missing_question/market_status detection).
+- WP55 adds resolution ambiguity taxonomy and manual-label workflow at
+  `docs/resolution_ambiguity_taxonomy_manual_label_workflow.md` on branch
+  `wp55-resolution-ambiguity-taxonomy-manual-label-workflow`. Docs/schema/tests only.
+  No parser, no automated extraction, no feature extraction from labels, no scorer
+  integration, no source changes.
 - WP49-D001 (feature extraction from local/offline artifacts) is resolved for
   the narrow WP51 basic feature extraction foundation scope only. Advanced
-  feature groups (provenance hardening, resolution-rule ambiguity, microstructure
-  quality) remain deferred (WP51-D001, WP51-D002, WP51-D003).
+  feature groups (resolution-rule ambiguity — taxonomy/manual-label workflow
+  added in WP55; automated extraction remains deferred; microstructure quality
+  remains deferred) remain open (WP51-D002 narrowed, WP51-D003, WP55-D001,
+  WP55-D002).
 - CLI/export/report writer is not started (WP49-D002 OPEN, WP51-D004 OPEN).
 - Advisory consumer / market catalog integration is not started (WP49-D003 OPEN).
 - Protected boundaries remain unchanged: live trading DISABLED, credentials
