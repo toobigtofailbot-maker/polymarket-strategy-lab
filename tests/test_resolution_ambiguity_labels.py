@@ -452,6 +452,89 @@ def test_limitations_normal_research_wording_passes():
     assert result.is_valid is True, [e.message for e in result.errors]
 
 
+# ── WP56 follow-up 2: extended forbidden wording tests (F/G) ─────────────────
+
+def test_evidence_notes_with_edge_fails():
+    """evidence_notes containing 'edge' (trade-like) must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["evidence_notes"] = "This market has a resolution edge that reviewers should note."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in {e.code for e in result.errors}
+
+
+def test_evidence_notes_with_buy_fails():
+    """evidence_notes containing 'buy' (trade-like) must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["evidence_notes"] = "Ambiguity creates a buy signal for informed traders."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in {e.code for e in result.errors}
+
+
+def test_evidence_notes_with_sell_fails():
+    """evidence_notes containing 'sell' (trade-like) must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["evidence_notes"] = "Resolution ambiguity may trigger a sell response."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in {e.code for e in result.errors}
+
+
+def test_limitations_with_entry_fails():
+    """limitations containing 'entry' (trade-like) must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["limitations"] = "Ambiguity level creates an entry point for analysis."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in {e.code for e in result.errors}
+
+
+def test_limitations_with_exit_fails():
+    """limitations containing 'exit' (trade-like) must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["limitations"] = "Resolution timing affects exit strategy planning."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in {e.code for e in result.errors}
+
+
+def test_evidence_notes_with_tradeable_fails():
+    """evidence_notes containing 'tradeable' (tradability variant) must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["evidence_notes"] = "High ambiguity makes this market untradeable."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in {e.code for e in result.errors}
+
+
+def test_evidence_notes_with_tradability_fails():
+    """evidence_notes containing 'tradability' must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["evidence_notes"] = "Tradability of this market is affected by the ambiguity."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in {e.code for e in result.errors}
+
+
+def test_evidence_notes_with_tradable_fails():
+    """evidence_notes containing 'tradable' must fail (covers original pattern)."""
+    label = _valid_medium_ambiguity_label()
+    label["evidence_notes"] = "This market is not tradable due to resolution ambiguity."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in {e.code for e in result.errors}
+
+
+def test_evidence_notes_with_untradable_fails():
+    """evidence_notes containing 'untradable' must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["evidence_notes"] = "Resolution gap makes this market untradable."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in {e.code for e in result.errors}
+
+
 # ── 9.3 Boundary tests ────────────────────────────────────────────────────────
 
 def test_module_imports_without_third_party_dependencies():

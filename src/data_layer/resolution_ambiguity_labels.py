@@ -138,12 +138,17 @@ _FORBIDDEN_REF_SUBSTRINGS: tuple[str, ...] = (
 # WP56 follow-up: Classification F (implementation logic defect) + G (test coverage gap).
 
 _FORBIDDEN_FREE_TEXT_PATTERNS: tuple[tuple[str, str], ...] = (
-    # (label, regex_pattern) — pattern matched against lowercased field value
+    # (label, regex_pattern) — pattern matched against lowercased field value.
+    # WP56 follow-up 2: expanded to include edge, buy, sell, entry, exit,
+    # and comprehensive tradable/tradeable/tradability/untradeable/untradable variants.
     ("alpha", r"\balpha\b"),
+    ("edge", r"\bedge\b"),
     ("opportunity", r"\bopportunity\b"),
     ("mispricing exploitation", r"mispricing\s+exploitation"),
-    ("tradable", r"\btradabl[ey]\b"),
-    ("untradeable", r"\buntradeable\b"),
+    # Matches tradable, tradeable, tradability, untradeable, untradable and
+    # other un?trad* variants. Replaces the previous separate tradable/untradeable entries.
+    ("tradable/tradeable/tradability/untradeable/untradable",
+     r"\b(?:un)?trade?abl[ey]\b|\b(?:un)?tradabilit\w*"),
     ("expected return", r"\bexpected\s+return\b"),
     ("execution confidence", r"\bexecution\s+confidence\b"),
     ("fill probability", r"\bfill\s+probability\b"),
@@ -152,6 +157,10 @@ _FORBIDDEN_FREE_TEXT_PATTERNS: tuple[tuple[str, str], ...] = (
     ("leverage", r"\bleverage\b"),
     ("order size", r"\border\s+size\b"),
     ("trading signal", r"\btrading\s+signal\b"),
+    ("buy", r"\bbuy\b"),
+    ("sell", r"\bsell\b"),
+    ("entry", r"\bentry\b"),
+    ("exit", r"\bexit\b"),
 )
 
 # Free-text fields where forbidden wording is checked.
