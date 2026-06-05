@@ -27,6 +27,13 @@
 - [ ] Unavailable security tools reported as UNAVAILABLE/SKIPPED (not passed)
 - [ ] Final PR comment is concise but evidence-complete (see `docs/ai/codex/CONCISE_REPORTING_RULES.md`)
 - [ ] No raw full test logs in PR comment unless needed to diagnose failure
+- [ ] Package size class (S/M/L/XL) stated in PR body
+- [ ] Bundle risk class confirmed: no mode boundary crossed
+- [ ] No forbidden bundle type present (see `docs/ai/codex/WP_BUNDLING_POLICY.md`)
+- [ ] Follow-up process-defect classification section present and accurate
+- [ ] Current-final evidence comment identified by marker (not older stale comment)
+- [ ] Guard input source line states: local drafts or copied posted content
+- [ ] `docs/project_status.md` reconciled after prior WP merge in this same WP
 
 ## Summary
 

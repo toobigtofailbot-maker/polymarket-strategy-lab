@@ -221,6 +221,174 @@ def test_no_runtime_exporter_or_report_paths_are_added() -> None:
         assert not (ROOT / forbidden).exists(), f"unexpected path exists: {forbidden}"
 
 
+def test_wp_bundling_policy_exists() -> None:
+    path = ROOT / "docs" / "ai" / "codex" / "WP_BUNDLING_POLICY.md"
+    assert path.is_file(), "docs/ai/codex/WP_BUNDLING_POLICY.md must exist"
+
+
+def test_wp_bundling_policy_contains_package_size_classes() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_BUNDLING_POLICY.md")
+    for expected in ("S", "M", "L", "XL"):
+        assert f"| {expected} |" in text or f"Class | Description" in text
+    assert "S" in text
+    assert "M" in text
+    assert "L" in text
+    assert "XL" in text
+
+
+def test_wp_bundling_policy_contains_risk_class_bundling_principle() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_BUNDLING_POLICY.md").lower()
+    for expected in (
+        "risk-class bundling principle",
+        "same safety class",
+        "mode boundaries",
+        "paper trading",
+        "credentials",
+        "execution",
+        "hermes runtime",
+        "live trading",
+    ):
+        assert expected in text, f"WP_BUNDLING_POLICY.md missing: {expected!r}"
+
+
+def test_wp_bundling_policy_contains_allowed_and_forbidden_bundles() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_BUNDLING_POLICY.md").lower()
+    assert "allowed bundle" in text
+    assert "forbidden bundle" in text
+
+
+def test_wp_bundling_policy_contains_follow_up_classification() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_BUNDLING_POLICY.md")
+    for expected in (
+        "Follow-up correction required",
+        "Classification",
+        "Systemic assessment",
+        "Separate hardening WP needed",
+    ):
+        assert expected in text, f"WP_BUNDLING_POLICY.md missing: {expected!r}"
+
+
+def test_wp_bundling_policy_contains_posted_evidence_self_check() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_BUNDLING_POLICY.md").lower()
+    assert "posted evidence self-check" in text
+    assert "guard input source" in text
+
+
+def test_wp_bundling_policy_indexed_in_repo_truth() -> None:
+    text = _read(ROOT / "docs" / "repo_truth_index.md")
+    assert "WP_BUNDLING_POLICY.md" in text
+
+
+def test_work_package_template_contains_package_size_class() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Package Size Class" in text
+
+
+def test_work_package_template_contains_risk_class_bundle_justification() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Risk-Class Bundle Justification" in text
+
+
+def test_work_package_template_contains_follow_up_classification() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Follow-up process-defect classification" in text or "Follow-Up Process-Defect Classification" in text
+
+
+def test_work_package_template_contains_posted_evidence_self_check() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Posted Evidence Self-Check" in text
+
+
+def test_pr_review_checklist_contains_follow_up_classification_check() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md")
+    assert "follow-up classification" in text.lower()
+
+
+def test_pr_review_checklist_contains_bundle_risk_check() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md")
+    assert "bundle" in text.lower()
+    assert "risk class" in text.lower() or "bundle is within one risk class" in text.lower()
+
+
+def test_pr_review_checklist_contains_current_final_evidence_check() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md")
+    assert "current final evidence" in text.lower() or "CURRENT FINAL WP EVIDENCE" in text
+
+
+def test_pr_review_checklist_contains_guard_input_source_check() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md")
+    assert "Guard input source" in text
+
+
+def test_pr_template_contains_follow_up_classification_check() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md")
+    assert "follow-up" in text.lower() or "Follow-up" in text
+
+
+def test_pr_template_contains_bundle_risk_check() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md")
+    assert "bundle" in text.lower()
+
+
+def test_pr_template_contains_guard_input_source_check() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md")
+    assert "Guard input source" in text
+
+
+def test_pr_template_contains_package_size_class_check() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md")
+    assert "Package size class" in text or "package size class" in text.lower()
+
+
+def test_project_status_reflects_wp53_merged() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP53" in merged_line
+
+
+def test_project_status_reflects_wp54_current() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    assert "WP54" in phase_line
+
+
+def test_project_status_reflects_wp54_branch() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp54" in branch_line
+
+
+def test_project_status_data_integrity_hardening_merged_not_on_branch() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    assert "DATA_INTEGRITY_HARDENING_MERGED" in text
+    assert "DATA_INTEGRITY_HARDENING_ON_BRANCH" not in text
+
+
+def test_no_live_trading_in_bundling_policy_or_codex_docs() -> None:
+    for path in (
+        ROOT / "docs" / "ai" / "codex" / "WP_BUNDLING_POLICY.md",
+        ROOT / "docs" / "work_package_template.md",
+    ):
+        text = _read(path).lower()
+        forbidden_phrases = (
+            "place_order",
+            "sign_order",
+            "execute_trade",
+            "submit_order",
+            "autonomous trading agent is active",
+            "live trading enabled",
+            "credentials_in_use",
+        )
+        for phrase in forbidden_phrases:
+            assert phrase not in text, f"{path.name} must not contain: {phrase!r}"
+
+
 def test_dependency_files_do_not_add_agent_runtime_dependencies() -> None:
     dependency_files = [
         ROOT / tracked

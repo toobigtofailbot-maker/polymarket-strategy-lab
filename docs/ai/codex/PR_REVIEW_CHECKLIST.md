@@ -43,4 +43,16 @@ Reviewers must also verify the following evidence discipline checks. If any item
 - The final PR body and current final evidence comment guard invocation includes WP47 hardening flags where practical: `--forbid-inline-test-counts`, `--forbid-placeholder-evidence`, `--require-current-final-marker`, `--require-posted-evidence-note`.
 - Both PR body and final comment include a "Guard input source:" line.
 
-See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` and `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` for the full policy, examples, and remediation guidance.
+**WP54 additional reviewer checks (bundling policy and follow-up classification):**
+- Reviewer checks the package size class (S/M/L/XL) is stated in the PR body.
+- Reviewer checks the bundle is within one risk class (no mode boundary crossed).
+- Reviewer checks no forbidden bundle type is present (see `docs/ai/codex/WP_BUNDLING_POLICY.md` for the forbidden bundle list).
+- Reviewer checks the follow-up classification section is accurate: if a follow-up occurred it must be classified; if none occurred it must say so explicitly.
+- Reviewer reads the latest current-final evidence comment, not an older superseded comment.
+- Reviewer checks that the PR body and latest current-final comment both reflect any follow-up classification.
+- Reviewer checks the "Guard input source:" line states whether guard ran on exact local drafts intended for posting or on copied posted content.
+- Reviewer checks whether evidence was based on local drafts or copied posted GitHub content; if local drafts, reviewer may wish to verify that the posted content matches.
+- Reviewer checks whether `docs/project_status.md` was reconciled after the prior WP's merge in this same WP.
+- Reviewer checks that the current WP's security wording in `docs/project_status.md` names the current WP number, not a prior WP.
+
+See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`, and `docs/ai/codex/WP_BUNDLING_POLICY.md` for the full policy, examples, and remediation guidance.

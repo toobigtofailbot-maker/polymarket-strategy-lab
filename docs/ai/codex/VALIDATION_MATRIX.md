@@ -7,6 +7,7 @@
 | docs-only policy WP | Changed-file scope check, focused doc tests, full pytest after final commit, generated-artifact guard after final commit, exact PR evidence reporting check. |
 | schema-only WP | Schema doc tests, repo-truth index tests, full pytest after final commit, no runtime implementation paths, exact PR evidence reporting check. |
 | workflow/governance WP | Workflow docs/template tests, focused docs tests, full pytest after final commit, project-status current-WP wording check, exact PR evidence reporting check, network usage wording check. |
+| docs-tests-workflow-governance-hardening | All workflow/governance WP checks plus: package size class stated, risk-class bundle justification, follow-up classification section, guard input source line, posted evidence self-check declaration, no forbidden bundle type, current-final evidence marker. |
 | local report/export WP | Offline tests with local fixtures, output under ignored `local_data/`, no credentials, no private endpoints, exact PR evidence reporting check. |
 | read-only public-data WP | Offline tests, explicit-network smoke only if scoped, bounded public-data behavior, ignored output under `local_data/`, exact PR evidence reporting check. |
 | official-client sandbox WP | Isolated sandbox tests, no project dependency, no `src/` runtime import, explicit-network public read-only probes only if scoped, exact PR evidence reporting check. |

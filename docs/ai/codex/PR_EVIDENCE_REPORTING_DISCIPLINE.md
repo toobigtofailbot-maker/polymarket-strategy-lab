@@ -140,6 +140,20 @@ supersedes earlier comments. Use the required marker:
 Reviewers must not treat stale earlier comments as current if a newer comment
 with this marker explicitly supersedes them.
 
+## Rule 13 — Posted Evidence Self-Check Source Must Be Declared (WP54)
+
+The local guard checks local text files only. It does not fetch or validate live GitHub PR body or posted PR comments.
+
+Before setting Ready for review: YES, Claude Code must satisfy one of the following conditions and state which was used in both the PR body and the final comment:
+
+1. **Guard ran on exact local drafts intended for posting.** The PR body and current final evidence comment texts are the exact texts that will be posted (or were just posted) without further change. State: "Guard input source: exact local drafts intended for posting."
+
+2. **Guard ran on copied posted GitHub content.** The already-posted PR body and the latest current-final evidence comment were copied into local temporary files and the guard was run on those copies. State: "Guard input source: copied from posted GitHub PR body and current-final comment."
+
+**If any posted evidence changes after the guard's last run, the guard must be rerun on the updated content.** If Claude Code cannot confirm the live GitHub content matches what the guard checked, it must state that limitation and may not claim posted evidence was verified.
+
+Running the guard only on pre-posting drafts that differ from what was posted is insufficient. Running the guard only on intermediate drafts is insufficient.
+
 ## Rule 12 — Run PR Evidence Consistency Guard Before Ready for Review (with WP47 Flags)
 
 When local PR body and final comment drafts are available, run
@@ -174,7 +188,9 @@ Ready for review: YES requires all of the following to be true:
 - [ ] No parenthetical test counts in file lists or summary sections.
 - [ ] No placeholder evidence tokens in PR body or final comment.
 - [ ] Both PR body and final comment include a "Guard input source:" line.
+- [ ] Guard input source line declares whether guard ran on exact local drafts intended for posting or on copied posted GitHub content.
 - [ ] `pr_evidence_consistency_guard.py` run with WP47 hardening flags on exact local drafts or on copied posted content, and result reported.
+- [ ] If any posted evidence changed after the last guard run, guard was rerun on updated content before Ready for review: YES.
 
 If any item is NO, set Ready for review: NO and correct the evidence before requesting review.
 

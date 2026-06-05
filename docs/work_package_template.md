@@ -16,6 +16,31 @@
 
 ## Package Class
 
+## Package Size Class
+
+S / M / L / XL — see `docs/ai/codex/WP_BUNDLING_POLICY.md` for definitions.
+
+## Risk-Class Bundle Justification
+
+(Required for M and L packages. For S packages, state "S package — no bundle justification required".)
+
+Why this bundle is safe within one risk class:
+Why all changed files belong to the same objective:
+What is explicitly excluded:
+Rollback surface:
+Changed-file budget (declared vs actual):
+Mode-boundary table: (list each mode boundary and confirm it is not crossed)
+
+## Forbidden Bundle Check
+
+- [ ] This WP does not combine research scoring with trade recommendation wording.
+- [ ] This WP does not combine data/report writer with buy/sell/entry/exit/sizing language.
+- [ ] This WP does not combine paper trading with live trading.
+- [ ] This WP does not combine credentials with order placement.
+- [ ] This WP does not combine scheduler/bot loop with execution.
+- [ ] This WP does not combine Hermes/agent runtime with execution authority.
+- [ ] No dependency or runtime integration is bundled with feature logic without explicit approval.
+
 ## Authorization Basis
 
 - Active user approval:
@@ -102,6 +127,33 @@ Every WP must satisfy the Standard PR Evidence Reporting Discipline Block before
 - **Required: Guard input source line.** Both PR body and final comment must include "Guard input source: exact local drafts intended for posting" or equivalent.
 - **Forbidden: placeholder evidence tokens.** `<HEAD_SHA>`, `TBD`, `placeholder`, `actual:`, `TODO`, or fake SHA filler must not appear in PR body or final comment.
 
+## Posted Evidence Self-Check (mandatory, WP54)
+
+Before Ready for review: YES, Claude Code must declare one of the following in both the PR body and the final comment:
+
+1. Guard ran on exact local draft texts intended for posting as-is. State: "Guard input source: exact local drafts intended for posting."
+2. Already-posted PR body and latest current-final evidence comment were copied into local temp files and the guard ran on those copies. State: "Guard input source: copied from posted GitHub PR body and current-final comment."
+
+If any posted evidence changes after the last guard run, the guard must be rerun. If Claude Code cannot confirm the live GitHub content matches what the guard checked, it must state that limitation and may not claim posted evidence was verified.
+
+## Follow-Up Process-Defect Classification (mandatory, WP54)
+
+Every review follow-up that required a correction must be classified. If no follow-up occurred, state so explicitly.
+
+```
+Follow-up correction required: YES/NO
+Classification: (A/B/C/D/E/F/G/H/I or none)
+Cause:
+Resolution:
+Systemic assessment:
+Separate hardening WP needed: YES/NO
+If NO, why not:
+```
+
+Classification categories: A=Evidence/reporting failure, B=Repo-truth/status reconciliation failure, C=Validation not rerun after final change, D=Scope drift, E=Boundary/protected-scope risk, F=Implementation logic defect, G=Test coverage gap, H=External/tooling/environment limitation, I=Reviewer-requested clarification without defect.
+
+See `docs/ai/codex/WP_BUNDLING_POLICY.md` for the full follow-up classification policy and posted evidence self-check rule.
+
 See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`, and `docs/ai/codex/PR_REVIEW_CHECKLIST.md` for the full policy and reviewer-facing checks.
 
 ## Post-Final-Commit Validation
@@ -153,8 +205,8 @@ See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDE
 
 ## Final PR Comment Required Sections
 
-- A. Work Package ID / package class
-- B. Branch / base
+- A. Work Package ID / package class / package size class
+- B. Branch / base / head SHA
 - C. Repo-truth discovery
 - D. Delivered changes
 - E. Validation results
@@ -166,8 +218,10 @@ See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDE
 - K. Security checks
 - L. Network usage
 - M. PR / push status
-- N. Open escalations / assumptions
-- O. Ready for review: YES/NO
+- N. Follow-up process-defect classification
+- O. Guard input source
+- P. Open escalations / assumptions
+- Q. Ready for review: YES/NO
 
 ## Expected Codex Final Report
 

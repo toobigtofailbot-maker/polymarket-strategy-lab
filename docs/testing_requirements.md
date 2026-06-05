@@ -1,5 +1,34 @@
 # Testing Requirements
 
+## WP54 PR Evidence Follow-Up Defect And Bundled-WP Execution Policy Hardening Tests
+
+- `docs/ai/codex/WP_BUNDLING_POLICY.md` must exist.
+- WP_BUNDLING_POLICY.md must contain package size classes S, M, L, XL.
+- WP_BUNDLING_POLICY.md must contain the risk-class bundling principle.
+- WP_BUNDLING_POLICY.md must contain allowed and forbidden bundle examples.
+- WP_BUNDLING_POLICY.md must contain follow-up classification categories and required fields.
+- WP_BUNDLING_POLICY.md must contain the posted evidence self-check rule and guard input source requirement.
+- `docs/work_package_template.md` must contain "Package Size Class" section.
+- `docs/work_package_template.md` must contain "Risk-Class Bundle Justification" section.
+- `docs/work_package_template.md` must contain follow-up process-defect classification fields.
+- `docs/work_package_template.md` must contain "Posted Evidence Self-Check" section.
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md` must contain follow-up classification check.
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md` must contain bundle risk class check.
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md` must contain current-final evidence check.
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md` must contain guard input source check.
+- `.github/pull_request_template.md` must contain follow-up classification check.
+- `.github/pull_request_template.md` must contain bundle risk check.
+- `.github/pull_request_template.md` must contain guard input source check.
+- `.github/pull_request_template.md` must contain package size class check.
+- `docs/project_status.md` must reflect WP53 in merged WPs list.
+- `docs/project_status.md` must reflect WP54 as current phase.
+- `docs/project_status.md` must show `DATA_INTEGRITY_HARDENING_MERGED` not `ON_BRANCH`.
+- `docs/repo_truth_index.md` must index `docs/ai/codex/WP_BUNDLING_POLICY.md`.
+- No docs may introduce live trading, execution, credentials, scheduler, Hermes runtime authority, or autonomous trading agent active status.
+- No `src/` changes are expected.
+- No dependency or lock-file changes are expected.
+- No generated outputs may be committed.
+
 ## WP42 Advisory Consumer Operator Workflow Hardening Tests
 
 - `docs/advisory_consumer_operator_workflow.md` must exist.

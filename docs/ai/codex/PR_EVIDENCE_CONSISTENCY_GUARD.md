@@ -30,6 +30,8 @@ not manually during review.
 
 **Important limitation:** Running the guard only on intermediate drafts is insufficient if the posted PR body or posted evidence comment later changes. If any evidence is updated after posting, copy the final posted text back into local temporary files and re-run the guard before marking Ready for review: YES.
 
+**WP54 posted evidence self-check rule:** Before Ready for review: YES, declare one of the following in both the PR body and the final comment: (1) the guard ran on exact local draft texts that are the texts intended for posting as-is, or (2) the already-posted PR body and current-final evidence comment were copied into local temp files and the guard ran on those copies. If neither condition is satisfied, Ready for review must remain NO. If Claude Code cannot confirm the live GitHub content matches what the guard checked, it must state that limitation and may not claim posted evidence was verified. See `docs/ai/codex/WP_BUNDLING_POLICY.md` for the full posted evidence self-check rule.
+
 ## Inputs
 
 | Argument | Required | Description |
