@@ -154,20 +154,20 @@ Before setting Ready for review: YES, Claude Code must satisfy one of the follow
 
 Running the guard only on pre-posting drafts that differ from what was posted is insufficient. Running the guard only on intermediate drafts is insufficient.
 
-## Rule 12 — Run PR Evidence Consistency Guard Before Ready for Review (with WP47 Flags)
+## Rule 12 — Run PR Evidence Consistency Guard Before Ready for Review (with WP47 + WP54 Flags)
 
 When local PR body and final comment drafts are available, run
-`tools/git/pr_evidence_consistency_guard.py` with WP47 hardening flags before
-setting Ready for review: YES.
+`tools/git/pr_evidence_consistency_guard.py` with WP47 hardening flags and the
+WP54 `--require-guard-result` flag before setting Ready for review: YES.
 
 The guard checks consistency between the two evidence surfaces and detects the
 most common defects: ellipses in commands, required commands missing from one
-surface, head SHA mismatch, test count mismatch, network wording gaps, and
-security tool honesty conflicts.
+surface, head SHA mismatch, test count mismatch, network wording gaps, security
+tool honesty conflicts, and missing guard result output.
 
 **If the guard fails, Ready for review must be NO until all failures are corrected and the guard passes.**
 
-Report the exact guard invocation and result (PASS/FAIL) in both the PR body and final comment.
+Report the exact guard invocation AND the full guard result output (result line, checked categories, and exit code) in both the PR body and final comment. A guard command invocation line alone does not satisfy this requirement.
 
 If local draft files are used (not the already-posted GitHub content), state that fact. Do not commit local draft files.
 
@@ -189,7 +189,8 @@ Ready for review: YES requires all of the following to be true:
 - [ ] No placeholder evidence tokens in PR body or final comment.
 - [ ] Both PR body and final comment include a "Guard input source:" line.
 - [ ] Guard input source line declares whether guard ran on exact local drafts intended for posting or on copied posted GitHub content.
-- [ ] `pr_evidence_consistency_guard.py` run with WP47 hardening flags on exact local drafts or on copied posted content, and result reported.
+- [ ] `pr_evidence_consistency_guard.py` run with WP47 hardening flags and `--require-guard-result` on exact local drafts or on copied posted content, and result reported.
+- [ ] Full guard result output (result line, checked categories, exit code) appears in both PR body and final comment — not just the command invocation.
 - [ ] If any posted evidence changed after the last guard run, guard was rerun on updated content before Ready for review: YES.
 
 If any item is NO, set Ready for review: NO and correct the evidence before requesting review.

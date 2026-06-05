@@ -34,7 +34,8 @@ Reviewers must also verify the following evidence discipline checks. If any item
 - Unavailable security tools are reported as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT, not as passed.
 - Final top-level PR comment is present (not only the PR body).
 - Ready for review: YES is not set if any evidence defect remains uncorrected.
-- `pr_evidence_consistency_guard.py` was run with WP47 hardening flags on exact local drafts or on copied posted content before Ready for review: YES, and the exact guard invocation and PASS result appear in both PR body and final comment.
+- `pr_evidence_consistency_guard.py` was run with WP47 hardening flags and `--require-guard-result` on exact local drafts or on copied posted content before Ready for review: YES, and the exact guard invocation AND full guard result output (result line, checked categories, exit code) appear in both PR body and final comment.
+- Full guard result output is present in both PR body and final comment: 'PR evidence consistency guard: PASS' or '... FAIL', 'Checked categories:', and 'exit 0' or 'exit 1'. A guard command invocation line alone does not satisfy this check.
 
 **WP47 additional reviewer checks (posted evidence hardening):**
 - Identify the current final evidence comment by the marker "CURRENT FINAL WP EVIDENCE". Do not treat older stale comments as current if a newer comment with this marker explicitly supersedes them.

@@ -1295,22 +1295,25 @@ validation.
 
 ## WP54 PR Evidence Follow-Up Defect And Bundled-WP Execution Policy Hardening Update
 
-WP54 creates `docs/ai/codex/WP_BUNDLING_POLICY.md` and updates workflow/governance
-docs, the WP template, the PR template, and the PR review checklist. It updates
-`docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`,
+WP54 hardens `tools/git/pr_evidence_consistency_guard.py` with a new `--require-guard-result`
+flag (category P) and creates `docs/ai/codex/WP_BUNDLING_POLICY.md`. It also updates
+workflow/governance docs, the WP template, the PR template, and the PR review checklist.
+It updates `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`,
 `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`,
 `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`,
 `docs/ai/codex/PR_REVIEW_CHECKLIST.md`,
 `docs/ai/codex/VALIDATION_MATRIX.md`,
 `docs/work_package_template.md`,
 `.github/pull_request_template.md`,
-`docs/review_checklist.md`, and
-`tests/test_codex_workflow_docs.py`.
+`docs/review_checklist.md`,
+`docs/testing_requirements.md`,
+`tests/test_codex_workflow_docs.py`, and
+`tests/tools/git/test_pr_evidence_consistency_guard.py`.
 
-WP54 is a workflow/governance/docs hardening WP. It adds no source under `src/`, no
-tools implementation, no runtime, no network, no dependency or lock-file changes, no
-Hermes/LLM/provider integration, no credentials, no account access, no trading or
-paper trading, no database/dashboard/scheduler/polling/product behavior, and no
+WP54 is a local/offline/stdlib workflow-governance helper hardening WP. It adds no source
+under `src/`, no Polymarket/trading/advisory tooling, no runtime, no network, no dependency
+or lock-file changes, no Hermes/LLM/provider integration, no credentials, no account access,
+no trading or paper trading, no database/dashboard/scheduler/polling/product behavior, and no
 generated outputs committed.
 
 WP54 resolves no existing implementation deferred items. All prior open deferred

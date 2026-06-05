@@ -83,7 +83,7 @@ An L-size work package must include all of the following in the WP definition an
 - A mode-boundary table confirming no boundary is crossed.
 - Focused tests covering all new policy or implementation content.
 - Full pytest after final commit.
-- Current-final evidence consistency with the guard before Ready for review: YES.
+- Current-final evidence consistency with the guard (including `--require-guard-result`) before Ready for review: YES.
 
 ## Stop and Report Triggers
 
@@ -154,6 +154,8 @@ Before setting Ready for review: YES, Claude Code must satisfy one of the follow
 
 1. The guard was run on exact local draft texts that are intended for posting as-is (the PR body and current final evidence comment). State: "Guard input source: exact local drafts intended for posting."
 2. The already-posted PR body and latest current-final evidence comment were copied into local temporary files, and the guard was run on those copied texts. State: "Guard input source: copied from posted GitHub PR body and current-final comment dated [date]."
+
+The guard must be run with `--require-guard-result`. The full guard result output — `PR evidence consistency guard: PASS` or `... FAIL`, `Checked categories: ...`, and `exit 0` or `exit 1` — must appear in both PR body and final comment. A guard command invocation line alone does not satisfy this requirement.
 
 If any posted evidence changes after the last guard run, the guard must be rerun on the updated content or Ready for review must remain NO.
 

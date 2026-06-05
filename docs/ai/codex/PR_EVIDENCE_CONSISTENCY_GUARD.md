@@ -48,6 +48,7 @@ not manually during review.
 | `--require-current-final-marker` | No | Fail unless final comment contains "CURRENT FINAL WP EVIDENCE" marker |
 | `--forbid-stale-count-tokens TEXT` | No, repeatable | Fail if the supplied stale token appears in either file |
 | `--require-posted-evidence-note` | No | Fail unless both files contain a "Guard input source:" line |
+| `--require-guard-result` | No | Fail unless both files contain the actual guard result output: result line, checked categories, and exit code |
 
 ## CLI Usage
 
@@ -59,7 +60,7 @@ python tools/git/pr_evidence_consistency_guard.py \
   --final-comment local_final_comment.md
 ```
 
-### Full WP invocation pattern (with WP47 hardening flags)
+### Full WP invocation pattern (with WP47 + WP54 hardening flags)
 
 ```
 python tools/git/pr_evidence_consistency_guard.py \
@@ -74,7 +75,8 @@ python tools/git/pr_evidence_consistency_guard.py \
   --forbid-inline-test-counts \
   --forbid-placeholder-evidence \
   --require-current-final-marker \
-  --require-posted-evidence-note
+  --require-posted-evidence-note \
+  --require-guard-result
 ```
 
 ### JSON output
@@ -138,6 +140,7 @@ The guard checks for this exact string when `--require-standard-network-wording`
 | M — Current final marker | (--require-current-final-marker) Final comment must contain "CURRENT FINAL WP EVIDENCE" marker |
 | N — Stale count tokens | (--forbid-stale-count-tokens) User-supplied stale tokens must not appear in either file |
 | O — Posted evidence note | (--require-posted-evidence-note) Both files must contain a "Guard input source:" line |
+| P — Guard result line | (--require-guard-result) Both files must contain: 'PR evidence consistency guard: PASS' or '... FAIL', 'Checked categories:', and an explicit exit code. A command invocation line alone does not satisfy this check. |
 
 ## Pass/Fail Behavior
 
@@ -186,9 +189,10 @@ Required workflow:
 5. Post or update the PR body and the current final evidence comment.
 6. If any posted evidence changes afterward, copy the final posted text back into local temporary files and re-run the guard.
 7. Mark Ready for review: YES only after final evidence passes the guard.
-8. Report the exact guard invocation and result (PASS/FAIL) in both the PR body and final comment.
+8. Report the exact guard invocation AND the full guard result output (result line, checked categories, exit code) in both the PR body and final comment.
 9. Include a "Guard input source:" line in both files identifying whether the guard ran on exact local drafts intended for posting or on copied posted GitHub content.
 10. Do not commit local draft files unless they are test fixtures under `tests/`.
+11. When using `--require-guard-result`: include the literal guard output lines — `PR evidence consistency guard: PASS`, `Checked categories: ...`, and `exit 0` or `exit 1` — in both the PR body and the final comment. The command invocation line alone does not satisfy this check.
 
 **Old final comments warning:** If previous evidence comments exist, the new current final evidence comment must start with "CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments" so reviewers know which comment is current.
 

@@ -90,6 +90,7 @@ def _run(
     require_current_final_marker: bool = False,
     stale_count_tokens: list[str] | None = None,
     require_posted_evidence_note: bool = False,
+    require_guard_result: bool = False,
 ) -> tuple[bool, list[str], list[str], list[str]]:
     body_file = tmp_path / "pr_body.md"
     comment_file = tmp_path / "final_comment.md"
@@ -107,6 +108,7 @@ def _run(
         require_current_final_marker=require_current_final_marker,
         stale_count_tokens=stale_count_tokens or [],
         require_posted_evidence_note=require_posted_evidence_note,
+        require_guard_result=require_guard_result,
     )
 
 
@@ -838,3 +840,237 @@ def test_json_output_errors_include_new_category_errors(
     assert "[L]" in error_text
     assert "[M]" in error_text
     assert "[O]" in error_text
+
+
+# ── WP54: --require-guard-result tests (P) ───────────────────────────────────
+
+_GUARD_RESULT_PASS = (
+    "PR evidence consistency guard: PASS\n"
+    "Checked categories: A:missing_files, B:empty_evidence\n"
+    "exit 0\n"
+)
+
+_GUARD_RESULT_FAIL = (
+    "PR evidence consistency guard: FAIL\n"
+    "Checked categories: A:missing_files\n"
+    "exit 1\n"
+)
+
+_GUARD_CMD_ONLY = (
+    "python tools/git/pr_evidence_consistency_guard.py "
+    "--pr-body local_pr_body.md --final-comment local_final_comment.md\n"
+)
+
+_GUARD_VAGUE = "The guard passes and everything looks good.\n"
+
+
+def _make_body_with_guard_result(result_block: str) -> str:
+    return (
+        f"# PR Body\n\n"
+        f"Head commit: {_HEAD_SHA}\n\n"
+        f"```\n{_REQUIRED_CMD}\n→ {_GOOD_COUNTS}\n```\n\n"
+        f"{STANDARD_NETWORK_WORDING}\n\n"
+        f"Guard input source: exact local drafts intended for posting\n\n"
+        f"```\n{result_block}```\n\n"
+        f"Ready for review: YES\n"
+    )
+
+
+def _make_comment_with_guard_result(result_block: str) -> str:
+    return (
+        f"CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments\n\n"
+        f"Head commit: {_HEAD_SHA}\n\n"
+        f"```\n{_REQUIRED_CMD}\n→ {_GOOD_COUNTS}\n```\n\n"
+        f"{STANDARD_NETWORK_WORDING}\n\n"
+        f"Guard input source: exact local drafts intended for posting\n\n"
+        f"```\n{result_block}```\n\n"
+        f"Ready for review: YES\n"
+    )
+
+
+def test_require_guard_result_passes_when_result_in_both(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = _make_body_with_guard_result(_GUARD_RESULT_PASS)
+    comment = _make_comment_with_guard_result(_GUARD_RESULT_PASS)
+    passed, errors, _, checked = _run(
+        tmp_path, body, comment,
+        expected_head=_HEAD_SHA,
+        required_commands=[_REQUIRED_CMD],
+        require_network=True,
+        require_ready=True,
+        require_posted_evidence_note=True,
+        require_current_final_marker=True,
+        require_guard_result=True,
+    )
+    assert passed, f"Expected PASS but got errors: {errors}"
+    assert any("P:guard_result" in c for c in checked)
+
+
+def test_require_guard_result_passes_with_fail_result(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = _make_body_with_guard_result(_GUARD_RESULT_FAIL)
+    comment = _make_comment_with_guard_result(_GUARD_RESULT_FAIL)
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        expected_head=_HEAD_SHA,
+        required_commands=[_REQUIRED_CMD],
+        require_guard_result=True,
+    )
+    assert passed, f"Expected PASS with FAIL result block but got errors: {errors}"
+
+
+def test_require_guard_result_fails_when_result_missing_from_both(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = _make_body_with_guard_result(_GUARD_CMD_ONLY)
+    comment = _make_comment_with_guard_result(_GUARD_CMD_ONLY)
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_guard_result=True,
+    )
+    assert not passed
+    p_errors = [e for e in errors if "[P]" in e]
+    assert p_errors, f"Expected [P] errors but got: {errors}"
+
+
+def test_require_guard_result_fails_when_result_missing_from_pr_body(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = _make_body_with_guard_result(_GUARD_CMD_ONLY)
+    comment = _make_comment_with_guard_result(_GUARD_RESULT_PASS)
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_guard_result=True,
+    )
+    assert not passed
+    p_errors = [e for e in errors if "[P]" in e]
+    assert p_errors, f"Expected [P] errors for PR body but got: {errors}"
+    assert any("PR body" in e for e in p_errors)
+
+
+def test_require_guard_result_fails_when_result_missing_from_final_comment(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = _make_body_with_guard_result(_GUARD_RESULT_PASS)
+    comment = _make_comment_with_guard_result(_GUARD_CMD_ONLY)
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_guard_result=True,
+    )
+    assert not passed
+    p_errors = [e for e in errors if "[P]" in e]
+    assert p_errors, f"Expected [P] errors for final comment but got: {errors}"
+    assert any("final comment" in e for e in p_errors)
+
+
+def test_require_guard_result_fails_on_vague_phrase(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = _make_body_with_guard_result(_GUARD_VAGUE)
+    comment = _make_comment_with_guard_result(_GUARD_VAGUE)
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_guard_result=True,
+    )
+    assert not passed
+    p_errors = [e for e in errors if "[P]" in e]
+    assert p_errors, f"Expected [P] errors for vague phrase but got: {errors}"
+
+
+def test_require_guard_result_fails_when_exit_code_missing(
+    tmp_path: pathlib.Path,
+) -> None:
+    result_no_exit = (
+        "PR evidence consistency guard: PASS\n"
+        "Checked categories: A:missing_files, B:empty_evidence\n"
+    )
+    body = _make_body_with_guard_result(result_no_exit)
+    comment = _make_comment_with_guard_result(result_no_exit)
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_guard_result=True,
+    )
+    assert not passed
+    p_errors = [e for e in errors if "[P]" in e]
+    assert p_errors, f"Expected [P] errors for missing exit code but got: {errors}"
+    assert any("exit" in e.lower() for e in p_errors)
+
+
+def test_require_guard_result_fails_when_checked_categories_missing(
+    tmp_path: pathlib.Path,
+) -> None:
+    result_no_categories = (
+        "PR evidence consistency guard: PASS\n"
+        "exit 0\n"
+    )
+    body = _make_body_with_guard_result(result_no_categories)
+    comment = _make_comment_with_guard_result(result_no_categories)
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_guard_result=True,
+    )
+    assert not passed
+    p_errors = [e for e in errors if "[P]" in e]
+    assert p_errors, f"Expected [P] errors for missing checked categories but got: {errors}"
+    assert any("Checked categories" in e for e in p_errors)
+
+
+def test_require_guard_result_not_active_by_default(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = _make_body_with_guard_result(_GUARD_CMD_ONLY)
+    comment = _make_comment_with_guard_result(_GUARD_CMD_ONLY)
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        require_guard_result=False,
+    )
+    p_errors = [e for e in errors if "[P]" in e]
+    assert not p_errors, f"[P] check should not run without --require-guard-result: {p_errors}"
+
+
+def test_require_guard_result_preserves_wp47_behavior(
+    tmp_path: pathlib.Path,
+) -> None:
+    body = (
+        "focused tests (33 tests)\n"
+        + _make_body_with_guard_result(_GUARD_RESULT_PASS)
+    )
+    comment = _make_comment_with_guard_result(_GUARD_RESULT_PASS)
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        forbid_inline_test_counts=True,
+        require_guard_result=True,
+    )
+    assert not passed
+    k_errors = [e for e in errors if "[K]" in e]
+    assert k_errors, "WP47 --forbid-inline-test-counts must still trigger"
+    p_errors = [e for e in errors if "[P]" in e]
+    assert not p_errors, "Guard result is present so [P] must not trigger"
+
+
+def test_require_guard_result_json_output_includes_category_p(
+    tmp_path: pathlib.Path,
+) -> None:
+    import io
+    from contextlib import redirect_stdout
+
+    body = _make_body_with_guard_result(_GUARD_RESULT_PASS)
+    comment = _make_comment_with_guard_result(_GUARD_RESULT_PASS)
+    body_file = tmp_path / "pr_body.md"
+    comment_file = tmp_path / "final_comment.md"
+    body_file.write_text(body, encoding="utf-8")
+    comment_file.write_text(comment, encoding="utf-8")
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        rc = guard.main([
+            "--pr-body", str(body_file),
+            "--final-comment", str(comment_file),
+            "--format", "json",
+            "--require-guard-result",
+        ])
+
+    data = json.loads(buf.getvalue())
+    assert "P:guard_result" in data["checked_categories"]

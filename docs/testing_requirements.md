@@ -25,6 +25,12 @@
 - `docs/project_status.md` must show `DATA_INTEGRITY_HARDENING_MERGED` not `ON_BRANCH`.
 - `docs/repo_truth_index.md` must index `docs/ai/codex/WP_BUNDLING_POLICY.md`.
 - No docs may introduce live trading, execution, credentials, scheduler, Hermes runtime authority, or autonomous trading agent active status.
+- `tools/git/pr_evidence_consistency_guard.py` must accept `--require-guard-result` flag.
+- When `--require-guard-result` is set, guard must fail if either file is missing: 'PR evidence consistency guard: PASS' or '... FAIL', 'Checked categories:', or an explicit exit code.
+- Guard command invocation line alone must not satisfy the `--require-guard-result` check.
+- Vague phrases like "guard passes" must not satisfy the `--require-guard-result` check.
+- New guard category P must appear in JSON output checked_categories when `--require-guard-result` is used.
+- Focused tests must cover: passes with result in both; fails when result missing from both; fails when result only in PR body; fails when result only in final comment; fails on vague phrase; fails when exit code missing; fails when checked categories missing; not active by default; preserves WP47 behavior.
 - No `src/` changes are expected.
 - No dependency or lock-file changes are expected.
 - No generated outputs may be committed.

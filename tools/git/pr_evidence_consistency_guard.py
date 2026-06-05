@@ -132,6 +132,19 @@ _POSTED_EVIDENCE_NOTE_PATTERN = re.compile(
     r"Guard\s+input\s+source\s*:", re.IGNORECASE
 )
 
+# ── Guard result patterns (P) ─────────────────────────────────────────────────
+# Matches the actual guard output line, not the command invocation line.
+_GUARD_RESULT_LINE_PATTERN = re.compile(
+    r"PR\s+evidence\s+consistency\s+guard\s*:\s*(PASS|FAIL)", re.IGNORECASE
+)
+_GUARD_CHECKED_CATEGORIES_PATTERN = re.compile(
+    r"Checked\s+categories\s*:", re.IGNORECASE
+)
+# Matches an explicit exit result: "exit 0" or "exit 1" (word boundary safe).
+_GUARD_EXIT_RESULT_PATTERN = re.compile(
+    r"\bexit\s+[01]\b", re.IGNORECASE
+)
+
 # ── Security tool honesty patterns ───────────────────────────────────────────
 _SECURITY_PASSED_PATTERNS = [
     re.compile(r"gitleaks\s+passed", re.IGNORECASE),
@@ -600,6 +613,48 @@ def check_posted_evidence_note(
     return errors
 
 
+def check_guard_result(
+    pr_body: str,
+    final_comment: str,
+) -> list[str]:
+    """P — Fail unless both files contain the actual guard result line.
+
+    Requires all three elements in BOTH surfaces:
+    - 'PR evidence consistency guard: PASS' or '... FAIL'
+    - 'Checked categories:'
+    - 'exit 0' or 'exit 1'
+
+    A guard command invocation line alone does not satisfy this check.
+    A vague phrase like 'guard passes' does not satisfy this check.
+    """
+    errors = []
+    for label, text in [("PR body", pr_body), ("final comment", final_comment)]:
+        has_result = bool(_GUARD_RESULT_LINE_PATTERN.search(text))
+        has_categories = bool(_GUARD_CHECKED_CATEGORIES_PATTERN.search(text))
+        has_exit = bool(_GUARD_EXIT_RESULT_PATTERN.search(text))
+
+        if not has_result:
+            errors.append(
+                f"[P] {label} is missing the guard result line. "
+                "Both PR body and final comment must contain: "
+                "'PR evidence consistency guard: PASS' or "
+                "'PR evidence consistency guard: FAIL'. "
+                "The guard command invocation alone does not satisfy this check."
+            )
+        if not has_categories:
+            errors.append(
+                f"[P] {label} is missing 'Checked categories:' from guard output. "
+                "Include the full guard result output (result line + checked categories + exit code) "
+                "in both PR body and final comment."
+            )
+        if not has_exit:
+            errors.append(
+                f"[P] {label} is missing an explicit exit result (e.g. 'exit 0' or 'exit 1'). "
+                "Include the guard exit code in both PR body and final comment."
+            )
+    return errors
+
+
 # ── Main guard ────────────────────────────────────────────────────────────────
 
 def run_guard(
@@ -614,6 +669,7 @@ def run_guard(
     require_current_final_marker: bool = False,
     stale_count_tokens: list[str] | None = None,
     require_posted_evidence_note: bool = False,
+    require_guard_result: bool = False,
 ) -> tuple[bool, list[str], list[str], list[str]]:
     """
     Returns (passed, errors, warnings, checked_categories).
@@ -707,6 +763,11 @@ def run_guard(
     checked.append("O:posted_evidence_note")
     if require_posted_evidence_note:
         errors.extend(check_posted_evidence_note(pr_body, final_comment))
+
+    # P — Guard result line required (optional)
+    checked.append("P:guard_result")
+    if require_guard_result:
+        errors.extend(check_guard_result(pr_body, final_comment))
 
     passed = len(errors) == 0
     return passed, errors, warnings, checked
@@ -824,6 +885,18 @@ def build_parser() -> argparse.ArgumentParser:
             "drafts intended for posting or on copied posted GitHub content."
         ),
     )
+    p.add_argument(
+        "--require-guard-result",
+        action="store_true",
+        default=False,
+        help=(
+            "Fail unless both PR body and final comment contain the actual guard "
+            "result output: 'PR evidence consistency guard: PASS' or '... FAIL', "
+            "'Checked categories:', and an explicit exit code ('exit 0' or 'exit 1'). "
+            "A guard command invocation line alone does not satisfy this check. "
+            "A vague phrase like 'guard passes' does not satisfy this check."
+        ),
+    )
     return p
 
 
@@ -880,6 +953,7 @@ def main(argv: list[str] | None = None) -> int:
         require_current_final_marker=args.require_current_final_marker,
         stale_count_tokens=args.stale_count_tokens,
         require_posted_evidence_note=args.require_posted_evidence_note,
+        require_guard_result=args.require_guard_result,
     )
 
     if args.format == "json":

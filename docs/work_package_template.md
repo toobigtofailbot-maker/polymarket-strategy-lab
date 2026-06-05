@@ -118,7 +118,7 @@ Every WP must satisfy the Standard PR Evidence Reporting Discipline Block before
 - PR body and final PR comment are consistent on all counts, commands, and results.
 - Stale counts corrected before Ready for review: YES.
 - Unavailable tools reported as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT, not as passed.
-- `tools/git/pr_evidence_consistency_guard.py` run with WP47 hardening flags on exact local drafts or copied posted content before Ready for review: YES. If guard fails, Ready for review must be NO. Report exact guard invocation and result in both PR body and final comment.
+- `tools/git/pr_evidence_consistency_guard.py` run with WP47 hardening flags and `--require-guard-result` on exact local drafts or copied posted content before Ready for review: YES. If guard fails, Ready for review must be NO. Report exact guard invocation AND full guard result output (result line, checked categories, exit code) in both PR body and final comment. A command invocation line alone is insufficient.
 
 ## Posted PR Evidence Discipline (mandatory, WP47)
 
