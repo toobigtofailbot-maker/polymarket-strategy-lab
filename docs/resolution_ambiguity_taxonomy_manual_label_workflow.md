@@ -2,26 +2,29 @@
 
 ## 1. Status
 
-- WP: WP55 (resolution ambiguity taxonomy and manual-label workflow on branch)
-- Package class: docs-tests-research-taxonomy-manual-label-workflow
+- WP: WP55 (resolution ambiguity taxonomy and manual-label workflow merged — merge commit b019bb825924d52057225455886c3ca45af9e925); WP56 (schema validation implementation on branch)
+- Package class: docs-tests-research-taxonomy-manual-label-workflow (WP55); local-offline-read-only-research-label-schema-validation (WP56)
 - Package size class: L
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: NO_SRC_CHANGE
+- Source impact: NO_SRC_CHANGE (WP55); LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED (WP56 — src/data_layer/resolution_ambiguity_labels.py)
 - Tooling impact: NO_TOOL_IMPLEMENTATION
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_RUNTIME_NETWORK
 - Trading impact: NO_TRADING_EXECUTION
 - Hermes impact: NO_HERMES_INSTALL_OR_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
-- Docs/schema/tests only: YES
-- No parser: YES — no automated resolution-rule parser is added in WP55
-- No automated extraction: YES — no automated ambiguity extraction is added in WP55
-- No feature extraction: YES — feature extraction from ambiguity labels is deferred
+- Docs/schema/tests only: YES (WP55); NO (WP56 adds source module and tests)
+- No parser: YES — no automated resolution-rule parser is added in WP55 or WP56
+- No automated extraction: YES — no automated ambiguity extraction is added in WP55 or WP56
+- No feature extraction: YES — feature extraction from ambiguity labels is deferred to a future WP
 - No scorer integration: YES — scorer integration is deferred to a future approved WP
-- No CLI/export/report: YES — no CLI, export, or report writer is added in WP55
+- No CLI/export/report: YES — no CLI, export, or report writer is added in WP55 or WP56
 - No LLM/provider: YES — no LLM or Hermes provider is used
 - No network: YES — all workflow steps are local/offline/read-only
 - No credentials: YES — no API keys, wallets, or private keys
+- WP56 cross-reference: src/data_layer/resolution_ambiguity_labels.py (schema validator); tests/test_resolution_ambiguity_labels.py (51 focused tests)
+- WP56 validator implements: validation of all 17 required fields, allowed enum values (14 categories, 6 review statuses, 5 severity values, 3 confidence values), manual-review gate, advisory label enforcement, forbidden-use notice phrase checks, source artifact reference safety, other_manual_review_issue evidence gate, ISO-8601 timestamp validation, and optional read-only JSON/JSONL reader
+- WP56 does not implement: feature extraction, scorer integration, advisory consumer integration, label store writer, CLI, export, report writer, parser, or any network/credential behavior
 
 ## 2. Purpose
 
@@ -477,25 +480,39 @@ The following examples demonstrate safe, compliant ambiguity label wording.
 
 ## 13. Deferred Items
 
-The following items are intentionally deferred from WP55 and must not be
-implemented until explicitly approved in a future work package.
+The following items were deferred from WP55. WP56 implements the label schema
+validator but leaves feature extraction, scorer integration, advisory consumer
+integration, label store writer, and parser deferred.
 
 ### WP55-D001 — Resolution Ambiguity Labels Not Yet Consumed By Feature Extraction
 
 Ambiguity labels defined in this document are not consumed by any feature
 extraction, scorer, advisory consumer, or reporting component in WP55.
 
-A future approved WP may implement feature extraction from local/offline
-ambiguity label files only after the integration gate conditions in Section 10
-are satisfied and the user explicitly approves.
+WP56 implements the schema validator (src/data_layer/resolution_ambiguity_labels.py)
+and optional read-only JSON/JSONL reader. Feature extraction from validated labels
+remains not started (see WP56-D001).
+
+A future approved WP may implement feature extraction from local/offline validated
+ambiguity label files only after the integration gate conditions in Section 10 are
+satisfied and the user explicitly approves.
 
 ### WP55-D002 — Automated Resolution-Rule Parser Remains Not Started
 
-No automated parser for resolution rules is added in WP55. Extracting
+No automated parser for resolution rules is added in WP55 or WP56. Extracting
 ambiguity categories from resolution rule text automatically requires:
 - A separate parser design and approval WP
 - Human review of parser outputs before any downstream use
 - Non-LLM parser design that does not depend on provider runtime
+
+### WP56-D001 — Resolution Ambiguity Labels Validated But Not Yet Consumed By Feature Extraction
+
+WP56 implements the local/offline/read-only schema validator and optional
+read-only reader. It does not implement feature extraction from labels, scorer
+integration, advisory consumer integration, or label store writer.
+
+The integration gate in Section 10 is satisfied for condition 1 (schema
+implemented and tested). Conditions 2–5 require a future explicitly approved WP.
 
 This item subsumes WP51-D002 and WP53-D001 for the automated parser scope.
 The taxonomy and manual-label workflow address the human-review portion of

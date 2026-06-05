@@ -2,8 +2,8 @@
 
 ## A. Status
 
-- WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2); WP55 (resolution ambiguity taxonomy/manual-label workflow on branch)
-- Package class: DOCS_ONLY_ROADMAP_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_ON_BRANCH
+- WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation on branch)
+- Package class: DOCS_ONLY_ROADMAP_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_ON_BRANCH
 - Side onboarding lock: SIDE4_ONBOARDING_LOCK_MERGED
 - Authority: PLANNING_GUIDANCE_ONLY
 - NOT_AUTHORIZATION

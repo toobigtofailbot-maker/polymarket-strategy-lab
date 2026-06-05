@@ -2,28 +2,30 @@
 
 ## A. Status
 
-- WP: WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow on branch)
-- Package class: DOCS_ONLY_DIRECTION_LOCK_MERGED; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; GOVERNANCE_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_ON_BRANCH
+- WP: WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation on branch)
+- Package class: DOCS_ONLY_DIRECTION_LOCK_MERGED; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; GOVERNANCE_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_ON_BRANCH
 - WP50 merge commit: 180a6547114824890851d6ba7e34ab96e7ddd4b8
 - WP51 merge commit: c57b9c0adcc044f8bd9ed01a6368f2fafdbe222f
 - WP52 merge commit: 259fac091a3b8d0d22aaab13345f440d5a958af2
 - WP53 merge commit: 7514b1aded39c5f1ca0c5abae4fdae86b6c4f1d6
 - WP54 merge commit: fb45fb849b0641e2007ef66f50bfd5725354b8f0
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: NO_SOURCE_CHANGE_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_ADDED_IN_WP51; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_HARDENED_IN_WP53; NO_SRC_CHANGE_IN_WP54; NO_SRC_CHANGE_IN_WP55
-- Tools impact: NO_TOOLS_CHANGE_IN_WP55
+- Source impact: NO_SOURCE_CHANGE_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_ADDED_IN_WP51; LOCAL_OFFLINE_READ_ONLY_FEATURE_MODULE_HARDENED_IN_WP53; NO_SRC_CHANGE_IN_WP54; NO_SRC_CHANGE_IN_WP55; LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED_IN_WP56
+- Tools impact: NO_TOOLS_CHANGE_IN_WP55; NO_TOOLS_CHANGE_IN_WP56
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
 - Trading impact: NO_TRADING_EXECUTION
 - Paper trading impact: NO_PAPER_TRADING
 - Hermes impact: NO_HERMES_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
-- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED_IN_WP51; DATA_INTEGRITY_HARDENING_MERGED_IN_WP53; NO_FEATURE_EXTRACTION_IN_WP54; NO_FEATURE_EXTRACTION_IN_WP55
+- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED_IN_WP51; DATA_INTEGRITY_HARDENING_MERGED_IN_WP53; NO_FEATURE_EXTRACTION_IN_WP54; NO_FEATURE_EXTRACTION_IN_WP55; NO_FEATURE_EXTRACTION_IN_WP56
 - WP51 scope: local/offline/read-only feature extraction foundation only; no CLI/export/report; no microstructure depth/slippage; no resolution ambiguity parser; no strategy/paper/live/execution
 - WP52 scope: docs/tests-only long-term bot roadmap and Side 4.0 onboarding lock; no source/tools/runtime/dependency changes
 - WP53 scope: local/offline/read-only data-integrity hardening only; provenance/staleness/missing-data enforcement; no CLI/export/report; no advisory consumer; no strategy/paper/live/execution
 - WP54 scope: local/offline/stdlib workflow-governance helper hardening; --require-guard-result flag; bundled-WP execution policy docs; no source/runtime/dependency changes
 - WP55 scope: docs/tests-only resolution ambiguity taxonomy and manual-label workflow; 14 taxonomy categories; 17-field label schema; local/offline/read-only human review workflow; no parser; no feature extraction; no scorer integration; no source/runtime/dependency changes
+- WP56 scope: local/offline/read-only stdlib schema validator for WP55 label records; validates 17 required fields, enum values, manual-review gate, advisory label, forbidden-use notice, source artifact refs, timestamp; optional read-only JSON/JSONL reader; no feature extraction; no scorer integration; no parser; no dependency changes
+- WP55 merge commit: b019bb825924d52057225455886c3ca45af9e925
 
 ## A1. Long-Term Roadmap Cross-Reference
 
