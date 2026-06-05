@@ -2,18 +2,18 @@
 
 ## A. Status
 
-- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_ON_BRANCH
-- WP: WP48 (schema/contract merged); WP49 (core scorer on branch)
+- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; FEATURE_EXTRACTION_MERGED; DATA_INTEGRITY_HARDENING_ON_BRANCH
+- WP: WP48 (schema/contract merged); WP49 (core scorer merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: WP48 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED
+- Source impact: WP48 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED
 - Tooling impact: NO_NEW_TOOLING
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
 - Trading impact: NO_TRADING_EXECUTION
 - Hermes impact: NO_HERMES_INSTALL_OR_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
-- Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ON_BRANCH
-- Feature extraction implementation: NOT_STARTED
+- Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_MERGED
+- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_ON_BRANCH
 - CLI/export/report implementation: NOT_STARTED
 - Advisory consumer integration: NOT_STARTED
 

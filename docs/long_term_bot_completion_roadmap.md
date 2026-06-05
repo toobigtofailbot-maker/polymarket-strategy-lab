@@ -2,9 +2,9 @@
 
 ## A. Status
 
-- WP: WP52
-- Package class: DOCS_ONLY_ROADMAP_ON_BRANCH
-- Side onboarding lock: SIDE4_ONBOARDING_LOCK_ON_BRANCH
+- WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2)
+- Package class: DOCS_ONLY_ROADMAP_MERGED
+- Side onboarding lock: SIDE4_ONBOARDING_LOCK_MERGED
 - Authority: PLANNING_GUIDANCE_ONLY
 - NOT_AUTHORIZATION
 - NO_RUNTIME_CHANGE

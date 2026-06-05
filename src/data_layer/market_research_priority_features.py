@@ -1,8 +1,9 @@
 """Local/offline/read-only Market Research Priority feature extraction foundation.
 
-WP51 first feature-extraction foundation. Advisory-only. Not a trading signal.
-Not expected return. Not investment advice. Not position sizing. Not an execution
-instruction. Human review required before any use.
+WP51 first feature-extraction foundation. WP53 provenance/staleness/missing-data
+hardening. Advisory-only. Not a trading signal. Not expected return. Not investment
+advice. Not position sizing. Not an execution instruction. Human review required
+before any use.
 
 This module:
 - consumes existing local/offline snapshot artifacts and data-layer models only;
@@ -29,7 +30,7 @@ from src.data_layer.polymarket.snapshot_models import (
 )
 
 FEATURE_EXTRACTION_SCOPE = "local/offline/read-only feature extraction foundation"
-FEATURE_EXTRACTION_VERSION = "wp51-v1"
+FEATURE_EXTRACTION_VERSION = "wp53-v1"
 
 DEFAULT_METADATA_FRESHNESS_THRESHOLD_SECONDS: int = 86400   # 24 hours
 DEFAULT_ORDERBOOK_FRESHNESS_THRESHOLD_SECONDS: int = 3600   # 1 hour
@@ -73,7 +74,10 @@ def _parse_utc(ts: Optional[str]) -> Optional[datetime]:
 
 
 def _age_seconds(ts: Optional[str], reference: datetime) -> Optional[float]:
-    """Return age in seconds between ts and reference, or None if ts is unparseable."""
+    """Return age in seconds between ts and reference, or None if ts is unparseable.
+
+    Negative values indicate a future timestamp (clock drift or corrupted capture).
+    """
     dt = _parse_utc(ts)
     if dt is None:
         return None
@@ -88,16 +92,36 @@ def _build_staleness(
     metadata_threshold: int,
     orderbook_threshold: int,
 ) -> dict:
-    """Build the staleness sub-dict for a market_context."""
+    """Build the staleness sub-dict for a market_context.
+
+    WP53 hardening: future timestamps (negative age) are treated as stale, not fresh.
+    Missing timestamps are treated as stale. Mixed fresh/stale order books are caught.
+    """
     stale_inputs = []
     staleness_warnings = []
     requires_recapture = False
+    future_timestamp_detected = False
 
     meta_age = _age_seconds(record.captured_at_utc, generated_at_utc)
     if meta_age is None:
-        stale_inputs.append("metadata_snapshot (unparseable timestamp)")
+        stale_inputs.append("metadata_snapshot (unparseable or missing timestamp)")
         staleness_warnings.append(
-            "Metadata snapshot timestamp is unparseable; treating as stale."
+            "Metadata snapshot timestamp is unparseable or missing; treating as stale."
+        )
+        requires_recapture = True
+        staleness_flag = True
+    elif meta_age < 0:
+        # Future timestamp: clock drift, corrupted capture, or data error.
+        # Do not silently treat as fresh — mark stale and require recapture.
+        future_timestamp_detected = True
+        stale_inputs.append(
+            f"metadata_snapshot (future timestamp, age={meta_age:.0f}s; "
+            f"ahead by {abs(meta_age):.0f}s)"
+        )
+        staleness_warnings.append(
+            f"Metadata snapshot timestamp is in the future by {abs(meta_age):.0f}s; "
+            "possible clock drift or corrupted capture. Treating as stale; "
+            "recapture required."
         )
         requires_recapture = True
         staleness_flag = True
@@ -117,9 +141,22 @@ def _build_staleness(
     for ob in order_book_records:
         age = _age_seconds(ob.captured_at_utc, generated_at_utc)
         if age is None:
-            stale_inputs.append(f"order_book_snapshot (token={ob.token_id}, unparseable)")
+            stale_inputs.append(f"order_book_snapshot (token={ob.token_id}, unparseable timestamp)")
             staleness_warnings.append(
-                f"Order book snapshot for token {ob.token_id} has unparseable timestamp."
+                f"Order book snapshot for token {ob.token_id} has unparseable or missing timestamp."
+            )
+            requires_recapture = True
+            staleness_flag = True
+        elif age < 0:
+            # Future timestamp on order book — same treatment as metadata future timestamp.
+            future_timestamp_detected = True
+            stale_inputs.append(
+                f"order_book_snapshot (token={ob.token_id}, future timestamp, age={age:.0f}s; "
+                f"ahead by {abs(age):.0f}s)"
+            )
+            staleness_warnings.append(
+                f"Order book snapshot for token {ob.token_id} has future timestamp "
+                f"by {abs(age):.0f}s; treating as stale."
             )
             requires_recapture = True
             staleness_flag = True
@@ -146,6 +183,7 @@ def _build_staleness(
         "stale_inputs": stale_inputs,
         "staleness_warning": "; ".join(staleness_warnings) if staleness_warnings else None,
         "requires_recapture_before_use": requires_recapture,
+        "future_timestamp_detected": future_timestamp_detected,
     }
 
 
@@ -155,7 +193,23 @@ def _build_provenance(
     record: MarketMetadataSnapshotRecord,
     manifest_index: Optional[dict],
 ) -> dict:
-    """Build the provenance sub-dict for a market_context."""
+    """Build the provenance sub-dict for a market_context.
+
+    WP53 hardening: weak provenance is made explicit with provenance_degraded flag,
+    provenance_weakness_reasons list, and provenance_warning string.
+
+    Real provenance weaknesses (affect quality status):
+      - no manifest index provided
+      - snapshot_id not found in manifest index
+      - manifest has no output files
+
+    Informational model limitations (always absent in current manifest model;
+    recorded but do not set provenance_degraded alone):
+      - guard_policy_version absent (not stored in SnapshotManifest model)
+      - empty_quality_report_ids (no quality-report workflow implemented yet)
+
+    Missing provenance is never silently treated as valid.
+    """
     snapshot_manifest_ids = []
     source_export_paths = []
     capture_session_ids = []
@@ -163,14 +217,49 @@ def _build_provenance(
     quality_report_ids = []
     input_artifact_types = ["market_metadata_snapshot"]
 
-    if manifest_index:
+    # Real weaknesses that degrade quality
+    quality_weakness_reasons: list = []
+    # Informational model limitations — recorded but not quality-impacting alone
+    informational_reasons: list = []
+
+    if manifest_index is None:
+        quality_weakness_reasons.append("no_manifest_index_provided")
+    else:
         manifest = manifest_index.get(record.snapshot_id)
         if manifest is not None:
             snapshot_manifest_ids.append(manifest.snapshot_id)
             capture_session_ids.append(manifest.snapshot_id)
-            source_export_paths.extend(manifest.output_files or [])
-            # Guard policy not stored in manifest; omit to avoid inventing values
-        # No else: absent manifest → empty lists (do not invent IDs)
+            output_files = manifest.output_files or []
+            source_export_paths.extend(output_files)
+            if not output_files:
+                quality_weakness_reasons.append("manifest_has_no_output_files")
+            # Guard policy not stored in manifest model; omit to avoid inventing values.
+        else:
+            quality_weakness_reasons.append("snapshot_id_not_found_in_manifest_index")
+
+    # Derive secondary absence reasons only when no manifest was found
+    if not snapshot_manifest_ids:
+        quality_weakness_reasons.append("empty_snapshot_manifest_ids")
+    if not capture_session_ids:
+        quality_weakness_reasons.append("empty_capture_session_ids")
+
+    # Source export paths are absent when either no manifest or manifest had no output_files
+    if not source_export_paths and not snapshot_manifest_ids:
+        quality_weakness_reasons.append("empty_source_export_paths")
+
+    # Informational: these are always absent in the current manifest model
+    if guard_policy_version is None:
+        informational_reasons.append("guard_policy_version_absent")
+    if not quality_report_ids:
+        informational_reasons.append("empty_quality_report_ids")
+
+    # provenance_degraded reflects real quality weaknesses only
+    provenance_degraded = len(quality_weakness_reasons) > 0
+    all_weakness_reasons = quality_weakness_reasons + informational_reasons
+    provenance_warning: Optional[str] = (
+        "Weak provenance: " + "; ".join(quality_weakness_reasons) + "."
+        if quality_weakness_reasons else None
+    )
 
     return {
         "snapshot_manifest_ids": snapshot_manifest_ids,
@@ -179,6 +268,9 @@ def _build_provenance(
         "guard_policy_version": guard_policy_version,
         "quality_report_ids": quality_report_ids,
         "input_artifact_types": input_artifact_types,
+        "provenance_degraded": provenance_degraded,
+        "provenance_weakness_reasons": all_weakness_reasons,
+        "provenance_warning": provenance_warning,
     }
 
 
@@ -189,8 +281,20 @@ def _build_missing_data(
     ob_records: list,
     warnings: list,
 ) -> dict:
+    """Build the missing_data sub-dict for a market_context.
+
+    WP53 hardening: adds detection for missing question text and missing
+    market_status. Multiple critical missing fields produce explicit non-compensatory
+    degradation — good values elsewhere cannot erase critical missing-data warnings.
+    """
     missing_fields = []
     has_warning = False
+
+    missing_question = not bool(record.question)
+    if missing_question:
+        missing_fields.append("question")
+        warnings.append("question field is absent")
+        has_warning = True
 
     missing_category = not bool(record.category)
     if missing_category:
@@ -228,6 +332,12 @@ def _build_missing_data(
         warnings.append("resolution_date is absent")
         has_warning = True
 
+    missing_market_status = not bool(record.market_status)
+    if missing_market_status:
+        missing_fields.append("market_status")
+        warnings.append("market_status field is absent")
+        has_warning = True
+
     reason = "; ".join(warnings) if warnings else None
 
     return {
@@ -237,6 +347,8 @@ def _build_missing_data(
         "missing_outcome_tokens": missing_outcome_tokens,
         "missing_category": missing_category,
         "missing_resolution_source": missing_resolution_source,
+        "missing_question": missing_question,
+        "missing_market_status": missing_market_status,
         "insufficient_coverage_reason": reason,
     }
 
@@ -248,28 +360,39 @@ def _build_quality_gates(
     staleness: dict,
     manifest_index: Optional[dict],
     record: MarketMetadataSnapshotRecord,
+    provenance: Optional[dict] = None,
 ) -> dict:
-    """Build quality_gates sub-dict from extracted feature state."""
+    """Build quality_gates sub-dict from extracted feature state.
+
+    WP53 hardening: provenance_degraded (weak but present manifest) is distinguished
+    from absent provenance and produces a weak_provenance warning. FAILING is still
+    reserved for stale or absent provenance. Weak-but-present provenance results in
+    DEGRADED status.
+    """
     quality_warnings = []
 
     if staleness["staleness_flag"]:
         quality_warnings.append("stale_snapshot")
     if missing_data["missing_data_warning"]:
         quality_warnings.append("missing_data")
+
     has_provenance = bool(
         manifest_index and manifest_index.get(record.snapshot_id) is not None
     )
     if not has_provenance:
         quality_warnings.append("no_manifest_provenance")
+    elif (provenance or {}).get("provenance_degraded"):
+        # Manifest present but provenance fields are weak — warn but don't fail
+        quality_warnings.append("weak_provenance")
 
-    if quality_warnings and (
-        staleness["staleness_flag"] or not has_provenance
-    ):
-        quality_status = "FAILING"
-    elif quality_warnings:
-        quality_status = "DEGRADED"
-    else:
+    if not quality_warnings:
         quality_status = "ACCEPTABLE"
+    elif staleness["staleness_flag"] or not has_provenance:
+        # Stale data or completely absent provenance → FAILING
+        quality_status = "FAILING"
+    else:
+        # Fresh data, provenance present (possibly weak) but with other warnings → DEGRADED
+        quality_status = "DEGRADED"
 
     return {
         "quality_status": quality_status,
@@ -289,8 +412,14 @@ def _build_score_components(
     missing_data: dict,
     quality_gates: dict,
     manifest_index: Optional[dict],
+    provenance: Optional[dict] = None,
 ) -> dict:
-    """Build score_components dict for WP49 scorer consumption."""
+    """Build score_components dict for WP49 scorer consumption.
+
+    WP53 hardening: guard_provenance_quality is reduced for weak-but-present provenance
+    (not just absent provenance). missing_data_penalty is non-zero whenever
+    missing_data_warning is True.
+    """
 
     # --- Positive components ---
 
@@ -307,7 +436,7 @@ def _build_score_components(
     snapshot_freshness = 0.0 if staleness["staleness_flag"] else 1.0
     age = staleness.get("snapshot_age_seconds")
     threshold = staleness.get("freshness_threshold_seconds") or DEFAULT_METADATA_FRESHNESS_THRESHOLD_SECONDS
-    if age is not None and not staleness["staleness_flag"] and threshold > 0:
+    if age is not None and age >= 0 and not staleness["staleness_flag"] and threshold > 0:
         # Smooth decay: 1.0 at age=0, ~0 at threshold
         snapshot_freshness = max(0.0, 1.0 - (age / threshold))
 
@@ -377,18 +506,26 @@ def _build_score_components(
         raw_proxy = total_sides / max_expected_sides if max_expected_sides > 0 else 0.0
         visible_local_liquidity_proxy = min(_MAX_LIQUIDITY_PROXY, raw_proxy * _MAX_LIQUIDITY_PROXY)
 
-    # guard_provenance_quality: high if manifest present; 0 otherwise
+    # guard_provenance_quality: reflects manifest presence and provenance strength.
+    # WP53: absent manifest → 0.0; present but weakly provenanced → 0.3; full → 0.8.
     has_provenance = bool(
         manifest_index and manifest_index.get(record.snapshot_id) is not None
     )
-    guard_provenance_quality = 0.8 if has_provenance else 0.0
+    provenance_degraded = (provenance or {}).get("provenance_degraded", False)
+    if not has_provenance:
+        guard_provenance_quality = 0.0
+    elif provenance_degraded:
+        guard_provenance_quality = 0.3
+    else:
+        guard_provenance_quality = 0.8
 
     # --- Penalty components (all ≤ 0.0) ---
 
     # duplicate_conflict_penalty: 0.0 (dedup info not available in WP51 basic extraction)
     duplicate_conflict_penalty = 0.0
 
-    # missing_data_penalty: -0.1 per missing critical field, capped at -0.5
+    # missing_data_penalty: -0.1 per missing critical field, capped at -0.5.
+    # Non-zero whenever missing_data_warning is True (non-compensatory).
     n_missing = len(missing_data.get("missing_metadata_fields") or [])
     missing_data_penalty = max(-0.5, -0.1 * n_missing)
 
@@ -426,6 +563,11 @@ def extract_market_research_priority_context(
 
     Compatible with build_market_research_priority_output() from WP49.
     Advisory-only. No network. No writes.
+
+    WP53 hardening: provenance_degraded, future_timestamp_detected, missing_question,
+    and missing_market_status are now propagated through staleness, provenance, and
+    missing_data sub-dicts. Critical missing data cannot be silently erased by good
+    values elsewhere.
 
     Args:
         record: market metadata snapshot record to extract from.
@@ -469,24 +611,32 @@ def extract_market_research_priority_context(
     provenance = _build_provenance(record, manifest_index)
     missing_data_warnings: list = []
     missing_data = _build_missing_data(record, ob_records, missing_data_warnings)
-    quality_gates = _build_quality_gates(missing_data, staleness, manifest_index, record)
+    quality_gates = _build_quality_gates(
+        missing_data, staleness, manifest_index, record, provenance
+    )
     score_components = _build_score_components(
-        record, ob_records, staleness, missing_data, quality_gates, manifest_index
+        record, ob_records, staleness, missing_data, quality_gates, manifest_index, provenance
     )
 
     explanation_parts = []
     if staleness["staleness_flag"]:
         explanation_parts.append("stale snapshot")
+    if staleness.get("future_timestamp_detected"):
+        explanation_parts.append("future timestamp detected")
+    if missing_data["missing_question"]:
+        explanation_parts.append("missing question")
     if missing_data["missing_category"]:
         explanation_parts.append("missing category")
+    if missing_data["missing_market_status"]:
+        explanation_parts.append("missing market_status")
     if missing_data["missing_order_book"]:
         explanation_parts.append("no order book")
-    if not provenance["snapshot_manifest_ids"]:
-        explanation_parts.append("no manifest provenance")
+    if provenance["provenance_degraded"]:
+        explanation_parts.append("weak or absent provenance")
     if not explanation_parts:
         explanation_parts.append("basic metadata and provenance present")
     component_explanation = (
-        f"WP51 feature extraction foundation. Advisory-only. "
+        f"WP53 feature extraction (hardened). Advisory-only. "
         f"Notes: {'; '.join(explanation_parts)}."
     )
 
@@ -562,7 +712,7 @@ def build_market_research_priority_run_context(
         artifacts = dict(artifacts)
         artifacts["snapshot_id"] = snapshot_id
 
-    run_id = f"wp51-run-{uuid.uuid4().hex[:12]}"
+    run_id = f"wp53-run-{uuid.uuid4().hex[:12]}"
 
     return {
         "generated_at_utc": generated_at_utc.isoformat(),

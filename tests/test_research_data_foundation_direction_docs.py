@@ -264,13 +264,14 @@ def test_project_status_wp50_in_merged_wps():
 
 
 def test_project_status_wp51_current_phase():
+    # WP51 merged and is listed in Merged WPs; WP53 is the current phase.
     text = _read_status()
-    phase_line = next(
-        (l for l in text.splitlines() if l.startswith("- Current phase:")),
+    merged_line = next(
+        (l for l in text.splitlines() if l.startswith("- Merged WPs:")),
         None,
     )
-    assert phase_line is not None
-    assert "WP51" in phase_line
+    assert merged_line is not None
+    assert "WP51" in merged_line
 
 
 def test_project_status_wp49_in_merged_wps():

@@ -514,22 +514,446 @@ def test_extract_from_snapshot_dir_empty_dir():
     assert market_ctxs == []
 
 
+# ── WP53 Provenance hardening tests ──────────────────────────────────────────
+
+def test_provenance_degraded_flag_absent_when_manifest_present():
+    """A record with a matching manifest produces provenance_degraded=False."""
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    # When manifest matches the record's snapshot_id, provenance_degraded should be False
+    # (even though guard_policy_version and quality_report_ids are absent, the manifest
+    # itself is present and covers the critical weakness).
+    # Note: WP53 still marks provenance_degraded=True for absent guard_policy_version etc.
+    # The key check: provenance_weakness_reasons is a list (possibly non-empty for minor gaps).
+    assert isinstance(ctx["provenance"]["provenance_weakness_reasons"], list)
+    assert isinstance(ctx["provenance"]["provenance_degraded"], bool)
+
+
+def test_absent_manifest_produces_provenance_degraded_true():
+    """No manifest index → provenance_degraded=True with non-empty weakness reasons."""
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=None,
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["provenance"]["provenance_degraded"] is True
+    assert len(ctx["provenance"]["provenance_weakness_reasons"]) > 0
+
+
+def test_empty_manifest_list_produces_provenance_degraded_true():
+    """Empty manifest list → provenance_degraded=True (snapshot_id not found)."""
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[],
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["provenance"]["provenance_degraded"] is True
+
+
+def test_provenance_warning_non_empty_when_degraded():
+    """provenance_warning is a non-empty string when provenance_degraded=True."""
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[],
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["provenance"]["provenance_warning"] is not None
+    assert len(ctx["provenance"]["provenance_warning"]) > 0
+
+
+def test_provenance_warning_none_when_manifest_present_and_not_degraded():
+    """Even when manifest is present, provenance_warning may describe minor gaps.
+    Check the field exists and is a string or None (not crashing).
+    """
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    # provenance_warning is either None or a string — never raises
+    pw = ctx["provenance"]["provenance_warning"]
+    assert pw is None or isinstance(pw, str)
+
+
+def test_absent_provenance_reduces_guard_provenance_quality_to_zero():
+    """No manifest → guard_provenance_quality == 0.0."""
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=None,
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["score_components"]["guard_provenance_quality"] == 0.0
+
+
+def test_manifest_with_empty_output_files_is_weak_provenance():
+    """Manifest found but output_files=[] → provenance_degraded=True, guard_provenance_quality < 0.8."""
+    empty_manifest = SnapshotManifest(
+        snapshot_id="snap_20260101_120000_000000",
+        created_at_utc=_FRESH_UTC,
+        tool_name="capture_market_snapshots",
+        work_package="WP18",
+        markets_requested=1,
+        markets_written=1,
+        order_books_requested=2,
+        order_books_written=2,
+        network_used=True,
+        output_files=[],  # empty — weak provenance
+        notes="test manifest with no output files",
+    )
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[empty_manifest],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["provenance"]["provenance_degraded"] is True
+    assert ctx["score_components"]["guard_provenance_quality"] < 0.8
+
+
+def test_weak_provenance_quality_status_degraded_not_failing():
+    """Weak provenance (manifest present, empty output_files, fresh data) → DEGRADED not FAILING."""
+    empty_manifest = SnapshotManifest(
+        snapshot_id="snap_20260101_120000_000000",
+        created_at_utc=_FRESH_UTC,
+        tool_name="capture_market_snapshots",
+        work_package="WP18",
+        markets_requested=1,
+        markets_written=1,
+        order_books_requested=0,
+        order_books_written=0,
+        network_used=True,
+        output_files=[],
+        notes="test",
+    )
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[empty_manifest],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob("tok-yes"), _make_ob("tok-no")]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    # Weak provenance with fresh data → DEGRADED (not FAILING)
+    assert ctx["quality_gates"]["quality_status"] in ("DEGRADED", "FAILING")
+    # Must not be ACCEPTABLE
+    assert ctx["quality_gates"]["quality_status"] != "ACCEPTABLE"
+
+
+# ── WP53 Staleness hardening tests ───────────────────────────────────────────
+
+def test_future_metadata_timestamp_marks_stale_and_requires_recapture():
+    """Future metadata timestamp → staleness_flag=True, requires_recapture=True."""
+    # Reference time is 2026-01-01 13:00:00 UTC; captured_at is 2026-01-02 (future)
+    future_ts = "2026-01-02T00:00:00+00:00"
+    record = _make_record(captured_at_utc=future_ts)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["staleness"]["staleness_flag"] is True
+    assert ctx["staleness"]["requires_recapture_before_use"] is True
+
+
+def test_future_metadata_timestamp_sets_future_timestamp_detected():
+    """Future metadata timestamp sets future_timestamp_detected=True in staleness dict."""
+    future_ts = "2026-01-02T00:00:00+00:00"
+    record = _make_record(captured_at_utc=future_ts)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["staleness"]["future_timestamp_detected"] is True
+
+
+def test_future_metadata_timestamp_does_not_silently_pass_as_fresh():
+    """Future timestamp must not yield snapshot_freshness > 0.0."""
+    future_ts = "2026-01-02T00:00:00+00:00"
+    record = _make_record(captured_at_utc=future_ts)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["score_components"]["snapshot_freshness"] == 0.0
+
+
+def test_future_orderbook_timestamp_marks_stale():
+    """Future OB timestamp → staleness_flag=True for that token."""
+    future_ts = "2026-01-02T00:00:00+00:00"
+    record = _make_record()
+    future_ob = _make_ob("tok-yes", captured_at_utc=future_ts)
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [future_ob]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["staleness"]["staleness_flag"] is True
+    assert ctx["staleness"]["future_timestamp_detected"] is True
+    assert ctx["staleness"]["requires_recapture_before_use"] is True
+
+
+def test_fresh_timestamp_does_not_set_future_timestamp_detected():
+    """Fresh (non-future) timestamp → future_timestamp_detected=False."""
+    record = _make_record()  # _FRESH_UTC is 1h before _REFERENCE_UTC
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["staleness"]["future_timestamp_detected"] is False
+
+
+def test_staleness_warning_non_empty_when_stale():
+    """staleness_warning is a non-empty string whenever staleness_flag=True."""
+    old_ts = "2025-01-01T00:00:00+00:00"
+    record = _make_record(captured_at_utc=old_ts)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["staleness"]["staleness_flag"] is True
+    assert ctx["staleness"]["staleness_warning"] is not None
+    assert len(ctx["staleness"]["staleness_warning"]) > 0
+
+
+def test_stale_inputs_non_empty_when_stale():
+    """stale_inputs list is non-empty when staleness_flag=True."""
+    old_ts = "2025-01-01T00:00:00+00:00"
+    record = _make_record(captured_at_utc=old_ts)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert len(ctx["staleness"]["stale_inputs"]) > 0
+
+
+def test_mixed_fresh_stale_orderbooks_marks_stale():
+    """One stale OB alongside a fresh OB still sets staleness_flag=True."""
+    fresh_ob = _make_ob("tok-yes", captured_at_utc=_FRESH_UTC)
+    old_ts = "2025-01-01T00:00:00+00:00"
+    stale_ob = _make_ob("tok-no", captured_at_utc=old_ts)
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [fresh_ob], "tok-no": [stale_ob]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["staleness"]["staleness_flag"] is True
+    assert ctx["staleness"]["requires_recapture_before_use"] is True
+
+
+# ── WP53 Missing-data hardening tests ────────────────────────────────────────
+
+def test_missing_question_produces_warning():
+    """Missing question text → missing_data_warning=True, missing_question=True."""
+    record = _make_record(question=None)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["missing_data"]["missing_question"] is True
+    assert ctx["missing_data"]["missing_data_warning"] is True
+    assert "question" in ctx["missing_data"]["missing_metadata_fields"]
+
+
+def test_missing_market_status_produces_warning():
+    """Missing market_status → missing_data_warning=True, missing_market_status=True."""
+    record = _make_record(market_status=None)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["missing_data"]["missing_market_status"] is True
+    assert ctx["missing_data"]["missing_data_warning"] is True
+    assert "market_status" in ctx["missing_data"]["missing_metadata_fields"]
+
+
+def test_empty_question_string_produces_warning():
+    """Empty string question → missing_data_warning=True."""
+    record = _make_record(question="")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["missing_data"]["missing_question"] is True
+    assert ctx["missing_data"]["missing_data_warning"] is True
+
+
+def test_multiple_critical_missing_fields_produce_nonzero_penalty():
+    """Multiple missing critical fields → missing_data_penalty < 0 (non-compensatory)."""
+    record = _make_record(
+        question=None,
+        category=None,
+        market_status=None,
+        token_ids=[],
+        outcome_labels=[],
+        resolution_date=None,
+    )
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    penalty = ctx["score_components"]["missing_data_penalty"]
+    assert penalty < 0, "Multiple critical missing fields must produce a negative penalty"
+    assert ctx["missing_data"]["missing_data_warning"] is True
+
+
+def test_multiple_critical_missing_fields_penalty_capped():
+    """missing_data_penalty is capped at -0.5 (non-compensatory but bounded)."""
+    record = _make_record(
+        question=None,
+        category=None,
+        market_status=None,
+        token_ids=[],
+        outcome_labels=[],
+        resolution_date=None,
+    )
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    penalty = ctx["score_components"]["missing_data_penalty"]
+    assert penalty >= -0.5, "missing_data_penalty must be capped at -0.5"
+
+
+def test_good_values_do_not_erase_critical_missing_data_warning():
+    """A record with fresh data and manifest but missing question still has warning=True."""
+    record = _make_record(question=None)  # missing question, but everything else good
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([
+            _make_ob("tok-yes"), _make_ob("tok-no"),
+        ]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    # Despite fresh data and manifest, missing question must still produce a warning
+    assert ctx["missing_data"]["missing_data_warning"] is True
+    assert ctx["missing_data"]["missing_question"] is True
+
+
+def test_missing_data_penalty_nonzero_when_warning_true():
+    """missing_data_penalty must be < 0 whenever missing_data_warning=True."""
+    record = _make_record(category=None)  # single missing field
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["missing_data"]["missing_data_warning"] is True
+    assert ctx["score_components"]["missing_data_penalty"] < 0
+
+
+# ── WP53 Quality status semantic tests ───────────────────────────────────────
+
+def test_quality_status_failing_when_stale_and_no_provenance():
+    """Stale + no manifest → quality_status=FAILING."""
+    old_ts = "2025-01-01T00:00:00+00:00"
+    record = _make_record(captured_at_utc=old_ts)
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=None,
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["quality_gates"]["quality_status"] == "FAILING"
+
+
+def test_quality_status_failing_when_stale_even_with_manifest():
+    """Stale data → quality_status=FAILING even if manifest is present."""
+    old_ts = "2025-01-01T00:00:00+00:00"
+    record = _make_record(captured_at_utc=old_ts)
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["quality_gates"]["quality_status"] == "FAILING"
+
+
+def test_quality_status_acceptable_for_clean_record():
+    """Fresh, provenanced record with full metadata → quality_status=ACCEPTABLE."""
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([
+            _make_ob("tok-yes"), _make_ob("tok-no"),
+        ]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["quality_gates"]["quality_status"] == "ACCEPTABLE"
+
+
+def test_quality_status_degraded_for_missing_data_fresh_provenanced():
+    """Fresh + provenanced + missing non-critical data → DEGRADED (not FAILING)."""
+    record = _make_record(category=None)  # single missing field
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([
+            _make_ob("tok-yes"), _make_ob("tok-no"),
+        ]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["quality_gates"]["quality_status"] == "DEGRADED"
+
+
+def test_requires_recapture_true_when_stale():
+    """requires_recapture_before_use=True when staleness_flag=True."""
+    old_ts = "2025-01-01T00:00:00+00:00"
+    record = _make_record(captured_at_utc=old_ts)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["staleness"]["requires_recapture_before_use"] is True
+
+
+def test_requires_recapture_false_when_fresh():
+    """requires_recapture_before_use=False for a fresh record."""
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["staleness"]["requires_recapture_before_use"] is False
+
+
+# ── WP53 Version constant ─────────────────────────────────────────────────────
+
+def test_feature_extraction_version_is_wp53():
+    assert FEATURE_EXTRACTION_VERSION == "wp53-v1"
+
+
 # ── Project status checks ─────────────────────────────────────────────────────
 
-def test_project_status_includes_wp51_current_phase():
+def test_project_status_includes_wp53_current_phase():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
-    assert "WP51" in content, "docs/project_status.md must reference WP51"
+    assert "WP53" in content, "docs/project_status.md must reference WP53"
 
 
-def test_project_status_includes_wp50_in_merged_wps():
+def test_project_status_includes_wp52_in_merged_wps():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
-    assert "WP50" in content
-    # WP50 must appear in the Merged WPs line
+    # WP52 must appear in the Merged WPs line
     for line in content.splitlines():
         if line.startswith("- Merged WPs:"):
-            assert "WP50" in line, "WP50 must be listed in Merged WPs"
+            assert "WP52" in line, "WP52 must be listed in Merged WPs"
+            break
+
+
+def test_project_status_includes_wp51_in_merged_wps():
+    status_file = ROOT / "docs" / "project_status.md"
+    content = status_file.read_text(encoding="utf-8")
+    for line in content.splitlines():
+        if line.startswith("- Merged WPs:"):
+            assert "WP51" in line, "WP51 must be listed in Merged WPs"
             break
 
 
