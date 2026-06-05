@@ -348,20 +348,38 @@ def test_project_status_reflects_wp53_merged() -> None:
     assert "WP53" in merged_line
 
 
-def test_project_status_reflects_wp55_current() -> None:
+def test_project_status_reflects_wp56_current() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP55" in phase_line
+    assert "WP56" in phase_line
 
 
-def test_project_status_reflects_wp55_branch() -> None:
+def test_project_status_reflects_wp56_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp55" in branch_line
+    assert "wp56" in branch_line
+
+
+def test_project_status_reflects_wp55_merged() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP55" in merged_line
+
+
+def test_resolution_ambiguity_label_schema_validator_indexed() -> None:
+    text = _read(ROOT / "docs" / "repo_truth_index.md")
+    assert "resolution_ambiguity_labels.py" in text
+
+
+def test_resolution_ambiguity_label_schema_validator_file_exists() -> None:
+    path = ROOT / "src" / "data_layer" / "resolution_ambiguity_labels.py"
+    assert path.is_file(), "src/data_layer/resolution_ambiguity_labels.py must exist"
 
 
 def test_wp54_in_merged_wps_in_codex_workflow_check() -> None:

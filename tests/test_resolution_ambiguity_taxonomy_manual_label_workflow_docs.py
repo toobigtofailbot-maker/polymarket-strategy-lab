@@ -417,3 +417,35 @@ def test_no_live_api_in_labels():
     text = _read()
     assert "not reference live API" in text or "no live API" in text.lower() or \
            "must not reference live API" in text
+
+
+# ── WP56 cross-reference ──────────────────────────────────────────────────────
+
+def test_doc_references_wp56():
+    assert "WP56" in _read()
+
+
+def test_doc_references_wp56_schema_validator():
+    text = _read()
+    assert "resolution_ambiguity_labels.py" in text
+
+
+def test_wp55_merged_in_status():
+    text = _read()
+    # WP55 must be shown as merged in the status section
+    assert "merged" in text.lower()
+    assert "b019bb825924d52057225455886c3ca45af9e925" in text or "WP55" in text
+
+
+def test_wp56_on_branch_in_status():
+    text = _read()
+    assert "on branch" in text.lower() or "WP56" in text
+
+
+def test_wp56_d001_present():
+    assert "WP56-D001" in _read()
+
+
+def test_wp56_validator_scope_does_not_include_feature_extraction():
+    text = _read()
+    assert "WP56 does not implement" in text or "no feature extraction" in text.lower()

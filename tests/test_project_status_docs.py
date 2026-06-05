@@ -105,20 +105,36 @@ def test_wp54_in_merged_wps_list():
     assert "WP54" in merged_line
 
 
-def test_wp55_is_current_phase():
+def test_wp55_in_merged_wps_list():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP55" in merged_line
+
+
+def test_wp56_is_current_phase():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP55" in current_phase_line
+    assert "WP56" in current_phase_line
 
 
-def test_wp55_branch_is_current_branch():
+def test_wp56_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp55-resolution-ambiguity-taxonomy-manual-label-workflow" in branch_line
+    assert "wp56-resolution-ambiguity-label-schema-validation" in branch_line
+
+
+def test_wp55_branch_not_current_branch():
+    text = _read()
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp55-resolution-ambiguity-taxonomy-manual-label-workflow" not in branch_line
 
 
 def test_wp54_bundled_wp_policy_status_is_merged():
@@ -131,10 +147,14 @@ def test_wp54_guard_flag_status_is_merged():
     assert "LOCAL_OFFLINE_STDLIB_GUARD_HARDENING_MERGED" in text
 
 
-def test_resolution_ambiguity_taxonomy_status_on_branch():
+def test_resolution_ambiguity_taxonomy_status_merged():
     text = _read()
-    assert "DOCS_SCHEMA_TESTS_ONLY_ON_BRANCH" in text or \
-           "Resolution ambiguity taxonomy" in text
+    assert "DOCS_SCHEMA_TESTS_ONLY_MERGED" in text
+
+
+def test_resolution_ambiguity_label_schema_validation_status_on_branch():
+    text = _read()
+    assert "LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATION_ON_BRANCH" in text
 
 
 def test_protected_boundaries_unchanged():

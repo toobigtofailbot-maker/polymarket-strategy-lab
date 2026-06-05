@@ -38,11 +38,13 @@ def test_required_src_readmes_exist():
 # WP23 approves executable local/offline exporter source under src/data_layer/agent_context/.
 # WP49 approves the local/offline/read-only core scorer at src/data_layer/market_research_priority_scoring.py.
 # WP51 approves the local/offline/read-only feature extraction foundation at src/data_layer/market_research_priority_features.py.
+# WP56 approves the local/offline/read-only label schema validator at src/data_layer/resolution_ambiguity_labels.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
     "src/data_layer/market_research_priority_scoring.py",
     "src/data_layer/market_research_priority_features.py",
+    "src/data_layer/resolution_ambiguity_labels.py",
 )
 
 
