@@ -114,10 +114,25 @@ def test_src_does_not_import_official_client() -> None:
         assert not import_pattern.search(text), f"official client import found in {path.relative_to(ROOT)}"
 
 
+# Files that use certain forbidden terms defensively (as rejection patterns, not credential use).
+# Each entry maps a relative file path to the set of terms it is exempt from.
+# Any file listed here must be explicitly reviewed and documented.
+FORBIDDEN_TERMS_FILE_EXEMPTIONS: dict[str, set[str]] = {
+    # WP56: resolution_ambiguity_labels.py uses "mnemonic" in _FORBIDDEN_REF_SUBSTRINGS
+    # to REJECT source artifact refs that contain mnemonic-like strings. This is a
+    # defensive rejection pattern, not a credential or key-derivation path.
+    "src/data_layer/resolution_ambiguity_labels.py": {"mnemonic"},
+}
+
+
 def test_src_does_not_include_forbidden_official_client_auth_or_order_terms() -> None:
     for path in (ROOT / "src").rglob("*.py"):
         text = _read(path)
+        rel = path.relative_to(ROOT).as_posix()
+        exempted = FORBIDDEN_TERMS_FILE_EXEMPTIONS.get(rel, set())
         for term in FORBIDDEN_SRC_TERMS:
+            if term in exempted:
+                continue
             assert not re.search(rf"\b{re.escape(term)}\b", text), (
                 f"{term} found in {path.relative_to(ROOT)}"
             )

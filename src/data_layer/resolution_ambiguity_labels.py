@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Iterable, Mapping
@@ -121,9 +122,41 @@ _FORBIDDEN_REF_SUBSTRINGS: tuple[str, ...] = (
     "api.",
     "wallet",
     "private_key",
+    # "mnemonic" is used here as a rejection pattern to detect mnemonic-like source refs,
+    # not as an actual credential or key-derivation path. The boundary tests
+    # (test_official_client_dependency_boundary.py, test_official_client_sandbox_boundary.py)
+    # exempt this file via FORBIDDEN_TERMS_FILE_EXEMPTIONS for this reason.
+    "mnemonic",
     "credential",
     "secret",
 )
+
+# ── Forbidden free-text wording patterns ──────────────────────────────────────
+# Applied to free-text label fields (evidence_notes, limitations).
+# NOT applied to forbidden_use_notice, which is required to state these terms.
+# Patterns use lowercase; match against lowercased field value.
+# WP56 follow-up: Classification F (implementation logic defect) + G (test coverage gap).
+
+_FORBIDDEN_FREE_TEXT_PATTERNS: tuple[tuple[str, str], ...] = (
+    # (label, regex_pattern) — pattern matched against lowercased field value
+    ("alpha", r"\balpha\b"),
+    ("opportunity", r"\bopportunity\b"),
+    ("mispricing exploitation", r"mispricing\s+exploitation"),
+    ("tradable", r"\btradabl[ey]\b"),
+    ("untradeable", r"\buntradeable\b"),
+    ("expected return", r"\bexpected\s+return\b"),
+    ("execution confidence", r"\bexecution\s+confidence\b"),
+    ("fill probability", r"\bfill\s+probability\b"),
+    ("slippage", r"\bslippage\b"),
+    ("position size", r"\bposition\s+size\b"),
+    ("leverage", r"\bleverage\b"),
+    ("order size", r"\border\s+size\b"),
+    ("trading signal", r"\btrading\s+signal\b"),
+)
+
+# Free-text fields where forbidden wording is checked.
+# forbidden_use_notice is intentionally excluded (it must contain these phrases).
+_FREE_TEXT_FIELDS_FOR_WORDING_CHECK: tuple[str, ...] = ("evidence_notes", "limitations")
 
 
 # ── Result types ──────────────────────────────────────────────────────────────
@@ -414,6 +447,27 @@ def validate_resolution_ambiguity_label(
                 f"'reviewed_at_utc' value '{reviewed_at_utc}' is not a parseable ISO-8601 timestamp.",
                 errors,
             )
+
+    # ── 8.8 Forbidden free-text wording in label text fields ──────────────────
+    # WP56 follow-up: Classification F (logic defect) + G (test coverage gap).
+    # Check evidence_notes and limitations for trade-like / alpha-seeking language.
+    # forbidden_use_notice is intentionally excluded from this check because it
+    # must contain the exact non-signal phrases to satisfy 8.4.
+    for _field in _FREE_TEXT_FIELDS_FOR_WORDING_CHECK:
+        _field_value = label.get(_field)
+        if isinstance(_field_value, str) and _field_value.strip():
+            _value_lower = _field_value.lower()
+            for _phrase_label, _pattern in _FORBIDDEN_FREE_TEXT_PATTERNS:
+                if re.search(_pattern, _value_lower):
+                    _err(
+                        _field,
+                        "FORBIDDEN_FREE_TEXT_WORDING",
+                        f"Field '{_field}' contains forbidden trade-like or alpha-seeking "
+                        f"wording: '{_phrase_label}'. Resolution ambiguity label free-text "
+                        "fields must not use trading-signal, opportunity, or execution language.",
+                        errors,
+                    )
+                    break  # Report one forbidden pattern per field; reviewer fixes and revalidates.
 
     return ResolutionAmbiguityLabelValidationResult(
         is_valid=len(errors) == 0,

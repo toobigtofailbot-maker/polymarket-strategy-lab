@@ -371,6 +371,87 @@ def test_unparseable_reviewed_at_utc():
     assert "UNPARSEABLE_TIMESTAMP" in codes
 
 
+def test_source_refs_contain_mnemonic_like_string():
+    """Source refs containing 'mnemonic' must fail with FORBIDDEN_SOURCE_REF."""
+    label = _valid_medium_ambiguity_label()
+    label["source_artifact_refs"] = ["local_data/mnemonic_backup.json"]
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    codes = {e.code for e in result.errors}
+    assert "FORBIDDEN_SOURCE_REF" in codes
+
+
+# ── WP56 follow-up: free-text wording validation (F/G fixes) ─────────────────
+
+def test_evidence_notes_with_alpha_wording_fails():
+    """evidence_notes containing 'alpha opportunity' must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["evidence_notes"] = "This market shows an alpha opportunity due to resolution ambiguity."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    codes = {e.code for e in result.errors}
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in codes
+
+
+def test_evidence_notes_with_mispricing_exploitation_fails():
+    """evidence_notes containing 'mispricing exploitation' must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["evidence_notes"] = "Resolution ambiguity creates a mispricing exploitation scenario."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    codes = {e.code for e in result.errors}
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in codes
+
+
+def test_evidence_notes_with_expected_return_fails():
+    """evidence_notes containing 'expected return' must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["evidence_notes"] = "Ambiguity increases expected return variance."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    codes = {e.code for e in result.errors}
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in codes
+
+
+def test_limitations_with_trade_like_phrase_fails():
+    """limitations containing trade-like wording must fail."""
+    label = _valid_medium_ambiguity_label()
+    label["limitations"] = "Slippage estimates based on ambiguity level not included."
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is False
+    codes = {e.code for e in result.errors}
+    assert "FORBIDDEN_FREE_TEXT_WORDING" in codes
+
+
+def test_forbidden_use_notice_still_passes_with_required_phrases():
+    """forbidden_use_notice is NOT checked for forbidden free-text wording.
+    It must contain non-signal phrases by design and must pass validation."""
+    result = validate_resolution_ambiguity_label(_valid_medium_ambiguity_label())
+    assert result.is_valid is True, [e.message for e in result.errors]
+
+
+def test_evidence_notes_normal_research_wording_passes():
+    """Legitimate research evidence notes must not be rejected."""
+    label = _valid_medium_ambiguity_label()
+    label["evidence_notes"] = (
+        "Resolution source is unclear. Multiple measurement methods exist for CPI. "
+        "Local snapshot does not contain the full resolution document."
+    )
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is True, [e.message for e in result.errors]
+
+
+def test_limitations_normal_research_wording_passes():
+    """Legitimate research limitations must not be rejected."""
+    label = _valid_medium_ambiguity_label()
+    label["limitations"] = (
+        "Snapshot may be stale. Resolution text was absent from local export. "
+        "Review is provisional pending more complete local data."
+    )
+    result = validate_resolution_ambiguity_label(label)
+    assert result.is_valid is True, [e.message for e in result.errors]
+
+
 # ── 9.3 Boundary tests ────────────────────────────────────────────────────────
 
 def test_module_imports_without_third_party_dependencies():
