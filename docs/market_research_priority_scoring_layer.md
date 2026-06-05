@@ -2,13 +2,13 @@
 
 ## 1. Status
 
-- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_ON_BRANCH
-- WP: WP44 (design merged); WP48 (schema/contract merged); WP49 (core scorer merged); WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening on branch)
+- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_ON_BRANCH
+- WP: WP44 (design merged); WP48 (schema/contract merged); WP49 (core scorer merged); WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
 - Tooling impact: NO_NEW_TOOLING
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
-- Source impact: WP44 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED
+- Source impact: WP44 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED; WP55 — NO_SRC_CHANGE
 - Validation impact: NO_VALIDATION_WEAKENING
 - Protected-boundary impact: NO_PROTECTED_BOUNDARY_CHANGE
 - Agent runtime impact: NO_AGENT_RUNTIME
@@ -16,7 +16,7 @@
 - LLM/provider impact: NO_LLM_PROVIDER_RUNTIME
 - Trading impact: NO_TRADING_EXECUTION
 - Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_MERGED
-- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_ON_BRANCH
+- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_ON_BRANCH
 - CLI/export/report implementation: NOT_STARTED
 - Advisory consumer integration: NOT_STARTED
 
@@ -39,6 +39,16 @@ resolution-rule ambiguity, microstructure quality) remain deferred.
 The formal schema and output contract for this layer is defined in
 `docs/market_research_priority_scoring_output_contract.md` (WP48, merged).
 Any future implementation must follow that contract.
+
+WP55 adds `docs/resolution_ambiguity_taxonomy_manual_label_workflow.md` as a
+docs/schema/tests-only resolution-rule ambiguity taxonomy and manual-label
+workflow reference. It defines 14 ambiguity categories, review status values,
+severity/confidence separation, a 17-field manual label schema, and a
+local/offline/read-only human review workflow. Resolution ambiguity labels are
+research-data-quality metadata only. They do not imply trade-readiness,
+profitability, expected return, or execution authority. No feature extraction
+from ambiguity labels is implemented in WP55; that is deferred to a future
+approved WP (WP55-D001).
 
 ## 2. Purpose
 

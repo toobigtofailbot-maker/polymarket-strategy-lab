@@ -2,8 +2,8 @@
 
 ## A. Status
 
-- WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2)
-- Package class: DOCS_ONLY_ROADMAP_MERGED
+- WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2); WP55 (resolution ambiguity taxonomy/manual-label workflow on branch)
+- Package class: DOCS_ONLY_ROADMAP_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_ON_BRANCH
 - Side onboarding lock: SIDE4_ONBOARDING_LOCK_MERGED
 - Authority: PLANNING_GUIDANCE_ONLY
 - NOT_AUTHORIZATION
@@ -20,6 +20,8 @@
 - NO_SCHEDULER
 - NO_BOT_LOOP
 - WP51 merge commit: c57b9c0adcc044f8bd9ed01a6368f2fafdbe222f
+- WP53 merge commit: 7514b1aded39c5f1ca0c5abae4fdae86b6c4f1d6
+- WP54 merge commit: fb45fb849b0641e2007ef66f50bfd5725354b8f0
 
 ## B. Purpose
 
@@ -111,7 +113,13 @@ The following capabilities are built and merged into repo truth as of WP52:
     (WP50), approved near-term sequence, blocked directions, non-signal
     semantics.
 
-12. **Protected boundaries** — Live trading DISABLED; credentials NOT_USED;
+12. **Resolution ambiguity taxonomy and manual-label workflow** — Docs/schema/tests-only
+    taxonomy document (WP55) on branch: 14 ambiguity categories, review status values,
+    severity/confidence separation, 17-field manual label schema, local/offline/read-only
+    human review workflow. Research-data-quality metadata only; no parser, no feature
+    extraction, no scorer integration in WP55.
+
+13. **Protected boundaries** — Live trading DISABLED; credentials NOT_USED;
     execution NOT_STARTED; authenticated client FORBIDDEN_UNTIL_APPROVED_WP;
     Hermes NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY; agent runtime NOT_STARTED;
     agent execution authority FORBIDDEN; fully autonomous trading agent
@@ -123,9 +131,8 @@ The following major capabilities are not yet complete as of WP52. Each
 requires one or more explicitly approved future work packages.
 
 - Robust scanner and refresh pipeline for scoring outputs
-- Provenance/staleness/missing-data enforcement hardening beyond the WP51
-  basic foundation
-- Resolution-rule ambiguity taxonomy and extraction
+- Resolution-rule ambiguity feature extraction and automated parser (taxonomy and
+  manual-label workflow defined in WP55; automated extraction and parser remain not started)
 - Microstructure quality features beyond basic order-book availability
 - Local scoring export and report integration (CLI/export/report writer)
 - Calibration and resolved-outcome validation harness
