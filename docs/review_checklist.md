@@ -1,5 +1,37 @@
 # Review Checklist
 
+## WP54 PR Evidence Follow-Up Defect And Bundled-WP Execution Policy Hardening
+
+- `docs/ai/codex/WP_BUNDLING_POLICY.md` exists and defines risk-class bundling principle?
+- WP_BUNDLING_POLICY.md contains package size classes S, M, L, XL with descriptions and file budgets?
+- WP_BUNDLING_POLICY.md lists allowed bundle examples?
+- WP_BUNDLING_POLICY.md lists forbidden bundle examples?
+- WP_BUNDLING_POLICY.md defines L-package requirements?
+- WP_BUNDLING_POLICY.md defines stop/report triggers?
+- WP_BUNDLING_POLICY.md defines follow-up classification categories A through I?
+- WP_BUNDLING_POLICY.md defines required follow-up classification fields?
+- WP_BUNDLING_POLICY.md defines the posted evidence self-check rule?
+- `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` updated with Rule 13 (posted evidence self-check source)?
+- `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` updated with WP54 posted evidence self-check limitation note?
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md` updated with WP54 reviewer checks including bundle-risk check and follow-up classification check?
+- `docs/ai/codex/VALIDATION_MATRIX.md` updated with `docs-tests-workflow-governance-hardening` package class?
+- `docs/work_package_template.md` updated with package size class, risk-class bundle justification, forbidden bundle check, posted evidence self-check, and follow-up classification sections?
+- `docs/work_package_template.md` final PR comment sections updated to include follow-up classification (N) and guard input source (O)?
+- `.github/pull_request_template.md` updated with package size class, bundle risk, follow-up classification, and current-final evidence checks?
+- `docs/project_status.md` shows WP53 in merged WPs list?
+- `docs/project_status.md` shows WP54 as current phase?
+- `docs/project_status.md` shows `DATA_INTEGRITY_HARDENING_MERGED` (not ON_BRANCH)?
+- `docs/project_status.md` shows WP54 bundled-WP execution policy status line?
+- `docs/repo_truth_index.md` indexes `docs/ai/codex/WP_BUNDLING_POLICY.md`?
+- `docs/deferred_items_log.md` has WP54-D001 added (guard local-offline limitation)?
+- `tests/test_codex_workflow_docs.py` updated with WP54-required tests?
+- No `src/` changes?
+- No dependency or lock-file changes?
+- No generated artifacts committed?
+- No runtime/product/network behavior added?
+- Full pytest passes after final commit?
+- WP54-D001 deferred item added?
+
 ## WP47 Posted PR Evidence Review Hardening
 
 - `tools/git/pr_evidence_consistency_guard.py` updated with five new optional flags?

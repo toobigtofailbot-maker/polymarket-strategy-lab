@@ -93,6 +93,7 @@ Research and workbench artifacts do not gain runtime authority because they are 
 
 | WP53-D001 | Resolution-rule ambiguity extraction still not started after WP53 hardening | OPEN | P3 | WP53 hardens provenance/staleness/missing-data enforcement but does not add resolution-rule ambiguity taxonomy, parser, manual-label workflow, or ambiguity feature extraction. WP51-D002 remains open for the same scope. | Any resolution-rule ambiguity extraction or taxonomy WP. | Future approved WP explicitly scopes resolution-rule ambiguity work after WP53 is merged and user explicitly approves. |
 | WP53-D002 | Microstructure quality feature extraction still not started after WP53 hardening | OPEN | P3 | WP53 hardens provenance/staleness/missing-data enforcement but does not add spread bps, depth buckets, slippage, tradability, fill probability, order size, or execution confidence computation. WP51-D003 remains open for the same scope. | Any microstructure quality feature extraction WP. | Future approved WP explicitly scopes microstructure quality extraction after WP53 is merged, local artifact schema is confirmed, and user explicitly approves. |
+| WP54-D001 | GitHub-posted evidence still requires human or Claude manual verification because the guard remains local/offline | OPEN | P4 | WP54 hardens posted evidence self-check rules and adds the follow-up process-defect classification policy, but the guard at `tools/git/pr_evidence_consistency_guard.py` remains local/offline and does not fetch or validate live GitHub PR body or posted PR comments. WP46-D001 and WP47-D001 remain open for the same scope. Any future requirement to validate already-posted GitHub content automatically is deferred to a future approved GitHub-aware helper WP with explicit network/auth boundary. | Any WP requiring automatic live GitHub PR content verification. | Future approved WP adds a GitHub-aware guard or validation helper with explicit network/auth boundary defined in repo truth. |
 
 ## Rules For Adding Items
 
@@ -1246,6 +1247,87 @@ remains gated by explicit future WPs (OPEN, P3).
 | WP52-D001 | Long-term roadmap locked but milestone implementation remains gated by explicit future WPs | OPEN | P3 | WP52 locks the long-term bot-completion roadmap in docs/long_term_bot_completion_roadmap.md but does not draft, approve, or schedule any future implementation WP. Each milestone phase requires separate explicit user approval before a WP is drafted. | Future approved WP explicitly selected by user after WP52 is merged; milestone implementation sequencing remains user-gated. | Candidate: any explicitly approved safe next WP after WP52 is merged. |
 
 WP3-D001 (gitleaks): rerun/assessed in WP52; availability reported honestly in
+validation. WP3-D002 (semgrep): READY_FOR_WP; semgrep availability must be
+honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project
+dependency added and pip-audit availability must be honestly reported by
+validation.
+
+## WP53 Repo-Truth Reconciliation And Provenance/Staleness/Missing-Data Enforcement Hardening Update
+
+WP53 updates `src/data_layer/market_research_priority_features.py` with explicit
+`provenance_degraded` flag, `provenance_weakness_reasons`, `provenance_warning`,
+future-timestamp detection, `missing_question` and `missing_market_status`
+detection, and quality-impacting vs informational provenance weakness separation.
+It updates `docs/project_status.md`, `docs/repo_truth_index.md`,
+`docs/deferred_items_log.md`, `docs/research_data_foundation_direction.md`,
+`docs/long_term_bot_completion_roadmap.md`,
+`docs/market_research_priority_scoring_layer.md`, and
+`docs/market_research_priority_scoring_output_contract.md`. It adds focused tests at
+`tests/test_market_research_priority_features.py`.
+
+WP53 is a local/offline/read-only source-implementation and docs/tests WP. It adds
+no CLI/export/report writer, no advisory consumer integration, no market catalog
+integration, no runtime/product/trading behavior, no Hermes/LLM/provider integration,
+no credentials, no network, no account access, no trading or paper trading, no
+database/dashboard/scheduler/polling/product behavior, and no generated outputs
+committed. No dependency or lock-file changes.
+
+WP53 resolves WP51-D001 only for the narrow provenance/staleness/missing-data
+hardening scope. WP49-D002, WP49-D003, WP50-D001, WP51-D002, WP51-D003,
+WP51-D004, and WP52-D001 remain OPEN.
+
+WP53-D001 is added: resolution-rule ambiguity extraction still not started after
+WP53 hardening (OPEN, P3).
+
+WP53-D002 is added: microstructure quality feature extraction still not started
+after WP53 hardening (OPEN, P3).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP53-D001 | Resolution-rule ambiguity extraction still not started after WP53 hardening | OPEN | P3 | WP53 hardens provenance/staleness/missing-data enforcement but does not add resolution-rule ambiguity taxonomy, parser, manual-label workflow, or ambiguity feature extraction. WP51-D002 remains open for the same scope. | Future approved WP explicitly scopes resolution-rule ambiguity work after WP53 is merged and user explicitly approves. | Candidate: WP55 resolution-rule ambiguity taxonomy and manual-label workflow. |
+| WP53-D002 | Microstructure quality feature extraction still not started after WP53 hardening | OPEN | P3 | WP53 hardens provenance/staleness/missing-data enforcement but does not add spread bps, depth buckets, slippage, tradability, fill probability, order size, or execution confidence computation. WP51-D003 remains open for the same scope. | Future approved WP explicitly scopes microstructure quality extraction after WP53 is merged, local artifact schema is confirmed, and user explicitly approves. | Candidate: future microstructure quality feature extraction WP. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP53; availability reported honestly in
+validation. WP3-D002 (semgrep): READY_FOR_WP; semgrep availability must be
+honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project
+dependency added and pip-audit availability must be honestly reported by
+validation.
+
+## WP54 PR Evidence Follow-Up Defect And Bundled-WP Execution Policy Hardening Update
+
+WP54 hardens `tools/git/pr_evidence_consistency_guard.py` with a new `--require-guard-result`
+flag (category P) and creates `docs/ai/codex/WP_BUNDLING_POLICY.md`. It also updates
+workflow/governance docs, the WP template, the PR template, and the PR review checklist.
+It updates `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`,
+`docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`,
+`docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`,
+`docs/ai/codex/PR_REVIEW_CHECKLIST.md`,
+`docs/ai/codex/VALIDATION_MATRIX.md`,
+`docs/work_package_template.md`,
+`.github/pull_request_template.md`,
+`docs/review_checklist.md`,
+`docs/testing_requirements.md`,
+`tests/test_codex_workflow_docs.py`, and
+`tests/tools/git/test_pr_evidence_consistency_guard.py`.
+
+WP54 is a local/offline/stdlib workflow-governance helper hardening WP. It adds no source
+under `src/`, no Polymarket/trading/advisory tooling, no runtime, no network, no dependency
+or lock-file changes, no Hermes/LLM/provider integration, no credentials, no account access,
+no trading or paper trading, no database/dashboard/scheduler/polling/product behavior, and no
+generated outputs committed.
+
+WP54 resolves no existing implementation deferred items. All prior open deferred
+items remain unchanged.
+
+WP54-D001 is added: GitHub-posted evidence still requires human or Claude manual
+verification because the guard remains local/offline and does not fetch live GitHub
+PR content (OPEN, P4).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP54-D001 | GitHub-posted evidence still requires human or Claude manual verification | OPEN | P4 | WP54 hardens posted evidence self-check rules but the guard remains local/offline and does not fetch live GitHub PR content. WP46-D001 and WP47-D001 remain open for the same scope. | Future approved WP adds a GitHub-aware guard or validation helper with explicit network/auth boundary defined in repo truth. | Not expected in near term; current workflow requires manual discipline. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP54; availability reported honestly in
 validation. WP3-D002 (semgrep): READY_FOR_WP; semgrep availability must be
 honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project
 dependency added and pip-audit availability must be honestly reported by
