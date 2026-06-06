@@ -11,6 +11,8 @@ Usage:
     --require-current-final-marker --require-guard-result \
     --require-ready-yes --require-standard-network-wording \
     --forbid-placeholder-evidence --forbid-inline-test-counts \
+    --require-posted-verifier-pass --require-follow-up-classification \
+    --require-file-count --expected-file-count 29 \
     --format text
 
 Exit codes:
@@ -28,13 +30,22 @@ import sys
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 
 GITHUB_API = "https://api.github.com"
 CURRENT_FINAL_MARKER = "CURRENT FINAL WP EVIDENCE"
 PLACEHOLDER_TOKENS = ["<HEAD_SHA>", "TBD", "TODO", "placeholder", "actual:", "<SHA>", "<BASE_SHA>"]
 GUARD_RESULT_PHRASES = ["PR evidence consistency guard: PASS", "Checked categories:", "exit 0"]
+STALE_POSTED_VERIFIER_PHRASES = [
+    "Posted GitHub evidence verifier: PENDING",
+    "PR number not yet assigned",
+    "Will be run after PR is created",
+]
+INLINE_TEST_COUNT_PATTERN = re.compile(
+    r'\.py\b[^\n]*\(\s*\d+\s+(?:tests?|passed|failing|failed)\s*\)',
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -52,6 +63,7 @@ class VerifierArgs:
     require_guard_input_source: bool = False
     require_file_count: bool = False
     expected_file_count: Optional[int] = None
+    require_posted_verifier_pass: bool = False
     format: str = "text"
     timeout_seconds: int = 10
     comment_page_size: int = 100
@@ -72,7 +84,10 @@ class VerifierResult:
 def _fetch_json(url: str, timeout: int) -> Any:
     req = urllib.request.Request(
         url,
-        headers={"Accept": "application/vnd.github+json", "User-Agent": "posted-pr-evidence-verifier/wp58"},
+        headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "posted-pr-evidence-verifier/wp58",
+        },
     )
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -117,6 +132,26 @@ def _contains_guard_input_source(text: str) -> bool:
     return "Guard input source:" in text
 
 
+def _contains_stale_posted_verifier(text: str) -> Optional[str]:
+    """Return the first stale posted-verifier phrase found, or None."""
+    for phrase in STALE_POSTED_VERIFIER_PHRASES:
+        if phrase in text:
+            return phrase
+    return None
+
+
+def _contains_posted_verifier_pass(text: str) -> bool:
+    return "Posted GitHub evidence verifier: PASS" in text and "exit 0" in text
+
+
+def _contains_follow_up_classification(text: str) -> bool:
+    return "Follow-up correction required:" in text
+
+
+def _contains_inline_test_counts(text: str) -> bool:
+    return bool(INLINE_TEST_COUNT_PATTERN.search(text))
+
+
 def _parse_file_count(text: str) -> Optional[int]:
     match = re.search(r"Changed files:\s*(\d+)", text)
     if match:
@@ -129,10 +164,15 @@ def _fetch_pr(owner: str, repo: str, pr: int, timeout: int) -> Dict[str, Any]:
     return _fetch_json(url, timeout)
 
 
-def _fetch_all_comments(owner: str, repo: str, pr: int, page_size: int, max_pages: int, timeout: int) -> List[Dict[str, Any]]:
+def _fetch_all_comments(
+    owner: str, repo: str, pr: int, page_size: int, max_pages: int, timeout: int
+) -> List[Dict[str, Any]]:
     all_comments: List[Dict[str, Any]] = []
     for page in range(1, max_pages + 1):
-        url = f"{GITHUB_API}/repos/{owner}/{repo}/issues/{pr}/comments?per_page={page_size}&page={page}"
+        url = (
+            f"{GITHUB_API}/repos/{owner}/{repo}/issues/{pr}/comments"
+            f"?per_page={page_size}&page={page}"
+        )
         page_data = _fetch_json(url, timeout)
         if not page_data:
             break
@@ -154,7 +194,11 @@ def _latest_comment(comments: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
 
 def verify(args: VerifierArgs) -> VerifierResult:
     if "/" not in args.repo:
-        return VerifierResult(status="FAIL", errors=["[2] Invalid --repo format. Use owner/repo."], exit_code=2)
+        return VerifierResult(
+            status="FAIL",
+            errors=["[2] Invalid --repo format. Use owner/repo."],
+            exit_code=2,
+        )
 
     owner, repo_name = args.repo.split("/", 1)
     result = VerifierResult(status="PASS")
@@ -172,7 +216,6 @@ def verify(args: VerifierArgs) -> VerifierResult:
 
     result.pr_url = pr_data.get("html_url", "")
     result.pr_head_sha = pr_data.get("head", {}).get("sha", "")
-
     pr_body = pr_data.get("body") or ""
 
     # B: PR body checks
@@ -181,11 +224,16 @@ def verify(args: VerifierArgs) -> VerifierResult:
         pr_body_errors.append("[B] PR body is empty.")
     else:
         if args.expected_head and args.expected_head not in pr_body:
-            pr_body_errors.append(f"[B] PR body does not contain expected head SHA: {args.expected_head}")
+            pr_body_errors.append(
+                f"[B] PR body does not contain expected head SHA: {args.expected_head}"
+            )
         if args.require_ready_yes and not _contains_ready_yes(pr_body):
             pr_body_errors.append("[B] PR body does not contain 'Ready for review: YES'.")
         if args.require_guard_result and not _contains_guard_result(pr_body):
-            pr_body_errors.append("[B] PR body does not contain required guard result (PASS + Checked categories + exit 0).")
+            pr_body_errors.append(
+                "[B] PR body does not contain required guard result "
+                "(PASS + Checked categories + exit 0)."
+            )
         if args.require_standard_network_wording and not _contains_standard_network_wording(pr_body):
             pr_body_errors.append("[B] PR body does not contain standard network wording.")
         if args.forbid_placeholder_evidence and _contains_placeholder(pr_body):
@@ -200,12 +248,21 @@ def verify(args: VerifierArgs) -> VerifierResult:
 
     # C: Fetch comments
     try:
-        all_comments = _fetch_all_comments(owner, repo_name, args.pr, args.comment_page_size, args.max_comment_pages, args.timeout_seconds)
+        all_comments = _fetch_all_comments(
+            owner, repo_name, args.pr,
+            args.comment_page_size, args.max_comment_pages, args.timeout_seconds,
+        )
         checked.append("C:comments_fetch")
     except ValueError as e:
-        return VerifierResult(status="FAIL", errors=errors + [f"[4] {e}"], checked_categories=checked, exit_code=4)
+        return VerifierResult(
+            status="FAIL", errors=errors + [f"[4] {e}"],
+            checked_categories=checked, exit_code=4,
+        )
     except RuntimeError as e:
-        return VerifierResult(status="FAIL", errors=errors + [f"[3] {e}"], checked_categories=checked, exit_code=3)
+        return VerifierResult(
+            status="FAIL", errors=errors + [f"[3] {e}"],
+            checked_categories=checked, exit_code=3,
+        )
 
     if not all_comments:
         errors.append("[C] No comments found on this PR.")
@@ -224,7 +281,10 @@ def verify(args: VerifierArgs) -> VerifierResult:
     # E: Head SHA in latest current-final comment
     if latest_cf:
         if args.expected_head and args.expected_head not in latest_cf_body:
-            errors.append(f"[E] Latest current-final comment does not contain expected head SHA: {args.expected_head}")
+            errors.append(
+                f"[E] Latest current-final comment does not contain expected head SHA: "
+                f"{args.expected_head}"
+            )
         else:
             checked.append("E:head_sha")
     elif args.require_current_final_marker:
@@ -235,7 +295,10 @@ def verify(args: VerifierArgs) -> VerifierResult:
         if latest_cf and _contains_guard_result(latest_cf_body):
             checked.append("F:guard_result")
         elif latest_cf:
-            errors.append("[F] Latest current-final comment does not contain required guard result (PASS + Checked categories + exit 0).")
+            errors.append(
+                "[F] Latest current-final comment does not contain required guard result "
+                "(PASS + Checked categories + exit 0)."
+            )
         else:
             errors.append("[F] No current-final comment found to check guard result.")
 
@@ -244,7 +307,9 @@ def verify(args: VerifierArgs) -> VerifierResult:
         if latest_cf and _contains_ready_yes(latest_cf_body):
             checked.append("G:ready_status")
         elif latest_cf:
-            errors.append("[G] Latest current-final comment does not contain 'Ready for review: YES'.")
+            errors.append(
+                "[G] Latest current-final comment does not contain 'Ready for review: YES'."
+            )
         else:
             errors.append("[G] No current-final comment found to check ready status.")
 
@@ -253,7 +318,9 @@ def verify(args: VerifierArgs) -> VerifierResult:
         if latest_cf and _contains_standard_network_wording(latest_cf_body):
             checked.append("H:network_wording")
         elif latest_cf:
-            errors.append("[H] Latest current-final comment does not contain standard network wording.")
+            errors.append(
+                "[H] Latest current-final comment does not contain standard network wording."
+            )
         else:
             errors.append("[H] No current-final comment found to check network wording.")
 
@@ -272,7 +339,9 @@ def verify(args: VerifierArgs) -> VerifierResult:
         if cf_has_source and pr_has_source:
             checked.append("J:guard_input_source")
         elif not cf_has_source and latest_cf:
-            errors.append("[J] Latest current-final comment does not contain 'Guard input source:'.")
+            errors.append(
+                "[J] Latest current-final comment does not contain 'Guard input source:'."
+            )
         elif not pr_has_source:
             errors.append("[J] PR body does not contain 'Guard input source:'.")
 
@@ -283,23 +352,164 @@ def verify(args: VerifierArgs) -> VerifierResult:
             pr_has_sha = args.expected_head in pr_body
             cf_has_sha = args.expected_head in latest_cf_body
             if pr_has_sha != cf_has_sha:
-                cross_errors.append("[K] Head SHA present in one surface but missing from the other.")
-
+                cross_errors.append(
+                    "[K] Head SHA present in one surface but missing from the other."
+                )
         if args.require_guard_result:
             pr_has_guard = _contains_guard_result(pr_body)
             cf_has_guard = _contains_guard_result(latest_cf_body)
             if pr_has_guard != cf_has_guard:
-                cross_errors.append("[K] Guard result present in one surface but missing from the other.")
-
+                cross_errors.append(
+                    "[K] Guard result present in one surface but missing from the other."
+                )
         pr_file_count = _parse_file_count(pr_body)
         cf_file_count = _parse_file_count(latest_cf_body)
-        if pr_file_count is not None and cf_file_count is not None and pr_file_count != cf_file_count:
-            cross_errors.append(f"[K] File count mismatch: PR body says {pr_file_count}, final comment says {cf_file_count}.")
+        if (
+            pr_file_count is not None
+            and cf_file_count is not None
+            and pr_file_count != cf_file_count
+        ):
+            cross_errors.append(
+                f"[K] File count mismatch: PR body says {pr_file_count}, "
+                f"final comment says {cf_file_count}."
+            )
 
     if not cross_errors:
         checked.append("K:cross_surface_consistency")
     else:
         errors.extend(cross_errors)
+
+    # L: Stale posted-verifier wording (always active)
+    l_errors: List[str] = []
+    stale_in_body = _contains_stale_posted_verifier(pr_body)
+    if stale_in_body:
+        l_errors.append(
+            f"[L] PR body contains stale posted-verifier wording: '{stale_in_body}'. "
+            "Update the PR body with the actual verifier result before requesting review."
+        )
+    if latest_cf:
+        stale_in_cf = _contains_stale_posted_verifier(latest_cf_body)
+        if stale_in_cf:
+            l_errors.append(
+                f"[L] Latest current-final comment contains stale posted-verifier wording: "
+                f"'{stale_in_cf}'."
+            )
+    if not l_errors:
+        checked.append("L:posted_verifier_stale")
+    else:
+        errors.extend(l_errors)
+
+    # M: Posted verifier PASS in both surfaces (when --require-posted-verifier-pass)
+    if args.require_posted_verifier_pass:
+        m_errors: List[str] = []
+        if not _contains_posted_verifier_pass(pr_body):
+            m_errors.append(
+                "[M] PR body does not contain "
+                "'Posted GitHub evidence verifier: PASS' and 'exit 0'."
+            )
+        if latest_cf:
+            if not _contains_posted_verifier_pass(latest_cf_body):
+                m_errors.append(
+                    "[M] Latest current-final comment does not contain "
+                    "'Posted GitHub evidence verifier: PASS' and 'exit 0'."
+                )
+        else:
+            m_errors.append(
+                "[M] No current-final comment found to check posted verifier result."
+            )
+        if not m_errors:
+            checked.append("M:posted_verifier_pass")
+        else:
+            errors.extend(m_errors)
+
+    # N: Follow-up classification (when --require-follow-up-classification)
+    if args.require_follow_up_classification:
+        n_errors: List[str] = []
+        if not _contains_follow_up_classification(pr_body):
+            n_errors.append(
+                "[N] PR body does not contain 'Follow-up correction required:'."
+            )
+        if latest_cf:
+            if not _contains_follow_up_classification(latest_cf_body):
+                n_errors.append(
+                    "[N] Latest current-final comment does not contain "
+                    "'Follow-up correction required:'."
+                )
+        else:
+            n_errors.append(
+                "[N] No current-final comment found to check follow-up classification."
+            )
+        if not n_errors:
+            checked.append("N:follow_up_classification")
+        else:
+            errors.extend(n_errors)
+
+    # O: File count presence and expected value
+    if args.require_file_count or args.expected_file_count is not None:
+        o_errors: List[str] = []
+        pr_fc = _parse_file_count(pr_body)
+        cf_fc = _parse_file_count(latest_cf_body) if latest_cf else None
+
+        if args.require_file_count:
+            if pr_fc is None:
+                o_errors.append(
+                    "[O] PR body does not contain a parseable 'Changed files: N' count."
+                )
+            if latest_cf:
+                if cf_fc is None:
+                    o_errors.append(
+                        "[O] Latest current-final comment does not contain a parseable "
+                        "'Changed files: N' count."
+                    )
+            else:
+                o_errors.append(
+                    "[O] No current-final comment found to check file count."
+                )
+
+        if args.expected_file_count is not None:
+            exp = args.expected_file_count
+            if pr_fc is not None and pr_fc != exp:
+                o_errors.append(
+                    f"[O] PR body file count {pr_fc} does not match expected {exp}."
+                )
+            elif pr_fc is None:
+                o_errors.append(
+                    f"[O] PR body does not contain a parseable file count "
+                    f"(expected {exp})."
+                )
+            if latest_cf:
+                if cf_fc is not None and cf_fc != exp:
+                    o_errors.append(
+                        f"[O] Latest current-final comment file count {cf_fc} does not "
+                        f"match expected {exp}."
+                    )
+                elif cf_fc is None:
+                    o_errors.append(
+                        f"[O] Latest current-final comment does not contain a parseable "
+                        f"file count (expected {exp})."
+                    )
+
+        if not o_errors:
+            checked.append("O:file_count")
+        else:
+            errors.extend(o_errors)
+
+    # P: Forbid inline test counts
+    if args.forbid_inline_test_counts:
+        p_errors: List[str] = []
+        if _contains_inline_test_counts(pr_body):
+            p_errors.append(
+                "[P] PR body contains inline test-count annotation "
+                "(e.g. file.py (33 tests)). Remove test counts from file listings."
+            )
+        if latest_cf and _contains_inline_test_counts(latest_cf_body):
+            p_errors.append(
+                "[P] Latest current-final comment contains inline test-count annotation."
+            )
+        if not p_errors:
+            checked.append("P:inline_test_counts")
+        else:
+            errors.extend(p_errors)
 
     result.checked_categories = checked
     result.errors = errors
@@ -317,7 +527,10 @@ def _format_text(result: VerifierResult, args: VerifierArgs) -> str:
         lines.append(f"Expected head SHA: {args.expected_head}")
     if result.status == "PASS":
         lines.append("PR body head SHA: present")
-        lines.append(f"Latest current-final comment: {'found' if result.latest_current_final_url else 'not required'}")
+        lines.append(
+            f"Latest current-final comment: "
+            f"{'found' if result.latest_current_final_url else 'not required'}"
+        )
         if result.latest_current_final_url:
             lines.append(f"Latest current-final comment URL: {result.latest_current_final_url}")
         lines.append(f"Checked categories: {', '.join(result.checked_categories)}")
@@ -363,6 +576,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--require-guard-input-source", action="store_true")
     parser.add_argument("--require-file-count", action="store_true")
     parser.add_argument("--expected-file-count", type=int, default=None)
+    parser.add_argument("--require-posted-verifier-pass", action="store_true")
     parser.add_argument("--format", choices=["text", "json"], default="text")
     parser.add_argument("--timeout-seconds", type=int, default=10)
     parser.add_argument("--comment-page-size", type=int, default=100)
@@ -388,6 +602,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         require_guard_input_source=parsed.require_guard_input_source,
         require_file_count=parsed.require_file_count,
         expected_file_count=parsed.expected_file_count,
+        require_posted_verifier_pass=parsed.require_posted_verifier_pass,
         format=parsed.format,
         timeout_seconds=parsed.timeout_seconds,
         comment_page_size=parsed.comment_page_size,

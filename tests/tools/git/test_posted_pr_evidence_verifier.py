@@ -109,6 +109,10 @@ def default_args(**kwargs) -> object:
         forbid_placeholder_evidence=True,
         forbid_inline_test_counts=False,
         require_guard_input_source=True,
+        require_posted_verifier_pass=False,
+        require_follow_up_classification=False,
+        require_file_count=False,
+        expected_file_count=None,
         format="text",
         timeout_seconds=5,
         comment_page_size=100,
@@ -383,3 +387,101 @@ def test_file_count_mismatch_detected():
             result = verify(args)
     assert result.status == "FAIL"
     assert any("mismatch" in e.lower() or "[K]" in e for e in result.errors)
+
+
+# ── Test 21: FAIL when PR body contains stale PENDING verifier wording ────────
+
+def test_fail_pr_body_has_pending_verifier_wording():
+    body_with_pending = VALID_PR_BODY + "\nPosted GitHub evidence verifier: PENDING\n"
+    args = default_args()
+    with _patch_pr(make_pr(body_with_pending)):
+        with _patch_comments([make_comment(VALID_FINAL_COMMENT)]):
+            result = verify(args)
+    assert result.status == "FAIL"
+    assert any("[L]" in e and "PENDING" in e for e in result.errors)
+
+
+# ── Test 22: FAIL when PR body says "PR number not yet assigned" ──────────────
+
+def test_fail_pr_body_has_pr_number_not_assigned():
+    body_with_stale = VALID_PR_BODY + "\nPR number not yet assigned at time of PR body creation.\n"
+    args = default_args()
+    with _patch_pr(make_pr(body_with_stale)):
+        with _patch_comments([make_comment(VALID_FINAL_COMMENT)]):
+            result = verify(args)
+    assert result.status == "FAIL"
+    assert any("[L]" in e for e in result.errors)
+
+
+# ── Test 23: FAIL — final has posted verifier PASS but PR body does not ───────
+
+def test_fail_final_has_verifier_pass_but_pr_body_missing():
+    comment_with_pass = VALID_FINAL_COMMENT + "\nPosted GitHub evidence verifier: PASS; exit 0\n"
+    # VALID_PR_BODY does not contain "Posted GitHub evidence verifier: PASS"
+    args = default_args(require_posted_verifier_pass=True)
+    with _patch_pr(make_pr(VALID_PR_BODY)):
+        with _patch_comments([make_comment(comment_with_pass)]):
+            result = verify(args)
+    assert result.status == "FAIL"
+    assert any("[M]" in e for e in result.errors)
+
+
+# ── Test 24: PASS when both surfaces contain posted verifier PASS + exit 0 ────
+
+def test_pass_both_surfaces_have_verifier_pass():
+    body_with_pass = VALID_PR_BODY + "\nPosted GitHub evidence verifier: PASS; exit 0\n"
+    comment_with_pass = VALID_FINAL_COMMENT + "\nPosted GitHub evidence verifier: PASS; exit 0\n"
+    args = default_args(require_posted_verifier_pass=True)
+    with _patch_pr(make_pr(body_with_pass)):
+        with _patch_comments([make_comment(comment_with_pass)]):
+            result = verify(args)
+    assert result.status == "PASS"
+    assert "M:posted_verifier_pass" in result.checked_categories
+
+
+# ── Test 25: FAIL when --require-follow-up-classification and it is missing ───
+
+def test_fail_follow_up_classification_missing():
+    # VALID bodies do not contain "Follow-up correction required:"
+    args = default_args(require_follow_up_classification=True)
+    with _patch_pr(make_pr(VALID_PR_BODY)):
+        with _patch_comments([make_comment(VALID_FINAL_COMMENT)]):
+            result = verify(args)
+    assert result.status == "FAIL"
+    assert any("[N]" in e for e in result.errors)
+
+
+# ── Test 26: FAIL when --require-file-count and count is missing ──────────────
+
+def test_fail_require_file_count_missing():
+    body_no_count = VALID_PR_BODY.replace("Changed files: 21", "")
+    args = default_args(require_file_count=True)
+    with _patch_pr(make_pr(body_no_count)):
+        with _patch_comments([make_comment(VALID_FINAL_COMMENT)]):
+            result = verify(args)
+    assert result.status == "FAIL"
+    assert any("[O]" in e for e in result.errors)
+
+
+# ── Test 27: FAIL when --expected-file-count 29 but surfaces say 21 ───────────
+
+def test_fail_expected_file_count_mismatch():
+    # VALID bodies have "Changed files: 21", expected is 29 → mismatch
+    args = default_args(expected_file_count=29)
+    with _patch_pr(make_pr(VALID_PR_BODY)):
+        with _patch_comments([make_comment(VALID_FINAL_COMMENT)]):
+            result = verify(args)
+    assert result.status == "FAIL"
+    assert any("[O]" in e for e in result.errors)
+
+
+# ── Test 28: FAIL when --forbid-inline-test-counts and pattern detected ───────
+
+def test_fail_forbid_inline_test_counts_detected():
+    body_with_counts = VALID_PR_BODY + "\n- tests/test_foo.py (33 tests)\n"
+    args = default_args(forbid_inline_test_counts=True)
+    with _patch_pr(make_pr(body_with_counts)):
+        with _patch_comments([make_comment(VALID_FINAL_COMMENT)]):
+            result = verify(args)
+    assert result.status == "FAIL"
+    assert any("[P]" in e for e in result.errors)
