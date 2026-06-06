@@ -58,24 +58,32 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 52. `docs/ai/codex/WP_BUNDLING_POLICY.md` - WP54 bundled-WP execution policy; defines risk-class bundling principle, package size classes (S/M/L/XL), allowed and forbidden bundle examples, L-package requirements, stop/report triggers, follow-up process-defect classification categories, and posted evidence self-check rule.
 53. `docs/resolution_ambiguity_taxonomy_manual_label_workflow.md` - WP55 docs-only resolution-rule ambiguity taxonomy and manual-label workflow for human research data quality; defines 14 taxonomy categories, 6 review status values, ambiguity severity tiers, reviewer confidence separation, 17-field manual label schema, local/offline/read-only manual review workflow, future integration gate, invalid/valid examples, and deferred items; research-data-quality metadata only; no parser, no automated extraction, no feature extraction, no scorer integration in WP55. Updated in WP56 to reflect WP55 merged and WP56 schema validation on branch. Updated in WP57 to reflect WP56 merged and WP57 local feature extraction from validated labels on branch; WP57 cross-reference added; automated parser remains not started.
 54. `src/data_layer/resolution_ambiguity_labels.py` - WP56 local/offline/read-only stdlib schema validator for WP55 resolution ambiguity label records; validates all 17 required fields, allowed enum values, manual-review gate, advisory label, forbidden-use notice, source artifact references, and ISO-8601 timestamp; provides validate_resolution_ambiguity_label, validate_resolution_ambiguity_labels, and load_resolution_ambiguity_label_records; stdlib-only, no network, no file writes, no parser, no feature extraction, no scorer integration, no runtime behavior. Consumed by WP57 feature extraction.
-55. `docs/architecture_principles.md` - platform architecture principles.
-56. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
-57. `docs/runtime_boundaries.md` - protected runtime boundary rules.
-58. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
-59. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
-60. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
-61. `docs/security_tooling_status.md` - current security-tool availability and scan status.
-62. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
-63. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
-64. `docs/data_semantics.md` - shared data definitions.
-65. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
-66. `docs/risk_semantics.md` - risk definitions and initial posture.
-67. `docs/live_trading_authorization.md` - live trading gate and authorization table.
-68. `docs/security_and_secrets.md` - credential and incident rules.
-69. `docs/codex_execution_guidelines.md` - work-package execution process.
-70. `docs/work_package_template.md` - reusable WP template.
-71. `docs/review_checklist.md` - review readiness checklist.
-72. `docs/testing_requirements.md` - current and future test requirements.
+55. `CLAUDE_START_HERE.md` - WP58 Claude Code startup guidance; mandatory startup sequence, Claude-specific posted evidence verification rules, and stop rules for workflow-only WPs.
+56. `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md` - WP58 mandatory posted GitHub evidence verification policy; explains why the local guard is insufficient, defines the required workflow after WP58, current-final comment rule, PR body rule, standard wording, failure examples, and non-goals.
+57. `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md` - WP58 negative test matrix policy for WPs that add or modify validators, scorers, parsers, schema validators, boundary guards, evidence guards, or semantic wording filters; defines 15 required matrix categories and enforcement rules.
+58. `tools/git/posted_pr_evidence_verifier.py` - WP58 read-only manual GitHub PR evidence verifier; checks live GitHub PR body and latest current-final evidence comment via the public GitHub REST API; no authentication, no write operations, workflow-only.
+59. `tests/tools/git/test_posted_pr_evidence_verifier.py` - WP58 focused tests for the posted PR evidence verifier using fake GitHub API responses; no real network in unit tests.
+60. `tests/test_posted_github_evidence_workflow_docs.py` - WP58 docs workflow tests for posted GitHub evidence verification policy and workflow files.
+61. `tests/test_negative_test_matrix_policy_docs.py` - WP58 docs tests for the negative test matrix policy.
+62. `tests/test_claude_start_here_docs.py` - WP58 docs tests for CLAUDE_START_HERE.md startup guidance.
+63. `docs/architecture_principles.md` - platform architecture principles.
+64. `docs/architecture_skeleton.md` - WP3 non-runtime architecture skeleton.
+65. `docs/runtime_boundaries.md` - protected runtime boundary rules.
+66. `docs/interface_contracts.md` - conceptual interface contracts for future implementation.
+67. `docs/mode_separation.md` - historical, read-only, paper, and live mode separation.
+68. `docs/security_tooling_requirements.md` - required future security and dependency-audit tooling gates.
+69. `docs/security_tooling_status.md` - current security-tool availability and scan status.
+70. `docs/security_tooling_installation.md` - approved security-tool installation and verification guidance.
+71. `docs/security_tooling_completion.md` - WP5 project-local security tooling and Remote Main Sync Gate outcomes.
+72. `docs/data_semantics.md` - shared data definitions.
+73. `docs/wallet_copy_trading_semantics.md` - wallet and copy-trading terminology.
+74. `docs/risk_semantics.md` - risk definitions and initial posture.
+75. `docs/live_trading_authorization.md` - live trading gate and authorization table.
+76. `docs/security_and_secrets.md` - credential and incident rules.
+77. `docs/codex_execution_guidelines.md` - work-package execution process.
+78. `docs/work_package_template.md` - reusable WP template.
+79. `docs/review_checklist.md` - review readiness checklist.
+80. `docs/testing_requirements.md` - current and future test requirements.
 
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 

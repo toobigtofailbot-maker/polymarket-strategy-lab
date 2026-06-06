@@ -1107,7 +1107,7 @@ markers but intentionally avoids GitHub API/network/auth behavior. See table bel
 
 | Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
 |---|---|---|---|---|---|---|
-| WP47-D001 | Guard still does not fetch live GitHub PR body/comments | OPEN | P4 | WP47 hardens local posted-evidence discipline and current-final markers but intentionally avoids GitHub API/network/auth behavior. | Any future requirement to validate already-posted GitHub content automatically. | Future approved GitHub-aware helper WP with explicit network/auth boundary, only if explicitly approved. |
+| WP47-D001 | Guard still does not fetch live GitHub PR body/comments | PARTIALLY_RESOLVED_PUBLIC_ONLY | P4 | WP47 hardens local posted-evidence discipline and current-final markers but intentionally avoids GitHub API/network/auth behavior. WP58 adds tools/git/posted_pr_evidence_verifier.py for public-repo manual verification only; authenticated/private GitHub verification remains unsupported. | Authenticated or private GitHub verification requires a separate future WP with explicit secrets/auth policy review. | WP58 addresses the public-repo case. Authenticated/private case deferred to WP58-D001. |
 
 WP3-D001 (gitleaks): rerun/assessed in WP47. WP3-D002 (semgrep):
 READY_FOR_WP; semgrep availability must be honestly reported by validation.
@@ -1329,7 +1329,7 @@ PR content (OPEN, P4).
 
 | Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
 |---|---|---|---|---|---|---|
-| WP54-D001 | GitHub-posted evidence still requires human or Claude manual verification | OPEN | P4 | WP54 hardens posted evidence self-check rules but the guard remains local/offline and does not fetch live GitHub PR content. WP46-D001 and WP47-D001 remain open for the same scope. | Future approved WP adds a GitHub-aware guard or validation helper with explicit network/auth boundary defined in repo truth. | Not expected in near term; current workflow requires manual discipline. |
+| WP54-D001 | GitHub-posted evidence still requires human or Claude manual verification | PARTIALLY_RESOLVED_PUBLIC_ONLY | P4 | WP54 hardens posted evidence self-check rules but the guard remains local/offline and does not fetch live GitHub PR content. WP58 adds tools/git/posted_pr_evidence_verifier.py for public-repo manual verification only; authenticated/private GitHub verification remains unsupported (see WP58-D001). | Authenticated or private GitHub verification requires a separate future WP with explicit secrets/auth policy review. | WP58 addresses the public-repo case. Authenticated/private case deferred to WP58-D001. |
 
 WP3-D001 (gitleaks): rerun/assessed in WP54; availability reported honestly in
 validation. WP3-D002 (semgrep): READY_FOR_WP; semgrep availability must be
@@ -1371,6 +1371,73 @@ WP55-D002 is added: automated resolution-rule parser remains not started (OPEN, 
 | WP55-D002 | Automated resolution-rule parser remains not started | OPEN | P3 | WP55 defines human-review workflow only. No automated parser for resolution rule text extraction is added. | Future approved WP explicitly scopes automated parser design after WP55 merge and user explicitly approves; non-LLM parser design preferred. | Not expected until feature extraction foundation is validated. |
 
 WP3-D001 (gitleaks): rerun/assessed in WP55; availability reported honestly in
+validation. WP3-D002 (semgrep): READY_FOR_WP; semgrep availability must be
+honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project
+dependency added and pip-audit availability must be honestly reported by
+validation.
+
+## WP56 Resolution Ambiguity Manual Label Schema Validation Update
+
+WP56 adds `src/data_layer/resolution_ambiguity_labels.py` (stdlib-only, local/offline/read-only
+schema validator) and focused tests. It reconciles repo truth after WP55 merge (WP55 is now listed
+in merged WPs).
+
+WP56 resolves WP55-D001 only for the narrow schema validation scope; feature extraction from
+validated labels remains not started. WP55-D002 (automated parser) remains OPEN.
+
+WP56-D001 is added: resolution ambiguity labels validated but not yet consumed by feature
+extraction or scoring (OPEN, P3).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP56-D001 | Resolution ambiguity labels validated but not yet consumed by feature extraction | RESOLVED (WP57 scope) | P3 | WP56 implements schema validator only. Feature extraction from validated labels is not implemented. WP57 implements local/offline/read-only feature extraction from validated manual labels. | Resolved only for WP57 local/offline/read-only feature extraction scope. Scorer integration, advisory consumer integration, and CLI/export/report writer remain deferred. | Expected in WP57; resolved for WP57 scope. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP56. WP3-D002 (semgrep): READY_FOR_WP.
+WP3-D004 (pip-audit): READY_FOR_WP.
+
+## WP57 Repo-Truth Reconciliation And Resolution Ambiguity Feature Extraction Deferred Items
+
+WP57 adds local/offline/read-only resolution ambiguity label feature extraction to
+`src/data_layer/market_research_priority_features.py` and focused tests. It reconciles
+repo truth after WP56 merge (WP56 is now listed in merged WPs).
+
+WP57 resolves WP55-D001 and WP56-D001 only for the narrow local/offline/read-only feature
+extraction from validated manual labels scope. WP55-D002 (automated parser) remains OPEN.
+
+WP57-D001 is added: resolution ambiguity feature extraction not yet integrated into
+scorer/report/advisory consumer (OPEN, P3).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP57-D001 | Resolution ambiguity feature extraction not yet integrated into scorer/report/advisory consumer | OPEN | P3 | WP57 adds feature extraction only. The resolution_ambiguity sub-dict in market contexts is not yet used in scorer weights/components, advisory consumer integration, CLI/export/report writer, or any downstream consumer. | Future approved WP explicitly scopes integration only after WP57 is merged and user explicitly approves. | Not expected until scorer integration WP is approved. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP57. WP3-D002 (semgrep): READY_FOR_WP.
+WP3-D004 (pip-audit): READY_FOR_WP.
+
+## WP58 Posted GitHub Evidence Verification, Claude Start Layer, And Workflow Hardening Deferred Items
+
+WP58 adds `CLAUDE_START_HERE.md`, `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`,
+`docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`, `tools/git/posted_pr_evidence_verifier.py`,
+focused tests, and workflow/governance docs updates. It reconciles repo truth after WP57 merge
+(WP57 is now listed in merged WPs).
+
+WP58 is a workflow/governance hardening WP. It adds no source under `src/`, no
+Polymarket/trading/advisory tooling, no runtime, no dependency or lock-file changes, no
+Hermes/LLM/provider integration, no credentials, no account access, no trading or paper trading,
+no database/dashboard/scheduler/polling/product behavior, and no generated outputs committed.
+
+WP58 marks WP54-D001 and WP47-D001 as PARTIALLY_RESOLVED_PUBLIC_ONLY — the new public GitHub
+manual read-only helper addresses the public-repo case; authenticated/private GitHub verification
+remains unsupported.
+
+WP58-D001 is added: authenticated or private GitHub posted-evidence verification not implemented
+(OPEN, P4). Future optional helper may support a token only after explicit secrets/auth policy review.
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP58-D001 | Authenticated or private GitHub posted-evidence verification not implemented | OPEN | P4 | WP58 adds tools/git/posted_pr_evidence_verifier.py for public-repo manual verification only. Authenticated access (tokens, private repos) is not supported in WP58. No secrets/auth policy review has been performed for this tool. | Future optional helper WP explicitly scopes token support after secrets/auth policy review and explicit user approval. | Not expected in near term; public-repo verifier addresses the main use case. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP58; availability reported honestly in
 validation. WP3-D002 (semgrep): READY_FOR_WP; semgrep availability must be
 honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project
 dependency added and pip-audit availability must be honestly reported by

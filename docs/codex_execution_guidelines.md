@@ -49,6 +49,12 @@ Apply the token-efficiency operating model (`docs/ai/codex/TOKEN_EFFICIENCY_OPER
 
 Stop if required work needs protected runtime boundaries, secrets, external code reuse, or live-trading paths not authorized by the WP.
 
+## Claude Code Startup And Posted Evidence (WP58+)
+
+Claude Code must read `CLAUDE_START_HERE.md` in addition to `AGENTS.md` and `CODEX_START_HERE.md` before every WP.
+
+Before `Ready for review: YES`, Claude Code must run `tools/git/posted_pr_evidence_verifier.py` against the live PR when GitHub access is available. If unavailable, state why explicitly and document manual live GitHub verification. Do not claim the verifier passed unless it was actually run against the live PR. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
+
 ## Expected Output After Each WP
 
 Report WP ID, summary, branch name, commit hash, PR review link, files changed, tests run, results, safety confirmations, open issues, and the suggested next WP.

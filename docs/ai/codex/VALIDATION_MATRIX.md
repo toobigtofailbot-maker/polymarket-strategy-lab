@@ -32,6 +32,51 @@
   ```
   If the guard fails, Ready for review must be NO. Report exact guard invocation and result in both PR body and final comment. See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
 
+## github-aware-readonly-workflow-helper WP
+
+Minimum validation:
+- Focused helper tests with fake GitHub API responses (no real network in unit tests).
+- No auth/token/env-secret reading verified in tests.
+- Docs workflow tests.
+- Full pytest after final commit.
+- Generated artifact guard.
+- Diff scope summary.
+- Code blast radius.
+- PR evidence consistency guard (local).
+- Posted PR evidence verifier after PR is posted.
+
+Required guard invocation example:
+```bash
+python tools/git/pr_evidence_consistency_guard.py \
+  --pr-body pr_body.txt \
+  --final-comment final_comment.txt \
+  --expected-head <HEAD_SHA> \
+  --require-guard-result \
+  --require-current-final-marker \
+  --require-posted-evidence-note \
+  --forbid-placeholder-evidence \
+  --forbid-inline-test-counts \
+  --require-standard-network-wording \
+  --require-ready-yes
+```
+
+Required posted verifier invocation after PR is posted:
+```bash
+python tools/git/posted_pr_evidence_verifier.py \
+  --repo toobigtofailbot-maker/polymarket-strategy-lab \
+  --pr <PR_NUMBER> \
+  --expected-head <HEAD_SHA> \
+  --require-current-final-marker \
+  --require-guard-result \
+  --require-ready-yes \
+  --require-standard-network-wording \
+  --forbid-placeholder-evidence \
+  --forbid-inline-test-counts \
+  --format text
+```
+
+Future Ready for review: YES requires both local guard PASS and posted verifier PASS when GitHub access is available.
+
 ## Docs, Schema, And Workflow WPs
 
 - Focused doc tests.

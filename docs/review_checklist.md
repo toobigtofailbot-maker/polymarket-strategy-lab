@@ -1,5 +1,53 @@
 # Review Checklist
 
+## WP58 Posted GitHub Evidence Verification, Claude Start Layer, And Workflow Hardening
+
+- `CLAUDE_START_HERE.md` exists and contains mandatory startup sequence for Claude Code?
+- `CLAUDE_START_HERE.md` references `AGENTS.md`, `CODEX_START_HERE.md`, and `docs/project_status.md`?
+- `CLAUDE_START_HERE.md` includes Claude-specific reminders about posted GitHub evidence?
+- `CLAUDE_START_HERE.md` includes stop rules for workflow-only WPs?
+- `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md` exists?
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md states status `WORKFLOW_GOVERNANCE_MANDATORY`?
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md explains that local guard does not fetch live GitHub data?
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md defines the required workflow after WP58?
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md defines current-final comment rule?
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md defines PR body rule?
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md defines standard wording for PASS and UNAVAILABLE?
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md lists failure examples?
+- `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md` exists?
+- NEGATIVE_TEST_MATRIX_POLICY.md states status `WORKFLOW_GOVERNANCE_MANDATORY`?
+- NEGATIVE_TEST_MATRIX_POLICY.md defines scope (validators, parsers, schema validators, scorers, etc.)?
+- NEGATIVE_TEST_MATRIX_POLICY.md lists 15 required negative-test matrix categories?
+- NEGATIVE_TEST_MATRIX_POLICY.md states PR body must declare `Negative test matrix required: YES/NO`?
+- `AGENTS.md` updated with Claude Code Startup, Posted GitHub Evidence Verification, and Negative Test Matrix Policy sections?
+- `CODEX_START_HERE.md` startup sequence updated with step 1b for CLAUDE_START_HERE.md?
+- `CODEX_START_HERE.md` updated with Posted GitHub Evidence Verification note?
+- `docs/codex_execution_guidelines.md` updated with Claude Code startup and posted evidence note?
+- `docs/ai/codex/README.md` updated with Claude Code startup, verifier, and negative test matrix notes?
+- `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` updated with Rule 14?
+- `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` updated with relationship to posted verifier?
+- `docs/ai/codex/VALIDATION_MATRIX.md` updated with github-aware-readonly-workflow-helper package class?
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md` updated with Posted GitHub Evidence Verification section?
+- `docs/ai/codex/WP_EXECUTION_REPORT.md` updated with Section R for posted evidence?
+- `docs/ai/codex/WP_BUNDLING_POLICY.md` updated with Negative Test Matrix Policy section?
+- `docs/ai/codex/PROTECTED_PATHS.md` updated with specific protected file examples?
+- `docs/work_package_template.md` updated with Negative Test Matrix and Posted GitHub Evidence Verification sections?
+- `docs/review_checklist.md` updated with WP58 section?
+- `docs/testing_requirements.md` updated with WP58 test requirements?
+- `.github/pull_request_template.md` updated with posted evidence and negative test matrix checks?
+- `docs/project_status.md` shows WP57 in merged WPs list?
+- `docs/project_status.md` shows WP58 as current phase?
+- `docs/project_status.md` has Claude start layer status, posted verifier status, negative test matrix policy status, PR template evidence status?
+- `docs/repo_truth_index.md` indexes new WP58 files?
+- `docs/deferred_items_log.md` has WP58-D001 added?
+- `docs/deferred_items_log.md` shows WP54-D001 and WP47-D001 as PARTIALLY_RESOLVED_PUBLIC_ONLY?
+- `tools/git/posted_pr_evidence_verifier.py` exists?
+- No `src/` changes?
+- No dependency or lock-file changes?
+- No generated artifacts committed?
+- No runtime/product/network behavior added?
+- Full pytest passes after final commit?
+
 ## WP54 PR Evidence Follow-Up Defect And Bundled-WP Execution Policy Hardening
 
 - `docs/ai/codex/WP_BUNDLING_POLICY.md` exists and defines risk-class bundling principle?

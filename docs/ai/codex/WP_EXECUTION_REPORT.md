@@ -103,6 +103,32 @@ Ready for review: YES is forbidden if any of the following remain:
 - Placeholder evidence tokens in either PR body or final comment.
 - "Guard input source:" note missing from either PR body or final comment.
 
+## R. Posted GitHub Evidence Verification
+
+Required fields:
+- Verifier command (exact command used).
+- Verifier result (PASS/FAIL/UNAVAILABLE).
+- Latest current-final comment URL.
+- Verified head SHA.
+- Whether PR body and final comment were both live-checked.
+- If verifier unavailable: exact reason and manual check result.
+
+Machine-readable header block required in final evidence comments:
+
+```
+CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments
+WP: <WP_ID>
+PR: #<PR_NUMBER>
+Head SHA: <HEAD_SHA>
+Base SHA: <BASE_SHA>
+Changed files: <N>
+Full pytest: <result>
+Local PR evidence guard: PASS/FAIL
+Posted GitHub evidence verifier: PASS/FAIL/UNAVAILABLE
+Follow-up correction required: YES/NO
+Ready for review: YES/NO
+```
+
 ## Concise Reporting
 
 Apply the concise-reporting format from `docs/ai/codex/CONCISE_REPORTING_RULES.md`:

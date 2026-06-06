@@ -57,3 +57,20 @@ Reviewers must also verify the following evidence discipline checks. If any item
 - Reviewer checks that the current WP's security wording in `docs/project_status.md` names the current WP number, not a prior WP.
 
 See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`, and `docs/ai/codex/WP_BUNDLING_POLICY.md` for the full policy, examples, and remediation guidance.
+
+## Posted GitHub Evidence Verification (WP58+)
+
+Reviewer must confirm:
+- Run or inspect output from `posted_pr_evidence_verifier.py`.
+- Latest current-final evidence comment is not merely present but:
+  - Latest by timestamp (not an older stale comment).
+  - Contains current head SHA.
+  - Contains guard result line.
+  - Contains checked categories.
+  - Contains exit code.
+  - Contains `Ready for review: YES`.
+  - Contains `Guard input source:`.
+- Older stale current-final comments are superseded by the latest.
+- Reviewer did not rely on PR body alone.
+- If verifier failed or was unavailable and PR is merge-ready, manual live GitHub verification must be explicitly documented and sufficient.
+- Negative test matrix present when applicable (see `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`).

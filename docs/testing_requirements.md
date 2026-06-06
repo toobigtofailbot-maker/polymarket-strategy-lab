@@ -1,5 +1,66 @@
 # Testing Requirements
 
+## WP58 Posted GitHub Evidence Verification, Claude Start Layer, And Workflow Hardening Tests
+
+- `CLAUDE_START_HERE.md` must exist.
+- `CLAUDE_START_HERE.md` must contain mandatory startup sequence items: `AGENTS.md`, `CODEX_START_HERE.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`, `docs/codex_execution_guidelines.md`, `docs/ai/codex/README.md`.
+- `CLAUDE_START_HERE.md` must contain Claude-specific reminders about posted GitHub evidence.
+- `CLAUDE_START_HERE.md` must contain stop rules for workflow-only WPs.
+- `CLAUDE_START_HERE.md` must reference `tools/git/posted_pr_evidence_verifier.py`.
+- `CLAUDE_START_HERE.md` must reference `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`.
+- `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md` must exist.
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md must contain status `WORKFLOW_GOVERNANCE_MANDATORY`.
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md must state that local guard does not fetch live GitHub data.
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md must define required workflow after WP58 (steps 1-8).
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md must define current-final comment rule.
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md must define PR body rule.
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md must define standard wording for PASS and UNAVAILABLE.
+- POSTED_GITHUB_EVIDENCE_VERIFICATION.md must list at least 8 failure examples.
+- `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md` must exist.
+- NEGATIVE_TEST_MATRIX_POLICY.md must contain status `WORKFLOW_GOVERNANCE_MANDATORY`.
+- NEGATIVE_TEST_MATRIX_POLICY.md must define scope including validators, parsers, schema validators, scorers, boundary guards, evidence guards, and semantic wording filters.
+- NEGATIVE_TEST_MATRIX_POLICY.md must list all 15 required negative-test matrix categories.
+- NEGATIVE_TEST_MATRIX_POLICY.md must state PR body must declare `Negative test matrix required: YES / NO`.
+- `AGENTS.md` must contain section `Claude Code Startup` referencing `CLAUDE_START_HERE.md`.
+- `AGENTS.md` must contain section `Posted GitHub Evidence Verification`.
+- `AGENTS.md` must contain section `Negative Test Matrix Policy`.
+- `CODEX_START_HERE.md` startup sequence must include step 1b for `CLAUDE_START_HERE.md`.
+- `CODEX_START_HERE.md` must contain `Posted GitHub Evidence Verification (WP58+)` section.
+- `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` must contain `Rule 14` about live posted GitHub evidence verification.
+- `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` must contain section about relationship to posted verifier.
+- `docs/ai/codex/VALIDATION_MATRIX.md` must contain `github-aware-readonly-workflow-helper WP` package class.
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md` must contain `Posted GitHub Evidence Verification (WP58+)` section.
+- `docs/ai/codex/WP_EXECUTION_REPORT.md` must contain `R. Posted GitHub Evidence Verification` section.
+- `docs/ai/codex/WP_BUNDLING_POLICY.md` must contain `Negative Test Matrix Policy` section.
+- `docs/ai/codex/PROTECTED_PATHS.md` must contain `Specific Protected File Examples` section.
+- `docs/work_package_template.md` must contain `Negative Test Matrix` section.
+- `docs/work_package_template.md` must contain `Posted GitHub Evidence Verification` section.
+- `docs/project_status.md` must reflect WP57 in merged WPs list.
+- `docs/project_status.md` must reflect WP58 as current phase.
+- `docs/project_status.md` must contain `Claude start layer status`.
+- `docs/project_status.md` must contain `Posted GitHub evidence verifier status`.
+- `docs/project_status.md` must contain `Negative test matrix policy status`.
+- `docs/repo_truth_index.md` must index `CLAUDE_START_HERE.md`.
+- `docs/repo_truth_index.md` must index `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
+- `docs/repo_truth_index.md` must index `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`.
+- `docs/repo_truth_index.md` must index `tools/git/posted_pr_evidence_verifier.py`.
+- `docs/deferred_items_log.md` must contain `WP58-D001`.
+- `tools/git/posted_pr_evidence_verifier.py` must exist.
+- `tools/git/posted_pr_evidence_verifier.py` must be stdlib-only (no requests, httpx, aiohttp).
+- `tools/git/posted_pr_evidence_verifier.py` must make no authenticated calls (no token/credential reading).
+- `tests/tools/git/test_posted_pr_evidence_verifier.py` must exist with focused tests using fake GitHub API responses.
+- `tests/test_posted_github_evidence_workflow_docs.py` must exist with docs workflow tests.
+- `tests/test_negative_test_matrix_policy_docs.py` must exist with docs tests.
+- `tests/test_claude_start_here_docs.py` must exist with docs tests.
+- No `src/` changes are expected.
+- No dependency or lock-file changes are expected.
+- No generated outputs may be committed.
+- No docs may introduce live trading, execution, credentials, scheduler, Hermes runtime authority, or autonomous trading agent active status.
+
+## WP58 Negative Test Matrix Policy Requirement
+
+WPs that add or modify validators, scorers, parsers, schema validators, boundary guards, evidence guards, or semantic wording filters must include a negative-test matrix covering applicable categories from `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`. The matrix must be tested in code, not only described in docs. The PR body must declare `Negative test matrix required: YES / NO`. If YES, list the categories covered. If NO, explain why not applicable.
+
 ## WP54 PR Evidence Follow-Up Defect And Bundled-WP Execution Policy Hardening Tests
 
 - `docs/ai/codex/WP_BUNDLING_POLICY.md` must exist.

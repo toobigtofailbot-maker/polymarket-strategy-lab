@@ -127,6 +127,42 @@ Every WP must satisfy the Standard PR Evidence Reporting Discipline Block before
 - **Required: Guard input source line.** Both PR body and final comment must include "Guard input source: exact local drafts intended for posting" or equivalent.
 - **Forbidden: placeholder evidence tokens.** `<HEAD_SHA>`, `TBD`, `placeholder`, `actual:`, `TODO`, or fake SHA filler must not appear in PR body or final comment.
 
+## Negative Test Matrix (mandatory when applicable, WP58)
+
+State whether a negative-test matrix is required for this WP:
+
+```
+Negative test matrix required: YES / NO
+```
+
+If YES, list the categories covered from `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`.
+
+If NO, explain why the matrix is not applicable (e.g., no validator/scorer/parser added or modified).
+
+## Posted GitHub Evidence Verification (mandatory when available, WP58)
+
+After posting the PR body and current-final evidence comment to GitHub, run:
+
+```
+python tools/git/posted_pr_evidence_verifier.py \
+  --repo toobigtofailbot-maker/polymarket-strategy-lab \
+  --pr <PR_NUMBER> \
+  --expected-head <HEAD_SHA> \
+  --require-current-final-marker \
+  --require-guard-result \
+  --require-ready-yes \
+  --require-standard-network-wording \
+  --forbid-placeholder-evidence \
+  --forbid-inline-test-counts \
+  --format text
+```
+
+State the verifier result in both the PR body and the final comment:
+- If PASS: include the command, result, and verified head SHA.
+- If UNAVAILABLE: state reason and describe manual live verification performed.
+
+See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md` for full policy.
+
 ## Posted Evidence Self-Check (mandatory, WP54)
 
 Before Ready for review: YES, Claude Code must declare one of the following in both the PR body and the final comment:

@@ -348,20 +348,20 @@ def test_project_status_reflects_wp53_merged() -> None:
     assert "WP53" in merged_line
 
 
-def test_project_status_reflects_wp57_current() -> None:
+def test_project_status_reflects_wp58_current() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP57" in phase_line
+    assert "WP58" in phase_line
 
 
-def test_project_status_reflects_wp57_branch() -> None:
+def test_project_status_reflects_wp58_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp57" in branch_line
+    assert "wp58" in branch_line
 
 
 def test_project_status_reflects_wp56_merged() -> None:
@@ -434,3 +434,54 @@ def test_dependency_files_do_not_add_agent_runtime_dependencies() -> None:
         text = _read(path).lower()
         for term in FORBIDDEN_AGENT_DEPENDENCY_TERMS:
             assert term not in text, f"{term} found in {path.relative_to(ROOT)}"
+
+
+# ── WP58: Posted evidence verifier and new governance docs ───────────────────
+
+
+def test_claude_start_here_exists() -> None:
+    assert (ROOT / "CLAUDE_START_HERE.md").is_file()
+
+
+def test_posted_github_evidence_verification_doc_exists() -> None:
+    assert (ROOT / "docs" / "ai" / "codex" / "POSTED_GITHUB_EVIDENCE_VERIFICATION.md").is_file()
+
+
+def test_negative_test_matrix_policy_doc_exists() -> None:
+    assert (ROOT / "docs" / "ai" / "codex" / "NEGATIVE_TEST_MATRIX_POLICY.md").is_file()
+
+
+def test_posted_pr_evidence_verifier_exists() -> None:
+    assert (ROOT / "tools" / "git" / "posted_pr_evidence_verifier.py").is_file()
+
+
+def test_pr_template_contains_posted_evidence_section() -> None:
+    path = ROOT / ".github" / "pull_request_template.md"
+    content = _read(path)
+    assert "posted" in content.lower() or "POSTED" in content
+
+
+def test_validation_matrix_includes_github_aware_class() -> None:
+    path = ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md"
+    content = _read(path)
+    assert (
+        "github-aware" in content.lower()
+        or "github_aware" in content.lower()
+        or "posted" in content.lower()
+    )
+
+
+def test_pr_review_checklist_includes_current_final_verification() -> None:
+    path = ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md"
+    content = _read(path)
+    assert "current-final" in content.lower() or "CURRENT FINAL" in content
+
+
+def test_wp_execution_report_includes_posted_evidence_section() -> None:
+    path = ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md"
+    content = _read(path)
+    assert (
+        "Posted GitHub" in content
+        or "posted github" in content.lower()
+        or "posted pr evidence" in content.lower()
+    )
