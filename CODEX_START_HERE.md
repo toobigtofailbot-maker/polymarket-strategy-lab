@@ -40,6 +40,15 @@ Stop and report before branch creation or implementation if:
 - The validation environment cannot run required checks.
 - Safe implementation would require forbidden scope or protected runtime boundaries.
 
+## Canonical WP Execution State Machine (WP59+)
+
+After completing the startup sequence, follow `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` for all WP execution, evidence packaging, and review-readiness decisions.
+
+Do not infer evidence mode. Select exactly one:
+- `PUBLIC_VERIFIER_PASS`
+- `PRIVATE_REPO_MANUAL_VERIFIED`
+- `BLOCKED_NOT_READY`
+
 ## Posted GitHub Evidence Verification (WP58+)
 
-Local PR body and final comment drafts are not posted GitHub evidence. Before `Ready for review: YES`, Claude Code must run `tools/git/posted_pr_evidence_verifier.py` against the live PR when GitHub access is available. If unavailable, state why explicitly and document manual live verification. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
+Local PR body and final comment drafts are not posted GitHub evidence. Before `Ready for review: YES`, Claude Code must select an evidence mode per the state machine and document it completely. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.

@@ -58,10 +58,19 @@ Reviewers must also verify the following evidence discipline checks. If any item
 
 See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`, and `docs/ai/codex/WP_BUNDLING_POLICY.md` for the full policy, examples, and remediation guidance.
 
-## Posted GitHub Evidence Verification (WP58+)
+## Posted GitHub Evidence Verification And Evidence Mode (WP58+/WP59+)
 
 Reviewer must confirm:
-- Run or inspect output from `posted_pr_evidence_verifier.py`.
+
+**Evidence mode checks:**
+1. Evidence mode declared in both PR body and final comment? (one of: `PUBLIC_VERIFIER_PASS`, `PRIVATE_REPO_MANUAL_VERIFIED`, `BLOCKED_NOT_READY`)
+2. If `PUBLIC_VERIFIER_PASS`: verifier exit 0 is present; live PR was accessible to the public unauthenticated API.
+3. If `PRIVATE_REPO_MANUAL_VERIFIED`: verifier unavailable/exit code documented; reason documented; all manual live verification fields complete (method, verified PR body head SHA, verified comment URL, verified comment head SHA, verified comment contains required fields).
+4. If `BLOCKED_NOT_READY`: Ready for review is NO. Do not merge.
+5. Latest current-final comment contains current head SHA.
+6. PR body does not call manual verification "posted verifier PASS."
+
+**Standard comment checks:**
 - Latest current-final evidence comment is not merely present but:
   - Latest by timestamp (not an older stale comment).
   - Contains current head SHA.
@@ -72,5 +81,6 @@ Reviewer must confirm:
   - Contains `Guard input source:`.
 - Older stale current-final comments are superseded by the latest.
 - Reviewer did not rely on PR body alone.
-- If verifier failed or was unavailable and PR is merge-ready, manual live GitHub verification must be explicitly documented and sufficient.
 - Negative test matrix present when applicable (see `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`).
+
+See `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` for full evidence mode definitions and required fields.

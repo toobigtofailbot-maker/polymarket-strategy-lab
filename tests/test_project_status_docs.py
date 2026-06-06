@@ -168,20 +168,36 @@ def test_wp57_in_merged_wps_list():
     assert "WP57" in merged_line
 
 
-def test_wp58_is_current_phase():
+def test_wp59_is_current_phase():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP58" in current_phase_line
+    assert "WP59" in current_phase_line
 
 
-def test_wp58_branch_is_current_branch():
+def test_wp58_in_merged_wps():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP58" in merged_line
+
+
+def test_wp59_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp58" in branch_line
+    assert "wp59" in branch_line
+
+
+def test_wp58_branch_not_current_branch():
+    text = _read()
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp58-posted-evidence-and-claude-workflow-hardening" not in branch_line
 
 
 def test_wp57_branch_not_current_branch():
