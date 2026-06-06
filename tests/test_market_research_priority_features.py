@@ -26,6 +26,7 @@ from src.data_layer.market_research_priority_features import (
     FEATURE_EXTRACTION_VERSION,
     build_manifest_index,
     build_market_research_priority_run_context,
+    build_resolution_ambiguity_label_index,
     extract_from_snapshot_dir,
     extract_market_research_priority_context,
     extract_market_research_priority_contexts,
@@ -924,10 +925,10 @@ def test_requires_recapture_false_when_fresh():
     assert ctx["staleness"]["requires_recapture_before_use"] is False
 
 
-# ── WP53 Version constant ─────────────────────────────────────────────────────
+# ── Version constant ──────────────────────────────────────────────────────────
 
-def test_feature_extraction_version_is_wp53():
-    assert FEATURE_EXTRACTION_VERSION == "wp53-v1"
+def test_feature_extraction_version_is_wp57():
+    assert FEATURE_EXTRACTION_VERSION == "wp57-v1"
 
 
 # ── Project status checks ─────────────────────────────────────────────────────
@@ -970,3 +971,601 @@ def test_research_direction_doc_still_blocks_strategy_and_trading():
     assert "Live trading" in content
     assert "Strategy runtime" in content
     assert "Paper-trading runtime" in content
+
+
+# ── WP57 Resolution ambiguity label fixtures ──────────────────────────────────
+
+_VALID_FORBIDDEN_USE = (
+    "This label is not a trading signal. Not expected return. "
+    "Not position sizing. Not execution instruction."
+)
+
+
+def _make_valid_label(
+    label_id="label-001",
+    market_id="mkt-001",
+    review_status="REVIEWED_CLEAR",
+    ambiguity_categories=None,
+    ambiguity_severity="NONE",
+    reviewer_confidence="HIGH",
+    manual_review_required=False,
+    reviewed_at_utc="2026-01-01T00:00:00Z",
+    source_artifact_refs=None,
+) -> dict:
+    if ambiguity_categories is None:
+        ambiguity_categories = []
+    if source_artifact_refs is None:
+        source_artifact_refs = ["local_data/manual_labels/label_001.txt"]
+    return {
+        "schema_version": "wp55-v1",
+        "label_id": label_id,
+        "market_id": market_id,
+        "question_snapshot": "Will X happen by date Y?",
+        "resolution_text_snapshot": "Resolves YES if X occurs.",
+        "review_status": review_status,
+        "ambiguity_categories": ambiguity_categories,
+        "ambiguity_severity": ambiguity_severity,
+        "reviewer_confidence": reviewer_confidence,
+        "manual_review_required": manual_review_required,
+        "reviewed_at_utc": reviewed_at_utc,
+        "reviewer_id_or_role": "human-reviewer-a",
+        "source_artifact_refs": source_artifact_refs,
+        "evidence_notes": "No ambiguity observed in resolution rules.",
+        "limitations": "Only local snapshot data reviewed.",
+        "advisory_label": "ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED",
+        "forbidden_use_notice": _VALID_FORBIDDEN_USE,
+    }
+
+
+def _make_valid_label_medium_ambiguity(market_id="mkt-001", label_id="label-002") -> dict:
+    return _make_valid_label(
+        label_id=label_id,
+        market_id=market_id,
+        review_status="REVIEWED_MEDIUM_AMBIGUITY",
+        ambiguity_categories=["cutoff_time_ambiguity", "timezone_ambiguity"],
+        ambiguity_severity="MEDIUM",
+        reviewer_confidence="MEDIUM",
+        manual_review_required=True,
+    )
+
+
+def _make_valid_label_high_ambiguity(market_id="mkt-001", label_id="label-003") -> dict:
+    return _make_valid_label(
+        label_id=label_id,
+        market_id=market_id,
+        review_status="REVIEWED_HIGH_AMBIGUITY",
+        ambiguity_categories=["source_conflict"],
+        ambiguity_severity="HIGH",
+        reviewer_confidence="LOW",
+        manual_review_required=True,
+    )
+
+
+# ── WP57 8.1 Backward compatibility ──────────────────────────────────────────
+
+def test_extraction_without_labels_still_passes():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert "market_id" in ctx
+    assert "score_components" in ctx
+    assert "resolution_ambiguity" in ctx
+
+
+def test_score_components_unchanged_without_labels():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    sc = ctx["score_components"]
+    assert "data_completeness" in sc
+    assert "snapshot_freshness" in sc
+    assert "guard_provenance_quality" in sc
+    assert "missing_data_penalty" in sc
+
+
+def test_existing_scorer_accepts_context_with_resolution_ambiguity():
+    record = _make_record()
+    run_ctx = build_market_research_priority_run_context(
+        snapshot_id=record.snapshot_id,
+        manifests=[_make_manifest()],
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    market_ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=build_resolution_ambiguity_label_index(
+            [_make_valid_label()]
+        ),
+    )
+    output = build_market_research_priority_output(run_ctx, market_ctx)
+    assert_market_research_priority_output(output)
+
+
+def test_no_scorer_import_required_for_basic_extraction():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert "resolution_ambiguity" in ctx
+
+
+# ── WP57 8.2 Valid label consumption ─────────────────────────────────────────
+
+def test_valid_reviewed_clear_label_attaches_correctly():
+    label = _make_valid_label(market_id="mkt-001", review_status="REVIEWED_CLEAR",
+                               ambiguity_severity="NONE", reviewer_confidence="HIGH",
+                               manual_review_required=False)
+    idx = build_resolution_ambiguity_label_index([label])
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    ra = ctx["resolution_ambiguity"]
+    assert ra["label_available"] is True
+    assert ra["validated_label_count"] == 1
+    assert ra["manual_review_required"] is False
+    assert ra["ambiguity_categories"] == []
+    assert ra["highest_ambiguity_severity"] == "NONE"
+    assert ra["lowest_reviewer_confidence"] == "HIGH"
+    assert ra["advisory_label"] == "ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED"
+
+
+def test_valid_medium_ambiguity_label_attaches_categories_and_severity():
+    label = _make_valid_label_medium_ambiguity(market_id="mkt-001")
+    idx = build_resolution_ambiguity_label_index([label])
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    ra = ctx["resolution_ambiguity"]
+    assert ra["label_available"] is True
+    assert "cutoff_time_ambiguity" in ra["ambiguity_categories"]
+    assert "timezone_ambiguity" in ra["ambiguity_categories"]
+    assert ra["highest_ambiguity_severity"] == "MEDIUM"
+    assert ra["lowest_reviewer_confidence"] == "MEDIUM"
+    assert ra["manual_review_required"] is True
+    assert "REVIEWED_MEDIUM_AMBIGUITY" in ra["review_statuses"]
+
+
+def test_multiple_labels_aggregate_categories_without_duplicates():
+    label1 = _make_valid_label_medium_ambiguity(market_id="mkt-001", label_id="lbl-1")
+    label2 = _make_valid_label(
+        label_id="lbl-2", market_id="mkt-001",
+        review_status="REVIEWED_MEDIUM_AMBIGUITY",
+        ambiguity_categories=["cutoff_time_ambiguity", "source_conflict"],
+        ambiguity_severity="MEDIUM", reviewer_confidence="MEDIUM",
+        manual_review_required=True,
+    )
+    idx = build_resolution_ambiguity_label_index([label1, label2])
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    ra = ctx["resolution_ambiguity"]
+    assert ra["validated_label_count"] == 2
+    cats = ra["ambiguity_categories"]
+    assert len(cats) == len(set(cats)), "categories should not contain duplicates"
+    assert "cutoff_time_ambiguity" in cats
+    assert "timezone_ambiguity" in cats
+    assert "source_conflict" in cats
+    assert len(ra["source_label_ids"]) == 2
+
+
+def test_multiple_labels_pick_highest_severity():
+    label_low = _make_valid_label(
+        label_id="lbl-low", market_id="mkt-001",
+        review_status="REVIEWED_LOW_AMBIGUITY",
+        ambiguity_categories=["timezone_ambiguity"],
+        ambiguity_severity="LOW", reviewer_confidence="HIGH",
+        manual_review_required=True,
+    )
+    label_high = _make_valid_label_high_ambiguity(market_id="mkt-001", label_id="lbl-high")
+    idx = build_resolution_ambiguity_label_index([label_low, label_high])
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    ra = ctx["resolution_ambiguity"]
+    assert ra["highest_ambiguity_severity"] == "HIGH"
+    assert ra["lowest_reviewer_confidence"] == "LOW"
+
+
+# ── WP57 8.3 No matching labels ───────────────────────────────────────────────
+
+def test_labels_for_other_market_do_not_attach_to_this_market():
+    label = _make_valid_label(market_id="mkt-OTHER")
+    idx = build_resolution_ambiguity_label_index([label])
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    ra = ctx["resolution_ambiguity"]
+    assert ra["label_available"] is False
+    assert ra["validated_label_count"] == 0
+
+
+def test_no_matching_labels_produces_safe_defaults():
+    idx = build_resolution_ambiguity_label_index([])
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    ra = ctx["resolution_ambiguity"]
+    assert ra["label_available"] is False
+    assert ra["highest_ambiguity_severity"] == "UNKNOWN"
+    assert ra["lowest_reviewer_confidence"] == "LOW"
+    assert ra["manual_review_required"] is True
+    assert ra["advisory_label"] == "ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED"
+    assert ra["ambiguity_categories"] == []
+    assert ra["source_label_ids"] == []
+
+
+def test_no_label_index_provided_produces_safe_defaults():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=None,
+    )
+    ra = ctx["resolution_ambiguity"]
+    assert ra["label_available"] is False
+    assert ra["advisory_label"] == "ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED"
+
+
+# ── WP57 8.4 Invalid labels ───────────────────────────────────────────────────
+
+def test_invalid_label_excluded_from_ambiguity_summary():
+    bad_label = {"label_id": "bad", "market_id": "mkt-001"}  # missing required fields
+    idx = build_resolution_ambiguity_label_index([bad_label])
+    assert idx["invalid_label_count"] == 1
+    assert len(idx["by_market_id"]) == 0
+
+
+def test_invalid_label_does_not_crash_extraction():
+    bad_label = {"label_id": "bad", "market_id": "mkt-001"}
+    idx = build_resolution_ambiguity_label_index([bad_label])
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    ra = ctx["resolution_ambiguity"]
+    assert ra["label_available"] is False
+
+
+def test_mixed_valid_invalid_labels_only_valid_ones_counted():
+    valid_label = _make_valid_label(market_id="mkt-001", label_id="valid-1")
+    bad_label = {"label_id": "bad", "market_id": "mkt-001"}
+    idx = build_resolution_ambiguity_label_index([valid_label, bad_label])
+    assert idx["invalid_label_count"] == 1
+    assert len(idx["by_market_id"]["mkt-001"]) == 1
+
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    ra = ctx["resolution_ambiguity"]
+    assert ra["label_available"] is True
+    assert ra["validated_label_count"] == 1
+
+
+def test_validation_error_count_surfaced_in_index():
+    bad_label = {"label_id": "bad", "market_id": "mkt-001"}
+    idx = build_resolution_ambiguity_label_index([bad_label])
+    assert idx["total_validation_error_count"] > 0
+
+
+# ── WP57 8.5 Forbidden semantics ─────────────────────────────────────────────
+
+_FORBIDDEN_SEMANTIC_TERMS = frozenset({
+    "alpha", "edge", "opportunity", "tradability", "tradeable", "tradable",
+    "expected_return", "execution_confidence", "fill_probability", "slippage",
+    "buy", "sell", "entry", "exit",
+})
+
+
+def _collect_all_string_values(obj) -> list:
+    results = []
+    if isinstance(obj, str):
+        results.append(obj)
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            results.extend(_collect_all_string_values(v))
+    elif isinstance(obj, (list, tuple)):
+        for item in obj:
+            results.extend(_collect_all_string_values(item))
+    return results
+
+
+def test_resolution_ambiguity_no_forbidden_key_names():
+    label = _make_valid_label_medium_ambiguity()
+    idx = build_resolution_ambiguity_label_index([label])
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    ra = ctx["resolution_ambiguity"]
+    all_keys = set(_collect_keys_recursive(ra))
+    found = all_keys & _FORBIDDEN_SEMANTIC_TERMS
+    assert found == set(), f"Forbidden key names in resolution_ambiguity: {found}"
+
+
+def test_advisory_label_preserved_exactly():
+    label = _make_valid_label(market_id="mkt-001")
+    idx = build_resolution_ambiguity_label_index([label])
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    ra = ctx["resolution_ambiguity"]
+    assert ra["advisory_label"] == "ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED"
+
+
+def test_advisory_label_present_in_default_state():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+    )
+    assert ctx["resolution_ambiguity"]["advisory_label"] == "ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED"
+
+
+# ── WP57 8.6 No parser / no LLM / no network / no writes ─────────────────────
+
+def test_module_does_not_import_network_packages_after_wp57():
+    source = (ROOT / "src" / "data_layer" / "market_research_priority_features.py").read_text()
+    for prefix in _FORBIDDEN_MODULE_PREFIXES:
+        assert f"import {prefix}" not in source and f"from {prefix}" not in source, (
+            f"Forbidden import found after WP57: {prefix}"
+        )
+
+
+def test_resolution_ambiguity_sub_dict_has_required_keys():
+    label = _make_valid_label(market_id="mkt-001")
+    idx = build_resolution_ambiguity_label_index([label])
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    ra = ctx["resolution_ambiguity"]
+    for key in ("label_available", "validated_label_count", "review_statuses",
+                "ambiguity_categories", "highest_ambiguity_severity",
+                "lowest_reviewer_confidence", "manual_review_required",
+                "advisory_label", "source_label_ids", "source_artifact_refs",
+                "validation_error_count", "validation_warning_count"):
+        assert key in ra, f"Missing key in resolution_ambiguity: {key}"
+
+
+def test_build_resolution_ambiguity_label_index_is_deterministic():
+    labels = [_make_valid_label(market_id="mkt-001")]
+    idx1 = build_resolution_ambiguity_label_index(labels)
+    idx2 = build_resolution_ambiguity_label_index(labels)
+    assert idx1["by_market_id"].keys() == idx2["by_market_id"].keys()
+    assert idx1["invalid_label_count"] == idx2["invalid_label_count"]
+
+
+def test_label_index_does_not_mutate_input():
+    label = _make_valid_label(market_id="mkt-001")
+    original_keys = set(label.keys())
+    build_resolution_ambiguity_label_index([label])
+    assert set(label.keys()) == original_keys
+
+
+# ── WP57 8.7 Optional explicit label-path read ────────────────────────────────
+
+def test_extract_from_snapshot_dir_with_label_json_file():
+    record = _make_record()
+    manifest = _make_manifest()
+    ob = _make_ob()
+    label = _make_valid_label(market_id=record.market_id)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        snap_dir = Path(tmpdir)
+        (snap_dir / "market_metadata_snapshots.jsonl").write_text(
+            record.to_jsonl_line() + "\n", encoding="utf-8"
+        )
+        (snap_dir / "order_book_snapshots.jsonl").write_text(
+            ob.to_jsonl_line() + "\n", encoding="utf-8"
+        )
+        (snap_dir / f"manifest_{manifest.snapshot_id}.json").write_text(
+            manifest.to_json(), encoding="utf-8"
+        )
+
+        label_file = snap_dir / "labels.json"
+        label_file.write_text(json.dumps([label]), encoding="utf-8")
+
+        run_ctx, market_ctxs = extract_from_snapshot_dir(
+            snap_dir,
+            generated_at_utc=_REFERENCE_UTC,
+            resolution_ambiguity_label_path=label_file,
+        )
+
+    assert len(market_ctxs) == 1
+    ra = market_ctxs[0]["resolution_ambiguity"]
+    assert ra["label_available"] is True
+    assert ra["validated_label_count"] == 1
+
+
+def test_extract_from_snapshot_dir_with_label_jsonl_file():
+    record = _make_record()
+    manifest = _make_manifest()
+    ob = _make_ob()
+    label = _make_valid_label(market_id=record.market_id)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        snap_dir = Path(tmpdir)
+        (snap_dir / "market_metadata_snapshots.jsonl").write_text(
+            record.to_jsonl_line() + "\n", encoding="utf-8"
+        )
+        (snap_dir / "order_book_snapshots.jsonl").write_text(
+            ob.to_jsonl_line() + "\n", encoding="utf-8"
+        )
+        (snap_dir / f"manifest_{manifest.snapshot_id}.json").write_text(
+            manifest.to_json(), encoding="utf-8"
+        )
+
+        label_file = snap_dir / "labels.jsonl"
+        label_file.write_text(json.dumps(label) + "\n", encoding="utf-8")
+
+        run_ctx, market_ctxs = extract_from_snapshot_dir(
+            snap_dir,
+            generated_at_utc=_REFERENCE_UTC,
+            resolution_ambiguity_label_path=label_file,
+        )
+
+    assert len(market_ctxs) == 1
+    ra = market_ctxs[0]["resolution_ambiguity"]
+    assert ra["label_available"] is True
+
+
+def test_extract_from_snapshot_dir_without_label_path_produces_safe_defaults():
+    record = _make_record()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        snap_dir = Path(tmpdir)
+        (snap_dir / "market_metadata_snapshots.jsonl").write_text(
+            record.to_jsonl_line() + "\n", encoding="utf-8"
+        )
+        (snap_dir / "order_book_snapshots.jsonl").write_text("", encoding="utf-8")
+
+        run_ctx, market_ctxs = extract_from_snapshot_dir(
+            snap_dir, generated_at_utc=_REFERENCE_UTC
+        )
+
+    assert len(market_ctxs) == 1
+    ra = market_ctxs[0]["resolution_ambiguity"]
+    assert ra["label_available"] is False
+    assert ra["advisory_label"] == "ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED"
+
+
+def test_extract_from_snapshot_dir_unsupported_label_extension_raises():
+    record = _make_record()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        snap_dir = Path(tmpdir)
+        (snap_dir / "market_metadata_snapshots.jsonl").write_text(
+            record.to_jsonl_line() + "\n", encoding="utf-8"
+        )
+        label_file = snap_dir / "labels.txt"
+        label_file.write_text("not supported", encoding="utf-8")
+        import pytest
+        with pytest.raises(ValueError):
+            extract_from_snapshot_dir(
+                snap_dir, generated_at_utc=_REFERENCE_UTC,
+                resolution_ambiguity_label_path=label_file,
+            )
+
+
+# ── WP57 8.8 Existing scorer tests remain compatible ─────────────────────────
+
+def test_project_status_includes_wp56_in_merged_wps():
+    status_file = ROOT / "docs" / "project_status.md"
+    content = status_file.read_text(encoding="utf-8")
+    for line in content.splitlines():
+        if line.startswith("- Merged WPs:"):
+            assert "WP56" in line, "WP56 must be listed in Merged WPs"
+            break
+
+
+def test_project_status_current_phase_is_wp57():
+    status_file = ROOT / "docs" / "project_status.md"
+    content = status_file.read_text(encoding="utf-8")
+    current_phase_line = next(
+        line for line in content.splitlines() if line.startswith("- Current phase:")
+    )
+    assert "WP57" in current_phase_line
+
+
+def test_project_status_current_branch_is_wp57():
+    status_file = ROOT / "docs" / "project_status.md"
+    content = status_file.read_text(encoding="utf-8")
+    branch_line = next(
+        line for line in content.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp57-resolution-ambiguity-label-feature-extraction" in branch_line
+
+
+def test_deferred_item_caveat_includes_resolution_ambiguity_when_labels_present():
+    label = _make_valid_label(market_id="mkt-001")
+    idx = build_resolution_ambiguity_label_index([label])
+    record = _make_record(market_id="mkt-001")
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    assert "resolution_ambiguity_label_review_required" in ctx["quality_gates"]["deferred_item_caveats"]
+
+
+def test_deferred_item_caveat_does_not_include_resolution_when_no_labels():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    assert "resolution_ambiguity_label_review_required" not in ctx["quality_gates"]["deferred_item_caveats"]
+
+
+def test_score_components_unchanged_when_labels_present():
+    record = _make_record()
+    label = _make_valid_label(market_id=record.market_id)
+    idx = build_resolution_ambiguity_label_index([label])
+
+    ctx_no_labels = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    ctx_with_labels = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    assert ctx_no_labels["score_components"] == ctx_with_labels["score_components"]
+
+
+def test_quality_status_unchanged_when_labels_present():
+    record = _make_record()
+    label = _make_valid_label(market_id=record.market_id)
+    idx = build_resolution_ambiguity_label_index([label])
+
+    ctx_no = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    ctx_with = extract_market_research_priority_context(
+        record=record,
+        manifests=[_make_manifest()],
+        order_books_by_token_id=index_order_books_by_token_id([_make_ob()]),
+        generated_at_utc=_REFERENCE_UTC,
+        resolution_ambiguity_label_index=idx,
+    )
+    assert ctx_no["quality_gates"]["quality_status"] == ctx_with["quality_gates"]["quality_status"]

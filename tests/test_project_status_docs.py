@@ -113,20 +113,10 @@ def test_wp55_in_merged_wps_list():
     assert "WP55" in merged_line
 
 
-def test_wp56_is_current_phase():
+def test_wp56_in_merged_phase_or_later():
     text = _read()
-    current_phase_line = next(
-        line for line in text.splitlines() if line.startswith("- Current phase:")
-    )
-    assert "WP56" in current_phase_line
-
-
-def test_wp56_branch_is_current_branch():
-    text = _read()
-    branch_line = next(
-        line for line in text.splitlines() if line.startswith("- Current branch:")
-    )
-    assert "wp56-resolution-ambiguity-label-schema-validation" in branch_line
+    # WP56 is merged; current phase is WP57 or later
+    assert "WP56" in text
 
 
 def test_wp55_branch_not_current_branch():
@@ -152,9 +142,46 @@ def test_resolution_ambiguity_taxonomy_status_merged():
     assert "DOCS_SCHEMA_TESTS_ONLY_MERGED" in text
 
 
-def test_resolution_ambiguity_label_schema_validation_status_on_branch():
+def test_resolution_ambiguity_label_schema_validation_status_merged():
     text = _read()
-    assert "LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATION_ON_BRANCH" in text
+    assert "LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATION_MERGED" in text
+
+
+def test_resolution_ambiguity_label_feature_extraction_status_on_branch():
+    text = _read()
+    assert "LOCAL_OFFLINE_READ_ONLY_LABEL_FEATURE_EXTRACTION_ON_BRANCH" in text
+
+
+def test_wp56_in_merged_wps_list():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP56" in merged_line
+
+
+def test_wp57_is_current_phase():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    assert "WP57" in current_phase_line
+
+
+def test_wp57_branch_is_current_branch():
+    text = _read()
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp57-resolution-ambiguity-label-feature-extraction" in branch_line
+
+
+def test_wp56_branch_not_current_branch():
+    text = _read()
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp56-resolution-ambiguity-label-schema-validation" not in branch_line
 
 
 def test_protected_boundaries_unchanged():
