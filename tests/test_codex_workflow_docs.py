@@ -348,20 +348,28 @@ def test_project_status_reflects_wp53_merged() -> None:
     assert "WP53" in merged_line
 
 
-def test_project_status_reflects_wp58_current() -> None:
+def test_project_status_reflects_wp59_current() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP58" in phase_line
+    assert "WP59" in phase_line
 
 
-def test_project_status_reflects_wp58_branch() -> None:
+def test_project_status_reflects_wp58_merged() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP58" in merged_line
+
+
+def test_project_status_reflects_wp59_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp58" in branch_line
+    assert "wp59" in branch_line
 
 
 def test_project_status_reflects_wp56_merged() -> None:

@@ -66,13 +66,21 @@ After this file, Codex must read `CODEX_START_HERE.md` and the relevant Codex wo
 - Do not commit API keys, private keys, wallet keys, mnemonic phrases, passphrases, tokens, or realistic secret placeholders.
 - Use local environment variables or a future approved secret manager for credentials.
 
+## Canonical WP Execution State Machine
+
+Detailed WP execution, evidence packaging, evidence-mode selection, and review-readiness decisions are governed by `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`.
+
+If another workflow doc conflicts with the state machine, the state machine wins unless the active WP gives a narrower package-specific instruction.
+
+Private-repo manual live verification is a first-class evidence mode only when the state machine's required fields are complete.
+
 ## Claude Code Startup
 
 Claude Code must read `CLAUDE_START_HERE.md` in addition to `AGENTS.md` and `CODEX_START_HERE.md`. See `CLAUDE_START_HERE.md` for Claude-specific startup guidance, posted evidence verification rules, and stop rules.
 
 ## Posted GitHub Evidence Verification
 
-Local PR body and final comment drafts are not posted GitHub evidence. Before `Ready for review: YES`, Claude Code and Codex must run `tools/git/posted_pr_evidence_verifier.py` against the live PR when GitHub access is available. If unavailable, state why explicitly and document manual live verification. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
+Local PR body and final comment drafts are not posted GitHub evidence. Before `Ready for review: YES`, Claude Code and Codex must select exactly one evidence mode from `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` (PUBLIC_VERIFIER_PASS, PRIVATE_REPO_MANUAL_VERIFIED, or BLOCKED_NOT_READY) and document it completely. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
 
 ## Negative Test Matrix Policy
 

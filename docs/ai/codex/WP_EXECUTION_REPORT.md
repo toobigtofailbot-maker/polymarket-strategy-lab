@@ -103,17 +103,44 @@ Ready for review: YES is forbidden if any of the following remain:
 - Placeholder evidence tokens in either PR body or final comment.
 - "Guard input source:" note missing from either PR body or final comment.
 
-## R. Posted GitHub Evidence Verification
+## R. Posted GitHub Evidence Verification And Evidence Mode (WP59+)
 
-Required fields:
-- Verifier command (exact command used).
-- Verifier result (PASS/FAIL/UNAVAILABLE).
-- Latest current-final comment URL.
-- Verified head SHA.
-- Whether PR body and final comment were both live-checked.
-- If verifier unavailable: exact reason and manual check result.
+Before `Ready for review: YES`, declare exactly one evidence mode. Required fields vary by mode.
 
-Machine-readable header block required in final evidence comments:
+**Evidence mode block (required in both PR body and final comment):**
+
+```
+Evidence mode: <PUBLIC_VERIFIER_PASS / PRIVATE_REPO_MANUAL_VERIFIED / BLOCKED_NOT_READY>
+Posted GitHub evidence verifier: <PASS; exit 0 / UNAVAILABLE; exit <code> / BLOCKED>
+```
+
+If `PUBLIC_VERIFIER_PASS`:
+```
+Verifier command: <exact command>
+Verified PR body head SHA: <sha>
+Verified latest current-final comment URL: <url>
+Verified latest current-final comment head SHA: <sha>
+```
+
+If `PRIVATE_REPO_MANUAL_VERIFIED`:
+```
+Posted GitHub evidence verifier: UNAVAILABLE; exit <code>
+Reason: <private repo / unauthenticated API unavailable / rate limit / access denied>
+Manual live GitHub verification performed: YES
+Manual verification method: <method>
+Verified PR body head SHA: <sha>
+Verified latest current-final comment URL: <url or UI-visible marker>
+Verified latest current-final comment head SHA: <sha>
+Verified latest current-final comment contains: validation results, local guard result, follow-up classification, network wording, Ready for review
+```
+
+If `BLOCKED_NOT_READY`:
+```
+Ready for review: NO
+Blocker: <specific reason>
+```
+
+**Machine-readable header block required in final evidence comments:**
 
 ```
 CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments
@@ -123,11 +150,15 @@ Head SHA: <HEAD_SHA>
 Base SHA: <BASE_SHA>
 Changed files: <N>
 Full pytest: <result>
+Evidence mode: <mode>
 Local PR evidence guard: PASS/FAIL
-Posted GitHub evidence verifier: PASS/FAIL/UNAVAILABLE
+Posted GitHub evidence verifier: PASS/UNAVAILABLE/BLOCKED
+Manual live GitHub verification: YES/NO/NOT_APPLICABLE
 Follow-up correction required: YES/NO
 Ready for review: YES/NO
 ```
+
+The PR body may be a concise index while the final comment carries full detailed evidence, provided required state-machine fields are present and key facts match. Long duplicate narratives in both surfaces are not required.
 
 ## Concise Reporting
 

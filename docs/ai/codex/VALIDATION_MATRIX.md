@@ -8,6 +8,7 @@
 | schema-only WP | Schema doc tests, repo-truth index tests, full pytest after final commit, no runtime implementation paths, exact PR evidence reporting check. |
 | workflow/governance WP | Workflow docs/template tests, focused docs tests, full pytest after final commit, project-status current-WP wording check, exact PR evidence reporting check, network usage wording check. |
 | docs-tests-workflow-governance-hardening | All workflow/governance WP checks plus: package size class stated, risk-class bundle justification, follow-up classification section, guard input source line, posted evidence self-check declaration, no forbidden bundle type, current-final evidence marker. |
+| workflow-governance-docs-tests-state-machine | All workflow/governance WP checks plus: canonical state machine doc present, evidence mode declared (PUBLIC_VERIFIER_PASS / PRIVATE_REPO_MANUAL_VERIFIED / BLOCKED_NOT_READY), no helper code changes, no product/runtime scope. |
 | local report/export WP | Offline tests with local fixtures, output under ignored `local_data/`, no credentials, no private endpoints, exact PR evidence reporting check. |
 | read-only public-data WP | Offline tests, explicit-network smoke only if scoped, bounded public-data behavior, ignored output under `local_data/`, exact PR evidence reporting check. |
 | official-client sandbox WP | Isolated sandbox tests, no project dependency, no `src/` runtime import, explicit-network public read-only probes only if scoped, exact PR evidence reporting check. |
@@ -75,7 +76,12 @@ python tools/git/posted_pr_evidence_verifier.py \
   --format text
 ```
 
-Future Ready for review: YES requires both local guard PASS and posted verifier PASS when GitHub access is available.
+Ready for review: YES requires local guard PASS and one complete evidence mode (see `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`):
+- `PUBLIC_VERIFIER_PASS`: posted verifier exit 0 required.
+- `PRIVATE_REPO_MANUAL_VERIFIED`: posted verifier UNAVAILABLE with exit code required; reason required; all manual live verification fields required.
+- `BLOCKED_NOT_READY`: Ready for review must be NO.
+
+Evidence mode does not replace validation. Validation proves code/docs state. Evidence mode proves PR reporting state. They are independent assessments.
 
 ## Docs, Schema, And Workflow WPs
 

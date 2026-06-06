@@ -19,6 +19,63 @@ Passing the local guard is necessary but not sufficient to prove posted GitHub e
 
 ---
 
+## Evidence Modes
+
+Select exactly one evidence mode before setting `Ready for review: YES`. See `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` for full phase definitions and required fields.
+
+### PUBLIC_VERIFIER_PASS
+
+Allowed only when the public unauthenticated GitHub API can read the live PR body and comments and the verifier returns exit 0.
+
+Standard wording:
+
+```
+Evidence mode: PUBLIC_VERIFIER_PASS
+Posted GitHub evidence verifier: PASS; exit 0
+Verifier command: <exact command>
+Verified PR body head SHA: <sha>
+Verified latest current-final comment URL: <url>
+Verified latest current-final comment head SHA: <sha>
+Ready for review: YES/NO
+```
+
+### PRIVATE_REPO_MANUAL_VERIFIED
+
+Allowed when the public unauthenticated GitHub verifier cannot access the PR body/comments due to private repo, access denied, rate limit, or tool unavailability.
+
+For private repositories or environments where the public unauthenticated GitHub API cannot fetch PR body/comments, the posted GitHub evidence verifier must be reported as UNAVAILABLE with its exit code. Manual live GitHub verification may satisfy the posted-evidence requirement only under this mode.
+
+Standard wording:
+
+```
+Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED
+Posted GitHub evidence verifier: UNAVAILABLE; exit 3
+Reason: private repo / public unauthenticated GitHub API cannot fetch posted PR evidence
+Manual live GitHub verification performed: YES
+Manual verification method: <GitHub UI / already-available GitHub connector / approved authenticated environment if separately authorized>
+Verified PR body head SHA: <sha>
+Verified latest current-final comment URL: <url>
+Verified latest current-final comment head SHA: <sha>
+Verified latest current-final comment contains: validation results, local guard result, follow-up classification, network wording, Ready for review
+Ready for review: YES/NO
+```
+
+This is a valid evidence mode for private repos. Public verifier unavailable / exit 3 is not itself a process defect when documented under this mode.
+
+This mode must never be reported as `Posted GitHub evidence verifier: PASS`.
+
+### BLOCKED_NOT_READY
+
+Required when manual verification is incomplete or when any required field cannot be confirmed honestly.
+
+```
+Evidence mode: BLOCKED_NOT_READY
+Ready for review: NO
+Blocker: <specific reason>
+```
+
+---
+
 ## Required Workflow After WP58
 
 1. Prepare PR body draft locally.
@@ -26,9 +83,12 @@ Passing the local guard is necessary but not sufficient to prove posted GitHub e
 3. Run local `pr_evidence_consistency_guard.py` on both drafts.
 4. Post or update the PR body on GitHub.
 5. Post the current-final evidence comment on GitHub.
-6. Run `posted_pr_evidence_verifier.py` against the live GitHub PR.
-7. If the verifier fails: `Ready for review: NO`.
-8. If the verifier cannot run due to network or tool limitation: state that explicitly, perform manual verification by inspecting live GitHub PR body and comments, and document the result. `Ready for review: NO` unless manual live verification is fully documented.
+6. Attempt `posted_pr_evidence_verifier.py` against the live GitHub PR.
+7. Select evidence mode:
+   - If verifier returns exit 0: use `PUBLIC_VERIFIER_PASS`.
+   - If verifier returns exit 3 (private repo / resource not found): use `PRIVATE_REPO_MANUAL_VERIFIED` with complete manual verification fields.
+   - If manual verification fields cannot be completed: use `BLOCKED_NOT_READY`.
+8. `Ready for review: YES` allowed only under `PUBLIC_VERIFIER_PASS` or `PRIVATE_REPO_MANUAL_VERIFIED` with all required fields complete.
 
 ---
 
@@ -47,31 +107,12 @@ Older current-final comments must be superseded by the latest one.
 
 ## PR Body Rule
 
-The PR body must state whether live GitHub posted evidence was verified. After WP58, it must include:
+The PR body must state the evidence mode used. After WP58, it must include:
 
-- The `posted_pr_evidence_verifier.py` command used.
-- The verifier result.
+- The evidence mode declared.
+- The `posted_pr_evidence_verifier.py` command used (even if UNAVAILABLE).
+- The verifier result (PASS/UNAVAILABLE + exit code).
 - The latest current-final comment URL if available.
-
----
-
-## Standard Wording
-
-When verifier passes:
-
-```
-Posted GitHub evidence verifier: PASS; exit 0
-Verified PR body head SHA: <sha>
-Verified latest current-final evidence comment SHA: <sha>
-```
-
-When verifier cannot run:
-
-```
-Posted GitHub evidence verifier: UNAVAILABLE — <reason>
-Manual live GitHub verification performed: YES/NO
-Manual verification result: <description>
-```
 
 ---
 
@@ -86,6 +127,10 @@ Manual verification result: <description>
 - Placeholder tokens (`<HEAD_SHA>`, `TBD`, `TODO`, `placeholder`) remain in either surface.
 - Guard input source is missing from the current-final comment.
 - PR body and current-final comment contain different head SHAs.
+- Public verifier returned exit 3 but evidence mode says `PUBLIC_VERIFIER_PASS`.
+- Manual verification was performed but evidence reports it as posted verifier PASS.
+- PR body references an older current-final comment as the latest.
+- Ready YES with evidence mode BLOCKED_NOT_READY.
 
 ---
 
@@ -95,7 +140,7 @@ This workflow does not:
 
 - Post or edit GitHub content.
 - Require authentication or tokens.
-- Support private repos in WP58.
+- Implement authenticated or private-repo GitHub verification.
 - Replace human review.
 - Prove that tests actually passed (only that the guard reported passing).
 
@@ -103,6 +148,7 @@ This workflow does not:
 
 ## Cross-References
 
+- `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` — canonical state machine; authoritative for evidence mode definitions
 - `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`
 - `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`
 - `docs/ai/codex/PR_REVIEW_CHECKLIST.md`

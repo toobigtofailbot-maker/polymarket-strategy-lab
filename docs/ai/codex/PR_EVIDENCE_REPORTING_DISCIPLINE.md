@@ -173,23 +173,32 @@ If local draft files are used (not the already-posted GitHub content), state tha
 
 See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` for full CLI reference.
 
-## Rule 14 — Live Posted GitHub Evidence Verification
+## Rule 14 — Live Posted GitHub Evidence Verification And Evidence Mode Selection (WP59+)
 
 Passing the local guard is necessary but not sufficient if GitHub content was posted or edited afterward.
 
-Before `Ready for review: YES`, Claude Code must run `posted_pr_evidence_verifier.py` on the live PR if public GitHub access is available.
+Before `Ready for review: YES`, Claude Code must select exactly one evidence mode per `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`:
 
-If the verifier cannot run:
-- State exactly why.
-- Perform manual verification by inspecting the live GitHub PR body and comments.
-- Do not claim the verifier passed.
+- `PUBLIC_VERIFIER_PASS` — verifier ran and returned exit 0.
+- `PRIVATE_REPO_MANUAL_VERIFIED` — verifier unavailable (exit 3 or other); manual live verification performed with all required fields.
+- `BLOCKED_NOT_READY` — manual verification incomplete or blocked; Ready must be NO.
 
-PR body and final comment must both include the verifier command and result after WP58.
+**Critical distinction:**
 
-If the verifier fails, `Ready for review: NO`.
+`PUBLIC_VERIFIER_FAIL` means the verifier ran and detected a posted evidence defect (stale head, missing final comment, missing guard result, mismatched SHAs, or other verifier-detected issue). Result: `Ready for review: NO`.
+
+`PUBLIC_VERIFIER_UNAVAILABLE` means the public unauthenticated verifier cannot access the repo/PR/comments due to private repo, access denied, rate limit, or tool/network limitation. Result: not itself a defect. May proceed only through `PRIVATE_REPO_MANUAL_VERIFIED` if all manual fields are complete.
+
+**Do not write `Posted GitHub evidence verifier: PASS` unless the verifier actually returned exit 0.**
+
+**Manual live verification must be reported as manual live verification, not as posted verifier PASS.**
+
+PR body and final comment must both include the evidence mode declaration, verifier command and result, and all required mode fields after WP59.
 
 The ready-for-review checklist must include:
-- Posted evidence verifier PASS, or honest unavailable/manual-verification statement.
+- Evidence mode declared.
+- If `PUBLIC_VERIFIER_PASS`: verifier exit 0 present and live PR accessible.
+- If `PRIVATE_REPO_MANUAL_VERIFIED`: verifier unavailable/exit code documented, reason documented, all manual live verification fields complete.
 - Latest current-final comment URL.
 - Confirmation that the latest current-final comment head SHA matches the PR head SHA.
 
@@ -212,6 +221,10 @@ Ready for review: YES requires all of the following to be true:
 - [ ] `pr_evidence_consistency_guard.py` run with WP47 hardening flags and `--require-guard-result` on exact local drafts or on copied posted content, and result reported.
 - [ ] Full guard result output (result line, checked categories, exit code) appears in both PR body and final comment — not just the command invocation.
 - [ ] If any posted evidence changed after the last guard run, guard was rerun on updated content before Ready for review: YES.
+- [ ] Evidence mode declared in both PR body and final comment (one of: `PUBLIC_VERIFIER_PASS`, `PRIVATE_REPO_MANUAL_VERIFIED`, `BLOCKED_NOT_READY`).
+- [ ] Evidence mode is not `BLOCKED_NOT_READY` (if it is, Ready must be NO).
+- [ ] If `PUBLIC_VERIFIER_PASS`: verifier actually returned exit 0 — not called PASS based on manual inspection.
+- [ ] If `PRIVATE_REPO_MANUAL_VERIFIED`: all required manual verification fields present; verifier UNAVAILABLE + exit code documented; reason documented.
 
 If any item is NO, set Ready for review: NO and correct the evidence before requesting review.
 

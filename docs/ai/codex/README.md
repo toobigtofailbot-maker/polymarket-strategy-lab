@@ -49,11 +49,17 @@ Token efficiency must never weaken validation, skip required checks, or omit fai
 
 Active work package forbidden scope wins. Nested or supporting docs do not authorize protected runtime work. If a safe implementation would require protected runtime paths, dependencies, credentials, live trading behavior, or scope expansion, Codex must stop and report instead of improvising.
 
+## Canonical WP Execution State Machine (WP59+)
+
+`docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` is the canonical state machine for all WP execution phases, evidence mode selection, and review-readiness gates. It applies to Ask Mode, Code Mode, and Review Mode boundaries.
+
+Before `Ready for review: YES`, select exactly one evidence mode from the state machine: `PUBLIC_VERIFIER_PASS`, `PRIVATE_REPO_MANUAL_VERIFIED`, or `BLOCKED_NOT_READY`.
+
 ## Claude Code Startup And Verifier (WP58+)
 
 Claude Code must read `CLAUDE_START_HERE.md` in addition to `AGENTS.md` and `CODEX_START_HERE.md`. See `CLAUDE_START_HERE.md` for Claude-specific startup guidance, posted evidence verification rules, and stop rules.
 
-Before `Ready for review: YES`, Claude Code must run `tools/git/posted_pr_evidence_verifier.py` against the live PR when public GitHub access is available. If unavailable, state why explicitly and document manual live GitHub verification. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
+Before `Ready for review: YES`, Claude Code must select the correct evidence mode per `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`. If the public unauthenticated verifier is unavailable (exit 3), use `PRIVATE_REPO_MANUAL_VERIFIED` with complete manual verification fields. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
 
 ## Negative Test Matrix (WP58+)
 

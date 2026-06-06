@@ -1443,6 +1443,32 @@ honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project
 dependency added and pip-audit availability must be honestly reported by
 validation.
 
+WP58-D001 is narrowed in WP59: public unauthenticated helper exists (`tools/git/posted_pr_evidence_verifier.py`); private/authenticated support remains deferred. The WP59 PRIVATE_REPO_MANUAL_VERIFIED mode documents the expected pattern for this private repository.
+
+## WP59 / WF-STAB-1 Canonical WP Execution State Machine And Private-Repo Evidence Mode Deferred Items
+
+WP59 creates `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` and updates startup and evidence docs to be
+evidence-mode-aware. It reconciles repo truth after WP58 merge (WP58 is now listed in merged WPs).
+
+WP59 is a workflow/governance-docs-tests-state-machine WP. It adds no source under `src/`, no
+Polymarket/trading/advisory tooling, no runtime, no dependency or lock-file changes, no
+Hermes/LLM/provider integration, no credentials, no account access, no trading or paper trading,
+no database/dashboard/scheduler/polling/product behavior, no helper code changes, and no generated outputs committed.
+
+WP59-D001 is added: local evidence-mode linter not implemented (OPEN, P4).
+WP59-D002 is added: `docs/project_status.md` slimming/history split not implemented (OPEN, P4).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP59-D001 | Local evidence-mode linter not implemented | OPEN | P4 | WP59 defines evidence modes in docs and tests but adds no automated linter to enforce mode selection in PR body/comment text. | Future optional workflow helper WP after WP59 is stable. | Not required for WP59 acceptance. |
+| WP59-D002 | docs/project_status.md slimming/history split not implemented | OPEN | P4 | docs/project_status.md is long; splitting architecture history into a separate file is desirable but not required for workflow stabilization. | Future workflow stabilization WP (WF-STAB-2 or equivalent). | Not required for WP59 acceptance. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP59; availability reported honestly in
+validation. WP3-D002 (semgrep): READY_FOR_WP; semgrep availability must be
+honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project
+dependency added and pip-audit availability must be honestly reported by
+validation.
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.
