@@ -1,12 +1,15 @@
 """Local/offline/read-only Market Research Priority feature extraction foundation.
 
 WP51 first feature-extraction foundation. WP53 provenance/staleness/missing-data
-hardening. Advisory-only. Not a trading signal. Not expected return. Not investment
+hardening. WP57 resolution ambiguity label feature extraction from validated manual
+labels. Advisory-only. Not a trading signal. Not expected return. Not investment
 advice. Not position sizing. Not an execution instruction. Human review required
 before any use.
 
 This module:
 - consumes existing local/offline snapshot artifacts and data-layer models only;
+- consumes locally stored, manually authored, already schema-validatable resolution
+  ambiguity labels using the WP56 validator (read-only, no parser, no inference);
 - produces prepared run_context and market_context dicts for the WP49 core scorer;
 - performs no network access;
 - writes no files;
@@ -21,16 +24,21 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Any, Iterable, Mapping, Optional
 
 from src.data_layer.polymarket.snapshot_models import (
     MarketMetadataSnapshotRecord,
     OrderBookSnapshotRecord,
     SnapshotManifest,
 )
+from src.data_layer.resolution_ambiguity_labels import (
+    ADVISORY_LABEL as _RESOLUTION_ADVISORY_LABEL,
+    load_resolution_ambiguity_label_records,
+    validate_resolution_ambiguity_label,
+)
 
 FEATURE_EXTRACTION_SCOPE = "local/offline/read-only feature extraction foundation"
-FEATURE_EXTRACTION_VERSION = "wp53-v1"
+FEATURE_EXTRACTION_VERSION = "wp57-v1"
 
 DEFAULT_METADATA_FRESHNESS_THRESHOLD_SECONDS: int = 86400   # 24 hours
 DEFAULT_ORDERBOOK_FRESHNESS_THRESHOLD_SECONDS: int = 3600   # 1 hour
@@ -56,6 +64,145 @@ def index_order_books_by_token_id(
     for ob in order_books:
         index.setdefault(ob.token_id, []).append(ob)
     return index
+
+
+# ── Resolution ambiguity label helpers ───────────────────────────────────────
+
+_SEVERITY_ORDER = {"NONE": 0, "LOW": 1, "MEDIUM": 2, "HIGH": 3, "UNKNOWN": 4}
+_CONFIDENCE_ORDER = {"LOW": 0, "MEDIUM": 1, "HIGH": 2}
+
+_DEFAULT_RESOLUTION_AMBIGUITY: dict = {
+    "label_available": False,
+    "validated_label_count": 0,
+    "review_statuses": [],
+    "ambiguity_categories": [],
+    "highest_ambiguity_severity": "UNKNOWN",
+    "lowest_reviewer_confidence": "LOW",
+    "manual_review_required": True,
+    "advisory_label": _RESOLUTION_ADVISORY_LABEL,
+    "source_label_ids": [],
+    "source_artifact_refs": [],
+    "validation_error_count": 0,
+    "validation_warning_count": 0,
+}
+
+
+def build_resolution_ambiguity_label_index(
+    labels: Iterable[Mapping[str, Any]],
+) -> dict:
+    """Validate and index manual resolution ambiguity label records by market_id.
+
+    Read-only. No writes. No parser. No inference from resolution text.
+    Invalid labels are excluded; validation issue counts are recorded.
+
+    Returns a dict with:
+      "by_market_id": dict[market_id -> list of valid label dicts]
+      "invalid_label_count": int
+      "total_validation_error_count": int
+      "total_validation_warning_count": int
+    """
+    by_market_id: dict[str, list] = {}
+    invalid_label_count = 0
+    total_error_count = 0
+    total_warning_count = 0
+
+    for label in labels:
+        result = validate_resolution_ambiguity_label(label)
+        total_error_count += len(result.errors)
+        total_warning_count += len(result.warnings)
+        if result.is_valid:
+            market_id = label.get("market_id", "")
+            if market_id:
+                by_market_id.setdefault(market_id, []).append(dict(label))
+        else:
+            invalid_label_count += 1
+
+    return {
+        "by_market_id": by_market_id,
+        "invalid_label_count": invalid_label_count,
+        "total_validation_error_count": total_error_count,
+        "total_validation_warning_count": total_warning_count,
+    }
+
+
+def _build_resolution_ambiguity_summary(
+    market_id: str,
+    label_index: Optional[dict],
+) -> dict:
+    """Build resolution_ambiguity sub-dict for a single market context.
+
+    Read-only. No parser. No inference. No writes.
+    Uses only valid labels from the pre-built label index.
+    """
+    if label_index is None:
+        return dict(_DEFAULT_RESOLUTION_AMBIGUITY)
+
+    valid_labels = label_index.get("by_market_id", {}).get(market_id, [])
+
+    index_error_count = label_index.get("total_validation_error_count", 0)
+    index_warning_count = label_index.get("total_validation_warning_count", 0)
+
+    if not valid_labels:
+        result = dict(_DEFAULT_RESOLUTION_AMBIGUITY)
+        result["validation_error_count"] = index_error_count
+        result["validation_warning_count"] = index_warning_count
+        return result
+
+    review_statuses: list[str] = []
+    all_categories: list[str] = []
+    seen_categories: set[str] = set()
+    highest_severity = "NONE"
+    lowest_confidence = "HIGH"
+    any_manual_review_required = False
+    source_label_ids: list[str] = []
+    source_artifact_refs: list[str] = []
+    seen_refs: set[str] = set()
+
+    for lbl in valid_labels:
+        rs = lbl.get("review_status", "")
+        if rs and rs not in review_statuses:
+            review_statuses.append(rs)
+
+        cats = lbl.get("ambiguity_categories") or []
+        for cat in cats:
+            if cat not in seen_categories:
+                all_categories.append(cat)
+                seen_categories.add(cat)
+
+        sev = lbl.get("ambiguity_severity", "UNKNOWN")
+        if _SEVERITY_ORDER.get(sev, 4) > _SEVERITY_ORDER.get(highest_severity, 0):
+            highest_severity = sev
+
+        conf = lbl.get("reviewer_confidence", "LOW")
+        if _CONFIDENCE_ORDER.get(conf, 0) < _CONFIDENCE_ORDER.get(lowest_confidence, 2):
+            lowest_confidence = conf
+
+        if lbl.get("manual_review_required") is True:
+            any_manual_review_required = True
+
+        label_id = lbl.get("label_id", "")
+        if label_id and label_id not in source_label_ids:
+            source_label_ids.append(label_id)
+
+        for ref in lbl.get("source_artifact_refs") or []:
+            if ref not in seen_refs:
+                source_artifact_refs.append(ref)
+                seen_refs.add(ref)
+
+    return {
+        "label_available": True,
+        "validated_label_count": len(valid_labels),
+        "review_statuses": review_statuses,
+        "ambiguity_categories": all_categories,
+        "highest_ambiguity_severity": highest_severity,
+        "lowest_reviewer_confidence": lowest_confidence,
+        "manual_review_required": any_manual_review_required,
+        "advisory_label": _RESOLUTION_ADVISORY_LABEL,
+        "source_label_ids": source_label_ids,
+        "source_artifact_refs": source_artifact_refs,
+        "validation_error_count": index_error_count,
+        "validation_warning_count": index_warning_count,
+    }
 
 
 # ── Staleness helpers ─────────────────────────────────────────────────────────
@@ -361,6 +508,7 @@ def _build_quality_gates(
     manifest_index: Optional[dict],
     record: MarketMetadataSnapshotRecord,
     provenance: Optional[dict] = None,
+    resolution_ambiguity: Optional[dict] = None,
 ) -> dict:
     """Build quality_gates sub-dict from extracted feature state.
 
@@ -394,12 +542,16 @@ def _build_quality_gates(
         # Fresh data, provenance present (possibly weak) but with other warnings → DEGRADED
         quality_status = "DEGRADED"
 
+    deferred_caveats = ["rate_limit_policy_unconfirmed_WP8D002"]
+    if resolution_ambiguity is not None:
+        deferred_caveats.append("resolution_ambiguity_label_review_required")
+
     return {
         "quality_status": quality_status,
         "quality_warnings": quality_warnings,
         "dedupe_conflict_flag": False,
         "guard_enforced_capture": has_provenance,
-        "deferred_item_caveats": ["rate_limit_policy_unconfirmed_WP8D002"],
+        "deferred_item_caveats": deferred_caveats,
     }
 
 
@@ -558,6 +710,7 @@ def extract_market_research_priority_context(
     generated_at_utc: Optional[datetime] = None,
     metadata_freshness_threshold_seconds: Optional[int] = None,
     orderbook_freshness_threshold_seconds: Optional[int] = None,
+    resolution_ambiguity_label_index: Optional[dict] = None,
 ) -> dict:
     """Extract a market_context dict from a MarketMetadataSnapshotRecord.
 
@@ -611,8 +764,14 @@ def extract_market_research_priority_context(
     provenance = _build_provenance(record, manifest_index)
     missing_data_warnings: list = []
     missing_data = _build_missing_data(record, ob_records, missing_data_warnings)
+    resolution_ambiguity = _build_resolution_ambiguity_summary(
+        record.market_id, resolution_ambiguity_label_index
+    )
+    # Pass resolution_ambiguity to quality_gates only when a label index was explicitly
+    # provided; otherwise omit it so the deferred-item caveat is not added superfluously.
     quality_gates = _build_quality_gates(
-        missing_data, staleness, manifest_index, record, provenance
+        missing_data, staleness, manifest_index, record, provenance,
+        resolution_ambiguity if resolution_ambiguity_label_index is not None else None,
     )
     score_components = _build_score_components(
         record, ob_records, staleness, missing_data, quality_gates, manifest_index, provenance
@@ -636,7 +795,7 @@ def extract_market_research_priority_context(
     if not explanation_parts:
         explanation_parts.append("basic metadata and provenance present")
     component_explanation = (
-        f"WP53 feature extraction (hardened). Advisory-only. "
+        f"WP57 feature extraction (hardened + resolution ambiguity labels). Advisory-only. "
         f"Notes: {'; '.join(explanation_parts)}."
     )
 
@@ -651,6 +810,7 @@ def extract_market_research_priority_context(
         "missing_data": missing_data,
         "quality_gates": quality_gates,
         "component_explanation": component_explanation,
+        "resolution_ambiguity": resolution_ambiguity,
     }
 
 
@@ -659,11 +819,17 @@ def extract_market_research_priority_contexts(
     manifests: Optional[Iterable[SnapshotManifest]] = None,
     order_books: Optional[Iterable[OrderBookSnapshotRecord]] = None,
     generated_at_utc: Optional[datetime] = None,
+    resolution_ambiguity_labels: Optional[Iterable[Mapping[str, Any]]] = None,
 ) -> list:
     """Extract market_context dicts for all records.
 
     Returns a list of dicts, each compatible with build_market_research_priority_output().
     Advisory-only. No network. No writes.
+
+    Args:
+        resolution_ambiguity_labels: optional iterable of manually authored local
+            label records. Each is validated using the WP56 validator; invalid labels
+            are excluded. No parser. No inference from resolution text.
     """
     if generated_at_utc is None:
         generated_at_utc = datetime.now(timezone.utc)
@@ -676,12 +842,17 @@ def extract_market_research_priority_contexts(
     if order_books is not None:
         order_books_by_token_id = index_order_books_by_token_id(order_books)
 
+    label_index: Optional[dict] = None
+    if resolution_ambiguity_labels is not None:
+        label_index = build_resolution_ambiguity_label_index(resolution_ambiguity_labels)
+
     return [
         extract_market_research_priority_context(
             record=r,
             manifests=list(manifest_index.values()) if manifest_index else None,
             order_books_by_token_id=order_books_by_token_id,
             generated_at_utc=generated_at_utc,
+            resolution_ambiguity_label_index=label_index,
         )
         for r in records
     ]
@@ -737,6 +908,7 @@ def build_market_research_priority_run_context(
 def extract_from_snapshot_dir(
     input_dir: Path,
     generated_at_utc: Optional[datetime] = None,
+    resolution_ambiguity_label_path: Optional[Path] = None,
 ) -> tuple:
     """Extract run_context and market_contexts from a local snapshot directory.
 
@@ -745,6 +917,13 @@ def extract_from_snapshot_dir(
 
     Uses only existing snapshot_reader local/offline functions. Does not write
     files, call network, generate reports, or produce CLI output.
+
+    Args:
+        resolution_ambiguity_label_path: optional explicit path to a local JSON or
+            JSONL file of manually authored resolution ambiguity label records. If
+            provided, labels are loaded using the WP56 reader, validated using the
+            WP56 validator, and attached to matching market contexts. No directory
+            auto-scan. No parser. No inference.
     """
     from src.data_layer.polymarket.snapshot_reader import (
         load_market_snapshot_records,
@@ -775,11 +954,18 @@ def extract_from_snapshot_dir(
         generated_at_utc=generated_at_utc,
     )
 
+    resolution_ambiguity_labels = None
+    if resolution_ambiguity_label_path is not None:
+        resolution_ambiguity_labels = load_resolution_ambiguity_label_records(
+            Path(resolution_ambiguity_label_path)
+        )
+
     market_contexts = extract_market_research_priority_contexts(
         records=records,
         manifests=manifests,
         order_books=order_books,
         generated_at_utc=generated_at_utc,
+        resolution_ambiguity_labels=resolution_ambiguity_labels,
     )
 
     return run_context, market_contexts

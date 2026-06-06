@@ -2,10 +2,10 @@
 
 ## A. Status
 
-- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; FEATURE_EXTRACTION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_ON_BRANCH
-- WP: WP48 (schema/contract merged); WP49 (core scorer merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation on branch)
+- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; FEATURE_EXTRACTION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_ON_BRANCH
+- WP: WP48 (schema/contract merged); WP49 (core scorer merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: WP48 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED; WP55 — NO_SRC_CHANGE; WP56 — LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED
+- Source impact: WP48 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED; WP55 — NO_SRC_CHANGE; WP56 — LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED; WP57 — LOCAL_OFFLINE_READ_ONLY_LABEL_FEATURE_EXTRACTION_ADDED
 - Tooling impact: NO_NEW_TOOLING
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
@@ -13,7 +13,8 @@
 - Hermes impact: NO_HERMES_INSTALL_OR_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
 - Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_MERGED
-- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_ON_BRANCH
+- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_ON_BRANCH
+- WP57 resolution_ambiguity sub-dict: advisory-only research-data-quality metadata; NOT a score component in WP57; scorer weights/components unchanged; scorer/report/advisory integration deferred (see WP57-D001)
 - CLI/export/report implementation: NOT_STARTED
 - Advisory consumer integration: NOT_STARTED
 
@@ -583,14 +584,16 @@ Implementation must not begin until all gates above are satisfied.
 |---|---|---|---|
 | WP48-D001 | Market Research Priority Scoring implementation not started after schema/output contract | OPEN | P3 |
 | WP48-D002 | Schema/output contract not enforced by implementation yet | OPEN | P3 |
-| WP55-D001 | Resolution ambiguity labels not yet consumed by feature extraction or scoring | OPEN | P3 |
+| WP55-D001 | Resolution ambiguity labels not yet consumed by feature extraction or scoring | RESOLVED (WP57 local/offline/read-only feature extraction scope) | P3 |
 | WP55-D002 | Automated resolution-rule parser remains not started | OPEN | P3 |
+| WP57-D001 | Resolution ambiguity feature extraction not yet integrated into scorer/report/advisory consumer | OPEN | P3 |
 
 WP55 adds `docs/resolution_ambiguity_taxonomy_manual_label_workflow.md` as a
-docs/schema/tests-only reference for resolution-rule ambiguity review. Future feature
-extraction from ambiguity labels may add a reviewed ambiguity component to scoring outputs
-only after a separately approved WP satisfies the integration gate conditions in that
-document. No new output fields are added to this contract by WP55.
+docs/schema/tests-only reference for resolution-rule ambiguity review. WP57 adds local/offline/read-only
+feature extraction from validated manual labels; the `resolution_ambiguity` sub-dict in market contexts
+is advisory-only metadata and is NOT a score component in WP57. Future scorer/report/advisory integration
+may add an ambiguity component to scoring outputs only after a separately approved WP satisfies the
+integration gate conditions in the taxonomy document. Scorer weights and components are unchanged in WP57.
 
 See `docs/deferred_items_log.md` for full entries.
 

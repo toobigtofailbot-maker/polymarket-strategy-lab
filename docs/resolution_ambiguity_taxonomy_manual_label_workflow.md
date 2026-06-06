@@ -2,29 +2,34 @@
 
 ## 1. Status
 
-- WP: WP55 (resolution ambiguity taxonomy and manual-label workflow merged — merge commit b019bb825924d52057225455886c3ca45af9e925); WP56 (schema validation implementation on branch)
-- Package class: docs-tests-research-taxonomy-manual-label-workflow (WP55); local-offline-read-only-research-label-schema-validation (WP56)
+- WP: WP55 (resolution ambiguity taxonomy and manual-label workflow merged — merge commit b019bb825924d52057225455886c3ca45af9e925); WP56 (schema validation implementation merged — merge commit a310e641eb790bd3906d054d703dd11945180e6c); WP57 (local/offline/read-only feature extraction from validated labels on branch)
+- Package class: docs-tests-research-taxonomy-manual-label-workflow (WP55); local-offline-read-only-research-label-schema-validation (WP56); local-offline-read-only-research-label-feature-extraction (WP57)
 - Package size class: L
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: NO_SRC_CHANGE (WP55); LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED (WP56 — src/data_layer/resolution_ambiguity_labels.py)
+- Source impact: NO_SRC_CHANGE (WP55); LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED (WP56 — src/data_layer/resolution_ambiguity_labels.py); LOCAL_OFFLINE_READ_ONLY_LABEL_FEATURE_EXTRACTION_ADDED (WP57 — src/data_layer/market_research_priority_features.py)
 - Tooling impact: NO_TOOL_IMPLEMENTATION
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_RUNTIME_NETWORK
 - Trading impact: NO_TRADING_EXECUTION
 - Hermes impact: NO_HERMES_INSTALL_OR_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
-- Docs/schema/tests only: YES (WP55); NO (WP56 adds source module and tests)
-- No parser: YES — no automated resolution-rule parser is added in WP55 or WP56
-- No automated extraction: YES — no automated ambiguity extraction is added in WP55 or WP56
-- No feature extraction: YES — feature extraction from ambiguity labels is deferred to a future WP
-- No scorer integration: YES — scorer integration is deferred to a future approved WP
-- No CLI/export/report: YES — no CLI, export, or report writer is added in WP55 or WP56
+- Docs/schema/tests only: YES (WP55); NO (WP56 adds source module and tests); NO (WP57 updates source module and tests)
+- No parser: YES — no automated resolution-rule parser is added in WP55, WP56, or WP57
+- No automated extraction: YES — no automated ambiguity extraction is added in any of WP55/WP56/WP57; WP57 consumes only manually authored validated labels
+- No feature extraction from raw text: YES — WP57 does not extract ambiguity categories from resolution text; it attaches validated manually authored label data only; feature extraction from ambiguity labels is deferred for automated parser scope (WP55-D002 remains OPEN)
+- No scorer integration: YES (WP55, WP56); ADVISORY_ONLY_SUB_DICT_ADDED (WP57 — resolution_ambiguity sub-dict is advisory-only metadata, not a score component; scorer weights/components unchanged)
+- No CLI/export/report: YES — no CLI, export, or report writer is added in WP55, WP56, or WP57
 - No LLM/provider: YES — no LLM or Hermes provider is used
 - No network: YES — all workflow steps are local/offline/read-only
 - No credentials: YES — no API keys, wallets, or private keys
-- WP56 cross-reference: src/data_layer/resolution_ambiguity_labels.py (schema validator); tests/test_resolution_ambiguity_labels.py (51 focused tests)
+- WP56 cross-reference: src/data_layer/resolution_ambiguity_labels.py (schema validator); tests/test_resolution_ambiguity_labels.py (focused tests)
 - WP56 validator implements: validation of all 17 required fields, allowed enum values (14 categories, 6 review statuses, 5 severity values, 3 confidence values), manual-review gate, advisory label enforcement, forbidden-use notice phrase checks, source artifact reference safety, other_manual_review_issue evidence gate, ISO-8601 timestamp validation, and optional read-only JSON/JSONL reader
 - WP56 does not implement: feature extraction, scorer integration, advisory consumer integration, label store writer, CLI, export, report writer, parser, or any network/credential behavior
+- WP57 cross-reference: src/data_layer/market_research_priority_features.py (feature extraction); tests/test_market_research_priority_features.py (focused tests)
+- WP57 feature extraction implements: build_resolution_ambiguity_label_index() (validates labels using WP56 validator, groups by market_id); resolution_ambiguity sub-dict in market contexts (label_available, validated_label_count, review_statuses, ambiguity_categories, highest_ambiguity_severity, lowest_reviewer_confidence, manual_review_required, advisory_label, source_label_ids, source_artifact_refs, validation_error_count, validation_warning_count); optional explicit local label path support in extract_from_snapshot_dir()
+- WP57 does not implement: automated parser, LLM/provider extraction, label generation, inference from resolution text, scorer weight changes, new score components, advisory consumer integration, CLI, export, report writer, or any network/credential/write behavior
+- Feature extraction remains advisory-only and human-review-required in WP57
+- Scorer/report/advisory integration remains future work unless separately approved (see WP57-D001)
 
 ## 2. Purpose
 
