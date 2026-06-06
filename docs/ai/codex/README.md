@@ -48,3 +48,13 @@ Token efficiency must never weaken validation, skip required checks, or omit fai
 ## Operating Rule
 
 Active work package forbidden scope wins. Nested or supporting docs do not authorize protected runtime work. If a safe implementation would require protected runtime paths, dependencies, credentials, live trading behavior, or scope expansion, Codex must stop and report instead of improvising.
+
+## Claude Code Startup And Verifier (WP58+)
+
+Claude Code must read `CLAUDE_START_HERE.md` in addition to `AGENTS.md` and `CODEX_START_HERE.md`. See `CLAUDE_START_HERE.md` for Claude-specific startup guidance, posted evidence verification rules, and stop rules.
+
+Before `Ready for review: YES`, Claude Code must run `tools/git/posted_pr_evidence_verifier.py` against the live PR when public GitHub access is available. If unavailable, state why explicitly and document manual live GitHub verification. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
+
+## Negative Test Matrix (WP58+)
+
+WPs that add or modify validators, scorers, parsers, schema validators, boundary guards, evidence guards, or semantic wording filters must include a negative-test matrix before `Ready for review: YES`. See `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`.

@@ -198,6 +198,18 @@ Required workflow:
 
 **No inline test counts in file lists:** Do not put test counts in file list descriptions or summary parentheticals (e.g., "focused tests (34 tests)"). Put counts only in validation result sections.
 
+## Relationship To Posted GitHub Evidence Verifier (WP58)
+
+`pr_evidence_consistency_guard.py` checks local drafts or copied text only. It does not fetch live GitHub PR data.
+
+`posted_pr_evidence_verifier.py` (added in WP58) checks the live GitHub PR body and comments via the public GitHub REST API.
+
+The required future workflow uses both:
+1. Local draft guard — run before posting.
+2. Posted verifier — run after posting.
+
+See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md` for the full required workflow.
+
 ## Relationship to WP45 PR Evidence Reporting Discipline
 
 WP45 established `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` as the

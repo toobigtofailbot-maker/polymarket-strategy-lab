@@ -9,6 +9,7 @@ It gives the concise startup sequence for this repository. It does not authorize
 ## Mandatory Startup Sequence
 
 1. Read `AGENTS.md`.
+1b. Read `CLAUDE_START_HERE.md` (Claude Code only — skip if running as Codex/OpenAI environment).
 2. Read `docs/project_status.md`.
 3. Read `docs/repo_truth_index.md`.
 4. Read `docs/deferred_items_log.md`.
@@ -38,3 +39,7 @@ Stop and report before branch creation or implementation if:
 - Generated artifacts are visible in a way that violates repo rules.
 - The validation environment cannot run required checks.
 - Safe implementation would require forbidden scope or protected runtime boundaries.
+
+## Posted GitHub Evidence Verification (WP58+)
+
+Local PR body and final comment drafts are not posted GitHub evidence. Before `Ready for review: YES`, Claude Code must run `tools/git/posted_pr_evidence_verifier.py` against the live PR when GitHub access is available. If unavailable, state why explicitly and document manual live verification. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.

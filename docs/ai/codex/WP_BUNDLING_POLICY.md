@@ -161,6 +161,10 @@ If any posted evidence changes after the last guard run, the guard must be rerun
 
 If Claude Code cannot verify that the live GitHub PR body and latest current-final evidence comment match what the guard checked, it must state that limitation explicitly in the final evidence. It must not claim posted evidence was verified when only pre-post local drafts were checked.
 
+## Negative Test Matrix Policy
+
+WPs that add or modify validators, scorers, parsers, schema validators, boundary guards, evidence guards, or semantic wording filters must include a negative-test matrix. See `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`. Failure to include an applicable negative-test matrix means `Ready for review: NO`.
+
 ## Cross-References
 
 - `AGENTS.md` — binding Codex and Claude Code operating rules

@@ -65,3 +65,15 @@ After this file, Codex must read `CODEX_START_HERE.md` and the relevant Codex wo
 - No secrets in repo, docs, logs, tests, screenshots, or PRs.
 - Do not commit API keys, private keys, wallet keys, mnemonic phrases, passphrases, tokens, or realistic secret placeholders.
 - Use local environment variables or a future approved secret manager for credentials.
+
+## Claude Code Startup
+
+Claude Code must read `CLAUDE_START_HERE.md` in addition to `AGENTS.md` and `CODEX_START_HERE.md`. See `CLAUDE_START_HERE.md` for Claude-specific startup guidance, posted evidence verification rules, and stop rules.
+
+## Posted GitHub Evidence Verification
+
+Local PR body and final comment drafts are not posted GitHub evidence. Before `Ready for review: YES`, Claude Code and Codex must run `tools/git/posted_pr_evidence_verifier.py` against the live PR when GitHub access is available. If unavailable, state why explicitly and document manual live verification. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
+
+## Negative Test Matrix Policy
+
+WPs that add or modify validators, scorers, parsers, schema validators, boundary guards, evidence guards, or semantic wording filters must include a negative-test matrix before `Ready for review: YES`. See `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`.

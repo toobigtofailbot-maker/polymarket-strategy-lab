@@ -1486,22 +1486,22 @@ def test_project_status_includes_wp56_in_merged_wps():
             break
 
 
-def test_project_status_current_phase_is_wp57():
+def test_project_status_current_phase_is_wp58():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP57" in current_phase_line
+    assert "WP58" in current_phase_line
 
 
-def test_project_status_current_branch_is_wp57():
+def test_project_status_current_branch_is_wp58():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp57-resolution-ambiguity-label-feature-extraction" in branch_line
+    assert "wp58-posted-evidence-and-claude-workflow-hardening" in branch_line
 
 
 def test_deferred_item_caveat_includes_resolution_ambiguity_when_labels_present():

@@ -173,6 +173,26 @@ If local draft files are used (not the already-posted GitHub content), state tha
 
 See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` for full CLI reference.
 
+## Rule 14 — Live Posted GitHub Evidence Verification
+
+Passing the local guard is necessary but not sufficient if GitHub content was posted or edited afterward.
+
+Before `Ready for review: YES`, Claude Code must run `posted_pr_evidence_verifier.py` on the live PR if public GitHub access is available.
+
+If the verifier cannot run:
+- State exactly why.
+- Perform manual verification by inspecting the live GitHub PR body and comments.
+- Do not claim the verifier passed.
+
+PR body and final comment must both include the verifier command and result after WP58.
+
+If the verifier fails, `Ready for review: NO`.
+
+The ready-for-review checklist must include:
+- Posted evidence verifier PASS, or honest unavailable/manual-verification statement.
+- Latest current-final comment URL.
+- Confirmation that the latest current-final comment head SHA matches the PR head SHA.
+
 ## Ready-for-Review Gate
 
 Ready for review: YES requires all of the following to be true:
