@@ -1,8 +1,8 @@
-# Codex Rulebook
+# AI Coding Agent Rulebook
 
-Codex must read this file before every work package.
+The AI coding agent must read this file before every work package. This rulebook applies to Codex and Claude Code equally, and to any future AI coding agent operating under this repository's WP discipline.
 
-After this file, Codex must read `CODEX_START_HERE.md` and the relevant Codex workflow guidance under `docs/ai/codex/`.
+After this file, every AI coding agent must read `AI_CODING_AGENT_START_HERE.md`, then its tool-specific adapter (`CODEX_START_HERE.md` for Codex, `CLAUDE_START_HERE.md` for Claude Code), then the relevant workflow guidance under `docs/ai/codex/`.
 
 ## Repo Truth
 
@@ -15,20 +15,20 @@ After this file, Codex must read `CODEX_START_HERE.md` and the relevant Codex wo
 
 - One WP = one branch = one PR.
 - Do not work on `main`.
-- Before any WP branch is created, Codex must run the Remote Main Sync Gate or equivalent commands proving local `main` equals `origin/main`, the working tree is clean, and previous WP merge evidence exists.
+- Before any WP branch is created, the AI coding agent must run the Remote Main Sync Gate or equivalent commands proving local `main` equals `origin/main`, the working tree is clean, and previous WP merge evidence exists.
 - If local `main` is stale, diverged, dirty, or missing required previous WP files, stop before branch creation.
 - Generated local environments and security-tool artifacts must never be committed.
-- If `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/` appear in `git status`, Codex must stop and run the generated-artifact investigation and cleanup workflow before starting a WP.
-- Codex must not use GitHub Desktop or equivalent GUI staging for generated artifact folders.
+- If `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/` appear in `git status`, the AI coding agent must stop and run the generated-artifact investigation and cleanup workflow before starting a WP.
+- The AI coding agent must not use GitHub Desktop or equivalent GUI staging for generated artifact folders.
 - Do not stack a new WP on a prior WP branch.
 - Do not manually merge prior WP branches locally.
 - Do not expand scope inside a WP.
 - If `git status --short` is dirty before starting a WP, stop and report.
 - Never delete or overwrite user files without explicit instruction.
-- If Codex defers a material issue, unavailable tool, unresolved dependency, blocked security check, or postponed decision, it must add or update an entry in `docs/deferred_items_log.md` in the same WP.
-- Whenever Codex completes a WP, it must create or prepare a pull request and provide the PR review link in the final report, unless the user explicitly says no PR should be created.
+- If the AI coding agent defers a material issue, unavailable tool, unresolved dependency, blocked security check, or postponed decision, it must add or update an entry in `docs/deferred_items_log.md` in the same WP.
+- Whenever the AI coding agent completes a WP, it must create or prepare a pull request and provide the PR review link in the final report, unless the user explicitly says no PR should be created.
 - A full final report PR comment is mandatory before requesting review unless the WP explicitly waives PR creation. The PR body does not replace this final report comment.
-- If the final validation environment cannot run required tests or checks, Codex must report blocked/not merge-ready rather than imply readiness.
+- If the final validation environment cannot run required tests or checks, the AI coding agent must report blocked/not merge-ready rather than imply readiness.
 
 ## Trading Safety
 
@@ -48,13 +48,13 @@ After this file, Codex must read `CODEX_START_HERE.md` and the relevant Codex wo
 
 ## Token Efficiency
 
-- Codex and Claude Code must apply the token-efficiency operating model defined in `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md`.
+- The AI coding agent must apply the token-efficiency operating model defined in `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md`.
 - Context hygiene, validation-output summarization, concise reporting, and reusable prompt-block rules are binding on all WPs.
 - Token efficiency must never weaken validation, skip required checks, or omit failure evidence.
 
 ## PR Evidence Reporting Discipline
 
-- Codex and Claude Code must use exact PR body and final PR comment evidence discipline before requesting review on any WP. See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`.
+- The AI coding agent must use exact PR body and final PR comment evidence discipline before requesting review on any WP. See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`.
 - Abbreviated validation commands, ellipses in command evidence, stale counts, and inaccurate network usage wording must all be corrected before Ready for review: YES.
 - The PR body and the final top-level PR comment must not contradict each other on test counts, command results, files changed, or network usage.
 - Network usage wording must accurately distinguish workflow network use (Remote Main Sync Gate, git fetch/pull/push, PR publication) from runtime/API/product/account network behavior. Do not say "no network" if git remote synchronization or PR publication ran.
@@ -74,13 +74,14 @@ If another workflow doc conflicts with the state machine, the state machine wins
 
 Private-repo manual live verification is a first-class evidence mode only when the state machine's required fields are complete.
 
-## Claude Code Startup
+## Tool-Specific Startup Adapters
 
-Claude Code must read `CLAUDE_START_HERE.md` in addition to `AGENTS.md` and `CODEX_START_HERE.md`. See `CLAUDE_START_HERE.md` for Claude-specific startup guidance, posted evidence verification rules, and stop rules.
+- Codex must read `CODEX_START_HERE.md` for Codex-specific startup guidance.
+- Claude Code must read `CLAUDE_START_HERE.md` for Claude Code-specific startup guidance, posted evidence verification rules, and stop rules.
 
 ## Posted GitHub Evidence Verification
 
-Local PR body and final comment drafts are not posted GitHub evidence. Before `Ready for review: YES`, Claude Code and Codex must select exactly one evidence mode from `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` (PUBLIC_VERIFIER_PASS, PRIVATE_REPO_MANUAL_VERIFIED, or BLOCKED_NOT_READY) and document it completely. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
+Local PR body and final comment drafts are not posted GitHub evidence. Before `Ready for review: YES`, the AI coding agent must select exactly one evidence mode from `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` (PUBLIC_VERIFIER_PASS, PRIVATE_REPO_MANUAL_VERIFIED, or BLOCKED_NOT_READY) and document it completely. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
 
 ## Negative Test Matrix Policy
 

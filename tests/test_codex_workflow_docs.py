@@ -348,12 +348,12 @@ def test_project_status_reflects_wp53_merged() -> None:
     assert "WP53" in merged_line
 
 
-def test_project_status_reflects_wp59_current() -> None:
+def test_project_status_reflects_wp60a_current() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP59" in phase_line
+    assert "WP60A" in phase_line
 
 
 def test_project_status_reflects_wp58_merged() -> None:
@@ -364,12 +364,20 @@ def test_project_status_reflects_wp58_merged() -> None:
     assert "WP58" in merged_line
 
 
-def test_project_status_reflects_wp59_branch() -> None:
+def test_project_status_reflects_wp59_merged() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP59" in merged_line
+
+
+def test_project_status_reflects_wp60a_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp59" in branch_line
+    assert "wp60a" in branch_line
 
 
 def test_project_status_reflects_wp56_merged() -> None:
@@ -493,3 +501,45 @@ def test_wp_execution_report_includes_posted_evidence_section() -> None:
         or "posted github" in content.lower()
         or "posted pr evidence" in content.lower()
     )
+
+
+# ── WP60A: Agent-neutral startup layer ───────────────────────────────────────
+
+
+def test_ai_coding_agent_start_here_exists() -> None:
+    assert (ROOT / "AI_CODING_AGENT_START_HERE.md").is_file()
+
+
+def test_agents_md_title_no_longer_codex_rulebook() -> None:
+    text = _read(ROOT / "AGENTS.md")
+    assert "# Codex Rulebook" not in text
+
+
+def test_codex_start_here_references_shared_startup() -> None:
+    text = _read(ROOT / "CODEX_START_HERE.md")
+    assert "AI_CODING_AGENT_START_HERE.md" in text
+
+
+def test_claude_start_here_references_shared_startup() -> None:
+    text = _read(ROOT / "CLAUDE_START_HERE.md")
+    assert "AI_CODING_AGENT_START_HERE.md" in text
+
+
+def test_pr_template_contains_ai_coding_agent_section() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md")
+    assert "AI coding agent" in text
+
+
+def test_work_package_template_contains_execution_agent_field() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Execution agent" in text
+
+
+def test_repo_truth_index_contains_ai_coding_agent_start_here() -> None:
+    text = _read(ROOT / "docs" / "repo_truth_index.md")
+    assert "AI_CODING_AGENT_START_HERE.md" in text
+
+
+def test_project_status_includes_agent_neutral_start_layer_status() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    assert "AGENT_NEUTRAL_START_LAYER_ON_BRANCH" in text

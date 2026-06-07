@@ -2,19 +2,24 @@
 
 ## Purpose
 
-This file is for Claude Code and other Claude-like coding agents. It does not replace `AGENTS.md` or `CODEX_START_HERE.md`. Read all three.
+This file is the Claude Code-specific startup adapter for this repository.
 
-## Mandatory Startup Sequence
+It does not replace `AGENTS.md`. It does not replace `AI_CODING_AGENT_START_HERE.md`. Read all three.
+
+Shared startup rules are in `AI_CODING_AGENT_START_HERE.md`. This file adds Claude Code-specific reminders and stop rules.
+
+## Mandatory Startup Sequence (Claude Code)
 
 1. Read `AGENTS.md`.
-2. Read `CLAUDE_START_HERE.md` (this file).
-3. Read `CODEX_START_HERE.md`.
-4. Read `docs/project_status.md`.
-5. Read `docs/repo_truth_index.md`.
-6. Read `docs/deferred_items_log.md`.
-7. Read `docs/codex_execution_guidelines.md`.
-8. Read `docs/ai/codex/README.md`.
-9. Read only task-relevant files after that.
+2. Read `AI_CODING_AGENT_START_HERE.md`.
+3. Read `CLAUDE_START_HERE.md` (this file).
+4. Continue with repo-truth files per `AI_CODING_AGENT_START_HERE.md`:
+   - Read `docs/project_status.md`.
+   - Read `docs/repo_truth_index.md`.
+   - Read `docs/deferred_items_log.md`.
+   - Read `docs/ai/codex/README.md`.
+   - Follow `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`.
+   - Read task-relevant files only after that.
 
 ## Precedence
 

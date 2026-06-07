@@ -1,13 +1,15 @@
-# Codex Workflow Guidance
+# AI Coding Agent Workflow Guidance
+
+> **Path compatibility note:** The `docs/ai/codex/` path is the current historical location for shared AI-coding-agent workflow docs. Unless a file explicitly says otherwise, these docs apply to Codex, Claude Code, and any future AI coding agent operating under this repo's WP discipline.
 
 ## Precedence
 
-Codex must apply guidance in this order:
+The AI coding agent must apply guidance in this order:
 
 1. Current merged repo truth.
 2. Active work package scope, including explicit forbidden scope.
 3. `AGENTS.md`.
-4. Codex workflow docs under `docs/ai/codex/`.
+4. Workflow docs under `docs/ai/codex/`.
 5. Chat memory, handoffs, and generic best practice.
 
 Repo-side guidance is default discipline. It is not permission to broaden scope.
@@ -28,7 +30,7 @@ Use Review Mode for PR review. Inspect PR metadata, changed files, comments, che
 
 ## Token Efficiency And Concise Reporting
 
-All Codex and Claude Code execution must follow the token-efficiency operating model:
+All AI coding agent execution must follow the token-efficiency operating model:
 
 - `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md` — context hygiene, summarization, and design gates.
 - `docs/ai/codex/CONCISE_REPORTING_RULES.md` — mandatory final report format and omission rules.
@@ -47,7 +49,7 @@ Token efficiency must never weaken validation, skip required checks, or omit fai
 
 ## Operating Rule
 
-Active work package forbidden scope wins. Nested or supporting docs do not authorize protected runtime work. If a safe implementation would require protected runtime paths, dependencies, credentials, live trading behavior, or scope expansion, Codex must stop and report instead of improvising.
+Active work package forbidden scope wins. Nested or supporting docs do not authorize protected runtime work. If a safe implementation would require protected runtime paths, dependencies, credentials, live trading behavior, or scope expansion, the AI coding agent must stop and report instead of improvising.
 
 ## Canonical WP Execution State Machine (WP59+)
 
@@ -55,11 +57,14 @@ Active work package forbidden scope wins. Nested or supporting docs do not autho
 
 Before `Ready for review: YES`, select exactly one evidence mode from the state machine: `PUBLIC_VERIFIER_PASS`, `PRIVATE_REPO_MANUAL_VERIFIED`, or `BLOCKED_NOT_READY`.
 
-## Claude Code Startup And Verifier (WP58+)
+## Tool-Specific Startup Adapters (WP60A+)
 
-Claude Code must read `CLAUDE_START_HERE.md` in addition to `AGENTS.md` and `CODEX_START_HERE.md`. See `CLAUDE_START_HERE.md` for Claude-specific startup guidance, posted evidence verification rules, and stop rules.
+The shared startup file `AI_CODING_AGENT_START_HERE.md` is the entry point for all AI coding agents. After that, each tool reads its adapter:
 
-Before `Ready for review: YES`, Claude Code must select the correct evidence mode per `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`. If the public unauthenticated verifier is unavailable (exit 3), use `PRIVATE_REPO_MANUAL_VERIFIED` with complete manual verification fields. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
+- Codex: read `CODEX_START_HERE.md` for Codex-specific startup guidance.
+- Claude Code: read `CLAUDE_START_HERE.md` for Claude Code-specific startup guidance, posted evidence verification rules, and stop rules.
+
+Before `Ready for review: YES`, the AI coding agent must select the correct evidence mode per `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`. If the public unauthenticated verifier is unavailable (exit 3), use `PRIVATE_REPO_MANUAL_VERIFIED` with complete manual verification fields. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
 
 ## Negative Test Matrix (WP58+)
 

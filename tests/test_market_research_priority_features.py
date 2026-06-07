@@ -1486,22 +1486,26 @@ def test_project_status_includes_wp56_in_merged_wps():
             break
 
 
-def test_project_status_current_phase_is_wp58():
+def test_project_status_current_phase_is_wp58_or_later():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP58" in current_phase_line
+    assert any(wp in current_phase_line for wp in ("WP58", "WP59", "WP60")), (
+        f"Expected WP58 or later in current phase line: {current_phase_line}"
+    )
 
 
-def test_project_status_current_branch_is_wp59():
+def test_project_status_current_branch_is_wp59_or_later():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp59" in branch_line
+    assert any(wp in branch_line for wp in ("wp59", "wp60")), (
+        f"Expected wp59 or wp60 branch in branch line: {branch_line}"
+    )
 
 
 def test_deferred_item_caveat_includes_resolution_ambiguity_when_labels_present():

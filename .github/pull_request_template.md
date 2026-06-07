@@ -1,5 +1,8 @@
 # Pull Request Checklist
 
+- [ ] AI coding agent used stated: Codex / Claude Code / other
+- [ ] Shared startup file read: `AI_CODING_AGENT_START_HERE.md`
+- [ ] Tool-specific adapter read: `CODEX_START_HERE.md` / `CLAUDE_START_HERE.md` / other
 - [ ] I read `AGENTS.md`
 - [ ] Scope matches WP
 - [ ] Full WP final report posted as PR comment
@@ -37,6 +40,12 @@
 - [ ] Posted GitHub evidence verifier run after PR posted (or unavailability stated with manual verification documented)
 - [ ] Latest current-final comment URL included in PR body
 - [ ] Negative test matrix declared (`Negative test matrix required: YES / NO`)
+
+## AI Coding Agent
+
+AI coding agent used:
+Shared startup file read:
+Tool-specific adapter read:
 
 ## Summary
 

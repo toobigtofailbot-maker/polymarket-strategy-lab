@@ -4,12 +4,14 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 ## Authority Hierarchy
 
-1. `AGENTS.md` - Codex rulebook and protected operating rules.
+1. `AGENTS.md` - AI coding agent rulebook and protected operating rules (shared; applies to Codex, Claude Code, and all future AI coding agents).
+1b. `AI_CODING_AGENT_START_HERE.md` - shared startup entry point for all AI coding agents; mandatory startup sequence, precedence order, evidence mode rules, and stop rules. Read immediately after `AGENTS.md`.
 2. `docs/project_charter.md` - project objective, scope, risk posture, and strategic direction.
 3. `docs/project_status.md` - current phase, branch, merged WPs, and open decisions.
 4. `docs/deferred_items_log.md` - deferred material issues, unavailable tools, blocked security checks, and postponed decisions.
-5. `CODEX_START_HERE.md` - Codex startup sequence and stop rules.
-6. `docs/ai/codex/README.md` - Codex operating modes and workflow precedence.
+5. `CODEX_START_HERE.md` - Codex-specific startup adapter; read after `AI_CODING_AGENT_START_HERE.md`.
+5b. `CLAUDE_START_HERE.md` (see item 55) - Claude Code-specific startup adapter; read after `AI_CODING_AGENT_START_HERE.md`; includes Claude-specific posted evidence rules and stop rules.
+6. `docs/ai/codex/README.md` - shared AI coding agent workflow guidance (historical path `docs/ai/codex/`; applies to Codex, Claude Code, and future agents unless a file says otherwise).
 7. `docs/ai/codex/WP_EXECUTION_REPORT.md` - mandatory WP final report PR comment format.
 8. `docs/ai/codex/VALIDATION_MATRIX.md` - package-class validation guidance.
 9. `docs/ai/codex/PR_REVIEW_CHECKLIST.md` - Codex PR review discipline.
@@ -58,7 +60,7 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 52. `docs/ai/codex/WP_BUNDLING_POLICY.md` - WP54 bundled-WP execution policy; defines risk-class bundling principle, package size classes (S/M/L/XL), allowed and forbidden bundle examples, L-package requirements, stop/report triggers, follow-up process-defect classification categories, and posted evidence self-check rule.
 53. `docs/resolution_ambiguity_taxonomy_manual_label_workflow.md` - WP55 docs-only resolution-rule ambiguity taxonomy and manual-label workflow for human research data quality; defines 14 taxonomy categories, 6 review status values, ambiguity severity tiers, reviewer confidence separation, 17-field manual label schema, local/offline/read-only manual review workflow, future integration gate, invalid/valid examples, and deferred items; research-data-quality metadata only; no parser, no automated extraction, no feature extraction, no scorer integration in WP55. Updated in WP56 to reflect WP55 merged and WP56 schema validation on branch. Updated in WP57 to reflect WP56 merged and WP57 local feature extraction from validated labels on branch; WP57 cross-reference added; automated parser remains not started.
 54. `src/data_layer/resolution_ambiguity_labels.py` - WP56 local/offline/read-only stdlib schema validator for WP55 resolution ambiguity label records; validates all 17 required fields, allowed enum values, manual-review gate, advisory label, forbidden-use notice, source artifact references, and ISO-8601 timestamp; provides validate_resolution_ambiguity_label, validate_resolution_ambiguity_labels, and load_resolution_ambiguity_label_records; stdlib-only, no network, no file writes, no parser, no feature extraction, no scorer integration, no runtime behavior. Consumed by WP57 feature extraction.
-55. `CLAUDE_START_HERE.md` - WP58 Claude Code startup guidance; mandatory startup sequence, Claude-specific posted evidence verification rules, and stop rules for workflow-only WPs. Updated in WP59 to reference the state machine, add drift prevention rule for private-repo evidence mode, and clarify that exit 3 is not itself a process defect.
+55. `CLAUDE_START_HERE.md` - WP58 Claude Code startup guidance; mandatory startup sequence, Claude-specific posted evidence verification rules, and stop rules for workflow-only WPs. Updated in WP59 to reference the state machine, add drift prevention rule for private-repo evidence mode, and clarify that exit 3 is not itself a process defect. Updated in WP60A to be a Claude Code-specific adapter that references `AI_CODING_AGENT_START_HERE.md` for shared startup rules.
 56. `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md` - WP58 mandatory posted GitHub evidence verification policy. Updated in WP59 to define three evidence modes (PUBLIC_VERIFIER_PASS, PRIVATE_REPO_MANUAL_VERIFIED, BLOCKED_NOT_READY), required fields for each mode, and failure examples for false PASS reporting.
 63b. `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` - WP59 canonical WP execution state machine; defines 13 phases (receive WP through post-merge reconciliation), three evidence modes, required fields per mode, evidence mode summary table, and cross-references; applies to Claude Code and Codex.
 57. `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md` - WP58 negative test matrix policy for WPs that add or modify validators, scorers, parsers, schema validators, boundary guards, evidence guards, or semantic wording filters; defines 15 required matrix categories and enforcement rules.

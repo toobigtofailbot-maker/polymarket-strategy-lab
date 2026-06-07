@@ -1,7 +1,10 @@
 # Codex Execution Guidelines
 
+> **Compatibility note:** This file is historically named for Codex but applies to all AI coding agents unless a line is explicitly tool-specific. For shared startup, see `AI_CODING_AGENT_START_HERE.md`.
+
 - Read `AGENTS.md` before every WP.
-- Read `CODEX_START_HERE.md` and `docs/ai/codex/README.md` before WP execution.
+- Read `AI_CODING_AGENT_START_HERE.md` and the relevant tool-specific adapter (`CODEX_START_HERE.md` for Codex, `CLAUDE_START_HERE.md` for Claude Code) before every WP.
+- Read `docs/ai/codex/README.md` before WP execution.
 - Run `git status --short` and `git branch --show-current` before starting.
 - Stop and report if the working tree is dirty before WP work begins.
 - Before creating any WP branch, run `python tools/git/preflight_generated_artifact_guard.py`.
@@ -29,7 +32,7 @@
 - Do not use "passed" wording for unavailable tools such as semgrep or pip-audit.
 - Include exact base verification fields: base branch, local main commit, origin/main commit, whether local main equals origin/main, required previous WP commit presence, required previous WP files presence, Remote Main Sync Gate result, and Generated Artifact Guard result.
 - Include `Ready for review: YES/NO`.
-- Whenever Codex completes a WP, create or prepare a pull request and provide the PR review link in the final report, unless the user explicitly says no PR should be created.
+- Whenever the AI coding agent completes a WP, create or prepare a pull request and provide the PR review link in the final report, unless the user explicitly says no PR should be created.
 - Never delete user files without explicit instruction.
 - Do not copy external repo code before audit.
 - Do not add live trading code unless the WP explicitly authorizes it and `docs/live_trading_authorization.md` is updated.
@@ -49,9 +52,9 @@ Apply the token-efficiency operating model (`docs/ai/codex/TOKEN_EFFICIENCY_OPER
 
 Stop if required work needs protected runtime boundaries, secrets, external code reuse, or live-trading paths not authorized by the WP.
 
-## Claude Code Startup And Posted Evidence (WP58+)
+## Claude Code Startup And Posted Evidence (WP58+; Claude-specific)
 
-Claude Code must read `CLAUDE_START_HERE.md` in addition to `AGENTS.md` and `CODEX_START_HERE.md` before every WP.
+Claude Code must read `CLAUDE_START_HERE.md` in addition to `AGENTS.md` and `AI_CODING_AGENT_START_HERE.md` before every WP.
 
 Before `Ready for review: YES`, Claude Code must run `tools/git/posted_pr_evidence_verifier.py` against the live PR when GitHub access is available. If unavailable, state why explicitly and document manual live GitHub verification. Do not claim the verifier passed unless it was actually run against the live PR. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
 

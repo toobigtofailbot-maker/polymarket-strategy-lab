@@ -23,9 +23,9 @@ def test_doc_references_agents_md():
     assert "AGENTS.md" in content
 
 
-def test_doc_references_codex_start_here():
+def test_doc_references_ai_coding_agent_start_here():
     content = read_doc()
-    assert "CODEX_START_HERE.md" in content
+    assert "AI_CODING_AGENT_START_HERE.md" in content
 
 
 def test_doc_references_project_status():
