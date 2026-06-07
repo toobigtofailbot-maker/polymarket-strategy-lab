@@ -77,6 +77,20 @@ def test_agents_md_uses_ai_coding_agent_shared_wording():
     assert "AI coding agent" in text or "AI Coding Agent" in text
 
 
+def test_agents_md_external_code_rule_uses_agent_neutral_wording():
+    text = _read(AGENTS)
+    assert "the AI coding agent must check" in text, (
+        "AGENTS.md External Code section must use 'the AI coding agent must check', not 'Codex must check'"
+    )
+
+
+def test_agents_md_no_shared_rule_codex_must_check():
+    text = _read(AGENTS)
+    assert "Codex must check" not in text, (
+        "AGENTS.md must not contain 'Codex must check' — use 'the AI coding agent must check' for shared rules"
+    )
+
+
 # --- CODEX_START_HERE.md is Codex-specific adapter ---
 
 def test_codex_start_identifies_as_codex_specific_adapter():
