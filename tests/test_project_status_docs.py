@@ -168,12 +168,12 @@ def test_wp57_in_merged_wps_list():
     assert "WP57" in merged_line
 
 
-def test_wp59_is_current_phase():
+def test_wp60a_is_current_phase():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP59" in current_phase_line
+    assert "WP60A" in current_phase_line
 
 
 def test_wp58_in_merged_wps():
@@ -184,12 +184,28 @@ def test_wp58_in_merged_wps():
     assert "WP58" in merged_line
 
 
-def test_wp59_branch_is_current_branch():
+def test_wp59_in_merged_wps():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP59" in merged_line
+
+
+def test_wp60a_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp59" in branch_line
+    assert "wp60a" in branch_line
+
+
+def test_wp59_branch_not_current_branch():
+    text = _read()
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp59-wf-stab-state-machine-private-repo-evidence-mode" not in branch_line
 
 
 def test_wp58_branch_not_current_branch():

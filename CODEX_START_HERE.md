@@ -2,20 +2,24 @@
 
 ## Purpose
 
-This is the first file Codex should read after a work package is received, after `AGENTS.md` if the active environment automatically starts there.
+This file is the Codex-specific startup adapter for this repository.
 
-It gives the concise startup sequence for this repository. It does not authorize broader scope than the active work package.
+It does not replace `AGENTS.md`. It does not replace `AI_CODING_AGENT_START_HERE.md`. Read all three.
 
-## Mandatory Startup Sequence
+Shared startup rules are in `AI_CODING_AGENT_START_HERE.md`. This file adds only Codex-specific notes.
+
+## Mandatory Startup Sequence (Codex)
 
 1. Read `AGENTS.md`.
-1b. Read `CLAUDE_START_HERE.md` (Claude Code only — skip if running as Codex/OpenAI environment).
-2. Read `docs/project_status.md`.
-3. Read `docs/repo_truth_index.md`.
-4. Read `docs/deferred_items_log.md`.
-5. Read `docs/codex_execution_guidelines.md`.
-6. Read `docs/ai/codex/README.md`.
-7. Read only task-relevant repo-truth files after that.
+2. Read `AI_CODING_AGENT_START_HERE.md`.
+3. Read `CODEX_START_HERE.md` (this file).
+4. Continue with repo-truth files per `AI_CODING_AGENT_START_HERE.md`:
+   - Read `docs/project_status.md`.
+   - Read `docs/repo_truth_index.md`.
+   - Read `docs/deferred_items_log.md`.
+   - Read `docs/ai/codex/README.md`.
+   - Follow `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`.
+   - Read task-relevant files only after that.
 
 ## Precedence
 
@@ -48,7 +52,3 @@ Do not infer evidence mode. Select exactly one:
 - `PUBLIC_VERIFIER_PASS`
 - `PRIVATE_REPO_MANUAL_VERIFIED`
 - `BLOCKED_NOT_READY`
-
-## Posted GitHub Evidence Verification (WP58+)
-
-Local PR body and final comment drafts are not posted GitHub evidence. Before `Ready for review: YES`, Claude Code must select an evidence mode per the state machine and document it completely. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.

@@ -387,27 +387,26 @@ def test_project_status_marks_wp58_merged():
     assert re.search(r"Merged WPs:.*WP58", content)
 
 
-def test_project_status_wp59_is_current_phase():
+def test_project_status_wp59_is_merged():
     path = "docs/project_status.md"
     with open(path, encoding="utf-8") as f:
         content = f.read()
     assert "WP59" in content
-    assert "Current phase" in content
-    # WP59 must appear near "Current phase"
+    # WP59 must appear in the merged WPs list
     lines = content.splitlines()
     for line in lines:
-        if "Current phase" in line:
-            assert "WP59" in line, f"Expected WP59 in current phase line: {line}"
+        if line.startswith("- Merged WPs:"):
+            assert "WP59" in line, f"Expected WP59 in merged WPs line: {line}"
             break
     else:
-        assert False, "Could not find 'Current phase' line"
+        assert False, "Could not find 'Merged WPs:' line"
 
 
-def test_project_status_wp59_status_on_branch():
+def test_project_status_wp59_statuses_merged():
     path = "docs/project_status.md"
     with open(path, encoding="utf-8") as f:
         content = f.read()
-    assert "WORKFLOW_GOVERNANCE_ON_BRANCH" in content
+    assert "WORKFLOW_GOVERNANCE_MERGED" in content
 
 
 def test_project_status_wp58_statuses_merged():

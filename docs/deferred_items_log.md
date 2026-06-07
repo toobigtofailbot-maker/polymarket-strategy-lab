@@ -1469,6 +1469,31 @@ honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project
 dependency added and pip-audit availability must be honestly reported by
 validation.
 
+## WP60A / WF-STAB-2 Agent-Neutral Startup Layer Deferred Items
+
+WP60A creates `AI_CODING_AGENT_START_HERE.md` (shared startup entry point) and updates AGENTS.md,
+CODEX_START_HERE.md, CLAUDE_START_HERE.md, docs/ai/codex/README.md, docs/codex_execution_guidelines.md,
+docs/work_package_template.md, and .github/pull_request_template.md to use agent-neutral shared wording
+where rules apply to all AI coding agents. It reconciles repo truth after WP59 merge (WP59 is now listed
+in merged WPs).
+
+WP60A is a workflow/governance-docs-tests-agent-neutral-startup WP. It adds no source under `src/`, no
+Polymarket/trading/advisory tooling, no runtime, no dependency or lock-file changes, no Hermes/LLM/provider
+integration, no credentials, no account access, no trading or paper trading, no database/dashboard/scheduler/
+polling/product behavior, and no generated outputs committed.
+
+WP60A-D001 is added: full directory migration from `docs/ai/codex/` to agent-neutral path not performed (OPEN, P4).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP60A-D001 | Full docs/ai/codex/ directory migration not performed | OPEN | P4 | WP60A clarifies that docs/ai/codex/ is the historical current shared workflow path and its contents apply to all AI coding agents. Renaming the directory was out of scope for WP60A. | Future optional governance cleanup WP when directory rename is explicitly authorized. | Not required for WP60A acceptance. |
+
+WP3-D001 (gitleaks): rerun/assessed in WP60A; availability reported honestly in
+validation. WP3-D002 (semgrep): READY_FOR_WP; semgrep availability must be
+honestly reported by validation. WP3-D004 (pip-audit): READY_FOR_WP; no project
+dependency added and pip-audit availability must be honestly reported by
+validation.
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.

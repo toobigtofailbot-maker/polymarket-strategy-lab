@@ -13,6 +13,9 @@
 - Work branch:
 - Required previous merge commit:
 - Previous PR:
+- Execution agent:
+- Shared startup file read: AI_CODING_AGENT_START_HERE.md — yes/no
+- Tool-specific adapter read: CODEX_START_HERE.md / CLAUDE_START_HERE.md / other — yes/no
 
 ## Package Class
 
@@ -80,6 +83,8 @@ Mode-boundary table: (list each mode boundary and confirm it is not crossed)
 - Generated artifact guard result:
 - Generated artifacts cleaned: yes/no
 - Any generated artifacts visible in final git status: yes/no
+- AI coding agent startup complete: yes/no
+- Tool-specific adapter used:
 
 ## Out Of Scope
 
@@ -165,12 +170,12 @@ See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md` for full policy.
 
 ## Posted Evidence Self-Check (mandatory, WP54)
 
-Before Ready for review: YES, Claude Code must declare one of the following in both the PR body and the final comment:
+Before Ready for review: YES, the AI coding agent must declare one of the following in both the PR body and the final comment:
 
 1. Guard ran on exact local draft texts intended for posting as-is. State: "Guard input source: exact local drafts intended for posting."
 2. Already-posted PR body and latest current-final evidence comment were copied into local temp files and the guard ran on those copies. State: "Guard input source: copied from posted GitHub PR body and current-final comment."
 
-If any posted evidence changes after the last guard run, the guard must be rerun. If Claude Code cannot confirm the live GitHub content matches what the guard checked, it must state that limitation and may not claim posted evidence was verified.
+If any posted evidence changes after the last guard run, the guard must be rerun. If the AI coding agent cannot confirm the live GitHub content matches what the guard checked, it must state that limitation and may not claim posted evidence was verified.
 
 ## Follow-Up Process-Defect Classification (mandatory, WP54)
 
