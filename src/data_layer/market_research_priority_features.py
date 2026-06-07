@@ -2,9 +2,10 @@
 
 WP51 first feature-extraction foundation. WP53 provenance/staleness/missing-data
 hardening. WP57 resolution ambiguity label feature extraction from validated manual
-labels. Advisory-only. Not a trading signal. Not expected return. Not investment
-advice. Not position sizing. Not an execution instruction. Human review required
-before any use.
+labels. WP61 microstructure quality metadata from local order-book snapshots.
+Advisory-only. Not a trading signal. Not expected return. Not investment advice.
+Not position sizing. Not an execution instruction. Human review required before
+any use.
 
 This module:
 - consumes existing local/offline snapshot artifacts and data-layer models only;
@@ -23,6 +24,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+import math
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional
 
@@ -38,7 +40,7 @@ from src.data_layer.resolution_ambiguity_labels import (
 )
 
 FEATURE_EXTRACTION_SCOPE = "local/offline/read-only feature extraction foundation"
-FEATURE_EXTRACTION_VERSION = "wp57-v1"
+FEATURE_EXTRACTION_VERSION = "wp61-v1"
 
 DEFAULT_METADATA_FRESHNESS_THRESHOLD_SECONDS: int = 86400   # 24 hours
 DEFAULT_ORDERBOOK_FRESHNESS_THRESHOLD_SECONDS: int = 3600   # 1 hour
@@ -230,6 +232,225 @@ def _age_seconds(ts: Optional[str], reference: datetime) -> Optional[float]:
         return None
     delta = reference - dt
     return delta.total_seconds()
+
+
+# ── Microstructure quality helpers ───────────────────────────────────────────
+
+def _parse_level_price(level: Any) -> Optional[float]:
+    if not isinstance(level, Mapping):
+        return None
+    try:
+        value = float(level.get("price"))
+    except (TypeError, ValueError):
+        return None
+    return value if math.isfinite(value) else None
+
+
+def _parse_level_size(level: Any) -> Optional[float]:
+    if not isinstance(level, Mapping):
+        return None
+    try:
+        value = float(level.get("size"))
+    except (TypeError, ValueError):
+        return None
+    return value if math.isfinite(value) else None
+
+
+def _is_non_empty_level(level: Any) -> bool:
+    price = _parse_level_price(level)
+    size = _parse_level_size(level)
+    return price is not None and size is not None and size > 0
+
+
+def _select_latest_order_book_records(order_book_records: list) -> tuple[list, list]:
+    """Select one latest local order-book record per token id.
+
+    Timestamp ties keep the later input record for deterministic fallback behavior.
+    Records with no parseable timestamp are used only when no parseable timestamp
+    exists for that token id.
+    """
+    by_token: dict[str, list] = {}
+    for position, ob in enumerate(order_book_records):
+        by_token.setdefault(ob.token_id, []).append((position, ob))
+
+    selected: list = []
+    warnings: list[str] = []
+    for token_id in sorted(by_token):
+        candidates = by_token[token_id]
+        parseable: list = []
+        for position, ob in candidates:
+            parsed = _parse_utc(ob.captured_at_utc)
+            if parsed is not None:
+                parseable.append((parsed, position, ob))
+
+        if parseable:
+            if len(parseable) < len(candidates):
+                warnings.append(
+                    f"One or more local order-book snapshot timestamps for token {token_id} "
+                    "are unparseable; latest selection used parseable timestamps where available."
+                )
+            selected.append(max(parseable, key=lambda item: (item[0], item[1]))[2])
+        else:
+            warnings.append(
+                f"Local order-book snapshot timestamps for token {token_id} are missing or "
+                "unparseable; latest selection used deterministic input order."
+            )
+            selected.append(max(candidates, key=lambda item: item[0])[1])
+
+    return selected, warnings
+
+
+def _build_microstructure_quality(
+    order_book_records: list,
+    generated_at_utc: datetime,
+    orderbook_threshold: int,
+) -> dict:
+    """Build advisory-only local order-book microstructure quality metadata.
+
+    This summary uses only local OrderBookSnapshotRecord objects already supplied
+    to feature extraction. It does not score market quality or interpret data as
+    an action signal.
+    """
+    warnings: list[str] = []
+
+    if not order_book_records:
+        return {
+            "order_book_available": False,
+            "local_order_book_snapshot_count": 0,
+            "best_bid_available": False,
+            "best_ask_available": False,
+            "two_sided_structure_observed": False,
+            "one_sided_structure_observed": False,
+            "empty_book_observed": True,
+            "spread_structure_observed": False,
+            "visible_bid_level_count": 0,
+            "visible_ask_level_count": 0,
+            "visible_total_level_count": 0,
+            "non_empty_bid_level_count": 0,
+            "non_empty_ask_level_count": 0,
+            "latest_order_book_snapshot_id": None,
+            "latest_order_book_captured_at_utc": None,
+            "order_book_stale": True,
+            "order_book_freshness_threshold_seconds": orderbook_threshold,
+            "requires_order_book_recapture_before_use": True,
+            "microstructure_warnings": [
+                "No local order-book snapshot available; research data is incomplete."
+            ],
+            "advisory_label": _ADVISORY_LABEL,
+        }
+
+    latest_records, selection_warnings = _select_latest_order_book_records(order_book_records)
+    warnings.extend(selection_warnings)
+
+    latest_overall = None
+    latest_parseable = None
+    for position, ob in enumerate(order_book_records):
+        parsed = _parse_utc(ob.captured_at_utc)
+        if parsed is not None:
+            if latest_parseable is None or (parsed, position) > latest_parseable[:2]:
+                latest_parseable = (parsed, position, ob)
+
+    if latest_parseable is not None:
+        latest_overall = latest_parseable[2]
+    else:
+        latest_overall = order_book_records[-1]
+
+    visible_bid_level_count = 0
+    visible_ask_level_count = 0
+    non_empty_bid_level_count = 0
+    non_empty_ask_level_count = 0
+    bid_prices: list[float] = []
+    ask_prices: list[float] = []
+
+    for ob in latest_records:
+        bids = ob.bids if isinstance(ob.bids, list) else []
+        asks = ob.asks if isinstance(ob.asks, list) else []
+        visible_bid_level_count += len(bids)
+        visible_ask_level_count += len(asks)
+
+        for level in bids:
+            if _is_non_empty_level(level):
+                non_empty_bid_level_count += 1
+                price = _parse_level_price(level)
+                if price is not None:
+                    bid_prices.append(price)
+
+        for level in asks:
+            if _is_non_empty_level(level):
+                non_empty_ask_level_count += 1
+                price = _parse_level_price(level)
+                if price is not None:
+                    ask_prices.append(price)
+
+    best_bid_available = bool(bid_prices)
+    best_ask_available = bool(ask_prices)
+    two_sided_structure_observed = best_bid_available and best_ask_available
+    one_sided_structure_observed = (
+        (best_bid_available or best_ask_available) and not two_sided_structure_observed
+    )
+    empty_book_observed = not best_bid_available and not best_ask_available
+    spread_structure_observed = False
+    if two_sided_structure_observed:
+        best_bid = max(bid_prices)
+        best_ask = min(ask_prices)
+        spread_structure_observed = best_bid <= best_ask
+        if not spread_structure_observed:
+            warnings.append(
+                "Local order-book sides are observable, but best-side prices do not "
+                "confirm basic bid/ask structure."
+            )
+    elif one_sided_structure_observed:
+        warnings.append(
+            "Only one local order-book side is observable; spread structure is not observable."
+        )
+    else:
+        warnings.append("Local order-book snapshots contain no non-empty bid or ask levels.")
+
+    order_book_stale = False
+    for ob in latest_records:
+        latest_age = _age_seconds(ob.captured_at_utc, generated_at_utc)
+        if latest_age is None:
+            order_book_stale = True
+            warnings.append(
+                f"Latest local order-book timestamp for token {ob.token_id} is missing "
+                "or unparseable; recapture is needed before relying on the data for research."
+            )
+        elif latest_age < 0:
+            order_book_stale = True
+            warnings.append(
+                f"Latest local order-book timestamp for token {ob.token_id} is in the "
+                f"future by {abs(latest_age):.0f}s; treating the data as degraded for research."
+            )
+        elif latest_age > orderbook_threshold:
+            order_book_stale = True
+            warnings.append(
+                f"Latest local order-book snapshot for token {ob.token_id} is {latest_age:.0f}s old "
+                f"(threshold {orderbook_threshold}s); recapture is needed before relying "
+                "on the data for research."
+            )
+
+    return {
+        "order_book_available": True,
+        "local_order_book_snapshot_count": len(order_book_records),
+        "best_bid_available": best_bid_available,
+        "best_ask_available": best_ask_available,
+        "two_sided_structure_observed": two_sided_structure_observed,
+        "one_sided_structure_observed": one_sided_structure_observed,
+        "empty_book_observed": empty_book_observed,
+        "spread_structure_observed": spread_structure_observed,
+        "visible_bid_level_count": visible_bid_level_count,
+        "visible_ask_level_count": visible_ask_level_count,
+        "visible_total_level_count": visible_bid_level_count + visible_ask_level_count,
+        "non_empty_bid_level_count": non_empty_bid_level_count,
+        "non_empty_ask_level_count": non_empty_ask_level_count,
+        "latest_order_book_snapshot_id": latest_overall.snapshot_id,
+        "latest_order_book_captured_at_utc": latest_overall.captured_at_utc,
+        "order_book_stale": order_book_stale,
+        "order_book_freshness_threshold_seconds": orderbook_threshold,
+        "requires_order_book_recapture_before_use": order_book_stale,
+        "microstructure_warnings": warnings,
+        "advisory_label": _ADVISORY_LABEL,
+    }
 
 
 def _build_staleness(
@@ -764,6 +985,9 @@ def extract_market_research_priority_context(
     provenance = _build_provenance(record, manifest_index)
     missing_data_warnings: list = []
     missing_data = _build_missing_data(record, ob_records, missing_data_warnings)
+    microstructure_quality = _build_microstructure_quality(
+        ob_records, generated_at_utc, ob_threshold
+    )
     resolution_ambiguity = _build_resolution_ambiguity_summary(
         record.market_id, resolution_ambiguity_label_index
     )
@@ -792,10 +1016,13 @@ def extract_market_research_priority_context(
         explanation_parts.append("no order book")
     if provenance["provenance_degraded"]:
         explanation_parts.append("weak or absent provenance")
+    if microstructure_quality["order_book_stale"]:
+        explanation_parts.append("order-book recapture needed for research")
     if not explanation_parts:
         explanation_parts.append("basic metadata and provenance present")
     component_explanation = (
-        f"WP57 feature extraction (hardened + resolution ambiguity labels). Advisory-only. "
+        f"WP61 feature extraction (hardened + resolution ambiguity labels + "
+        f"microstructure metadata). Advisory-only. "
         f"Notes: {'; '.join(explanation_parts)}."
     )
 
@@ -811,6 +1038,7 @@ def extract_market_research_priority_context(
         "quality_gates": quality_gates,
         "component_explanation": component_explanation,
         "resolution_ambiguity": resolution_ambiguity,
+        "microstructure_quality": microstructure_quality,
     }
 
 
@@ -883,7 +1111,7 @@ def build_market_research_priority_run_context(
         artifacts = dict(artifacts)
         artifacts["snapshot_id"] = snapshot_id
 
-    run_id = f"wp53-run-{uuid.uuid4().hex[:12]}"
+    run_id = f"wp61-run-{uuid.uuid4().hex[:12]}"
 
     return {
         "generated_at_utc": generated_at_utc.isoformat(),

@@ -166,7 +166,7 @@ def test_valid_record_produces_required_keys():
     )
     for key in ("market_id", "question", "category", "active_status", "score_components",
                 "staleness", "provenance", "missing_data", "quality_gates",
-                "component_explanation"):
+                "component_explanation", "microstructure_quality"):
         assert key in ctx, f"Missing key: {key}"
 
 
@@ -357,6 +357,238 @@ def test_one_sided_orderbook_does_not_imply_tradability():
     assert ctx["score_components"]["spread_structure_observed"] < 0.5
     # visible_local_liquidity_proxy capped
     assert ctx["score_components"]["visible_local_liquidity_proxy"] <= 0.5
+
+
+# ── WP61 microstructure quality metadata ─────────────────────────────────────
+
+def test_microstructure_quality_present_for_every_market_context():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, order_books_by_token_id={}, generated_at_utc=_REFERENCE_UTC
+    )
+    assert "microstructure_quality" in ctx
+    assert ctx["microstructure_quality"]["advisory_label"] == "ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED"
+
+
+def test_microstructure_quality_no_order_book_safe_defaults():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, order_books_by_token_id={}, generated_at_utc=_REFERENCE_UTC
+    )
+    mq = ctx["microstructure_quality"]
+    assert mq["order_book_available"] is False
+    assert mq["local_order_book_snapshot_count"] == 0
+    assert mq["best_bid_available"] is False
+    assert mq["best_ask_available"] is False
+    assert mq["two_sided_structure_observed"] is False
+    assert mq["one_sided_structure_observed"] is False
+    assert mq["empty_book_observed"] is True
+    assert mq["spread_structure_observed"] is False
+    assert mq["visible_total_level_count"] == 0
+    assert mq["non_empty_bid_level_count"] == 0
+    assert mq["non_empty_ask_level_count"] == 0
+    assert mq["latest_order_book_snapshot_id"] is None
+    assert mq["latest_order_book_captured_at_utc"] is None
+    assert mq["order_book_stale"] is True
+    assert mq["requires_order_book_recapture_before_use"] is True
+
+
+def test_microstructure_quality_bid_only_book_is_one_sided():
+    record = _make_record()
+    ob = _make_ob("tok-yes", bids=[{"price": "0.49", "size": "10"}], asks=[])
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [ob]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    mq = ctx["microstructure_quality"]
+    assert mq["best_bid_available"] is True
+    assert mq["best_ask_available"] is False
+    assert mq["two_sided_structure_observed"] is False
+    assert mq["one_sided_structure_observed"] is True
+    assert mq["spread_structure_observed"] is False
+
+
+def test_microstructure_quality_ask_only_book_is_one_sided():
+    record = _make_record()
+    ob = _make_ob("tok-yes", bids=[], asks=[{"price": "0.52", "size": "10"}])
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [ob]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    mq = ctx["microstructure_quality"]
+    assert mq["best_bid_available"] is False
+    assert mq["best_ask_available"] is True
+    assert mq["two_sided_structure_observed"] is False
+    assert mq["one_sided_structure_observed"] is True
+    assert mq["spread_structure_observed"] is False
+
+
+def test_microstructure_quality_empty_bid_ask_book_is_empty():
+    record = _make_record()
+    ob = _make_ob("tok-yes", bids=[], asks=[])
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [ob]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    mq = ctx["microstructure_quality"]
+    assert mq["order_book_available"] is True
+    assert mq["empty_book_observed"] is True
+    assert mq["two_sided_structure_observed"] is False
+    assert mq["spread_structure_observed"] is False
+
+
+def test_microstructure_quality_two_sided_book_observes_spread_structure():
+    record = _make_record()
+    ob = _make_ob(
+        "tok-yes",
+        bids=[{"price": "0.49", "size": "10"}],
+        asks=[{"price": "0.51", "size": "8"}],
+    )
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [ob]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    mq = ctx["microstructure_quality"]
+    assert mq["best_bid_available"] is True
+    assert mq["best_ask_available"] is True
+    assert mq["two_sided_structure_observed"] is True
+    assert mq["spread_structure_observed"] is True
+
+
+def test_microstructure_quality_counts_visible_and_non_empty_levels():
+    record = _make_record()
+    ob = _make_ob(
+        "tok-yes",
+        bids=[
+            {},
+            {"price": "0.48", "size": "0"},
+            {"price": "0.49", "size": "10"},
+        ],
+        asks=[
+            {"price": "0.51", "size": ""},
+            {"price": "0.52", "size": "5"},
+        ],
+    )
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [ob]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    mq = ctx["microstructure_quality"]
+    assert mq["visible_bid_level_count"] == 3
+    assert mq["visible_ask_level_count"] == 2
+    assert mq["visible_total_level_count"] == 5
+    assert mq["non_empty_bid_level_count"] == 1
+    assert mq["non_empty_ask_level_count"] == 1
+
+
+def test_microstructure_quality_multiple_snapshots_choose_latest_parseable_timestamp():
+    record = _make_record(token_ids=["tok-yes"])
+    older = _make_ob(
+        "tok-yes",
+        snapshot_id="snap-old",
+        captured_at_utc="2026-01-01T11:00:00+00:00",
+        bids=[{"price": "0.40", "size": "10"}],
+        asks=[],
+    )
+    newer = _make_ob(
+        "tok-yes",
+        snapshot_id="snap-new",
+        captured_at_utc="2026-01-01T12:30:00+00:00",
+        bids=[],
+        asks=[{"price": "0.60", "size": "10"}],
+    )
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [older, newer]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    mq = ctx["microstructure_quality"]
+    assert mq["local_order_book_snapshot_count"] == 2
+    assert mq["latest_order_book_snapshot_id"] == "snap-new"
+    assert mq["latest_order_book_captured_at_utc"] == "2026-01-01T12:30:00+00:00"
+    assert mq["best_bid_available"] is False
+    assert mq["best_ask_available"] is True
+
+
+def test_microstructure_quality_unparseable_timestamp_is_degraded():
+    record = _make_record(token_ids=["tok-yes"])
+    ob = _make_ob("tok-yes", snapshot_id="snap-bad-ts", captured_at_utc="not-a-time")
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [ob]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    mq = ctx["microstructure_quality"]
+    assert mq["latest_order_book_snapshot_id"] == "snap-bad-ts"
+    assert mq["order_book_stale"] is True
+    assert mq["requires_order_book_recapture_before_use"] is True
+    assert any("unparseable" in warning for warning in mq["microstructure_warnings"])
+
+
+def test_microstructure_quality_future_timestamp_is_degraded_not_fresh():
+    record = _make_record(token_ids=["tok-yes"])
+    ob = _make_ob(
+        "tok-yes",
+        snapshot_id="snap-future",
+        captured_at_utc="2026-01-01T14:00:00+00:00",
+    )
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [ob]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    mq = ctx["microstructure_quality"]
+    assert mq["latest_order_book_snapshot_id"] == "snap-future"
+    assert mq["order_book_stale"] is True
+    assert mq["requires_order_book_recapture_before_use"] is True
+    assert any("future" in warning for warning in mq["microstructure_warnings"])
+
+
+def test_microstructure_quality_degrades_when_any_latest_token_book_is_stale():
+    record = _make_record(token_ids=["tok-yes", "tok-no"])
+    stale_ob = _make_ob(
+        "tok-yes",
+        snapshot_id="snap-stale-token",
+        captured_at_utc="2025-12-31T00:00:00+00:00",
+    )
+    fresh_ob = _make_ob(
+        "tok-no",
+        snapshot_id="snap-fresh-token",
+        captured_at_utc="2026-01-01T12:30:00+00:00",
+    )
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [stale_ob], "tok-no": [fresh_ob]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    mq = ctx["microstructure_quality"]
+    assert mq["latest_order_book_snapshot_id"] == "snap-fresh-token"
+    assert mq["order_book_stale"] is True
+    assert mq["requires_order_book_recapture_before_use"] is True
+    assert any("tok-yes" in warning for warning in mq["microstructure_warnings"])
+
+
+def test_microstructure_quality_warnings_avoid_forbidden_action_wording():
+    record = _make_record()
+    ob = _make_ob("tok-yes", bids=[], asks=[{"price": "0.52", "size": "10"}])
+    ctx = extract_market_research_priority_context(
+        record=record,
+        order_books_by_token_id={"tok-yes": [ob]},
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    warning_text = " ".join(ctx["microstructure_quality"]["microstructure_warnings"]).lower()
+    forbidden_terms = (
+        "alpha", "edge", "opportunity", "tradeable", "tradable", "buy", "sell",
+        "entry", "exit", "position size", "leverage", "expected return",
+        "execution confidence", "fill probability", "slippage", "profitable",
+    )
+    for term in forbidden_terms:
+        assert term not in warning_text
 
 
 # ── Forbidden fields do not appear ───────────────────────────────────────────
@@ -927,8 +1159,8 @@ def test_requires_recapture_false_when_fresh():
 
 # ── Version constant ──────────────────────────────────────────────────────────
 
-def test_feature_extraction_version_is_wp57():
-    assert FEATURE_EXTRACTION_VERSION == "wp57-v1"
+def test_feature_extraction_version_is_wp61():
+    assert FEATURE_EXTRACTION_VERSION == "wp61-v1"
 
 
 # ── Project status checks ─────────────────────────────────────────────────────
@@ -1492,7 +1724,7 @@ def test_project_status_current_phase_is_wp58_or_later():
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP58", "WP59", "WP60")), (
+    assert any(wp in current_phase_line for wp in ("WP58", "WP59", "WP60", "WP61")), (
         f"Expected WP58 or later in current phase line: {current_phase_line}"
     )
 
@@ -1503,7 +1735,7 @@ def test_project_status_current_branch_is_wp59_or_later():
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp59", "wp60")), (
+    assert any(wp in branch_line for wp in ("wp59", "wp60", "wp61")), (
         f"Expected wp59 or wp60 branch in branch line: {branch_line}"
     )
 

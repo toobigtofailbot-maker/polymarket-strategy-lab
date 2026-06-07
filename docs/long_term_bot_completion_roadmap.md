@@ -2,8 +2,8 @@
 
 ## A. Status
 
-- WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged; merge commit a310e641eb790bd3906d054d703dd11945180e6c); WP57 (local/offline/read-only feature extraction from validated labels on branch)
-- Package class: DOCS_ONLY_ROADMAP_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_ON_BRANCH
+- WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged; merge commit a310e641eb790bd3906d054d703dd11945180e6c); WP57 (local/offline/read-only feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (architecture direction lock-in and microstructure quality metadata on branch)
+- Package class: DOCS_ONLY_ROADMAP_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; ARCHITECTURE_DIRECTION_ON_BRANCH; LOCAL_OFFLINE_READ_ONLY_MICROSTRUCTURE_QUALITY_ON_BRANCH
 - Side onboarding lock: SIDE4_ONBOARDING_LOCK_MERGED
 - Authority: PLANNING_GUIDANCE_ONLY
 - NOT_AUTHORIZATION
@@ -119,7 +119,19 @@ The following capabilities are built and merged into repo truth as of WP52:
     human review workflow. Research-data-quality metadata only; no parser, no feature
     extraction, no scorer integration in WP55.
 
-13. **Protected boundaries** — Live trading DISABLED; credentials NOT_USED;
+13. **Architecture direction lock-in** — WP61 adds
+    `docs/architecture_decision_record.md` with planning constraints only:
+    SQLite first/Postgres later if needed; Streamlit first/Grafana later/Next.js
+    only if productizing; local development first/cheap VPS later; rules-based
+    plus research-score-driven first; LLM read-only analyst/proposal layer only;
+    research-only -> paper -> dry-run -> manual live approval -> restricted live.
+
+14. **Microstructure Quality V1 metadata** — WP61 adds advisory-only
+    `microstructure_quality` metadata to prepared market contexts from local
+    order-book snapshots only. It is not a score component and does not change
+    scorer weights.
+
+15. **Protected boundaries** — Live trading DISABLED; credentials NOT_USED;
     execution NOT_STARTED; authenticated client FORBIDDEN_UNTIL_APPROVED_WP;
     Hermes NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY; agent runtime NOT_STARTED;
     agent execution authority FORBIDDEN; fully autonomous trading agent
