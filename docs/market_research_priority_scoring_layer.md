@@ -2,8 +2,8 @@
 
 ## 1. Status
 
-- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_ON_BRANCH
-- WP: WP44 (design merged); WP48 (schema/contract merged); WP49 (core scorer merged); WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels on branch)
+- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_ON_BRANCH
+- WP: WP44 (design merged); WP48 (schema/contract merged); WP49 (core scorer merged); WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
 - Tooling impact: NO_NEW_TOOLING
 - Dependency impact: NO_DEPENDENCY_CHANGE
@@ -16,8 +16,8 @@
 - LLM/provider impact: NO_LLM_PROVIDER_RUNTIME
 - Trading impact: NO_TRADING_EXECUTION
 - Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_MERGED
-- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_ON_BRANCH
-- Scorer weights/components: UNCHANGED_IN_WP57; resolution_ambiguity sub-dict is advisory-only metadata, not a score component
+- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_ON_BRANCH
+- Scorer weights/components: UNCHANGED_IN_WP61; resolution_ambiguity and microstructure_quality sub-dicts are advisory-only metadata, not score components
 - CLI/export/report implementation: NOT_STARTED
 - Advisory consumer integration: NOT_STARTED
 
@@ -36,6 +36,11 @@ and market_context dicts compatible with the WP49 core scorer. Feature
 extraction produces basic metadata/provenance/staleness/missing-data features.
 Non-signal boundary is preserved. Advanced feature groups (provenance hardening,
 resolution-rule ambiguity, microstructure quality) remain deferred.
+
+WP61 adds Microstructure Quality V1 as a `microstructure_quality` sub-dict in
+market contexts. It is local order-book data-quality metadata for human research
+review only. It does not change scorer weights/components and must not be read
+as a trading interpretation.
 
 The formal schema and output contract for this layer is defined in
 `docs/market_research_priority_scoring_output_contract.md` (WP48, merged).
@@ -273,6 +278,9 @@ implementation is added in WP44.
   order-book data where available
 - This feature must be capped or separated to prevent a single liquidity signal
   from creating misleadingly high scores for otherwise incomplete markets
+- WP61 preserves the historical contract name only for compatibility. New
+  `microstructure_quality` metadata uses visible local level counts as
+  data-quality metadata, not liquidity for trading.
 
 ### 12.10 Duplicate/Conflict Flags
 - Whether WP13 deduplication found duplicate or conflicting snapshot records

@@ -348,12 +348,12 @@ def test_project_status_reflects_wp53_merged() -> None:
     assert "WP53" in merged_line
 
 
-def test_project_status_reflects_wp60a_current() -> None:
+def test_project_status_reflects_wp61_current() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP60A" in phase_line
+    assert "WP61" in phase_line
 
 
 def test_project_status_reflects_wp58_merged() -> None:
@@ -372,12 +372,20 @@ def test_project_status_reflects_wp59_merged() -> None:
     assert "WP59" in merged_line
 
 
-def test_project_status_reflects_wp60a_branch() -> None:
+def test_project_status_reflects_wp61_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp60a" in branch_line
+    assert "wp61-architecture-lockin-and-microstructure-quality-v1" in branch_line
+
+
+def test_project_status_reflects_wp60a_merged() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP60A" in merged_line
 
 
 def test_project_status_reflects_wp56_merged() -> None:
@@ -542,4 +550,4 @@ def test_repo_truth_index_contains_ai_coding_agent_start_here() -> None:
 
 def test_project_status_includes_agent_neutral_start_layer_status() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
-    assert "AGENT_NEUTRAL_START_LAYER_ON_BRANCH" in text
+    assert "AGENT_NEUTRAL_START_LAYER_MERGED" in text

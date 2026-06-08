@@ -2,8 +2,8 @@
 
 ## A. Status
 
-- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; FEATURE_EXTRACTION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_ON_BRANCH
-- WP: WP48 (schema/contract merged); WP49 (core scorer merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels on branch)
+- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; FEATURE_EXTRACTION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_ON_BRANCH
+- WP: WP48 (schema/contract merged); WP49 (core scorer merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
 - Source impact: WP48 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED; WP55 — NO_SRC_CHANGE; WP56 — LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED; WP57 — LOCAL_OFFLINE_READ_ONLY_LABEL_FEATURE_EXTRACTION_ADDED
 - Tooling impact: NO_NEW_TOOLING
@@ -13,8 +13,9 @@
 - Hermes impact: NO_HERMES_INSTALL_OR_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
 - Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_MERGED
-- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_ON_BRANCH
+- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_ON_BRANCH
 - WP57 resolution_ambiguity sub-dict: advisory-only research-data-quality metadata; NOT a score component in WP57; scorer weights/components unchanged; scorer/report/advisory integration deferred (see WP57-D001)
+- WP61 microstructure_quality sub-dict: advisory-only market_context feature extraction metadata only; no score contract redesign; no scorer weight change; no trading interpretation; no downstream integration
 - CLI/export/report implementation: NOT_STARTED
 - Advisory consumer integration: NOT_STARTED
 
@@ -23,6 +24,11 @@ contract (docs-only). WP49 adds the local/offline/read-only core scorer at
 src/data_layer/market_research_priority_scoring.py (stdlib-only, in-memory
 output only, no network, no file writes, no CLI, no export, no report writer,
 no feature extraction, no advisory consumer integration, no runtime behavior).
+
+WP61 adds `microstructure_quality` to prepared `market_context` objects before
+scoring. This is local order-book research metadata only. It does not redesign
+the score contract, add a new score component, change scorer weights, or imply
+paper/live execution readiness.
 
 ## B. Purpose
 
@@ -225,6 +231,9 @@ by this contract. Future implementation must define all of them:
 - **Capped:** yes — must be capped or separated; a single liquidity signal
   must not create misleadingly high scores for otherwise incomplete markets
 - **Required explanation:** local data depth proxy; note deliberately capped
+- **WP61 note:** the historical field name is preserved for scorer contract
+  compatibility only. WP61 `microstructure_quality` uses visible local level
+  counts as data-quality metadata, not liquidity for trading.
 
 ### duplicate_conflict_penalty
 - **Type:** number
