@@ -2,8 +2,8 @@
 
 ## A. Status
 
-- WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged; merge commit a310e641eb790bd3906d054d703dd11945180e6c); WP57 (local/offline/read-only feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (architecture direction lock-in and microstructure quality metadata on branch)
-- Package class: DOCS_ONLY_ROADMAP_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; ARCHITECTURE_DIRECTION_ON_BRANCH; LOCAL_OFFLINE_READ_ONLY_MICROSTRUCTURE_QUALITY_ON_BRANCH
+- WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged; merge commit a310e641eb790bd3906d054d703dd11945180e6c); WP57 (local/offline/read-only feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (architecture direction lock-in and microstructure quality metadata merged); WP62 (cross-market relationship metadata on branch)
+- Package class: DOCS_ONLY_ROADMAP_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; ARCHITECTURE_DIRECTION_MERGED; LOCAL_OFFLINE_READ_ONLY_MICROSTRUCTURE_QUALITY_MERGED; LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_ON_BRANCH
 - Side onboarding lock: SIDE4_ONBOARDING_LOCK_MERGED
 - Authority: PLANNING_GUIDANCE_ONLY
 - NOT_AUTHORIZATION

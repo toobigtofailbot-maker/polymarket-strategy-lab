@@ -6,7 +6,7 @@ authority beyond the active work package scope.
 
 ## WP61 Direction Lock-In - User-Approved Execution Path
 
-Status: WP61_ON_BRANCH
+Status: WP61_MERGED (PR #62; merge commit fa84711471fcd81a9f6a447584d0e5dd92e4f4c4)
 
 Scope: planning constraints and research-data metadata only. There is no database, dashboard, runtime, deployment, scheduler, or execution implementation in WP61.
 

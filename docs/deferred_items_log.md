@@ -103,6 +103,9 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP61-D003 | VPS/runtime scheduler deferred | OPEN | P3 | WP61 locks local development first and cheap VPS later for controlled live pilot planning. No deployment, scheduler, bot loop, or hosted runtime implementation is added. | Any VPS, deployment, scheduler, bot loop, service, or hosted runtime work. | Future approved WP explicitly scopes runtime/deployment work and protected-boundary review. |
 | WP61-D004 | Paper/live execution ladder phases deferred | OPEN | P3 | WP61 locks the phased ladder research-only -> paper -> dry-run -> manual live approval -> restricted live. No phase after research-only is implemented or authorized. | Any paper, dry-run, manual live approval, restricted live, credential, account, or execution work. | Future approved WP explicitly authorizes the next phase and satisfies protected-boundary gates. |
 | WP61-D005 | Slippage/fill/tradability/execution modeling remains forbidden until explicit future WP | OPEN | P3 | WP61 adds only advisory local order-book metadata. It does not add slippage, fill probability, tradability, execution-confidence, order-size, or downstream modeling. | Any numeric modeling or downstream consumer that could be interpreted as execution readiness. | Future approved WP explicitly scopes modeling and preserves non-signal boundaries. |
+| WP62-D001 | Semantic/fuzzy/LLM cross-market matching remains deferred | OPEN | P3 | WP62 adds deterministic metadata-only local key comparison only. No semantic similarity, fuzzy match, embedding, or LLM-based equivalence detection is implemented. | Any WP that adds semantic or fuzzy cross-market matching. | Future approved WP explicitly scopes semantic/fuzzy/LLM matching and confirms non-signal boundary. |
+| WP62-D002 | Price-incoherence/arbitrage/opportunity detection remains forbidden until explicit future WP | OPEN | P3 | WP62 adds metadata-only relationship candidates only. No price comparison, incoherence detection, arbitrage detection, or opportunity scoring is implemented or authorized. | Any WP that adds cross-market price comparison, incoherence scoring, arbitrage detection, or opportunity detection. | Future approved WP explicitly authorizes the scope, non-signal boundaries, and security/compliance gates. |
+| WP62-D003 | Cross-market relationship metadata not integrated into scorer weights | OPEN | P3 | WP62 adds relationship metadata to market_context only. No new score component, no scorer weight change, and no advisory consumer integration is added. | Any WP that integrates cross-market relationship metadata into scorer weights or advisory consumer output. | Future approved WP explicitly scopes integration with the scorer and preserves non-signal boundaries. |
 
 ## Rules For Adding Items
 
@@ -1528,6 +1531,35 @@ forbidden until explicit future WP (OPEN, P3).
 | WP61-D003 | VPS/runtime scheduler deferred | OPEN | P3 | WP61 locks local development first and cheap VPS later for controlled live pilot planning. No deployment, scheduler, bot loop, or hosted runtime implementation is added. | Future approved WP explicitly scopes runtime/deployment work and protected-boundary review. | Candidate: future deployment/runtime design WP, not implementation by default. |
 | WP61-D004 | Paper/live execution ladder phases deferred | OPEN | P3 | WP61 locks the phased ladder research-only -> paper -> dry-run -> manual live approval -> restricted live. No phase after research-only is implemented or authorized. | Future approved WP explicitly authorizes the next phase and satisfies protected-boundary gates. | Candidate: future paper design only after research-data foundations mature. |
 | WP61-D005 | Slippage/fill/tradability/execution modeling remains forbidden until explicit future WP | OPEN | P3 | WP61 adds only advisory local order-book metadata. It does not add slippage, fill probability, tradability, execution-confidence, order-size, or downstream modeling. | Future approved WP explicitly scopes modeling and preserves non-signal boundaries. | Candidate: future execution-realism design after data-quality foundations mature. |
+
+## WP62 Repo-Truth Reconciliation And Cross-Market Relationship Metadata V1 Deferred Items
+
+WP62 reconciles repo truth after WP61 merge (WP61 is now listed in merged WPs).
+WP62 adds deterministic, metadata-only `cross_market_relationships` sub-dict to
+`src/data_layer/market_research_priority_features.py`.
+
+WP62 is local/offline/read-only research-data feature extraction. It adds no
+database, dashboard, runtime, deployment, scheduler, bot loop, credentials,
+dependency, lock-file, network, parser, report writer, advisory consumer
+integration, scorer implementation change, scorer weight change, paper trading,
+live trading, semantic matching, fuzzy matching, price comparison, arbitrage
+detection, or execution behavior.
+
+WP62 does not resolve WP62-D001, WP62-D002, or WP62-D003 as those remain
+explicitly deferred.
+
+WP62-D001 is added: Semantic/fuzzy/LLM cross-market matching remains deferred
+(OPEN, P3).
+WP62-D002 is added: Price-incoherence/arbitrage/opportunity detection remains
+forbidden until explicit future WP (OPEN, P3).
+WP62-D003 is added: Cross-market relationship metadata not integrated into
+scorer weights (OPEN, P3).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP62-D001 | Semantic/fuzzy/LLM cross-market matching remains deferred | OPEN | P3 | WP62 adds deterministic metadata-only local key comparison only. No semantic similarity, fuzzy match, embedding, or LLM-based equivalence detection is implemented. | Future approved WP explicitly scopes semantic/fuzzy/LLM matching and confirms non-signal boundary. | Candidate: future NLP/semantic matching WP after research-data foundations mature. |
+| WP62-D002 | Price-incoherence/arbitrage/opportunity detection remains forbidden until explicit future WP | OPEN | P3 | WP62 adds metadata-only relationship candidates only. No price comparison, incoherence detection, arbitrage detection, or opportunity scoring is implemented or authorized. | Future approved WP explicitly authorizes the scope, non-signal boundaries, and security/compliance gates. | Candidate: forbidden until explicit future WP. |
+| WP62-D003 | Cross-market relationship metadata not integrated into scorer weights | OPEN | P3 | WP62 adds relationship metadata to market_context only. No new score component, no scorer weight change, and no advisory consumer integration is added. | Future approved WP explicitly scopes integration with the scorer and preserves non-signal boundaries. | Candidate: future scorer integration WP after cross-market metadata matures. |
 
 ## WP6 Generated Artifact Incident Update
 
