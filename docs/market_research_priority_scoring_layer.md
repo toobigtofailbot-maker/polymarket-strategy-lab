@@ -2,13 +2,13 @@
 
 ## 1. Status
 
-- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_ON_BRANCH
-- WP: WP44 (design merged); WP48 (schema/contract merged); WP49 (core scorer merged); WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata merged); WP62 (cross-market relationship metadata on branch)
+- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_ON_BRANCH
+- WP: WP44 (design merged); WP48 (schema/contract merged); WP49 (core scorer merged); WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
 - Tooling impact: NO_NEW_TOOLING
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
-- Source impact: WP44 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED; WP55 — NO_SRC_CHANGE; WP56 — LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED; WP57 — LOCAL_OFFLINE_READ_ONLY_LABEL_FEATURE_EXTRACTION_ADDED; WP62 — LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_ADDED
+- Source impact: WP44 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED; WP55 — NO_SRC_CHANGE; WP56 — LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED; WP57 — LOCAL_OFFLINE_READ_ONLY_LABEL_FEATURE_EXTRACTION_ADDED; WP62 — LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_ADDED; WP63 — LOCAL_OFFLINE_READ_ONLY_RESOLUTION_SOURCE_HIERARCHY_METADATA_ADDED
 - Validation impact: NO_VALIDATION_WEAKENING
 - Protected-boundary impact: NO_PROTECTED_BOUNDARY_CHANGE
 - Agent runtime impact: NO_AGENT_RUNTIME
@@ -16,8 +16,8 @@
 - LLM/provider impact: NO_LLM_PROVIDER_RUNTIME
 - Trading impact: NO_TRADING_EXECUTION
 - Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_MERGED
-- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_ON_BRANCH
-- Scorer weights/components: UNCHANGED_IN_WP62; resolution_ambiguity, microstructure_quality, and cross_market_relationships sub-dicts are advisory-only metadata, not score components
+- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_ON_BRANCH
+- Scorer weights/components: UNCHANGED_IN_WP63; resolution_ambiguity, microstructure_quality, cross_market_relationships, and resolution_source_hierarchy sub-dicts are advisory-only metadata, not score components
 - CLI/export/report implementation: NOT_STARTED
 - Advisory consumer integration: NOT_STARTED
 
@@ -47,6 +47,13 @@ sub-dict in market contexts. It is deterministic local relationship metadata for
 human research triage only. It does not change scorer weights/components, does
 not perform semantic matching or price comparison, and must not be read as a
 trading interpretation or automated equivalence claim.
+
+WP63 adds Resolution Source Hierarchy Metadata V1 as a `resolution_source_hierarchy`
+sub-dict always present in every market context. It is deterministic local field
+presence metadata for human research review only. It does not change scorer
+weights/components, does not implement a resolution-rule parser, does not monitor
+official sources, does not perform automated source authority judgment, and must
+not be read as an outcome prediction, resolution authority claim, or trading signal.
 
 The formal schema and output contract for this layer is defined in
 `docs/market_research_priority_scoring_output_contract.md` (WP48, merged).
