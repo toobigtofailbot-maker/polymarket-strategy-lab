@@ -348,12 +348,20 @@ def test_project_status_reflects_wp53_merged() -> None:
     assert "WP53" in merged_line
 
 
-def test_project_status_reflects_wp62_current() -> None:
+def test_project_status_reflects_wp63_current() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP62" in phase_line
+    assert "WP63" in phase_line
+
+
+def test_project_status_reflects_wp62_merged() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP62" in merged_line
 
 
 def test_project_status_reflects_wp61_merged() -> None:
@@ -380,12 +388,12 @@ def test_project_status_reflects_wp59_merged() -> None:
     assert "WP59" in merged_line
 
 
-def test_project_status_reflects_wp62_branch() -> None:
+def test_project_status_reflects_wp63_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp62-cross-market-relationship-metadata-v1" in branch_line
+    assert "wp63-resolution-source-hierarchy-metadata-v1" in branch_line
 
 
 def test_project_status_reflects_wp60a_merged() -> None:

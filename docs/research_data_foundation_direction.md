@@ -2,8 +2,8 @@
 
 ## A. Status
 
-- WP: WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (architecture direction lock-in and microstructure quality metadata merged); WP62 (cross-market relationship metadata on branch)
-- Package class: DOCS_ONLY_DIRECTION_LOCK_MERGED; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; GOVERNANCE_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; ARCHITECTURE_DIRECTION_MERGED; LOCAL_OFFLINE_READ_ONLY_MICROSTRUCTURE_QUALITY_MERGED; LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_ON_BRANCH
+- WP: WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (architecture direction lock-in and microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata on branch)
+- Package class: DOCS_ONLY_DIRECTION_LOCK_MERGED; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; GOVERNANCE_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; ARCHITECTURE_DIRECTION_MERGED; LOCAL_OFFLINE_READ_ONLY_MICROSTRUCTURE_QUALITY_MERGED; LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; LOCAL_OFFLINE_READ_ONLY_RESOLUTION_SOURCE_HIERARCHY_ON_BRANCH
 - WP50 merge commit: 180a6547114824890851d6ba7e34ab96e7ddd4b8
 - WP51 merge commit: c57b9c0adcc044f8bd9ed01a6368f2fafdbe222f
 - WP52 merge commit: 259fac091a3b8d0d22aaab13345f440d5a958af2
@@ -20,7 +20,7 @@
 - Paper trading impact: NO_PAPER_TRADING
 - Hermes impact: NO_HERMES_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
-- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED_IN_WP51; DATA_INTEGRITY_HARDENING_MERGED_IN_WP53; NO_FEATURE_EXTRACTION_IN_WP54; NO_FEATURE_EXTRACTION_IN_WP55; NO_FEATURE_EXTRACTION_IN_WP56; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED_IN_WP57; MICROSTRUCTURE_QUALITY_MERGED_IN_WP61; CROSS_MARKET_RELATIONSHIP_METADATA_ON_BRANCH_IN_WP62
+- Feature extraction implementation: NO_FEATURE_EXTRACTION_IMPLEMENTATION_IN_WP50; LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED_IN_WP51; DATA_INTEGRITY_HARDENING_MERGED_IN_WP53; NO_FEATURE_EXTRACTION_IN_WP54; NO_FEATURE_EXTRACTION_IN_WP55; NO_FEATURE_EXTRACTION_IN_WP56; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED_IN_WP57; MICROSTRUCTURE_QUALITY_MERGED_IN_WP61; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED_IN_WP62; RESOLUTION_SOURCE_HIERARCHY_ON_BRANCH_IN_WP63
 - WP51 scope: local/offline/read-only feature extraction foundation only; no CLI/export/report; no microstructure depth/slippage; no resolution ambiguity parser; no strategy/paper/live/execution
 - WP52 scope: docs/tests-only long-term bot roadmap and Side 4.0 onboarding lock; no source/tools/runtime/dependency changes
 - WP53 scope: local/offline/read-only data-integrity hardening only; provenance/staleness/missing-data enforcement; no CLI/export/report; no advisory consumer; no strategy/paper/live/execution
@@ -30,6 +30,7 @@
 - WP57 scope: local/offline/read-only feature extraction from validated manual labels; build_resolution_ambiguity_label_index(), resolution_ambiguity sub-dict in market contexts; advisory-only metadata; no parser; no automated extraction; no scorer weight changes; no advisory consumer integration; no CLI/export/report; no dependency changes; future parser/scorer/reporting gates remain explicit
 - WP61 scope: architecture planning constraints plus Microstructure Quality V1 metadata; `microstructure_quality` sub-dict in market contexts; local/offline/read-only; no database/dashboard/runtime/deployment/scheduler/bot loop/credentials/network/scorer weight changes/paper-live execution
 - WP62 scope: repo-truth reconciliation plus Cross-Market Relationship Metadata V1; `cross_market_relationships` sub-dict in market contexts; deterministic local key comparison only; no semantic matching; no price comparison; no automated equivalence claim; no scorer weight changes; local/offline/read-only
+- WP63 scope: repo-truth reconciliation plus Resolution Source Hierarchy Metadata V1; `resolution_source_hierarchy` sub-dict always present in market contexts; deterministic local field presence checks (resolution_date timing, question text source/URL detection); no resolution-rule parser; no source authority judgment; no official-source monitoring; no scorer weight changes; local/offline/read-only
 
 ## A1. Long-Term Roadmap Cross-Reference
 

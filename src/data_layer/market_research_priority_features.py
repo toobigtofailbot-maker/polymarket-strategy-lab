@@ -4,6 +4,7 @@ WP51 first feature-extraction foundation. WP53 provenance/staleness/missing-data
 hardening. WP57 resolution ambiguity label feature extraction from validated manual
 labels. WP61 microstructure quality metadata from local order-book snapshots.
 WP62 cross-market relationship metadata from deterministic local key comparison.
+WP63 resolution source hierarchy metadata from deterministic local field presence.
 Advisory-only. Not a trading signal. Not expected return. Not investment advice.
 Not position sizing. Not an execution instruction. Human review required before
 any use.
@@ -41,7 +42,7 @@ from src.data_layer.resolution_ambiguity_labels import (
 )
 
 FEATURE_EXTRACTION_SCOPE = "local/offline/read-only feature extraction foundation"
-FEATURE_EXTRACTION_VERSION = "wp62-v1"
+FEATURE_EXTRACTION_VERSION = "wp63-v1"
 
 DEFAULT_METADATA_FRESHNESS_THRESHOLD_SECONDS: int = 86400   # 24 hours
 DEFAULT_ORDERBOOK_FRESHNESS_THRESHOLD_SECONDS: int = 3600   # 1 hour
@@ -420,6 +421,127 @@ def _build_cross_market_relationships(
         "automated_equivalence_claim": False,
         "manual_review_required": manual_review_required,
         "relationship_warnings": warnings,
+        "advisory_label": _ADVISORY_LABEL,
+    }
+
+
+# ── Resolution source hierarchy helpers ──────────────────────────────────────
+
+def _build_resolution_source_hierarchy(
+    record: MarketMetadataSnapshotRecord,
+) -> dict:
+    """Build advisory-only local resolution-source hierarchy metadata.
+
+    Deterministic field presence and simple substring checks only.
+    No resolution-rule parsing. No source authority judgment.
+    No official-source monitoring. No network. No writes.
+    Advisory-only. Human review required.
+
+    The current MarketMetadataSnapshotRecord model exposes resolution_date and
+    question as the only locally available fields relevant to resolution-source
+    metadata. All automated-authority, automated-interpretation, and
+    official-source-monitoring flags are always False.
+    """
+    warnings: list[str] = []
+
+    # Timing fields: resolution_date is the only local timing field in the model
+    timing_fields: list[str] = []
+    if record.resolution_date and str(record.resolution_date).strip():
+        timing_fields.append("resolution_date")
+    timing_fields = sorted(timing_fields)
+    cutoff_timing_observed = bool(timing_fields)
+    resolution_timing_observed = bool(timing_fields)
+
+    # Source text fields: non-empty text fields that may carry source hints
+    source_text_fields: list[str] = []
+    question_text = record.question or ""
+    if question_text.strip():
+        source_text_fields.append("question")
+    source_text_fields = sorted(source_text_fields)
+
+    # URL detection in question text (simple substring count — no fetch, no validation)
+    http_count = question_text.count("http://")
+    https_count = question_text.count("https://")
+    source_url_count = http_count + https_count
+    source_url_observed = source_url_count > 0
+
+    # Primary source observed: True only when a URL pattern is found in local text
+    primary_source_observed = source_url_observed
+
+    # No dedicated official_source_reference, resolution_rules, or resolution_source
+    # fields exist in the current MarketMetadataSnapshotRecord model
+    official_source_reference_observed = False
+    resolution_rules_text_observed = False
+
+    # Source reference count: dedicated resolution-source reference fields (not timing)
+    # No such fields exist in the current model
+    source_reference_count = 0
+
+    # source_metadata_available: any timing or source text locally observed
+    source_metadata_available = bool(
+        timing_fields or source_text_fields or source_url_observed
+    )
+
+    # manual_source_review_required: True when source hierarchy is incomplete
+    manual_source_review_required = (
+        not source_metadata_available
+        or not cutoff_timing_observed
+        or not primary_source_observed
+        or not official_source_reference_observed
+    )
+
+    # Build warnings
+    if not source_metadata_available:
+        warnings.append(
+            "No local resolution-source metadata observed; "
+            "manual source review is required."
+        )
+    else:
+        if source_text_fields and not cutoff_timing_observed:
+            warnings.append(
+                "Local source text metadata observed without local cutoff or "
+                "resolution timing metadata."
+            )
+        if timing_fields and not source_text_fields and not source_url_observed:
+            warnings.append(
+                "Local resolution timing metadata observed without local source or "
+                "rules text; manual source review is required."
+            )
+        if source_url_observed:
+            warnings.append(
+                "Source URL pattern observed in local text field; "
+                "URL was not fetched, validated, or verified online; "
+                "manual source review is required."
+            )
+        if not source_url_observed and not official_source_reference_observed:
+            warnings.append(
+                "No local resolution-source reference or URL observed; "
+                "manual source review is required."
+            )
+
+    if not warnings:
+        warnings.append(
+            "No local resolution-source metadata observed; "
+            "manual source review is required."
+        )
+
+    return {
+        "source_metadata_available": source_metadata_available,
+        "primary_source_observed": primary_source_observed,
+        "official_source_reference_observed": official_source_reference_observed,
+        "resolution_rules_text_observed": resolution_rules_text_observed,
+        "cutoff_timing_observed": cutoff_timing_observed,
+        "resolution_timing_observed": resolution_timing_observed,
+        "source_url_observed": source_url_observed,
+        "source_text_fields_observed": source_text_fields,
+        "timing_fields_observed": timing_fields,
+        "source_reference_count": source_reference_count,
+        "source_url_count": source_url_count,
+        "manual_source_review_required": manual_source_review_required,
+        "automated_source_authority_judgment": False,
+        "automated_resolution_interpretation": False,
+        "official_source_monitoring_performed": False,
+        "resolution_source_warnings": warnings,
         "advisory_label": _ADVISORY_LABEL,
     }
 
@@ -1164,6 +1286,9 @@ def extract_market_research_priority_context(
     WP62: cross_market_relationship_index adds deterministic local relationship
     metadata. When None, relationship_metadata_available is False.
 
+    WP63: resolution_source_hierarchy is always present. Derived from deterministic
+    local field presence checks on the supplied record. No parser. No network.
+
     Args:
         record: market metadata snapshot record to extract from.
         manifests: iterable of SnapshotManifest objects for provenance lookup.
@@ -1218,6 +1343,7 @@ def extract_market_research_priority_context(
     cross_market_relationships = _build_cross_market_relationships(
         record, cross_market_relationship_index
     )
+    resolution_source_hierarchy = _build_resolution_source_hierarchy(record)
     # Pass resolution_ambiguity to quality_gates only when a label index was explicitly
     # provided; otherwise omit it so the deferred-item caveat is not added superfluously.
     quality_gates = _build_quality_gates(
@@ -1248,8 +1374,9 @@ def extract_market_research_priority_context(
     if not explanation_parts:
         explanation_parts.append("basic metadata and provenance present")
     component_explanation = (
-        f"WP62 feature extraction (hardened + resolution ambiguity labels + "
-        f"microstructure metadata + cross-market relationship metadata). Advisory-only. "
+        f"WP63 feature extraction (hardened + resolution ambiguity labels + "
+        f"microstructure metadata + cross-market relationship metadata + "
+        f"resolution source hierarchy metadata). Advisory-only. "
         f"Notes: {'; '.join(explanation_parts)}."
     )
 
@@ -1267,6 +1394,7 @@ def extract_market_research_priority_context(
         "resolution_ambiguity": resolution_ambiguity,
         "microstructure_quality": microstructure_quality,
         "cross_market_relationships": cross_market_relationships,
+        "resolution_source_hierarchy": resolution_source_hierarchy,
     }
 
 
@@ -1348,7 +1476,7 @@ def build_market_research_priority_run_context(
         artifacts = dict(artifacts)
         artifacts["snapshot_id"] = snapshot_id
 
-    run_id = f"wp62-run-{uuid.uuid4().hex[:12]}"
+    run_id = f"wp63-run-{uuid.uuid4().hex[:12]}"
 
     return {
         "generated_at_utc": generated_at_utc.isoformat(),

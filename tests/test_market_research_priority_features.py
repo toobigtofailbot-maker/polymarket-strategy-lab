@@ -1160,8 +1160,8 @@ def test_requires_recapture_false_when_fresh():
 
 # ── Version constant ──────────────────────────────────────────────────────────
 
-def test_feature_extraction_version_is_wp61():
-    assert FEATURE_EXTRACTION_VERSION == "wp62-v1"
+def test_feature_extraction_version_is_wp63():
+    assert FEATURE_EXTRACTION_VERSION == "wp63-v1"
 
 
 # ── Project status checks ─────────────────────────────────────────────────────
@@ -1725,7 +1725,7 @@ def test_project_status_current_phase_is_wp58_or_later():
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP58", "WP59", "WP60", "WP61", "WP62")), (
+    assert any(wp in current_phase_line for wp in ("WP58", "WP59", "WP60", "WP61", "WP62", "WP63")), (
         f"Expected WP58 or later in current phase line: {current_phase_line}"
     )
 
@@ -1736,7 +1736,7 @@ def test_project_status_current_branch_is_wp59_or_later():
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp59", "wp60", "wp61", "wp62")), (
+    assert any(wp in branch_line for wp in ("wp59", "wp60", "wp61", "wp62", "wp63")), (
         f"Expected wp59 or later branch in branch line: {branch_line}"
     )
 
@@ -2278,42 +2278,323 @@ def test_manual_review_required_false_when_no_related_candidates():
     assert ctx1b["cross_market_relationships"]["manual_review_required"] is False
 
 
-# 25. Docs project_status reconciliation guard (WP62)
+# 25. Docs project_status reconciliation guard (WP62 → updated for WP63)
 
-def test_project_status_current_phase_is_wp62_or_later():
+def test_project_status_current_phase_is_wp63_or_later():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP62" in current_phase_line, (
-        f"Expected WP62 in current phase line: {current_phase_line}"
+    assert "WP63" in current_phase_line, (
+        f"Expected WP63 in current phase line: {current_phase_line}"
     )
 
 
-def test_project_status_current_branch_is_wp62():
+def test_project_status_current_branch_is_wp63():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp62" in branch_line, (
-        f"Expected wp62 in current branch line: {branch_line}"
+    assert "wp63" in branch_line, (
+        f"Expected wp63 in current branch line: {branch_line}"
     )
 
 
-def test_project_status_includes_wp61_in_merged_wps():
+def test_project_status_includes_wp62_in_merged_wps():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
     for line in content.splitlines():
         if line.startswith("- Merged WPs:"):
-            assert "WP61" in line, "WP61 must be listed in Merged WPs"
+            assert "WP62" in line, "WP62 must be listed in Merged WPs"
             break
 
 
-def test_project_status_cross_market_metadata_on_branch():
+def test_project_status_cross_market_metadata_merged():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
-    assert "CROSS_MARKET_RELATIONSHIP_METADATA_ON_BRANCH" in content or "cross-market" in content.lower(), (
-        "project_status.md must reference cross-market relationship metadata on branch"
+    assert (
+        "CROSS_MARKET_RELATIONSHIP_METADATA_MERGED" in content
+        or "cross-market" in content.lower()
+    ), "project_status.md must reference cross-market relationship metadata as merged"
+
+
+# 26. WP63 resolution source hierarchy metadata tests
+
+def test_resolution_source_hierarchy_always_present():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
     )
+    assert "resolution_source_hierarchy" in ctx
+    rsh = ctx["resolution_source_hierarchy"]
+    assert isinstance(rsh, dict)
+
+
+def test_resolution_source_hierarchy_required_fields():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    for field in (
+        "source_metadata_available",
+        "primary_source_observed",
+        "official_source_reference_observed",
+        "resolution_rules_text_observed",
+        "cutoff_timing_observed",
+        "resolution_timing_observed",
+        "source_url_observed",
+        "source_text_fields_observed",
+        "timing_fields_observed",
+        "source_reference_count",
+        "source_url_count",
+        "manual_source_review_required",
+        "automated_source_authority_judgment",
+        "automated_resolution_interpretation",
+        "official_source_monitoring_performed",
+        "resolution_source_warnings",
+        "advisory_label",
+    ):
+        assert field in rsh, f"resolution_source_hierarchy missing field: {field}"
+
+
+def test_no_source_metadata_returns_unavailable_defaults():
+    record = _make_record(question="", resolution_date=None)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert rsh["source_metadata_available"] is False
+    assert rsh["primary_source_observed"] is False
+    assert rsh["official_source_reference_observed"] is False
+    assert rsh["source_reference_count"] == 0
+    assert rsh["source_url_count"] == 0
+    assert rsh["manual_source_review_required"] is True
+    assert isinstance(rsh["resolution_source_warnings"], list)
+    assert len(rsh["resolution_source_warnings"]) > 0
+    warning_text = " ".join(rsh["resolution_source_warnings"])
+    assert "manual source review" in warning_text.lower()
+
+
+def test_timing_field_observed_from_resolution_date():
+    record = _make_record(resolution_date="2026-06-01T00:00:00+00:00")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert rsh["cutoff_timing_observed"] is True
+    assert rsh["resolution_timing_observed"] is True
+    assert "resolution_date" in rsh["timing_fields_observed"]
+
+
+def test_no_timing_when_resolution_date_absent():
+    record = _make_record(resolution_date=None)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert rsh["cutoff_timing_observed"] is False
+    assert rsh["resolution_timing_observed"] is False
+    assert rsh["timing_fields_observed"] == []
+
+
+def test_source_text_field_from_question():
+    record = _make_record(question="Will X happen?")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert "question" in rsh["source_text_fields_observed"]
+
+
+def test_no_source_text_field_when_question_empty():
+    record = _make_record(question="")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert "question" not in rsh["source_text_fields_observed"]
+
+
+def test_source_url_observed_when_url_in_question():
+    record = _make_record(question="See https://example.com for details.")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert rsh["source_url_observed"] is True
+    assert rsh["source_url_count"] >= 1
+    assert rsh["primary_source_observed"] is True
+
+
+def test_source_url_not_fetched_or_validated():
+    record = _make_record(question="See https://example.com/data for details.")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert rsh["official_source_monitoring_performed"] is False
+    assert rsh["automated_source_authority_judgment"] is False
+    assert rsh["automated_resolution_interpretation"] is False
+
+
+def test_source_url_count_increments_per_occurrence():
+    record = _make_record(
+        question="See https://a.com and https://b.com for resolution info."
+    )
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert rsh["source_url_count"] >= 2
+
+
+def test_source_text_with_no_timing_produces_warning():
+    record = _make_record(question="Will X happen?", resolution_date=None)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert rsh["cutoff_timing_observed"] is False
+    combined = " ".join(rsh["resolution_source_warnings"]).lower()
+    assert "timing" in combined or "manual" in combined
+
+
+def test_manual_source_review_required_always_true_without_official_source():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert rsh["manual_source_review_required"] is True
+    assert rsh["official_source_reference_observed"] is False
+
+
+def test_automated_authority_judgment_always_false():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["resolution_source_hierarchy"]["automated_source_authority_judgment"] is False
+
+
+def test_automated_resolution_interpretation_always_false():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["resolution_source_hierarchy"]["automated_resolution_interpretation"] is False
+
+
+def test_official_source_monitoring_always_false():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert ctx["resolution_source_hierarchy"]["official_source_monitoring_performed"] is False
+
+
+def test_timing_fields_list_sorted_and_deterministic():
+    record = _make_record(resolution_date="2026-06-01T00:00:00+00:00")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    fields = rsh["timing_fields_observed"]
+    assert fields == sorted(fields)
+
+
+def test_source_text_fields_list_sorted_and_deterministic():
+    record = _make_record(question="Will X happen?")
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    fields = rsh["source_text_fields_observed"]
+    assert fields == sorted(fields)
+
+
+def test_resolution_source_warnings_avoid_forbidden_trading_wording():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    warnings_text = " ".join(ctx["resolution_source_hierarchy"]["resolution_source_warnings"]).lower()
+    for forbidden in ("alpha", "edge", "arbitrage", "buy", "sell", "entry", "exit",
+                       "position size", "leverage", "expected return", "tradability",
+                       "tradable", "tradeable", "fill probability", "slippage"):
+        assert forbidden not in warnings_text, (
+            f"Forbidden wording '{forbidden}' found in resolution_source_warnings"
+        )
+
+
+def test_advisory_label_present():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert rsh["advisory_label"] == "ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED"
+
+
+def test_resolution_source_hierarchy_present_in_batch():
+    records = [_make_record(market_id=f"mkt-{i:03d}") for i in range(3)]
+    ctxs = extract_market_research_priority_contexts(records, generated_at_utc=_REFERENCE_UTC)
+    for ctx in ctxs:
+        assert "resolution_source_hierarchy" in ctx
+        assert isinstance(ctx["resolution_source_hierarchy"], dict)
+
+
+def test_existing_resolution_ambiguity_still_present_after_wp63():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert "resolution_ambiguity" in ctx
+    assert isinstance(ctx["resolution_ambiguity"], dict)
+
+
+def test_existing_microstructure_quality_still_present_after_wp63():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert "microstructure_quality" in ctx
+    assert isinstance(ctx["microstructure_quality"], dict)
+
+
+def test_existing_cross_market_relationships_still_present_after_wp63():
+    record = _make_record()
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    assert "cross_market_relationships" in ctx
+    assert isinstance(ctx["cross_market_relationships"], dict)
+
+
+def test_scorer_still_compatible_after_wp63():
+    record = _make_record()
+    manifest = _make_manifest()
+    run_ctx = build_market_research_priority_run_context(
+        snapshot_id=record.snapshot_id,
+        manifests=[manifest],
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    market_ctx = extract_market_research_priority_context(
+        record=record,
+        manifests=[manifest],
+        generated_at_utc=_REFERENCE_UTC,
+    )
+    output = build_market_research_priority_output(run_ctx, market_ctx)
+    assert_market_research_priority_output(output)
+
+
+def test_project_status_resolution_source_hierarchy_on_branch():
+    status_file = ROOT / "docs" / "project_status.md"
+    content = status_file.read_text(encoding="utf-8")
+    assert (
+        "RESOLUTION_SOURCE_HIERARCHY" in content
+        or "resolution source hierarchy" in content.lower()
+    ), "project_status.md must reference resolution source hierarchy metadata"

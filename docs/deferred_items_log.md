@@ -106,6 +106,10 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP62-D001 | Semantic/fuzzy/LLM cross-market matching remains deferred | OPEN | P3 | WP62 adds deterministic metadata-only local key comparison only. No semantic similarity, fuzzy match, embedding, or LLM-based equivalence detection is implemented. | Any WP that adds semantic or fuzzy cross-market matching. | Future approved WP explicitly scopes semantic/fuzzy/LLM matching and confirms non-signal boundary. |
 | WP62-D002 | Price-incoherence/arbitrage/opportunity detection remains forbidden until explicit future WP | OPEN | P3 | WP62 adds metadata-only relationship candidates only. No price comparison, incoherence detection, arbitrage detection, or opportunity scoring is implemented or authorized. | Any WP that adds cross-market price comparison, incoherence scoring, arbitrage detection, or opportunity detection. | Future approved WP explicitly authorizes the scope, non-signal boundaries, and security/compliance gates. |
 | WP62-D003 | Cross-market relationship metadata not integrated into scorer weights | OPEN | P3 | WP62 adds relationship metadata to market_context only. No new score component, no scorer weight change, and no advisory consumer integration is added. | Any WP that integrates cross-market relationship metadata into scorer weights or advisory consumer output. | Future approved WP explicitly scopes integration with the scorer and preserves non-signal boundaries. |
+| WP63-D001 | Automated resolution-rule parser remains deferred | OPEN | P3 | WP63 adds metadata-only field presence checks only. No resolution-rule parsing, NLP extraction, or automated rule interpretation is implemented. | Any WP that adds a resolution-rule parser. | Future approved WP explicitly scopes a resolution-rule parser and confirms non-signal boundary. |
+| WP63-D002 | Official-source monitoring/polling remains deferred | OPEN | P3 | WP63 detects source URL patterns in local text only. No official-source monitoring, URL fetching, source polling, or network access is implemented. | Any WP that adds official-source monitoring or network-backed source verification. | Future approved WP explicitly authorizes official-source monitoring with network/auth boundary review. |
+| WP63-D003 | Source authority ranking remains deferred | OPEN | P3 | WP63 adds only presence/absence metadata flags. No source ranking, authority scoring, or source hierarchy ordering is implemented. | Any WP that adds source authority ranking or scoring. | Future approved WP explicitly scopes source authority ranking and preserves non-signal boundaries. |
+| WP63-D004 | Resolution source hierarchy metadata not integrated into scorer weights | OPEN | P3 | WP63 adds resolution_source_hierarchy to market_context only. No new score component, no scorer weight change, and no advisory consumer integration is added. | Any WP that integrates resolution source hierarchy metadata into scorer weights or advisory consumer output. | Future approved WP explicitly scopes integration with the scorer and preserves non-signal boundaries. |
 
 ## Rules For Adding Items
 
@@ -1560,6 +1564,39 @@ scorer weights (OPEN, P3).
 | WP62-D001 | Semantic/fuzzy/LLM cross-market matching remains deferred | OPEN | P3 | WP62 adds deterministic metadata-only local key comparison only. No semantic similarity, fuzzy match, embedding, or LLM-based equivalence detection is implemented. | Future approved WP explicitly scopes semantic/fuzzy/LLM matching and confirms non-signal boundary. | Candidate: future NLP/semantic matching WP after research-data foundations mature. |
 | WP62-D002 | Price-incoherence/arbitrage/opportunity detection remains forbidden until explicit future WP | OPEN | P3 | WP62 adds metadata-only relationship candidates only. No price comparison, incoherence detection, arbitrage detection, or opportunity scoring is implemented or authorized. | Future approved WP explicitly authorizes the scope, non-signal boundaries, and security/compliance gates. | Candidate: forbidden until explicit future WP. |
 | WP62-D003 | Cross-market relationship metadata not integrated into scorer weights | OPEN | P3 | WP62 adds relationship metadata to market_context only. No new score component, no scorer weight change, and no advisory consumer integration is added. | Future approved WP explicitly scopes integration with the scorer and preserves non-signal boundaries. | Candidate: future scorer integration WP after cross-market metadata matures. |
+
+## WP63 Repo-Truth Reconciliation And Resolution Source Hierarchy Metadata V1 Deferred Items
+
+WP63 reconciles repo truth after WP62 merge (WP62 is now listed in merged WPs).
+WP63 adds deterministic, metadata-only `resolution_source_hierarchy` sub-dict to every
+market context in `src/data_layer/market_research_priority_features.py`, derived from
+local field presence checks only (resolution_date timing, question text source hints and
+URL pattern detection). No resolution-rule parsing, no source authority judgment, no
+official-source monitoring, no network access.
+
+WP63 is local/offline/read-only research-data feature extraction. It adds no
+resolution-rule parser, no automated source authority judgment, no semantic source
+ranking, no official-source monitoring, no source polling, no network access, no file
+writes, no CLI, no export/report writer, no LLM/NLP extraction, no strategy logic,
+no scorer weight changes, no new score components, no advisory consumer integration,
+no runtime, no credentials, no trading, no paper trading, no execution, no database,
+no dashboard, no scheduler.
+
+WP63 does not resolve WP63-D001, WP63-D002, WP63-D003, or WP63-D004 as those remain
+open for future approved WPs.
+
+WP63-D001 is added: Automated resolution-rule parser remains deferred (OPEN, P3).
+WP63-D002 is added: Official-source monitoring/polling remains deferred (OPEN, P3).
+WP63-D003 is added: Source authority ranking remains deferred (OPEN, P3).
+WP63-D004 is added: Resolution source hierarchy metadata not integrated into scorer
+weights (OPEN, P3).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP63-D001 | Automated resolution-rule parser remains deferred | OPEN | P3 | WP63 adds metadata-only field presence checks only. No resolution-rule parsing, NLP extraction, or automated rule interpretation is implemented. | Future approved WP explicitly scopes a resolution-rule parser and confirms non-signal boundary. | Candidate: forbidden until explicit future WP with explicit scope approval. |
+| WP63-D002 | Official-source monitoring/polling remains deferred | OPEN | P3 | WP63 detects source URL patterns in local text only. No official-source monitoring, URL fetching, source polling, or network access is implemented. | Future approved WP explicitly authorizes official-source monitoring with network/auth boundary review. | Candidate: forbidden until explicit future WP. |
+| WP63-D003 | Source authority ranking remains deferred | OPEN | P3 | WP63 adds only presence/absence metadata flags. No source ranking, authority scoring, or source hierarchy ordering is implemented. | Future approved WP explicitly scopes source authority ranking and preserves non-signal boundaries. | Candidate: future approved WP after research-data foundations mature. |
+| WP63-D004 | Resolution source hierarchy metadata not integrated into scorer weights | OPEN | P3 | WP63 adds resolution_source_hierarchy to market_context only. No new score component, no scorer weight change, and no advisory consumer integration is added. | Future approved WP explicitly scopes integration with the scorer and preserves non-signal boundaries. | Candidate: future scorer integration WP after resolution-source metadata matures. |
 
 ## WP6 Generated Artifact Incident Update
 
