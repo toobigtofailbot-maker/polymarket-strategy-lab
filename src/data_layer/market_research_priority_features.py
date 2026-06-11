@@ -3,6 +3,7 @@
 WP51 first feature-extraction foundation. WP53 provenance/staleness/missing-data
 hardening. WP57 resolution ambiguity label feature extraction from validated manual
 labels. WP61 microstructure quality metadata from local order-book snapshots.
+WP62 cross-market relationship metadata from deterministic local key comparison.
 Advisory-only. Not a trading signal. Not expected return. Not investment advice.
 Not position sizing. Not an execution instruction. Human review required before
 any use.
@@ -40,7 +41,7 @@ from src.data_layer.resolution_ambiguity_labels import (
 )
 
 FEATURE_EXTRACTION_SCOPE = "local/offline/read-only feature extraction foundation"
-FEATURE_EXTRACTION_VERSION = "wp61-v1"
+FEATURE_EXTRACTION_VERSION = "wp62-v1"
 
 DEFAULT_METADATA_FRESHNESS_THRESHOLD_SECONDS: int = 86400   # 24 hours
 DEFAULT_ORDERBOOK_FRESHNESS_THRESHOLD_SECONDS: int = 3600   # 1 hour
@@ -204,6 +205,222 @@ def _build_resolution_ambiguity_summary(
         "source_artifact_refs": source_artifact_refs,
         "validation_error_count": index_error_count,
         "validation_warning_count": index_warning_count,
+    }
+
+
+# ── Cross-market relationship helpers ────────────────────────────────────────
+
+def _normalize_text(text: Optional[str]) -> str:
+    """Deterministic normalization: lowercase, strip, collapse internal whitespace."""
+    if not text:
+        return ""
+    return " ".join(text.lower().strip().split())
+
+
+def _normalize_outcome_label_set(labels: Optional[list]) -> Optional[frozenset]:
+    """Return a frozenset of normalized outcome labels, or None if empty."""
+    if not labels:
+        return None
+    normalized = frozenset(_normalize_text(str(lbl)) for lbl in labels if lbl is not None)
+    return normalized if normalized else None
+
+
+def build_cross_market_relationship_index(
+    records: Iterable[MarketMetadataSnapshotRecord],
+) -> dict:
+    """Build a deterministic in-memory cross-market relationship index.
+
+    Indexes only deterministic, metadata-only keys:
+    - normalized question text
+    - condition_id (exact, non-empty)
+    - token_id (each, non-empty)
+    - normalized category + resolution_date
+    - normalized outcome-label set
+
+    No semantic matching. No fuzzy matching. No embeddings. No LLM. No external
+    libraries. No price comparison. No microstructure comparison.
+
+    Returns a dict with sub-dicts keyed by each relationship type, each mapping
+    a key → sorted list of market_ids that share that key.
+    """
+    by_question: dict[str, list[str]] = {}
+    by_condition_id: dict[str, list[str]] = {}
+    by_token_id: dict[str, list[str]] = {}
+    by_category_resolution: dict[tuple, list[str]] = {}
+    by_outcome_label_set: dict[frozenset, list[str]] = {}
+
+    for record in records:
+        market_id = record.market_id
+        if not market_id:
+            continue
+
+        norm_q = _normalize_text(record.question)
+        if norm_q:
+            by_question.setdefault(norm_q, []).append(market_id)
+
+        cid = record.condition_id
+        if cid and str(cid).strip():
+            by_condition_id.setdefault(str(cid).strip(), []).append(market_id)
+
+        for tid in (record.token_ids or []):
+            if tid and str(tid).strip():
+                by_token_id.setdefault(str(tid).strip(), []).append(market_id)
+
+        norm_cat = _normalize_text(record.category)
+        res_date = (record.resolution_date or "").strip()
+        if norm_cat and res_date:
+            key = (norm_cat, res_date)
+            by_category_resolution.setdefault(key, []).append(market_id)
+
+        label_set = _normalize_outcome_label_set(record.outcome_labels)
+        if label_set is not None:
+            by_outcome_label_set.setdefault(label_set, []).append(market_id)
+
+    # Sort all lists for determinism
+    for d in (by_question, by_condition_id, by_token_id):
+        for k in d:
+            d[k] = sorted(set(d[k]))
+    for k in by_category_resolution:
+        by_category_resolution[k] = sorted(set(by_category_resolution[k]))
+    for k in by_outcome_label_set:
+        by_outcome_label_set[k] = sorted(set(by_outcome_label_set[k]))
+
+    return {
+        "by_question": by_question,
+        "by_condition_id": by_condition_id,
+        "by_token_id": by_token_id,
+        "by_category_resolution": by_category_resolution,
+        "by_outcome_label_set": by_outcome_label_set,
+    }
+
+
+def _build_cross_market_relationships(
+    record: MarketMetadataSnapshotRecord,
+    cross_market_relationship_index: Optional[dict],
+) -> dict:
+    """Build cross_market_relationships sub-dict for a single market_context.
+
+    Metadata-only. Deterministic. No semantic matching. No price comparison.
+    No automated equivalence claim. Advisory-only. Human review required.
+
+    When no index is supplied, returns safe unavailable defaults.
+    """
+    if cross_market_relationship_index is None:
+        return {
+            "relationship_metadata_available": False,
+            "same_question_market_ids": [],
+            "same_condition_id_market_ids": [],
+            "shared_token_market_ids": [],
+            "same_category_resolution_market_ids": [],
+            "same_outcome_label_set_market_ids": [],
+            "related_market_candidate_ids": [],
+            "relationship_candidate_count": 0,
+            "relationship_types_observed": [],
+            "metadata_only": True,
+            "semantic_matching_performed": False,
+            "price_comparison_performed": False,
+            "automated_equivalence_claim": False,
+            "manual_review_required": True,
+            "relationship_warnings": [
+                "No local cross-market relationship index supplied; "
+                "relationship metadata is unavailable."
+            ],
+            "advisory_label": _ADVISORY_LABEL,
+        }
+
+    market_id = record.market_id
+    idx = cross_market_relationship_index
+    warnings: list[str] = []
+
+    # same normalized question
+    norm_q = _normalize_text(record.question)
+    same_question: list[str] = []
+    if norm_q:
+        same_question = sorted(
+            mid for mid in idx.get("by_question", {}).get(norm_q, [])
+            if mid != market_id
+        )
+
+    # same condition_id
+    cid = record.condition_id
+    same_condition: list[str] = []
+    if cid and str(cid).strip():
+        same_condition = sorted(
+            mid for mid in idx.get("by_condition_id", {}).get(str(cid).strip(), [])
+            if mid != market_id
+        )
+
+    # shared token_id
+    shared_tokens_set: set[str] = set()
+    for tid in (record.token_ids or []):
+        if tid and str(tid).strip():
+            for mid in idx.get("by_token_id", {}).get(str(tid).strip(), []):
+                if mid != market_id:
+                    shared_tokens_set.add(mid)
+    shared_tokens = sorted(shared_tokens_set)
+
+    # same category + resolution_date
+    norm_cat = _normalize_text(record.category)
+    res_date = (record.resolution_date or "").strip()
+    same_cat_res: list[str] = []
+    if norm_cat and res_date:
+        key = (norm_cat, res_date)
+        same_cat_res = sorted(
+            mid for mid in idx.get("by_category_resolution", {}).get(key, [])
+            if mid != market_id
+        )
+        if same_cat_res:
+            warnings.append(
+                "Same-category-and-resolution-date local relationship metadata candidates "
+                "detected; weak candidate relationship only — human review required."
+            )
+
+    # same outcome-label set
+    label_set = _normalize_outcome_label_set(record.outcome_labels)
+    same_outcome_labels: list[str] = []
+    if label_set is not None:
+        same_outcome_labels = sorted(
+            mid for mid in idx.get("by_outcome_label_set", {}).get(label_set, [])
+            if mid != market_id
+        )
+
+    # union of all relationship lists → related_market_candidate_ids
+    all_related: set[str] = set(same_question) | set(same_condition) | set(shared_tokens) | set(same_cat_res) | set(same_outcome_labels)
+    related_market_candidate_ids = sorted(all_related)
+
+    # relationship_types_observed
+    relationship_types_observed: list[str] = []
+    if same_question:
+        relationship_types_observed.append("same_normalized_question")
+    if same_condition:
+        relationship_types_observed.append("same_condition_id")
+    if shared_tokens:
+        relationship_types_observed.append("shared_token_id")
+    if same_cat_res:
+        relationship_types_observed.append("same_category_and_resolution_date")
+    if same_outcome_labels:
+        relationship_types_observed.append("same_outcome_label_set")
+    relationship_types_observed = sorted(relationship_types_observed)
+
+    manual_review_required = bool(related_market_candidate_ids)
+
+    return {
+        "relationship_metadata_available": True,
+        "same_question_market_ids": same_question,
+        "same_condition_id_market_ids": same_condition,
+        "shared_token_market_ids": shared_tokens,
+        "same_category_resolution_market_ids": same_cat_res,
+        "same_outcome_label_set_market_ids": same_outcome_labels,
+        "related_market_candidate_ids": related_market_candidate_ids,
+        "relationship_candidate_count": len(related_market_candidate_ids),
+        "relationship_types_observed": relationship_types_observed,
+        "metadata_only": True,
+        "semantic_matching_performed": False,
+        "price_comparison_performed": False,
+        "automated_equivalence_claim": False,
+        "manual_review_required": manual_review_required,
+        "relationship_warnings": warnings,
+        "advisory_label": _ADVISORY_LABEL,
     }
 
 
@@ -932,6 +1149,7 @@ def extract_market_research_priority_context(
     metadata_freshness_threshold_seconds: Optional[int] = None,
     orderbook_freshness_threshold_seconds: Optional[int] = None,
     resolution_ambiguity_label_index: Optional[dict] = None,
+    cross_market_relationship_index: Optional[dict] = None,
 ) -> dict:
     """Extract a market_context dict from a MarketMetadataSnapshotRecord.
 
@@ -943,6 +1161,9 @@ def extract_market_research_priority_context(
     missing_data sub-dicts. Critical missing data cannot be silently erased by good
     values elsewhere.
 
+    WP62: cross_market_relationship_index adds deterministic local relationship
+    metadata. When None, relationship_metadata_available is False.
+
     Args:
         record: market metadata snapshot record to extract from.
         manifests: iterable of SnapshotManifest objects for provenance lookup.
@@ -950,6 +1171,9 @@ def extract_market_research_priority_context(
         generated_at_utc: reference time for staleness computation. Defaults to now.
         metadata_freshness_threshold_seconds: staleness threshold for metadata.
         orderbook_freshness_threshold_seconds: staleness threshold for order books.
+        cross_market_relationship_index: optional pre-built relationship index from
+            build_cross_market_relationship_index(). When None, relationship metadata
+            is unavailable. Metadata-only — no price, no microstructure comparison.
 
     Returns:
         dict compatible with build_market_research_priority_output().
@@ -991,6 +1215,9 @@ def extract_market_research_priority_context(
     resolution_ambiguity = _build_resolution_ambiguity_summary(
         record.market_id, resolution_ambiguity_label_index
     )
+    cross_market_relationships = _build_cross_market_relationships(
+        record, cross_market_relationship_index
+    )
     # Pass resolution_ambiguity to quality_gates only when a label index was explicitly
     # provided; otherwise omit it so the deferred-item caveat is not added superfluously.
     quality_gates = _build_quality_gates(
@@ -1021,8 +1248,8 @@ def extract_market_research_priority_context(
     if not explanation_parts:
         explanation_parts.append("basic metadata and provenance present")
     component_explanation = (
-        f"WP61 feature extraction (hardened + resolution ambiguity labels + "
-        f"microstructure metadata). Advisory-only. "
+        f"WP62 feature extraction (hardened + resolution ambiguity labels + "
+        f"microstructure metadata + cross-market relationship metadata). Advisory-only. "
         f"Notes: {'; '.join(explanation_parts)}."
     )
 
@@ -1039,6 +1266,7 @@ def extract_market_research_priority_context(
         "component_explanation": component_explanation,
         "resolution_ambiguity": resolution_ambiguity,
         "microstructure_quality": microstructure_quality,
+        "cross_market_relationships": cross_market_relationships,
     }
 
 
@@ -1053,6 +1281,10 @@ def extract_market_research_priority_contexts(
 
     Returns a list of dicts, each compatible with build_market_research_priority_output().
     Advisory-only. No network. No writes.
+
+    WP62: Builds a deterministic cross-market relationship index over all supplied
+    records and attaches relationship metadata to each context. The current market
+    is excluded from its own related candidate lists. Metadata-only.
 
     Args:
         resolution_ambiguity_labels: optional iterable of manually authored local
@@ -1074,6 +1306,10 @@ def extract_market_research_priority_contexts(
     if resolution_ambiguity_labels is not None:
         label_index = build_resolution_ambiguity_label_index(resolution_ambiguity_labels)
 
+    # Materialize records once so they can be iterated twice (index + extraction)
+    records_list = list(records)
+    relationship_index = build_cross_market_relationship_index(records_list)
+
     return [
         extract_market_research_priority_context(
             record=r,
@@ -1081,8 +1317,9 @@ def extract_market_research_priority_contexts(
             order_books_by_token_id=order_books_by_token_id,
             generated_at_utc=generated_at_utc,
             resolution_ambiguity_label_index=label_index,
+            cross_market_relationship_index=relationship_index,
         )
-        for r in records
+        for r in records_list
     ]
 
 
@@ -1111,7 +1348,7 @@ def build_market_research_priority_run_context(
         artifacts = dict(artifacts)
         artifacts["snapshot_id"] = snapshot_id
 
-    run_id = f"wp61-run-{uuid.uuid4().hex[:12]}"
+    run_id = f"wp62-run-{uuid.uuid4().hex[:12]}"
 
     return {
         "generated_at_utc": generated_at_utc.isoformat(),
