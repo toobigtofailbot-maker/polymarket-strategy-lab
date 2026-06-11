@@ -2400,8 +2400,9 @@ def test_no_timing_when_resolution_date_absent():
     assert rsh["timing_fields_observed"] == []
 
 
-def test_source_text_field_from_question():
-    record = _make_record(question="Will X happen?")
+def test_source_text_field_from_question_with_url():
+    # "question" is only counted as a source text field when it contains a URL.
+    record = _make_record(question="See https://example.com for resolution details.")
     ctx = extract_market_research_priority_context(
         record=record, generated_at_utc=_REFERENCE_UTC
     )
@@ -2451,8 +2452,12 @@ def test_source_url_count_increments_per_occurrence():
     assert rsh["source_url_count"] >= 2
 
 
-def test_source_text_with_no_timing_produces_warning():
-    record = _make_record(question="Will X happen?", resolution_date=None)
+def test_source_url_with_no_timing_produces_warning():
+    # A URL in the question without resolution_date produces a timing-absent warning.
+    record = _make_record(
+        question="See https://example.com for resolution details.",
+        resolution_date=None,
+    )
     ctx = extract_market_research_priority_context(
         record=record, generated_at_utc=_REFERENCE_UTC
     )
@@ -2507,7 +2512,7 @@ def test_timing_fields_list_sorted_and_deterministic():
 
 
 def test_source_text_fields_list_sorted_and_deterministic():
-    record = _make_record(question="Will X happen?")
+    record = _make_record(question="See https://example.com for resolution details.")
     ctx = extract_market_research_priority_context(
         record=record, generated_at_utc=_REFERENCE_UTC
     )
@@ -2589,6 +2594,29 @@ def test_scorer_still_compatible_after_wp63():
     )
     output = build_market_research_priority_output(run_ctx, market_ctx)
     assert_market_research_priority_output(output)
+
+
+def test_plain_question_with_no_source_not_counted_as_source_metadata():
+    # Regression: a non-empty question with no URL and no resolution_date must NOT
+    # make source_metadata_available=True. Plain market title text is not resolution-
+    # source metadata.
+    record = _make_record(question="Will X happen?", resolution_date=None)
+    ctx = extract_market_research_priority_context(
+        record=record, generated_at_utc=_REFERENCE_UTC
+    )
+    rsh = ctx["resolution_source_hierarchy"]
+    assert rsh["source_metadata_available"] is False
+    assert rsh["primary_source_observed"] is False
+    assert rsh["official_source_reference_observed"] is False
+    assert rsh["source_url_observed"] is False
+    assert rsh["source_reference_count"] == 0
+    assert rsh["source_url_count"] == 0
+    assert rsh["manual_source_review_required"] is True
+    assert rsh["automated_source_authority_judgment"] is False
+    assert rsh["automated_resolution_interpretation"] is False
+    assert rsh["official_source_monitoring_performed"] is False
+    warnings_text = " ".join(rsh["resolution_source_warnings"]).lower()
+    assert "manual source review" in warnings_text
 
 
 def test_project_status_resolution_source_hierarchy_on_branch():

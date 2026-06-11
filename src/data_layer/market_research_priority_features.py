@@ -452,18 +452,20 @@ def _build_resolution_source_hierarchy(
     cutoff_timing_observed = bool(timing_fields)
     resolution_timing_observed = bool(timing_fields)
 
-    # Source text fields: non-empty text fields that may carry source hints
-    source_text_fields: list[str] = []
     question_text = record.question or ""
-    if question_text.strip():
-        source_text_fields.append("question")
-    source_text_fields = sorted(source_text_fields)
 
     # URL detection in question text (simple substring count — no fetch, no validation)
     http_count = question_text.count("http://")
     https_count = question_text.count("https://")
     source_url_count = http_count + https_count
     source_url_observed = source_url_count > 0
+
+    # Source text fields: only when the question contains explicit source evidence (URL).
+    # A plain market question (e.g. "Will X happen?") is not resolution-source metadata.
+    source_text_fields: list[str] = []
+    if source_url_observed:
+        source_text_fields.append("question")
+    source_text_fields = sorted(source_text_fields)
 
     # Primary source observed: True only when a URL pattern is found in local text
     primary_source_observed = source_url_observed
@@ -477,9 +479,12 @@ def _build_resolution_source_hierarchy(
     # No such fields exist in the current model
     source_reference_count = 0
 
-    # source_metadata_available: any timing or source text locally observed
+    # source_metadata_available: True only when actual source/reference/URL metadata
+    # is locally observed. Timing fields and plain question text alone are not sufficient.
     source_metadata_available = bool(
-        timing_fields or source_text_fields or source_url_observed
+        source_url_observed
+        or official_source_reference_observed
+        or resolution_rules_text_observed
     )
 
     # manual_source_review_required: True when source hierarchy is incomplete
@@ -497,25 +502,17 @@ def _build_resolution_source_hierarchy(
             "manual source review is required."
         )
     else:
-        if source_text_fields and not cutoff_timing_observed:
+        # source_metadata_available is True only when source_url_observed (or future
+        # official_source_reference_observed / resolution_rules_text_observed).
+        if source_url_observed and not cutoff_timing_observed:
             warnings.append(
-                "Local source text metadata observed without local cutoff or "
-                "resolution timing metadata."
-            )
-        if timing_fields and not source_text_fields and not source_url_observed:
-            warnings.append(
-                "Local resolution timing metadata observed without local source or "
-                "rules text; manual source review is required."
+                "Source URL pattern observed in local text field without local "
+                "cutoff or resolution timing metadata."
             )
         if source_url_observed:
             warnings.append(
                 "Source URL pattern observed in local text field; "
                 "URL was not fetched, validated, or verified online; "
-                "manual source review is required."
-            )
-        if not source_url_observed and not official_source_reference_observed:
-            warnings.append(
-                "No local resolution-source reference or URL observed; "
                 "manual source review is required."
             )
 
