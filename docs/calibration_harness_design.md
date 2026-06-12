@@ -251,4 +251,26 @@ See `docs/resolved_outcome_data_requirements.md` for the companion
 resolved-outcome data requirements design.
 
 See `docs/deferred_items_log.md` for calibration-specific deferred items
-(WP66-D001 through WP66-D004).
+(WP66-D001 through WP66-D004, WP67-D001 through WP67-D004, WP68-D001 through WP68-D004).
+
+## WP68 Update
+
+WP68 adds a local/offline/read-only resolved outcome fixture loader at
+`src/data_layer/resolved_outcome_fixture_loader.py`. The loader accepts explicit local paths
+to JSON fixture files (single object, JSON list, or direct-child *.json directory) and
+validates each record with the WP67 `validate_calibration_record` validator. It returns
+structured results with loaded/valid/invalid/warning counts.
+
+The WP68 fixture loader does NOT implement:
+
+```text
+API or network resolved outcome ingestion
+Calibration metric computation
+Calibration report generation
+Recursive directory scanning
+File writes
+Scoring weight changes
+Paper/live trading
+```
+
+Metric computation, report generation, and API ingestion remain deferred to future phases.
