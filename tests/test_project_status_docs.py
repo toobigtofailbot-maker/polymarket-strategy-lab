@@ -168,12 +168,20 @@ def test_wp57_in_merged_wps_list():
     assert "WP57" in merged_line
 
 
-def test_wp63_is_current_phase():
+def test_wp64_is_current_phase():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP63" in current_phase_line
+    assert "WP64" in current_phase_line
+
+
+def test_wp63_in_merged_wps():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP63" in merged_line
 
 
 def test_wp62_in_merged_wps():
@@ -216,12 +224,12 @@ def test_wp60a_in_merged_wps():
     assert "WP60A" in merged_line
 
 
-def test_wp63_branch_is_current_branch():
+def test_wp64_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp63-resolution-source-hierarchy-metadata-v1" in branch_line
+    assert "wp64-research-queue-report-session-packet-v1" in branch_line
 
 
 def test_wp59_branch_not_current_branch():
