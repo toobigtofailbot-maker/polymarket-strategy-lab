@@ -303,20 +303,22 @@ def test_project_status_has_wp65_in_merged_wps():
     assert "WP65" in merged_line
 
 
-def test_project_status_current_phase_is_wp68():
+def test_project_status_current_phase_is_wp69_or_later():
     text = _read(PROJECT_STATUS)
     phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP68" in phase_line
+    # WP68 is merged; current phase is WP69 or later
+    assert "WP68" in text
+    assert "WP69" in phase_line or "WP70" in phase_line or "WP71" in phase_line
 
 
-def test_project_status_current_branch_is_wp68():
+def test_project_status_wp68_in_merged_wps():
     text = _read(PROJECT_STATUS)
-    branch_line = next(
-        line for line in text.splitlines() if line.startswith("- Current branch:")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "wp68-local-resolved-outcome-fixture-loader-v1" in branch_line
+    assert "WP68" in merged_line
 
 
 def test_project_status_calibration_harness_status_present():

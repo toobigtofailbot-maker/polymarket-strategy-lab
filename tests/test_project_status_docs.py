@@ -168,12 +168,12 @@ def test_wp57_in_merged_wps_list():
     assert "WP57" in merged_line
 
 
-def test_wp68_is_current_phase():
+def test_wp69_is_current_phase():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP68" in current_phase_line
+    assert "WP69" in current_phase_line
 
 
 def test_wp65_in_merged_wps():
@@ -240,12 +240,28 @@ def test_wp60a_in_merged_wps():
     assert "WP60A" in merged_line
 
 
-def test_wp68_branch_is_current_branch():
+def test_wp69_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp68-local-resolved-outcome-fixture-loader-v1" in branch_line
+    assert "wp69-calibration-report-generator-design-v1" in branch_line
+
+
+def test_wp68_in_merged_wps():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP68" in merged_line
+
+
+def test_wp68_branch_not_current_branch():
+    text = _read()
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp68-local-resolved-outcome-fixture-loader-v1" not in branch_line
 
 
 def test_wp59_branch_not_current_branch():
