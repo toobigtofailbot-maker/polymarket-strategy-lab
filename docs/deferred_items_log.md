@@ -110,6 +110,10 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP63-D002 | Official-source monitoring/polling remains deferred | OPEN | P3 | WP63 detects source URL patterns in local text only. No official-source monitoring, URL fetching, source polling, or network access is implemented. | Any WP that adds official-source monitoring or network-backed source verification. | Future approved WP explicitly authorizes official-source monitoring with network/auth boundary review. |
 | WP63-D003 | Source authority ranking remains deferred | OPEN | P3 | WP63 adds only presence/absence metadata flags. No source ranking, authority scoring, or source hierarchy ordering is implemented. | Any WP that adds source authority ranking or scoring. | Future approved WP explicitly scopes source authority ranking and preserves non-signal boundaries. |
 | WP63-D004 | Resolution source hierarchy metadata not integrated into scorer weights | OPEN | P3 | WP63 adds resolution_source_hierarchy to market_context only. No new score component, no scorer weight change, and no advisory consumer integration is added. | Any WP that integrates resolution source hierarchy metadata into scorer weights or advisory consumer output. | Future approved WP explicitly scopes integration with the scorer and preserves non-signal boundaries. |
+| WP64-D001 | CLI/export/report writer for research queue remains deferred | OPEN | P3 | WP64 adds only in-memory queue/report/packet objects. No CLI, no JSON file writer, no markdown report writer, no export service, no dashboard, and no database-backed queue is added. | Any WP that adds a CLI-driven or file-export research queue output. | Future approved WP explicitly scopes the export/CLI path as a local/offline/read-only explicit command only; no scheduler; no strategy; no trading. |
+| WP64-D002 | Advisory consumer integration of research queue remains deferred | OPEN | P3 | WP64 adds queue/report/packet objects only. No advisory consumer integration, no strategy proposal integration, and no paper/live trading integration is added. | Any WP that wires the research queue into an advisory consumer, strategy, or execution path. | Future approved WP explicitly scopes integration with advisory consumer only after explicit user authorization and protected-boundary review. |
+| WP64-D003 | Strategy/paper/live use of research queue remains forbidden until explicit future WP | OPEN | P3 | WP64 queue/report/packet is advisory-only research triage. No trade signal, no expected return, no position sizing, no paper trading, and no live trading use is authorized. | Any WP that proposes using the research queue as a trading signal or paper/live trading input. | Future approved WP explicitly authorizes the research scope expansion and satisfies all protected-boundary gates. |
+| WP64-D004 | Dashboard/database-backed research queue remains deferred | OPEN | P3 | WP64 adds in-memory-only objects. No dashboard, no database, no persistence, no scheduler, and no hosted runtime is added. | Any WP that adds a dashboard, database, or persistent queue. | Future approved WP explicitly scopes database/dashboard integration after protected-boundary review and schema stabilization. |
 
 ## Rules For Adding Items
 
@@ -1597,6 +1601,35 @@ weights (OPEN, P3).
 | WP63-D002 | Official-source monitoring/polling remains deferred | OPEN | P3 | WP63 detects source URL patterns in local text only. No official-source monitoring, URL fetching, source polling, or network access is implemented. | Future approved WP explicitly authorizes official-source monitoring with network/auth boundary review. | Candidate: forbidden until explicit future WP. |
 | WP63-D003 | Source authority ranking remains deferred | OPEN | P3 | WP63 adds only presence/absence metadata flags. No source ranking, authority scoring, or source hierarchy ordering is implemented. | Future approved WP explicitly scopes source authority ranking and preserves non-signal boundaries. | Candidate: future approved WP after research-data foundations mature. |
 | WP63-D004 | Resolution source hierarchy metadata not integrated into scorer weights | OPEN | P3 | WP63 adds resolution_source_hierarchy to market_context only. No new score component, no scorer weight change, and no advisory consumer integration is added. | Future approved WP explicitly scopes integration with the scorer and preserves non-signal boundaries. | Candidate: future scorer integration WP after resolution-source metadata matures. |
+
+## WP64 Repo-Truth Reconciliation, Research Queue Ranking, Local Human Review Report, And Research Session Packet V1 Deferred Items
+
+WP64 reconciles repo truth after WP63 merge (WP63 is now listed in merged WPs;
+merge commit `e1ab1aa7e0915a3c65afc9eb5a55c58292ef6910`).
+
+WP64 adds a local/offline/read-only research-output packaging layer at
+`src/data_layer/market_research_priority_review_queue.py`. It produces
+deterministic in-memory queue/report/packet objects for human research triage
+only. Advisory-only. Not a trading signal.
+
+WP64 is local/offline/read-only research-output packaging. It adds no
+CLI/export/report file writer, no advisory consumer integration, no strategy
+integration, no paper/live trading path, no network access, no file writes
+beyond existing test fixture behavior, no database, no dashboard, no scheduler,
+no scorer weight changes, no new score components, no runtime, no credentials,
+no trading, no execution.
+
+WP64-D001 is added: CLI/export/report writer for research queue remains deferred (OPEN, P3).
+WP64-D002 is added: Advisory consumer integration of research queue remains deferred (OPEN, P3).
+WP64-D003 is added: Strategy/paper/live use of research queue remains forbidden until explicit future WP (OPEN, P3).
+WP64-D004 is added: Dashboard/database-backed research queue remains deferred (OPEN, P3).
+
+| Item | Title | Status | Priority | Why Deferred | Resolution Condition | Path |
+|---|---|---|---|---|---|---|
+| WP64-D001 | CLI/export/report writer for research queue remains deferred | OPEN | P3 | WP64 adds only in-memory objects. No CLI, no file writer, no export service, no dashboard, no database-backed queue. | Future approved WP explicitly scopes local/offline/read-only explicit CLI export path; no scheduler; no strategy; no trading. | Candidate: WP65 Local Research Queue Export/CLI V1. |
+| WP64-D002 | Advisory consumer integration of research queue remains deferred | OPEN | P3 | WP64 adds queue/report/packet objects only. No advisory consumer integration, no strategy proposal, no paper/live trading integration. | Future approved WP explicitly scopes integration with advisory consumer only after explicit user authorization. | Candidate: future advisory consumer integration WP. |
+| WP64-D003 | Strategy/paper/live use of research queue remains forbidden until explicit future WP | OPEN | P3 | WP64 queue/report/packet is advisory-only research triage. No trade signal, no expected return, no paper/live trading use is authorized. | Future approved WP explicitly authorizes scope expansion and satisfies all protected-boundary gates. | Candidate: forbidden until explicitly authorized future WP. |
+| WP64-D004 | Dashboard/database-backed research queue remains deferred | OPEN | P3 | WP64 adds in-memory-only objects. No dashboard, no database, no persistence, no scheduler, no hosted runtime. | Future approved WP explicitly scopes database/dashboard integration after protected-boundary review. | Candidate: future dashboard/database WP after schema stabilization. |
 
 ## WP6 Generated Artifact Incident Update
 

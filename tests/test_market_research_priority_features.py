@@ -1725,7 +1725,7 @@ def test_project_status_current_phase_is_wp58_or_later():
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP58", "WP59", "WP60", "WP61", "WP62", "WP63")), (
+    assert any(wp in current_phase_line for wp in ("WP58", "WP59", "WP60", "WP61", "WP62", "WP63", "WP64")), (
         f"Expected WP58 or later in current phase line: {current_phase_line}"
     )
 
@@ -1736,7 +1736,7 @@ def test_project_status_current_branch_is_wp59_or_later():
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp59", "wp60", "wp61", "wp62", "wp63")), (
+    assert any(wp in branch_line for wp in ("wp59", "wp60", "wp61", "wp62", "wp63", "wp64")), (
         f"Expected wp59 or later branch in branch line: {branch_line}"
     )
 
@@ -2278,27 +2278,38 @@ def test_manual_review_required_false_when_no_related_candidates():
     assert ctx1b["cross_market_relationships"]["manual_review_required"] is False
 
 
-# 25. Docs project_status reconciliation guard (WP62 → updated for WP63)
+# 25. Docs project_status reconciliation guard (WP63 → updated for WP64)
 
-def test_project_status_current_phase_is_wp63_or_later():
+def test_project_status_current_phase_is_wp64_or_later():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP63" in current_phase_line, (
-        f"Expected WP63 in current phase line: {current_phase_line}"
+    assert "WP64" in current_phase_line, (
+        f"Expected WP64 in current phase line: {current_phase_line}"
     )
 
 
-def test_project_status_current_branch_is_wp63():
+def test_project_status_current_branch_is_wp64():
     status_file = ROOT / "docs" / "project_status.md"
     content = status_file.read_text(encoding="utf-8")
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp63" in branch_line, (
-        f"Expected wp63 in current branch line: {branch_line}"
+    assert "wp64" in branch_line, (
+        f"Expected wp64 in current branch line: {branch_line}"
+    )
+
+
+def test_project_status_includes_wp63_in_merged_wps():
+    status_file = ROOT / "docs" / "project_status.md"
+    content = status_file.read_text(encoding="utf-8")
+    merged_line = next(
+        line for line in content.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP63" in merged_line, (
+        f"Expected WP63 in merged WPs line: {merged_line}"
     )
 
 

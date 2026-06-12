@@ -39,12 +39,14 @@ def test_required_src_readmes_exist():
 # WP49 approves the local/offline/read-only core scorer at src/data_layer/market_research_priority_scoring.py.
 # WP51 approves the local/offline/read-only feature extraction foundation at src/data_layer/market_research_priority_features.py.
 # WP56 approves the local/offline/read-only label schema validator at src/data_layer/resolution_ambiguity_labels.py.
+# WP64 approves the local/offline/read-only research queue/report/session packet at src/data_layer/market_research_priority_review_queue.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
     "src/data_layer/market_research_priority_scoring.py",
     "src/data_layer/market_research_priority_features.py",
     "src/data_layer/resolution_ambiguity_labels.py",
+    "src/data_layer/market_research_priority_review_queue.py",
 )
 
 
@@ -54,6 +56,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     WP8 explicitly permits .py files under src/data_layer/polymarket/ for the
     read-only public data adapter. WP23 permits .py files under
     src/data_layer/agent_context/ for the local/offline/read-only exporter.
+    WP64 permits market_research_priority_review_queue.py for the local/offline/read-only
+    research queue/report/session packet module.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
