@@ -2,11 +2,11 @@
 
 ## A. Status
 
-- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; FEATURE_EXTRACTION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; LOCAL_RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_ON_BRANCH
-- WP: WP48 (schema/contract merged); WP49 (core scorer merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged); WP64 (research queue/report/session packet merged); WP65 (local research queue export/operator runbook on branch)
+- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; FEATURE_EXTRACTION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; LOCAL_RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_ON_BRANCH
+- WP: WP48 (schema/contract merged); WP49 (core scorer merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged); WP64 (research queue/report/session packet merged); WP65 (local research queue export/operator runbook merged); WP66 (calibration harness design/resolved outcome requirements on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: WP48 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED; WP55 — NO_SRC_CHANGE; WP56 — LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED; WP57 — LOCAL_OFFLINE_READ_ONLY_LABEL_FEATURE_EXTRACTION_ADDED; WP62 — LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_ADDED; WP63 — LOCAL_OFFLINE_READ_ONLY_RESOLUTION_SOURCE_HIERARCHY_METADATA_ADDED; WP64 — LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_REPORT_SESSION_PACKET_ADDED; WP65 — LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_EXPORT_TOOL_ADDED
-- Tooling impact: WP65 — LOCAL_OFFLINE_READ_ONLY_EXPORT_TOOL_ADDED (tools/research_queue/local_research_queue_export.py); no network; no credentials; no scheduler; no database; no dashboard; no advisory consumer integration; human-operated only
+- Source impact: WP48 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED; WP55 — NO_SRC_CHANGE; WP56 — LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED; WP57 — LOCAL_OFFLINE_READ_ONLY_LABEL_FEATURE_EXTRACTION_ADDED; WP62 — LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_ADDED; WP63 — LOCAL_OFFLINE_READ_ONLY_RESOLUTION_SOURCE_HIERARCHY_METADATA_ADDED; WP64 — LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_REPORT_SESSION_PACKET_ADDED; WP65 — LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_EXPORT_TOOL_ADDED; WP66 — NO_SRC_CHANGE
+- Tooling impact: WP65 — LOCAL_OFFLINE_READ_ONLY_EXPORT_TOOL_ADDED (tools/research_queue/local_research_queue_export.py); no network; no credentials; no scheduler; no database; no dashboard; no advisory consumer integration; human-operated only; WP66 — NO_TOOLING_CHANGE
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
 - Trading impact: NO_TRADING_EXECUTION
@@ -633,6 +633,25 @@ may add an ambiguity component to scoring outputs only after a separately approv
 integration gate conditions in the taxonomy document. Scorer weights and components are unchanged in WP57.
 
 See `docs/deferred_items_log.md` for full entries.
+
+## WP66 Future Calibration Advisory Note
+
+WP66 adds `docs/calibration_harness_design.md` and `docs/resolved_outcome_data_requirements.md`
+defining a future local/offline/read-only calibration framework.
+
+The current output contract outputs (advisory labels, research_priority_score,
+research_queue_bucket, human_review_required) may later be evaluated against
+resolved outcomes to assess whether high-priority queue items were useful
+for human research. However:
+
+- Current outputs remain ADVISORY_ONLY_HUMAN_REVIEW_REQUIRED until calibration
+  is implemented and explicitly approved.
+- Calibration is for research-usefulness evaluation only, not trading results.
+- Calibration output must not be interpreted as profitability, PnL, ROI,
+  expected return, win rate, or any trading performance measure.
+- No calibration implementation is added in WP66.
+- No resolved-outcome ingestion is added in WP66.
+- Future calibration implementation requires a separately approved work package.
 
 ## S. Protected-Boundary Reaffirmation
 
