@@ -311,12 +311,12 @@ def test_project_status_current_phase_is_wp66():
     assert "WP66" in phase_line
 
 
-def test_project_status_current_branch_is_wp66():
+def test_project_status_current_branch_is_wp67():
     text = _read(PROJECT_STATUS)
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp66-calibration-harness-design" in branch_line
+    assert "wp67-local-calibration-record-schema-validator-v1" in branch_line
 
 
 def test_project_status_calibration_harness_status_present():

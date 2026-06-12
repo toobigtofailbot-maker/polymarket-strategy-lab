@@ -40,6 +40,7 @@ def test_required_src_readmes_exist():
 # WP51 approves the local/offline/read-only feature extraction foundation at src/data_layer/market_research_priority_features.py.
 # WP56 approves the local/offline/read-only label schema validator at src/data_layer/resolution_ambiguity_labels.py.
 # WP64 approves the local/offline/read-only research queue/report/session packet at src/data_layer/market_research_priority_review_queue.py.
+# WP67 approves the local/offline/read-only calibration record schema validator at src/data_layer/calibration_record_validation.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -47,6 +48,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/market_research_priority_features.py",
     "src/data_layer/resolution_ambiguity_labels.py",
     "src/data_layer/market_research_priority_review_queue.py",
+    "src/data_layer/calibration_record_validation.py",
 )
 
 
@@ -58,6 +60,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     src/data_layer/agent_context/ for the local/offline/read-only exporter.
     WP64 permits market_research_priority_review_queue.py for the local/offline/read-only
     research queue/report/session packet module.
+    WP67 permits calibration_record_validation.py for the local/offline/read-only
+    calibration record schema validator.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
