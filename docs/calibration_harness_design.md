@@ -2,19 +2,20 @@
 
 ## 1. Status
 
-- WP: WP66 (calibration harness design on branch)
-- Package class: local-offline-read-only-calibration-design
+- WP: WP66 (calibration harness design merged); WP67 adds local/offline/read-only schema validator
+- Package class: local-offline-read-only-calibration-design (WP66); local-offline-read-only-calibration-record-validation (WP67)
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: NO_SRC_CHANGE
+- Source impact: NO_SRC_CHANGE (WP66 docs/schema/tests only); VALIDATOR_ADDED (WP67 adds src/data_layer/calibration_record_validation.py)
 - Tools impact: NO_TOOLS_CHANGE
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
 - Trading impact: NO_TRADING_EXECUTION
 - Paper trading impact: NO_PAPER_TRADING
-- Calibration implementation status: DESIGN_ONLY_ON_BRANCH
+- Calibration implementation status: DESIGN_MERGED (WP66); LOCAL_OFFLINE_READ_ONLY_VALIDATOR_ON_BRANCH (WP67)
 - Resolved outcome ingestion status: NOT_STARTED
 - Calibration report generator status: NOT_STARTED
 - Human review label workflow status: LABELS_DEFINED_DESIGN_ONLY
+- WP67 note: WP67 adds a local/offline/read-only calibration record schema validator only. It does not implement resolved outcome ingestion, calibration report generation, fixture loading, human review workflow, or any scoring weight changes. All remaining implementation phases remain deferred per the phase plan below.
 
 ## 2. Purpose
 

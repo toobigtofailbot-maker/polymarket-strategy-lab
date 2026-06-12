@@ -240,12 +240,12 @@ def test_wp60a_in_merged_wps():
     assert "WP60A" in merged_line
 
 
-def test_wp66_branch_is_current_branch():
+def test_wp67_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp66-calibration-harness-design-resolved-outcome-requirements-v1" in branch_line
+    assert "wp67-local-calibration-record-schema-validator-v1" in branch_line
 
 
 def test_wp59_branch_not_current_branch():

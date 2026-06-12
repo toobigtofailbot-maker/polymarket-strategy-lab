@@ -2,10 +2,10 @@
 
 ## 1. Status
 
-- WP: WP66 (resolved outcome data requirements design on branch)
-- Package class: local-offline-read-only-calibration-design
+- WP: WP66 (resolved outcome data requirements design merged); WP67 adds local structural validator
+- Package class: local-offline-read-only-calibration-design (WP66); local-offline-read-only-calibration-record-validation (WP67)
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: NO_SRC_CHANGE
+- Source impact: NO_SRC_CHANGE (WP66); VALIDATOR_ADDED (WP67)
 - Tools impact: NO_TOOLS_CHANGE
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
@@ -13,6 +13,7 @@
 - Paper trading impact: NO_PAPER_TRADING
 - Resolved outcome ingestion status: NOT_STARTED_DESIGN_ONLY
 - Ingestion implementation: NOT_AUTHORIZED_BY_THIS_DOCUMENT
+- WP67 note: As of WP67, resolved outcome records that follow the WP66 calibration_record_v1 schema can be structurally validated locally using `validate_calibration_record` in `src/data_layer/calibration_record_validation.py`. Structural validation does not constitute ingestion. Resolved outcome ingestion from Polymarket or any external source remains unauthorized and deferred (WP66-D002).
 
 ## 2. Purpose
 
