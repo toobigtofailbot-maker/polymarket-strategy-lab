@@ -348,12 +348,12 @@ def test_project_status_reflects_wp53_merged() -> None:
     assert "WP53" in merged_line
 
 
-def test_project_status_reflects_wp65_current() -> None:
+def test_project_status_reflects_wp66_current() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP65" in phase_line
+    assert "WP66" in phase_line
 
 
 def test_project_status_reflects_wp63_merged() -> None:
@@ -396,12 +396,12 @@ def test_project_status_reflects_wp59_merged() -> None:
     assert "WP59" in merged_line
 
 
-def test_project_status_reflects_wp65_branch() -> None:
+def test_project_status_reflects_wp66_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp65-local-research-queue-export-operator-runbook-v1" in branch_line
+    assert "wp66-calibration-harness-design-resolved-outcome-requirements-v1" in branch_line
 
 
 def test_project_status_reflects_wp64_merged() -> None:

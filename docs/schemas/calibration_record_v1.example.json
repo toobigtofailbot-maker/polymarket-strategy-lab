@@ -1,0 +1,57 @@
+{
+  "_notice": "ADVISORY_ONLY_RESEARCH_USEFULNESS_AUDIT — NOT A TRADING RECORD. This example schema defines future calibration record structure. It contains no trading signals, no PnL, no expected return, no buy/sell recommendation, and no execution data. See docs/calibration_harness_design.md and docs/resolved_outcome_data_requirements.md.",
+  "_schema_version": "calibration_record_v1",
+  "_wp": "WP66",
+  "_status": "DESIGN_ONLY_NOT_IMPLEMENTED",
+
+  "identity": {
+    "market_id": "example-market-id-abc123",
+    "condition_id": "example-condition-id-def456",
+    "question": "Will example event occur before 2026-01-01?",
+    "category": "Politics"
+  },
+
+  "snapshot_metadata": {
+    "snapshot_time_utc": "2025-12-01T12:00:00Z",
+    "local_capture_time_utc": "2025-12-01T12:05:00Z",
+    "snapshot_offset_from_resolution": "T-30d"
+  },
+
+  "research_queue_state": {
+    "research_queue_bucket": "REVIEW_FIRST",
+    "research_review_priority": 1,
+    "research_priority_score": 0.87,
+    "quality_status": "ACCEPTABLE",
+    "source_metadata_available": true,
+    "manual_source_review_required": false,
+    "resolution_ambiguity_manual_review_required": false,
+    "microstructure_quality_summary": "LOCAL_DATA_AVAILABLE",
+    "cross_market_candidate_count": 2
+  },
+
+  "resolved_outcome": {
+    "resolved_outcome": "YES",
+    "resolution_status": "RESOLVED",
+    "resolution_time_utc": "2026-01-02T00:00:00Z",
+    "resolution_source_url_or_reference": "https://example-news-source.invalid/article-123",
+    "resolution_source_type": "NEWS_ARTICLE",
+    "resolution_rule_text_snapshot_available": true,
+    "resolution_dispute_or_ambiguity_flag": false,
+    "final_market_status": "RESOLVED",
+    "outcome_token_mapping_verified": true
+  },
+
+  "human_review": {
+    "human_review_usefulness_label": "USEFUL_RESEARCH_TARGET",
+    "manual_reviewer_id": null,
+    "manual_review_timestamp_utc": null,
+    "reviewer_notes": null
+  },
+
+  "calibration_validity": {
+    "record_complete": true,
+    "missing_required_fields": [],
+    "excluded_from_calibration": false,
+    "exclusion_reason": null
+  }
+}
