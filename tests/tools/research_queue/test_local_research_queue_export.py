@@ -170,12 +170,12 @@ def test_non_json_input_exits_nonzero(tmp_path: pathlib.Path) -> None:
 # 7. Unsupported format returns nonzero
 # ---------------------------------------------------------------------------
 
-def test_unsupported_format_exits_nonzero(tmp_path: pathlib.Path) -> None:
+def test_unsupported_format_exits_1(tmp_path: pathlib.Path) -> None:
     contexts = [_minimal_ctx()]
     inp = _write_input(tmp_path, contexts)
     with pytest.raises(SystemExit) as exc:
         _export_main(["--input", str(inp), "--format", "csv"])
-    assert exc.value.code != 0
+    assert exc.value.code == 1
 
 
 # ---------------------------------------------------------------------------
@@ -197,6 +197,44 @@ def test_unsafe_output_path_tests_exits_2(tmp_path: pathlib.Path) -> None:
     with pytest.raises(SystemExit) as exc:
         _export_main(["--input", str(inp), "--format", "json",
                       "--output", "tests/tools/research_queue/should_not_write.json"])
+    assert exc.value.code == 2
+
+
+def test_unsafe_output_path_absolute_exits_2(tmp_path: pathlib.Path) -> None:
+    contexts = [_minimal_ctx()]
+    inp = _write_input(tmp_path, contexts)
+    abs_path = _REPO_ROOT / "docs" / "should_not_write.md"
+    with pytest.raises(SystemExit) as exc:
+        _export_main(["--input", str(inp), "--format", "json",
+                      "--output", str(abs_path)])
+    assert exc.value.code == 2
+
+
+def test_safe_tmp_path_output_succeeds(tmp_path: pathlib.Path) -> None:
+    contexts = [_minimal_ctx()]
+    inp = _write_input(tmp_path, contexts)
+    out_file = tmp_path / "safe_out.json"
+    _export_main(["--input", str(inp), "--format", "json",
+                  "--output", str(out_file), "--generated-at-utc", _REF_UTC])
+    assert out_file.exists()
+    parsed = json.loads(out_file.read_text(encoding="utf-8"))
+    assert parsed["report_type"] == "LOCAL_HUMAN_REVIEW_REPORT_V1"
+
+
+def test_symlink_to_docs_exits_2(tmp_path: pathlib.Path) -> None:
+    import os
+    pytest.importorskip("os")
+    link = tmp_path / "link_to_docs"
+    docs_dir = _REPO_ROOT / "docs"
+    try:
+        link.symlink_to(docs_dir)
+    except (OSError, NotImplementedError):
+        pytest.skip("Symlink creation not supported on this platform")
+    contexts = [_minimal_ctx()]
+    inp = _write_input(tmp_path, contexts)
+    with pytest.raises(SystemExit) as exc:
+        _export_main(["--input", str(inp), "--format", "json",
+                      "--output", str(link / "should_not_write.md")])
     assert exc.value.code == 2
 
 

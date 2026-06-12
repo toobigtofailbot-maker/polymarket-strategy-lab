@@ -67,6 +67,13 @@ _FORBIDDEN_OUTPUT_PATH_PREFIXES = (
     ".github/",
 )
 
+# Repo root and resolved forbidden directories (used by the resolved-path guard).
+_REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
+_FORBIDDEN_OUTPUT_DIRS = tuple(
+    (_REPO_ROOT / p).resolve()
+    for p in ("src", "tests", "docs", "tools", ".github")
+)
+
 # Bucket display order for Markdown output.
 _BUCKET_ORDER = [
     "REVIEW_FIRST",
@@ -83,6 +90,18 @@ _BUCKET_HEADINGS = {
     "DATA_QUALITY_BLOCKED": "Data Quality Blocked",
     "DEPRIORITIZED": "Deprioritized",
 }
+
+
+# ---------------------------------------------------------------------------
+# Path helpers
+# ---------------------------------------------------------------------------
+
+def _is_relative_to(path: pathlib.Path, parent: pathlib.Path) -> bool:
+    try:
+        path.relative_to(parent)
+        return True
+    except ValueError:
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -190,12 +209,7 @@ def _apply_generated_at_override(report: dict, generated_at_utc: Optional[str]) 
 
 def _check_output_path(output_path: pathlib.Path) -> None:
     """Reject unsafe output paths."""
-    # Resolve to catch symlinks and relative traversal.
-    try:
-        resolved = output_path.resolve()
-    except OSError:
-        resolved = output_path
-
+    # String-form check (conservative: catches relative paths before they exist).
     path_str = str(output_path).replace("\\", "/")
     for prefix in _FORBIDDEN_OUTPUT_PATH_PREFIXES:
         if path_str.startswith(prefix) or ("/" + prefix) in path_str:
@@ -203,6 +217,21 @@ def _check_output_path(output_path: pathlib.Path) -> None:
                 f"Error: unsafe output path — writing to {prefix!r} directories "
                 "is not allowed. Use local_data/ or an absolute path outside the "
                 "project for test/dev outputs.",
+                file=sys.stderr,
+            )
+            sys.exit(2)
+
+    # Resolved-path check (catches symlinks and absolute paths under tracked dirs).
+    try:
+        resolved = output_path.resolve()
+    except OSError:
+        resolved = output_path
+    for forbidden_dir in _FORBIDDEN_OUTPUT_DIRS:
+        if resolved == forbidden_dir or _is_relative_to(resolved, forbidden_dir):
+            print(
+                "Error: unsafe output path — resolved path is under a tracked "
+                f"repository directory ({forbidden_dir.name!r}). Use local_data/ "
+                "or an absolute path outside the project for test/dev outputs.",
                 file=sys.stderr,
             )
             sys.exit(2)
@@ -390,7 +419,6 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--format",
         dest="output_format",
-        choices=["json", "markdown"],
         default="json",
         help="Output format: json (default) or markdown.",
     )
@@ -425,6 +453,11 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
 def main(argv: Optional[list[str]] = None) -> None:
     args = _parse_args(argv)
 
+    # Validate format before any file I/O.
+    if args.output_format not in {"json", "markdown"}:
+        print(f"Error: unsupported format: {args.output_format!r}", file=sys.stderr)
+        sys.exit(1)
+
     # Validate output path before any processing.
     if args.output is not None:
         _check_output_path(args.output)
@@ -439,11 +472,8 @@ def main(argv: Optional[list[str]] = None) -> None:
     # Render.
     if args.output_format == "json":
         output_text = _render_json(report, args.max_items)
-    elif args.output_format == "markdown":
-        output_text = _render_markdown(report, args.max_items)
     else:
-        print(f"Error: unsupported format: {args.output_format!r}", file=sys.stderr)
-        sys.exit(1)
+        output_text = _render_markdown(report, args.max_items)
 
     # Write.
     if args.output is None:
