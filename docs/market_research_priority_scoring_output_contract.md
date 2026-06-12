@@ -2,24 +2,32 @@
 
 ## A. Status
 
-- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; FEATURE_EXTRACTION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_ON_BRANCH
-- WP: WP48 (schema/contract merged); WP49 (core scorer merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged); WP64 (research queue/report/session packet on branch)
+- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; FEATURE_EXTRACTION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; LOCAL_RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_ON_BRANCH
+- WP: WP48 (schema/contract merged); WP49 (core scorer merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged); WP64 (research queue/report/session packet merged); WP65 (local research queue export/operator runbook on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: WP48 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED; WP55 — NO_SRC_CHANGE; WP56 — LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED; WP57 — LOCAL_OFFLINE_READ_ONLY_LABEL_FEATURE_EXTRACTION_ADDED; WP62 — LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_ADDED; WP63 — LOCAL_OFFLINE_READ_ONLY_RESOLUTION_SOURCE_HIERARCHY_METADATA_ADDED; WP64 — LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_REPORT_SESSION_PACKET_ADDED
-- Tooling impact: NO_NEW_TOOLING
+- Source impact: WP48 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED; WP55 — NO_SRC_CHANGE; WP56 — LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED; WP57 — LOCAL_OFFLINE_READ_ONLY_LABEL_FEATURE_EXTRACTION_ADDED; WP62 — LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_ADDED; WP63 — LOCAL_OFFLINE_READ_ONLY_RESOLUTION_SOURCE_HIERARCHY_METADATA_ADDED; WP64 — LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_REPORT_SESSION_PACKET_ADDED; WP65 — LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_EXPORT_TOOL_ADDED
+- Tooling impact: WP65 — LOCAL_OFFLINE_READ_ONLY_EXPORT_TOOL_ADDED (tools/research_queue/local_research_queue_export.py); no network; no credentials; no scheduler; no database; no dashboard; no advisory consumer integration; human-operated only
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
 - Trading impact: NO_TRADING_EXECUTION
 - Hermes impact: NO_HERMES_INSTALL_OR_RUNTIME
 - Agent runtime impact: NO_AGENT_RUNTIME
 - Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_MERGED
-- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_ON_BRANCH
+- Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; LOCAL_RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_ON_BRANCH
 - WP57 resolution_ambiguity sub-dict: advisory-only research-data-quality metadata; NOT a score component in WP57; scorer weights/components unchanged; scorer/report/advisory integration deferred (see WP57-D001)
 - WP61 microstructure_quality sub-dict: advisory-only market_context feature extraction metadata only; no score contract redesign; no scorer weight change; no trading interpretation; no downstream integration
 - WP62 cross_market_relationships sub-dict: advisory-only market_context feature extraction metadata only; deterministic local key comparison (normalized question, condition_id, token_id, category+resolution_date, outcome-label set); no semantic matching; no price comparison; no automated equivalence claim; no score contract redesign; no scorer weight change; no trading interpretation; no downstream integration
 - WP63 resolution_source_hierarchy sub-dict: advisory-only market_context feature extraction metadata only; deterministic local field presence checks (resolution_date for timing, question text for source text and URL pattern detection); no resolution-rule parsing; no source authority judgment; no official-source monitoring; no score contract redesign; no scorer weight change; no trading interpretation; no downstream integration
-- CLI/export/report implementation: NOT_STARTED
+- CLI/export/report implementation: LOCAL_OFFLINE_EXPLICIT_MANUAL_EXPORT_ON_BRANCH; output remains advisory-only; output is not a trading recommendation, not a signal, not expected return, not execution instruction; human review required before any use
 - Advisory consumer integration: NOT_STARTED
+
+WP65 safe export contract note: the export tool reads WP64 LOCAL_HUMAN_REVIEW_REPORT_V1
+objects or lists of market contexts and writes deterministic JSON or Markdown output to
+stdout or an explicit local path. The output contract of the underlying report object is
+unchanged. The export adds only human-readable formatting and CLI access. All advisory-only
+labels, forbidden-interpretation notices, and non-signal boundaries from WP64 are
+preserved verbatim in the export output. The export tool does not alter scores, weights,
+or metadata.
 
 This document is the binding schema and output contract. WP48 defined the
 contract (docs-only). WP49 adds the local/offline/read-only core scorer at
