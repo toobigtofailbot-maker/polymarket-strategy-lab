@@ -176,3 +176,28 @@ work requires an explicitly approved work package with:
 - Explicit credential policy (if any API authentication is needed)
 - Explicit non-signal boundary enforcement
 - Full repo-truth update
+
+## 11. WP68 Update — Local Fixture Loading Now Available
+
+WP68 adds a local/offline/read-only fixture loader at
+`src/data_layer/resolved_outcome_fixture_loader.py`.
+
+Local fixture loading is now possible from explicit local JSON paths. The loader
+accepts a single JSON object file, a JSON list file, or a directory of direct-child
+*.json files, and validates each record against the WP67 schema validator.
+
+This does NOT authorize:
+
+```text
+API or network resolved outcome ingestion
+Resolved outcome data fetched from Polymarket or any external source
+Automated or scheduled resolved outcome collection
+Credential-backed API access
+Recursive directory scanning
+Calibration metric computation
+Report generation
+```
+
+API/network resolved outcome ingestion remains deferred (WP66-D002, WP68-D001).
+Calibration metric computation remains deferred (WP68-D003).
+Calibration report generation remains deferred (WP67-D002, WP68-D002).

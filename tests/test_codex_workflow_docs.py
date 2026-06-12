@@ -348,12 +348,12 @@ def test_project_status_reflects_wp53_merged() -> None:
     assert "WP53" in merged_line
 
 
-def test_project_status_reflects_wp66_current() -> None:
+def test_project_status_reflects_wp68_current() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP66" in phase_line
+    assert "WP68" in phase_line
 
 
 def test_project_status_reflects_wp63_merged() -> None:
@@ -396,12 +396,12 @@ def test_project_status_reflects_wp59_merged() -> None:
     assert "WP59" in merged_line
 
 
-def test_project_status_reflects_wp67_branch() -> None:
+def test_project_status_reflects_wp68_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp67-local-calibration-record-schema-validator-v1" in branch_line
+    assert "wp68-local-resolved-outcome-fixture-loader-v1" in branch_line
 
 
 def test_project_status_reflects_wp64_merged() -> None:
