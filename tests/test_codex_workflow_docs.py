@@ -396,12 +396,12 @@ def test_project_status_reflects_wp59_merged() -> None:
     assert "WP59" in merged_line
 
 
-def test_project_status_reflects_wp68_branch() -> None:
+def test_project_status_reflects_wp69_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp68-local-resolved-outcome-fixture-loader-v1" in branch_line
+    assert "wp69-calibration-report-generator-design-v1" in branch_line
 
 
 def test_project_status_reflects_wp64_merged() -> None:

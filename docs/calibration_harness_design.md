@@ -218,12 +218,15 @@ Calibration implementation is phased. This WP covers Phase 1 only.
 
 | Phase | Description | WP Status |
 |---|---|---|
-| Phase 1 | Docs/schema design only | WP66 — THIS WP |
-| Phase 2 | Local calibration record schema validator | NOT STARTED |
-| Phase 3 | Local resolved outcome fixture loader | NOT STARTED |
-| Phase 4 | Calibration report generator | NOT STARTED |
-| Phase 5 | Human review label workflow | NOT STARTED |
-| Phase 6 | Paper/live trading boundary design (future-gated) | DEFERRED |
+| Phase 1 | Docs/schema design only | WP66 — MERGED |
+| Phase 2 | Local calibration record schema validator | WP67 — MERGED |
+| Phase 3 | Local resolved outcome fixture loader | WP68 — MERGED |
+| Phase 4 | Calibration report generator design | WP69 — DESIGN_ONLY |
+| Phase 5 | Calibration metric computation implementation V1 | NOT STARTED |
+| Phase 6 | Calibration report generator implementation V1 | NOT STARTED |
+| Phase 7 | Human review label workflow integration | NOT STARTED |
+| Phase 8 | Calibration trend comparison across snapshots | NOT STARTED |
+| Phase 9 | Paper/live trading boundary design (future-gated) | DEFERRED |
 
 Phase 2 and later must be approved as separate work packages. No
 implementation authority flows from this design document.
@@ -251,7 +254,42 @@ See `docs/resolved_outcome_data_requirements.md` for the companion
 resolved-outcome data requirements design.
 
 See `docs/deferred_items_log.md` for calibration-specific deferred items
-(WP66-D001 through WP66-D004, WP67-D001 through WP67-D004, WP68-D001 through WP68-D004).
+(WP66-D001 through WP66-D004, WP67-D001 through WP67-D004, WP68-D001 through WP68-D004,
+WP69-D001 through WP69-D004).
+
+## WP69 Update
+
+WP69 adds a local/offline/read-only calibration report generator design at
+`docs/calibration_report_generator_design.md` and a static example schema at
+`docs/schemas/calibration_report_v1.example.json`.
+
+The WP69 design defines:
+
+- Report purpose: research-usefulness audit only, not profitability/trading/backtest
+- Report inputs: validated calibration records from WP68/WP67 components only
+- Forbidden inputs: account trades, positions, orders, fills, wallet, execution logs
+- Safe report sections: validation summary, coverage, missingness, staleness, bucket distribution, usefulness labels
+- Report output contract: LOCAL_CALIBRATION_REPORT_V1 shape
+- Allowed metrics: coverage_rate, staleness_rate, bucket_distribution, usefulness label distribution
+- Forbidden metrics: PnL, ROI, expected return, Sharpe, win rate, edge, alpha, arbitrage
+- Human interpretation guidance
+- Future implementation phases (Phases 5–9 all NOT STARTED)
+- Non-signal boundary
+
+WP69 does NOT implement:
+
+```text
+Calibration metric computation
+Calibration report generator
+Human review label workflow
+Scoring weight changes
+Network/API resolved outcome ingestion
+```
+
+See `docs/calibration_report_generator_design.md` for the full design.
+
+Calibration metric computation, report generator implementation, and human review
+label workflow implementation remain deferred to future phases.
 
 ## WP68 Update
 

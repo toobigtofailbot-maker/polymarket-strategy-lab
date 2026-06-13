@@ -1,0 +1,75 @@
+{
+  "_notice": "ADVISORY_ONLY_RESEARCH_USEFULNESS_AUDIT",
+  "_schema_version": "calibration_report_v1",
+  "_status": "DESIGN_ONLY_NOT_IMPLEMENTED",
+  "_description": "Static example of a future LOCAL_CALIBRATION_REPORT_V1 output shape. No live data. No trading fields. No profitability metrics.",
+  "report_type": "LOCAL_CALIBRATION_REPORT_V1",
+  "advisory_label": "ADVISORY_ONLY_RESEARCH_USEFULNESS_AUDIT",
+  "report_scope": {
+    "local_offline_read_only": true,
+    "no_network": true,
+    "no_trading": true,
+    "no_profitability_metrics": true,
+    "no_strategy_output": true,
+    "no_paper_trading": true,
+    "no_live_trading": true
+  },
+  "input_summary": {
+    "fixture_path": "/path/to/local/fixtures",
+    "record_count": 10,
+    "source_file_count": 3
+  },
+  "validation_summary": {
+    "valid_record_count": 9,
+    "invalid_record_count": 1,
+    "warning_count": 2
+  },
+  "coverage_summary": {
+    "coverage_rate": 0.9
+  },
+  "missingness_summary": {
+    "missing_required_field_rate": 0.1
+  },
+  "staleness_summary": {
+    "staleness_rate": 0.2
+  },
+  "resolution_source_summary": {
+    "source_metadata_available_rate": 0.8,
+    "resolution_source_missing_rate": 0.2
+  },
+  "manual_review_summary": {
+    "manual_review_required_rate": 0.3,
+    "ambiguity_review_required_rate": 0.1
+  },
+  "bucket_summary": {
+    "bucket_distribution": {
+      "REVIEW_FIRST": 3,
+      "MANUAL_SOURCE_REVIEW_REQUIRED": 2,
+      "REVIEW_LATER": 3,
+      "DATA_QUALITY_BLOCKED": 1,
+      "DEPRIORITIZED": 1
+    }
+  },
+  "human_review_usefulness_summary": {
+    "human_review_usefulness_label_distribution": {
+      "USEFUL_RESEARCH_TARGET": 4,
+      "PARTIALLY_USEFUL_RESEARCH_TARGET": 2,
+      "NOT_USEFUL_DATA_TOO_WEAK": 1,
+      "NOT_USEFUL_RESOLUTION_TOO_AMBIGUOUS": 1,
+      "NOT_USEFUL_DUPLICATE_OR_OVERLAP": 0,
+      "NOT_REVIEWED": 2
+    }
+  },
+  "excluded_record_summary": {
+    "excluded_record_count": 1,
+    "exclusion_reasons": [
+      "missing_market_id"
+    ]
+  },
+  "warnings": [
+    "2 records missing resolution_source_url_or_reference",
+    "1 record has outcome_token_mapping_verified=false"
+  ],
+  "post_resolution_audit_warning_count": 1,
+  "forbidden_interpretation_notice": "This report is research-usefulness audit data only. It must not be used as a trading signal, expected-return estimate, buy/sell recommendation, position-sizing input, or portfolio metric. This report contains no profit, PnL, ROI, Sharpe, win-rate, edge, alpha, opportunity, arbitrage, or strategy-return data."
+}
