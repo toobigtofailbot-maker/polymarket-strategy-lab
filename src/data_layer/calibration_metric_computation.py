@@ -112,11 +112,12 @@ def _compute_from_pairs(
     record_count = len(pairs)
 
     if record_count == 0:
+        _empty_warnings = ("no_records",)
         return CalibrationMetricComputationResult(
             record_count=0,
             valid_record_count=0,
             invalid_record_count=0,
-            warning_count=0,
+            warning_count=len(_empty_warnings),
             coverage_rate=0.0,
             missing_required_field_rate=0.0,
             staleness_rate=0.0,
@@ -128,7 +129,7 @@ def _compute_from_pairs(
             human_review_usefulness_label_distribution={},
             excluded_record_count=0,
             post_resolution_audit_warning_count=0,
-            warnings=("no_records",),
+            warnings=_empty_warnings,
             advisory_label=_ADVISORY_LABEL,
         )
 

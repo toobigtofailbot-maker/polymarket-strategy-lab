@@ -133,6 +133,12 @@ class TestEmptyInput:
         assert result.excluded_record_count == 0
         assert result.post_resolution_audit_warning_count == 0
 
+    def test_empty_list_warning_count_matches_no_records_warning(self):
+        result = compute_calibration_metrics([])
+        assert result.warnings == ("no_records",)
+        assert result.warning_count == 1
+        assert result.warning_count == len(result.warnings)
+
 
 # ---------------------------------------------------------------------------
 # 2. One valid record
