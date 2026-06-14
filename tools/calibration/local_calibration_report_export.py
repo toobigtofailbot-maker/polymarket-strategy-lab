@@ -369,7 +369,6 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
         "--format",
         dest="output_format",
         default="json",
-        choices=["json", "markdown"],
         help="Output format: json (default) or markdown.",
     )
     parser.add_argument(
@@ -397,8 +396,7 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
 def main(argv: Optional[list[str]] = None) -> None:
     args = _parse_args(argv)
 
-    # Validate format before any file I/O (choices= already enforces this, but
-    # being explicit keeps the exit-code contract clear).
+    # Validate format before any file I/O (exit 1 per WP72 contract).
     if args.output_format not in _SUPPORTED_FORMATS:
         print(f"Error: unsupported format: {args.output_format!r}", file=sys.stderr)
         sys.exit(1)

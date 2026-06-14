@@ -220,7 +220,7 @@ def test_unsupported_format_exits_1(tmp_path: pathlib.Path) -> None:
     inp = _write_json(tmp_path, _minimal_record())
     with pytest.raises(SystemExit) as exc:
         _export_main(["--input", str(inp), "--format", "csv"])
-    assert exc.value.code == 2  # argparse choices= emits exit 2
+    assert exc.value.code == 1
 
 
 # ---------------------------------------------------------------------------
