@@ -348,12 +348,12 @@ def test_project_status_reflects_wp53_merged() -> None:
     assert "WP53" in merged_line
 
 
-def test_project_status_reflects_wp68_current() -> None:
+def test_project_status_reflects_wp68_merged() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
-    phase_line = next(
-        line for line in text.splitlines() if line.startswith("- Current phase:")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP68" in phase_line
+    assert "WP68" in merged_line
 
 
 def test_project_status_reflects_wp63_merged() -> None:
@@ -396,12 +396,20 @@ def test_project_status_reflects_wp59_merged() -> None:
     assert "WP59" in merged_line
 
 
-def test_project_status_reflects_wp69_branch() -> None:
+def test_project_status_reflects_wp69_merged() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP69" in merged_line
+
+
+def test_project_status_reflects_wp70_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp69-calibration-report-generator-design-v1" in branch_line
+    assert "wp70-local-calibration-metric-computation-v1" in branch_line
 
 
 def test_project_status_reflects_wp64_merged() -> None:
