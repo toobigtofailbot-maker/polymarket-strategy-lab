@@ -42,6 +42,7 @@ def test_required_src_readmes_exist():
 # WP64 approves the local/offline/read-only research queue/report/session packet at src/data_layer/market_research_priority_review_queue.py.
 # WP67 approves the local/offline/read-only calibration record schema validator at src/data_layer/calibration_record_validation.py.
 # WP68 approves the local/offline/read-only resolved outcome fixture loader at src/data_layer/resolved_outcome_fixture_loader.py.
+# WP70 approves the local/offline/read-only calibration metric computation helper at src/data_layer/calibration_metric_computation.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -51,6 +52,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/market_research_priority_review_queue.py",
     "src/data_layer/calibration_record_validation.py",
     "src/data_layer/resolved_outcome_fixture_loader.py",
+    "src/data_layer/calibration_metric_computation.py",
 )
 
 
@@ -66,6 +68,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     calibration record schema validator.
     WP68 permits resolved_outcome_fixture_loader.py for the local/offline/read-only
     resolved outcome fixture loader.
+    WP70 permits calibration_metric_computation.py for the local/offline/read-only
+    calibration metric computation helper.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"

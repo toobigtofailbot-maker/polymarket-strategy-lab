@@ -240,12 +240,20 @@ def test_wp60a_in_merged_wps():
     assert "WP60A" in merged_line
 
 
-def test_wp69_branch_is_current_branch():
+def test_wp69_in_merged_wps():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP69" in merged_line
+
+
+def test_wp70_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp69-calibration-report-generator-design-v1" in branch_line
+    assert "wp70-local-calibration-metric-computation-v1" in branch_line
 
 
 def test_wp68_in_merged_wps():

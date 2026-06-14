@@ -12,8 +12,9 @@
 - Trading impact: NO_TRADING_EXECUTION
 - Paper trading impact: NO_PAPER_TRADING
 - Report generator implementation status: DESIGN_ONLY_NOT_IMPLEMENTED
-- Metric computation implementation status: NOT_STARTED
+- Metric computation implementation status: LOCAL_OFFLINE_READ_ONLY_METRIC_COMPUTATION_IMPLEMENTED_WP70
 - Advisory label: ADVISORY_ONLY_RESEARCH_USEFULNESS_AUDIT
+- WP70 note: WP70 adds local/offline/read-only metric computation only at `src/data_layer/calibration_metric_computation.py`. It computes research-quality metrics (coverage, missingness, staleness, review burden, bucket distribution, label distribution) from loaded calibration records. It does not implement the calibration report generator, CLI/export, network ingestion, database storage, or any trading/performance metrics. Report generator implementation remains deferred (WP70-D001).
 
 ## 2. Report Purpose
 

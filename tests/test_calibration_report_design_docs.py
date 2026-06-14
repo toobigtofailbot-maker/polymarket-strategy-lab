@@ -429,20 +429,18 @@ def test_project_status_has_wp68_in_merged_wps():
     assert "WP68" in merged_line
 
 
-def test_project_status_current_phase_is_wp69():
+def test_project_status_has_wp69_in_merged_wps():
     text = _read(PROJECT_STATUS)
-    phase_line = next(
-        line for line in text.splitlines() if line.startswith("- Current phase:")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP69" in phase_line
+    assert "WP69" in merged_line
 
 
-def test_project_status_current_branch_is_wp69():
+def test_project_status_calibration_report_design_is_merged():
     text = _read(PROJECT_STATUS)
-    branch_line = next(
-        line for line in text.splitlines() if line.startswith("- Current branch:")
-    )
-    assert "wp69-calibration-report-generator-design-v1" in branch_line
+    assert "CALIBRATION_REPORT_GENERATOR_DESIGN_MERGED" in text
+    assert "CALIBRATION_REPORT_GENERATOR_DESIGN_ON_BRANCH" not in text
 
 
 # ---------------------------------------------------------------------------
@@ -533,10 +531,11 @@ def test_protected_boundaries_unchanged():
 
 def test_no_new_src_files_added():
     src_dir = REPO_ROOT / "src"
-    # WP69 adds no new files under src/
-    # Verify that key existing source files still exist (no breakage)
+    # WP69 adds no new files under src/.
+    # WP70 adds calibration_metric_computation.py — verify key files all exist.
     assert (src_dir / "data_layer" / "calibration_record_validation.py").is_file()
     assert (src_dir / "data_layer" / "resolved_outcome_fixture_loader.py").is_file()
+    assert (src_dir / "data_layer" / "calibration_metric_computation.py").is_file()
 
 
 def test_calibration_report_design_is_in_docs_directory():
