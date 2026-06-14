@@ -256,12 +256,12 @@ def test_wp70_in_merged_wps():
     assert "WP70" in merged_line
 
 
-def test_wp71_branch_is_current_branch():
+def test_wp72_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp71-local-calibration-report-generator-implementation-v1" in branch_line
+    assert "wp72-local-calibration-report-export-v1" in branch_line
 
 
 def test_wp68_in_merged_wps():
