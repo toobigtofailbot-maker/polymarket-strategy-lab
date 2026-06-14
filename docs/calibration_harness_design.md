@@ -11,13 +11,14 @@
 - Network impact: NO_NETWORK
 - Trading impact: NO_TRADING_EXECUTION
 - Paper trading impact: NO_PAPER_TRADING
-- Calibration implementation status: DESIGN_MERGED (WP66); LOCAL_OFFLINE_READ_ONLY_VALIDATOR_MERGED (WP67); LOCAL_OFFLINE_READ_ONLY_FIXTURE_LOADER_MERGED (WP68); CALIBRATION_REPORT_GENERATOR_DESIGN_MERGED (WP69); LOCAL_OFFLINE_READ_ONLY_METRIC_COMPUTATION_ON_BRANCH (WP70)
+- Calibration implementation status: DESIGN_MERGED (WP66); LOCAL_OFFLINE_READ_ONLY_VALIDATOR_MERGED (WP67); LOCAL_OFFLINE_READ_ONLY_FIXTURE_LOADER_MERGED (WP68); CALIBRATION_REPORT_GENERATOR_DESIGN_MERGED (WP69); LOCAL_OFFLINE_READ_ONLY_METRIC_COMPUTATION_MERGED (WP70); LOCAL_OFFLINE_READ_ONLY_REPORT_GENERATOR_ON_BRANCH (WP71)
 - Resolved outcome ingestion status: NOT_STARTED
-- Calibration report generator status: DESIGN_ONLY_NOT_IMPLEMENTED
+- Calibration report generator status: IN_MEMORY_REPORT_OBJECT_IMPLEMENTED_WP71 (CLI/export/file writing remains DESIGN_ONLY_NOT_IMPLEMENTED — deferred WP71-D001)
 - Calibration metric computation status: LOCAL_OFFLINE_READ_ONLY_IMPLEMENTED_WP70
 - Human review label workflow status: LABELS_DEFINED_DESIGN_ONLY
 - WP67 note: WP67 adds a local/offline/read-only calibration record schema validator only. It does not implement resolved outcome ingestion, calibration report generation, fixture loading, human review workflow, or any scoring weight changes. All remaining implementation phases remain deferred per the phase plan below.
 - WP70 note: WP70 adds local/offline/read-only metric computation for research-quality metrics only. It does not add scoring-weight changes, paper/live performance metrics, report generator implementation, or network/API resolved outcome ingestion. All remaining implementation phases remain deferred per WP70-D001 through WP70-D004.
+- WP71 note: WP71 adds local/offline/read-only in-memory report object generation for research-quality metrics only. It implements `build_calibration_report` and `build_calibration_report_from_load_result` at `src/data_layer/calibration_report_generator.py`, building a frozen `LocalCalibrationReport` dataclass using WP70 metrics. It does not add CLI/export/file writing, scoring-weight changes, paper/live performance metrics, dashboard/database behavior, or network/API ingestion. CLI/export remains deferred (WP71-D001). Human review label workflow remains deferred (WP71-D002). Report output is not used for scoring weight changes (WP71-D003). Paper/live metrics remain forbidden (WP71-D004).
 
 ## 2. Purpose
 
