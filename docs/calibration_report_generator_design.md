@@ -2,19 +2,20 @@
 
 ## 1. Status
 
-- WP: WP69 (calibration report generator design only)
+- WP: WP69 (calibration report generator design only); updated in WP70 and WP71
 - Package class: local-offline-read-only-calibration-report-design
 - Runtime impact: NO_RUNTIME_CHANGE
-- Source impact: NO_SRC_CHANGE (WP69 docs/schema/tests only)
+- Source impact: NO_SRC_CHANGE (WP69 docs/schema/tests only); WP71 adds report generator source
 - Tools impact: NO_TOOLS_CHANGE
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network impact: NO_NETWORK
 - Trading impact: NO_TRADING_EXECUTION
 - Paper trading impact: NO_PAPER_TRADING
-- Report generator implementation status: DESIGN_ONLY_NOT_IMPLEMENTED
+- Report generator implementation status: IN_MEMORY_REPORT_OBJECT_IMPLEMENTED_WP71 (DESIGN_ONLY_NOT_IMPLEMENTED for CLI/export/file writing — those remain deferred)
 - Metric computation implementation status: LOCAL_OFFLINE_READ_ONLY_METRIC_COMPUTATION_IMPLEMENTED_WP70
 - Advisory label: ADVISORY_ONLY_RESEARCH_USEFULNESS_AUDIT
-- WP70 note: WP70 adds local/offline/read-only metric computation only at `src/data_layer/calibration_metric_computation.py`. It computes research-quality metrics (coverage, missingness, staleness, review burden, bucket distribution, label distribution) from loaded calibration records. It does not implement the calibration report generator, CLI/export, network ingestion, database storage, or any trading/performance metrics. Report generator implementation remains deferred (WP70-D001).
+- WP70 note: WP70 adds local/offline/read-only metric computation only at `src/data_layer/calibration_metric_computation.py`. It computes research-quality metrics (coverage, missingness, staleness, review burden, bucket distribution, label distribution) from loaded calibration records. It does not implement the calibration report generator, CLI/export, network ingestion, database storage, or any trading/performance metrics. Report generator implementation was deferred as WP70-D001.
+- WP71 note: WP71 implements the in-memory report object at `src/data_layer/calibration_report_generator.py`. It builds a frozen `LocalCalibrationReport` dataclass from already-loaded records or a WP68 load result, using WP70 metrics. It does not write files, export reports, add a CLI, fetch outcomes, access the network, compute trading/performance metrics, or integrate with a database/dashboard/scheduler. CLI/export/file writing and dashboard/database behavior remain deferred (WP71-D001 through WP71-D004).
 
 ## 2. Report Purpose
 
@@ -278,13 +279,13 @@ Calibration report generation is phased:
 | Phase 1 | Calibration harness design | WP66 — MERGED |
 | Phase 2 | Calibration record schema validator | WP67 — MERGED |
 | Phase 3 | Resolved outcome fixture loader | WP68 — MERGED |
-| Phase 4 | Calibration report generator design | WP69 — THIS WP |
-| Phase 5 | Calibration metric computation implementation V1 | NOT STARTED |
-| Phase 6 | Calibration report generator implementation V1 | NOT STARTED |
-| Phase 7 | Human review label workflow integration | NOT STARTED |
+| Phase 4 | Calibration report generator design | WP69 — MERGED |
+| Phase 5 | Calibration metric computation implementation V1 | WP70 — MERGED |
+| Phase 6 | Calibration report generator implementation V1 (in-memory only) | WP71 — ON BRANCH |
+| Phase 7 | Human review label workflow integration | NOT STARTED (WP71-D002) |
 | Phase 8 | Calibration trend comparison across snapshots | NOT STARTED |
-| Phase 9 | Scoring-weight review policy | NOT STARTED |
-| Phase 10 | Paper/live trading boundary design (future-gated) | DEFERRED |
+| Phase 9 | Scoring-weight review policy | NOT STARTED (WP71-D003) |
+| Phase 10 | Paper/live trading boundary design (future-gated) | DEFERRED (WP71-D004) |
 
 Phases 5 through 10 require separate explicit work package approval.
 No implementation authority flows from this design document.

@@ -532,10 +532,12 @@ def test_protected_boundaries_unchanged():
 def test_no_new_src_files_added():
     src_dir = REPO_ROOT / "src"
     # WP69 adds no new files under src/.
-    # WP70 adds calibration_metric_computation.py — verify key files all exist.
+    # WP70 adds calibration_metric_computation.py.
+    # WP71 adds calibration_report_generator.py — verify key files all exist.
     assert (src_dir / "data_layer" / "calibration_record_validation.py").is_file()
     assert (src_dir / "data_layer" / "resolved_outcome_fixture_loader.py").is_file()
     assert (src_dir / "data_layer" / "calibration_metric_computation.py").is_file()
+    assert (src_dir / "data_layer" / "calibration_report_generator.py").is_file()
 
 
 def test_calibration_report_design_is_in_docs_directory():
