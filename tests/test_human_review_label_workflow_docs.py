@@ -5,11 +5,11 @@ Verifies:
 - docs/human_review_label_workflow_design.md exists and covers required content
 - docs/schemas/human_review_label_record_v1.example.json exists with required fields
 - Schema example contains safety fields and no forbidden trading/performance fields
-- Project status marks WP72 merged and WP73 on branch
-- Repo truth index includes new doc/schema/test
-- Deferred items keep implementation and automation deferred
+- Project status marks WP73 merged and WP74 as current phase
+- Repo truth index includes workflow design doc, schema, and WP74 validator
+- Deferred items keep fixture loader, report integration, and automation deferred
 - Protected boundaries remain unchanged
-- No src/ or tools/ files are modified by WP73
+- No dependency files are modified
 """
 
 import json
@@ -330,7 +330,7 @@ def test_schema_example_no_forbidden_trading_fields():
 
 
 # ---------------------------------------------------------------------------
-# Test 16: Project status marks WP72 merged and WP73 on branch
+# Test 16: Project status marks WP73 merged and WP74 as current
 # ---------------------------------------------------------------------------
 
 
@@ -340,20 +340,29 @@ def test_project_status_wp72_merged():
     assert "WP73" in content, "project_status.md must reference WP73"
 
 
-def test_project_status_current_phase_is_wp73():
+def test_project_status_wp73_in_merged_wps():
     content = _read(PROJECT_STATUS_DOC)
-    # WP73 must be the current phase
     lines = content.splitlines()
-    phase_lines = [l for l in lines if "current phase" in l.lower()]
-    assert any("WP73" in l for l in phase_lines), (
-        "project_status.md must set current phase to WP73"
+    merged_lines = [l for l in lines if "merged wps" in l.lower()]
+    assert any("WP73" in l for l in merged_lines), (
+        "project_status.md must list WP73 in Merged WPs (WP73 is now merged)"
     )
 
 
-def test_project_status_current_branch_is_wp73():
+def test_project_status_current_phase_is_wp74():
     content = _read(PROJECT_STATUS_DOC)
-    assert "wp73-human-review-label-workflow-design-v1" in content, (
-        "project_status.md must set current branch to wp73-human-review-label-workflow-design-v1"
+    # WP74 must be the current phase after WP73 merge
+    lines = content.splitlines()
+    phase_lines = [l for l in lines if "current phase" in l.lower()]
+    assert any("WP74" in l for l in phase_lines), (
+        "project_status.md must set current phase to WP74"
+    )
+
+
+def test_project_status_current_branch_is_wp74():
+    content = _read(PROJECT_STATUS_DOC)
+    assert "wp74-local-human-review-label-record-validator-v1" in content, (
+        "project_status.md must set current branch to wp74-local-human-review-label-record-validator-v1"
     )
 
 
@@ -380,6 +389,20 @@ def test_repo_truth_index_includes_focused_test():
     content = _read(REPO_TRUTH_INDEX_DOC)
     assert "test_human_review_label_workflow_docs" in content, (
         "repo_truth_index.md must reference test_human_review_label_workflow_docs"
+    )
+
+
+def test_repo_truth_index_includes_validator_module():
+    content = _read(REPO_TRUTH_INDEX_DOC)
+    assert "human_review_label_validation" in content, (
+        "repo_truth_index.md must reference human_review_label_validation (WP74 validator)"
+    )
+
+
+def test_repo_truth_index_includes_validator_test():
+    content = _read(REPO_TRUTH_INDEX_DOC)
+    assert "test_human_review_label_validation" in content, (
+        "repo_truth_index.md must reference test_human_review_label_validation (WP74 tests)"
     )
 
 
@@ -477,42 +500,46 @@ def test_project_status_hermes_forbidden():
 
 
 # ---------------------------------------------------------------------------
-# Test 20: No src/ or tools/ files modified by WP73
+# Test 20: WP73 scope verification and WP74 boundary checks
 # ---------------------------------------------------------------------------
 
 
-def test_no_src_files_modified_by_wp73():
-    """WP73 is docs/schema/tests only — no src/ files should be modified."""
-    result = subprocess.run(
-        ["git", "diff", "--name-only", "origin/main", "HEAD"],
-        capture_output=True,
-        text=True,
-        cwd=REPO_ROOT,
+def test_wp73_design_files_exist():
+    """WP73 created these files — verify they are still present after WP74."""
+    assert os.path.isfile(WORKFLOW_DESIGN_DOC), (
+        "WP73 human_review_label_workflow_design.md must exist"
     )
-    changed = result.stdout.strip().splitlines()
-    src_changes = [f for f in changed if f.startswith("src/")]
-    assert not src_changes, (
-        f"WP73 must not modify src/ files. Found: {src_changes}"
+    assert os.path.isfile(SCHEMA_EXAMPLE), (
+        "WP73 human_review_label_record_v1.example.json must exist"
     )
-
-
-def test_no_tools_files_modified_by_wp73():
-    """WP73 is docs/schema/tests only — no tools/ files should be modified."""
-    result = subprocess.run(
-        ["git", "diff", "--name-only", "origin/main", "HEAD"],
-        capture_output=True,
-        text=True,
-        cwd=REPO_ROOT,
-    )
-    changed = result.stdout.strip().splitlines()
-    tools_changes = [f for f in changed if f.startswith("tools/")]
-    assert not tools_changes, (
-        f"WP73 must not modify tools/ files. Found: {tools_changes}"
+    docs_test = os.path.join(REPO_ROOT, "tests", "test_human_review_label_workflow_docs.py")
+    assert os.path.isfile(docs_test), (
+        "WP73 test_human_review_label_workflow_docs.py must exist"
     )
 
 
-def test_no_dependency_files_modified_by_wp73():
-    """WP73 must not change dependency or lock files."""
+def test_wp74_validator_file_exists():
+    """WP74 adds the local human review label validator source file."""
+    validator = os.path.join(
+        REPO_ROOT, "src", "data_layer", "human_review_label_validation.py"
+    )
+    assert os.path.isfile(validator), (
+        "WP74 src/data_layer/human_review_label_validation.py must exist"
+    )
+
+
+def test_wp74_validator_test_file_exists():
+    """WP74 adds the focused validator test file."""
+    val_test = os.path.join(
+        REPO_ROOT, "tests", "test_human_review_label_validation.py"
+    )
+    assert os.path.isfile(val_test), (
+        "WP74 tests/test_human_review_label_validation.py must exist"
+    )
+
+
+def test_no_dependency_files_modified():
+    """WP74 must not change dependency or lock files."""
     result = subprocess.run(
         ["git", "diff", "--name-only", "origin/main", "HEAD"],
         capture_output=True,
@@ -526,5 +553,20 @@ def test_no_dependency_files_modified_by_wp73():
                  "poetry.lock", "Pipfile.lock", "setup.py", "setup.cfg")
     ]
     assert not dep_changes, (
-        f"WP73 must not modify dependency files. Found: {dep_changes}"
+        f"WP74 must not modify dependency files. Found: {dep_changes}"
+    )
+
+
+def test_no_tools_files_modified():
+    """WP74 must not modify tools/ files."""
+    result = subprocess.run(
+        ["git", "diff", "--name-only", "origin/main", "HEAD"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    changed = result.stdout.strip().splitlines()
+    tools_changes = [f for f in changed if f.startswith("tools/")]
+    assert not tools_changes, (
+        f"WP74 must not modify tools/ files. Found: {tools_changes}"
     )
