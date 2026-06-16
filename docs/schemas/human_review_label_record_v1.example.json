@@ -1,0 +1,29 @@
+{
+  "_notice": "ADVISORY_ONLY_MANUAL_RESEARCH_REVIEW_LABEL",
+  "_schema_version": "HUMAN_REVIEW_LABEL_RECORD_V1",
+  "_status": "DESIGN_ONLY_NOT_IMPLEMENTED",
+  "identity": {
+    "market_id": "example-market",
+    "condition_id": "example-condition",
+    "question": "Example market question",
+    "snapshot_time_utc": "2026-01-01T00:00:00Z"
+  },
+  "review": {
+    "review_time_utc": "2026-01-02T00:00:00Z",
+    "reviewer_id_or_alias": "manual-reviewer",
+    "workflow_state": "LABEL_APPLIED",
+    "human_review_usefulness_label": "USEFUL_RESEARCH_TARGET",
+    "confidence_level": "MEDIUM",
+    "primary_reason": "SOURCE_CLARITY",
+    "secondary_reasons": [],
+    "requires_followup_review": false,
+    "review_notes": "Manual research-usefulness label example."
+  },
+  "safety": {
+    "manual_only": true,
+    "not_automated": true,
+    "no_trading_signal": true,
+    "no_score_change": true,
+    "no_execution": true
+  }
+}
