@@ -483,6 +483,35 @@ def test_safety_no_execution_missing_fails():
 
 
 # ---------------------------------------------------------------------------
+# Regression: non-required keys inside safety section must still be scanned
+# ---------------------------------------------------------------------------
+
+
+def test_forbidden_key_execution_inside_safety_is_flagged():
+    record = _valid_record()
+    record["safety"]["execution"] = True
+    result = validate_human_review_label_record(record)
+    assert not result.is_valid
+    assert "safety.execution" in result.invalid_fields
+
+
+def test_forbidden_key_profit_inside_safety_is_flagged():
+    record = _valid_record()
+    record["safety"]["profit"] = True
+    result = validate_human_review_label_record(record)
+    assert not result.is_valid
+    assert "safety.profit" in result.invalid_fields
+
+
+def test_forbidden_key_auto_label_inside_safety_is_flagged():
+    record = _valid_record()
+    record["safety"]["auto_label"] = True
+    result = validate_human_review_label_record(record)
+    assert not result.is_valid
+    assert "safety.auto_label" in result.invalid_fields
+
+
+# ---------------------------------------------------------------------------
 # Test 27: Result dataclass is frozen/deterministic
 # ---------------------------------------------------------------------------
 

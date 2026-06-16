@@ -141,6 +141,8 @@ FORBIDDEN_STRING_VALUES: frozenset[str] = frozenset({
     "PROFITABLE",
 })
 
+ALLOWED_SAFETY_KEY_NAMES: frozenset[str] = frozenset(REQUIRED_SAFETY_FLAGS)
+
 _UTC_SUFFIX_RE = re.compile(r"Z$")
 
 
@@ -164,15 +166,15 @@ def _is_utc_timestamp(value: object) -> bool:
 def _collect_forbidden_keys(obj: object, path: str = "") -> list[str]:
     """Recursively collect keys matching FORBIDDEN_KEY_NAMES.
 
-    The top-level 'safety' section is excluded because required safety flags
-    use safe prefixed names (e.g. no_execution, no_trading_signal) that would
-    otherwise match forbidden key terms.
+    Required safety flags (ALLOWED_SAFETY_KEY_NAMES) are exempt when directly
+    under the 'safety' section. All other keys under 'safety' are scanned normally.
     """
     found: list[str] = []
     if isinstance(obj, dict):
         for k, v in obj.items():
             full_path = f"{path}.{k}" if path else k
-            if path == "" and k == "safety":
+            if path == "safety" and k in ALLOWED_SAFETY_KEY_NAMES:
+                found.extend(_collect_forbidden_keys(v, full_path))
                 continue
             if k.lower() in FORBIDDEN_KEY_NAMES:
                 found.append(full_path)
