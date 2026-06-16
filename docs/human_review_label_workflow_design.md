@@ -14,7 +14,7 @@
 - Human review label workflow status: DESIGN_SCHEMA_TESTS_ONLY
 - Label implementation status: NOT_STARTED
 - Label editor status: NOT_STARTED
-- Label loader status: NOT_STARTED
+- Label loader status: LOCAL_OFFLINE_READ_ONLY_FIXTURE_LOADER_IMPLEMENTED_WP75
 - Label validator status: LOCAL_OFFLINE_READ_ONLY_VALIDATOR_IMPLEMENTED_WP74
 - Label report integration status: NOT_STARTED
 - Automated labeling status: FORBIDDEN

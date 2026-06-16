@@ -404,12 +404,12 @@ def test_project_status_reflects_wp69_merged() -> None:
     assert "WP69" in merged_line
 
 
-def test_project_status_reflects_wp74_branch() -> None:
+def test_project_status_reflects_wp75_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp74-local-human-review-label-record-validator-v1" in branch_line
+    assert "wp75-local-human-review-label-fixture-loader-v1" in branch_line
 
 
 def test_project_status_reflects_wp64_merged() -> None:
