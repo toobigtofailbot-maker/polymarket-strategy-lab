@@ -44,6 +44,7 @@ def test_required_src_readmes_exist():
 # WP68 approves the local/offline/read-only resolved outcome fixture loader at src/data_layer/resolved_outcome_fixture_loader.py.
 # WP70 approves the local/offline/read-only calibration metric computation helper at src/data_layer/calibration_metric_computation.py.
 # WP71 approves the local/offline/read-only calibration report generator at src/data_layer/calibration_report_generator.py.
+# WP74 approves the local/offline/read-only human review label record validator at src/data_layer/human_review_label_validation.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -55,6 +56,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/resolved_outcome_fixture_loader.py",
     "src/data_layer/calibration_metric_computation.py",
     "src/data_layer/calibration_report_generator.py",
+    "src/data_layer/human_review_label_validation.py",
 )
 
 
@@ -74,6 +76,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     calibration metric computation helper.
     WP71 permits calibration_report_generator.py for the local/offline/read-only
     calibration report generator.
+    WP74 permits human_review_label_validation.py for the local/offline/read-only
+    human review label record validator.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"

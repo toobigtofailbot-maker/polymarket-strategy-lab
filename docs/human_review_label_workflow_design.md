@@ -15,7 +15,7 @@
 - Label implementation status: NOT_STARTED
 - Label editor status: NOT_STARTED
 - Label loader status: NOT_STARTED
-- Label validator status: NOT_STARTED
+- Label validator status: LOCAL_OFFLINE_READ_ONLY_VALIDATOR_IMPLEMENTED_WP74
 - Label report integration status: NOT_STARTED
 - Automated labeling status: FORBIDDEN
 - LLM labeling status: FORBIDDEN
@@ -295,12 +295,12 @@ Human review labels must not propagate into:
 
 ## 12. Future Implementation Phases
 
-The human review label workflow is design-only in WP73. Implementation is deferred.
+The human review label workflow is design-only in WP73. WP74 implements the local label record validator (Phase 2). Remaining phases are deferred.
 
-Future phases (not authorized in WP73):
+Future phases (not authorized beyond WP74 scope):
 
-1. **WP73** (current): design/schema only.
-2. Local label record validator — validates label records against this schema.
+1. **WP73** (merged): design/schema only.
+2. **WP74** (merged): Local label record validator — validates label records against this schema. Implemented in `src/data_layer/human_review_label_validation.py`. Local/offline/read-only, stdlib-only, no file I/O, no network, no automation.
 3. Local label fixture loader — loads label records from explicit local paths.
 4. Label merge/join with calibration records — joins labels to calibration records.
 5. Report integration — includes label aggregates in calibration reports.
