@@ -168,12 +168,12 @@ def test_wp57_in_merged_wps_list():
     assert "WP57" in merged_line
 
 
-def test_wp71_is_current_phase():
+def test_wp73_is_current_phase():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP71" in current_phase_line
+    assert "WP73" in current_phase_line
 
 
 def test_wp65_in_merged_wps():
@@ -256,12 +256,12 @@ def test_wp70_in_merged_wps():
     assert "WP70" in merged_line
 
 
-def test_wp72_branch_is_current_branch():
+def test_wp73_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp72-local-calibration-report-export-v1" in branch_line
+    assert "wp73-human-review-label-workflow-design-v1" in branch_line
 
 
 def test_wp68_in_merged_wps():

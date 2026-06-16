@@ -391,3 +391,19 @@ The export tool uses:
 - WP71 `build_calibration_report_from_load_result` for in-memory report generation.
 
 It does not duplicate the loader or report generator logic.
+
+---
+
+## 20. Human Review Labels Note (WP73)
+
+WP73 added `docs/human_review_label_workflow_design.md`, which defines how a human analyst
+can label whether a reviewed market was useful for research calibration.
+
+Human review labels are **design-stage only** in WP73. They are not yet integrated into
+this export tool or the report generator output. The `human_review_usefulness_label` field
+visible in calibration records is a field defined in the calibration record schema (WP66/WP67)
+but does not yet benefit from the full WP73-designed label workflow, validator, or fixture loader.
+
+Label/report integration is deferred per WP73-D003. Until a future approved WP implements
+label/report integration, this tool's output does not include separately authored WP73-format
+human review label records.
