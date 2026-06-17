@@ -133,14 +133,15 @@ advisory_only_notice       — must be present
 
 ### 4.8 deferred_items
 
-Items explicitly deferred from this report:
+Items explicitly deferred from this report, using safe advisory capability names
+(not forbidden trade-like field names — see Section 5 for the normative ban list):
 
 ```text
-live_copyability_simulation   — deferred to future approved WP
-expected_return_computation   — deferred and forbidden
-paper_trading_candidate       — deferred to future approved WP
-position_sizing               — deferred and forbidden
-strategy_signal               — deferred and forbidden
+copyability_evaluation_implementation   — deferred to WP81
+wallet_report_generator_implementation  — deferred to WP82
+future_simulation_contract              — deferred to WP83
+live_execution_forbidden                — forbidden
+wallet_api_ingestion_forbidden          — forbidden
 ```
 
 ### 4.9 safety

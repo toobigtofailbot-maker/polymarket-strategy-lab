@@ -3,7 +3,7 @@
     "schema_type": "WALLET_INTELLIGENCE_ADVISORY_REPORT_V1",
     "schema_status": "DESIGN_EXAMPLE_ONLY_NOT_IMPLEMENTED",
     "wp": "WP80",
-    "advisory_only_notice": "This is a static design example only. It is not a live report, not a trading signal, not a trade recommendation, and not a copy-trading instruction. All fields are illustrative placeholders.",
+    "advisory_only_notice": "This is a static design example only. It is not a live report, not an advisory signal, not a research recommendation, and not a copy instruction. All fields are illustrative.",
     "safety": {
       "manual_research_only": true,
       "not_automated_copy_trading": true,
@@ -19,7 +19,7 @@
     "report_type": "WALLET_INTELLIGENCE_ADVISORY_REPORT_V1",
     "report_generated_at": "PLACEHOLDER_TIMESTAMP",
     "wp_version": "WP80",
-    "advisory_only_notice": "Design example only. Not a live report or trade signal.",
+    "advisory_only_notice": "Design example only. Not a live report or advisory signal.",
     "design_example_only": true
   },
   "input_summary": {
@@ -35,7 +35,7 @@
     "signal_category_distribution": {},
     "suspicious_flow_count": 0,
     "human_review_required_count": 0,
-    "advisory_only_notice": "Design example only. No profiles were evaluated. This section contains no trade signals."
+    "advisory_only_notice": "Design example only. No profiles were evaluated. This section carries no signals."
   },
   "copyability_delay_design_summary": {
     "delay_windows_assessed": [
@@ -58,7 +58,7 @@
     "uncopyable_fast_flow_count": 0,
     "uncopyable_illiquid_count": 0,
     "suspicious_flow_blocked_count": 0,
-    "advisory_only_notice": "Design example only. RESEARCH_PROMISING and RESEARCH_WEAK are advisory research labels only. They are not buy or sell signals."
+    "advisory_only_notice": "Design example only. RESEARCH_PROMISING and RESEARCH_WEAK are advisory research labels only. They are not entry or exit signals."
   },
   "research_queue_implications": {
     "markets_flagged_for_research": 0,
@@ -74,15 +74,15 @@
     "data_source_limitations": "All inputs derive from local/offline validated fixtures only. No live wallet API data, no account credentials data, no real-time market feed.",
     "evaluation_limitations": "Spread, slippage, fee, liquidity, and size-limit contexts may be absent from local fixtures. Evaluation status INSUFFICIENT_CONTEXT is expected until fixture coverage improves.",
     "no_live_data_notice": "No live data was used. All observations derive from local fixture files.",
-    "no_trading_signal_notice": "This report contains no trade signals, no buy or sell recommendations, no position sizing, and no copy-trading instructions.",
+    "no_trading_signal_notice": "Advisory research only. This report carries no signals, no entry or exit recommendations, no sizing guidance, and no copy instructions.",
     "advisory_only_notice": "Design example only. This limitations section is illustrative."
   },
   "deferred_items": {
-    "live_copyability_simulation": "Deferred to future approved WP81.",
-    "expected_return_computation": "Deferred and forbidden. Expected-return computation is not permitted.",
-    "paper_trading_candidate": "Deferred to future approved WP83.",
-    "position_sizing": "Deferred and forbidden. Position sizing is not permitted.",
-    "strategy_signal": "Deferred and forbidden. Strategy signals are not permitted."
+    "copyability_evaluation_implementation": "Deferred to future approved WP81.",
+    "wallet_report_generator_implementation": "Deferred to future approved WP82.",
+    "future_simulation_contract": "Deferred to future approved WP83.",
+    "live_execution_forbidden": "Forbidden. Live execution capability is not permitted in this WP.",
+    "wallet_api_ingestion_forbidden": "Forbidden. Live wallet API ingestion is not permitted in this WP."
   },
   "safety": {
     "manual_research_only": true,

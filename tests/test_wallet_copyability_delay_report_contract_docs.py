@@ -51,14 +51,39 @@ FORBIDDEN_TRADE_LIKE_KEYS = {
     "open_position",
     "close_position",
     "position_size",
+    "position_sizing",              # variant: position_size with ing suffix
     "expected_return",
+    "expected_return_computation",  # variant: expected_return with _computation suffix
     "profit_target",
     "stop_loss",
     "take_profit",
     "live_signal",
     "auto_copy",
     "pnl_target",
+    "paper_trading_candidate",      # forbidden deferred-item key variant
+    "strategy_signal",              # forbidden deferred-item key variant
 }
+
+FORBIDDEN_VALUE_SUBSTRINGS = (
+    "expected_return",
+    "expected-return",
+    "expected return",
+    "expected_return_computation",
+    "position_size",
+    "position_sizing",
+    "paper_trading_candidate",
+    "strategy_signal",
+    "live_signal",
+    "auto_copy",
+    "pnl_target",
+    "open_position",
+    "close_position",
+    "take_profit",
+    "stop_loss",
+    "profit_target",
+    "buy",
+    "sell",
+)
 
 REQUIRED_SAFETY_FLAGS = (
     "manual_research_only",
@@ -126,6 +151,20 @@ def _walk_keys(value: Any) -> list[str]:
         for item in value:
             keys.extend(_walk_keys(item))
     return keys
+
+
+def _walk_string_values(value: Any) -> list[str]:
+    """Walk a JSON structure and collect all lowercased string leaf values."""
+    values: list[str] = []
+    if isinstance(value, dict):
+        for v in value.values():
+            values.extend(_walk_string_values(v))
+    elif isinstance(value, list):
+        for item in value:
+            values.extend(_walk_string_values(item))
+    elif isinstance(value, str):
+        values.append(value.lower())
+    return values
 
 
 # ---------------------------------------------------------------------------
@@ -764,28 +803,34 @@ def test_delay_eval_schema_type_is_delay_evaluation() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 24. Report schema deferred_items section lists expected deferrals
+# 24. Report schema deferred_items uses safe advisory capability names
 # ---------------------------------------------------------------------------
 
-def test_wallet_report_schema_deferred_expected_return() -> None:
+def test_wallet_report_schema_deferred_items_contains_copyability_evaluation() -> None:
     data = _json(REPORT_SCHEMA)
     deferred = data.get("deferred_items", {})
-    er = deferred.get("expected_return_computation", "")
-    assert "forbidden" in er.lower() or "deferred" in er.lower()
+    val = deferred.get("copyability_evaluation_implementation", "")
+    assert "deferred" in val.lower() or "wp81" in val.lower(), (
+        "deferred_items must contain 'copyability_evaluation_implementation' with deferred/WP81 reference"
+    )
 
 
-def test_wallet_report_schema_deferred_position_sizing() -> None:
+def test_wallet_report_schema_deferred_items_contains_report_generator() -> None:
     data = _json(REPORT_SCHEMA)
     deferred = data.get("deferred_items", {})
-    ps = deferred.get("position_sizing", "")
-    assert "forbidden" in ps.lower() or "deferred" in ps.lower()
+    val = deferred.get("wallet_report_generator_implementation", "")
+    assert "deferred" in val.lower() or "wp82" in val.lower(), (
+        "deferred_items must contain 'wallet_report_generator_implementation' with deferred/WP82 reference"
+    )
 
 
-def test_wallet_report_schema_deferred_strategy_signal() -> None:
+def test_wallet_report_schema_deferred_items_contains_live_execution_forbidden() -> None:
     data = _json(REPORT_SCHEMA)
     deferred = data.get("deferred_items", {})
-    ss = deferred.get("strategy_signal", "")
-    assert "forbidden" in ss.lower() or "deferred" in ss.lower()
+    val = deferred.get("live_execution_forbidden", "")
+    assert "forbidden" in val.lower(), (
+        "deferred_items must contain 'live_execution_forbidden' with forbidden reference"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -815,5 +860,29 @@ def test_wallet_report_schema_limitations_no_trading_signal_notice() -> None:
     data = _json(REPORT_SCHEMA)
     limitations = data.get("limitations", {})
     notice = limitations.get("no_trading_signal_notice", "")
-    assert "no trade" in notice.lower() or "no signal" in notice.lower() or \
-           "contains no trade" in notice.lower() or "contains no" in notice.lower()
+    assert "no signal" in notice.lower() or "no entry" in notice.lower() or \
+           "carries no" in notice.lower() or "contains no" in notice.lower()
+
+
+# ---------------------------------------------------------------------------
+# 26. Static examples contain no forbidden value substrings
+# ---------------------------------------------------------------------------
+
+def test_delay_evaluation_schema_no_forbidden_value_substrings() -> None:
+    data = _json(DELAY_EVAL_SCHEMA)
+    str_values = _walk_string_values(data)
+    for forbidden in FORBIDDEN_VALUE_SUBSTRINGS:
+        for v in str_values:
+            assert forbidden not in v, (
+                f"Forbidden value substring '{forbidden}' found in delay eval schema"
+            )
+
+
+def test_wallet_report_schema_no_forbidden_value_substrings() -> None:
+    data = _json(REPORT_SCHEMA)
+    str_values = _walk_string_values(data)
+    for forbidden in FORBIDDEN_VALUE_SUBSTRINGS:
+        for v in str_values:
+            assert forbidden not in v, (
+                f"Forbidden value substring '{forbidden}' found in report schema"
+            )
