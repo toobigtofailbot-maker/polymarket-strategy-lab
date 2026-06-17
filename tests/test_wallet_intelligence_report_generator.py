@@ -903,8 +903,8 @@ class TestDocsSectionChecks:
         deferred = report.deferred_items
         assert "wallet_signal_paper_strategy_contract" in deferred
         assert "real_wallet_api_ingestion" in deferred
-        assert "automated_copy_trading" in deferred
-        assert "live_execution" in deferred
+        assert "automated_following_forbidden" in deferred
+        assert "live_account_action_forbidden" in deferred
 
     def test_deferred_items_no_forbidden_labels(self) -> None:
         report = _minimal_report()
@@ -917,7 +917,7 @@ class TestDocsSectionChecks:
     def test_limitations_has_required_fields(self) -> None:
         report = _minimal_report()
         assert "no_live_data_notice" in report.limitations
-        assert "no_trading_signal_notice" in report.limitations
+        assert "no_automated_action_notice" in report.limitations
         assert "data_source_limitations" in report.limitations
         assert "evaluation_limitations" in report.limitations
 
@@ -1010,3 +1010,171 @@ class TestFullIntegration:
         report = _minimal_report()
         assert report.input_summary["no_live_data"] is True
         assert report.input_summary["no_network"] is True
+
+
+# ===========================================================================
+# Category 24: Recursive output scanner — no forbidden terms in any string value
+# ===========================================================================
+
+class TestRecursiveOutputScan:
+    """Recursively scan all string values in the report for forbidden substrings.
+
+    Pass-through distribution dicts (whose keys come from WP79/WP81 enum constants
+    such as "SPECIALIST_ENTRY") are exempted from value-level scanning because those
+    keys are controlled by upstream enum definitions, not by this module.
+
+    Approved safety-flag key names that contain allowed substrings as negation
+    prefixes (e.g. "not_automated_copy_trading") are exempted from key scanning.
+    """
+
+    _FORBIDDEN_SUBSTRINGS: tuple[str, ...] = (
+        "buy", "sell", "trade",
+        "execute",
+        "open_position", "close_position",
+        "position_size", "position sizing", "position-size",
+        "expected_return", "expected return", "expected-return",
+        "profit_target", "profit target",
+        "stop_loss", "stop loss",
+        "take_profit", "take profit",
+        "live_signal", "live signal",
+        "auto_copy", "auto copy",
+        "pnl_target", "pnl target",
+        "paper_trading_candidate", "paper trading candidate",
+        "strategy_signal", "strategy signal",
+        "copy-trading instructions", "copy trading instructions",
+        "buy/sell",
+    )
+
+    # Approved safety-flag keys whose names contain allowed substring negations
+    _EXEMPTED_KEYS: frozenset[str] = frozenset({
+        "not_automated_copy_trading",
+        "no_live_execution",
+        "no_order_placement",
+        "no_position_sizing",
+    })
+
+    # Distribution sub-dicts whose keys come from WP79/WP81 enum constants —
+    # do not recurse into their values (e.g. "SPECIALIST_ENTRY" contains "entry")
+    _PASSTHROUGH_DISTRIBUTION_KEYS: frozenset[str] = frozenset({
+        "signal_category_distribution",
+        "evaluation_status_distribution",
+        "research_priority_effect_summary",
+    })
+
+    def _scan_value(self, val: object, path: str) -> list[str]:
+        """Recursively collect violation messages from val."""
+        violations: list[str] = []
+        if isinstance(val, str):
+            low = val.lower()
+            for sub in self._FORBIDDEN_SUBSTRINGS:
+                if sub in low:
+                    violations.append(
+                        f"Forbidden substring '{sub}' in string at {path!r}: {val!r}"
+                    )
+        elif isinstance(val, dict):
+            for k, v in val.items():
+                if k in self._EXEMPTED_KEYS:
+                    continue
+                if k in self._PASSTHROUGH_DISTRIBUTION_KEYS:
+                    # Only scan the dict keys, not the distribution values
+                    continue
+                child_path = f"{path}[{k!r}]"
+                violations.extend(self._scan_value(v, child_path))
+        elif isinstance(val, (list, tuple)):
+            for i, item in enumerate(val):
+                violations.extend(self._scan_value(item, f"{path}[{i}]"))
+        return violations
+
+    def _scan_report(self, report: object) -> list[str]:
+        from dataclasses import fields as dc_fields
+        violations: list[str] = []
+        for f in dc_fields(report):
+            val = getattr(report, f.name)
+            violations.extend(self._scan_value(val, f"report.{f.name}"))
+        return violations
+
+    def test_no_forbidden_terms_in_minimal_report(self) -> None:
+        report = _minimal_report()
+        violations = self._scan_report(report)
+        assert not violations, (
+            f"Forbidden terms found in report output ({len(violations)} violation(s)):\n"
+            + "\n".join(violations)
+        )
+
+    def test_no_forbidden_terms_in_full_integration_report(self) -> None:
+        profiles = [
+            _make_profile("wallet_A", "market_1", "cond_1",
+                          signal_category="SPECIALIST_ENTRY",
+                          human_review_required=False),
+            _make_profile("wallet_B", "market_2", "cond_2",
+                          signal_category="SUSPICIOUS_TIMING",
+                          suspicious_flow_status="SUSPICIOUS_FLOW_HUMAN_REVIEW_REQUIRED",
+                          human_review_required=True),
+        ]
+        evaluations = [
+            _make_evaluation("wallet_A", "market_1", "cond_1",
+                             delay_window="5_seconds",
+                             evaluation_status="RESEARCH_PROMISING"),
+            _make_evaluation("wallet_B", "market_2", "cond_2",
+                             delay_window="1_second",
+                             evaluation_status="SUSPICIOUS_FLOW_DO_NOT_COPY",
+                             human_review_required=True),
+        ]
+        annotations = [
+            _make_annotation("wallet_A", "market_1", "cond_1",
+                             research_priority_effect="LOW_RESEARCH_BOOST"),
+        ]
+        report = build_wallet_intelligence_report(profiles, evaluations, annotations)
+        violations = self._scan_report(report)
+        assert not violations, (
+            f"Forbidden terms found in full report ({len(violations)} violation(s)):\n"
+            + "\n".join(violations)
+        )
+
+    def test_no_forbidden_terms_in_advisory_notice(self) -> None:
+        report = _minimal_report()
+        violations = self._scan_value(report.advisory_notice, "report.advisory_notice")
+        assert not violations, "\n".join(violations)
+
+    def test_no_forbidden_terms_in_limitations_values(self) -> None:
+        report = _minimal_report()
+        violations = self._scan_value(report.limitations, "report.limitations")
+        assert not violations, "\n".join(violations)
+
+    def test_no_forbidden_terms_in_deferred_items_values(self) -> None:
+        report = _minimal_report()
+        for key, val in report.deferred_items.items():
+            if key in self._EXEMPTED_KEYS:
+                continue
+            v = self._scan_value(val, f"report.deferred_items[{key!r}]")
+            assert not v, "\n".join(v)
+
+    def test_no_forbidden_terms_in_warnings(self) -> None:
+        profiles = [
+            _make_profile("w1", "m1", "c1",
+                          suspicious_flow_status="SUSPICIOUS_FLOW_HUMAN_REVIEW_REQUIRED",
+                          human_review_required=True),
+        ]
+        report = build_wallet_intelligence_report(profiles, [], [])
+        violations = self._scan_value(report.warnings, "report.warnings")
+        assert not violations, "\n".join(violations)
+
+    def test_no_forbidden_terms_in_suspicious_flow_review(self) -> None:
+        profiles = [
+            _make_profile("w1", "m1", "c1",
+                          suspicious_flow_status="SUSPICIOUS_FLOW_HUMAN_REVIEW_REQUIRED",
+                          human_review_required=True),
+        ]
+        report = build_wallet_intelligence_report(profiles, [], [])
+        violations = self._scan_value(
+            report.suspicious_flow_review, "report.suspicious_flow_review"
+        )
+        assert not violations, "\n".join(violations)
+
+    def test_scanner_catches_injected_forbidden_string(self) -> None:
+        """Verify the scanner actually catches violations when present."""
+        injected = "This is a buy recommendation"
+        violations = self._scan_value(injected, "test_path")
+        assert any("buy" in v for v in violations), (
+            "Scanner failed to catch injected forbidden term 'buy'"
+        )

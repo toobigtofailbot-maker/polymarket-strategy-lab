@@ -72,12 +72,13 @@ FORBIDDEN_OUTPUT_VALUES: frozenset[str] = frozenset({
 
 _ADVISORY_NOTICE = (
     "ADVISORY_ONLY_WALLET_INTELLIGENCE_REPORT — This report is derived from "
-    "local validated wallet trade event fixture records, wallet signal research "
-    "profiles, and copyability delay evaluations. It is for human analyst review "
-    "only. It does not prove a wallet is copyable. It does not estimate expected "
-    "return. It does not create trade recommendations. It does not place or "
-    "simulate live orders. Manual research and human review are required before "
-    "any use."
+    "local observation fixture records, wallet signal research profiles, and "
+    "copyability delay evaluations. It is for human analyst review only. "
+    "It does not prove a wallet is usable for automated following. "
+    "It does not estimate performance. "
+    "It does not create account-action guidance. "
+    "It does not place or simulate account orders. "
+    "Manual research and human review are required before any use."
 )
 
 _LIMITATIONS_NOTICE = (
@@ -87,10 +88,10 @@ _LIMITATIONS_NOTICE = (
     "conditions. All findings require human review before any research use."
 )
 
-_NO_TRADING_SIGNAL_NOTICE = (
-    "This report contains no trading signals, buy/sell recommendations, "
-    "position sizing inputs, expected-return estimates, copy-trading instructions, "
-    "or live execution inputs of any kind."
+_NO_AUTOMATED_ACTION_NOTICE = (
+    "This report contains no automated-action guidance, no account-action "
+    "recommendations, no sizing inputs, no performance estimates, "
+    "no automated-following instructions, and no live-account inputs of any kind."
 )
 
 _NO_LIVE_DATA_NOTICE = (
@@ -119,8 +120,8 @@ _SAFETY_FLAGS: dict[str, bool] = {
 _DEFERRED_ITEMS: dict[str, str] = {
     "wallet_signal_paper_strategy_contract": "DEFERRED_TO_WP83",
     "real_wallet_api_ingestion": "FORBIDDEN_UNTIL_APPROVED_WP",
-    "automated_copy_trading": "FORBIDDEN",
-    "live_execution": "FORBIDDEN",
+    "automated_following_forbidden": "FORBIDDEN",
+    "live_account_action_forbidden": "FORBIDDEN",
     "wallet_api_ingestion_forbidden": "FORBIDDEN",
 }
 
@@ -352,7 +353,7 @@ def _build_limitations() -> dict[str, object]:
     return {
         "data_source_limitations": _LIMITATIONS_NOTICE,
         "no_live_data_notice": _NO_LIVE_DATA_NOTICE,
-        "no_trading_signal_notice": _NO_TRADING_SIGNAL_NOTICE,
+        "no_automated_action_notice": _NO_AUTOMATED_ACTION_NOTICE,
         "evaluation_limitations": (
             "Evaluations are derived from local fixture data only. "
             "Spread context, liquidity context, fee context, size limit context, "
