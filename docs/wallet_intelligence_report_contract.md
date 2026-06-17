@@ -2,10 +2,9 @@
 
 ## 1. Status
 
-- WP: WP80 (wallet intelligence report contract docs/schema/tests-only)
-- Package class: DOCS_SCHEMA_TESTS_ONLY_WALLET_COPYABILITY_REPORT_CONTRACT
-- Authority: DESIGN_ONLY
-- NOT_IMPLEMENTATION
+- WP: WP80 (wallet intelligence report contract docs/schema/tests-only); WP82 (local/offline/read-only report generator implementation)
+- Package class: DOCS_SCHEMA_TESTS_ONLY_WALLET_COPYABILITY_REPORT_CONTRACT (WP80); LOCAL_OFFLINE_READ_ONLY_WALLET_INTELLIGENCE_REPORT_GENERATOR (WP82)
+- Authority: DESIGN_ONLY (WP80); LOCAL_OFFLINE_READ_ONLY_IMPLEMENTATION (WP82)
 - NOT_AUTHORIZATION
 - NO_RUNTIME_CHANGE
 - NO_TOOLS_CHANGE
@@ -19,6 +18,7 @@
 - NO_SCHEDULER
 - NO_BOT_LOOP
 - WP80 merge commit: TO_BE_RECORDED_AFTER_MERGE
+- WP82 implementation: `src/data_layer/wallet_intelligence_report_generator.py`
 
 ## 2. Purpose
 
@@ -219,10 +219,34 @@ WP83 — Wallet Signal Paper Strategy Contract
 WP84 — Human Review Label And Calibration Record Join Design Or Implementation
 ```
 
-The report generator is deferred to WP82. WP80 defines the contract only.
-WP82 must implement a local/offline/read-only report generator that satisfies
-this contract. WP82 must not add live execution, network ingestion, credentials,
+WP82 implements the local/offline/read-only wallet intelligence report generator at
+`src/data_layer/wallet_intelligence_report_generator.py`. The generator:
+
+```text
+WP82 generates advisory local reports only.
+It does not prove a wallet is copyable.
+It does not estimate expected return.
+It does not create trade recommendations.
+It does not place or simulate live orders.
+```
+
+WP82 consumes only:
+- WalletSignalResearchProfile records (WP79) in-memory
+- WalletResearchQueueAnnotation records (WP79) in-memory
+- WalletCopyabilityDelayEvaluation records (WP81) in-memory
+- Optional explicit local metadata supplied by callers
+
+WP82 does not add live execution, network ingestion, credentials,
 paper-trading strategy, or buy/sell signal output.
+
+The following deferred items remain open:
+
+```text
+wallet_signal_paper_strategy_contract   — DEFERRED_TO_WP83
+real_wallet_api_ingestion               — FORBIDDEN_UNTIL_APPROVED_WP
+automated_copy_trading                  — FORBIDDEN
+live_execution                          — FORBIDDEN
+```
 
 ## 9. Safety
 

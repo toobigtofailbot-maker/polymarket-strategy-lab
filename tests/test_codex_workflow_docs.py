@@ -413,6 +413,7 @@ def test_project_status_reflects_wp79_branch() -> None:
         "wp79-wallet-skill-niche-profiler-research-queue-integration",
         "wp80-copyability-delay-simulator-design-wallet-report-contract",
         "wp81-local-copyability-delay-evaluation-from-fixtures",
+        "wp82-wallet-intelligence-report-generator-v1",
     ))
 
 

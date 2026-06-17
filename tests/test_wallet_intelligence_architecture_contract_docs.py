@@ -382,6 +382,7 @@ def test_only_allowed_wallet_src_files_changed() -> None:
         "src/data_layer/wallet_trade_event_fixtures.py",
         "src/data_layer/wallet_signal_research_profile.py",
         "src/data_layer/wallet_copyability_delay_evaluation.py",
+        "src/data_layer/wallet_intelligence_report_generator.py",
     }
     assert set(src_changes) <= allowed_src_changes, (
         f"Unexpected src/ changes: {set(src_changes) - allowed_src_changes}"
