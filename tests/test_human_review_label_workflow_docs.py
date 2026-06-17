@@ -330,7 +330,7 @@ def test_schema_example_no_forbidden_trading_fields():
 
 
 # ---------------------------------------------------------------------------
-# Test 16: Project status marks WP73 merged and WP74 as current
+# Test 16: Project status marks WP74 merged and WP75 as current
 # ---------------------------------------------------------------------------
 
 
@@ -349,20 +349,29 @@ def test_project_status_wp73_in_merged_wps():
     )
 
 
-def test_project_status_current_phase_is_wp74():
+def test_project_status_wp74_in_merged_wps():
     content = _read(PROJECT_STATUS_DOC)
-    # WP74 must be the current phase after WP73 merge
     lines = content.splitlines()
-    phase_lines = [l for l in lines if "current phase" in l.lower()]
-    assert any("WP74" in l for l in phase_lines), (
-        "project_status.md must set current phase to WP74"
+    merged_lines = [l for l in lines if "merged wps" in l.lower()]
+    assert any("WP74" in l for l in merged_lines), (
+        "project_status.md must list WP74 in Merged WPs (WP74 is now merged)"
     )
 
 
-def test_project_status_current_branch_is_wp74():
+def test_project_status_current_phase_is_wp75():
     content = _read(PROJECT_STATUS_DOC)
-    assert "wp74-local-human-review-label-record-validator-v1" in content, (
-        "project_status.md must set current branch to wp74-local-human-review-label-record-validator-v1"
+    # WP75 must be the current phase after WP74 merge
+    lines = content.splitlines()
+    phase_lines = [l for l in lines if "current phase" in l.lower()]
+    assert any("WP75" in l for l in phase_lines), (
+        "project_status.md must set current phase to WP75"
+    )
+
+
+def test_project_status_current_branch_is_wp75():
+    content = _read(PROJECT_STATUS_DOC)
+    assert "wp75-local-human-review-label-fixture-loader-v1" in content, (
+        "project_status.md must set current branch to wp75-local-human-review-label-fixture-loader-v1"
     )
 
 
@@ -403,6 +412,20 @@ def test_repo_truth_index_includes_validator_test():
     content = _read(REPO_TRUTH_INDEX_DOC)
     assert "test_human_review_label_validation" in content, (
         "repo_truth_index.md must reference test_human_review_label_validation (WP74 tests)"
+    )
+
+
+def test_repo_truth_index_includes_fixture_loader_module():
+    content = _read(REPO_TRUTH_INDEX_DOC)
+    assert "human_review_label_fixture_loader" in content, (
+        "repo_truth_index.md must reference human_review_label_fixture_loader (WP75 loader)"
+    )
+
+
+def test_repo_truth_index_includes_fixture_loader_test():
+    content = _read(REPO_TRUTH_INDEX_DOC)
+    assert "test_human_review_label_fixture_loader" in content, (
+        "repo_truth_index.md must reference test_human_review_label_fixture_loader (WP75 tests)"
     )
 
 
@@ -538,8 +561,28 @@ def test_wp74_validator_test_file_exists():
     )
 
 
+def test_wp75_fixture_loader_file_exists():
+    """WP75 adds the local human review label fixture loader source file."""
+    loader = os.path.join(
+        REPO_ROOT, "src", "data_layer", "human_review_label_fixture_loader.py"
+    )
+    assert os.path.isfile(loader), (
+        "WP75 src/data_layer/human_review_label_fixture_loader.py must exist"
+    )
+
+
+def test_wp75_fixture_loader_test_file_exists():
+    """WP75 adds the focused fixture loader test file."""
+    loader_test = os.path.join(
+        REPO_ROOT, "tests", "test_human_review_label_fixture_loader.py"
+    )
+    assert os.path.isfile(loader_test), (
+        "WP75 tests/test_human_review_label_fixture_loader.py must exist"
+    )
+
+
 def test_no_dependency_files_modified():
-    """WP74 must not change dependency or lock files."""
+    """WP75 must not change dependency or lock files."""
     result = subprocess.run(
         ["git", "diff", "--name-only", "origin/main", "HEAD"],
         capture_output=True,
@@ -553,12 +596,12 @@ def test_no_dependency_files_modified():
                  "poetry.lock", "Pipfile.lock", "setup.py", "setup.cfg")
     ]
     assert not dep_changes, (
-        f"WP74 must not modify dependency files. Found: {dep_changes}"
+        f"WP75 must not modify dependency files. Found: {dep_changes}"
     )
 
 
 def test_no_tools_files_modified():
-    """WP74 must not modify tools/ files."""
+    """WP75 must not modify tools/ files."""
     result = subprocess.run(
         ["git", "diff", "--name-only", "origin/main", "HEAD"],
         capture_output=True,
@@ -568,5 +611,5 @@ def test_no_tools_files_modified():
     changed = result.stdout.strip().splitlines()
     tools_changes = [f for f in changed if f.startswith("tools/")]
     assert not tools_changes, (
-        f"WP74 must not modify tools/ files. Found: {tools_changes}"
+        f"WP75 must not modify tools/ files. Found: {tools_changes}"
     )

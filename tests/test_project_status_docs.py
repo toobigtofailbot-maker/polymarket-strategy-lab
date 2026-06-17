@@ -168,12 +168,12 @@ def test_wp57_in_merged_wps_list():
     assert "WP57" in merged_line
 
 
-def test_wp74_is_current_phase():
+def test_wp75_is_current_phase():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP74" in current_phase_line
+    assert "WP75" in current_phase_line
 
 
 def test_wp73_in_merged_wps():
@@ -264,12 +264,28 @@ def test_wp70_in_merged_wps():
     assert "WP70" in merged_line
 
 
-def test_wp74_branch_is_current_branch():
+def test_wp75_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp74-local-human-review-label-record-validator-v1" in branch_line
+    assert "wp75-local-human-review-label-fixture-loader-v1" in branch_line
+
+
+def test_wp74_in_merged_wps():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP74" in merged_line
+
+
+def test_wp74_branch_not_current_branch():
+    text = _read()
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp74-local-human-review-label-record-validator-v1" not in branch_line
 
 
 def test_wp68_in_merged_wps():
