@@ -1,0 +1,77 @@
+{
+  "_notice": "ADVISORY_ONLY_WALLET_INTELLIGENCE_PROFILE",
+  "_schema_version": "WALLET_INTELLIGENCE_PROFILE_V1",
+  "_status": "DESIGN_EXAMPLE_ONLY",
+  "identity": {
+    "wallet_id_or_address": "0x0000000000000000000000000000000000000000",
+    "alias_or_label": "SYNTHETIC_PLACEHOLDER_WALLET",
+    "source_of_inclusion": "DESIGN_EXAMPLE_ONLY",
+    "advisory_only_notice": "Research profile example only. Not a wallet to follow."
+  },
+  "sample_size": {
+    "sample_size_status": "WATCH_ONLY_LOW_SAMPLE",
+    "trade_count_observed": 0,
+    "resolved_market_count_observed": 0,
+    "market_count_observed": 0,
+    "sufficient_for_material_research_priority": false
+  },
+  "profitability": {
+    "profitability_status": "NOT_EVALUATED",
+    "realized_profit_observed": null,
+    "unrealized_profit_observed": null,
+    "profit_by_category_available": false,
+    "profit_by_holding_period_available": false,
+    "profit_by_liquidity_context_available": false,
+    "raw_pnl_not_sufficient_notice": "Raw PnL alone is not enough to classify wallet usefulness."
+  },
+  "specialization": {
+    "specialization_status": "NOT_EVALUATED",
+    "observed_market_categories": [],
+    "category_consistency_available": false,
+    "holding_period_consistency_available": false,
+    "liquidity_context_consistency_available": false
+  },
+  "entry_quality": {
+    "entry_quality_status": "NOT_EVALUATED",
+    "historical_timing_context_available": false,
+    "price_movement_after_observation_available": false,
+    "resolution_comparison_available": false,
+    "instruction_notice": "Historical timing fields are observations only, not instructions."
+  },
+  "copyability": {
+    "copyability_status": "COPYABILITY_UNPROVEN",
+    "delay_windows_required": ["1s", "5s", "30s", "2m", "10m"],
+    "spread_slippage_fee_context_available": false,
+    "liquidity_limit_context_available": false,
+    "size_constraint_context_available": false,
+    "copyability_materiality_status": "NOT_MATERIAL_FOR_RESEARCH_PRIORITY"
+  },
+  "risk": {
+    "drawdown_context_available": false,
+    "largest_win_loss_context_available": false,
+    "concentration_context_available": false,
+    "suspicious_flow_status": "NOT_EVALUATED",
+    "suspicious_flow_flag": false
+  },
+  "signal_policy": {
+    "allowed_registry_status": "WATCH_ONLY_LOW_SAMPLE",
+    "allowed_research_priority_effect": "NO_CHANGE",
+    "human_review_required": true,
+    "forbidden_use_notice": "This profile must not be used for automatic copy-trading, live execution, order placement, position sizing, risk override, or parameter auto-change."
+  },
+  "review": {
+    "review_status": "NOT_REVIEWED",
+    "last_reviewed_at_utc": null,
+    "reviewer_id_or_alias": null,
+    "review_notes": "Synthetic placeholder profile for WP77 contract documentation."
+  },
+  "safety": {
+    "manual_research_only": true,
+    "not_automated_copy_trading": true,
+    "no_live_execution": true,
+    "no_order_placement": true,
+    "no_position_sizing": true,
+    "no_risk_override": true,
+    "no_parameter_auto_change": true
+  }
+}

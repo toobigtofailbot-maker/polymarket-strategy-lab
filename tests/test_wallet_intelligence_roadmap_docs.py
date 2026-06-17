@@ -314,17 +314,23 @@ def test_deferred_items_log_contains_wp76_d007():
 
 
 # ---------------------------------------------------------------------------
-# 17. Project status marks WP76 as current branch/phase
+# 17. Project status marks WP76 merged and WP77 as current branch/phase
 # ---------------------------------------------------------------------------
 
-def test_project_status_marks_wp76_as_current_phase():
+def test_project_status_marks_wp77_as_current_phase():
     content = _read(STATUS_DOC)
-    assert "WP76" in content
+    current_phase_line = next(
+        line for line in content.splitlines() if line.startswith("- Current phase:")
+    )
+    assert "WP77" in current_phase_line
 
 
-def test_project_status_marks_wp76_branch():
+def test_project_status_marks_wp77_branch():
     content = _read(STATUS_DOC)
-    assert "wp76-wallet-intelligence-roadmap-lockin" in content
+    branch_line = next(
+        line for line in content.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp77-wallet-intelligence-architecture-registry-profile-contract" in branch_line
 
 
 def test_project_status_shows_wp75_merged():
@@ -333,10 +339,18 @@ def test_project_status_shows_wp75_merged():
     assert "WP75" in content
 
 
-def test_project_status_records_pr76_merge_commit():
+def test_project_status_records_pr77_merge_commit():
     content = _read(STATUS_DOC)
-    # PR #76 actual merge commit
-    assert "0160ac1c7087625a4596edd541524445bc004bd5" in content
+    # PR #77 actual merge commit
+    assert "91cd26e4fe16d492fa2f7b319fba176ee60cd9d5" in content
+
+
+def test_project_status_shows_wp76_merged():
+    content = _read(STATUS_DOC)
+    merged_line = next(
+        line for line in content.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP76" in merged_line
 
 
 # ---------------------------------------------------------------------------

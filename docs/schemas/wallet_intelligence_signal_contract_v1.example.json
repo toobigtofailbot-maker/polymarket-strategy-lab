@@ -1,0 +1,52 @@
+{
+  "_notice": "ADVISORY_ONLY_WALLET_INTELLIGENCE_SIGNAL",
+  "_schema_version": "WALLET_INTELLIGENCE_SIGNAL_CONTRACT_V1",
+  "_status": "DESIGN_EXAMPLE_ONLY",
+  "signal": {
+    "signal_id": "wallet-signal-example-0001",
+    "observed_at_utc": "2026-06-17T00:00:00Z",
+    "signal_category": "LOW_SAMPLE_OUTLIER",
+    "direction_observed": "HISTORICAL_OBSERVATION_ONLY",
+    "direction_observed_notice": "direction_observed records historical behavior only and is not a buy/sell instruction.",
+    "advisory_only_notice": "Research observation only. Not a trade signal."
+  },
+  "wallet_reference": {
+    "wallet_id_or_address": "0x0000000000000000000000000000000000000000",
+    "alias_or_label": "SYNTHETIC_PLACEHOLDER_WALLET"
+  },
+  "market_reference": {
+    "market_id": "synthetic-market-id",
+    "condition_id": "synthetic-condition-id",
+    "market_category": "SYNTHETIC_CATEGORY"
+  },
+  "observation": {
+    "entry_price_observed": null,
+    "size_observed": null,
+    "liquidity_context_available": false,
+    "copyability_context_available": false,
+    "observation_notice": "Observed price and size are historical context only and do not authorize action."
+  },
+  "classification": {
+    "wallet_specialization_match": "NOT_EVALUATED",
+    "suspicious_flow_flag": false,
+    "human_review_required": true
+  },
+  "research_priority_effect": {
+    "effect": "NO_CHANGE",
+    "allowed_effect_notice": "Research-priority effect is advisory-only and does not create execution authority."
+  },
+  "copyability_context": {
+    "copyability_status": "COPYABILITY_UNPROVEN",
+    "delay_windows_required": ["1s", "5s", "30s", "2m", "10m"],
+    "copyability_context_available": false
+  },
+  "safety": {
+    "manual_research_only": true,
+    "not_automated_copy_trading": true,
+    "no_live_execution": true,
+    "no_order_placement": true,
+    "no_position_sizing": true,
+    "no_risk_override": true,
+    "no_parameter_auto_change": true
+  }
+}

@@ -2,8 +2,8 @@
 
 ## 1. Status
 
-- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; LOCAL_RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_ON_BRANCH
-- WP: WP44 (design merged); WP48 (schema/contract merged); WP49 (core scorer merged); WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged); WP64 (research queue/report/session packet merged); WP65 (local research queue export/operator runbook merged); WP66 (calibration harness design/resolved outcome requirements on branch)
+- Package status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; LOCAL_RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_MERGED; WALLET_INTELLIGENCE_ROADMAP_MERGED; WALLET_INTELLIGENCE_ARCHITECTURE_CONTRACT_ON_BRANCH
+- WP: WP44 (design merged); WP48 (schema/contract merged); WP49 (core scorer merged); WP50 (direction lock merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged); WP64 (research queue/report/session packet merged); WP65 (local research queue export/operator runbook merged); WP66 (calibration harness design/resolved outcome requirements merged); WP76 (wallet intelligence roadmap lock-in merged); WP77 (wallet intelligence architecture/profile/signal contract on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
 - Tooling impact: NO_NEW_TOOLING
 - Dependency impact: NO_DEPENDENCY_CHANGE
@@ -17,7 +17,8 @@
 - Trading impact: NO_TRADING_EXECUTION
 - Scoring implementation: LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_MERGED
 - Feature extraction implementation: LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_FOUNDATION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_DOCS_ONLY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED
-- Scorer weights/components: UNCHANGED_IN_WP63; UNCHANGED_IN_WP64; UNCHANGED_IN_WP65; UNCHANGED_IN_WP66; resolution_ambiguity, microstructure_quality, cross_market_relationships, and resolution_source_hierarchy sub-dicts are advisory-only metadata, not score components; research queue/report/packet is advisory-only human research triage, not a signal engine or trade recommendation
+- Scorer weights/components: UNCHANGED_IN_WP63; UNCHANGED_IN_WP64; UNCHANGED_IN_WP65; UNCHANGED_IN_WP66; UNCHANGED_IN_WP76; UNCHANGED_IN_WP77; resolution_ambiguity, microstructure_quality, cross_market_relationships, resolution_source_hierarchy, and wallet intelligence contract docs are advisory-only metadata/design, not score components; research queue/report/packet is advisory-only human research triage, not a signal engine or trade recommendation
+- Wallet intelligence status: ROADMAP_MERGED_IN_WP76; ARCHITECTURE_PROFILE_SIGNAL_CONTRACT_ON_BRANCH_IN_WP77; advisory-only research priority effects only; no scorer weight changes, no trade signals, no wallet loader, no wallet API client, no network ingestion, no automatic copy-trading, no paper/live trading, no credentials, no execution
 - CLI/export/report implementation: LOCAL_OFFLINE_EXPLICIT_MANUAL_EXPORT_MERGED; no scheduler, daemon, database, dashboard, or advisory consumer integration; human-operated only
 - Calibration harness design: DOCS_SCHEMA_DESIGN_ONLY_ON_BRANCH; calibration is for research-priority usefulness evaluation only, not trading results, not profitability, not performance measurement; see docs/calibration_harness_design.md
 - Advisory consumer integration: NOT_STARTED
@@ -64,6 +65,13 @@ DEPRIORITIZED), a LOCAL_HUMAN_REVIEW_REPORT_V1 summary object, and compact
 research session packets. This is human research triage only. It does not change
 scorer weights/components and must not be read as a trading signal, opportunity
 signal, expected return, or execution recommendation.
+
+WP76 locks wallet intelligence as a future advisory research signal layer. WP77
+adds the docs/schema/tests-only wallet architecture/profile/signal contract.
+Wallet signal contract values may describe advisory research-priority effects
+only. They are not scorer weight changes, not trade signals, not expected
+return, not order instructions, not position sizing, and not live execution
+authority.
 
 The formal schema and output contract for this layer is defined in
 `docs/market_research_priority_scoring_output_contract.md` (WP48, merged).

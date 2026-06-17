@@ -168,12 +168,12 @@ def test_wp57_in_merged_wps_list():
     assert "WP57" in merged_line
 
 
-def test_wp75_is_current_phase():
+def test_wp77_is_current_phase():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP75" in current_phase_line
+    assert "WP77" in current_phase_line
 
 
 def test_wp73_in_merged_wps():
@@ -264,15 +264,12 @@ def test_wp70_in_merged_wps():
     assert "WP70" in merged_line
 
 
-def test_wp75_branch_is_current_branch():
+def test_wp77_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(
-        wp in branch_line
-        for wp in ("wp75-local-human-review-label-fixture-loader-v1", "wp76-wallet-intelligence-roadmap-lockin")
-    ), f"Expected wp75 or wp76 branch in branch line: {branch_line}"
+    assert "wp77-wallet-intelligence-architecture-registry-profile-contract" in branch_line
 
 
 def test_wp74_in_merged_wps():
@@ -281,6 +278,14 @@ def test_wp74_in_merged_wps():
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
     assert "WP74" in merged_line
+
+
+def test_wp76_in_merged_wps():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP76" in merged_line
 
 
 def test_wp74_branch_not_current_branch():
