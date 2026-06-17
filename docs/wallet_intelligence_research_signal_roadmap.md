@@ -2,12 +2,12 @@
 
 ## A. Status
 
-- WP: WP76 (wallet intelligence roadmap lock-in merged); WP77 (wallet intelligence architecture/profile/signal contract merged); WP78 (wallet trade event snapshot schema/local loader/validator merged); WP79 (wallet signal research profiler and advisory research queue annotation on branch)
-- Package class: DOCS_TESTS_ONLY_WALLET_INTELLIGENCE_ROADMAP_LOCKIN_MERGED; DOCS_SCHEMA_TESTS_ONLY_WALLET_INTELLIGENCE_CONTRACT_MERGED; LOCAL_OFFLINE_READ_ONLY_WALLET_TRADE_EVENT_FIXTURE_LOADER_MERGED; LOCAL_OFFLINE_READ_ONLY_WALLET_SIGNAL_RESEARCH_PROFILER_ON_BRANCH
+- WP: WP76 (wallet intelligence roadmap lock-in merged); WP77 (wallet intelligence architecture/profile/signal contract merged); WP78 (wallet trade event snapshot schema/local loader/validator merged); WP79 (wallet signal research profiler and advisory research queue annotation merged); WP80 (copyability delay simulator design and wallet intelligence report contract on branch)
+- Package class: DOCS_TESTS_ONLY_WALLET_INTELLIGENCE_ROADMAP_LOCKIN_MERGED; DOCS_SCHEMA_TESTS_ONLY_WALLET_INTELLIGENCE_CONTRACT_MERGED; LOCAL_OFFLINE_READ_ONLY_WALLET_TRADE_EVENT_FIXTURE_LOADER_MERGED; LOCAL_OFFLINE_READ_ONLY_WALLET_SIGNAL_RESEARCH_PROFILER_MERGED; DOCS_SCHEMA_TESTS_ONLY_WALLET_COPYABILITY_DELAY_SIMULATOR_DESIGN_ON_BRANCH
 - Authority: PLANNING_GUIDANCE_ONLY
 - NOT_AUTHORIZATION
 - NO_RUNTIME_CHANGE
-- LOCAL_OFFLINE_READ_ONLY_WALLET_SIGNAL_RESEARCH_PROFILER_ON_BRANCH
+- DOCS_SCHEMA_TESTS_ONLY_WALLET_COPYABILITY_DELAY_SIMULATOR_DESIGN_ON_BRANCH
 - NO_TOOLS_CHANGE
 - NO_DEPENDENCY_CHANGE
 - NO_NETWORK
@@ -21,7 +21,8 @@
 - WP76 merge commit: 91cd26e4fe16d492fa2f7b319fba176ee60cd9d5
 - WP77 merge commit: 24badbfb7a9da06ee4c8ae94795e1f2c862af913
 - WP78 merge commit: 7ff117f6caf78eab62e6a116db72b60d76d305f5
-- WP79 branch: wp79-wallet-skill-niche-profiler-research-queue-integration
+- WP79 merge commit: 4266aefa09da9b06a7e2f547aae70149c203da80
+- WP80 branch: wp80-copyability-delay-simulator-design-wallet-report-contract
 
 ## B. Purpose
 
@@ -229,18 +230,26 @@ merge, and WP78 fixture-loader selection:
   *Local/offline/read-only niche profiler from validated trade event fixtures;
   first wallet signal integration into research queue (advisory-only).*
 
-- **WP80** - Copyability Delay Simulator Design And Wallet Intelligence Report Generator
-  *Delayed-copy evaluation design; local/offline/read-only report generator.*
+- **WP80** - Copyability Delay Simulator Design And Wallet Intelligence Report Contract
+  *Current WP: copyability delay simulator design, wallet intelligence report
+  contract, static JSON examples, focused tests.*
 
-- **WP81** - Wallet Signal Paper Strategy Contract
+- **WP81** - Local Copyability Delay Evaluation From Validated Fixtures V1
+  *Delayed-copy evaluation from local validated wallet trade event fixtures;
+  local/offline/read-only; no live execution.*
+
+- **WP82** - Wallet Intelligence Report Generator V1
+  *Local/offline/read-only wallet intelligence report generator satisfying the
+  WP80 contract; no live execution.*
+
+- **WP83** - Wallet Signal Paper Strategy Contract
   *Paper-trading candidate generation contract from wallet signals; no live
   execution.*
 
-- **WP82** - Human Review Label And Calibration Record Join Design Or Implementation
+- **WP84** - Human Review Label And Calibration Record Join Design Or Implementation
   *Join design or implementation between human review labels and calibration records.*
 
-If WP78 merges cleanly, WP79 is the next wallet-intelligence candidate. Do not
-draft WP79 until WP78 is merged and repo truth is re-verified.
+Do not draft WP81 until WP80 is merged and repo truth is re-verified.
 
 ## L. Explicit Non-Goals
 
@@ -278,8 +287,8 @@ Wallet intelligence may later feed:
 - performance review (future, after performance measurement WP)
 
 Wallet intelligence must not feed live execution until ALL of the following exist:
-- validated delayed-copy evidence (from WP80 or successor)
-- paper-trading evidence (from WP81 or successor)
+- validated delayed-copy evidence (from WP81 or successor)
+- paper-trading evidence (from WP83 or successor)
 - risk-gate approval (from future explicit risk review WP)
 - explicit live-trading authorization (from user and documented in repo truth)
 - credential boundary (future secret management and key boundary WP)
@@ -301,10 +310,13 @@ The following items are deferred from WP76 to future WPs:
   only for WP78 local/offline/read-only schema, static example, validator, and
   explicit-path fixture loader scope.
 - **WP76-D003**: Wallet skill/niche profiler and research queue integration
-  remain deferred (WP79 is next candidate).
-- **WP76-D004**: Copyability delay simulator and wallet intelligence report
-  generator remain deferred (WP80 is next candidate).
-- **WP76-D005**: Wallet signal paper strategy contract remains deferred (WP81
+  are resolved only for WP79 local/offline/read-only advisory wallet signal
+  research profile and research queue annotation scope.
+- **WP76-D004**: Copyability delay simulator design and wallet intelligence report
+  contract are resolved only for WP80 docs/schema/tests-only scope. Copyability
+  delay implementation remains deferred to WP81; report generator remains deferred
+  to WP82.
+- **WP76-D005**: Wallet signal paper strategy contract remains deferred (WP83
   is next candidate).
 - **WP76-D006**: Any direct wallet-driven live execution remains forbidden until
   explicit future authorization satisfying all live boundary conditions in
