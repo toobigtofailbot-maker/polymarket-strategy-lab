@@ -18,7 +18,27 @@
 - NO_CREDENTIALS
 - NO_SCHEDULER
 - NO_BOT_LOOP
-- WP80 merge commit: TO_BE_RECORDED_AFTER_MERGE
+- WP80 merge commit: ee3d10296dce5504164b7e747b286e8fe5a09991
+
+## 1b. WP81 Implementation Status
+
+- WP: WP81 (local/offline/read-only copyability delay evaluation implementation — first evaluator)
+- Package class: LOCAL_OFFLINE_READ_ONLY_WALLET_COPYABILITY_DELAY_EVALUATION
+- Scope: `src/data_layer/wallet_copyability_delay_evaluation.py` — first local/offline evaluator implementation
+
+WP81 evaluates local fixture records only. It does not prove a wallet is copyable.
+It does not estimate expected return. It does not create trade recommendations.
+It does not place or simulate live orders.
+
+Specifically, WP81:
+- Consumes only in-memory/local `DelayWindowObservation` fixture records and
+  already-validated WP78 `LoadedWalletTradeEventRecord` objects.
+- Evaluates all five required delay windows (1_second, 5_seconds, 30_seconds,
+  2_minutes, 10_minutes) for each (wallet, market, condition) group.
+- Produces only advisory `WalletCopyabilityDelayEvaluation` records.
+- Emits only the eight allowed advisory statuses from the WP80 design contract.
+- Never computes dollar PnL, expected return, position size, or live signal.
+- Is stdlib-only. No network. No credentials. No file writes.
 
 ## 2. Purpose
 

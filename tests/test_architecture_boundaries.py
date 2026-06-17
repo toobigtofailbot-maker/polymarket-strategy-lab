@@ -48,6 +48,7 @@ def test_required_src_readmes_exist():
 # WP75 approves the local/offline/read-only human review label fixture loader at src/data_layer/human_review_label_fixture_loader.py.
 # WP78 approves the local/offline/read-only wallet trade event fixture loader at src/data_layer/wallet_trade_event_fixtures.py.
 # WP79 approves the local/offline/read-only wallet signal research profile builder at src/data_layer/wallet_signal_research_profile.py.
+# WP81 approves the local/offline/read-only copyability delay evaluator at src/data_layer/wallet_copyability_delay_evaluation.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -63,6 +64,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/human_review_label_fixture_loader.py",
     "src/data_layer/wallet_trade_event_fixtures.py",
     "src/data_layer/wallet_signal_research_profile.py",
+    "src/data_layer/wallet_copyability_delay_evaluation.py",
 )
 
 
@@ -90,6 +92,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     wallet trade event fixture validator/loader.
     WP79 permits wallet_signal_research_profile.py for the local/offline/read-only
     wallet signal research profile builder and annotation builder.
+    WP81 permits wallet_copyability_delay_evaluation.py for the local/offline/read-only
+    copyability delay evaluator from validated fixtures.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"

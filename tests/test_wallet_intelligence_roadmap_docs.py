@@ -333,6 +333,7 @@ def test_project_status_marks_wp79_branch():
     assert any(wp in branch_line for wp in (
         "wp79-wallet-skill-niche-profiler-research-queue-integration",
         "wp80-copyability-delay-simulator-design-wallet-report-contract",
+        "wp81-local-copyability-delay-evaluation-from-fixtures",
     ))
 
 

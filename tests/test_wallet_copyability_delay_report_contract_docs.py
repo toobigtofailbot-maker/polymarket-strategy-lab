@@ -717,11 +717,23 @@ def test_trade_event_doc_still_states_no_network_ingestion() -> None:
 # ---------------------------------------------------------------------------
 
 def test_no_wallet_copyability_src_module() -> None:
+    # WP80 is docs/schema/tests-only — no src implementation was added in WP80.
+    # WP81 adds wallet_copyability_delay_evaluation.py, which is the approved
+    # local/offline/read-only evaluator. All other copyability src files remain
+    # forbidden. This test now checks that the only allowed copyability src file
+    # is the WP81 evaluator.
     src_dir = ROOT / "src"
     if not src_dir.exists():
         return
+    allowed_copyability_src = {
+        src_dir / "data_layer" / "wallet_copyability_delay_evaluation.py",
+    }
     for path in src_dir.rglob("*copyability*"):
-        assert False, f"Unexpected copyability src file: {path}"
+        if "__pycache__" in path.parts:
+            continue
+        assert path in allowed_copyability_src, (
+            f"Unexpected copyability src file outside WP81 approved scope: {path}"
+        )
 
 
 def test_no_wallet_report_generator_src_module() -> None:
