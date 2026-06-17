@@ -1,0 +1,139 @@
+{
+  "_meta": {
+    "schema_type": "WALLET_COPYABILITY_DELAY_EVALUATION_V1",
+    "schema_status": "DESIGN_EXAMPLE_ONLY_NOT_IMPLEMENTED",
+    "wp": "WP80",
+    "advisory_only_notice": "This is a static design example only. It is not a live evaluation, not a trading signal, not a trade recommendation, and not a copy-trading instruction. All fields are illustrative placeholders.",
+    "allowed_evaluation_statuses": [
+      "NOT_EVALUATED",
+      "INSUFFICIENT_CONTEXT",
+      "RESEARCH_PROMISING",
+      "RESEARCH_WEAK",
+      "UNCOPYABLE_FAST_FLOW",
+      "UNCOPYABLE_TOO_ILLIQUID",
+      "SUSPICIOUS_FLOW_DO_NOT_COPY",
+      "HUMAN_REVIEW_REQUIRED"
+    ],
+    "safety": {
+      "manual_research_only": true,
+      "not_automated_copy_trading": true,
+      "no_live_execution": true,
+      "no_order_placement": true,
+      "no_position_sizing": true,
+      "no_risk_override": true,
+      "no_parameter_auto_change": true
+    }
+  },
+  "evaluation_identity": {
+    "evaluation_id": "EXAMPLE-EVAL-001",
+    "evaluation_type": "WALLET_COPYABILITY_DELAY_EVALUATION_V1",
+    "design_example_only": true,
+    "advisory_only_notice": "Design example only. Not a live evaluation or trade signal."
+  },
+  "wallet_reference": {
+    "wallet_id_or_address": "PLACEHOLDER_WALLET_ID",
+    "alias_or_label": "PLACEHOLDER_WALLET_LABEL",
+    "source_of_inclusion": "EXAMPLE_PLACEHOLDER"
+  },
+  "market_reference": {
+    "market_id": "PLACEHOLDER_MARKET_ID",
+    "condition_id": "PLACEHOLDER_CONDITION_ID",
+    "market_category": "EXAMPLE_CATEGORY"
+  },
+  "signal_context": {
+    "signal_category": "SPECIALIST_ENTRY",
+    "wallet_event_timestamp_utc": "PLACEHOLDER_TIMESTAMP",
+    "entry_price_at_wallet_event": "PLACEHOLDER_PRICE"
+  },
+  "delay_window_evaluations": [
+    {
+      "delay_window": "1_second",
+      "observable_price_after_delay": "PLACEHOLDER_PRICE",
+      "spread_context_available": false,
+      "liquidity_context_available": false,
+      "fee_context_available": false,
+      "size_limit_context_available": false,
+      "resolved_outcome_available": false,
+      "evaluation_status": "INSUFFICIENT_CONTEXT",
+      "research_interpretation": "Spread, liquidity, fee, and size-limit context not available for this window in local fixtures.",
+      "human_review_required": true,
+      "warnings": [
+        "Insufficient context: spread data absent",
+        "Insufficient context: liquidity data absent",
+        "Insufficient context: fee data absent",
+        "Insufficient context: size-limit data absent"
+      ],
+      "advisory_only_notice": "INSUFFICIENT_CONTEXT status. No trade signal."
+    },
+    {
+      "delay_window": "5_seconds",
+      "observable_price_after_delay": "PLACEHOLDER_PRICE",
+      "spread_context_available": false,
+      "liquidity_context_available": false,
+      "fee_context_available": false,
+      "size_limit_context_available": false,
+      "resolved_outcome_available": false,
+      "evaluation_status": "NOT_EVALUATED",
+      "research_interpretation": "Not evaluated in this design example.",
+      "human_review_required": true,
+      "warnings": [],
+      "advisory_only_notice": "NOT_EVALUATED status. No trade signal."
+    },
+    {
+      "delay_window": "30_seconds",
+      "observable_price_after_delay": "PLACEHOLDER_PRICE",
+      "spread_context_available": false,
+      "liquidity_context_available": false,
+      "fee_context_available": false,
+      "size_limit_context_available": false,
+      "resolved_outcome_available": false,
+      "evaluation_status": "NOT_EVALUATED",
+      "research_interpretation": "Not evaluated in this design example.",
+      "human_review_required": true,
+      "warnings": [],
+      "advisory_only_notice": "NOT_EVALUATED status. No trade signal."
+    },
+    {
+      "delay_window": "2_minutes",
+      "observable_price_after_delay": "PLACEHOLDER_PRICE",
+      "spread_context_available": false,
+      "liquidity_context_available": false,
+      "fee_context_available": false,
+      "size_limit_context_available": false,
+      "resolved_outcome_available": false,
+      "evaluation_status": "NOT_EVALUATED",
+      "research_interpretation": "Not evaluated in this design example.",
+      "human_review_required": true,
+      "warnings": [],
+      "advisory_only_notice": "NOT_EVALUATED status. No trade signal."
+    },
+    {
+      "delay_window": "10_minutes",
+      "observable_price_after_delay": "PLACEHOLDER_PRICE",
+      "spread_context_available": false,
+      "liquidity_context_available": false,
+      "fee_context_available": false,
+      "size_limit_context_available": false,
+      "resolved_outcome_available": false,
+      "evaluation_status": "NOT_EVALUATED",
+      "research_interpretation": "Not evaluated in this design example.",
+      "human_review_required": true,
+      "warnings": [],
+      "advisory_only_notice": "NOT_EVALUATED status. No trade signal."
+    }
+  ],
+  "overall_evaluation": {
+    "evaluation_status": "NOT_EVALUATED",
+    "human_review_required": true,
+    "advisory_only_notice": "This design example shows only the schema shape. All statuses are placeholder. No evaluation was performed.",
+    "safety": {
+      "manual_research_only": true,
+      "not_automated_copy_trading": true,
+      "no_live_execution": true,
+      "no_order_placement": true,
+      "no_position_sizing": true,
+      "no_risk_override": true,
+      "no_parameter_auto_change": true
+    }
+  }
+}

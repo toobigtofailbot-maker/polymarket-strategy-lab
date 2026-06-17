@@ -1,0 +1,96 @@
+{
+  "_meta": {
+    "schema_type": "WALLET_INTELLIGENCE_ADVISORY_REPORT_V1",
+    "schema_status": "DESIGN_EXAMPLE_ONLY_NOT_IMPLEMENTED",
+    "wp": "WP80",
+    "advisory_only_notice": "This is a static design example only. It is not a live report, not a trading signal, not a trade recommendation, and not a copy-trading instruction. All fields are illustrative placeholders.",
+    "safety": {
+      "manual_research_only": true,
+      "not_automated_copy_trading": true,
+      "no_live_execution": true,
+      "no_order_placement": true,
+      "no_position_sizing": true,
+      "no_risk_override": true,
+      "no_parameter_auto_change": true
+    }
+  },
+  "report_identity": {
+    "report_id": "EXAMPLE-REPORT-001",
+    "report_type": "WALLET_INTELLIGENCE_ADVISORY_REPORT_V1",
+    "report_generated_at": "PLACEHOLDER_TIMESTAMP",
+    "wp_version": "WP80",
+    "advisory_only_notice": "Design example only. Not a live report or trade signal.",
+    "design_example_only": true
+  },
+  "input_summary": {
+    "wallet_fixture_source": "PLACEHOLDER_FIXTURE_PATH",
+    "event_count": 0,
+    "market_count": 0,
+    "condition_count": 0,
+    "fixture_validation_status": "NOT_VALIDATED",
+    "research_queue_context": false
+  },
+  "wallet_signal_summary": {
+    "profile_count": 0,
+    "signal_category_distribution": {},
+    "suspicious_flow_count": 0,
+    "human_review_required_count": 0,
+    "advisory_only_notice": "Design example only. No profiles were evaluated. This section contains no trade signals."
+  },
+  "copyability_delay_design_summary": {
+    "delay_windows_assessed": [
+      "1_second",
+      "5_seconds",
+      "30_seconds",
+      "2_minutes",
+      "10_minutes"
+    ],
+    "evaluation_status_distribution": {
+      "NOT_EVALUATED": 0,
+      "INSUFFICIENT_CONTEXT": 0,
+      "RESEARCH_PROMISING": 0,
+      "RESEARCH_WEAK": 0,
+      "UNCOPYABLE_FAST_FLOW": 0,
+      "UNCOPYABLE_TOO_ILLIQUID": 0,
+      "SUSPICIOUS_FLOW_DO_NOT_COPY": 0,
+      "HUMAN_REVIEW_REQUIRED": 0
+    },
+    "uncopyable_fast_flow_count": 0,
+    "uncopyable_illiquid_count": 0,
+    "suspicious_flow_blocked_count": 0,
+    "advisory_only_notice": "Design example only. RESEARCH_PROMISING and RESEARCH_WEAK are advisory research labels only. They are not buy or sell signals."
+  },
+  "research_queue_implications": {
+    "markets_flagged_for_research": 0,
+    "research_priority_effect_summary": {},
+    "human_review_queue_additions": 0,
+    "advisory_only_notice": "Design example only. Research priority effects are advisory only. No market is recommended for entry based on this report."
+  },
+  "suspicious_flow_review": {
+    "suspicious_flow_events": [],
+    "advisory_only_notice": "Design example only. Suspicious-flow observations may trigger human review or block automation. They must not become a strategy to follow privileged or suspicious information."
+  },
+  "limitations": {
+    "data_source_limitations": "All inputs derive from local/offline validated fixtures only. No live wallet API data, no account credentials data, no real-time market feed.",
+    "evaluation_limitations": "Spread, slippage, fee, liquidity, and size-limit contexts may be absent from local fixtures. Evaluation status INSUFFICIENT_CONTEXT is expected until fixture coverage improves.",
+    "no_live_data_notice": "No live data was used. All observations derive from local fixture files.",
+    "no_trading_signal_notice": "This report contains no trade signals, no buy or sell recommendations, no position sizing, and no copy-trading instructions.",
+    "advisory_only_notice": "Design example only. This limitations section is illustrative."
+  },
+  "deferred_items": {
+    "live_copyability_simulation": "Deferred to future approved WP81.",
+    "expected_return_computation": "Deferred and forbidden. Expected-return computation is not permitted.",
+    "paper_trading_candidate": "Deferred to future approved WP83.",
+    "position_sizing": "Deferred and forbidden. Position sizing is not permitted.",
+    "strategy_signal": "Deferred and forbidden. Strategy signals are not permitted."
+  },
+  "safety": {
+    "manual_research_only": true,
+    "not_automated_copy_trading": true,
+    "no_live_execution": true,
+    "no_order_placement": true,
+    "no_position_sizing": true,
+    "no_risk_override": true,
+    "no_parameter_auto_change": true
+  }
+}

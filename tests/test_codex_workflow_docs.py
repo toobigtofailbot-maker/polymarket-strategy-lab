@@ -409,7 +409,10 @@ def test_project_status_reflects_wp79_branch() -> None:
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp79-wallet-skill-niche-profiler-research-queue-integration" in branch_line
+    assert any(wp in branch_line for wp in (
+        "wp79-wallet-skill-niche-profiler-research-queue-integration",
+        "wp80-copyability-delay-simulator-design-wallet-report-contract",
+    ))
 
 
 def test_project_status_reflects_wp64_merged() -> None:
