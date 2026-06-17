@@ -269,7 +269,10 @@ def test_wp75_branch_is_current_branch():
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp75-local-human-review-label-fixture-loader-v1" in branch_line
+    assert any(
+        wp in branch_line
+        for wp in ("wp75-local-human-review-label-fixture-loader-v1", "wp76-wallet-intelligence-roadmap-lockin")
+    ), f"Expected wp75 or wp76 branch in branch line: {branch_line}"
 
 
 def test_wp74_in_merged_wps():

@@ -158,6 +158,13 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP75-D002 | Human review label editor remains deferred | OPEN | P3 | WP75 adds a local/offline/read-only fixture loader only. No label editor, no label writer, no label update function, and no label mutation interface is implemented or authorized. | Any WP that implements a human review label editor or label writer. | Future approved WP explicitly scopes a local/offline label editor with safety boundary review and explicit authorization. |
 | WP75-D003 | Automated or LLM-based labeling remains forbidden and deferred | OPEN | P3 | WP75 adds a local/offline/read-only fixture loader only. No automated label generation, no LLM/Hermes-based labeling, no automated workflow state transitions, and no AUTO_LABELED_BY_LLM state is implemented or authorized. | Any WP that proposes automated label generation, LLM-based labeling, or automated label workflow state transitions. | Future approved WP with explicit authorization, separate boundary review, and separate user approval. |
 | WP75-D004 | Labels are not used for scoring weight changes until explicit future WP | OPEN | P3 | WP75 adds a local/offline/read-only fixture loader only. No loaded human review label record is connected to the research priority scorer, no scoring weights are updated based on label outcomes, and no feedback loop between the fixture loader and scoring is implemented or authorized. | Any WP that uses loaded human review label records to update scorer weights, thresholds, or bucket boundaries. | Future approved WP explicitly scopes the label-to-scoring feedback loop with non-signal boundary review and protected-boundary gates. |
+| WP76-D001 | Wallet intelligence architecture/registry/profile contract remains deferred | OPEN | P3 | WP76 locks the wallet intelligence roadmap in docs/tests form only. No wallet registry, no wallet profile schema, no wallet signal contract, and no architecture implementation is added or authorized. WP77 is the next candidate. | Any WP that defines a wallet registry, wallet profile schema, or wallet signal contract. | Future approved WP77 explicitly scopes wallet intelligence architecture in docs/schema/tests form; no network ingestion, no wallet API client, no automatic copy-trading, no paper/live trading, no credentials, no execution. |
+| WP76-D002 | Wallet trade event schema/local loader/validator remains deferred | OPEN | P3 | WP76 locks the roadmap only. No wallet trade event schema, no local loader, and no validator is designed or implemented. WP78 is the next candidate after WP77. | Any WP that defines a wallet trade event schema or implements a local loader/validator for wallet trade events. | Future approved WP78 explicitly scopes wallet trade event schema and local/offline/read-only fixture loader; local/offline/read-only only; no network ingestion. |
+| WP76-D003 | Wallet skill/niche profiler and research queue integration remain deferred | OPEN | P3 | WP76 locks the roadmap only. No wallet skill classifier, no niche profiler, and no research queue integration is designed or implemented. WP79 is the next candidate. | Any WP that implements a wallet skill profiler or integrates wallet signals into the research queue. | Future approved WP79 explicitly scopes a local/offline/read-only niche profiler and advisory-only research queue integration; no scorer weight changes without separate explicit approval. |
+| WP76-D004 | Copyability delay simulator and wallet intelligence report generator remain deferred | OPEN | P3 | WP76 locks the roadmap only. No copyability delay simulator, no PnL delay evaluation, and no wallet intelligence report generator is designed or implemented. WP80 is the next candidate. | Any WP that designs or implements a copyability delay simulator or wallet intelligence report generator. | Future approved WP80 explicitly scopes the copyability delay simulator design and local/offline/read-only report generator; no live execution; no trading signals. |
+| WP76-D005 | Wallet signal paper strategy contract remains deferred | OPEN | P3 | WP76 locks the roadmap only. No wallet signal paper trading contract, no paper strategy implementation, and no live strategy implementation is authorized. WP81 is the next candidate. | Any WP that defines a wallet-signal-driven paper trading strategy contract or paper/live execution behavior. | Future approved WP81 explicitly scopes a paper-trading candidate generation contract only; requires prior copyability evidence from WP80; no live execution without full live boundary conditions. |
+| WP76-D006 | Any direct wallet-driven live execution remains forbidden until explicit future authorization | OPEN | P0 | WP76 explicitly forbids direct wallet-signal-driven live execution. No order placement, no position sizing, no risk override, no parameter auto-change, and no live trading authority is granted by this or any future wallet intelligence WP until all live boundary conditions are satisfied: delayed-copy evidence, paper-trading evidence, risk-gate approval, explicit live-trading authorization, credential boundary, execution gateway, kill switch, monitoring, and human approval. | Any WP that proposes wallet-signal-driven order placement, live execution, or live trading. | All live boundary conditions from docs/wallet_intelligence_research_signal_roadmap.md Section M must be satisfied before any live-trading WP is proposed. |
+| WP76-D007 | Automated copy-trading remains forbidden until delayed-copy evidence, paper-trading proof, risk review, and live authorization exist | OPEN | P0 | WP76 explicitly classifies automatic copy-trading as a forbidden behavior. No wallet signal may trigger automatic trade entry, exit, position sizing, or order placement without the full evidence chain and explicit user authorization. | Any WP that proposes automatic copy-trading, automatic position mirroring, or automated wallet-following strategy without the full evidence chain. | Future WP that proposes copy-trading must demonstrate delayed-copy evidence (WP80+), paper-trading proof (WP81+), risk-gate review, and explicit user authorization documented in repo truth. |
 
 ## Rules For Adding Items
 
@@ -1674,6 +1681,42 @@ WP64-D004 is added: Dashboard/database-backed research queue remains deferred (O
 | WP64-D002 | Advisory consumer integration of research queue remains deferred | OPEN | P3 | WP64 adds queue/report/packet objects only. No advisory consumer integration, no strategy proposal, no paper/live trading integration. | Future approved WP explicitly scopes integration with advisory consumer only after explicit user authorization. | Candidate: future advisory consumer integration WP. |
 | WP64-D003 | Strategy/paper/live use of research queue remains forbidden until explicit future WP | OPEN | P3 | WP64 queue/report/packet is advisory-only research triage. No trade signal, no expected return, no paper/live trading use is authorized. | Future approved WP explicitly authorizes scope expansion and satisfies all protected-boundary gates. | Candidate: forbidden until explicitly authorized future WP. |
 | WP64-D004 | Dashboard/database-backed research queue remains deferred | OPEN | P3 | WP64 adds in-memory-only objects. No dashboard, no database, no persistence, no scheduler, no hosted runtime. | Future approved WP explicitly scopes database/dashboard integration after protected-boundary review. | Candidate: future dashboard/database WP after schema stabilization. |
+
+## WP75 Post-WP74 Repo-Truth Reconciliation And Local Human Review Label Fixture Loader V1 Deferred Items
+
+WP75 reconciles repo truth after WP74 merge (WP74 is now listed in merged WPs;
+PR #75 merge commit `e70013a2e1e9a6dbe0365831f9dd96bdc2d579be`).
+
+WP75 adds a local/offline/read-only human review label fixture loader at
+`src/data_layer/human_review_label_fixture_loader.py`. It accepts single JSON
+object files, JSON list files, or direct-child *.json directories; validates each
+loaded record with the WP74 validator; returns frozen deterministic dataclasses;
+rejects URL-like paths, unsupported extensions, missing paths, non-object list
+entries; no file writes, no network, no credentials, no automation.
+
+WP75 resolves WP74-D001 and WP73-D002 only for the local/offline/read-only fixture
+loader scope. WP75 adds WP75-D001 through WP75-D004 (see table above).
+
+## WP76 Post-WP75 Repo-Truth Reconciliation And Wallet Intelligence Roadmap Lock-In Deferred Items
+
+WP76 reconciles repo truth after WP75 merge (WP75 / PR #76 merge commit
+`0160ac1c7087625a4596edd541524445bc004bd5`).
+
+WP76 locks the wallet intelligence roadmap into repo truth in docs/tests-only form.
+It records that top wallets are a major future research signal layer (not an
+automatic trade trigger), defines the five wallet intelligence jobs, required wallet
+metrics, copyability delay principle, wallet signal categories, suspicious-flow
+boundary, research queue influence target (25%–35%), forbidden-boundary list, and
+the near-term roadmap WP77–WP82.
+
+WP76 adds no source implementation, no wallet registry, no wallet API client, no
+copyability simulator, no automatic copy-trading, no live execution, no paper
+trading, no credentials, no network ingestion, no scheduler, no bot loop, no
+dashboard, no Hermes/LLM runtime, no dependency or lock-file changes.
+
+WP76 resolves no existing deferred items by implementation. WP76 adds WP76-D001
+through WP76-D007 (see table above). WP76-D006 and WP76-D007 are classified P0
+because they govern the live execution and copy-trading safety boundaries.
 
 ## WP6 Generated Artifact Incident Update
 
