@@ -1,9 +1,9 @@
 # Project Status
 
-- Current phase: WP80 - Post-WP79 Repo-Truth Reconciliation And Copyability Delay Simulator Design Plus Wallet Intelligence Report Contract
-- Repo state: Copyability delay simulator design and wallet intelligence report contract on branch after WP79 wallet signal research profiler and research queue annotation merge
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79
-- Current branch: `wp80-copyability-delay-simulator-design-wallet-report-contract`
+- Current phase: WP81 - Post-WP80 Repo-Truth Reconciliation And Local Copyability Delay Evaluation From Validated Fixtures V1
+- Repo state: Local/offline/read-only copyability delay evaluator implementation on branch after WP80 copyability delay simulator design and wallet intelligence report contract merge
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80
+- Current branch: `wp81-local-copyability-delay-evaluation-from-fixtures`
 - Multi-agent coding workflow status: AGENT_NEUTRAL_START_LAYER_MERGED
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; MANUAL_EXPLICIT_NETWORK_POLLING_RUNNER_DEV_ONLY; MANUAL_GUARD_ENFORCED_SNAPSHOT_CAPTURE_DEV_ONLY
 - Runtime dependency integration status: NOT_STARTED_FOR_NEW_RUNTIME_DEPENDENCIES
@@ -35,7 +35,7 @@
 - Local advisory consumer prototype status: LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER_MERGED
 - Advisory prompt/runbook package status: DOCS_ONLY_ADVISORY_PROMPT_RUNBOOK_MERGED
 - Advisory operator workflow hardening status: DOCS_ONLY_ADVISORY_OPERATOR_WORKFLOW_MERGED
-- Market research priority scoring layer status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_MERGED; CALIBRATION_RECORD_SCHEMA_VALIDATOR_MERGED; LOCAL_RESOLVED_OUTCOME_FIXTURE_LOADER_MERGED; CALIBRATION_REPORT_GENERATOR_DESIGN_MERGED; LOCAL_CALIBRATION_METRIC_COMPUTATION_MERGED; LOCAL_CALIBRATION_REPORT_GENERATOR_MERGED; LOCAL_CALIBRATION_REPORT_EXPORT_MERGED; HUMAN_REVIEW_LABEL_WORKFLOW_DESIGN_MERGED; HUMAN_REVIEW_LABEL_RECORD_VALIDATOR_MERGED; HUMAN_REVIEW_LABEL_FIXTURE_LOADER_MERGED; WALLET_INTELLIGENCE_ROADMAP_MERGED; WALLET_INTELLIGENCE_ARCHITECTURE_CONTRACT_MERGED; WALLET_TRADE_EVENT_FIXTURE_LOADER_MERGED; WALLET_SIGNAL_RESEARCH_PROFILER_MERGED; WALLET_COPYABILITY_DELAY_SIMULATOR_DESIGN_ON_BRANCH; WALLET_INTELLIGENCE_REPORT_CONTRACT_ON_BRANCH
+- Market research priority scoring layer status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_MERGED; CALIBRATION_RECORD_SCHEMA_VALIDATOR_MERGED; LOCAL_RESOLVED_OUTCOME_FIXTURE_LOADER_MERGED; CALIBRATION_REPORT_GENERATOR_DESIGN_MERGED; LOCAL_CALIBRATION_METRIC_COMPUTATION_MERGED; LOCAL_CALIBRATION_REPORT_GENERATOR_MERGED; LOCAL_CALIBRATION_REPORT_EXPORT_MERGED; HUMAN_REVIEW_LABEL_WORKFLOW_DESIGN_MERGED; HUMAN_REVIEW_LABEL_RECORD_VALIDATOR_MERGED; HUMAN_REVIEW_LABEL_FIXTURE_LOADER_MERGED; WALLET_INTELLIGENCE_ROADMAP_MERGED; WALLET_INTELLIGENCE_ARCHITECTURE_CONTRACT_MERGED; WALLET_TRADE_EVENT_FIXTURE_LOADER_MERGED; WALLET_SIGNAL_RESEARCH_PROFILER_MERGED; WALLET_COPYABILITY_DELAY_SIMULATOR_DESIGN_MERGED; WALLET_INTELLIGENCE_REPORT_CONTRACT_MERGED; WALLET_COPYABILITY_DELAY_EVALUATOR_ON_BRANCH
 - Research queue export/operator runbook status: LOCAL_OFFLINE_EXPLICIT_MANUAL_EXPORT_MERGED
 - Calibration harness design status: DOCS_SCHEMA_DESIGN_ONLY_MERGED
 - Resolved outcome data requirements status: DOCS_DESIGN_ONLY_MERGED
@@ -90,8 +90,9 @@
 - WP78 deferred items status: WP78 resolves WP76-D002 and WP77-D001 only for local/offline/read-only wallet trade event schema, static example, validator, and explicit-path fixture loader. WP78 adds WP78-D001 through WP78-D007 for remaining profiler, research queue, copyability, report, paper strategy, wallet API/network, and live-execution gaps.
 - WP79 deferred items status: WP79 resolves WP78-D001 and WP78-D002 only for local/offline/read-only advisory wallet signal research profile and research queue annotation scope. WP79 adds WP79-D001 through WP79-D006 for remaining copyability delay simulator, report generator, paper strategy, wallet API/network, and live-execution gaps.
 - WP80 deferred items status: WP80 resolves WP79-D001 and WP79-D002 (and WP76-D004, WP77-D004, WP77-D005, WP78-D003, WP78-D004) only for docs/schema/tests-only copyability delay simulator design and wallet intelligence report contract scope. WP80 adds WP80-D001 through WP80-D006 for remaining copyability delay implementation, report generator implementation, paper strategy, wallet API/network, and live-execution gaps.
+- WP81 deferred items status: WP81 resolves WP80-D001 only for the local/offline/read-only copyability delay evaluator implementation scope (src/data_layer/wallet_copyability_delay_evaluation.py). WP80-D002 through WP80-D006 remain OPEN (wallet intelligence report generator, paper strategy, wallet API/network, and live-execution gaps). WP81 adds WP81-D001 (wallet intelligence report generator not started, OPEN, P3) and WP81-D002 (wallet signal paper strategy contract not started, OPEN, P3).
 - Generated artifact status: WP6 guardrails active; WP7 gitleaks binary in ignored tools/.bin/ (not committed); local_data/ is ignored and generated outputs must not be committed; WP23 agent context exports output remains under ignored local_data/agent_context_exports/; WP25 agent context report output remains under ignored local_data/agent_context_reports/; WP40 optional advisory consumer output remains under ignored local_data/advisory_outputs/ only.
-- Next intended WP: after WP80 merge, likely next WP is WP81 Local Copyability Delay Evaluation From Validated Fixtures V1 (local/offline/read-only only from validated fixtures; no live execution; no network ingestion; no wallet API client; no automatic copy-trading; no paper/live trading; no credentials; no execution).
+- Next intended WP: after WP81 merge, likely next WP is WP82 Wallet Intelligence Report Generator V1 (local/offline/read-only only; no live execution; no network ingestion; no wallet API client; no automatic copy-trading; no paper/live trading; no credentials; no execution).
 - Human review label workflow status: DOCS_SCHEMA_TESTS_DESIGN_ONLY_MERGED
 - Human review label record validator status: LOCAL_OFFLINE_READ_ONLY_VALIDATOR_MERGED
 - Human review label fixture loader status: LOCAL_OFFLINE_READ_ONLY_FIXTURE_LOADER_MERGED
@@ -99,14 +100,43 @@
 - Wallet intelligence architecture/profile/signal contract status: DOCS_SCHEMA_TESTS_ONLY_CONTRACT_MERGED
 - Wallet trade event fixture loader status: LOCAL_OFFLINE_READ_ONLY_FIXTURE_LOADER_MERGED
 - Wallet signal research profiler status: LOCAL_OFFLINE_READ_ONLY_RESEARCH_PROFILER_MERGED
-- Wallet copyability delay simulator design status: DOCS_SCHEMA_TESTS_ONLY_COPYABILITY_DELAY_DESIGN_ON_BRANCH
-- Wallet intelligence report contract status: DOCS_SCHEMA_TESTS_ONLY_REPORT_CONTRACT_ON_BRANCH
+- Wallet copyability delay simulator design status: DOCS_SCHEMA_TESTS_ONLY_COPYABILITY_DELAY_DESIGN_MERGED
+- Wallet intelligence report contract status: DOCS_SCHEMA_TESTS_ONLY_REPORT_CONTRACT_MERGED
+- Wallet copyability delay evaluator status: LOCAL_OFFLINE_READ_ONLY_COPYABILITY_DELAY_EVALUATOR_ON_BRANCH
+
+## WP81 Post-WP80 Repo-Truth Reconciliation And Local Copyability Delay Evaluation From Validated Fixtures V1
+
+WP81 - Post-WP80 Repo-Truth Reconciliation And Local Copyability Delay
+Evaluation From Validated Fixtures V1 is on branch
+(`wp81-local-copyability-delay-evaluation-from-fixtures`).
+
+It reconciles repo truth after WP80 merge (PR #81, merge commit
+`ee3d10296dce5504164b7e747b286e8fe5a09991`; PR #81 head SHA
+`0f7b2defb6c2392f75be800286304577b800dbef`) and implements the first
+local/offline/read-only copyability delay evaluator.
+
+WP81 adds `src/data_layer/wallet_copyability_delay_evaluation.py` and
+`tests/test_wallet_copyability_delay_evaluation.py`. It updates
+`docs/wallet_copyability_delay_simulator_design.md` to record WP81 as the
+first local/offline evaluator implementation.
+
+WP81 is local/offline/read-only. It adds no network ingestion, no wallet API
+client, no real wallet monitoring, no live copyability simulator, no dollar PnL
+computation, no expected-return calculation, no paper-trading strategy, no
+credentials, no scheduler, no bot loop, no dashboard, no LLM/AI agent runtime,
+no dependency or lock-file changes, and no paper/live trading behavior.
+
+WP81 resolves WP80-D001 only for the local/offline/read-only evaluator
+implementation scope. WP80-D002 through WP80-D006 remain OPEN.
+
+Protected boundaries remain unchanged.
 
 ## WP80 Post-WP79 Repo-Truth Reconciliation And Copyability Delay Simulator Design Plus Wallet Intelligence Report Contract
 
 WP80 - Post-WP79 Repo-Truth Reconciliation And Copyability Delay Simulator
-Design Plus Wallet Intelligence Report Contract is on branch
-(`wp80-copyability-delay-simulator-design-wallet-report-contract`).
+Design Plus Wallet Intelligence Report Contract is merged (PR #81, merge commit
+`ee3d10296dce5504164b7e747b286e8fe5a09991`; historical branch
+`wp80-copyability-delay-simulator-design-wallet-report-contract`).
 
 It reconciles repo truth after WP79 merge (PR #80, merge commit
 `4266aefa09da9b06a7e2f547aae70149c203da80`; PR #80 head SHA
