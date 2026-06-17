@@ -95,30 +95,64 @@ def _contains_forbidden_substring(s: str) -> bool:
 def _sanitize_metadata(
     raw: Mapping[str, object],
 ) -> tuple[dict[str, object], bool]:
-    """Sanitize caller-supplied metadata.
+    """Recursively sanitize caller-supplied metadata.
 
-    Forbidden keys are replaced with neutral redaction placeholders.
-    Forbidden string values are replaced with a neutral redaction sentinel.
-    Non-string values that are not str are passed through unchanged.
+    Forbidden keys at any nesting depth are replaced with neutral redaction
+    placeholders. Forbidden string values at any nesting depth are replaced
+    with 'metadata_value_redacted'. Nested dicts, lists, and tuples are
+    recursed into. Safe scalar values are preserved unchanged.
     Returns (sanitized_dict, was_redacted).
+
+    The redaction-key counter is shared across the entire traversal so
+    placeholder names are deterministic based on depth-first traversal order.
     """
+    key_counter: list[int] = [0]
+
+    def _sanitize_val(value: object) -> tuple[object, bool]:
+        if isinstance(value, str):
+            if _contains_forbidden_substring(value):
+                return "metadata_value_redacted", True
+            return value, False
+        if isinstance(value, dict):
+            out: dict[str, object] = {}
+            sub_redacted = False
+            for k, v in value.items():
+                if _contains_forbidden_substring(k):
+                    safe_k = f"unsafe_metadata_key_redacted_{key_counter[0]:03d}"
+                    key_counter[0] += 1
+                    sub_redacted = True
+                else:
+                    safe_k = k
+                safe_v, v_redacted = _sanitize_val(v)
+                if v_redacted:
+                    sub_redacted = True
+                out[safe_k] = safe_v
+            return out, sub_redacted
+        if isinstance(value, (list, tuple)):
+            items = []
+            sub_redacted = False
+            for item in value:
+                safe_item, item_redacted = _sanitize_val(item)
+                if item_redacted:
+                    sub_redacted = True
+                items.append(safe_item)
+            return (tuple(items) if isinstance(value, tuple) else items), sub_redacted
+        return value, False
+
     result: dict[str, object] = {}
-    redacted = False
-    redacted_key_counter = 0
+    was_redacted = False
     for k, v in raw.items():
         if _contains_forbidden_substring(k):
-            safe_key = f"unsafe_metadata_key_redacted_{redacted_key_counter:03d}"
-            redacted_key_counter += 1
-            redacted = True
+            safe_key = f"unsafe_metadata_key_redacted_{key_counter[0]:03d}"
+            key_counter[0] += 1
+            was_redacted = True
         else:
             safe_key = k
-        if isinstance(v, str) and _contains_forbidden_substring(v):
-            safe_val: object = "metadata_value_redacted"
-            redacted = True
-        else:
-            safe_val = v
-        result[safe_key] = safe_val
-    return result, redacted
+        safe_v, sub = _sanitize_val(v)
+        if sub:
+            was_redacted = True
+        result[safe_key] = safe_v
+    return result, was_redacted
 
 
 # ---------------------------------------------------------------------------

@@ -1381,3 +1381,135 @@ class TestMetadataSanitization:
             f"Recursive scan found violations after metadata sanitization:\n"
             + "\n".join(violations)
         )
+
+    # -- Nested metadata reviewer-trap cases --
+
+    def test_nested_metadata_key_expected_return_is_redacted(self) -> None:
+        meta = {"safe_outer": {"expected_return": "some_value"}}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        nested = source_meta.get("safe_outer", {})
+        assert "expected_return" not in nested, (
+            "Nested forbidden metadata key 'expected_return' must be redacted"
+        )
+
+    def test_nested_metadata_key_position_size_is_redacted(self) -> None:
+        meta = {"safe_outer": {"position_size": "some_value"}}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        nested = source_meta.get("safe_outer", {})
+        assert "position_size" not in nested, (
+            "Nested forbidden metadata key 'position_size' must be redacted"
+        )
+
+    def test_nested_metadata_value_buy_recommendation_is_redacted(self) -> None:
+        meta = {"safe_outer": {"label": "buy recommendation"}}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        assert "buy recommendation" not in str(source_meta), (
+            "Nested forbidden metadata value 'buy recommendation' must be redacted"
+        )
+
+    def test_nested_metadata_value_paper_trading_candidate_is_redacted(self) -> None:
+        meta = {"safe_outer": {"label": "paper_trading_candidate"}}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        assert "paper_trading_candidate" not in str(source_meta), (
+            "Nested forbidden metadata value 'paper_trading_candidate' must be redacted"
+        )
+
+    def test_metadata_list_value_strategy_signal_is_redacted(self) -> None:
+        meta = {"tags": ["safe_tag", "strategy_signal", "another_safe_tag"]}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        tags = source_meta.get("tags", [])
+        assert "strategy_signal" not in tags, (
+            "Forbidden string in metadata list must be redacted"
+        )
+
+    def test_metadata_tuple_value_expected_return_is_redacted(self) -> None:
+        meta = {"dims": ("safe_dim", "expected return", "another_dim")}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        assert "expected return" not in str(source_meta), (
+            "Forbidden string in metadata tuple must be redacted"
+        )
+
+    def test_deeply_nested_metadata_is_sanitized_recursively(self) -> None:
+        meta = {
+            "level_one": {
+                "level_two": {
+                    "expected_return": "val_a",
+                    "safe_inner": "safe_val",
+                },
+                "safe_two": "also_safe",
+            },
+        }
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        assert "expected_return" not in str(source_meta), (
+            "Deeply nested forbidden key 'expected_return' must be redacted"
+        )
+        level_two = source_meta.get("level_one", {}).get("level_two", {})
+        assert "safe_inner" in level_two, "Safe deeply nested key must be preserved"
+        assert level_two["safe_inner"] == "safe_val"
+
+    def test_safe_nested_metadata_is_preserved(self) -> None:
+        meta = {
+            "safe_outer": {
+                "safe_inner_key": "safe_inner_value",
+                "count": 42,
+            },
+            "safe_list": ["item_a", "item_b"],
+        }
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        nested = source_meta.get("safe_outer", {})
+        assert nested.get("safe_inner_key") == "safe_inner_value"
+        assert nested.get("count") == 42
+        assert source_meta.get("safe_list") == ["item_a", "item_b"]
+
+    def test_recursive_scan_passes_after_nested_unsafe_metadata_sanitization(self) -> None:
+        """Full recursive scan must produce no violations after deeply nested sanitization."""
+        scanner = TestRecursiveOutputScan()
+        meta = {
+            "safe_outer": {
+                "expected_return": "buy recommendation",
+                "position_size": "paper_trading_candidate",
+                "safe_key": "safe_value",
+            },
+            "tags": ["strategy_signal", "safe_tag"],
+        }
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        violations = scanner._scan_report(report)
+        assert not violations, (
+            f"Recursive scan found violations after nested metadata sanitization:\n"
+            + "\n".join(violations)
+        )
