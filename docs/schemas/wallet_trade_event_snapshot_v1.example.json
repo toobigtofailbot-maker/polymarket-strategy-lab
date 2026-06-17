@@ -1,0 +1,46 @@
+{
+  "_notice": "ADVISORY_ONLY_WALLET_TRADE_EVENT_SNAPSHOT",
+  "_schema_version": "WALLET_TRADE_EVENT_SNAPSHOT_V1",
+  "_status": "DESIGN_EXAMPLE_ONLY",
+  "event": {
+    "schema_version": "WALLET_TRADE_EVENT_SNAPSHOT_V1",
+    "event_id": "wallet-event-fixture-001",
+    "source_type": "LOCAL_FIXTURE",
+    "source_id": "docs-schema-example",
+    "observed_at_utc": "2026-01-01T00:00:00Z"
+  },
+  "wallet_reference": {
+    "wallet_id_or_address": "0x0000000000000000000000000000000000000000"
+  },
+  "market_reference": {
+    "market_id": "example-market-id",
+    "condition_id": "example-condition-id",
+    "market_category": "example-category",
+    "asset_id": "example-asset-id",
+    "outcome_label": "Yes"
+  },
+  "observation": {
+    "direction_observed": "YES_OBSERVED",
+    "price_observed": 0.42,
+    "size_observed": 100.0
+  },
+  "context": {
+    "liquidity_context_available": false,
+    "orderbook_context_available": false,
+    "copyability_context_available": false
+  },
+  "review": {
+    "suspicious_flow_flag": false,
+    "human_review_required": true,
+    "advisory_only_notice": "Historical local fixture observation only. Not a signal, instruction, copy action, or execution input."
+  },
+  "safety": {
+    "manual_research_only": true,
+    "not_automated_copy_trading": true,
+    "no_live_execution": true,
+    "no_order_placement": true,
+    "no_position_sizing": true,
+    "no_risk_override": true,
+    "no_parameter_auto_change": true
+  }
+}

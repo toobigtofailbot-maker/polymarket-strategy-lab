@@ -2,12 +2,12 @@
 
 ## A. Status
 
-- WP: WP76 (wallet intelligence roadmap lock-in merged); WP77 (wallet intelligence architecture/profile/signal contract on branch)
-- Package class: DOCS_TESTS_ONLY_WALLET_INTELLIGENCE_ROADMAP_LOCKIN_MERGED; DOCS_SCHEMA_TESTS_ONLY_WALLET_INTELLIGENCE_CONTRACT_ON_BRANCH
+- WP: WP76 (wallet intelligence roadmap lock-in merged); WP77 (wallet intelligence architecture/profile/signal contract merged); WP78 (wallet trade event snapshot schema/local loader/validator on branch)
+- Package class: DOCS_TESTS_ONLY_WALLET_INTELLIGENCE_ROADMAP_LOCKIN_MERGED; DOCS_SCHEMA_TESTS_ONLY_WALLET_INTELLIGENCE_CONTRACT_MERGED; LOCAL_OFFLINE_READ_ONLY_WALLET_TRADE_EVENT_FIXTURE_LOADER_ON_BRANCH
 - Authority: PLANNING_GUIDANCE_ONLY
 - NOT_AUTHORIZATION
 - NO_RUNTIME_CHANGE
-- NO_SOURCE_CHANGE
+- LOCAL_OFFLINE_READ_ONLY_WALLET_TRADE_EVENT_FIXTURE_SOURCE_ON_BRANCH
 - NO_TOOLS_CHANGE
 - NO_DEPENDENCY_CHANGE
 - NO_NETWORK
@@ -19,7 +19,8 @@
 - NO_SCHEDULER
 - NO_BOT_LOOP
 - WP76 merge commit: 91cd26e4fe16d492fa2f7b319fba176ee60cd9d5
-- WP77 branch: wp77-wallet-intelligence-architecture-registry-profile-contract
+- WP77 merge commit: 24badbfb7a9da06ee4c8ae94795e1f2c862af913
+- WP78 branch: wp78-wallet-trade-event-snapshot-loader-validation
 
 ## B. Purpose
 
@@ -211,16 +212,17 @@ All `SUSPICIOUS_TIMING` signals must:
 
 ## K. Updated Near-Term Roadmap
 
-After WP76 wallet intelligence roadmap lock-in and WP77 architecture-contract
-selection:
+After WP76 wallet intelligence roadmap lock-in, WP77 architecture-contract
+merge, and WP78 fixture-loader selection:
 
 - **WP77** - Wallet Intelligence Architecture, Registry, Profile, And Signal Contract
-  *Current WP: first blueprint for watched-wallet profiles, registry statuses,
+  *Merged: first blueprint for watched-wallet profiles, registry statuses,
   wallet signal contracts, research-priority effects, copyability statuses, and
   forbidden controls.*
 
 - **WP78** - Wallet Trade Event Snapshot Schema, Local Loader, And Validation
-  *Schema and local/offline/read-only fixture loader for wallet trade events.*
+  *Current WP: schema and local/offline/read-only fixture loader/validator for
+  explicitly provided wallet trade event fixture files.*
 
 - **WP79** - Wallet Skill/Niche Profiler And Research Queue Integration V1
   *Local/offline/read-only niche profiler from validated trade event fixtures;
@@ -236,8 +238,8 @@ selection:
 - **WP82** - Human Review Label And Calibration Record Join Design Or Implementation
   *Join design or implementation between human review labels and calibration records.*
 
-If WP77 merges cleanly, WP78 is the next wallet-intelligence candidate. Do not
-draft WP78 until WP77 is merged and repo truth is re-verified.
+If WP78 merges cleanly, WP79 is the next wallet-intelligence candidate. Do not
+draft WP79 until WP78 is merged and repo truth is re-verified.
 
 ## L. Explicit Non-Goals
 
@@ -294,8 +296,9 @@ The following items are deferred from WP76 to future WPs:
 - **WP76-D001**: Wallet intelligence architecture/registry/profile contract
   is resolved only for WP77 docs/schema/tests design scope; implementation
   remains deferred through WP77 items.
-- **WP76-D002**: Wallet trade event schema/local loader/validator remains
-  deferred (WP78 is next candidate after WP77).
+- **WP76-D002**: Wallet trade event schema/local loader/validator is resolved
+  only for WP78 local/offline/read-only schema, static example, validator, and
+  explicit-path fixture loader scope.
 - **WP76-D003**: Wallet skill/niche profiler and research queue integration
   remain deferred (WP79 is next candidate).
 - **WP76-D004**: Copyability delay simulator and wallet intelligence report

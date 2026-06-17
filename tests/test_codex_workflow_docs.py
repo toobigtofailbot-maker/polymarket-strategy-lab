@@ -404,12 +404,12 @@ def test_project_status_reflects_wp69_merged() -> None:
     assert "WP69" in merged_line
 
 
-def test_project_status_reflects_wp75_branch() -> None:
+def test_project_status_reflects_wp78_branch() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp77-wallet-intelligence-architecture-registry-profile-contract" in branch_line
+    assert "wp78-wallet-trade-event-snapshot-loader-validation" in branch_line
 
 
 def test_project_status_reflects_wp64_merged() -> None:
