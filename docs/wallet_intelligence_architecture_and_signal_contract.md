@@ -232,19 +232,21 @@ Updated sequence:
 - WP81 - Wallet Signal Paper Strategy Contract
 - WP82 - Human Review Label And Calibration Record Join Design Or Implementation
 
-WP78 consumes the current wallet fixture-loader slot. Do not draft WP79 until
-WP78 is merged and repo truth is re-verified.
+WP78 is merged (PR #79 merge commit `7ff117f6caf78eab62e6a116db72b60d76d305f5`).
+WP79 is on branch: local/offline/read-only wallet signal research profiler and
+advisory research queue annotation. Do not draft WP80 until WP79 is merged and
+repo truth is re-verified.
 
 ## 12. Non-Goals
 
-WP77 explicitly did not add, and WP78 still does not add:
+WP77 explicitly did not add, WP78 still did not add, and WP79 adds only local
+advisory profiling and annotation (no network/API ingestion, no copyability PnL,
+no buy/sell signals, no scoring weight changes):
 
 - no wallet API client
 - no network ingestion
 - no real wallet monitoring
-- no wallet skill/niche profiler
 - no copyability delay simulator
-- no research queue integration
 - no wallet intelligence report generator
 - no automatic copy-trading
 - no live execution
@@ -259,3 +261,10 @@ WP77 explicitly did not add, and WP78 still does not add:
 - no bot loop
 - no dashboard
 - no Hermes/LLM execution authority
+
+WP79 adds:
+
+- local/offline/read-only wallet signal research profile builder
+- local/offline/read-only wallet research queue annotation builder
+- advisory-only frozen dataclasses (no trade-like fields)
+- docs and focused tests

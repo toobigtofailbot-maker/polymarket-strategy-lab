@@ -1,9 +1,9 @@
 # Project Status
 
-- Current phase: WP78 - Post-WP77 Repo-Truth Reconciliation And Wallet Trade Event Snapshot Schema, Local Loader, And Validation
-- Repo state: Wallet trade event snapshot schema/local loader/validator on branch after WP77 wallet intelligence architecture/profile/signal contract merge
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77
-- Current branch: `wp78-wallet-trade-event-snapshot-loader-validation`
+- Current phase: WP79 - Post-WP78 Repo-Truth Reconciliation And Wallet Skill/Niche Profiler And Research Queue Integration V1
+- Repo state: Wallet signal research profiler and advisory research queue annotation on branch after WP78 wallet trade event fixture loader/validator merge
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78
+- Current branch: `wp79-wallet-skill-niche-profiler-research-queue-integration`
 - Multi-agent coding workflow status: AGENT_NEUTRAL_START_LAYER_MERGED
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; MANUAL_EXPLICIT_NETWORK_POLLING_RUNNER_DEV_ONLY; MANUAL_GUARD_ENFORCED_SNAPSHOT_CAPTURE_DEV_ONLY
 - Runtime dependency integration status: NOT_STARTED_FOR_NEW_RUNTIME_DEPENDENCIES
@@ -35,7 +35,7 @@
 - Local advisory consumer prototype status: LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER_MERGED
 - Advisory prompt/runbook package status: DOCS_ONLY_ADVISORY_PROMPT_RUNBOOK_MERGED
 - Advisory operator workflow hardening status: DOCS_ONLY_ADVISORY_OPERATOR_WORKFLOW_MERGED
-- Market research priority scoring layer status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_MERGED; CALIBRATION_RECORD_SCHEMA_VALIDATOR_MERGED; LOCAL_RESOLVED_OUTCOME_FIXTURE_LOADER_MERGED; CALIBRATION_REPORT_GENERATOR_DESIGN_MERGED; LOCAL_CALIBRATION_METRIC_COMPUTATION_MERGED; LOCAL_CALIBRATION_REPORT_GENERATOR_MERGED; LOCAL_CALIBRATION_REPORT_EXPORT_MERGED; HUMAN_REVIEW_LABEL_WORKFLOW_DESIGN_MERGED; HUMAN_REVIEW_LABEL_RECORD_VALIDATOR_MERGED; HUMAN_REVIEW_LABEL_FIXTURE_LOADER_MERGED; WALLET_INTELLIGENCE_ROADMAP_MERGED; WALLET_INTELLIGENCE_ARCHITECTURE_CONTRACT_MERGED; WALLET_TRADE_EVENT_FIXTURE_LOADER_ON_BRANCH
+- Market research priority scoring layer status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_MERGED; CALIBRATION_RECORD_SCHEMA_VALIDATOR_MERGED; LOCAL_RESOLVED_OUTCOME_FIXTURE_LOADER_MERGED; CALIBRATION_REPORT_GENERATOR_DESIGN_MERGED; LOCAL_CALIBRATION_METRIC_COMPUTATION_MERGED; LOCAL_CALIBRATION_REPORT_GENERATOR_MERGED; LOCAL_CALIBRATION_REPORT_EXPORT_MERGED; HUMAN_REVIEW_LABEL_WORKFLOW_DESIGN_MERGED; HUMAN_REVIEW_LABEL_RECORD_VALIDATOR_MERGED; HUMAN_REVIEW_LABEL_FIXTURE_LOADER_MERGED; WALLET_INTELLIGENCE_ROADMAP_MERGED; WALLET_INTELLIGENCE_ARCHITECTURE_CONTRACT_MERGED; WALLET_TRADE_EVENT_FIXTURE_LOADER_MERGED; WALLET_SIGNAL_RESEARCH_PROFILER_ON_BRANCH
 - Research queue export/operator runbook status: LOCAL_OFFLINE_EXPLICIT_MANUAL_EXPORT_MERGED
 - Calibration harness design status: DOCS_SCHEMA_DESIGN_ONLY_MERGED
 - Resolved outcome data requirements status: DOCS_DESIGN_ONLY_MERGED
@@ -97,11 +97,50 @@
 - Wallet intelligence architecture/profile/signal contract status: DOCS_SCHEMA_TESTS_ONLY_CONTRACT_MERGED
 - Wallet trade event fixture loader status: LOCAL_OFFLINE_READ_ONLY_FIXTURE_LOADER_ON_BRANCH
 
+## WP79 Post-WP78 Repo-Truth Reconciliation And Wallet Skill/Niche Profiler And Research Queue Integration V1
+
+WP79 - Post-WP78 Repo-Truth Reconciliation And Wallet Skill/Niche Profiler And
+Research Queue Integration V1 is on branch
+(`wp79-wallet-skill-niche-profiler-research-queue-integration`).
+
+It reconciles repo truth after WP78 merge (PR #79, merge commit
+`7ff117f6caf78eab62e6a116db72b60d76d305f5`; PR #79 head SHA
+`d59ed363d16262553314730af36812803076696e`) and creates the first local/offline
+advisory wallet signal research profile and research queue annotation layer.
+
+WP79 adds `src/data_layer/wallet_signal_research_profile.py`,
+`tests/test_wallet_signal_research_profile.py`, and
+`docs/wallet_signal_research_profile.md`.
+
+WP79 is local/offline/read-only. It consumes only WP78 validated
+`LoadedWalletTradeEventRecord` objects. It produces deterministic advisory
+`WalletSignalResearchProfile` and `WalletResearchQueueAnnotation` frozen
+dataclasses. It does not fetch network or API data, monitor real wallets,
+compute copyability PnL, produce buy/sell signals, modify scoring weights,
+place orders, write files, use credentials, or run paper/live trading.
+
+WP79 resolves WP78-D001 (wallet skill/niche profiler) and WP78-D002 (wallet
+research queue integration) only for the local/offline/read-only advisory
+profiling and annotation scope.
+
+Protected boundaries remain unchanged:
+- Live trading: DISABLED
+- Credentials: NOT_USED
+- Execution: NOT_STARTED
+- Authenticated client: FORBIDDEN_UNTIL_APPROVED_WP
+- Hermes: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
+- Agent runtime: NOT_STARTED
+- Agent execution authority: FORBIDDEN
+- Scheduler: NOT_STARTED
+- Bot loop: NOT_STARTED
+
 ## WP78 Post-WP77 Repo-Truth Reconciliation And Wallet Trade Event Snapshot Schema, Local Loader, And Validation
 
 WP78 - Post-WP77 Repo-Truth Reconciliation And Wallet Trade Event Snapshot
-Schema, Local Loader, And Validation is on branch
-(`wp78-wallet-trade-event-snapshot-loader-validation`).
+Schema, Local Loader, And Validation is merged (historical branch:
+`wp78-wallet-trade-event-snapshot-loader-validation`; PR #79 merge commit
+`7ff117f6caf78eab62e6a116db72b60d76d305f5`; PR #79 head SHA
+`d59ed363d16262553314730af36812803076696e`).
 
 It reconciles repo truth after WP77 merge (PR #78, merge commit
 `24badbfb7a9da06ee4c8ae94795e1f2c862af913`; PR #78 head SHA
@@ -125,7 +164,7 @@ intelligence report generator, no research queue integration, no paper-trading
 strategy, no credentials, no scheduler, no bot loop, no dashboard, no Hermes/LLM
 runtime, no dependency or lock-file changes, and no paper/live trading behavior.
 
-WP78 resolves WP76-D002 and WP77-D001 only for the local/offline/read-only
+WP78 resolved WP76-D002 and WP77-D001 only for the local/offline/read-only
 schema, static example, validator, and fixture loader scope. Wallet skill/niche
 profiling, wallet research queue integration, copyability delay simulation,
 wallet intelligence reporting, wallet signal paper strategy contracts, wallet

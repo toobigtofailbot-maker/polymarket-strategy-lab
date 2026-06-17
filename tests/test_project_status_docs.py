@@ -168,12 +168,12 @@ def test_wp57_in_merged_wps_list():
     assert "WP57" in merged_line
 
 
-def test_wp78_is_current_phase():
+def test_wp79_is_current_phase():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP78" in current_phase_line
+    assert "WP79" in current_phase_line
 
 
 def test_wp73_in_merged_wps():
@@ -264,12 +264,20 @@ def test_wp70_in_merged_wps():
     assert "WP70" in merged_line
 
 
-def test_wp78_branch_is_current_branch():
+def test_wp79_branch_is_current_branch():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp78-wallet-trade-event-snapshot-loader-validation" in branch_line
+    assert "wp79-wallet-skill-niche-profiler-research-queue-integration" in branch_line
+
+
+def test_wp78_in_merged_wps():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP78" in merged_line
 
 
 def test_wp77_in_merged_wps():

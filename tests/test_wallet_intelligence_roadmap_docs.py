@@ -317,20 +317,20 @@ def test_deferred_items_log_contains_wp76_d007():
 # 17. Project status marks WP77 merged and WP78 as current branch/phase
 # ---------------------------------------------------------------------------
 
-def test_project_status_marks_wp78_as_current_phase():
+def test_project_status_marks_wp79_as_current_phase():
     content = _read(STATUS_DOC)
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP78" in current_phase_line
+    assert "WP79" in current_phase_line
 
 
-def test_project_status_marks_wp78_branch():
+def test_project_status_marks_wp79_branch():
     content = _read(STATUS_DOC)
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp78-wallet-trade-event-snapshot-loader-validation" in branch_line
+    assert "wp79-wallet-skill-niche-profiler-research-queue-integration" in branch_line
 
 
 def test_project_status_shows_wp75_merged():
@@ -348,6 +348,19 @@ def test_project_status_records_pr77_merge_commit():
 def test_project_status_records_pr78_merge_commit():
     content = _read(STATUS_DOC)
     assert "24badbfb7a9da06ee4c8ae94795e1f2c862af913" in content
+
+
+def test_project_status_records_pr79_merge_commit():
+    content = _read(STATUS_DOC)
+    assert "7ff117f6caf78eab62e6a116db72b60d76d305f5" in content
+
+
+def test_project_status_shows_wp78_merged():
+    content = _read(STATUS_DOC)
+    merged_line = next(
+        line for line in content.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP78" in merged_line
 
 
 def test_project_status_shows_wp76_merged():
@@ -405,8 +418,9 @@ def test_project_status_agent_execution_authority_forbidden():
 # 18. No src/ files changed (boundary check via import test)
 # ---------------------------------------------------------------------------
 
-def test_no_new_src_wallet_module_exists():
-    # WP76 is docs/tests only — no wallet module in src/
+def test_no_forbidden_src_wallet_modules_exist():
+    # Only wallet_trade_event_fixtures.py (WP78) and wallet_signal_research_profile.py (WP79)
+    # are approved wallet src modules. Forbidden modules must not exist.
     assert not os.path.isfile("src/data_layer/wallet_intelligence.py")
     assert not os.path.isfile("src/data_layer/wallet_registry.py")
     assert not os.path.isfile("src/data_layer/wallet_profiles.py")
