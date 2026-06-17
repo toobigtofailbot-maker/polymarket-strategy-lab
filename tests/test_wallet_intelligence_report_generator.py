@@ -1062,7 +1062,11 @@ class TestRecursiveOutputScan:
     })
 
     def _scan_value(self, val: object, path: str) -> list[str]:
-        """Recursively collect violation messages from val."""
+        """Recursively collect violation messages from val.
+
+        Scans both dict keys and dict values — a forbidden term in a dict key
+        name is just as much a contract violation as one in a string value.
+        """
         violations: list[str] = []
         if isinstance(val, str):
             low = val.lower()
@@ -1075,8 +1079,15 @@ class TestRecursiveOutputScan:
             for k, v in val.items():
                 if k in self._EXEMPTED_KEYS:
                     continue
+                # Scan the key name itself for forbidden substrings
+                low_k = k.lower()
+                for sub in self._FORBIDDEN_SUBSTRINGS:
+                    if sub in low_k:
+                        violations.append(
+                            f"Forbidden substring '{sub}' in dict key '{k}' at {path!r}"
+                        )
                 if k in self._PASSTHROUGH_DISTRIBUTION_KEYS:
-                    # Only scan the dict keys, not the distribution values
+                    # Skip recursing into distribution values (enum constants from WP79/WP81)
                     continue
                 child_path = f"{path}[{k!r}]"
                 violations.extend(self._scan_value(v, child_path))
@@ -1177,4 +1188,196 @@ class TestRecursiveOutputScan:
         violations = self._scan_value(injected, "test_path")
         assert any("buy" in v for v in violations), (
             "Scanner failed to catch injected forbidden term 'buy'"
+        )
+
+    def test_scanner_catches_injected_forbidden_dict_key(self) -> None:
+        """Scanner must catch a forbidden term appearing as a dict key."""
+        injected = {"expected_return": "some_value"}
+        violations = self._scan_value(injected, "test_path")
+        assert any("expected_return" in v for v in violations), (
+            "Scanner failed to catch forbidden dict key 'expected_return'"
+        )
+
+    def test_scanner_catches_injected_forbidden_nested_dict_key(self) -> None:
+        """Scanner must catch a forbidden term in a nested dict key."""
+        injected = {"outer_section": {"strategy_signal": "something"}}
+        violations = self._scan_value(injected, "test_path")
+        assert any("strategy_signal" in v for v in violations), (
+            "Scanner failed to catch forbidden nested dict key 'strategy_signal'"
+        )
+
+    def test_scanner_exempted_keys_not_flagged(self) -> None:
+        """Approved safety-flag key names must not be flagged as violations."""
+        safe_dict = {
+            "not_automated_copy_trading": True,
+            "no_live_execution": True,
+            "no_order_placement": True,
+            "no_position_sizing": True,
+        }
+        violations = self._scan_value(safe_dict, "test_path")
+        assert not violations, (
+            f"Exempted keys incorrectly flagged: {violations}"
+        )
+
+    def test_scanner_field_names_via_helper(self) -> None:
+        """All WalletIntelligenceReport field names must be free of forbidden terms."""
+        from dataclasses import fields as dc_fields
+        field_names = [f.name for f in dc_fields(WalletIntelligenceReport)]
+        violations = []
+        for name in field_names:
+            low = name.lower()
+            for sub in self._FORBIDDEN_SUBSTRINGS:
+                if sub in low:
+                    violations.append(
+                        f"Forbidden substring '{sub}' in dataclass field name '{name}'"
+                    )
+        assert not violations, "\n".join(violations)
+
+
+# ===========================================================================
+# Category 25: Metadata sanitization
+# ===========================================================================
+
+class TestMetadataSanitization:
+    """Verify that caller-supplied metadata is sanitized before appearing in report output."""
+
+    def test_safe_metadata_is_preserved(self) -> None:
+        meta = {"fixture_source": "tests/local_fixture_set_1"}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        assert report.report_identity["source_metadata"] == meta
+
+    def test_forbidden_metadata_key_expected_return_is_redacted(self) -> None:
+        meta = {"expected_return": "some_value"}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        assert "expected_return" not in source_meta, (
+            "Forbidden metadata key 'expected_return' must be redacted from report output"
+        )
+
+    def test_forbidden_metadata_key_strategy_signal_is_redacted(self) -> None:
+        meta = {"strategy_signal": "some_value"}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        assert "strategy_signal" not in source_meta, (
+            "Forbidden metadata key 'strategy_signal' must be redacted from report output"
+        )
+
+    def test_forbidden_metadata_value_buy_recommendation_is_redacted(self) -> None:
+        meta = {"label": "buy recommendation"}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        assert "buy recommendation" not in str(source_meta), (
+            "Forbidden metadata value 'buy recommendation' must be redacted from report output"
+        )
+
+    def test_forbidden_metadata_value_paper_trading_candidate_is_redacted(self) -> None:
+        meta = {"label": "paper_trading_candidate"}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        assert "paper_trading_candidate" not in str(source_meta), (
+            "Forbidden metadata value 'paper_trading_candidate' must be redacted"
+        )
+
+    def test_redacted_metadata_key_gets_neutral_placeholder(self) -> None:
+        meta = {"expected_return": "some_value"}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        assert any("unsafe_metadata_key_redacted" in k for k in source_meta), (
+            "Redacted metadata key should appear with neutral placeholder"
+        )
+
+    def test_redacted_metadata_value_gets_neutral_sentinel(self) -> None:
+        meta = {"label": "buy signal source"}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        assert source_meta.get("label") == "metadata_value_redacted", (
+            "Redacted metadata value should be replaced with 'metadata_value_redacted'"
+        )
+
+    def test_redaction_adds_safe_warning(self) -> None:
+        meta = {"expected_return": "some_value"}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        assert any("redacted" in w.lower() for w in report.warnings), (
+            "Metadata redaction must add a warning to the report"
+        )
+
+    def test_redaction_warning_contains_no_forbidden_terms(self) -> None:
+        meta = {"strategy_signal": "buy_signal_source"}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        for warning in report.warnings:
+            low = warning.lower()
+            for forbidden in ("buy", "sell", "trade", "execute", "position_size",
+                              "expected_return", "strategy_signal"):
+                assert forbidden not in low, (
+                    f"Redaction warning contains forbidden term '{forbidden}': {warning!r}"
+                )
+
+    def test_safe_metadata_produces_no_redaction_warning(self) -> None:
+        meta = {"fixture_source": "tests/local_fixture_set_1", "analyst": "human_reviewer"}
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        assert not any("redacted" in w.lower() for w in report.warnings), (
+            "Safe metadata must not trigger a redaction warning"
+        )
+
+    def test_multiple_forbidden_metadata_keys_all_redacted(self) -> None:
+        meta = {
+            "expected_return": "val_a",
+            "strategy_signal": "val_b",
+            "fixture_source": "safe_val",
+        }
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        source_meta = report.report_identity["source_metadata"]
+        assert "expected_return" not in source_meta
+        assert "strategy_signal" not in source_meta
+        assert source_meta.get("fixture_source") == "safe_val"
+
+    def test_recursive_scan_passes_after_metadata_sanitization(self) -> None:
+        """Full recursive scan of report with unsafe metadata must produce no violations."""
+        scanner = TestRecursiveOutputScan()
+        meta = {
+            "expected_return": "buy recommendation",
+            "strategy_signal": "paper_trading_candidate",
+            "safe_key": "safe_value",
+        }
+        report = build_wallet_intelligence_report(
+            profiles=[], evaluations=[], annotations=[],
+            metadata=meta,
+        )
+        violations = scanner._scan_report(report)
+        assert not violations, (
+            f"Recursive scan found violations after metadata sanitization:\n"
+            + "\n".join(violations)
         )

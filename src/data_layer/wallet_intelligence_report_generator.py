@@ -67,6 +67,61 @@ FORBIDDEN_OUTPUT_VALUES: frozenset[str] = frozenset({
 })
 
 # ---------------------------------------------------------------------------
+# Forbidden output substrings — used for metadata sanitization
+# ---------------------------------------------------------------------------
+
+_FORBIDDEN_OUTPUT_SUBSTRINGS: tuple[str, ...] = (
+    "buy", "sell", "trade",
+    "execute",
+    "open_position", "close_position",
+    "position_size", "position sizing", "position-size",
+    "expected_return", "expected return", "expected-return",
+    "profit_target", "profit target",
+    "stop_loss", "stop loss",
+    "take_profit", "take profit",
+    "live_signal", "live signal",
+    "auto_copy", "auto copy",
+    "pnl_target", "pnl target",
+    "paper_trading_candidate", "paper trading candidate",
+    "strategy_signal", "strategy signal",
+)
+
+
+def _contains_forbidden_substring(s: str) -> bool:
+    low = s.lower()
+    return any(sub in low for sub in _FORBIDDEN_OUTPUT_SUBSTRINGS)
+
+
+def _sanitize_metadata(
+    raw: Mapping[str, object],
+) -> tuple[dict[str, object], bool]:
+    """Sanitize caller-supplied metadata.
+
+    Forbidden keys are replaced with neutral redaction placeholders.
+    Forbidden string values are replaced with a neutral redaction sentinel.
+    Non-string values that are not str are passed through unchanged.
+    Returns (sanitized_dict, was_redacted).
+    """
+    result: dict[str, object] = {}
+    redacted = False
+    redacted_key_counter = 0
+    for k, v in raw.items():
+        if _contains_forbidden_substring(k):
+            safe_key = f"unsafe_metadata_key_redacted_{redacted_key_counter:03d}"
+            redacted_key_counter += 1
+            redacted = True
+        else:
+            safe_key = k
+        if isinstance(v, str) and _contains_forbidden_substring(v):
+            safe_val: object = "metadata_value_redacted"
+            redacted = True
+        else:
+            safe_val = v
+        result[safe_key] = safe_val
+    return result, redacted
+
+
+# ---------------------------------------------------------------------------
 # Advisory notice text
 # ---------------------------------------------------------------------------
 
@@ -367,8 +422,15 @@ def _collect_warnings(
     profiles: list[object],
     evaluations: list[object],
     annotations: list[object],
+    metadata_was_redacted: bool = False,
 ) -> tuple[str, ...]:
     warnings: list[str] = []
+
+    if metadata_was_redacted:
+        warnings.append(
+            "One or more metadata entries were redacted because they violated "
+            "the advisory report vocabulary boundary."
+        )
 
     if not profiles:
         warnings.append(
@@ -464,14 +526,21 @@ def build_wallet_intelligence_report(
         ),
     )
 
-    report_identity = _build_report_identity(wp_version, metadata)
+    sanitized_metadata: Mapping[str, object] | None = None
+    metadata_was_redacted = False
+    if metadata:
+        sanitized_metadata, metadata_was_redacted = _sanitize_metadata(metadata)
+
+    report_identity = _build_report_identity(wp_version, sanitized_metadata)
     input_summary = _build_input_summary(profile_list, eval_list, annotation_list)
     wallet_signal_summary = _build_wallet_signal_summary(profile_list)
     copyability_delay_summary = _build_copyability_delay_summary(eval_list)
     research_queue_implications = _build_research_queue_implications(annotation_list)
     suspicious_flow_review = _build_suspicious_flow_review(profile_list, eval_list)
     limitations = _build_limitations()
-    warnings = _collect_warnings(profile_list, eval_list, annotation_list)
+    warnings = _collect_warnings(
+        profile_list, eval_list, annotation_list, metadata_was_redacted
+    )
 
     return WalletIntelligenceReport(
         report_type=REPORT_TYPE,
