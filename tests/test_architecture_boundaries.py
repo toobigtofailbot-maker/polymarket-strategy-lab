@@ -46,6 +46,7 @@ def test_required_src_readmes_exist():
 # WP71 approves the local/offline/read-only calibration report generator at src/data_layer/calibration_report_generator.py.
 # WP74 approves the local/offline/read-only human review label record validator at src/data_layer/human_review_label_validation.py.
 # WP75 approves the local/offline/read-only human review label fixture loader at src/data_layer/human_review_label_fixture_loader.py.
+# WP78 approves the local/offline/read-only wallet trade event fixture loader at src/data_layer/wallet_trade_event_fixtures.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -59,6 +60,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/calibration_report_generator.py",
     "src/data_layer/human_review_label_validation.py",
     "src/data_layer/human_review_label_fixture_loader.py",
+    "src/data_layer/wallet_trade_event_fixtures.py",
 )
 
 
@@ -82,6 +84,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     human review label record validator.
     WP75 permits human_review_label_fixture_loader.py for the local/offline/read-only
     human review label fixture loader.
+    WP78 permits wallet_trade_event_fixtures.py for the local/offline/read-only
+    wallet trade event fixture validator/loader.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"

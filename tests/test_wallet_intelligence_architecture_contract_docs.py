@@ -78,7 +78,8 @@ def test_architecture_doc_states_advisory_research_only() -> None:
     text = _read(ARCH_DOC)
     assert "advisory research-signal architecture" in text
     assert "does not authorize automatic copy-trading" in text
-    assert "does not load wallet data" in text
+    assert "explicit-path loader" in text
+    assert "fetches network data" in text
 
 
 def test_architecture_doc_forbids_direct_protected_connections() -> None:
@@ -359,15 +360,17 @@ def test_deferred_items_log_contains_wp77_deferred_items() -> None:
 
 def test_project_status_marks_wp77_current_branch_phase() -> None:
     text = _read(STATUS_DOC)
-    assert "WP77 - Post-WP76 Repo-Truth Reconciliation And Wallet Intelligence Architecture, Registry, Profile, And Signal Contract" in text
-    assert "wp77-wallet-intelligence-architecture-registry-profile-contract" in text
+    assert "WP78 - Post-WP77 Repo-Truth Reconciliation And Wallet Trade Event Snapshot Schema, Local Loader, And Validation" in text
+    assert "wp78-wallet-trade-event-snapshot-loader-validation" in text
     assert "WP76" in next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
     assert "91cd26e4fe16d492fa2f7b319fba176ee60cd9d5" in text
+    assert "24badbfb7a9da06ee4c8ae94795e1f2c862af913" in text
 
 
-def test_no_src_files_changed() -> None:
+def test_only_allowed_wallet_trade_event_src_file_changed() -> None:
     changed = _changed_files()
-    assert not any(path.startswith("src/") for path in changed)
+    src_changes = [path for path in changed if path.startswith("src/")]
+    assert src_changes == ["src/data_layer/wallet_trade_event_fixtures.py"]
 
 
 def test_no_tools_files_changed() -> None:
@@ -392,13 +395,22 @@ def test_no_dependency_or_lock_files_changed() -> None:
 
 
 def _changed_files() -> list[str]:
-    result = subprocess.run(
-        ["git", "diff", "--name-only", "origin/main...HEAD"],
+    diff_result = subprocess.run(
+        ["git", "diff", "--name-only", "origin/main"],
         cwd=ROOT,
         check=True,
         capture_output=True,
         text=True,
         timeout=60,
     )
-    return [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+    untracked_result = subprocess.run(
+        ["git", "ls-files", "--others", "--exclude-standard"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    lines = diff_result.stdout.splitlines() + untracked_result.stdout.splitlines()
+    return sorted({line.strip().replace("\\", "/") for line in lines if line.strip()})
 

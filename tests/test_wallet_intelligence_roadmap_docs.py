@@ -314,23 +314,23 @@ def test_deferred_items_log_contains_wp76_d007():
 
 
 # ---------------------------------------------------------------------------
-# 17. Project status marks WP76 merged and WP77 as current branch/phase
+# 17. Project status marks WP77 merged and WP78 as current branch/phase
 # ---------------------------------------------------------------------------
 
-def test_project_status_marks_wp77_as_current_phase():
+def test_project_status_marks_wp78_as_current_phase():
     content = _read(STATUS_DOC)
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP77" in current_phase_line
+    assert "WP78" in current_phase_line
 
 
-def test_project_status_marks_wp77_branch():
+def test_project_status_marks_wp78_branch():
     content = _read(STATUS_DOC)
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp77-wallet-intelligence-architecture-registry-profile-contract" in branch_line
+    assert "wp78-wallet-trade-event-snapshot-loader-validation" in branch_line
 
 
 def test_project_status_shows_wp75_merged():
@@ -345,12 +345,25 @@ def test_project_status_records_pr77_merge_commit():
     assert "91cd26e4fe16d492fa2f7b319fba176ee60cd9d5" in content
 
 
+def test_project_status_records_pr78_merge_commit():
+    content = _read(STATUS_DOC)
+    assert "24badbfb7a9da06ee4c8ae94795e1f2c862af913" in content
+
+
 def test_project_status_shows_wp76_merged():
     content = _read(STATUS_DOC)
     merged_line = next(
         line for line in content.splitlines() if line.startswith("- Merged WPs:")
     )
     assert "WP76" in merged_line
+
+
+def test_project_status_shows_wp77_merged():
+    content = _read(STATUS_DOC)
+    merged_line = next(
+        line for line in content.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP77" in merged_line
 
 
 # ---------------------------------------------------------------------------

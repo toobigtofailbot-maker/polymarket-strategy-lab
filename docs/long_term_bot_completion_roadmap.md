@@ -2,8 +2,8 @@
 
 ## A. Status
 
-- WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged; merge commit a310e641eb790bd3906d054d703dd11945180e6c); WP57 (local/offline/read-only feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (architecture direction lock-in and microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged; merge commit e1ab1aa7e0915a3c65afc9eb5a55c58292ef6910); WP64 (research queue/report/session packet merged; merge commit 7795efd45b19ab89c943bd49602449baa67411db); WP65 (local research queue export/operator runbook merged; merge commit 5c5b0c7ef8a2d1f094a2eff6dabbe6fd4be434f7); WP75 (human review label fixture loader merged; PR #76 merge commit 0160ac1c7087625a4596edd541524445bc004bd5); WP76 (wallet intelligence roadmap lock-in merged; PR #77 merge commit 91cd26e4fe16d492fa2f7b319fba176ee60cd9d5); WP77 (wallet intelligence architecture/profile/signal contract on branch)
-- Package class: DOCS_ONLY_ROADMAP_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; ARCHITECTURE_DIRECTION_MERGED; LOCAL_OFFLINE_READ_ONLY_MICROSTRUCTURE_QUALITY_MERGED; LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; LOCAL_OFFLINE_READ_ONLY_RESOLUTION_SOURCE_HIERARCHY_MERGED; LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; HUMAN_REVIEW_LABEL_FIXTURE_LOADER_MERGED; DOCS_TESTS_ONLY_WALLET_INTELLIGENCE_ROADMAP_LOCKIN_MERGED; DOCS_SCHEMA_TESTS_ONLY_WALLET_INTELLIGENCE_CONTRACT_ON_BRANCH
+- WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged; merge commit a310e641eb790bd3906d054d703dd11945180e6c); WP57 (local/offline/read-only feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (architecture direction lock-in and microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged; merge commit e1ab1aa7e0915a3c65afc9eb5a55c58292ef6910); WP64 (research queue/report/session packet merged; merge commit 7795efd45b19ab89c943bd49602449baa67411db); WP65 (local research queue export/operator runbook merged; merge commit 5c5b0c7ef8a2d1f094a2eff6dabbe6fd4be434f7); WP75 (human review label fixture loader merged; PR #76 merge commit 0160ac1c7087625a4596edd541524445bc004bd5); WP76 (wallet intelligence roadmap lock-in merged; PR #77 merge commit 91cd26e4fe16d492fa2f7b319fba176ee60cd9d5); WP77 (wallet intelligence architecture/profile/signal contract merged; PR #78 merge commit 24badbfb7a9da06ee4c8ae94795e1f2c862af913); WP78 (wallet trade event snapshot schema/local loader/validator on branch)
+- Package class: DOCS_ONLY_ROADMAP_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; ARCHITECTURE_DIRECTION_MERGED; LOCAL_OFFLINE_READ_ONLY_MICROSTRUCTURE_QUALITY_MERGED; LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; LOCAL_OFFLINE_READ_ONLY_RESOLUTION_SOURCE_HIERARCHY_MERGED; LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; HUMAN_REVIEW_LABEL_FIXTURE_LOADER_MERGED; DOCS_TESTS_ONLY_WALLET_INTELLIGENCE_ROADMAP_LOCKIN_MERGED; DOCS_SCHEMA_TESTS_ONLY_WALLET_INTELLIGENCE_CONTRACT_MERGED; LOCAL_OFFLINE_READ_ONLY_WALLET_TRADE_EVENT_FIXTURE_LOADER_ON_BRANCH
 - Side onboarding lock: SIDE4_ONBOARDING_LOCK_MERGED
 - Authority: PLANNING_GUIDANCE_ONLY
 - NOT_AUTHORIZATION
@@ -23,6 +23,7 @@
 - WP53 merge commit: 7514b1aded39c5f1ca0c5abae4fdae86b6c4f1d6
 - WP54 merge commit: fb45fb849b0641e2007ef66f50bfd5725354b8f0
 - WP76 merge commit: 91cd26e4fe16d492fa2f7b319fba176ee60cd9d5
+- WP77 merge commit: 24badbfb7a9da06ee4c8ae94795e1f2c862af913
 
 ## B. Purpose
 
@@ -138,13 +139,14 @@ The following capabilities are built and merged into repo truth as of WP52:
     agent execution authority FORBIDDEN; fully autonomous trading agent
     EXCLUDED_FOR_NOW; scheduler NOT_STARTED; bot loop NOT_STARTED.
 
-16. **Wallet intelligence roadmap and contract** — WP76 locks top-wallet
+16. **Wallet intelligence roadmap, contract, and fixture loader** — WP76 locks top-wallet
     intelligence as a future advisory research signal layer, not a blind
     copy-trading engine. WP77 adds docs/schema/tests-only architecture,
     watched-wallet profile, registry status, signal contract, copyability status,
-    suspicious-flow, and safety-flag design. No wallet data loader, wallet API
-    client, real wallet monitoring, automatic copy-trading, paper/live trading,
-    credentials, or execution behavior is authorized.
+    suspicious-flow, and safety-flag design. WP78 adds only local/offline
+    wallet trade event fixture schema, validator, and explicit-path loader.
+    No wallet API client, real wallet monitoring, automatic copy-trading,
+    paper/live trading, credentials, or execution behavior is authorized.
 
 ## E. Missing Major Capabilities
 

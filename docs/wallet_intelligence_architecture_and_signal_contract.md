@@ -16,15 +16,17 @@ WP77 draws the blueprint for the wallet-scout system.
 The blueprint says what information a scout card must contain and what the scout is never allowed to control.
 ```
 
-WP77 is docs/schema/tests-only. It creates a design contract for later
-local/offline wallet intelligence work. It does not load wallet data, fetch
-network data, rank real wallets, copy wallets, paper trade, or live trade.
+WP77 is merged as docs/schema/tests-only. It created a design contract for later
+local/offline wallet intelligence work. WP78 adds only the local/offline
+wallet trade event fixture schema, validator, and explicit-path loader. Neither
+WP77 nor WP78 fetches network data, monitors wallets, ranks real wallets,
+copies wallets, paper trades, or live trades.
 
 ## 2. Architecture Position
 
 Wallet intelligence is an advisory layer between:
 
-- future local/offline wallet event fixtures
+- WP78 local/offline wallet event fixtures
 - research queue and human review queue
 - future paper-trading candidate generation, only after separate approval
 
@@ -222,25 +224,28 @@ add stricter flags, but may not remove these boundaries.
 
 ## 11. Future WP Sequence
 
-Updated future sequence:
+Updated sequence:
 
-- WP78 - Wallet Trade Event Snapshot Schema, Local Loader, And Validation
+- WP78 - Wallet Trade Event Snapshot Schema, Local Loader, And Validation (on branch)
 - WP79 - Wallet Skill/Niche Profiler And Research Queue Integration V1
 - WP80 - Copyability Delay Simulator Design And Wallet Intelligence Report Generator
 - WP81 - Wallet Signal Paper Strategy Contract
 - WP82 - Human Review Label And Calibration Record Join Design Or Implementation
 
-WP77 consumes the current wallet architecture slot. Do not draft WP78 until
-WP77 is merged and repo truth is re-verified.
+WP78 consumes the current wallet fixture-loader slot. Do not draft WP79 until
+WP78 is merged and repo truth is re-verified.
 
 ## 12. Non-Goals
 
-WP77 explicitly does not add:
+WP77 explicitly did not add, and WP78 still does not add:
 
-- no wallet loader
 - no wallet API client
 - no network ingestion
 - no real wallet monitoring
+- no wallet skill/niche profiler
+- no copyability delay simulator
+- no research queue integration
+- no wallet intelligence report generator
 - no automatic copy-trading
 - no live execution
 - no order placement
