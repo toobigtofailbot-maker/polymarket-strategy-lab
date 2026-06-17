@@ -293,7 +293,9 @@ def _evaluate_one(
         )
 
     # Suspicious-flow boundary: must not become a strategy to follow privileged info.
-    if event_fields["suspicious_flow_flag"]:
+    # Treat as active if either the wallet event record OR the delay observation is flagged.
+    _suspicious = event_fields["suspicious_flow_flag"] or (obs is not None and obs.suspicious_flow_flag)
+    if _suspicious:
         return WalletCopyabilityDelayEvaluation(
             wallet_id_or_address=event_fields["wallet_id"],
             market_id=event_fields["market_id"],

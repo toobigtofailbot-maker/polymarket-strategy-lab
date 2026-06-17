@@ -487,6 +487,67 @@ class TestSuspiciousFlow:
             if ev.evaluation_status not in (STATUS_INSUFFICIENT_CONTEXT,):
                 assert ev.human_review_required is True
 
+    def test_obs_suspicious_flow_yields_do_not_copy(self):
+        """Observation-level suspicious_flow_flag=True must yield SUSPICIOUS_FLOW_DO_NOT_COPY."""
+        records = [_make_record(suspicious_flow_flag=False)]
+        obs = [_make_obs(delay_window="1_second", suspicious_flow_flag=True)]
+        result = evaluate_copyability_delay(records, obs)
+        windows = {ev.delay_window: ev for ev in result}
+        assert windows["1_second"].evaluation_status == STATUS_SUSPICIOUS_FLOW_DO_NOT_COPY
+
+    def test_obs_suspicious_flow_sets_human_review_required(self):
+        """Observation-level suspicious_flow_flag=True must set human_review_required=True."""
+        records = [_make_record(suspicious_flow_flag=False)]
+        obs = [_make_obs(delay_window="1_second", suspicious_flow_flag=True)]
+        result = evaluate_copyability_delay(records, obs)
+        windows = {ev.delay_window: ev for ev in result}
+        assert windows["1_second"].human_review_required is True
+
+    def test_obs_suspicious_flow_includes_warning(self):
+        """Observation-level suspicious_flow_flag=True must include a suspicious-flow warning."""
+        records = [_make_record(suspicious_flow_flag=False)]
+        obs = [_make_obs(delay_window="1_second", suspicious_flow_flag=True)]
+        result = evaluate_copyability_delay(records, obs)
+        windows = {ev.delay_window: ev for ev in result}
+        ev = windows["1_second"]
+        assert any("suspicious" in w.lower() or "SUSPICIOUS" in w for w in ev.warnings)
+
+    def test_both_event_and_obs_suspicious_flow_yields_do_not_copy(self):
+        """Both event and observation suspicious_flow_flag=True must yield SUSPICIOUS_FLOW_DO_NOT_COPY."""
+        records = [_make_record(suspicious_flow_flag=True)]
+        obs = [_make_obs(delay_window="1_second", suspicious_flow_flag=True)]
+        result = evaluate_copyability_delay(records, obs)
+        windows = {ev.delay_window: ev for ev in result}
+        assert windows["1_second"].evaluation_status == STATUS_SUSPICIOUS_FLOW_DO_NOT_COPY
+
+    def test_obs_suspicious_flow_takes_precedence_over_fast_flow(self):
+        """Observation suspicious_flow_flag must block before fast_flow_flag is checked."""
+        records = [_make_record(suspicious_flow_flag=False)]
+        obs = [_make_obs(delay_window="1_second", suspicious_flow_flag=True, fast_flow_flag=True)]
+        result = evaluate_copyability_delay(records, obs)
+        windows = {ev.delay_window: ev for ev in result}
+        assert windows["1_second"].evaluation_status == STATUS_SUSPICIOUS_FLOW_DO_NOT_COPY
+
+    def test_obs_suspicious_flow_takes_precedence_over_illiquid(self):
+        """Observation suspicious_flow_flag must block before liquidity_insufficient_flag is checked."""
+        records = [_make_record(suspicious_flow_flag=False)]
+        obs = [_make_obs(delay_window="1_second", suspicious_flow_flag=True, liquidity_insufficient_flag=True)]
+        result = evaluate_copyability_delay(records, obs)
+        windows = {ev.delay_window: ev for ev in result}
+        assert windows["1_second"].evaluation_status == STATUS_SUSPICIOUS_FLOW_DO_NOT_COPY
+
+    def test_obs_suspicious_flow_takes_precedence_over_research_promising(self):
+        """Observation suspicious_flow_flag must block even when price would yield RESEARCH_PROMISING."""
+        records = [_make_record(price_observed=0.65, suspicious_flow_flag=False)]
+        obs = [_make_obs(
+            delay_window="1_second",
+            delayed_price_observed=0.66,
+            suspicious_flow_flag=True,
+        )]
+        result = evaluate_copyability_delay(records, obs)
+        windows = {ev.delay_window: ev for ev in result}
+        assert windows["1_second"].evaluation_status == STATUS_SUSPICIOUS_FLOW_DO_NOT_COPY
+
 
 # ---------------------------------------------------------------------------
 # 6–9. Forbidden fields and labels
