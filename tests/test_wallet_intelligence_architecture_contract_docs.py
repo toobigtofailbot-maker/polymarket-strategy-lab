@@ -1,0 +1,404 @@
+"""Focused docs/schema tests for WP77 wallet intelligence contracts."""
+
+from __future__ import annotations
+
+import json
+import subprocess
+from pathlib import Path
+from typing import Any
+
+
+ROOT = Path(__file__).resolve().parents[1]
+ARCH_DOC = ROOT / "docs" / "wallet_intelligence_architecture_and_signal_contract.md"
+PROFILE_SCHEMA = ROOT / "docs" / "schemas" / "wallet_intelligence_profile_v1.example.json"
+SIGNAL_SCHEMA = ROOT / "docs" / "schemas" / "wallet_intelligence_signal_contract_v1.example.json"
+STATUS_DOC = ROOT / "docs" / "project_status.md"
+REPO_TRUTH_DOC = ROOT / "docs" / "repo_truth_index.md"
+DEFERRED_DOC = ROOT / "docs" / "deferred_items_log.md"
+
+SAFETY_FLAGS = (
+    "manual_research_only",
+    "not_automated_copy_trading",
+    "no_live_execution",
+    "no_order_placement",
+    "no_position_sizing",
+    "no_risk_override",
+    "no_parameter_auto_change",
+)
+
+FORBIDDEN_EXACT_KEYS = {
+    "buy",
+    "sell",
+    "entry",
+    "exit",
+    "position_size",
+    "expected_return",
+    "profit_target",
+    "stop_loss",
+    "take_profit",
+    "live_signal",
+    "execute",
+    "auto_copy",
+}
+
+
+def _read(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def _json(path: Path) -> dict[str, Any]:
+    return json.loads(_read(path))
+
+
+def _walk_keys(value: Any) -> list[str]:
+    keys: list[str] = []
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            keys.append(str(key).lower())
+            keys.extend(_walk_keys(nested))
+    elif isinstance(value, list):
+        for item in value:
+            keys.extend(_walk_keys(item))
+    return keys
+
+
+def test_architecture_doc_exists() -> None:
+    assert ARCH_DOC.is_file()
+
+
+def test_profile_example_schema_exists() -> None:
+    assert PROFILE_SCHEMA.is_file()
+
+
+def test_signal_contract_example_schema_exists() -> None:
+    assert SIGNAL_SCHEMA.is_file()
+
+
+def test_architecture_doc_states_advisory_research_only() -> None:
+    text = _read(ARCH_DOC)
+    assert "advisory research-signal architecture" in text
+    assert "does not authorize automatic copy-trading" in text
+    assert "does not load wallet data" in text
+
+
+def test_architecture_doc_forbids_direct_protected_connections() -> None:
+    text = _read(ARCH_DOC)
+    for phrase in (
+        "credentials",
+        "authenticated account endpoints",
+        "order placement",
+        "order cancellation",
+        "position sizing",
+        "risk override",
+        "live execution",
+    ):
+        assert phrase in text
+
+
+def test_architecture_doc_defines_registry_concept() -> None:
+    text = _read(ARCH_DOC)
+    assert "future wallet registry" in text
+    assert "classifies wallets for research review" in text
+
+
+def test_architecture_doc_lists_allowed_registry_statuses() -> None:
+    text = _read(ARCH_DOC)
+    for status in (
+        "ACTIVE_RESEARCH_WATCH",
+        "WATCH_ONLY_LOW_SAMPLE",
+        "WATCH_ONLY_UNCOPYABLE",
+        "WATCH_ONLY_SUSPICIOUS_FLOW",
+        "DEPRECATED_DO_NOT_USE",
+    ):
+        assert status in text
+
+
+def test_architecture_doc_lists_forbidden_registry_statuses() -> None:
+    text = _read(ARCH_DOC)
+    for status in (
+        "AUTO_COPY",
+        "LIVE_TRADE",
+        "EXECUTE",
+        "POSITION_SIZE_FROM_WALLET",
+        "RISK_OVERRIDE_FROM_WALLET",
+    ):
+        assert status in text
+
+
+def test_architecture_doc_defines_profile_field_groups() -> None:
+    text = _read(ARCH_DOC)
+    for group in (
+        "identity",
+        "sample_size",
+        "profitability",
+        "specialization",
+        "entry_quality",
+        "copyability",
+        "risk",
+        "signal_policy",
+        "review",
+        "safety",
+    ):
+        assert f"`{group}`" in text
+    assert "Raw PnL is not enough" in text
+
+
+def test_architecture_doc_defines_signal_fields() -> None:
+    text = _read(ARCH_DOC)
+    for field in (
+        "signal_id",
+        "wallet_id_or_address",
+        "market_id",
+        "condition_id",
+        "observed_at_utc",
+        "signal_category",
+        "market_category",
+        "wallet_specialization_match",
+        "direction_observed",
+        "entry_price_observed",
+        "size_observed",
+        "liquidity_context_available",
+        "copyability_context_available",
+        "suspicious_flow_flag",
+        "human_review_required",
+        "research_priority_effect",
+        "advisory_only_notice",
+    ):
+        assert f"`{field}`" in text
+    assert "must not be interpreted as a buy/sell instruction" in text
+
+
+def test_architecture_doc_lists_allowed_signal_categories() -> None:
+    text = _read(ARCH_DOC)
+    for category in (
+        "SPECIALIST_ENTRY",
+        "MULTI_WALLET_CLUSTER",
+        "EARLY_ENTRY_BEFORE_PRICE_MOVE",
+        "LATE_CHASER",
+        "MARKET_MAKER_FLOW",
+        "ARBITRAGE_FLOW",
+        "SUSPICIOUS_TIMING",
+        "LOW_SAMPLE_OUTLIER",
+        "UNCOPYABLE_FAST_FLOW",
+    ):
+        assert category in text
+
+
+def test_architecture_doc_lists_allowed_research_priority_effects() -> None:
+    text = _read(ARCH_DOC)
+    for effect in (
+        "NO_CHANGE",
+        "LOW_RESEARCH_BOOST",
+        "MEDIUM_RESEARCH_BOOST",
+        "HIGH_RESEARCH_BOOST",
+        "CAP_RESEARCH_PRIORITY",
+        "REQUIRE_HUMAN_REVIEW",
+        "BLOCK_FROM_AUTOMATION",
+    ):
+        assert effect in text
+
+
+def test_architecture_doc_lists_forbidden_trade_like_values() -> None:
+    text = _read(ARCH_DOC)
+    for value in (
+        "BUY",
+        "SELL",
+        "TRADE",
+        "EXECUTE",
+        "OPEN_POSITION",
+        "CLOSE_POSITION",
+        "POSITION_SIZE",
+        "EXPECTED_RETURN",
+        "PROFIT_TARGET",
+        "STOP_LOSS",
+        "LIVE_SIGNAL",
+        "AUTO_COPY",
+    ):
+        assert value in text
+
+
+def test_architecture_doc_lists_allowed_copyability_statuses() -> None:
+    text = _read(ARCH_DOC)
+    for status in (
+        "NOT_EVALUATED",
+        "COPYABILITY_UNPROVEN",
+        "COPYABILITY_RESEARCH_PROMISING",
+        "COPYABILITY_PAPER_ELIGIBLE",
+        "UNCOPYABLE_FAST_FLOW",
+        "UNCOPYABLE_TOO_ILLIQUID",
+        "UNCOPYABLE_TOO_LATE",
+        "SUSPICIOUS_FLOW_DO_NOT_COPY",
+    ):
+        assert status in text
+    assert "No status may imply current live permission" in text
+
+
+def test_architecture_doc_includes_suspicious_flow_boundary() -> None:
+    text = _read(ARCH_DOC)
+    assert "suspicious timing" in text
+    assert "research-watch-only" in text
+    assert "must not build a strategy" in text
+    assert "privileged-information flow" in text
+
+
+def test_architecture_doc_includes_safety_flags() -> None:
+    text = _read(ARCH_DOC)
+    for flag in SAFETY_FLAGS:
+        assert flag in text
+
+
+def test_architecture_doc_includes_future_wp_sequence_wp78_wp82() -> None:
+    text = _read(ARCH_DOC)
+    for wp in ("WP78", "WP79", "WP80", "WP81", "WP82"):
+        assert wp in text
+
+
+def test_profile_example_has_required_top_level_sections() -> None:
+    data = _json(PROFILE_SCHEMA)
+    for section in (
+        "_notice",
+        "_schema_version",
+        "_status",
+        "identity",
+        "sample_size",
+        "profitability",
+        "specialization",
+        "entry_quality",
+        "copyability",
+        "risk",
+        "signal_policy",
+        "review",
+        "safety",
+    ):
+        assert section in data
+    assert data["_notice"] == "ADVISORY_ONLY_WALLET_INTELLIGENCE_PROFILE"
+    assert data["_schema_version"] == "WALLET_INTELLIGENCE_PROFILE_V1"
+    assert data["_status"] == "DESIGN_EXAMPLE_ONLY"
+
+
+def test_profile_example_uses_placeholder_wallet_identity_only() -> None:
+    data = _json(PROFILE_SCHEMA)
+    assert data["identity"]["wallet_id_or_address"] == "0x0000000000000000000000000000000000000000"
+
+
+def test_profile_example_has_safety_flags_all_true() -> None:
+    safety = _json(PROFILE_SCHEMA)["safety"]
+    for flag in SAFETY_FLAGS:
+        assert safety.get(flag) is True
+
+
+def test_profile_example_does_not_contain_forbidden_trade_like_keys() -> None:
+    keys = set(_walk_keys(_json(PROFILE_SCHEMA)))
+    assert keys.isdisjoint(FORBIDDEN_EXACT_KEYS)
+
+
+def test_signal_example_has_required_top_level_sections() -> None:
+    data = _json(SIGNAL_SCHEMA)
+    for section in (
+        "_notice",
+        "_schema_version",
+        "_status",
+        "signal",
+        "wallet_reference",
+        "market_reference",
+        "observation",
+        "classification",
+        "research_priority_effect",
+        "copyability_context",
+        "safety",
+    ):
+        assert section in data
+    assert data["_notice"] == "ADVISORY_ONLY_WALLET_INTELLIGENCE_SIGNAL"
+    assert data["_schema_version"] == "WALLET_INTELLIGENCE_SIGNAL_CONTRACT_V1"
+    assert data["_status"] == "DESIGN_EXAMPLE_ONLY"
+
+
+def test_signal_example_has_safety_flags_all_true() -> None:
+    safety = _json(SIGNAL_SCHEMA)["safety"]
+    for flag in SAFETY_FLAGS:
+        assert safety.get(flag) is True
+
+
+def test_signal_example_does_not_contain_forbidden_trade_like_keys() -> None:
+    keys = set(_walk_keys(_json(SIGNAL_SCHEMA)))
+    assert keys.isdisjoint(FORBIDDEN_EXACT_KEYS)
+
+
+def test_signal_example_states_direction_observed_is_not_buy_sell_instruction() -> None:
+    data = _json(SIGNAL_SCHEMA)
+    notice = data["signal"]["direction_observed_notice"]
+    assert "historical behavior only" in notice
+    assert "not a buy/sell instruction" in notice
+
+
+def test_repo_truth_index_references_new_docs_schema_test_files() -> None:
+    text = _read(REPO_TRUTH_DOC)
+    for path in (
+        "docs/wallet_intelligence_architecture_and_signal_contract.md",
+        "docs/schemas/wallet_intelligence_profile_v1.example.json",
+        "docs/schemas/wallet_intelligence_signal_contract_v1.example.json",
+        "tests/test_wallet_intelligence_architecture_contract_docs.py",
+    ):
+        assert path in text
+
+
+def test_deferred_items_log_contains_wp77_deferred_items() -> None:
+    text = _read(DEFERRED_DOC)
+    for item_id in (
+        "WP77-D001",
+        "WP77-D002",
+        "WP77-D003",
+        "WP77-D004",
+        "WP77-D005",
+        "WP77-D006",
+        "WP77-D007",
+        "WP77-D008",
+    ):
+        assert item_id in text
+
+
+def test_project_status_marks_wp77_current_branch_phase() -> None:
+    text = _read(STATUS_DOC)
+    assert "WP77 - Post-WP76 Repo-Truth Reconciliation And Wallet Intelligence Architecture, Registry, Profile, And Signal Contract" in text
+    assert "wp77-wallet-intelligence-architecture-registry-profile-contract" in text
+    assert "WP76" in next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
+    assert "91cd26e4fe16d492fa2f7b319fba176ee60cd9d5" in text
+
+
+def test_no_src_files_changed() -> None:
+    changed = _changed_files()
+    assert not any(path.startswith("src/") for path in changed)
+
+
+def test_no_tools_files_changed() -> None:
+    changed = _changed_files()
+    assert not any(path.startswith("tools/") for path in changed)
+
+
+def test_no_dependency_or_lock_files_changed() -> None:
+    changed = _changed_files()
+    forbidden_names = {
+        "requirements.txt",
+        "requirements-dev.txt",
+        "pyproject.toml",
+        "package.json",
+        "package-lock.json",
+        "poetry.lock",
+        "uv.lock",
+        "pdm.lock",
+        "Pipfile.lock",
+    }
+    assert not any(Path(path).name in forbidden_names for path in changed)
+
+
+def _changed_files() -> list[str]:
+    result = subprocess.run(
+        ["git", "diff", "--name-only", "origin/main...HEAD"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    return [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+

@@ -2,8 +2,8 @@
 
 ## A. Status
 
-- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; FEATURE_EXTRACTION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; LOCAL_RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_ON_BRANCH
-- WP: WP48 (schema/contract merged); WP49 (core scorer merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged); WP64 (research queue/report/session packet merged); WP65 (local research queue export/operator runbook merged); WP66 (calibration harness design/resolved outcome requirements on branch)
+- Package status: DOCS_ONLY_SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; FEATURE_EXTRACTION_MERGED; DATA_INTEGRITY_HARDENING_MERGED; RESOLUTION_AMBIGUITY_TAXONOMY_MERGED; RESOLUTION_AMBIGUITY_LABEL_SCHEMA_VALIDATION_MERGED; RESOLUTION_AMBIGUITY_LABEL_FEATURE_EXTRACTION_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; LOCAL_RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_MERGED; WALLET_INTELLIGENCE_ROADMAP_MERGED; WALLET_INTELLIGENCE_ARCHITECTURE_CONTRACT_ON_BRANCH
+- WP: WP48 (schema/contract merged); WP49 (core scorer merged); WP51 (feature extraction foundation merged); WP52 (long-term roadmap merged); WP53 (data-integrity hardening merged); WP54 (governance hardening merged); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged); WP57 (local feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged); WP64 (research queue/report/session packet merged); WP65 (local research queue export/operator runbook merged); WP66 (calibration harness design/resolved outcome requirements merged); WP76 (wallet intelligence roadmap lock-in merged); WP77 (wallet intelligence architecture/profile/signal contract on branch)
 - Runtime impact: NO_RUNTIME_CHANGE
 - Source impact: WP48 — NO_SRC_CHANGE; WP49 — LOCAL_OFFLINE_READ_ONLY_CORE_SCORER_ADDED; WP51 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_ADDED; WP53 — LOCAL_OFFLINE_READ_ONLY_FEATURE_EXTRACTION_HARDENED; WP55 — NO_SRC_CHANGE; WP56 — LOCAL_OFFLINE_READ_ONLY_LABEL_SCHEMA_VALIDATOR_ADDED; WP57 — LOCAL_OFFLINE_READ_ONLY_LABEL_FEATURE_EXTRACTION_ADDED; WP62 — LOCAL_OFFLINE_READ_ONLY_CROSS_MARKET_RELATIONSHIP_METADATA_ADDED; WP63 — LOCAL_OFFLINE_READ_ONLY_RESOLUTION_SOURCE_HIERARCHY_METADATA_ADDED; WP64 — LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_REPORT_SESSION_PACKET_ADDED; WP65 — LOCAL_OFFLINE_READ_ONLY_RESEARCH_QUEUE_EXPORT_TOOL_ADDED; WP66 — NO_SRC_CHANGE
 - Tooling impact: WP65 — LOCAL_OFFLINE_READ_ONLY_EXPORT_TOOL_ADDED (tools/research_queue/local_research_queue_export.py); no network; no credentials; no scheduler; no database; no dashboard; no advisory consumer integration; human-operated only; WP66 — NO_TOOLING_CHANGE
@@ -19,6 +19,7 @@
 - WP62 cross_market_relationships sub-dict: advisory-only market_context feature extraction metadata only; deterministic local key comparison (normalized question, condition_id, token_id, category+resolution_date, outcome-label set); no semantic matching; no price comparison; no automated equivalence claim; no score contract redesign; no scorer weight change; no trading interpretation; no downstream integration
 - WP63 resolution_source_hierarchy sub-dict: advisory-only market_context feature extraction metadata only; deterministic local field presence checks (resolution_date for timing, question text for source text and URL pattern detection); no resolution-rule parsing; no source authority judgment; no official-source monitoring; no score contract redesign; no scorer weight change; no trading interpretation; no downstream integration
 - CLI/export/report implementation: LOCAL_OFFLINE_EXPLICIT_MANUAL_EXPORT_ON_BRANCH; output remains advisory-only; output is not a trading recommendation, not a signal, not expected return, not execution instruction; human review required before any use
+- Wallet intelligence contract status: ROADMAP_MERGED_IN_WP76; ARCHITECTURE_PROFILE_SIGNAL_CONTRACT_ON_BRANCH_IN_WP77; wallet signals may have advisory research-priority effects only; no score contract redesign, no scorer weight change, no trading interpretation, no automatic copy-trading, no paper/live trading, no credentials, no execution
 - Advisory consumer integration: NOT_STARTED
 
 WP65 safe export contract note: the export tool reads WP64 LOCAL_HUMAN_REVIEW_REPORT_V1
@@ -57,6 +58,13 @@ This adds no score contract redesign, no scorer weight change, no CLI/export/
 report file writer, no trading interpretation, and no downstream integration.
 The queue/report/packet objects consume existing market_context or scored market
 objects and produce advisory-only research triage output only.
+
+WP76 locks wallet intelligence as a future advisory research signal layer. WP77
+adds a docs/schema/tests-only wallet architecture/profile/signal contract.
+Wallet signal contract values are not part of the WP48 scoring output schema in
+WP77, do not change scorer weights, and must not be interpreted as trading
+signals, expected return, position sizing, order instructions, automatic
+copy-trading, paper/live trading, credentials, or execution authority.
 
 ## B. Purpose
 

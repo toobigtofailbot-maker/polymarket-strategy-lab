@@ -409,10 +409,7 @@ def test_project_status_reflects_wp75_branch() -> None:
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(
-        wp in branch_line
-        for wp in ("wp75-local-human-review-label-fixture-loader-v1", "wp76-wallet-intelligence-roadmap-lockin")
-    ), f"Expected wp75 or wp76 branch in branch line: {branch_line}"
+    assert "wp77-wallet-intelligence-architecture-registry-profile-contract" in branch_line
 
 
 def test_project_status_reflects_wp64_merged() -> None:
