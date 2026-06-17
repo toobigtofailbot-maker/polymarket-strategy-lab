@@ -274,6 +274,7 @@ def test_wp79_branch_is_current_branch():
         "wp80-copyability-delay-simulator-design-wallet-report-contract",
         "wp81-local-copyability-delay-evaluation-from-fixtures",
         "wp82-wallet-intelligence-report-generator-v1",
+        "wp83-wallet-signal-paper-strategy-contract-v1",
     ))
 
 

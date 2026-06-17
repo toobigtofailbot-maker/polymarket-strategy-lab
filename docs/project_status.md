@@ -1,9 +1,9 @@
 # Project Status
 
-- Current phase: WP82 - Post-WP81 Repo-Truth Reconciliation And Wallet Intelligence Report Generator V1
-- Repo state: Local/offline/read-only wallet intelligence report generator implementation on branch after WP81 local copyability delay evaluation merge
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81
-- Current branch: `wp82-wallet-intelligence-report-generator-v1`
+- Current phase: WP83 - Post-WP82 Repo-Truth Reconciliation And Wallet Signal Paper Strategy Contract V1
+- Repo state: Docs/schema/tests-only wallet signal paper strategy contract on branch after WP82 local wallet intelligence report generator merge
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82
+- Current branch: `wp83-wallet-signal-paper-strategy-contract-v1`
 - Multi-agent coding workflow status: AGENT_NEUTRAL_START_LAYER_MERGED
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; MANUAL_EXPLICIT_NETWORK_POLLING_RUNNER_DEV_ONLY; MANUAL_GUARD_ENFORCED_SNAPSHOT_CAPTURE_DEV_ONLY
 - Runtime dependency integration status: NOT_STARTED_FOR_NEW_RUNTIME_DEPENDENCIES
@@ -35,7 +35,7 @@
 - Local advisory consumer prototype status: LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER_MERGED
 - Advisory prompt/runbook package status: DOCS_ONLY_ADVISORY_PROMPT_RUNBOOK_MERGED
 - Advisory operator workflow hardening status: DOCS_ONLY_ADVISORY_OPERATOR_WORKFLOW_MERGED
-- Market research priority scoring layer status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_MERGED; CALIBRATION_RECORD_SCHEMA_VALIDATOR_MERGED; LOCAL_RESOLVED_OUTCOME_FIXTURE_LOADER_MERGED; CALIBRATION_REPORT_GENERATOR_DESIGN_MERGED; LOCAL_CALIBRATION_METRIC_COMPUTATION_MERGED; LOCAL_CALIBRATION_REPORT_GENERATOR_MERGED; LOCAL_CALIBRATION_REPORT_EXPORT_MERGED; HUMAN_REVIEW_LABEL_WORKFLOW_DESIGN_MERGED; HUMAN_REVIEW_LABEL_RECORD_VALIDATOR_MERGED; HUMAN_REVIEW_LABEL_FIXTURE_LOADER_MERGED; WALLET_INTELLIGENCE_ROADMAP_MERGED; WALLET_INTELLIGENCE_ARCHITECTURE_CONTRACT_MERGED; WALLET_TRADE_EVENT_FIXTURE_LOADER_MERGED; WALLET_SIGNAL_RESEARCH_PROFILER_MERGED; WALLET_COPYABILITY_DELAY_SIMULATOR_DESIGN_MERGED; WALLET_INTELLIGENCE_REPORT_CONTRACT_MERGED; WALLET_COPYABILITY_DELAY_EVALUATOR_MERGED; WALLET_INTELLIGENCE_REPORT_GENERATOR_ON_BRANCH
+- Market research priority scoring layer status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_MERGED; CALIBRATION_RECORD_SCHEMA_VALIDATOR_MERGED; LOCAL_RESOLVED_OUTCOME_FIXTURE_LOADER_MERGED; CALIBRATION_REPORT_GENERATOR_DESIGN_MERGED; LOCAL_CALIBRATION_METRIC_COMPUTATION_MERGED; LOCAL_CALIBRATION_REPORT_GENERATOR_MERGED; LOCAL_CALIBRATION_REPORT_EXPORT_MERGED; HUMAN_REVIEW_LABEL_WORKFLOW_DESIGN_MERGED; HUMAN_REVIEW_LABEL_RECORD_VALIDATOR_MERGED; HUMAN_REVIEW_LABEL_FIXTURE_LOADER_MERGED; WALLET_INTELLIGENCE_ROADMAP_MERGED; WALLET_INTELLIGENCE_ARCHITECTURE_CONTRACT_MERGED; WALLET_TRADE_EVENT_FIXTURE_LOADER_MERGED; WALLET_SIGNAL_RESEARCH_PROFILER_MERGED; WALLET_COPYABILITY_DELAY_SIMULATOR_DESIGN_MERGED; WALLET_INTELLIGENCE_REPORT_CONTRACT_MERGED; WALLET_COPYABILITY_DELAY_EVALUATOR_MERGED; WALLET_INTELLIGENCE_REPORT_GENERATOR_MERGED; WALLET_SIGNAL_PAPER_STRATEGY_CONTRACT_ON_BRANCH
 - Research queue export/operator runbook status: LOCAL_OFFLINE_EXPLICIT_MANUAL_EXPORT_MERGED
 - Calibration harness design status: DOCS_SCHEMA_DESIGN_ONLY_MERGED
 - Resolved outcome data requirements status: DOCS_DESIGN_ONLY_MERGED
@@ -102,7 +102,78 @@
 - Wallet signal research profiler status: LOCAL_OFFLINE_READ_ONLY_RESEARCH_PROFILER_MERGED
 - Wallet copyability delay simulator design status: DOCS_SCHEMA_TESTS_ONLY_COPYABILITY_DELAY_DESIGN_MERGED
 - Wallet intelligence report contract status: DOCS_SCHEMA_TESTS_ONLY_REPORT_CONTRACT_MERGED
-- Wallet copyability delay evaluator status: LOCAL_OFFLINE_READ_ONLY_COPYABILITY_DELAY_EVALUATOR_ON_BRANCH
+- Wallet copyability delay evaluator status: LOCAL_OFFLINE_READ_ONLY_COPYABILITY_DELAY_EVALUATOR_MERGED
+- Wallet intelligence report generator status: LOCAL_OFFLINE_READ_ONLY_REPORT_GENERATOR_MERGED
+- Wallet signal paper strategy contract status: DOCS_SCHEMA_TESTS_ONLY_PAPER_STRATEGY_CONTRACT_ON_BRANCH
+- WP82 deferred items status: WP82 resolves WP80-D002 and WP81-D001 only for the local/offline/read-only in-memory report generator scope. WP80-D003, WP81-D002, WP82-D001 (wallet signal paper strategy contract) remain OPEN as of WP82 merge. WP82 adds WP82-D001 (wallet signal paper strategy contract remains deferred, OPEN, P3) and WP82-D002 (wallet intelligence report export CLI remains deferred, OPEN, P3).
+- WP83 deferred items status: WP83 resolves WP80-D003, WP81-D002, and WP82-D001 only for contract-definition scope only (docs/schema/tests-only). Paper strategy implementation, paper order model, paper portfolio ledger, paper fill model, paper PnL computation, network/API wallet ingestion, real wallet monitoring, automatic following behavior, live account access, credentials, scheduler, dashboard, and bot loop remain deferred. WP83 adds WP83-D001 (wallet signal paper strategy contract local validator not started, OPEN, P3).
+
+## WP83 Post-WP82 Repo-Truth Reconciliation And Wallet Signal Paper Strategy Contract V1
+
+WP83 - Post-WP82 Repo-Truth Reconciliation And Wallet Signal Paper Strategy
+Contract V1 is on branch (`wp83-wallet-signal-paper-strategy-contract-v1`).
+
+It reconciles repo truth after WP82 merge (PR #83, merge commit
+`5c2bd9df3182e6f0035750cd6faa3f6ec8144256`; PR #83 head SHA
+`aa88f8d519a04db089cdd6b5b99a5fb3363bde79`) and defines the first
+local/offline/read-only wallet signal paper strategy research candidate
+contract in docs/schema/tests-only form.
+
+WP83 adds `docs/wallet_signal_paper_strategy_contract.md`,
+`docs/schemas/wallet_signal_paper_strategy_contract_v1.example.json`, and
+`tests/test_wallet_signal_paper_strategy_contract_docs.py`.
+
+WP83 is docs/schema/tests-only. It adds no source implementation, no tools
+implementation, no wallet API client, no network ingestion, no real wallet
+monitoring, no live copyability simulator, no PnL computation, no paper
+strategy implementation, no paper order model, no paper portfolio ledger,
+no paper fill model, no paper PnL calculation, no credentials, no scheduler,
+no bot loop, no dashboard, no Hermes/LLM runtime, no dependency or lock-file
+changes, and no paper/live account activity behavior.
+
+WP83 resolves WP80-D003, WP81-D002, and WP82-D001 only for
+contract-definition scope only. Implementation remains deferred.
+
+Protected boundaries remain unchanged:
+- Live account activity: DISABLED
+- Credentials: NOT_USED
+- Execution: NOT_STARTED
+- Authenticated client: FORBIDDEN_UNTIL_APPROVED_WP
+- Hermes: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
+- Agent runtime: NOT_STARTED
+- Agent execution authority: FORBIDDEN
+- Scheduler: NOT_STARTED
+- Bot loop: NOT_STARTED
+
+## WP82 Post-WP81 Repo-Truth Reconciliation And Wallet Intelligence Report Generator V1
+
+WP82 - Post-WP81 Repo-Truth Reconciliation And Wallet Intelligence Report
+Generator V1 is merged (PR #83, merge commit
+`5c2bd9df3182e6f0035750cd6faa3f6ec8144256`; historical branch
+`wp82-wallet-intelligence-report-generator-v1`).
+
+It reconciled repo truth after WP81 merge (PR #82, merge commit
+`4f77d5233e51e6379677fd5dec049de372f847a9`; PR #82 head SHA
+`97db62d268b4eb99e31549b61f212803ab72742e`) and implemented the first
+local/offline/read-only wallet intelligence report generator.
+
+WP82 adds `src/data_layer/wallet_intelligence_report_generator.py` and
+`tests/test_wallet_intelligence_report_generator.py`. It updates
+`docs/wallet_intelligence_report_contract.md` to record WP82 as the first
+local/offline/read-only in-memory report generator implementation.
+
+WP82 is local/offline/read-only. It adds no network ingestion, no wallet
+API client, no real wallet monitoring, no live copyability simulator, no
+dollar PnL computation, no expected-return calculation, no paper strategy,
+no credentials, no scheduler, no bot loop, no dashboard, no Hermes/LLM
+runtime, no dependency or lock-file changes, and no paper/live account
+activity behavior.
+
+WP82 resolves WP80-D002 and WP81-D001 for the local/offline/read-only
+in-memory report generator scope. WP80-D003 through WP80-D006 and WP81-D002
+remain OPEN.
+
+Protected boundaries remain unchanged.
 
 ## WP81 Post-WP80 Repo-Truth Reconciliation And Local Copyability Delay Evaluation From Validated Fixtures V1
 
