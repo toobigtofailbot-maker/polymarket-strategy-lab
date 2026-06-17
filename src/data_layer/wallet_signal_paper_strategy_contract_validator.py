@@ -191,12 +191,17 @@ def _scan_forbidden_terms(
     value: object,
     path: str,
     errors: list[str],
+    _counter: list[int] | None = None,
 ) -> None:
     """Recursively scan for forbidden output terms in keys and string values.
 
     Keys in _SAFETY_FLAG_EXCEPTION_KEYS are exempt from key scanning.
     All string values are scanned without exception.
+    Error messages use neutral deterministic codes — caller-provided keys,
+    values, and paths are never echoed back into output.
     """
+    if _counter is None:
+        _counter = [0]
     if isinstance(value, dict):
         for k, v in value.items():
             current_path = f"{path}.{k}" if path else k
@@ -205,20 +210,24 @@ def _scan_forbidden_terms(
                 for term in _FORBIDDEN_TERM_SUBSTRINGS:
                     if term in norm_k:
                         errors.append(
-                            f"Forbidden term '{term}' found in key at path '{current_path}'"
+                            f"Advisory vocabulary boundary violation in record key: "
+                            f"unsafe_key_{_counter[0]:03d}"
                         )
+                        _counter[0] += 1
                         break
-            _scan_forbidden_terms(v, current_path, errors)
+            _scan_forbidden_terms(v, current_path, errors, _counter)
     elif isinstance(value, (list, tuple)):
         for i, item in enumerate(value):
-            _scan_forbidden_terms(item, f"{path}[{i}]", errors)
+            _scan_forbidden_terms(item, f"{path}[{i}]", errors, _counter)
     elif isinstance(value, str):
         norm_v = _normalize(value)
         for term in _FORBIDDEN_TERM_SUBSTRINGS:
             if term in norm_v:
                 errors.append(
-                    f"Forbidden term '{term}' found in value at path '{path}'"
+                    f"Advisory vocabulary boundary violation in record value: "
+                    f"unsafe_value_{_counter[0]:03d}"
                 )
+                _counter[0] += 1
                 break
 
 
@@ -233,8 +242,7 @@ def _scan_raw_metadata_keys(
             current_path = f"{path}.{k}" if path else k
             if k in _RAW_METADATA_KEYS:
                 errors.append(
-                    f"Raw metadata-like key '{k}' found at path '{current_path}' — "
-                    f"raw metadata pass-through is not permitted in contract records"
+                    f"Raw metadata-like field '{k}' not permitted in contract records."
                 )
             _scan_raw_metadata_keys(v, current_path, errors)
     elif isinstance(value, (list, tuple)):
@@ -428,6 +436,6 @@ def validate_wallet_signal_paper_strategy_contract_record(
         status=VALID_STATUS if is_valid else INVALID_STATUS,
         errors=tuple(errors),
         warnings=tuple(warnings_out),
-        normalized_record=dict(record),
+        normalized_record=dict(record) if is_valid else {},
         advisory_label=VALIDATOR_ADVISORY_LABEL,
     )

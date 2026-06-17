@@ -402,7 +402,7 @@ def test_forbidden_terms_rejected_recursively() -> None:
     }
     result = validate_wallet_signal_paper_strategy_contract_record(record)
     assert result.is_valid is False
-    assert any("expected return" in e for e in result.errors)
+    assert any("boundary violation" in e for e in result.errors)
 
 
 def test_forbidden_term_in_list_value_rejected() -> None:
@@ -415,7 +415,7 @@ def test_forbidden_term_in_list_value_rejected() -> None:
     ]
     result = validate_wallet_signal_paper_strategy_contract_record(record)
     assert result.is_valid is False
-    assert any("expected return" in e for e in result.errors)
+    assert any("boundary violation" in e for e in result.errors)
 
 
 def test_forbidden_term_in_nested_dict_key_rejected() -> None:
@@ -425,7 +425,7 @@ def test_forbidden_term_in_nested_dict_key_rejected() -> None:
     }
     result = validate_wallet_signal_paper_strategy_contract_record(record)
     assert result.is_valid is False
-    assert any("expected return" in e for e in result.errors)
+    assert any("boundary violation" in e for e in result.errors)
 
 
 def test_forbidden_terms_buy_sell_in_values_rejected() -> None:
@@ -443,7 +443,7 @@ def test_forbidden_terms_live_signal_in_values_rejected() -> None:
     record["advisory_notice"] = "live signal present"
     result = validate_wallet_signal_paper_strategy_contract_record(record)
     assert result.is_valid is False
-    assert any("live signal" in e for e in result.errors)
+    assert any("boundary violation" in e for e in result.errors)
 
 
 def test_forbidden_terms_pnl_target_in_key_rejected() -> None:
@@ -451,7 +451,7 @@ def test_forbidden_terms_pnl_target_in_key_rejected() -> None:
     record["pnl_target"] = "5%"
     result = validate_wallet_signal_paper_strategy_contract_record(record)
     assert result.is_valid is False
-    assert any("pnl target" in e for e in result.errors)
+    assert any("boundary violation" in e for e in result.errors)
 
 
 def test_safety_flag_exception_keys_not_rejected() -> None:
@@ -899,6 +899,133 @@ def test_human_review_required_missing_fails() -> None:
     result = validate_wallet_signal_paper_strategy_contract_record(record)
     assert result.is_valid is False
     assert any("human_review_required" in e for e in result.errors)
+
+
+# ---------------------------------------------------------------------------
+# Output surface safety tests (Issue F/G follow-up)
+# Verify that invalid records never echo forbidden terms, unsafe keys, or
+# unsafe values in their errors — and that normalized_record is empty.
+# ---------------------------------------------------------------------------
+
+_ALL_FORBIDDEN_SUBSTRINGS = (
+    "buy", "sell", "trade", "trading", "execute", "execution",
+    "order ready", "execution ready", "entry", "exit",
+    "position size", "position sizing", "expected return", "profit target",
+    "stop loss", "take profit", "live signal", "auto copy",
+    "automatic copy", "copy signal", "wallet copy instruction",
+    "pnl target", "paper trading candidate", "strategy signal",
+)
+
+# These safety flag names are contract-defined exception keys; they contain
+# forbidden-term substrings by design and must be stripped before scanning
+# error messages for leaked user-provided unsafe content.
+_SAFETY_FLAG_EXCEPTION_STRINGS = (
+    "not_automated_copy_trading",
+    "no_live_execution",
+    "no_order_placement",
+    "no_position_sizing",
+)
+
+_OUTPUT_TRAP_RECORDS: list[tuple[str, dict[object, object]]] = [
+    ("buy_signal key", {"buy_signal": "YES"}),
+    ("expected_return key", {"expected_return": "12%"}),
+    ("position_size key", {"position_size": "25 USDC"}),
+    ("execution_ready key", {"execution_ready": True}),
+    ("paper_trading_candidate key", {"paper_trading_candidate": True}),
+    ("strategy_signal key", {"strategy_signal": "wallet followed"}),
+    (
+        "nested source_metadata with forbidden value",
+        {"source_metadata": {"expected_return": "buy recommendation"}},
+    ),
+    (
+        "nested metadata with position_size key",
+        {"metadata": {"safe_outer": {"position_size": "25"}}},
+    ),
+]
+
+
+def _errors_contain_forbidden_term(errors: tuple[str, ...]) -> str | None:
+    for msg in errors:
+        # Strip known-safe exception key names before scanning — they are
+        # contract-defined vocabulary, not echoed user-provided content.
+        sanitized = msg
+        for exc in _SAFETY_FLAG_EXCEPTION_STRINGS:
+            sanitized = sanitized.replace(exc, "")
+        sanitized_norm = sanitized.lower().replace("_", " ").replace("-", " ")
+        for term in _ALL_FORBIDDEN_SUBSTRINGS:
+            if term in sanitized_norm:
+                return f"term '{term}' in error '{msg}'"
+    return None
+
+
+@pytest.mark.parametrize("label,extra", _OUTPUT_TRAP_RECORDS)
+def test_reviewer_trap_error_messages_do_not_echo_forbidden_terms(
+    label: str, extra: dict[object, object]
+) -> None:
+    """Error messages for trap records must not echo forbidden terms or unsafe keys."""
+    record: dict[str, object] = {**extra}
+    result = validate_wallet_signal_paper_strategy_contract_record(record)
+    assert result.is_valid is False, f"Expected invalid for trap record: {label}"
+    leaked = _errors_contain_forbidden_term(result.errors)
+    assert leaked is None, (
+        f"Trap record '{label}': output leakage detected — {leaked}"
+    )
+
+
+@pytest.mark.parametrize("label,extra", _OUTPUT_TRAP_RECORDS)
+def test_reviewer_trap_invalid_normalized_record_is_empty(
+    label: str, extra: dict[object, object]
+) -> None:
+    """Invalid records must return an empty normalized_record."""
+    record: dict[str, object] = {**extra}
+    result = validate_wallet_signal_paper_strategy_contract_record(record)
+    assert result.is_valid is False, f"Expected invalid for trap record: {label}"
+    assert result.normalized_record == {}, (
+        f"Trap record '{label}': normalized_record must be empty for invalid records, "
+        f"got {result.normalized_record!r}"
+    )
+
+
+def test_valid_record_normalized_record_is_populated() -> None:
+    """Valid records must return a non-empty normalized_record."""
+    result = validate_wallet_signal_paper_strategy_contract_record(
+        _build_valid_record()
+    )
+    assert result.is_valid is True
+    assert result.normalized_record != {}
+
+
+def test_output_surface_has_no_forbidden_terms_for_buy_signal_input() -> None:
+    """Full output surface scan for {'buy_signal': 'YES'} input."""
+    result = validate_wallet_signal_paper_strategy_contract_record(
+        {"buy_signal": "YES"}
+    )
+    assert result.is_valid is False
+    leaked = _errors_contain_forbidden_term(result.errors)
+    assert leaked is None, f"Output leakage in errors: {leaked}"
+    assert result.normalized_record == {}
+
+
+def test_output_surface_has_no_forbidden_terms_for_expected_return_input() -> None:
+    """Full output surface scan for {'expected_return': '12%'} input."""
+    result = validate_wallet_signal_paper_strategy_contract_record(
+        {"expected_return": "12%"}
+    )
+    assert result.is_valid is False
+    leaked = _errors_contain_forbidden_term(result.errors)
+    assert leaked is None, f"Output leakage in errors: {leaked}"
+    assert result.normalized_record == {}
+
+
+def test_output_surface_has_no_forbidden_terms_for_nested_position_size_input() -> None:
+    """Full output surface scan for nested position_size in metadata input."""
+    result = validate_wallet_signal_paper_strategy_contract_record(
+        {"metadata": {"safe_outer": {"position_size": "25"}}}
+    )
+    assert result.is_valid is False
+    leaked = _errors_contain_forbidden_term(result.errors)
+    assert leaked is None, f"Output leakage in errors: {leaked}"
+    assert result.normalized_record == {}
 
 
 # ---------------------------------------------------------------------------
