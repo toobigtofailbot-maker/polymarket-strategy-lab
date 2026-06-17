@@ -358,19 +358,27 @@ def test_deferred_items_log_contains_wp77_deferred_items() -> None:
         assert item_id in text
 
 
-def test_project_status_marks_wp77_current_branch_phase() -> None:
+def test_project_status_marks_wp79_current_branch_phase() -> None:
     text = _read(STATUS_DOC)
-    assert "WP78 - Post-WP77 Repo-Truth Reconciliation And Wallet Trade Event Snapshot Schema, Local Loader, And Validation" in text
-    assert "wp78-wallet-trade-event-snapshot-loader-validation" in text
+    assert "WP79" in next(line for line in text.splitlines() if line.startswith("- Current phase:"))
+    assert "wp79-wallet-skill-niche-profiler-research-queue-integration" in text
     assert "WP76" in next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
+    assert "WP78" in next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
     assert "91cd26e4fe16d492fa2f7b319fba176ee60cd9d5" in text
     assert "24badbfb7a9da06ee4c8ae94795e1f2c862af913" in text
+    assert "7ff117f6caf78eab62e6a116db72b60d76d305f5" in text
 
 
-def test_only_allowed_wallet_trade_event_src_file_changed() -> None:
+def test_only_allowed_wallet_src_files_changed() -> None:
     changed = _changed_files()
-    src_changes = [path for path in changed if path.startswith("src/")]
-    assert src_changes == ["src/data_layer/wallet_trade_event_fixtures.py"]
+    src_changes = sorted(path for path in changed if path.startswith("src/"))
+    allowed_src_changes = {
+        "src/data_layer/wallet_trade_event_fixtures.py",
+        "src/data_layer/wallet_signal_research_profile.py",
+    }
+    assert set(src_changes) <= allowed_src_changes, (
+        f"Unexpected src/ changes: {set(src_changes) - allowed_src_changes}"
+    )
 
 
 def test_no_tools_files_changed() -> None:

@@ -2,12 +2,12 @@
 
 ## A. Status
 
-- WP: WP76 (wallet intelligence roadmap lock-in merged); WP77 (wallet intelligence architecture/profile/signal contract merged); WP78 (wallet trade event snapshot schema/local loader/validator on branch)
-- Package class: DOCS_TESTS_ONLY_WALLET_INTELLIGENCE_ROADMAP_LOCKIN_MERGED; DOCS_SCHEMA_TESTS_ONLY_WALLET_INTELLIGENCE_CONTRACT_MERGED; LOCAL_OFFLINE_READ_ONLY_WALLET_TRADE_EVENT_FIXTURE_LOADER_ON_BRANCH
+- WP: WP76 (wallet intelligence roadmap lock-in merged); WP77 (wallet intelligence architecture/profile/signal contract merged); WP78 (wallet trade event snapshot schema/local loader/validator merged); WP79 (wallet signal research profiler and advisory research queue annotation on branch)
+- Package class: DOCS_TESTS_ONLY_WALLET_INTELLIGENCE_ROADMAP_LOCKIN_MERGED; DOCS_SCHEMA_TESTS_ONLY_WALLET_INTELLIGENCE_CONTRACT_MERGED; LOCAL_OFFLINE_READ_ONLY_WALLET_TRADE_EVENT_FIXTURE_LOADER_MERGED; LOCAL_OFFLINE_READ_ONLY_WALLET_SIGNAL_RESEARCH_PROFILER_ON_BRANCH
 - Authority: PLANNING_GUIDANCE_ONLY
 - NOT_AUTHORIZATION
 - NO_RUNTIME_CHANGE
-- LOCAL_OFFLINE_READ_ONLY_WALLET_TRADE_EVENT_FIXTURE_SOURCE_ON_BRANCH
+- LOCAL_OFFLINE_READ_ONLY_WALLET_SIGNAL_RESEARCH_PROFILER_ON_BRANCH
 - NO_TOOLS_CHANGE
 - NO_DEPENDENCY_CHANGE
 - NO_NETWORK
@@ -20,7 +20,8 @@
 - NO_BOT_LOOP
 - WP76 merge commit: 91cd26e4fe16d492fa2f7b319fba176ee60cd9d5
 - WP77 merge commit: 24badbfb7a9da06ee4c8ae94795e1f2c862af913
-- WP78 branch: wp78-wallet-trade-event-snapshot-loader-validation
+- WP78 merge commit: 7ff117f6caf78eab62e6a116db72b60d76d305f5
+- WP79 branch: wp79-wallet-skill-niche-profiler-research-queue-integration
 
 ## B. Purpose
 
