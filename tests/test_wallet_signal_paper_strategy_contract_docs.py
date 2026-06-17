@@ -515,10 +515,17 @@ def test_source_reference_advisory_present() -> None:
 
 def test_no_src_implementation_for_wp83_contract() -> None:
     """WP83 is docs/schema/tests-only. No paper strategy contract implementation
-    may exist in src/."""
+    may exist in src/ beyond the WP84 local validator.
+
+    WP84 adds the local/offline/read-only validator at
+    src/data_layer/wallet_signal_paper_strategy_contract_validator.py.
+    This file is explicitly allowed; all other paper strategy contract
+    implementation files remain forbidden.
+    """
     src = ROOT / "src"
+    # WP84 local validator is the only permitted implementation file
+    wp84_validator_name = "wallet_signal_paper_strategy_contract_validator.py"
     forbidden_names = (
-        "wallet_signal_paper_strategy",
         "paper_strategy_contract",
         "paper_strategy_engine",
         "paper_order",
@@ -527,11 +534,36 @@ def test_no_src_implementation_for_wp83_contract() -> None:
     )
     violations = []
     for path in src.rglob("*.py"):
+        # Allow the WP84 validator
+        if path.name == wp84_validator_name:
+            continue
         for name in forbidden_names:
             if name in path.name.lower():
                 violations.append(str(path.relative_to(ROOT)))
+        # wallet_signal_paper_strategy prefix is only allowed for the validator
+        if (
+            "wallet_signal_paper_strategy" in path.name.lower()
+            and path.name != wp84_validator_name
+        ):
+            violations.append(str(path.relative_to(ROOT)))
     assert violations == [], (
-        f"WP83 is docs-only but found implementation files: {violations}"
+        f"WP83 is docs-only but found unexpected implementation files: {violations}"
+    )
+
+
+def test_wp84_validator_file_exists() -> None:
+    """WP84 adds the local/offline/read-only contract validator."""
+    validator = ROOT / "src" / "data_layer" / "wallet_signal_paper_strategy_contract_validator.py"
+    assert validator.is_file(), (
+        f"WP84 validator not found at expected path: {validator}"
+    )
+
+
+def test_wp84_focused_tests_exist() -> None:
+    """WP84 adds focused tests for the contract validator."""
+    test_file = ROOT / "tests" / "test_wallet_signal_paper_strategy_contract_validator.py"
+    assert test_file.is_file(), (
+        f"WP84 focused tests not found at expected path: {test_file}"
     )
 
 

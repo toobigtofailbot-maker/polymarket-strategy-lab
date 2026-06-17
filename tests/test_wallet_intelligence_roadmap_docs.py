@@ -336,6 +336,7 @@ def test_project_status_marks_wp79_branch():
         "wp81-local-copyability-delay-evaluation-from-fixtures",
         "wp82-wallet-intelligence-report-generator-v1",
         "wp83-wallet-signal-paper-strategy-contract-v1",
+        "wp84-wallet-signal-paper-strategy-contract-local-validator-v1",
     ))
 
 

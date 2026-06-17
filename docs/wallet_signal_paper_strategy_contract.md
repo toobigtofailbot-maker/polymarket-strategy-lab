@@ -17,7 +17,21 @@
 - NO_CREDENTIALS
 - NO_SCHEDULER
 - NO_BOT_LOOP
-- WP83 merge commit: TO_BE_RECORDED_AFTER_MERGE
+- WP83 merge commit: ac66cd582bf2a53cc29869b3e49ffdb7f020ea44
+
+## 1a. WP84 Local Validator
+
+WP84 provides a local/offline/read-only validator for contract records.
+
+- Validator module: `src/data_layer/wallet_signal_paper_strategy_contract_validator.py`
+- Focused tests: `tests/test_wallet_signal_paper_strategy_contract_validator.py`
+- Package class: LOCAL_OFFLINE_READ_ONLY_WALLET_SIGNAL_PAPER_STRATEGY_CONTRACT_VALIDATOR
+- WP84 status: LOCAL_OFFLINE_READ_ONLY_VALIDATOR_MERGED (pending merge)
+
+The validator rejects invalid advisory records based on the contract rules
+defined in this document. It does not implement paper strategy execution.
+It does not create account-action guidance. It does not create a paper engine.
+It does not authorize live execution.
 
 ## 2. Purpose
 

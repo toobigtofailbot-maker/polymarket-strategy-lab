@@ -1927,7 +1927,31 @@ WP83 adds WP83-D001. WP82-D002 remains OPEN.
 
 | ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
 |----|---------|--------|----------|--------|-----------------|---------------------|
-| WP83-D001 | Wallet signal paper strategy contract local validator not started | OPEN | P3 | WP83 defines the contract and static example only. No local validator, no validator implementation, no record loader, and no advisory-consumer handoff is implemented. | Any WP that validates wallet-signal paper strategy contract records from local fixtures. | Future approved WP84 explicitly scopes a local/offline/read-only contract validator following the pattern of WP74 (human review label validator) or WP67 (calibration record validator). |
+| WP83-D001 | Wallet signal paper strategy contract local validator not started | RESOLVED (WP84 local/offline/read-only validator scope only) | P3 | WP83 defines the contract and static example only. No local validator, no validator implementation, no record loader, and no advisory-consumer handoff is implemented. | Any WP that validates wallet-signal paper strategy contract records from local fixtures. | Resolved for local/offline/read-only validator scope only by WP84 (src/data_layer/wallet_signal_paper_strategy_contract_validator.py, tests/test_wallet_signal_paper_strategy_contract_validator.py). Candidate fixture loader, advisory-consumer handoff, and all other paper strategy implementation remain deferred. |
+
+## WP84 Post-WP83 Repo-Truth Reconciliation And Wallet Signal Paper Strategy Contract Local Validator V1 Deferred Items
+
+WP84 reconciles repo truth after WP83 merge (PR #84, merge commit
+`ac66cd582bf2a53cc29869b3e49ffdb7f020ea44`; PR #84 head SHA
+`08874da0893c7c29567979b6cd1101833fd0b0c9`) and implements the first
+local/offline/read-only wallet signal paper strategy contract validator
+in `src/data_layer/wallet_signal_paper_strategy_contract_validator.py`.
+
+WP84 adds no paper strategy implementation, no paper order model, no paper
+portfolio ledger, no paper fill model, no paper PnL computation, no
+network/API wallet ingestion, no real wallet monitoring, no automatic
+following behavior, no live account access, no credentials, no scheduler,
+no dashboard, no bot loop, no Hermes/LLM runtime, no dependency or
+lock-file changes, and no live or paper account activity behavior.
+
+WP84 resolves WP83-D001 only for local/offline/read-only validator scope.
+WP80-D004 and WP80-D005 remain classified P0.
+
+WP84 adds WP84-D001. WP82-D002 remains OPEN.
+
+| ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
+|----|---------|--------|----------|--------|-----------------|---------------------|
+| WP84-D001 | Wallet signal paper strategy contract candidate fixture loader not started | OPEN | P3 | WP84 adds only the local/offline/read-only contract validator. No candidate fixture loader, no advisory-consumer handoff, no fixture-loading pipeline, and no contract record generator is implemented. | Any WP that loads wallet-signal paper strategy contract records from local fixtures for validation. | Future approved WP85 explicitly scopes a local/offline/read-only candidate fixture loader following the local/offline/read-only pattern; no live execution or credentials. |
 
 ## WP6 Generated Artifact Incident Update
 
