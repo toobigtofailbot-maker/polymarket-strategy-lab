@@ -736,12 +736,23 @@ def test_no_wallet_copyability_src_module() -> None:
         )
 
 
-def test_no_wallet_report_generator_src_module() -> None:
+def test_wallet_report_generator_src_module_is_wp82() -> None:
+    # WP82 implements the wallet intelligence report generator.
+    # The module is expected to exist at this path; it is local/offline/read-only.
     src_dir = ROOT / "src"
     if not src_dir.exists():
         return
-    for path in src_dir.rglob("*wallet_intelligence_report*"):
-        assert False, f"Unexpected wallet intelligence report src file: {path}"
+    report_gen = src_dir / "data_layer" / "wallet_intelligence_report_generator.py"
+    if report_gen.exists():
+        # WP82 is merged or on branch — verify it is the only wallet intelligence report src file
+        found = [
+            p for p in src_dir.rglob("*wallet_intelligence_report*")
+            if p.suffix != ".pyc" and "__pycache__" not in p.parts
+        ]
+        assert found == [report_gen], (
+            f"Unexpected wallet intelligence report src files beyond WP82 module: "
+            f"{[p for p in found if p != report_gen]}"
+        )
 
 
 # ---------------------------------------------------------------------------
