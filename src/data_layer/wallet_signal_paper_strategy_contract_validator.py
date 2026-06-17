@@ -370,16 +370,16 @@ def validate_wallet_signal_paper_strategy_contract_record(
     if stated_status is not None:
         if stated_status in FORBIDDEN_ELIGIBILITY_STATUSES:
             errors.append(
-                f"Forbidden eligibility status present: {stated_status}"
+                "Forbidden eligibility status rejected by advisory safety boundary."
             )
         elif stated_status not in ALLOWED_ELIGIBILITY_STATUSES:
             errors.append(
-                f"Unknown eligibility status: {stated_status}"
+                "Unknown eligibility status rejected by advisory contract boundary."
             )
         elif stated_status != expected_status:
             errors.append(
-                f"Eligibility status mismatch: record states '{stated_status}' "
-                f"but blocking-gate precedence requires '{expected_status}'"
+                f"Eligibility status mismatch: stated status does not match "
+                f"required advisory precedence status '{expected_status}'."
             )
     elif isinstance(eligibility_review, dict):
         errors.append(

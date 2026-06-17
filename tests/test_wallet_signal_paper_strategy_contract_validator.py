@@ -319,7 +319,7 @@ def test_forbidden_statuses_fail() -> None:
         assert result.is_valid is False, (
             f"Expected invalid for forbidden status '{status}'"
         )
-        assert any("forbidden" in e.lower() or status in e for e in result.errors), (
+        assert any("forbidden" in e.lower() for e in result.errors), (
             f"Error for forbidden status '{status}' not found in {result.errors}"
         )
 
@@ -1026,6 +1026,85 @@ def test_output_surface_has_no_forbidden_terms_for_nested_position_size_input() 
     leaked = _errors_contain_forbidden_term(result.errors)
     assert leaked is None, f"Output leakage in errors: {leaked}"
     assert result.normalized_record == {}
+
+
+# ---------------------------------------------------------------------------
+# Forbidden eligibility status output leakage tests (Issue F/G follow-up 2)
+# Verify that forbidden/unknown/mismatch status errors do not echo the unsafe
+# caller-provided status value.
+# ---------------------------------------------------------------------------
+
+# Forbidden statuses that contain unsafe substrings (would leak via echo)
+_FORBIDDEN_STATUSES_WITH_UNSAFE_SUBSTRINGS = (
+    "TRADE_READY",       # contains "trade"
+    "ORDER_READY",       # contains "order ready"
+    "EXECUTION_READY",   # contains "execution ready"
+    "BUY_SIGNAL",        # contains "buy"
+    "SELL_SIGNAL",       # contains "sell"
+)
+
+
+@pytest.mark.parametrize("status", _FORBIDDEN_STATUSES_WITH_UNSAFE_SUBSTRINGS)
+def test_forbidden_status_errors_do_not_echo_status_value(status: str) -> None:
+    """Forbidden eligibility status errors must not echo the unsafe status value."""
+    record = _build_valid_record()
+    record["eligibility_review"]["eligibility_status"] = status
+    result = validate_wallet_signal_paper_strategy_contract_record(record)
+    assert result.is_valid is False, f"Expected invalid for forbidden status '{status}'"
+    leaked = _errors_contain_forbidden_term(result.errors)
+    assert leaked is None, (
+        f"Forbidden status '{status}' leaked into errors: {leaked}"
+    )
+
+
+@pytest.mark.parametrize("status", _FORBIDDEN_STATUSES_WITH_UNSAFE_SUBSTRINGS)
+def test_forbidden_status_invalid_normalized_record_is_empty(status: str) -> None:
+    """Invalid records with forbidden eligibility status must have empty normalized_record."""
+    record = _build_valid_record()
+    record["eligibility_review"]["eligibility_status"] = status
+    result = validate_wallet_signal_paper_strategy_contract_record(record)
+    assert result.is_valid is False
+    assert result.normalized_record == {}, (
+        f"normalized_record must be empty for forbidden status '{status}', "
+        f"got {result.normalized_record!r}"
+    )
+
+
+def test_unknown_status_error_does_not_echo_raw_value() -> None:
+    """Unknown eligibility status error must not echo the raw caller-provided value."""
+    record = _build_valid_record()
+    # Use a value that contains a forbidden term to verify no echo
+    record["eligibility_review"]["eligibility_status"] = "TRADE_EXECUTE_READY_UNKNOWN"
+    result = validate_wallet_signal_paper_strategy_contract_record(record)
+    assert result.is_valid is False
+    assert any("unknown" in e.lower() for e in result.errors)
+    leaked = _errors_contain_forbidden_term(result.errors)
+    assert leaked is None, f"Unknown status value leaked into errors: {leaked}"
+
+
+def test_mismatch_error_echoes_expected_not_stated() -> None:
+    """Eligibility mismatch error must contain the safe expected status, not stated status."""
+    record = _build_valid_record()
+    # Force a mismatch: gate 3 (suspicious flow) fires, but record states wrong status
+    record["suspicious_flow_review"]["suspicious_flow_detected"] = True
+    # Stated status is an allowed status but wrong one for the gate result
+    record["eligibility_review"]["eligibility_status"] = (
+        "RESEARCH_ONLY_ELIGIBLE_FOR_FUTURE_PAPER_DESIGN"
+    )
+    result = validate_wallet_signal_paper_strategy_contract_record(record)
+    assert result.is_valid is False
+    mismatch_errors = [e for e in result.errors if "mismatch" in e.lower()]
+    assert mismatch_errors, f"Expected mismatch error, got {result.errors}"
+    # Must contain the expected status
+    assert any("NOT_ELIGIBLE_SUSPICIOUS_FLOW" in e for e in mismatch_errors), (
+        f"Expected 'NOT_ELIGIBLE_SUSPICIOUS_FLOW' in mismatch error, got {mismatch_errors}"
+    )
+    # Must not contain the stated status (even though it is an allowed safe value,
+    # the neutral-output contract requires not echoing caller-provided status)
+    assert not any(
+        "RESEARCH_ONLY_ELIGIBLE_FOR_FUTURE_PAPER_DESIGN" in e
+        for e in mismatch_errors
+    ), f"Mismatch error echoes stated status: {mismatch_errors}"
 
 
 # ---------------------------------------------------------------------------
