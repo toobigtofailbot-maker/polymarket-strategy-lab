@@ -143,7 +143,11 @@ def _scan_for_forbidden_terms(obj: object, path: str = "") -> list[str]:
 
 
 def _result_to_dict(result: CandidateFixtureLoadResult) -> dict:
-    """Convert a loader result to a plain dict for recursive scanning."""
+    """Convert a loader result to a plain dict for recursive scanning.
+
+    Must include advisory_label so the forbidden-term scan covers all output
+    surfaces including advisory notices (WP87 §12 output surface inventory).
+    """
     return {
         "root_path": result.root_path,
         "total_files": result.total_files,
@@ -154,6 +158,7 @@ def _result_to_dict(result: CandidateFixtureLoadResult) -> dict:
         "items": [_item_to_dict(it) for it in result.items],
         "errors": list(result.errors),
         "warnings": list(result.warnings),
+        "advisory_label": result.advisory_label,
     }
 
 
@@ -578,6 +583,27 @@ def test_load_result_advisory_label_has_no_forbidden_terms() -> None:
         assert term.lower() not in norm, (
             f"Forbidden term '{term}' found in advisory_label: {result.advisory_label!r}"
         )
+
+
+def test_result_to_dict_includes_advisory_label() -> None:
+    """_result_to_dict must include advisory_label so recursive scans cover all output surfaces.
+
+    This is the coverage proof for WP87 §12 output surface inventory requirement:
+    advisory notices are an output surface and must be included in the recursive scan.
+    """
+    result = load_wallet_signal_paper_strategy_candidate_fixtures(VALID_FIXTURE)
+    d = _result_to_dict(result)
+    assert "advisory_label" in d, "_result_to_dict must include advisory_label key"
+    assert d["advisory_label"] == result.advisory_label
+    assert d["advisory_label"]
+
+
+def test_full_result_dict_advisory_label_has_no_forbidden_terms() -> None:
+    """advisory_label must pass the recursive forbidden-term scan via _result_to_dict."""
+    result = load_wallet_signal_paper_strategy_candidate_fixtures(VALID_FIXTURE)
+    d = _result_to_dict(result)
+    violations = _scan_for_forbidden_terms({"advisory_label": d["advisory_label"]})
+    assert violations == [], f"Forbidden terms in advisory_label via recursive scan: {violations}"
 
 
 # ---------------------------------------------------------------------------
