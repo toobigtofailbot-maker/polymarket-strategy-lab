@@ -458,3 +458,31 @@ no_live_execution
 no_order_placement
 no_position_sizing
 ```
+
+
+## WP87 — Local Candidate Fixture Loader
+
+WP87 adds a local/offline/read-only fixture loader for wallet signal paper
+strategy candidate contract records at
+`src/data_layer/wallet_signal_paper_strategy_candidate_fixture_loader.py`.
+
+The loader:
+- reads candidate fixture records from local JSON files or directories;
+- validates each record using the WP84 contract validator;
+- produces a deterministic safe `CandidateFixtureLoadResult`;
+- keeps invalid and malformed `normalized_record` fields empty/safe;
+- never echoes unsafe invalid input through errors, warnings, paths, metadata,
+  or summaries.
+
+The loader does not create paper strategies, paper order models, paper portfolio
+ledgers, paper fill models, paper PnL computations, network/API wallet
+ingestion clients, real wallet monitoring, automatic copy instructions, live
+account access, credentials, schedulers, dashboards, or bot loops.
+
+Allowed load statuses: `LOADED_VALID_CONTRACT_RECORD`,
+`LOADED_INVALID_CONTRACT_RECORD`, `MALFORMED_FIXTURE_FILE`,
+`MISSING_FIXTURE_PATH`, `UNSUPPORTED_FIXTURE_PATH`.
+
+Forbidden statuses: `TRADE_READY`, `COPY_READY`, `LIVE_READY`,
+`ORDER_READY`, `EXECUTION_READY`, `BUY_SIGNAL`, `SELL_SIGNAL`,
+`AUTO_APPROVED`.

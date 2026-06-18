@@ -1,0 +1,73 @@
+{
+  "_fixture_purpose": "WP87 reviewer-trap fixture: forbidden raw metadata key. Loader must reject and must not echo unsafe metadata content in output.",
+  "contract_identity": {
+    "contract_id": "FIXTURE-WP87-INVALID-META-001",
+    "contract_type": "WALLET_SIGNAL_PAPER_STRATEGY_CONTRACT_V1",
+    "contract_created_at": "PLACEHOLDER_TIMESTAMP",
+    "wp_version": "WP87",
+    "advisory_only_notice": "Invalid fixture only. Not for use."
+  },
+  "source_report_reference": {
+    "wallet_intelligence_report_id": "PLACEHOLDER_REPORT_001",
+    "wallet_signal_profile_ids": ["PLACEHOLDER_PROFILE_001"],
+    "copyability_delay_evaluation_ids": ["PLACEHOLDER_DELAY_EVAL_001"],
+    "research_queue_annotation_ids": [],
+    "human_review_label_ids": [],
+    "local_fixture_set_id": "PLACEHOLDER_FIXTURE_SET_001",
+    "source_reference_advisory": "Invalid fixture only.",
+    "metadata": {
+      "safe_outer": {
+        "position_size": "25"
+      }
+    }
+  },
+  "source_signal_context": {
+    "wallet_id_placeholder": "wallet_placeholder_001",
+    "market_id_placeholder": "market_placeholder_001",
+    "condition_id_placeholder": "condition_placeholder_001",
+    "advisory_only_notice": "Invalid fixture only."
+  },
+  "copyability_delay_context": {
+    "copyability_delay_evaluation_id": "PLACEHOLDER_DELAY_EVAL_001",
+    "delay_window_label": "PLACEHOLDER_DELAY_WINDOW",
+    "advisory_only_notice": "Invalid fixture only."
+  },
+  "eligibility_review": {
+    "eligibility_status": "NOT_ELIGIBLE_SAFETY_FLAG_FAILURE",
+    "advisory_only_notice": "Invalid fixture only."
+  },
+  "suspicious_flow_review": {
+    "suspicious_flow_detected": false,
+    "suspicious_flow_records": [],
+    "advisory_only_notice": "Invalid fixture only."
+  },
+  "insufficient_context_review": {
+    "insufficient_context_warnings": [],
+    "advisory_only_notice": "Invalid fixture only."
+  },
+  "human_review": {
+    "human_review_required": true,
+    "advisory_only_notice": "Invalid fixture only."
+  },
+  "deferred_items": {
+    "all_implementation": "Deferred. This is an invalid fixture.",
+    "source_metadata": {
+      "expected_return": "research advisory label only"
+    }
+  },
+  "safety": {
+    "manual_research_only": true,
+    "not_automated_copy_trading": true,
+    "no_live_execution": true,
+    "no_order_placement": true,
+    "no_position_sizing": true,
+    "no_risk_override": true,
+    "no_parameter_auto_change": true,
+    "no_paper_engine_created": true,
+    "no_account_action": true
+  },
+  "warnings": {
+    "invalid_fixture_warning": "This is an invalid fixture for WP87 loader tests only."
+  },
+  "advisory_notice": "Invalid WP87 test fixture. Not a valid contract record."
+}
