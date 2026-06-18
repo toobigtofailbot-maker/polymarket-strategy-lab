@@ -173,7 +173,7 @@ def test_wp79_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89"))
 
 
 def test_wp73_in_merged_wps():
@@ -280,6 +280,7 @@ def test_wp79_branch_is_current_branch():
         "wp86",
         "wp87",
         "wp88",
+        "wp89",
     ))
 
 
@@ -399,7 +400,7 @@ def test_wp88_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP88" in current_phase_line
+    assert any(wp in current_phase_line for wp in ("WP88", "WP89"))
 
 
 def test_wp88_current_branch_name():
@@ -407,7 +408,7 @@ def test_wp88_current_branch_name():
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp88" in branch_line
+    assert any(wp in branch_line for wp in ("wp88", "wp89"))
 
 
 def test_wp88_is_workflow_evidence_repair_not_product():

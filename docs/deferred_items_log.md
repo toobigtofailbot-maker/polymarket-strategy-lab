@@ -1975,7 +1975,7 @@ WP87 adds WP87-D001. WP82-D002, WP86-D001, and WP86-D002 remain OPEN.
 
 | ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
 |----|---------|--------|----------|--------|-----------------|---------------------|
-| WP87-D001 | Wallet signal paper strategy candidate review report generator not started | OPEN | P3 | WP87 adds only the local/offline/read-only candidate fixture loader. No candidate review report generator, no advisory-consumer handoff, and no paper strategy design review report is implemented. | Any WP that generates a local advisory report from loaded candidate fixture results. | Future approved WP89 explicitly scopes a local/offline/read-only candidate review report generator using the WP88 result-object and evidence standards; no paper engine, no live execution, no credentials. |
+| WP87-D001 | Wallet signal paper strategy candidate review report generator not started | RESOLVED (WP89 local/offline/read-only report generator scope) | P3 | WP87 adds only the local/offline/read-only candidate fixture loader. WP89 implements the in-memory candidate review report generator from loaded fixture results only. | Any WP that generates a local advisory report from loaded candidate fixture results. | Resolved on the WP89 branch for local/offline/read-only in-memory report generation only; export, advisory-consumer handoff, paper engine, live execution, credentials, network/API behavior, scheduler, dashboard, and bot loop remain deferred. |
 
 ## WP88 Evidence Architecture And Result-Object Invariant Repair
 
@@ -1994,9 +1994,27 @@ The following items remain OPEN and deferred from WP88:
 |----|---------|--------|----------|--------|-----------------|---------------------|
 | WP88-DEFER-001 | GitHub-aware evidence verifier tool not implemented | OPEN | P4 | WP88 is workflow/docs/tests only; a GitHub-aware verifier that fetches live PR state is a separate tooling WP. The manual verification path (PRIVATE_REPO_MANUAL_VERIFIED) remains the current required mode. | Any future automated posted-evidence verification for private repos. | Future approved tooling WP explicitly scopes the GitHub-aware verifier; no live execution, no credentials. |
 | WP88-DEFER-002 | Removal of final GitHub comments after WP86–WP90 transition | OPEN | P4 | The transition policy (WP86–WP90) still requires both committed status entries and final GitHub comments. Removal is deferred until WP90 or a later explicit decision WP. | After WP90 transition period. | A later WP explicitly removes or simplifies the final GitHub comment requirement, documents that decision in repo truth. |
-| WP88-DEFER-003 | WP89 candidate review report generator | OPEN | P3 | WP88 fixes the inspection system. WP89 can safely build the next product piece using the new evidence and result-object standards. | After WP88 merges. | Future approved WP89 implements local/offline/read-only candidate review report generator using WP88 standards. |
+| WP88-DEFER-003 | WP89 candidate review report generator | RESOLVED (WP89 local/offline/read-only report generator scope) | P3 | WP88 fixes the inspection system. WP89 implements the next product-support report piece using the new evidence and result-object standards. | After WP88 merges. | Resolved on the WP89 branch for local/offline/read-only in-memory candidate review report generation using WP88 standards; export, dashboard, paper strategy, network/API behavior, credentials, scheduler, bot loop, and live execution remain deferred. |
 
-WP82-D002, WP86-D001, and WP86-D002 remain OPEN.
+WP82-D002, WP86-D001, WP86-D002, WP88-DEFER-001, and WP88-DEFER-002 remain OPEN.
+
+## WP89 Wallet Signal Candidate Review Report V1 Deferred Items
+
+WP89 reconciles repo truth after WP88 merge (PR #88, merge commit
+`a3cf399b7158fd00af255f57c5bf5cd1024b2c86`) and implements the first
+local/offline/read-only candidate review report generator in
+`src/data_layer/wallet_signal_candidate_review_report.py`.
+
+WP89 adds no paper strategy implementation, no paper order model, no paper
+portfolio ledger, no paper fill model, no paper PnL computation, no
+network/API wallet ingestion, no real wallet monitoring, no automatic following
+behavior, no live account access, no credentials, no scheduler, no dashboard,
+no bot loop, no Hermes/LLM runtime, no dependency or lock-file changes, and
+no live or paper account activity behavior.
+
+WP89 resolves WP87-D001 and WP88-DEFER-003 only for local/offline/read-only
+in-memory candidate review report generation from WP87 loader output.
+WP82-D002, WP86-D001, WP86-D002, WP88-DEFER-001, and WP88-DEFER-002 remain OPEN.
 
 ## WP6 Generated Artifact Incident Update
 

@@ -161,6 +161,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z42. `docs/status_entries/WP88.md` - WP88 committed status fragment; stable non-self-referential model; records identity, authority posture, scope boundary, validation summary, deferred items (WP88-D001 through WP88-D004 and WP88-DEFER-001 through WP88-DEFER-003), next WP pointer (WP89), and ready for review.
 
+62z43. `src/data_layer/wallet_signal_candidate_review_report.py` - WP89 local/offline/read-only candidate review report generator; consumes only an in-memory WP87 `CandidateFixtureLoadResult`; returns frozen `CandidateReviewReportItem`, `CandidateReviewReportSummary`, and `CandidateReviewReport` dataclasses; implements `build_wallet_signal_candidate_review_report`, `render_wallet_signal_candidate_review_report`, and `candidate_review_report_to_dict`; summarizes valid, invalid, malformed, missing, and unsupported fixture-loader outcomes with neutral reason codes and deterministic Markdown; uses `dataclasses.asdict` for full public-field serialization; no file reads, no file writes, no network/API behavior, no credentials, no scheduler/dashboard/bot loop, no paper engine, no live execution, and no dependency changes.
+
+62z44. `tests/test_wallet_signal_candidate_review_report.py` - WP89 focused tests for the candidate review report generator; covers valid and mixed loader results, deterministic ordering and Markdown, no report-time file I/O, no network/runtime imports, neutral invalid/malformed/missing/unsupported reason codes, no echo of forbidden status/metadata/raw malformed input, serializer coverage for every public report/summary/item field, full report object and Markdown forbidden-variant scans, allowlisted status values, safe field names, safe boundary notices, WP87 loader-result contract use, frozen dataclasses, and source-level no-write checks.
+
+62z45. `docs/status_entries/WP89.md` - WP89 committed status fragment; stable non-self-referential Model D record for the candidate review report generator; records identity, authority posture, scope boundary, validation summary, deferred items, next WP pointer (WP90), and ready-for-review state.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
