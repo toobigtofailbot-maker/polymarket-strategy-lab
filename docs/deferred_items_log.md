@@ -2016,6 +2016,33 @@ WP89 resolves WP87-D001 and WP88-DEFER-003 only for local/offline/read-only
 in-memory candidate review report generation from WP87 loader output.
 WP82-D002, WP86-D001, WP86-D002, WP88-DEFER-001, and WP88-DEFER-002 remain OPEN.
 
+| ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
+|----|---------|--------|----------|--------|-----------------|---------------------|
+| WP89-D001 | Candidate review report local file export not started | RESOLVED (WP90 local/offline/read-only report export scope) | P3 | WP89 adds only the local/offline/read-only in-memory candidate review report generator. No file export, no CLI, no dashboard, no scheduler, no paper engine, and no live execution is added. WP90 implements deterministic Markdown and JSON export under an operator-specified output directory. | Any WP that writes candidate review report files to disk. | Resolved on the WP90 branch for local/offline/read-only deterministic file export scope only; paper strategy, live execution, credentials, scheduler, dashboard, and bot loop remain deferred. |
+
+## WP90 Candidate Review Report Local Export V1 Deferred Items
+
+WP90 reconciles repo truth after WP89 merge (PR #89, merge commit
+`d74c4e696adb5e2fa55345434607a376e8343d9d`) and implements the local/offline/read-only
+candidate review report export layer in
+`src/data_layer/wallet_signal_candidate_review_report_export.py`.
+
+WP90 adds no paper strategy implementation, no paper order model, no paper
+portfolio ledger, no paper fill model, no paper PnL computation, no
+network/API wallet ingestion, no real wallet monitoring, no automatic following
+behavior, no live account access, no credentials, no scheduler, no dashboard,
+no bot loop, no Hermes/LLM runtime, no dependency or lock-file changes, and
+no live or paper account activity behavior.
+
+WP90 resolves WP89-D001 only for local/offline/read-only deterministic
+Markdown and JSON file export under operator-specified output directory.
+WP82-D002, WP86-D001, WP86-D002, WP88-DEFER-001, and WP88-DEFER-002 remain OPEN.
+
+| ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
+|----|---------|--------|----------|--------|-----------------|---------------------|
+| WP90-D001 | Paper strategy implementation remains deferred | OPEN | P3 | WP90 adds only a local/offline/read-only file export. No paper strategy logic, paper order model, paper portfolio ledger, paper fill model, or paper PnL computation is added or authorized. | Any WP that implements paper strategy, paper orders, paper portfolio, or paper fill logic. | Future approved WP explicitly scopes paper strategy after all protected-boundary gates are satisfied. |
+| WP90-D002 | Final comment transition removal after WP86-WP90 | OPEN | P4 | The transition policy (WP86-WP90) still requires both committed status entries and final GitHub comments. Removal or simplification decision is deferred to WP91. | After WP90 transition period ends. | WP91 explicitly decides and documents whether final GitHub comments remain required or are retired in favor of PR body + stable status fragments under Model D. |
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.

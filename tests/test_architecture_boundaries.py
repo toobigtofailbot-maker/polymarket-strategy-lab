@@ -53,6 +53,7 @@ def test_required_src_readmes_exist():
 # WP84 approves the local/offline/read-only wallet signal paper strategy contract validator at src/data_layer/wallet_signal_paper_strategy_contract_validator.py.
 # WP87 approves the local/offline/read-only wallet signal paper strategy candidate fixture loader at src/data_layer/wallet_signal_paper_strategy_candidate_fixture_loader.py.
 # WP89 approves the local/offline/read-only wallet signal candidate review report at src/data_layer/wallet_signal_candidate_review_report.py.
+# WP90 approves the local/offline/read-only candidate review report export layer at src/data_layer/wallet_signal_candidate_review_report_export.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -73,6 +74,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/wallet_signal_paper_strategy_contract_validator.py",
     "src/data_layer/wallet_signal_paper_strategy_candidate_fixture_loader.py",
     "src/data_layer/wallet_signal_candidate_review_report.py",
+    "src/data_layer/wallet_signal_candidate_review_report_export.py",
 )
 
 
@@ -110,6 +112,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     wallet signal paper strategy candidate fixture loader.
     WP89 permits wallet_signal_candidate_review_report.py for the local/offline/read-only
     wallet signal candidate review report.
+    WP90 permits wallet_signal_candidate_review_report_export.py for the local/offline/read-only
+    candidate review report export layer.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
@@ -190,3 +194,29 @@ def test_wp88_does_not_add_new_src_files():
         f.startswith(scope + "/") or f == scope for scope in APPROVED_SRC_SCOPES
     )]
     assert new_src == [], f"WP88 must not add new src/ files outside approved scopes: {new_src}"
+
+
+# ── WP89: Candidate Review Report V1 ─────────────────────────────────────────
+
+
+def test_wp89_status_fragment_exists():
+    path = ROOT / "docs" / "status_entries" / "WP89.md"
+    assert path.is_file(), "docs/status_entries/WP89.md must exist after WP89"
+
+
+def test_wp89_report_module_exists():
+    path = ROOT / "src" / "data_layer" / "wallet_signal_candidate_review_report.py"
+    assert path.is_file(), "WP89 report module must exist"
+
+
+# ── WP90: Candidate Review Report Local Export V1 ────────────────────────────
+
+
+def test_wp90_status_fragment_exists():
+    path = ROOT / "docs" / "status_entries" / "WP90.md"
+    assert path.is_file(), "docs/status_entries/WP90.md must exist after WP90"
+
+
+def test_wp90_export_module_exists():
+    path = ROOT / "src" / "data_layer" / "wallet_signal_candidate_review_report_export.py"
+    assert path.is_file(), "WP90 export module must exist"

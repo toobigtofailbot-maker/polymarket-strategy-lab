@@ -361,7 +361,7 @@ def test_deferred_items_log_contains_wp77_deferred_items() -> None:
 def test_project_status_marks_wp79_current_branch_phase() -> None:
     text = _read(STATUS_DOC)
     current_phase = next(line for line in text.splitlines() if line.startswith("- Current phase:"))
-    assert any(wp in current_phase for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87"))
+    assert any(wp in current_phase for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90"))
     # wp79 branch or later still referenced somewhere in the document
     assert any(s in text for s in (
         "wp79-wallet-skill-niche-profiler-research-queue-integration",
@@ -388,6 +388,7 @@ def test_only_allowed_wallet_src_files_changed() -> None:
         "src/data_layer/wallet_signal_paper_strategy_contract_validator.py",
         "src/data_layer/wallet_signal_paper_strategy_candidate_fixture_loader.py",
         "src/data_layer/wallet_signal_candidate_review_report.py",
+        "src/data_layer/wallet_signal_candidate_review_report_export.py",
     }
     assert set(src_changes) <= allowed_src_changes, (
         f"Unexpected src/ changes: {set(src_changes) - allowed_src_changes}"

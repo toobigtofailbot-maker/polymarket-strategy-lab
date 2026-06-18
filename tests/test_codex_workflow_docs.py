@@ -421,6 +421,8 @@ def test_project_status_reflects_wp79_branch() -> None:
         "wp87",
         "wp88",
         "wp89",
+        "wp90",
+        "eager-shtern",
     ))
 
 
@@ -930,6 +932,8 @@ def test_project_status_reflects_wp86_branch() -> None:
         "wp87",
         "wp88",
         "wp89",
+        "wp90",
+        "eager-shtern",
     ))
 
 
