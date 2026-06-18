@@ -295,6 +295,35 @@ git diff --check → ok
 
 (Incorrect if `git fetch`, `git pull`, `git push`, or PR publication ran.)
 
+## Rule 15 — Local Drafts Do Not Count As Posted GitHub Evidence (WP86+)
+
+A local draft written on disk — even if it is byte-for-byte identical to what will be posted — is `LOCAL_DRAFT_VERIFIED`, not `POSTED_GITHUB_API_VERIFIED` and not `MANUAL_UI_VERIFIED`.
+
+Required evidence tokens:
+
+| Evidence type | Token |
+|---|---|
+| Local draft only — guard ran on files not yet posted | `LOCAL_DRAFT_VERIFIED` |
+| Posted GitHub PR body/comment confirmed via API (verifier exit 0) | `POSTED_GITHUB_API_VERIFIED` |
+| Posted GitHub PR body/comment confirmed via manual UI inspection | `MANUAL_UI_VERIFIED` |
+| Not verified | `NOT_VERIFIED` |
+
+When a WP claims a posted GitHub PR body or posted final evidence comment is verified, the actor must re-fetch that posted GitHub state after posting. Drafting and checking locally without re-fetching is `LOCAL_DRAFT_VERIFIED`.
+
+`Ready for review: YES` with `LOCAL_DRAFT_VERIFIED` is only allowed when the WP package class explicitly permits it (e.g., the active WP selects `PRIVATE_REPO_MANUAL_VERIFIED` and documents manual UI inspection as the verification method).
+
+## Rule 16 — Status Fragments As Committed Evidence Records (WP86+)
+
+Every WP from WP86 onward must commit a status fragment at `docs/status_entries/WP<NN>.md` on the WP branch.
+
+The status fragment is a committed evidence record. It is the preferred primary evidence surface because it cannot be accidentally superseded by a later GitHub comment.
+
+The status fragment must be consistent with the final comment on all key fields: head commit, changed files, validation results, evidence mode, and Ready for review status.
+
+If the status fragment and the PR body or final comment contradict each other, the PR is not merge-ready.
+
+See `docs/status_entries/README.md` for the required format.
+
 ## Cross-References
 
 - `AGENTS.md` — binding Codex and Claude Code operating rules
@@ -305,3 +334,5 @@ git diff --check → ok
 - `docs/ai/codex/VALIDATION_MATRIX.md` — package-class validation requirements
 - `docs/work_package_template.md` — WP template with evidence discipline section
 - `docs/review_checklist.md` — reviewer-facing evidence checks
+- `docs/status_entries/README.md` — committed per-WP evidence fragment convention (WP86+)
+- `docs/ai/codex/WP_DRAFTING_STANDARD.md` — full evidence model and drafting standard (WP86+)

@@ -84,3 +84,63 @@ Reviewer must confirm:
 - Negative test matrix present when applicable (see `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`).
 
 See `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` for full evidence mode definitions and required fields.
+
+## Status Fragment Checks (WP86+)
+
+Reviewer must confirm:
+
+- `docs/status_entries/WP<NN>.md` exists and is committed on the PR branch.
+- Status fragment head commit matches the PR head SHA.
+- Status fragment authority posture matches the PR body and WP definition.
+- Status fragment validation summary is consistent with the final comment validation results.
+- Status fragment evidence mode matches the final comment evidence mode.
+- Status fragment and PR body do not contradict each other on: changed files, test counts, evidence mode, or Ready for review status.
+
+If status fragment is missing or inconsistent, the PR is not merge-ready.
+
+## Requirement-to-Evidence Traceability Checks (WP86+, M/L/XL WPs)
+
+Reviewer must confirm for M, L, and XL package size class WPs:
+
+- Requirement-to-evidence traceability table is present in the PR body.
+- Every row in the table has a status of SATISFIED or OPEN.
+- OPEN rows are acceptable only with documented justification for deferral.
+- No `Ready for review: YES` with open unaccepted rows.
+
+## Not-Merge-Ready Review Self-Diagnosis (WP86+)
+
+When a reviewer finds a PR not merge-ready, the AI coding agent must include a self-diagnosis block in the follow-up response before resubmitting:
+
+```
+Root cause:
+Preventable: YES/NO
+What should have caught it:
+Immediate process change:
+Durable guidance change needed: YES/NO
+If YES, describe:
+Follow-up defect category: (A/B/C/D/E/F/G/H/I)
+```
+
+Classification categories (from `docs/ai/codex/WP_BUNDLING_POLICY.md`):
+- A = Evidence/reporting failure
+- B = Repo-truth/status reconciliation failure
+- C = Validation not rerun after final change
+- D = Scope drift
+- E = Boundary/protected-scope risk
+- F = Implementation logic defect
+- G = Test coverage gap
+- H = External/tooling/environment limitation
+- I = Reviewer-requested clarification without defect
+
+Reviewer checks:
+- Self-diagnosis block present when a same-PR follow-up correction was required.
+- Classification matches the actual defect type.
+- "Durable guidance change needed: YES" triggers a deferred item or future WP if no immediate fix is possible.
+
+## Compatibility / Impossibility Table Checks (WP86+, Nontrivial WPs)
+
+Reviewer must confirm for validator, report, schema, export, collector, workflow, L/XL, or evidence-policy WPs:
+
+- Compatibility/impossibility table present in PR body.
+- All rows with "not compatible" or "not allowed" are either resolved or explicitly deferred with justification.
+- No `Ready for review: YES` if any row was incompatible and unresolved.

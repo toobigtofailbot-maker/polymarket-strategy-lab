@@ -173,7 +173,7 @@ def test_wp79_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87"))
 
 
 def test_wp73_in_merged_wps():
@@ -276,6 +276,9 @@ def test_wp79_branch_is_current_branch():
         "wp82-wallet-intelligence-report-generator-v1",
         "wp83-wallet-signal-paper-strategy-contract-v1",
         "wp84-wallet-signal-paper-strategy-contract-local-validator-v1",
+        "workflow/wp86-execution-package-discipline-adoption",
+        "wp86",
+        "wp87",
     ))
 
 

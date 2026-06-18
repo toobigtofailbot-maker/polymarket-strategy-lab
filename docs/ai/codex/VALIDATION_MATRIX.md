@@ -1,22 +1,76 @@
 # Validation Matrix
 
-## Package Classes
+## Package Classes By Risk Level
+
+Package classes are grouped by risk level. Each class defines its minimum validation surface. Higher risk classes require stronger gates.
+
+### Risk Level 0 — Docs / Workflow Only (Lowest Risk)
+
+| Package class | Focused tests | Adjacent tests | Full pytest | Diff scope | Artifact guard | Security | GitHub evidence re-fetch | Status fragment |
+|---|---|---|---|---|---|---|---|---|
+| docs-only policy WP | Doc content tests | Repo truth index | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+| schema-only WP | Schema doc tests | Repo truth index | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+| workflow-docs-tests-only WP | Workflow/template tests | Project status / arch boundary | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+| workflow/governance WP | Workflow docs/template tests, focused docs tests, exact PR evidence reporting check | Project status wording check, network usage wording check | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+| docs-tests-workflow-governance-hardening | All workflow/governance WP checks | Bundle risk class, follow-up classification | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+| workflow-governance-docs-tests-state-machine | All workflow/governance WP checks, state machine doc present | Evidence mode declared | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+
+All Risk Level 0 WPs must also confirm:
+- Package size class stated.
+- No `src/`, `tools/` (unless explicitly scoped), dependency, or lock-file changes.
+- Exact PR evidence reporting discipline.
+- Network usage wording accurate.
+- Current-final evidence marker in final comment.
+- Guard input source stated.
+- Evidence mode declared (PUBLIC_VERIFIER_PASS / PRIVATE_REPO_MANUAL_VERIFIED / BLOCKED_NOT_READY).
+
+### Risk Level 1 — Local/Offline Source (Low Risk)
+
+| Package class | Focused tests | Adjacent tests | Full pytest | Diff scope | Artifact guard | Security | GitHub evidence re-fetch | Status fragment |
+|---|---|---|---|---|---|---|---|---|
+| validator WP | Focused validator tests, negative-test matrix | Adjacent schema tests, architecture boundary | Required | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
+| report/output WP | Focused report tests, advisory output safety | Adjacent schema and boundary tests | Required | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
+| local/offline source WP | Focused unit tests, negative-test matrix | Architecture boundary | Required | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
+| local report/export WP | Offline tests with local fixtures | No credential/network tests | Required | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
+| github-aware-readonly-workflow-helper WP | Focused helper tests with fake responses | Docs workflow tests | Required | Required | Required | gitleaks if available | Required — posted verifier after PR posted | Required (WP86+) |
+
+All Risk Level 1 WPs must also confirm:
+- Output under ignored `local_data/` only (for report/export WPs).
+- No credentials, no private endpoints, no account queries.
+- Negative-test matrix present when adding validators, scorers, parsers, or filters.
+- Advisory output safety helper used for output WPs if available.
+- Recursive forbidden-terms scan for output surfaces.
+
+### Risk Level 2 — Data Ingestion / External Data (Medium Risk)
+
+| Package class | Focused tests | Adjacent tests | Full pytest | Diff scope | Artifact guard | Security | GitHub evidence re-fetch | Status fragment |
+|---|---|---|---|---|---|---|---|---|
+| read-only public-data WP | Offline tests; explicit-network smoke only if scoped | Boundary/scope tests | Required | Required | Required | gitleaks + pip-audit if available | Required | Required (WP86+) |
+| official-client sandbox WP | Isolated sandbox tests, no `src/` import | No runtime/auth tests | Required | Required | Required | gitleaks + pip-audit | Required | Required (WP86+) |
+| security/tooling WP | Tool availability checks, generated-artifact controls | Honest unavailable reporting | Required | Required | Required | All available tools | Required | Required (WP86+) |
+
+### Risk Level 3 — Paper / Scheduler / Bot Loop (High Risk — Blocked Until Authorized)
 
 | Package class | Minimum validation |
 |---|---|
-| docs-only policy WP | Changed-file scope check, focused doc tests, full pytest after final commit, generated-artifact guard after final commit, exact PR evidence reporting check. |
-| schema-only WP | Schema doc tests, repo-truth index tests, full pytest after final commit, no runtime implementation paths, exact PR evidence reporting check. |
-| workflow/governance WP | Workflow docs/template tests, focused docs tests, full pytest after final commit, project-status current-WP wording check, exact PR evidence reporting check, network usage wording check. |
-| docs-tests-workflow-governance-hardening | All workflow/governance WP checks plus: package size class stated, risk-class bundle justification, follow-up classification section, guard input source line, posted evidence self-check declaration, no forbidden bundle type, current-final evidence marker. |
-| workflow-governance-docs-tests-state-machine | All workflow/governance WP checks plus: canonical state machine doc present, evidence mode declared (PUBLIC_VERIFIER_PASS / PRIVATE_REPO_MANUAL_VERIFIED / BLOCKED_NOT_READY), no helper code changes, no product/runtime scope. |
-| local report/export WP | Offline tests with local fixtures, output under ignored `local_data/`, no credentials, no private endpoints, exact PR evidence reporting check. |
-| read-only public-data WP | Offline tests, explicit-network smoke only if scoped, bounded public-data behavior, ignored output under `local_data/`, exact PR evidence reporting check. |
-| official-client sandbox WP | Isolated sandbox tests, no project dependency, no `src/` runtime import, explicit-network public read-only probes only if scoped, exact PR evidence reporting check. |
-| security/tooling WP | Tool availability checks, generated-artifact controls, honest unavailable-tool reporting, no broad suppressions, exact PR evidence reporting check. |
-| runtime dependency WP | Blocked unless explicitly authorized by repo truth and active WP; stronger security and dependency-audit gates required; exact PR evidence reporting check. |
-| PR review package | PR metadata, changed files, comments, checks, final report comment, validation evidence, safety boundaries, and exact PR evidence reporting discipline inspected. |
-| future paper-trading package | Blocked until explicitly authorized; must prove mode separation, no live fallback, deterministic simulation boundaries. |
+| future paper-trading package | Blocked until explicitly authorized; must prove mode separation, no live fallback, deterministic simulation boundaries. All Level 1+2 gates plus paper-mode boundary proof. |
+| data ingestion WP | Blocked unless explicitly authorized; stronger rate-limit, credential, and network-boundary gates required. |
+| runtime dependency WP | Blocked unless explicitly authorized by repo truth and active WP; dependency audit required; stronger security and dependency-audit gates required. |
+| scheduler/bot loop WP | Blocked until explicitly authorized with kill switch, rate-limit evidence, and observability plan. |
+
+### Risk Level 4 — Credentials / Execution / Live (Highest Risk — Blocked)
+
+| Package class | Minimum validation |
+|---|---|
+| credential/auth WP | Blocked until `docs/live_trading_authorization.md` updated and credential boundary WP explicitly authorized. |
+| execution WP | Blocked; requires separate authorization and risk-engine review. |
 | future live-trading package | Blocked until explicitly authorized in repo truth and `docs/live_trading_authorization.md`; strongest safety, security, risk, and review gates required. |
+
+### PR Review Package
+
+| Package class | Validation |
+|---|---|
+| PR review package | PR metadata, changed files, comments, checks, final report comment, validation evidence, safety boundaries, exact PR evidence reporting discipline, status fragment, and requirement-to-evidence traceability inspected. |
 
 ## All Work Packages
 

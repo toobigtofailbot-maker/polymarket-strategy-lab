@@ -16,6 +16,15 @@
 - Execution agent:
 - Shared startup file read: AI_CODING_AGENT_START_HERE.md — yes/no
 - Tool-specific adapter read: CODEX_START_HERE.md / CLAUDE_START_HERE.md / other — yes/no
+- Package class:
+- Package size class:
+- Evidence mode expected:
+- Runtime impact:
+- Product impact:
+- Network impact:
+- Credential impact:
+- Dependency impact:
+- Trading impact:
 
 ## Package Class
 
@@ -43,6 +52,110 @@ Mode-boundary table: (list each mode boundary and confirm it is not crossed)
 - [ ] This WP does not combine scheduler/bot loop with execution.
 - [ ] This WP does not combine Hermes/agent runtime with execution authority.
 - [ ] No dependency or runtime integration is bundled with feature logic without explicit approval.
+
+## Recommended Claude/Codex Mode
+
+- Model/reasoning:
+- Reason:
+- Escalate to higher reasoning or STOP if:
+
+## Authority / Non-Authority Posture
+
+### Authorized in this WP
+
+(List exact authorized subsystems: workflow docs, schema docs, validators, reports, etc.)
+
+### Not authorized in this WP
+
+(List exact forbidden subsystems: source/runtime, data-layer, paper engine, scheduler, credentials, live trading, etc.)
+
+### Authority Posture Fields
+
+- Implementation authority:
+- Report/export authority:
+- Paper authority:
+- Execution authority:
+- Live authority:
+- Credential authority:
+- Runtime/scheduler authority:
+- Canonical evidence authority:
+- Network authority:
+- Dependency-change authority:
+
+### Canonical Evidence / Runtime / Paper / Live Posture
+
+(State evidence mode and any runtime/paper/live authority here. Reference `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`.)
+
+## Hard Merge Gate
+
+Before doing substantive work, run:
+
+```bash
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+```
+
+Required checks:
+1. Required previous PR is merged.
+2. Record required previous PR final head SHA.
+3. Record required previous PR merge commit.
+4. Verify main contains required previous PR final head SHA.
+5. Verify no newer conflicting PR merged.
+6. Verify no open WP branch for this WP exists locally or remotely.
+7. Verify no open PR for this WP exists.
+8. Verify target doc does not already claim this WP complete.
+
+If any condition fails, STOP and report before proceeding.
+
+Merge gate result:
+- Required previous PR merged: YES/NO
+- Required previous PR final head SHA:
+- Required previous PR merge commit:
+- main contains required head: YES/NO
+- No conflicting newer PR: YES/NO
+- No existing WP branch: YES/NO
+- No existing WP PR: YES/NO
+
+## Context Budget
+
+Read first:
+- AGENTS.md
+- AI_CODING_AGENT_START_HERE.md
+- CODEX_START_HERE.md / CLAUDE_START_HERE.md
+- docs/project_status.md
+- docs/repo_truth_index.md
+- docs/deferred_items_log.md
+- docs/ai/codex/README.md
+
+Read for this package:
+- (list files directly changed or inspected for this specific WP)
+
+Read only if blocked:
+- (list files to read only if a specific blocker arises)
+
+Do not read / do not touch:
+- src/ (unless explicitly authorized)
+- tools/ (unless explicitly authorized)
+- requirements.txt, pyproject.toml, package.json, lock files
+- local_data/
+- credentials, .env files
+
+Search terms if paths changed:
+- (list fallback search terms if key files have moved)
+
+## Compatibility / Impossibility Check
+
+(Required for nontrivial WPs: validators, reports, schemas, exports, collectors, workflow WPs, large bundles, any WP touching evidence policy or advisory output surfaces.)
+
+| Required behavior | Controlling repo mechanism | Files likely needed | Allowed in this WP? | Compatible? | Action |
+|---|---|---|---:|---:|---|
+| (describe required behavior) | (controlling doc or mechanism) | (files) | YES/NO | YES/NO | (update docs/tests, split WP, STOP) |
+
+If any row shows "not allowed" or "not compatible", STOP or split before proceeding.
 
 ## Authorization Basis
 
@@ -220,6 +333,34 @@ See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDE
 - Required validation cannot run.
 - Implementation requires forbidden paths, dependencies, credentials, runtime behavior, or scope expansion.
 
+## Concrete Stop Conditions
+
+(List concrete stop conditions tied to this WP's risk class. Generic STOP language is insufficient. Each condition must name the specific trigger and consequence.)
+
+For output WPs (validators, reports, exports), include:
+- STOP if invalid-output no-echo cannot be tested.
+- STOP if central advisory output safety helper is unavailable.
+- STOP if a validator returns raw invalid input in any output surface.
+- STOP if a report copies raw metadata into output.
+- STOP if any output surface cannot be recursively scanned for forbidden terms.
+
+For all nontrivial WPs, include:
+- STOP if changed files exceed the declared allowed scope.
+- STOP if validation cannot be rerun after final source changes.
+- STOP if any dependency or lock file would change.
+
+(Add WP-specific stop conditions here.)
+
+## Requirement-to-Evidence Traceability
+
+(Required for nontrivial WPs — M, L, XL size class — before Ready for review: YES.)
+
+| Requirement | Source WP section | Evidence location | Status |
+|---|---|---|---|
+| (requirement description) | (WP section number or name) | (test name, guard result, doc section, etc.) | SATISFIED/OPEN |
+
+No `Ready for review: YES` without this table for M/L/XL WPs.
+
 ## Safety Confirmations
 
 - No live trading code added unless explicitly authorized.
@@ -229,11 +370,26 @@ See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDE
 - Scope respected.
 - Pull request created or prepared with review link unless explicitly waived by the user.
 
+## Status Fragment
+
+Create `docs/status_entries/WP<NN>.md` as part of this WP. See `docs/status_entries/README.md` for the required format and field definitions.
+
+The status fragment must be committed on the WP branch and merged with the PR.
+
+- Status fragment path: docs/status_entries/WP<NN>.md
+- Status fragment committed: YES/NO
+
 ## PR Body Required Sections
 
 - Summary
-- Package class
+- Package class and package size class
+- Authorization / why now
+- Hard merge gate result
+- Compatibility / impossibility table (for nontrivial WPs)
 - Files changed
+- Adoption items implemented (for workflow WPs)
+- Evidence model decision (for WPs touching evidence policy)
+- Status-fragment convention decision (for WPs introducing new evidence conventions)
 - Safety boundary confirmations
 - Tests run with exact result counts and exact full commands (no ellipses)
 - Helper validation results with exact full commands and all flags
@@ -242,6 +398,9 @@ See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDE
 - Generated artifact status
 - Dependency and lock-file status
 - Deferred items changed
+- Requirement-to-evidence traceability table (for M/L/XL WPs)
+- Follow-up prevention explanation (for workflow WPs)
+- Open issues / deferred items
 - Suggested next WP
 
 ## Final PR Comment Required Sections
@@ -262,7 +421,9 @@ See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDE
 - N. Follow-up process-defect classification
 - O. Guard input source
 - P. Open escalations / assumptions
-- Q. Ready for review: YES/NO
+- Q. Status fragment committed: YES/NO (docs/status_entries/WP<NN>.md)
+- R. Requirement-to-evidence traceability table (for M/L/XL WPs)
+- S. Ready for review: YES/NO
 
 ## Expected Codex Final Report
 

@@ -69,3 +69,33 @@ Before `Ready for review: YES`, the AI coding agent must select the correct evid
 ## Negative Test Matrix (WP58+)
 
 WPs that add or modify validators, scorers, parsers, schema validators, boundary guards, evidence guards, or semantic wording filters must include a negative-test matrix before `Ready for review: YES`. See `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`.
+
+## WP Drafting Standard (WP86+)
+
+All WPs from WP86 onward must follow the execution-package drafting discipline. See `docs/ai/codex/WP_DRAFTING_STANDARD.md` for:
+- Mandatory front matter
+- Authority / Non-Authority Posture
+- Hard Merge Gate
+- Context Budget
+- Compatibility / Impossibility Check
+- Concrete Stop Conditions
+- Requirement-to-Evidence Traceability
+- Evidence model and status fragments
+
+## Status Entries / Committed Evidence Fragments (WP86+)
+
+Every WP from WP86 onward commits a status fragment at `docs/status_entries/WP<NN>.md`. These are the preferred committed evidence surface for WPs — they travel with the branch and cannot be accidentally superseded by a later comment.
+
+See `docs/status_entries/README.md` for the required format and the evidence distinction policy (LOCAL_DRAFT_VERIFIED vs POSTED_GITHUB_API_VERIFIED vs MANUAL_UI_VERIFIED).
+
+## Shared Claude/Codex Operating Layer
+
+All files under `docs/ai/codex/` apply to Codex, Claude Code, and all future AI coding agents unless a specific file says otherwise. The path `docs/ai/codex/` is a historical naming artifact — it is the shared AI-coding-agent workflow layer, not a Codex-only layer.
+
+Claude-specific and Codex-specific files (`CLAUDE_START_HERE.md`, `CODEX_START_HERE.md`) are thin adapter entrypoints only. They add tool-specific startup notes and do not duplicate or override the shared layer in `docs/ai/codex/`.
+
+Prompt wrappers (e.g., `prompts/execution_brief.md`, `.claude/skills/*.md`) are compatibility wrappers only and are not canonical. Canonical standards are: `AGENTS.md`, `AI_CODING_AGENT_START_HERE.md`, `CODEX_START_HERE.md`, `CLAUDE_START_HERE.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/work_package_template.md`, and `docs/ai/codex/*.md`.
+
+## Protected Boundaries Centralized (WP86+)
+
+Protected boundary groups are centralized in `docs/ai/codex/PROTECTED_PATHS.md`. Future WPs must reference that document's boundary group table rather than repeating inconsistent forbidden lists. See the Centralized Boundary Group Reference section in that document.

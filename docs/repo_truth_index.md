@@ -145,6 +145,10 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 79. `docs/review_checklist.md` - review readiness checklist.
 80. `docs/testing_requirements.md` - current and future test requirements.
 
+62z32. `docs/ai/codex/WP_DRAFTING_STANDARD.md` - WP86 execution-package drafting standard for all WPs (WP86+); defines mandatory front matter, authority/non-authority posture fields, hard merge gate sequence, context budget structure, compatibility/impossibility check, concrete stop conditions by risk class, validation by package class, requirement-to-evidence traceability, evidence model tokens (LOCAL_DRAFT_VERIFIED/POSTED_GITHUB_API_VERIFIED/MANUAL_UI_VERIFIED), review self-diagnosis for not-merge-ready reviews, worktree-first execution standard, shared Claude/Codex layer clarification, prompt wrapper non-canonical status, safety/evidence precedence table, forbidden variant matrix for output WPs, and raw metadata pass-through policy.
+62z33. `docs/status_entries/README.md` - WP86 committed per-WP evidence fragment convention (WP86+); defines status entry purpose, when to create, required format (WP<NN>.md with identity, authority posture, scope boundary, validation summary, guard summary, deferred items, next WP pointer, ready for review), evidence distinction policy (LOCAL_DRAFT_VERIFIED/POSTED_GITHUB_API_VERIFIED/MANUAL_UI_VERIFIED/NOT_VERIFIED), transition policy (both status entries and final GitHub PR comments required during WP86–WP90 transition), and relationship to other evidence docs.
+62z34. `docs/status_entries/WP86.md` - WP86 committed status fragment for the execution-package discipline adoption WP; records identity, authority posture, scope boundary, validation summary, deferred items, next WP pointer (WP87), and ready for review.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
