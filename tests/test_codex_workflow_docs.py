@@ -419,6 +419,7 @@ def test_project_status_reflects_wp79_branch() -> None:
         "workflow/wp86-execution-package-discipline-adoption",
         "wp86",
         "wp87",
+        "wp88",
     ))
 
 
@@ -755,6 +756,150 @@ def test_protected_paths_centralizes_boundary_groups() -> None:
     assert "boundary group" in text or "centralized boundary" in text or "centralize" in text
 
 
+# ── WP88: Evidence Architecture And Result-Object Invariant Repair ────────────
+
+
+def test_evidence_architecture_doc_exists() -> None:
+    assert (ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md").is_file()
+
+
+def test_result_output_invariant_standard_doc_exists() -> None:
+    assert (ROOT / "docs" / "ai" / "codex" / "RESULT_OUTPUT_INVARIANT_STANDARD.md").is_file()
+
+
+def test_followup_prompt_standard_doc_exists() -> None:
+    assert (ROOT / "docs" / "ai" / "codex" / "FOLLOWUP_PROMPT_STANDARD.md").is_file()
+
+
+def test_evidence_architecture_defines_pr_body_as_current_review_surface() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md").lower()
+    assert "pr body" in text
+    assert "current review" in text
+
+
+def test_evidence_architecture_defines_status_fragment_as_stable() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md").lower()
+    assert "stable" in text
+    assert "non-self-referential" in text or "non self-referential" in text or "non-self referential" in text
+
+
+def test_evidence_architecture_forbids_current_live_head_in_status_fragment() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md").lower()
+    assert "current live" in text
+    assert "fixed sha" in text or "fixed sha" in text.replace("_", " ")
+
+
+def test_evidence_architecture_defines_final_comment_as_transition_only() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md").lower()
+    assert "transition" in text
+    assert "final" in text
+
+
+def test_evidence_architecture_contains_contradiction_matrix() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md").lower()
+    assert "contradiction" in text or "invalid combination" in text or "invalid state" in text
+
+
+def test_evidence_architecture_blocks_not_verified_plus_ready_yes() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md")
+    assert "NOT_VERIFIED" in text
+    assert "Ready for review: YES" in text or "ready for review" in text.lower()
+    assert "Block merge" in text or "block merge" in text.lower()
+
+
+def test_result_output_invariant_standard_requires_field_inventory() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "RESULT_OUTPUT_INVARIANT_STANDARD.md").lower()
+    assert "public field" in text or "field" in text
+    assert "enumerate" in text or "inventory" in text or "all public" in text
+
+
+def test_result_output_invariant_standard_requires_serializer_losslessness() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "RESULT_OUTPUT_INVARIANT_STANDARD.md").lower()
+    assert "lossless" in text or "manual serializer" in text
+
+
+def test_result_output_invariant_standard_requires_invalid_output_full_scan() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "RESULT_OUTPUT_INVARIANT_STANDARD.md").lower()
+    assert "invalid" in text
+    assert "full" in text or "recursive" in text or "entire" in text
+    assert "scan" in text or "check" in text
+
+
+def test_followup_prompt_standard_requires_root_cause_classification() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "FOLLOWUP_PROMPT_STANDARD.md").lower()
+    assert "root cause" in text
+    assert "classif" in text
+
+
+def test_status_entries_readme_requires_non_self_referential_wording() -> None:
+    text = _read(ROOT / "docs" / "status_entries" / "README.md").lower()
+    assert "non-self-referential" in text or "non self referential" in text or "non-self referential" in text
+
+
+def test_status_entries_readme_forbids_head_commit_for_in_review_head() -> None:
+    text = _read(ROOT / "docs" / "status_entries" / "README.md")
+    assert "Validated implementation commit" in text or "validated implementation commit" in text.lower()
+    assert "Head commit" not in text or "must not" in text.lower() or "forbidden" in text.lower()
+
+
+def test_pr_review_checklist_blocks_not_verified_plus_ready_yes() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md")
+    assert "NOT_VERIFIED" in text
+    assert "Ready for review: YES" in text or "ready for review" in text.lower()
+
+
+def test_pr_review_checklist_blocks_status_fragment_with_live_head_sha() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md").lower()
+    assert "status fragment" in text
+    assert "current live" in text or "live pr head" in text or "fixed sha" in text
+
+
+def test_pr_review_checklist_requires_result_object_field_coverage() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md").lower()
+    assert "field" in text
+    assert "coverage" in text or "public field" in text
+
+
+def test_validation_matrix_references_field_coverage_gate() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md").lower()
+    assert "field" in text and "coverage" in text
+
+
+def test_validation_matrix_references_evidence_architecture_model_d() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md").lower()
+    assert "model d" in text or "evidence architecture" in text
+
+
+def test_work_package_template_references_evidence_architecture() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md").lower()
+    assert "evidence architecture" in text or "model d" in text
+
+
+def test_work_package_template_references_result_output_invariant_standard() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md").lower()
+    assert "result" in text and ("invariant" in text or "field-coverage" in text or "field coverage" in text)
+
+
+def test_pr_template_contains_evidence_architecture_section() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md").lower()
+    assert "evidence architecture" in text or "model d" in text
+
+
+def test_codex_readme_references_evidence_architecture() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "README.md").lower()
+    assert "evidence architecture" in text or "model d" in text
+
+
+def test_codex_readme_references_result_output_invariant_standard() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "README.md").lower()
+    assert "result" in text and "invariant" in text
+
+
+def test_codex_readme_references_followup_prompt_standard() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "README.md").lower()
+    assert "follow" in text and "root cause" in text
+
+
 def test_protected_paths_includes_paper_engine_group() -> None:
     text = _read(ROOT / "docs" / "ai" / "codex" / "PROTECTED_PATHS.md").lower()
     assert "paper engine" in text
@@ -782,6 +927,7 @@ def test_project_status_reflects_wp86_branch() -> None:
         "workflow/wp86-execution-package-discipline-adoption",
         "wp86",
         "wp87",
+        "wp88",
     ))
 
 

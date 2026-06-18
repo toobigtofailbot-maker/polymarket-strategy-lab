@@ -173,7 +173,7 @@ def test_wp79_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88"))
 
 
 def test_wp73_in_merged_wps():
@@ -279,6 +279,7 @@ def test_wp79_branch_is_current_branch():
         "workflow/wp86-execution-package-discipline-adoption",
         "wp86",
         "wp87",
+        "wp88",
     ))
 
 
@@ -380,3 +381,45 @@ def test_protected_boundaries_unchanged():
     assert "Agent execution authority: FORBIDDEN" in text
     assert "Scheduler status: NOT_STARTED" in text
     assert "Bot loop status: NOT_STARTED" in text
+
+
+# ── WP87 / WP88 ──────────────────────────────────────────────────────────────
+
+
+def test_wp87_in_merged_wps():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP87" in merged_line
+
+
+def test_wp88_is_current_phase():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    assert "WP88" in current_phase_line
+
+
+def test_wp88_current_branch_name():
+    text = _read()
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp88" in branch_line
+
+
+def test_wp88_is_workflow_evidence_repair_not_product():
+    text = _read()
+    assert "No product behavior changed" in text or "workflow" in text.lower()
+
+
+def test_wp88_candidate_fixture_loader_is_merged():
+    text = _read()
+    assert "WALLET_SIGNAL_PAPER_STRATEGY_CANDIDATE_FIXTURE_LOADER_MERGED" in text
+
+
+def test_wp88_evidence_architecture_on_branch():
+    text = _read()
+    assert "EVIDENCE_ARCHITECTURE" in text

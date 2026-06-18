@@ -72,6 +72,18 @@ Negative test matrix required: YES / NO
 Status fragment path: docs/status_entries/WP<NN>.md
 Status fragment committed: YES/NO
 Status fragment consistent with final comment: YES/NO
+Status fragment is stable/non-self-referential (no current live PR head as fixed SHA): YES/NO
+Status fragment uses "Validated implementation commit:" (not "Head commit:") for in-review SHA: YES/NO
+```
+
+## Evidence Architecture (WP88+)
+
+```
+Evidence architecture: Model D
+PR body is current review evidence surface: YES/NO
+Status fragment is stable/non-self-referential: YES/NO
+Final comment is transition-only pointer (not duplicate evidence table): YES/NO
+Evidence contradiction matrix checked: YES/NO — no invalid combinations present
 ```
 
 ## Compatibility / Impossibility Table (nontrivial WPs)

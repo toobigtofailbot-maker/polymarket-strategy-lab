@@ -164,3 +164,24 @@ A future validation-output summary helper (designed in `docs/ai/codex/VALIDATION
 ## Runtime, Dependency, Paper, And Live WPs
 
 These package classes are blocked unless explicitly authorized by repo truth and the active work package. They require stronger security, dependency, safety, and review gates than docs-only or schema-only work.
+
+## Result/Report/Loader/Validator WPs — Field-Coverage Gate (WP88+)
+
+All WPs that introduce or return public result objects (dataclasses, TypedDicts, dict-returning functions) must satisfy the field-coverage gate from `docs/ai/codex/RESULT_OUTPUT_INVARIANT_STANDARD.md`:
+
+- All public fields enumerated and classified (scanned / exempt / forbidden).
+- Test: `{f.name for f in fields(ResultType)} <= set(serialized)` or equivalent recursive scan.
+- Invalid result objects scanned, not only valid result objects.
+- Manual serializers prohibited unless a field-coverage test proves losslessness.
+- Recursive forbidden-terms scan covers the entire result object, not only the `errors` field.
+
+## Evidence Architecture Model D (WP88+)
+
+All WPs from WP88 onward must satisfy Model D from `docs/ai/codex/EVIDENCE_ARCHITECTURE.md`:
+
+- PR body is the current review evidence surface; status fragment is a stable non-self-referential record.
+- Status fragment must not record the current live PR head as a fixed SHA.
+- Status fragment must use `Validated implementation commit:` (not `Head commit:`) for in-review validated SHAs.
+- Final comment is a transition-only verification pointer — not a duplicate evidence table.
+- Evidence contradiction matrix must be checked before `Ready for review: YES`.
+- `NOT_VERIFIED` + `Ready for review: YES` is always invalid.

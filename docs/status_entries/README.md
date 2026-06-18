@@ -28,7 +28,8 @@ Required fields:
 - Branch:
 - PR:
 - Base commit:
-- Head commit:
+- Validated implementation commit: (SHA of commit on which all focused/related/full tests passed; label exactly this way)
+- Current live PR head: see GitHub PR metadata and PR body. This status fragment is stable and non-self-referential; it does not attempt to encode the SHA of the commit containing itself.
 - Merge commit: (fill after merge)
 - Evidence mode: PUBLIC_VERIFIER_PASS / PRIVATE_REPO_MANUAL_VERIFIED / BLOCKED_NOT_READY
 
@@ -88,6 +89,45 @@ Forbidden prefixes:
 - Ready for review: YES/NO
 ```
 
+## Non-Self-Referential Status Fragments (WP88+)
+
+Status fragments must not track the current live PR head as a fixed SHA. That SHA is in the GitHub PR metadata and the PR body, which are updated with each push. A status fragment that records a live PR head SHA becomes stale after the next commit.
+
+**Forbidden in status fragments:**
+
+- `Head commit: <current in-review SHA>` — this label is reserved for historical merge records
+- `NOT_VERIFIED` + `Ready for review: YES` — this combination is always invalid
+- Claims that local draft verification equals posted GitHub verification
+- Duplicate full final-comment evidence tables that can drift from the PR body
+
+**Required wording for live PR head:**
+
+Every status fragment must include:
+
+```
+Current live PR head: see GitHub PR metadata and PR body. This status fragment is stable
+and non-self-referential; it does not attempt to encode the SHA of the commit containing itself.
+```
+
+If a specific implementation commit is recorded (e.g., the last commit on which all tests passed), label it exactly:
+
+```
+Validated implementation commit: <SHA>
+```
+
+See `docs/ai/codex/EVIDENCE_ARCHITECTURE.md` for the full Model D evidence architecture.
+
+## Evidence Contradiction Matrix
+
+The following combinations are invalid and must block merge:
+
+| Invalid combination | Required outcome |
+|---|---|
+| `NOT_VERIFIED` + `Ready for review: YES` | Block merge |
+| Status fragment claims current live PR head as fixed SHA | Block merge |
+| Status fragment uses `Head commit:` for in-review PR head | Block merge |
+| Status fragment and PR body disagree on validation summary | Block merge or update fragment |
+
 ## Evidence Distinction
 
 | Evidence type | Token | When applicable |
@@ -117,6 +157,9 @@ The committed status entry is the preferred evidence surface going forward becau
 
 ## Relationship to Other Evidence Docs
 
+- `docs/ai/codex/EVIDENCE_ARCHITECTURE.md` — Model D evidence architecture (WP88+); defines PR body as current review surface, status fragment as stable non-self-referential record, and final comment as transition-only pointer.
+- `docs/ai/codex/RESULT_OUTPUT_INVARIANT_STANDARD.md` — field-coverage gate and serializer losslessness standard for result/report/loader/validator WPs.
+- `docs/ai/codex/FOLLOWUP_PROMPT_STANDARD.md` — root-cause-first follow-up prompt standard.
 - `docs/ai/codex/WP_EXECUTION_REPORT.md` — mandatory PR final report comment format.
 - `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` — exact validation command requirements.
 - `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` — local guard tool.

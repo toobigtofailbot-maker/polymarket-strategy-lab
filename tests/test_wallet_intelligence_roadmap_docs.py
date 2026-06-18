@@ -340,6 +340,7 @@ def test_project_status_marks_wp79_branch():
         "workflow/wp86-execution-package-discipline-adoption",
         "wp86",
         "wp87",
+        "wp88",
     ))
 
 

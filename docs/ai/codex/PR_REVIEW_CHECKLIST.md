@@ -144,3 +144,36 @@ Reviewer must confirm for validator, report, schema, export, collector, workflow
 - Compatibility/impossibility table present in PR body.
 - All rows with "not compatible" or "not allowed" are either resolved or explicitly deferred with justification.
 - No `Ready for review: YES` if any row was incompatible and unresolved.
+
+## Evidence Contradiction Matrix Checks (WP88+)
+
+Reviewer must block merge if any of the following combinations are present:
+
+| Combination found | Required action |
+|---|---|
+| `NOT_VERIFIED` + `Ready for review: YES` | Block merge |
+| `PR body and final comment compared after posting: NO` + `Ready for review: YES` | Block merge |
+| `LOCAL_DRAFT_VERIFIED` claimed as posted GitHub evidence | Block merge |
+| Status fragment claims current live PR head as fixed SHA | Block merge |
+| Status fragment uses `Head commit:` for currently-in-review head | Block merge |
+| PR body and final comment report different current live PR head | Block merge |
+| Final comment claims verification without post-posting re-fetch | Block merge |
+| Multiple final evidence comments without `CURRENT FINAL WP EVIDENCE` marker on latest | Block merge |
+| Status fragment and PR body disagree on validation summary | Block merge |
+| Ready for review appears as YES in one surface and NO in another | Block merge |
+
+Reviewer must also confirm:
+
+- Status fragment uses `Validated implementation commit:` (not `Head commit:`) for the in-review validated SHA.
+- Status fragment includes the required non-self-referential wording for current live PR head.
+- Follow-up responses include a self-diagnosis block classifying root cause (not just the symptom).
+
+## Result-Object Field-Coverage Checks (WP88+, Result/Report/Loader/Validator WPs)
+
+Reviewer must confirm for WPs that introduce result objects, loaders, validators, or report generators:
+
+- Field-coverage gate documented: all public fields enumerated and classified.
+- Test proves `{f.name for f in fields(ResultType)} <= set(serialized)` or equivalent recursive scan.
+- Invalid result objects are scanned, not only valid result objects.
+- If a manual serializer is used, a field-coverage test is present.
+- No manual serializer silently omits advisory_label, warnings, notices, or metadata fields.
