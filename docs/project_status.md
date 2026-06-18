@@ -1,9 +1,9 @@
 # Project Status
 
-- Current phase: WP87 - Wallet Signal Paper Strategy Candidate Fixture Loader V1
-- Repo state: Local/offline/read-only candidate fixture loader on branch after WP86 execution package discipline adoption merge
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86
-- Current branch: `wp87-wallet-signal-paper-strategy-candidate-fixture-loader-v1`
+- Current phase: WP88 - Evidence Architecture And Result-Object Invariant Repair After WP87
+- Repo state: Workflow/evidence architecture repair on branch after WP87 merge; no product behavior changed; next product WP deferred until this evidence architecture repair lands
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87
+- Current branch: `wp88-evidence-architecture-and-result-object-invariant-repair`
 - Multi-agent coding workflow status: AGENT_NEUTRAL_START_LAYER_MERGED
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; MANUAL_EXPLICIT_NETWORK_POLLING_RUNNER_DEV_ONLY; MANUAL_GUARD_ENFORCED_SNAPSHOT_CAPTURE_DEV_ONLY
 - Runtime dependency integration status: NOT_STARTED_FOR_NEW_RUNTIME_DEPENDENCIES
@@ -35,7 +35,7 @@
 - Local advisory consumer prototype status: LOCAL_OFFLINE_READ_ONLY_ADVISORY_CONSUMER_MERGED
 - Advisory prompt/runbook package status: DOCS_ONLY_ADVISORY_PROMPT_RUNBOOK_MERGED
 - Advisory operator workflow hardening status: DOCS_ONLY_ADVISORY_OPERATOR_WORKFLOW_MERGED
-- Market research priority scoring layer status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_MERGED; CALIBRATION_RECORD_SCHEMA_VALIDATOR_MERGED; LOCAL_RESOLVED_OUTCOME_FIXTURE_LOADER_MERGED; CALIBRATION_REPORT_GENERATOR_DESIGN_MERGED; LOCAL_CALIBRATION_METRIC_COMPUTATION_MERGED; LOCAL_CALIBRATION_REPORT_GENERATOR_MERGED; LOCAL_CALIBRATION_REPORT_EXPORT_MERGED; HUMAN_REVIEW_LABEL_WORKFLOW_DESIGN_MERGED; HUMAN_REVIEW_LABEL_RECORD_VALIDATOR_MERGED; HUMAN_REVIEW_LABEL_FIXTURE_LOADER_MERGED; WALLET_INTELLIGENCE_ROADMAP_MERGED; WALLET_INTELLIGENCE_ARCHITECTURE_CONTRACT_MERGED; WALLET_TRADE_EVENT_FIXTURE_LOADER_MERGED; WALLET_SIGNAL_RESEARCH_PROFILER_MERGED; WALLET_COPYABILITY_DELAY_SIMULATOR_DESIGN_MERGED; WALLET_INTELLIGENCE_REPORT_CONTRACT_MERGED; WALLET_COPYABILITY_DELAY_EVALUATOR_MERGED; WALLET_INTELLIGENCE_REPORT_GENERATOR_MERGED; WALLET_SIGNAL_PAPER_STRATEGY_CONTRACT_MERGED; WALLET_SIGNAL_PAPER_STRATEGY_CONTRACT_LOCAL_VALIDATOR_MERGED; EXECUTION_PACKAGE_DISCIPLINE_ADOPTION_MERGED; WALLET_SIGNAL_PAPER_STRATEGY_CANDIDATE_FIXTURE_LOADER_ON_BRANCH
+- Market research priority scoring layer status: DOCS_ONLY_DESIGN_MERGED; SCHEMA_OUTPUT_CONTRACT_MERGED; CORE_SCORER_MERGED; RESEARCH_DATA_FOUNDATION_DIRECTION_MERGED; FEATURE_EXTRACTION_FOUNDATION_MERGED; LONG_TERM_ROADMAP_MERGED; DATA_INTEGRITY_HARDENING_MERGED; MICROSTRUCTURE_QUALITY_MERGED; CROSS_MARKET_RELATIONSHIP_METADATA_MERGED; RESOLUTION_SOURCE_HIERARCHY_MERGED; RESEARCH_QUEUE_REPORT_SESSION_PACKET_MERGED; RESEARCH_QUEUE_EXPORT_OPERATOR_RUNBOOK_MERGED; CALIBRATION_HARNESS_DESIGN_MERGED; CALIBRATION_RECORD_SCHEMA_VALIDATOR_MERGED; LOCAL_RESOLVED_OUTCOME_FIXTURE_LOADER_MERGED; CALIBRATION_REPORT_GENERATOR_DESIGN_MERGED; LOCAL_CALIBRATION_METRIC_COMPUTATION_MERGED; LOCAL_CALIBRATION_REPORT_GENERATOR_MERGED; LOCAL_CALIBRATION_REPORT_EXPORT_MERGED; HUMAN_REVIEW_LABEL_WORKFLOW_DESIGN_MERGED; HUMAN_REVIEW_LABEL_RECORD_VALIDATOR_MERGED; HUMAN_REVIEW_LABEL_FIXTURE_LOADER_MERGED; WALLET_INTELLIGENCE_ROADMAP_MERGED; WALLET_INTELLIGENCE_ARCHITECTURE_CONTRACT_MERGED; WALLET_TRADE_EVENT_FIXTURE_LOADER_MERGED; WALLET_SIGNAL_RESEARCH_PROFILER_MERGED; WALLET_COPYABILITY_DELAY_SIMULATOR_DESIGN_MERGED; WALLET_INTELLIGENCE_REPORT_CONTRACT_MERGED; WALLET_COPYABILITY_DELAY_EVALUATOR_MERGED; WALLET_INTELLIGENCE_REPORT_GENERATOR_MERGED; WALLET_SIGNAL_PAPER_STRATEGY_CONTRACT_MERGED; WALLET_SIGNAL_PAPER_STRATEGY_CONTRACT_LOCAL_VALIDATOR_MERGED; EXECUTION_PACKAGE_DISCIPLINE_ADOPTION_MERGED; WALLET_SIGNAL_PAPER_STRATEGY_CANDIDATE_FIXTURE_LOADER_MERGED; EVIDENCE_ARCHITECTURE_REPAIR_ON_BRANCH
 - Research queue export/operator runbook status: LOCAL_OFFLINE_EXPLICIT_MANUAL_EXPORT_MERGED
 - Calibration harness design status: DOCS_SCHEMA_DESIGN_ONLY_MERGED
 - Resolved outcome data requirements status: DOCS_DESIGN_ONLY_MERGED
@@ -107,11 +107,50 @@
 - Wallet intelligence report contract status: DOCS_SCHEMA_TESTS_ONLY_REPORT_CONTRACT_MERGED
 - Wallet copyability delay evaluator status: LOCAL_OFFLINE_READ_ONLY_COPYABILITY_DELAY_EVALUATOR_MERGED
 - Wallet intelligence report generator status: LOCAL_OFFLINE_READ_ONLY_REPORT_GENERATOR_MERGED
-- Wallet signal paper strategy contract status: DOCS_SCHEMA_TESTS_ONLY_PAPER_STRATEGY_CONTRACT_MERGED; LOCAL_OFFLINE_READ_ONLY_VALIDATOR_MERGED; LOCAL_OFFLINE_READ_ONLY_CANDIDATE_FIXTURE_LOADER_ON_BRANCH
+- Wallet signal paper strategy contract status: DOCS_SCHEMA_TESTS_ONLY_PAPER_STRATEGY_CONTRACT_MERGED; LOCAL_OFFLINE_READ_ONLY_VALIDATOR_MERGED; LOCAL_OFFLINE_READ_ONLY_CANDIDATE_FIXTURE_LOADER_MERGED
+- Evidence architecture repair status: EVIDENCE_ARCHITECTURE_MODEL_D_ON_BRANCH; RESULT_OUTPUT_INVARIANT_STANDARD_ON_BRANCH; FOLLOWUP_PROMPT_STANDARD_ON_BRANCH; NO_PRODUCT_BEHAVIOR_CHANGED
+- WP88 deferred items status: WP88-D001 (evidence architecture transition clarified with Model D, ON_BRANCH); WP88-D002 (result-object field coverage standard added, ON_BRANCH); WP88-D003 (manual serializer losslessness standard added, ON_BRANCH); WP88-D004 (root-cause-first follow-up prompt standard added, ON_BRANCH)
 - WP82 deferred items status: WP82 resolves WP80-D002 and WP81-D001 only for the local/offline/read-only in-memory report generator scope. WP80-D003, WP81-D002, WP82-D001 (wallet signal paper strategy contract) remain OPEN as of WP82 merge. WP82 adds WP82-D001 (wallet signal paper strategy contract remains deferred, OPEN, P3) and WP82-D002 (wallet intelligence report export CLI remains deferred, OPEN, P3).
 - WP83 deferred items status: WP83 resolves WP80-D003, WP81-D002, and WP82-D001 only for contract-definition scope only (docs/schema/tests-only). Paper strategy implementation, paper order model, paper portfolio ledger, paper fill model, paper PnL computation, network/API wallet ingestion, real wallet monitoring, automatic following behavior, live account access, credentials, scheduler, dashboard, and bot loop remain deferred. WP83 adds WP83-D001 (wallet signal paper strategy contract local validator not started, OPEN, P3).
 - WP84 deferred items status: WP84 resolves WP83-D001 only for local/offline/read-only contract validator scope. Paper strategy implementation, paper order model, paper portfolio ledger, paper fill model, paper PnL computation, network/API wallet ingestion, real wallet monitoring, automatic following behavior, live account access, credentials, scheduler, dashboard, and bot loop remain deferred. WP84 adds WP84-D001 (wallet signal paper strategy contract candidate fixture loader not started, OPEN, P3).
 - WP87 deferred items status: WP87 resolves WP84-D001 only for local/offline/read-only candidate fixture loader scope. Paper strategy implementation, paper order model, paper portfolio ledger, paper fill model, paper PnL computation, network/API wallet ingestion, real wallet monitoring, automatic following behavior, live account access, credentials, scheduler, dashboard, and bot loop remain deferred. WP87 adds WP87-D001 (candidate review report generator not started, OPEN, P3).
+
+## WP88 Evidence Architecture And Result-Object Invariant Repair After WP87
+
+WP88 - Evidence Architecture And Result-Object Invariant Repair After WP87 is on branch
+(`wp88-evidence-architecture-and-result-object-invariant-repair`).
+
+It implements Side 12's Model D evidence architecture feedback as persistent repo truth.
+
+WP88 is workflow/evidence architecture repair. No product behavior changed. No trading/paper/live/runtime/network/credential behavior changed. Next product WP is deferred until this evidence architecture repair lands.
+
+WP88 adds:
+- `docs/ai/codex/EVIDENCE_ARCHITECTURE.md` (Model D: PR body = current review surface; status fragment = stable non-self-referential record; final comment = transition-only pointer; evidence contradiction matrix)
+- `docs/ai/codex/RESULT_OUTPUT_INVARIANT_STANDARD.md` (field-coverage gate; manual serializer losslessness rule; invalid-output no-echo full public result scan requirement)
+- `docs/ai/codex/FOLLOWUP_PROMPT_STANDARD.md` (root-cause-first follow-up prompt template; classification before fix requirement)
+- `docs/status_entries/WP88.md` (WP88 stable non-self-referential status fragment)
+
+WP88 updates:
+- `docs/status_entries/README.md` — non-self-referential model, contradiction matrix, `Validated implementation commit:` labeling
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md` — contradiction matrix checks, result-object field-coverage checks
+- `docs/ai/codex/VALIDATION_MATRIX.md` — field-coverage gate section, Model D section
+- `docs/ai/codex/README.md` — references to EVIDENCE_ARCHITECTURE.md, RESULT_OUTPUT_INVARIANT_STANDARD.md, FOLLOWUP_PROMPT_STANDARD.md
+- `docs/work_package_template.md` — Evidence Architecture Model D section, Result Object Field-Coverage Gate section
+- `.github/pull_request_template.md` — Evidence Architecture section
+- `tests/test_codex_workflow_docs.py` — WP88 workflow tests
+
+WP88 resolves WP88-D001 through WP88-D004 as ON_BRANCH (evidence architecture, field coverage, serializer losslessness, follow-up standard).
+
+Protected boundaries remain unchanged:
+- Live account activity: DISABLED
+- Credentials: NOT_USED
+- Execution: NOT_STARTED
+- Authenticated client: FORBIDDEN_UNTIL_APPROVED_WP
+- Hermes: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
+- Agent runtime: NOT_STARTED
+- Agent execution authority: FORBIDDEN
+- Scheduler: NOT_STARTED
+- Bot loop: NOT_STARTED
 
 ## WP87 Wallet Signal Paper Strategy Candidate Fixture Loader V1
 

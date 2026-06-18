@@ -290,6 +290,37 @@ Before Ready for review: YES, the AI coding agent must declare one of the follow
 
 If any posted evidence changes after the last guard run, the guard must be rerun. If the AI coding agent cannot confirm the live GitHub content matches what the guard checked, it must state that limitation and may not claim posted evidence was verified.
 
+## Evidence Architecture Model D (mandatory, WP88+)
+
+Before Ready for review: YES, confirm all of the following:
+
+```
+Evidence architecture: Model D (docs/ai/codex/EVIDENCE_ARCHITECTURE.md)
+PR body is current review evidence surface: YES/NO
+Status fragment is stable/non-self-referential: YES/NO
+Status fragment current live PR head as fixed SHA: ABSENT (must be absent)
+Status fragment uses "Validated implementation commit:" label: YES/NO
+Final comment is transition-only pointer: YES/NO
+Evidence contradiction matrix: NO invalid combinations present
+NOT_VERIFIED + Ready YES combination: ABSENT (must be absent)
+```
+
+## Result Object Field-Coverage Gate (mandatory for result/report/loader/validator WPs, WP88+)
+
+If this WP introduces a result object, loader, validator, or report generator:
+
+```
+Field-coverage gate required: YES / NO
+If YES:
+  - All public fields enumerated: YES/NO
+  - Each field classified scanned/exempt/forbidden: YES/NO
+  - Field-coverage test (fields(ResultType) <= set(serialized)): YES/NO
+  - Invalid result objects scanned recursively: YES/NO
+  - Manual serializer (if used) has field-coverage test: YES/NO
+```
+
+See `docs/ai/codex/RESULT_OUTPUT_INVARIANT_STANDARD.md`.
+
 ## Follow-Up Process-Defect Classification (mandatory, WP54)
 
 Every review follow-up that required a correction must be classified. If no follow-up occurred, state so explicitly.

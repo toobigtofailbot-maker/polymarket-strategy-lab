@@ -1975,7 +1975,28 @@ WP87 adds WP87-D001. WP82-D002, WP86-D001, and WP86-D002 remain OPEN.
 
 | ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
 |----|---------|--------|----------|--------|-----------------|---------------------|
-| WP87-D001 | Wallet signal paper strategy candidate review report generator not started | OPEN | P3 | WP87 adds only the local/offline/read-only candidate fixture loader. No candidate review report generator, no advisory-consumer handoff, and no paper strategy design review report is implemented. | Any WP that generates a local advisory report from loaded candidate fixture results. | Future approved WP88 explicitly scopes a local/offline/read-only candidate review report generator; no paper engine, no live execution, no credentials. |
+| WP87-D001 | Wallet signal paper strategy candidate review report generator not started | OPEN | P3 | WP87 adds only the local/offline/read-only candidate fixture loader. No candidate review report generator, no advisory-consumer handoff, and no paper strategy design review report is implemented. | Any WP that generates a local advisory report from loaded candidate fixture results. | Future approved WP89 explicitly scopes a local/offline/read-only candidate review report generator using the WP88 result-object and evidence standards; no paper engine, no live execution, no credentials. |
+
+## WP88 Evidence Architecture And Result-Object Invariant Repair
+
+WP88 implements Side 12's Model D evidence architecture feedback. This is a workflow/docs/tests repair WP. No product behavior, runtime behavior, trading behavior, network behavior, credential behavior, or dependency behavior is changed.
+
+WP88 resolves the following deferred items (adding them as ON_BRANCH, not yet merged):
+
+- WP88-D001: evidence architecture transition clarified with Model D — adds EVIDENCE_ARCHITECTURE.md defining PR body as current review surface, status fragment as stable non-self-referential record, final comment as transition-only pointer, and the evidence contradiction matrix.
+- WP88-D002: result-object field coverage standard added — adds RESULT_OUTPUT_INVARIANT_STANDARD.md with field inventory, serializer losslessness rule, and invalid-output no-echo full public result scan requirement.
+- WP88-D003: manual serializer losslessness standard added — included in RESULT_OUTPUT_INVARIANT_STANDARD.md.
+- WP88-D004: root-cause-first follow-up prompt standard added — adds FOLLOWUP_PROMPT_STANDARD.md with classification template and root-cause requirement.
+
+The following items remain OPEN and deferred from WP88:
+
+| ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
+|----|---------|--------|----------|--------|-----------------|---------------------|
+| WP88-DEFER-001 | GitHub-aware evidence verifier tool not implemented | OPEN | P4 | WP88 is workflow/docs/tests only; a GitHub-aware verifier that fetches live PR state is a separate tooling WP. The manual verification path (PRIVATE_REPO_MANUAL_VERIFIED) remains the current required mode. | Any future automated posted-evidence verification for private repos. | Future approved tooling WP explicitly scopes the GitHub-aware verifier; no live execution, no credentials. |
+| WP88-DEFER-002 | Removal of final GitHub comments after WP86–WP90 transition | OPEN | P4 | The transition policy (WP86–WP90) still requires both committed status entries and final GitHub comments. Removal is deferred until WP90 or a later explicit decision WP. | After WP90 transition period. | A later WP explicitly removes or simplifies the final GitHub comment requirement, documents that decision in repo truth. |
+| WP88-DEFER-003 | WP89 candidate review report generator | OPEN | P3 | WP88 fixes the inspection system. WP89 can safely build the next product piece using the new evidence and result-object standards. | After WP88 merges. | Future approved WP89 implements local/offline/read-only candidate review report generator using WP88 standards. |
+
+WP82-D002, WP86-D001, and WP86-D002 remain OPEN.
 
 ## WP6 Generated Artifact Incident Update
 

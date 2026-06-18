@@ -146,3 +146,43 @@ def test_security_tools_are_mandatory_before_runtime_dependency_integration():
     assert "mandatory before runtime dependency integration" in text
     assert "vendoring" in text
     assert "live/API execution" in text
+
+
+# ── WP88: Evidence Architecture Repair ───────────────────────────────────────
+
+
+def test_wp88_evidence_architecture_doc_exists():
+    path = ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md"
+    assert path.is_file(), "docs/ai/codex/EVIDENCE_ARCHITECTURE.md must exist after WP88"
+
+
+def test_wp88_result_output_invariant_standard_doc_exists():
+    path = ROOT / "docs" / "ai" / "codex" / "RESULT_OUTPUT_INVARIANT_STANDARD.md"
+    assert path.is_file(), "docs/ai/codex/RESULT_OUTPUT_INVARIANT_STANDARD.md must exist after WP88"
+
+
+def test_wp88_followup_prompt_standard_doc_exists():
+    path = ROOT / "docs" / "ai" / "codex" / "FOLLOWUP_PROMPT_STANDARD.md"
+    assert path.is_file(), "docs/ai/codex/FOLLOWUP_PROMPT_STANDARD.md must exist after WP88"
+
+
+def test_wp88_status_fragment_exists():
+    path = ROOT / "docs" / "status_entries" / "WP88.md"
+    assert path.is_file(), "docs/status_entries/WP88.md must exist after WP88"
+
+
+def test_wp88_does_not_add_new_src_files():
+    """WP88 is workflow-docs-tests-only; it must not add new src/ modules."""
+    import subprocess
+    result = subprocess.run(
+        ["git", "diff", "--name-only", "origin/main", "HEAD"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    changed = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    new_src = [f for f in changed if f.startswith("src/") and not any(
+        f.startswith(scope + "/") or f == scope for scope in APPROVED_SRC_SCOPES
+    )]
+    assert new_src == [], f"WP88 must not add new src/ files outside approved scopes: {new_src}"

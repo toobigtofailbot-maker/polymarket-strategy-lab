@@ -88,6 +88,33 @@ Every WP from WP86 onward commits a status fragment at `docs/status_entries/WP<N
 
 See `docs/status_entries/README.md` for the required format and the evidence distinction policy (LOCAL_DRAFT_VERIFIED vs POSTED_GITHUB_API_VERIFIED vs MANUAL_UI_VERIFIED).
 
+## Evidence Architecture — Model D (WP88+)
+
+From WP88 onward, all evidence surfaces must comply with Model D from `docs/ai/codex/EVIDENCE_ARCHITECTURE.md`:
+
+- **PR body** is the current review evidence surface (current live PR head, validation, guards, traceability).
+- **Status fragment** is a stable non-self-referential repo record — it must not record the current live PR head as a fixed SHA.
+- **Final GitHub comment** is a transition-only verification pointer during WP86–WP90.
+- The evidence contradiction matrix must be checked before `Ready for review: YES`.
+
+## Result Object And Output Invariant Standard (WP88+)
+
+WPs that introduce result objects, loaders, validators, or report generators must satisfy `docs/ai/codex/RESULT_OUTPUT_INVARIANT_STANDARD.md`:
+
+- All public fields enumerated and classified.
+- Field-coverage test proves serializer covers all public fields.
+- Invalid result objects scanned recursively.
+- Manual serializers forbidden unless field-coverage test is present.
+
+## Follow-Up Prompt Standard (WP88+)
+
+Every follow-up to a not-merge-ready review must follow `docs/ai/codex/FOLLOWUP_PROMPT_STANDARD.md`:
+
+- Root cause classified before the fix is described.
+- Root cause explains WHY the failure happened, not only what it was.
+- Evidence contradiction matrix result is stated.
+- Follow-up does not patch only the visible symptom.
+
 ## Shared Claude/Codex Operating Layer
 
 All files under `docs/ai/codex/` apply to Codex, Claude Code, and all future AI coding agents unless a specific file says otherwise. The path `docs/ai/codex/` is a historical naming artifact — it is the shared AI-coding-agent workflow layer, not a Codex-only layer.
