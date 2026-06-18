@@ -416,6 +416,9 @@ def test_project_status_reflects_wp79_branch() -> None:
         "wp82-wallet-intelligence-report-generator-v1",
         "wp83-wallet-signal-paper-strategy-contract-v1",
         "wp84-wallet-signal-paper-strategy-contract-local-validator-v1",
+        "workflow/wp86-execution-package-discipline-adoption",
+        "wp86",
+        "wp87",
     ))
 
 
@@ -598,3 +601,241 @@ def test_repo_truth_index_contains_ai_coding_agent_start_here() -> None:
 def test_project_status_includes_agent_neutral_start_layer_status() -> None:
     text = _read(ROOT / "docs" / "project_status.md")
     assert "AGENT_NEUTRAL_START_LAYER_MERGED" in text
+
+
+# ── WP86: Execution Package Discipline Adoption ──────────────────────────────
+
+
+def test_wp_drafting_standard_exists() -> None:
+    assert (ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md").is_file()
+
+
+def test_status_entries_readme_exists() -> None:
+    assert (ROOT / "docs" / "status_entries" / "README.md").is_file()
+
+
+def test_work_package_template_contains_authority_posture() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Authority / Non-Authority Posture" in text
+
+
+def test_work_package_template_contains_hard_merge_gate() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Hard Merge Gate" in text
+
+
+def test_work_package_template_contains_context_budget() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Context Budget" in text
+
+
+def test_work_package_template_contains_compatibility_check() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Compatibility / Impossibility Check" in text
+
+
+def test_work_package_template_contains_concrete_stop_conditions() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Concrete Stop Conditions" in text
+
+
+def test_work_package_template_contains_requirement_traceability() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Requirement-to-Evidence Traceability" in text
+
+
+def test_work_package_template_contains_status_fragment() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Status Fragment" in text or "status_entries" in text
+
+
+def test_wp_execution_report_requires_status_fragment() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md")
+    assert "status" in text.lower() and ("fragment" in text.lower() or "status_entries" in text.lower() or "committed" in text.lower())
+
+
+def test_pr_review_checklist_requires_self_diagnosis() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md").lower()
+    assert "root cause" in text
+    assert "preventable" in text
+
+
+def test_pr_review_checklist_requires_status_fragment_check() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md").lower()
+    assert "status fragment" in text or "status_entries" in text
+
+
+def test_pr_review_checklist_requires_traceability_check() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md").lower()
+    assert "traceability" in text
+
+
+def test_pr_review_checklist_requires_compatibility_check() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md").lower()
+    assert "compatibility" in text or "impossibility" in text
+
+
+def test_validation_matrix_includes_risk_levels() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md").lower()
+    assert "risk level" in text or "risk class" in text or "package class" in text
+
+
+def test_validation_matrix_includes_validator_class() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md").lower()
+    assert "validator" in text
+
+
+def test_validation_matrix_includes_report_class() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md").lower()
+    assert "report" in text
+
+
+def test_validation_matrix_includes_status_fragment_requirement() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md").lower()
+    assert "status fragment" in text or "status_entries" in text or "committed evidence" in text
+
+
+def test_codex_readme_states_docs_apply_to_claude_and_codex() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "README.md").lower()
+    assert "claude code" in text
+    assert "codex" in text
+    assert ("shared" in text or "both" in text or "applies to" in text)
+
+
+def test_codex_readme_clarifies_prompt_wrappers_non_canonical() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "README.md").lower()
+    assert "non-canonical" in text or "not canonical" in text or "prompt wrapper" in text
+
+
+def test_codex_execution_guidelines_contains_worktree_first() -> None:
+    text = _read(ROOT / "docs" / "codex_execution_guidelines.md").lower()
+    assert "worktree" in text
+
+
+def test_status_entries_readme_defines_evidence_distinction() -> None:
+    text = _read(ROOT / "docs" / "status_entries" / "README.md")
+    assert "LOCAL_DRAFT_VERIFIED" in text
+    assert "POSTED_GITHUB_API_VERIFIED" in text
+    assert "MANUAL_UI_VERIFIED" in text
+
+
+def test_status_entries_readme_states_local_drafts_do_not_count() -> None:
+    text = _read(ROOT / "docs" / "status_entries" / "README.md").lower()
+    assert "local draft" in text
+    assert "posted" in text
+
+
+def test_evidence_doc_requires_github_refetch() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_REPORTING_DISCIPLINE.md").lower()
+    assert "re-fetch" in text or "refetch" in text or "re-fetching" in text or "posted github" in text
+
+
+def test_evidence_doc_states_local_drafts_do_not_count() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_REPORTING_DISCIPLINE.md")
+    assert "LOCAL_DRAFT_VERIFIED" in text
+
+
+def test_pr_template_contains_status_fragment_section() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md").lower()
+    assert "status fragment" in text or "status_entries" in text
+
+
+def test_pr_template_contains_traceability_section() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md").lower()
+    assert "traceability" in text
+
+
+def test_pr_template_contains_compatibility_section() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md").lower()
+    assert "compatibility" in text or "impossibility" in text
+
+
+def test_protected_paths_centralizes_boundary_groups() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PROTECTED_PATHS.md").lower()
+    assert "boundary group" in text or "centralized boundary" in text or "centralize" in text
+
+
+def test_protected_paths_includes_paper_engine_group() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PROTECTED_PATHS.md").lower()
+    assert "paper engine" in text
+
+
+def test_protected_paths_includes_scheduler_group() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PROTECTED_PATHS.md").lower()
+    assert "scheduler" in text
+
+
+def test_project_status_reflects_wp84_merged() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP84" in merged_line
+
+
+def test_project_status_reflects_wp86_branch() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert any(wp in branch_line for wp in (
+        "workflow/wp86-execution-package-discipline-adoption",
+        "wp86",
+        "wp87",
+    ))
+
+
+def test_repo_truth_index_references_wp_drafting_standard() -> None:
+    text = _read(ROOT / "docs" / "repo_truth_index.md")
+    assert "WP_DRAFTING_STANDARD.md" in text
+
+
+def test_repo_truth_index_references_status_entries_readme() -> None:
+    text = _read(ROOT / "docs" / "repo_truth_index.md")
+    assert "status_entries" in text or "status entries" in text.lower()
+
+
+def test_wp_drafting_standard_contains_authority_posture() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md")
+    assert "Authority / Non-Authority Posture" in text
+
+
+def test_wp_drafting_standard_contains_hard_merge_gate() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md")
+    assert "Hard Merge Gate" in text
+
+
+def test_wp_drafting_standard_contains_context_budget() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md")
+    assert "Context Budget" in text
+
+
+def test_wp_drafting_standard_contains_compatibility_check() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md")
+    assert "Compatibility / Impossibility Check" in text
+
+
+def test_wp_drafting_standard_contains_stop_conditions() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md")
+    assert "Concrete Stop Conditions" in text
+
+
+def test_wp_drafting_standard_contains_traceability() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md")
+    assert "Requirement-to-Evidence Traceability" in text
+
+
+def test_wp_drafting_standard_contains_worktree_first() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md").lower()
+    assert "worktree" in text
+
+
+def test_wp_drafting_standard_contains_evidence_model() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md")
+    assert "LOCAL_DRAFT_VERIFIED" in text
+    assert "POSTED_GITHUB_API_VERIFIED" in text
+
+
+def test_wp_drafting_standard_contains_prompt_wrappers_non_canonical() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md").lower()
+    assert "non-canonical" in text or "not canonical" in text or "prompt wrapper" in text

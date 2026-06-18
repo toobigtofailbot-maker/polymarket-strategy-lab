@@ -86,3 +86,15 @@ Local PR body and final comment drafts are not posted GitHub evidence. Before `R
 ## Negative Test Matrix Policy
 
 WPs that add or modify validators, scorers, parsers, schema validators, boundary guards, evidence guards, or semantic wording filters must include a negative-test matrix before `Ready for review: YES`. See `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`.
+
+## WP Drafting Standard (WP86+)
+
+All WPs from WP86 onward must be drafted to execution-package discipline. This means every WP must include: Authority / Non-Authority Posture, Hard Merge Gate, Context Budget, Compatibility / Impossibility Check (nontrivial WPs), Concrete Stop Conditions tied to risk class, Requirement-to-Evidence Traceability (M/L/XL WPs), and a committed status fragment (`docs/status_entries/WP<NN>.md`). See `docs/ai/codex/WP_DRAFTING_STANDARD.md`.
+
+## Status Fragments (WP86+)
+
+Every WP from WP86 onward must commit a status fragment at `docs/status_entries/WP<NN>.md` on the WP branch before requesting review. Status fragments are committed evidence records and the preferred primary evidence surface. See `docs/status_entries/README.md`.
+
+## Protected Boundary Groups (WP86+)
+
+Protected boundary groups are centralized in `docs/ai/codex/PROTECTED_PATHS.md`. Future WPs must reference that document's Centralized Boundary Group Reference table in their Authority / Non-Authority Posture section rather than repeating inconsistent forbidden lists.

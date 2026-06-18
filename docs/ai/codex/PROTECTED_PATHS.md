@@ -1,6 +1,10 @@
 # Protected Paths And Boundaries
 
-Codex must stop and escalate before touching these areas unless the active work package explicitly authorizes them:
+This document is the central boundary source for all WPs. Future WPs must reference this document rather than repeating inconsistent forbidden lists.
+
+Each boundary group below defines a protected mode. Crossing a boundary requires an explicit authorization gate in the active WP. A doc mentioning a boundary group does not authorize crossing it.
+
+Codex, Claude Code, and all AI coding agents must stop and escalate before touching these areas unless the active work package explicitly authorizes them:
 
 - Live trading paths and live authorization.
 - Credentials, secrets, `.env` loading, private keys, wallet keys, mnemonics, passphrases, tokens, and authenticated headers.
@@ -34,3 +38,24 @@ The following are always protected:
 - `.env`, `.env.*`, key files, wallet files, credential files — secret files
 
 Note: `tools/git/posted_pr_evidence_verifier.py` is allowed in WP58 only because it is explicitly scoped as a workflow-governance helper.
+
+## Centralized Boundary Group Reference
+
+Every WP must verify it does not cross any of the following boundary groups. Reference this list in the WP's Authority / Non-Authority Posture section instead of repeating a partial list:
+
+| Boundary Group | Scope | Authorization Gate |
+|---|---|---|
+| credentials/secrets | `.env`, private keys, API tokens, wallet keys, mnemonics, passphrases | Credential/auth WP explicitly authorized with user approval |
+| authenticated clients | L1/L2 clients, private endpoints, account queries, private order queries | Credential boundary WP must first complete |
+| wallet/account behavior | wallet reads, account queries, balance checks via authenticated path | Authenticated client WP must first complete |
+| order placement/cancel | order submission, cancellation, OMS, reconciliation | Execution WP explicitly authorized; live trading auth doc updated |
+| execution gateway | risk caps, risk engine, kill switch, signing, submission | Execution WP with strongest safety gates |
+| paper engine | paper order model, paper fill model, paper PnL, paper portfolio ledger | Paper WP explicitly authorized with mode separation proof |
+| scheduler/bot loop | `while True`, `time.sleep`, daemon, service loop, background worker, retry loop | Scheduler WP with rate-limit evidence, kill switch, observability |
+| runtime/daemon | production service, bot loop, polling daemon | Runtime WP explicitly authorized |
+| dashboard/deployment | Streamlit, Grafana, monitoring stack, production deployment | Dashboard WP explicitly authorized |
+| dependency/lock changes | `requirements.txt`, `pyproject.toml`, `package.json`, lock files | Dependency WP with security audit |
+| external code copying | vendored code, copied source from external repo | License/security audit required before copy |
+| generated artifacts | `local_data/`, `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, `security-scan-output/`, `.venv-official-client/`, `official-client-sandbox-output/` | Never committed; must be in `.gitignore` |
+
+WPs must cite this table's boundary group names in their Authority / Non-Authority Posture section to confirm which boundaries are not crossed.

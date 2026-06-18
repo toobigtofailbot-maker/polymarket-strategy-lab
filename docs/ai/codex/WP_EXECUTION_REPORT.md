@@ -4,9 +4,9 @@ Codex must post a full final report as a top-level PR comment before requesting 
 
 ## Required Sections
 
-A. Work Package ID / package class
+A. Work Package ID / package class / package size class
 
-B. Branch / base
+B. Branch / base / head SHA
 
 C. Repo-truth discovery
 
@@ -30,9 +30,17 @@ L. Network usage
 
 M. PR / push status
 
-N. Open escalations / assumptions
+N. Follow-up process-defect classification
 
-O. Ready for review: YES/NO
+O. Guard input source
+
+P. Status fragment (WP86+): docs/status_entries/WP<NN>.md committed: YES/NO
+
+Q. Requirement-to-evidence traceability (M/L/XL WPs)
+
+R. Open escalations / assumptions
+
+S. Ready for review: YES/NO
 
 ## Reporting Rules
 

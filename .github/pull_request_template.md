@@ -40,6 +40,13 @@
 - [ ] Posted GitHub evidence verifier run after PR posted (or unavailability stated with manual verification documented)
 - [ ] Latest current-final comment URL included in PR body
 - [ ] Negative test matrix declared (`Negative test matrix required: YES / NO`)
+- [ ] Status fragment committed: `docs/status_entries/WP<NN>.md` (WP86+)
+- [ ] Status fragment consistent with final comment on all key fields
+- [ ] Requirement-to-evidence traceability table included (M/L/XL WPs)
+- [ ] Compatibility/impossibility table included (nontrivial WPs)
+- [ ] Authority/Non-Authority Posture declared in WP definition
+- [ ] Hard Merge Gate result recorded before any edits
+- [ ] Context Budget defined and followed
 
 ## AI Coding Agent
 
@@ -58,6 +65,26 @@ Negative test matrix required: YES / NO
 ```
 
 (If YES, list categories covered. If NO, explain why not applicable.)
+
+## Status Fragment (WP86+)
+
+```
+Status fragment path: docs/status_entries/WP<NN>.md
+Status fragment committed: YES/NO
+Status fragment consistent with final comment: YES/NO
+```
+
+## Compatibility / Impossibility Table (nontrivial WPs)
+
+| Required behavior | Controlling repo mechanism | Files likely needed | Allowed in this WP? | Compatible? | Action |
+|---|---|---|---:|---:|---|
+| (fill for validator/report/schema/export/workflow/L+XL WPs) | | | | | |
+
+## Requirement-to-Evidence Traceability (M/L/XL WPs)
+
+| Requirement | Source WP section | Evidence location | Status |
+|---|---|---|---|
+| (fill for M, L, XL size class WPs) | | | |
 
 ## Posted GitHub Evidence Verification
 

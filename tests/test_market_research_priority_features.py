@@ -1725,7 +1725,7 @@ def test_project_status_current_phase_is_wp58_or_later():
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP58", "WP59", "WP60", "WP61", "WP62", "WP63", "WP64", "WP65", "WP66", "WP67", "WP68", "WP69", "WP70", "WP71", "WP72", "WP73", "WP74", "WP75", "WP76", "WP77", "WP78", "WP79", "WP80", "WP81", "WP82", "WP83", "WP84")), (
+    assert any(wp in current_phase_line for wp in ("WP58", "WP59", "WP60", "WP61", "WP62", "WP63", "WP64", "WP65", "WP66", "WP67", "WP68", "WP69", "WP70", "WP71", "WP72", "WP73", "WP74", "WP75", "WP76", "WP77", "WP78", "WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87")), (
         f"Expected WP58 or later in current phase line: {current_phase_line}"
     )
 
@@ -1736,7 +1736,7 @@ def test_project_status_current_branch_is_wp59_or_later():
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp59", "wp60", "wp61", "wp62", "wp63", "wp64", "wp65", "wp66", "wp67", "wp68", "wp69", "wp70", "wp71", "wp72", "wp73", "wp74", "wp75", "wp76", "wp77", "wp78", "wp79", "wp80", "wp81", "wp82", "wp83", "wp84")), (
+    assert any(wp in branch_line for wp in ("wp59", "wp60", "wp61", "wp62", "wp63", "wp64", "wp65", "wp66", "wp67", "wp68", "wp69", "wp70", "wp71", "wp72", "wp73", "wp74", "wp75", "wp76", "wp77", "wp78", "wp79", "wp80", "wp81", "wp82", "wp83", "wp84", "wp86", "wp87")), (
         f"Expected wp59 or later branch in branch line: {branch_line}"
     )
 
@@ -2286,7 +2286,7 @@ def test_project_status_current_phase_is_wp64_or_later():
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP64", "WP65", "WP66", "WP67", "WP68", "WP69", "WP70", "WP71", "WP72", "WP73", "WP74", "WP75", "WP76", "WP77", "WP78", "WP79", "WP80", "WP81", "WP82", "WP83", "WP84")), (
+    assert any(wp in current_phase_line for wp in ("WP64", "WP65", "WP66", "WP67", "WP68", "WP69", "WP70", "WP71", "WP72", "WP73", "WP74", "WP75", "WP76", "WP77", "WP78", "WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87")), (
         f"Expected WP64 or later in current phase line: {current_phase_line}"
     )
 
@@ -2297,7 +2297,7 @@ def test_project_status_current_branch_is_wp64():
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp64", "wp65", "wp66", "wp67", "wp68", "wp69", "wp70", "wp71", "wp72", "wp73", "wp74", "wp75", "wp76", "wp77", "wp78", "wp79", "wp80", "wp81", "wp82", "wp83", "wp84")), (
+    assert any(wp in branch_line for wp in ("wp64", "wp65", "wp66", "wp67", "wp68", "wp69", "wp70", "wp71", "wp72", "wp73", "wp74", "wp75", "wp76", "wp77", "wp78", "wp79", "wp80", "wp81", "wp82", "wp83", "wp84", "wp86", "wp87")), (
         f"Expected wp64 or later in current branch line: {branch_line}"
     )
 

@@ -16,11 +16,14 @@
   - verify `git status --short` is clean
   - verify local `HEAD` equals `origin/main`
   - verify required previous WP merge commit and required previous WP files
+- Preferred execution model: one WP = one dedicated worktree = one branch = one PR. Using a dedicated worktree isolates WP work from other branches and reduces accidental scope bleed.
+- Branch-only fallback is allowed but requires an explicit fallback note in the WP and PR body, confirmation of clean branch state before work starts, and no dirty main.
 - Create one branch per WP.
 - Open one PR per WP.
 - Do not work on `main`.
 - Do not stack a new WP on a prior WP branch.
 - Do not manually merge prior WP branches locally.
+- Do not reuse a prior WP branch unless explicitly confirmed by the user.
 - Do not continue from stale local `main`.
 - Do not expand scope beyond the WP.
 - Run required tests before final report.
@@ -58,6 +61,25 @@ Claude Code must read `CLAUDE_START_HERE.md` in addition to `AGENTS.md` and `AI_
 
 Before `Ready for review: YES`, Claude Code must run `tools/git/posted_pr_evidence_verifier.py` against the live PR when GitHub access is available. If unavailable, state why explicitly and document manual live GitHub verification. Do not claim the verifier passed unless it was actually run against the live PR. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
 
+## WP Drafting Discipline (WP86+)
+
+All WPs from WP86 onward must follow the execution-package drafting discipline in `docs/ai/codex/WP_DRAFTING_STANDARD.md`.
+
+Required WP sections (WP86+):
+- Authority / Non-Authority Posture
+- Hard Merge Gate
+- Context Budget
+- Compatibility / Impossibility Check (nontrivial WPs)
+- Concrete Stop Conditions (tied to risk class)
+- Requirement-to-Evidence Traceability (M/L/XL WPs)
+- Status Fragment (`docs/status_entries/WP<NN>.md`)
+
+## Status Fragments (WP86+)
+
+Every WP from WP86 onward must commit a status fragment at `docs/status_entries/WP<NN>.md` on the WP branch.
+
+See `docs/status_entries/README.md` for the required format and evidence distinction policy.
+
 ## Expected Output After Each WP
 
-Report WP ID, summary, branch name, commit hash, PR review link, files changed, tests run, results, safety confirmations, open issues, and the suggested next WP.
+Report WP ID, summary, branch name, commit hash, PR review link, files changed, tests run, results, safety confirmations, open issues, status fragment path, and the suggested next WP.
