@@ -52,6 +52,7 @@ def test_required_src_readmes_exist():
 # WP82 approves the local/offline/read-only wallet intelligence report generator at src/data_layer/wallet_intelligence_report_generator.py.
 # WP84 approves the local/offline/read-only wallet signal paper strategy contract validator at src/data_layer/wallet_signal_paper_strategy_contract_validator.py.
 # WP87 approves the local/offline/read-only wallet signal paper strategy candidate fixture loader at src/data_layer/wallet_signal_paper_strategy_candidate_fixture_loader.py.
+# WP89 approves the local/offline/read-only wallet signal candidate review report at src/data_layer/wallet_signal_candidate_review_report.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -71,6 +72,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/wallet_intelligence_report_generator.py",
     "src/data_layer/wallet_signal_paper_strategy_contract_validator.py",
     "src/data_layer/wallet_signal_paper_strategy_candidate_fixture_loader.py",
+    "src/data_layer/wallet_signal_candidate_review_report.py",
 )
 
 
@@ -106,6 +108,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     wallet signal paper strategy contract validator.
     WP87 permits wallet_signal_paper_strategy_candidate_fixture_loader.py for the local/offline/read-only
     wallet signal paper strategy candidate fixture loader.
+    WP89 permits wallet_signal_candidate_review_report.py for the local/offline/read-only
+    wallet signal candidate review report.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
