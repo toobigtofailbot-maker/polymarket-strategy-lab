@@ -1951,9 +1951,31 @@ WP84 adds WP84-D001. WP82-D002 remains OPEN.
 
 | ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
 |----|---------|--------|----------|--------|-----------------|---------------------|
-| WP84-D001 | Wallet signal paper strategy contract candidate fixture loader not started | OPEN | P3 | WP84 adds only the local/offline/read-only contract validator. No candidate fixture loader, no advisory-consumer handoff, no fixture-loading pipeline, and no contract record generator is implemented. | Any WP that loads wallet-signal paper strategy contract records from local fixtures for validation. | Future approved WP87 explicitly scopes a local/offline/read-only candidate fixture loader following the local/offline/read-only pattern; no live execution or credentials. |
+| WP84-D001 | Wallet signal paper strategy contract candidate fixture loader not started | RESOLVED (WP87 local/offline/read-only fixture loader scope) | P3 | WP84 adds only the local/offline/read-only contract validator. No candidate fixture loader, no advisory-consumer handoff, no fixture-loading pipeline, and no contract record generator is implemented. | Any WP that loads wallet-signal paper strategy contract records from local fixtures for validation. | Resolved by WP87: load_wallet_signal_paper_strategy_candidate_fixtures implemented in src/data_layer/wallet_signal_paper_strategy_candidate_fixture_loader.py; local/offline/read-only; stdlib-only; no file writes; no network; no automation; no credentials; no paper engine. |
 | WP86-D001 | Final GitHub PR comment transition policy active during WP86–WP90 | DEFERRED | P3 | WP86 introduces status fragments as the preferred committed evidence surface but keeps final GitHub PR comments required during transition (WP86–WP90). A later WP must explicitly decide to keep, simplify, or replace the final GitHub comment requirement. | Any WP that wants to remove or simplify the final GitHub PR comment requirement. | Future WP (WP90 or later) explicitly reviews the transition, updates docs/status_entries/README.md, and records the decision in repo truth. |
 | WP86-D002 | Compact WP template not yet created | DEFERRED | P3 | WP86 creates WP_DRAFTING_STANDARD.md and updates docs/work_package_template.md but does not create a separate compact template. A future WP may create docs/ai/codex/COMPACT_WP_TEMPLATE.md if the full template proves too verbose for simple WPs. | Any WP that specifically requires a compact template. | Future WP explicitly scopes and creates COMPACT_WP_TEMPLATE.md after evaluating whether a compact form is needed without losing required gates. |
+
+## WP87 Post-WP86 Wallet Signal Paper Strategy Candidate Fixture Loader V1 Deferred Items
+
+WP87 implements the first local/offline/read-only wallet signal paper strategy
+candidate fixture loader in
+`src/data_layer/wallet_signal_paper_strategy_candidate_fixture_loader.py`.
+
+WP87 adds no paper strategy implementation, no paper order model, no paper
+portfolio ledger, no paper fill model, no paper PnL computation, no
+network/API wallet ingestion, no real wallet monitoring, no automatic
+following behavior, no live account access, no credentials, no scheduler,
+no dashboard, no bot loop, no Hermes/LLM runtime, no dependency or
+lock-file changes, and no live or paper account activity behavior.
+
+WP87 resolves WP84-D001 only for local/offline/read-only candidate fixture loader scope.
+WP80-D004 and WP80-D005 remain classified P0.
+
+WP87 adds WP87-D001. WP82-D002, WP86-D001, and WP86-D002 remain OPEN.
+
+| ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
+|----|---------|--------|----------|--------|-----------------|---------------------|
+| WP87-D001 | Wallet signal paper strategy candidate review report generator not started | OPEN | P3 | WP87 adds only the local/offline/read-only candidate fixture loader. No candidate review report generator, no advisory-consumer handoff, and no paper strategy design review report is implemented. | Any WP that generates a local advisory report from loaded candidate fixture results. | Future approved WP88 explicitly scopes a local/offline/read-only candidate review report generator; no paper engine, no live execution, no credentials. |
 
 ## WP6 Generated Artifact Incident Update
 

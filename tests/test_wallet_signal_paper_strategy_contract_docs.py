@@ -523,8 +523,10 @@ def test_no_src_implementation_for_wp83_contract() -> None:
     implementation files remain forbidden.
     """
     src = ROOT / "src"
-    # WP84 local validator is the only permitted implementation file
-    wp84_validator_name = "wallet_signal_paper_strategy_contract_validator.py"
+    # WP84 local validator and WP87 fixture loader are the only permitted implementation files
+    _wp84_validator_name = "wallet_signal_paper_strategy_contract_validator.py"
+    _wp87_loader_name = "wallet_signal_paper_strategy_candidate_fixture_loader.py"
+    _allowed_wallet_paper_strategy_src = frozenset({_wp84_validator_name, _wp87_loader_name})
     forbidden_names = (
         "paper_strategy_contract",
         "paper_strategy_engine",
@@ -534,16 +536,16 @@ def test_no_src_implementation_for_wp83_contract() -> None:
     )
     violations = []
     for path in src.rglob("*.py"):
-        # Allow the WP84 validator
-        if path.name == wp84_validator_name:
+        # Allow the WP84 validator and WP87 fixture loader
+        if path.name in _allowed_wallet_paper_strategy_src:
             continue
         for name in forbidden_names:
             if name in path.name.lower():
                 violations.append(str(path.relative_to(ROOT)))
-        # wallet_signal_paper_strategy prefix is only allowed for the validator
+        # wallet_signal_paper_strategy prefix is only allowed for the two permitted files
         if (
             "wallet_signal_paper_strategy" in path.name.lower()
-            and path.name != wp84_validator_name
+            and path.name not in _allowed_wallet_paper_strategy_src
         ):
             violations.append(str(path.relative_to(ROOT)))
     assert violations == [], (

@@ -1,0 +1,94 @@
+{
+  "contract_identity": {
+    "contract_id": "FIXTURE-WP87-VALID-001",
+    "contract_type": "WALLET_SIGNAL_PAPER_STRATEGY_CONTRACT_V1",
+    "contract_created_at": "PLACEHOLDER_TIMESTAMP",
+    "wp_version": "WP87",
+    "advisory_only_notice": "WP87 fixture. Advisory research record only. Not a strategy instruction, not an allocation record, not an order record.",
+    "design_example_only": true
+  },
+  "source_report_reference": {
+    "wallet_intelligence_report_id": "PLACEHOLDER_REPORT_001",
+    "wallet_signal_profile_ids": ["PLACEHOLDER_PROFILE_001"],
+    "copyability_delay_evaluation_ids": ["PLACEHOLDER_DELAY_EVAL_001"],
+    "research_queue_annotation_ids": ["PLACEHOLDER_ANNOTATION_001"],
+    "human_review_label_ids": ["PLACEHOLDER_LABEL_001"],
+    "local_fixture_set_id": "PLACEHOLDER_FIXTURE_SET_001",
+    "source_reference_advisory": "Local placeholder IDs only. No real wallet addresses, market IDs, or condition IDs."
+  },
+  "source_signal_context": {
+    "wallet_id_placeholder": "wallet_placeholder_001",
+    "market_id_placeholder": "market_placeholder_001",
+    "condition_id_placeholder": "condition_placeholder_001",
+    "signal_category_label": "WATCH_ONLY_ADVISORY_LABEL",
+    "profitability_advisory_label": "ADVISORY_RESEARCH_LABEL_ONLY",
+    "specialization_advisory_label": "ADVISORY_RESEARCH_LABEL_ONLY",
+    "copyability_advisory_label": "RESEARCH_PROMISING_ADVISORY_ONLY",
+    "advisory_only_notice": "Signal context fields are advisory research labels only. Not strategy instructions."
+  },
+  "copyability_delay_context": {
+    "copyability_delay_evaluation_id": "PLACEHOLDER_DELAY_EVAL_001",
+    "delay_window_label": "PLACEHOLDER_DELAY_WINDOW",
+    "copyability_advisory_status": "RESEARCH_PROMISING",
+    "advisory_only_notice": "RESEARCH_PROMISING is an advisory research label only. Not an approval to copy."
+  },
+  "eligibility_review": {
+    "eligibility_status": "RESEARCH_ONLY_ELIGIBLE_FOR_FUTURE_PAPER_DESIGN",
+    "eligibility_gate_results": {
+      "source_report_reference_present": true,
+      "safety_flags_all_pass": true,
+      "no_suspicious_flow_block": true,
+      "copyability_context_present": true,
+      "no_insufficient_context_warnings": true
+    },
+    "advisory_only_notice": "RESEARCH_ONLY_ELIGIBLE_FOR_FUTURE_PAPER_DESIGN is not an authorization to implement paper strategy logic."
+  },
+  "suspicious_flow_review": {
+    "suspicious_flow_detected": false,
+    "suspicious_flow_records": [],
+    "advisory_only_notice": "No suspicious flow detected in this fixture."
+  },
+  "insufficient_context_review": {
+    "insufficient_context_warnings": [],
+    "context_completeness_label": "SUFFICIENT_FOR_ADVISORY_REVIEW",
+    "advisory_only_notice": "Context completeness is an advisory label only."
+  },
+  "human_review": {
+    "human_review_required": true,
+    "human_review_label_ids": ["PLACEHOLDER_LABEL_001"],
+    "human_review_advisory_note": "Human review is required before any future paper strategy design review.",
+    "advisory_only_notice": "Human review is always required regardless of research status."
+  },
+  "deferred_items": {
+    "paper_strategy_implementation": "Deferred. Not authorized by this advisory contract.",
+    "paper_order_model": "Deferred. Not authorized by this advisory contract.",
+    "paper_portfolio_ledger": "Deferred. Not authorized by this advisory contract.",
+    "paper_fill_model": "Deferred. Not authorized by this advisory contract.",
+    "paper_pnl_computation": "Deferred. Not authorized by this advisory contract.",
+    "network_wallet_ingestion": "Deferred. Not authorized by this advisory contract.",
+    "real_wallet_monitoring": "Deferred. Not authorized by this advisory contract.",
+    "passive_following_scope": "Deferred. Not authorized by this advisory contract.",
+    "live_access_capability": "Forbidden. Not authorized by this advisory contract.",
+    "credential_access": "Forbidden. Not authorized by this advisory contract.",
+    "scheduler_or_loop": "Deferred. Not authorized by this advisory contract.",
+    "dashboard_capability": "Deferred. Not authorized by this advisory contract."
+  },
+  "safety": {
+    "manual_research_only": true,
+    "not_automated_copy_trading": true,
+    "no_live_execution": true,
+    "no_order_placement": true,
+    "no_position_sizing": true,
+    "no_risk_override": true,
+    "no_parameter_auto_change": true,
+    "no_paper_engine_created": true,
+    "no_account_action": true
+  },
+  "warnings": {
+    "not_a_strategy_instruction": "This fixture record is not a strategy instruction.",
+    "not_an_allocation_record": "This fixture record is not an allocation record.",
+    "not_an_order_record": "This fixture record is not an order record.",
+    "research_queue_advisory_only": "This record may queue a wallet-signal idea for future paper-only strategy design review. It does not authorize that review."
+  },
+  "advisory_notice": "WALLET_SIGNAL_PAPER_STRATEGY_CONTRACT_V1 fixture record. Advisory research record only. Not a strategy instruction, not an allocation record, not an order record, and not an authorization of any implementation."
+}
