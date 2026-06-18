@@ -20,8 +20,8 @@ All Risk Level 0 WPs must also confirm:
 - No `src/`, `tools/` (unless explicitly scoped), dependency, or lock-file changes.
 - Exact PR evidence reporting discipline.
 - Network usage wording accurate.
-- Current-final evidence marker in final comment.
-- Guard input source stated.
+- Current-final evidence marker in final comment (only if a final comment is voluntarily posted; optional after WP91).
+- Guard input source stated in PR body.
 - Evidence mode declared (PUBLIC_VERIFIER_PASS / PRIVATE_REPO_MANUAL_VERIFIED / BLOCKED_NOT_READY).
 
 ### Risk Level 1 — Local/Offline Source (Low Risk)
@@ -175,13 +175,14 @@ All WPs that introduce or return public result objects (dataclasses, TypedDicts,
 - Manual serializers prohibited unless a field-coverage test proves losslessness.
 - Recursive forbidden-terms scan covers the entire result object, not only the `errors` field.
 
-## Evidence Architecture Model D (WP88+)
+## Evidence Architecture Model D (WP88+; updated by WP91)
 
 All WPs from WP88 onward must satisfy Model D from `docs/ai/codex/EVIDENCE_ARCHITECTURE.md`:
 
 - PR body is the current review evidence surface; status fragment is a stable non-self-referential record.
 - Status fragment must not record the current live PR head as a fixed SHA.
 - Status fragment must use `Validated implementation commit:` (not `Head commit:`) for in-review validated SHAs.
-- Final comment is a transition-only verification pointer — not a duplicate evidence table.
+- Final comment is optional and non-canonical after WP91 — not required for merge readiness.
 - Evidence contradiction matrix must be checked before `Ready for review: YES`.
 - `NOT_VERIFIED` + `Ready for review: YES` is always invalid.
+- Absence of a final comment is not a merge blocker after WP91.

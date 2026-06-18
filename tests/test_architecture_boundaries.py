@@ -220,3 +220,30 @@ def test_wp90_status_fragment_exists():
 def test_wp90_export_module_exists():
     path = ROOT / "src" / "data_layer" / "wallet_signal_candidate_review_report_export.py"
     assert path.is_file(), "WP90 export module must exist"
+
+
+# ── WP91: Final Comment Transition Retirement Decision ────────────────────────
+
+
+def test_wp91_status_fragment_exists():
+    path = ROOT / "docs" / "status_entries" / "WP91.md"
+    assert path.is_file(), "docs/status_entries/WP91.md must exist after WP91"
+
+
+def test_wp91_final_comment_policy_doc_exists():
+    path = ROOT / "docs" / "ai" / "codex" / "FINAL_COMMENT_POLICY.md"
+    assert path.is_file(), "docs/ai/codex/FINAL_COMMENT_POLICY.md must exist after WP91"
+
+
+def test_wp91_does_not_add_new_src_files():
+    import subprocess
+    result = subprocess.run(
+        ["git", "diff", "origin/main...HEAD", "--name-only"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+    new_src = [f for f in changed if f.startswith("src/")]
+    assert new_src == [], f"WP91 must not add new src/ files: {new_src}"

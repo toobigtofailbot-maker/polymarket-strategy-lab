@@ -5,8 +5,8 @@
 - [ ] Tool-specific adapter read: `CODEX_START_HERE.md` / `CLAUDE_START_HERE.md` / other
 - [ ] I read `AGENTS.md`
 - [ ] Scope matches WP
-- [ ] Full WP final report posted as PR comment
-- [ ] PR body is not the only final report
+- [ ] Full WP final report posted as PR comment (optional after WP91 — absence is not a merge blocker; PR body is the current review evidence surface)
+- [ ] PR body is not the only final report (after WP91: PR body alone is sufficient; final comment is optional)
 - [ ] Base verification included
 - [ ] Required previous merge commit verified
 - [ ] Required previous files verified
@@ -79,10 +79,11 @@ Status fragment uses "Validated implementation commit:" (not "Head commit:") for
 ## Evidence Architecture (WP88+)
 
 ```
-Evidence architecture: Model D
+Evidence architecture: Model D (after WP91)
 PR body is current review evidence surface: YES/NO
 Status fragment is stable/non-self-referential: YES/NO
-Final comment is transition-only pointer (not duplicate evidence table): YES/NO
+Final comment is optional/non-canonical (not required for merge readiness after WP91): YES/NO
+If final comment posted: does not contradict PR body: YES/NO/NOT_APPLICABLE
 Evidence contradiction matrix checked: YES/NO — no invalid combinations present
 ```
 

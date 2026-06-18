@@ -6,7 +6,7 @@ Status entries are committed, per-WP evidence records. They are the preferred co
 
 Status entries replace the failure-prone pattern of relying solely on mutable GitHub PR comments as the only evidence record. A committed status entry is repo truth — it cannot be accidentally superseded by a later comment, and it travels with the branch.
 
-Status entries complement — not replace — the existing PR evidence system during transition. Final GitHub PR comments remain required during transition (see Section 5 below).
+Status entries complement the PR evidence system. After WP91, final GitHub PR comments are optional — status entries and PR body together are sufficient for merge readiness.
 
 ## When to Create a Status Entry
 
@@ -143,17 +143,26 @@ When a WP claims a posted GitHub PR body or posted final evidence comment is ver
 
 A `Ready for review: YES` with `LOCAL_DRAFT_VERIFIED` is only allowed when the WP package class explicitly permits it (e.g., docs-only WPs that use `PRIVATE_REPO_MANUAL_VERIFIED` with manual UI verification).
 
-## Transition Policy (WP86–WP90)
+## Final Comment Policy (After WP91)
 
-During transition (WP86 through WP90), both committed status entries and final GitHub PR comments are required.
+WP91 retired the mandatory final GitHub PR comment requirement.
 
-After WP90, a later WP may explicitly decide to keep, simplify, or replace the final GitHub comment requirement. That decision must appear in repo truth.
+**After WP91 (current policy):**
 
-The committed status entry is the preferred evidence surface going forward because it:
+- Final GitHub PR comments are optional and non-canonical.
+- Merge readiness depends on PR body + status fragment evidence only.
+- Absence of a final comment is not a merge blocker.
+- If a final comment is voluntarily posted, it must not contradict the PR body or claim canonical evidence authority.
+
+The committed status entry is the preferred stable evidence surface because it:
 - Cannot be accidentally superseded by a later GitHub comment.
 - Is part of the merged branch history.
 - Travels with the code change.
 - Removes the failure-prone reliance on a reviewer finding "the latest" comment.
+
+**Historical context (WP86–WP90 transition):**
+
+During the WP86–WP90 transition, both committed status entries and final GitHub PR comments were required. WP91 explicitly ended the transition and retired the final comment requirement.
 
 ## Relationship to Other Evidence Docs
 

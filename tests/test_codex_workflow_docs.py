@@ -422,7 +422,9 @@ def test_project_status_reflects_wp79_branch() -> None:
         "wp88",
         "wp89",
         "wp90",
+        "wp91",
         "eager-shtern",
+        "happy-torvalds",
     ))
 
 
@@ -933,7 +935,9 @@ def test_project_status_reflects_wp86_branch() -> None:
         "wp88",
         "wp89",
         "wp90",
+        "wp91",
         "eager-shtern",
+        "happy-torvalds",
     ))
 
 
@@ -991,3 +995,100 @@ def test_wp_drafting_standard_contains_evidence_model() -> None:
 def test_wp_drafting_standard_contains_prompt_wrappers_non_canonical() -> None:
     text = _read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md").lower()
     assert "non-canonical" in text or "not canonical" in text or "prompt wrapper" in text
+
+
+# ── WP91: Final Comment Transition Retirement Decision ────────────────────────
+
+
+def test_final_comment_policy_doc_exists() -> None:
+    assert (ROOT / "docs" / "ai" / "codex" / "FINAL_COMMENT_POLICY.md").is_file()
+
+
+def test_final_comment_policy_states_final_comments_optional() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "FINAL_COMMENT_POLICY.md").lower()
+    assert "optional" in text
+    assert "wp91" in text
+    assert "non-canonical" in text or "not canonical" in text
+
+
+def test_final_comment_policy_defines_correct_evidence_mode() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "FINAL_COMMENT_POLICY.md")
+    assert "PR_BODY_CURRENT_REVIEW_SURFACE" in text
+    assert "STABLE_NON_SELF_REFERENTIAL" in text
+    assert "OPTIONAL_REVIEW_CLARIFICATION" in text
+
+
+def test_evidence_architecture_final_comment_optional_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md").lower()
+    assert "optional" in text
+    assert "wp91" in text
+
+
+def test_evidence_architecture_defines_optional_final_comment_as_non_canonical() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md").lower()
+    assert "non-canonical" in text or "not required for merge" in text or "optional reviewer clarification" in text
+
+
+def test_pr_evidence_reporting_discipline_final_comment_optional_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_REPORTING_DISCIPLINE.md").lower()
+    assert "optional" in text
+    assert "wp91" in text
+
+
+def test_pr_review_checklist_final_comment_not_required_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md").lower()
+    assert "optional" in text or "wp91" in text
+    assert "not a merge blocker" in text or "not required for merge" in text or "absence" in text
+
+
+def test_status_entries_readme_transition_ended_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "status_entries" / "README.md").lower()
+    assert "wp91" in text
+
+
+def test_status_entries_readme_final_comment_optional() -> None:
+    text = _read(ROOT / "docs" / "status_entries" / "README.md").lower()
+    assert "optional" in text
+
+
+def test_pr_template_final_comment_optional_note() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md").lower()
+    assert "optional" in text
+    assert "wp91" in text
+
+
+def test_validation_matrix_final_comment_optional_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md").lower()
+    assert "optional" in text or "wp91" in text
+
+
+def test_deferred_item_wp90_d002_resolved() -> None:
+    text = _read(ROOT / "docs" / "deferred_items_log.md")
+    assert "WP90-D002" in text
+    lines = [line for line in text.splitlines() if "WP90-D002" in line]
+    assert any("RESOLVED" in line for line in lines), "WP90-D002 must be RESOLVED"
+
+
+def test_deferred_item_wp88_defer_002_resolved() -> None:
+    text = _read(ROOT / "docs" / "deferred_items_log.md")
+    assert "WP88-DEFER-002" in text
+    lines = [line for line in text.splitlines() if "WP88-DEFER-002" in line]
+    assert any("RESOLVED" in line for line in lines), "WP88-DEFER-002 must be RESOLVED"
+
+
+def test_project_status_final_comment_transition_retired() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    assert "RETIRED_AFTER_WP91" in text or "final comment" in text.lower()
+
+
+def test_repo_truth_index_references_final_comment_policy() -> None:
+    text = _read(ROOT / "docs" / "repo_truth_index.md")
+    assert "FINAL_COMMENT_POLICY.md" in text
+
+
+def test_project_status_reflects_wp90_merged() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP90" in merged_line

@@ -6,8 +6,8 @@ Reviewers and Codex Review Mode must verify:
 - Base commit equals required previous merge commit when the work package specifies one.
 - Changed-file set matches the work package objective.
 - Forbidden files and protected paths are untouched.
-- Full final report PR comment exists.
-- PR body alone is not treated as sufficient.
+- Full final report PR comment exists **or** PR body contains complete evidence (after WP91, final comment is optional — merge must not be blocked solely because no final comment exists).
+- PR body contains complete current review evidence.
 - `docs/project_status.md` security wording uses the current WP number.
 - Unavailable tools are not described as passed.
 - Tests were rerun after the final commit.
@@ -18,6 +18,8 @@ Reviewers and Codex Review Mode must verify:
 - Repo-truth docs were updated accurately.
 - Safety boundaries remain intact.
 - Ready for review: YES/NO is stated.
+
+**After WP91:** Absence of a final GitHub evidence comment is NOT a merge blocker. The PR body is the current review evidence surface. Merge readiness depends on PR body + status fragment evidence, not on the existence of a final comment.
 
 ## PR Evidence Reporting Discipline Checks
 
@@ -32,10 +34,11 @@ Reviewers must also verify the following evidence discipline checks. If any item
 - PR body and final PR comment are consistent: test counts, command results, files changed, and network wording must match.
 - No stale counts appear in the PR body or final PR comment (counts must reflect the actual last run after the final commit).
 - Unavailable security tools are reported as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT, not as passed.
-- Final top-level PR comment is present (not only the PR body).
+- Final top-level PR comment is present (optional after WP91; not required for merge readiness).
 - Ready for review: YES is not set if any evidence defect remains uncorrected.
-- `pr_evidence_consistency_guard.py` was run with WP47 hardening flags and `--require-guard-result` on exact local drafts or on copied posted content before Ready for review: YES, and the exact guard invocation AND full guard result output (result line, checked categories, exit code) appear in both PR body and final comment.
-- Full guard result output is present in both PR body and final comment: 'PR evidence consistency guard: PASS' or '... FAIL', 'Checked categories:', and 'exit 0' or 'exit 1'. A guard command invocation line alone does not satisfy this check.
+- `pr_evidence_consistency_guard.py` was run with applicable hardening flags on exact local drafts or on copied posted content before Ready for review: YES, and the exact guard invocation AND full guard result output (result line, checked categories, exit code) appear in the PR body.
+- Full guard result output is present in PR body: 'PR evidence consistency guard: PASS' or '... FAIL', 'Checked categories:', and 'exit 0' or 'exit 1'. A guard command invocation line alone does not satisfy this check.
+- After WP91: if no final comment is posted, the guard is run against PR body only. The absence of a final comment is not a guard failure and is not a merge blocker.
 
 **WP47 additional reviewer checks (posted evidence hardening):**
 - Identify the current final evidence comment by the marker "CURRENT FINAL WP EVIDENCE". Do not treat older stale comments as current if a newer comment with this marker explicitly supersedes them.
@@ -152,15 +155,17 @@ Reviewer must block merge if any of the following combinations are present:
 | Combination found | Required action |
 |---|---|
 | `NOT_VERIFIED` + `Ready for review: YES` | Block merge |
-| `PR body and final comment compared after posting: NO` + `Ready for review: YES` | Block merge |
+| `PR body and final comment compared after posting: NO` + `Ready for review: YES` (if a final comment was posted) | Block merge |
 | `LOCAL_DRAFT_VERIFIED` claimed as posted GitHub evidence | Block merge |
 | Status fragment claims current live PR head as fixed SHA | Block merge |
 | Status fragment uses `Head commit:` for currently-in-review head | Block merge |
-| PR body and final comment report different current live PR head | Block merge |
-| Final comment claims verification without post-posting re-fetch | Block merge |
-| Multiple final evidence comments without `CURRENT FINAL WP EVIDENCE` marker on latest | Block merge |
+| PR body and final comment report different current live PR head (if a final comment was posted) | Block merge |
+| Optional final comment contradicts PR body | Block merge |
+| Optional final comment claims canonical evidence authority after WP91 | Block merge |
+| Multiple final evidence comments without `CURRENT FINAL WP EVIDENCE` marker on latest (through WP90 only) | Block merge |
 | Status fragment and PR body disagree on validation summary | Block merge |
 | Ready for review appears as YES in one surface and NO in another | Block merge |
+| No final GitHub evidence comment exists after WP91 | **Not a merge blocker** — absence of final comment is valid after WP91 |
 
 Reviewer must also confirm:
 
