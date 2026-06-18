@@ -322,7 +322,7 @@ def test_project_status_marks_wp79_as_current_phase():
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90"))
 
 
 def test_project_status_marks_wp79_branch():
@@ -341,6 +341,9 @@ def test_project_status_marks_wp79_branch():
         "wp86",
         "wp87",
         "wp88",
+        "wp89",
+        "wp90",
+        "eager-shtern",
     ))
 
 
