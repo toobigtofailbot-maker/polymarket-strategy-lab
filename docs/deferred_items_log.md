@@ -2065,6 +2065,22 @@ remain OPEN after WP91.
 
 WP82-D002, WP86-D001, WP86-D002, WP88-DEFER-001, and WP90-D001 remain OPEN.
 
+## WP92 Repo-Truth Policy Guard And One-Shot Execution Gate Deferred Items
+
+WP92 reconciles repo truth after WP91 merge (PR #91, merge commit
+`5f0d5a594f98f2204698c25d487fc4c826cdcd42`) and implements the repo-truth policy
+guard and one-shot execution gate.
+
+WP92 adds no product source code, no tooling implementation, no runtime/paper/
+live/credential/network/API behavior, and no dependency or lock-file changes.
+
+WP91-D001 remains OPEN. WP82-D002, WP86-D001, WP86-D002, WP88-DEFER-001,
+and WP90-D001 remain OPEN.
+
+| ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
+|----|---------|--------|----------|--------|-----------------|---------------------|
+| WP92-D001 | GitHub-aware private evidence verifier tool still not implemented | OPEN | P4 | WP92 adds docs/tests-only guard and gate; the local guard remains the only mechanical evidence check. Any future requirement to automatically validate already-posted GitHub PR body content in a private repo is still deferred. | Any WP requiring automatic live GitHub PR content verification for private repos. | Future approved tooling WP explicitly scopes a GitHub-aware private verifier with explicit network/auth boundary defined in repo truth. |
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.

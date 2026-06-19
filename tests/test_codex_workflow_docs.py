@@ -424,8 +424,10 @@ def test_project_status_reflects_wp79_branch() -> None:
         "wp89",
         "wp90",
         "wp91",
+        "wp92",
         "eager-shtern",
         "happy-torvalds",
+        "recursing-bell",
     ))
 
 
@@ -937,8 +939,10 @@ def test_project_status_reflects_wp86_branch() -> None:
         "wp89",
         "wp90",
         "wp91",
+        "wp92",
         "eager-shtern",
         "happy-torvalds",
+        "recursing-bell",
     ))
 
 
@@ -1352,3 +1356,122 @@ def test_claude_start_here_final_comment_optional_after_wp91() -> None:
 def test_wp_execution_report_guard_not_both_surfaces() -> None:
     text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md")
     assert "in both the PR body and final comment" not in text
+
+
+# ── WP92: Repo-Truth Policy Guard And One-Shot Execution Gate ─────────────────
+
+ACTIVE_CANONICAL_POLICY_DOCS = (
+    ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md",
+    ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_REPORTING_DISCIPLINE.md",
+    ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_CONSISTENCY_GUARD.md",
+    ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md",
+    ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md",
+    ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md",
+    ROOT / "docs" / "ai" / "codex" / "FOLLOWUP_PROMPT_STANDARD.md",
+    ROOT / "docs" / "ai" / "codex" / "RESULT_OUTPUT_INVARIANT_STANDARD.md",
+    ROOT / "docs" / "work_package_template.md",
+    ROOT / "docs" / "status_entries" / "README.md",
+    ROOT / ".github" / "pull_request_template.md",
+)
+
+
+def test_repo_truth_policy_guard_doc_exists() -> None:
+    assert (ROOT / "docs" / "ai" / "codex" / "REPO_TRUTH_POLICY_GUARD.md").is_file()
+
+
+def test_repo_truth_policy_guard_defines_canonical_policy_doc_set() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "REPO_TRUTH_POLICY_GUARD.md")
+    assert "EVIDENCE_ARCHITECTURE.md" in text
+    assert "PR_EVIDENCE_REPORTING_DISCIPLINE.md" in text
+    assert "PR_REVIEW_CHECKLIST.md" in text
+    assert "work_package_template.md" in text
+    assert "status_entries/README.md" in text
+    assert "pull_request_template.md" in text
+
+
+def test_repo_truth_policy_guard_defines_old_policy_phrase_sweep() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "REPO_TRUTH_POLICY_GUARD.md")
+    assert "CURRENT FINAL WP EVIDENCE" in text
+    assert "--final-comment" in text
+    assert "require-current-final-marker" in text
+    assert "final evidence comment is mandatory" in text
+
+
+def test_repo_truth_policy_guard_defines_phrase_hit_classifications() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "REPO_TRUTH_POLICY_GUARD.md")
+    assert "ACTIVE_POST_WP91_POLICY" in text
+    assert "HISTORICAL_WP86_WP90_ONLY" in text
+    assert "REMOVED" in text
+    assert "REWRITTEN_TO_POST_WP91_POLICY" in text
+    assert "OPTIONAL_NON_CANONICAL_COMMENT" in text
+
+
+def test_repo_truth_policy_guard_defines_product_wp_gate() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "REPO_TRUTH_POLICY_GUARD.md").lower()
+    assert "product wp" in text or "product work package" in text
+    assert "repo-truth phrase sweep" in text
+
+
+def test_repo_truth_policy_guard_defines_policy_wp_gate() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "REPO_TRUTH_POLICY_GUARD.md").lower()
+    assert "policy wp" in text or "policy work package" in text
+    assert "canonical-doc set" in text or "canonical doc set" in text
+
+
+def test_active_policy_docs_do_not_contain_mandatory_final_comment_phrase() -> None:
+    forbidden = "final evidence comment is mandatory"
+    for path in ACTIVE_CANONICAL_POLICY_DOCS:
+        if path.is_file():
+            text = _read(path).lower()
+            assert forbidden not in text, (
+                f"{path.name} contains forbidden phrase: {forbidden!r}"
+            )
+
+
+def test_pr_template_contains_one_shot_readiness_gate() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md")
+    assert "One-Shot Readiness Gate" in text
+
+
+def test_wp_template_contains_one_shot_readiness_gate() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "One-Shot Readiness Gate" in text
+
+
+def test_pr_review_checklist_requires_repo_truth_phrase_sweep() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md").lower()
+    assert "phrase sweep" in text or "repo-truth phrase sweep" in text
+
+
+def test_validation_matrix_references_repo_truth_phrase_sweep() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md").lower()
+    assert "phrase sweep" in text or "repo-truth phrase sweep" in text
+
+
+def test_status_entries_readme_forbids_pending_guard_with_ready_yes() -> None:
+    text = _read(ROOT / "docs" / "status_entries" / "README.md")
+    assert "NOT_VERIFIED" in text
+    lower = text.lower()
+    assert "ready for review" in lower or "ready for review: yes" in lower
+    assert "block merge" in lower or "invalid" in lower
+
+
+def test_repo_truth_index_references_repo_truth_policy_guard() -> None:
+    text = _read(ROOT / "docs" / "repo_truth_index.md")
+    assert "REPO_TRUTH_POLICY_GUARD.md" in text
+
+
+def test_project_status_reflects_wp91_merged() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP91" in merged_line
+
+
+def test_project_status_reflects_wp92_branch() -> None:
+    text = _read(ROOT / "docs" / "project_status.md")
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert any(wp in branch_line for wp in ("wp92", "recursing-bell"))

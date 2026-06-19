@@ -357,6 +357,38 @@ See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`, `docs/ai/codex/PR_EVIDE
 - `git diff --check` after final commit:
 - Security checks after final commit:
 
+## One-Shot Readiness Gate (WP92+)
+
+Classify this WP as Product WP or Policy WP, then fill in the appropriate gate below.
+See `docs/ai/codex/REPO_TRUTH_POLICY_GUARD.md` for full gate definitions.
+
+**Product WP gate** (report/export/loader/validator WPs):
+```
+- repo-truth phrase sweep: PASS / NOT_APPLICABLE
+- PR body/status fragment contradiction matrix: PASS
+- status fragment stable/non-self-referential: PASS
+- result-object field coverage: PASS / NOT_APPLICABLE
+- serializer losslessness: PASS / NOT_APPLICABLE
+- full public output scan: PASS / NOT_APPLICABLE
+- invalid-output no-echo: PASS / NOT_APPLICABLE
+- validation tier complete: PASS
+- guards: PASS
+```
+
+**Policy WP gate** (workflow/policy/template/docs WPs):
+```
+- canonical-doc set reviewed: PASS / NOT_APPLICABLE
+- repo-truth phrase sweep: PASS / NOT_APPLICABLE
+- old-policy phrase hits classified: PASS / NOT_APPLICABLE
+- templates aligned: PASS / NOT_APPLICABLE
+- PR review checklist aligned: PASS / NOT_APPLICABLE
+- validation matrix aligned: PASS / NOT_APPLICABLE
+- status-fragment guidance aligned: PASS / NOT_APPLICABLE
+- workflow docs tests updated: PASS / NOT_APPLICABLE
+- contradiction matrix updated if policy changes: PASS / NOT_APPLICABLE
+- no product/source/tool/dependency changes: PASS / NOT_APPLICABLE
+```
+
 ## Deferred Items Added/Updated/Resolved
 
 ## Deferred Security/Tooling Items Updated

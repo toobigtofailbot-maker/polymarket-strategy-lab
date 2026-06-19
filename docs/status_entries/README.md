@@ -124,6 +124,8 @@ The following combinations are invalid and must block merge:
 | Invalid combination | Required outcome |
 |---|---|
 | `NOT_VERIFIED` + `Ready for review: YES` | Block merge |
+| Evidence guard pending while `Ready for review: YES` | Block merge |
+| `LOCAL_DRAFT_VERIFIED` as sole evidence source while `Ready for review: YES` (without documented justification) | Block merge |
 | Status fragment claims current live PR head as fixed SHA | Block merge |
 | Status fragment uses `Head commit:` for in-review PR head | Block merge |
 | Status fragment and PR body disagree on validation summary | Block merge or update fragment |

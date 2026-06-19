@@ -247,3 +247,30 @@ def test_wp91_does_not_add_new_src_files():
     changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
     new_src = [f for f in changed if f.startswith("src/")]
     assert new_src == [], f"WP91 must not add new src/ files: {new_src}"
+
+
+# ── WP92: Repo-Truth Policy Guard And One-Shot Execution Gate ────────────────
+
+
+def test_wp92_status_fragment_exists():
+    path = ROOT / "docs" / "status_entries" / "WP92.md"
+    assert path.is_file(), "docs/status_entries/WP92.md must exist after WP92"
+
+
+def test_wp92_repo_truth_policy_guard_doc_exists():
+    path = ROOT / "docs" / "ai" / "codex" / "REPO_TRUTH_POLICY_GUARD.md"
+    assert path.is_file(), "docs/ai/codex/REPO_TRUTH_POLICY_GUARD.md must exist after WP92"
+
+
+def test_wp92_does_not_add_new_src_files():
+    import subprocess
+    result = subprocess.run(
+        ["git", "diff", "origin/main...HEAD", "--name-only"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+    new_src = [f for f in changed if f.startswith("src/")]
+    assert new_src == [], f"WP92 must not add new src/ files: {new_src}"
