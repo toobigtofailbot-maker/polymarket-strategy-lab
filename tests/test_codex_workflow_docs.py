@@ -1167,3 +1167,29 @@ def test_wp_template_evidence_architecture_no_transition_only_pointer() -> None:
 def test_wp_template_final_comment_optional_non_canonical_field() -> None:
     text = _read(ROOT / "docs" / "work_package_template.md")
     assert "optional/non-canonical after WP91" in text
+
+
+def test_pr_evidence_discipline_purpose_absence_not_a_merge_blocker_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_REPORTING_DISCIPLINE.md")
+    assert "not a merge blocker after WP91" in text
+
+
+def test_pr_evidence_discipline_pr_body_is_required_surface() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_REPORTING_DISCIPLINE.md")
+    assert "PR body is the required surface" in text
+
+
+def test_pr_evidence_discipline_missing_final_comment_not_active_blocker() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_REPORTING_DISCIPLINE.md")
+    assert "after WP91, absence is not a merge blocker" in text
+
+
+def test_pr_evidence_discipline_latest_comment_url_not_required_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_REPORTING_DISCIPLINE.md")
+    assert "Latest current-final comment URL" in text
+    assert "not required after WP91" in text
+
+
+def test_pr_evidence_discipline_status_fragment_consistent_with_pr_body() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_REPORTING_DISCIPLINE.md")
+    assert "consistent with the PR body on all key fields" in text
