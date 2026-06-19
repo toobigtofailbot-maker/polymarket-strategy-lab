@@ -1583,6 +1583,24 @@ def test_status_entries_readme_forbids_pending_guard_with_ready_yes() -> None:
     assert "block merge" in lower or "invalid" in lower
 
 
+def test_status_entries_readme_defines_stable_only_pr_identity_policy() -> None:
+    text = _read(ROOT / "docs" / "status_entries" / "README.md")
+    assert "Status fragments are stable committed repo records" in text
+    assert "PR: see GitHub PR metadata and PR body." in text
+    assert "PR: TBD" in text
+    assert "LOCAL_DRAFT_VERIFIED" in text
+    assert "Current live PR head: <40-character SHA>" in text
+    assert "dynamic PR metadata" in text
+
+
+def test_templates_reference_stable_status_fragment_pr_field() -> None:
+    pr_template = _read(ROOT / ".github" / "pull_request_template.md")
+    wp_template = _read(ROOT / "docs" / "work_package_template.md")
+    assert "not \"PR: TBD\" with Ready YES" in pr_template
+    assert "PR: see GitHub PR metadata and PR body." in wp_template
+    assert "no `PR: TBD` with Ready YES" in wp_template
+
+
 def test_repo_truth_index_references_repo_truth_policy_guard() -> None:
     text = _read(ROOT / "docs" / "repo_truth_index.md")
     assert "REPO_TRUTH_POLICY_GUARD.md" in text

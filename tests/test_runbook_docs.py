@@ -157,6 +157,10 @@ def test_wp93_project_status_and_deferred_items_recorded() -> None:
 def test_wp93_status_fragment_exists_and_is_non_self_referential() -> None:
     text = _read(WP93_STATUS)
     assert "WP ID: WP93" in text
+    assert "PR: see GitHub PR metadata and PR body." in text
     assert "Current live PR head: see GitHub PR metadata and PR body" in text
     assert "stable and non-self-referential" in text
+    assert "PR: TBD" not in text
+    assert "LOCAL_DRAFT_VERIFIED" not in text
+    assert "Head commit:" not in text
     assert "Ready for review:" in text

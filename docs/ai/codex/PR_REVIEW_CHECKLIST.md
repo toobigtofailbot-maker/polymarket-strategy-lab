@@ -93,7 +93,8 @@ See `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` for full evidence mode definit
 Reviewer must confirm:
 
 - `docs/status_entries/WP<NN>.md` exists and is committed on the PR branch.
-- Status fragment head commit matches the PR head SHA.
+- Status fragment does not store dynamic PR metadata as committed facts: no `PR: TBD` with Ready YES, no fixed current live PR head SHA, and no `Head commit:` for an in-review SHA.
+- Status fragment points to GitHub metadata and the PR body for live PR identity/head state.
 - Status fragment authority posture matches the PR body and WP definition.
 - Status fragment validation summary is consistent with the PR body validation results (and with the optional final comment if one was posted).
 - Status fragment evidence mode matches the PR body evidence mode (and the optional final comment if one was posted).
@@ -184,6 +185,7 @@ Reviewer must also confirm:
 
 - Status fragment uses `Validated implementation commit:` (not `Head commit:`) for the in-review validated SHA.
 - Status fragment includes the required non-self-referential wording for current live PR head.
+- Status fragment uses `PR: see GitHub PR metadata and PR body.` rather than `PR: TBD` before Ready YES.
 - Follow-up responses include a self-diagnosis block classifying root cause (not just the symptom).
 
 ## Result-Object Field-Coverage Checks (WP88+, Result/Report/Loader/Validator WPs)

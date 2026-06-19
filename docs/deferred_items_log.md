@@ -2098,6 +2098,13 @@ any future GitHub-aware private evidence verifier. Existing runtime, paper,
 live, credential, network/API, scheduler, dashboard, bot-loop, and dependency
 deferred items remain unchanged.
 
+WP93 final follow-up repairs the WP93 status fragment dynamic PR placeholder
+and hardens stable-only status-fragment policy/tests. It resolves no deferred
+implementation item and adds no source code, tools, CLI, runtime behavior,
+paper engine, order logic, live execution, credentials, runtime/API/product/
+account network behavior, scheduler, dashboard, bot loop, dependency file, or
+lock file.
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.

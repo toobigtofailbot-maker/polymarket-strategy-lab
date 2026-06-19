@@ -194,6 +194,7 @@ See `docs/ai/codex/REPO_TRUTH_POLICY_GUARD.md` for the active canonical policy-d
 All WPs from WP88 onward must satisfy Model D from `docs/ai/codex/EVIDENCE_ARCHITECTURE.md`:
 
 - PR body is the current review evidence surface; status fragment is a stable non-self-referential record.
+- Status fragment PR identity should use `PR: see GitHub PR metadata and PR body.` for in-review WPs; `PR: TBD` is invalid with Ready YES.
 - Status fragment must not record the current live PR head as a fixed SHA.
 - Status fragment must use `Validated implementation commit:` (not `Head commit:`) for in-review validated SHAs.
 - Final comment is optional and non-canonical after WP91 — not required for merge readiness.

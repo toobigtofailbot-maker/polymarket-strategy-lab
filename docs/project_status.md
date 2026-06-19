@@ -77,7 +77,7 @@
 - Status entries / committed evidence fragments status: WORKFLOW_CONVENTION_MERGED
 - Final comment transition status: RETIRED_AFTER_WP91; mandatory final GitHub evidence comments retired; PR body is current review evidence surface; status fragment is stable non-self-referential record; final comments optional non-canonical after WP91
 - Repo-truth policy guard status: REPO_TRUTH_POLICY_GUARD_MERGED; one-shot readiness gate added to PR template and WP template; phrase sweep defined for active canonical policy-doc set; workflow docs tests updated; no product behavior changed; no runtime/paper/live/credential/network/dependency behavior changed
-- Candidate review report operator runbook status: DOCS_ONLY_OPERATOR_RUNBOOK_ON_BRANCH; documents the import-based local/offline WP87 fixture-loader, WP89 candidate review report, and WP90 export workflow; no new CLI, source code, tools, runtime/paper/live/credential/network/API/account behavior, scheduler/dashboard/bot loop, dependency, or lock-file change
+- Candidate review report operator runbook status: DOCS_ONLY_OPERATOR_RUNBOOK_ON_BRANCH; documents the import-based local/offline WP87 fixture-loader, WP89 candidate review report, and WP90 export workflow; WP93 final follow-up hardens stable-only status-fragment policy and repairs the WP93 status fragment PR field; no new CLI, source code, tools, runtime/paper/live/credential/network/API/account behavior, scheduler/dashboard/bot loop, dependency, or lock-file change
 - Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
 - Agent execution authority: FORBIDDEN

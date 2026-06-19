@@ -69,6 +69,7 @@ Negative test matrix required: YES / NO
 Status fragment path: docs/status_entries/WP<NN>.md
 Status fragment committed: YES/NO
 Status fragment consistent with PR body: YES/NO
+Status fragment PR field uses "see GitHub PR metadata and PR body" (not "PR: TBD" with Ready YES): YES/NO
 Status fragment is stable/non-self-referential (no current live PR head as fixed SHA): YES/NO
 Status fragment uses "Validated implementation commit:" (not "Head commit:") for in-review SHA: YES/NO
 ```
