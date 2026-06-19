@@ -449,6 +449,9 @@ The status fragment must be committed on the WP branch and merged with the PR.
 
 - Status fragment path: docs/status_entries/WP<NN>.md
 - Status fragment committed: YES/NO
+- Status fragment PR field: `PR: see GitHub PR metadata and PR body.`
+- Status fragment current live PR head field: `Current live PR head: see GitHub PR metadata and PR body.`
+- Status fragment stable-only check: no `PR: TBD` with Ready YES, no fixed current-live-head SHA, no `Head commit:` for in-review SHA, no `LOCAL_DRAFT_VERIFIED` as final active evidence with Ready YES
 
 ## PR Body Required Sections
 

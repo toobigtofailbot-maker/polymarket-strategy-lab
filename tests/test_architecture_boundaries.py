@@ -274,3 +274,30 @@ def test_wp92_does_not_add_new_src_files():
     changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
     new_src = [f for f in changed if f.startswith("src/")]
     assert new_src == [], f"WP92 must not add new src/ files: {new_src}"
+
+
+# -- WP93: Candidate Review Report Operator Runbook V1 ------------------------
+
+
+def test_wp93_status_fragment_exists():
+    path = ROOT / "docs" / "status_entries" / "WP93.md"
+    assert path.is_file(), "docs/status_entries/WP93.md must exist after WP93"
+
+
+def test_wp93_candidate_review_report_operator_runbook_exists():
+    path = ROOT / "docs" / "runbooks" / "candidate_review_report_operator_runbook.md"
+    assert path.is_file(), "WP93 runbook must exist"
+
+
+def test_wp93_does_not_add_new_src_files():
+    import subprocess
+    result = subprocess.run(
+        ["git", "diff", "origin/main...HEAD", "--name-only"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+    new_src = [f for f in changed if f.startswith("src/")]
+    assert new_src == [], f"WP93 must not add new src/ files: {new_src}"

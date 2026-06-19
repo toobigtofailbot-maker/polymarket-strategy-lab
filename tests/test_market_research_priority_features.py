@@ -1736,7 +1736,7 @@ def test_project_status_current_branch_is_wp59_or_later():
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp59", "wp60", "wp61", "wp62", "wp63", "wp64", "wp65", "wp66", "wp67", "wp68", "wp69", "wp70", "wp71", "wp72", "wp73", "wp74", "wp75", "wp76", "wp77", "wp78", "wp79", "wp80", "wp81", "wp82", "wp83", "wp84", "wp86", "wp87", "wp88", "wp89", "wp90", "wp91", "wp92", "eager-shtern", "happy-torvalds", "recursing-bell")), (
+    assert any(wp in branch_line for wp in ("wp59", "wp60", "wp61", "wp62", "wp63", "wp64", "wp65", "wp66", "wp67", "wp68", "wp69", "wp70", "wp71", "wp72", "wp73", "wp74", "wp75", "wp76", "wp77", "wp78", "wp79", "wp80", "wp81", "wp82", "wp83", "wp84", "wp86", "wp87", "wp88", "wp89", "wp90", "wp91", "wp92", "wp93", "eager-shtern", "happy-torvalds", "recursing-bell")), (
         f"Expected wp59 or later branch in branch line: {branch_line}"
     )
 
@@ -2297,7 +2297,7 @@ def test_project_status_current_branch_is_wp64():
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp64", "wp65", "wp66", "wp67", "wp68", "wp69", "wp70", "wp71", "wp72", "wp73", "wp74", "wp75", "wp76", "wp77", "wp78", "wp79", "wp80", "wp81", "wp82", "wp83", "wp84", "wp86", "wp87", "wp88", "wp89", "wp90", "wp91", "wp92", "eager-shtern", "happy-torvalds", "recursing-bell")), (
+    assert any(wp in branch_line for wp in ("wp64", "wp65", "wp66", "wp67", "wp68", "wp69", "wp70", "wp71", "wp72", "wp73", "wp74", "wp75", "wp76", "wp77", "wp78", "wp79", "wp80", "wp81", "wp82", "wp83", "wp84", "wp86", "wp87", "wp88", "wp89", "wp90", "wp91", "wp92", "wp93", "eager-shtern", "happy-torvalds", "recursing-bell")), (
         f"Expected wp64 or later in current branch line: {branch_line}"
     )
 

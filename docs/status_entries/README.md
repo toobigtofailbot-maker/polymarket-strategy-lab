@@ -26,10 +26,10 @@ Required fields:
 - WP ID: WP<NN>
 - Title:
 - Branch:
-- PR:
+- PR: see GitHub PR metadata and PR body.
 - Base commit:
 - Validated implementation commit: (SHA of commit on which all focused/related/full tests passed; label exactly this way)
-- Current live PR head: see GitHub PR metadata and PR body. This status fragment is stable and non-self-referential; it does not attempt to encode the SHA of the commit containing itself.
+- Current live PR head: see GitHub PR metadata and PR body. This status fragment is stable and non-self-referential; it does not attempt to encode dynamic PR metadata or the SHA of the commit containing itself.
 - Merge commit: (fill after merge)
 - Evidence mode: PUBLIC_VERIFIER_PASS / PRIVATE_REPO_MANUAL_VERIFIED / BLOCKED_NOT_READY
 
@@ -91,22 +91,33 @@ Forbidden prefixes:
 
 ## Non-Self-Referential Status Fragments (WP88+)
 
+Status fragments are stable committed repo records. They must not depend on
+post-PR dynamic metadata. The PR number and current live PR head belong in
+GitHub metadata and the PR body, not as required committed status-fragment
+fields. A status fragment may point to those live surfaces with stable wording
+such as `see GitHub PR metadata and PR body`.
+
 Status fragments must not track the current live PR head as a fixed SHA. That SHA is in the GitHub PR metadata and the PR body, which are updated with each push. A status fragment that records a live PR head SHA becomes stale after the next commit.
 
 **Forbidden in status fragments:**
 
+- `PR: TBD` while `Ready for review: YES`
+- `PR: #<number>` as a required in-review committed field for new status fragments
 - `Head commit: <current in-review SHA>` — this label is reserved for historical merge records
 - `NOT_VERIFIED` + `Ready for review: YES` — this combination is always invalid
+- `LOCAL_DRAFT_VERIFIED` + `Ready for review: YES` as the final active evidence state
+- `Current live PR head: <40-character SHA>`
 - Claims that local draft verification equals posted GitHub verification
 - Duplicate full final-comment evidence tables that can drift from the PR body
 
-**Required wording for live PR head:**
+**Required stable wording for PR identity and live PR head:**
 
 Every status fragment must include:
 
 ```
+PR: see GitHub PR metadata and PR body.
 Current live PR head: see GitHub PR metadata and PR body. This status fragment is stable
-and non-self-referential; it does not attempt to encode the SHA of the commit containing itself.
+and non-self-referential; it does not attempt to encode dynamic PR metadata or the SHA of the commit containing itself.
 ```
 
 If a specific implementation commit is recorded (e.g., the last commit on which all tests passed), label it exactly:
@@ -125,7 +136,8 @@ The following combinations are invalid and must block merge:
 |---|---|
 | `NOT_VERIFIED` + `Ready for review: YES` | Block merge |
 | Evidence guard pending while `Ready for review: YES` | Block merge |
-| `LOCAL_DRAFT_VERIFIED` as sole evidence source while `Ready for review: YES` (without documented justification) | Block merge |
+| `PR: TBD` while `Ready for review: YES` | Block merge |
+| `LOCAL_DRAFT_VERIFIED` as final active evidence source while `Ready for review: YES` | Block merge |
 | Status fragment claims current live PR head as fixed SHA | Block merge |
 | Status fragment uses `Head commit:` for in-review PR head | Block merge |
 | Status fragment and PR body disagree on validation summary | Block merge or update fragment |
@@ -143,7 +155,10 @@ The following combinations are invalid and must block merge:
 
 When a WP claims a posted GitHub PR body or posted final evidence comment is verified, the actor must re-fetch that posted GitHub state after posting. Writing and checking a draft locally — even if identical to what will be posted — is `LOCAL_DRAFT_VERIFIED`, not `POSTED_GITHUB_API_VERIFIED`.
 
-A `Ready for review: YES` with `LOCAL_DRAFT_VERIFIED` is only allowed when the WP package class explicitly permits it (e.g., docs-only WPs that use `PRIVATE_REPO_MANUAL_VERIFIED` with manual UI verification).
+A `Ready for review: YES` with `LOCAL_DRAFT_VERIFIED` as the final active
+evidence state is not allowed. Use `PRIVATE_REPO_MANUAL_VERIFIED`,
+`POSTED_GITHUB_API_VERIFIED`, or `PR_BODY_CURRENT_REVIEW_SURFACE` as applicable
+after the PR body/GitHub state is verified.
 
 ## Final Comment Policy (After WP91)
 
