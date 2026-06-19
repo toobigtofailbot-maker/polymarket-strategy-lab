@@ -1092,3 +1092,23 @@ def test_project_status_reflects_wp90_merged() -> None:
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
     assert "WP90" in merged_line
+
+
+def test_guard_doc_states_final_comment_not_required_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_CONSISTENCY_GUARD.md")
+    assert "not required after WP91" in text or "optional after WP91" in text
+
+
+def test_guard_doc_states_absence_not_a_merge_blocker_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_CONSISTENCY_GUARD.md")
+    assert "not a merge blocker after WP91" in text or "Absence of a final comment is not" in text
+
+
+def test_guard_doc_optional_final_comment_is_non_canonical() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_CONSISTENCY_GUARD.md")
+    assert "non-canonical" in text
+
+
+def test_guard_doc_require_current_final_marker_is_historical() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_CONSISTENCY_GUARD.md")
+    assert "WP86" in text or "historical" in text.lower()

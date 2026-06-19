@@ -7,7 +7,7 @@
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network access: NONE — the guard is local/offline and does not fetch GitHub
 - Applies to: Codex and Claude Code
-- Enforcement: run before Ready for review: YES when local PR body and final comment drafts are available
+- Enforcement: run before Ready for review: YES when local PR body draft is available. After WP91, a final comment draft is not required as a guard input — final comments are optional and non-canonical after WP91.
 
 ## Purpose
 
@@ -18,6 +18,8 @@ Ready for review: YES.
 WP45 made exact PR evidence reporting mandatory as written policy.
 WP46 adds this mechanical guard so evidence drift is caught by a tool,
 not manually during review.
+
+**WP91 policy change:** After WP91, mandatory final GitHub evidence comments are retired. The guard is no longer required as a merge gate with a final comment input. After WP91, the PR body alone is the current review evidence surface; the status fragment is the stable non-self-referential record; final comments are optional reviewer clarification only and non-canonical. Absence of a final comment is not a merge blocker after WP91. If a final comment is voluntarily posted, it must not contradict the PR body and must explicitly state it is optional and non-canonical.
 
 ## Non-Goals
 
@@ -37,7 +39,7 @@ not manually during review.
 | Argument | Required | Description |
 |---|---|---|
 | `--pr-body PATH` | Yes | Local PR body draft file path |
-| `--final-comment PATH` | Yes | Local final comment draft file path |
+| `--final-comment PATH` | Yes (WP86–WP90); not required after WP91 | Local final comment draft file path — optional and non-canonical after WP91; absence is not a merge blocker |
 | `--expected-head SHA` | No | Expected 40-char head commit SHA — must appear in both files |
 | `--required-command TEXT` | No, repeatable | Exact command text that must appear verbatim in both files |
 | `--require-standard-network-wording` | No | Require standard network wording in both files |
@@ -60,7 +62,9 @@ python tools/git/pr_evidence_consistency_guard.py \
   --final-comment local_final_comment.md
 ```
 
-### Full WP invocation pattern (with WP47 + WP54 hardening flags)
+### Full WP invocation pattern — Historical WP86–WP90 Only (required final comment)
+
+This pattern applied during the WP86–WP90 transition when a mandatory final comment was required. `--require-current-final-marker` is a WP86–WP90-only flag and is not required after WP91.
 
 ```
 python tools/git/pr_evidence_consistency_guard.py \
@@ -77,6 +81,23 @@ python tools/git/pr_evidence_consistency_guard.py \
   --require-current-final-marker \
   --require-posted-evidence-note \
   --require-guard-result
+```
+
+### Post-WP91 invocation pattern (final comment not required)
+
+After WP91, `--final-comment` and `--require-current-final-marker` are not required. Run the guard on the PR body only:
+
+```
+python tools/git/pr_evidence_consistency_guard.py \
+  --pr-body local_pr_body.md \
+  --expected-head <HEAD_SHA> \
+  --required-command "python tools/git/status_snapshot.py --format text --include-deferred --include-helper-inventory --include-next-wp-candidates --include-protected-boundaries" \
+  --required-command "python tools/git/diff_scope_summary.py --base origin/main --head HEAD --package-class <PACKAGE_CLASS> --allowed-prefix docs/ --allowed-prefix tests/ --forbidden-prefix src/ --forbidden-prefix tools/" \
+  --require-standard-network-wording \
+  --require-ready-yes \
+  --forbid-inline-test-counts \
+  --forbid-placeholder-evidence \
+  --require-posted-evidence-note
 ```
 
 ### JSON output
@@ -137,7 +158,7 @@ The guard checks for this exact string when `--require-standard-network-wording`
 | J — Security honesty | Tool described as "passed" must not also be described as NOT_AVAILABLE/SKIPPED |
 | K — Inline test counts | (--forbid-inline-test-counts) Parenthetical test-count phrases like "(33 tests)" are forbidden outside validation sections |
 | L — Placeholder evidence | (--forbid-placeholder-evidence) Tokens like `<HEAD_SHA>`, `TBD`, `placeholder`, `actual:`, `TODO`, or fake SHA filler are forbidden |
-| M — Current final marker | (--require-current-final-marker) Final comment must contain "CURRENT FINAL WP EVIDENCE" marker |
+| M — Current final marker | (--require-current-final-marker) Final comment must contain "CURRENT FINAL WP EVIDENCE" marker — **WP86–WP90 only; not required after WP91** |
 | N — Stale count tokens | (--forbid-stale-count-tokens) User-supplied stale tokens must not appear in either file |
 | O — Posted evidence note | (--require-posted-evidence-note) Both files must contain a "Guard input source:" line |
 | P — Guard result line | (--require-guard-result) Both files must contain: 'PR evidence consistency guard: PASS' or '... FAIL', 'Checked categories:', and an explicit exit code. A command invocation line alone does not satisfy this check. |
@@ -180,7 +201,7 @@ The `run_guard()` API (for direct Python callers) still returns `[A]` category e
 
 ## How Claude Code / Codex Should Use This Guard
 
-Required workflow:
+**Historical required workflow (WP86–WP90, mandatory final comment):**
 
 1. Prepare final PR body text locally (e.g., `local_pr_body.md`).
 2. Prepare current final evidence comment text locally (e.g., `local_final_comment.md`).
@@ -194,7 +215,19 @@ Required workflow:
 10. Do not commit local draft files unless they are test fixtures under `tests/`.
 11. When using `--require-guard-result`: include the literal guard output lines — `PR evidence consistency guard: PASS`, `Checked categories: ...`, and `exit 0` or `exit 1` — in both the PR body and the final comment. The command invocation line alone does not satisfy this check.
 
-**Old final comments warning:** If previous evidence comments exist, the new current final evidence comment must start with "CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments" so reviewers know which comment is current.
+**Post-WP91 required workflow (final comment not required):**
+
+1. Prepare final PR body text locally (e.g., `local_pr_body.md`).
+2. A final comment is not required after WP91 — skip final comment draft preparation unless a voluntary comment is desired.
+3. Run the guard on the PR body using the post-WP91 invocation pattern (no `--final-comment`, no `--require-current-final-marker`).
+4. If the guard fails, fix the PR body and re-run.
+5. Post or update the PR body. No final comment is required for merge readiness.
+6. Mark Ready for review: YES after the guard passes on the PR body.
+7. If a final comment is voluntarily posted, it must not contradict the PR body, and must state it is optional and non-canonical.
+
+**Old final comments warning (WP86–WP90 only):** If previous evidence comments exist, the new current final evidence comment must start with "CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments" so reviewers know which comment is current.
+
+**After WP91:** Mandatory current-final-comment requirement is retired. Final comments are optional and non-canonical after WP91. If a final comment is voluntarily posted, it must not contradict the PR body and must explicitly state: "This comment is optional and non-canonical; the PR body is the current review evidence surface." Absence of a final comment is not a merge blocker after WP91.
 
 **No inline test counts in file lists:** Do not put test counts in file list descriptions or summary parentheticals (e.g., "focused tests (34 tests)"). Put counts only in validation result sections.
 
