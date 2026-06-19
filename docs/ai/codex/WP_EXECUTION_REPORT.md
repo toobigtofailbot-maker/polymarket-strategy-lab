@@ -78,7 +78,7 @@ If Remote Main Sync Gate, `git fetch`, `git pull`, `git push`, or PR publication
 > Network was used only for Remote Main Sync Gate / git remote synchronization and PR push/publication. This WP adds no runtime network behavior, no API polling, no account access, and no product network behavior.
 
 **PR evidence consistency guard:**
-Run `tools/git/pr_evidence_consistency_guard.py` on local PR body and final comment drafts before Ready for review: YES. Report the exact guard invocation and result (PASS/FAIL) in both the PR body and final comment. If the guard fails, correct all failures before requesting review. Do not commit local draft files. See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
+Run `tools/git/pr_evidence_consistency_guard.py` on the local PR body draft before Ready for review: YES. After WP91, if an optional final comment is posted, also run the guard against it. Report the exact guard invocation and result (PASS/FAIL) in the PR body (and in the optional final comment if posted). If the guard fails, correct all failures before requesting review. Do not commit local draft files. See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
 
 **Current final evidence marker requirement (Historical WP86–WP90 only; not active after WP91):**
 

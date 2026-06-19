@@ -1242,3 +1242,113 @@ def test_wp_execution_report_latest_comment_url_not_required_after_wp91() -> Non
     text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md")
     assert "Verified latest current-final comment URL" in text
     assert "not required after WP91" in text
+
+
+# ── WP91 follow-up 6: Repo-wide sweep — all active old-policy hits resolved ───
+
+
+def test_concise_reporting_rules_mandatory_header_retired() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "CONCISE_REPORTING_RULES.md")
+    assert "## Mandatory Final PR Comment" not in text
+
+
+def test_concise_reporting_rules_final_comment_optional_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "CONCISE_REPORTING_RULES.md")
+    assert "optional" in text.lower()
+    assert "WP91" in text
+
+
+def test_concise_reporting_rules_pr_body_not_replacement_retired() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "CONCISE_REPORTING_RULES.md")
+    assert "The PR body does not replace this final report comment" not in text
+
+
+def test_posted_pr_evidence_review_hardening_wp91_note() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "POSTED_PR_EVIDENCE_REVIEW_HARDENING.md")
+    assert "WP91" in text
+    assert "optional" in text.lower()
+
+
+def test_posted_pr_evidence_review_hardening_workflows_labeled_historical() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "POSTED_PR_EVIDENCE_REVIEW_HARDENING.md")
+    assert "Historical WP47" in text
+
+
+def test_wp_execution_state_machine_phase6_final_comment_optional() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_STATE_MACHINE.md")
+    assert "optional after WP91" in text
+
+
+def test_wp_execution_state_machine_phase8_final_comment_not_required() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_STATE_MACHINE.md")
+    assert "not required after WP91" in text
+
+
+def test_pr_review_checklist_wp47_checks_labeled_post_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md")
+    assert "After WP91" in text or "after WP91" in text
+
+
+def test_pr_review_checklist_status_fragment_not_final_comment_consistency() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_REVIEW_CHECKLIST.md")
+    assert "Status fragment validation summary is consistent with the PR body" in text
+
+
+def test_wp_bundling_policy_posted_evidence_rule_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_BUNDLING_POLICY.md")
+    assert "WP91" in text or "optional after WP91" in text
+
+
+def test_validation_matrix_guard_example_no_final_comment_required() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md")
+    assert "optional" in text.lower() or "WP91" in text
+
+
+def test_token_efficiency_operating_model_final_comment_optional() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "TOKEN_EFFICIENCY_OPERATING_MODEL.md")
+    assert "optional" in text.lower() and "WP91" in text
+
+
+def test_token_efficiency_operating_model_no_mandatory_final_comment() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "TOKEN_EFFICIENCY_OPERATING_MODEL.md")
+    assert "skipping any required preflight, validation, security check, final PR comment" not in text
+
+
+def test_token_efficiency_sequence_closeout_final_comment_optional() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "TOKEN_EFFICIENCY_SEQUENCE_CLOSEOUT.md")
+    assert "optional" in text.lower() and "WP91" in text
+
+
+def test_diff_scope_summary_helper_no_mandatory_final_comment() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "DIFF_SCOPE_SUMMARY_HELPER.md")
+    assert "mandatory final PR comment" not in text
+
+
+def test_diff_scope_summary_helper_design_no_mandatory_final_comment() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md")
+    assert "mandatory final PR comment" not in text
+
+
+def test_validation_output_summary_helper_design_final_comment_optional() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md")
+    assert "optional after WP91" in text or "WP91" in text
+
+
+def test_validation_output_summary_helper_design_no_mandatory_final_comment() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md")
+    assert "mandatory final PR comment" not in text or "Historical" in text
+
+
+def test_code_index_blast_radius_helper_design_no_mandatory_final_comment() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md")
+    assert "The mandatory final PR comment." not in text
+
+
+def test_claude_start_here_final_comment_optional_after_wp91() -> None:
+    text = _read(ROOT / "CLAUDE_START_HERE.md")
+    assert "optional" in text.lower() or "WP91" in text
+
+
+def test_wp_execution_report_guard_not_both_surfaces() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md")
+    assert "in both the PR body and final comment" not in text

@@ -152,10 +152,12 @@ The local guard validates local text drafts only. It does not fetch or validate 
 
 Before setting Ready for review: YES, Claude Code must satisfy one of the following conditions and state which one was used:
 
-1. The guard was run on exact local draft texts that are intended for posting as-is (the PR body and current final evidence comment). State: "Guard input source: exact local drafts intended for posting."
-2. The already-posted PR body and latest current-final evidence comment were copied into local temporary files, and the guard was run on those copied texts. State: "Guard input source: copied from posted GitHub PR body and current-final comment dated [date]."
+1. The guard was run on exact local draft texts intended for posting as-is (the PR body; and optionally the current final evidence comment if posting one after WP91). State: "Guard input source: exact local drafts intended for posting."
+2. The already-posted PR body (and latest current-final evidence comment if one was posted) were copied into local temporary files, and the guard was run on those copied texts. State: "Guard input source: copied from posted GitHub PR body and current-final comment dated [date]."
 
-The guard must be run with `--require-guard-result`. The full guard result output — `PR evidence consistency guard: PASS` or `... FAIL`, `Checked categories: ...`, and `exit 0` or `exit 1` — must appear in both PR body and final comment. A guard command invocation line alone does not satisfy this requirement.
+After WP91, if no final comment is posted, omit `--final-comment` and `--require-current-final-marker` from the guard invocation.
+
+The guard must be run with `--require-guard-result`. The full guard result output — `PR evidence consistency guard: PASS` or `... FAIL`, `Checked categories: ...`, and `exit 0` or `exit 1` — must appear in the PR body (and in the optional final comment if posted). A guard command invocation line alone does not satisfy this requirement.
 
 If any posted evidence changes after the last guard run, the guard must be rerun on the updated content or Ready for review must remain NO.
 

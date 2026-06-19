@@ -34,7 +34,7 @@ Follow `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` for all WP execution, evide
 
 ## Claude-Specific Reminders
 
-- Local PR body and final comment drafts are NOT posted GitHub evidence. A file on disk does not prove a GitHub comment was posted.
+- Local PR body and final comment drafts are NOT posted GitHub evidence. A file on disk does not prove a GitHub comment was posted. After WP91, a final comment is not required; the PR body is the primary evidence surface.
 - Before saying `Ready for review: YES`, select exactly one evidence mode: `PUBLIC_VERIFIER_PASS`, `PRIVATE_REPO_MANUAL_VERIFIED`, or `BLOCKED_NOT_READY`. Document all required fields for the selected mode.
 - Do not claim the posted evidence verifier passed unless you actually ran it against the live PR and it returned exit 0.
 - In this private repo, public unauthenticated posted verifier exit 3 is not itself a process defect. It becomes a process defect only if PR evidence falsely reports PASS, omits the manual-verification fields, or sets Ready for review contrary to the state machine.

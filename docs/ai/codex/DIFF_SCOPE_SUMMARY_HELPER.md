@@ -16,7 +16,8 @@ It reduces the token load of PR reviews and WP executions by pre-computing infor
 reviewers currently derive manually from `git diff` output and file lists.
 
 It does not replace human review, required validation, security checks, preflight tools, the
-generated artifact guard, the Remote Main Sync Gate, or the mandatory final PR comment.
+generated artifact guard, the Remote Main Sync Gate, or the PR body current evidence surface
+(final PR comment is optional after WP91).
 
 ## 3. Commands
 

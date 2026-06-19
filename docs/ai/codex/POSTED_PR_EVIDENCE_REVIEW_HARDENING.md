@@ -10,6 +10,8 @@
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Network access: NONE
 
+**After WP91:** Final evidence comments are optional and non-canonical. The CURRENT FINAL WP EVIDENCE marker and the Reviewer Workflow and Claude Code/Codex Workflow described in this document are historical WP47–WP90 practice. After WP91, absence of a final comment is not a merge blocker; the PR body is the primary evidence surface. If an optional final comment is posted, these workflows remain applicable to it.
+
 ## Purpose
 
 Harden the PR evidence workflow so future PRs do not require repeated manual
@@ -71,7 +73,7 @@ This means:
 5. If any posted evidence changes afterward: copy final posted text to local files and re-run guard.
 6. Mark Ready for review: YES only after final evidence passes.
 
-**Guard input source line** (required in both PR body and final comment):
+**Guard input source line** (required in PR body; required in final comment only if one is posted after WP91):
 
 ```
 Guard input source: exact local drafts intended for posting
@@ -105,22 +107,28 @@ python -m pytest tests/tools/git/test_pr_evidence_consistency_guard.py -v
 Test counts belong only in validation result sections where they appear next to
 the command that produced them.
 
-## Reviewer Workflow
+## Reviewer Workflow (Historical WP47–WP90; applies to optional final comments after WP91)
 
-1. Identify the current final evidence comment by searching for the marker
-   "CURRENT FINAL WP EVIDENCE". Do not treat older stale comments as current.
+**After WP91:** A final comment is not required. If no final comment exists, skip steps 1 and 4. The PR body alone is sufficient for merge readiness.
+
+1. If a final comment was posted: identify the current final evidence comment by searching for
+   the marker "CURRENT FINAL WP EVIDENCE". Do not treat older stale comments as current.
 2. Verify you are reading the latest live PR body (or state clearly if using a
    PDF/export/screenshot at a specific point in time).
 3. Check no parenthetical test counts appear in file lists or summary lines.
-4. Check both PR body and final comment include a "Guard input source:" line.
+4. Check PR body includes a "Guard input source:" line. If an optional final comment was
+   posted, check it also includes a "Guard input source:" line.
 5. Check no placeholder evidence tokens appear (`<HEAD_SHA>`, `TBD`, `placeholder`,
    `actual:`, `TODO`, fake SHA filler).
 6. Verify the guard was run with WP47 hardening flags and passed.
 
-## Claude Code / Codex Workflow
+## Claude Code / Codex Workflow (Historical WP47–WP90; applies to optional final comments after WP91)
+
+**After WP91:** Posting a final comment is optional. If skipping the final comment, run the guard against the PR body draft only (omit `--final-comment` and `--require-current-final-marker`).
 
 1. Prepare final PR body draft (local file).
-2. Prepare final evidence comment draft (local file, starting with current-final marker).
+2. If posting an optional final comment: prepare final evidence comment draft (local file,
+   starting with current-final marker).
 3. Run guard with WP47 hardening flags on these exact local drafts:
    ```
    python tools/git/pr_evidence_consistency_guard.py \
@@ -134,8 +142,10 @@ the command that produced them.
      --require-current-final-marker \
      --require-posted-evidence-note
    ```
+   After WP91, if no final comment is posted, omit `--final-comment` and
+   `--require-current-final-marker` from the invocation.
 4. Fix any failures and re-run.
-5. Post PR body and current final evidence comment.
+5. Post PR body; optionally post current final evidence comment (not required after WP91).
 6. Set Ready for review: YES only after guard passes.
 
 ## Known Limitation: No GitHub API Fetch
