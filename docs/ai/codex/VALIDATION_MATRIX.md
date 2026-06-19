@@ -175,6 +175,20 @@ All WPs that introduce or return public result objects (dataclasses, TypedDicts,
 - Manual serializers prohibited unless a field-coverage test proves losslessness.
 - Recursive forbidden-terms scan covers the entire result object, not only the `errors` field.
 
+## Repo-Truth Policy Guard And One-Shot Gate (WP92+)
+
+All workflow-policy WPs (workflow/governance, docs-only policy, workflow-docs-tests-only) must also confirm:
+
+- Active canonical policy-doc set reviewed for old-policy phrase sweep.
+- Repo-truth phrase sweep performed on all active canonical policy docs.
+- Any old-policy phrase hit classified as `HISTORICAL_WP86_WP90_ONLY`, `REMOVED`, `REWRITTEN_TO_POST_WP91_POLICY`, or `OPTIONAL_NON_CANONICAL_COMMENT`.
+- No phrase hit classified as `ACTIVE_POST_WP91_POLICY`.
+- One-Shot Readiness Gate (Policy WP gate) declared and PASS in PR body.
+- Workflow docs tests updated to enforce the guard.
+- No src/, tools/, dependency, or lock-file changes.
+
+See `docs/ai/codex/REPO_TRUTH_POLICY_GUARD.md` for the active canonical policy-doc set, phrase list, and classification definitions.
+
 ## Evidence Architecture Model D (WP88+; updated by WP91)
 
 All WPs from WP88 onward must satisfy Model D from `docs/ai/codex/EVIDENCE_ARCHITECTURE.md`:

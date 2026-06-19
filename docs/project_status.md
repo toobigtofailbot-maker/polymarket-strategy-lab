@@ -1,9 +1,9 @@
 # Project Status
 
-- Current phase: WP91 - Final Comment Transition Retirement Decision after WP90 merge
-- Repo state: WP90 merged; WP91 workflow-docs-tests-only final comment transition retirement on branch; no paper engine, no order logic, no live execution, no credentials, no network/API behavior, no scheduler/dashboard/bot loop; no product code changes
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90
-- Current branch: `claude/happy-torvalds-94ef00` (wp91 final comment transition retirement; started after WP90 merge)
+- Current phase: WP92 - Repo-Truth Policy Guard And One-Shot Execution Gate after WP91 merge
+- Repo state: WP91 merged; WP92 workflow-docs-tests-only repo-truth policy guard and one-shot readiness gate on branch; no paper engine, no order logic, no live execution, no credentials, no network/API behavior, no scheduler/dashboard/bot loop; no product code changes
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90, WP91
+- Current branch: `claude/recursing-bell-d54bd1` (wp92 repo-truth policy guard and one-shot execution gate; started after WP91 merge)
 - Multi-agent coding workflow status: AGENT_NEUTRAL_START_LAYER_MERGED
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; MANUAL_EXPLICIT_NETWORK_POLLING_RUNNER_DEV_ONLY; MANUAL_GUARD_ENFORCED_SNAPSHOT_CAPTURE_DEV_ONLY
 - Runtime dependency integration status: NOT_STARTED_FOR_NEW_RUNTIME_DEPENDENCIES
@@ -76,6 +76,7 @@
 - WP drafting standard status: WORKFLOW_GOVERNANCE_MERGED
 - Status entries / committed evidence fragments status: WORKFLOW_CONVENTION_MERGED
 - Final comment transition status: RETIRED_AFTER_WP91; mandatory final GitHub evidence comments retired; PR body is current review evidence surface; status fragment is stable non-self-referential record; final comments optional non-canonical after WP91
+- Repo-truth policy guard status: REPO_TRUTH_POLICY_GUARD_ON_BRANCH; one-shot readiness gate added to PR template and WP template; phrase sweep defined for active canonical policy-doc set; workflow docs tests updated; no product behavior changed; no runtime/paper/live/credential/network/dependency behavior changed
 - Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
 - Agent execution authority: FORBIDDEN

@@ -148,6 +148,19 @@ Reviewer must confirm for validator, report, schema, export, collector, workflow
 - All rows with "not compatible" or "not allowed" are either resolved or explicitly deferred with justification.
 - No `Ready for review: YES` if any row was incompatible and unresolved.
 
+## Repo-Truth Phrase Sweep And One-Shot Gate Checks (WP92+)
+
+Reviewer must block merge if any of the following are found:
+
+- Repo-truth phrase sweep missing from PR body for policy WPs (workflow/policy/template/docs WPs).
+- Old active policy wording present in active canonical policy docs but unclassified (not labeled as `HISTORICAL_WP86_WP90_ONLY`).
+- PR body final comment treated as mandatory after WP91 (absence is not a merge blocker after WP91).
+- Status fragment shows pending guard state while PR body says `Ready for review: YES`.
+- Result-object field coverage missing where applicable (result/report/loader/validator WPs).
+- One-Shot Readiness Gate missing from PR body (WP92+ WPs).
+
+See `docs/ai/codex/REPO_TRUTH_POLICY_GUARD.md` for gate definitions and phrase-hit classifications.
+
 ## Evidence Contradiction Matrix Checks (WP88+)
 
 Reviewer must block merge if any of the following combinations are present:

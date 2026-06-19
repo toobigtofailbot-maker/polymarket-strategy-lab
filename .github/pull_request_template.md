@@ -73,6 +73,37 @@ Status fragment is stable/non-self-referential (no current live PR head as fixed
 Status fragment uses "Validated implementation commit:" (not "Head commit:") for in-review SHA: YES/NO
 ```
 
+## One-Shot Readiness Gate (WP92+)
+
+Product WP gate (report/export/loader/validator WPs):
+```
+- repo-truth phrase sweep: PASS / NOT_APPLICABLE
+- PR body/status fragment contradiction matrix: PASS
+- status fragment stable/non-self-referential: PASS
+- result-object field coverage: PASS / NOT_APPLICABLE
+- serializer losslessness: PASS / NOT_APPLICABLE
+- full public output scan: PASS / NOT_APPLICABLE
+- invalid-output no-echo: PASS / NOT_APPLICABLE
+- validation tier complete: PASS
+- guards: PASS
+```
+
+Policy WP gate (workflow/policy/template/docs WPs):
+```
+- canonical-doc set reviewed: PASS / NOT_APPLICABLE
+- repo-truth phrase sweep: PASS / NOT_APPLICABLE
+- old-policy phrase hits classified: PASS / NOT_APPLICABLE
+- templates aligned: PASS / NOT_APPLICABLE
+- PR review checklist aligned: PASS / NOT_APPLICABLE
+- validation matrix aligned: PASS / NOT_APPLICABLE
+- status-fragment guidance aligned: PASS / NOT_APPLICABLE
+- workflow docs tests updated: PASS / NOT_APPLICABLE
+- contradiction matrix updated if policy changes: PASS / NOT_APPLICABLE
+- no product/source/tool/dependency changes: PASS / NOT_APPLICABLE
+```
+
+See `docs/ai/codex/REPO_TRUTH_POLICY_GUARD.md` for full gate definitions.
+
 ## Evidence Architecture (WP88+)
 
 ```

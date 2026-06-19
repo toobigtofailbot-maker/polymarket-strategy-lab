@@ -177,6 +177,10 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z50. `docs/status_entries/WP91.md` - WP91 committed status fragment; stable non-self-referential record for the final comment transition retirement decision WP; records identity, authority posture, final comment policy decision (mandatory final comments RETIRED after WP90), scope boundary, validation summary, deferred items (WP88-DEFER-002 and WP90-D002 RESOLVED, WP91-D001 added), next WP pointer (WP92), and ready-for-review state.
 
+62z51. `docs/ai/codex/REPO_TRUTH_POLICY_GUARD.md` - WP92 repo-truth policy guard; defines active canonical policy-doc set, old-policy phrase sweep list (14 phrases that must not appear as active post-WP91 policy), phrase-hit classification labels (ACTIVE_POST_WP91_POLICY / HISTORICAL_WP86_WP90_ONLY / REMOVED / REWRITTEN_TO_POST_WP91_POLICY / OPTIONAL_NON_CANONICAL_COMMENT), product WP one-shot readiness gate, policy WP one-shot readiness gate, final comment policy after WP91, status-fragment consistency rules, result-object/output gate reminders, and required PR-body evidence format.
+
+62z52. `docs/status_entries/WP92.md` - WP92 committed status fragment; stable non-self-referential record for the repo-truth policy guard and one-shot execution gate WP; records identity, authority posture, scope boundary, validation summary, deferred items, next WP pointer (WP93), and ready-for-review state.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
