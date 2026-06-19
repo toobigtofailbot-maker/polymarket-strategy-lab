@@ -185,6 +185,10 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z54. `docs/status_entries/WP93.md` - WP93 committed status fragment; stable non-self-referential record for the candidate review report operator runbook WP; records identity, authority posture, scope boundary, validation summary, guard summary, deferred items, next WP pointer, and ready-for-review state.
 
+62z55. `docs/runbooks/candidate_review_workflow_local_smoke_receipt.md` - WP94 local/offline smoke receipt for the existing import-only candidate review workflow; verifies WP87 `load_wallet_signal_paper_strategy_candidate_fixtures`, WP89 `build_wallet_signal_candidate_review_report`, WP89 `render_wallet_signal_candidate_review_report`, WP89 `candidate_review_report_to_dict`, WP90 `export_wallet_signal_candidate_review_report`, and WP90 `candidate_review_report_export_result_to_dict` through docs/tests and temp-only local export smoke coverage; adds no CLI, source code, tools, runtime/paper/live/credential/network/API/account behavior, scheduler/dashboard/bot loop, dependency, lock-file change, strategy promotion, candidate ranking for execution, expected-return computation, or position-size computation.
+
+62z56. `docs/status_entries/WP94.md` - WP94 committed status fragment; stable non-self-referential record for the candidate review workflow local smoke receipt WP; records identity, authority posture, scope boundary, validation summary, guard summary, deferred items, next WP pointer, and ready-for-review state.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.

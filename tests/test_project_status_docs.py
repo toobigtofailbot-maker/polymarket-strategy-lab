@@ -175,7 +175,7 @@ def test_wp79_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94"))
 
 
 def test_wp73_in_merged_wps():
@@ -287,6 +287,7 @@ def test_wp79_branch_is_current_branch():
         "wp91",
         "wp92",
         "wp93",
+        "wp94",
         "eager-shtern",
         "happy-torvalds",
         "recursing-bell",
@@ -409,7 +410,7 @@ def test_wp88_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90", "WP91", "WP92", "WP93"))
+    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94"))
 
 
 def test_wp88_current_branch_name():
@@ -417,7 +418,7 @@ def test_wp88_current_branch_name():
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp88", "wp89", "wp90", "wp91", "wp92", "wp93", "eager-shtern", "happy-torvalds", "recursing-bell"))
+    assert any(wp in branch_line for wp in ("wp88", "wp89", "wp90", "wp91", "wp92", "wp93", "wp94", "eager-shtern", "happy-torvalds", "recursing-bell"))
 
 
 def test_wp88_is_workflow_evidence_repair_not_product():
@@ -466,7 +467,7 @@ def test_wp91_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP91", "WP90", "WP92", "WP93"))
+    assert any(wp in current_phase_line for wp in ("WP91", "WP90", "WP92", "WP93", "WP94"))
 
 
 def test_wp91_final_comment_retirement_status():
@@ -495,7 +496,7 @@ def test_wp92_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP92", "WP91", "WP93"))
+    assert any(wp in current_phase_line for wp in ("WP92", "WP91", "WP93", "WP94"))
 
 
 def test_wp92_branch_is_current_branch():
@@ -503,7 +504,7 @@ def test_wp92_branch_is_current_branch():
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp92", "wp93", "recursing-bell"))
+    assert any(wp in branch_line for wp in ("wp92", "wp93", "wp94", "recursing-bell"))
 
 
 def test_wp92_repo_truth_policy_guard_status():
@@ -524,7 +525,7 @@ def test_wp93_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP93" in current_phase_line
+    assert any(wp in current_phase_line for wp in ("WP93", "WP94"))
 
 
 def test_wp93_branch_is_current_branch():
@@ -532,13 +533,38 @@ def test_wp93_branch_is_current_branch():
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp93-candidate-review-report-operator-runbook-v1" in branch_line
+    assert any(wp in branch_line for wp in (
+        "wp93-candidate-review-report-operator-runbook-v1",
+        "wp94-candidate-review-workflow-local-smoke-receipt-v1",
+    ))
 
 
 def test_wp93_candidate_review_report_operator_runbook_status():
     text = _read()
-    assert "DOCS_ONLY_OPERATOR_RUNBOOK_ON_BRANCH" in text
+    assert "DOCS_ONLY_OPERATOR_RUNBOOK_MERGED" in text
     assert "Candidate review report operator runbook status" in text
+
+
+def test_wp94_is_current_phase():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    assert "WP94" in current_phase_line
+
+
+def test_wp94_branch_is_current_branch():
+    text = _read()
+    branch_line = next(
+        line for line in text.splitlines() if line.startswith("- Current branch:")
+    )
+    assert "wp94-candidate-review-workflow-local-smoke-receipt-v1" in branch_line
+
+
+def test_wp94_candidate_review_workflow_smoke_receipt_status():
+    text = _read()
+    assert "LOCAL_SMOKE_RECEIPT_ON_BRANCH" in text
+    assert "Candidate review workflow local smoke receipt status" in text
 
 
 def test_ready_model_d_status_fragments_use_stable_dynamic_metadata_references():

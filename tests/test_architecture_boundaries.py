@@ -301,3 +301,30 @@ def test_wp93_does_not_add_new_src_files():
     changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
     new_src = [f for f in changed if f.startswith("src/")]
     assert new_src == [], f"WP93 must not add new src/ files: {new_src}"
+
+
+# -- WP94: Candidate Review Workflow Local Smoke Receipt V1 -------------------
+
+
+def test_wp94_status_fragment_exists():
+    path = ROOT / "docs" / "status_entries" / "WP94.md"
+    assert path.is_file(), "docs/status_entries/WP94.md must exist after WP94"
+
+
+def test_wp94_candidate_review_workflow_smoke_receipt_exists():
+    path = ROOT / "docs" / "runbooks" / "candidate_review_workflow_local_smoke_receipt.md"
+    assert path.is_file(), "WP94 smoke receipt must exist"
+
+
+def test_wp94_does_not_add_new_src_files():
+    import subprocess
+    result = subprocess.run(
+        ["git", "diff", "origin/main...HEAD", "--name-only"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+    new_src = [f for f in changed if f.startswith("src/")]
+    assert new_src == [], f"WP94 must not add new src/ files: {new_src}"

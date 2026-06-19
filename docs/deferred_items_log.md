@@ -2105,6 +2105,24 @@ paper engine, order logic, live execution, credentials, runtime/API/product/
 account network behavior, scheduler, dashboard, bot loop, dependency file, or
 lock file.
 
+## WP94 Candidate Review Workflow Local Smoke Receipt V1 Deferred Items
+
+WP94 reconciles repo truth after WP93 merge (PR #93, merge commit
+`01d916242d3ba93c757bcf84f4195183b9ea2336`) and adds a local/offline smoke
+receipt for the existing import-based candidate review workflow.
+
+WP94 adds no source code, no tools, no CLI, no runtime behavior, no paper
+engine, no order logic, no live execution, no credentials, no runtime/API/
+product/account network behavior, no scheduler, no dashboard, no bot loop, no
+dependency file, and no lock file. Generated report exports are temp/test-only
+and are not committed.
+
+WP94 resolves no deferred implementation item. WP90-D001 remains OPEN for
+future paper strategy implementation. WP91-D001 and WP92-D001 remain OPEN for
+any future GitHub-aware private evidence verifier. Existing runtime, paper,
+live, credential, network/API, scheduler, dashboard, bot-loop, and dependency
+deferred items remain unchanged.
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.

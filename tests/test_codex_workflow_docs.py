@@ -426,6 +426,7 @@ def test_project_status_reflects_wp79_branch() -> None:
         "wp91",
         "wp92",
         "wp93",
+        "wp94",
         "eager-shtern",
         "happy-torvalds",
         "recursing-bell",
@@ -942,6 +943,7 @@ def test_project_status_reflects_wp86_branch() -> None:
         "wp91",
         "wp92",
         "wp93",
+        "wp94",
         "eager-shtern",
         "happy-torvalds",
         "recursing-bell",
@@ -1619,10 +1621,16 @@ def test_project_status_reflects_wp92_branch() -> None:
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp92", "wp93", "recursing-bell"))
+    assert any(wp in branch_line for wp in ("wp92", "wp93", "wp94", "recursing-bell"))
 
 
 def test_repo_truth_index_references_wp93_runbook() -> None:
     text = _read(ROOT / "docs" / "repo_truth_index.md")
     assert "candidate_review_report_operator_runbook.md" in text
     assert "docs/status_entries/WP93.md" in text
+
+
+def test_repo_truth_index_references_wp94_smoke_receipt() -> None:
+    text = _read(ROOT / "docs" / "repo_truth_index.md")
+    assert "candidate_review_workflow_local_smoke_receipt.md" in text
+    assert "docs/status_entries/WP94.md" in text
