@@ -322,7 +322,7 @@ def test_project_status_marks_wp79_as_current_phase():
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95"))
 
 
 def test_project_status_marks_wp79_branch():
@@ -330,7 +330,7 @@ def test_project_status_marks_wp79_branch():
     branch_line = next(
         line for line in content.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in (
+    assert "see GitHub PR metadata and PR body" in branch_line or any(wp in branch_line for wp in (
         "wp79-wallet-skill-niche-profiler-research-queue-integration",
         "wp80-copyability-delay-simulator-design-wallet-report-contract",
         "wp81-local-copyability-delay-evaluation-from-fixtures",

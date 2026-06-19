@@ -197,7 +197,7 @@ def test_wp94_project_status_and_deferred_items_recorded() -> None:
     status = _read(STATUS)
     deferred = _read(DEFERRED)
     assert "WP94 - Candidate Review Workflow Local Smoke Receipt V1" in status
-    assert "LOCAL_SMOKE_RECEIPT_ON_BRANCH" in status
+    assert "LOCAL_SMOKE_RECEIPT_MERGED" in status
     assert "WP94 Candidate Review Workflow Local Smoke Receipt V1 Deferred Items" in deferred
     assert "WP94 resolves no deferred implementation item" in deferred
 
