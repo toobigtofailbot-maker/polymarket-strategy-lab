@@ -92,7 +92,6 @@ def test_wp_execution_report_contains_required_final_report_sections() -> None:
 
     for expected in (
         "full final report",
-        "PR body does not replace",
         "Branch / base",
         "Repo-truth discovery",
         "Delivered changes",
@@ -103,6 +102,8 @@ def test_wp_execution_report_contains_required_final_report_sections() -> None:
         "Ready for review",
     ):
         assert expected in text
+    # "PR body does not replace" was the pre-WP91 mandatory wording — now retired
+    assert "PR body does not replace" not in text
 
 
 def test_validation_matrix_contains_required_package_classes() -> None:
@@ -1193,3 +1194,51 @@ def test_pr_evidence_discipline_latest_comment_url_not_required_after_wp91() -> 
 def test_pr_evidence_discipline_status_fragment_consistent_with_pr_body() -> None:
     text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_REPORTING_DISCIPLINE.md")
     assert "consistent with the PR body on all key fields" in text
+
+
+# ── WP91 follow-up 5: Top-level rulebook and execution-report alignment ────────
+
+
+def test_agents_md_final_comment_optional_non_canonical_after_wp91() -> None:
+    text = _read(ROOT / "AGENTS.md")
+    assert "optional and non-canonical" in text
+    assert "WP91" in text
+
+
+def test_agents_md_no_active_mandatory_final_comment_requirement() -> None:
+    text = _read(ROOT / "AGENTS.md")
+    assert "full final report PR comment is mandatory" not in text
+    assert "PR body does not replace this final report comment" not in text
+
+
+def test_agents_md_pr_body_and_status_fragment_evidence_discipline() -> None:
+    text = _read(ROOT / "AGENTS.md")
+    assert "PR body and stable status-fragment evidence discipline" in text
+
+
+def test_wp_execution_report_final_comment_optional_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md")
+    assert "optional and non-canonical" in text
+    assert "WP91" in text
+
+
+def test_wp_execution_report_no_active_mandatory_final_comment() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md")
+    assert "PR body alone is not sufficient" not in text
+    assert "Codex must post a full final report as a top-level PR comment" not in text
+
+
+def test_wp_execution_report_current_final_marker_not_active_requirement() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md")
+    assert "Historical WP86" in text or "not active after WP91" in text.lower()
+
+
+def test_wp_execution_report_missing_final_comment_not_active_blocker() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md")
+    assert "WP86–WP90 only; absence is not a merge blocker after WP91" in text
+
+
+def test_wp_execution_report_latest_comment_url_not_required_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md")
+    assert "Verified latest current-final comment URL" in text
+    assert "not required after WP91" in text
