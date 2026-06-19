@@ -181,6 +181,10 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z52. `docs/status_entries/WP92.md` - WP92 committed status fragment; stable non-self-referential record for the repo-truth policy guard and one-shot execution gate WP; records identity, authority posture, scope boundary, validation summary, deferred items, next WP pointer (WP93), and ready-for-review state.
 
+62z53. `docs/runbooks/candidate_review_report_operator_runbook.md` - WP93 docs-only operator runbook for the existing local/offline/import-based candidate review workflow; documents local fixture input expectations, WP87 `load_wallet_signal_paper_strategy_candidate_fixtures`, WP89 `build_wallet_signal_candidate_review_report`, WP90 `export_wallet_signal_candidate_review_report`, local report export to fixed Markdown/JSON filenames, safe interpretation language, validation commands, troubleshooting, path-safety guidance, and boundary checklist; adds no CLI, source code, tools, runtime/paper/live/credential/network/API/account behavior, scheduler/dashboard/bot loop, dependency, or lock-file change.
+
+62z54. `docs/status_entries/WP93.md` - WP93 committed status fragment; stable non-self-referential record for the candidate review report operator runbook WP; records identity, authority posture, scope boundary, validation summary, guard summary, deferred items, next WP pointer, and ready-for-review state.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.

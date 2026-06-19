@@ -1,9 +1,9 @@
 # Project Status
 
-- Current phase: WP92 - Repo-Truth Policy Guard And One-Shot Execution Gate after WP91 merge
-- Repo state: WP91 merged; WP92 workflow-docs-tests-only repo-truth policy guard and one-shot readiness gate on branch; no paper engine, no order logic, no live execution, no credentials, no network/API behavior, no scheduler/dashboard/bot loop; no product code changes
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90, WP91
-- Current branch: `claude/recursing-bell-d54bd1` (wp92 repo-truth policy guard and one-shot execution gate; started after WP91 merge)
+- Current phase: WP93 - Candidate Review Report Operator Runbook V1 after WP92 merge
+- Repo state: WP92 merged; WP93 docs-only operator runbook on branch; no paper engine, no order logic, no live execution, no credentials, no runtime/API/product/account network behavior, no scheduler/dashboard/bot loop; no product code changes
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90, WP91, WP92
+- Current branch: `wp93-candidate-review-report-operator-runbook-v1` (WP93 candidate review report operator runbook; started after WP92 merge)
 - Multi-agent coding workflow status: AGENT_NEUTRAL_START_LAYER_MERGED
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; MANUAL_EXPLICIT_NETWORK_POLLING_RUNNER_DEV_ONLY; MANUAL_GUARD_ENFORCED_SNAPSHOT_CAPTURE_DEV_ONLY
 - Runtime dependency integration status: NOT_STARTED_FOR_NEW_RUNTIME_DEPENDENCIES
@@ -76,7 +76,8 @@
 - WP drafting standard status: WORKFLOW_GOVERNANCE_MERGED
 - Status entries / committed evidence fragments status: WORKFLOW_CONVENTION_MERGED
 - Final comment transition status: RETIRED_AFTER_WP91; mandatory final GitHub evidence comments retired; PR body is current review evidence surface; status fragment is stable non-self-referential record; final comments optional non-canonical after WP91
-- Repo-truth policy guard status: REPO_TRUTH_POLICY_GUARD_ON_BRANCH; one-shot readiness gate added to PR template and WP template; phrase sweep defined for active canonical policy-doc set; workflow docs tests updated; no product behavior changed; no runtime/paper/live/credential/network/dependency behavior changed
+- Repo-truth policy guard status: REPO_TRUTH_POLICY_GUARD_MERGED; one-shot readiness gate added to PR template and WP template; phrase sweep defined for active canonical policy-doc set; workflow docs tests updated; no product behavior changed; no runtime/paper/live/credential/network/dependency behavior changed
+- Candidate review report operator runbook status: DOCS_ONLY_OPERATOR_RUNBOOK_ON_BRANCH; documents the import-based local/offline WP87 fixture-loader, WP89 candidate review report, and WP90 export workflow; no new CLI, source code, tools, runtime/paper/live/credential/network/API/account behavior, scheduler/dashboard/bot loop, dependency, or lock-file change
 - Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
 - Agent execution authority: FORBIDDEN
@@ -116,6 +117,28 @@
 - WP83 deferred items status: WP83 resolves WP80-D003, WP81-D002, and WP82-D001 only for contract-definition scope only (docs/schema/tests-only). Paper strategy implementation, paper order model, paper portfolio ledger, paper fill model, paper PnL computation, network/API wallet ingestion, real wallet monitoring, automatic following behavior, live account access, credentials, scheduler, dashboard, and bot loop remain deferred. WP83 adds WP83-D001 (wallet signal paper strategy contract local validator not started, OPEN, P3).
 - WP84 deferred items status: WP84 resolves WP83-D001 only for local/offline/read-only contract validator scope. Paper strategy implementation, paper order model, paper portfolio ledger, paper fill model, paper PnL computation, network/API wallet ingestion, real wallet monitoring, automatic following behavior, live account access, credentials, scheduler, dashboard, and bot loop remain deferred. WP84 adds WP84-D001 (wallet signal paper strategy contract candidate fixture loader not started, OPEN, P3).
 - WP87 deferred items status: WP87 resolves WP84-D001 only for local/offline/read-only candidate fixture loader scope. Paper strategy implementation, paper order model, paper portfolio ledger, paper fill model, paper PnL computation, network/API wallet ingestion, real wallet monitoring, automatic following behavior, live account access, credentials, scheduler, dashboard, and bot loop remain deferred. WP89 resolves WP87-D001 on branch only for local/offline/read-only in-memory candidate review report generator scope.
+
+## WP93 Candidate Review Report Operator Runbook V1
+
+WP93 - Candidate Review Report Operator Runbook V1 is on branch
+(`wp93-candidate-review-report-operator-runbook-v1`).
+
+It adds `docs/runbooks/candidate_review_report_operator_runbook.md` as a
+docs-only operator runbook for the existing local/offline/import-based WP87,
+WP89, and WP90 candidate review workflow.
+
+WP93 also adds `docs/status_entries/WP93.md` and focused runbook docs tests.
+It updates repo-truth docs and docs/status/boundary/roadmap consistency tests
+only.
+
+WP93 adds no source code, no tools, no CLI, no runtime behavior, no paper
+engine, no order logic, no live execution, no credentials, no runtime/API/
+product/account network behavior, no scheduler, no dashboard, no bot loop, no
+dependency file, and no lock file.
+
+WP93 resolves no deferred implementation item. WP90-D001 remains OPEN for
+future paper strategy implementation. WP91-D001 and WP92-D001 remain OPEN for
+any future GitHub-aware private evidence verifier.
 
 ## WP89 Wallet Signal Candidate Review Report V1
 

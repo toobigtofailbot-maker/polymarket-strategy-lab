@@ -2081,6 +2081,23 @@ and WP90-D001 remain OPEN.
 |----|---------|--------|----------|--------|-----------------|---------------------|
 | WP92-D001 | GitHub-aware private evidence verifier tool still not implemented | OPEN | P4 | WP92 adds docs/tests-only guard and gate; the local guard remains the only mechanical evidence check. Any future requirement to automatically validate already-posted GitHub PR body content in a private repo is still deferred. | Any WP requiring automatic live GitHub PR content verification for private repos. | Future approved tooling WP explicitly scopes a GitHub-aware private verifier with explicit network/auth boundary defined in repo truth. |
 
+## WP93 Candidate Review Report Operator Runbook V1 Deferred Items
+
+WP93 reconciles repo truth after WP92 merge (PR #92, merge commit
+`1d9e59aa94aef1609352123473c6eee8fd6d12c1`) and adds a docs-only operator
+runbook for the existing local/offline/import-based candidate review workflow.
+
+WP93 adds no source code, no tools, no CLI, no runtime behavior, no paper
+engine, no order logic, no live execution, no credentials, no runtime/API/
+product/account network behavior, no scheduler, no dashboard, no bot loop, no
+dependency file, and no lock file.
+
+WP93 resolves no deferred implementation item. WP90-D001 remains OPEN for
+future paper strategy implementation. WP91-D001 and WP92-D001 remain OPEN for
+any future GitHub-aware private evidence verifier. Existing runtime, paper,
+live, credential, network/API, scheduler, dashboard, bot-loop, and dependency
+deferred items remain unchanged.
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.
