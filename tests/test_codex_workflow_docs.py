@@ -1132,3 +1132,38 @@ def test_posted_evidence_verification_doc_historical_sections_labeled() -> None:
 def test_guard_doc_posted_verifier_cross_reference_aligned_with_wp91() -> None:
     text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_CONSISTENCY_GUARD.md")
     assert "not a required final-comment merge gate" in text
+
+
+def test_pr_template_no_active_current_final_marker_requirement() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md")
+    assert "Current-final evidence comment identified by marker" not in text
+
+
+def test_pr_template_no_active_latest_comment_url_requirement() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md")
+    assert "Latest current-final comment URL" not in text
+
+
+def test_wp_template_final_comment_optional_non_canonical_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "optional and non-canonical" in text and "WP91" in text
+
+
+def test_wp_template_absence_not_a_merge_blocker_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "not a merge blocker after WP91" in text
+
+
+def test_wp_template_posted_evidence_sections_labeled_historical() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Not Active After WP91" in text
+
+
+def test_wp_template_evidence_architecture_no_transition_only_pointer() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "Final comment is transition-only pointer" not in text
+
+
+def test_wp_template_final_comment_optional_non_canonical_field() -> None:
+    text = _read(ROOT / "docs" / "work_package_template.md")
+    assert "optional/non-canonical after WP91" in text

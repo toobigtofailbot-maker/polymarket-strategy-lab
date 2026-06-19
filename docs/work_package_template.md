@@ -238,7 +238,11 @@ Every WP must satisfy the Standard PR Evidence Reporting Discipline Block before
 - Unavailable tools reported as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT, not as passed.
 - `tools/git/pr_evidence_consistency_guard.py` run with WP47 hardening flags and `--require-guard-result` on exact local drafts or copied posted content before Ready for review: YES. If guard fails, Ready for review must be NO. Report exact guard invocation AND full guard result output (result line, checked categories, exit code) in both PR body and final comment. A command invocation line alone is insufficient.
 
-## Posted PR Evidence Discipline (mandatory, WP47)
+**WP91 update:** After WP91, final GitHub evidence comments are optional and non-canonical. Absence of a final comment is not a merge blocker after WP91. Required evidence surfaces after WP91 are the PR body and the stable/non-self-referential status fragment. If an optional final comment is posted, it must not contradict the PR body and must state it is optional and non-canonical.
+
+## Posted PR Evidence Discipline — Historical WP47/WP54/WP58/WP86–WP90 Only (Not Active After WP91)
+
+**Not active after WP91.** The following applied during WP86–WP90 only. After WP91, final comments are optional and non-canonical.
 
 - **Forbidden: file-list parenthetical test counts.** Do not write test counts in file-list descriptions or summary parentheticals such as "focused tests (34 tests)". Test counts belong only in validation result sections.
 - **Required: current final evidence marker.** The final top-level PR comment must start with or contain "CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments" when it supersedes earlier evidence comments.
@@ -257,7 +261,9 @@ If YES, list the categories covered from `docs/ai/codex/NEGATIVE_TEST_MATRIX_POL
 
 If NO, explain why the matrix is not applicable (e.g., no validator/scorer/parser added or modified).
 
-## Posted GitHub Evidence Verification (mandatory when available, WP58)
+## Posted GitHub Evidence Verification — Historical WP58/WP86–WP90 Only (Not Active After WP91)
+
+**Not active after WP91.** The posted verifier workflow and current-final comment requirement applied during WP86–WP90 only. After WP91, the posted verifier is not a required final-comment merge gate.
 
 After posting the PR body and current-final evidence comment to GitHub, run:
 
@@ -281,7 +287,9 @@ State the verifier result in both the PR body and the final comment:
 
 See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md` for full policy.
 
-## Posted Evidence Self-Check (mandatory, WP54)
+## Posted Evidence Self-Check — Historical WP54/WP86–WP90 Only (Not Active After WP91)
+
+**Not active after WP91.** The following applied during WP86–WP90 only. After WP91, no final comment is required.
 
 Before Ready for review: YES, the AI coding agent must declare one of the following in both the PR body and the final comment:
 
@@ -300,7 +308,7 @@ PR body is current review evidence surface: YES/NO
 Status fragment is stable/non-self-referential: YES/NO
 Status fragment current live PR head as fixed SHA: ABSENT (must be absent)
 Status fragment uses "Validated implementation commit:" label: YES/NO
-Final comment is transition-only pointer: YES/NO
+Final comment is optional/non-canonical after WP91: YES/NO/NOT_APPLICABLE
 Evidence contradiction matrix: NO invalid combinations present
 NOT_VERIFIED + Ready YES combination: ABSENT (must be absent)
 ```
@@ -435,6 +443,8 @@ The status fragment must be committed on the WP branch and merged with the PR.
 - Suggested next WP
 
 ## Final PR Comment Required Sections
+
+**After WP91, a final PR comment is optional.** Absence of a final comment is not a merge blocker. If an optional final comment is posted, it must not contradict the PR body and must state it is optional and non-canonical.
 
 - A. Work Package ID / package class / package size class
 - B. Branch / base / head SHA
