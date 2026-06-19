@@ -1,4 +1,4 @@
-"""Focused docs tests for WP93 candidate review report operator runbook."""
+"""Focused docs tests for candidate review report operator runbooks."""
 
 from __future__ import annotations
 
@@ -7,10 +7,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNBOOK = ROOT / "docs" / "runbooks" / "candidate_review_report_operator_runbook.md"
+SMOKE_RECEIPT = ROOT / "docs" / "runbooks" / "candidate_review_workflow_local_smoke_receipt.md"
 STATUS = ROOT / "docs" / "project_status.md"
 REPO_TRUTH = ROOT / "docs" / "repo_truth_index.md"
 DEFERRED = ROOT / "docs" / "deferred_items_log.md"
 WP93_STATUS = ROOT / "docs" / "status_entries" / "WP93.md"
+WP94_STATUS = ROOT / "docs" / "status_entries" / "WP94.md"
 
 
 REQUIRED_SECTIONS = (
@@ -149,7 +151,7 @@ def test_wp93_project_status_and_deferred_items_recorded() -> None:
     status = _read(STATUS)
     deferred = _read(DEFERRED)
     assert "WP93 - Candidate Review Report Operator Runbook V1" in status
-    assert "DOCS_ONLY_OPERATOR_RUNBOOK_ON_BRANCH" in status
+    assert "DOCS_ONLY_OPERATOR_RUNBOOK_MERGED" in status
     assert "WP93 Candidate Review Report Operator Runbook V1 Deferred Items" in deferred
     assert "WP93 resolves no deferred implementation item" in deferred
 
@@ -157,6 +159,52 @@ def test_wp93_project_status_and_deferred_items_recorded() -> None:
 def test_wp93_status_fragment_exists_and_is_non_self_referential() -> None:
     text = _read(WP93_STATUS)
     assert "WP ID: WP93" in text
+    assert "PR: see GitHub PR metadata and PR body." in text
+    assert "Current live PR head: see GitHub PR metadata and PR body" in text
+    assert "stable and non-self-referential" in text
+    assert "PR: TBD" not in text
+    assert "LOCAL_DRAFT_VERIFIED" not in text
+    assert "Head commit:" not in text
+    assert "Ready for review:" in text
+
+
+def test_candidate_review_workflow_smoke_receipt_exists() -> None:
+    assert SMOKE_RECEIPT.is_file()
+
+
+def test_candidate_review_workflow_smoke_receipt_indexed_in_repo_truth() -> None:
+    text = _read(REPO_TRUTH)
+    assert "candidate_review_workflow_local_smoke_receipt.md" in text
+    assert "docs/status_entries/WP94.md" in text
+
+
+def test_candidate_review_workflow_smoke_receipt_has_no_invented_cli() -> None:
+    text = _read(SMOKE_RECEIPT)
+    forbidden = (
+        "python -m tools.",
+        "tools.some_new_cli",
+        "candidate_review_report_cli",
+        "--input",
+        "--output",
+    )
+    for token in forbidden:
+        assert token not in text
+    assert "No CLI is introduced by this WP." in text
+    assert "existing import surfaces only" in text
+
+
+def test_wp94_project_status_and_deferred_items_recorded() -> None:
+    status = _read(STATUS)
+    deferred = _read(DEFERRED)
+    assert "WP94 - Candidate Review Workflow Local Smoke Receipt V1" in status
+    assert "LOCAL_SMOKE_RECEIPT_ON_BRANCH" in status
+    assert "WP94 Candidate Review Workflow Local Smoke Receipt V1 Deferred Items" in deferred
+    assert "WP94 resolves no deferred implementation item" in deferred
+
+
+def test_wp94_status_fragment_exists_and_is_non_self_referential() -> None:
+    text = _read(WP94_STATUS)
+    assert "WP ID: WP94" in text
     assert "PR: see GitHub PR metadata and PR body." in text
     assert "Current live PR head: see GitHub PR metadata and PR body" in text
     assert "stable and non-self-referential" in text
