@@ -23,6 +23,7 @@ The following files are active policy docs — they must reflect post-WP91 optio
 policy and are scanned by the old-policy phrase sweep:
 
 ```
+# Core codex docs (original WP92 set)
 docs/ai/codex/EVIDENCE_ARCHITECTURE.md
 docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md
 docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md
@@ -34,6 +35,25 @@ docs/ai/codex/RESULT_OUTPUT_INVARIANT_STANDARD.md
 docs/work_package_template.md
 docs/status_entries/README.md
 .github/pull_request_template.md
+
+# Top-level agent startup/rulebook docs (added WP92 follow-up)
+AGENTS.md
+CLAUDE_START_HERE.md
+CODEX_START_HERE.md
+AI_CODING_AGENT_START_HERE.md
+
+# Execution and evidence helper/design docs (added WP92 follow-up)
+docs/ai/codex/WP_EXECUTION_REPORT.md
+docs/ai/codex/CONCISE_REPORTING_RULES.md
+docs/ai/codex/POSTED_PR_EVIDENCE_REVIEW_HARDENING.md
+docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md
+docs/ai/codex/WP_BUNDLING_POLICY.md
+docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md
+docs/ai/codex/TOKEN_EFFICIENCY_SEQUENCE_CLOSEOUT.md
+docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md
+docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md
+docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md
+docs/ai/codex/CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md
 ```
 
 Historical status fragments are NOT active policy docs:
@@ -70,20 +90,42 @@ final comment starts with CURRENT FINAL WP EVIDENCE
 final evidence comment is mandatory
 ```
 
-These phrases are **allowed only** in sections clearly labeled with one of:
+These phrases are **allowed only** when a classification label appears in one of these
+context scopes relative to the phrase hit:
+
+1. **Same line or ±5 lines**: the phrase hit line or nearby lines contain an allowed classifier.
+2. **Nearest section header** (nearest `##` heading above the hit): the section heading text
+   contains an allowed classifier such as "Historical WP47–WP90" or "optional final comments".
+3. **Document-level preamble** (first 25 lines of the file): the file has a document-level
+   "After WP91" or "Historical" disclaimer near the top that scopes the whole document.
+
+Allowed classifier tokens (checked case-insensitively):
 
 ```
-Historical WP86-WP90 transition-only behavior. Not active after WP91.
+historical wp
+wp86-wp90 only
+wp86–wp90 only
+after wp91
+not required
+optional
+omit
+if no final comment
+if skipping
+HISTORICAL_WP86_WP90_ONLY
+REWRITTEN_TO_POST_WP91_POLICY
+REMOVED
+OPTIONAL_NON_CANONICAL_COMMENT
+not posted
+not mandatory
+is not required
+non-canonical
+not a merge blocker
 ```
-
-or equivalent exact wording (e.g., "WP86–WP90 only", "Not Active After WP91",
-"Historical WP47", "(through WP90 only)", "(WP86–WP90 Only)").
 
 They are **not allowed** in:
-- Active instructions
-- Current gates
-- Current templates (outside clearly labeled historical sections)
-- Current required report-back sections
+- Active instructions without a classifier in any of the three context scopes above
+- Current gates or templates outside clearly labeled historical sections
+- Current required report-back sections without qualification
 
 ---
 
@@ -227,6 +269,10 @@ Ready for review: YES/NO
 
 ## Cross-References
 
+- `AGENTS.md` — top-level agent startup and posted evidence verification rules
+- `CLAUDE_START_HERE.md` — Claude Code startup guidance
+- `CODEX_START_HERE.md` — Codex startup guidance
+- `AI_CODING_AGENT_START_HERE.md` — AI coding agent startup guidance
 - `docs/ai/codex/EVIDENCE_ARCHITECTURE.md` — Model D evidence architecture (WP88+)
 - `docs/ai/codex/FINAL_COMMENT_POLICY.md` — canonical final comment policy (WP91)
 - `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` — PR evidence reporting discipline
@@ -234,6 +280,10 @@ Ready for review: YES/NO
 - `docs/ai/codex/PR_REVIEW_CHECKLIST.md` — reviewer checks including phrase sweep
 - `docs/ai/codex/VALIDATION_MATRIX.md` — package-class validation requirements
 - `docs/ai/codex/WP_DRAFTING_STANDARD.md` — WP drafting standard
+- `docs/ai/codex/WP_EXECUTION_REPORT.md` — execution report format
+- `docs/ai/codex/POSTED_PR_EVIDENCE_REVIEW_HARDENING.md` — posted evidence review hardening
+- `docs/ai/codex/WP_BUNDLING_POLICY.md` — WP bundling policy
+- `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` — WP execution state machine
 - `docs/work_package_template.md` — WP template with one-shot gate
 - `docs/status_entries/README.md` — status fragment format and rules
 - `.github/pull_request_template.md` — PR template with one-shot gate

@@ -1360,7 +1360,71 @@ def test_wp_execution_report_guard_not_both_surfaces() -> None:
 
 # ── WP92: Repo-Truth Policy Guard And One-Shot Execution Gate ─────────────────
 
+OLD_POLICY_PHRASES = (
+    "CURRENT FINAL WP EVIDENCE",
+    "--final-comment",
+    "require-current-final-marker",
+    "final comment required",
+    "final evidence comment required",
+    "current final evidence comment required",
+    "Ready only after final evidence",
+    "Ready for review only after final evidence",
+    "mark Ready for review only after final evidence passes",
+    "final comment will be posted after merge",
+    "PR body and final comment drafts",
+    "latest final comment must exist",
+    "final comment starts with CURRENT FINAL WP EVIDENCE",
+    "final evidence comment is mandatory",
+)
+
+ALLOWED_CLASSIFIERS = (
+    "historical wp",
+    "wp86-wp90 only",
+    "wp86–wp90 only",
+    "after wp91",
+    "not required",
+    "optional",
+    "omit",
+    "if no final comment",
+    "if skipping",
+    "historical_wp86_wp90_only",
+    "rewritten_to_post_wp91_policy",
+    "removed",
+    "optional_non_canonical_comment",
+    "not posted",
+    "not mandatory",
+    "is not required",
+    "non-canonical",
+    "not a merge blocker",
+)
+
+
+def _phrase_hit_is_classified(lines: list, hit_lineno: int) -> bool:
+    """Return True if phrase hit at hit_lineno is in a historical/optional context.
+
+    Checks three scopes: ±5-line local context, nearest section header (## heading
+    above the hit), and the document-level preamble (first 25 lines).
+    """
+    context_start = max(0, hit_lineno - 5)
+    context_end = min(len(lines), hit_lineno + 6)
+    local_context = "\n".join(lines[context_start:context_end]).lower()
+
+    section_header = ""
+    for i in range(hit_lineno - 1, -1, -1):
+        if lines[i].startswith("#"):
+            section_header = lines[i].lower()
+            break
+
+    doc_preamble = "\n".join(lines[:25]).lower()
+
+    return any(
+        m in local_context or m in section_header or m in doc_preamble
+        for m in ALLOWED_CLASSIFIERS
+    )
+
+
 ACTIVE_CANONICAL_POLICY_DOCS = (
+    # Core codex docs (original WP92 set)
     ROOT / "docs" / "ai" / "codex" / "EVIDENCE_ARCHITECTURE.md",
     ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_REPORTING_DISCIPLINE.md",
     ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_CONSISTENCY_GUARD.md",
@@ -1372,6 +1436,23 @@ ACTIVE_CANONICAL_POLICY_DOCS = (
     ROOT / "docs" / "work_package_template.md",
     ROOT / "docs" / "status_entries" / "README.md",
     ROOT / ".github" / "pull_request_template.md",
+    # Top-level agent startup/rulebook docs (added WP92 follow-up)
+    ROOT / "AGENTS.md",
+    ROOT / "CLAUDE_START_HERE.md",
+    ROOT / "CODEX_START_HERE.md",
+    ROOT / "AI_CODING_AGENT_START_HERE.md",
+    # Execution and evidence helper/design docs (added WP92 follow-up)
+    ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_REPORT.md",
+    ROOT / "docs" / "ai" / "codex" / "CONCISE_REPORTING_RULES.md",
+    ROOT / "docs" / "ai" / "codex" / "POSTED_PR_EVIDENCE_REVIEW_HARDENING.md",
+    ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_STATE_MACHINE.md",
+    ROOT / "docs" / "ai" / "codex" / "WP_BUNDLING_POLICY.md",
+    ROOT / "docs" / "ai" / "codex" / "TOKEN_EFFICIENCY_OPERATING_MODEL.md",
+    ROOT / "docs" / "ai" / "codex" / "TOKEN_EFFICIENCY_SEQUENCE_CLOSEOUT.md",
+    ROOT / "docs" / "ai" / "codex" / "DIFF_SCOPE_SUMMARY_HELPER.md",
+    ROOT / "docs" / "ai" / "codex" / "DIFF_SCOPE_SUMMARY_HELPER_DESIGN.md",
+    ROOT / "docs" / "ai" / "codex" / "VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md",
+    ROOT / "docs" / "ai" / "codex" / "CODE_INDEX_BLAST_RADIUS_HELPER_DESIGN.md",
 )
 
 
@@ -1381,12 +1462,23 @@ def test_repo_truth_policy_guard_doc_exists() -> None:
 
 def test_repo_truth_policy_guard_defines_canonical_policy_doc_set() -> None:
     text = _read(ROOT / "docs" / "ai" / "codex" / "REPO_TRUTH_POLICY_GUARD.md")
+    # Original core codex docs
     assert "EVIDENCE_ARCHITECTURE.md" in text
     assert "PR_EVIDENCE_REPORTING_DISCIPLINE.md" in text
     assert "PR_REVIEW_CHECKLIST.md" in text
     assert "work_package_template.md" in text
     assert "status_entries/README.md" in text
     assert "pull_request_template.md" in text
+    # Top-level agent startup/rulebook docs (WP92 follow-up expansion)
+    assert "AGENTS.md" in text
+    assert "CLAUDE_START_HERE.md" in text
+    assert "CODEX_START_HERE.md" in text
+    assert "AI_CODING_AGENT_START_HERE.md" in text
+    # Execution and evidence helper docs (WP92 follow-up expansion)
+    assert "WP_EXECUTION_REPORT.md" in text
+    assert "POSTED_PR_EVIDENCE_REVIEW_HARDENING.md" in text
+    assert "WP_EXECUTION_STATE_MACHINE.md" in text
+    assert "WP_BUNDLING_POLICY.md" in text
 
 
 def test_repo_truth_policy_guard_defines_old_policy_phrase_sweep() -> None:
@@ -1426,6 +1518,39 @@ def test_active_policy_docs_do_not_contain_mandatory_final_comment_phrase() -> N
             assert forbidden not in text, (
                 f"{path.name} contains forbidden phrase: {forbidden!r}"
             )
+
+
+def test_active_policy_docs_full_phrase_sweep() -> None:
+    """All 14 old-policy phrases must be absent or classified in every active canonical policy doc.
+
+    A phrase hit is allowed only when a classification label appears in one of three context
+    scopes: ±5 local lines, nearest ## section header above the hit, or document preamble
+    (first 25 lines). Unclassified hits in active instruction context fail.
+    """
+    failures = []
+    for path in ACTIVE_CANONICAL_POLICY_DOCS:
+        if not path.is_file():
+            continue
+        lines = path.read_text(encoding="utf-8").splitlines()
+        for phrase in OLD_POLICY_PHRASES:
+            for i, line in enumerate(lines):
+                if phrase.lower() in line.lower():
+                    if not _phrase_hit_is_classified(lines, i):
+                        failures.append(
+                            f"{path.name}:L{i + 1} — unclassified hit for {phrase!r}: "
+                            f"{line.strip()[:80]}"
+                        )
+    assert not failures, (
+        "Unclassified old-policy phrase hits in active canonical policy docs "
+        "(must add HISTORICAL_WP86_WP90_ONLY / REWRITTEN / OPTIONAL_NON_CANONICAL_COMMENT "
+        "classifier in nearby context):\n" + "\n".join(failures)
+    )
+
+
+def test_active_canonical_policy_docs_all_exist() -> None:
+    """Every path in ACTIVE_CANONICAL_POLICY_DOCS must exist on disk."""
+    missing = [str(p) for p in ACTIVE_CANONICAL_POLICY_DOCS if not p.is_file()]
+    assert not missing, f"Active canonical policy docs missing from repo: {missing}"
 
 
 def test_pr_template_contains_one_shot_readiness_gate() -> None:
