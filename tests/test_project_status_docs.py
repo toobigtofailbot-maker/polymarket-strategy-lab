@@ -175,7 +175,7 @@ def test_wp79_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95"))
 
 
 def test_wp73_in_merged_wps():
@@ -271,7 +271,7 @@ def test_wp79_branch_is_current_branch():
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in (
+    assert "see GitHub PR metadata and PR body" in branch_line or any(wp in branch_line for wp in (
         "wp79-wallet-skill-niche-profiler-research-queue-integration",
         "wp80-copyability-delay-simulator-design-wallet-report-contract",
         "wp81-local-copyability-delay-evaluation-from-fixtures",
@@ -410,7 +410,7 @@ def test_wp88_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94"))
+    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95"))
 
 
 def test_wp88_current_branch_name():
@@ -418,7 +418,7 @@ def test_wp88_current_branch_name():
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp88", "wp89", "wp90", "wp91", "wp92", "wp93", "wp94", "eager-shtern", "happy-torvalds", "recursing-bell"))
+    assert "see GitHub PR metadata and PR body" in branch_line or any(wp in branch_line for wp in ("wp88", "wp89", "wp90", "wp91", "wp92", "wp93", "wp94", "eager-shtern", "happy-torvalds", "recursing-bell"))
 
 
 def test_wp88_is_workflow_evidence_repair_not_product():
@@ -467,7 +467,7 @@ def test_wp91_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP91", "WP90", "WP92", "WP93", "WP94"))
+    assert any(wp in current_phase_line for wp in ("WP91", "WP90", "WP92", "WP93", "WP94", "WP95"))
 
 
 def test_wp91_final_comment_retirement_status():
@@ -496,7 +496,7 @@ def test_wp92_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP92", "WP91", "WP93", "WP94"))
+    assert any(wp in current_phase_line for wp in ("WP92", "WP91", "WP93", "WP94", "WP95"))
 
 
 def test_wp92_branch_is_current_branch():
@@ -504,7 +504,7 @@ def test_wp92_branch_is_current_branch():
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp92", "wp93", "wp94", "recursing-bell"))
+    assert "see GitHub PR metadata and PR body" in branch_line or any(wp in branch_line for wp in ("wp92", "wp93", "wp94", "recursing-bell"))
 
 
 def test_wp92_repo_truth_policy_guard_status():
@@ -525,7 +525,7 @@ def test_wp93_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP93", "WP94"))
+    assert any(wp in current_phase_line for wp in ("WP93", "WP94", "WP95"))
 
 
 def test_wp93_branch_is_current_branch():
@@ -533,7 +533,7 @@ def test_wp93_branch_is_current_branch():
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in (
+    assert "see GitHub PR metadata and PR body" in branch_line or any(wp in branch_line for wp in (
         "wp93-candidate-review-report-operator-runbook-v1",
         "wp94-candidate-review-workflow-local-smoke-receipt-v1",
     ))
@@ -545,26 +545,115 @@ def test_wp93_candidate_review_report_operator_runbook_status():
     assert "Candidate review report operator runbook status" in text
 
 
-def test_wp94_is_current_phase():
+def test_wp94_is_reconciled_as_merged():
     text = _read()
-    current_phase_line = next(
-        line for line in text.splitlines() if line.startswith("- Current phase:")
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP94" in current_phase_line
+    assert "WP94" in merged_line
 
 
-def test_wp94_branch_is_current_branch():
+def test_current_branch_uses_stable_github_pointer():
     text = _read()
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert "wp94-candidate-review-workflow-local-smoke-receipt-v1" in branch_line
+    assert "see GitHub PR metadata and PR body" in branch_line
+    assert "stable post-merge target repo truth" in branch_line
 
 
 def test_wp94_candidate_review_workflow_smoke_receipt_status():
     text = _read()
-    assert "LOCAL_SMOKE_RECEIPT_ON_BRANCH" in text
+    assert "LOCAL_SMOKE_RECEIPT_MERGED" in text
     assert "Candidate review workflow local smoke receipt status" in text
+
+
+# ── WP95: Post-WP94 repo-truth and Hermes plan lock-in ───────────────────────
+
+
+def test_wp95_is_stable_post_merge_target_state():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP95" in current_phase_line
+    assert "WP95" in merged_line
+    assert "Hermes Advisory Foundation And Research-Brain Architecture V1" in text
+
+
+def test_wp94_and_wp95_committed_status_docs_reject_stale_wording():
+    wp94_text = (STATUS_ENTRIES / "WP94.md").read_text(encoding="utf-8")
+    wp95_path = STATUS_ENTRIES / "WP95.md"
+    assert wp95_path.is_file()
+    wp95_text = wp95_path.read_text(encoding="utf-8")
+    project_text = _read()
+    forbidden_wp94 = (
+        "WP94 on branch",
+        "WP94 active branch",
+        "Merge commit: TBD after merge",
+    )
+    forbidden_wp95 = (
+        "WP95 on branch",
+        "WP95 active branch",
+        "Merge commit: TBD after merge",
+        "PR: TBD",
+    )
+    for phrase in forbidden_wp94:
+        assert phrase not in wp94_text
+        assert phrase not in project_text
+    for phrase in forbidden_wp95:
+        assert phrase not in wp95_text
+        assert phrase not in project_text
+    fixed_live_head = re.compile(r"Current live PR head:\s*`?[0-9a-f]{40}`?", re.IGNORECASE)
+    assert fixed_live_head.search(wp95_text) is None
+    assert fixed_live_head.search(project_text) is None
+
+
+def test_wp94_status_entry_records_actual_merge_commit():
+    text = (STATUS_ENTRIES / "WP94.md").read_text(encoding="utf-8")
+    assert "e22212c7abaa2cb924bd2c43eeaae0695713633c" in text
+
+
+def test_hermes_research_brain_plan_is_registered_and_complete():
+    plan_path = REPO_ROOT / "docs" / "hermes_research_brain_execution_plan.md"
+    index_text = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    assert plan_path.is_file()
+    plan_text = plan_path.read_text(encoding="utf-8")
+    assert "docs/hermes_research_brain_execution_plan.md" in index_text
+    required = (
+        "adaptive research brain",
+        "Broad Research Freedoms",
+        "Deterministic-Core Responsibilities",
+        "Forbidden Hermes Authority",
+        "Manual-Step Checkpoints",
+        "Future changes to the accepted Hermes/research-brain execution plan must update",
+        "Chat memory alone is not authoritative",
+        "PR comments alone are not authoritative",
+        "Hermes Advisory Foundation And Research-Brain Architecture V1",
+    )
+    for phrase in required:
+        assert phrase in plan_text
+
+
+def test_wp95_preserves_hermes_and_trading_boundaries():
+    plan_text = (REPO_ROOT / "docs" / "hermes_research_brain_execution_plan.md").read_text(encoding="utf-8")
+    project_text = _read()
+    for phrase in (
+        "Live trading status: DISABLED",
+        "Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY",
+        "Agent execution authority: FORBIDDEN",
+    ):
+        assert phrase in project_text
+    for phrase in (
+        "access credentials or private endpoints",
+        "place, cancel, sign, or submit orders",
+        "control runtime, scheduler, or bot loop",
+        "approve pull requests or claim merge readiness",
+    ):
+        assert phrase in plan_text
 
 
 def test_ready_model_d_status_fragments_use_stable_dynamic_metadata_references():

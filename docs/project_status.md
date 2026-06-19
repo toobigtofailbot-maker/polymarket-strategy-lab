@@ -1,9 +1,9 @@
 # Project Status
 
-- Current phase: WP94 - Candidate Review Workflow Local Smoke Receipt V1 after WP93 merge; preserves WP92 stable status policy
-- Repo state: WP93 merged; WP94 workflow-docs-tests-only local smoke receipt on branch; no source code changes, no tools, no CLI, no paper engine, no order logic, no live execution, no credentials, no runtime/API/product/account network behavior, no scheduler/dashboard/bot loop; no product behavior changes
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90, WP91, WP92, WP93
-- Current branch: `wp94-candidate-review-workflow-local-smoke-receipt-v1` (WP94 candidate review workflow local smoke receipt; started after WP93 merge; wp93 continuity baseline)
+- Current phase: Post-WP95 repo-truth reconciliation and accepted Hermes research-brain plan lock-in; next substantive WP is Hermes Advisory Foundation And Research-Brain Architecture V1
+- Repo state: WP94 is merged; WP95 records stable post-merge target repo truth for the accepted Hermes/research-brain execution plan; no source code, tools, runtime, paper/live, credential, order, risk, scheduler, dashboard, bot-loop, dependency, or product-network behavior changes
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90, WP91, WP92, WP93, WP94, WP95
+- Current branch: see GitHub PR metadata and PR body; committed status docs are authored as stable post-merge target repo truth
 - Multi-agent coding workflow status: AGENT_NEUTRAL_START_LAYER_MERGED
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; MANUAL_EXPLICIT_NETWORK_POLLING_RUNNER_DEV_ONLY; MANUAL_GUARD_ENFORCED_SNAPSHOT_CAPTURE_DEV_ONLY
 - Runtime dependency integration status: NOT_STARTED_FOR_NEW_RUNTIME_DEPENDENCIES
@@ -78,7 +78,8 @@
 - Final comment transition status: RETIRED_AFTER_WP91; mandatory final GitHub evidence comments retired; PR body is current review evidence surface; status fragment is stable non-self-referential record; final comments optional non-canonical after WP91
 - Repo-truth policy guard status: REPO_TRUTH_POLICY_GUARD_MERGED; one-shot readiness gate added to PR template and WP template; phrase sweep defined for active canonical policy-doc set; workflow docs tests updated; no product behavior changed; no runtime/paper/live/credential/network/dependency behavior changed
 - Candidate review report operator runbook status: DOCS_ONLY_OPERATOR_RUNBOOK_MERGED; documents the import-based local/offline WP87 fixture-loader, WP89 candidate review report, and WP90 export workflow; WP93 final follow-up hardens stable-only status-fragment policy and repairs the WP93 status fragment PR field; no new CLI, source code, tools, runtime/paper/live/credential/network/API/account behavior, scheduler/dashboard/bot loop, dependency, or lock-file change
-- Candidate review workflow local smoke receipt status: LOCAL_SMOKE_RECEIPT_ON_BRANCH; verifies the existing WP87/WP89/WP90 import-only workflow through docs/tests and temp-only local export smoke coverage; no new CLI, source code, tools, runtime/paper/live/credential/network/API/account behavior, scheduler/dashboard/bot loop, dependency, or lock-file change
+- Candidate review workflow local smoke receipt status: LOCAL_SMOKE_RECEIPT_MERGED; verifies the existing WP87/WP89/WP90 import-only workflow through docs/tests and temp-only local export smoke coverage; no new CLI, source code, tools, runtime/paper/live/credential/network/API/account behavior, scheduler/dashboard/bot loop, dependency, or lock-file change
+- Hermes research-brain execution plan status: REPO_TRUTH_PLAN_LOCKED; canonical plan is `docs/hermes_research_brain_execution_plan.md`; future material plan changes must update repo-truth docs in the same WP or an approved follow-up, because chat memory and PR comments alone are not authoritative
 - Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
 - Agent execution authority: FORBIDDEN
@@ -121,8 +122,9 @@
 
 ## WP94 Candidate Review Workflow Local Smoke Receipt V1
 
-WP94 - Candidate Review Workflow Local Smoke Receipt V1 is on branch
-(`wp94-candidate-review-workflow-local-smoke-receipt-v1`).
+WP94 - Candidate Review Workflow Local Smoke Receipt V1 is merged
+(merge commit `e22212c7abaa2cb924bd2c43eeaae0695713633c`; historical branch
+`wp94-candidate-review-workflow-local-smoke-receipt-v1`).
 
 It reconciles repo truth after WP93 merge (PR #93, merge commit
 `01d916242d3ba93c757bcf84f4195183b9ea2336`) and adds a local/offline smoke
@@ -143,6 +145,27 @@ and are not committed.
 WP94 resolves no deferred implementation item. WP90-D001 remains OPEN for
 future paper strategy implementation. WP91-D001 and WP92-D001 remain OPEN for
 any future GitHub-aware private evidence verifier.
+
+## WP95 Post-WP94 Repo-Truth Reconciliation And Accepted Hermes Research-Brain Plan Lock-In
+
+WP95 reconciles WP94 as merged and locks the accepted Hermes/research-brain
+execution plan into repo truth at `docs/hermes_research_brain_execution_plan.md`.
+The plan defines broad advisory research freedoms while preserving deterministic
+control over execution, validation, risk, state, accounting, credentials, order
+lifecycle, live safety, kill switch, audit logs, and strategy-promotion gates.
+
+Hermes remains not installed, not connected, and not runtime-authorized. Live
+trading remains disabled. WP95 creates no Hermes schema, validator, prompt pack,
+runbook, exporter, runtime artifact, provider configuration, model call, memory,
+scheduler, paper/live behavior, credential path, or order behavior.
+
+Future material changes to the accepted Hermes/research-brain plan must update
+repo-truth docs in the same WP or an approved follow-up. Chat memory and PR
+comments alone are not authoritative. Dynamic PR state belongs in GitHub PR
+metadata and the PR body; committed status docs remain stable post-merge.
+
+The next substantive WP is Hermes Advisory Foundation And Research-Brain
+Architecture V1.
 
 ## WP93 Candidate Review Report Operator Runbook V1
 

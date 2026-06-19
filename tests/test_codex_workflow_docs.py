@@ -410,7 +410,7 @@ def test_project_status_reflects_wp79_branch() -> None:
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in (
+    assert "see GitHub PR metadata and PR body" in branch_line or any(wp in branch_line for wp in (
         "wp79-wallet-skill-niche-profiler-research-queue-integration",
         "wp80-copyability-delay-simulator-design-wallet-report-contract",
         "wp81-local-copyability-delay-evaluation-from-fixtures",
@@ -933,7 +933,7 @@ def test_project_status_reflects_wp86_branch() -> None:
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in (
+    assert "see GitHub PR metadata and PR body" in branch_line or any(wp in branch_line for wp in (
         "workflow/wp86-execution-package-discipline-adoption",
         "wp86",
         "wp87",
@@ -1621,7 +1621,9 @@ def test_project_status_reflects_wp92_branch() -> None:
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp92", "wp93", "wp94", "recursing-bell"))
+    assert "see GitHub PR metadata and PR body" in branch_line or any(
+        wp in branch_line for wp in ("wp92", "wp93", "wp94", "recursing-bell")
+    )
 
 
 def test_repo_truth_index_references_wp93_runbook() -> None:

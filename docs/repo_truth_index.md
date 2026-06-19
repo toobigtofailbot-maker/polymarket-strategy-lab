@@ -189,6 +189,10 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z56. `docs/status_entries/WP94.md` - WP94 committed status fragment; stable non-self-referential record for the candidate review workflow local smoke receipt WP; records identity, authority posture, scope boundary, validation summary, guard summary, deferred items, next WP pointer, and ready-for-review state.
 
+62z57. `docs/hermes_research_brain_execution_plan.md` - WP95 canonical accepted Hermes/research-brain execution plan; governs the broad advisory research philosophy, deterministic-core responsibilities, forbidden Hermes authority, phased sequence, manual-step checkpoints, cost controls, and future plan-change rule. Material changes to this plan must update repo-truth docs in the same WP or an approved follow-up; chat memory and PR comments alone are not authoritative. Related policy and boundary context remains in `docs/ai_agent_integration_policy.md`, `docs/hermes_readonly_boundary.md`, `docs/agent_hermes_manual_setup_decision_record.md`, `docs/local_advisory_handoff_package.md`, and `docs/advisory_runtime_boundary_consumption_design.md`. Planning guidance only; no Hermes runtime, paper, execution, live, credential, scheduler, or order authority.
+
+62z58. `docs/status_entries/WP95.md` - WP95 stable committed status fragment for post-WP94 repo-truth reconciliation and accepted Hermes research-brain plan lock-in.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
