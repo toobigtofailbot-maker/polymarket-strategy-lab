@@ -1112,3 +1112,23 @@ def test_guard_doc_optional_final_comment_is_non_canonical() -> None:
 def test_guard_doc_require_current_final_marker_is_historical() -> None:
     text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_CONSISTENCY_GUARD.md")
     assert "WP86" in text or "historical" in text.lower()
+
+
+def test_posted_evidence_verification_doc_final_comment_not_required_after_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "POSTED_GITHUB_EVIDENCE_VERIFICATION.md")
+    assert "mandatory final GitHub evidence comments are retired" in text or "not required after WP91" in text
+
+
+def test_posted_evidence_verification_doc_absence_not_a_merge_blocker() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "POSTED_GITHUB_EVIDENCE_VERIFICATION.md")
+    assert "not a merge blocker after WP91" in text
+
+
+def test_posted_evidence_verification_doc_historical_sections_labeled() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "POSTED_GITHUB_EVIDENCE_VERIFICATION.md")
+    assert "Historical WP58/WP86" in text or "Not Active After WP91" in text
+
+
+def test_guard_doc_posted_verifier_cross_reference_aligned_with_wp91() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "PR_EVIDENCE_CONSISTENCY_GUARD.md")
+    assert "not a required final-comment merge gate" in text

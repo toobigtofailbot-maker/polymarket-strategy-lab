@@ -1,6 +1,6 @@
 # Posted GitHub Evidence Verification
 
-Status: `WORKFLOW_GOVERNANCE_MANDATORY`
+Status: `HISTORICAL_WP58_TO_WP90_PLUS_OPTIONAL_AFTER_WP91` — see Post-WP91 Policy section below.
 
 Applies to: Codex and Claude Code. The GitHub helper is read-only, manual, workflow-only.
 
@@ -16,6 +16,37 @@ The local PR evidence consistency guard (`tools/git/pr_evidence_consistency_guar
 - It does not identify the latest current-final comment in GitHub's comment history.
 
 Passing the local guard is necessary but not sufficient to prove posted GitHub evidence is correct.
+
+---
+
+## Post-WP91 Policy
+
+After WP91, mandatory final GitHub evidence comments are retired.
+
+Required current evidence surfaces:
+1. GitHub PR metadata for current live PR head.
+2. PR body as the current review evidence surface.
+3. Stable non-self-referential status fragment.
+
+Not required after WP91:
+- current-final evidence comment exists;
+- final comment starts with CURRENT FINAL WP EVIDENCE;
+- final comment contains current live PR head;
+- latest current-final comment URL/head SHA is present;
+- posted verifier checks PR comments as a merge gate.
+
+If an optional final comment is posted after WP91:
+- it is non-canonical;
+- it must not contradict the PR body;
+- absence of that comment is not a merge blocker after WP91.
+
+`Ready for review: YES` is allowed after WP91 when PR body + status fragment evidence is complete and consistent. No posted verifier run or final comment is required.
+
+---
+
+## Historical WP58/WP86–WP90 Workflow (Not Active After WP91)
+
+The following sections describe the mandatory final-comment verification workflow that applied during WP58–WP90. This workflow is **not active after WP91**. It is preserved here for historical reference only.
 
 ---
 

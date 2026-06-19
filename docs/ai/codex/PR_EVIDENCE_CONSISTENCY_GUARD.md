@@ -237,11 +237,16 @@ The `run_guard()` API (for direct Python callers) still returns `[A]` category e
 
 `posted_pr_evidence_verifier.py` (added in WP58) checks the live GitHub PR body and comments via the public GitHub REST API.
 
-The required future workflow uses both:
-1. Local draft guard — run before posting.
-2. Posted verifier — run after posting.
+**After WP91, posted GitHub evidence verification is not a required final-comment merge gate.**
 
-See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md` for the full required workflow.
+Current required evidence check after WP91:
+- PR body is current and matches GitHub PR metadata.
+- Status fragment is stable/non-self-referential and does not contradict PR body.
+
+Optional after WP91:
+- If a final comment is posted, it must not contradict the PR body.
+
+Historical WP58/WP86–WP90 workflow (not active after WP91): the two-step workflow (local draft guard + posted verifier) with mandatory final comment is documented in `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md` under its historical section.
 
 ## Relationship to WP45 PR Evidence Reporting Discipline
 
