@@ -114,7 +114,7 @@ def test_wp_execution_report_requires_network_distinction():
 def test_wp_execution_report_requires_body_comment_consistency():
     text = WP_EXECUTION_REPORT.read_text(encoding="utf-8")
     assert "consistent" in text.lower() or "consistency" in text.lower(), (
-        "WP_EXECUTION_REPORT.md must require PR body and final comment consistency"
+        "WP_EXECUTION_REPORT.md must require PR body and status fragment consistency (after WP91, final comment is optional)"
     )
 
 
@@ -378,7 +378,7 @@ def test_discipline_doc_network_wording_rule():
 def test_discipline_doc_body_comment_consistency():
     text = PR_EVIDENCE_DISCIPLINE.read_text(encoding="utf-8")
     assert "consistent" in text.lower() or "consistency" in text.lower(), (
-        "PR_EVIDENCE_REPORTING_DISCIPLINE.md must require PR body and final comment consistency"
+        "PR_EVIDENCE_REPORTING_DISCIPLINE.md must require PR body and status fragment consistency (after WP91, final comment is optional)"
     )
 
 

@@ -4,13 +4,15 @@
 
 Codex and Claude Code.
 
-## Mandatory Final PR Comment
+## Final PR Comment (Optional After WP91)
 
-The final PR comment is mandatory before requesting review. The PR body does not replace this final report comment. This rule cannot be waived for token savings.
+**After WP91:** A final top-level PR comment is optional and non-canonical. The PR body is the primary review evidence surface; absence of a final comment is not a merge blocker after WP91. If an optional final comment is posted, it must not contradict the PR body and must state it is optional and non-canonical.
+
+**Historical WP86–WP90 only:** The final PR comment was mandatory before requesting review. The PR body did not replace this final report comment. This rule could not be waived for token savings.
 
 ## Concise Report Format
 
-Every final PR comment must include the following sections (concise but evidence-complete):
+When a final PR comment is posted (optional after WP91), it should include the following sections (concise but evidence-complete):
 
 **A. Work Package ID / package class**
 **B. Branch / base / required previous merge commit**
@@ -63,8 +65,8 @@ Accurate classification is mandatory even when the concise format is applied. Se
 
 ## PR Body
 
-The PR body contains the review checklist, summary, files changed, safety confirmations, and known limitations. It is a complement to the final report comment, not a replacement.
+The PR body contains the review checklist, summary, files changed, safety confirmations, and known limitations. After WP91, the PR body is the primary evidence surface. An optional final comment may be posted to provide additional review clarity but is not required.
 
 ## Future Validation-Output Summary Helper
 
-A future local validation-output summary helper (designed in `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md`) may support concise reporting by producing structured command-result summaries. However, the helper must not replace command execution, required validation evidence, or the mandatory final PR comment. Using the helper does not waive any section of this document.
+A future local validation-output summary helper (designed in `docs/ai/codex/VALIDATION_OUTPUT_SUMMARY_HELPER_DESIGN.md`) may support concise reporting by producing structured command-result summaries. However, the helper must not replace command execution, required validation evidence, or PR body evidence. After WP91, a final PR comment is optional. Using the helper does not waive any section of this document.

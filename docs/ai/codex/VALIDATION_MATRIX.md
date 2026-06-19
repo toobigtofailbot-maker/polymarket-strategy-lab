@@ -20,8 +20,8 @@ All Risk Level 0 WPs must also confirm:
 - No `src/`, `tools/` (unless explicitly scoped), dependency, or lock-file changes.
 - Exact PR evidence reporting discipline.
 - Network usage wording accurate.
-- Current-final evidence marker in final comment.
-- Guard input source stated.
+- Current-final evidence marker in final comment (only if a final comment is voluntarily posted; optional after WP91).
+- Guard input source stated in PR body.
 - Evidence mode declared (PUBLIC_VERIFIER_PASS / PRIVATE_REPO_MANUAL_VERIFIED / BLOCKED_NOT_READY).
 
 ### Risk Level 1 — Local/Offline Source (Low Risk)
@@ -80,12 +80,13 @@ All Risk Level 1 WPs must also confirm:
 - Full pytest after final commit unless the active WP explicitly defines a narrower gate and explains why.
 - `docs/project_status.md` current-WP wording check.
 - Dependency and lock-file preservation unless explicitly scoped.
-- Exact PR evidence reporting discipline: exact full validation commands in PR body and final PR comment (no ellipses, no abbreviated commands, no placeholder text), accurate network usage wording, consistent counts between PR body and final comment, and stale counts corrected before Ready for review: YES. See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`.
-- PR evidence consistency guard: run `tools/git/pr_evidence_consistency_guard.py` on exact local drafts intended for posting (or on copied posted GitHub content if evidence was posted before the guard ran). Include WP47 hardening flags where local PR body/final comment drafts are available:
+- Exact PR evidence reporting discipline: exact full validation commands in PR body (no ellipses, no abbreviated commands, no placeholder text), accurate network usage wording, consistent counts in PR body (and between PR body and optional final comment if posted), and stale counts corrected before Ready for review: YES. After WP91, final comment is optional; PR body is the required evidence surface. See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`.
+- PR evidence consistency guard: run `tools/git/pr_evidence_consistency_guard.py` on exact local drafts intended for posting (or on copied posted GitHub content if evidence was posted before the guard ran). Include WP47 hardening flags where local PR body drafts are available. After WP91, `--final-comment` and `--require-current-final-marker` are omitted if no final comment is posted:
   ```
-  python tools/git/pr_evidence_consistency_guard.py --pr-body <FINAL_PR_BODY_TEXT> --final-comment <CURRENT_FINAL_EVIDENCE_COMMENT_TEXT> --expected-head <HEAD_SHA> --required-command "python tools/git/status_snapshot.py --format text --include-deferred --include-helper-inventory --include-next-wp-candidates --include-protected-boundaries" --required-command "python tools/git/diff_scope_summary.py --base main --head HEAD --package-class local-offline-stdlib-governance-helper-hardening --allowed-prefix docs/ --allowed-prefix tests/ --allowed-prefix tools/git/pr_evidence_consistency_guard.py --forbidden-prefix src/" --require-standard-network-wording --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-current-final-marker --require-posted-evidence-note
+  python tools/git/pr_evidence_consistency_guard.py --pr-body <FINAL_PR_BODY_TEXT> --expected-head <HEAD_SHA> --required-command "python tools/git/status_snapshot.py --format text --include-deferred --include-helper-inventory --include-next-wp-candidates --include-protected-boundaries" --required-command "python tools/git/diff_scope_summary.py --base main --head HEAD --package-class local-offline-stdlib-governance-helper-hardening --allowed-prefix docs/ --allowed-prefix tests/ --allowed-prefix tools/git/pr_evidence_consistency_guard.py --forbidden-prefix src/" --require-standard-network-wording --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note
   ```
-  If the guard fails, Ready for review must be NO. Report exact guard invocation and result in both PR body and final comment. See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
+  If a final comment is also posted (optional after WP91), add `--final-comment <CURRENT_FINAL_EVIDENCE_COMMENT_TEXT> --require-current-final-marker` to the invocation.
+  If the guard fails, Ready for review must be NO. Report exact guard invocation and result in the PR body (and in the optional final comment if posted). See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
 
 ## github-aware-readonly-workflow-helper WP
 
@@ -100,20 +101,19 @@ Minimum validation:
 - PR evidence consistency guard (local).
 - Posted PR evidence verifier after PR is posted.
 
-Required guard invocation example:
+Required guard invocation example (after WP91, omit `--final-comment` and `--require-current-final-marker` if no final comment is posted):
 ```bash
 python tools/git/pr_evidence_consistency_guard.py \
   --pr-body pr_body.txt \
-  --final-comment final_comment.txt \
   --expected-head <HEAD_SHA> \
   --require-guard-result \
-  --require-current-final-marker \
   --require-posted-evidence-note \
   --forbid-placeholder-evidence \
   --forbid-inline-test-counts \
   --require-standard-network-wording \
   --require-ready-yes
 ```
+If an optional final comment was posted: add `--final-comment final_comment.txt --require-current-final-marker`.
 
 Required posted verifier invocation after PR is posted:
 ```bash
@@ -175,13 +175,14 @@ All WPs that introduce or return public result objects (dataclasses, TypedDicts,
 - Manual serializers prohibited unless a field-coverage test proves losslessness.
 - Recursive forbidden-terms scan covers the entire result object, not only the `errors` field.
 
-## Evidence Architecture Model D (WP88+)
+## Evidence Architecture Model D (WP88+; updated by WP91)
 
 All WPs from WP88 onward must satisfy Model D from `docs/ai/codex/EVIDENCE_ARCHITECTURE.md`:
 
 - PR body is the current review evidence surface; status fragment is a stable non-self-referential record.
 - Status fragment must not record the current live PR head as a fixed SHA.
 - Status fragment must use `Validated implementation commit:` (not `Head commit:`) for in-review validated SHAs.
-- Final comment is a transition-only verification pointer — not a duplicate evidence table.
+- Final comment is optional and non-canonical after WP91 — not required for merge readiness.
 - Evidence contradiction matrix must be checked before `Ready for review: YES`.
 - `NOT_VERIFIED` + `Ready for review: YES` is always invalid.
+- Absence of a final comment is not a merge blocker after WP91.

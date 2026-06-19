@@ -5,8 +5,8 @@
 - [ ] Tool-specific adapter read: `CODEX_START_HERE.md` / `CLAUDE_START_HERE.md` / other
 - [ ] I read `AGENTS.md`
 - [ ] Scope matches WP
-- [ ] Full WP final report posted as PR comment
-- [ ] PR body is not the only final report
+- [ ] Full WP final report posted as PR comment (optional after WP91 — absence is not a merge blocker; PR body is the current review evidence surface)
+- [ ] PR body is not the only final report (after WP91: PR body alone is sufficient; final comment is optional)
 - [ ] Base verification included
 - [ ] Required previous merge commit verified
 - [ ] Required previous files verified
@@ -28,20 +28,17 @@
 - [ ] Known limitations documented
 - [ ] Validation summary includes exact commands and result counts
 - [ ] Unavailable security tools reported as UNAVAILABLE/SKIPPED (not passed)
-- [ ] Final PR comment is concise but evidence-complete (see `docs/ai/codex/CONCISE_REPORTING_RULES.md`)
+- [ ] Final PR comment is optional after WP91; if posted, it is non-canonical (see `docs/ai/codex/FINAL_COMMENT_POLICY.md` and `docs/ai/codex/CONCISE_REPORTING_RULES.md`)
 - [ ] No raw full test logs in PR comment unless needed to diagnose failure
 - [ ] Package size class (S/M/L/XL) stated in PR body
 - [ ] Bundle risk class confirmed: no mode boundary crossed
 - [ ] No forbidden bundle type present (see `docs/ai/codex/WP_BUNDLING_POLICY.md`)
 - [ ] Follow-up process-defect classification section present and accurate
-- [ ] Current-final evidence comment identified by marker (not older stale comment)
-- [ ] Guard input source line states: local drafts or copied posted content
+- [ ] Guard input source line states: PR body is current review evidence surface (after WP91; final comment is optional and non-canonical)
 - [ ] `docs/project_status.md` reconciled after prior WP merge in this same WP
-- [ ] Posted GitHub evidence verifier run after PR posted (or unavailability stated with manual verification documented)
-- [ ] Latest current-final comment URL included in PR body
 - [ ] Negative test matrix declared (`Negative test matrix required: YES / NO`)
 - [ ] Status fragment committed: `docs/status_entries/WP<NN>.md` (WP86+)
-- [ ] Status fragment consistent with final comment on all key fields
+- [ ] Status fragment consistent with PR body on all key fields
 - [ ] Requirement-to-evidence traceability table included (M/L/XL WPs)
 - [ ] Compatibility/impossibility table included (nontrivial WPs)
 - [ ] Authority/Non-Authority Posture declared in WP definition
@@ -71,7 +68,7 @@ Negative test matrix required: YES / NO
 ```
 Status fragment path: docs/status_entries/WP<NN>.md
 Status fragment committed: YES/NO
-Status fragment consistent with final comment: YES/NO
+Status fragment consistent with PR body: YES/NO
 Status fragment is stable/non-self-referential (no current live PR head as fixed SHA): YES/NO
 Status fragment uses "Validated implementation commit:" (not "Head commit:") for in-review SHA: YES/NO
 ```
@@ -79,10 +76,11 @@ Status fragment uses "Validated implementation commit:" (not "Head commit:") for
 ## Evidence Architecture (WP88+)
 
 ```
-Evidence architecture: Model D
+Evidence architecture: Model D (after WP91)
 PR body is current review evidence surface: YES/NO
 Status fragment is stable/non-self-referential: YES/NO
-Final comment is transition-only pointer (not duplicate evidence table): YES/NO
+Final comment is optional/non-canonical (not required for merge readiness after WP91): YES/NO
+If final comment posted: does not contradict PR body: YES/NO/NOT_APPLICABLE
 Evidence contradiction matrix checked: YES/NO — no invalid combinations present
 ```
 
@@ -98,14 +96,11 @@ Evidence contradiction matrix checked: YES/NO — no invalid combinations presen
 |---|---|---|---|
 | (fill for M, L, XL size class WPs) | | | |
 
-## Posted GitHub Evidence Verification
+## Posted GitHub Evidence Verification — Optional After WP91
 
-```
-Posted GitHub evidence verifier: PASS/FAIL/UNAVAILABLE
-Command: python tools/git/posted_pr_evidence_verifier.py ...
-Result: ...
-Latest current-final comment URL: ...
-```
+After WP91, a final GitHub evidence comment is optional and non-canonical. Absence of a final comment is not a merge blocker after WP91.
+
+If an optional final comment is posted, it must not contradict the PR body and must state: "This comment is optional and non-canonical; the PR body is the current review evidence surface."
 
 ## Tests Run
 

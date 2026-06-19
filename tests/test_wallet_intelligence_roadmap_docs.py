@@ -343,7 +343,9 @@ def test_project_status_marks_wp79_branch():
         "wp88",
         "wp89",
         "wp90",
+        "wp91",
         "eager-shtern",
+        "happy-torvalds",
     ))
 
 

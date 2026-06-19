@@ -12,9 +12,13 @@
 
 Require exact, honest, and consistent PR evidence in every work package PR body and final top-level PR comment so reviewers never need to request the same corrections manually.
 
+**After WP91:** PR evidence reporting discipline applies to the PR body and the stable/non-self-referential status fragment. Final GitHub comments are optional and non-canonical. Absence of a final comment is not a merge blocker after WP91. If an optional final comment is posted, it must not contradict the PR body.
+
 ## Rule 1 — Exact Validation Commands Required
 
 The PR body and the final top-level PR comment must include the exact full command invocation used for every validation step. This means all flags, arguments, and paths must appear verbatim.
+
+**After WP91:** The PR body is the required surface for exact validation command evidence. A final comment is not required. If a final comment is voluntarily posted, it must not contradict the PR body.
 
 **Acceptable:**
 
@@ -65,6 +69,8 @@ The PR body and the final top-level PR comment must not contradict each other. K
 
 If a final re-run produces updated counts, update both the PR body and the final comment before marking Ready for review: YES.
 
+**After WP91:** The PR body and status fragment must not contradict each other. If an optional final comment is posted, it must not contradict the PR body. No final comment is required for merge readiness.
+
 ## Rule 5 — Correct Counts Before Ready for Review
 
 Stale counts, stale summaries, and stale wording must be corrected before Ready for review: YES.
@@ -85,24 +91,25 @@ For each validation command in the PR body and final PR comment:
 | Warning count | If any warnings were emitted |
 | Skipped tools | Report as SKIPPED_NOT_PRESENT or UNAVAILABLE/SKIPPED with reason |
 
+**After WP91:** Required evidence fields apply to the PR body. Status fragments may reference stable validation evidence. Optional final comments are not required to contain command evidence.
+
 ## Rule 7 — Unavailable Tool Honesty
 
 Unavailable security tools must be reported as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT. They must not be described as passed.
 
 Required helper commands that do not exist must be reported as SKIPPED_NOT_PRESENT with exact reason. Do not imply they were run.
 
-## Rule 8 — Current Final Evidence Comments Must Be Marked
+## Rule 8 — Current Final Evidence Comments Must Be Marked (WP86–WP90 Only; Optional After WP91)
 
-When posting a new final evidence comment that supersedes older comments, the new
-comment must start with:
+**After WP91:** Final GitHub evidence comments are optional and non-canonical. Rule 8 applies only if a final comment is voluntarily posted.
+
+If a final comment is voluntarily posted after WP91, it should state it is optional and non-canonical, and must not contradict the PR body.
+
+**Through WP90 (historical):** When posting a new final evidence comment that superseded older comments, the new comment was required to start with:
 
 > CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments
 
-Old evidence comments may remain visible on the PR. Reviewers must identify the
-current final evidence comment by this marker, not by scroll position or date.
-
-If the posted final evidence changes after the initial comment (e.g., a re-run
-corrects counts), the updated comment must include the current-final marker.
+Old evidence comments may remain visible on the PR. Reviewers must identify the current final evidence comment by this marker, not by scroll position or date. If the posted final evidence changes after the initial comment (e.g., a re-run corrects counts), the updated comment must include the current-final marker.
 
 ## Rule 9 — Inline Test Counts in File Lists Are Forbidden
 
@@ -129,16 +136,17 @@ Running the guard only on intermediate or earlier drafts is insufficient if
 the posted content later changed. Intermediate draft checks do not count as
 verification of posted evidence.
 
-## Rule 11 — Supersede Stale Older Comments Explicitly
+**After WP91:** The guard must be run on the PR body draft. A final comment draft is not required after WP91.
 
-If an earlier evidence comment contains stale counts, stale SHA, or incorrect
-evidence, the current final evidence comment must explicitly state that it
-supersedes earlier comments. Use the required marker:
+## Rule 11 — Supersede Stale Older Comments Explicitly (WP86–WP90 Only)
+
+**After WP91:** Final comments are optional. If no final comment is posted, nothing to supersede.
+
+**Through WP90 (historical):** If an earlier evidence comment contains stale counts, stale SHA, or incorrect evidence, the current final evidence comment must explicitly state that it supersedes earlier comments. Use the required marker:
 
 > CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments
 
-Reviewers must not treat stale earlier comments as current if a newer comment
-with this marker explicitly supersedes them.
+Reviewers must not treat stale earlier comments as current if a newer comment with this marker explicitly supersedes them.
 
 ## Rule 13 — Posted Evidence Self-Check Source Must Be Declared (WP54)
 
@@ -153,6 +161,8 @@ Before setting Ready for review: YES, Claude Code must satisfy one of the follow
 **If any posted evidence changes after the guard's last run, the guard must be rerun on the updated content.** If Claude Code cannot confirm the live GitHub content matches what the guard checked, it must state that limitation and may not claim posted evidence was verified.
 
 Running the guard only on pre-posting drafts that differ from what was posted is insufficient. Running the guard only on intermediate drafts is insufficient.
+
+**After WP91:** The "Guard input source" declaration belongs in the PR body. A final comment is not required after WP91. If no final comment is posted, only the PR body guard input source needs to be declared.
 
 ## Rule 12 — Run PR Evidence Consistency Guard Before Ready for Review (with WP47 + WP54 Flags)
 
@@ -172,6 +182,8 @@ Report the exact guard invocation AND the full guard result output (result line,
 If local draft files are used (not the already-posted GitHub content), state that fact. Do not commit local draft files.
 
 See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md` for full CLI reference.
+
+**After WP91:** The guard runs on the PR body. A final comment is not required after WP91. See the post-WP91 invocation pattern in `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
 
 ## Rule 14 — Live Posted GitHub Evidence Verification And Evidence Mode Selection (WP59+)
 
@@ -202,31 +214,38 @@ The ready-for-review checklist must include:
 - Latest current-final comment URL.
 - Confirmation that the latest current-final comment head SHA matches the PR head SHA.
 
+**After WP91:** Latest current-final comment URL and confirmation of current-final comment head SHA are not required after WP91. The evidence mode declaration belongs in the PR body only. A final comment is not required for merge readiness.
+
 ## Ready-for-Review Gate
 
 Ready for review: YES requires all of the following to be true:
 
 - [ ] Exact full validation commands appear in PR body (no ellipses).
-- [ ] Exact full validation commands appear in final PR comment (no ellipses).
 - [ ] Network usage wording is accurate.
-- [ ] PR body and final PR comment are consistent (matching counts and results).
 - [ ] No stale counts or stale summary text.
 - [ ] Unavailable tools reported honestly.
-- [ ] Final top-level PR comment is posted (not only the PR body).
-- [ ] Final top-level PR comment starts with "CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments" if it supersedes older comments.
 - [ ] No parenthetical test counts in file lists or summary sections.
-- [ ] No placeholder evidence tokens in PR body or final comment.
-- [ ] Both PR body and final comment include a "Guard input source:" line.
+- [ ] No placeholder evidence tokens in PR body.
+- [ ] PR body includes a "Guard input source:" line.
 - [ ] Guard input source line declares whether guard ran on exact local drafts intended for posting or on copied posted GitHub content.
-- [ ] `pr_evidence_consistency_guard.py` run with WP47 hardening flags and `--require-guard-result` on exact local drafts or on copied posted content, and result reported.
-- [ ] Full guard result output (result line, checked categories, exit code) appears in both PR body and final comment — not just the command invocation.
-- [ ] If any posted evidence changed after the last guard run, guard was rerun on updated content before Ready for review: YES.
-- [ ] Evidence mode declared in both PR body and final comment (one of: `PUBLIC_VERIFIER_PASS`, `PRIVATE_REPO_MANUAL_VERIFIED`, `BLOCKED_NOT_READY`).
+- [ ] `pr_evidence_consistency_guard.py` run with applicable hardening flags on exact local drafts or on copied posted content, and result reported.
+- [ ] Full guard result output (result line, checked categories, exit code) appears in PR body — not just the command invocation.
+- [ ] Evidence mode declared in PR body (one of: `PUBLIC_VERIFIER_PASS`, `PRIVATE_REPO_MANUAL_VERIFIED`, `BLOCKED_NOT_READY`).
 - [ ] Evidence mode is not `BLOCKED_NOT_READY` (if it is, Ready must be NO).
 - [ ] If `PUBLIC_VERIFIER_PASS`: verifier actually returned exit 0 — not called PASS based on manual inspection.
 - [ ] If `PRIVATE_REPO_MANUAL_VERIFIED`: all required manual verification fields present; verifier UNAVAILABLE + exit code documented; reason documented.
+- [ ] If a final comment was voluntarily posted: final comment does not contradict PR body and does not claim canonical evidence authority.
 
-If any item is NO, set Ready for review: NO and correct the evidence before requesting review.
+**After WP91:** A final top-level PR comment is no longer required for merge readiness. The following checklist items from the WP86–WP90 transition period are retired as mandatory requirements (they apply only if a final comment is voluntarily posted):
+
+- Final top-level PR comment is posted (optional after WP91; not required for merge readiness)
+- Final top-level PR comment starts with "CURRENT FINAL WP EVIDENCE" if it supersedes older comments (optional after WP91)
+- Both PR body and final comment are consistent (only if a final comment is posted)
+- Both PR body and final comment include a "Guard input source:" line (only if a final comment is posted)
+- Full guard result output appears in both PR body and final comment (only if a final comment is posted)
+- Evidence mode declared in both PR body and final comment (only if a final comment is posted)
+
+If any required item is NO, set Ready for review: NO and correct the evidence before requesting review.
 
 ## Reviewer Action When Evidence Is Defective
 
@@ -238,9 +257,11 @@ If a reviewer finds any of the following, the PR is not merge-ready:
 - PR body and final PR comment that contradict each other on counts or results.
 - Stale counts that do not match the last reported test run.
 - Unavailable tools described as passed.
-- Missing final top-level PR comment.
+- Missing final top-level PR comment (WP86–WP90 only; after WP91, absence is not a merge blocker — see `docs/ai/codex/FINAL_COMMENT_POLICY.md`).
 
 Correct action: mark follow-up required; do not merge.
+
+**After WP91:** Absence of a final top-level PR comment is not a defect. If an optional final comment is posted and contradicts the PR body, mark follow-up required.
 
 ## Applies To
 
@@ -318,9 +339,9 @@ Every WP from WP86 onward must commit a status fragment at `docs/status_entries/
 
 The status fragment is a committed evidence record. It is the preferred primary evidence surface because it cannot be accidentally superseded by a later GitHub comment.
 
-The status fragment must be consistent with the final comment on all key fields: head commit, changed files, validation results, evidence mode, and Ready for review status.
+The status fragment must be consistent with the PR body on all key fields: head commit, changed files, validation results, evidence mode, and Ready for review status. After WP91, if an optional final comment is posted, the status fragment must not contradict it either.
 
-If the status fragment and the PR body or final comment contradict each other, the PR is not merge-ready.
+If the status fragment and the PR body contradict each other, the PR is not merge-ready. After WP91, a final comment is not required, but if posted, it must not contradict the status fragment or PR body.
 
 See `docs/status_entries/README.md` for the required format.
 

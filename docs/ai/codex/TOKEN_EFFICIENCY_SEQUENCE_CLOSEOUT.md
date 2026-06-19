@@ -76,7 +76,8 @@ wallet, copy-trading, or official-client runtime work by itself.
   status, helper inventory, deferred items, next-WP candidates, and protected
   boundaries.
 - Advisory limit: does not replace repo truth, direct file reads, validation,
-  security checks, human review, final PR comments, or merge-ready decisions.
+  security checks, human review, PR body evidence (final PR comments are optional
+  after WP91), or merge-ready decisions.
 
 ## 5. Recommended Future Helper Usage Order
 
@@ -171,7 +172,7 @@ Helper output is evidence support only, never authority.
 
 ## 11. Validation/Reporting Standard After Closeout
 
-- Final PR comments should remain concise but evidence-complete.
+- After WP91, a final PR comment is optional. If posted, it should remain concise but evidence-complete and must not contradict the PR body.
 - Exact commands and counts are still required.
 - Unavailable security tools must be reported as unavailable/skipped, not
   passed.

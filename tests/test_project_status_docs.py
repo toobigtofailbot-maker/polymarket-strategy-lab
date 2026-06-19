@@ -173,7 +173,7 @@ def test_wp79_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91"))
 
 
 def test_wp73_in_merged_wps():
@@ -282,7 +282,9 @@ def test_wp79_branch_is_current_branch():
         "wp88",
         "wp89",
         "wp90",
+        "wp91",
         "eager-shtern",
+        "happy-torvalds",
     ))
 
 
@@ -402,7 +404,7 @@ def test_wp88_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90"))
+    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90", "WP91"))
 
 
 def test_wp88_current_branch_name():
@@ -410,7 +412,7 @@ def test_wp88_current_branch_name():
     branch_line = next(
         line for line in text.splitlines() if line.startswith("- Current branch:")
     )
-    assert any(wp in branch_line for wp in ("wp88", "wp89", "wp90", "eager-shtern"))
+    assert any(wp in branch_line for wp in ("wp88", "wp89", "wp90", "wp91", "eager-shtern", "happy-torvalds"))
 
 
 def test_wp88_is_workflow_evidence_repair_not_product():
@@ -441,3 +443,32 @@ def test_wp90_candidate_review_report_export_on_branch():
     assert "WALLET_SIGNAL_CANDIDATE_REVIEW_REPORT_EXPORT_ON_BRANCH" in text or (
         "WP90" in text and "export" in text.lower()
     )
+
+
+# ── WP91: Final Comment Transition Retirement Decision ────────────────────────
+
+
+def test_wp90_in_merged_wps():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP90" in merged_line
+
+
+def test_wp91_is_current_phase():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    assert any(wp in current_phase_line for wp in ("WP91", "WP90", "WP92"))
+
+
+def test_wp91_final_comment_retirement_status():
+    text = _read()
+    assert "RETIRED_AFTER_WP91" in text or "final comment" in text.lower()
+
+
+def test_wp91_evidence_architecture_merged_in_project_status():
+    text = _read()
+    assert "EVIDENCE_ARCHITECTURE" in text

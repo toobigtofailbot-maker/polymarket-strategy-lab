@@ -25,7 +25,7 @@ This design describes a future local diff/scope summary helper that would:
 - Produce package-class alignment warnings when the WP scope and changed-file set appear misaligned.
 - Output a concise, human-readable summary to stdout by default.
 
-The helper is intended to reduce the token load of PR reviews and WP executions by pre-computing information that reviewers currently derive manually from `git diff` output and file lists. It does not replace human review, required validation, security checks, or the mandatory final PR comment.
+The helper is intended to reduce the token load of PR reviews and WP executions by pre-computing information that reviewers currently derive manually from `git diff` output and file lists. It does not replace human review, required validation, security checks, or the PR body current evidence surface (final PR comment is optional after WP91).
 
 ## 3. Non-Goals
 
@@ -130,7 +130,7 @@ The future helper must follow these safety rules:
 - Dependency and lock-file changes must always be highlighted in the summary.
 - Generated artifacts must always be highlighted in the summary.
 - The helper does not perform secrets scanning. Secrets scanning requires gitleaks or an approved equivalent and remains fully separate.
-- The helper does not replace pytest, security checks, preflight tools, the generated artifact guard, the Remote Main Sync Gate, or the mandatory final PR comment.
+- The helper does not replace pytest, security checks, preflight tools, the generated artifact guard, the Remote Main Sync Gate, or the PR body current evidence surface (final PR comment is optional after WP91).
 - The helper output, if written to `local_data/`, must never be committed.
 - No exit status value may be used to bypass required validation.
 

@@ -30,7 +30,7 @@ From highest to lowest authority:
 1. **GitHub PR metadata** — source of truth for the current live PR head SHA.
 2. **PR body** — source of truth for current review evidence (validation, guards, changed files, traceability).
 3. **Status fragment** (`docs/status_entries/WP<NN>.md`) — stable historical/repo record; not a live-head tracker.
-4. **Final GitHub comment** — transition-only posted verification pointer during the WP86–WP90 transition.
+4. **Final GitHub comment** — optional reviewer clarification after WP91; was transition-only pointer during WP86–WP90.
 5. **Local drafts** — never treated as posted evidence.
 
 No surface below may claim authority that belongs to a higher surface.
@@ -107,31 +107,22 @@ Validated implementation commit: <SHA>
 
 Never label a currently-in-review head as `Head commit:`. That label is reserved for historical merge records.
 
-## 5. Final GitHub Comment — Transition-Only Verification Pointer
+## 5. Final GitHub Comment — Optional Reviewer Clarification (After WP91)
 
-During the WP86–WP90 transition, final GitHub comments remain required. After WP90, a later WP may remove or simplify this requirement; that decision must appear in repo truth.
+**After WP91:** Final GitHub evidence comments are **optional**. They are not required for merge readiness.
 
-Until that decision is made, final comments must be **short transition markers**. They may contain:
+A final comment may be posted voluntarily for reviewer clarity. If posted, it must:
 
-- the `CURRENT FINAL WP EVIDENCE` marker
-- PR number
-- current live PR head re-fetched after posting
-- statement that PR body is the current review surface
-- statement that status fragment is stable/non-self-referential
-- validation summary mirrored from PR body
-- posted evidence self-check (`POSTED_GITHUB_API_VERIFIED` or `MANUAL_UI_VERIFIED`)
-- PR body / final comment comparison result
-- status fragment / PR body comparison result
-- evidence contradiction matrix result
-- Ready for review
+- not claim canonical evidence authority
+- not contradict the PR body
+- not claim to supersede the PR body as the current review evidence surface
+- not encode a current live PR head as a fixed SHA that will become stale
 
-Final comments must not contain:
+If a final comment is voluntarily posted, it should say:
 
-- large duplicate evidence tables that can drift from the PR body
-- separate changed-file inventories that can drift
-- separate requirement-to-evidence tables that can drift
-- a current live head that was not re-fetched after posting
-- `NOT_VERIFIED` combined with `Ready for review: YES`
+> This comment is optional and non-canonical; the PR body is the current review evidence surface.
+
+**Historical context (WP86–WP90 transition):** During the WP86–WP90 transition, final GitHub comments were required as short transition markers containing the `CURRENT FINAL WP EVIDENCE` marker, current live PR head re-fetched after posting, validation summary mirrored from PR body, and posted evidence self-check. That transition ended with WP90. WP91 retires the mandatory final-comment requirement.
 
 ## 6. Evidence Contradiction Matrix
 
@@ -140,34 +131,47 @@ The following combinations are **invalid** and must block merge:
 | Invalid combination | Required outcome |
 |---|---|
 | `Posted evidence self-check: NOT_VERIFIED` + `Ready for review: YES` | Block merge |
-| `PR body and latest final evidence comment compared after posting: NO` + `Ready for review: YES` | Block merge |
+| `PR body and latest final evidence comment compared after posting: NO` + `Ready for review: YES` (if a final comment was posted) | Block merge |
 | `LOCAL_DRAFT_VERIFIED` treated as posted GitHub verification | Block merge |
 | status fragment claims current live PR head as fixed SHA | Block merge |
 | status fragment uses `Head commit:` for the currently-in-review PR head | Block merge |
-| PR body and final comment report different current live PR head SHAs | Block merge |
-| final comment claims verification without post-posting re-fetch | Block merge |
-| multiple final evidence comments without latest authoritative marker | Block merge |
+| PR body and final comment report different current live PR head SHAs (if a final comment was posted) | Block merge |
+| final comment claims canonical evidence authority after WP91 | Block merge |
+| optional final comment contradicts PR body | Block merge |
+| multiple final evidence comments without latest authoritative marker (if final comments were posted through WP90) | Block merge |
 | status fragment and PR body disagree on validation summary | Block merge or update status fragment before Ready |
 | Ready status appears in multiple surfaces with contradictory values | Block merge |
+| No final GitHub evidence comment exists after WP91 | **Not invalid** — absence of final comment is not a merge blocker after WP91 |
 
-The following are **valid** combinations:
+The following are **valid** combinations after WP91:
 
 | Valid combination | Meaning |
 |---|---|
+| PR body current + status fragment stable/non-self-referential + no final comment | Fully valid; may merge (after WP91) |
 | `POSTED_GITHUB_API_VERIFIED` + `compared after posting: YES` + `Ready for review: YES` | Fully verified; may merge |
 | `MANUAL_UI_VERIFIED` + allowed-by-policy note + `Ready for review: YES` | Manual verification accepted; may merge |
 | `NOT_VERIFIED` + `Ready for review: NO` | Not ready; correction required |
+| optional final comment posted, explicitly non-canonical, does not contradict PR body | Allowed; comment is non-canonical |
 
 No intermediate state (e.g., `LOCAL_DRAFT_VERIFIED` + `Ready for review: YES`) is valid unless the active WP's package class explicitly permits it and the evidence mode is declared.
 
 ## 7. Transition Policy
 
-During WP86–WP90 transition:
+**After WP91 (current policy):**
 
-- Both committed status entries and final GitHub PR comments are required.
-- The committed status entry is the preferred evidence surface (cannot be superseded by a later comment).
-- The final GitHub comment remains required as a posted verification pointer.
-- After WP90, a later WP may explicitly remove or simplify the final comment requirement; that decision must appear in repo truth.
+The WP86–WP90 transition ended with WP91. Final GitHub evidence comments are retired as a mandatory evidence surface.
+
+Current policy:
+
+- PR body is the current review evidence surface.
+- Status fragment is the stable non-self-referential repo record.
+- Final GitHub comments are optional reviewer clarifications only; they are not required for merge readiness and are not canonical evidence.
+- A PR must not be blocked from merge solely because no final evidence comment exists.
+- If a final comment is voluntarily posted, it must not contradict the PR body or claim canonical evidence authority.
+
+**Historical context (WP86–WP90 transition):**
+
+During the WP86–WP90 transition, both committed status entries and final GitHub PR comments were required. The committed status entry was the preferred evidence surface. The final GitHub comment was required as a posted verification pointer. WP91 explicitly removed the final comment requirement and documented that decision in repo truth.
 
 ## 8. Cross-References
 

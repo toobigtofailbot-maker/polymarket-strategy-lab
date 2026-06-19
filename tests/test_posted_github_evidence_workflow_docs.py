@@ -40,9 +40,15 @@ def test_doc_requires_verifier_after_posting():
     assert "after" in content.lower()
 
 
-def test_doc_defines_current_final_marker():
+def test_doc_current_final_marker_historical_after_wp91():
     content = read_doc()
-    assert "CURRENT FINAL WP EVIDENCE" in content
+    assert "CURRENT FINAL WP EVIDENCE" in content, (
+        "Doc must preserve the historical CURRENT FINAL WP EVIDENCE marker description"
+    )
+    lower = content.lower()
+    assert "historical" in lower or "wp91" in lower, (
+        "Doc must label CURRENT FINAL WP EVIDENCE as historical after WP91"
+    )
 
 
 def test_doc_references_verifier_tool():
@@ -50,14 +56,12 @@ def test_doc_references_verifier_tool():
     assert "posted_pr_evidence_verifier.py" in content
 
 
-def test_doc_states_pr_body_alone_insufficient():
+def test_doc_pr_body_sufficient_after_wp91():
     content = read_doc()
     lower = content.lower()
-    assert (
-        "not sufficient" in lower
-        or "not prove" in lower
-        or "does not prove" in lower
-    ), "Doc must state that PR body alone is not sufficient proof"
+    assert "wp91" in lower or "optional" in lower, (
+        "Doc must indicate that final comment is optional after WP91 (PR body is sufficient)"
+    )
 
 
 def test_doc_says_ready_yes_forbidden_if_verifier_fails():

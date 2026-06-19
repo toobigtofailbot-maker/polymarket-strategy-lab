@@ -27,7 +27,7 @@ After this file, every AI coding agent must read `AI_CODING_AGENT_START_HERE.md`
 - Never delete or overwrite user files without explicit instruction.
 - If the AI coding agent defers a material issue, unavailable tool, unresolved dependency, blocked security check, or postponed decision, it must add or update an entry in `docs/deferred_items_log.md` in the same WP.
 - Whenever the AI coding agent completes a WP, it must create or prepare a pull request and provide the PR review link in the final report, unless the user explicitly says no PR should be created.
-- A full final report PR comment is mandatory before requesting review unless the WP explicitly waives PR creation. The PR body does not replace this final report comment.
+- After WP91, a full final report PR comment is optional and non-canonical. The PR body is the current review evidence surface; the stable status fragment is the committed repo record. Absence of a final PR comment is not a merge blocker. If an optional final comment is posted, it must not contradict the PR body.
 - If the final validation environment cannot run required tests or checks, the AI coding agent must report blocked/not merge-ready rather than imply readiness.
 
 ## Trading Safety
@@ -54,9 +54,9 @@ After this file, every AI coding agent must read `AI_CODING_AGENT_START_HERE.md`
 
 ## PR Evidence Reporting Discipline
 
-- The AI coding agent must use exact PR body and final PR comment evidence discipline before requesting review on any WP. See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`.
+- The AI coding agent must use exact PR body and stable status-fragment evidence discipline before requesting review on any WP. Optional final PR comments may be posted for reviewer clarity but are non-canonical and must not contradict the PR body. See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`.
 - Abbreviated validation commands, ellipses in command evidence, stale counts, and inaccurate network usage wording must all be corrected before Ready for review: YES.
-- The PR body and the final top-level PR comment must not contradict each other on test counts, command results, files changed, or network usage.
+- The PR body and the stable status fragment must not contradict each other on test counts, command results, files changed, or network usage. After WP91, if an optional final comment is posted, it must not contradict the PR body.
 - Network usage wording must accurately distinguish workflow network use (Remote Main Sync Gate, git fetch/pull/push, PR publication) from runtime/API/product/account network behavior. Do not say "no network" if git remote synchronization or PR publication ran.
 - Ready for review: YES is forbidden if any evidence defect remains uncorrected.
 
@@ -81,7 +81,7 @@ Private-repo manual live verification is a first-class evidence mode only when t
 
 ## Posted GitHub Evidence Verification
 
-Local PR body and final comment drafts are not posted GitHub evidence. Before `Ready for review: YES`, the AI coding agent must select exactly one evidence mode from `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` (PUBLIC_VERIFIER_PASS, PRIVATE_REPO_MANUAL_VERIFIED, or BLOCKED_NOT_READY) and document it completely. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`.
+Local PR body and final comment drafts are not posted GitHub evidence. Before `Ready for review: YES`, the AI coding agent must select exactly one evidence mode from `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md` (PUBLIC_VERIFIER_PASS, PRIVATE_REPO_MANUAL_VERIFIED, or BLOCKED_NOT_READY) and document it completely in the PR body. See `docs/ai/codex/POSTED_GITHUB_EVIDENCE_VERIFICATION.md`. After WP91, a final GitHub comment is not required; the evidence mode declaration belongs in the PR body only.
 
 ## Negative Test Matrix Policy
 

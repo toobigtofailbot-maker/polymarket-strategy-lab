@@ -60,17 +60,17 @@ def test_token_efficiency_doc_sections():
 
 # --- 3. Concise-reporting doc content ---
 
-def test_concise_reporting_doc_mandatory_final_comment():
+def test_concise_reporting_doc_final_comment_optional_after_wp91():
     text = CONCISE_REPORTING_DOC.read_text(encoding="utf-8").lower()
-    assert "final pr comment" in text and "mandatory" in text, (
-        "CONCISE_REPORTING_RULES.md must state that the final PR comment remains mandatory"
+    assert "optional" in text and "wp91" in text, (
+        "CONCISE_REPORTING_RULES.md must state that the final PR comment is optional after WP91"
     )
 
 
-def test_concise_reporting_doc_pr_body_not_replacement():
+def test_concise_reporting_doc_pr_body_not_replacement_retired():
     text = CONCISE_REPORTING_DOC.read_text(encoding="utf-8")
-    assert "PR body does not replace" in text, (
-        "CONCISE_REPORTING_RULES.md must state that the PR body does not replace the final report"
+    assert "PR body does not replace" not in text, (
+        "CONCISE_REPORTING_RULES.md must not contain the retired pre-WP91 mandatory wording"
     )
 
 

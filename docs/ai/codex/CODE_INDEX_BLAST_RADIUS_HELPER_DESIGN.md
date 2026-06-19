@@ -223,7 +223,7 @@ A future helper must not reduce validation. It cannot replace:
 - `git diff --check`.
 - Direct changed-file inspection.
 - Human review.
-- The mandatory final PR comment.
+- The PR body current evidence surface (final PR comment is optional after WP91).
 
 The helper cannot authorize merge-ready status by itself.
 

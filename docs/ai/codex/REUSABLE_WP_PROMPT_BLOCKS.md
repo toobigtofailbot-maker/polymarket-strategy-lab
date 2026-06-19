@@ -125,25 +125,27 @@ See `CODEX_START_HERE.md` stop rules and `AGENTS.md` escalation rules.
 
 Applies to: Codex and Claude Code. Mandatory for every WP.
 
+**After WP91:** Final GitHub evidence comments are optional and non-canonical. Absence of a final comment is not a merge blocker after WP91. Required evidence surfaces after WP91 are the PR body and the stable/non-self-referential status fragment. If an optional final comment is posted, it must not contradict the PR body and must state it is optional and non-canonical.
+
 Before setting Ready for review: YES, verify all of the following:
 
 **Exact validation commands:**
 - Every validation step in the PR body must use the exact full command invocation — all flags, arguments, and paths. No ellipses (`...`). No abbreviated helper commands. No placeholder text.
-- Every validation step in the final top-level PR comment must use the same exact full command invocations.
+- After WP91, if an optional final comment is posted, every validation step in it must use the same exact full command invocations.
 - Example of required form: `python -m pytest tests/test_foo.py -v` (not `python -m pytest tests/test_foo.py ...`).
 
 **Exact result counts:**
 - State the exact numbers: passed, failed, errors, skipped, warnings, exit code.
 - Do not use approximate wording such as "tests passed" without counts.
-- If the suite count changed after a re-run, update both PR body and final comment.
+- If the suite count changed after a re-run, update the PR body. After WP91, if an optional final comment is posted, update it too.
 
 **Network usage wording:**
 - If Remote Main Sync Gate, `git fetch`, `git pull`, `git push`, or PR publication ran, do not write "no network was used."
 - Use: "Network was used only for Remote Main Sync Gate / git remote synchronization and PR push/publication. This WP adds no runtime network behavior, no API polling, no account access, and no product network behavior."
 
-**PR body and final PR comment consistency:**
-- Test counts, command results, files changed, and network wording must match between the PR body and the final PR comment.
-- Update both before requesting review if a re-run produces new counts.
+**PR body and status fragment consistency:**
+- Test counts, command results, files changed, and network wording must match between the PR body and the status fragment.
+- After WP91, if an optional final comment is posted, it must not contradict the PR body.
 
 **Stale counts:**
 - Correct any stale count before Ready for review: YES.
@@ -152,11 +154,10 @@ Before setting Ready for review: YES, verify all of the following:
 - Report unavailable security tools as UNAVAILABLE/SKIPPED or SKIPPED_NOT_PRESENT with exact reason.
 - Do not describe unavailable tools as passed.
 
-**Current final evidence marker:**
-- The final top-level PR comment must start with or contain:
+**Current final evidence marker (Historical WP86–WP90 only; not required after WP91):**
+- After WP91, a final comment is not required. If an optional final comment is posted, the CURRENT FINAL WP EVIDENCE marker is not required; the comment must state it is optional and non-canonical.
+- **Historical WP86–WP90 only:** The final top-level PR comment must start with or contain:
   `CURRENT FINAL WP EVIDENCE — supersedes previous evidence comments`
-- This marker is mandatory when the comment supersedes earlier evidence comments.
-- Reviewers use this marker to identify the current evidence and discard stale earlier comments.
 
 **No inline test counts in file lists:**
 - Do not put test counts in file-list descriptions or summary parentheticals (e.g., "focused tests (34 tests)"). These counts drift.
@@ -166,8 +167,8 @@ Before setting Ready for review: YES, verify all of the following:
 - Before setting Ready for review: YES, run `tools/git/pr_evidence_consistency_guard.py` on exact local drafts intended for posting or on copied posted GitHub content.
 - Running only on intermediate drafts is insufficient if the posted content later changed.
 - If the guard fails, fix all failures and re-run before marking Ready for review: YES.
-- Report the exact guard invocation and result (PASS/FAIL) in both the PR body and final comment.
-- Include a "Guard input source:" line in both files.
+- Report the exact guard invocation and result (PASS/FAIL) in the PR body. After WP91, if an optional final comment is posted, also report the guard result there.
+- Include a "Guard input source:" line in the PR body. After WP91, if an optional final comment is posted, it may also include a guard input source line.
 
 ```
 python tools/git/pr_evidence_consistency_guard.py \
@@ -188,7 +189,7 @@ python tools/git/pr_evidence_consistency_guard.py \
 **Ready for review gate:**
 - Ready for review: YES is forbidden if any evidence defect listed above remains uncorrected.
 - Ready for review: YES is forbidden if `pr_evidence_consistency_guard.py` fails on local drafts.
-- Ready for review: YES is forbidden if the final comment lacks the current-final evidence marker (when superseding old comments).
+- Ready for review: YES is forbidden if the final comment lacks the current-final evidence marker when superseding old comments (Historical WP86–WP90 only; not required after WP91).
 - Ready for review: YES is forbidden if file lists contain parenthetical test counts.
 
 See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md` and `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.

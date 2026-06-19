@@ -1993,7 +1993,7 @@ The following items remain OPEN and deferred from WP88:
 | ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
 |----|---------|--------|----------|--------|-----------------|---------------------|
 | WP88-DEFER-001 | GitHub-aware evidence verifier tool not implemented | OPEN | P4 | WP88 is workflow/docs/tests only; a GitHub-aware verifier that fetches live PR state is a separate tooling WP. The manual verification path (PRIVATE_REPO_MANUAL_VERIFIED) remains the current required mode. | Any future automated posted-evidence verification for private repos. | Future approved tooling WP explicitly scopes the GitHub-aware verifier; no live execution, no credentials. |
-| WP88-DEFER-002 | Removal of final GitHub comments after WP86–WP90 transition | OPEN | P4 | The transition policy (WP86–WP90) still requires both committed status entries and final GitHub comments. Removal is deferred until WP90 or a later explicit decision WP. | After WP90 transition period. | A later WP explicitly removes or simplifies the final GitHub comment requirement, documents that decision in repo truth. |
+| WP88-DEFER-002 | Removal of final GitHub comments after WP86–WP90 transition | RESOLVED (WP91) | P4 | The transition policy (WP86–WP90) required both committed status entries and final GitHub comments. WP91 explicitly retires mandatory final GitHub evidence comments. Final comments are now optional/non-canonical. PR body is the current review evidence surface. Status fragment is the stable non-self-referential record. | N/A — resolved. | Resolved by WP91: FINAL_COMMENT_POLICY.md created; EVIDENCE_ARCHITECTURE.md, PR_EVIDENCE_REPORTING_DISCIPLINE.md, PR_REVIEW_CHECKLIST.md, VALIDATION_MATRIX.md, status_entries/README.md, PR template all updated. |
 | WP88-DEFER-003 | WP89 candidate review report generator | RESOLVED (WP89 local/offline/read-only report generator scope) | P3 | WP88 fixes the inspection system. WP89 implements the next product-support report piece using the new evidence and result-object standards. | After WP88 merges. | Resolved on the WP89 branch for local/offline/read-only in-memory candidate review report generation using WP88 standards; export, dashboard, paper strategy, network/API behavior, credentials, scheduler, bot loop, and live execution remain deferred. |
 
 WP82-D002, WP86-D001, WP86-D002, WP88-DEFER-001, and WP88-DEFER-002 remain OPEN.
@@ -2041,7 +2041,29 @@ WP82-D002, WP86-D001, WP86-D002, WP88-DEFER-001, and WP88-DEFER-002 remain OPEN.
 | ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
 |----|---------|--------|----------|--------|-----------------|---------------------|
 | WP90-D001 | Paper strategy implementation remains deferred | OPEN | P3 | WP90 adds only a local/offline/read-only file export. No paper strategy logic, paper order model, paper portfolio ledger, paper fill model, or paper PnL computation is added or authorized. | Any WP that implements paper strategy, paper orders, paper portfolio, or paper fill logic. | Future approved WP explicitly scopes paper strategy after all protected-boundary gates are satisfied. |
-| WP90-D002 | Final comment transition removal after WP86-WP90 | OPEN | P4 | The transition policy (WP86-WP90) still requires both committed status entries and final GitHub comments. Removal or simplification decision is deferred to WP91. | After WP90 transition period ends. | WP91 explicitly decides and documents whether final GitHub comments remain required or are retired in favor of PR body + stable status fragments under Model D. |
+| WP90-D002 | Final comment transition removal after WP86-WP90 | RESOLVED (WP91) | P4 | The transition policy (WP86-WP90) required both committed status entries and final GitHub comments. Removal or simplification decision was deferred to WP91. | N/A — resolved. | Resolved by WP91: mandatory final GitHub evidence comments retired; final comments optional/non-canonical; PR body is current review evidence surface; status fragment is stable non-self-referential record; FINAL_COMMENT_POLICY.md created; all workflow docs updated. |
+
+## WP91 Final Comment Transition Retirement Decision Deferred Items
+
+WP91 reconciles repo truth after WP90 merge (PR #90, merge commit
+`7fa1d72c66f77dc3815762fe742144d8e43adad8`) and implements the final comment
+transition retirement decision.
+
+WP91 resolves WP88-DEFER-002 and WP90-D002. It retires mandatory final GitHub
+evidence comments, documents the decision in FINAL_COMMENT_POLICY.md, and
+updates all workflow docs to reflect the new optional final comment policy.
+
+WP91 adds no product source code, no tooling implementation, no runtime/paper/
+live/credential/network/API behavior, and no dependency or lock-file changes.
+
+WP88-DEFER-001, WP90-D001, and the long-running deferred items listed below
+remain OPEN after WP91.
+
+| ID | Summary | Status | Priority | Reason | Required Before | Resolution Condition |
+|----|---------|--------|----------|--------|-----------------|---------------------|
+| WP91-D001 | GitHub-aware private evidence verifier tool still not implemented | OPEN | P4 | WP91 retires mandatory final comments, making the private-repo verifier less urgent. The local guard remains the only mechanical evidence check. Any future requirement to automatically validate already-posted GitHub PR body content in a private repo is still deferred. | Any WP requiring automatic live GitHub PR content verification for private repos. | Future approved tooling WP explicitly scopes a GitHub-aware private verifier with explicit network/auth boundary defined in repo truth. |
+
+WP82-D002, WP86-D001, WP86-D002, WP88-DEFER-001, and WP90-D001 remain OPEN.
 
 ## WP6 Generated Artifact Incident Update
 

@@ -119,7 +119,7 @@ Validation is separated into four concerns:
 ```
 Implementation validation: code/docs state correct.
 Docs validation: doc structure, wording, cross-references correct.
-Evidence validation: PR body and final comment correct.
+Evidence validation: PR body correct (final comment optional after WP91).
 Security/tool availability reporting: unavailable tools reported as UNAVAILABLE, not passed.
 ```
 
@@ -138,7 +138,7 @@ A WP may have all validation passing while evidence mode is BLOCKED_NOT_READY (e
 ## Phase 6 — Evidence Package Construction
 
 **Input:** Validation complete.
-**Action:** Prepare PR body and current-final evidence comment drafts.
+**Action:** Prepare PR body draft (and optionally current-final evidence comment draft after WP91).
 **Output:** Local draft files ready for guard check and posting.
 **Stop condition:** Required evidence fields cannot be filled honestly.
 **Verifier:** Agent self-check; local guard.
@@ -146,15 +146,15 @@ A WP may have all validation passing while evidence mode is BLOCKED_NOT_READY (e
 Recommended split:
 
 ```
-PR body:
+PR body (required):
 - Package identity
 - Changed files
 - Scope/boundary summary
 - Validation summary
 - Evidence mode summary
-- Reference to current-final evidence comment
+- Guard result
 
-Final current-final evidence comment:
+Final current-final evidence comment (optional after WP91):
 - Full exact validation command evidence
 - Local guard result
 - Posted verifier / manual verification details
@@ -162,13 +162,13 @@ Final current-final evidence comment:
 - Final Ready decision
 ```
 
-The PR body may be a concise index. Long duplicate narratives in both surfaces are not required, provided all state-machine required fields are present and key facts match.
+The PR body is the primary evidence surface after WP91. An optional final comment may carry additional detail. Long duplicate narratives in both surfaces are not required, provided all state-machine required fields are present in the PR body and key facts match.
 
 ---
 
 ## Phase 7 — Local Evidence Guard
 
-**Input:** Local PR body and final comment drafts.
+**Input:** Local PR body draft (and optional final comment draft if posting one after WP91).
 **Action:** Run `tools/git/pr_evidence_consistency_guard.py` with required flags.
 **Output:** Guard PASS or FAIL with categories.
 **Stop condition:** Guard fails — fix evidence before proceeding.
@@ -187,8 +187,8 @@ If guard fails, Ready for review must be NO. Fix all failures before rerunning.
 ## Phase 8 — GitHub Posting
 
 **Input:** Local guard passed.
-**Action:** Post or update PR body on GitHub; post current-final evidence comment on GitHub.
-**Output:** Live PR body and comment exist on GitHub.
+**Action:** Post or update PR body on GitHub; optionally post current-final evidence comment on GitHub (not required after WP91).
+**Output:** Live PR body exists on GitHub; optional final comment posted if one was prepared.
 **Stop condition:** GitHub is unavailable (proceed to Phase 9 with UNAVAILABLE reporting).
 **Verifier:** gh CLI; manual GitHub UI inspection.
 
@@ -214,15 +214,15 @@ BLOCKED_NOT_READY
 
 Allowed only when the public unauthenticated GitHub API or an approved future verifier can read the live PR body and comments and returns exit 0.
 
-Required fields in both PR body and final comment:
+Required fields in PR body (and optional final comment if posted):
 
 ```
 Evidence mode: PUBLIC_VERIFIER_PASS
 Posted GitHub evidence verifier: PASS; exit 0
 Verifier command: <exact command>
 Verified PR body head SHA: <sha>
-Verified latest current-final comment URL: <url>
-Verified latest current-final comment head SHA: <sha>
+Verified latest current-final comment URL: <url>        (not required after WP91 if no final comment posted)
+Verified latest current-final comment head SHA: <sha>   (not required after WP91 if no final comment posted)
 Ready for review: YES/NO
 ```
 
@@ -237,7 +237,7 @@ Forbidden under this mode:
 
 Allowed when the public unauthenticated GitHub verifier cannot access the PR body/comments (private repo, access denied, rate limit, tool unavailable). This is the expected evidence mode for this repository.
 
-Required fields in both PR body and final comment:
+Required fields in PR body (and optional final comment if posted):
 
 ```
 Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED
@@ -246,9 +246,9 @@ Reason: <private repo / unauthenticated API unavailable / rate limit / access de
 Manual live GitHub verification performed: YES
 Manual verification method: <GitHub UI / already-available GitHub connector / approved authenticated environment if separately authorized>
 Verified PR body head SHA: <sha>
-Verified latest current-final comment URL: <url or UI-visible latest current-final marker if URL unavailable>
-Verified latest current-final comment head SHA: <sha>
-Verified latest current-final comment contains: validation results, local guard result, follow-up classification, network wording, Ready for review
+Verified latest current-final comment URL: <url or UI-visible latest current-final marker if URL unavailable>   (not required after WP91 if no final comment posted)
+Verified latest current-final comment head SHA: <sha>                                                            (not required after WP91 if no final comment posted)
+Verified latest current-final comment contains: validation results, local guard result, follow-up classification, network wording, Ready for review  (not required after WP91 if no final comment posted)
 Ready for review: YES/NO
 ```
 
@@ -266,9 +266,9 @@ Rules:
 
 Required when:
 - Public verifier is unavailable AND manual verification is incomplete.
-- PR body or final comment mismatch remains.
-- Latest current-final comment cannot be identified.
-- Current head SHA cannot be confirmed in both surfaces.
+- PR body or final comment mismatch remains (if a final comment was posted).
+- Latest current-final comment cannot be identified (applies only if a final comment was posted; absence of final comment is not a blocker after WP91).
+- Current head SHA cannot be confirmed in the PR body.
 - Required validation is missing.
 - Protected boundary was touched.
 
