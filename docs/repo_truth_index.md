@@ -199,6 +199,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z61. `tests/test_hermes_advisory_foundation_architecture_docs.py` - WP96 focused docs tests for architecture doc existence and repo-truth registration, WP95 relationship, broad Hermes research freedom, H0-H10 mode map, authority matrix, deterministic-core responsibilities, forbidden Hermes authority, architecture-only input/output families, forbidden-output matrix, stable status wording, and absence of actual Hermes schema/validator/prompt/runbook/exporter implementation artifacts.
 
+62z62. `docs/hermes_input_output_contracts_and_validator_requirements.md` - WP97 canonical documentation-level Hermes input/output contract requirements and future validator requirements; defines input family requirements, output family requirements, common field concepts, forbidden-output matrix, recursive validator requirements, no-raw-unsafe-echo policy, human-review and deterministic-handoff requirements, plan-change rule, and future implementation gates. Documentation-level only; no machine-readable schema, source validator, prompt pack, runbook, exporter, parser, context-packet generator, Hermes runtime, provider/model configuration, credentials, private endpoints, paper/live behavior, execution/order/risk behavior, scheduler, dashboard, bot loop, source, tools, dependency, or lock-file authority.
+
+62z63. `docs/status_entries/WP97.md` - WP97 stable committed status fragment for the Hermes input/output contracts and validator requirements lock-in.
+
+62z64. `tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py` - WP97 focused docs tests for contract doc existence and registration, WP95/WP96 relationship, input/output family requirements, common fields, forbidden-output matrix, recursive validator requirements, no-raw-unsafe-echo policy, stable status wording, project-status target state, broad Hermes research freedom, deterministic-core responsibilities, and absence of actual Hermes schema/validator/prompt/runbook/exporter/runtime artifacts.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.

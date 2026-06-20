@@ -86,7 +86,7 @@ Hermes must not:
 
 0. Post-WP94 repo-truth/status reconciliation and plan lock-in.
 1. Hermes Advisory Foundation And Research-Brain Architecture V1.
-2. Hermes input/output contracts and validator hardening.
+2. Hermes input/output contracts and validator hardening, documented by WP97.
 3. Hermes research prompt pack and operator runbooks.
 4. Deterministic Hermes context-packet exporters.
 5. Hermes local/offline simulation or manual run process.
@@ -169,6 +169,12 @@ family names, and forbidden Hermes authority.
 WP96 does not create actual schemas, validators, prompt packs, runbooks,
 exporters, context packets, runtime artifacts, provider/model configuration,
 credentials, network behavior, paper/live behavior, execution behavior, risk
-behavior, scheduler behavior, dashboard behavior, or bot-loop behavior. The
-next substantive phase remains Hermes input/output contracts and validator
-hardening, subject to a separate approved WP.
+behavior, scheduler behavior, dashboard behavior, or bot-loop behavior.
+
+WP97 documents Phase 2 contract and validator requirements at
+`docs/hermes_input_output_contracts_and_validator_requirements.md`. WP97 is
+documentation-level only; it creates no machine-readable schemas, validators,
+prompt packs, runbooks, exporters, context packets, runtime artifacts,
+provider/model configuration, credentials, network behavior, paper/live
+behavior, execution behavior, risk behavior, scheduler behavior, dashboard
+behavior, or bot-loop behavior.

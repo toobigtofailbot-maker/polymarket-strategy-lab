@@ -76,7 +76,7 @@ future approved work package. It cannot create execution authority.
 |---|---|---|
 | H0 | Repo-truth discovery and artifact inventory | Read repo-truth and local approved artifacts only when a future WP authorizes the surface |
 | H1 | Advisory foundation / authority boundary | Define advisory scope and forbidden control authority |
-| H2 | Output contract and validator hardening | Future architecture for contracts and deterministic validation; no actual contracts or validators in WP96 |
+| H2 | Output contract and validator hardening | Phase 2 documented by WP97 at `docs/hermes_input_output_contracts_and_validator_requirements.md`; documentation-level contracts and validator requirements only |
 | H3 | Research prompt pack and operator runbooks | Future human-operated prompts and runbooks; no prompt-pack or runbook files in WP96 |
 | H4 | Deterministic context-packet consumption | Future structured packet consumption; no exporters or packets in WP96 |
 | H5 | Local/offline simulation or manual run process | Future manual or local process design only |
@@ -217,13 +217,19 @@ Hermes outputs must not contain or imply the following as actionable authority:
 | Strategy-promotion approval | Forbidden |
 | Paper/live execution decision | Forbidden |
 
-## Future Contract Families Without Creation
+## Phase 2 Contract Requirements
 
-The next intended WP is Hermes input/output contracts and validator hardening.
-That future WP may define concrete contract docs and deterministic checks if
-explicitly authorized. WP96 does not create actual schema files, validator
-modules, prompt packs, runbooks, exporters, context-packet generators, runtime
-configs, or runtime artifacts.
+WP97 documents Phase 2 at
+`docs/hermes_input_output_contracts_and_validator_requirements.md`. That
+document defines human-readable input/output contract requirements and future
+deterministic validator requirements. It does not override WP95 or WP96.
+
+WP97 does not create actual schema files, validator modules, prompt packs,
+runbooks, exporters, context-packet generators, runtime configs, runtime
+artifacts, Hermes installation, provider/model configuration, credentials,
+network behavior, paper/live behavior, execution/order/risk behavior,
+scheduler/dashboard behavior, bot-loop behavior, source code, tools, dependency
+files, or lock files.
 
 ## Plan-Change Rule
 
