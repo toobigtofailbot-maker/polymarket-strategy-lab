@@ -175,7 +175,38 @@ def test_wp79_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98"))
+
+
+def test_wp97_in_merged_wps_list():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP97" in merged_line
+
+
+def test_wp98_in_merged_wps_list():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP98" in merged_line
+
+
+def test_hermes_prompt_pack_status_is_locked():
+    text = _read()
+    assert "REPO_TRUTH_RESEARCH_PROMPT_PACK_AND_OPERATOR_RUNBOOKS_LOCKED" in text
+
+
+def test_hermes_prompt_pack_status_not_on_branch():
+    text = _read()
+    assert "HERMES_RESEARCH_PROMPT_PACK_ON_BRANCH" not in text
+
+
+def test_hermes_prompt_pack_doc_referenced_in_status():
+    text = _read()
+    assert "docs/hermes_research_prompt_pack_and_operator_runbooks.md" in text
 
 
 def test_wp73_in_merged_wps():
@@ -410,7 +441,7 @@ def test_wp88_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97"))
+    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98"))
 
 
 def test_wp88_current_branch_name():
@@ -467,7 +498,7 @@ def test_wp91_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP91", "WP90", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97"))
+    assert any(wp in current_phase_line for wp in ("WP91", "WP90", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98"))
 
 
 def test_wp91_final_comment_retirement_status():
@@ -496,7 +527,7 @@ def test_wp92_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP92", "WP91", "WP93", "WP94", "WP95", "WP96", "WP97"))
+    assert any(wp in current_phase_line for wp in ("WP92", "WP91", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98"))
 
 
 def test_wp92_branch_is_current_branch():
@@ -525,7 +556,7 @@ def test_wp93_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP93", "WP94", "WP95", "WP96", "WP97"))
+    assert any(wp in current_phase_line for wp in ("WP93", "WP94", "WP95", "WP96", "WP97", "WP98"))
 
 
 def test_wp93_branch_is_current_branch():
@@ -579,7 +610,7 @@ def test_wp95_is_stable_post_merge_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert any(wp in current_phase_line for wp in ("WP95", "WP96", "WP97"))
+    assert any(wp in current_phase_line for wp in ("WP95", "WP96", "WP97", "WP98"))
     assert "WP95" in merged_line
     assert "Hermes Advisory Foundation And Research-Brain Architecture V1" in text
 
@@ -592,7 +623,7 @@ def test_wp96_is_stable_post_merge_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert any(wp in current_phase_line for wp in ("WP96", "WP97"))
+    assert any(wp in current_phase_line for wp in ("WP96", "WP97", "WP98"))
     assert "WP96" in merged_line
     assert "Hermes input/output contracts and validator hardening" in text
     assert "Hermes advisory foundation architecture status: REPO_TRUTH_ARCHITECTURE_LOCKED" in text
@@ -606,11 +637,10 @@ def test_wp97_is_stable_post_merge_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP97" in current_phase_line
+    assert any(wp in current_phase_line for wp in ("WP97", "WP98"))
     assert "WP97" in merged_line
     assert "Hermes input/output contracts and validator requirements status: REPO_TRUTH_DOCUMENTATION_LEVEL_CONTRACT_REQUIREMENTS_LOCKED" in text
     assert "docs/hermes_input_output_contracts_and_validator_requirements.md" in text
-    assert "Next intended WP: Hermes research prompt pack and operator runbooks" in text
 
 
 def test_wp94_and_wp95_committed_status_docs_reject_stale_wording():
