@@ -75,6 +75,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/wallet_signal_paper_strategy_candidate_fixture_loader.py",
     "src/data_layer/wallet_signal_candidate_review_report.py",
     "src/data_layer/wallet_signal_candidate_review_report_export.py",
+    "src/data_layer/hermes_advisory_output_validator.py",
 )
 
 

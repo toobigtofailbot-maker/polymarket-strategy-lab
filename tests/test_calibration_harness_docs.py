@@ -311,7 +311,7 @@ def test_project_status_current_phase_is_wp69_or_later():
     # WP68 is merged; current phase is WP69 or later
     assert "WP68" in text
     assert any(
-        f"WP{n}" in phase_line for n in range(69, 99)
+        f"WP{n}" in phase_line for n in range(69, 100)
     )
 
 
