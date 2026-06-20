@@ -157,3 +157,18 @@ simulation or manual run process.
 
 Each later phase requires its own approved scope. This plan describes sequencing
 but grants no implementation authority.
+
+## WP96 Phase 1 Architecture Foundation
+
+WP96 records this Phase 1 architecture foundation at
+`docs/hermes_advisory_foundation_research_brain_architecture.md`. That document
+elaborates the advisory foundation, mode map, broad research freedoms,
+authority matrix, deterministic-core responsibilities, future input/output
+family names, and forbidden Hermes authority.
+
+WP96 does not create actual schemas, validators, prompt packs, runbooks,
+exporters, context packets, runtime artifacts, provider/model configuration,
+credentials, network behavior, paper/live behavior, execution behavior, risk
+behavior, scheduler behavior, dashboard behavior, or bot-loop behavior. The
+next substantive phase remains Hermes input/output contracts and validator
+hardening, subject to a separate approved WP.

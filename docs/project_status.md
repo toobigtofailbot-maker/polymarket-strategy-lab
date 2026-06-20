@@ -1,8 +1,8 @@
 # Project Status
 
-- Current phase: Post-WP95 repo-truth reconciliation and accepted Hermes research-brain plan lock-in; next substantive WP is Hermes Advisory Foundation And Research-Brain Architecture V1
-- Repo state: WP94 is merged; WP95 records stable post-merge target repo truth for the accepted Hermes/research-brain execution plan; no source code, tools, runtime, paper/live, credential, order, risk, scheduler, dashboard, bot-loop, dependency, or product-network behavior changes
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90, WP91, WP92, WP93, WP94, WP95
+- Current phase: Post-WP96 Hermes advisory foundation architecture lock-in; next substantive WP is Hermes input/output contracts and validator hardening
+- Repo state: WP94 is merged; WP95 records stable post-merge target repo truth for the accepted Hermes/research-brain execution plan; WP96 records stable post-merge target repo truth for the Hermes advisory foundation and research-brain architecture; no source code, tools, runtime, paper/live, credential, order, risk, scheduler, dashboard, bot-loop, dependency, or product-network behavior changes
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90, WP91, WP92, WP93, WP94, WP95, WP96
 - Current branch: see GitHub PR metadata and PR body; committed status docs are authored as stable post-merge target repo truth
 - Multi-agent coding workflow status: AGENT_NEUTRAL_START_LAYER_MERGED
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; MANUAL_EXPLICIT_NETWORK_POLLING_RUNNER_DEV_ONLY; MANUAL_GUARD_ENFORCED_SNAPSHOT_CAPTURE_DEV_ONLY
@@ -80,6 +80,7 @@
 - Candidate review report operator runbook status: DOCS_ONLY_OPERATOR_RUNBOOK_MERGED; documents the import-based local/offline WP87 fixture-loader, WP89 candidate review report, and WP90 export workflow; WP93 final follow-up hardens stable-only status-fragment policy and repairs the WP93 status fragment PR field; no new CLI, source code, tools, runtime/paper/live/credential/network/API/account behavior, scheduler/dashboard/bot loop, dependency, or lock-file change
 - Candidate review workflow local smoke receipt status: LOCAL_SMOKE_RECEIPT_MERGED; verifies the existing WP87/WP89/WP90 import-only workflow through docs/tests and temp-only local export smoke coverage; no new CLI, source code, tools, runtime/paper/live/credential/network/API/account behavior, scheduler/dashboard/bot loop, dependency, or lock-file change
 - Hermes research-brain execution plan status: REPO_TRUTH_PLAN_LOCKED; canonical plan is `docs/hermes_research_brain_execution_plan.md`; future material plan changes must update repo-truth docs in the same WP or an approved follow-up, because chat memory and PR comments alone are not authoritative
+- Hermes advisory foundation architecture status: REPO_TRUTH_ARCHITECTURE_LOCKED; canonical architecture is `docs/hermes_advisory_foundation_research_brain_architecture.md`; WP96 elaborates WP95 Phase 1 only and preserves broad Hermes research freedom, strict deterministic control boundaries, and the prohibition on Hermes runtime/install/provider/model/credential/schema/validator/prompt-pack/runbook/exporter/paper/live/execution/risk/scheduler/dashboard/bot-loop authority
 - Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
 - Agent execution authority: FORBIDDEN
@@ -166,6 +167,27 @@ metadata and the PR body; committed status docs remain stable post-merge.
 
 The next substantive WP is Hermes Advisory Foundation And Research-Brain
 Architecture V1.
+
+## WP96 Hermes Advisory Foundation And Research-Brain Architecture V1
+
+WP96 records the Hermes advisory foundation and research-brain architecture at
+`docs/hermes_advisory_foundation_research_brain_architecture.md`. It elaborates
+the accepted WP95 plan without overriding it.
+
+The architecture keeps Hermes powerful as an adaptive research brain for market
+research, edge discovery, hypothesis generation, experiment design, strategy
+critique, future WP recommendations, failure analysis, performance-improvement
+ideas, wallet/candidate review, regime monitoring, cross-market inconsistency
+analysis, resolution-rule ambiguity review, and microstructure/slippage realism
+review.
+
+WP96 adds no Hermes install, connection, runtime dependency, provider/model
+configuration, credentials, private endpoint access, API/product/account network
+behavior, schema, validator, prompt pack, runbook, exporter, runtime artifact,
+paper/live behavior, execution/order/risk module, scheduler, dashboard, bot
+loop, source code, tools, dependency file, or lock file.
+
+Next intended WP: Hermes input/output contracts and validator hardening.
 
 ## WP93 Candidate Review Report Operator Runbook V1
 

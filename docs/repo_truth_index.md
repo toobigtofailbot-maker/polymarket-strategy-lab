@@ -193,6 +193,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z58. `docs/status_entries/WP95.md` - WP95 stable committed status fragment for post-WP94 repo-truth reconciliation and accepted Hermes research-brain plan lock-in.
 
+62z59. `docs/hermes_advisory_foundation_research_brain_architecture.md` - WP96 canonical Hermes advisory foundation and research-brain architecture; elaborates WP95 Phase 1 with the corrected powerful adaptive research-brain philosophy, broad research freedoms, H0-H10 architecture mode map, authority matrix, deterministic-core responsibilities, forbidden Hermes authority, architecture-level future input/output families, forbidden-output matrix, and next-WP pointer to Hermes input/output contracts and validator hardening. Planning guidance only; no Hermes runtime, install, provider/model configuration, credentials, private endpoints, schema files, validator modules, prompt packs, runbooks, exporters, runtime artifacts, paper/live behavior, execution/order/risk behavior, scheduler, dashboard, bot loop, source, tools, dependency, or lock-file authority.
+
+62z60. `docs/status_entries/WP96.md` - WP96 stable committed status fragment for the Hermes advisory foundation and research-brain architecture lock-in.
+
+62z61. `tests/test_hermes_advisory_foundation_architecture_docs.py` - WP96 focused docs tests for architecture doc existence and repo-truth registration, WP95 relationship, broad Hermes research freedom, H0-H10 mode map, authority matrix, deterministic-core responsibilities, forbidden Hermes authority, architecture-only input/output families, forbidden-output matrix, stable status wording, and absence of actual Hermes schema/validator/prompt/runbook/exporter implementation artifacts.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
