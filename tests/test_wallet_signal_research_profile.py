@@ -732,7 +732,7 @@ def test_project_status_marks_wp79_as_current_phase() -> None:
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98"))
 
 
 def test_project_status_marks_wp78_merged() -> None:
