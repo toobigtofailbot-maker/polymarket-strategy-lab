@@ -250,6 +250,15 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         "docs/hermes_research_brain_execution_plan.md",
         "docs/hermes_advisory_foundation_research_brain_architecture.md",
         "tests/test_hermes_advisory_foundation_architecture_docs.py",
+        # WP97: docs-only contract requirements (authorized docs/tests, not implementation)
+        "docs/hermes_input_output_contracts_and_validator_requirements.md",
+        "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+        # WP98: docs-only prompt pack and runbook (authorized docs/tests, not implementation)
+        "docs/hermes_research_prompt_pack_and_operator_runbooks.md",
+        "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+        # WP99: local/offline/read-only deterministic validator (explicitly authorized)
+        "src/data_layer/hermes_advisory_output_validator.py",
+        "tests/test_hermes_advisory_output_validator.py",
     }
     findings = []
     for path in tracked:

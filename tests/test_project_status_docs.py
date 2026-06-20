@@ -175,7 +175,7 @@ def test_wp79_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99"))
 
 
 def test_wp97_in_merged_wps_list():
@@ -441,7 +441,7 @@ def test_wp88_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98"))
+    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99"))
 
 
 def test_wp88_current_branch_name():
@@ -498,7 +498,7 @@ def test_wp91_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP91", "WP90", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98"))
+    assert any(wp in current_phase_line for wp in ("WP91", "WP90", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99"))
 
 
 def test_wp91_final_comment_retirement_status():
@@ -527,7 +527,7 @@ def test_wp92_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP92", "WP91", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98"))
+    assert any(wp in current_phase_line for wp in ("WP92", "WP91", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99"))
 
 
 def test_wp92_branch_is_current_branch():
@@ -556,7 +556,7 @@ def test_wp93_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP93", "WP94", "WP95", "WP96", "WP97", "WP98"))
+    assert any(wp in current_phase_line for wp in ("WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99"))
 
 
 def test_wp93_branch_is_current_branch():
@@ -610,7 +610,7 @@ def test_wp95_is_stable_post_merge_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert any(wp in current_phase_line for wp in ("WP95", "WP96", "WP97", "WP98"))
+    assert any(wp in current_phase_line for wp in ("WP95", "WP96", "WP97", "WP98", "WP99"))
     assert "WP95" in merged_line
     assert "Hermes Advisory Foundation And Research-Brain Architecture V1" in text
 
@@ -623,7 +623,7 @@ def test_wp96_is_stable_post_merge_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert any(wp in current_phase_line for wp in ("WP96", "WP97", "WP98"))
+    assert any(wp in current_phase_line for wp in ("WP96", "WP97", "WP98", "WP99"))
     assert "WP96" in merged_line
     assert "Hermes input/output contracts and validator hardening" in text
     assert "Hermes advisory foundation architecture status: REPO_TRUTH_ARCHITECTURE_LOCKED" in text
@@ -637,7 +637,7 @@ def test_wp97_is_stable_post_merge_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert any(wp in current_phase_line for wp in ("WP97", "WP98"))
+    assert any(wp in current_phase_line for wp in ("WP97", "WP98", "WP99"))
     assert "WP97" in merged_line
     assert "Hermes input/output contracts and validator requirements status: REPO_TRUTH_DOCUMENTATION_LEVEL_CONTRACT_REQUIREMENTS_LOCKED" in text
     assert "docs/hermes_input_output_contracts_and_validator_requirements.md" in text
@@ -779,3 +779,94 @@ def test_ready_model_d_status_fragments_use_stable_dynamic_metadata_references()
         if "stable and non-self-referential" not in text:
             failures.append(f"{path.name}: missing stable/non-self-referential wording")
     assert not failures, "\n".join(failures)
+
+
+# ── WP98: Hermes research prompt pack and operator runbooks ───────────────────
+
+
+def test_wp98_committed_status_docs_reject_stale_wording():
+    wp98_path = STATUS_ENTRIES / "WP98.md"
+    assert wp98_path.is_file()
+    wp98_text = wp98_path.read_text(encoding="utf-8")
+    project_text = _read()
+    forbidden_wp98 = (
+        "WP98 on branch",
+        "WP98 active branch",
+        "Merge commit: TBD after merge",
+        "PR: TBD",
+    )
+    for phrase in forbidden_wp98:
+        assert phrase not in wp98_text
+        assert phrase not in project_text
+    fixed_live_head = re.compile(r"Current live PR head:\s*`?[0-9a-f]{40}`?", re.IGNORECASE)
+    assert fixed_live_head.search(wp98_text) is None
+    assert fixed_live_head.search(project_text) is None
+
+
+def test_wp98_is_stable_post_merge_target_state():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert any(wp in current_phase_line for wp in ("WP98", "WP99"))
+    assert "WP98" in merged_line
+    assert "REPO_TRUTH_RESEARCH_PROMPT_PACK_AND_OPERATOR_RUNBOOKS_LOCKED" in text
+    assert "docs/hermes_research_prompt_pack_and_operator_runbooks.md" in text
+
+
+# ── WP99: Hermes advisory output validator V1 ─────────────────────────────────
+
+
+def test_wp99_in_merged_wps_list():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP99" in merged_line
+
+
+def test_wp99_is_stable_post_merge_target_state():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP99" in current_phase_line
+    assert "WP99" in merged_line
+    assert "LOCAL_OFFLINE_READ_ONLY_VALIDATOR_MERGED" in text
+    assert "src/data_layer/hermes_advisory_output_validator.py" in text
+
+
+def test_wp99_committed_status_docs_reject_stale_wording():
+    wp99_path = STATUS_ENTRIES / "WP99.md"
+    assert wp99_path.is_file()
+    wp99_text = wp99_path.read_text(encoding="utf-8")
+    project_text = _read()
+    forbidden_wp99 = (
+        "WP99 on branch",
+        "WP99 active branch",
+        "Merge commit: TBD after merge",
+        "PR: TBD",
+    )
+    for phrase in forbidden_wp99:
+        assert phrase not in wp99_text
+        assert phrase not in project_text
+    fixed_live_head = re.compile(r"Current live PR head:\s*`?[0-9a-f]{40}`?", re.IGNORECASE)
+    assert fixed_live_head.search(wp99_text) is None
+    assert fixed_live_head.search(project_text) is None
+
+
+def test_hermes_advisory_output_validator_status_is_registered():
+    text = _read()
+    assert "Hermes advisory output validator status" in text
+    assert "LOCAL_OFFLINE_READ_ONLY_VALIDATOR_MERGED" in text
+
+
+def test_hermes_advisory_output_validator_not_on_branch():
+    text = _read()
+    assert "HERMES_ADVISORY_OUTPUT_VALIDATOR_ON_BRANCH" not in text
