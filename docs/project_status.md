@@ -1,8 +1,8 @@
 # Project Status
 
-- Current phase: Post-WP96 Hermes advisory foundation architecture lock-in; next substantive WP is Hermes input/output contracts and validator hardening
-- Repo state: WP94 is merged; WP95 records stable post-merge target repo truth for the accepted Hermes/research-brain execution plan; WP96 records stable post-merge target repo truth for the Hermes advisory foundation and research-brain architecture; no source code, tools, runtime, paper/live, credential, order, risk, scheduler, dashboard, bot-loop, dependency, or product-network behavior changes
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90, WP91, WP92, WP93, WP94, WP95, WP96
+- Current phase: Post-WP97 Hermes input/output contracts and validator requirements lock-in; next substantive WP is Hermes research prompt pack and operator runbooks or a narrower Hermes contract validator implementation WP if explicitly approved
+- Repo state: WP94 is merged; WP95 records stable post-merge target repo truth for the accepted Hermes/research-brain execution plan; WP96 records stable post-merge target repo truth for the Hermes advisory foundation and research-brain architecture; WP97 records stable post-merge target repo truth for documentation-level Hermes input/output contract requirements and future validator requirements; no source code, tools, runtime, paper/live, credential, order, risk, scheduler, dashboard, bot-loop, dependency, or product-network behavior changes
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90, WP91, WP92, WP93, WP94, WP95, WP96, WP97
 - Current branch: see GitHub PR metadata and PR body; committed status docs are authored as stable post-merge target repo truth
 - Multi-agent coding workflow status: AGENT_NEUTRAL_START_LAYER_MERGED
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; MANUAL_EXPLICIT_NETWORK_POLLING_RUNNER_DEV_ONLY; MANUAL_GUARD_ENFORCED_SNAPSHOT_CAPTURE_DEV_ONLY
@@ -81,6 +81,8 @@
 - Candidate review workflow local smoke receipt status: LOCAL_SMOKE_RECEIPT_MERGED; verifies the existing WP87/WP89/WP90 import-only workflow through docs/tests and temp-only local export smoke coverage; no new CLI, source code, tools, runtime/paper/live/credential/network/API/account behavior, scheduler/dashboard/bot loop, dependency, or lock-file change
 - Hermes research-brain execution plan status: REPO_TRUTH_PLAN_LOCKED; canonical plan is `docs/hermes_research_brain_execution_plan.md`; future material plan changes must update repo-truth docs in the same WP or an approved follow-up, because chat memory and PR comments alone are not authoritative
 - Hermes advisory foundation architecture status: REPO_TRUTH_ARCHITECTURE_LOCKED; canonical architecture is `docs/hermes_advisory_foundation_research_brain_architecture.md`; WP96 elaborates WP95 Phase 1 only and preserves broad Hermes research freedom, strict deterministic control boundaries, and the prohibition on Hermes runtime/install/provider/model/credential/schema/validator/prompt-pack/runbook/exporter/paper/live/execution/risk/scheduler/dashboard/bot-loop authority
+- Historical WP96 next phase completed by WP97: Hermes input/output contracts and validator hardening
+- Hermes input/output contracts and validator requirements status: REPO_TRUTH_DOCUMENTATION_LEVEL_CONTRACT_REQUIREMENTS_LOCKED; canonical contract requirements doc is `docs/hermes_input_output_contracts_and_validator_requirements.md`; WP97 documents Phase 2 only and creates no machine-readable schema, source validator, prompt pack, runbook, exporter, parser, context-packet generator, Hermes runtime, provider/model configuration, credential path, paper/live behavior, execution/order/risk behavior, scheduler/dashboard behavior, bot-loop behavior, source code, tools, dependency file, or lock file
 - Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
 - Agent execution authority: FORBIDDEN
@@ -187,7 +189,23 @@ behavior, schema, validator, prompt pack, runbook, exporter, runtime artifact,
 paper/live behavior, execution/order/risk module, scheduler, dashboard, bot
 loop, source code, tools, dependency file, or lock file.
 
-Next intended WP: Hermes input/output contracts and validator hardening.
+WP97 documents Phase 2 at
+`docs/hermes_input_output_contracts_and_validator_requirements.md`. It defines
+documentation-level input/output contract requirements and future deterministic
+validator requirements only. It adds no machine-readable schema, source
+validator, prompt pack, runbook, exporter, parser, context-packet generator,
+Hermes runtime, provider/model configuration, credentials, private endpoint
+access, API/product/account network behavior, paper/live behavior,
+execution/order/risk module, scheduler, dashboard, bot loop, source code,
+tools, dependency file, or lock file.
+
+Next intended WP: Hermes input/output contracts and validator hardening was the
+WP96 next-phase pointer and is completed by WP97. The next intended WP after
+WP97 is Hermes research prompt pack and operator runbooks, or a narrower Hermes
+contract validator implementation WP if explicitly approved.
+
+Next intended WP: Hermes research prompt pack and operator runbooks, or a
+narrower Hermes contract validator implementation WP if explicitly approved.
 
 ## WP93 Candidate Review Report Operator Runbook V1
 
