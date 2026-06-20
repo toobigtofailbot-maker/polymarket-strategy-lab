@@ -664,8 +664,14 @@ def test_no_src_implementation_for_wp98() -> None:
         cwd=str(REPO_ROOT),
     )
     changed_files = result.stdout.strip().splitlines()
+    later_authorized_src = {
+        "src/data_layer/hermes_advisory_output_validator.py",
+        "src/data_layer/hermes_context_packet_exporter.py",
+    }
     for f in changed_files:
-        assert not f.startswith("src/"), f"Forbidden src/ file changed: {f}"
+        assert not f.startswith("src/") or f in later_authorized_src, (
+            f"Forbidden src/ file changed: {f}"
+        )
         assert not f.startswith("tools/"), f"Forbidden tools/ file changed: {f}"
         assert not f.startswith(".github/workflows/"), f"Forbidden workflow file changed: {f}"
         forbidden_deps = (

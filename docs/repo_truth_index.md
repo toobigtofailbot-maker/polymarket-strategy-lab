@@ -217,6 +217,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z70. `docs/status_entries/WP99.md` - WP99 stable committed status fragment for the Hermes advisory output validator V1.
 
+62z71. `src/data_layer/hermes_context_packet_exporter.py` - WP100 local/offline/read-only deterministic stdlib-only Hermes context-packet builder foundation; implements `build_hermes_context_packet` returning frozen `HermesContextPacketBuildResult`; consumes explicit in-memory summaries only; requires identity, source-reference, provenance, staleness, warning, missing-data, summary, structured-context, safe routing, review-step, and deterministic-owner concepts; sets advisory-only, human-review-required, and non-authority flags; recursively rejects forbidden keys/string values and raw/free-form mapping keys; invalid input returns an empty packet with neutral no-echo diagnostics; no Hermes runtime, prompt runner, CLI, file I/O, network/API, credentials, private/account/order state, paper/live, execution/risk, scheduler/dashboard, bot-loop, dependency, or lock-file behavior.
+
+62z72. `tests/test_hermes_context_packet_exporter.py` - WP100 focused positive, negative-matrix, recursive rejection, no-unsafe-echo, determinism, result-field-coverage, stdlib-only, and protected-boundary tests for the Hermes context-packet builder foundation.
+
+62z73. `docs/status_entries/WP100.md` - WP100 stable committed status fragment for the Hermes context-packet exporter foundation V1.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
