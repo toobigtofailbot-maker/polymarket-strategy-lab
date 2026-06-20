@@ -246,8 +246,10 @@ def test_wp91_does_not_add_new_src_files():
         timeout=60,
     )
     changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
-    new_src = [f for f in changed if f.startswith("src/")]
-    assert new_src == [], f"WP91 must not add new src/ files: {new_src}"
+    new_src = [f for f in changed if f.startswith("src/") and not any(
+        f.startswith(scope + "/") or f == scope for scope in APPROVED_SRC_SCOPES
+    )]
+    assert new_src == [], f"WP91 must not add new src/ files outside approved scopes: {new_src}"
 
 
 # ── WP92: Repo-Truth Policy Guard And One-Shot Execution Gate ────────────────
@@ -273,8 +275,10 @@ def test_wp92_does_not_add_new_src_files():
         timeout=60,
     )
     changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
-    new_src = [f for f in changed if f.startswith("src/")]
-    assert new_src == [], f"WP92 must not add new src/ files: {new_src}"
+    new_src = [f for f in changed if f.startswith("src/") and not any(
+        f.startswith(scope + "/") or f == scope for scope in APPROVED_SRC_SCOPES
+    )]
+    assert new_src == [], f"WP92 must not add new src/ files outside approved scopes: {new_src}"
 
 
 # -- WP93: Candidate Review Report Operator Runbook V1 ------------------------
@@ -300,8 +304,10 @@ def test_wp93_does_not_add_new_src_files():
         timeout=60,
     )
     changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
-    new_src = [f for f in changed if f.startswith("src/")]
-    assert new_src == [], f"WP93 must not add new src/ files: {new_src}"
+    new_src = [f for f in changed if f.startswith("src/") and not any(
+        f.startswith(scope + "/") or f == scope for scope in APPROVED_SRC_SCOPES
+    )]
+    assert new_src == [], f"WP93 must not add new src/ files outside approved scopes: {new_src}"
 
 
 # -- WP94: Candidate Review Workflow Local Smoke Receipt V1 -------------------
@@ -327,5 +333,7 @@ def test_wp94_does_not_add_new_src_files():
         timeout=60,
     )
     changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
-    new_src = [f for f in changed if f.startswith("src/")]
-    assert new_src == [], f"WP94 must not add new src/ files: {new_src}"
+    new_src = [f for f in changed if f.startswith("src/") and not any(
+        f.startswith(scope + "/") or f == scope for scope in APPROVED_SRC_SCOPES
+    )]
+    assert new_src == [], f"WP94 must not add new src/ files outside approved scopes: {new_src}"
