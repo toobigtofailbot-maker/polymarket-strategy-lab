@@ -317,6 +317,9 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         # WP100: local/offline/read-only deterministic context-packet builder
         "src/data_layer/hermes_context_packet_exporter.py",
         "tests/test_hermes_context_packet_exporter.py",
+        # WP101: local/offline/read-only deterministic dry-run receipt helper
+        "src/data_layer/hermes_context_packet_dry_run_receipt.py",
+        "tests/test_hermes_context_packet_dry_run_receipt.py",
     }
     findings = []
     for path in tracked:

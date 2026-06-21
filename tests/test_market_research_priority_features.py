@@ -1725,7 +1725,7 @@ def test_project_status_current_phase_is_wp58_or_later():
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP58", "WP59", "WP60", "WP61", "WP62", "WP63", "WP64", "WP65", "WP66", "WP67", "WP68", "WP69", "WP70", "WP71", "WP72", "WP73", "WP74", "WP75", "WP76", "WP77", "WP78", "WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100")), (
+    assert any(wp in current_phase_line for wp in ("WP58", "WP59", "WP60", "WP61", "WP62", "WP63", "WP64", "WP65", "WP66", "WP67", "WP68", "WP69", "WP70", "WP71", "WP72", "WP73", "WP74", "WP75", "WP76", "WP77", "WP78", "WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101")), (
         f"Expected WP58 or later in current phase line: {current_phase_line}"
     )
 
@@ -2286,7 +2286,7 @@ def test_project_status_current_phase_is_wp64_or_later():
     current_phase_line = next(
         line for line in content.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP64", "WP65", "WP66", "WP67", "WP68", "WP69", "WP70", "WP71", "WP72", "WP73", "WP74", "WP75", "WP76", "WP77", "WP78", "WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100")), (
+    assert any(wp in current_phase_line for wp in ("WP64", "WP65", "WP66", "WP67", "WP68", "WP69", "WP70", "WP71", "WP72", "WP73", "WP74", "WP75", "WP76", "WP77", "WP78", "WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101")), (
         f"Expected WP64 or later in current phase line: {current_phase_line}"
     )
 

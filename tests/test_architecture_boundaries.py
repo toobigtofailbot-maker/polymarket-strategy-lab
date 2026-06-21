@@ -56,6 +56,7 @@ def test_required_src_readmes_exist():
 # WP90 approves the local/offline/read-only candidate review report export layer at src/data_layer/wallet_signal_candidate_review_report_export.py.
 # WP99 approves the local/offline/read-only Hermes advisory output validator at src/data_layer/hermes_advisory_output_validator.py.
 # WP100 approves the local/offline/read-only in-memory Hermes context-packet builder at src/data_layer/hermes_context_packet_exporter.py.
+# WP101 approves the local/offline/read-only in-memory Hermes context-packet dry-run receipt at src/data_layer/hermes_context_packet_dry_run_receipt.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -79,6 +80,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/wallet_signal_candidate_review_report_export.py",
     "src/data_layer/hermes_advisory_output_validator.py",
     "src/data_layer/hermes_context_packet_exporter.py",
+    "src/data_layer/hermes_context_packet_dry_run_receipt.py",
 )
 
 
@@ -122,6 +124,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     advisory output validation.
     WP100 permits hermes_context_packet_exporter.py for local/offline/read-only
     in-memory context-packet construction.
+    WP101 permits hermes_context_packet_dry_run_receipt.py for local/offline/read-only
+    in-memory context-packet dry-run receipt construction.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
