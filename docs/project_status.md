@@ -1,8 +1,8 @@
 # Project Status
 
-- Current phase: Post-WP99 Hermes advisory output validator V1 lock-in; next substantive WP is Hermes context-packet exporter foundation implementation if explicitly approved
-- Repo state: WP95 records stable post-merge target repo truth for the accepted Hermes/research-brain execution plan; WP96 records stable post-merge target repo truth for the Hermes advisory foundation and research-brain architecture; WP97 records stable post-merge target repo truth for documentation-level Hermes input/output contract requirements and future validator requirements; WP98 records stable post-merge target repo truth for the Hermes research prompt pack and operator runbooks foundation; WP99 records stable post-merge target repo truth for the Hermes advisory output validator V1; Hermes advisory output validator is local/offline/read-only stdlib-only validator; no runtime, paper/live, credential, order, risk, scheduler, dashboard, bot-loop, dependency, or product-network behavior changes
-- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90, WP91, WP92, WP93, WP94, WP95, WP96, WP97, WP98, WP99
+- Current phase: Post-WP100 Hermes context-packet exporter foundation V1 lock-in; next substantive WP is Hermes local/offline manual simulation or context-packet dry-run receipt V1 if explicitly approved
+- Repo state: WP95 records the accepted Hermes/research-brain execution plan; WP96-WP98 record the advisory architecture, contract requirements, and manual prompt/runbook foundation; WP99 records the local/offline/read-only advisory output validator; WP100 records the local/offline/read-only in-memory context-packet builder foundation; no Hermes install/connect/run, prompt runner, file writer, CLI, product/runtime network, credential, account, order, paper/live, execution/risk, scheduler, dashboard, bot-loop, dependency, or lock-file behavior changes
+- Merged WPs: WP1, WP2, WP3, WP4, WP5, WP6, WP7, WP8, WP9, WP10, WP10-Follow-up, WP11, WP12, WP13, WP14, WP15, WP16, WP17, WP18, WP19, WP20, WP21, WP22, WP23, WP24, WP25, WP26, WP27, WP28, WP29, WP30, WP31, WP32, WP33, WP34, WP35, WP36, WP37, WP38, WP39, WP40, WP41, WP42, WP43, WP44, WP45, WP46, WP47, WP48, WP49, WP50, WP51, WP52, WP53, WP54, WP55, WP56, WP57, WP58, WP59, WP60A, WP61, WP62, WP63, WP64, WP65, WP66, WP67, WP68, WP69, WP70, WP71, WP72, WP73, WP74, WP75, WP76, WP77, WP78, WP79, WP80, WP81, WP82, WP83, WP84, WP86, WP87, WP88, WP89, WP90, WP91, WP92, WP93, WP94, WP95, WP96, WP97, WP98, WP99, WP100
 - Current branch: see GitHub PR metadata and PR body; committed status docs are authored as stable post-merge target repo truth
 - Multi-agent coding workflow status: AGENT_NEUTRAL_START_LAYER_MERGED
 - API integration status: STDLIB_READ_ONLY_PUBLIC_DATA_ACTIVE; MANUAL_EXPLICIT_NETWORK_POLLING_RUNNER_DEV_ONLY; MANUAL_GUARD_ENFORCED_SNAPSHOT_CAPTURE_DEV_ONLY
@@ -85,6 +85,7 @@
 - Hermes input/output contracts and validator requirements status: REPO_TRUTH_DOCUMENTATION_LEVEL_CONTRACT_REQUIREMENTS_LOCKED; canonical contract requirements doc is `docs/hermes_input_output_contracts_and_validator_requirements.md`; WP97 documents Phase 2 only and creates no machine-readable schema, source validator, prompt pack, runbook, exporter, parser, context-packet generator, Hermes runtime, provider/model configuration, credential path, paper/live behavior, execution/order/risk behavior, scheduler/dashboard behavior, bot-loop behavior, source code, tools, dependency file, or lock file
 - Hermes research prompt pack and operator runbooks status: REPO_TRUTH_RESEARCH_PROMPT_PACK_AND_OPERATOR_RUNBOOKS_LOCKED; canonical prompt pack and runbook doc is `docs/hermes_research_prompt_pack_and_operator_runbooks.md`; WP98 documents Phase 3 only and creates no prompt runner, machine-readable schema, source validator, exporter, parser, context-packet generator, Hermes runtime, provider/model configuration, credential path, paper/live behavior, execution/order/risk behavior, scheduler/dashboard behavior, bot-loop behavior, source code, tools, dependency file, or lock file; defines 10 manual-use-only research prompt families with operator preflight, input preparation, prompt-injection policy, common output requirements, output review checklist, forbidden output matrix, human-review and deterministic handoff rules, failure/stop conditions, manual setup dependency note, future implementation gates, and next WP sequence pointer
 - Hermes advisory output validator status: LOCAL_OFFLINE_READ_ONLY_VALIDATOR_MERGED; validator module is `src/data_layer/hermes_advisory_output_validator.py`; WP99 implements stdlib-only deterministic local/offline/read-only validator for in-memory Hermes advisory output mappings; enforces WP97/WP98 required boolean safety fields, required text/list fields, confidence-level allowlist, recursive forbidden-term scan, recursive raw-metadata-key rejection, fail-closed behavior, and no unsafe echo; no Hermes runtime, prompt runner, context-packet exporter, CLI, network, credentials, paper/live, execution/risk, scheduler/dashboard, bot-loop, dependency, or lock-file behavior
+- Hermes context-packet exporter foundation status: LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_PACKET_BUILDER_MERGED; builder module is `src/data_layer/hermes_context_packet_exporter.py`; WP100 implements deterministic stdlib-only construction of sanitized in-memory advisory context packets from explicit caller-supplied summaries; enforces required identity/evidence/provenance/safety/payload concepts, recursive forbidden-content and raw/free-form mapping rejection, fail-closed empty invalid packets, and no unsafe echo; no Hermes runtime, prompt runner, CLI, file export/report writer, product/runtime network, credentials, account/order/private state, paper/live, execution/risk, scheduler/dashboard, bot-loop, dependency, or lock-file behavior
 - Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY
 - Agent runtime status: NOT_STARTED
 - Agent execution authority: FORBIDDEN
@@ -266,6 +267,31 @@ lock-file change.
 
 Next intended WP after WP99: Hermes Context-Packet Exporter Foundation V1,
 requiring a separately approved WP.
+
+## WP100 Hermes Context-Packet Exporter Foundation V1
+
+WP100 implements the deterministic stdlib-only local/offline/read-only builder
+for sanitized in-memory Hermes context packets. The builder module is at
+`src/data_layer/hermes_context_packet_exporter.py`. It consumes only explicit
+caller-supplied in-memory summaries and returns a frozen result object whose
+invalid state always contains an empty packet.
+
+The builder enforces required identity, source-reference, provenance,
+staleness, warning, missing-data, summary, structured-context, safe routing,
+review-step, and deterministic-owner concepts. It sets all required advisory
+and non-authority flags, recursively rejects unsafe keys and string values,
+rejects raw/free-form mapping keys at any depth, normalizes structured values
+deterministically, and emits only neutral diagnostic codes that do not echo
+unsafe caller content.
+
+WP100 adds no Hermes install, connection, runtime, provider/model
+configuration, prompt runner, prompt execution, CLI, file export/report writer,
+product/runtime network behavior, credentials, private endpoints, account or
+order state, paper/live behavior, execution/risk behavior, scheduler,
+dashboard, bot loop, dependency, or lock-file change.
+
+Next intended WP after WP100: Hermes Local/Offline Manual Simulation Or
+Context-Packet Dry-Run Receipt V1, requiring a separately approved WP.
 
 ## WP93 Candidate Review Report Operator Runbook V1
 

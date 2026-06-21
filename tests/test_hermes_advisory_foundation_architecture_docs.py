@@ -259,6 +259,9 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         # WP99: local/offline/read-only deterministic validator (explicitly authorized)
         "src/data_layer/hermes_advisory_output_validator.py",
         "tests/test_hermes_advisory_output_validator.py",
+        # WP100: local/offline/read-only deterministic context-packet builder
+        "src/data_layer/hermes_context_packet_exporter.py",
+        "tests/test_hermes_context_packet_exporter.py",
     }
     findings = []
     for path in tracked:

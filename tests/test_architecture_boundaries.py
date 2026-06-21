@@ -54,6 +54,8 @@ def test_required_src_readmes_exist():
 # WP87 approves the local/offline/read-only wallet signal paper strategy candidate fixture loader at src/data_layer/wallet_signal_paper_strategy_candidate_fixture_loader.py.
 # WP89 approves the local/offline/read-only wallet signal candidate review report at src/data_layer/wallet_signal_candidate_review_report.py.
 # WP90 approves the local/offline/read-only candidate review report export layer at src/data_layer/wallet_signal_candidate_review_report_export.py.
+# WP99 approves the local/offline/read-only Hermes advisory output validator at src/data_layer/hermes_advisory_output_validator.py.
+# WP100 approves the local/offline/read-only in-memory Hermes context-packet builder at src/data_layer/hermes_context_packet_exporter.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -76,6 +78,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/wallet_signal_candidate_review_report.py",
     "src/data_layer/wallet_signal_candidate_review_report_export.py",
     "src/data_layer/hermes_advisory_output_validator.py",
+    "src/data_layer/hermes_context_packet_exporter.py",
 )
 
 
@@ -115,6 +118,10 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     wallet signal candidate review report.
     WP90 permits wallet_signal_candidate_review_report_export.py for the local/offline/read-only
     candidate review report export layer.
+    WP99 permits hermes_advisory_output_validator.py for local/offline/read-only
+    advisory output validation.
+    WP100 permits hermes_context_packet_exporter.py for local/offline/read-only
+    in-memory context-packet construction.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
