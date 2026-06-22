@@ -668,6 +668,7 @@ def test_no_src_implementation_for_wp98() -> None:
         "src/data_layer/hermes_advisory_output_validator.py",
         "src/data_layer/hermes_context_packet_exporter.py",
         "src/data_layer/hermes_context_packet_dry_run_receipt.py",
+        "src/data_layer/hermes_manual_research_dry_run_review.py",
     }
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (

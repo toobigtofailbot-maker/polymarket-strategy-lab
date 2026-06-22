@@ -229,6 +229,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z76. `docs/status_entries/WP101.md` - WP101 stable committed status fragment for the Hermes context-packet dry-run receipt V1.
 
+62z77. `src/data_layer/hermes_manual_research_dry_run_review.py` - WP102 local/offline/read-only deterministic stdlib-only Hermes manual research dry-run operator review helper; implements `build_hermes_manual_research_dry_run_review` returning frozen `HermesManualResearchDryRunReviewResult`; consumes an explicit in-memory WP101 dry-run receipt, reviewer identity, selected research family and runbook ref, exact source-review checks, optional stop reasons, operator notes, and related repo-truth refs only; validates receipt type/status/safety flags, required receipt identity/source-ref fields, exact source-review checks, stop-reason precedence, recursive forbidden text, recursive raw/free-form mapping keys, fail-closed empty invalid reviews, and no unsafe echo; valid reviews set dry-run/manual-review/no-runtime/no-model/no-file/no-network/no-paper-live/no-execution-risk/no-credential flags; no Hermes runtime, prompt runner, CLI, file I/O, network/API, credentials, private/account/order state, paper/live, execution/risk, scheduler/dashboard, bot-loop, dependency, or lock-file behavior.
+
+62z78. `tests/test_hermes_manual_research_dry_run_review.py` - WP102 focused positive, negative-matrix, recursive rejection, no-unsafe-echo, output-surface, result-field-coverage, stdlib-only, and protected-boundary tests for the Hermes manual research dry-run operator review helper.
+
+62z79. `docs/status_entries/WP102.md` - WP102 stable committed status fragment for the Hermes manual research dry-run operator review V1.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.

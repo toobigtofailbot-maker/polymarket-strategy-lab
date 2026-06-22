@@ -265,6 +265,9 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         # WP101: local/offline/read-only deterministic dry-run receipt helper
         "src/data_layer/hermes_context_packet_dry_run_receipt.py",
         "tests/test_hermes_context_packet_dry_run_receipt.py",
+        # WP102: local/offline/read-only deterministic manual operator review helper
+        "src/data_layer/hermes_manual_research_dry_run_review.py",
+        "tests/test_hermes_manual_research_dry_run_review.py",
     }
     findings = []
     for path in tracked:
