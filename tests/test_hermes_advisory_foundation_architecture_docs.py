@@ -268,6 +268,9 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         # WP102: local/offline/read-only deterministic manual operator review helper
         "src/data_layer/hermes_manual_research_dry_run_review.py",
         "tests/test_hermes_manual_research_dry_run_review.py",
+        # WP103: local/offline/read-only deterministic candidate-review context packet adapter
+        "src/data_layer/hermes_candidate_review_context_packet_integration.py",
+        "tests/test_hermes_candidate_review_context_packet_integration.py",
     }
     findings = []
     for path in tracked:
