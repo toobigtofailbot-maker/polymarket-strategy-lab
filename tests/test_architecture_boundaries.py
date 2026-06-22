@@ -58,6 +58,7 @@ def test_required_src_readmes_exist():
 # WP100 approves the local/offline/read-only in-memory Hermes context-packet builder at src/data_layer/hermes_context_packet_exporter.py.
 # WP101 approves the local/offline/read-only in-memory Hermes context-packet dry-run receipt at src/data_layer/hermes_context_packet_dry_run_receipt.py.
 # WP102 approves the local/offline/read-only in-memory Hermes manual research dry-run operator review at src/data_layer/hermes_manual_research_dry_run_review.py.
+# WP103 approves the local/offline/read-only in-memory Hermes candidate-review context packet integration adapter at src/data_layer/hermes_candidate_review_context_packet_integration.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -83,6 +84,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/hermes_context_packet_exporter.py",
     "src/data_layer/hermes_context_packet_dry_run_receipt.py",
     "src/data_layer/hermes_manual_research_dry_run_review.py",
+    "src/data_layer/hermes_candidate_review_context_packet_integration.py",
 )
 
 

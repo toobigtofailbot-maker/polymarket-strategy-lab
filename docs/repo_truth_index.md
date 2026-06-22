@@ -235,6 +235,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z79. `docs/status_entries/WP102.md` - WP102 stable committed status fragment for the Hermes manual research dry-run operator review V1.
 
+62z80. `src/data_layer/hermes_candidate_review_context_packet_integration.py` - WP103 local/offline/read-only deterministic (stdlib-only plus approved WP100 internal import) Hermes candidate-review context packet integration adapter; implements `build_candidate_review_hermes_context_packet` returning `HermesContextPacketBuildResult` from WP100; accepts explicit in-memory candidate-review report data (packet_id, report_identity, source_refs, advisory_notice, human_review_required, review_status, provenance_status, staleness_status, recommended_next_review_step, and optional fields); pre-validates all inputs for forbidden credential/trade/execution/runtime/raw-mapping-key content, maps safe fields to WP100 `build_hermes_context_packet`, returns advisory-only/human-review-required/no-authority packet; fail-closed empty invalid packets; no unsafe echo; no Hermes runtime, prompt runner, CLI, file I/O, network/API, credentials, private/account/order state, paper/live, execution/risk, scheduler/dashboard, bot-loop, dependency, or lock-file behavior.
+
+62z81. `tests/test_hermes_candidate_review_context_packet_integration.py` - WP103 focused positive, negative-matrix, no-unsafe-echo, output-surface-inventory, approved-import-only, and protected-boundary tests for the Hermes candidate-review context packet integration adapter.
+
+62z82. `docs/status_entries/WP103.md` - WP103 stable committed status fragment for the Hermes candidate-review context packet integration V1.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.

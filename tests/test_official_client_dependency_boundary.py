@@ -122,6 +122,10 @@ FORBIDDEN_TERMS_FILE_EXEMPTIONS: dict[str, set[str]] = {
     # to REJECT source artifact refs that contain mnemonic-like strings. This is a
     # defensive rejection pattern, not a credential or key-derivation path.
     "src/data_layer/resolution_ambiguity_labels.py": {"mnemonic"},
+    # WP103: hermes_candidate_review_context_packet_integration.py lists "mnemonic" in
+    # _FORBIDDEN_SINGLE_WORDS to REJECT caller-supplied text containing it. This is a
+    # defensive rejection pattern, not a credential or key-derivation path.
+    "src/data_layer/hermes_candidate_review_context_packet_integration.py": {"mnemonic"},
 }
 
 
