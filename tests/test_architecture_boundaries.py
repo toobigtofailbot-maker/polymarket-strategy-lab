@@ -85,6 +85,8 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/hermes_context_packet_dry_run_receipt.py",
     "src/data_layer/hermes_manual_research_dry_run_review.py",
     "src/data_layer/hermes_candidate_review_context_packet_integration.py",
+    # WP104 approves the local/offline/read-only in-memory Hermes candidate-review manual chain smoke at src/data_layer/hermes_candidate_review_manual_chain_smoke.py.
+    "src/data_layer/hermes_candidate_review_manual_chain_smoke.py",
 )
 
 
@@ -132,6 +134,10 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     in-memory context-packet dry-run receipt construction.
     WP102 permits hermes_manual_research_dry_run_review.py for local/offline/read-only
     in-memory manual research dry-run operator review record construction.
+    WP103 permits hermes_candidate_review_context_packet_integration.py for local/offline/read-only
+    in-memory candidate-review context packet integration adapter construction.
+    WP104 permits hermes_candidate_review_manual_chain_smoke.py for local/offline/read-only
+    in-memory candidate-review manual chain smoke helper construction.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"

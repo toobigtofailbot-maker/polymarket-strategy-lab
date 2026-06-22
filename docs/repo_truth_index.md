@@ -241,6 +241,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z82. `docs/status_entries/WP103.md` - WP103 stable committed status fragment for the Hermes candidate-review context packet integration V1.
 
+62z83. `src/data_layer/hermes_candidate_review_manual_chain_smoke.py` - WP104 local/offline/read-only deterministic (stdlib-only plus approved WP103/WP101/WP102 internal imports) Hermes candidate-review manual chain smoke helper; implements `run_candidate_review_manual_chain_smoke` returning frozen `HermesChainSmokeResult`; composes WP103 candidate-review context packet adapter, WP101 dry-run receipt helper, and WP102 manual research dry-run review helper in memory; stage-cascade fail-closed design: invalid input fails at first failing stage with neutral stage-namespaced error codes; safety flags always True describing advisory-only posture; no unsafe echo in errors; no Hermes runtime, prompt runner, CLI, file I/O, network/API, credentials, private/account/order state, paper/live, execution/risk, scheduler/dashboard, bot-loop, dependency, or lock-file behavior.
+
+62z84. `tests/test_hermes_candidate_review_manual_chain_smoke.py` - WP104 focused positive, negative-matrix, stage-cascade failure, no-unsafe-echo, output-surface, result-field-coverage, stdlib-only, and protected-boundary tests for the Hermes candidate-review manual chain smoke helper.
+
+62z85. `docs/status_entries/WP104.md` - WP104 stable committed status fragment for the Hermes candidate-review manual chain smoke V1.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
