@@ -253,6 +253,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z88. `docs/status_entries/WP105.md` - WP105 stable committed status fragment for the Hermes candidate-review operator handoff contract V1.
 
+62z89. `src/data_layer/hermes_candidate_review_operator_handoff.py` - WP106 local/offline/read-only deterministic stdlib-only in-memory operator handoff object implementation for the WP105 operator handoff contract; implements `build_candidate_review_operator_handoff`, `validate_candidate_review_operator_handoff`, and `assert_candidate_review_operator_handoff`; validates required conceptual groups, required safety flags (all True), allowed research decision labels, source-review checklist fields, recursive forbidden-content scan, recursive raw/free-form metadata key scan, fail-closed empty invalid handoffs with neutral error codes, and no-unsafe-echo policy; does not widen any WP105 authority; no Hermes runtime, prompt runner, CLI, file I/O, network/API, credentials, private/account/order state, paper/live, execution/risk, scheduler/dashboard, bot-loop, dependency, or lock-file behavior.
+
+62z90. `tests/test_hermes_candidate_review_operator_handoff.py` - WP106 focused tests for the Hermes candidate-review in-memory operator handoff object; covers valid minimal handoff, required groups, safety flags, all allowed decision labels, unknown label rejection, missing group rejection, missing/false safety flags, conflicting authority rejection, missing/false checklist keys, forbidden content recursion (trade/order/execution, expected-return/edge/tradability, paper/live, PR-approval/merge-ready, credential/wallet, runtime/provider/prompt), raw/free-form metadata key rejection, no-unsafe-echo in errors/warnings, empty invalid handoff dict, assert helper neutral error, approved imports only, no forbidden behaviors in module source, contract doc WP106 reference, project status WP106 boundary preservation, WP106 status entry stable inventory.
+
+62z91. `docs/status_entries/WP106.md` - WP106 stable committed status fragment for the Hermes candidate-review in-memory operator handoff object V1. WP106 is an implementation of the WP105 operator handoff contract and does not widen any WP105 authority.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.

@@ -205,6 +205,13 @@ Hermes runtime/model/provider/prompt execution.
 No future WP may use this contract to authorize paper/live/execution/risk or
 credentials.
 
+WP106 implements the first in-memory handoff object layer for this contract.
+WP106 is a local/offline/read-only stdlib-only source implementation that
+validates caller-supplied in-memory handoff data and returns an in-memory
+result. WP106 does not widen any authority defined in WP105. All WP105
+forbidden scope boundaries, safety flags, fail-closed policy, and no-unsafe-echo
+requirements remain unchanged by WP106.
+
 ## 12. Operator Runbook Summary
 
 Human operator steps:

@@ -87,6 +87,8 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/hermes_candidate_review_context_packet_integration.py",
     # WP104 approves the local/offline/read-only in-memory Hermes candidate-review manual chain smoke at src/data_layer/hermes_candidate_review_manual_chain_smoke.py.
     "src/data_layer/hermes_candidate_review_manual_chain_smoke.py",
+    # WP106 approves the local/offline/read-only in-memory Hermes candidate-review operator handoff object at src/data_layer/hermes_candidate_review_operator_handoff.py.
+    "src/data_layer/hermes_candidate_review_operator_handoff.py",
 )
 
 
