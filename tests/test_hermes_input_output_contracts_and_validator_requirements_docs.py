@@ -326,6 +326,9 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         # WP103: local/offline/read-only deterministic candidate-review context packet adapter
         "src/data_layer/hermes_candidate_review_context_packet_integration.py",
         "tests/test_hermes_candidate_review_context_packet_integration.py",
+        # WP104: local/offline/read-only deterministic candidate-review manual chain smoke
+        "src/data_layer/hermes_candidate_review_manual_chain_smoke.py",
+        "tests/test_hermes_candidate_review_manual_chain_smoke.py",
     }
     findings = []
     for path in tracked:

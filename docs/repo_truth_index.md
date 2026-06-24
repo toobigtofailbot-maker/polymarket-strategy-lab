@@ -247,6 +247,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z85. `docs/status_entries/WP104.md` - WP104 stable committed status fragment for the Hermes candidate-review manual chain smoke V1.
 
+62z86. `docs/hermes_candidate_review_operator_handoff_contract.md` - WP105 canonical documentation-level Hermes candidate-review operator handoff contract; defines the human-operator contract around the WP103 -> WP101 -> WP102 -> WP104 candidate-review research chain, required conceptual handoff groups, required safety flags, allowed research decision labels, forbidden interpretation, forbidden output/wording matrix, raw metadata/free-form mapping policy, no-unsafe-echo policy, fail-closed policy, future implementation gates, operator runbook summary, and non-goals; docs/status/tests-only; no source implementation, report writer, exporter, CLI, Hermes runtime/provider/model/prompt runner, network/API/product/account behavior, credentials, paper/live, execution/risk/order, scheduler/dashboard/bot-loop, dependency, workflow, or generated-artifact behavior.
+
+62z87. `tests/test_hermes_candidate_review_operator_handoff_contract_docs.py` - WP105 focused docs tests for the Hermes candidate-review operator handoff contract; verifies doc existence, WP99-WP104 relationship, advisory-only and human-review-required language, no execution/runtime/credential/paper-live/prompt/file-network authority, required conceptual groups, allowed decision labels, forbidden interpretation, forbidden wording matrix, raw metadata/free-form policy, no-unsafe-echo policy, fail-closed policy, future implementation gates, constrained readiness/approval wording, absence of current runtime/export behavior claims, repo-truth registration, project-status boundary preservation, and WP105 status entry inventory/stable wording.
+
+62z88. `docs/status_entries/WP105.md` - WP105 stable committed status fragment for the Hermes candidate-review operator handoff contract V1.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
