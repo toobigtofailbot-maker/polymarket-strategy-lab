@@ -275,7 +275,10 @@ def test_project_status_records_wp105_and_preserves_boundaries() -> None:
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
     assert "WP105" in merged_line
-    assert "Post-WP105 Hermes candidate-review operator handoff contract V1 lock-in" in text
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    assert any(wp in current_phase_line for wp in ("WP105", "WP106"))
     assert "Hermes candidate-review operator handoff contract status" in text
     for phrase in (
         "Live trading status: DISABLED",
@@ -316,3 +319,11 @@ def test_wp105_status_entry_exists_and_lists_exact_changed_files() -> None:
     assert "Ready for review: YES" in text
     assert "PR: see GitHub PR metadata and PR body." in text
     assert "stable and non-self-referential" in text
+
+
+def test_doc_references_wp106_implementation_started() -> None:
+    text = _doc()
+    assert "WP106" in text
+    section = _normalized(_section(text, "Future Implementation Guidance"))
+    assert "WP106 implements the first in-memory handoff object layer" in section
+    assert "does not widen any authority defined in WP105" in section

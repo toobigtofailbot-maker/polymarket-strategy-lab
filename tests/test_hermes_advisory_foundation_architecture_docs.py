@@ -274,6 +274,9 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         # WP104: local/offline/read-only deterministic candidate-review manual chain smoke
         "src/data_layer/hermes_candidate_review_manual_chain_smoke.py",
         "tests/test_hermes_candidate_review_manual_chain_smoke.py",
+        # WP106: local/offline/read-only deterministic in-memory candidate-review operator handoff object
+        "src/data_layer/hermes_candidate_review_operator_handoff.py",
+        "tests/test_hermes_candidate_review_operator_handoff.py",
     }
     findings = []
     for path in tracked:
