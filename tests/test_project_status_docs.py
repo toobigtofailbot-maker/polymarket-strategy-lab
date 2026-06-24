@@ -1240,3 +1240,55 @@ def test_hermes_candidate_review_operator_handoff_object_is_registered():
     assert "Hermes candidate-review in-memory operator handoff object status" in status_text
     assert "src/data_layer/hermes_candidate_review_operator_handoff.py" in index_text
     assert "tests/test_hermes_candidate_review_operator_handoff.py" in index_text
+
+
+# ── WP107: Hermes candidate-review handoff local manual export contract V1 ───
+
+
+def test_wp107_in_stable_merged_wps_target_list():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP107" in merged_line
+
+
+def test_wp107_is_stable_post_merge_target_state():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    assert "WP107" in current_phase_line
+    assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CONTRACT_MERGED" in text
+    assert "docs/hermes_candidate_review_handoff_local_manual_export_contract.md" in text
+
+
+def test_wp107_committed_status_docs_reject_stale_wording():
+    wp107_path = STATUS_ENTRIES / "WP107.md"
+    assert wp107_path.is_file()
+    wp107_text = wp107_path.read_text(encoding="utf-8")
+    project_text = _read()
+    for phrase in (
+        "WP107 on branch",
+        "WP107 active branch",
+        "Merge commit: TBD after merge",
+        "PR: TBD",
+        "count depends",
+    ):
+        assert phrase not in wp107_text
+        assert phrase not in project_text
+    fixed_live_head = re.compile(
+        r"Current live PR head:\s*`?[0-9a-f]{40}`?", re.IGNORECASE
+    )
+    assert fixed_live_head.search(wp107_text) is None
+    assert fixed_live_head.search(project_text) is None
+
+
+def test_hermes_candidate_review_handoff_local_manual_export_contract_is_registered():
+    status_text = _read()
+    index_text = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(
+        encoding="utf-8"
+    )
+    assert "Hermes candidate-review handoff local manual export contract status" in status_text
+    assert "docs/hermes_candidate_review_handoff_local_manual_export_contract.md" in index_text
+    assert "tests/test_hermes_candidate_review_handoff_local_manual_export_contract_docs.py" in index_text
