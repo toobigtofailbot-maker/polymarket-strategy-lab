@@ -399,6 +399,8 @@ def test_only_allowed_wallet_src_files_changed() -> None:
         "src/data_layer/hermes_candidate_review_manual_chain_smoke.py",
         # WP106: local/offline/read-only in-memory candidate-review operator handoff object
         "src/data_layer/hermes_candidate_review_operator_handoff.py",
+        # WP108: local/offline/read-only in-memory candidate-review handoff manual export artifact builder
+        "src/data_layer/hermes_candidate_review_handoff_manual_export_artifact.py",
     }
     assert set(src_changes) <= allowed_src_changes, (
         f"Unexpected src/ changes: {set(src_changes) - allowed_src_changes}"
