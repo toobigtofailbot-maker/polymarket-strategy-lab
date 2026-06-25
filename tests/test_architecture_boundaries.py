@@ -89,6 +89,8 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/hermes_candidate_review_manual_chain_smoke.py",
     # WP106 approves the local/offline/read-only in-memory Hermes candidate-review operator handoff object at src/data_layer/hermes_candidate_review_operator_handoff.py.
     "src/data_layer/hermes_candidate_review_operator_handoff.py",
+    # WP108 approves the local/offline/read-only in-memory Hermes candidate-review handoff manual export artifact builder at src/data_layer/hermes_candidate_review_handoff_manual_export_artifact.py.
+    "src/data_layer/hermes_candidate_review_handoff_manual_export_artifact.py",
 )
 
 

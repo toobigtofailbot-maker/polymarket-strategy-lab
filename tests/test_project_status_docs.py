@@ -1154,7 +1154,7 @@ def test_wp105_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP105" in current_phase_line
+    assert any(wp in current_phase_line for wp in ("WP105", "WP106", "WP107", "WP108"))
     assert "DOCS_STATUS_TESTS_ONLY_OPERATOR_HANDOFF_CONTRACT_MERGED" in text
     assert "docs/hermes_candidate_review_operator_handoff_contract.md" in text
 
@@ -1206,7 +1206,7 @@ def test_wp106_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP106" in current_phase_line
+    assert any(wp in current_phase_line for wp in ("WP106", "WP107", "WP108"))
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_OPERATOR_HANDOFF_OBJECT_MERGED" in text
     assert "src/data_layer/hermes_candidate_review_operator_handoff.py" in text
 
@@ -1258,7 +1258,7 @@ def test_wp107_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP107" in current_phase_line
+    assert any(wp in current_phase_line for wp in ("WP107", "WP108"))
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CONTRACT_MERGED" in text
     assert "docs/hermes_candidate_review_handoff_local_manual_export_contract.md" in text
 
@@ -1292,3 +1292,57 @@ def test_hermes_candidate_review_handoff_local_manual_export_contract_is_registe
     assert "Hermes candidate-review handoff local manual export contract status" in status_text
     assert "docs/hermes_candidate_review_handoff_local_manual_export_contract.md" in index_text
     assert "tests/test_hermes_candidate_review_handoff_local_manual_export_contract_docs.py" in index_text
+
+
+# ── WP108: Hermes candidate-review handoff in-memory manual export artifact builder V1 ──
+
+
+def test_wp108_in_stable_merged_wps_target_list():
+    text = _read()
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP108" in merged_line
+
+
+def test_wp108_is_stable_post_merge_target_state():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    assert "WP108" in current_phase_line
+    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_EXPORT_ARTIFACT_MERGED" in text
+    assert "src/data_layer/hermes_candidate_review_handoff_manual_export_artifact.py" in text
+
+
+def test_wp108_committed_status_docs_reject_stale_wording():
+    wp108_path = STATUS_ENTRIES / "WP108.md"
+    assert wp108_path.is_file()
+    wp108_text = wp108_path.read_text(encoding="utf-8")
+    project_text = _read()
+    for phrase in (
+        "WP108 on branch",
+        "WP108 active branch",
+        "Merge commit: TBD after merge",
+        "PR: TBD",
+        "count depends",
+        "TBD after merge",
+        "LOCAL_DRAFT_VERIFIED",
+    ):
+        assert phrase not in wp108_text
+        assert phrase not in project_text
+    fixed_live_head = re.compile(
+        r"Current live PR head:\s*`?[0-9a-f]{40}`?", re.IGNORECASE
+    )
+    assert fixed_live_head.search(wp108_text) is None
+    assert fixed_live_head.search(project_text) is None
+
+
+def test_hermes_candidate_review_handoff_manual_export_artifact_is_registered():
+    status_text = _read()
+    index_text = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(
+        encoding="utf-8"
+    )
+    assert "Hermes candidate-review handoff in-memory manual export artifact status" in status_text
+    assert "src/data_layer/hermes_candidate_review_handoff_manual_export_artifact.py" in index_text
+    assert "tests/test_hermes_candidate_review_handoff_manual_export_artifact.py" in index_text
