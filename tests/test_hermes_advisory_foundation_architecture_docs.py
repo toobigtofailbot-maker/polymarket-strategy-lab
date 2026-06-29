@@ -277,6 +277,10 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         # WP106: local/offline/read-only deterministic in-memory candidate-review operator handoff object
         "src/data_layer/hermes_candidate_review_operator_handoff.py",
         "tests/test_hermes_candidate_review_operator_handoff.py",
+        # WP108: local/offline/read-only in-memory candidate-review handoff manual export artifact builder
+        "src/data_layer/hermes_candidate_review_handoff_manual_export_artifact.py",
+        # WP109: local/offline/manual-only explicit file writer for valid WP108 artifacts
+        "src/data_layer/hermes_candidate_review_handoff_manual_export_writer.py",
     }
     findings = []
     for path in tracked:
