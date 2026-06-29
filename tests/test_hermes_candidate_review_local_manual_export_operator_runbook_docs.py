@@ -190,7 +190,7 @@ def test_project_status_records_wp110_without_runtime_activation() -> None:
     text = _read(PROJECT_STATUS)
     assert "WP110" in text
     assert "Hermes candidate-review local manual export operator runbook status" in text
-    assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_OPERATOR_RUNBOOK_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_OPERATOR_RUNBOOK_MERGED" in text
     for phrase in (
         "no Hermes install/connect/run",
         "no source implementation",
