@@ -671,6 +671,14 @@ def test_no_src_implementation_for_wp98() -> None:
         "src/data_layer/hermes_manual_research_dry_run_review.py",
         # WP103: local/offline/read-only deterministic candidate-review context packet adapter
         "src/data_layer/hermes_candidate_review_context_packet_integration.py",
+        # WP104: local/offline/read-only deterministic candidate-review manual chain smoke
+        "src/data_layer/hermes_candidate_review_manual_chain_smoke.py",
+        # WP106: local/offline/read-only deterministic in-memory candidate-review operator handoff object
+        "src/data_layer/hermes_candidate_review_operator_handoff.py",
+        # WP108: local/offline/read-only in-memory candidate-review handoff manual export artifact builder
+        "src/data_layer/hermes_candidate_review_handoff_manual_export_artifact.py",
+        # WP109: local/offline/manual-only explicit file writer for valid WP108 artifacts
+        "src/data_layer/hermes_candidate_review_handoff_manual_export_writer.py",
     }
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (
