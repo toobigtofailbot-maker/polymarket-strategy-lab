@@ -281,6 +281,8 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         "src/data_layer/hermes_candidate_review_handoff_manual_export_artifact.py",
         # WP109: local/offline/manual-only explicit file writer for valid WP108 artifacts
         "src/data_layer/hermes_candidate_review_handoff_manual_export_writer.py",
+        # WP110: docs/status/tests-only operator runbook for manual WP109 writer use
+        "docs/hermes_candidate_review_local_manual_export_operator_runbook.md",
     }
     findings = []
     for path in tracked:
