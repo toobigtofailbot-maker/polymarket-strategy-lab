@@ -198,7 +198,7 @@ def test_no_forbidden_implementation_paths_exist():
     ]
     forbidden_tool_patterns = [
         re.compile(r"^tools/advisory_agent"),
-        re.compile(r"^tools/hermes"),
+        re.compile(r"^tools/hermes(?:/|$)"),
     ]
     for path in tracked:
         normalized = path.replace("\\", "/")

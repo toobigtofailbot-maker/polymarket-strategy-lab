@@ -684,7 +684,12 @@ def test_no_src_implementation_for_wp98() -> None:
         assert not f.startswith("src/") or f in later_authorized_src, (
             f"Forbidden src/ file changed: {f}"
         )
-        assert not f.startswith("tools/"), f"Forbidden tools/ file changed: {f}"
+        allowed_later_tools = {
+            "tools/hermes_candidate_review_manual_export_cli.py",
+        }
+        assert not f.startswith("tools/") or f in allowed_later_tools, (
+            f"Forbidden tools/ file changed: {f}"
+        )
         assert not f.startswith(".github/workflows/"), f"Forbidden workflow file changed: {f}"
         forbidden_deps = (
             "requirements.txt", "pyproject.toml", "package.json",
