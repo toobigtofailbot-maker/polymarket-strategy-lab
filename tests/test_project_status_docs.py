@@ -1379,17 +1379,17 @@ def test_wp110_is_stable_post_merge_target_state():
     assert "docs/hermes_candidate_review_local_manual_export_operator_runbook.md" in text
 
 
-def test_wp111_is_current_review_target_state():
+def test_wp111_is_reconciled_or_in_current_chain_context():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP111" in current_phase_line or "WP112" in current_phase_line
+    assert any(wp in current_phase_line for wp in ("WP111", "WP112", "WP113"))
     assert "DOCS_STATUS_TESTS_ONLY_TEMP_ONLY_LOCAL_MANUAL_EXPORT_SMOKE_EXERCISE_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp112_is_current_review_target_state():
+def test_wp112_is_reconciled_as_merged_and_wp113_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,10 +1397,27 @@ def test_wp112_is_current_review_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP112" in current_phase_line
+    assert "WP113" in current_phase_line
     assert "WP111" in merged_line
+    assert "WP112" in merged_line
+    assert "WP113" not in merged_line
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
+    assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_REVIEW_TARGET" in text
+    assert "docs/hermes_candidate_review_local_manual_export_cli_wrapper_contract.md" in text
+    assert "Hermes candidate-review local manual export CLI wrapper contract status" in text
+    for phrase in (
+        "no CLI implementation",
+        "no source/tool/runtime behavior",
+        "no Hermes runtime",
+        "no network",
+        "no credentials",
+        "no paper/live",
+        "no execution/risk/order",
+        "no scheduler/dashboard/bot-loop",
+        "no dependency/workflow/lock-file behavior",
+    ):
+        assert phrase in text
 
 
 def test_wp109_committed_status_docs_reject_stale_wording():
