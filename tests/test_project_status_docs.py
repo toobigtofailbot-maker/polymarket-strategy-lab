@@ -1384,9 +1384,23 @@ def test_wp111_is_current_review_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP111" in current_phase_line
+    assert "WP111" in current_phase_line or "WP112" in current_phase_line
     assert "DOCS_STATUS_TESTS_ONLY_TEMP_ONLY_LOCAL_MANUAL_EXPORT_SMOKE_EXERCISE_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
+
+
+def test_wp112_is_current_review_target_state():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP112" in current_phase_line
+    assert "WP111" in merged_line
+    assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
+    assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
 
 
 def test_wp109_committed_status_docs_reject_stale_wording():
