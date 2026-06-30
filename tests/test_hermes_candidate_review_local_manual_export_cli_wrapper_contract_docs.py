@@ -219,7 +219,10 @@ def test_project_status_records_wp113_review_target_and_preserves_boundaries() -
     assert "Hermes candidate-review local manual export CLI wrapper contract status" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_COMMAND_SURFACE_CONTRACT_MERGED" in text
-    assert "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_REVIEW_TARGET" in text
+    assert (
+        "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_REVIEW_TARGET" in text
+        or "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_MERGED" in text
+    )
     for phrase in (
         "no source implementation under `src/`",
         "no product/runtime network",

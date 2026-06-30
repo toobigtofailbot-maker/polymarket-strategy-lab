@@ -189,7 +189,10 @@ def test_project_status_records_wp112_and_preserves_boundaries() -> None:
     assert "Hermes candidate-review local manual export chain closeout status" in text
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_COMMAND_SURFACE_CONTRACT_MERGED" in text
-    assert "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_REVIEW_TARGET" in text
+    assert (
+        "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_REVIEW_TARGET" in text
+        or "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_MERGED" in text
+    )
     for phrase in (
         "Live trading status: DISABLED",
         "Credentials status: NOT_USED",

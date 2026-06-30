@@ -424,7 +424,10 @@ def test_project_status_records_wp115_and_preserves_boundaries() -> None:
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
     assert "WP114" in merged_line
     assert "WP115" in text
-    assert "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_REVIEW_TARGET" in text
+    assert (
+        "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_REVIEW_TARGET" in text
+        or "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_MERGED" in text
+    )
     for phrase in (
         "Live trading status: DISABLED",
         "Credentials status: NOT_USED",
