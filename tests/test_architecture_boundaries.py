@@ -366,3 +366,27 @@ def test_wp94_does_not_add_new_src_files():
         f.startswith(scope + "/") or f == scope for scope in APPROVED_SRC_SCOPES
     )]
     assert new_src == [], f"WP94 must not add new src/ files outside approved scopes: {new_src}"
+
+
+# -- WP115: Hermes Candidate-Review Local Manual Export CLI Wrapper ------------
+
+
+def test_wp115_manual_export_cli_tool_exists():
+    path = ROOT / "tools" / "hermes_candidate_review_manual_export_cli.py"
+    assert path.is_file(), "WP115 CLI wrapper must exist under tools/"
+
+
+def test_wp115_does_not_add_new_src_files():
+    import subprocess
+    result = subprocess.run(
+        ["git", "diff", "origin/main...HEAD", "--name-only"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    changed = [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+    new_src = [f for f in changed if f.startswith("src/") and not any(
+        f.startswith(scope + "/") or f == scope for scope in APPROVED_SRC_SCOPES
+    )]
+    assert new_src == [], f"WP115 must not add new src/ files outside approved scopes: {new_src}"

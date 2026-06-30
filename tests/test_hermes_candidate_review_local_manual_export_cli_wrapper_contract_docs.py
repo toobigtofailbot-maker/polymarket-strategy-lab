@@ -213,22 +213,22 @@ def test_project_status_records_wp113_review_target_and_preserves_boundaries() -
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
-    assert any(wp in current_phase_line for wp in ("WP113", "WP114"))
+    assert any(wp in current_phase_line for wp in ("WP113", "WP114", "WP115"))
     assert "WP112" in merged_line
     assert "WP113" in merged_line
     assert "Hermes candidate-review local manual export CLI wrapper contract status" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
-    assert "DOCS_STATUS_TESTS_ONLY_CLI_COMMAND_SURFACE_CONTRACT_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_CLI_COMMAND_SURFACE_CONTRACT_MERGED" in text
+    assert "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_REVIEW_TARGET" in text
     for phrase in (
-        "no CLI implementation",
-        "no source/tool/runtime behavior",
+        "no source implementation under `src/`",
+        "no product/runtime network",
         "no Hermes runtime",
-        "no network",
         "no credentials",
         "no paper/live",
         "no execution/risk/order",
         "no scheduler/dashboard/bot-loop",
-        "no dependency/workflow/lock-file behavior",
+        "no dependency/workflow/lock-file",
         "Live trading status: DISABLED",
         "Credentials status: NOT_USED",
         "Execution status: NOT_STARTED",

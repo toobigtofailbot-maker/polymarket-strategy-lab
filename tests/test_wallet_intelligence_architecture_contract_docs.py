@@ -411,7 +411,13 @@ def test_only_allowed_wallet_src_files_changed() -> None:
 
 def test_no_tools_files_changed() -> None:
     changed = _changed_files()
-    assert not any(path.startswith("tools/") for path in changed)
+    allowed_tools_changes = {
+        "tools/hermes_candidate_review_manual_export_cli.py",
+    }
+    tools_changes = {path for path in changed if path.startswith("tools/")}
+    assert tools_changes <= allowed_tools_changes, (
+        f"Unexpected tools/ changes: {tools_changes - allowed_tools_changes}"
+    )
 
 
 def test_no_dependency_or_lock_files_changed() -> None:

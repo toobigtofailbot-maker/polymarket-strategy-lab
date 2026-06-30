@@ -297,11 +297,13 @@ def test_project_status_records_wp114_and_preserves_protected_boundaries() -> No
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
-    assert "WP114" in current_phase_line
+    assert any(wp in current_phase_line for wp in ("WP114", "WP115"))
     assert "WP113" in merged_line
-    assert "WP114" not in merged_line
+    assert "WP114" in merged_line
     assert "Hermes candidate-review local manual export CLI command surface contract status" in text
-    assert "DOCS_STATUS_TESTS_ONLY_CLI_COMMAND_SURFACE_CONTRACT_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_CLI_COMMAND_SURFACE_CONTRACT_MERGED" in text
+    assert "Hermes candidate-review local manual export CLI wrapper implementation status" in text
+    assert "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_REVIEW_TARGET" in text
     for phrase in (
         "Live trading status: DISABLED",
         "Credentials status: NOT_USED",
