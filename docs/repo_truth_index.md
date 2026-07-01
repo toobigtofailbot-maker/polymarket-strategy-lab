@@ -313,6 +313,14 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z118. `docs/status_entries/WP115.md` - WP115 stable committed status fragment for the Hermes candidate-review local manual export CLI wrapper implementation V1. WP115 implements only the local/offline/manual wrapper around the existing WP109 writer for strict WP108 artifact-result envelopes; no source implementation under `src/`, no product/runtime/API/account network behavior, no credentials/private state, no paper/live/execution/risk/order behavior, no scheduler/dashboard/bot-loop/runtime/daemon behavior, no Hermes runtime/provider/model/prompt runner behavior, no dependency/workflow/lock-file changes, and no committed generated-artifact behavior is added.
 
+62z119. `docs/hermes_candidate_review_local_manual_export_cli_operator_runbook.md` - WP116 docs/status/tests-only operator runbook for safe manual use of the existing WP115 local/offline/manual CLI wrapper. It records the exact command shape, strict WP108 artifact-result JSON envelope preflight, explicit local `.md`/`.txt` output path preflight, success/failure behavior, cleanup rules, human-review requirement, forbidden interpretation, and future gates. It adds no CLI modification, no source implementation, no runtime/Hermes/network/credential/paper/live/execution/scheduler/dashboard/dependency behavior, and no committed generated artifacts.
+
+62z120. `docs/hermes_candidate_review_local_manual_export_cli_smoke_receipt.md` - WP116 concise docs/status/tests-only smoke receipt for the existing WP115 CLI temp-path command path. It states that WP115 focused tests already prove pytest `tmp_path` CLI coherence and that WP116 adds no implementation or generated artifact content.
+
+62z121. `tests/test_hermes_candidate_review_local_manual_export_cli_operator_runbook_docs.py` - WP116 focused docs/status tests for the CLI operator runbook, smoke receipt, status fragment, project-status registration, repo-truth-index registration, and changed-file inventory boundary.
+
+62z122. `docs/status_entries/WP116.md` - WP116 stable committed status fragment for the Hermes candidate-review local manual export CLI operator runbook and smoke receipt V1. WP116 is docs/status/tests-only; no CLI modification, no source implementation under `src/`, no product/runtime/API/account network behavior, no credentials/private state, no paper/live/execution/risk/order behavior, no scheduler/dashboard/bot-loop/runtime/daemon behavior, no Hermes runtime/provider/model/prompt runner behavior, no dependency/workflow/lock-file changes, and no committed generated-artifact behavior is added.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
