@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp115_is_reconciled_as_merged_and_wp116_is_current_review_target_state():
+def test_wp116_is_reconciled_as_merged_and_wp117_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,12 +1397,13 @@ def test_wp115_is_reconciled_as_merged_and_wp116_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP116" in current_phase_line
+    assert "WP117" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
     assert "WP114" in merged_line
     assert "WP115" in merged_line
+    assert "WP116" in merged_line
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1414,10 +1415,13 @@ def test_wp115_is_reconciled_as_merged_and_wp116_is_current_review_target_state(
     assert "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_MERGED" in text
     assert "tools/hermes_candidate_review_manual_export_cli.py" in text
     assert "Hermes candidate-review local manual export CLI wrapper implementation status" in text
-    assert "DOCS_STATUS_TESTS_ONLY_CLI_OPERATOR_RUNBOOK_SMOKE_RECEIPT_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_CLI_OPERATOR_RUNBOOK_SMOKE_RECEIPT_MERGED" in text
     assert "docs/hermes_candidate_review_local_manual_export_cli_operator_runbook.md" in text
     assert "docs/hermes_candidate_review_local_manual_export_cli_smoke_receipt.md" in text
     assert "Hermes candidate-review local manual export CLI operator runbook and smoke receipt status" in text
+    assert "DOCS_STATUS_TESTS_ONLY_CLI_CHAIN_CLOSEOUT_RESEARCH_WORKFLOW_TRANSITION_REVIEW_TARGET" in text
+    assert "docs/hermes_candidate_review_local_manual_export_cli_chain_closeout.md" in text
+    assert "Hermes candidate-review local manual export CLI chain closeout and research-workflow transition status" in text
     for phrase in (
         "no source implementation under `src/`",
         "no product/runtime network",
