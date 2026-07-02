@@ -192,16 +192,18 @@ def test_wp116_status_fragment_inventory_and_stable_wording() -> None:
     assert fixed_live_head.search(text) is None
 
 
-def test_project_status_records_wp116_merged_and_wp117_review_target() -> None:
+def test_project_status_records_wp116_wp117_merged_and_wp118_review_target() -> None:
     text = PROJECT_STATUS.read_text(encoding="utf-8")
     current_phase_line = next(line for line in text.splitlines() if line.startswith("- Current phase:"))
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
-    assert "WP117" in current_phase_line
+    assert "WP118" in current_phase_line
     assert "WP115" in merged_line
     assert "WP116" in merged_line
+    assert "WP117" in merged_line
     assert "LOCAL_OFFLINE_MANUAL_CLI_WRAPPER_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_OPERATOR_RUNBOOK_SMOKE_RECEIPT_MERGED" in text
-    assert "DOCS_STATUS_TESTS_ONLY_CLI_CHAIN_CLOSEOUT_RESEARCH_WORKFLOW_TRANSITION_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_CLI_CHAIN_CLOSEOUT_RESEARCH_WORKFLOW_TRANSITION_MERGED" in text
+    assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_WORKFLOW_INTAKE_CONTRACT_REVIEW_TARGET" in text
 
 
 def test_repo_truth_index_registers_wp116_surfaces() -> None:
