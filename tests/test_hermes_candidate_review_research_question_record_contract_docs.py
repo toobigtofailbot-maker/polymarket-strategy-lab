@@ -211,15 +211,18 @@ def test_status_fragment_has_exact_inventory_and_stable_wording() -> None:
     assert "stable and non-self-referential" in text
 
 
-def test_project_status_records_wp120_review_target_and_wp119_merged() -> None:
+def test_project_status_records_wp120_merged_and_wp121_review_target() -> None:
     text = _read(PROJECT_STATUS)
     current_phase_line = next(line for line in text.splitlines() if line.startswith("- Current phase:"))
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
-    assert "WP120" in current_phase_line
+    assert "WP121" in current_phase_line
     assert "WP119" in merged_line
+    assert "WP120" in merged_line
     assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_WORKFLOW_RUNBOOK_MERGED" in text
-    assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_QUESTION_RECORD_CONTRACT_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_QUESTION_RECORD_CONTRACT_MERGED" in text
+    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_RESEARCH_QUESTION_RECORD_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_research_question_record_contract.md" in text
+    assert "src/data_layer/hermes_candidate_review_research_question_record.py" in text
     for phrase in (
         "Live trading status: DISABLED",
         "Credentials status: NOT_USED",
