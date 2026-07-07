@@ -200,11 +200,14 @@ def test_project_status_records_wp117_merged_or_later_review_target() -> None:
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
     assert "WP117" in current_phase_line or "WP117" in merged_line
     assert "WP118" in current_phase_line
+    assert "WP119" in current_phase_line
     assert "WP116" in merged_line
     assert "WP117" in merged_line
+    assert "WP118" in merged_line
     assert "DOCS_STATUS_TESTS_ONLY_CLI_OPERATOR_RUNBOOK_SMOKE_RECEIPT_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_CHAIN_CLOSEOUT_RESEARCH_WORKFLOW_TRANSITION_MERGED" in text
-    assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_WORKFLOW_INTAKE_CONTRACT_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_WORKFLOW_INTAKE_CONTRACT_MERGED" in text
+    assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_WORKFLOW_RUNBOOK_REVIEW_TARGET" in text
     for phrase in (
         "Live trading status: DISABLED",
         "Credentials status: NOT_USED",
