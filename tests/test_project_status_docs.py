@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp117_is_reconciled_as_merged_and_wp118_is_current_review_target_state():
+def test_wp118_is_reconciled_as_merged_and_wp119_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp117_is_reconciled_as_merged_and_wp118_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP118" in current_phase_line
+    assert "WP119" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1405,6 +1405,7 @@ def test_wp117_is_reconciled_as_merged_and_wp118_is_current_review_target_state(
     assert "WP115" in merged_line
     assert "WP116" in merged_line
     assert "WP117" in merged_line
+    assert "WP118" in merged_line
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1423,9 +1424,12 @@ def test_wp117_is_reconciled_as_merged_and_wp118_is_current_review_target_state(
     assert "DOCS_STATUS_TESTS_ONLY_CLI_CHAIN_CLOSEOUT_RESEARCH_WORKFLOW_TRANSITION_MERGED" in text
     assert "docs/hermes_candidate_review_local_manual_export_cli_chain_closeout.md" in text
     assert "Hermes candidate-review local manual export CLI chain closeout and research-workflow transition status" in text
-    assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_WORKFLOW_INTAKE_CONTRACT_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_WORKFLOW_INTAKE_CONTRACT_MERGED" in text
     assert "docs/hermes_candidate_review_research_workflow_intake_contract.md" in text
     assert "Hermes candidate-review research workflow intake contract status" in text
+    assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_WORKFLOW_RUNBOOK_REVIEW_TARGET" in text
+    assert "docs/hermes_candidate_review_research_workflow_runbook.md" in text
+    assert "Hermes candidate-review research workflow runbook status" in text
     for phrase in (
         "no source implementation under `src/`",
         "no product/runtime network",

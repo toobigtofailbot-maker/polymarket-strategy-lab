@@ -333,6 +333,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z128. `docs/status_entries/WP118.md` - WP118 stable committed status fragment for the Hermes candidate-review research workflow intake contract V1. WP118 is docs/status/tests-only; no implementation, no runtime, no automation, no Hermes execution, no trading, and no committed generated artifacts are added.
 
+62z129. `docs/hermes_candidate_review_research_workflow_runbook.md` - WP119 docs/status/tests-only Hermes candidate-review research workflow runbook V1. It documents the manual/local/offline/advisory-only operator workflow after WP118 intake and before future schemas/storage/implementation. It defines operator preconditions, manual workflow steps, neutral non-executing research-question rules, manual Hermes prompt adaptation boundaries, advisory output review boundaries, conceptual human decision categories, cleanup/repo hygiene, future gates, and non-authority posture. It authorizes no implementation, runtime, automation, Hermes execution, trading, storage, or committed generated artifacts.
+
+62z130. `tests/test_hermes_candidate_review_research_workflow_runbook_docs.py` - WP119 focused docs/status tests for the Hermes candidate-review research workflow runbook; verifies doc existence, docs/status/tests-only posture, WP118 intake-contract reference, completed WP106 -> WP117 chain context, operator preconditions, manual workflow steps, research-question allowed/forbidden families, manual Hermes prompt adaptation boundary, advisory output review boundary, conceptual human decision categories, cleanup/repo hygiene, future gates, status fragment inventory/stable wording, project-status WP119 target and WP118 merged state, repo-truth registration, and forbidden changed-file inventory exclusions.
+
+62z131. `docs/status_entries/WP119.md` - WP119 stable committed status fragment for the Hermes candidate-review research workflow runbook V1. WP119 is docs/status/tests-only; no implementation, no runtime, no automation, no Hermes execution, no trading, and no committed generated artifacts are added.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
