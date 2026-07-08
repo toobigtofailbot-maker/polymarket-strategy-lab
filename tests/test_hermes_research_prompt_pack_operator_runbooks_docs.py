@@ -679,6 +679,8 @@ def test_no_src_implementation_for_wp98() -> None:
         "src/data_layer/hermes_candidate_review_handoff_manual_export_artifact.py",
         # WP109: local/offline/manual-only explicit file writer for valid WP108 artifacts
         "src/data_layer/hermes_candidate_review_handoff_manual_export_writer.py",
+        # WP121: local/offline/read-only in-memory research question record validator
+        "src/data_layer/hermes_candidate_review_research_question_record.py",
     }
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (

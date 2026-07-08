@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp119_is_reconciled_as_merged_and_wp120_is_current_review_target_state():
+def test_wp120_is_reconciled_as_merged_and_wp121_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp119_is_reconciled_as_merged_and_wp120_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP120" in current_phase_line
+    assert "WP121" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1407,6 +1407,7 @@ def test_wp119_is_reconciled_as_merged_and_wp120_is_current_review_target_state(
     assert "WP117" in merged_line
     assert "WP118" in merged_line
     assert "WP119" in merged_line
+    assert "WP120" in merged_line
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1431,11 +1432,13 @@ def test_wp119_is_reconciled_as_merged_and_wp120_is_current_review_target_state(
     assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_WORKFLOW_RUNBOOK_MERGED" in text
     assert "docs/hermes_candidate_review_research_workflow_runbook.md" in text
     assert "Hermes candidate-review research workflow runbook status" in text
-    assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_QUESTION_RECORD_CONTRACT_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_QUESTION_RECORD_CONTRACT_MERGED" in text
     assert "docs/hermes_candidate_review_research_question_record_contract.md" in text
     assert "Hermes candidate-review research question record contract status" in text
+    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_RESEARCH_QUESTION_RECORD_REVIEW_TARGET" in text
+    assert "src/data_layer/hermes_candidate_review_research_question_record.py" in text
+    assert "Hermes candidate-review research question record implementation status" in text
     for phrase in (
-        "no source implementation under `src/`",
         "no product/runtime network",
         "no Hermes runtime",
         "no credentials",
@@ -1443,6 +1446,9 @@ def test_wp119_is_reconciled_as_merged_and_wp120_is_current_review_target_state(
         "no execution/risk/order",
         "no scheduler/dashboard/bot-loop",
         "no dependency/workflow/lock-file",
+        "no parser/loader/writer/storage path",
+        "no CLI",
+        "no report/export pipeline",
     ):
         assert phrase in text
 
