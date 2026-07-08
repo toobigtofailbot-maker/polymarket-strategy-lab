@@ -523,14 +523,16 @@ def test_exact_changed_file_inventory_excludes_protected_paths() -> None:
         assert forbidden not in inventory
 
 
-def test_project_status_records_wp120_merged_and_wp121_current_review_target() -> None:
+def test_project_status_records_wp121_merged_and_wp122_current_review_target() -> None:
     text = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
     current_phase = next(line for line in text.splitlines() if line.startswith("- Current phase:"))
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
-    assert "WP121" in current_phase
+    assert "WP122" in current_phase
     assert "WP120" in merged_line
+    assert "WP121" in merged_line
     assert "DOCS_STATUS_TESTS_ONLY_RESEARCH_QUESTION_RECORD_CONTRACT_MERGED" in text
-    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_RESEARCH_QUESTION_RECORD_REVIEW_TARGET" in text
+    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_RESEARCH_QUESTION_RECORD_MERGED" in text
+    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_ADVISORY_OUTPUT_VALIDATION_RECEIPT_REVIEW_TARGET" in text
 
 
 def test_repo_truth_index_registers_new_module_tests_and_status() -> None:
