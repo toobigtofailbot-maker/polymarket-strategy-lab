@@ -605,14 +605,15 @@ def test_module_contains_no_file_io_network_subprocess_cli_env_or_dependency_imp
     assert "output_path" not in inspect.signature(build_receipt).parameters
 
 
-def test_project_status_records_wp121_merged_and_wp122_current_review_target() -> None:
+def test_project_status_records_wp122_merged_or_later_review_target() -> None:
     text = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
     current_phase = next(line for line in text.splitlines() if line.startswith("- Current phase:"))
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
-    assert "WP122" in current_phase
+    assert "WP122" in current_phase or "WP122" in merged_line
     assert "WP121" in merged_line
+    assert "WP122" in merged_line
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_RESEARCH_QUESTION_RECORD_MERGED" in text
-    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_ADVISORY_OUTPUT_VALIDATION_RECEIPT_REVIEW_TARGET" in text
+    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_ADVISORY_OUTPUT_VALIDATION_RECEIPT_MERGED" in text
 
 
 def test_project_status_preserves_protected_boundary_statuses() -> None:
