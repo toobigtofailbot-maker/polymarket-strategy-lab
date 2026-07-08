@@ -60,6 +60,7 @@ def test_required_src_readmes_exist():
 # WP102 approves the local/offline/read-only in-memory Hermes manual research dry-run operator review at src/data_layer/hermes_manual_research_dry_run_review.py.
 # WP103 approves the local/offline/read-only in-memory Hermes candidate-review context packet integration adapter at src/data_layer/hermes_candidate_review_context_packet_integration.py.
 # WP121 approves the local/offline/read-only in-memory Hermes candidate-review research question record validator at src/data_layer/hermes_candidate_review_research_question_record.py.
+# WP122 approves the local/offline/read-only in-memory Hermes candidate-review advisory output validation receipt validator at src/data_layer/hermes_candidate_review_advisory_output_validation_receipt.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -96,6 +97,8 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/hermes_candidate_review_handoff_manual_export_writer.py",
     # WP121 approves the local/offline/read-only in-memory Hermes candidate-review research question record validator at src/data_layer/hermes_candidate_review_research_question_record.py.
     "src/data_layer/hermes_candidate_review_research_question_record.py",
+    # WP122 approves the local/offline/read-only in-memory Hermes candidate-review advisory output validation receipt validator at src/data_layer/hermes_candidate_review_advisory_output_validation_receipt.py.
+    "src/data_layer/hermes_candidate_review_advisory_output_validation_receipt.py",
 )
 
 
@@ -149,6 +152,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     in-memory candidate-review manual chain smoke helper construction.
     WP121 permits hermes_candidate_review_research_question_record.py for
     local/offline/read-only in-memory research question record validation.
+    WP122 permits hermes_candidate_review_advisory_output_validation_receipt.py
+    for local/offline/read-only in-memory advisory output receipt validation.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"

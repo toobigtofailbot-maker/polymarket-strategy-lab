@@ -405,6 +405,8 @@ def test_only_allowed_wallet_src_files_changed() -> None:
         "src/data_layer/hermes_candidate_review_handoff_manual_export_writer.py",
         # WP121: local/offline/read-only in-memory candidate-review research question record validator
         "src/data_layer/hermes_candidate_review_research_question_record.py",
+        # WP122: local/offline/read-only in-memory candidate-review advisory output validation receipt validator
+        "src/data_layer/hermes_candidate_review_advisory_output_validation_receipt.py",
     }
     assert set(src_changes) <= allowed_src_changes, (
         f"Unexpected src/ changes: {set(src_changes) - allowed_src_changes}"
