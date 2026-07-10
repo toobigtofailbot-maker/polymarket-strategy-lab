@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp125_is_reconciled_as_merged_and_wp126_is_current_review_target_state():
+def test_wp126_is_reconciled_as_merged_and_wp127_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp125_is_reconciled_as_merged_and_wp126_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP126" in current_phase_line
+    assert "WP127" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1413,6 +1413,7 @@ def test_wp125_is_reconciled_as_merged_and_wp126_is_current_review_target_state(
     assert "WP123" in merged_line
     assert "WP124" in merged_line
     assert "WP125" in merged_line
+    assert "WP126" in merged_line
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1452,9 +1453,11 @@ def test_wp125_is_reconciled_as_merged_and_wp126_is_current_review_target_state(
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_RESEARCH_SESSION_PACKAGE_MERGED" in text
     assert "src/data_layer/hermes_candidate_review_manual_research_session_package.py" in text
     assert "Hermes candidate-review manual research session package status" in text
-    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_RESEARCH_CANDIDATE_QUEUE_REVIEW_TARGET" in text
+    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_RESEARCH_CANDIDATE_QUEUE_MERGED" in text
     assert "src/data_layer/hermes_candidate_review_research_candidate_queue.py" in text
     assert "Hermes candidate-review research candidate queue status" in text
+    assert "DOCS_STATUS_TESTS_ONLY_MANUAL_LOCAL_OFFLINE_ADVISORY_QUEUE_OPERATOR_RUNBOOK_TEMP_SMOKE_REVIEW_TARGET" in text
+    assert "Hermes candidate-review research candidate queue operator runbook/temp smoke status" in text
     for phrase in (
         "no product/runtime network",
         "no Hermes runtime",
