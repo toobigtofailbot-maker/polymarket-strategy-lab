@@ -63,6 +63,7 @@ def test_required_src_readmes_exist():
 # WP122 approves the local/offline/read-only in-memory Hermes candidate-review advisory output validation receipt validator at src/data_layer/hermes_candidate_review_advisory_output_validation_receipt.py.
 # WP123 approves the local/offline/read-only in-memory Hermes candidate-review human decision and follow-up record validator at src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py.
 # WP124 approves the local/offline/read-only in-memory Hermes candidate-review manual research session package validator at src/data_layer/hermes_candidate_review_manual_research_session_package.py.
+# WP126 approves the local/offline/read-only in-memory Hermes candidate-review research candidate queue validator at src/data_layer/hermes_candidate_review_research_candidate_queue.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -105,6 +106,8 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py",
     # WP124 approves the local/offline/read-only in-memory Hermes candidate-review manual research session package validator.
     "src/data_layer/hermes_candidate_review_manual_research_session_package.py",
+    # WP126 approves the local/offline/read-only in-memory research candidate queue validator.
+    "src/data_layer/hermes_candidate_review_research_candidate_queue.py",
 )
 
 
@@ -165,6 +168,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     record validation.
     WP124 permits hermes_candidate_review_manual_research_session_package.py
     for local/offline/read-only in-memory manual research session package validation.
+    WP126 permits hermes_candidate_review_research_candidate_queue.py for
+    local/offline/read-only in-memory research candidate queue validation.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
