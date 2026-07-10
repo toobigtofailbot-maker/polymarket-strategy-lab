@@ -369,6 +369,14 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z146. `docs/status_entries/WP124.md` - WP124 stable committed status fragment for the Hermes candidate-review manual research session package builder V1. WP124 is a Tier 2 bundled local/offline/manual implementation packet adding one in-memory stdlib-only validator module, focused tests, and repo-truth/status reconciliation only.
 
+62z147. `docs/hermes_candidate_review_manual_research_session_package_operator_runbook.md` - WP125 manual/local/offline/advisory-only operator runbook for the completed WP121 -> WP122 -> WP123 -> WP124 in-memory record/session chain; documents synthetic fixture, human-review, repo-hygiene, forbidden-interpretation, and future-gate boundaries.
+
+62z148. `tests/test_hermes_candidate_review_manual_research_session_package_operator_runbook_docs.py` - WP125 focused documentation test for the operator runbook and its explicit non-authority boundaries.
+
+62z149. `tests/test_hermes_candidate_review_manual_research_session_package_temp_smoke.py` - WP125 temp-only synthetic smoke test exercising the existing WP121-WP124 builders in memory, including fail-closed no-echo trap coverage and an empty pytest `tmp_path` assertion.
+
+62z150. `docs/status_entries/WP125.md` - WP125 stable committed status fragment for the docs/status/tests plus temp-only smoke package; no source, runtime, persistence, export/report, CLI, network, credential, automation, or trading authority.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.

@@ -213,7 +213,7 @@ def test_project_status_records_wp113_review_target_and_preserves_boundaries() -
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
-    assert any(wp in current_phase_line for wp in ("WP113", "WP114", "WP115", "WP116", "WP117"))
+    assert any(wp in current_phase_line for wp in ("WP113", "WP114", "WP115", "WP116", "WP117", "WP125"))
     assert "WP112" in merged_line
     assert "WP113" in merged_line
     assert "Hermes candidate-review local manual export CLI wrapper contract status" in text

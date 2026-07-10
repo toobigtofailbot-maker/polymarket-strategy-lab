@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp123_is_reconciled_as_merged_and_wp124_is_current_review_target_state():
+def test_wp124_is_reconciled_as_merged_and_wp125_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp123_is_reconciled_as_merged_and_wp124_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP124" in current_phase_line
+    assert "WP125" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1411,6 +1411,7 @@ def test_wp123_is_reconciled_as_merged_and_wp124_is_current_review_target_state(
     assert "WP121" in merged_line
     assert "WP122" in merged_line
     assert "WP123" in merged_line
+    assert "WP124" in merged_line
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1447,7 +1448,7 @@ def test_wp123_is_reconciled_as_merged_and_wp124_is_current_review_target_state(
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_HUMAN_DECISION_FOLLOW_UP_RECORD_MERGED" in text
     assert "src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py" in text
     assert "Hermes candidate-review human decision and follow-up record status" in text
-    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_RESEARCH_SESSION_PACKAGE_REVIEW_TARGET" in text
+    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_RESEARCH_SESSION_PACKAGE_MERGED" in text
     assert "src/data_layer/hermes_candidate_review_manual_research_session_package.py" in text
     assert "Hermes candidate-review manual research session package status" in text
     for phrase in (
