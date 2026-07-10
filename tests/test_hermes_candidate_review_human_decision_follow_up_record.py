@@ -693,7 +693,7 @@ def test_project_status_records_wp122_merged_and_wp123_current_review_target() -
     assert "WP123" in current_phase
     assert "WP122" in merged_line
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_ADVISORY_OUTPUT_VALIDATION_RECEIPT_MERGED" in text
-    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_HUMAN_DECISION_FOLLOW_UP_RECORD_REVIEW_TARGET" in text
+    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_HUMAN_DECISION_FOLLOW_UP_RECORD_MERGED" in text
 
 
 def test_repo_truth_index_registers_wp123_surfaces() -> None:

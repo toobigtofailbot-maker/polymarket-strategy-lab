@@ -363,6 +363,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z143. `docs/status_entries/WP123.md` - WP123 stable committed status fragment for the Hermes candidate-review human decision and follow-up record packet V1. WP123 is a Tier 2 bundled local/offline/manual implementation packet adding one in-memory stdlib-only validator module, focused tests, and repo-truth/status reconciliation only; no runtime, automation, Hermes execution, trading, parser/loader/writer/storage, CLI, report/export pipeline, dependency, workflow, or committed generated artifacts are added.
 
+62z144. `src/data_layer/hermes_candidate_review_manual_research_session_package.py` - WP124 stdlib-only local/offline/read-only in-memory Hermes candidate-review manual research session package validator/build/assert module. It combines explicit caller-supplied research question, advisory receipt, human decision, and manual follow-up task records; enforces required fields, nested shapes, allowed session labels, exact safety flags, human review, non-authority notice safety, recursive raw/free-form metadata rejection, recursive forbidden-content rejection, fail-closed empty invalid packages, and no unsafe echo. It adds no parser, loader, writer, storage, CLI, report/export pipeline, Hermes runtime/provider/model/prompt runner, network, credentials/private state, paper/live/execution/risk/order behavior, automation, dependency/workflow/lock-file changes, or committed generated artifacts.
+
+62z145. `tests/test_hermes_candidate_review_manual_research_session_package.py` - WP124 focused validator tests covering stdlib-only imports, valid packages, all labels, required fields and shapes, exact human-review and safety flags, notice safety, sanitized outputs, build/assert behavior, result fields, recursive forbidden terms and raw metadata, nested reviewer traps, fail-closed neutral diagnostics, and no unsafe echo.
+
+62z146. `docs/status_entries/WP124.md` - WP124 stable committed status fragment for the Hermes candidate-review manual research session package builder V1. WP124 is a Tier 2 bundled local/offline/manual implementation packet adding one in-memory stdlib-only validator module, focused tests, and repo-truth/status reconciliation only.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
