@@ -342,6 +342,8 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         "src/data_layer/hermes_candidate_review_advisory_output_validation_receipt.py",
         # WP123: local/offline/read-only in-memory human decision and follow-up record validator
         "src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py",
+        # WP124: local/offline/read-only in-memory manual research session package validator
+        "src/data_layer/hermes_candidate_review_manual_research_session_package.py",
         # WP110: docs/status/tests-only operator runbook for manual WP109 writer use
         "docs/hermes_candidate_review_local_manual_export_operator_runbook.md",
         # WP116: docs/status/tests-only operator runbook for manual WP115 CLI use
