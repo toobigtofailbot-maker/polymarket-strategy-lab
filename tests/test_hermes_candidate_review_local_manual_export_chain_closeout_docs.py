@@ -182,7 +182,7 @@ def test_project_status_records_wp112_and_preserves_boundaries() -> None:
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
-    assert any(wp in current_phase_line for wp in ("WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP125"))
+    assert any(wp in current_phase_line for wp in ("WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP125", "WP128"))
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line

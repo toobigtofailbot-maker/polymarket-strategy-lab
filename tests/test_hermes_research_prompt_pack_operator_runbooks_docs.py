@@ -687,6 +687,8 @@ def test_no_src_implementation_for_wp98() -> None:
         "src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py",
         # WP124: local/offline/read-only in-memory manual research session package validator
         "src/data_layer/hermes_candidate_review_manual_research_session_package.py",
+        # WP128: explicit-human-selection-only in-memory queue selection/question handoff validator
+        "src/data_layer/hermes_candidate_review_manual_queue_selection_handoff.py",
     }
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (

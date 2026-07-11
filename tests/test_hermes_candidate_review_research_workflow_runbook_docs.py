@@ -218,7 +218,7 @@ def test_project_status_records_wp120_merged_and_wp121_review_target() -> None:
     text = _read(PROJECT_STATUS)
     current_phase_line = next(line for line in text.splitlines() if line.startswith("- Current phase:"))
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
-    assert "WP121" in current_phase_line
+    assert any(wp in current_phase_line for wp in ("WP121", "WP128"))
     assert "WP118" in merged_line
     assert "WP119" in merged_line
     assert "WP120" in merged_line
