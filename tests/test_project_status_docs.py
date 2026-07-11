@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp127_is_reconciled_as_merged_and_wp128_is_current_review_target_state():
+def test_wp128_is_reconciled_as_merged_and_wp129_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp127_is_reconciled_as_merged_and_wp128_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP128" in current_phase_line
+    assert "WP129" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1415,6 +1415,7 @@ def test_wp127_is_reconciled_as_merged_and_wp128_is_current_review_target_state(
     assert "WP125" in merged_line
     assert "WP126" in merged_line
     assert "WP127" in merged_line
+    assert "WP128" in merged_line
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text

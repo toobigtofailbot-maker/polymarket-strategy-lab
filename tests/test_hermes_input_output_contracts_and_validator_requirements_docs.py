@@ -358,6 +358,8 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         "docs/hermes_candidate_review_research_candidate_queue_operator_runbook.md",
         # WP128: explicit-human-selection-only in-memory queue selection/question handoff validator
         "src/data_layer/hermes_candidate_review_manual_queue_selection_handoff.py",
+        # WP129: docs/status/tests-only manual queue-selection-to-question chain runbook
+        "docs/hermes_candidate_review_manual_queue_selection_research_question_chain_operator_runbook.md",
     }
     findings = []
     for path in tracked:
