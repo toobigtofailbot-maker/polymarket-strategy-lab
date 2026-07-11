@@ -278,7 +278,7 @@ def test_project_status_records_wp105_and_preserves_boundaries() -> None:
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP125", "WP128"))
+    assert any(wp in current_phase_line for wp in ("WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP125", "WP128", "WP130"))
     assert "Hermes candidate-review operator handoff contract status" in text
     for phrase in (
         "Live trading status: DISABLED",
