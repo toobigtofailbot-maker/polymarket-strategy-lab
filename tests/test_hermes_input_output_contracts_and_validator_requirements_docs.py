@@ -354,6 +354,8 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         "docs/hermes_candidate_review_manual_research_session_package_operator_runbook.md",
         # WP126: local/offline/read-only in-memory research candidate queue validator
         "src/data_layer/hermes_candidate_review_research_candidate_queue.py",
+        # WP127: docs/status/tests-only operator runbook for manual WP126 queue use
+        "docs/hermes_candidate_review_research_candidate_queue_operator_runbook.md",
     }
     findings = []
     for path in tracked:

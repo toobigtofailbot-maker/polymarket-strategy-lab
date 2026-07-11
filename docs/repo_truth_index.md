@@ -383,6 +383,14 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z153. `docs/status_entries/WP126.md` - WP126 stable committed status fragment for the Tier 2 local/offline/manual in-memory research candidate queue implementation packet.
 
+62z154. `docs/hermes_candidate_review_research_candidate_queue_operator_runbook.md` - WP127 manual/local/offline/advisory-only operator runbook for safe explicit in-memory use of the merged WP126 candidate item and non-empty queue package contract; documents synthetic fixture, human-review, cleanup, forbidden-interpretation, and future-gate boundaries.
+
+62z155. `tests/test_hermes_candidate_review_research_candidate_queue_operator_runbook_docs.py` - WP127 focused documentation test for the queue operator runbook structure and explicit non-authority boundaries.
+
+62z156. `tests/test_hermes_candidate_review_research_candidate_queue_temp_smoke.py` - WP127 temp-only synthetic smoke test for a valid WP126 candidate item and non-empty queue package, fail-closed no-echo trap behavior, exact safety flags, and an empty pytest `tmp_path`.
+
+62z157. `docs/status_entries/WP127.md` - WP127 stable committed status fragment for the docs/status/tests plus temp-only smoke package; no source, runtime, persistence, export/report, CLI, automation, discovery, ingestion, scoring/ranking, credential, or trading authority.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
