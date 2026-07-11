@@ -356,6 +356,8 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         "src/data_layer/hermes_candidate_review_research_candidate_queue.py",
         # WP127: docs/status/tests-only operator runbook for manual WP126 queue use
         "docs/hermes_candidate_review_research_candidate_queue_operator_runbook.md",
+        # WP128: explicit-human-selection-only in-memory queue selection/question handoff validator
+        "src/data_layer/hermes_candidate_review_manual_queue_selection_handoff.py",
     }
     findings = []
     for path in tracked:

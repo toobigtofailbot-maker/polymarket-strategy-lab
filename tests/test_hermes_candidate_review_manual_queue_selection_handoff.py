@@ -166,6 +166,53 @@ def test_notice_requirements_and_permission_grants():
         assert validate_candidate_review_manual_queue_selection_record(data).errors == ("INVALID_NON_AUTHORITY_NOTICE",)
 
 
+def test_canonical_notice_and_required_negative_fragments_remain_valid_in_notice_context():
+    selected = validate_candidate_review_manual_queue_selection_record(selection())
+    handed = validate_candidate_review_research_question_handoff(handoff())
+    assert selected.is_valid and selected.selection_record["non_authority_notice"] == NOTICE
+    assert handed.is_valid and handed.handoff_record["non_authority_notice"] == NOTICE
+    for fragment in (
+        "not automated selection", "not scoring or ranking", "not priority calculation",
+        "not market data ingestion", "not research-question generation", "not execution",
+        "not prompt execution", "not storage or writer", "not export or report",
+    ):
+        assert fragment in NOTICE.lower()
+
+
+@pytest.mark.parametrize("unsafe", [
+    "buy", "sell", "trade ready", "private key", "provider", "Hermes runtime",
+    "automated selection", "priority score", "market data ingestion", "parser",
+    "file writer", "storage path", "exporter", "CLI command", "recommended candidate", TRAP,
+])
+@pytest.mark.parametrize("factory,validator,record_field,neutral_field", [
+    (selection, validate_candidate_review_manual_queue_selection_record, "selection_record", "selection_label"),
+    (handoff, validate_candidate_review_research_question_handoff, "handoff_record", "research_question_type"),
+])
+def test_appended_unsafe_notice_fails_closed_without_echo(
+    unsafe, factory, validator, record_field, neutral_field
+):
+    data = factory(); data["non_authority_notice"] = NOTICE + " " + unsafe
+    result = validator(data)
+    assert not result.is_valid
+    assert result.errors == ("INVALID_NON_AUTHORITY_NOTICE",)
+    assert getattr(result, record_field) == {}
+    assert result.safety_flags == {}
+    assert getattr(result, neutral_field) is None
+    assert unsafe not in repr(result)
+
+
+def test_unsafe_notice_assert_helpers_are_exactly_neutral():
+    selected = selection(); selected["non_authority_notice"] = NOTICE + " " + TRAP
+    with pytest.raises(ValueError, match="^INVALID_MANUAL_QUEUE_SELECTION_RECORD$") as exc:
+        assert_candidate_review_manual_queue_selection_record(selected)
+    assert TRAP not in str(exc.value)
+
+    handed = handoff(); handed["non_authority_notice"] = NOTICE + " " + TRAP
+    with pytest.raises(ValueError, match="^INVALID_RESEARCH_QUESTION_HANDOFF$") as exc:
+        assert_candidate_review_research_question_handoff(handed)
+    assert TRAP not in str(exc.value)
+
+
 @pytest.mark.parametrize("term", [
     "buy", "stop loss", "fair value", "merge ready", "private key", "provider",
     "automated selection", "market data ingestion", "priority score", "rank", "score",

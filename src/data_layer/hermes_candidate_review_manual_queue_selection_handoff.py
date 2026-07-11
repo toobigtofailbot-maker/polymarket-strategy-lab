@@ -188,6 +188,24 @@ def _copy_value(value: Any) -> Any:
     return value
 
 
+def _validate_non_authority_notice(value: object) -> bool:
+    """Allow required negations while rejecting forbidden notice remainder."""
+    if not isinstance(value, str) or not value.strip():
+        return False
+    normalized_notice = _normalize(value)
+    normalized_fragments = tuple(_normalize(fragment) for fragment in _NOTICE_FRAGMENTS)
+    if any(fragment not in normalized_notice for fragment in normalized_fragments):
+        return False
+    if any(phrase in normalized_notice for phrase in _PERMISSION_PHRASES):
+        return False
+
+    remainder = normalized_notice
+    for fragment in sorted(normalized_fragments, key=len, reverse=True):
+        remainder = remainder.replace(fragment, " ")
+    remainder = _normalize(remainder)
+    return not any(term in remainder for term in _FORBIDDEN_TERMS)
+
+
 def _common(data: Mapping[str, Any], fields: tuple[str, ...]) -> str | None:
     error = _scan(data)
     if error:
@@ -205,13 +223,7 @@ def _common(data: Mapping[str, Any], fields: tuple[str, ...]) -> str | None:
         return "INVALID_SAFETY_FLAG"
     if any(flags.get(flag) is not True for flag in REQUIRED_MANUAL_QUEUE_SELECTION_SAFETY_FLAGS):
         return "INVALID_SAFETY_FLAG"
-    notice = data["non_authority_notice"]
-    if not isinstance(notice, str) or not notice.strip():
-        return "INVALID_NON_AUTHORITY_NOTICE"
-    normalized_notice = _normalize(notice)
-    if any(phrase in normalized_notice for phrase in _PERMISSION_PHRASES):
-        return "INVALID_NON_AUTHORITY_NOTICE"
-    if any(_normalize(fragment) not in normalized_notice for fragment in _NOTICE_FRAGMENTS):
+    if not _validate_non_authority_notice(data["non_authority_notice"]):
         return "INVALID_NON_AUTHORITY_NOTICE"
     return None
 
