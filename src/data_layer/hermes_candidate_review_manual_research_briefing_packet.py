@@ -48,6 +48,18 @@ REQUIRED_RESEARCH_BRIEFING_PACKET_SAFETY_FLAGS = (
     "no_scheduler_or_background_authority",
 )
 
+_REQUIRED_SCALAR_FIELDS = (
+    "briefing_id", "source_wp_context", "source_research_question_record_reference",
+    "selected_candidate_reference", "research_question", "research_question_type",
+    "resolution_rule_context", "evidence_gap_summary", "uncertainty_summary",
+    "known_missing_data", "limitations", "operator_research_instructions",
+    "operator_next_manual_step", "created_by_operator_note", "non_authority_notice",
+)
+_REQUIRED_SEQUENCE_FIELDS = (
+    "source_references_to_inspect", "falsification_checks_to_perform",
+    "required_response_sections",
+)
+
 _RAW_KEYS = frozenset({
     "raw_metadata", "free_form_metadata", "caller_metadata", "arbitrary_metadata", "raw_input",
     "untrusted_input", "notes_raw", "warnings_raw", "reason_text_raw", "custom", "extras",
@@ -178,14 +190,27 @@ def validate_candidate_review_manual_research_briefing_packet(
         return _invalid("UNSUPPORTED_INPUT_SHAPE")
     if any(key not in REQUIRED_RESEARCH_BRIEFING_PACKET_FIELDS for key in packet_data):
         return _invalid("UNKNOWN_FIELD")
+    for field in REQUIRED_RESEARCH_BRIEFING_PACKET_FIELDS:
+        if field not in packet_data:
+            return _invalid("MISSING_REQUIRED_FIELD")
+    if any(
+        not isinstance(packet_data[field], str) or not packet_data[field].strip()
+        for field in _REQUIRED_SCALAR_FIELDS
+    ):
+        return _invalid("INVALID_REQUIRED_FIELD")
+    if any(
+        not isinstance(packet_data[field], (list, tuple))
+        or not packet_data[field]
+        or any(not isinstance(item, str) or not item.strip() for item in packet_data[field])
+        for field in _REQUIRED_SEQUENCE_FIELDS
+    ):
+        return _invalid("INVALID_REQUIRED_FIELD")
     error = _scan(packet_data)
     if error:
         return _invalid(error)
     for field in REQUIRED_RESEARCH_BRIEFING_PACKET_FIELDS:
-        if field not in packet_data:
-            return _invalid("MISSING_REQUIRED_FIELD")
         value = packet_data[field]
-        if value is None or (isinstance(value, str) and not value.strip()):
+        if value is None:
             return _invalid("INVALID_REQUIRED_FIELD")
     label = packet_data["briefing_label"]
     if not isinstance(label, str) or label not in ALLOWED_RESEARCH_BRIEFING_PACKET_LABELS:

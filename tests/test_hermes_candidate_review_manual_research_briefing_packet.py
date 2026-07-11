@@ -107,6 +107,59 @@ def test_null_and_blank_scalar_fields_rejected(value):
     data = packet(); data["briefing_id"] = value; invalid(data)
 
 
+SCALAR_FIELDS = (
+    "briefing_id", "source_wp_context", "source_research_question_record_reference",
+    "selected_candidate_reference", "research_question", "research_question_type",
+    "resolution_rule_context", "evidence_gap_summary", "uncertainty_summary",
+    "known_missing_data", "limitations", "operator_research_instructions",
+    "operator_next_manual_step", "created_by_operator_note", "non_authority_notice",
+)
+SEQUENCE_FIELDS = (
+    "source_references_to_inspect", "falsification_checks_to_perform",
+    "required_response_sections",
+)
+
+
+@pytest.mark.parametrize("field", SCALAR_FIELDS)
+@pytest.mark.parametrize("value", [
+    7, 1.5, True, False, [], (), {}, ["text"], {"a": "b"}, b"text",
+])
+def test_every_scalar_field_rejects_non_string_shapes(field, value):
+    data = packet(); data[field] = value
+    assert invalid(data).errors == ("INVALID_REQUIRED_FIELD",)
+
+
+@pytest.mark.parametrize("field", SEQUENCE_FIELDS)
+@pytest.mark.parametrize("value", [
+    [], (), "single string", 7, {}, [" "], [7], [True], [{}], [["nested"]],
+    ["safe", {}],
+])
+def test_every_sequence_field_rejects_invalid_shapes_and_elements(field, value):
+    data = packet(); data[field] = value
+    assert invalid(data).errors == ("INVALID_REQUIRED_FIELD",)
+
+
+@pytest.mark.parametrize("field", SEQUENCE_FIELDS)
+@pytest.mark.parametrize("container", [list, tuple])
+def test_every_sequence_field_accepts_nonempty_string_list_or_tuple(field, container):
+    data = packet()
+    values = ["QUESTION_RESTATEMENT"] if field == "required_response_sections" else ["safe text"]
+    data[field] = container(values)
+    result = validate_candidate_review_manual_research_briefing_packet(data)
+    assert result.is_valid
+    assert result.briefing_packet[field] == container(values)
+
+
+@pytest.mark.parametrize("field", SCALAR_FIELDS)
+@pytest.mark.parametrize("payload", [
+    {"generated_response": "safe answer"}, {"response": "safe answer"},
+    {"conclusion": "safe"}, {"finding": "safe"},
+])
+def test_nested_response_payloads_in_scalar_fields_fail_by_schema_shape(field, payload):
+    data = packet(); data[field] = payload
+    assert invalid(data).errors == ("INVALID_REQUIRED_FIELD",)
+
+
 @pytest.mark.parametrize("value", [None, [], (), "packet", 7, True])
 def test_unsupported_top_level_shapes_rejected(value):
     invalid(value)
