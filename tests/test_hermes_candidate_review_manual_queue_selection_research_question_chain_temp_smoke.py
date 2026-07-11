@@ -79,21 +79,6 @@ def _handoff():
             "safety_flags": _flags(REQUIRED_MANUAL_QUEUE_SELECTION_SAFETY_FLAGS)}
 
 
-def _wp121(handoff):
-    return {"record_id": "synthetic-rq-129", "source_wp_context": {"intake_wp": "WP126", "runbook_wp": "WP129", "contract_wp": "WP121"},
-            "selected_candidate_reference": {"candidate_id": handoff["selected_candidate_reference"], "source_artifact": "synthetic-in-memory-handoff"},
-            "intake_basis": _flags(REQUIRED_RESEARCH_QUESTION_PREFLIGHT_FLAGS), "research_question": handoff["proposed_research_question"],
-            "research_question_type": handoff["proposed_research_question_type"], "evidence_references_to_check": handoff["evidence_references_to_check"],
-            "uncertainty_notes": [handoff["uncertainty_notes"]], "known_missing_data": [handoff["known_missing_data"]],
-            "limitations": [handoff["limitations"]], "falsification_checks_to_perform": handoff["falsification_checks_to_perform"],
-            "forbidden_interpretation_flags": {"not_a_signal": True, "not_authority": True}, "human_review_required": True,
-            "next_manual_step": "Manually inspect the synthetic source", "created_by_operator_note": "Prepared by human operator",
-            "non_authority_notice": ("Advisory-only manual local offline planning record. It is not a trade signal, not strategy promotion, "
-                "not paper readiness, not live readiness, not execution authority, not risk authority, not order authority, not PR approval, "
-                "not merge readiness, not credential permission, not account access, not private-state permission, not Hermes runtime authority, "
-                "and not prompt runner authority."), "safety_flags": _flags(REQUIRED_RESEARCH_QUESTION_NON_AUTHORITY_FLAGS)}
-
-
 def test_positive_manual_chain_stays_in_memory_and_advisory(tmp_path) -> None:
     item = build_candidate_review_research_candidate_queue_item(_item()); assert item.is_valid
     queue_data = {"queue_id": "synthetic-queue-129", "source_wp_context": "WP126 synthetic queue contract",
@@ -106,7 +91,34 @@ def test_positive_manual_chain_stays_in_memory_and_advisory(tmp_path) -> None:
     assert not ({"priority_score", "rank", "score"} & set(selected.selection_record))
     handed = build_candidate_review_research_question_handoff(_handoff()); assert handed.is_valid
     assert handed.handoff_record["proposed_research_question"] == QUESTION
-    final = build_candidate_review_research_question_record(_wp121(handed.handoff_record)); assert final.is_valid
+    wp121_record = {
+        "record_id": "synthetic-rq-129",
+        "source_wp_context": {"intake_wp": "WP126", "runbook_wp": "WP129", "contract_wp": "WP121"},
+        "selected_candidate_reference": {
+            "candidate_id": handed.handoff_record["selected_candidate_reference"],
+            "source_artifact": "synthetic-in-memory-handoff",
+        },
+        "intake_basis": _flags(REQUIRED_RESEARCH_QUESTION_PREFLIGHT_FLAGS),
+        "research_question": handed.handoff_record["proposed_research_question"],
+        "research_question_type": handed.handoff_record["proposed_research_question_type"],
+        "evidence_references_to_check": handed.handoff_record["evidence_references_to_check"],
+        "uncertainty_notes": [handed.handoff_record["uncertainty_notes"]],
+        "known_missing_data": [handed.handoff_record["known_missing_data"]],
+        "limitations": [handed.handoff_record["limitations"]],
+        "falsification_checks_to_perform": handed.handoff_record["falsification_checks_to_perform"],
+        "forbidden_interpretation_flags": {"not_a_signal": True, "not_authority": True},
+        "human_review_required": True,
+        "next_manual_step": "Manually inspect the synthetic source",
+        "created_by_operator_note": "Prepared by human operator",
+        "non_authority_notice": (
+            "Advisory-only manual local offline planning record. It is not a trade signal, not strategy promotion, "
+            "not paper readiness, not live readiness, not execution authority, not risk authority, not order authority, "
+            "not PR approval, not merge readiness, not credential permission, not account access, not private-state "
+            "permission, not Hermes runtime authority, and not prompt runner authority."
+        ),
+        "safety_flags": _flags(REQUIRED_RESEARCH_QUESTION_NON_AUTHORITY_FLAGS),
+    }
+    final = build_candidate_review_research_question_record(wp121_record); assert final.is_valid
     for record in (queue.queue_package, selected.selection_record, handed.handoff_record, final.record):
         assert record["human_review_required"] is True
         assert "advisory" in record["non_authority_notice"].lower()
@@ -128,7 +140,34 @@ def test_reviewer_traps_fail_closed_neutrally_and_create_nothing(tmp_path) -> No
         unsafe = _handoff(); unsafe[field] = (_wp128_notice() + " " + TRAP) if field == "non_authority_notice" else TRAP
         result = build_candidate_review_research_question_handoff(unsafe)
         assert not result.is_valid and TRAP not in repr(result)
-    unsafe_final = _wp121(_handoff()); unsafe_final["research_question"] = TRAP
+    handoff_record = _handoff()
+    unsafe_final = {
+        "record_id": "synthetic-rq-129-unsafe",
+        "source_wp_context": {"intake_wp": "WP126", "runbook_wp": "WP129", "contract_wp": "WP121"},
+        "selected_candidate_reference": {
+            "candidate_id": handoff_record["selected_candidate_reference"],
+            "source_artifact": "synthetic-in-memory-handoff",
+        },
+        "intake_basis": _flags(REQUIRED_RESEARCH_QUESTION_PREFLIGHT_FLAGS),
+        "research_question": TRAP,
+        "research_question_type": handoff_record["proposed_research_question_type"],
+        "evidence_references_to_check": handoff_record["evidence_references_to_check"],
+        "uncertainty_notes": [handoff_record["uncertainty_notes"]],
+        "known_missing_data": [handoff_record["known_missing_data"]],
+        "limitations": [handoff_record["limitations"]],
+        "falsification_checks_to_perform": handoff_record["falsification_checks_to_perform"],
+        "forbidden_interpretation_flags": {"not_a_signal": True, "not_authority": True},
+        "human_review_required": True,
+        "next_manual_step": "Manually inspect the synthetic source",
+        "created_by_operator_note": "Prepared by human operator",
+        "non_authority_notice": (
+            "Advisory-only manual local offline planning record. It is not a trade signal, not strategy promotion, "
+            "not paper readiness, not live readiness, not execution authority, not risk authority, not order authority, "
+            "not PR approval, not merge readiness, not credential permission, not account access, not private-state "
+            "permission, not Hermes runtime authority, and not prompt runner authority."
+        ),
+        "safety_flags": _flags(REQUIRED_RESEARCH_QUESTION_NON_AUTHORITY_FLAGS),
+    }
     result = build_candidate_review_research_question_record(unsafe_final)
     assert not result.is_valid and result.record == {} and TRAP not in repr(result)
     for helper, data in ((assert_candidate_review_manual_queue_selection_record, {**_selection(), "selected_candidate_reference": TRAP}),
@@ -142,8 +181,25 @@ def test_reviewer_traps_fail_closed_neutrally_and_create_nothing(tmp_path) -> No
 
 def test_no_adapter_priority_or_recommendation_surface_exists() -> None:
     tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
-    function_names = {node.name.lower() for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)}
-    assert not any(name.startswith(("convert", "adapt", "auto_select")) for name in function_names)
+    functions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
+    private_helpers = {node.name for node in functions if not node.name.startswith("test_")}
+    assert private_helpers == {"_flags", "_queue_notice", "_wp128_notice", "_item", "_selection", "_handoff"}
+    forbidden_names = ("wp121", "convert", "adapt", "adapter", "bridge", "transfer", "mapping", "map_handoff")
+    assert not any(term in node.name.lower() for node in functions if not node.name.startswith("test_") for term in forbidden_names)
+    wp121_keys = {"record_id", "research_question", "research_question_type", "selected_candidate_reference"}
+    for helper in (node for node in functions if not node.name.startswith("test_")):
+        for dictionary in (node for node in ast.walk(helper) if isinstance(node, ast.Dict)):
+            literal_keys = {key.value for key in dictionary.keys if isinstance(key, ast.Constant) and isinstance(key.value, str)}
+            assert not wp121_keys <= literal_keys
+    imports = [node for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)]
+    assert {node.module for node in imports} == {
+        "pathlib",
+        "src.data_layer.hermes_candidate_review_manual_queue_selection_handoff",
+        "src.data_layer.hermes_candidate_review_research_candidate_queue",
+        "src.data_layer.hermes_candidate_review_research_question_record",
+    }
+    imported_names = {alias.name.lower() for node in imports for alias in node.names}
+    assert not any(term in name for name in imported_names for term in ("adapter", "convert", "bridge", "transfer", "map_handoff"))
     ordered = [_selection(), {**_selection(), "selection_id": "second"}]
     assert [entry["selection_id"] for entry in ordered] == ["synthetic-selection-129", "second"]
     outputs = repr([build_candidate_review_manual_queue_selection_record(entry) for entry in ordered]).lower()
