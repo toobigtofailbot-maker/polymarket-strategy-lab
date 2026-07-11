@@ -690,7 +690,7 @@ def test_project_status_records_wp122_merged_and_wp123_current_review_target() -
     text = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
     current_phase = next(line for line in text.splitlines() if line.startswith("- Current phase:"))
     merged_line = next(line for line in text.splitlines() if line.startswith("- Merged WPs:"))
-    assert any(wp in current_phase for wp in ("WP123", "WP128"))
+    assert any(wp in current_phase for wp in ("WP123", "WP128", "WP130"))
     assert "WP122" in merged_line
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_ADVISORY_OUTPUT_VALIDATION_RECEIPT_MERGED" in text
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_HUMAN_DECISION_FOLLOW_UP_RECORD_MERGED" in text

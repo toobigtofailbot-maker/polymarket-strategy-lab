@@ -463,7 +463,7 @@ def test_project_status_wp45_current_phase():
     )
     assert phase_line is not None, "docs/project_status.md must have a Current phase line"
     # WP45 is merged; current phase is WP46 or later
-    assert any(f"WP{n}" in phase_line for n in range(46, 129)), (
+    assert any(f"WP{n}" in phase_line for n in range(46, 131)), (
         "docs/project_status.md Current phase must show a WP after WP45 merge "
         f"(got: {phase_line!r})"
     )
