@@ -310,9 +310,11 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         "src/data_layer/hermes_candidate_review_manual_research_response.py",
         # WP129: docs/status/tests-only manual queue-selection-to-question chain runbook
         "docs/hermes_candidate_review_manual_queue_selection_research_question_chain_operator_runbook.md",
-        # WP131: docs/status/tests-only manual research briefing packet runbook
-        "docs/hermes_candidate_review_manual_research_briefing_packet_operator_runbook.md",
-    }
+            # WP131: docs/status/tests-only manual research briefing packet runbook
+            "docs/hermes_candidate_review_manual_research_briefing_packet_operator_runbook.md",
+            # WP134: docs/status/tests-only manual research response operator runbook
+            "docs/hermes_candidate_review_manual_research_response_operator_runbook.md",
+        }
     findings = []
     for path in tracked:
         normalized = path.replace("\\", "/")
