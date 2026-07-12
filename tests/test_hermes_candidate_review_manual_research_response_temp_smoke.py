@@ -1,4 +1,5 @@
 import ast
+import copy
 from pathlib import Path
 
 import pytest
@@ -55,12 +56,15 @@ def _record() -> dict[str, object]:
         "selected_candidate_reference": "synthetic-candidate-reference", "response_label": "RESPONSE_COMPLETE_PENDING_HUMAN_REVIEW",
         "research_question": "What synthetic public condition would resolve this exercise?", "research_question_type": "synthetic resolution rules",
         "question_restatement": "Inspect the synthetic condition.", "source_summary": "Caller recorded synthetic source text.",
-        "resolution_rule_analysis": "Caller recorded synthetic rule analysis.", "evidence_for": ["Synthetic item A supports the condition."],
+        "resolution_rule_analysis": "Caller recorded synthetic rule analysis.", "evidence_for": [
+            "Synthetic item A supports the condition.",
+            "Synthetic item C independently supports the condition.",
+        ],
         "evidence_against": ["Synthetic item B disputes the condition."], "source_conflicts": ["Synthetic items use different dates."],
         "uncertainties": ["A synthetic update remains unavailable."], "known_missing_data": ["A synthetic bulletin is absent."],
         "falsification_checks_performed": ["Compared synthetic rule wording."], "limitations": ["Only synthetic material was considered."],
         "what_would_change_the_conclusion": ["A contrary synthetic bulletin."], "operator_review_notes": "Human inspection remains required.",
-        "cited_source_references": ["synthetic-source-reference-a"], "source_assessment_labels": ["PRIMARY_SOURCE_REVIEWED"],
+        "cited_source_references": ["synthetic-source-reference-a", "synthetic-source-reference-b"], "source_assessment_labels": ["PRIMARY_SOURCE_REVIEWED"],
         "completion_labels": ["REQUIRED_SECTIONS_PRESENT"], "response_sections": ["QUESTION_RESTATEMENT", "SOURCE_SUMMARY"],
         "operator_next_manual_step": "Perform human inspection.", "reviewer_acknowledgement": "Human inspection remains pending.",
         "human_review_required": True, "created_by_operator_note": "Explicit synthetic caller fixture.",
@@ -70,17 +74,42 @@ def _record() -> dict[str, object]:
 
 def test_positive_manual_response_is_sanitized_in_memory_and_tmp_empty(tmp_path: Path) -> None:
     record = _record()
+    before = copy.deepcopy(record)
+    expected_evidence = list(before["evidence_for"])
+    expected_sources = list(before["cited_source_references"])
+    expected_sections = list(before["response_sections"])
     result = build_candidate_review_manual_research_response(record)
-    assert result.is_valid and not result.errors and not result.warnings
+    assert result.is_valid is True
+    assert result.errors == ()
+    assert result.warnings == ()
     assert set(result.research_response) == set(REQUIRED_MANUAL_RESEARCH_RESPONSE_FIELDS)
-    assert result.research_response["evidence_for"] == record["evidence_for"]
-    assert result.response_label == record["response_label"]
-    assert result.source_assessment_labels == tuple(record["source_assessment_labels"])
-    assert result.completion_labels == tuple(record["completion_labels"])
-    assert result.response_sections == tuple(record["response_sections"])
+    assert record == before
+    for field in SCALARS:
+        assert isinstance(result.research_response[field], str)
+        assert result.research_response[field] == before[field]
+    for field in SEQUENCES:
+        value = result.research_response[field]
+        assert isinstance(value, (list, tuple))
+        assert value
+        assert all(isinstance(item, str) and item.strip() for item in value)
+        assert value == before[field]
+    assert result.research_response["evidence_for"] == expected_evidence
+    assert result.research_response["cited_source_references"] == expected_sources
+    assert result.research_response["response_sections"] == expected_sections
+    assert result.response_label == before["response_label"]
+    assert result.source_assessment_labels == tuple(before["source_assessment_labels"])
+    assert result.completion_labels == tuple(before["completion_labels"])
+    assert result.response_sections == tuple(before["response_sections"])
     assert result.safety_flags == _safety_flags()
+    assert result.research_response["safety_flags"] == _safety_flags()
     assert result.research_response["human_review_required"] is True
-    assert not list(tmp_path.iterdir())
+    forbidden_output_keys = {
+        "recommendation", "probability_estimate", "score", "rank", "priority",
+        "prompt", "model_output", "tool_plan", "execution", "order", "position",
+        "risk_decision", "report", "export",
+    }
+    assert forbidden_output_keys.isdisjoint(result.research_response)
+    assert list(tmp_path.iterdir()) == []
 
 
 @pytest.mark.parametrize("field", REQUIRED_MANUAL_RESEARCH_RESPONSE_FIELDS)
