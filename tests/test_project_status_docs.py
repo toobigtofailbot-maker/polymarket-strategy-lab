@@ -1397,7 +1397,7 @@ def test_wp132_is_reconciled_as_merged_and_wp133_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP133" in current_phase_line
+    assert "WP134" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1431,9 +1431,16 @@ def test_wp132_is_reconciled_as_merged_and_wp133_is_current_review_target_state(
     assert "tests/test_hermes_candidate_review_manual_research_request.py" in (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     assert "docs/status_entries/WP132.md" in (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     assert "src/data_layer/hermes_candidate_review_manual_research_response.py" in text
-    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_RESEARCH_RESPONSE_REVIEW_TARGET" in text
+    assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_RESEARCH_RESPONSE_MERGED" in text
     assert "tests/test_hermes_candidate_review_manual_research_response.py" in (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     assert "docs/status_entries/WP133.md" in (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    assert "WP133" in merged_line
+    assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_MANUAL_RESEARCH_RESPONSE_SMOKE_REVIEW_TARGET" in text
+    index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    assert "docs/hermes_candidate_review_manual_research_response_operator_runbook.md" in index
+    assert "tests/test_hermes_candidate_review_manual_research_response_operator_runbook_docs.py" in index
+    assert "tests/test_hermes_candidate_review_manual_research_response_temp_smoke.py" in index
+    assert "docs/status_entries/WP134.md" in index
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
