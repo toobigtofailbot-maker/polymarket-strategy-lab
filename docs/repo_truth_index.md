@@ -419,6 +419,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z171. `docs/status_entries/WP131.md` - WP131 stable committed status fragment for the docs/status/tests plus temp-only synthetic smoke package.
 
+62z172. `src/data_layer/hermes_candidate_review_manual_research_request.py` - WP132 stdlib-only deterministic in-memory validator/build/assert contract for explicit caller-supplied manual research requests; enforces exact fields, label families, bounded integers, safety flags, notice concepts, recursive forbidden/raw content rejection, and neutral fail-closed no-echo output without prompt, model, tool, network, storage, runtime, or trading authority.
+
+62z173. `tests/test_hermes_candidate_review_manual_research_request.py` - WP132 focused positive, negative-matrix, bounded-integer, notice, immutability, no-echo, and reviewer-trap coverage for the manual research-request contract.
+
+62z174. `docs/status_entries/WP132.md` - WP132 stable committed status fragment for the Tier 2 explicit-caller-content-only in-memory implementation packet.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.

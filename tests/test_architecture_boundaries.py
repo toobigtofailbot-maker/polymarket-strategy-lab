@@ -66,6 +66,7 @@ def test_required_src_readmes_exist():
 # WP126 approves the local/offline/read-only in-memory Hermes candidate-review research candidate queue validator at src/data_layer/hermes_candidate_review_research_candidate_queue.py.
 # WP128 approves the local/offline/read-only in-memory manual queue selection and research-question handoff validator at src/data_layer/hermes_candidate_review_manual_queue_selection_handoff.py.
 # WP130 approves the local/offline/read-only in-memory manual research briefing packet validator at src/data_layer/hermes_candidate_review_manual_research_briefing_packet.py.
+# WP132 approves the local/offline/read-only in-memory manual research request validator at src/data_layer/hermes_candidate_review_manual_research_request.py.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -112,6 +113,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/hermes_candidate_review_research_candidate_queue.py",
     "src/data_layer/hermes_candidate_review_manual_queue_selection_handoff.py",
     "src/data_layer/hermes_candidate_review_manual_research_briefing_packet.py",
+    "src/data_layer/hermes_candidate_review_manual_research_request.py",
 )
 
 
@@ -178,6 +180,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     explicit-human-selection-only in-memory queue selection and question handoff validation.
     WP130 permits hermes_candidate_review_manual_research_briefing_packet.py for
     explicit-caller-content-only in-memory manual research briefing packet validation.
+    WP132 permits hermes_candidate_review_manual_research_request.py for
+    explicit-caller-content-only in-memory manual research request validation.
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
