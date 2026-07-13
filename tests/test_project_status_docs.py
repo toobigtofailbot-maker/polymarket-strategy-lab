@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp133_is_reconciled_as_merged_and_wp134_is_current_review_target_state():
+def test_wp134_is_reconciled_as_merged_and_wp135_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp133_is_reconciled_as_merged_and_wp134_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP134" in current_phase_line
+    assert "WP135" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1435,12 +1435,18 @@ def test_wp133_is_reconciled_as_merged_and_wp134_is_current_review_target_state(
     assert "tests/test_hermes_candidate_review_manual_research_response.py" in (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     assert "docs/status_entries/WP133.md" in (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     assert "WP133" in merged_line
-    assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_MANUAL_RESEARCH_RESPONSE_SMOKE_REVIEW_TARGET" in text
+    assert "WP134" in merged_line
+    assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_MANUAL_RESEARCH_RESPONSE_SMOKE_MERGED" in text
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     assert "docs/hermes_candidate_review_manual_research_response_operator_runbook.md" in index
     assert "tests/test_hermes_candidate_review_manual_research_response_operator_runbook_docs.py" in index
     assert "tests/test_hermes_candidate_review_manual_research_response_temp_smoke.py" in index
     assert "docs/status_entries/WP134.md" in index
+    assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_MANUAL_REQUEST_RESPONSE_SESSION_CHAIN_SMOKE_REVIEW_TARGET" in text
+    assert "docs/hermes_candidate_review_manual_research_request_response_session_chain_operator_runbook.md" in index
+    assert "tests/test_hermes_candidate_review_manual_research_request_response_session_chain_operator_runbook_docs.py" in index
+    assert "tests/test_hermes_candidate_review_manual_research_request_response_session_chain_temp_smoke.py" in index
+    assert "docs/status_entries/WP135.md" in index
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1536,7 +1542,7 @@ def test_hermes_candidate_review_handoff_manual_export_writer_is_registered():
     assert "tests/test_hermes_candidate_review_handoff_manual_export_writer.py" in index_text
 
 
-def test_wp131_through_wp134_dedicated_status_chain_is_consistent():
+def test_wp131_through_wp135_dedicated_status_chain_is_consistent():
     lines = _read().splitlines()
     wp131_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review manual research briefing packet operator runbook/temp smoke status:"
@@ -1550,14 +1556,20 @@ def test_wp131_through_wp134_dedicated_status_chain_is_consistent():
     wp134_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review manual research response operator runbook/temp smoke status:"
     ))
+    wp135_line = next(line for line in lines if line.startswith(
+        "- Hermes candidate-review manual research request-to-response session chain runbook/temp smoke status:"
+    ))
     current_phase_line = next(line for line in lines if line.startswith("- Current phase:"))
     merged_line = next(line for line in lines if line.startswith("- Merged WPs:"))
 
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_SMOKE_MERGED" in wp131_line
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_RESEARCH_REQUEST_MERGED" in wp132_line
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_RESEARCH_RESPONSE_MERGED" in wp133_line
-    assert all("REVIEW_TARGET" not in line for line in (wp131_line, wp132_line, wp133_line))
-    assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_MANUAL_RESEARCH_RESPONSE_SMOKE_REVIEW_TARGET" in wp134_line
-    assert "REVIEW_TARGET" in wp134_line
-    assert "WP134" in current_phase_line
-    assert "WP133" in merged_line
+    assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_MANUAL_RESEARCH_RESPONSE_SMOKE_MERGED" in wp134_line
+    assert all("REVIEW_TARGET" not in line for line in (
+        wp131_line, wp132_line, wp133_line, wp134_line,
+    ))
+    assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_MANUAL_REQUEST_RESPONSE_SESSION_CHAIN_SMOKE_REVIEW_TARGET" in wp135_line
+    assert "REVIEW_TARGET" in wp135_line
+    assert "WP135" in current_phase_line
+    assert "WP134" in merged_line

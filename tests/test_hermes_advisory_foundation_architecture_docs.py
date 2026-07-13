@@ -314,6 +314,8 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
             "docs/hermes_candidate_review_manual_research_briefing_packet_operator_runbook.md",
             # WP134: docs/status/tests-only manual research response operator runbook
             "docs/hermes_candidate_review_manual_research_response_operator_runbook.md",
+            # WP135: docs/status/tests-only manual request-to-response chain runbook
+            "docs/hermes_candidate_review_manual_research_request_response_session_chain_operator_runbook.md",
         }
     findings = []
     for path in tracked:
