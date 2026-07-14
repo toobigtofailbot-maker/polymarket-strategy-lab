@@ -453,6 +453,14 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z188. `docs/status_entries/WP136.md` - WP136 stable committed status fragment for the docs/status/tests-only compatibility contract and smoke-decision package.
 
+62z189. `docs/hermes_candidate_review_manual_research_question_request_response_validation_receipt_four_record_chain_operator_runbook.md` - WP137 manual/local/offline four-record lineage runbook for independently authored WP121, WP132, WP133, and WP122 records with fourteen post-validation comparisons and no adapter, transfer, verification, I/O, runtime, or trading authority.
+
+62z190. `tests/test_hermes_candidate_review_manual_research_question_request_response_validation_receipt_four_record_chain_operator_runbook_docs.py` - WP137 focused documentation tests for exact headings, four APIs, fixture independence, fourteen relationships, non-linkages, mismatch/human-review/no-echo matrices, compatibility caveats, and non-authority boundaries.
+
+62z191. `tests/test_hermes_candidate_review_manual_research_question_request_response_validation_receipt_four_record_chain_temp_smoke.py` - WP137 synthetic in-memory positive lineage, thirteen valid-but-inconsistent cases, four human-review failures, four unsafe no-echo cases, AST independence traps, and empty-temp-directory coverage.
+
+62z192. `docs/status_entries/WP137.md` - WP137 stable committed status fragment for the docs/status/tests plus temp-only synthetic four-record manual-lineage smoke package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
