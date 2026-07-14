@@ -467,6 +467,14 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z195. `docs/status_entries/WP138.md` - WP138 stable committed status fragment for the docs/status/tests-only compatibility contract and future six-record smoke decision package.
 
+62z196. `docs/hermes_candidate_review_manual_six_record_research_lineage_human_decision_follow_up_task_operator_runbook.md` - WP139 manual/local/offline operator runbook for six independently authored WP121, WP132, WP133, WP122, WP123-decision, and WP123-follow-up-task records with eighteen post-validation relationships, sixteen explicit non-linkages, and no adapter, generation, I/O, runtime, or authority expansion.
+
+62z197. `tests/test_hermes_candidate_review_manual_six_record_research_lineage_human_decision_follow_up_task_operator_runbook_docs.py` - WP139 focused Markdown-only tests for exact headings, six API families, fixture independence, eighteen relationships, sixteen non-linkages, seventeen mismatch cases, human-review/no-echo matrices, WP123 caveats, and non-authority boundaries.
+
+62z198. `tests/test_hermes_candidate_review_manual_six_record_research_lineage_human_decision_follow_up_task_temp_smoke.py` - WP139 synthetic in-memory positive six-record lineage, seventeen exactly-one-false mismatch cases, six human-review failures, six unsafe no-echo cases, AST independence traps, forbidden-output-key checks, and empty-temp-directory coverage.
+
+62z199. `docs/status_entries/WP139.md` - WP139 stable committed status fragment for the docs/status/tests plus temp-only synthetic six-record manual-lineage, human-decision, and follow-up-task smoke package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
