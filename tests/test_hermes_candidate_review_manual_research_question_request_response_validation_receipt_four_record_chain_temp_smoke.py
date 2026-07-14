@@ -273,6 +273,14 @@ def test_positive_four_record_manual_lineage_and_empty_tmp_path(tmp_path: Path) 
     assert rs["limitations"] != rc["limitations_review"]
     assert rs["known_missing_data"] != rc["missing_data_review"]
     assert rs["falsification_checks_performed"] != rc["falsification_review"]
+    assert rs["response_label"] != rc["receipt_label"]
+    request_requirement_labels = {
+        *rr["source_requirement_labels"],
+        *rr["citation_requirement_labels"],
+        *rr["evidence_requirement_labels"],
+    }
+    receipt_review_flags = set(REQUIRED_ADVISORY_OUTPUT_REVIEW_FLAGS)
+    assert request_requirement_labels.isdisjoint(receipt_review_flags)
     forbidden_keys = {"chain", "session", "linkage", "authority_output", "generated_record"}
     assert all(not (forbidden_keys & set(item)) for item in (qr, rr, rs, rc))
     assert list(tmp_path.iterdir()) == []
@@ -302,11 +310,13 @@ def test_contract_valid_records_can_be_lineage_inconsistent(case: str, tmp_path:
     elif case == "response_receipt_artifact": receipt["advisory_output_reference"]["artifact_id"] = "synthetic-response-other"
     elif case == "receipt_checked_sources": receipt["source_references_checked"] = ["synthetic-source-reference-c"]
 
+    before = copy.deepcopy((question, request, response, receipt))
     q = validate_candidate_review_research_question_record(question)
     req = validate_candidate_review_manual_research_request(request)
     res = validate_candidate_review_manual_research_response(response)
     rec = validate_candidate_review_advisory_output_validation_receipt(receipt)
     assert all(item.is_valid for item in (q, req, res, rec))
+    assert (question, request, response, receipt) == before
     checks = [
         q.record["record_id"] == rec.receipt["source_research_question_record_reference"]["record_id"],
         q.record["selected_candidate_reference"] == req.research_request["selected_candidate_reference"],
@@ -323,22 +333,56 @@ def test_contract_valid_records_can_be_lineage_inconsistent(case: str, tmp_path:
         res.research_response["cited_source_references"] == rec.receipt["source_references_checked"],
     ]
     assert checks.count(False) == 1
+    normalized_records = (
+        q.record,
+        req.research_request,
+        res.research_response,
+        rec.receipt,
+    )
+    forbidden_chain_output_keys = {
+        "chain",
+        "chain_result",
+        "session",
+        "session_result",
+        "linkage",
+        "linkage_result",
+        "lineage",
+        "lineage_result",
+        "generated_record",
+        "repaired_record",
+    }
+    assert all(
+        forbidden_chain_output_keys.isdisjoint(record)
+        for record in normalized_records
+    )
     assert list(tmp_path.iterdir()) == []
 
 
 @pytest.mark.parametrize("record_name", ["question", "request", "response", "receipt"])
 def test_each_contract_rejects_false_human_review(record_name: str, tmp_path: Path) -> None:
-    records = {"question": _question_record(), "request": _request(), "response": _response(), "receipt": _receipt()}
-    records[record_name]["human_review_required"] = False
+    factories = {
+        "question": _question_record,
+        "request": _request,
+        "response": _response,
+        "receipt": _receipt,
+    }
+    record = factories[record_name]()
+    record["human_review_required"] = False
     validators = {
         "question": validate_candidate_review_research_question_record,
         "request": validate_candidate_review_manual_research_request,
         "response": validate_candidate_review_manual_research_response,
         "receipt": validate_candidate_review_advisory_output_validation_receipt,
     }
-    result = validators[record_name](records[record_name])
+    result = validators[record_name](record)
+    normalized_attribute = {
+        "question": "record",
+        "request": "research_request",
+        "response": "research_response",
+        "receipt": "receipt",
+    }[record_name]
     assert result.is_valid is False
-    assert getattr(result, {"question": "record", "request": "research_request", "response": "research_response", "receipt": "receipt"}[record_name]) == {}
+    assert getattr(result, normalized_attribute) == {}
     assert list(tmp_path.iterdir()) == []
 
 
@@ -362,7 +406,15 @@ def test_each_contract_rejects_unsafe_content_without_echo(record_name: str, fie
         "receipt": assert_candidate_review_advisory_output_validation_receipt,
     }
     result = validators[record_name](records[record_name])
-    assert result.is_valid is False and TRAP not in repr(result)
+    normalized_attribute = {
+        "question": "record",
+        "request": "research_request",
+        "response": "research_response",
+        "receipt": "receipt",
+    }[record_name]
+    assert result.is_valid is False
+    assert getattr(result, normalized_attribute) == {}
+    assert TRAP not in repr(result)
     with pytest.raises(ValueError) as exc:
         assertions[record_name](records[record_name])
     assert TRAP not in str(exc.value)
@@ -394,8 +446,38 @@ def test_ast_reviewer_guard_proves_fixture_independence_and_no_side_effects() ->
     assert all(not any(part in name.lower() for part in forbidden_name_parts) for name in helper_names)
     assert not any(isinstance(node, (ast.ClassDef, ast.AsyncFunctionDef)) for node in ast.walk(tree))
     forbidden_imports = {"subprocess", "os", "socket", "http", "requests", "urllib", "time", "datetime", "uuid", "random", "database", "writer", "storage", "export", "cli"}
-    imports = {alias.name.split(".")[0] for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names}
-    assert not (imports & forbidden_imports)
+    imported_roots = {
+        alias.name.split(".")[0]
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    }
+    imported_roots |= {
+        node.module.split(".")[0]
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    assert not (imported_roots & forbidden_imports)
+    literal_dict_keys = {
+        key.value
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Dict)
+        for key in node.keys
+        if isinstance(key, ast.Constant) and isinstance(key.value, str)
+    }
+    forbidden_literal_output_keys = {
+        "chain",
+        "chain_result",
+        "session",
+        "session_result",
+        "linkage",
+        "linkage_result",
+        "lineage",
+        "lineage_result",
+        "generated_record",
+        "repaired_record",
+    }
+    assert forbidden_literal_output_keys.isdisjoint(literal_dict_keys)
     calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)]
     assert not any(isinstance(call.func, ast.Name) and call.func.id in {"open", "write"} for call in calls)
     assert not any(isinstance(call.func, ast.Name) and call.func.id in fixtures and (call.args or call.keywords) for call in calls)
