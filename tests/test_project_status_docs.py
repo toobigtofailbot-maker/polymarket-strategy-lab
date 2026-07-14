@@ -766,10 +766,7 @@ def test_ready_model_d_status_fragments_use_stable_dynamic_metadata_references()
             continue
         if "PR: TBD" in text:
             failures.append(f"{path.name}: contains PR: TBD while Ready YES")
-        if (
-            "Guard input source: LOCAL_DRAFT_VERIFIED" in text
-            and path.name != "WP140.md"
-        ):
+        if "Guard input source: LOCAL_DRAFT_VERIFIED" in text:
             failures.append(f"{path.name}: contains LOCAL_DRAFT_VERIFIED while Ready YES")
         if "Head commit:" in text:
             failures.append(f"{path.name}: contains Head commit while Ready YES")
@@ -1685,10 +1682,11 @@ def test_wp140_status_fragment_is_stable_and_contains_locked_decisions():
         "Hermes paper/live/execution authority: FORBIDDEN",
         "WP141 requires separate approval",
         "Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED",
-        "Guard input source: LOCAL_DRAFT_VERIFIED",
+        "Guard input source: pre-publication local evidence draft used only for consistency checking; the current canonical review evidence is the PR body and authenticated GitHub metadata.",
         "Evidence architecture: Model D",
     ):
         assert statement in status
+    assert "LOCAL_DRAFT_VERIFIED" not in status
     assert "TBD" not in status
     assert "Head commit:" not in status
     assert re.search(r"Current live PR head:\s*`?[0-9a-f]{40}`?", status, re.IGNORECASE) is None
