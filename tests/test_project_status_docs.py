@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp139_is_reconciled_as_merged_and_wp140_is_current_review_target_state():
+def test_wp140_is_reconciled_as_merged_and_wp141_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp139_is_reconciled_as_merged_and_wp140_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP140" in current_phase_line
+    assert "WP141" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1441,6 +1441,7 @@ def test_wp139_is_reconciled_as_merged_and_wp140_is_current_review_target_state(
     assert "WP137" in merged_line
     assert "WP138" in merged_line
     assert "WP139" in merged_line
+    assert "WP140" in merged_line
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_MANUAL_RESEARCH_RESPONSE_SMOKE_MERGED" in text
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     assert "docs/hermes_candidate_review_manual_research_response_operator_runbook.md" in index
@@ -1459,7 +1460,8 @@ def test_wp139_is_reconciled_as_merged_and_wp140_is_current_review_target_state(
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_FOUR_RECORD_MANUAL_LINEAGE_SMOKE_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_FOUR_RECORD_LINEAGE_TO_HUMAN_DECISION_FOLLOW_UP_CHAIN_DECISION_MERGED" in text
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_SIX_RECORD_MANUAL_LINEAGE_HUMAN_DECISION_FOLLOW_UP_TASK_SMOKE_MERGED" in text
-    assert "DOCS_STATUS_TESTS_ONLY_MANUAL_SIX_RECORD_WORKFLOW_CLOSEOUT_ASSISTED_RESEARCH_TRANSITION_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_MANUAL_SIX_RECORD_WORKFLOW_CLOSEOUT_ASSISTED_RESEARCH_TRANSITION_MERGED" in text
+    assert "DOCS_STATUS_TESTS_ONLY_PROVIDER_NEUTRAL_RUNTIME_INACTIVE_ASSISTED_RESEARCH_EXPERIMENT_CONTRACT_REVIEW_TARGET" in text
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1555,7 +1557,7 @@ def test_hermes_candidate_review_handoff_manual_export_writer_is_registered():
     assert "tests/test_hermes_candidate_review_handoff_manual_export_writer.py" in index_text
 
 
-def test_wp131_through_wp140_dedicated_status_chain_is_consistent():
+def test_wp131_through_wp141_dedicated_status_chain_is_consistent():
     lines = _read().splitlines()
     wp131_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review manual research briefing packet operator runbook/temp smoke status:"
@@ -1586,6 +1588,9 @@ def test_wp131_through_wp140_dedicated_status_chain_is_consistent():
     ))
     wp140_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review manual six-record workflow closeout and assisted-research transition status:"
+    ))
+    wp141_line = next(line for line in lines if line.startswith(
+        "- Hermes candidate-review assisted research session experiment contract status:"
     ))
     current_phase_line = next(line for line in lines if line.startswith("- Current phase:"))
     merged_line = next(line for line in lines if line.startswith("- Merged WPs:"))
@@ -1636,10 +1641,11 @@ def test_wp131_through_wp140_dedicated_status_chain_is_consistent():
     assert "WP140 remains separately gated" not in wp139_line
     assert "REVIEW_TARGET" not in wp138_line
     assert "REVIEW_TARGET" not in wp139_line
-    assert "REVIEW_TARGET" in wp140_line
+    assert "REVIEW_TARGET" not in wp140_line
+    assert "REVIEW_TARGET" in wp141_line
     assert sum("REVIEW_TARGET" in line for line in (
         wp131_line, wp132_line, wp133_line, wp134_line, wp135_line,
-        wp136_line, wp137_line, wp138_line, wp139_line, wp140_line,
+        wp136_line, wp137_line, wp138_line, wp139_line, wp140_line, wp141_line,
     )) == 1
     assert "Manual six-record workflow status: CLOSED_COMPLETE_ENOUGH_FOR_BOUNDED_MANUAL_USE" in wp140_line
     assert "Default manual-chain extension: STOP" in wp140_line
@@ -1647,10 +1653,22 @@ def test_wp131_through_wp140_dedicated_status_chain_is_consistent():
     assert "Hermes installation/runtime activation: NOT AUTHORIZED" in wp140_line
     assert "Deterministic validation and safety authority: UNCHANGED" in wp140_line
     assert "Hermes paper/live/execution authority: FORBIDDEN" in wp140_line
-    assert "WP141 requires separate approval" in wp140_line
-    assert "WP140" in current_phase_line
+    assert "WP141 was separately approved" in wp140_line
+    assert "DOCS_STATUS_TESTS_ONLY_PROVIDER_NEUTRAL_RUNTIME_INACTIVE_ASSISTED_RESEARCH_EXPERIMENT_CONTRACT_REVIEW_TARGET" in wp141_line
+    assert "Experiment contract status: PROVIDER_NEUTRAL_RUNTIME_INACTIVE" in wp141_line
+    assert "Assisted output status: UNTRUSTED_DRAFT_ONLY" in wp141_line
+    assert "Deterministic validation: MANDATORY_BEFORE_ACCEPTANCE" in wp141_line
+    assert "Human review: MANDATORY_BEFORE_ANY_DOWNSTREAM_HANDOFF" in wp141_line
+    assert "Hermes installation/runtime activation: NOT AUTHORIZED" in wp141_line
+    assert "Provider/model selection: NOT AUTHORIZED" in wp141_line
+    assert "Network/source fetching: NOT AUTHORIZED" in wp141_line
+    assert "Persistence/storage: NOT AUTHORIZED" in wp141_line
+    assert "Paper/live/execution authority: FORBIDDEN" in wp141_line
+    assert "WP142 requires separate approval" in wp141_line
+    assert "WP141" in current_phase_line
     assert "WP138" in merged_line
     assert "WP139" in merged_line
+    assert "WP140" in merged_line
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     for path in (
         "docs/hermes_candidate_review_manual_research_question_request_response_validation_receipt_four_record_chain_operator_runbook.md",
@@ -1667,6 +1685,9 @@ def test_wp131_through_wp140_dedicated_status_chain_is_consistent():
         "docs/hermes_candidate_review_manual_six_record_workflow_closeout_and_assisted_research_transition_decision_record.md",
         "tests/test_hermes_candidate_review_manual_six_record_workflow_closeout_and_assisted_research_transition_decision_record_docs.py",
         "docs/status_entries/WP140.md",
+        "docs/hermes_candidate_review_assisted_research_session_experiment_contract.md",
+        "tests/test_hermes_candidate_review_assisted_research_session_experiment_contract_docs.py",
+        "docs/status_entries/WP141.md",
     ):
         assert path in index
 
@@ -1686,6 +1707,37 @@ def test_wp140_status_fragment_is_stable_and_contains_locked_decisions():
         "Evidence architecture: Model D",
     ):
         assert statement in status
+    assert "LOCAL_DRAFT_VERIFIED" not in status
+    assert "TBD" not in status
+    assert "Head commit:" not in status
+    assert re.search(r"Current live PR head:\s*`?[0-9a-f]{40}`?", status, re.IGNORECASE) is None
+    assert "future mergeability" not in status.lower()
+
+
+def test_wp141_status_fragment_is_stable_and_contains_locked_decisions():
+    status = (STATUS_ENTRIES / "WP141.md").read_text(encoding="utf-8")
+    for statement in (
+        "Experiment contract status: PROVIDER_NEUTRAL_RUNTIME_INACTIVE",
+        "Assisted output status: UNTRUSTED_DRAFT_ONLY",
+        "Deterministic validation: MANDATORY_BEFORE_ACCEPTANCE",
+        "Human review: MANDATORY_BEFORE_ANY_DOWNSTREAM_HANDOFF",
+        "Hermes installation/runtime activation: NOT AUTHORIZED",
+        "Provider/model selection: NOT AUTHORIZED",
+        "Network/source fetching: NOT AUTHORIZED",
+        "Persistence/storage: NOT AUTHORIZED",
+        "Paper/live/execution authority: FORBIDDEN",
+        "WP142 requires separate approval",
+        "Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED",
+        "Evidence architecture: Model D",
+        "Ready for review: YES only after final validation",
+    ):
+        assert statement in status
+    for path in (
+        "docs/hermes_candidate_review_assisted_research_session_experiment_contract.md",
+        "tests/test_hermes_candidate_review_assisted_research_session_experiment_contract_docs.py",
+        "docs/status_entries/WP141.md",
+    ):
+        assert path in status
     assert "LOCAL_DRAFT_VERIFIED" not in status
     assert "TBD" not in status
     assert "Head commit:" not in status

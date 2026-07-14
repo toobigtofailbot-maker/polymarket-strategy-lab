@@ -481,6 +481,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z202. `docs/status_entries/WP140.md` - WP140 stable committed status fragment for the docs/status/tests-only manual six-record workflow closeout and assisted-research transition decision package.
 
+62z203. `docs/hermes_candidate_review_assisted_research_session_experiment_contract.md` - WP141 provider-neutral, runtime-inactive experiment contract defining already-valid sanitized inputs, an untrusted WP133-aligned draft boundary, source/citation disclosure, deterministic and human review gates, quality/cost/latency/repeatability/privacy measurement, stop conditions, promotion criteria, and a separately gated WP142 boundary without runtime or trading authority.
+
+62z204. `tests/test_hermes_candidate_review_assisted_research_session_experiment_contract_docs.py` - WP141 focused Markdown-only tests for exact structure, locked decisions, all 30 WP133 fields, input/output boundaries, disclosure and traceability, review and validation gates, complete case/metric inventories, zero-incidence gates, privacy/stops/promotion, WP142 gating, and reviewer traps.
+
+62z205. `docs/status_entries/WP141.md` - WP141 stable committed status fragment for the docs/status/tests-only provider-neutral, runtime-inactive assisted-research experiment contract package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.

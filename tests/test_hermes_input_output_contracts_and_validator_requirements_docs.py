@@ -375,6 +375,8 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         "docs/hermes_candidate_review_manual_research_question_request_response_validation_receipt_four_record_chain_operator_runbook.md",
         # WP139: docs/status/tests plus temp-only six-record manual lineage runbook
         "docs/hermes_candidate_review_manual_six_record_research_lineage_human_decision_follow_up_task_operator_runbook.md",
+        # WP141: docs/status/tests-only provider-neutral runtime-inactive experiment contract
+        "docs/hermes_candidate_review_assisted_research_session_experiment_contract.md",
     }
     findings = []
     for path in tracked:
