@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp137_is_reconciled_as_merged_and_wp138_is_current_review_target_state():
+def test_wp138_is_reconciled_as_merged_and_wp139_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp137_is_reconciled_as_merged_and_wp138_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP138" in current_phase_line
+    assert "WP139" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1439,6 +1439,7 @@ def test_wp137_is_reconciled_as_merged_and_wp138_is_current_review_target_state(
     assert "WP135" in merged_line
     assert "WP136" in merged_line
     assert "WP137" in merged_line
+    assert "WP138" in merged_line
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_MANUAL_RESEARCH_RESPONSE_SMOKE_MERGED" in text
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     assert "docs/hermes_candidate_review_manual_research_response_operator_runbook.md" in index
@@ -1455,7 +1456,8 @@ def test_wp137_is_reconciled_as_merged_and_wp138_is_current_review_target_state(
     assert "tests/test_hermes_candidate_review_manual_request_response_validation_receipt_chain_contract_and_smoke_decision_record_docs.py" in index
     assert "docs/status_entries/WP136.md" in index
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_FOUR_RECORD_MANUAL_LINEAGE_SMOKE_MERGED" in text
-    assert "DOCS_STATUS_TESTS_ONLY_FOUR_RECORD_LINEAGE_TO_HUMAN_DECISION_FOLLOW_UP_CHAIN_DECISION_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_FOUR_RECORD_LINEAGE_TO_HUMAN_DECISION_FOLLOW_UP_CHAIN_DECISION_MERGED" in text
+    assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_SIX_RECORD_MANUAL_LINEAGE_HUMAN_DECISION_FOLLOW_UP_TASK_SMOKE_REVIEW_TARGET" in text
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1551,7 +1553,7 @@ def test_hermes_candidate_review_handoff_manual_export_writer_is_registered():
     assert "tests/test_hermes_candidate_review_handoff_manual_export_writer.py" in index_text
 
 
-def test_wp131_through_wp138_dedicated_status_chain_is_consistent():
+def test_wp131_through_wp139_dedicated_status_chain_is_consistent():
     lines = _read().splitlines()
     wp131_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review manual research briefing packet operator runbook/temp smoke status:"
@@ -1577,6 +1579,9 @@ def test_wp131_through_wp138_dedicated_status_chain_is_consistent():
     wp138_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review four-record lineage to human decision and follow-up chain decision status:"
     ))
+    wp139_line = next(line for line in lines if line.startswith(
+        "- Hermes candidate-review manual six-record research lineage, human decision, and follow-up-task runbook/temp smoke status:"
+    ))
     current_phase_line = next(line for line in lines if line.startswith("- Current phase:"))
     merged_line = next(line for line in lines if line.startswith("- Merged WPs:"))
 
@@ -1586,7 +1591,7 @@ def test_wp131_through_wp138_dedicated_status_chain_is_consistent():
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_MANUAL_RESEARCH_RESPONSE_SMOKE_MERGED" in wp134_line
     assert all("REVIEW_TARGET" not in line for line in (
         wp131_line, wp132_line, wp133_line, wp134_line, wp135_line,
-        wp136_line, wp137_line,
+        wp136_line, wp137_line, wp138_line,
     ))
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_MANUAL_REQUEST_RESPONSE_SESSION_CHAIN_SMOKE_MERGED" in wp135_line
     assert "DOCS_STATUS_TESTS_ONLY_MANUAL_REQUEST_RESPONSE_VALIDATION_RECEIPT_CHAIN_DECISION_MERGED" in wp136_line
@@ -1602,18 +1607,32 @@ def test_wp131_through_wp138_dedicated_status_chain_is_consistent():
     assert "product network" in wp137_line
     assert "storage" in wp137_line
     assert "trading" not in wp137_line or "authority" in wp137_line
-    assert "DOCS_STATUS_TESTS_ONLY_FOUR_RECORD_LINEAGE_TO_HUMAN_DECISION_FOLLOW_UP_CHAIN_DECISION_REVIEW_TARGET" in wp138_line
+    assert "DOCS_STATUS_TESTS_ONLY_FOUR_RECORD_LINEAGE_TO_HUMAN_DECISION_FOLLOW_UP_CHAIN_DECISION_MERGED" in wp138_line
     assert "Six-record future smoke: APPROVED FOR A SEPARATE WP" in wp138_line
     assert "Required future topology: WP121 → WP132 → WP133 → WP122 → WP123 decision → WP123 follow-up task" in wp138_line
     assert "WP132/WP133 lineage is inherited through WP121/WP122" in wp138_line
-    assert "WP139 requires separate approval" in wp138_line
+    assert "WP139 is the separately approved implementation package" in wp138_line
     assert "no source" in wp138_line
     assert "no smoke" in wp138_line
     assert "no runtime" in wp138_line
     assert "trading authority" in wp138_line
-    assert "REVIEW_TARGET" in wp138_line
-    assert "WP138" in current_phase_line
-    assert "WP137" in merged_line
+    assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_SIX_RECORD_MANUAL_LINEAGE_HUMAN_DECISION_FOLLOW_UP_TASK_SMOKE_REVIEW_TARGET" in wp139_line
+    assert "eighteen post-validation relationships" in wp139_line
+    assert "sixteen explicit non-linkages" in wp139_line
+    assert "seventeen valid-but-inconsistent cases" in wp139_line
+    assert "six human-review failures" in wp139_line
+    assert "six unsafe no-echo failures" in wp139_line
+    assert "no source change" in wp139_line
+    assert "no adapter" in wp139_line
+    assert "no generated decision/task" in wp139_line
+    assert "no runtime" in wp139_line
+    assert "product network" in wp139_line
+    assert "storage" in wp139_line
+    assert "WP140 remains separately gated" in wp139_line
+    assert "REVIEW_TARGET" not in wp138_line
+    assert "REVIEW_TARGET" in wp139_line
+    assert "WP139" in current_phase_line
+    assert "WP138" in merged_line
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     for path in (
         "docs/hermes_candidate_review_manual_research_question_request_response_validation_receipt_four_record_chain_operator_runbook.md",
@@ -1623,5 +1642,9 @@ def test_wp131_through_wp138_dedicated_status_chain_is_consistent():
         "docs/hermes_candidate_review_manual_four_record_lineage_human_decision_follow_up_chain_contract_and_smoke_decision_record.md",
         "tests/test_hermes_candidate_review_manual_four_record_lineage_human_decision_follow_up_chain_contract_and_smoke_decision_record_docs.py",
         "docs/status_entries/WP138.md",
+        "docs/hermes_candidate_review_manual_six_record_research_lineage_human_decision_follow_up_task_operator_runbook.md",
+        "tests/test_hermes_candidate_review_manual_six_record_research_lineage_human_decision_follow_up_task_operator_runbook_docs.py",
+        "tests/test_hermes_candidate_review_manual_six_record_research_lineage_human_decision_follow_up_task_temp_smoke.py",
+        "docs/status_entries/WP139.md",
     ):
         assert path in index
