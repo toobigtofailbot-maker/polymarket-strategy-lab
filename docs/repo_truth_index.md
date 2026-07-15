@@ -487,6 +487,16 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z205. `docs/status_entries/WP141.md` - WP141 stable committed status fragment for the docs/status/tests-only provider-neutral, runtime-inactive assisted-research experiment contract package.
 
+62z206. `docs/hermes_candidate_review_assisted_research_experiment_gold_case_fixture_pack_and_evaluation_rubric.md` - WP142 canonical local synthetic/offline test-only 20-case gold-case pack and 16-category human-review rubric; records the 6/6/8 family split, expected safe outcomes, disclosures, forbidden behaviors, three-level scale, ten zero-tolerance hard gates, applicability rules, normative future thresholds, privacy/no-verification boundaries, and separately gated WP143 without runtime or trading authority.
+
+62z207. `tests/fixtures/hermes_candidate_review_assisted_research_gold_cases.json` - WP142 sole static UTF-8 synthetic/offline test-only fixture data file; contains exactly 20 ordered cases, exact authority posture, rubric, thresholds, expected outcomes, required disclosures, forbidden behaviors, applicable categories, and all-true hard-gate expectations; no real source, URL, market, wallet, account, person, provider, credential, prompt, model output, timestamp, or runtime configuration.
+
+62z208. `tests/test_hermes_candidate_review_assisted_research_experiment_gold_case_fixture_pack_docs.py` - WP142 focused Markdown-only tests for exact structure, locked decisions, 20 case IDs and 6/6/8 counts, outcomes, disclosure and prohibition inventories, rubric, scale, applicability, gates, thresholds, evaluation concepts, synthetic/privacy/no-verification boundaries, output inventory, forbidden interpretations, WP143 gate, and no implementation claims.
+
+62z209. `tests/test_hermes_candidate_review_assisted_research_experiment_gold_case_fixture_pack.py` - WP142 test-only static fixture/rubric validation and in-memory negative mutation suite; verifies exact keys, versions, IDs, counts, outcomes, disclosures, categories, scale, gates, applicability, thresholds, arithmetic, synthetic safety, immutability, and no side effects without product imports, network, or writes.
+
+62z210. `docs/status_entries/WP142.md` - WP142 stable committed status fragment for the docs/status/tests plus sole static synthetic fixture package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
