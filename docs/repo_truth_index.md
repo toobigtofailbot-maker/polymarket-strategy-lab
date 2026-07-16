@@ -503,6 +503,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z213. `docs/status_entries/WP143.md` - WP143 stable committed status fragment for the documentation/status/tests-only provider, runtime, privacy, permissions, credential, and budget architecture decision package.
 
+62z214. `docs/hermes_candidate_review_assisted_research_controlled_experiment_harness_contract_prompt_configuration_boundary_and_dry_run_plan.md` - WP144 canonical documentation-only, runtime-inactive future harness contract and local no-provider dry-run plan; defines local deterministic exclusive controller ownership, the exact 17-state failed-closed state machine, synthetic session-envelope and non-executable prompt/configuration boundaries, a one-endpoint provider-adapter boundary, WP143 permission/credential/budget preservation, forbidden-by-default raw persistence, exact future sanitized metadata, mandatory teardown, an 18-row failure matrix, five dry-run stages, promotion gates, and separately gated WP145 without implementation or trading authority.
+
+62z215. `tests/test_hermes_candidate_review_assisted_research_controlled_experiment_harness_contract_prompt_configuration_boundary_and_dry_run_plan_docs.py` - WP144 focused Markdown-only tests for exact structure and locked posture, conceptual flow, controller ownership, 17 states, envelope/prompt/config/adapter boundaries, WP143 permissions/credentials/budgets, retry and timeout limits, raw/evidence policy, teardown, failure matrix, five dry-run stages and acceptance, security invariants, deferrals, output inventory, reviewer traps, and the separately gated WP145 boundary.
+
+62z216. `docs/status_entries/WP144.md` - WP144 stable committed status fragment for the documentation/status/tests-only harness contract, prompt/configuration boundary, and dry-run-plan package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
