@@ -497,6 +497,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z210. `docs/status_entries/WP142.md` - WP142 stable committed status fragment for the docs/status/tests plus sole static synthetic fixture package.
 
+62z211. `docs/hermes_candidate_review_assisted_research_provider_runtime_privacy_permissions_budget_decision.md` - WP143 canonical provider/runtime/privacy/permissions/budget governance decision selecting a future local deterministic control plane with an ephemeral Hermes session, at most two provider-neutral remote candidates plus one optional local baseline, synthetic-only data, one-endpoint future network allowlisting, least-privilege file/credential/memory posture, exact 140-call and USD 100/25/2 caps, deterministic validation, human review, and promotion gates without runtime, provider, credential, product-network, storage, or trading activation.
+
+62z212. `tests/test_hermes_candidate_review_assisted_research_provider_runtime_privacy_permissions_budget_decision_docs.py` - WP143 focused Markdown-only tests for exact structure and decisions, four runtime options, provider eligibility, privacy/retention/jurisdiction/deletion, the complete permission matrix, credential/memory/network/file policies, budget/call/retry/token/latency caps, accounting, stops, evaluation/promotion gates, deferrals, output boundaries, reviewer traps, and the separately gated WP144 boundary.
+
+62z213. `docs/status_entries/WP143.md` - WP143 stable committed status fragment for the documentation/status/tests-only provider, runtime, privacy, permissions, credential, and budget architecture decision package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.

@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp141_is_reconciled_as_merged_and_wp142_is_current_review_target_state():
+def test_wp142_is_reconciled_as_merged_and_wp143_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp141_is_reconciled_as_merged_and_wp142_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP142" in current_phase_line
+    assert "WP143" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1463,7 +1463,8 @@ def test_wp141_is_reconciled_as_merged_and_wp142_is_current_review_target_state(
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_SIX_RECORD_MANUAL_LINEAGE_HUMAN_DECISION_FOLLOW_UP_TASK_SMOKE_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_MANUAL_SIX_RECORD_WORKFLOW_CLOSEOUT_ASSISTED_RESEARCH_TRANSITION_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_PROVIDER_NEUTRAL_RUNTIME_INACTIVE_ASSISTED_RESEARCH_EXPERIMENT_CONTRACT_MERGED" in text
-    assert "DOCS_STATUS_TESTS_FIXTURE_ONLY_LOCAL_SYNTHETIC_OFFLINE_GOLD_CASE_PACK_EVALUATION_RUBRIC_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_FIXTURE_ONLY_LOCAL_SYNTHETIC_OFFLINE_GOLD_CASE_PACK_EVALUATION_RUBRIC_MERGED" in text
+    assert "DOCS_STATUS_TESTS_ONLY_HERMES_PROVIDER_RUNTIME_PRIVACY_PERMISSIONS_BUDGET_DECISION_REVIEW_TARGET" in text
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1559,7 +1560,7 @@ def test_hermes_candidate_review_handoff_manual_export_writer_is_registered():
     assert "tests/test_hermes_candidate_review_handoff_manual_export_writer.py" in index_text
 
 
-def test_wp131_through_wp142_dedicated_status_chain_is_consistent():
+def test_wp131_through_wp143_dedicated_status_chain_is_consistent():
     lines = _read().splitlines()
     wp131_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review manual research briefing packet operator runbook/temp smoke status:"
@@ -1596,6 +1597,9 @@ def test_wp131_through_wp142_dedicated_status_chain_is_consistent():
     ))
     wp142_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review assisted research gold-case fixture pack and evaluation rubric status:"
+    ))
+    wp143_line = next(line for line in lines if line.startswith(
+        "- Hermes candidate-review assisted research provider/runtime/privacy/permissions/budget decision status:"
     ))
     current_phase_line = next(line for line in lines if line.startswith("- Current phase:"))
     merged_line = next(line for line in lines if line.startswith("- Merged WPs:"))
@@ -1648,10 +1652,12 @@ def test_wp131_through_wp142_dedicated_status_chain_is_consistent():
     assert "REVIEW_TARGET" not in wp139_line
     assert "REVIEW_TARGET" not in wp140_line
     assert "REVIEW_TARGET" not in wp141_line
-    assert "REVIEW_TARGET" in wp142_line
+    assert "REVIEW_TARGET" not in wp142_line
+    assert "REVIEW_TARGET" in wp143_line
     assert sum("REVIEW_TARGET" in line for line in (
         wp131_line, wp132_line, wp133_line, wp134_line, wp135_line, wp136_line,
         wp137_line, wp138_line, wp139_line, wp140_line, wp141_line, wp142_line,
+        wp143_line,
     )) == 1
     assert "Manual six-record workflow status: CLOSED_COMPLETE_ENOUGH_FOR_BOUNDED_MANUAL_USE" in wp140_line
     assert "Default manual-chain extension: STOP" in wp140_line
@@ -1671,7 +1677,7 @@ def test_wp131_through_wp142_dedicated_status_chain_is_consistent():
     assert "Persistence/storage: NOT AUTHORIZED" in wp141_line
     assert "Paper/live/execution authority: FORBIDDEN" in wp141_line
     assert "WP142 was separately approved" in wp141_line
-    assert "DOCS_STATUS_TESTS_FIXTURE_ONLY_LOCAL_SYNTHETIC_OFFLINE_GOLD_CASE_PACK_EVALUATION_RUBRIC_REVIEW_TARGET" in wp142_line
+    assert "DOCS_STATUS_TESTS_FIXTURE_ONLY_LOCAL_SYNTHETIC_OFFLINE_GOLD_CASE_PACK_EVALUATION_RUBRIC_MERGED" in wp142_line
     for phrase in (
         "Fixture-pack status: LOCAL_SYNTHETIC_OFFLINE_TEST_ONLY", "Case count: 20",
         "Positive/complete cases: 6", "Refusal/defer cases: 6", "Adversarial cases: 8",
@@ -1679,14 +1685,33 @@ def test_wp131_through_wp142_dedicated_status_chain_is_consistent():
         "Hard safety gates: ZERO_TOLERANCE", "Provider/model performance claims: NONE",
         "Hermes installation/runtime activation: NOT AUTHORIZED",
         "Network/source fetching: NOT AUTHORIZED", "Paper/live/execution authority: FORBIDDEN",
-        "WP143 requires separate approval",
+        "WP143 was separately approved",
     ):
         assert phrase in wp142_line
-    assert "WP142" in current_phase_line
+    assert "DOCS_STATUS_TESTS_ONLY_HERMES_PROVIDER_RUNTIME_PRIVACY_PERMISSIONS_BUDGET_DECISION_REVIEW_TARGET" in wp143_line
+    for phrase in (
+        "Assisted-research architecture: LOCAL_DETERMINISTIC_CONTROL_PLANE_WITH_EPHEMERAL_HERMES_SESSION",
+        "Model-access posture: PROVIDER_NEUTRAL_REMOTE_MODEL_CANDIDATES_WITH_OPTIONAL_LOCAL_BASELINE",
+        "Provider decision: SHORTLIST_MAXIMUM_TWO_REMOTE_CANDIDATES_PLUS_OPTIONAL_ONE_LOCAL_BASELINE",
+        "Experiment data classification: SYNTHETIC_OFFLINE_TEST_DATA_ONLY",
+        "Network posture for the first future experiment: PROVIDER_ENDPOINT_ONLY_DENY_ALL_OTHER_NETWORK",
+        "Repository posture: NO_REPOSITORY_WIDE_ACCESS", "Command and shell posture: DISABLED",
+        "Tool posture: NO_BROWSER_NO_SEARCH_NO_SOURCE_FETCH_NO_TRADING_TOOLS",
+        "Memory posture: EPHEMERAL_SESSION_MEMORY_ONLY", "Persistent memory: FORBIDDEN",
+        "Credential posture: OUT_OF_REPO_OPERATOR_INJECTED_LEAST_PRIVILEGE_REVOCABLE_SECRET",
+        "Maximum total remote calls: 140", "Maximum total experiment spend: USD 100",
+        "Maximum daily spend: USD 25", "Maximum single-call spend: USD 2",
+        "Concurrent remote calls: 1", "Provider activation: NOT AUTHORIZED",
+        "Hermes installation/runtime activation: NOT AUTHORIZED",
+        "Paper/live/execution authority: FORBIDDEN", "WP144 requires separate approval",
+    ):
+        assert phrase in wp143_line
+    assert "WP143" in current_phase_line
     assert "WP138" in merged_line
     assert "WP139" in merged_line
     assert "WP140" in merged_line
     assert "WP141" in merged_line
+    assert "WP142" in merged_line
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     for path in (
         "docs/hermes_candidate_review_manual_research_question_request_response_validation_receipt_four_record_chain_operator_runbook.md",
@@ -1711,6 +1736,9 @@ def test_wp131_through_wp142_dedicated_status_chain_is_consistent():
         "tests/test_hermes_candidate_review_assisted_research_experiment_gold_case_fixture_pack_docs.py",
         "tests/test_hermes_candidate_review_assisted_research_experiment_gold_case_fixture_pack.py",
         "docs/status_entries/WP142.md",
+        "docs/hermes_candidate_review_assisted_research_provider_runtime_privacy_permissions_budget_decision.md",
+        "tests/test_hermes_candidate_review_assisted_research_provider_runtime_privacy_permissions_budget_decision_docs.py",
+        "docs/status_entries/WP143.md",
     ):
         assert path in index
 
@@ -1787,6 +1815,37 @@ def test_wp142_status_fragment_is_stable_and_contains_locked_decisions():
         "tests/test_hermes_candidate_review_assisted_research_experiment_gold_case_fixture_pack_docs.py",
         "tests/test_hermes_candidate_review_assisted_research_experiment_gold_case_fixture_pack.py",
         "docs/status_entries/WP142.md",
+    ):
+        assert path in status
+    assert "LOCAL_DRAFT_VERIFIED" not in status
+    assert "TBD" not in status
+    assert "Head commit:" not in status
+    assert re.search(r"Current live PR head:\s*`?[0-9a-f]{40}`?", status, re.IGNORECASE) is None
+    assert "future mergeability" not in status.lower()
+
+
+def test_wp143_status_fragment_is_stable_and_contains_locked_decisions():
+    status = (STATUS_ENTRIES / "WP143.md").read_text(encoding="utf-8")
+    for statement in (
+        "Assisted-research architecture: LOCAL_DETERMINISTIC_CONTROL_PLANE_WITH_EPHEMERAL_HERMES_SESSION",
+        "Model-access posture: PROVIDER_NEUTRAL_REMOTE_MODEL_CANDIDATES_WITH_OPTIONAL_LOCAL_BASELINE",
+        "Provider decision: SHORTLIST_MAXIMUM_TWO_REMOTE_CANDIDATES_PLUS_OPTIONAL_ONE_LOCAL_BASELINE",
+        "Experiment data classification: SYNTHETIC_OFFLINE_TEST_DATA_ONLY",
+        "Network posture for the first future experiment: PROVIDER_ENDPOINT_ONLY_DENY_ALL_OTHER_NETWORK",
+        "Repository posture: NO_REPOSITORY_WIDE_ACCESS",
+        "Credential posture: OUT_OF_REPO_OPERATOR_INJECTED_LEAST_PRIVILEGE_REVOCABLE_SECRET",
+        "Memory posture: EPHEMERAL_SESSION_MEMORY_ONLY", "Persistent memory: FORBIDDEN",
+        "140-call hard maximum", "USD 100 total", "USD 25 daily", "USD 2 per call",
+        "one concurrent remote call", "Provider activation: NOT AUTHORIZED",
+        "Hermes installation/runtime activation: NOT AUTHORIZED",
+        "Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED", "Evidence architecture: Model D",
+        "Ready for review: YES only after final validation",
+    ):
+        assert statement in status
+    assert "WP144" in status and "not implemented here" in status
+    for path in (
+        "docs/hermes_candidate_review_assisted_research_provider_runtime_privacy_permissions_budget_decision.md",
+        "tests/test_hermes_candidate_review_assisted_research_provider_runtime_privacy_permissions_budget_decision_docs.py",
     ):
         assert path in status
     assert "LOCAL_DRAFT_VERIFIED" not in status
