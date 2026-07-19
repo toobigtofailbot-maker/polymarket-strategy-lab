@@ -326,10 +326,12 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
             "docs/hermes_candidate_review_assisted_research_experiment_gold_case_fixture_pack_and_evaluation_rubric.md",
             # WP143: docs/status/tests-only provider/runtime/privacy/permissions/budget decision
             "docs/hermes_candidate_review_assisted_research_provider_runtime_privacy_permissions_budget_decision.md",
-            # WP144: docs/status/tests-only harness contract and dry-run plan
-            "docs/hermes_candidate_review_assisted_research_controlled_experiment_harness_contract_prompt_configuration_boundary_and_dry_run_plan.md",
-            "tests/test_hermes_candidate_review_assisted_research_controlled_experiment_harness_contract_prompt_configuration_boundary_and_dry_run_plan_docs.py",
-        }
+                # WP144: docs/status/tests-only harness contract and dry-run plan
+                "docs/hermes_candidate_review_assisted_research_controlled_experiment_harness_contract_prompt_configuration_boundary_and_dry_run_plan.md",
+                "tests/test_hermes_candidate_review_assisted_research_controlled_experiment_harness_contract_prompt_configuration_boundary_and_dry_run_plan_docs.py",
+                # WP145: local/offline test-oriented deterministic one-case harness
+                "src/data_layer/hermes_candidate_review_assisted_research_local_dry_run_harness.py",
+            }
     findings = []
     for path in tracked:
         normalized = path.replace("\\", "/")

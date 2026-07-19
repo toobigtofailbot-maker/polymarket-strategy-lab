@@ -509,6 +509,16 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z216. `docs/status_entries/WP144.md` - WP144 stable committed status fragment for the documentation/status/tests-only harness contract, prompt/configuration boundary, and dry-run-plan package.
 
+62z217. `src/data_layer/hermes_candidate_review_assisted_research_local_dry_run_harness.py` - WP145 local/offline/test-oriented deterministic in-memory controller skeleton for exactly one caller-supplied `GC-P01-COMPLETE-SUPPORTED` WP142 case; exposes exact input validation, immutable sanitized session-envelope construction, one-call test-only fake-adapter orchestration, existing WP133 deterministic validation, bounded WP142 hard-gate evaluation, explicit caller-supplied human-review acknowledgement, sanitized result assertion, and mandatory success/failure teardown across the exact 17-state model; returns frozen sanitized results with neutral no-echo diagnostics and no filesystem I/O, network, credentials, Hermes/provider/model call, source access, retry, stable output, downstream records, paper/live, execution/risk/order, or trading behavior.
+
+62z218. `tests/test_hermes_candidate_review_assisted_research_local_dry_run_harness.py` - WP145 focused positive, negative-matrix, state/order, input/permission/budget/output-policy, immutable-envelope, one-adapter-call, adapter mutation/exception/non-mapping, WP133 reuse, no-echo, human-review, sanitized-evidence, teardown, deterministic repeat, field-coverage, AST/no-I/O/no-network/no-Hermes/no-provider/no-random/no-storage, exact source-inventory, and protected-boundary tests.
+
+62z219. `tests/test_hermes_candidate_review_assisted_research_local_dry_run_harness_temp_smoke.py` - WP145 pytest `tmp_path` smoke for exactly one unchanged existing WP142 case and one in-test zero-I/O fake adapter, including the full positive state trace plus adapter-exception, invalid-output, unsafe-no-echo, and failed-review variants; every variant invokes the adapter at most once, leaves `tmp_path` empty, preserves fixture/input immutability, performs teardown, and creates no network/credential/Hermes/provider/persistence/downstream/trading behavior.
+
+62z220. `docs/hermes_candidate_review_assisted_research_local_dry_run_harness_operator_note.md` - WP145 operator note defining the local skeleton posture, exact one-case procedure, 17-state controller, test-only fake-adapter boundary, existing WP133 validation, explicit human review, sanitized evidence, teardown/failure behavior, pytest temp-only proof, forbidden interpretations, and separately gated WP146 closeout/readiness-decision boundary.
+
+62z221. `docs/status_entries/WP145.md` - WP145 stable committed status fragment for the local/offline/test-oriented deterministic one-case harness skeleton, test-only fake adapter, and no-network dry-run package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
