@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp143_is_reconciled_as_merged_and_wp144_is_current_review_target_state():
+def test_wp144_is_reconciled_as_merged_and_wp145_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp143_is_reconciled_as_merged_and_wp144_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP144" in current_phase_line
+    assert "WP145" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1420,6 +1420,7 @@ def test_wp143_is_reconciled_as_merged_and_wp144_is_current_review_target_state(
     assert "WP130" in merged_line
     assert "WP131" in merged_line
     assert "WP132" in merged_line
+    assert "WP144" in merged_line
     assert "src/data_layer/hermes_candidate_review_manual_research_briefing_packet.py" in text
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_RESEARCH_BRIEFING_PACKET_MERGED" in text
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_SMOKE_MERGED" in text
@@ -1465,7 +1466,8 @@ def test_wp143_is_reconciled_as_merged_and_wp144_is_current_review_target_state(
     assert "DOCS_STATUS_TESTS_ONLY_PROVIDER_NEUTRAL_RUNTIME_INACTIVE_ASSISTED_RESEARCH_EXPERIMENT_CONTRACT_MERGED" in text
     assert "DOCS_STATUS_TESTS_FIXTURE_ONLY_LOCAL_SYNTHETIC_OFFLINE_GOLD_CASE_PACK_EVALUATION_RUBRIC_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_HERMES_PROVIDER_RUNTIME_PRIVACY_PERMISSIONS_BUDGET_DECISION_MERGED" in text
-    assert "DOCS_STATUS_TESTS_ONLY_HERMES_CONTROLLED_EXPERIMENT_HARNESS_CONTRACT_DRY_RUN_PLAN_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_HERMES_CONTROLLED_EXPERIMENT_HARNESS_CONTRACT_DRY_RUN_PLAN_MERGED" in text
+    assert "LOCAL_OFFLINE_TEST_ORIENTED_SKELETON_REVIEW_TARGET" in text
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1561,7 +1563,7 @@ def test_hermes_candidate_review_handoff_manual_export_writer_is_registered():
     assert "tests/test_hermes_candidate_review_handoff_manual_export_writer.py" in index_text
 
 
-def test_wp131_through_wp144_dedicated_status_chain_is_consistent():
+def test_wp131_through_wp145_dedicated_status_chain_is_consistent():
     lines = _read().splitlines()
     wp131_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review manual research briefing packet operator runbook/temp smoke status:"
@@ -1604,6 +1606,9 @@ def test_wp131_through_wp144_dedicated_status_chain_is_consistent():
     ))
     wp144_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review assisted research controlled experiment harness contract, prompt/configuration boundary, and dry-run plan status:"
+    ))
+    wp145_line = next(line for line in lines if line.startswith(
+        "- Hermes candidate-review assisted research local deterministic harness skeleton and no-network dry-run status:"
     ))
     current_phase_line = next(line for line in lines if line.startswith("- Current phase:"))
     merged_line = next(line for line in lines if line.startswith("- Merged WPs:"))
@@ -1658,11 +1663,12 @@ def test_wp131_through_wp144_dedicated_status_chain_is_consistent():
     assert "REVIEW_TARGET" not in wp141_line
     assert "REVIEW_TARGET" not in wp142_line
     assert "REVIEW_TARGET" not in wp143_line
-    assert "REVIEW_TARGET" in wp144_line
+    assert "REVIEW_TARGET" not in wp144_line
+    assert "REVIEW_TARGET" in wp145_line
     assert sum("REVIEW_TARGET" in line for line in (
         wp131_line, wp132_line, wp133_line, wp134_line, wp135_line, wp136_line,
         wp137_line, wp138_line, wp139_line, wp140_line, wp141_line, wp142_line,
-        wp143_line, wp144_line,
+        wp143_line, wp144_line, wp145_line,
     )) == 1
     assert "Manual six-record workflow status: CLOSED_COMPLETE_ENOUGH_FOR_BOUNDED_MANUAL_USE" in wp140_line
     assert "Default manual-chain extension: STOP" in wp140_line
@@ -1711,7 +1717,7 @@ def test_wp131_through_wp144_dedicated_status_chain_is_consistent():
         "Paper/live/execution authority: FORBIDDEN", "WP144 was separately approved",
     ):
         assert phrase in wp143_line
-    assert "DOCS_STATUS_TESTS_ONLY_HERMES_CONTROLLED_EXPERIMENT_HARNESS_CONTRACT_DRY_RUN_PLAN_REVIEW_TARGET" in wp144_line
+    assert "DOCS_STATUS_TESTS_ONLY_HERMES_CONTROLLED_EXPERIMENT_HARNESS_CONTRACT_DRY_RUN_PLAN_MERGED" in wp144_line
     for phrase in (
         "Harness contract status: DOCUMENTATION_ONLY_RUNTIME_INACTIVE",
         "Controller authority: LOCAL_DETERMINISTIC_EXCLUSIVE",
@@ -1728,18 +1734,33 @@ def test_wp131_through_wp144_dedicated_status_chain_is_consistent():
         "Dry-run posture: LOCAL_NO_PROVIDER_NO_NETWORK_NO_CREDENTIAL",
         "Deterministic validation and human review: MANDATORY",
         "Hermes/provider/model activation: NOT AUTHORIZED",
-        "Paper/live/execution authority: FORBIDDEN", "WP145 requires separate approval",
+        "Paper/live/execution authority: FORBIDDEN", "WP145 was separately approved",
     ):
         assert phrase in wp144_line
-    assert "WP144" in current_phase_line
+    assert "LOCAL_OFFLINE_TEST_ORIENTED_SKELETON_REVIEW_TARGET" in wp145_line
+    for phrase in (
+        "Harness implementation status: LOCAL_OFFLINE_TEST_ORIENTED_SKELETON",
+        "Controller authority: LOCAL_DETERMINISTIC_EXCLUSIVE",
+        "Adapter status: TEST_ONLY_PRECOMPUTED_FAKE_RESPONSE",
+        "Dry-run case count: 1", "Dry-run case ID: GC-P01-COMPLETE-SUPPORTED",
+        "Network: FORBIDDEN", "Credentials: FORBIDDEN",
+        "Hermes installation/invocation: FORBIDDEN", "Provider/model call: FORBIDDEN",
+        "Stable raw input/output persistence: FORBIDDEN",
+        "Temporary filesystem: PYTEST_TMP_PATH_ONLY", "Output: SANITIZED_EVIDENCE_ONLY",
+        "Deterministic WP133 validation: MANDATORY",
+        "Human review: EXPLICIT_CALLER_SUPPLIED_ACKNOWLEDGEMENT_REQUIRED",
+        "Automatic downstream records: FORBIDDEN",
+        "Paper/live/execution authority: FORBIDDEN", "WP146 requires separate approval",
+    ):
+        assert phrase in wp145_line
+    assert "WP145" in current_phase_line
     assert "WP138" in merged_line
     assert "WP139" in merged_line
     assert "WP140" in merged_line
     assert "WP141" in merged_line
     assert "WP142" in merged_line
     assert "WP143" in merged_line
-    assert "WP142" in merged_line
-    assert "WP143" in merged_line
+    assert "WP144" in merged_line
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     for path in (
         "docs/hermes_candidate_review_manual_research_question_request_response_validation_receipt_four_record_chain_operator_runbook.md",
@@ -1770,6 +1791,11 @@ def test_wp131_through_wp144_dedicated_status_chain_is_consistent():
         "docs/hermes_candidate_review_assisted_research_controlled_experiment_harness_contract_prompt_configuration_boundary_and_dry_run_plan.md",
         "tests/test_hermes_candidate_review_assisted_research_controlled_experiment_harness_contract_prompt_configuration_boundary_and_dry_run_plan_docs.py",
         "docs/status_entries/WP144.md",
+        "src/data_layer/hermes_candidate_review_assisted_research_local_dry_run_harness.py",
+        "tests/test_hermes_candidate_review_assisted_research_local_dry_run_harness.py",
+        "tests/test_hermes_candidate_review_assisted_research_local_dry_run_harness_temp_smoke.py",
+        "docs/hermes_candidate_review_assisted_research_local_dry_run_harness_operator_note.md",
+        "docs/status_entries/WP145.md",
     ):
         assert path in index
 
@@ -1916,6 +1942,49 @@ def test_wp144_status_fragment_is_stable_and_contains_locked_decisions():
     ):
         assert path in status
     assert "WP145" in status and "not implemented here" in status
+    assert "LOCAL_DRAFT_VERIFIED" not in status
+    assert "TBD" not in status
+    assert "Head commit:" not in status
+    assert re.search(r"Current live PR head:\s*`?[0-9a-f]{40}`?", status, re.IGNORECASE) is None
+    assert "future mergeability" not in status.lower()
+
+
+def test_wp145_status_fragment_is_stable_and_contains_locked_decisions():
+    status = (STATUS_ENTRIES / "WP145.md").read_text(encoding="utf-8")
+    for statement in (
+        "Harness implementation status: LOCAL_OFFLINE_TEST_ORIENTED_SKELETON",
+        "Controller authority: LOCAL_DETERMINISTIC_EXCLUSIVE",
+        "Adapter status: TEST_ONLY_PRECOMPUTED_FAKE_RESPONSE",
+        "Dry-run case count: 1",
+        "Dry-run case ID: GC-P01-COMPLETE-SUPPORTED",
+        "Network: FORBIDDEN",
+        "Credentials: FORBIDDEN",
+        "Hermes installation/invocation: FORBIDDEN",
+        "Provider/model call: FORBIDDEN",
+        "Stable raw input/output persistence: FORBIDDEN",
+        "Temporary filesystem: PYTEST_TMP_PATH_ONLY",
+        "Output: SANITIZED_EVIDENCE_ONLY",
+        "Deterministic WP133 validation: MANDATORY",
+        "Human review: EXPLICIT_CALLER_SUPPLIED_ACKNOWLEDGEMENT_REQUIRED",
+        "Automatic downstream records: FORBIDDEN",
+        "Paper/live/execution authority: FORBIDDEN",
+        "WP146 requires separate approval",
+        "Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED",
+        "Evidence architecture: Model D",
+        "Ready for review: YES only after final validation",
+    ):
+        assert statement in status
+    for path in (
+        "src/data_layer/hermes_candidate_review_assisted_research_local_dry_run_harness.py",
+        "tests/test_hermes_candidate_review_assisted_research_local_dry_run_harness.py",
+        "tests/test_hermes_candidate_review_assisted_research_local_dry_run_harness_temp_smoke.py",
+        "docs/hermes_candidate_review_assisted_research_local_dry_run_harness_operator_note.md",
+        "docs/status_entries/WP145.md",
+    ):
+        assert path in status
+    assert "WP144 merged" in status
+    assert "WP145 sole review target" in status
+    assert "WP146 gated" in status
     assert "LOCAL_DRAFT_VERIFIED" not in status
     assert "TBD" not in status
     assert "Head commit:" not in status
