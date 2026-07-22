@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp145_is_reconciled_as_merged_and_wp146_is_current_review_target_state():
+def test_wp146_is_reconciled_as_merged_and_wp147_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1469,7 +1469,8 @@ def test_wp145_is_reconciled_as_merged_and_wp146_is_current_review_target_state(
     assert "DOCS_STATUS_TESTS_ONLY_HERMES_PROVIDER_RUNTIME_PRIVACY_PERMISSIONS_BUDGET_DECISION_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_HERMES_CONTROLLED_EXPERIMENT_HARNESS_CONTRACT_DRY_RUN_PLAN_MERGED" in text
     assert "LOCAL_OFFLINE_TEST_ORIENTED_SKELETON_MERGED" in text
-    assert "DOCS_STATUS_TESTS_ONLY_LOCAL_HARNESS_CLOSEOUT_REMOTE_READINESS_DECISION_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_LOCAL_HARNESS_CLOSEOUT_REMOTE_READINESS_DECISION_MERGED" in text
+    assert "DOCS_STATUS_TESTS_ONLY_CURRENT_PROVIDER_MODEL_RESEARCH_AND_CANDIDATE_SHORTLIST_REVIEW_TARGET" in text
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1565,7 +1566,7 @@ def test_hermes_candidate_review_handoff_manual_export_writer_is_registered():
     assert "tests/test_hermes_candidate_review_handoff_manual_export_writer.py" in index_text
 
 
-def test_wp131_through_wp146_dedicated_status_chain_is_consistent():
+def test_wp131_through_wp147_dedicated_status_chain_is_consistent():
     lines = _read().splitlines()
     wp131_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review manual research briefing packet operator runbook/temp smoke status:"
@@ -1614,6 +1615,9 @@ def test_wp131_through_wp146_dedicated_status_chain_is_consistent():
     ))
     wp146_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review assisted research local-harness closeout and controlled remote-experiment readiness decision status:"
+    ))
+    wp147_line = next(line for line in lines if line.startswith(
+        "- Hermes candidate-review assisted research current provider/model, privacy, retention, cost, endpoint, and candidate-shortlist research status:"
     ))
     current_phase_line = next(line for line in lines if line.startswith("- Current phase:"))
     merged_line = next(line for line in lines if line.startswith("- Merged WPs:"))
@@ -1670,11 +1674,12 @@ def test_wp131_through_wp146_dedicated_status_chain_is_consistent():
     assert "REVIEW_TARGET" not in wp143_line
     assert "REVIEW_TARGET" not in wp144_line
     assert "REVIEW_TARGET" not in wp145_line
-    assert "REVIEW_TARGET" in wp146_line
+    assert "REVIEW_TARGET" not in wp146_line
+    assert "REVIEW_TARGET" in wp147_line
     assert sum("REVIEW_TARGET" in line for line in (
         wp131_line, wp132_line, wp133_line, wp134_line, wp135_line, wp136_line,
         wp137_line, wp138_line, wp139_line, wp140_line, wp141_line, wp142_line,
-        wp143_line, wp144_line, wp145_line, wp146_line,
+        wp143_line, wp144_line, wp145_line, wp146_line, wp147_line,
     )) == 1
     assert "Manual six-record workflow status: CLOSED_COMPLETE_ENOUGH_FOR_BOUNDED_MANUAL_USE" in wp140_line
     assert "Default manual-chain extension: STOP" in wp140_line
@@ -1759,7 +1764,7 @@ def test_wp131_through_wp146_dedicated_status_chain_is_consistent():
         "Paper/live/execution authority: FORBIDDEN", "WP146 was separately approved",
     ):
         assert phrase in wp145_line
-    assert "DOCS_STATUS_TESTS_ONLY_LOCAL_HARNESS_CLOSEOUT_REMOTE_READINESS_DECISION_REVIEW_TARGET" in wp146_line
+    assert "DOCS_STATUS_TESTS_ONLY_LOCAL_HARNESS_CLOSEOUT_REMOTE_READINESS_DECISION_MERGED" in wp146_line
     for phrase in (
         "Local harness phase status: CLOSED_COMPLETE_ENOUGH_FOR_BOUNDED_LOCAL_DRY_RUN",
         "WP145 corrected evidence accepted: YES",
@@ -1780,10 +1785,36 @@ def test_wp131_through_wp146_dedicated_status_chain_is_consistent():
         "Raw input/output persistence: NOT AUTHORIZED",
         "Paper/live/execution authority: FORBIDDEN",
         "Next phase: CURRENT_PROVIDER_MODEL_PRIVACY_RETENTION_COST_RESEARCH_AND_CANDIDATE_SHORTLIST",
-        "WP147 requires separate approval",
+        "WP147 was separately approved",
     ):
         assert phrase in wp146_line
-    assert "WP146" in current_phase_line
+    assert "DOCS_STATUS_TESTS_ONLY_CURRENT_PROVIDER_MODEL_RESEARCH_AND_CANDIDATE_SHORTLIST_REVIEW_TARGET" in wp147_line
+    for phrase in (
+        "WP147 research status: COMPLETE",
+        "Research cut-off: 2026-07-22T21:55:02Z",
+        "Candidate pool posture: CURRENT_AUTHORITATIVE_FIRST_PARTY_RESEARCH_ONLY",
+        "Provider decision: SHORTLIST_MAXIMUM_TWO_REMOTE_CANDIDATES_PLUS_OPTIONAL_ONE_LOCAL_BASELINE",
+        "Remote configurations researched deeply: 3",
+        "Remote configurations eligible: 2",
+        "Remote configurations shortlisted: 2",
+        "Candidate shortlist decision: SHORTLIST_TWO_ELIGIBLE_REMOTE_CONFIGURATIONS",
+        "Shortlisted candidate IDs: OAI-SOL-RESPONSES and OAI-LUNA-RESPONSES",
+        "Local baseline decision: DEFERRED_HARDWARE_EVIDENCE_MISSING",
+        "Remote controlled experiment readiness: NOT_READY",
+        "Provider/model activation: NOT AUTHORIZED",
+        "Provider/model call: NOT AUTHORIZED",
+        "Hermes installation/invocation: NOT AUTHORIZED",
+        "Provider account creation: NOT AUTHORIZED",
+        "Credential creation/use: NOT AUTHORIZED",
+        "Network endpoint activation: NOT AUTHORIZED",
+        "Experiment spending: NOT AUTHORIZED",
+        "Raw input/output persistence: NOT AUTHORIZED",
+        "Paper/live/execution authority: FORBIDDEN",
+        "Next phase: CANDIDATE_SELECTION_CONFIGURATION_PRIVACY_EVIDENCE_AND_OPERATOR_APPROVAL_DECISION",
+        "WP148 requires separate approval",
+    ):
+        assert phrase in wp147_line
+    assert "WP147" in current_phase_line
     assert "WP138" in merged_line
     assert "WP139" in merged_line
     assert "WP140" in merged_line
@@ -1792,6 +1823,7 @@ def test_wp131_through_wp146_dedicated_status_chain_is_consistent():
     assert "WP143" in merged_line
     assert "WP144" in merged_line
     assert "WP145" in merged_line
+    assert "WP146" in merged_line
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     for path in (
         "docs/hermes_candidate_review_manual_research_question_request_response_validation_receipt_four_record_chain_operator_runbook.md",
@@ -1830,6 +1862,9 @@ def test_wp131_through_wp146_dedicated_status_chain_is_consistent():
         "docs/hermes_candidate_review_assisted_research_local_harness_closeout_and_controlled_remote_experiment_readiness_decision.md",
         "tests/test_hermes_candidate_review_assisted_research_local_harness_closeout_and_controlled_remote_experiment_readiness_decision_docs.py",
         "docs/status_entries/WP146.md",
+        "docs/hermes_candidate_review_assisted_research_current_provider_model_privacy_retention_cost_endpoint_research_and_candidate_shortlist.md",
+        "tests/test_hermes_candidate_review_assisted_research_current_provider_model_privacy_retention_cost_endpoint_research_and_candidate_shortlist_docs.py",
+        "docs/status_entries/WP147.md",
     ):
         assert path in index
 
@@ -2095,3 +2130,88 @@ def test_wp146_status_fragment_is_stable_and_contains_locked_decisions():
         in normalized_status
     )
     assert "two exact Hermes-document allowlist additions" not in status
+
+
+def test_wp147_status_fragment_is_stable_and_contains_locked_decisions():
+    status = (STATUS_ENTRIES / "WP147.md").read_text(encoding="utf-8")
+    expected_headings = [
+        "# WP147 — Hermes Current Provider/Model Research And Candidate Shortlist V1",
+        "## Package Identity",
+        "## Authorization Basis",
+        "## Authority / Non-Authority",
+        "## Merge Gate",
+        "## Repository Inputs Reviewed",
+        "## Repository Discovery",
+        "## Research Authority",
+        "## Research Method",
+        "## Research Cut-Off",
+        "## Source Hierarchy",
+        "## Candidate Pool",
+        "## Hermes Compatibility",
+        "## Mandatory Eligibility",
+        "## Candidate Research Summary",
+        "## Privacy/Retention Summary",
+        "## Endpoint Summary",
+        "## Cost Summary",
+        "## Optional Local Baseline",
+        "## Eligibility Matrix",
+        "## Shortlist Decision",
+        "## Candidate-Specific Blockers",
+        "## Cross-Cutting Blockers",
+        "## Readiness Decision",
+        "## Next Phase",
+        "## Promotion Gates",
+        "## Deferred Capabilities",
+        "## Changed Files",
+        "## Requirement-To-Evidence",
+        "## Validation",
+        "## Model D Evidence",
+        "## Stable Metadata",
+        "## Follow-Up Classification",
+        "## Ready For Review",
+    ]
+    headings = [
+        line
+        for line in status.splitlines()
+        if line.startswith("# ") or line.startswith("## ")
+    ]
+    assert headings == expected_headings
+    for statement in (
+        "WP147 research status: COMPLETE",
+        "Research cut-off: 2026-07-22T21:55:02Z",
+        "Candidate pool posture: CURRENT_AUTHORITATIVE_FIRST_PARTY_RESEARCH_ONLY",
+        "Provider decision: SHORTLIST_MAXIMUM_TWO_REMOTE_CANDIDATES_PLUS_OPTIONAL_ONE_LOCAL_BASELINE",
+        "Candidate shortlist decision: SHORTLIST_TWO_ELIGIBLE_REMOTE_CONFIGURATIONS",
+        "Local baseline decision: DEFERRED_HARDWARE_EVIDENCE_MISSING",
+        "Remote controlled experiment readiness: NOT_READY",
+        "Provider/model activation: NOT AUTHORIZED",
+        "Provider/model call: NOT AUTHORIZED",
+        "Hermes installation/invocation: NOT AUTHORIZED",
+        "Provider account creation: NOT AUTHORIZED",
+        "Credential creation/use: NOT AUTHORIZED",
+        "Network endpoint activation: NOT AUTHORIZED",
+        "Experiment spending: NOT AUTHORIZED",
+        "Raw input/output persistence: NOT AUTHORIZED",
+        "Paper/live/execution authority: FORBIDDEN",
+        "Next phase: CANDIDATE_SELECTION_CONFIGURATION_PRIVACY_EVIDENCE_AND_OPERATOR_APPROVAL_DECISION",
+        "WP148 requires separate approval",
+        "Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED",
+        "Evidence architecture: Model D",
+        "Ready for review: YES only after final validation",
+    ):
+        assert statement in status
+    for path in (
+        "docs/hermes_candidate_review_assisted_research_current_provider_model_privacy_retention_cost_endpoint_research_and_candidate_shortlist.md",
+        "tests/test_hermes_candidate_review_assisted_research_current_provider_model_privacy_retention_cost_endpoint_research_and_candidate_shortlist_docs.py",
+        "docs/status_entries/WP147.md",
+    ):
+        assert path in status
+    assert "WP146 is merged" in status
+    assert "WP147 is the sole current review target" in status
+    assert "Hermes-document allowlist additions: NONE" in status
+    assert "Compatibility-test modification: `tests/test_project_status_docs.py` ONLY" in status
+    assert "LOCAL_DRAFT_VERIFIED" not in status
+    assert "TBD" not in status
+    assert "Head commit:" not in status
+    assert re.search(r"Current live PR head:\s*`?[0-9a-f]{40}`?", status, re.IGNORECASE) is None
+    assert "future mergeability" not in status.lower()

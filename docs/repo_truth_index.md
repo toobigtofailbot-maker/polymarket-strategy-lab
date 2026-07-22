@@ -525,6 +525,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z224. `docs/status_entries/WP146.md` - WP146 stable committed status fragment for the docs/status/tests-only local-harness closeout and controlled remote-experiment readiness decision package.
 
+62z225. `docs/hermes_candidate_review_assisted_research_current_provider_model_privacy_retention_cost_endpoint_research_and_candidate_shortlist.md` - WP147 canonical current first-party research record for a bounded four-configuration preliminary pool, three deeply researched exact remote configurations, the two-configuration OpenAI Responses research shortlist, fail-closed Anthropic and Google evidence gaps, exact privacy/retention/jurisdiction/endpoint/key evidence, WP143-compatible expected and stress cost calculations, hardware-evidence local-baseline deferral, persistent `NOT_READY`, and separately gated WP148 with no activation, implementation, credential, spend, storage, or trading authority.
+
+62z226. `tests/test_hermes_candidate_review_assisted_research_current_provider_model_privacy_retention_cost_endpoint_research_and_candidate_shortlist_docs.py` - WP147 Markdown-only focused regression for exact structure and decisions, ISO research cutoff, complete official HTTPS source metadata, bounded candidate counts and exact identities, fail-closed mandatory eligibility, shortlist PASS requirements, API-policy/privacy/retention/deletion/jurisdiction/subprocessor/security coverage, endpoint/Hermes/key feasibility, formulas and all WP143 caps, hardware-evidence deferral, `NOT_READY`, WP148 gating, and no implementation/activation/spend/storage/trading authority.
+
+62z227. `docs/status_entries/WP147.md` - WP147 stable committed status fragment for the public-research/documentation/status/tests-only current provider/model evidence and candidate-shortlist package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
