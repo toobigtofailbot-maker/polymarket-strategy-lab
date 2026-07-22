@@ -1741,7 +1741,7 @@ def test_wp131_through_wp145_dedicated_status_chain_is_consistent():
     for phrase in (
         "Harness implementation status: LOCAL_OFFLINE_TEST_ORIENTED_SKELETON",
         "Controller authority: LOCAL_DETERMINISTIC_EXCLUSIVE",
-        "Adapter status: TEST_ONLY_FAKE_PROVIDER_ADAPTER",
+        "Adapter status: TEST_ONLY_PRECOMPUTED_FAKE_RESPONSE",
         "Dry-run case count: 1", "Dry-run case ID: GC-P01-COMPLETE-SUPPORTED",
         "Network: FORBIDDEN", "Credentials: FORBIDDEN",
         "Hermes installation/invocation: FORBIDDEN", "Provider/model call: FORBIDDEN",
@@ -1954,7 +1954,7 @@ def test_wp145_status_fragment_is_stable_and_contains_locked_decisions():
     for statement in (
         "Harness implementation status: LOCAL_OFFLINE_TEST_ORIENTED_SKELETON",
         "Controller authority: LOCAL_DETERMINISTIC_EXCLUSIVE",
-        "Adapter status: TEST_ONLY_FAKE_PROVIDER_ADAPTER",
+        "Adapter status: TEST_ONLY_PRECOMPUTED_FAKE_RESPONSE",
         "Dry-run case count: 1",
         "Dry-run case ID: GC-P01-COMPLETE-SUPPORTED",
         "Network: FORBIDDEN",

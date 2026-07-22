@@ -3,7 +3,8 @@
 ## Purpose
 
 WP145 provides one bounded local/offline test-oriented controller skeleton for
-exercising one existing synthetic WP142 case through an in-test fake adapter,
+exercising one existing synthetic WP142 case through an already-materialized
+in-memory synthetic response,
 the existing deterministic WP133 validator, explicit human review, sanitized
 evidence, and mandatory teardown. It is a dry-run harness only.
 
@@ -21,7 +22,7 @@ Harness implementation status: LOCAL_OFFLINE_TEST_ORIENTED_SKELETON
 
 Controller authority: LOCAL_DETERMINISTIC_EXCLUSIVE
 
-Adapter status: TEST_ONLY_FAKE_PROVIDER_ADAPTER
+Adapter status: TEST_ONLY_PRECOMPUTED_FAKE_RESPONSE
 
 Dry-run case count: 1
 
@@ -69,8 +70,8 @@ behavior.
 
 The smoke test reads the existing WP142 JSON fixture in test code, selects
 exactly `GC-P01-COMPLETE-SUPPORTED`, copies it into the exact caller-supplied
-wrapper, invokes one in-test fake adapter exactly once, validates the returned
-untrusted mapping with WP133, records the bounded case hard-gate evaluation,
+wrapper, hands the controller one precomputed plain built-in response mapping,
+validates that untrusted mapping with WP133, records the bounded case hard-gate evaluation,
 requires explicit caller-supplied human review, emits only sanitized evidence,
 and proves the original fixture and caller input are unchanged. No fixture is
 created or modified.
@@ -102,24 +103,26 @@ Failure preserves reached-state order, performs teardown, and ends only at
 `STOPPED_FAILED_CLOSED`. The caller cannot supply or alter transitions, skip a
 state, restart a run, or request background continuation.
 
-## Fake Adapter Boundary
+## Precomputed Fake-Response Boundary
 
-The fake adapter exists only in test code. The controller passes it one copied
-immutable session envelope containing allowlisted synthetic content,
-identifiers, policy IDs, zero-cost limits, safety constraints, and WP133 shape
-instructions. It receives no credential, endpoint, client, path, filesystem,
-network, shell, browser, search, repository, or trading argument. A mutation
-attempt, exception, non-mapping output, second-call expectation, or unsafe
-output fails closed without retry or caller-content echo.
+The source runner accepts data, not executable callback behavior. Tests may
+construct the synthetic response before the call, but the controller invokes no
+caller-supplied code. It accepts only a plain built-in mapping recursively
+composed of plain strings, booleans, lists, tuples, and mappings; custom mapping
+or callable objects fail closed before output capture. Evidence therefore
+records `adapter_kind: TEST_ONLY_PRECOMPUTED_FAKE_RESPONSE`,
+`adapter_call_count: 0`, and `external_callable_invoked: False`.
 
 ## Deterministic Validation
 
 The controller imports and calls the existing
 `validate_candidate_review_manual_research_response` API from WP133. It does
 not duplicate or replace WP133 validation. Unknown fields, invalid shape,
-unsafe content, unsupported citation labels, source-access claims, forbidden
-authority, raw/persistent-output fields, and downstream-record fields fail
-closed. There is no repair, regeneration, alternate output, or second call.
+unsafe content, any non-success response label, missing positive-case completion
+posture, unsupported or missing supplied citation labels, recursively detected
+source-access claims, forbidden authority, raw/persistent-output fields, and
+downstream-record fields fail closed. There is no repair, regeneration,
+alternate output, or callback.
 
 ## Human Review
 
@@ -127,13 +130,14 @@ The caller separately supplies exactly `reviewer_outcome`,
 `human_review_complete`, `human_review_required`, and `reviewer_note`. Both
 booleans must be exactly true; the outcome must be bounded and acceptable for
 dry-run evidence; and the note must be safe, non-empty, bounded, and must not
-claim source/citation verification or automatic approval. The fake adapter
+claim source/citation verification or automatic approval. The precomputed response
 cannot author, infer, or approve this acknowledgement.
 
 ## Sanitized Evidence
 
-The result contains identifiers and versions, fake-adapter kind and call
-count, deterministic-validation status, the ten bounded hard-gate results, a
+The result contains identifiers and versions, precomputed-response kind, zero
+adapter calls, explicit no-external-callable evidence, deterministic-validation
+status, the ten explicitly derived hard-gate results, a
 bounded test-evaluation label, reviewer outcome, neutral stop reason, and
 teardown result. It excludes the envelope, prompt, synthetic excerpts, raw
 adapter output, free-form adapter errors, credentials, paths, provider/model
@@ -142,17 +146,18 @@ results and exceptions expose neutral codes only.
 
 ## Teardown
 
-Every terminal path discards the transient adapter output, clears the local
+Every terminal path discards the transient precomputed response, clears the local
 session-envelope reference, prevents retry by design, records no stable
 output, and reaches `TEARDOWN_COMPLETE` before `COMPLETED` or
 `STOPPED_FAILED_CLOSED`. Source code has no filesystem or repository write
-surface. Tests prove one call at most and no continued activity.
+surface. Tests prove no external caller code executes and no continued activity.
 
 ## Failure Behavior
 
 Missing/invalid cases, unknown wrapper fields, false human-review requirements,
-permission or budget violations, the wrong case, adapter mutation/exception/
-non-mapping output, WP133 rejection, unsafe no-echo traps, review failure,
+permission or budget violations, the wrong case, callable/custom/non-plain
+response objects, WP133 rejection, non-success outcomes, missing completion
+labels, recursive unsafe no-echo traps, review failure,
 authority/downstream/persistence keys, transition tampering, and input mutation
 all fail closed. Failure results preserve only sanitized identifiers that
 passed validation, neutral error codes, bounded stop evidence, teardown proof,
@@ -169,7 +174,7 @@ no raw or generated output is written anywhere.
 
 - A local harness skeleton is not a Hermes runtime or provider adapter.
 - `PROVIDER_INVOCATION_PENDING` is a deterministic state name, not a provider call.
-- A fake-adapter call is not a provider/model call.
+- A precomputed fake response is data, not a provider/model or caller-code invocation.
 - WP133 validity is not factual, source, or citation verification.
 - A hard-gate result is not provider performance or production acceptance.
 - Human review acknowledgement is not automatic approval or authority transfer.
@@ -191,7 +196,7 @@ implement WP147. WP146 requires separate approval.
 ## Non-Authority Statement
 
 WP145 is one local/offline/test-oriented deterministic skeleton and test-only
-fake-adapter dry run for one existing synthetic case. It grants no Hermes,
+precomputed-response dry run for one existing synthetic case. It grants no Hermes,
 provider, model, credential, network, source, persistence, downstream-record,
 recommendation, probability, ranking, strategy, paper/live, execution, risk,
 order, trading, acceptance, promotion, runtime, scheduler, or WP146 authority.

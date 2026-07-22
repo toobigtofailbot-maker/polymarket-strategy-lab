@@ -19,7 +19,7 @@ MODULE_PATH = ROOT / "src" / "data_layer" / "hermes_candidate_review_assisted_re
 FIXTURE_PATH = ROOT / "tests" / "fixtures" / "hermes_candidate_review_assisted_research_gold_cases.json"
 OPERATOR_NOTE = ROOT / "docs" / "hermes_candidate_review_assisted_research_local_dry_run_harness_operator_note.md"
 TRAP = "NEVER_ECHO_PRIVATE_KEY_BUY_ORDER_PROVIDER_MODEL_SOURCE_FETCHED_RAW_OUTPUT"
-DEFAULT_ADAPTER_OUTPUT = object()
+DEFAULT_RESPONSE = object()
 WP133_NOTICE = "; ".join((
     "advisory only", "manual", "local", "offline", "read only", "human review required",
     "explicit caller content only", "response contract only", "not prompt generation",
@@ -104,30 +104,17 @@ def valid_review() -> dict[str, Any]:
     }
 
 
-class CountingAdapter:
-    def __init__(self, output: object = DEFAULT_ADAPTER_OUTPUT) -> None:
-        self.calls = 0
-        self.envelopes: list[object] = []
-        self.output = valid_response() if output is DEFAULT_ADAPTER_OUTPUT else output
-
-    def __call__(self, envelope: object) -> object:
-        self.calls += 1
-        if self.calls > 1:
-            raise AssertionError("adapter invoked more than once")
-        self.envelopes.append(envelope)
-        return copy.deepcopy(self.output)
-
-
 def run(
     *,
     data: dict[str, Any] | None = None,
-    adapter: object | None = None,
+    response: object = DEFAULT_RESPONSE,
     review: dict[str, Any] | None = None,
 ) -> subject.AssistedResearchLocalDryRunResult:
-    chosen_adapter = CountingAdapter() if adapter is None else adapter
     return subject.run_assisted_research_local_no_network_dry_run(
         dry_run_input=valid_input() if data is None else data,
-        fake_adapter=chosen_adapter,  # type: ignore[arg-type]
+        fake_adapter_output=(
+            valid_response() if response is DEFAULT_RESPONSE else response
+        ),  # type: ignore[arg-type]
         human_review_acknowledgement=valid_review() if review is None else review,
     )
 
@@ -156,6 +143,7 @@ def assert_failed_closed(result: subject.AssistedResearchLocalDryRunResult, trap
     assert result.network_used is result.credential_used is result.hermes_used is False
     assert result.provider_call_used is result.persistent_output_created is False
     assert result.downstream_record_created is False
+    assert result.external_callable_invoked is False
     assert result.errors and result.warnings == ()
     if trap:
         assert trap not in recursive_text(result)
@@ -175,7 +163,7 @@ def test_exact_public_surface_state_model_and_frozen_result() -> None:
     assert subject.ASSISTED_RESEARCH_LOCAL_DRY_RUN_POSTURE == (
         "Harness implementation status: LOCAL_OFFLINE_TEST_ORIENTED_SKELETON",
         "Controller authority: LOCAL_DETERMINISTIC_EXCLUSIVE",
-        "Adapter status: TEST_ONLY_FAKE_PROVIDER_ADAPTER",
+        "Adapter status: TEST_ONLY_PRECOMPUTED_FAKE_RESPONSE",
         "Dry-run case count: 1", "Dry-run case ID: GC-P01-COMPLETE-SUPPORTED",
         "Network: FORBIDDEN", "Credentials: FORBIDDEN",
         "Hermes installation/invocation: FORBIDDEN", "Provider/model call: FORBIDDEN",
@@ -218,28 +206,32 @@ def test_valid_input_and_immutable_sanitized_envelope() -> None:
         envelope["budget_limits"]["max_total_calls"] = 2  # type: ignore[index]
 
 
-def test_positive_run_calls_adapter_once_and_returns_only_sanitized_evidence() -> None:
+def test_positive_run_uses_precomputed_response_and_returns_only_sanitized_evidence() -> None:
     data = valid_input()
     before = copy.deepcopy(data)
-    adapter = CountingAdapter()
-    result = run(data=data, adapter=adapter)
+    response = valid_response()
+    response_before = copy.deepcopy(response)
+    result = run(data=data, response=response)
     assert result.valid is True
     assert result.state_trace == subject.ASSISTED_RESEARCH_LOCAL_DRY_RUN_STATES[:-1]
     assert result.terminal_state == "COMPLETED"
-    assert adapter.calls == 1
-    assert len(adapter.envelopes) == 1
+    assert response == response_before
     assert data == before and result.input_unchanged is True
     assert result.deterministic_validation_passed is True
     assert result.rubric_evaluation_complete is True
     assert result.human_review_complete is result.teardown_complete is True
-    assert result.fake_adapter_only is True
+    assert result.precomputed_fake_response_only is True
+    assert result.external_callable_invoked is False
     assert not any((
         result.network_used, result.credential_used, result.hermes_used,
         result.provider_call_used, result.persistent_output_created,
         result.downstream_record_created,
     ))
     assert result.errors == result.warnings == ()
-    assert result.sanitized_evidence["adapter_call_count"] == 1
+    assert result.sanitized_evidence["adapter_kind"] == "TEST_ONLY_PRECOMPUTED_FAKE_RESPONSE"
+    assert result.sanitized_evidence["adapter_call_count"] == 0
+    assert result.sanitized_evidence["external_callable_invoked"] is False
+    assert tuple(result.sanitized_evidence["hard_gate_results"]) == subject._HARD_GATE_IDS
     assert all(result.sanitized_evidence["hard_gate_results"].values())
     forbidden = {
         "raw_input", "raw_output", "raw_adapter_output", "prompt", "envelope",
@@ -252,13 +244,11 @@ def test_positive_run_calls_adapter_once_and_returns_only_sanitized_evidence() -
     assert subject.assert_valid_assisted_research_local_dry_run_result(result) is result
 
 
-def test_repeated_runs_are_deterministic_and_adapter_is_never_retried() -> None:
-    first_adapter = CountingAdapter()
-    second_adapter = CountingAdapter()
-    first = run(adapter=first_adapter)
-    second = run(adapter=second_adapter)
+def test_repeated_runs_with_same_precomputed_response_are_deterministic() -> None:
+    response = valid_response()
+    first = run(response=response)
+    second = run(response=response)
     assert first == second
-    assert first_adapter.calls == second_adapter.calls == 1
 
 
 @pytest.mark.parametrize("mutation", ["missing_case", "case_not_mapping", "unknown_wrapper", "false_review"])
@@ -344,44 +334,27 @@ def test_output_policy_unknown_or_authority_true_fails_closed() -> None:
         assert_failed_closed(run(data=data))
 
 
-def test_adapter_mutation_attempt_fails_closed_even_when_adapter_catches_error() -> None:
-    class MutatingAdapter:
+def test_public_runner_rejects_callable_without_invoking_external_code() -> None:
+    class SideEffectCallable:
         calls = 0
 
-        def __call__(self, envelope: object) -> dict[str, Any]:
+        def __call__(self) -> dict[str, Any]:
             self.calls += 1
-            try:
-                envelope["case_id"] = "changed"  # type: ignore[index]
-            except TypeError:
-                pass
             return valid_response()
 
-    adapter = MutatingAdapter()
-    result = run(adapter=adapter)
+    candidate = SideEffectCallable()
+    result = run(response=candidate)
     assert_failed_closed(result)
-    assert result.errors == ("ADAPTER_MUTATION_ATTEMPT",)
-    assert adapter.calls == 1
+    assert result.errors == ("INVALID_PRECOMPUTED_FAKE_RESPONSE",)
+    assert result.external_callable_invoked is False
+    assert candidate.calls == 0
 
 
-def test_adapter_exception_and_non_mapping_fail_closed_without_echo_or_retry() -> None:
-    class ExplodingAdapter:
-        calls = 0
-
-        def __call__(self, envelope: object) -> object:
-            self.calls += 1
-            raise RuntimeError(TRAP)
-
-    exploding = ExplodingAdapter()
-    result = run(adapter=exploding)
-    assert_failed_closed(result, TRAP)
-    assert result.errors == ("ADAPTER_EXCEPTION",)
-    assert exploding.calls == 1
+def test_non_plain_or_non_mapping_precomputed_response_fails_closed() -> None:
     for output in (None, "text", [], (), 7):
-        adapter = CountingAdapter(output)
-        result = run(adapter=adapter)
+        result = run(response=output)
         assert_failed_closed(result)
-        assert result.errors == ("ADAPTER_OUTPUT_NOT_MAPPING",)
-        assert adapter.calls == 1
+        assert result.errors == ("INVALID_PRECOMPUTED_FAKE_RESPONSE",)
 
 
 @pytest.mark.parametrize("mode", ["missing", "unknown", "unsafe", "source_claim", "unsupported_citation"])
@@ -397,9 +370,85 @@ def test_wp133_and_output_safety_failures_are_neutral(mode: str) -> None:
         response["source_summary"] = "The source was fetched and verified. " + TRAP
     else:
         response["cited_source_references"] = ["Synthetic unknown label"]
-    result = run(adapter=CountingAdapter(response))
+    result = run(response=response)
     assert_failed_closed(result, TRAP if mode in {"unsafe", "source_claim"} else None)
     assert result.deterministic_validation_passed is False
+
+
+NON_SUCCESS_RESPONSE_LABELS = sorted(
+    wp133.ALLOWED_MANUAL_RESEARCH_RESPONSE_LABELS
+    - {"RESPONSE_COMPLETE_PENDING_HUMAN_REVIEW"}
+)
+
+
+@pytest.mark.parametrize("response_label", NON_SUCCESS_RESPONSE_LABELS)
+def test_every_non_success_wp133_label_fails_closed(response_label: str) -> None:
+    response = valid_response()
+    response["response_label"] = response_label
+    result = run(response=response)
+    assert_failed_closed(result)
+    assert result.errors == ("POSITIVE_CASE_EXPECTED_OUTCOME_NOT_MET",)
+
+
+@pytest.mark.parametrize("missing_label", ["REQUIRED_SECTIONS_PRESENT", "HUMAN_REVIEW_PENDING"])
+def test_missing_required_positive_completion_label_fails_closed(missing_label: str) -> None:
+    response = valid_response()
+    response["completion_labels"].remove(missing_label)
+    replacement = next(
+        label for label in sorted(wp133.ALLOWED_RESEARCH_COMPLETION_LABELS)
+        if label not in response["completion_labels"] and label != missing_label
+    )
+    response["completion_labels"].append(replacement)
+    result = run(response=response)
+    assert_failed_closed(result)
+    assert result.errors == ("POSITIVE_CASE_EXPECTED_OUTCOME_NOT_MET",)
+
+
+def test_expected_outcome_mismatch_fails_closed() -> None:
+    data = valid_input()
+    data["case_bundle"]["expected_outcome_label"] = "REFUSAL_OR_DEFER_EXPECTED"
+    result = run(data=data)
+    assert_failed_closed(result)
+    assert result.errors == ("POSITIVE_CASE_EXPECTED_OUTCOME_NOT_MET",)
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    subject._WP133_FREE_TEXT_SCALAR_FIELDS + subject._WP133_FREE_TEXT_SEQUENCE_FIELDS,
+)
+@pytest.mark.parametrize("phrase", subject._FORBIDDEN_SOURCE_ACCESS_CLAIMS)
+def test_recursive_source_access_claim_scan_covers_every_text_surface(
+    field_name: str,
+    phrase: str,
+) -> None:
+    response = valid_response()
+    if field_name in subject._WP133_FREE_TEXT_SEQUENCE_FIELDS:
+        response[field_name] = [phrase]
+    else:
+        response[field_name] = phrase
+    result = run(response=response)
+    assert_failed_closed(result)
+    assert phrase not in recursive_text(result)
+    assert phrase not in repr(result)
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    subject._WP133_FREE_TEXT_SCALAR_FIELDS + subject._WP133_FREE_TEXT_SEQUENCE_FIELDS,
+)
+def test_wp145_scan_itself_rejects_each_scalar_and_sequence_surface(field_name: str) -> None:
+    phrase = "source was accessed"
+    response = valid_response()
+    if field_name == "non_authority_notice":
+        response[field_name] = f"{response[field_name]}; {phrase}"
+    elif field_name in subject._WP133_FREE_TEXT_SEQUENCE_FIELDS:
+        response[field_name] = [phrase]
+    else:
+        response[field_name] = phrase
+    result = run(response=response)
+    assert_failed_closed(result)
+    assert result.errors == ("FORBIDDEN_SOURCE_ACCESS_CLAIM",)
+    assert phrase not in recursive_text(result)
 
 
 @pytest.mark.parametrize("extra_key", [
@@ -409,7 +458,7 @@ def test_wp133_and_output_safety_failures_are_neutral(mode: str) -> None:
 def test_forbidden_authority_downstream_and_persistence_keys_fail_closed(extra_key: str) -> None:
     response = valid_response()
     response[extra_key] = TRAP
-    result = run(adapter=CountingAdapter(response))
+    result = run(response=response)
     assert_failed_closed(result, TRAP)
 
 
@@ -433,27 +482,44 @@ def test_human_review_failures_fail_closed(mode: str) -> None:
     result = run(review=review)
     assert_failed_closed(result, TRAP if mode == "claim" else None)
     assert result.deterministic_validation_passed is True
-    assert result.rubric_evaluation_complete is True
+    assert result.rubric_evaluation_complete is False
     assert result.human_review_complete is False
 
 
-def test_original_input_mutation_by_adapter_closure_is_detected() -> None:
-    data = valid_input()
+def test_one_false_derived_hard_gate_blocks_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    original = subject._evaluate_wp142_hard_gates
 
-    class ClosureMutator:
-        calls = 0
+    def false_gate(**kwargs: object) -> dict[str, bool]:
+        gates = dict(original(**kwargs))  # type: ignore[arg-type]
+        gates["NO_UNAPPROVED_PERSISTENCE"] = False
+        return gates
 
-        def __call__(self, envelope: object) -> dict[str, Any]:
-            self.calls += 1
-            data["experiment_id"] = "WP145-LOCAL-DRY-RUN-MUTATED"
-            return valid_response()
-
-    adapter = ClosureMutator()
-    result = run(data=data, adapter=adapter)
+    monkeypatch.setattr(subject, "_evaluate_wp142_hard_gates", false_gate)
+    result = run()
     assert_failed_closed(result)
-    assert result.errors == ("INPUT_MUTATION_DETECTED",)
-    assert result.input_unchanged is False
-    assert adapter.calls == 1
+    assert result.errors == ("HARD_GATE_EVALUATION_FAILED",)
+
+
+def test_all_ten_hard_gates_are_explicitly_derived_without_blanket_true_initialization() -> None:
+    source = MODULE_PATH.read_text(encoding="utf-8")
+    assert "{gate: True for gate in _HARD_GATE_IDS}" not in source
+    tree = ast.parse(source)
+    evaluator = next(
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "_evaluate_wp142_hard_gates"
+    )
+    gate_dict = next(
+        node.args[0]
+        for node in ast.walk(evaluator)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "_ImmutableMapping"
+        and node.args
+        and isinstance(node.args[0], ast.Dict)
+    )
+    keys = tuple(key.value for key in gate_dict.keys if isinstance(key, ast.Constant))
+    assert keys == subject._HARD_GATE_IDS
+    assert all(not (isinstance(value, ast.Constant) and value.value is True) for value in gate_dict.values)
 
 
 def test_assert_helper_rejects_failure_with_neutral_exception() -> None:
@@ -468,14 +534,15 @@ def test_result_field_coverage_and_full_invalid_output_scan() -> None:
         "valid", "experiment_id", "case_id", "state_trace", "terminal_state",
         "deterministic_validation_passed", "rubric_evaluation_complete",
         "human_review_complete", "teardown_complete", "input_unchanged",
-        "fake_adapter_only", "network_used", "credential_used", "hermes_used",
+        "precomputed_fake_response_only", "external_callable_invoked",
+        "network_used", "credential_used", "hermes_used",
         "provider_call_used", "persistent_output_created", "downstream_record_created",
         "sanitized_evidence", "errors", "warnings",
     }
     assert {field.name for field in dataclasses.fields(subject.AssistedResearchLocalDryRunResult)} == expected_fields
     response = valid_response()
     response["source_summary"] = TRAP
-    result = run(adapter=CountingAdapter(response))
+    result = run(response=response)
     assert set(dataclasses.asdict(result)) == expected_fields
     assert TRAP not in recursive_text(result)
 
@@ -509,6 +576,21 @@ def test_ast_boundary_has_only_stdlib_and_exact_wp133_import_and_no_io() -> None
         "aiohttp", "asyncio", "random", "uuid", "sqlite3", "shelve", "pickle",
     }
     assert not ({name.split(".")[0] for name in imports} & forbidden_import_roots)
+    assert "Callable" not in source
+    runner = next(
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "run_assisted_research_local_no_network_dry_run"
+    )
+    assert [argument.arg for argument in runner.args.kwonlyargs] == [
+        "dry_run_input", "fake_adapter_output", "human_review_acknowledgement",
+    ]
+    assert not any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id in {"dry_run_input", "fake_adapter_output", "human_review_acknowledgement"}
+        for node in ast.walk(runner)
+    )
 
 
 def test_source_does_not_load_fixture_or_define_reusable_fake_adapter() -> None:
@@ -527,7 +609,7 @@ def test_operator_note_has_exact_title_headings_and_locked_posture() -> None:
     assert headings == [
         "## Purpose", "## Position After WP144", "## What WP145 Implements",
         "## What WP145 Does Not Implement", "## Exact One-Case Dry Run",
-        "## State Machine", "## Fake Adapter Boundary", "## Deterministic Validation",
+        "## State Machine", "## Precomputed Fake-Response Boundary", "## Deterministic Validation",
         "## Human Review", "## Sanitized Evidence", "## Teardown",
         "## Failure Behavior", "## Test-Only Temp Boundary",
         "## Forbidden Interpretations", "## Future WP146 Boundary",
@@ -536,7 +618,7 @@ def test_operator_note_has_exact_title_headings_and_locked_posture() -> None:
     for statement in (
         "Harness implementation status: LOCAL_OFFLINE_TEST_ORIENTED_SKELETON",
         "Controller authority: LOCAL_DETERMINISTIC_EXCLUSIVE",
-        "Adapter status: TEST_ONLY_FAKE_PROVIDER_ADAPTER",
+        "Adapter status: TEST_ONLY_PRECOMPUTED_FAKE_RESPONSE",
         "Dry-run case count: 1", "Dry-run case ID: GC-P01-COMPLETE-SUPPORTED",
         "Network: FORBIDDEN", "Credentials: FORBIDDEN",
         "Hermes installation/invocation: FORBIDDEN", "Provider/model call: FORBIDDEN",

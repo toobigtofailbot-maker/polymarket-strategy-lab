@@ -97,18 +97,6 @@ def review() -> dict[str, Any]:
     }
 
 
-class OneCallAdapter:
-    def __init__(self, output: object) -> None:
-        self.output = output
-        self.calls = 0
-
-    def __call__(self, envelope: object) -> object:
-        self.calls += 1
-        assert self.calls == 1
-        assert set(envelope) == set(harness._ENVELOPE_FIELDS)  # type: ignore[arg-type]
-        return copy.deepcopy(self.output)
-
-
 def assert_failed(result: harness.AssistedResearchLocalDryRunResult, tmp_path: Path, before: bytes) -> None:
     assert result.valid is False
     assert result.state_trace[-2:] == ("TEARDOWN_COMPLETE", "STOPPED_FAILED_CLOSED")
@@ -120,28 +108,31 @@ def assert_failed(result: harness.AssistedResearchLocalDryRunResult, tmp_path: P
         result.provider_call_used, result.persistent_output_created,
         result.downstream_record_created,
     ))
+    assert result.external_callable_invoked is False
 
 
 def test_exact_one_case_local_no_network_temp_smoke(tmp_path: Path) -> None:
     case, fixture_before = load_one_case()
     data = dry_run_input(case)
     data_before = copy.deepcopy(data)
-    adapter = OneCallAdapter(response())
+    fake_response = response()
+    fake_response_before = copy.deepcopy(fake_response)
     result = harness.run_assisted_research_local_no_network_dry_run(
         dry_run_input=data,
-        fake_adapter=adapter,
+        fake_adapter_output=fake_response,
         human_review_acknowledgement=review(),
     )
     assert result.valid is True
     assert result.case_id == "GC-P01-COMPLETE-SUPPORTED"
     assert result.state_trace == harness.ASSISTED_RESEARCH_LOCAL_DRY_RUN_STATES[:-1]
     assert result.terminal_state == "COMPLETED"
-    assert adapter.calls == 1
+    assert fake_response == fake_response_before
     assert result.input_unchanged is True and data == data_before
     assert result.deterministic_validation_passed is True
     assert result.rubric_evaluation_complete is True
     assert result.human_review_complete is result.teardown_complete is True
-    assert result.fake_adapter_only is True
+    assert result.precomputed_fake_response_only is True
+    assert result.external_callable_invoked is False
     assert not any((
         result.network_used, result.credential_used, result.hermes_used,
         result.provider_call_used, result.persistent_output_created,
@@ -150,33 +141,36 @@ def test_exact_one_case_local_no_network_temp_smoke(tmp_path: Path) -> None:
     assert result.errors == result.warnings == ()
     assert set(result.sanitized_evidence) == {
         "experiment_id", "case_id", "configuration_version", "fixture_pack_version",
-        "rubric_version", "adapter_kind", "adapter_call_count",
+        "rubric_version", "adapter_kind", "adapter_call_count", "external_callable_invoked",
         "deterministic_validation", "hard_gate_results", "bounded_test_evaluation",
         "reviewer_outcome", "stop_reason", "teardown_result",
     }
+    assert result.sanitized_evidence["adapter_kind"] == "TEST_ONLY_PRECOMPUTED_FAKE_RESPONSE"
+    assert result.sanitized_evidence["adapter_call_count"] == 0
+    assert result.sanitized_evidence["external_callable_invoked"] is False
     assert all(result.sanitized_evidence["hard_gate_results"].values())
     assert not list(tmp_path.iterdir())
     assert FIXTURE.read_bytes() == fixture_before
 
 
-def test_adapter_exception_temp_smoke_fails_closed(tmp_path: Path) -> None:
+def test_external_callable_temp_smoke_is_rejected_without_execution(tmp_path: Path) -> None:
     case, fixture_before = load_one_case()
 
-    class ExplodingAdapter:
+    class SideEffectCallable:
         calls = 0
 
-        def __call__(self, envelope: object) -> object:
+        def __call__(self) -> object:
             self.calls += 1
             raise RuntimeError(TRAP)
 
-    adapter = ExplodingAdapter()
+    candidate = SideEffectCallable()
     result = harness.run_assisted_research_local_no_network_dry_run(
         dry_run_input=dry_run_input(case),
-        fake_adapter=adapter,
+        fake_adapter_output=candidate,  # type: ignore[arg-type]
         human_review_acknowledgement=review(),
     )
     assert_failed(result, tmp_path, fixture_before)
-    assert adapter.calls == 1
+    assert candidate.calls == 0
     assert TRAP not in repr(result)
 
 
@@ -184,28 +178,24 @@ def test_invalid_output_temp_smoke_fails_closed(tmp_path: Path) -> None:
     case, fixture_before = load_one_case()
     output = response()
     del output["response_id"]
-    adapter = OneCallAdapter(output)
     result = harness.run_assisted_research_local_no_network_dry_run(
         dry_run_input=dry_run_input(case),
-        fake_adapter=adapter,
+        fake_adapter_output=output,
         human_review_acknowledgement=review(),
     )
     assert_failed(result, tmp_path, fixture_before)
-    assert adapter.calls == 1
 
 
 def test_unsafe_no_echo_temp_smoke_fails_closed(tmp_path: Path) -> None:
     case, fixture_before = load_one_case()
     output = response()
     output["source_summary"] = TRAP
-    adapter = OneCallAdapter(output)
     result = harness.run_assisted_research_local_no_network_dry_run(
         dry_run_input=dry_run_input(case),
-        fake_adapter=adapter,
+        fake_adapter_output=output,
         human_review_acknowledgement=review(),
     )
     assert_failed(result, tmp_path, fixture_before)
-    assert adapter.calls == 1
     assert TRAP not in repr(result)
 
 
@@ -213,14 +203,12 @@ def test_failed_review_temp_smoke_fails_closed(tmp_path: Path) -> None:
     case, fixture_before = load_one_case()
     acknowledgement = review()
     acknowledgement["human_review_complete"] = False
-    adapter = OneCallAdapter(response())
     result = harness.run_assisted_research_local_no_network_dry_run(
         dry_run_input=dry_run_input(case),
-        fake_adapter=adapter,
+        fake_adapter_output=response(),
         human_review_acknowledgement=acknowledgement,
     )
     assert_failed(result, tmp_path, fixture_before)
-    assert adapter.calls == 1
     assert result.deterministic_validation_passed is True
-    assert result.rubric_evaluation_complete is True
+    assert result.rubric_evaluation_complete is False
     assert result.human_review_complete is False
