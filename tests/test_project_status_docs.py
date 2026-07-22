@@ -2067,3 +2067,26 @@ def test_wp146_status_fragment_is_stable_and_contains_locked_decisions():
     assert "Head commit:" not in status
     assert re.search(r"Current live PR head:\s*`?[0-9a-f]{40}`?", status, re.IGNORECASE) is None
     assert "future mergeability" not in status.lower()
+    normalized_status = " ".join(status.split())
+    assert (
+        "Existing Hermes foundation guards already accepted the WP146 documentation and "
+        "focused-test paths, so no Hermes-document allowlist edit was required."
+        in normalized_status
+    )
+    assert (
+        "The only compatibility-test modification was the dedicated project-status/"
+        "status-fragment chain extension in `tests/test_project_status_docs.py`."
+        in normalized_status
+    )
+    assert "Hermes-document allowlist additions: NONE" in status
+    assert (
+        "Compatibility-test modification: `tests/test_project_status_docs.py` ONLY"
+        in status
+    )
+    assert (
+        "No source registration, prompt-runbook source registration, architecture source "
+        "allowlist, fixture registration, wildcard, regex weakening, assertion deletion, "
+        "filename-specific evidence exception, or deferred-log change was required."
+        in normalized_status
+    )
+    assert "two exact Hermes-document allowlist additions" not in status
