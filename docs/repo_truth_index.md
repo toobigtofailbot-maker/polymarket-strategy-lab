@@ -519,6 +519,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z221. `docs/status_entries/WP145.md` - WP145 stable committed status fragment for the local/offline/test-oriented deterministic one-case harness skeleton, test-only precomputed fake response, and no-network dry-run package.
 
+62z222. `docs/hermes_candidate_review_assisted_research_local_harness_closeout_and_controlled_remote_experiment_readiness_decision.md` - WP146 canonical docs-only closeout/readiness decision accepting the corrected merged WP145 one-case local harness as bounded test-only control evidence, closing the local harness phase, classifying a controlled remote experiment as `NOT_READY`, identifying missing current provider/model/privacy/retention/cost/endpoint evidence as the primary blocker, requiring current external research before remote implementation, denying activation and implementation authority, and separately gating WP147.
+
+62z223. `tests/test_hermes_candidate_review_assisted_research_local_harness_closeout_and_controlled_remote_experiment_readiness_decision_docs.py` - WP146 focused Markdown-only regression for exact structure, locked closeout/readiness decisions, final WP145 evidence and follow-up reconciliation, local completeness and remote blocking matrices, external-research requirement, denied remote implementation, WP147 boundary, deferrals, forbidden interpretations, and no implementation/provider/credential/network/spend/storage/trading authority.
+
+62z224. `docs/status_entries/WP146.md` - WP146 stable committed status fragment for the docs/status/tests-only local-harness closeout and controlled remote-experiment readiness decision package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
