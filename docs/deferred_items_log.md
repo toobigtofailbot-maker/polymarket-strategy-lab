@@ -56,6 +56,7 @@ Research and workbench artifacts do not gain runtime authority because they are 
 | WP17-D002 | Polling runner remains dev-only/manual because venue rate limits are unconfirmed | OPEN | P2 | WP8-D002 and WP16-D002 remain OPEN; WP17 uses conservative local budgets but does not confirm venue limits. | Production or higher-frequency polling. | Authoritative rate-limit evidence and controlled production-readiness policy update repo truth. |
 | WP20-D001 | Hermes installation and setup not performed | READY_FOR_MANUAL_SETUP_DECISION | P3 | WP20 records Hermes policy only. WP27 adds `docs/agent_hermes_manual_setup_decision_record.md` defining the manual setup gates, user decisions, and approval steps. Hermes remains not installed, not required, and not a runtime dependency. Decision state: DECISION_DEFERRED_PENDING_USER_SELECTION. | Any Hermes runtime use, command approval, memory/persistence setup, network permission, or provider integration. | User explicitly selects runtime/provider/environment; future approved WP documents manual setup and keeps it outside protected runtime boundaries unless explicitly approved. WP27 does not resolve this item because Hermes is still not installed or configured. |
 | WP27-D001 | Runtime/provider/environment decision remains pending user selection | OPEN | P3 | WP27 creates decision gates but does not make the runtime/provider/environment selection. The user must explicitly choose Hermes, an alternative runtime, or the no-runtime path before any setup work begins. | Any Hermes or agent runtime installation, provider key setup, network permission, memory/persistence, or command execution. | User explicitly states runtime preference in a future work package instruction, repo truth is updated, and required approval gates are satisfied. |
+| WP149-D001 | Remote provider track deferred pending material new evidence | DEFERRED | P3 | Merged WP148 produced three deeply researched configurations, zero eligible, zero shortlisted, no provider selection, and `NOT_READY`. WP149 sets the track to `DEFERRED_PENDING_MATERIAL_NEW_EVIDENCE`, forbids periodic or unchanged provider research, and selects an `EVENT_DRIVEN_ONLY` review cadence. | Any new remote-provider research, candidate reconsideration, shortlist/configuration decision, provider implementation, account/credential/endpoint work, or remote experiment. | A safe, complete, fresh revisit packet is accepted because it could change an exact mandatory gate to `PASS`, followed by `MATERIAL_EVIDENCE_TRIGGER_AND_SEPARATE_APPROVAL`. Acceptance does not authorize activation. |
 | WP20-D002 | Agent context export schema not implemented | RESOLVED | P3 | WP21 defines and tests `docs/agent_context_export_schema.md` as a schema-only contract without exporter implementation, runtime Hermes dependency, or execution authority. | Any AI-agent read-only context export or local report handoff. | Resolved for schema-contract scope only by WP21; exporter implementation remains not started under WP21-D001. |
 | WP20-D003 | Performance and strategy logs unavailable for performance-review agent | OPEN | P3 | WP20 does not add paper trading, backtesting, live trading, strategy signals, or log schemas. Performance review remains future advisory policy only. | Any performance-review agent or strategy suggestion workflow. | Future approved WPs define authorized logs/schemas and review workflow before advisory analysis uses them. |
 | WP21-D001 | Local agent context exporter not implemented | RESOLVED | P3 | WP23 implements and tests a local/offline/read-only context exporter using allowlisted repo-truth docs and optional allowlisted local report metadata only. It adds no scheduler, runtime, network polling, Hermes dependency, credentials, execution authority, or generated committed context package. | Any actual local agent context export generation. | Resolved for WP23 local/offline/read-only exporter scope only. |
@@ -2122,6 +2123,23 @@ future paper strategy implementation. WP91-D001 and WP92-D001 remain OPEN for
 any future GitHub-aware private evidence verifier. Existing runtime, paper,
 live, credential, network/API, scheduler, dashboard, bot-loop, and dependency
 deferred items remain unchanged.
+
+## WP149 Remote Provider Track Deferral And Revisit Criteria Update
+
+WP149 adds `WP149-D001` with status `DEFERRED` and priority P3. The remote
+provider track status is `DEFERRED_PENDING_MATERIAL_NEW_EVIDENCE`; automatic
+periodic re-research, repeated unchanged research, scheduled provider sweeps,
+and reopening based only on elapsed time are forbidden. The review cadence is
+`EVENT_DRIVEN_ONLY`, and reopening requires
+`MATERIAL_EVIDENCE_TRIGGER_AND_SEPARATE_APPROVAL`.
+
+The productive provider-independent next phase is
+`LOCAL_RESEARCH_WORKFLOW_VALUE_VALIDATION_AND_PAPER_TRADING_READINESS_DECISION`.
+WP150 requires separate approval. This deferral adds no provider research,
+candidate, shortlist, selection, Hermes/provider install, account, credential,
+endpoint, model call, spend, persistence, scheduled task, paper/live,
+execution/risk/order, or trading authority. WP20-D001 and WP27-D001 remain
+unresolved for any future Hermes/runtime setup.
 
 ## WP6 Generated Artifact Incident Update
 
