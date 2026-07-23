@@ -409,11 +409,34 @@ def test_output_inventory_and_non_authority_add_no_implementation_surface():
     )
     for path in expected_paths:
         assert path in inventory
+    assert len(re.findall(r"(?m)^\d+\. ", inventory)) == 7
+    assert "docs/deferred_items_log.md" not in inventory
     assert "three additions and four documentation/test updates" in inventory
     assert "zero source, tool, fixture, workflow, dependency, lock, configuration, credential" in _normalized(inventory)
     non_authority = text.split("## Non-Authority Statement", 1)[1]
     assert "has no execution authority" in non_authority
     assert "does not research, add, shortlist, select, activate, install, configure, call" in _normalized(non_authority)
+
+
+def test_stable_authority_sections_name_only_corrected_authorized_surfaces():
+    document_authority = _section(
+        _read(),
+        "## Authority And Non-Authority",
+        "## Repository Inputs Reviewed",
+    )
+    status_authority = _section(
+        _read(STATUS),
+        "## Authority / Non-Authority",
+        "## Merge Gate",
+    )
+    authorized_wording = (
+        "project-status, repo-truth-index, and current-phase compatibility "
+        "reconciliation"
+    )
+    stale_wording = "deferred-item reconciliation"
+    for section in (document_authority, status_authority):
+        assert authorized_wording in _normalized(section)
+        assert stale_wording not in _normalized(section)
 
 
 def test_authorized_document_status_project_and_repo_truth_surfaces_agree():
@@ -423,6 +446,7 @@ def test_authorized_document_status_project_and_repo_truth_surfaces_agree():
         "project": _read(PROJECT_STATUS),
         "repo_truth": _read(REPO_TRUTH),
     }
+    assert tuple(surfaces) == ("document", "status", "project", "repo_truth")
     normalized = {name: _normalized(text) for name, text in surfaces.items()}
     for token in DECISION_TOKENS:
         normalized_token = _normalized(token)

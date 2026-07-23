@@ -46,7 +46,8 @@ Evidence insufficiency is not provider impossibility.
 The Centralized Boundary Group Reference in
 `docs/ai/codex/PROTECTED_PATHS.md` is binding. WP149 authorizes one canonical
 governance decision, one Markdown-only regression, one stable status fragment,
-and exact project-status, repo-truth-index, and deferred-item reconciliation.
+and exact project-status, repo-truth-index, and current-phase compatibility
+reconciliation.
 
 WP149 crosses none of the credentials/secrets, authenticated clients,
 wallet/account behavior, order placement/cancel, execution gateway, paper
