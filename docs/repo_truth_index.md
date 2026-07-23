@@ -531,6 +531,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z227. `docs/status_entries/WP147.md` - WP147 stable committed status fragment for the public-research/documentation/status/tests-only current provider/model evidence and candidate-shortlist package.
 
+62z228. `docs/hermes_candidate_review_assisted_research_mandatory_provider_evidence_resolution_and_research_refresh_decision.md` - WP148 canonical current public Tier 1 evidence-resolution record: OpenAI provider-side deletion and exact workload-identity token revocation remain insufficient; Anthropic deletion remains insufficient while its current public subprocessors and detailed security/incident evidence pass; Google remains preliminary and deletion-insufficient; eligibility recomputes to three deeply researched, zero eligible, zero shortlisted, no provider selection, `NOT_READY`, hardware-evidence local deferral, and a separately gated remote-provider-track deferral/revisit decision for WP149.
+
+62z229. `tests/test_hermes_candidate_review_assisted_research_mandatory_provider_evidence_resolution_and_research_refresh_decision_docs.py` - WP148 Markdown-only focused regression for exact structure and decisions, complete unique current HTTPS source metadata, mandatory Tier 1/DIRECT/current PASS evidence, all 16 resolution rows, fail-closed candidate derivation, and the required negative matrix covering `store=false`, automatic expiry, approval-dependent ZDR/MAM, Tier 2, mixed credential chains, login-only evidence, a missing mandatory row, hypothetical eligibility with zero shortlist, non-compensating cost/Hermes evidence, WP149 gating, cross-surface consistency, and no implementation authority.
+
+62z230. `docs/status_entries/WP148.md` - WP148 stable committed status fragment for the current public-research/documentation/status/tests-only mandatory provider evidence-resolution and research-refresh decision package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
