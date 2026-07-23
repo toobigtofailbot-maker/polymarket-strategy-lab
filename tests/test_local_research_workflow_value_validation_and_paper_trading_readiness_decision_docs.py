@@ -23,6 +23,7 @@ HEADINGS = [
     "## Local Research Workflow Inventory",
     "## Implemented Versus Contract-Only Capabilities",
     "## Research-Value Framework",
+    "## Metric-To-Evidence Grounding Matrix",
     "## Research Throughput",
     "## Candidate Rejection Quality",
     "## Hypothesis Quality",
@@ -81,7 +82,12 @@ DECISION_TOKENS = (
     "Provider/model selection:\nNOT MADE",
     "Remote controlled experiment readiness:\nNOT_READY",
     "Local research workflow value-validation status:\n"
-    "READY_FOR_BOUNDED_VALUE_MEASUREMENT_IMPLEMENTATION",
+    "PARTIALLY_READY_BLOCKERS_IDENTIFIED",
+    "Research-value metric records:\n39",
+    "Research-value metrics measured:\n0",
+    "Research-value metrics measurable but not yet measured:\n22",
+    "Research-value metrics not currently measurable:\n17",
+    "Research-value blockers:\n7",
     "Paper-trading implementation readiness:\nNOT_READY_FOUNDATIONAL_GAPS",
     "Paper-trading execution:\nNOT AUTHORIZED",
     "Live-trading execution:\nFORBIDDEN",
@@ -117,6 +123,16 @@ BLOCKER_FIELDS = (
     "prerequisite",
     "suggested_future_wp",
     "authority_required",
+)
+METRIC_GROUNDING_FIELDS = (
+    "metric_id",
+    "dimension",
+    "metric",
+    "measurement_state",
+    "current_artifact",
+    "exact_current_field_or_derivation",
+    "current_corpus_or_rubric_coverage",
+    "blocker",
 )
 
 
@@ -234,37 +250,157 @@ def test_capability_matrix_uses_only_allowed_states_and_separates_nonimplementat
     assert "Scaffold boundary tests prove absence" in section
 
 
-def test_every_research_value_metric_exists_and_is_not_claimed_measured():
+def test_every_research_value_metric_is_grounded_and_state_totals_are_derived():
     text = _read()
-    metric_sections = (
-        ("## Research Throughput", "## Candidate Rejection Quality", 6),
-        ("## Candidate Rejection Quality", "## Hypothesis Quality", 7),
-        ("## Hypothesis Quality", "## Reproducibility", 7),
-        ("## Reproducibility", "## Strategy-Validation Handoff Quality", 7),
-        ("## Strategy-Validation Handoff Quality", "## Operator Burden", 7),
-        ("## Operator Burden", "## Value-Measurement Readiness", 5),
+    section = _section(
+        text,
+        "## Metric-To-Evidence Grounding Matrix",
+        "## Research Throughput",
     )
-    total = 0
-    for heading, next_heading, expected_count in metric_sections:
-        header, rows = _table(_section(text, heading, next_heading))
-        assert header == [
-            "Metric",
-            "Measurement state",
-            "Future bounded measure",
-            "Current evidence boundary",
-        ]
-        assert len(rows) == expected_count
-        assert all(row[1] in MEASUREMENT_STATES for row in rows)
-        assert all(row[1] == "MEASURABLE_NOT_YET_MEASURED" for row in rows)
-        total += len(rows)
-    assert total == 39
+    header, rows = _table(section)
+    assert tuple(header) == METRIC_GROUNDING_FIELDS
+    assert len(rows) == 39
+    assert len({row[0] for row in rows}) == 39
+    assert all(len(row) == len(METRIC_GROUNDING_FIELDS) for row in rows)
+    assert all(all(cell for cell in row) for row in rows)
+    assert {row[3] for row in rows} <= MEASUREMENT_STATES
+
+    state_counts = {
+        state: sum(row[3] == state for row in rows)
+        for state in MEASUREMENT_STATES
+    }
+    assert state_counts == {
+        "MEASURED": 0,
+        "MEASURABLE_NOT_YET_MEASURED": 22,
+        "NOT_CURRENTLY_MEASURABLE": 17,
+    }
+
+    for row in rows:
+        artifact_paths = re.findall(r"`([^`]+)`", row[4])
+        assert artifact_paths, row[0]
+        for raw_path in artifact_paths:
+            path = raw_path.split("::", 1)[0]
+            assert (REPO_ROOT / path).exists(), (row[0], path)
+
+    measurable_rows = [
+        row for row in rows if row[3] == "MEASURABLE_NOT_YET_MEASURED"
+    ]
+    for row in measurable_rows:
+        assert "NONE" not in row[4]
+        assert "NONE" not in row[5]
+        assert "NONE" not in row[6]
+        coverage_paths = re.findall(r"`([^`]+)`", row[6])
+        assert coverage_paths, row[0]
+        for raw_path in coverage_paths:
+            path = raw_path.split("::", 1)[0]
+            if path.startswith(("src/", "tests/", "docs/")):
+                assert (REPO_ROOT / path).exists(), (row[0], path)
+        assert "`" in row[5] or "deterministic derivation:" in row[5]
+        assert "future" not in (row[4] + row[5] + row[6]).lower()
+
+    unsupported_rows = [
+        row for row in rows if row[3] == "NOT_CURRENTLY_MEASURABLE"
+    ]
+    assert all("NONE" in row[5] for row in unsupported_rows)
+    assert all("NONE" in row[6] for row in unsupported_rows)
+
+    totals = _normalized(section)
+    for token in (
+        "Metric records: 39",
+        "MEASURED: 0",
+        "MEASURABLE_NOT_YET_MEASURED: 22",
+        "NOT_CURRENTLY_MEASURABLE: 17",
+        "Measurable metrics without exact current field/derivation: 0",
+        "Measurable metrics without bounded corpus/rubric coverage: 0",
+        "Future-only fields used as current evidence: 0",
+    ):
+        assert token in totals
+
     framework = _section(
-        text, "## Research-Value Framework", "## Research Throughput"
+        text, "## Research-Value Framework", "## Metric-To-Evidence Grounding Matrix"
     )
-    assert "Research value means" in framework
-    assert "It is not profitability" in framework
-    assert "WP150 records no `MEASURED` result." in framework
-    assert "| MEASURED |" not in text
+    normalized_framework = _normalized(framework)
+    assert "Research value means" in normalized_framework
+    assert "It is not profitability" in normalized_framework
+    assert "`MEASURED` requires an actual measurement receipt." in normalized_framework
+    assert (
+        "WP150 records no `MEASURED` result and no measurement receipt."
+        in normalized_framework
+    )
+    assert "future field" in normalized_framework
+    assert "free-form concept" in normalized_framework
+
+
+def test_future_runbook_free_form_wp142_and_wp151_evidence_fail_closed():
+    text = _read()
+    matrix = _section(
+        text,
+        "## Metric-To-Evidence Grounding Matrix",
+        "## Research Throughput",
+    )
+    _, rows = _table(matrix)
+    by_metric = {row[2]: row for row in rows}
+
+    horizon = by_metric["horizon"]
+    assert horizon[3] == "NOT_CURRENTLY_MEASURABLE"
+    assert "future horizon field" in horizon[6]
+
+    manual_steps = by_metric["manual steps"]
+    expertise = by_metric["expertise"]
+    assert manual_steps[3] == "NOT_CURRENTLY_MEASURABLE"
+    assert expertise[3] == "NOT_CURRENTLY_MEASURABLE"
+    assert "runbook mention is not structured completion evidence" in manual_steps[6]
+    assert "runbook instruction is not an operator study" in expertise[6]
+
+    mechanism = by_metric["expected mechanism"]
+    assert mechanism[3] == "NOT_CURRENTLY_MEASURABLE"
+    assert "free-form `research_question` does not prove mechanism" in mechanism[6]
+
+    schema_version = by_metric["schema/version"]
+    assert schema_version[3] == "NOT_CURRENTLY_MEASURABLE"
+    assert "not all 20 workflow stages" in schema_version[6]
+
+    readiness = _section(
+        text,
+        "## Value-Measurement Readiness",
+        "## Paper-Trading Readiness Method",
+    )
+    normalized_readiness = _normalized(readiness)
+    assert "Future WP151 field/schema requirements cannot retroactively" in normalized_readiness
+    assert "WP142 covers a synthetic assisted-research experiment surface" in normalized_readiness
+
+
+def test_overall_value_readiness_is_derived_from_grounded_metric_states():
+    text = _read()
+    matrix = _section(
+        text,
+        "## Metric-To-Evidence Grounding Matrix",
+        "## Research Throughput",
+    )
+    _, rows = _table(matrix)
+    measured = sum(row[3] == "MEASURED" for row in rows)
+    measurable = sum(row[3] == "MEASURABLE_NOT_YET_MEASURED" for row in rows)
+    unsupported = sum(row[3] == "NOT_CURRENTLY_MEASURABLE" for row in rows)
+    if measurable and not unsupported:
+        derived = "READY_FOR_BOUNDED_VALUE_MEASUREMENT_IMPLEMENTATION"
+    elif measurable and unsupported:
+        derived = "PARTIALLY_READY_BLOCKERS_IDENTIFIED"
+    else:
+        derived = "NOT_READY_FOUNDATIONAL_GAPS"
+    assert measured == 0
+    assert derived == "PARTIALLY_READY_BLOCKERS_IDENTIFIED"
+    assert (
+        f"Local research workflow value-validation status:\n{derived}"
+        in text
+    )
+    assert (
+        "READY_FOR_BOUNDED_VALUE_MEASUREMENT_IMPLEMENTATION"
+        not in _section(
+            text,
+            "## Value-Measurement Readiness",
+            "## Paper-Trading Readiness Method",
+        )
+    )
 
 
 def test_value_measurement_readiness_is_bounded_local_and_not_implemented():
@@ -275,15 +411,15 @@ def test_value_measurement_readiness_is_bounded_local_and_not_implemented():
         "## Paper-Trading Readiness Method",
     )
     for phrase in (
-        "fixed synthetic/offline corpus",
-        "stage inputs and outputs are identifiable",
-        "deterministic validators",
-        "durations and interventions can be observed locally",
-        "without provider/model, credentials, paper trading, or new network access",
-        "deterministic repeatability can be tested",
-        "in memory, pytest temporary paths, or ignored local directories",
-        "WP150 does not implement them",
-        "READY_FOR_BOUNDED_VALUE_MEASUREMENT_IMPLEMENTATION",
+        "22 currently measurable but unmeasured metrics",
+        "17 metrics that fail closed as not currently measurable",
+        "structured hypothesis mechanism/horizon/test-plan fields",
+        "metric-to-stage mapping",
+        "operator-burden instrumentation",
+        "cannot automatically cover all 20 local workflow stages",
+        "cannot retroactively make a WP150 metric measurable",
+        "WP150 implements none of them",
+        "PARTIALLY_READY_BLOCKERS_IDENTIFIED",
     ):
         assert phrase in _normalized(section)
 
@@ -358,7 +494,7 @@ def test_blocker_records_are_complete_and_use_allowed_classification_priority():
     )
     header, rows = _table(section)
     assert tuple(header) == BLOCKER_FIELDS
-    assert len(rows) == 11
+    assert len(rows) == 17
     assert all(len(row) == len(BLOCKER_FIELDS) for row in rows)
     assert all(all(cell for cell in row) for row in rows)
     assert {row[2] for row in rows} <= {
@@ -385,9 +521,35 @@ def test_blocker_records_are_complete_and_use_allowed_classification_priority():
         "PT-007",
         "PT-008",
         "PT-009",
-        "RV-001",
         "PT-010",
+        "RV-001",
+        "RV-002",
+        "RV-003",
+        "RV-004",
+        "RV-005",
+        "RV-006",
+        "RV-007",
     }
+    assert sum(row[3] == "P0_SAFETY" for row in rows) == 4
+    assert sum(row[3] == "P1_INTEGRITY" for row in rows) == 8
+    assert sum(row[3] == "P2_READINESS" for row in rows) == 5
+    assert sum(row[2] == "FOUNDATIONAL" for row in rows) == 5
+    assert sum(row[2] == "CONTRACT_MISSING" for row in rows) == 7
+    assert sum(row[2] == "IMPLEMENTATION_MISSING" for row in rows) == 1
+    assert sum(row[2] == "EVIDENCE_MISSING" for row in rows) == 3
+    assert sum(row[2] == "OPERATOR_DECISION" for row in rows) == 1
+    research_rows = [row for row in rows if row[0].startswith("RV-")]
+    assert len(research_rows) == 7
+    joined = _normalized(" ".join(" ".join(row) for row in research_rows))
+    for required_gap in (
+        "structured hypothesis",
+        "deterministic derivation",
+        "corpus/rubric coverage",
+        "metric-to-stage mapping",
+        "handoff fields",
+        "operator burden",
+    ):
+        assert required_gap in joined
 
 
 def test_paper_readiness_is_foundationally_blocked_and_grants_no_authority():
@@ -426,6 +588,15 @@ def test_next_phase_and_wp151_boundary_match_value_measurement_decision():
         in future
     )
     assert "docs/status/tests-only contract" in _normalized(future)
+    for phrase in (
+        "missing structured fields",
+        "metric-to-stage applicability",
+        "metric grounding",
+        "deterministic scoring",
+        "per-metric coverage",
+        "measurement receipts",
+    ):
+        assert phrase in future
     assert "must not implement instrumentation" in future
     assert "build a paper engine" in future
     assert "WP151 requires separate approval" in future

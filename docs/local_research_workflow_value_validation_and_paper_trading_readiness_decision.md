@@ -209,104 +209,152 @@ MEASURABLE_NOT_YET_MEASURED
 NOT_CURRENTLY_MEASURABLE
 ```
 
-WP150 records no `MEASURED` result. The tables define what a separately
-approved local harness can measure.
+`MEASURED` requires an actual measurement receipt. WP150 records no
+`MEASURED` result and no measurement receipt. The tables define what a
+separately approved local harness can measure.
+
+Current measurability is fail-closed. `MEASURABLE_NOT_YET_MEASURED` requires
+an existing canonical artifact, exact current structured fields or an exact
+deterministic derivation, and bounded current corpus/rubric coverage capable of
+exercising the metric. A future field, proposed WP151 schema, runbook
+aspiration, or free-form concept without a current deterministic parser or
+rubric is not current evidence.
+
+## Metric-To-Evidence Grounding Matrix
+
+The artifact, field/derivation, and coverage columns contain present repository
+evidence only. The blocker column links each metric to future contract
+requirements in the blocker register; those future requirements never count
+as present evidence.
+
+| metric_id | dimension | metric | measurement_state | current_artifact | exact_current_field_or_derivation | current_corpus_or_rubric_coverage | blocker |
+|---|---|---|---|---|---|---|---|
+| RV-THR-01 | Research throughput | markets reviewed | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/polymarket/snapshot_models.py` | `MarketSnapshotRecord.market_id`; deterministic derivation: count distinct `market_id` values in the bounded replay input | `tests/data_layer/polymarket/test_snapshot_replay.py` exercises multiple fixed market IDs and deterministic ordering | RV-001; RV-005 |
+| RV-THR-02 | Research throughput | candidates produced/rejected | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_research_candidate_queue.py` | `candidate_items[].candidate_id` and `candidate_items[].candidate_label`; deterministic derivation: count items by allowed `candidate_label` | `tests/test_hermes_candidate_review_research_candidate_queue.py` exercises required items and every allowed label | RV-001; RV-005 |
+| RV-THR-03 | Research throughput | time per candidate | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_research_candidate_queue.py` | NONE — no current candidate-stage timestamp or duration field; monotonic timing receipt is a future contract requirement | NONE — current queue tests contain no candidate timing corpus | RV-007 |
+| RV-THR-04 | Research throughput | operator intervention count | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_manual_research_session_package.py` | NONE — `human_review_required` and `operator_next_manual_step` are state fields, not intervention events or counts | NONE — current session tests do not record correction, retry, or intervention events | RV-007 |
+| RV-THR-05 | Research throughput | manual steps | NOT_CURRENTLY_MEASURABLE | `docs/hermes_candidate_review_manual_six_record_research_lineage_human_decision_follow_up_task_operator_runbook.md` | NONE — runbook steps are instructions; no current completed-stage ledger exists | NONE — a runbook mention is not structured completion evidence | RV-007 |
+| RV-THR-06 | Research throughput | incomplete records | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_research_candidate_queue.py` | validator result fields `is_valid` and `errors`; deterministic derivation: count invalid records and error codes over a fixed input set | `tests/test_hermes_candidate_review_research_candidate_queue.py` parametrically exercises every missing required field and invalid labels | RV-001; RV-005 |
+| RV-REJ-01 | Candidate rejection quality | reason completeness | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_research_candidate_queue.py` | required `candidate_reason_labels` constrained by `ALLOWED_RESEARCH_CANDIDATE_QUEUE_REASON_LABELS`; derivation: required-field pass plus non-empty allowed-label count | `tests/test_hermes_candidate_review_research_candidate_queue.py` exercises missing fields, every allowed reason, and unknown-reason rejection | RV-001; RV-005 |
+| RV-REJ-02 | Candidate rejection quality | evidence coverage | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_manual_research_response.py` | required `cited_source_references`, `evidence_for`, `evidence_against`, and `completion_labels`; derivation: required presence and allowed completion-label coverage | `tests/test_hermes_candidate_review_manual_research_response.py` exercises complete, missing-source, missing-citation, and evidence-conflict records | RV-001; RV-005 |
+| RV-REJ-03 | Candidate rejection quality | resolution-rule clarity | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_manual_research_response.py` | NONE — `resolution_rule_analysis` is free-form text and has no current deterministic clarity parser or rubric | NONE — the WP142 ambiguity case does not score resolution-rule clarity across current workflow outputs | RV-003; RV-004 |
+| RV-REJ-04 | Candidate rejection quality | data-quality failure detection | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/polymarket/snapshot_quality.py` | `QualityIssue.code`, `QualityIssue.severity`, and `QualityGateResult.passed`; derivation: count seeded failures detected by code and gate outcome | `tests/data_layer/polymarket/test_snapshot_quality.py` exercises malformed, missing-field, duplicate, provenance, and cross-record failures | RV-001; RV-005 |
+| RV-REJ-05 | Candidate rejection quality | unsupported-claim rejection | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_advisory_output_validation_receipt.py` | `receipt_label`, `unsupported_claims`, and review flag `unsupported_claims_identified`; derivation: unsupported-claim cases ending in the required rejection label | `tests/test_hermes_candidate_review_advisory_output_validation_receipt.py` and `tests/fixtures/hermes_candidate_review_assisted_research_gold_cases.json` exercise unsupported-claim rejection | RV-001; RV-005 |
+| RV-REJ-06 | Candidate rejection quality | duplicate/contradiction detection | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/polymarket/snapshot_quality.py`; `src/data_layer/hermes_candidate_review_manual_research_response.py` | `QualityIssue.code == DUPLICATE_MARKET_ID_IN_SNAPSHOT`; required `source_conflicts`; derivation: count seeded duplicate and conflict cases detected | `tests/data_layer/polymarket/test_snapshot_quality.py` and `tests/test_hermes_candidate_review_manual_research_response.py` exercise duplicate and conflict cases | RV-001; RV-005 |
+| RV-REJ-07 | Candidate rejection quality | deterministic-gate failure rate | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/polymarket/snapshot_quality.py` | `QualityGateResult.passed`, `error_count`, and `warning_count`; deterministic derivation: failed gate results divided by all results in a fixed bounded input set | `tests/data_layer/polymarket/test_snapshot_quality.py` exercises passing, warning, strict-warning, and error gate outcomes | RV-001; RV-005 |
+| RV-HYP-01 | Hypothesis quality | falsifiable statement | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_research_question_record.py` | NONE — `research_question` is free-form and `falsification_checks_to_perform` does not structure a falsifiable hypothesis statement | NONE — WP142 scores falsification effort, not a current structured falsifiable-statement field | RV-002; RV-004 |
+| RV-HYP-02 | Hypothesis quality | supporting and counter-evidence | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_manual_research_response.py` | required sequences `evidence_for` and `evidence_against` plus completion labels `EVIDENCE_FOR_RECORDED` and `EVIDENCE_AGAINST_RECORDED`; derivation: both fields and labels present | `tests/test_hermes_candidate_review_manual_research_response.py` and the WP142 `EVIDENCE_FOR`/`EVIDENCE_AGAINST` categories exercise both sides | RV-001; RV-005 |
+| RV-HYP-03 | Hypothesis quality | invalidation condition | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_manual_research_response.py` | required sequence `what_would_change_the_conclusion`; derivation: non-empty validated sequence count | `tests/test_hermes_candidate_review_manual_research_response.py` and WP142 required disclosure coverage exercise the field | RV-001; RV-005 |
+| RV-HYP-04 | Hypothesis quality | expected mechanism | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_research_question_record.py` | NONE — no current `expected_mechanism` field or deterministic mechanism parser/rubric exists | NONE — a free-form `research_question` does not prove mechanism coverage | RV-002; RV-004 |
+| RV-HYP-05 | Hypothesis quality | horizon | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_research_question_record.py` | NONE — no current `horizon` field or deterministic horizon derivation exists | NONE — a future horizon field or proposed WP151 schema is not current evidence | RV-002; RV-004 |
+| RV-HYP-06 | Hypothesis quality | resolution path | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_manual_research_response.py` | NONE — `resolution_rule_analysis` is free-form and no structured source hierarchy or deterministic resolution-path rubric exists | NONE — one synthetic ambiguity case does not establish workflow-wide resolution-path coverage | RV-002; RV-003; RV-004 |
+| RV-HYP-07 | Hypothesis quality | measurable test plan | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_research_question_record.py` | NONE — `falsification_checks_to_perform` is free-form and lacks structured input, outcome, threshold, and horizon fields | NONE — current tests validate shape/safety, not test-plan measurability | RV-002; RV-004 |
+| RV-REP-01 | Reproducibility | exact inputs | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_manual_research_session_package.py` | required embedded `research_question_record`, `advisory_output_validation_receipt`, `human_decision_record`, and `follow_up_research_task_records`; derivation: strict required-key validation of the complete in-memory package | `tests/test_hermes_candidate_review_manual_research_session_package.py` exercises complete nested inputs and fail-closed mutations | RV-001; RV-005 |
+| RV-REP-02 | Reproducibility | snapshot/fixture identity | MEASURABLE_NOT_YET_MEASURED | `tests/fixtures/hermes_candidate_review_assisted_research_gold_cases.json` | root fields `fixture_pack_id`, `fixture_pack_version`, `rubric_version`, and ordered `cases[].case_id`; derivation: exact identity/version/order comparison | `tests/test_hermes_candidate_review_assisted_research_experiment_gold_case_fixture_pack.py` validates the fixed 20-case fixture identity and immutability | RV-001; RV-004; RV-005 |
+| RV-REP-03 | Reproducibility | schema/version | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_manual_research_session_package.py` | NONE — current nested workflow records have strict keys but no common explicit record-schema version spanning the measurement scope | NONE — WP142 fixture/rubric versions cover the assisted-research pack, not all 20 workflow stages | RV-003; RV-004 |
+| RV-REP-04 | Reproducibility | validation receipt | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_advisory_output_validation_receipt.py` | required `receipt_id`, source references, `receipt_label`, review fields, and `safety_flags`; derivation: valid receipt presence per bounded case | `tests/test_hermes_candidate_review_advisory_output_validation_receipt.py` exercises accepted, rejected, missing-field, unsafe, and fail-closed receipts | RV-001; RV-005 |
+| RV-REP-05 | Reproducibility | human review | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_manual_research_response.py` | required `reviewer_acknowledgement` and `human_review_required`; derivation: validated acknowledgement coverage over fixed records | `tests/test_hermes_candidate_review_manual_research_response.py` and the WP142 `HUMAN_REVIEW_REQUIRED` hard gate exercise review presence | RV-001; RV-005 |
+| RV-REP-06 | Reproducibility | rerun consistency | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_assisted_research_local_dry_run_harness.py` | deterministic derivation: equality of complete result objects for the same validated case bundle and precomputed response | `tests/test_hermes_candidate_review_assisted_research_local_dry_run_harness.py::test_repeated_runs_with_same_precomputed_response_are_deterministic` exercises the current one-case path | RV-001; RV-004; RV-005 |
+| RV-REP-07 | Reproducibility | ambiguity record | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_manual_research_response.py` | required `source_conflicts`, `uncertainties`, `known_missing_data`, and `limitations`; derivation: validated explicit-field coverage | `tests/test_hermes_candidate_review_manual_research_response.py` and WP142 conflict, ambiguity, and missing-data cases exercise these fields | RV-001; RV-005 |
+| RV-HOF-01 | Strategy-validation handoff quality | research conclusion separated from action | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py` | required `non_authority_notice` and safety flags `no_execution_authority`, `no_paper_or_live_authority`, and `no_strategy_promotion_authority`; derivation: all required flags true and forbidden scan passes | `tests/test_hermes_candidate_review_human_decision_follow_up_record.py` and WP142 `FORBIDDEN_AUTHORITY_ABSENCE` exercise separation | RV-001; RV-005 |
+| RV-HOF-02 | Strategy-validation handoff quality | uncertainty represented | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py` | required `uncertainty_notes`, `limitations`, and `unresolved_questions`; derivation: validated explicit-field coverage | `tests/test_hermes_candidate_review_human_decision_follow_up_record.py` and WP142 `UNCERTAINTY_QUALITY` exercise uncertainty disclosure | RV-001; RV-005 |
+| RV-HOF-03 | Strategy-validation handoff quality | assumptions explicit | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py` | NONE — no current structured `assumptions` field or deterministic assumptions parser/rubric exists in the handoff record | NONE — WP142 disclosure wording does not create a current handoff field | RV-006 |
+| RV-HOF-04 | Strategy-validation handoff quality | data needs explicit | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py` | follow-up fields `missing_data_to_resolve`, `evidence_to_check`, `source_references_to_revisit`, and `uncertainty_to_reduce`; derivation: validated non-empty task fields | `tests/test_hermes_candidate_review_human_decision_follow_up_record.py` exercises complete follow-up tasks and missing-field rejection | RV-001; RV-005 |
+| RV-HOF-05 | Strategy-validation handoff quality | risk implications explicit | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py` | NONE — no neutral structured `risk_relevance` or `risk_implications` field exists; safety flags are authority boundaries, not research risk implications | NONE — no current bounded rubric scores risk-relevance completeness | RV-006 |
+| RV-HOF-06 | Strategy-validation handoff quality | next validation step explicit | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py` | required task fields `falsification_check_to_perform`, `blocking_reason`, and `next_manual_step`; derivation: validated explicit next-step coverage | `tests/test_hermes_candidate_review_human_decision_follow_up_record.py` exercises complete and invalid follow-up task records | RV-001; RV-005 |
+| RV-HOF-07 | Strategy-validation handoff quality | no execution authority leakage | MEASURABLE_NOT_YET_MEASURED | `src/data_layer/hermes_candidate_review_human_decision_follow_up_record.py` | recursive forbidden-content scan plus required safety flags `no_execution_authority`, `no_paper_or_live_authority`, and `no_strategy_promotion_authority`; derivation: zero forbidden findings and all flags true | `tests/test_hermes_candidate_review_human_decision_follow_up_record.py` and all ten WP142 hard gates exercise forbidden-authority failures | RV-001; RV-005 |
+| RV-OPB-01 | Operator burden | setup/run/review time | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_manual_research_session_package.py` | NONE — no current stage timestamps, monotonic durations, or review-time receipt exists | NONE — current tests contain no timing corpus | RV-007 |
+| RV-OPB-02 | Operator burden | correction loops | NOT_CURRENTLY_MEASURABLE | `src/data_layer/hermes_candidate_review_manual_research_session_package.py` | NONE — no current correction, resubmission, retry, or loop-event fields exist | NONE — fail-closed test mutations are not operator correction-loop receipts | RV-007 |
+| RV-OPB-03 | Operator burden | expertise | NOT_CURRENTLY_MEASURABLE | `docs/hermes_candidate_review_manual_research_session_package_operator_runbook.md` | NONE — no current structured operator-expertise field or deterministic expertise rubric exists | NONE — a runbook instruction is not an operator study or expertise record | RV-007 |
+| RV-OPB-04 | Operator burden | recovery steps | NOT_CURRENTLY_MEASURABLE | `docs/hermes_candidate_review_manual_research_session_package_operator_runbook.md` | NONE — runbook recovery prose is not a structured recovery-event record or deterministic derivation | NONE — current tests do not record recovery actions per case | RV-007 |
+| RV-OPB-05 | Operator burden | manual copy/paste burden | NOT_CURRENTLY_MEASURABLE | `docs/hermes_candidate_review_local_manual_export_operator_runbook.md` | NONE — no current manual-transfer event, copy/paste count, or transfer receipt exists | NONE — the manual export runbook is not burden instrumentation | RV-007 |
+
+Grounded state totals:
+
+```text
+Metric records:
+39
+MEASURED:
+0
+MEASURABLE_NOT_YET_MEASURED:
+22
+NOT_CURRENTLY_MEASURABLE:
+17
+Measurable metrics without exact current field/derivation:
+0
+Measurable metrics without bounded corpus/rubric coverage:
+0
+Future-only fields used as current evidence:
+0
+```
 
 ## Research Throughput
 
-| Metric | Measurement state | Future bounded measure | Current evidence boundary |
-|---|---|---|---|
-| markets reviewed | MEASURABLE_NOT_YET_MEASURED | count unique market IDs entering the fixed corpus | no canonical run baseline |
-| candidates produced/rejected | MEASURABLE_NOT_YET_MEASURED | count queue and rejection outcomes by reason code | existing records are not an evaluated corpus |
-| time per candidate | MEASURABLE_NOT_YET_MEASURED | monotonic local stage durations in a future harness | current records contain no timing receipt |
-| operator intervention count | MEASURABLE_NOT_YET_MEASURED | count explicit acknowledgements, corrections, and retries | current workflow is manual but not instrumented |
-| manual steps | MEASURABLE_NOT_YET_MEASURED | count completed runbook stages | runbooks are fragmented |
-| incomplete records | MEASURABLE_NOT_YET_MEASURED | deterministic validator failure and missing-field counts | no bounded baseline run |
+Three of six throughput metrics are currently measurable but unmeasured:
+markets reviewed, candidates produced/rejected, and incomplete records. Time
+per candidate, operator intervention count, and manual-step completion are
+`NOT_CURRENTLY_MEASURABLE` because the current workflow has no timing,
+intervention-event, or completed-stage ledger.
 
 ## Candidate Rejection Quality
 
-| Metric | Measurement state | Future bounded measure | Current evidence boundary |
-|---|---|---|---|
-| reason completeness | MEASURABLE_NOT_YET_MEASURED | required rejection fields populated | no scored corpus |
-| evidence coverage | MEASURABLE_NOT_YET_MEASURED | required evidence references present per rejection | references are not factual verification |
-| resolution-rule clarity | MEASURABLE_NOT_YET_MEASURED | ambiguity labels and source hierarchy completeness | source monitoring is absent |
-| data-quality failure detection | MEASURABLE_NOT_YET_MEASURED | seeded failing cases rejected | only existing unit/synthetic evidence |
-| unsupported-claim rejection | MEASURABLE_NOT_YET_MEASURED | adversarial cases rejected by hard gates | no workflow-level rate |
-| duplicate/contradiction detection | MEASURABLE_NOT_YET_MEASURED | seeded duplicate and lineage-conflict cases detected | no bounded aggregate |
-| deterministic-gate failure rate | MEASURABLE_NOT_YET_MEASURED | failed validations divided by fixed corpus cases | no measurement run |
+Six of seven rejection-quality metrics are currently measurable but
+unmeasured. Resolution-rule clarity is `NOT_CURRENTLY_MEASURABLE` because its
+current content is free-form and no deterministic clarity parser or bounded
+workflow-wide rubric exists.
 
 ## Hypothesis Quality
 
-| Metric | Measurement state | Future bounded measure | Current evidence boundary |
-|---|---|---|---|
-| falsifiable statement | MEASURABLE_NOT_YET_MEASURED | rubric presence and quality score | question/advisory records are not yet scored as a corpus |
-| supporting and counter-evidence | MEASURABLE_NOT_YET_MEASURED | required balanced evidence fields | no external verification |
-| invalidation condition | MEASURABLE_NOT_YET_MEASURED | explicit bounded invalidation field | no aggregate receipt |
-| expected mechanism | MEASURABLE_NOT_YET_MEASURED | rubric completeness and ambiguity score | not profitability evidence |
-| horizon | MEASURABLE_NOT_YET_MEASURED | explicit bounded horizon field | not measured |
-| resolution path | MEASURABLE_NOT_YET_MEASURED | source hierarchy and resolution-plan coverage | current source metadata may be incomplete |
-| measurable test plan | MEASURABLE_NOT_YET_MEASURED | explicit future test steps and evidence needs | no implementation authority |
+Two of seven hypothesis-quality metrics are currently measurable but
+unmeasured: supporting/counter-evidence and invalidation condition.
+Falsifiable statement, expected mechanism, horizon, resolution path, and
+measurable test plan are `NOT_CURRENTLY_MEASURABLE` because the necessary
+structured fields or deterministic rubrics do not exist.
 
 ## Reproducibility
 
-| Metric | Measurement state | Future bounded measure | Current evidence boundary |
-|---|---|---|---|
-| exact inputs | MEASURABLE_NOT_YET_MEASURED | corpus ID and input checksums | no canonical measurement corpus |
-| snapshot/fixture identity | MEASURABLE_NOT_YET_MEASURED | fixed IDs and bytes/checksums | existing fixture is test-only |
-| schema/version | MEASURABLE_NOT_YET_MEASURED | record versions captured in receipts | cross-version compatibility is not proven |
-| validation receipt | MEASURABLE_NOT_YET_MEASURED | receipt present and valid for every case | no aggregate run |
-| human review | MEASURABLE_NOT_YET_MEASURED | explicit acknowledgement coverage | no timing or burden baseline |
-| rerun consistency | MEASURABLE_NOT_YET_MEASURED | byte-equivalent sanitized output across repeated runs | current deterministic unit tests are not a value study |
-| ambiguity record | MEASURABLE_NOT_YET_MEASURED | unresolved ambiguity explicitly retained | no aggregate rate |
+Six of seven reproducibility metrics are currently measurable but unmeasured.
+Schema/version is `NOT_CURRENTLY_MEASURABLE` across the claimed workflow scope
+because strict record keys do not provide a common explicit schema-version
+field. WP142 fixture/rubric versions cover only that synthetic assisted-
+research pack.
 
 ## Strategy-Validation Handoff Quality
 
-| Metric | Measurement state | Future bounded measure | Current evidence boundary |
-|---|---|---|---|
-| research conclusion separated from action | MEASURABLE_NOT_YET_MEASURED | safety-boundary fields and forbidden-action scan | no strategy consumer exists |
-| uncertainty represented | MEASURABLE_NOT_YET_MEASURED | uncertainty fields complete and bounded | no corpus score |
-| assumptions explicit | MEASURABLE_NOT_YET_MEASURED | assumption count and completeness | no aggregate run |
-| data needs explicit | MEASURABLE_NOT_YET_MEASURED | missing-data and follow-up fields complete | no strategy input contract |
-| risk implications explicit | MEASURABLE_NOT_YET_MEASURED | neutral risk-relevance field coverage | not a risk decision |
-| next validation step explicit | MEASURABLE_NOT_YET_MEASURED | follow-up task completeness | no scheduler or automatic task |
-| no execution authority leakage | MEASURABLE_NOT_YET_MEASURED | recursive forbidden-term and boundary scan | no paper consumer exists |
+Five of seven handoff metrics are currently measurable but unmeasured.
+Assumptions explicit and risk implications explicit are
+`NOT_CURRENTLY_MEASURABLE` because the current handoff record has neither a
+structured assumptions field nor a neutral risk-relevance field. Safety flags
+remain authority boundaries and cannot substitute for risk implications.
 
 ## Operator Burden
 
-| Metric | Measurement state | Future bounded measure | Current evidence boundary |
-|---|---|---|---|
-| setup/run/review time | MEASURABLE_NOT_YET_MEASURED | monotonic local timestamps around fixed stages | timing is absent |
-| correction loops | MEASURABLE_NOT_YET_MEASURED | validation failure and resubmission count | current workflow has no integrated runner |
-| expertise | MEASURABLE_NOT_YET_MEASURED | operator rubric and assistance events | no operator study |
-| recovery steps | MEASURABLE_NOT_YET_MEASURED | fail-closed recovery actions per case | runbooks are distributed |
-| manual copy/paste burden | MEASURABLE_NOT_YET_MEASURED | manual transfer count | manual export chain exists but is not instrumented |
+All five operator-burden metrics are `NOT_CURRENTLY_MEASURABLE`. Current
+runbooks and manual fields contain instructions and next steps, not timing,
+intervention, correction, expertise, recovery-event, or transfer receipts.
 
 ## Value-Measurement Readiness
 
-Repository truth supports a separately approved bounded measurement-contract
-WP because:
+Repository truth supports 22 currently measurable but unmeasured metrics and
+17 metrics that fail closed as not currently measurable. The existing
+structured records, deterministic validators, fixed tests, WP142 fixture, and
+one-case WP145 rerun provide bounded coverage for the 22 grounded metrics.
+They do not provide structured hypothesis mechanism/horizon/test-plan fields,
+workflow-wide schema versioning or corpus coverage, neutral handoff
+assumption/risk-relevance fields, metric-to-stage mapping, or operator-burden
+instrumentation.
 
-- WP142 supplies a fixed synthetic/offline corpus that a future contract can
-  subset or extend only through separate approval;
-- stage inputs and outputs are identifiable;
-- deterministic validators, safety checks, hard gates, and structured record
-  boundaries exist;
-- durations and interventions can be observed locally by a future harness
-  without provider/model, credentials, paper trading, or new network access;
-- rejection, hypothesis, reproducibility, and handoff fields are structured
-  enough to define scoring;
-- deterministic repeatability can be tested;
-- outputs can remain in memory, pytest temporary paths, or ignored local
-  directories; and
-- an operator runbook can be separately approved.
-
-The missing measurement corpus contract, metric receipt, stage-timing receipt,
-intervention schema, repeatability protocol, and operator runbook are the
-proper scope of the next contract WP. WP150 does not implement them.
+The positive readiness conditions are therefore incomplete. WP142 covers a
+synthetic assisted-research experiment surface and cannot automatically cover
+all 20 local workflow stages. Future WP151 field/schema requirements cannot
+retroactively make a WP150 metric measurable. A separate contract may define
+the missing fields, derivations, mapping, corpus coverage, receipts, scoring,
+timing/intervention events, repeatability rules, and temporary/local output
+boundaries. WP150 implements none of them.
 
 ```text
 Local research workflow value-validation status:
-READY_FOR_BOUNDED_VALUE_MEASUREMENT_IMPLEMENTATION
+PARTIALLY_READY_BLOCKERS_IDENTIFIED
 ```
 
 ## Paper-Trading Readiness Method
@@ -467,8 +515,14 @@ Critical gaps cannot be averaged away. Seven of the nine domains are
 | PT-007 | observability | IMPLEMENTATION_MISSING | P1_INTEGRITY | documentation-only monitoring scaffold | paper IDs, transitions, metrics, health, alerts, and failure classes | operators cannot explain or diagnose paper state | lifecycle, risk, and reconciliation contracts | future paper architecture contract | paper observability contract authority only |
 | PT-008 | reconciliation | FOUNDATIONAL | P0_SAFETY | no reconciliation surface | deterministic orders/fills/positions/cash/P&L invariants and restart recovery | silent divergence cannot be detected or resolved | lifecycle, fill, and accounting contracts | future paper architecture contract | paper reconciliation contract authority only |
 | PT-009 | operations | CONTRACT_MISSING | P0_SAFETY | no paper runbook or promotion evidence pack | startup, shutdown, incident, recovery, retention, approval, and promotion contract | no safe operator procedure or recovery gate exists | all paper domain contracts | future paper architecture contract | paper operations contract authority only |
-| RV-001 | research value | EVIDENCE_MISSING | P2_READINESS | structured deterministic workflow without measurement receipts | fixed corpus, metric, timing, intervention, repeatability, and receipt contract | value is measurable but not measured | separately approved WP151 contract | WP151 value measurement harness contract | docs/status/tests-only contract authority |
 | PT-010 | paper governance | OPERATOR_DECISION | P2_READINESS | paper execution unauthorized | explicit future operator approval and paper/live mode-separation decision | technical contracts cannot grant operational authority | architecture and safety contract reviewed first | later separately approved paper implementation WP | explicit user approval |
+| RV-001 | research value receipts | EVIDENCE_MISSING | P2_READINESS | 22 grounded metrics have no measurement receipt | deterministic metric receipts over a fixed bounded corpus | grounded measurability is not measurement | metric grounding, corpus, and scoring contracts | WP151 value measurement harness contract | docs/status/tests-only contract authority |
+| RV-002 | structured hypothesis | CONTRACT_MISSING | P1_INTEGRITY | no structured falsifiable statement, expected mechanism, horizon, resolution path, or measurable test-plan fields | exact versioned hypothesis fields and validation rules | free-form question/check text cannot be scored deterministically for these metrics | field/schema and negative-test contract | WP151 value measurement harness contract | docs/status/tests-only contract authority |
+| RV-003 | deterministic derivation | CONTRACT_MISSING | P1_INTEGRITY | resolution clarity and workflow-wide schema/version lack exact derivations | exact deterministic derivation and scoring rules for every claimed metric | prose concepts and strict keys alone do not define a score | metric-specific derivation contract | WP151 value measurement harness contract | docs/status/tests-only contract authority |
+| RV-004 | corpus/rubric coverage | EVIDENCE_MISSING | P1_INTEGRITY | WP142 covers a synthetic assisted-research surface and WP145 reruns one case, not all 20 stages or all 39 metrics | bounded corpus/rubric coverage explicitly mapped to each metric and applicable stage | fixture existence cannot imply workflow-wide coverage | corpus coverage and applicability contract | WP151 value measurement harness contract | docs/status/tests-only contract authority |
+| RV-005 | metric-to-stage mapping | CONTRACT_MISSING | P2_READINESS | no canonical mapping binds each metric to its applicable LRW stages and record boundaries | exact metric-to-stage applicability and non-applicability map | current per-artifact tests cannot establish complete workflow-scope coverage | mapping contract after grounded field inventory | WP151 value measurement harness contract | docs/status/tests-only contract authority |
+| RV-006 | handoff fields | CONTRACT_MISSING | P1_INTEGRITY | handoff records lack structured assumptions and neutral risk-relevance fields | exact non-authoritative assumptions and risk-relevance fields with deterministic validation | safety flags prevent authority leakage but do not encode research risk implications | handoff field/schema contract | WP151 value measurement harness contract | docs/status/tests-only contract authority |
+| RV-007 | operator burden | CONTRACT_MISSING | P2_READINESS | no timing, intervention, correction, expertise, recovery-event, or manual-transfer receipt schema | bounded local event and receipt contract without runtime or scheduler authority | runbooks and next-step prose are not operator-burden measurements | timing/intervention/operator-rubric contract | WP151 value measurement harness contract | docs/status/tests-only contract authority |
 
 No blocker is resolved by WP150. The register is decision evidence and is not a
 paper implementation backlog with execution authority.
@@ -509,17 +563,21 @@ Next phase:
 LOCAL_RESEARCH_WORKFLOW_VALUE_MEASUREMENT_HARNESS_CONTRACT
 ```
 
-The local workflow is ready for a bounded measurement contract, while paper
-architecture is not the highest-priority next step and paper implementation is
-not ready. A value-measurement contract can turn the current structured local
-workflow into evidence about throughput, rejection quality, hypothesis quality,
-reproducibility, handoff quality, and operator burden without crossing a paper,
-provider, credential, network, or runtime boundary.
+The local workflow is partially ready and has exact research-value blockers,
+while paper implementation remains not ready. The same next phase remains
+appropriate because its contract can define the missing field/schema,
+metric-grounding, metric-to-stage mapping, corpus-coverage, receipt,
+deterministic-scoring, timing/intervention, repeatability, and temporary/local
+output boundaries without crossing a paper, provider, credential, network, or
+runtime boundary. Retaining the next phase does not preserve the corrected
+positive readiness conclusion.
 
 ## Promotion Gates
 
-Value measurement requires, in order: separate WP151 approval; a fixed
-synthetic/sanitized corpus; exact metric definitions; deterministic receipts;
+Value measurement requires, in order: separate WP151 approval; exact missing
+field/schema requirements; a metric-to-stage applicability map; a fixed
+synthetic/sanitized corpus with explicit per-metric coverage; exact metric
+definitions and deterministic scoring derivations; deterministic receipts;
 local timing and intervention boundaries; repeatability rules; temporary or
 ignored output policy; focused negative tests; operator runbook; full
 validation; and human review of results.
@@ -585,10 +643,13 @@ The supported separately gated boundary is:
 WP151 — Local Research Workflow Value Measurement Harness Contract V1
 ```
 
-WP151 may be a docs/status/tests-only contract for a fixed
-synthetic/sanitized corpus, metric definitions, validation receipts, stage
-timing, intervention counts, repeatability, operator review, and
-temporary/ignored local output boundaries.
+WP151 may be a docs/status/tests-only contract for missing structured fields
+and schema versions; metric-to-stage applicability; metric grounding and exact
+deterministic scoring; a fixed synthetic/sanitized corpus with explicit
+per-metric coverage; validation and measurement receipts; stage timing;
+intervention, correction, recovery, and transfer events; operator-expertise
+rubric boundaries; repeatability; operator review; and temporary/ignored local
+output boundaries.
 
 WP151 must not implement instrumentation, modify source or tools, call a
 provider/model, use credentials, add network behavior, build a paper engine,
@@ -613,7 +674,17 @@ NOT MADE
 Remote controlled experiment readiness:
 NOT_READY
 Local research workflow value-validation status:
-READY_FOR_BOUNDED_VALUE_MEASUREMENT_IMPLEMENTATION
+PARTIALLY_READY_BLOCKERS_IDENTIFIED
+Research-value metric records:
+39
+Research-value metrics measured:
+0
+Research-value metrics measurable but not yet measured:
+22
+Research-value metrics not currently measurable:
+17
+Research-value blockers:
+7
 Paper-trading implementation readiness:
 NOT_READY_FOUNDATIONAL_GAPS
 Paper-trading execution:
