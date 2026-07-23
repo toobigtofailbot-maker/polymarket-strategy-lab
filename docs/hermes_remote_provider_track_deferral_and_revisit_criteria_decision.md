@@ -427,11 +427,10 @@ WP149 changes only:
 3. one stable WP149 status fragment;
 4. `docs/project_status.md`;
 5. `docs/repo_truth_index.md`;
-6. `docs/deferred_items_log.md`; and
-7. `tests/test_project_status_docs.py`; and
-8. `tests/test_wallet_intelligence_architecture_contract_docs.py`.
+6. `tests/test_project_status_docs.py`; and
+7. `tests/test_wallet_intelligence_architecture_contract_docs.py`.
 
-There are three additions and five documentation/test updates. There are zero
+There are three additions and four documentation/test updates. There are zero
 source, tool, fixture, workflow, dependency, lock, configuration, credential,
 prompt, runtime, provider/model output, generated artifact, billing, paper,
 execution, risk, order, or trading changes.

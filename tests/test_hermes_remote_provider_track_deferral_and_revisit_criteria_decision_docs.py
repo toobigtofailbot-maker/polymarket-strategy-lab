@@ -7,7 +7,6 @@ DOC = REPO_ROOT / "docs/hermes_remote_provider_track_deferral_and_revisit_criter
 STATUS = REPO_ROOT / "docs/status_entries/WP149.md"
 PROJECT_STATUS = REPO_ROOT / "docs/project_status.md"
 REPO_TRUTH = REPO_ROOT / "docs/repo_truth_index.md"
-DEFERRED = REPO_ROOT / "docs/deferred_items_log.md"
 
 TITLE = "# Hermes Remote Provider Track Deferral And Revisit Criteria Decision"
 HEADINGS = [
@@ -405,39 +404,30 @@ def test_output_inventory_and_non_authority_add_no_implementation_surface():
     expected_paths = (
         "docs/project_status.md",
         "docs/repo_truth_index.md",
-        "docs/deferred_items_log.md",
         "tests/test_project_status_docs.py",
         "tests/test_wallet_intelligence_architecture_contract_docs.py",
     )
     for path in expected_paths:
         assert path in inventory
-    assert "three additions and five documentation/test updates" in inventory
+    assert "three additions and four documentation/test updates" in inventory
     assert "zero source, tool, fixture, workflow, dependency, lock, configuration, credential" in _normalized(inventory)
     non_authority = text.split("## Non-Authority Statement", 1)[1]
     assert "has no execution authority" in non_authority
     assert "does not research, add, shortlist, select, activate, install, configure, call" in _normalized(non_authority)
 
 
-def test_document_status_project_repo_truth_and_deferred_surfaces_agree():
+def test_authorized_document_status_project_and_repo_truth_surfaces_agree():
     surfaces = {
         "document": _read(),
         "status": _read(STATUS),
         "project": _read(PROJECT_STATUS),
         "repo_truth": _read(REPO_TRUTH),
-        "deferred": _read(DEFERRED),
     }
     normalized = {name: _normalized(text) for name, text in surfaces.items()}
     for token in DECISION_TOKENS:
         normalized_token = _normalized(token)
         for name in ("document", "status", "project"):
             assert normalized_token in normalized[name], (name, normalized_token)
-    for token in (
-        "DEFERRED_PENDING_MATERIAL_NEW_EVIDENCE",
-        "MATERIAL_EVIDENCE_TRIGGER_AND_SEPARATE_APPROVAL",
-        "EVENT_DRIVEN_ONLY",
-        "LOCAL_RESEARCH_WORKFLOW_VALUE_VALIDATION_AND_PAPER_TRADING_READINESS_DECISION",
-    ):
-        assert token in surfaces["deferred"]
     for path in (
         "docs/hermes_remote_provider_track_deferral_and_revisit_criteria_decision.md",
         "tests/test_hermes_remote_provider_track_deferral_and_revisit_criteria_decision_docs.py",

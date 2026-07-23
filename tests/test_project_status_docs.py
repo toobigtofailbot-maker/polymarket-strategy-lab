@@ -2462,7 +2462,6 @@ def test_wp149_status_fragment_is_stable_and_contains_locked_decisions():
         "docs/status_entries/WP149.md",
         "docs/project_status.md",
         "docs/repo_truth_index.md",
-        "docs/deferred_items_log.md",
         "tests/test_project_status_docs.py",
         "tests/test_wallet_intelligence_architecture_contract_docs.py",
     ):
