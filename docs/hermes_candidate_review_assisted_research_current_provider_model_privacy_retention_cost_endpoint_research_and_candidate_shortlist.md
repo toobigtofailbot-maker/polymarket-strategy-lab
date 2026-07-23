@@ -4,8 +4,8 @@
 
 This WP147 record performs a bounded, current, public, first-party-documentation
 review of remote model configurations that could be considered in a later
-controlled Hermes-assisted experiment. It records evidence and a research
-shortlist only. It does not choose a production provider, create an account or
+controlled Hermes-assisted experiment. It records evidence and a fail-closed
+eligibility decision. It does not force a shortlist, choose a production provider, create an account or
 credential, install or invoke Hermes, call a model, activate an endpoint, spend
 money, persist model data, or change any trading or runtime surface.
 
@@ -16,7 +16,7 @@ Candidate pool posture:
 CURRENT_AUTHORITATIVE_FIRST_PARTY_RESEARCH_ONLY
 
 Provider decision:
-SHORTLIST_MAXIMUM_TWO_REMOTE_CANDIDATES_PLUS_OPTIONAL_ONE_LOCAL_BASELINE
+NO_PROVIDER_SELECTED_EVIDENCE_INSUFFICIENT
 
 ## Position After WP146
 
@@ -24,7 +24,7 @@ Merged WP146 accepted the corrected WP145 local one-case harness only as
 bounded test-control evidence, closed that local phase, and left remote
 readiness blocked by missing current provider/model, privacy, retention, cost,
 endpoint, credential, sandbox, and evidence decisions. WP147 supplies the
-current research and a fail-closed shortlist. It supplies none of the remote
+current research and a fail-closed no-shortlist decision. It supplies none of the remote
 implementation or operator approvals that WP146 said were still missing.
 
 ## Authority And Non-Authority
@@ -90,12 +90,12 @@ SDK, or endpoint was used.
 ## Research Cut-Off And Freshness
 
 Research cut-off:
-2026-07-22T21:55:02Z
+2026-07-22T23:49:02Z
 
 Pricing, model, endpoint, lifecycle, privacy, retention, security, region,
 subprocessor, error, limit, credential, and Hermes pages were accessed on
 2026-07-22 UTC. Current pages may change after the cutoff; WP148 must re-check
-all time-sensitive facts before making any selection/configuration decision.
+all time-sensitive facts before making any evidence-resolution or configuration decision.
 Undated pages are labeled `UNDATED_CURRENT_PAGE` rather than assigned invented
 dates.
 
@@ -190,13 +190,13 @@ evidence_category: API data use, retention, state, ZDR, region
 publisher: OpenAI
 document_title: Data controls in the OpenAI platform
 canonical_url: https://developers.openai.com/api/docs/guides/your-data
-accessed_at_utc: 2026-07-22T21:55:02Z
+accessed_at_utc: 2026-07-22T23:49:02Z
 document_effective_date_or_last_updated: UNDATED_CURRENT_PAGE
 source_tier: TIER_1
-claim_supported: API data is not used for training; Responses abuse-monitoring retention is up to 30 days; store=false avoids application-state retention subject to documented exceptions; ZDR requires approval; data-residency controls and limitations are documented.
+claim_supported: API data is not used for training; Responses abuse-monitoring retention is up to 30 days with documented exceptions; store=false prevents Responses application-state creation but does not prove deletion of abuse-monitoring content; ZDR or MAM requires approval and is not standard-account posture; data-residency controls and limitations are documented.
 direct_or_inferred: DIRECT
 freshness_status: CURRENT_AT_CUTOFF
-notes: No ZDR eligibility is assumed. Safety/legal exceptions are material limitations.
+notes: Refreshed for PR147-FU1. No ZDR or MAM eligibility is assumed. No public per-experiment operator-verifiable abuse-log deletion mechanism is documented for the standard posture; safety/legal exceptions are material limitations.
 ---
 source_id: OAI-004
 candidate_id: OAI-SOL-RESPONSES, OAI-LUNA-RESPONSES
@@ -281,6 +281,48 @@ claim_supported: Current API subprocessors, purposes, and processing locations a
 direct_or_inferred: DIRECT
 freshness_status: CURRENT_AT_CUTOFF
 notes: Global processing exposure remains a material limitation unless later residency controls are approved and verified.
+---
+source_id: OAI-010
+candidate_id: OAI-SOL-RESPONSES, OAI-LUNA-RESPONSES
+evidence_category: service-account key creation, project scope, replacement, revocation, operator verification
+publisher: OpenAI
+document_title: Service Accounts API Reference
+canonical_url: https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/projects/subresources/service_accounts
+accessed_at_utc: 2026-07-22T23:49:02Z
+document_effective_date_or_last_updated: UNDATED_CURRENT_PAGE
+source_tier: TIER_1
+claim_supported: The project-scoped API supports creating service accounts and additional service-account API keys, retrieving/listing service accounts, deleting the service account, and returning a deletion response with a deleted boolean; creation, replacement, and service-account deletion are directly observable, but the page does not document deletion of one service-account key.
+direct_or_inferred: DIRECT
+freshness_status: CURRENT_AT_CUTOFF
+notes: Feasibility evidence only. No service account or key was created, listed, retrieved, replaced, or deleted.
+---
+source_id: OAI-011
+candidate_id: OAI-SOL-RESPONSES, OAI-LUNA-RESPONSES
+evidence_category: project key inventory, project scope, key deletion, operator verification
+publisher: OpenAI
+document_title: Project API Keys API Reference
+canonical_url: https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/projects/subresources/api_keys
+accessed_at_utc: 2026-07-22T23:49:02Z
+document_effective_date_or_last_updated: UNDATED_CURRENT_PAGE
+source_tier: TIER_1
+claim_supported: Project API keys can be listed and retrieved with owner and effective project-access fields; user-owned project keys can be deleted through the documented endpoint with a deleted boolean response; service-account keys carry a project role.
+direct_or_inferred: DIRECT
+freshness_status: CURRENT_AT_CUTOFF
+notes: The Tier 2 OAI-007 page supplements endpoint-level UI interpretation only. OAI-011 documents deletion of user-owned project keys and explicitly distinguishes service-account-owned keys; it does not complete the exact service-account-key revocation chain.
+---
+source_id: OAI-012
+candidate_id: OAI-SOL-RESPONSES, OAI-LUNA-RESPONSES
+evidence_category: project-bound roles and least-privilege permission sets
+publisher: OpenAI
+document_title: Roles API Reference
+canonical_url: https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/roles
+accessed_at_utc: 2026-07-22T23:49:02Z
+document_effective_date_or_last_updated: UNDATED_CURRENT_PAGE
+source_tier: TIER_1
+claim_supported: The administration API supports project-bound custom roles with explicit permission arrays and returns the configured permissions, allowing a future operator to define and verify least-privilege project administration independently of model input.
+direct_or_inferred: DIRECT
+freshness_status: CURRENT_AT_CUTOFF
+notes: Role feasibility evidence only; no role, permission assignment, account, or key was created or modified.
 ---
 source_id: ANT-001
 candidate_id: ANT-SONNET-MESSAGES
@@ -478,8 +520,8 @@ timeouts. Therefore:
 
 | Candidate | Interface | Compatibility classification | Evidence |
 |---|---|---|---|
-| OAI-SOL-RESPONSES | `codex_responses` at direct OpenAI API | PASS | HERMES-001, HERMES-002, HERMES-003 |
-| OAI-LUNA-RESPONSES | `codex_responses` at direct OpenAI API | PASS | HERMES-001, HERMES-002, HERMES-003 |
+| OAI-SOL-RESPONSES | `codex_responses` at direct OpenAI API | PASS_CODEX_RESPONSES | HERMES-001, HERMES-002, HERMES-003 |
+| OAI-LUNA-RESPONSES | `codex_responses` at direct OpenAI API | PASS_CODEX_RESPONSES | HERMES-001, HERMES-002, HERMES-003 |
 | ANT-SONNET-MESSAGES | native `anthropic_messages` | PASS | HERMES-001, HERMES-002, HERMES-003 |
 
 This is interface feasibility only. It does not prove a local installed Hermes
@@ -504,6 +546,13 @@ cost reporting; output cap; timeout; errors; rate limits; key lifecycle; secret
 isolation; synthetic-data and WP133 compatibility; Hermes compatibility;
 pricing; per-call/total/daily budgets; and caveat disclosure.
 
+Negative-test matrix: REQUIRED for the hardened test-only matrix parser. The
+existing focused regression proves Tier-2-only mandatory support fails; Tier 2
+may supplement but not replace Tier 1; inference-only support fails;
+request-manifest verification cannot prove provider-side deletion; one
+mandatory `EVIDENCE_INSUFFICIENT` removes eligibility; candidate-ID aliases are
+rejected; and canonical cost values must agree across evidence surfaces.
+
 ## Remote Candidate Evidence
 
 Deep research count: 3.
@@ -512,13 +561,13 @@ Deep research count: 3.
 `gpt-5.6-sol`. It is the high-capability role. The request is restricted to
 plain synthetic text, `store=false`, no conversation, no file, no background
 mode, no hosted tool, no MCP, no web/search, no memory, and an 8,000-token
-controller cap. Exact candidate evidence: OAI-001 through OAI-009 and
+controller cap. Exact candidate evidence: OAI-001 through OAI-012 and
 HERMES-001 through HERMES-003.
 
 `OAI-LUNA-RESPONSES` is OpenAI + Responses API + exact model identifier
 `gpt-5.6-luna`. It is the lower-cost comparison role under the identical
 stateless/no-tool request posture. Exact candidate evidence: OAI-002 through
-OAI-009 and HERMES-001 through HERMES-003.
+OAI-012 and HERMES-001 through HERMES-003.
 
 `ANT-SONNET-MESSAGES` is Anthropic + Claude Messages API + exact pinned model
 identifier `claude-sonnet-5`. It supports a plain, bounded, tool-free Messages
@@ -532,19 +581,32 @@ ANT-010 and HERMES-001 through HERMES-003.
 
 OpenAI's API endpoint table marks Responses data as not used for training,
 records default abuse-monitoring retention up to 30 days, and permits
-`store=false` so the candidate creates no application-state response record.
-The operator-verifiable future control is a request manifest requiring
-`store=false`, rejection of conversation/file/background/tool fields, and
-post-run confirmation that no application-state object was requested. Abuse
-logs expire under the documented provider policy rather than an operator API.
-Legal/safety exceptions and ZDR approval requirements remain material. OAI-003
-and OAI-008 support these facts.
+`store=false` so the candidate creates no Responses application-state record.
+The request manifest can verify only the request shape and prevention of that
+application-state creation. It cannot verify deletion of provider-side
+abuse-monitoring content. OAI-003 documents automatic provider retention,
+legal/safety exceptions, and approval-dependent ZDR/MAM, but no public
+per-experiment operator-verifiable deletion method for the evaluated standard
+account posture. OAI-008's contractual deletion obligations do not create a
+per-request verification mechanism. The mandatory deletion gate is therefore
+`EVIDENCE_INSUFFICIENT` for both OpenAI configurations.
+
+| Required deletion fact | OpenAI standard Responses posture | Gate effect |
+|---|---|---|
+| `application_state_creation_prevented` | `store=false`; request manifest verifies the field | PROVEN, but narrower than provider deletion |
+| `abuse_monitoring_retention` | Up to 30 days by default, with documented legal/safety exceptions | PROVEN |
+| `provider_side_deletion_method` | Automatic policy expiry; no public experiment-specific deletion action for abuse-monitoring content | EVIDENCE_INSUFFICIENT |
+| `operator_verification_method` | No public mechanism proving that retained abuse-monitoring content for the experiment was deleted | EVIDENCE_INSUFFICIENT |
+| `ZDR_or_MAM_eligibility` | Prior approval and additional requirements; not assumed | NOT ESTABLISHED FOR CANDIDATE |
+| `exceptions` | Legal, service-protection, Eyes Off, Safety Retention, and image/file safety exceptions are documented | MATERIAL |
 
 Anthropic commercial terms prohibit training on customer content and the API
 retention page states normal automatic input/output deletion within 30 days.
 Messages is ZDR-eligible, but eligibility is not assumed. The documented
-policy/safety/legal exceptions are material. ANT-003, ANT-004, and ANT-006
-support these facts.
+policy/safety/legal exceptions are material, and the bounded public evidence
+does not provide per-experiment operator verification of the automatic
+provider-side deletion. The mandatory deletion gate is therefore also
+`EVIDENCE_INSUFFICIENT`. ANT-003, ANT-004, and ANT-006 support these facts.
 
 No candidate permits raw repo data, live market/account data, feedback
 submission, files, persistent conversations, or raw local persistence. The
@@ -604,7 +666,17 @@ called in WP147.
 
 ## Credential And Key-Lifecycle Evidence
 
-OpenAI supports project keys, endpoint restrictions, editing, and revocation;
+OpenAI's Tier 1 administration references document project-scoped service
+account and project-key creation/inventory, additional service-account keys for
+replacement, project-bound roles with explicit permission sets, deletion of a
+service account or user-owned project key, and deletion responses containing a
+`deleted` boolean. They do not directly establish the complete exact chain for
+one proposed service-account credential: endpoint-level key restriction is
+described only by Tier 2 OAI-007, and the Tier 1 project-key deletion reference
+distinguishes service-account-owned keys rather than documenting deletion of
+one such key. OAI-010 through OAI-012 are material Tier 1 partial evidence;
+OAI-007 may supplement but cannot cure the remaining gap. The OpenAI mandatory
+key-lifecycle gate is therefore `EVIDENCE_INSUFFICIENT`.
 Anthropic supports workspace-scoped keys, separate limits, usage/cost
 reporting, and revocation by key removal or workspace archival. The future
 secret must be operator-created outside the repo, injected only into the
@@ -637,17 +709,23 @@ expected input estimate. Actual provider token usage would control accounting.
 | OAI-LUNA-RESPONSES | $1 input / $6 output | `(8k*1 + 2k*6)/1M = $0.020` | `(50k*1 + 8k*6)/1M = $0.098` | OAI-002 |
 | ANT-SONNET-MESSAGES | $3.30 input / $16.50 output (standard $3/$15 with 1.1x US geo) | `(8k*3.3 + 2k*16.5)/1M = $0.0594` | `(50k*3.3 + 8k*16.5)/1M = $0.297` | ANT-001, ANT-005 |
 
+Canonical Anthropic geo-adjusted values:
+
+- `expected_us_geo_cost: USD 0.0594`
+- `stress_us_geo_cost: USD 0.2970`
+
 These are reproducible projections, not invoices or spending authority. Taxes,
 minimum deposits, currency conversion, provider-side rounding, failed-request
 billing, and price changes are not included and require operator verification.
 
 ## WP143 Budget Compatibility
 
-For the two-candidate shortlist, the 120-call primary plan allocates 60 calls
-to each candidate. Expected cost is `60*$0.100 + 60*$0.020 = $7.20`; absolute
+For a non-executable two-OpenAI comparison envelope retained only for cost
+reproducibility, the 120-call primary scenario allocates 60 calls to each
+configuration. Expected cost is `60*$0.100 + 60*$0.020 = $7.20`; absolute
 stress cost is `60*$0.490 + 60*$0.098 = $35.28`.
 
-The hard 140-call envelope allocates at most 70 calls to each candidate.
+The hypothetical hard 140-call envelope allocates at most 70 calls to each configuration.
 Absolute stress cost is `70*$0.490 + 70*$0.098 = $41.16`, below USD 100. A
 seven-day schedule of at most 20 calls/day, ten per candidate, has absolute
 stress cost `10*$0.490 + 10*$0.098 = $5.88/day`, below USD 25. Each absolute
@@ -690,8 +768,12 @@ Local baseline evaluated: NO
 ## Candidate Eligibility Matrix
 
 The following matrix covers every mandatory gate. `ZDR` is preferred and does
-not compensate for any mandatory failure. Every material cell cites registry
-IDs; repeated OpenAI operational rows cite the common OpenAI source set.
+not compensate for any mandatory failure. Every candidate cell cites existing
+registry IDs. A mandatory PASS requires at least one directly relevant Tier 1,
+DIRECT, current source; Tier 2 and analyst inference may supplement but never
+replace that source. A source marked `EVIDENCE_INSUFFICIENT` cannot support a
+PASS. The focused regression maps every citation back to this registry and
+derives eligibility and shortlist counts from the mandatory rows.
 
 | Mandatory gate | OAI-SOL-RESPONSES | OAI-LUNA-RESPONSES | ANT-SONNET-MESSAGES |
 |---|---|---|---|
@@ -701,11 +783,11 @@ IDs; repeated OpenAI operational rows cite the common OpenAI source set.
 | API no-training | PASS (OAI-003) | PASS (OAI-003) | PASS (ANT-003) |
 | Default/configurable retention <=30 days | PASS (OAI-003) | PASS (OAI-003) | PASS (ANT-004, ANT-006) |
 | ZDR availability (preferred) | PASS, approval required/not assumed (OAI-003) | PASS, approval required/not assumed (OAI-003) | PASS, agreement required/not assumed (ANT-006) |
-| Deletion/operator-verifiable control | PASS, store=false plus request-manifest verification (OAI-003, OAI-008; ANALYST_INFERENCE) | PASS, same (OAI-003, OAI-008; ANALYST_INFERENCE) | PASS, automatic <=30-day deletion plus request-shape verification (ANT-004, ANT-006; ANALYST_INFERENCE) |
-| Jurisdiction/region evidence | PASS, global locations and conditional residency disclosed (OAI-003, OAI-009) | PASS, same (OAI-003, OAI-009) | PASS, US/global request and response evidence (ANT-005) |
+| Deletion/operator-verifiable control | EVIDENCE_INSUFFICIENT, store=false proves application-state prevention but no operator-verifiable abuse-log deletion (OAI-003, OAI-008) | EVIDENCE_INSUFFICIENT, same unresolved provider-side deletion proof (OAI-003, OAI-008) | EVIDENCE_INSUFFICIENT, automatic policy deletion lacks per-experiment operator verification (ANT-004, ANT-006) |
+| Jurisdiction/region evidence | PASS, global locations and conditional residency disclosed (OAI-003, OAI-009) | PASS, global locations and conditional residency disclosed (OAI-003, OAI-009) | PASS, US/global request and response evidence (ANT-005) |
 | Current public subprocessors | PASS (OAI-009) | PASS (OAI-009) | EVIDENCE_INSUFFICIENT (ANT-010) |
 | Security/incident evidence | PASS (OAI-008) | PASS (OAI-008) | EVIDENCE_INSUFFICIENT (ANT-003, ANT-010) |
-| Exact host/path and redirects | PASS (OAI-001, OAI-004, HERMES-002; ANALYST_INFERENCE) | PASS (OAI-002, OAI-004, HERMES-002; ANALYST_INFERENCE) | PASS (ANT-002, HERMES-002; ANALYST_INFERENCE) |
+| Exact host/path and redirects | PASS (OAI-001, OAI-004, HERMES-002; ANALYST_INFERENCE supplements direct endpoint evidence) | PASS (OAI-002, OAI-004, HERMES-002; ANALYST_INFERENCE supplements direct endpoint evidence) | PASS (ANT-002, HERMES-002; ANALYST_INFERENCE supplements direct endpoint evidence) |
 | Hosted tools not mandatory | PASS (OAI-004) | PASS (OAI-004) | PASS (ANT-002, ANT-006) |
 | Persistent hosted memory not mandatory | PASS (OAI-003, OAI-004) | PASS (OAI-003, OAI-004) | PASS (ANT-006) |
 | Repository connection not required | PASS (OAI-004) | PASS (OAI-004) | PASS (ANT-002) |
@@ -716,8 +798,8 @@ IDs; repeated OpenAI operational rows cite the common OpenAI source set.
 | Controller timeout compatibility | PASS (HERMES-003) | PASS (HERMES-003) | PASS (HERMES-003) |
 | Documented errors/transients | PASS (OAI-005) | PASS (OAI-005) | PASS (ANT-007) |
 | Rate-limit behavior | PASS, account value later verified (OAI-001, OAI-006) | PASS, account value later verified (OAI-002, OAI-006) | PASS, account value later verified (ANT-007, ANT-008) |
-| Key create/scope/rotate/revoke | PASS (OAI-007) | PASS (OAI-007) | PASS (ANT-008) |
-| Secret isolation from model context | PASS (HERMES-001, OAI-007; ANALYST_INFERENCE) | PASS (HERMES-001, OAI-007; ANALYST_INFERENCE) | PASS (HERMES-001, ANT-008; ANALYST_INFERENCE) |
+| Key create/scope/rotate/revoke | EVIDENCE_INSUFFICIENT, Tier 1 partial chain plus Tier 2 endpoint restriction cannot prove exact service-account-key revocation (OAI-007, OAI-010, OAI-011, OAI-012) | EVIDENCE_INSUFFICIENT, same incomplete exact credential chain (OAI-007, OAI-010, OAI-011, OAI-012) | PASS (ANT-008) |
+| Secret isolation from model context | PASS (HERMES-001, OAI-010, OAI-012; ANALYST_INFERENCE supplements direct configuration evidence) | PASS (HERMES-001, OAI-010, OAI-012; ANALYST_INFERENCE supplements direct configuration evidence) | PASS (HERMES-001, ANT-008; ANALYST_INFERENCE supplements direct configuration evidence) |
 | Synthetic WP142 input/no tools | PASS (OAI-004 plus repository input) | PASS (OAI-004 plus repository input) | PASS (ANT-002, ANT-006 plus repository input) |
 | WP133 bounded plain/structured output | PASS (OAI-001, OAI-004) | PASS (OAI-002, OAI-004) | PASS (ANT-001, ANT-002) |
 | Hermes compatibility | PASS (HERMES-001 through HERMES-003) | PASS (HERMES-001 through HERMES-003) | PASS (HERMES-001 through HERMES-003) |
@@ -725,93 +807,55 @@ IDs; repeated OpenAI operational rows cite the common OpenAI source set.
 | Per-call <=USD2 | PASS, $0.490 stress (OAI-001) | PASS, $0.098 stress (OAI-002) | PASS, $0.297 stress (ANT-001, ANT-005) |
 | Total <=USD100 | PASS, shortlist plan jointly $41.16 stress (OAI-001, OAI-002) | PASS, shortlist plan jointly $41.16 stress (OAI-001, OAI-002) | PASS, standalone projection within cap (ANT-001, ANT-005) |
 | Daily executable <=USD25 | PASS, joint 20-call day $5.88 stress (OAI-001, OAI-002) | PASS, joint 20-call day $5.88 stress (OAI-001, OAI-002) | PASS, standalone 20-call day $5.94 stress (ANT-001, ANT-005) |
-| Material caveats disclosed | PASS (this record; OAI-003, OAI-006, OAI-008, OAI-009) | PASS (same) | PASS (ANT-004 through ANT-010) |
+| Material caveats disclosed | PASS (OAI-003, OAI-006, OAI-008, OAI-009) | PASS (OAI-003, OAI-006, OAI-008, OAI-009) | PASS (ANT-004, ANT-005, ANT-006, ANT-007, ANT-008, ANT-009) |
 
 Candidate classifications:
 
-- OAI-SOL-RESPONSES: `ELIGIBLE_FOR_FUTURE_CONTROLLED_EXPERIMENT_CONFIGURATION_DECISION`.
-- OAI-LUNA-RESPONSES: `ELIGIBLE_FOR_FUTURE_CONTROLLED_EXPERIMENT_CONFIGURATION_DECISION`.
-- ANT-SONNET-MESSAGES: `NOT_SHORTLISTABLE_EVIDENCE_INSUFFICIENT` because mandatory gates remain not PASS.
+- OAI-SOL-RESPONSES: `NOT_SHORTLISTABLE_EVIDENCE_INSUFFICIENT` because provider-side deletion/operator verification and the exact Tier 1 key-lifecycle chain remain unresolved.
+- OAI-LUNA-RESPONSES: `NOT_SHORTLISTABLE_EVIDENCE_INSUFFICIENT` because provider-side deletion/operator verification and the exact Tier 1 key-lifecycle chain remain unresolved.
+- ANT-SONNET-MESSAGES: `NOT_SHORTLISTABLE_EVIDENCE_INSUFFICIENT` because deletion/operator verification, public subprocessors, and detailed security/incident evidence remain unresolved.
 
 `EVIDENCE_INSUFFICIENT` never acts as PASS.
 
 ## Eligible Candidate Comparison
 
-| Dimension | OAI-SOL-RESPONSES | OAI-LUNA-RESPONSES | Evidence source IDs |
-|---|---|---|---|
-| Role | high-capability reasoning | lower-cost comparison | OAI-001, OAI-002 |
-| Exact model | `gpt-5.6-sol` | `gpt-5.6-luna` | OAI-001, OAI-002 |
-| Exact API | OpenAI Responses API | OpenAI Responses API | OAI-001, OAI-002, OAI-004 |
-| Exact future endpoint | `https://api.openai.com/v1/responses` | `https://api.openai.com/v1/responses` | OAI-001, OAI-002, OAI-004 |
-| Standard rates | $5/M input, $30/M output | $1/M input, $6/M output | OAI-001, OAI-002 |
-| Stress call | $0.490 | $0.098 | OAI-001, OAI-002 |
-| Privacy posture | no training, store=false, abuse logs <=30 days | same | OAI-003, OAI-008 |
-| Hermes mode | `codex_responses` | `codex_responses` | HERMES-001, HERMES-002 |
-| Strength supported by official catalog | frontier/complex-work role | cost-sensitive role | OAI-001, OAI-002 |
-| Material limitation | same-provider concentration; no empirical WP142 quality/latency evidence; global processing unless later eligible control; account limits unknown until operator verification | same; lower catalog positioning cannot be treated as measured quality | OAI-003, OAI-006, OAI-009 plus repository evidence |
-
-No unsupported benchmark or quality inference breaks the tie. Both advance
-because they fill distinct research roles and pass the same mandatory controls,
-not because either is approved for production or trading.
+No deeply researched configuration passes every mandatory row, so there is no
+eligible-candidate comparison and no tie to break. The cost and capability
+research remains useful evidence, but it cannot compensate for unresolved
+deletion/operator-verification gates.
 
 ## Candidate Shortlist
 
 Candidate shortlist decision:
-SHORTLIST_TWO_ELIGIBLE_REMOTE_CONFIGURATIONS
+EVIDENCE_INSUFFICIENT_NO_SHORTLIST
 
 Remote configurations researched deeply: 3
 
-Remote configurations eligible: 2
+Remote configurations eligible: 0
 
-Remote configurations shortlisted: 2
+Remote configurations shortlisted: 0
 
-```text
-candidate_id: OAI-SOL-RESPONSES
-provider: OpenAI
-api_product: Responses API
-exact_model_identifier: gpt-5.6-sol
-candidate_role: HIGH_CAPABILITY_REASONING_CANDIDATE
-eligibility_status: ELIGIBLE_FOR_FUTURE_CONTROLLED_EXPERIMENT_CONFIGURATION_DECISION
-retention_status: PASS_STANDARD_MAXIMUM_30_DAYS_STORE_FALSE_APPLICATION_STATE_NONE_WITH_DOCUMENTED_EXCEPTIONS
-endpoint_status: PASS_EXACT_HOST_PATH_REDIRECT_FAIL_CLOSED_FEASIBLE
-Hermes_compatibility: PASS_CODEX_RESPONSES
-budget_compatibility: PASS_STRESS_CALL_USD_0.490_JOINT_140_CALL_STRESS_USD_41.16
-material_limitations: NO_EMPIRICAL_WP142_RESULT; ACCOUNT_LIMITS_UNVERIFIED; GLOBAL_PROCESSING_UNLESS_LATER_ELIGIBLE_CONTROL; SAME_PROVIDER_CONCENTRATION; NO_ACTIVATION
-research_cutoff: 2026-07-22T21:55:02Z
-evidence_source_ids: OAI-001, OAI-003 through OAI-009, HERMES-001 through HERMES-003
----
-candidate_id: OAI-LUNA-RESPONSES
-provider: OpenAI
-api_product: Responses API
-exact_model_identifier: gpt-5.6-luna
-candidate_role: LOWER_COST_COMPARISON_CANDIDATE
-eligibility_status: ELIGIBLE_FOR_FUTURE_CONTROLLED_EXPERIMENT_CONFIGURATION_DECISION
-retention_status: PASS_STANDARD_MAXIMUM_30_DAYS_STORE_FALSE_APPLICATION_STATE_NONE_WITH_DOCUMENTED_EXCEPTIONS
-endpoint_status: PASS_EXACT_HOST_PATH_REDIRECT_FAIL_CLOSED_FEASIBLE
-Hermes_compatibility: PASS_CODEX_RESPONSES
-budget_compatibility: PASS_STRESS_CALL_USD_0.098_JOINT_140_CALL_STRESS_USD_41.16
-material_limitations: NO_EMPIRICAL_WP142_RESULT; ACCOUNT_LIMITS_UNVERIFIED; GLOBAL_PROCESSING_UNLESS_LATER_ELIGIBLE_CONTROL; SAME_PROVIDER_CONCENTRATION; NO_ACTIVATION
-research_cutoff: 2026-07-22T21:55:02Z
-evidence_source_ids: OAI-002 through OAI-009, HERMES-001 through HERMES-003
-```
-
-The shortlist is a research output, not provider selection, primary/backup
-activation, production approval, or trading recommendation.
+No candidate entry is emitted. `EVIDENCE_INSUFFICIENT_NO_SHORTLIST` is a valid
+complete WP147 outcome and is not a provider-negative claim, production
+selection, activation decision, or trading recommendation.
 
 ## Candidate-Specific Blockers
 
-- `ANT-SONNET-MESSAGES`: current public subprocessor entity/purpose/location
-  evidence and an accessible detailed security-program/incident-notification
-  record were not available in the bounded official review, so two mandatory
-  gates are `EVIDENCE_INSUFFICIENT`; it is not shortlisted.
+- `ANT-SONNET-MESSAGES`: operator-verifiable provider-side deletion, current
+  public subprocessor entity/purpose/location evidence, and an accessible
+  detailed security-program/incident-notification record were not available in
+  the bounded official review, so mandatory gates are
+  `EVIDENCE_INSUFFICIENT`; it is not shortlisted.
 - `GGL-FLASH-DEVELOPER`: stopped before deep research because a public
   operator-verifiable deletion control for the exact Developer API
   configuration was not found; this is evidence insufficiency, not a claim
   that deletion is impossible.
-- `OAI-SOL-RESPONSES` and `OAI-LUNA-RESPONSES`: no candidate-specific
-  eligibility blocker remains at research cutoff, but neither has account,
-  credential, endpoint, Hermes-version, empirical quality/latency, or operator
-  approval evidence. Those are cross-cutting implementation blockers.
+- `OAI-SOL-RESPONSES` and `OAI-LUNA-RESPONSES`: `store=false` proves only
+  prevention of Responses application-state creation. The bounded Tier 1
+  evidence does not expose an operator-verifiable method proving deletion of
+  standard-posture abuse-monitoring content for the experiment. The exact
+  Tier 1 service-account-key restriction/revocation chain is also incomplete. Both are
+  `NOT_SHORTLISTABLE_EVIDENCE_INSUFFICIENT`.
 
 ## Cross-Cutting Remote-Implementation Blockers
 
@@ -823,35 +867,35 @@ redirect-deny sandbox; disabled fallback/tool/memory/source access; approved
 raw-output and sanitized-evidence policy; remote adapter/controller
 implementation; teardown/revocation proof; and a controlled dry run.
 
-Research cannot prove login-only account settings. WP148 must make a separate
-selection/configuration/privacy/operator-approval decision; a still-later
-implementation WP would remain required. One missing gate preserves
-`NOT_READY`.
+Research cannot prove login-only account settings. A separately approved
+evidence-resolution/research-refresh decision must resolve every mandatory
+unknown before any candidate-selection package can be proposed. A still-later
+implementation WP would remain required. One missing gate preserves `NOT_READY`.
 
 ## Readiness Decision
 
 Remote controlled experiment readiness: NOT_READY
 
-The research blocker from WP146 is resolved enough to record current candidates
-and a shortlist, but no remote capability is configured or authorized. This
-decision cannot be interpreted as readiness, production selection, model
+The research blocker from WP146 is resolved enough to record current candidate
+evidence, but the mandatory matrix yields no eligible candidate and no
+shortlist. No remote capability is configured or authorized. This decision
+cannot be interpreted as readiness, production selection, model
 quality proof, account approval, budget approval, or permission to call an API.
 
 Next phase:
-CANDIDATE_SELECTION_CONFIGURATION_PRIVACY_EVIDENCE_AND_OPERATOR_APPROVAL_DECISION
+MANDATORY_EVIDENCE_RESOLUTION_AND_RESEARCH_REFRESH_DECISION
 
-WP148 requires separate approval
+WP148 requires separate approval and is not authorized as candidate selection while the shortlist count is zero
 
 ## Promotion Gates
 
-Before any remote implementation can be proposed, an approved WP148 must select
-at most one primary and one optional comparison configuration from this
-eligible shortlist; revalidate source freshness; lock exact model IDs and one
-endpoint each; choose lower candidate-specific token/output/time/cost limits;
-lock `store=false`, no tools/memory/files/background/conversation; document
-operator terms, jurisdiction, account, rate/spend, key scope/revocation, and
-budget approvals; approve raw-output/evidence handling; and preserve every
-WP143 cap. Implementation, dry run, and promotion each require later separate
+Before candidate selection can be proposed, a separately approved evidence
+resolution package must revalidate source freshness and establish a directly
+relevant Tier 1 operator-verifiable provider-side deletion posture for every
+candidate it would reconsider. Only after every mandatory row passes may a
+later selection package lock exact model IDs, endpoints, lower limits, privacy
+controls, terms, jurisdiction, account, key, budget, and evidence decisions.
+Implementation, dry run, and promotion each require later separate
 authorization and evidence.
 
 ## Explicit Deferred Capabilities
@@ -875,12 +919,13 @@ benchmark, storage, billing, paper/live, or trading artifact is created.
 
 ## Forbidden Interpretations
 
-The following are false: familiar provider means eligible; consumer privacy is
-API policy; absence of retention evidence means zero; enterprise ZDR/residency
+The following are false: familiar provider means eligible; `store=false` proves
+provider-side abuse-log deletion; a request manifest verifies provider deletion;
+consumer privacy is API policy; absence of retention evidence means zero; enterprise ZDR/residency
 is automatically available; model alias means a pinned version; context size
 is output size; advertised tools must be enabled; SDK compatibility proves
 Hermes compatibility; research hosts belong on a runtime allowlist; budget cap
-authorizes spending; shortlist means selection; candidate means production;
+authorizes spending; evidence research must force a shortlist; candidate means production;
 research network means product network; unknown rate means unlimited; local
 hardware can be guessed; stronger catalog positioning overrides privacy; one
 failed gate can be compensated; WP147 starts WP142 calls; or WP147 implements
@@ -891,15 +936,13 @@ trading.
 
 ## Future WP148 Boundary
 
-`WP148 — Hermes Candidate-Review Assisted Research Candidate Selection,
-Remote Experiment Configuration, Privacy Evidence, And Operator Approval
-Decision V1` may, only after separate approval, select at most one primary and
-one optional comparison candidate from the eligible WP147 shortlist and lock a
-non-executable decision package for endpoint, limits, privacy controls, key
-lifecycle, evidence handling, and operator approvals. It may not install
-Hermes, create/use credentials, call a model, implement an adapter/sandbox,
-execute cases, spend, persist raw output, or trade unless its separately
-approved package expressly and safely authorizes narrower work.
+WP148 remains separately gated and unimplemented. While WP147 has zero eligible
+and zero shortlisted configurations, its revised purpose may only be a
+mandatory-evidence resolution and research-refresh decision. It may not select
+a provider, install Hermes, create/use credentials, call a model, implement an
+adapter/sandbox, execute cases, spend, persist raw output, or trade. Candidate
+selection requires a later separately approved package after a refreshed
+matrix proves every mandatory gate.
 
 ## Decision
 
@@ -907,7 +950,7 @@ WP147 research status:
 COMPLETE
 
 Candidate shortlist decision:
-SHORTLIST_TWO_ELIGIBLE_REMOTE_CONFIGURATIONS
+EVIDENCE_INSUFFICIENT_NO_SHORTLIST
 
 Remote controlled experiment readiness: NOT_READY
 
@@ -931,7 +974,7 @@ Paper/live/execution authority: FORBIDDEN
 
 ## Non-Authority Statement
 
-This research and shortlist have no execution authority. They do not modify or
+This research and no-shortlist decision have no execution authority. They do not modify or
 authorize runtime execution, OMS, reconciliation, risk caps, bounded overlay
 semantics, safe mode, configs, credentials, live-trading paths, paper trading,
 orders, or market/account behavior. Deterministic validation and human review
