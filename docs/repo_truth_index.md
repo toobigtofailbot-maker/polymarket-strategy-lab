@@ -537,6 +537,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z230. `docs/status_entries/WP148.md` - WP148 stable committed status fragment for the current public-research/documentation/status/tests-only mandatory provider evidence-resolution and research-refresh decision package.
 
+62z231. `docs/hermes_remote_provider_track_deferral_and_revisit_criteria_decision.md` - WP149 canonical governance decision setting the remote-provider track to `DEFERRED_PENDING_MATERIAL_NEW_EVIDENCE`, forbidding automatic/periodic/elapsed-time and unchanged-source research loops, defining public/operator/contractual/architecture trigger classes, objective freshness and mandatory-gate materiality, a sanitized bounded revisit packet, an event-driven-only cadence, exact fail-closed reopen states and forbidden activation transitions, persistent zero eligible/shortlisted and no-selection `NOT_READY` truth, and the separately gated provider-independent `LOCAL_RESEARCH_WORKFLOW_VALUE_VALIDATION_AND_PAPER_TRADING_READINESS_DECISION` next phase without provider, Hermes, scheduled-task, paper/live, execution, or trading authority.
+
+62z232. `tests/test_hermes_remote_provider_track_deferral_and_revisit_criteria_decision_docs.py` - WP149 Markdown-only focused regression for exact title/headings and decision tokens; merged WP148 truth; allowed triggers and required non-triggers; objective freshness/materiality and complete sanitized packet fields/outcomes; elapsed-time/model/price/benchmark/Tier-2/login-only/unchanged-evidence negative cases; event-driven cadence; exact reopen states and forbidden direct transitions; provider-independent WP150 boundary; cross-surface consistency; stable status metadata; exact eight-file output inventory; and no provider research, candidate addition, activation, scheduling, source/tool/runtime/configuration/credential/paper/live/execution/trading authority.
+
+62z233. `docs/status_entries/WP149.md` - WP149 stable committed status fragment for the documentation/status/Markdown-only tests remote-provider-track deferral, material-evidence revisit contract, anti-loop governance, event-driven cadence, fail-closed state transition, and provider-independent next-phase decision package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.

@@ -175,7 +175,7 @@ def test_wp79_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP79", "WP80", "WP81", "WP82", "WP83", "WP84", "WP86", "WP87", "WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
 
 
 def test_wp97_in_merged_wps_list():
@@ -441,7 +441,7 @@ def test_wp88_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP88", "WP89", "WP90", "WP91", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
 
 
 def test_wp88_current_branch_name():
@@ -498,7 +498,7 @@ def test_wp91_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP91", "WP90", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP91", "WP90", "WP92", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
 
 
 def test_wp91_final_comment_retirement_status():
@@ -527,7 +527,7 @@ def test_wp92_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP92", "WP91", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP92", "WP91", "WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
 
 
 def test_wp92_branch_is_current_branch():
@@ -556,7 +556,7 @@ def test_wp93_is_current_phase():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP93", "WP94", "WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
 
 
 def test_wp93_branch_is_current_branch():
@@ -610,7 +610,7 @@ def test_wp95_is_stable_post_merge_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert any(wp in current_phase_line for wp in ("WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP95", "WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "WP95" in merged_line
     assert "Hermes Advisory Foundation And Research-Brain Architecture V1" in text
 
@@ -623,7 +623,7 @@ def test_wp96_is_stable_post_merge_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert any(wp in current_phase_line for wp in ("WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP96", "WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "WP96" in merged_line
     assert "Hermes input/output contracts and validator hardening" in text
     assert "Hermes advisory foundation architecture status: REPO_TRUTH_ARCHITECTURE_LOCKED" in text
@@ -637,7 +637,7 @@ def test_wp97_is_stable_post_merge_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert any(wp in current_phase_line for wp in ("WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP97", "WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "WP97" in merged_line
     assert "Hermes input/output contracts and validator requirements status: REPO_TRUTH_DOCUMENTATION_LEVEL_CONTRACT_REQUIREMENTS_LOCKED" in text
     assert "docs/hermes_input_output_contracts_and_validator_requirements.md" in text
@@ -811,7 +811,7 @@ def test_wp98_is_stable_post_merge_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert any(wp in current_phase_line for wp in ("WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP98", "WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "WP98" in merged_line
     assert "REPO_TRUTH_RESEARCH_PROMPT_PACK_AND_OPERATOR_RUNBOOKS_LOCKED" in text
     assert "docs/hermes_research_prompt_pack_and_operator_runbooks.md" in text
@@ -836,7 +836,7 @@ def test_wp99_is_stable_post_merge_target_state():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert any(wp in current_phase_line for wp in ("WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP99", "WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "WP99" in merged_line
     assert "LOCAL_OFFLINE_READ_ONLY_VALIDATOR_MERGED" in text
     assert "src/data_layer/hermes_advisory_output_validator.py" in text
@@ -888,7 +888,7 @@ def test_wp100_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP100", "WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_PACKET_BUILDER_MERGED" in text
     assert "src/data_layer/hermes_context_packet_exporter.py" in text
 
@@ -950,7 +950,7 @@ def test_wp101_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP101", "WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_DRY_RUN_RECEIPT_MERGED" in text
     assert "src/data_layer/hermes_context_packet_dry_run_receipt.py" in text
 
@@ -1001,7 +1001,7 @@ def test_wp102_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP102", "WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_OPERATOR_REVIEW_MERGED" in text
     assert "src/data_layer/hermes_manual_research_dry_run_review.py" in text
 
@@ -1052,7 +1052,7 @@ def test_wp103_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP103", "WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_CANDIDATE_REVIEW_INTEGRATION_MERGED" in text
     assert "src/data_layer/hermes_candidate_review_context_packet_integration.py" in text
 
@@ -1103,7 +1103,7 @@ def test_wp104_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP104", "WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_CHAIN_SMOKE_MERGED" in text
     assert "src/data_layer/hermes_candidate_review_manual_chain_smoke.py" in text
 
@@ -1154,7 +1154,7 @@ def test_wp105_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP105", "WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "DOCS_STATUS_TESTS_ONLY_OPERATOR_HANDOFF_CONTRACT_MERGED" in text
     assert "docs/hermes_candidate_review_operator_handoff_contract.md" in text
 
@@ -1206,7 +1206,7 @@ def test_wp106_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP106", "WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_OPERATOR_HANDOFF_OBJECT_MERGED" in text
     assert "src/data_layer/hermes_candidate_review_operator_handoff.py" in text
 
@@ -1258,7 +1258,7 @@ def test_wp107_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP107", "WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CONTRACT_MERGED" in text
     assert "docs/hermes_candidate_review_handoff_local_manual_export_contract.md" in text
 
@@ -1310,7 +1310,7 @@ def test_wp108_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP108", "WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_EXPORT_ARTIFACT_MERGED" in text
     assert "src/data_layer/hermes_candidate_review_handoff_manual_export_artifact.py" in text
 
@@ -1364,7 +1364,7 @@ def test_wp109_is_stable_post_merge_target_state():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP109", "WP110", "WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "LOCAL_OFFLINE_MANUAL_ONLY_FILE_WRITER_MERGED" in text
     assert "src/data_layer/hermes_candidate_review_handoff_manual_export_writer.py" in text
 
@@ -1384,12 +1384,12 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert any(wp in current_phase_line for wp in ("WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148"))
+    assert any(wp in current_phase_line for wp in ("WP111", "WP112", "WP113", "WP114", "WP115", "WP116", "WP117", "WP118", "WP128", "WP130", "WP136", "WP138", "WP142", "WP148", "WP149"))
     assert "DOCS_STATUS_TESTS_ONLY_TEMP_ONLY_LOCAL_MANUAL_EXPORT_SMOKE_EXERCISE_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp147_is_reconciled_as_merged_and_wp148_is_current_review_target_state():
+def test_wp148_is_reconciled_as_merged_and_wp149_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp147_is_reconciled_as_merged_and_wp148_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP148" in current_phase_line
+    assert "WP149" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1424,6 +1424,7 @@ def test_wp147_is_reconciled_as_merged_and_wp148_is_current_review_target_state(
     assert "WP145" in merged_line
     assert "WP146" in merged_line
     assert "WP147" in merged_line
+    assert "WP148" in merged_line
     assert "src/data_layer/hermes_candidate_review_manual_research_briefing_packet.py" in text
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_RESEARCH_BRIEFING_PACKET_MERGED" in text
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_SMOKE_MERGED" in text
@@ -1473,7 +1474,8 @@ def test_wp147_is_reconciled_as_merged_and_wp148_is_current_review_target_state(
     assert "LOCAL_OFFLINE_TEST_ORIENTED_SKELETON_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_HARNESS_CLOSEOUT_REMOTE_READINESS_DECISION_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_CURRENT_PROVIDER_MODEL_RESEARCH_AND_CANDIDATE_SHORTLIST_MERGED" in text
-    assert "DOCS_STATUS_TESTS_ONLY_MANDATORY_PROVIDER_EVIDENCE_RESOLUTION_AND_RESEARCH_REFRESH_DECISION_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_TESTS_ONLY_MANDATORY_PROVIDER_EVIDENCE_RESOLUTION_AND_RESEARCH_REFRESH_DECISION_MERGED" in text
+    assert "DOCS_STATUS_TESTS_ONLY_REMOTE_PROVIDER_TRACK_DEFERRAL_REVISIT_CRITERIA_DECISION_REVIEW_TARGET" in text
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1569,7 +1571,7 @@ def test_hermes_candidate_review_handoff_manual_export_writer_is_registered():
     assert "tests/test_hermes_candidate_review_handoff_manual_export_writer.py" in index_text
 
 
-def test_wp131_through_wp148_dedicated_status_chain_is_consistent():
+def test_wp131_through_wp149_dedicated_status_chain_is_consistent():
     lines = _read().splitlines()
     wp131_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review manual research briefing packet operator runbook/temp smoke status:"
@@ -1624,6 +1626,9 @@ def test_wp131_through_wp148_dedicated_status_chain_is_consistent():
     ))
     wp148_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review assisted research mandatory provider evidence resolution and research refresh decision status:"
+    ))
+    wp149_line = next(line for line in lines if line.startswith(
+        "- Hermes remote provider track deferral and revisit criteria decision status:"
     ))
     current_phase_line = next(line for line in lines if line.startswith("- Current phase:"))
     merged_line = next(line for line in lines if line.startswith("- Merged WPs:"))
@@ -1682,11 +1687,13 @@ def test_wp131_through_wp148_dedicated_status_chain_is_consistent():
     assert "REVIEW_TARGET" not in wp145_line
     assert "REVIEW_TARGET" not in wp146_line
     assert "REVIEW_TARGET" not in wp147_line
-    assert "REVIEW_TARGET" in wp148_line
+    assert "REVIEW_TARGET" not in wp148_line
+    assert "REVIEW_TARGET" in wp149_line
     assert sum("REVIEW_TARGET" in line for line in (
         wp131_line, wp132_line, wp133_line, wp134_line, wp135_line, wp136_line,
         wp137_line, wp138_line, wp139_line, wp140_line, wp141_line, wp142_line,
         wp143_line, wp144_line, wp145_line, wp146_line, wp147_line, wp148_line,
+        wp149_line,
     )) == 1
     assert "Manual six-record workflow status: CLOSED_COMPLETE_ENOUGH_FOR_BOUNDED_MANUAL_USE" in wp140_line
     assert "Default manual-chain extension: STOP" in wp140_line
@@ -1824,7 +1831,7 @@ def test_wp131_through_wp148_dedicated_status_chain_is_consistent():
         "WP148 was separately approved",
     ):
         assert phrase in wp147_line
-    assert "DOCS_STATUS_TESTS_ONLY_MANDATORY_PROVIDER_EVIDENCE_RESOLUTION_AND_RESEARCH_REFRESH_DECISION_REVIEW_TARGET" in wp148_line
+    assert "DOCS_STATUS_TESTS_ONLY_MANDATORY_PROVIDER_EVIDENCE_RESOLUTION_AND_RESEARCH_REFRESH_DECISION_MERGED" in wp148_line
     for phrase in (
         "Research cut-off: 2026-07-23T16:10:31Z",
         "Refreshed source count: 11",
@@ -1858,7 +1865,33 @@ def test_wp131_through_wp148_dedicated_status_chain_is_consistent():
         "WP149 requires separate approval",
     ):
         assert phrase in wp148_line
-    assert "WP148" in current_phase_line
+    assert "DOCS_STATUS_TESTS_ONLY_REMOTE_PROVIDER_TRACK_DEFERRAL_REVISIT_CRITERIA_DECISION_REVIEW_TARGET" in wp149_line
+    for phrase in (
+        "Remote provider track status: DEFERRED_PENDING_MATERIAL_NEW_EVIDENCE",
+        "Automatic periodic provider re-research: FORBIDDEN",
+        "Repeated unchanged provider research: FORBIDDEN",
+        "Scheduled periodic provider sweep: FORBIDDEN",
+        "Reopen based only on elapsed time: FORBIDDEN",
+        "Provider track may reopen only after: MATERIAL_EVIDENCE_TRIGGER_AND_SEPARATE_APPROVAL",
+        "Deferral review cadence: EVENT_DRIVEN_ONLY",
+        "Remote configurations eligible: 0",
+        "Remote configurations shortlisted: 0",
+        "Provider/model selection: NOT MADE",
+        "Remote controlled experiment readiness: NOT_READY",
+        "Provider/model activation: NOT AUTHORIZED",
+        "Provider/model call: NOT AUTHORIZED",
+        "Hermes installation/invocation: NOT AUTHORIZED",
+        "Provider account creation: NOT AUTHORIZED",
+        "Credential creation/use: NOT AUTHORIZED",
+        "Network endpoint activation: NOT AUTHORIZED",
+        "Experiment spending: NOT AUTHORIZED",
+        "Raw input/output persistence: NOT AUTHORIZED",
+        "Paper/live/execution authority: FORBIDDEN",
+        "Next phase: LOCAL_RESEARCH_WORKFLOW_VALUE_VALIDATION_AND_PAPER_TRADING_READINESS_DECISION",
+        "WP150 requires separate approval",
+    ):
+        assert phrase in wp149_line
+    assert "WP149" in current_phase_line
     assert "WP138" in merged_line
     assert "WP139" in merged_line
     assert "WP140" in merged_line
@@ -1869,6 +1902,7 @@ def test_wp131_through_wp148_dedicated_status_chain_is_consistent():
     assert "WP145" in merged_line
     assert "WP146" in merged_line
     assert "WP147" in merged_line
+    assert "WP148" in merged_line
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     for path in (
         "docs/hermes_candidate_review_manual_research_question_request_response_validation_receipt_four_record_chain_operator_runbook.md",
@@ -1913,6 +1947,9 @@ def test_wp131_through_wp148_dedicated_status_chain_is_consistent():
         "docs/hermes_candidate_review_assisted_research_mandatory_provider_evidence_resolution_and_research_refresh_decision.md",
         "tests/test_hermes_candidate_review_assisted_research_mandatory_provider_evidence_resolution_and_research_refresh_decision_docs.py",
         "docs/status_entries/WP148.md",
+        "docs/hermes_remote_provider_track_deferral_and_revisit_criteria_decision.md",
+        "tests/test_hermes_remote_provider_track_deferral_and_revisit_criteria_decision_docs.py",
+        "docs/status_entries/WP149.md",
     ):
         assert path in index
 
@@ -2345,6 +2382,92 @@ def test_wp148_status_fragment_is_stable_and_contains_locked_decisions():
         assert path in status
     assert "WP147 is merged" in status
     assert "WP148 is the sole current review target" in status
+    assert "LOCAL_DRAFT_VERIFIED" not in status
+    assert "TBD" not in status
+    assert "Head commit:" not in status
+    assert (
+        re.search(
+            r"Current live PR head:\s*`?[0-9a-f]{40}`?",
+            status,
+            re.IGNORECASE,
+        )
+        is None
+    )
+    assert "future mergeability" not in status.lower()
+
+
+def test_wp149_status_fragment_is_stable_and_contains_locked_decisions():
+    status = (STATUS_ENTRIES / "WP149.md").read_text(encoding="utf-8")
+    expected_headings = [
+        "# WP149 — Hermes Remote Provider Track Deferral And Revisit Criteria Decision V1",
+        "## Package Identity",
+        "## Authorization Basis",
+        "## Authority / Non-Authority",
+        "## Merge Gate",
+        "## Repository Inputs Reviewed",
+        "## Repository Discovery",
+        "## Deferral Decision",
+        "## Meaning Of Deferral",
+        "## Revisit Triggers",
+        "## Non-Triggers",
+        "## Materiality Standard",
+        "## Revisit Evidence Packet",
+        "## Anti-Loop Rules",
+        "## Deferral Review Cadence",
+        "## Reopen State Machine",
+        "## Productive Next Phase",
+        "## Promotion Gates",
+        "## Deferred Capabilities",
+        "## Changed Files",
+        "## Requirement-To-Evidence",
+        "## Validation",
+        "## Model D Evidence",
+        "## Stable Metadata",
+        "## Follow-Up Classification",
+        "## Ready For Review",
+    ]
+    headings = [
+        line
+        for line in status.splitlines()
+        if line.startswith("# ") or line.startswith("## ")
+    ]
+    assert headings == expected_headings
+    for statement in (
+        "Remote provider track status:\nDEFERRED_PENDING_MATERIAL_NEW_EVIDENCE",
+        "Automatic periodic provider re-research:\nFORBIDDEN",
+        "Repeated unchanged provider research:\nFORBIDDEN",
+        "Scheduled periodic provider sweep:\nFORBIDDEN",
+        "Reopen based only on elapsed time:\nFORBIDDEN",
+        "Provider track may reopen only after:\nMATERIAL_EVIDENCE_TRIGGER_AND_SEPARATE_APPROVAL",
+        "Deferral review cadence:\nEVENT_DRIVEN_ONLY",
+        "Remote configurations eligible",
+        "zero eligible",
+        "zero shortlisted",
+        "no provider/model selection",
+        "remote readiness `NOT_READY`",
+        "Next phase:\nLOCAL_RESEARCH_WORKFLOW_VALUE_VALIDATION_AND_PAPER_TRADING_READINESS_DECISION",
+        "WP150 requires separate approval",
+        "Hermes-document allowlist additions: NONE",
+        "Architecture-test modification:",
+        "`tests/test_wallet_intelligence_architecture_contract_docs.py` current-phase",
+        "Compatibility-test modification: `tests/test_project_status_docs.py` ONLY",
+        "Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED",
+        "Evidence architecture: Model D",
+        "Ready for review: YES only after final validation",
+    ):
+        assert statement in status
+    for path in (
+        "docs/hermes_remote_provider_track_deferral_and_revisit_criteria_decision.md",
+        "tests/test_hermes_remote_provider_track_deferral_and_revisit_criteria_decision_docs.py",
+        "docs/status_entries/WP149.md",
+        "docs/project_status.md",
+        "docs/repo_truth_index.md",
+        "tests/test_project_status_docs.py",
+        "tests/test_wallet_intelligence_architecture_contract_docs.py",
+    ):
+        assert path in status
+    assert "WP148 is merged" in status
+    assert "WP149 is the sole current review target" in status
     assert "LOCAL_DRAFT_VERIFIED" not in status
     assert "TBD" not in status
     assert "Head commit:" not in status
