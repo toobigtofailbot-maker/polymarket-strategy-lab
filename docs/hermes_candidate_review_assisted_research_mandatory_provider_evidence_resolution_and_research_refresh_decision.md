@@ -68,6 +68,13 @@ below. Unrefreshed WP147 source timestamps remain unchanged in the WP147
 record. Undated live pages are labeled `UNDATED_CURRENT_PAGE`; a page's
 availability at the cutoff is not a claim about future availability.
 
+```text
+Refreshed source count: 11
+Tier 1 source count: 10
+Tier 2 source count: 1
+Tier 2 source IDs: ANT-R02
+```
+
 ## Source Hierarchy
 
 - Tier 1: official provider API/admin/legal/privacy/security/subprocessor
@@ -173,11 +180,11 @@ document_title: How long do you store my organization's data?
 canonical_url: https://privacy.anthropic.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data
 accessed_at_utc: 2026-07-23T16:10:31Z
 document_effective_date_or_last_updated: UPDATED_WITHIN_WEEK_OF_2026-07-23
-source_tier: TIER_1
+source_tier: TIER_2
 claim_supported: commercial product inputs and outputs are automatically deleted within 30 days subject to policy and legal exceptions
 direct_or_inferred: DIRECT
 freshness_status: CURRENT_AT_CUTOFF
-notes: Supplemental confirmation of retention, not operator-verifiable deletion evidence.
+notes: Official Tier 2 supplemental confirmation only; cannot independently satisfy a mandatory gate and does not prove operator-verifiable deletion.
 ---
 source_id: ANT-R03
 candidate_id: ANT-SONNET-MESSAGES

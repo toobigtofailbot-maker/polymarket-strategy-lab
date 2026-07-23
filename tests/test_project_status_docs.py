@@ -1827,7 +1827,10 @@ def test_wp131_through_wp148_dedicated_status_chain_is_consistent():
     assert "DOCS_STATUS_TESTS_ONLY_MANDATORY_PROVIDER_EVIDENCE_RESOLUTION_AND_RESEARCH_REFRESH_DECISION_REVIEW_TARGET" in wp148_line
     for phrase in (
         "Research cut-off: 2026-07-23T16:10:31Z",
-        "Refreshed sources: 11",
+        "Refreshed source count: 11",
+        "Tier 1 source count: 10",
+        "Tier 2 source count: 1",
+        "Tier 2 source IDs: ANT-R02",
         "OpenAI deletion result: EVIDENCE_INSUFFICIENT",
         "OpenAI key-lifecycle result: EVIDENCE_INSUFFICIENT",
         "Anthropic deletion result: EVIDENCE_INSUFFICIENT",
@@ -2298,7 +2301,10 @@ def test_wp148_status_fragment_is_stable_and_contains_locked_decisions():
     assert headings == expected_headings
     for statement in (
         "Research cut-off: 2026-07-23T16:10:31Z",
-        "Refreshed sources: 11",
+        "Refreshed source count: 11",
+        "Tier 1 source count: 10",
+        "Tier 2 source count: 1",
+        "Tier 2 source IDs: ANT-R02",
         "OpenAI deletion result: EVIDENCE_INSUFFICIENT",
         "OpenAI key-lifecycle result: EVIDENCE_INSUFFICIENT",
         "Anthropic deletion result: EVIDENCE_INSUFFICIENT",

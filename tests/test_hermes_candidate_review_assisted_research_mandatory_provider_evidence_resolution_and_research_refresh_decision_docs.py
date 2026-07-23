@@ -157,7 +157,7 @@ def _mandatory_pass(
         state == "PASS"
         and directly_relevant
         and bool(sources)
-        and all(source["source_tier"] == "TIER_1" for source in sources)
+        and any(source["source_tier"] == "TIER_1" for source in sources)
         and all(source["direct_or_inferred"] == "DIRECT" for source in sources)
         and all(source["freshness_status"] == "CURRENT_AT_CUTOFF" for source in sources)
         and not login_only
@@ -194,6 +194,7 @@ def test_exact_title_heading_order_and_decision_tokens():
 
 def test_refreshed_source_registry_is_complete_unique_current_and_https():
     records = _source_records(_read())
+    source_by_id = {record["source_id"]: record for record in records}
     assert len(records) == 11
     assert len({record["source_id"] for record in records}) == len(records)
     for record in records:
@@ -209,8 +210,48 @@ def test_refreshed_source_registry_is_complete_unique_current_and_https():
         assert record["direct_or_inferred"] in {"DIRECT", "ANALYST_INFERENCE"}
         assert record["freshness_status"] == "CURRENT_AT_CUTOFF"
         assert "google.com/search" not in record["canonical_url"].lower()
-    assert all(record["source_tier"] == "TIER_1" for record in records)
+    assert sum(record["source_tier"] == "TIER_1" for record in records) == 10
+    assert sum(record["source_tier"] == "TIER_2" for record in records) == 1
+    assert source_by_id["ANT-R02"]["source_tier"] == "TIER_2"
+    assert {
+        record["source_id"]
+        for record in records
+        if record["source_tier"] == "TIER_2"
+    } == {"ANT-R02"}
     assert all(record["direct_or_inferred"] == "DIRECT" for record in records)
+
+
+def test_anthropic_help_article_is_tier2_supplement_only_and_outcome_is_unchanged():
+    text = _read()
+    source_by_id = {
+        record["source_id"]: record for record in _source_records(text)
+    }
+    ant_r01 = source_by_id["ANT-R01"]
+    ant_r02 = source_by_id["ANT-R02"]
+    assert ant_r02["source_tier"] == "TIER_2"
+    assert ant_r02["direct_or_inferred"] == "DIRECT"
+    assert ant_r02["freshness_status"] == "CURRENT_AT_CUTOFF"
+    assert "supplemental confirmation only" in ant_r02["notes"]
+    assert "cannot independently satisfy a mandatory gate" in ant_r02["notes"]
+    assert "does not prove operator-verifiable deletion" in ant_r02["notes"]
+
+    # ANT-R02 alone cannot satisfy PASS, but may supplement Tier 1 ANT-R01.
+    assert not _mandatory_pass("PASS", [ant_r02])
+    assert _mandatory_pass("PASS", [ant_r01, ant_r02])
+
+    rows = _matrix_rows(text)
+    for gate in ("provider-side deletion", "operator verification"):
+        row = next(
+            row
+            for row in rows
+            if row["Candidate"] == "ANT-SONNET-MESSAGES"
+            and row["Gate"] == gate
+        )
+        assert row["WP148 state"] == "EVIDENCE_INSUFFICIENT"
+        assert "ANT-R02" in row["Source IDs"].split(",")
+    assert not _eligible("ANT-SONNET-MESSAGES", rows)
+    assert "Remote configurations eligible: 0" in text
+    assert "Remote configurations shortlisted: 0" in text
 
 
 def test_resolution_matrix_has_every_required_row_and_supported_state():
@@ -400,6 +441,14 @@ def test_document_status_project_and_repo_truth_surfaces_agree():
     for token in DECISION_TOKENS:
         for name in ("document", "status", "project"):
             assert token in surfaces[name], (name, token)
+    for token in (
+        "Refreshed source count: 11",
+        "Tier 1 source count: 10",
+        "Tier 2 source count: 1",
+        "Tier 2 source IDs: ANT-R02",
+    ):
+        for name, surface in surfaces.items():
+            assert token in surface, (name, token)
     for path in (
         "docs/hermes_candidate_review_assisted_research_mandatory_provider_evidence_resolution_and_research_refresh_decision.md",
         "tests/test_hermes_candidate_review_assisted_research_mandatory_provider_evidence_resolution_and_research_refresh_decision_docs.py",
