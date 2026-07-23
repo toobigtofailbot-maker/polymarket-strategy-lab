@@ -525,6 +525,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z224. `docs/status_entries/WP146.md` - WP146 stable committed status fragment for the docs/status/tests-only local-harness closeout and controlled remote-experiment readiness decision package.
 
+62z225. `docs/hermes_candidate_review_assisted_research_current_provider_model_privacy_retention_cost_endpoint_research_and_candidate_shortlist.md` - WP147 canonical current first-party research record for a bounded four-configuration preliminary pool, three deeply researched exact remote configurations, PR147-FU1 Tier 1 key-lifecycle reconciliation, separate application-state and abuse-monitoring deletion findings, zero eligible/zero shortlisted configurations with `EVIDENCE_INSUFFICIENT_NO_SHORTLIST`, canonical `ANT-SONNET-MESSAGES` and `GGL-FLASH-DEVELOPER` IDs, exact `expected_us_geo_cost: USD 0.0594` and `stress_us_geo_cost: USD 0.2970`, fail-closed evidence gaps, WP143-compatible cost calculations, hardware-evidence local-baseline deferral, persistent `NOT_READY`, and separately gated/unimplemented WP148 with no activation, implementation, credential, spend, storage, or trading authority.
+
+62z226. `tests/test_hermes_candidate_review_assisted_research_current_provider_model_privacy_retention_cost_endpoint_research_and_candidate_shortlist_docs.py` - WP147 Markdown-only focused regression for exact structure/decisions, ISO research cutoff, complete official HTTPS registry metadata, deterministic matrix-citation-to-registry parsing, directly relevant Tier 1/DIRECT/current evidence for every mandatory PASS, Tier-2-only/inference-only/unresolved-source rejection, request-manifest versus provider-deletion separation, derived zero eligibility/shortlist counts, canonical ID/cost consistency, API-policy/privacy/retention/deletion/jurisdiction/subprocessor/security coverage, endpoint/Hermes/key feasibility, WP143 caps, hardware-evidence deferral, `NOT_READY`, WP148 gating, and no implementation/activation/spend/storage/trading authority.
+
+62z227. `docs/status_entries/WP147.md` - WP147 stable committed status fragment for the public-research/documentation/status/tests-only current provider/model evidence and candidate-shortlist package.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
