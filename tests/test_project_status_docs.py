@@ -1389,7 +1389,7 @@ def test_wp111_is_reconciled_or_in_current_chain_context():
     assert "docs/hermes_candidate_review_local_manual_export_smoke_exercise.md" in text
 
 
-def test_wp149_is_reconciled_as_merged_and_wp150_is_current_review_target_state():
+def test_wp150_is_reconciled_as_merged_and_wp151_is_current_review_target_state():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -1397,7 +1397,7 @@ def test_wp149_is_reconciled_as_merged_and_wp150_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP150" in current_phase_line
+    assert "WP151" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -1426,6 +1426,7 @@ def test_wp149_is_reconciled_as_merged_and_wp150_is_current_review_target_state(
     assert "WP147" in merged_line
     assert "WP148" in merged_line
     assert "WP149" in merged_line
+    assert "WP150" in merged_line
     assert "src/data_layer/hermes_candidate_review_manual_research_briefing_packet.py" in text
     assert "LOCAL_OFFLINE_READ_ONLY_IN_MEMORY_MANUAL_RESEARCH_BRIEFING_PACKET_MERGED" in text
     assert "DOCS_STATUS_TESTS_PLUS_TEMP_ONLY_SYNTHETIC_SMOKE_MERGED" in text
@@ -1477,7 +1478,8 @@ def test_wp149_is_reconciled_as_merged_and_wp150_is_current_review_target_state(
     assert "DOCS_STATUS_TESTS_ONLY_CURRENT_PROVIDER_MODEL_RESEARCH_AND_CANDIDATE_SHORTLIST_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_MANDATORY_PROVIDER_EVIDENCE_RESOLUTION_AND_RESEARCH_REFRESH_DECISION_MERGED" in text
     assert "DOCS_STATUS_TESTS_ONLY_REMOTE_PROVIDER_TRACK_DEFERRAL_REVISIT_CRITERIA_DECISION_MERGED" in text
-    assert "DOCS_STATUS_MARKDOWN_TESTS_ONLY_LOCAL_RESEARCH_VALUE_AND_PAPER_READINESS_DECISION_REVIEW_TARGET" in text
+    assert "DOCS_STATUS_MARKDOWN_TESTS_ONLY_LOCAL_RESEARCH_VALUE_AND_PAPER_READINESS_DECISION_MERGED" in text
+    assert "DOCS_STATUS_MARKDOWN_TESTS_ONLY_LOCAL_RESEARCH_VALUE_MEASUREMENT_HARNESS_CONTRACT_REVIEW_TARGET" in text
     assert "DOCS_STATUS_TESTS_ONLY_LOCAL_MANUAL_EXPORT_CHAIN_CLOSEOUT_REVIEW_TARGET" in text
     assert "docs/hermes_candidate_review_local_manual_export_chain_closeout.md" in text
     assert "DOCS_STATUS_TESTS_ONLY_CLI_WRAPPER_CONTRACT_MERGED" in text
@@ -1573,7 +1575,7 @@ def test_hermes_candidate_review_handoff_manual_export_writer_is_registered():
     assert "tests/test_hermes_candidate_review_handoff_manual_export_writer.py" in index_text
 
 
-def test_wp131_through_wp150_dedicated_status_chain_is_consistent():
+def test_wp131_through_wp151_dedicated_status_chain_is_consistent():
     lines = _read().splitlines()
     wp131_line = next(line for line in lines if line.startswith(
         "- Hermes candidate-review manual research briefing packet operator runbook/temp smoke status:"
@@ -1635,6 +1637,9 @@ def test_wp131_through_wp150_dedicated_status_chain_is_consistent():
     wp150_line = next(line for line in lines if line.startswith(
         "- Local research workflow value validation and paper-trading readiness decision status:"
     ))
+    wp151_line = next(line for line in lines if line.startswith(
+        "- Local research workflow value measurement harness contract status:"
+    ))
     current_phase_line = next(line for line in lines if line.startswith("- Current phase:"))
     merged_line = next(line for line in lines if line.startswith("- Merged WPs:"))
 
@@ -1694,12 +1699,13 @@ def test_wp131_through_wp150_dedicated_status_chain_is_consistent():
     assert "REVIEW_TARGET" not in wp147_line
     assert "REVIEW_TARGET" not in wp148_line
     assert "REVIEW_TARGET" not in wp149_line
-    assert "REVIEW_TARGET" in wp150_line
+    assert "REVIEW_TARGET" not in wp150_line
+    assert "REVIEW_TARGET" in wp151_line
     assert sum("REVIEW_TARGET" in line for line in (
         wp131_line, wp132_line, wp133_line, wp134_line, wp135_line, wp136_line,
         wp137_line, wp138_line, wp139_line, wp140_line, wp141_line, wp142_line,
         wp143_line, wp144_line, wp145_line, wp146_line, wp147_line, wp148_line,
-        wp149_line, wp150_line,
+        wp149_line, wp150_line, wp151_line,
     )) == 1
     assert "Manual six-record workflow status: CLOSED_COMPLETE_ENOUGH_FOR_BOUNDED_MANUAL_USE" in wp140_line
     assert "Default manual-chain extension: STOP" in wp140_line
@@ -1897,7 +1903,7 @@ def test_wp131_through_wp150_dedicated_status_chain_is_consistent():
         "WP150 was separately approved",
     ):
         assert phrase in wp149_line
-    assert "DOCS_STATUS_MARKDOWN_TESTS_ONLY_LOCAL_RESEARCH_VALUE_AND_PAPER_READINESS_DECISION_REVIEW_TARGET" in wp150_line
+    assert "DOCS_STATUS_MARKDOWN_TESTS_ONLY_LOCAL_RESEARCH_VALUE_AND_PAPER_READINESS_DECISION_MERGED" in wp150_line
     for phrase in (
         "Local workflow stages inventoried: 20",
         "Implemented and tested: 13",
@@ -1938,7 +1944,45 @@ def test_wp131_through_wp150_dedicated_status_chain_is_consistent():
         "WP151 requires separate approval",
     ):
         assert phrase in wp150_line
-    assert "WP150" in current_phase_line
+    for phrase in (
+        "DOCS_STATUS_MARKDOWN_TESTS_ONLY_LOCAL_RESEARCH_VALUE_MEASUREMENT_HARNESS_CONTRACT_REVIEW_TARGET",
+        "Measurement harness contract status: COMPLETE_READY_FOR_BOUNDED_IMPLEMENTATION_WP",
+        "Measurement architecture: LOCAL_DETERMINISTIC_OPERATOR_INITIATED_TEMPORARY_HARNESS",
+        "Initial harness metric scope: GROUNDED_22_METRICS_ONLY",
+        "Blocked metric posture: CONTRACT_DEFINED_IMPLEMENTATION_DEFERRED",
+        "Research-value metric records: 39",
+        "Research-value metrics measured: 0",
+        "Research-value metrics measurable but not yet measured: 22",
+        "Research-value metrics not currently measurable: 17",
+        "Wave 1 metrics: 22",
+        "Wave 2 metrics: 17",
+        "Workflow stages: 20",
+        "Corpus cases: 14",
+        "Corpus families: 14",
+        "Event types: 13",
+        "Run statuses: 9",
+        "Required repeats per selected case: 3",
+        "WP150 blockers mapped: 7",
+        "Contract-resolved blockers: 7",
+        "Implementation-required blockers: 7",
+        "Separate schema decision required: NO",
+        "Measurement harness implementation: NOT AUTHORIZED",
+        "Measurement run: NOT AUTHORIZED",
+        "Measurement receipts generated: 0",
+        "Persistent measurement output: NOT AUTHORIZED",
+        "Paper-trading implementation readiness: NOT_READY_FOUNDATIONAL_GAPS",
+        "Paper-trading execution: NOT AUTHORIZED",
+        "Live-trading execution: FORBIDDEN",
+        "Capital at risk: USD 0",
+        "Orders submitted: 0",
+        "Credentials created/used: 0",
+        "External model calls: 0",
+        "Scheduler/tasks: 0",
+        "Next phase: BOUNDED_LOCAL_RESEARCH_VALUE_MEASUREMENT_HARNESS_IMPLEMENTATION",
+        "WP152 requires separate approval",
+    ):
+        assert phrase in wp151_line
+    assert "WP151" in current_phase_line
     assert "WP138" in merged_line
     assert "WP139" in merged_line
     assert "WP140" in merged_line
@@ -1951,6 +1995,7 @@ def test_wp131_through_wp150_dedicated_status_chain_is_consistent():
     assert "WP147" in merged_line
     assert "WP148" in merged_line
     assert "WP149" in merged_line
+    assert "WP150" in merged_line
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     for path in (
         "docs/hermes_candidate_review_manual_research_question_request_response_validation_receipt_four_record_chain_operator_runbook.md",
