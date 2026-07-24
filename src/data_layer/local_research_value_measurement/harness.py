@@ -78,6 +78,14 @@ ALLOWED_OUTPUT_MODES = (
     "PYTEST_TMP_PATH_ONLY",
     "IGNORED_LOCAL_TEMP_DIRECTORY",
 )
+ALLOWED_HUMAN_REVIEW_OUTCOMES = (
+    "ACCEPT_MEASUREMENT_RECEIPT_FOR_RESEARCH_MEMORY_ONLY",
+    "REJECT_RECEIPT_CONTRACT_FAILURE",
+    "REJECT_RECEIPT_COVERAGE_FAILURE",
+    "REJECT_RECEIPT_REPEATABILITY_FAILURE",
+    "REJECT_RECEIPT_SAFETY_FAILURE",
+    "DEFER_RECEIPT_PENDING_CORRECTION",
+)
 SAFETY_GATES = (
     "NO_NETWORK",
     "NO_CREDENTIAL_ACCESS",
@@ -190,6 +198,9 @@ ALLOWED_REASON_CODES = frozenset(
 )
 ALLOWED_CORRECTION_TARGETS = frozenset(
     {"NONE", "CASE_INPUT", "CASE_VALIDATION", "CASE_REVIEW"}
+)
+_FINAL_REVIEW_ACTIONS = frozenset(
+    {"ACKNOWLEDGE", "REQUEST_CORRECTION", "RETRY_CASE", "DEFER_CASE"}
 )
 _ACTION_RULES = {
     "NO_ACTION": ("NO_REASON", frozenset({"NONE"}), False),
@@ -486,6 +497,43 @@ _EXPECTED_CASE_METADATA = {
         "fixture/source/input mutation",
     ),
 }
+_FIXED_CORPUS_VALIDATION_STATES = tuple(
+    dict.fromkeys(metadata[2] for metadata in _EXPECTED_CASE_METADATA.values())
+)
+_EVENT_REVIEW_STATES = (
+    "NOT_APPLICABLE",
+    "REVIEW_REQUIRED",
+    "REVIEW_COMPLETE",
+)
+ALLOWED_EVENT_VALIDATION_STATES = tuple(
+    dict.fromkeys(
+        _FIXED_CORPUS_VALIDATION_STATES
+        + _EVENT_REVIEW_STATES
+        + ALLOWED_RUN_STATUSES
+        + ALLOWED_HUMAN_REVIEW_OUTCOMES
+    )
+)
+ALLOWED_EVENT_ERROR_CODES = (
+    "ACTION_DISPOSITION_DEFERRED",
+    "BLOCKED_WAVE_2",
+    "METRIC_DERIVATION_FAILED",
+    "MISSING_REQUIRED_CASE_COVERAGE",
+    "RECEIPT_CONTRACT_FAILURE",
+    "REPEATABILITY_MISMATCH",
+    "SAFETY_GATE_FAILURE",
+)
+ALLOWED_METRIC_FAILURE_CODES = (
+    "BLOCKED_WAVE_2",
+    "METRIC_DERIVATION_FAILED",
+    "MISSING_REQUIRED_CASE_COVERAGE",
+)
+ALLOWED_RECEIPT_HARD_FAILURE_CODES = (
+    "DEFER_RECEIPT_PENDING_CORRECTION",
+    "MISSING_REQUIRED_CASE_COVERAGE",
+    "RECEIPT_CONTRACT_FAILURE",
+    "REPEATABILITY_MISMATCH",
+    "SAFETY_GATE_FAILURE",
+)
 _ID_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9._-]{0,79}$")
 _CASE_PATTERN = re.compile(r"LVM-\d{3}")
 _ABSOLUTE_PATH_PATTERN = re.compile(r"^(?:[A-Za-z]:[\\/]|/[^/])")
@@ -498,40 +546,117 @@ _SECRET_PATTERN = re.compile(
     r"(?i)(api[_ -]?key|private[_ -]?key|mnemonic|passphrase|"
     r"bearer\s+[a-z0-9]|sk-[a-z0-9]{8,}|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})"
 )
-_FORBIDDEN_CONTENT = (
-    "buy recommendation",
-    "sell recommendation",
-    "trade ready",
-    "strategy signal",
-    "signal creation",
-    "paper trading candidate",
-    "paper state",
-    "live state",
-    "paper ready",
-    "live ready",
-    "position sizing",
-    "profit target",
-    "expected return",
-    "take profit",
-    "stop loss",
-    "order payload",
-    "order creation",
-    "create order",
-    "account state",
-    "wallet address",
-    "provider output",
-    "model output",
-    "hermes runtime",
-    "background task",
-    "scheduler",
-    "database writer",
-    "username",
-    "user profile",
-    "user id",
-    "real person",
-    "http://",
-    "https://",
-    "www.",
+_SAFE_EXACT_TEXT = frozenset(
+    {
+        NON_AUTHORITY_NOTICE,
+        *SAFETY_GATES,
+        *ALLOWED_HUMAN_REVIEW_OUTCOMES,
+    }
+)
+_FORBIDDEN_CONTENT_BY_GATE = (
+    (
+        "SAFETY_GATE_NO_NETWORK",
+        (
+            "http://",
+            "https://",
+            "www.",
+            "network request",
+            "endpoint response",
+        ),
+    ),
+    (
+        "SAFETY_GATE_NO_PROVIDER_OR_MODEL_CALL",
+        (
+            "provider output",
+            "provider response",
+            "model output",
+            "model response",
+        ),
+    ),
+    (
+        "SAFETY_GATE_NO_HERMES_RUNTIME",
+        (
+            "hermes runtime",
+            "hermes command",
+        ),
+    ),
+    (
+        "SAFETY_GATE_NO_SCHEDULER_OR_BACKGROUND_TASK",
+        (
+            "background task",
+            "background worker",
+            "scheduler",
+            "scheduled job",
+        ),
+    ),
+    (
+        "SAFETY_GATE_NO_UNAPPROVED_PERSISTENCE",
+        (
+            "database writer",
+            "persistent report",
+            "persist report",
+            "write database",
+        ),
+    ),
+    (
+        "SAFETY_GATE_NO_PAPER_OR_LIVE_STATE",
+        (
+            "account state",
+            "account balance",
+            "wallet address",
+            "wallet balance",
+            "paper trading candidate",
+            "paper state",
+            "live state",
+            "paper ready",
+            "live ready",
+            "paper trade",
+            "live trade",
+        ),
+    ),
+    (
+        "SAFETY_GATE_NO_ORDER_OR_SIGNAL_CREATION",
+        (
+            "order payload",
+            "order creation",
+            "create order",
+            "place order",
+            "submit order",
+            "execute order",
+            "strategy signal",
+            "trade signal",
+            "signal creation",
+            "approve strategy",
+            "promote strategy",
+        ),
+    ),
+    (
+        "SAFETY_GATE_NO_PROFITABILITY_OR_RECOMMENDATION_OUTPUT",
+        (
+            "buy recommendation",
+            "sell recommendation",
+            "buy now",
+            "sell now",
+            "trade ready",
+            "position size",
+            "position sizing",
+            "profit target",
+            "expected return",
+            "take profit",
+            "stop loss",
+        ),
+    ),
+    (
+        "SAFETY_GATE_NO_RAW_PRIVATE_OR_SECRET_DATA",
+        (
+            "username",
+            "user profile",
+            "user id",
+            "user identity",
+            "real person",
+            "private identity",
+        ),
+    ),
 )
 
 
@@ -596,7 +721,7 @@ def _recursive_strings(value: object, depth: int = 0) -> tuple[str, ...]:
 
 def _safety_error(value: object) -> str | None:
     for text in _recursive_strings(value):
-        if text in SAFETY_GATES:
+        if text in _SAFE_EXACT_TEXT:
             continue
         normalized = " ".join(
             text.lower().replace("_", " ").replace("-", " ").split()
@@ -608,41 +733,9 @@ def _safety_error(value: object) -> str | None:
             or _UUID_PATTERN.search(text)
         ):
             return "SAFETY_GATE_NO_RAW_PRIVATE_OR_SECRET_DATA"
-        if any(term in normalized for term in _FORBIDDEN_CONTENT):
-            if "http" in normalized or "www." in normalized:
-                return "SAFETY_GATE_NO_NETWORK"
-            if "provider" in normalized or "model output" in normalized:
-                return "SAFETY_GATE_NO_PROVIDER_OR_MODEL_CALL"
-            if "hermes runtime" in normalized:
-                return "SAFETY_GATE_NO_HERMES_RUNTIME"
-            if "background task" in normalized or "scheduler" in normalized:
-                return "SAFETY_GATE_NO_SCHEDULER_OR_BACKGROUND_TASK"
-            if "database writer" in normalized:
-                return "SAFETY_GATE_NO_UNAPPROVED_PERSISTENCE"
-            if any(
-                term in normalized
-                for term in (
-                    "account state",
-                    "wallet address",
-                    "paper state",
-                    "live state",
-                    "paper ready",
-                    "live ready",
-                )
-            ):
-                return "SAFETY_GATE_NO_PAPER_OR_LIVE_STATE"
-            if any(
-                term in normalized
-                for term in (
-                    "order payload",
-                    "order creation",
-                    "create order",
-                    "strategy signal",
-                    "signal creation",
-                )
-            ):
-                return "SAFETY_GATE_NO_ORDER_OR_SIGNAL_CREATION"
-            return "SAFETY_GATE_NO_PROFITABILITY_OR_RECOMMENDATION_OUTPUT"
+        for gate_error, phrases in _FORBIDDEN_CONTENT_BY_GATE:
+            if any(phrase in normalized for phrase in phrases):
+                return gate_error
     return None
 
 
@@ -873,7 +966,7 @@ def validate_operator_actions(
     selected_cases: Sequence[str],
     corpus_cases: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    """Validate bounded actions, case lineage, and retry limits."""
+    """Validate bounded actions and reconcile one final disposition per case."""
     safety_error = _safety_error(actions)
     if safety_error:
         return _validation(False, "RUN_FAILED_VALIDATION", (safety_error,))
@@ -919,6 +1012,50 @@ def validate_operator_actions(
             if retries[case_id] > 1:
                 return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("UNBOUNDED_RETRY",))
         normalized.append(copy.deepcopy(dict(action)))
+    abort_actions = [
+        action for action in normalized if action["action_type"] == "ABORT_RUN"
+    ]
+    if len(abort_actions) > 1:
+        return _validation(
+            False,
+            "RUN_FAILED_EVENT_CONTRACT",
+            ("DUPLICATE_ABORT_ACTION",),
+        )
+    if abort_actions:
+        return _validation(
+            True,
+            "RUN_ABORTED_BY_OPERATOR",
+            normalized={"actions": tuple(normalized)},
+        )
+    if any(action["action_type"] == "NO_ACTION" for action in normalized):
+        return _validation(
+            False,
+            "RUN_FAILED_VALIDATION",
+            ("NONFINAL_ACTION_NOT_ALLOWED",),
+        )
+    for case_id in selected_cases:
+        dispositions = [
+            action
+            for action in normalized
+            if action["case_id"] == case_id
+            and action["action_type"] in _FINAL_REVIEW_ACTIONS
+        ]
+        if not dispositions:
+            return _validation(
+                False,
+                "RUN_FAILED_VALIDATION",
+                ("MISSING_FINAL_REVIEW_DISPOSITION",),
+            )
+        if len(dispositions) > 1:
+            error = (
+                "DUPLICATE_ACKNOWLEDGEMENT"
+                if all(
+                    action["action_type"] == "ACKNOWLEDGE"
+                    for action in dispositions
+                )
+                else "CONFLICTING_FINAL_REVIEW_DISPOSITIONS"
+            )
+            return _validation(False, "RUN_FAILED_VALIDATION", (error,))
     return _validation(
         True,
         "RUN_VALID_MEASUREMENT_COMPLETE",
@@ -961,16 +1098,33 @@ def _event(
 
 
 def validate_event_stream(
-    events: object, *, run_id: str, selected_cases: Sequence[str]
+    events: object,
+    *,
+    run_id: str,
+    selected_cases: Sequence[str],
+    expected_operator_actions: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """Validate exact fields, safe references, lineage, ordering, and duration."""
+    """Validate the complete event surface, lineage, ordering, and dispositions."""
+    safety_error = _safety_error(events)
+    if safety_error:
+        return _validation(False, "RUN_FAILED_VALIDATION", (safety_error,))
     if not isinstance(events, (list, tuple)) or not events:
         return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("EMPTY_EVENT_STREAM",))
+    expected_dispositions = (
+        {
+            action["case_id"]: action["action_type"]
+            for action in expected_operator_actions
+            if action["action_type"] in _FINAL_REVIEW_ACTIONS
+        }
+        if expected_operator_actions is not None
+        else None
+    )
     normalized: list[dict[str, Any]] = []
     previous_elapsed = -1
     started: set[tuple[str, int, str]] = set()
     completed: set[tuple[str, int, str]] = set()
     event_counts: Counter[tuple[str, int, str]] = Counter()
+    review_dispositions: dict[tuple[str, int], str] = {}
     for index, event in enumerate(events, 1):
         if not isinstance(event, Mapping) or tuple(event.keys()) != REQUIRED_EVENT_FIELDS:
             return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("EVENT_FIELDS_MISMATCH",))
@@ -978,11 +1132,44 @@ def validate_event_stream(
             return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("EVENT_VERSION_MISMATCH",))
         if event["run_id"] != run_id:
             return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("CROSS_RUN_EVENT",))
-        if event["event_sequence"] != index:
+        if (
+            not isinstance(event["event_sequence"], int)
+            or isinstance(event["event_sequence"], bool)
+            or event["event_sequence"] != index
+        ):
             return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("NONCONTIGUOUS_EVENT_SEQUENCE",))
         if event["event_type"] not in ALLOWED_EVENT_TYPES:
             return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("UNKNOWN_EVENT_TYPE",))
-        if not isinstance(event["monotonic_elapsed_ns"], int) or event["monotonic_elapsed_ns"] < 0:
+        if event["validation_state"] not in ALLOWED_EVENT_VALIDATION_STATES:
+            return _validation(
+                False,
+                "RUN_FAILED_EVENT_CONTRACT",
+                ("UNKNOWN_EVENT_VALIDATION_STATE",),
+            )
+        error_codes = event["error_codes"]
+        if (
+            not isinstance(error_codes, (list, tuple))
+            or any(not isinstance(code, str) for code in error_codes)
+            or len(error_codes) != len(set(error_codes))
+            or any(code not in ALLOWED_EVENT_ERROR_CODES for code in error_codes)
+            or tuple(error_codes)
+            != tuple(
+                sorted(
+                    error_codes,
+                    key=ALLOWED_EVENT_ERROR_CODES.index,
+                )
+            )
+        ):
+            return _validation(
+                False,
+                "RUN_FAILED_EVENT_CONTRACT",
+                ("INVALID_EVENT_ERROR_CODES",),
+            )
+        if (
+            not isinstance(event["monotonic_elapsed_ns"], int)
+            or isinstance(event["monotonic_elapsed_ns"], bool)
+            or event["monotonic_elapsed_ns"] < 0
+        ):
             return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("NEGATIVE_OR_INVALID_DURATION",))
         if event["monotonic_elapsed_ns"] < previous_elapsed:
             return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("OUT_OF_ORDER_DURATION",))
@@ -990,22 +1177,79 @@ def validate_event_stream(
         case_id = event["case_id"]
         repeat_index = event["repeat_index"]
         if case_id:
-            if case_id not in selected_cases or repeat_index not in (1, 2, 3):
+            if (
+                not isinstance(case_id, str)
+                or case_id not in selected_cases
+                or not isinstance(repeat_index, int)
+                or isinstance(repeat_index, bool)
+                or repeat_index not in (1, 2, 3)
+            ):
                 return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("ORPHAN_OR_CROSS_CASE_EVENT",))
-        elif repeat_index != 0:
+        elif (
+            not isinstance(case_id, str)
+            or not isinstance(repeat_index, int)
+            or isinstance(repeat_index, bool)
+            or repeat_index != 0
+        ):
             return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("INVALID_RUN_LEVEL_EVENT",))
         stage_id = event["stage_id"]
-        if stage_id and stage_id not in _STAGE_BY_ID:
+        if not isinstance(stage_id, str) or (
+            stage_id and stage_id not in _STAGE_BY_ID
+        ):
             return _validation(False, "RUN_FAILED_STAGE_MAP", ("UNKNOWN_STAGE",))
         metric_ids = event["metric_ids"]
         if (
             not isinstance(metric_ids, (list, tuple))
+            or any(not isinstance(metric_id, str) for metric_id in metric_ids)
             or len(metric_ids) != len(set(metric_ids))
             or any(metric_id not in _METRIC_BY_ID for metric_id in metric_ids)
         ):
             return _validation(False, "RUN_FAILED_METRIC_REGISTRY", ("INVALID_EVENT_METRIC_IDS",))
         if event["operator_action_type"] not in ALLOWED_OPERATOR_ACTIONS:
             return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("UNKNOWN_OPERATOR_ACTION",))
+        if event["event_type"] == "OPERATOR_ACKNOWLEDGED":
+            if (
+                event["operator_action_type"] != "ACKNOWLEDGE"
+                or event["validation_state"] != "REVIEW_COMPLETE"
+                or tuple(error_codes) != ()
+            ):
+                return _validation(
+                    False,
+                    "RUN_FAILED_EVENT_CONTRACT",
+                    ("EVENT_ACTION_DISPOSITION_MISMATCH",),
+                )
+            review_dispositions[(case_id, repeat_index)] = "ACKNOWLEDGE"
+        elif event["event_type"] == "CORRECTION_REQUESTED":
+            if (
+                event["operator_action_type"]
+                not in {"REQUEST_CORRECTION", "RETRY_CASE", "DEFER_CASE"}
+                or event["validation_state"]
+                != "DEFER_RECEIPT_PENDING_CORRECTION"
+                or tuple(error_codes) != ("ACTION_DISPOSITION_DEFERRED",)
+            ):
+                return _validation(
+                    False,
+                    "RUN_FAILED_EVENT_CONTRACT",
+                    ("EVENT_ACTION_DISPOSITION_MISMATCH",),
+                )
+            review_dispositions[(case_id, repeat_index)] = event[
+                "operator_action_type"
+            ]
+        elif event["operator_action_type"] != "NO_ACTION":
+            return _validation(
+                False,
+                "RUN_FAILED_EVENT_CONTRACT",
+                ("UNEXPECTED_EVENT_ACTION",),
+            )
+        if (
+            event["event_type"] == "OPERATOR_REVIEW_REQUIRED"
+            and event["validation_state"] != "REVIEW_REQUIRED"
+        ):
+            return _validation(
+                False,
+                "RUN_FAILED_EVENT_CONTRACT",
+                ("EVENT_REVIEW_STATE_MISMATCH",),
+            )
         if not _safe_reference(event["input_reference"]) or not _safe_reference(
             event["output_reference"]
         ):
@@ -1042,7 +1286,6 @@ def validate_event_stream(
             for event_type in (
                 "CASE_STARTED",
                 "OPERATOR_REVIEW_REQUIRED",
-                "OPERATOR_ACKNOWLEDGED",
             ):
                 if event_counts[(case_id, repeat_index, event_type)] != 1:
                     return _validation(
@@ -1050,6 +1293,16 @@ def validate_event_stream(
                         "RUN_FAILED_EVENT_CONTRACT",
                         ("MISSING_OR_DUPLICATE_REQUIRED_EVENT",),
                     )
+            review_event_count = (
+                event_counts[(case_id, repeat_index, "OPERATOR_ACKNOWLEDGED")]
+                + event_counts[(case_id, repeat_index, "CORRECTION_REQUESTED")]
+            )
+            if review_event_count != 1:
+                return _validation(
+                    False,
+                    "RUN_FAILED_EVENT_CONTRACT",
+                    ("MISSING_OR_DUPLICATE_REVIEW_DISPOSITION_EVENT",),
+                )
             if (
                 event_counts[(case_id, repeat_index, "CASE_COMPLETED")]
                 + event_counts[(case_id, repeat_index, "CASE_FAILED")]
@@ -1064,6 +1317,28 @@ def validate_event_stream(
                     "RUN_FAILED_EVENT_CONTRACT",
                     ("MISSING_OR_DUPLICATE_REQUIRED_EVENT",),
                 )
+            disposition = review_dispositions.get((case_id, repeat_index))
+            if (
+                disposition == "ACKNOWLEDGE"
+                and event_counts[(case_id, repeat_index, "CASE_COMPLETED")] != 1
+            ) or (
+                disposition != "ACKNOWLEDGE"
+                and event_counts[(case_id, repeat_index, "CASE_FAILED")] != 1
+            ):
+                return _validation(
+                    False,
+                    "RUN_FAILED_EVENT_CONTRACT",
+                    ("CASE_DISPOSITION_EVENT_MISMATCH",),
+                )
+            if (
+                expected_dispositions is not None
+                and disposition != expected_dispositions.get(case_id)
+            ):
+                return _validation(
+                    False,
+                    "RUN_FAILED_EVENT_CONTRACT",
+                    ("EVENT_ACTION_RECONCILIATION_FAILED",),
+                )
             actual_stages = {
                 stage_id
                 for event_case_id, event_repeat, stage_id in started
@@ -1073,13 +1348,30 @@ def validate_event_stream(
                 return _validation(
                     False, "RUN_FAILED_EVENT_CONTRACT", ("CASE_STAGE_EVENT_COVERAGE_MISMATCH",)
                 )
+        if (
+            len(
+                {
+                    review_dispositions[(case_id, repeat_index)]
+                    for repeat_index in range(1, REQUIRED_REPEATS + 1)
+                }
+            )
+            != 1
+        ):
+            return _validation(
+                False,
+                "RUN_FAILED_EVENT_CONTRACT",
+                ("EVENT_ACTION_RECONCILIATION_FAILED",),
+            )
     final = events[-1]
     if (
         final["event_type"] == "RUN_COMPLETED"
         and final["validation_state"] != "RUN_VALID_MEASUREMENT_COMPLETE"
     ) or (
         final["event_type"] == "RUN_FAILED"
-        and final["validation_state"] == "RUN_VALID_MEASUREMENT_COMPLETE"
+        and (
+            final["validation_state"] not in ALLOWED_RUN_STATUSES
+            or final["validation_state"] == "RUN_VALID_MEASUREMENT_COMPLETE"
+        )
     ):
         return _validation(False, "RUN_FAILED_EVENT_CONTRACT", ("RUN_TERMINAL_EVENT_MISMATCH",))
     return _validation(
@@ -1310,6 +1602,17 @@ def _measure_wave_1(
     else:
         valid = False
     if not valid:
+        for field in (
+            "numerator",
+            "denominator",
+            "count",
+            "duration_ns",
+            "boolean_result",
+            "set_coverage",
+            "repeatability_result",
+            "rubric_score",
+        ):
+            result[field] = None
         result["measurement_status"] = "FAILED_VALIDATION"
         result["failure_codes"] = ("METRIC_DERIVATION_FAILED",)
     return result
@@ -1363,10 +1666,10 @@ def _build_events(
         )
 
     append(case_id="", repeat_index=0, event_type="RUN_STARTED")
-    acknowledgements = {
+    dispositions = {
         action["case_id"]: action
         for action in actions
-        if action["action_type"] == "ACKNOWLEDGE"
+        if action["action_type"] in _FINAL_REVIEW_ACTIONS
     }
     for case in cases:
         for repeat_index in range(1, REQUIRED_REPEATS + 1):
@@ -1410,7 +1713,8 @@ def _build_events(
                 metric_ids=case["metric_ids"],
                 validation_state="REVIEW_REQUIRED",
             )
-            if case["case_id"] in acknowledgements:
+            disposition = dispositions[case["case_id"]]
+            if disposition["action_type"] == "ACKNOWLEDGE":
                 append(
                     case_id=case["case_id"],
                     repeat_index=repeat_index,
@@ -1419,12 +1723,35 @@ def _build_events(
                     validation_state="REVIEW_COMPLETE",
                     operator_action_type="ACKNOWLEDGE",
                 )
+            else:
+                append(
+                    case_id=case["case_id"],
+                    repeat_index=repeat_index,
+                    event_type="CORRECTION_REQUESTED",
+                    metric_ids=case["metric_ids"],
+                    validation_state="DEFER_RECEIPT_PENDING_CORRECTION",
+                    error_codes=("ACTION_DISPOSITION_DEFERRED",),
+                    operator_action_type=disposition["action_type"],
+                )
             append(
                 case_id=case["case_id"],
                 repeat_index=repeat_index,
-                event_type="CASE_COMPLETED",
+                event_type=(
+                    "CASE_COMPLETED"
+                    if disposition["action_type"] == "ACKNOWLEDGE"
+                    else "CASE_FAILED"
+                ),
                 metric_ids=case["metric_ids"],
-                validation_state=case["expected_validation_state"],
+                validation_state=(
+                    case["expected_validation_state"]
+                    if disposition["action_type"] == "ACKNOWLEDGE"
+                    else "DEFER_RECEIPT_PENDING_CORRECTION"
+                ),
+                error_codes=(
+                    ()
+                    if disposition["action_type"] == "ACKNOWLEDGE"
+                    else ("ACTION_DISPOSITION_DEFERRED",)
+                ),
                 output_reference=f"{case['case_id']}_OUTPUT",
             )
     append(
@@ -1438,6 +1765,28 @@ def _build_events(
         validation_state=run_status,
     )
     return tuple(events)
+
+
+def _human_review_outcome(
+    *,
+    safety_failed: bool = False,
+    deferred: bool = False,
+    repeatability_passed: bool = True,
+    coverage_complete: bool = True,
+    contract_valid: bool = True,
+) -> str:
+    """Map bounded receipt state to the exact WP151 human-review outcome."""
+    if safety_failed:
+        return "REJECT_RECEIPT_SAFETY_FAILURE"
+    if deferred:
+        return "DEFER_RECEIPT_PENDING_CORRECTION"
+    if not repeatability_passed:
+        return "REJECT_RECEIPT_REPEATABILITY_FAILURE"
+    if not coverage_complete:
+        return "REJECT_RECEIPT_COVERAGE_FAILURE"
+    if not contract_valid:
+        return "REJECT_RECEIPT_CONTRACT_FAILURE"
+    return "ACCEPT_MEASUREMENT_RECEIPT_FOR_RESEARCH_MEMORY_ONLY"
 
 
 def _build_receipt(
@@ -1465,6 +1814,15 @@ def _build_receipt(
         for result in metric_results
         if result["wave"] == "WAVE_1"
     )
+    coverage_complete = not any(
+        result["measurement_status"] == "INSUFFICIENT_CASE_COVERAGE"
+        for result in metric_results
+        if result["wave"] == "WAVE_1"
+    )
+    deferred = any(
+        action["action_type"] in {"REQUEST_CORRECTION", "RETRY_CASE", "DEFER_CASE"}
+        for action in actions
+    )
     acknowledgements = {
         action["case_id"]
         for action in actions
@@ -1473,10 +1831,30 @@ def _build_receipt(
     human_review_complete = acknowledgements == {case["case_id"] for case in cases}
     run_status = (
         "RUN_VALID_MEASUREMENT_COMPLETE"
-        if complete and repeatability_passed and human_review_complete
+        if complete
+        and repeatability_passed
+        and human_review_complete
+        and not deferred
         else "RUN_FAILED_REPEATABILITY"
         if not repeatability_passed
         else "RUN_FAILED_VALIDATION"
+    )
+    hard_failures = (
+        ("DEFER_RECEIPT_PENDING_CORRECTION",)
+        if deferred
+        else ("REPEATABILITY_MISMATCH",)
+        if not repeatability_passed
+        else ("MISSING_REQUIRED_CASE_COVERAGE",)
+        if not coverage_complete
+        else ("RECEIPT_CONTRACT_FAILURE",)
+        if not complete or not human_review_complete
+        else ()
+    )
+    human_review_status = _human_review_outcome(
+        deferred=deferred,
+        repeatability_passed=repeatability_passed,
+        coverage_complete=coverage_complete,
+        contract_valid=complete and human_review_complete,
     )
     action_counts = Counter(action["action_type"] for action in actions)
     return {
@@ -1492,7 +1870,7 @@ def _build_receipt(
         "repeat_count": REQUIRED_REPEATS,
         "event_count": len(events),
         "metric_results": metric_results,
-        "hard_failures": (),
+        "hard_failures": hard_failures,
         "repeatability_results": tuple(
             (case_id, "PASS" if all(item == repeats[0] for item in repeats[1:]) else "FAIL")
             for case_id, repeats in repeatability_results.items()
@@ -1501,11 +1879,7 @@ def _build_receipt(
             (action, action_counts.get(action, 0)) for action in ALLOWED_OPERATOR_ACTIONS
         ),
         "run_status": run_status,
-        "human_review_status": (
-            "HUMAN_REVIEW_COMPLETE_NOT_ACCEPTED"
-            if human_review_complete
-            else "HUMAN_REVIEW_INCOMPLETE"
-        ),
+        "human_review_status": human_review_status,
         "temporary_output_status": request["temporary_output_mode"],
         "non_authority_notice": NON_AUTHORITY_NOTICE,
         "safety_flags": tuple((gate, True) for gate in SAFETY_GATES),
@@ -1519,6 +1893,7 @@ def validate_receipt(
     expected_case_count: int,
     expected_event_count: int,
     expected_operator_action_count: int,
+    expected_operator_actions: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Validate exact receipt/result fields and Wave 2 blocking."""
     safety_error = _safety_error(receipt)
@@ -1544,6 +1919,12 @@ def validate_receipt(
         return _validation(False, "RUN_FAILED_VALIDATION", ("RECEIPT_RECONCILIATION_FAILED",))
     if receipt["run_status"] not in ALLOWED_RUN_STATUSES:
         return _validation(False, "RUN_FAILED_VALIDATION", ("UNKNOWN_RUN_STATUS",))
+    if receipt["human_review_status"] not in ALLOWED_HUMAN_REVIEW_OUTCOMES:
+        return _validation(
+            False,
+            "RUN_FAILED_VALIDATION",
+            ("UNKNOWN_HUMAN_REVIEW_OUTCOME",),
+        )
     metric_results = receipt["metric_results"]
     if not isinstance(metric_results, (list, tuple)) or len(metric_results) != 39:
         return _validation(False, "RUN_FAILED_METRIC_REGISTRY", ("METRIC_RESULT_COUNT_MISMATCH",))
@@ -1596,6 +1977,24 @@ def validate_receipt(
                     "SAFETY_GATE_NO_WAVE_2_FALSE_MEASUREMENT",
                 ),
             )
+        failure_codes = result["failure_codes"]
+        expected_failure_codes = {
+            "MEASURED_VALID": (),
+            "NOT_APPLICABLE": (),
+            "FAILED_VALIDATION": ("METRIC_DERIVATION_FAILED",),
+            "INSUFFICIENT_CASE_COVERAGE": ("MISSING_REQUIRED_CASE_COVERAGE",),
+            "BLOCKED_WAVE_2": ("BLOCKED_WAVE_2",),
+        }[result["measurement_status"]]
+        if (
+            not isinstance(failure_codes, (list, tuple))
+            or tuple(failure_codes) != expected_failure_codes
+            or any(code not in ALLOWED_METRIC_FAILURE_CODES for code in failure_codes)
+        ):
+            return _validation(
+                False,
+                "RUN_FAILED_VALIDATION",
+                ("INVALID_METRIC_FAILURE_CODES",),
+            )
         populated = [field for field in value_fields if result[field] is not None]
         expected_value_fields = {
             "COUNT": {"count"},
@@ -1645,10 +2044,6 @@ def validate_receipt(
                 and result["repeatability_result"] != "PASS"
             ):
                 return _validation(False, "RUN_FAILED_REPEATABILITY", ("REPEATABILITY_MISMATCH",))
-    if receipt["hard_failures"] != ():
-        return _validation(False, "RUN_FAILED_VALIDATION", ("UNEXPECTED_HARD_FAILURES",))
-    if receipt["human_review_status"] != "HUMAN_REVIEW_COMPLETE_NOT_ACCEPTED":
-        return _validation(False, "RUN_FAILED_VALIDATION", ("HUMAN_REVIEW_REQUIRED",))
     if receipt["temporary_output_status"] not in ALLOWED_OUTPUT_MODES:
         return _validation(False, "RUN_FAILED_VALIDATION", ("INVALID_OUTPUT_MODE",))
     flags = receipt["safety_flags"]
@@ -1658,7 +2053,6 @@ def validate_receipt(
     if (
         not isinstance(repeatability_results, (list, tuple))
         or len(repeatability_results) != expected_case_count
-        or len({item[0] for item in repeatability_results}) != expected_case_count
         or any(
             not isinstance(item, (list, tuple))
             or len(item) != 2
@@ -1667,14 +2061,99 @@ def validate_receipt(
         )
     ):
         return _validation(False, "RUN_FAILED_VALIDATION", ("REPEATABILITY_RECONCILIATION_FAILED",))
+    if (
+        len({item[0] for item in repeatability_results}) != expected_case_count
+        or any(
+            not _safe_identifier(item[0])
+            or item[0] not in _CASE_IDS
+            for item in repeatability_results
+        )
+    ):
+        return _validation(False, "RUN_FAILED_VALIDATION", ("REPEATABILITY_RECONCILIATION_FAILED",))
     action_counts = receipt["operator_action_counts"]
     if (
         not isinstance(action_counts, (list, tuple))
-        or tuple(item[0] for item in action_counts) != ALLOWED_OPERATOR_ACTIONS
-        or any(not isinstance(item[1], int) or item[1] < 0 for item in action_counts)
+        or len(action_counts) != len(ALLOWED_OPERATOR_ACTIONS)
+        or any(
+            not isinstance(item, (list, tuple))
+            or len(item) != 2
+            or not isinstance(item[1], int)
+            or isinstance(item[1], bool)
+            or item[1] < 0
+            for item in action_counts
+        )
+    ):
+        return _validation(False, "RUN_FAILED_VALIDATION", ("ACTION_COUNT_RECONCILIATION_FAILED",))
+    if (
+        tuple(item[0] for item in action_counts) != ALLOWED_OPERATOR_ACTIONS
         or sum(item[1] for item in action_counts) != expected_operator_action_count
     ):
         return _validation(False, "RUN_FAILED_VALIDATION", ("ACTION_COUNT_RECONCILIATION_FAILED",))
+    actual_action_counts = Counter(dict(action_counts))
+    if expected_operator_actions is not None and actual_action_counts != Counter(
+        action["action_type"] for action in expected_operator_actions
+    ):
+        return _validation(False, "RUN_FAILED_VALIDATION", ("ACTION_COUNT_RECONCILIATION_FAILED",))
+    hard_failures = receipt["hard_failures"]
+    if (
+        not isinstance(hard_failures, (list, tuple))
+        or any(not isinstance(code, str) for code in hard_failures)
+        or len(hard_failures) != len(set(hard_failures))
+        or any(
+            code not in ALLOWED_RECEIPT_HARD_FAILURE_CODES
+            for code in hard_failures
+        )
+    ):
+        return _validation(False, "RUN_FAILED_VALIDATION", ("INVALID_RECEIPT_FAILURE_CODES",))
+    deferred = any(
+        actual_action_counts[action] > 0
+        for action in ("REQUEST_CORRECTION", "RETRY_CASE", "DEFER_CASE")
+    )
+    repeatability_passed = all(
+        item[1] == "PASS" for item in repeatability_results
+    )
+    coverage_complete = not any(
+        result["measurement_status"] == "INSUFFICIENT_CASE_COVERAGE"
+        for result in metric_results
+        if result["wave"] == "WAVE_1"
+    )
+    contract_valid = all(
+        result["measurement_status"] == "MEASURED_VALID"
+        for result in metric_results
+        if result["wave"] == "WAVE_1"
+    ) and actual_action_counts["ACKNOWLEDGE"] == expected_case_count
+    expected_hard_failures = (
+        ("DEFER_RECEIPT_PENDING_CORRECTION",)
+        if deferred
+        else ("REPEATABILITY_MISMATCH",)
+        if not repeatability_passed
+        else ("MISSING_REQUIRED_CASE_COVERAGE",)
+        if not coverage_complete
+        else ("RECEIPT_CONTRACT_FAILURE",)
+        if not contract_valid
+        else ()
+    )
+    if tuple(hard_failures) != expected_hard_failures:
+        return _validation(False, "RUN_FAILED_VALIDATION", ("RECEIPT_FAILURE_RECONCILIATION_FAILED",))
+    expected_human_review_status = _human_review_outcome(
+        deferred=deferred,
+        repeatability_passed=repeatability_passed,
+        coverage_complete=coverage_complete,
+        contract_valid=contract_valid,
+    )
+    if receipt["human_review_status"] != expected_human_review_status:
+        return _validation(False, "RUN_FAILED_VALIDATION", ("HUMAN_REVIEW_OUTCOME_MISMATCH",))
+    expected_run_status = (
+        "RUN_VALID_MEASUREMENT_COMPLETE"
+        if expected_human_review_status
+        == "ACCEPT_MEASUREMENT_RECEIPT_FOR_RESEARCH_MEMORY_ONLY"
+        else "RUN_FAILED_REPEATABILITY"
+        if expected_human_review_status
+        == "REJECT_RECEIPT_REPEATABILITY_FAILURE"
+        else "RUN_FAILED_VALIDATION"
+    )
+    if receipt["run_status"] != expected_run_status:
+        return _validation(False, "RUN_FAILED_VALIDATION", ("RECEIPT_RUN_STATUS_MISMATCH",))
     return _validation(
         True,
         receipt["run_status"],
@@ -1710,18 +2189,17 @@ def run_measurement(
     actions = actions_result["normalized"]["actions"]
     if any(action["action_type"] == "ABORT_RUN" for action in actions):
         return _run_failure("RUN_ABORTED_BY_OPERATOR", "ABORTED_BY_OPERATOR")
-    acknowledged_cases = {
-        action["case_id"]
-        for action in actions
-        if action["action_type"] == "ACKNOWLEDGE"
-    }
-    if acknowledged_cases != set(normalized_request["case_selection"]):
-        return _run_failure("RUN_FAILED_VALIDATION", "HUMAN_REVIEW_REQUIRED")
     repeatability_passed, repeatability_results = _repeat_cases(selected_cases)
+    deferred = any(
+        action["action_type"] in {"REQUEST_CORRECTION", "RETRY_CASE", "DEFER_CASE"}
+        for action in actions
+    )
     provisional_status = (
         "RUN_VALID_MEASUREMENT_COMPLETE"
-        if repeatability_passed
+        if repeatability_passed and not deferred
         else "RUN_FAILED_REPEATABILITY"
+        if not repeatability_passed
+        else "RUN_FAILED_VALIDATION"
     )
     events = _build_events(normalized_request, selected_cases, actions, provisional_status)
     receipt = _build_receipt(
@@ -1732,8 +2210,6 @@ def run_measurement(
         repeatability_passed,
         repeatability_results,
     )
-    if not repeatability_passed:
-        return _run_failure("RUN_FAILED_REPEATABILITY", "REPEATABILITY_MISMATCH")
     if receipt["run_status"] != provisional_status:
         events = _build_events(
             normalized_request, selected_cases, actions, receipt["run_status"]
@@ -1750,6 +2226,7 @@ def run_measurement(
         events,
         run_id=normalized_request["run_id"],
         selected_cases=normalized_request["case_selection"],
+        expected_operator_actions=actions,
     )
     if not event_result["is_valid"]:
         return _run_failure(event_result["run_status"], *event_result["errors"])
@@ -1759,14 +2236,23 @@ def run_measurement(
         expected_case_count=len(selected_cases),
         expected_event_count=len(events),
         expected_operator_action_count=len(actions),
+        expected_operator_actions=actions,
     )
     if not receipt_result["is_valid"]:
         return _run_failure(receipt_result["run_status"], *receipt_result["errors"])
     run_status = receipt["run_status"]
-    return {
+    result = {
         "is_valid": run_status == "RUN_VALID_MEASUREMENT_COMPLETE",
         "run_status": run_status,
-        "errors": () if run_status == "RUN_VALID_MEASUREMENT_COMPLETE" else ("RUN_NOT_COMPLETE",),
+        "errors": (
+            ()
+            if run_status == "RUN_VALID_MEASUREMENT_COMPLETE"
+            else tuple(receipt["hard_failures"])
+        ),
         "events": copy.deepcopy(events),
         "receipt": copy.deepcopy(receipt),
     }
+    safety_error = _safety_error(result)
+    if safety_error:
+        return _run_failure("RUN_FAILED_VALIDATION", safety_error)
+    return result

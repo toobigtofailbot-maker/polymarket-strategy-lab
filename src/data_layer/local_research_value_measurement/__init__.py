@@ -1,7 +1,10 @@
 """Bounded local research-workflow value measurement contracts."""
 
 from .harness import (
+    ALLOWED_EVENT_ERROR_CODES,
     ALLOWED_EVENT_TYPES,
+    ALLOWED_EVENT_VALIDATION_STATES,
+    ALLOWED_HUMAN_REVIEW_OUTCOMES,
     ALLOWED_OPERATOR_ACTIONS,
     ALLOWED_RUN_STATUSES,
     CORPUS_ID,
@@ -25,7 +28,10 @@ from .harness import (
 )
 
 __all__ = (
+    "ALLOWED_EVENT_ERROR_CODES",
     "ALLOWED_EVENT_TYPES",
+    "ALLOWED_EVENT_VALIDATION_STATES",
+    "ALLOWED_HUMAN_REVIEW_OUTCOMES",
     "ALLOWED_OPERATOR_ACTIONS",
     "ALLOWED_RUN_STATUSES",
     "CORPUS_ID",

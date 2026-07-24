@@ -2005,6 +2005,11 @@ def test_wp131_through_wp151_dedicated_status_chain_is_consistent():
     assert "WP151" in merged_line
     for phrase in (
         "LOCAL_OFFLINE_DETERMINISTIC_WAVE_1_MEASUREMENT_HARNESS_REVIEW_TARGET",
+        "Review follow-up required: YES",
+        "Classification: F/G — human-review/action semantics and output-surface safety",
+        "Current PR reused: YES",
+        "Separate hardening WP required: NO",
+        "WP153 implemented: NO",
         "Bounded Wave 1 harness implementation: IMPLEMENTED_AND_TESTED",
         "Registry records: 39",
         "Wave 1 metrics implemented: 22",

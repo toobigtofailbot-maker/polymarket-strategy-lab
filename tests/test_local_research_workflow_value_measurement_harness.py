@@ -11,7 +11,10 @@ import pytest
 
 import src.data_layer.local_research_value_measurement.harness as harness
 from src.data_layer.local_research_value_measurement import (
+    ALLOWED_EVENT_ERROR_CODES,
     ALLOWED_EVENT_TYPES,
+    ALLOWED_EVENT_VALIDATION_STATES,
+    ALLOWED_HUMAN_REVIEW_OUTCOMES,
     ALLOWED_OPERATOR_ACTIONS,
     ALLOWED_RUN_STATUSES,
     CORPUS_ID,
@@ -40,6 +43,26 @@ CONTRACT = ROOT / "docs/local_research_workflow_value_measurement_harness_contra
 SOURCE = (
     ROOT
     / "src/data_layer/local_research_value_measurement/harness.py"
+)
+FORBIDDEN_OUTPUT_VARIANTS = (
+    "buy now",
+    "sell now",
+    "trade signal",
+    "place order",
+    "submit order",
+    "execute order",
+    "approve strategy",
+    "promote strategy",
+    "position size",
+    "wallet balance",
+    "account balance",
+    "paper trade",
+    "live trade",
+    "provider response",
+    "model response",
+    "Hermes command",
+    "background worker",
+    "persistent report",
 )
 
 
@@ -87,6 +110,40 @@ def _actions(corpus: dict, request: dict) -> list[dict]:
         for case in corpus["cases"]
         if case["case_id"] in selected
     ]
+
+
+def _disposition_action(
+    corpus: dict,
+    request: dict,
+    case_id: str,
+    action_type: str,
+    *,
+    suffix: str | None = None,
+) -> dict:
+    reason, target, acknowledgement = {
+        "ACKNOWLEDGE": ("REVIEW_COMPLETE", "NONE", True),
+        "REQUEST_CORRECTION": (
+            "CONTRACT_CORRECTION_REQUIRED",
+            "CASE_VALIDATION",
+            False,
+        ),
+        "RETRY_CASE": ("CASE_RETRY_REQUIRED", "CASE_VALIDATION", False),
+        "DEFER_CASE": ("CASE_DEFERRED", "CASE_REVIEW", False),
+        "ABORT_RUN": ("RUN_ABORT_REQUESTED", "NONE", False),
+    }[action_type]
+    case = next(case for case in corpus["cases"] if case["case_id"] == case_id)
+    return {
+        "action_id": f"{case_id}-{suffix or action_type}",
+        "run_id": request["run_id"],
+        "case_id": case_id,
+        "stage_id": case["stage_ids"][-1],
+        "action_type": action_type,
+        "reason_code": reason,
+        "correction_target": target,
+        "reviewer_acknowledgement": acknowledgement,
+        "human_review_required": True,
+        "non_authority_notice": NON_AUTHORITY_NOTICE,
+    }
 
 
 def _valid_run(
@@ -229,6 +286,98 @@ def test_contract_vocabularies_are_exact() -> None:
     )
 
 
+def test_wp151_human_review_outcomes_are_exact_and_invented_values_are_absent() -> None:
+    assert ALLOWED_HUMAN_REVIEW_OUTCOMES == (
+        "ACCEPT_MEASUREMENT_RECEIPT_FOR_RESEARCH_MEMORY_ONLY",
+        "REJECT_RECEIPT_CONTRACT_FAILURE",
+        "REJECT_RECEIPT_COVERAGE_FAILURE",
+        "REJECT_RECEIPT_REPEATABILITY_FAILURE",
+        "REJECT_RECEIPT_SAFETY_FAILURE",
+        "DEFER_RECEIPT_PENDING_CORRECTION",
+    )
+    source_text = SOURCE.read_text(encoding="utf-8")
+    assert "HUMAN_REVIEW_COMPLETE_NOT_ACCEPTED" not in source_text
+    assert "HUMAN_REVIEW_INCOMPLETE" not in source_text
+    project_status = (ROOT / "docs/project_status.md").read_text(encoding="utf-8")
+    assert "Measurement runs accepted: 0" in project_status
+    assert "Measurement receipts accepted: 0" in project_status
+
+
+def test_human_review_outcome_mapping_is_exact_for_every_bounded_result() -> None:
+    assert (
+        harness._human_review_outcome()
+        == "ACCEPT_MEASUREMENT_RECEIPT_FOR_RESEARCH_MEMORY_ONLY"
+    )
+    assert (
+        harness._human_review_outcome(contract_valid=False)
+        == "REJECT_RECEIPT_CONTRACT_FAILURE"
+    )
+    assert (
+        harness._human_review_outcome(coverage_complete=False)
+        == "REJECT_RECEIPT_COVERAGE_FAILURE"
+    )
+    assert (
+        harness._human_review_outcome(repeatability_passed=False)
+        == "REJECT_RECEIPT_REPEATABILITY_FAILURE"
+    )
+    assert (
+        harness._human_review_outcome(safety_failed=True)
+        == "REJECT_RECEIPT_SAFETY_FAILURE"
+    )
+    assert (
+        harness._human_review_outcome(deferred=True)
+        == "DEFER_RECEIPT_PENDING_CORRECTION"
+    )
+
+
+def test_event_validation_vocabularies_are_exact_and_bounded() -> None:
+    expected_states = (
+        "VALID",
+        "EXPECTED_FAILURE_DETECTED",
+        "VALID_AND_EXPECTED_REJECTIONS",
+        "VALID_REVIEW_REQUIRED",
+        "NOT_APPLICABLE",
+        "REVIEW_REQUIRED",
+        "REVIEW_COMPLETE",
+        *ALLOWED_RUN_STATUSES,
+        *ALLOWED_HUMAN_REVIEW_OUTCOMES,
+    )
+    assert ALLOWED_EVENT_VALIDATION_STATES == expected_states
+    assert ALLOWED_EVENT_ERROR_CODES == (
+        "ACTION_DISPOSITION_DEFERRED",
+        "BLOCKED_WAVE_2",
+        "METRIC_DERIVATION_FAILED",
+        "MISSING_REQUIRED_CASE_COVERAGE",
+        "RECEIPT_CONTRACT_FAILURE",
+        "REPEATABILITY_MISMATCH",
+        "SAFETY_GATE_FAILURE",
+    )
+
+
+def test_follow_up_status_and_repo_truth_record_the_root_cause_and_resolution() -> None:
+    status = (ROOT / "docs/status_entries/WP152.md").read_text(encoding="utf-8")
+    project = (ROOT / "docs/project_status.md").read_text(encoding="utf-8")
+    index = (ROOT / "docs/repo_truth_index.md").read_text(encoding="utf-8")
+    normalized_status = " ".join(status.split())
+    for phrase in (
+        "Review follow-up required: YES",
+        "Classification: F/G — human-review/action semantics and output-surface safety",
+        "Current PR reused: YES",
+        "Separate hardening WP required: NO",
+        "WP153 implemented: NO",
+    ):
+        assert phrase in status
+        assert phrase in project
+    for phrase in (
+        "six WP151 human-review outcomes",
+        "mutually exclusive per-case final dispositions",
+        "recursively validates event and receipt",
+    ):
+        assert phrase in normalized_status
+    assert "six exact WP151 human-review outcomes" in index
+    assert "action/event/receipt reconciliation" in index
+
+
 def test_complete_run_is_deterministic_and_measures_only_wave1() -> None:
     corpus = _corpus()
     request = _request()
@@ -249,7 +398,10 @@ def test_complete_run_is_deterministic_and_measures_only_wave1() -> None:
     assert receipt["case_count"] == 14
     assert receipt["repeat_count"] == 3
     assert receipt["event_count"] == len(first["events"]) == 392
-    assert receipt["human_review_status"] == "HUMAN_REVIEW_COMPLETE_NOT_ACCEPTED"
+    assert (
+        receipt["human_review_status"]
+        == "ACCEPT_MEASUREMENT_RECEIPT_FOR_RESEARCH_MEMORY_ONLY"
+    )
     assert receipt["temporary_output_status"] == "IN_MEMORY_ONLY"
     assert sum(
         item["measurement_status"] == "MEASURED_VALID"
@@ -598,6 +750,251 @@ def test_operator_action_contract_orphan_cross_case_unknown_note_retry_and_abort
     assert result["receipt"] == {}
 
 
+@pytest.mark.parametrize(
+    ("first_type", "second_type", "expected_error"),
+    [
+        ("ACKNOWLEDGE", "ACKNOWLEDGE", "DUPLICATE_ACKNOWLEDGEMENT"),
+        ("ACKNOWLEDGE", "DEFER_CASE", "CONFLICTING_FINAL_REVIEW_DISPOSITIONS"),
+        (
+            "ACKNOWLEDGE",
+            "REQUEST_CORRECTION",
+            "CONFLICTING_FINAL_REVIEW_DISPOSITIONS",
+        ),
+        ("ACKNOWLEDGE", "RETRY_CASE", "CONFLICTING_FINAL_REVIEW_DISPOSITIONS"),
+        (
+            "DEFER_CASE",
+            "REQUEST_CORRECTION",
+            "CONFLICTING_FINAL_REVIEW_DISPOSITIONS",
+        ),
+        ("RETRY_CASE", "DEFER_CASE", "CONFLICTING_FINAL_REVIEW_DISPOSITIONS"),
+    ],
+)
+def test_duplicate_or_conflicting_final_dispositions_fail_closed(
+    first_type: str,
+    second_type: str,
+    expected_error: str,
+) -> None:
+    corpus = _corpus()
+    request = _request()
+    other_actions = [
+        action
+        for action in _actions(corpus, request)
+        if action["case_id"] != "LVM-001"
+    ]
+    actions = other_actions + [
+        _disposition_action(
+            corpus,
+            request,
+            "LVM-001",
+            first_type,
+            suffix="FIRST",
+        ),
+        _disposition_action(
+            corpus,
+            request,
+            "LVM-001",
+            second_type,
+            suffix="SECOND",
+        ),
+    ]
+    validation = validate_operator_actions(
+        actions,
+        run_id=request["run_id"],
+        selected_cases=request["case_selection"],
+        corpus_cases=corpus["cases"],
+    )
+    assert validation["is_valid"] is False
+    assert validation["errors"] == (expected_error,)
+    result = run_measurement(request, corpus, actions)
+    assert result["is_valid"] is False
+    assert result["events"] == ()
+    assert result["receipt"] == {}
+
+
+@pytest.mark.parametrize(
+    "action_type",
+    ["REQUEST_CORRECTION", "RETRY_CASE", "DEFER_CASE"],
+)
+def test_correction_retry_or_defer_controls_completion_and_receipt(
+    action_type: str,
+) -> None:
+    corpus = _corpus()
+    request = _request()
+    actions = _actions(corpus, request)
+    actions[0] = _disposition_action(corpus, request, "LVM-001", action_type)
+    validation = validate_operator_actions(
+        actions,
+        run_id=request["run_id"],
+        selected_cases=request["case_selection"],
+        corpus_cases=corpus["cases"],
+    )
+    assert validation["is_valid"] is True
+    result = run_measurement(request, corpus, actions)
+    assert result["is_valid"] is False
+    assert result["run_status"] == "RUN_FAILED_VALIDATION"
+    assert result["errors"] == ("DEFER_RECEIPT_PENDING_CORRECTION",)
+    assert (
+        result["receipt"]["human_review_status"]
+        == "DEFER_RECEIPT_PENDING_CORRECTION"
+    )
+    assert result["receipt"]["hard_failures"] == (
+        "DEFER_RECEIPT_PENDING_CORRECTION",
+    )
+    action_counts = dict(result["receipt"]["operator_action_counts"])
+    assert action_counts[action_type] == 1
+    assert action_counts["ACKNOWLEDGE"] == 13
+    disposition_events = [
+        event
+        for event in result["events"]
+        if event["case_id"] == "LVM-001"
+        and event["event_type"] == "CORRECTION_REQUESTED"
+    ]
+    assert len(disposition_events) == REQUIRED_REPEATS
+    assert {
+        event["operator_action_type"] for event in disposition_events
+    } == {action_type}
+    assert all(
+        event["validation_state"] == "DEFER_RECEIPT_PENDING_CORRECTION"
+        for event in disposition_events
+    )
+    assert validate_event_stream(
+        result["events"],
+        run_id=request["run_id"],
+        selected_cases=request["case_selection"],
+        expected_operator_actions=actions,
+    )["is_valid"] is True
+
+
+def test_missing_or_neutral_action_cannot_be_silently_ignored() -> None:
+    corpus = _corpus()
+    request = _request()
+    actions = _actions(corpus, request)
+    missing = actions[1:]
+    assert validate_operator_actions(
+        missing,
+        run_id=request["run_id"],
+        selected_cases=request["case_selection"],
+        corpus_cases=corpus["cases"],
+    )["errors"] == ("MISSING_FINAL_REVIEW_DISPOSITION",)
+    neutral = copy.deepcopy(actions)
+    neutral[0].update(
+        {
+            "action_type": "NO_ACTION",
+            "reason_code": "NO_REASON",
+            "correction_target": "NONE",
+            "reviewer_acknowledgement": False,
+        }
+    )
+    assert validate_operator_actions(
+        neutral,
+        run_id=request["run_id"],
+        selected_cases=request["case_selection"],
+        corpus_cases=corpus["cases"],
+    )["errors"] == ("NONFINAL_ACTION_NOT_ALLOWED",)
+
+
+def test_abort_has_global_precedence_over_other_valid_dispositions() -> None:
+    corpus = _corpus()
+    request = _request()
+    actions = _actions(corpus, request)
+    actions.append(
+        _disposition_action(
+            corpus,
+            request,
+            "LVM-001",
+            "ABORT_RUN",
+            suffix="GLOBAL-ABORT",
+        )
+    )
+    validation = validate_operator_actions(
+        actions,
+        run_id=request["run_id"],
+        selected_cases=request["case_selection"],
+        corpus_cases=corpus["cases"],
+    )
+    assert validation["is_valid"] is True
+    assert validation["run_status"] == "RUN_ABORTED_BY_OPERATOR"
+    result = run_measurement(request, corpus, actions)
+    assert result["run_status"] == "RUN_ABORTED_BY_OPERATOR"
+    assert result["events"] == ()
+    assert result["receipt"] == {}
+
+
+def test_event_and_receipt_action_dispositions_reconcile_exactly() -> None:
+    corpus = _corpus()
+    request = _request()
+    actions = _actions(corpus, request)
+    actions[0] = _disposition_action(corpus, request, "LVM-001", "DEFER_CASE")
+    result = run_measurement(request, corpus, actions)
+    events = list(copy.deepcopy(result["events"]))
+    event = next(
+        item
+        for item in events
+        if item["event_type"] == "CORRECTION_REQUESTED"
+        and item["case_id"] == "LVM-001"
+    )
+    event["operator_action_type"] = "RETRY_CASE"
+    assert validate_event_stream(
+        events,
+        run_id=request["run_id"],
+        selected_cases=request["case_selection"],
+        expected_operator_actions=actions,
+    )["errors"] == ("EVENT_ACTION_RECONCILIATION_FAILED",)
+
+    cross_repeat = list(copy.deepcopy(result["events"]))
+    review_event = next(
+        item
+        for item in cross_repeat
+        if item["event_type"] == "CORRECTION_REQUESTED"
+        and item["case_id"] == "LVM-001"
+        and item["repeat_index"] == 1
+    )
+    review_event.update(
+        {
+            "event_type": "OPERATOR_ACKNOWLEDGED",
+            "validation_state": "REVIEW_COMPLETE",
+            "error_codes": (),
+            "operator_action_type": "ACKNOWLEDGE",
+        }
+    )
+    case_event = next(
+        item
+        for item in cross_repeat
+        if item["event_type"] == "CASE_FAILED"
+        and item["case_id"] == "LVM-001"
+        and item["repeat_index"] == 1
+    )
+    case_event.update(
+        {
+            "event_type": "CASE_COMPLETED",
+            "validation_state": "VALID",
+            "error_codes": (),
+        }
+    )
+    assert validate_event_stream(
+        cross_repeat,
+        run_id=request["run_id"],
+        selected_cases=request["case_selection"],
+    )["errors"] == ("EVENT_ACTION_RECONCILIATION_FAILED",)
+
+    receipt = copy.deepcopy(result["receipt"])
+    counts = dict(receipt["operator_action_counts"])
+    counts["ACKNOWLEDGE"] += 1
+    counts["DEFER_CASE"] -= 1
+    receipt["operator_action_counts"] = tuple(
+        (action_type, counts[action_type])
+        for action_type in ALLOWED_OPERATOR_ACTIONS
+    )
+    assert validate_receipt(
+        receipt,
+        expected_run_id=request["run_id"],
+        expected_case_count=14,
+        expected_event_count=len(result["events"]),
+        expected_operator_action_count=14,
+        expected_operator_actions=actions,
+    )["errors"] == ("ACTION_COUNT_RECONCILIATION_FAILED",)
+
+
 def test_event_mutations_missing_duplicate_out_of_order_negative_and_unknown() -> None:
     result = _valid_run()
     request = _request()
@@ -642,6 +1039,120 @@ def test_event_mutations_missing_duplicate_out_of_order_negative_and_unknown() -
     assert validate_event_stream(
         unknown, run_id=request["run_id"], selected_cases=request["case_selection"]
     )["errors"] == ("UNKNOWN_EVENT_TYPE",)
+
+
+@pytest.mark.parametrize(
+    "unsafe_text",
+    [
+        "api key sample",
+        "C:\\private\\event.txt",
+        "2026-07-24T12:30:00Z",
+        "123e4567-e89b-12d3-a456-426614174000",
+    ],
+)
+@pytest.mark.parametrize("surface", ["validation_state", "error_codes"])
+def test_unsafe_event_state_or_error_code_fails_without_echo(
+    unsafe_text: str,
+    surface: str,
+) -> None:
+    result = _valid_run()
+    events = list(copy.deepcopy(result["events"]))
+    events[1][surface] = (
+        (unsafe_text,) if surface == "error_codes" else unsafe_text
+    )
+    validation = validate_event_stream(
+        events,
+        run_id=_request()["run_id"],
+        selected_cases=_request()["case_selection"],
+    )
+    assert validation["is_valid"] is False
+    assert validation["normalized"] == {}
+    assert validation["errors"] == (
+        "SAFETY_GATE_NO_RAW_PRIVATE_OR_SECRET_DATA",
+    )
+    assert unsafe_text not in _recursive_text(validation)
+
+
+def test_unknown_event_state_and_free_form_error_code_fail_closed() -> None:
+    result = _valid_run()
+    unknown_state = list(copy.deepcopy(result["events"]))
+    unknown_state[1]["validation_state"] = "UNREGISTERED_NEUTRAL_STATE"
+    state_validation = validate_event_stream(
+        unknown_state,
+        run_id=_request()["run_id"],
+        selected_cases=_request()["case_selection"],
+    )
+    assert state_validation["errors"] == ("UNKNOWN_EVENT_VALIDATION_STATE",)
+    assert state_validation["normalized"] == {}
+    assert "UNREGISTERED_NEUTRAL_STATE" not in _recursive_text(state_validation)
+
+    free_form_error = list(copy.deepcopy(result["events"]))
+    free_form_error[1]["error_codes"] = ("free form event detail",)
+    error_validation = validate_event_stream(
+        free_form_error,
+        run_id=_request()["run_id"],
+        selected_cases=_request()["case_selection"],
+    )
+    assert error_validation["errors"] == ("INVALID_EVENT_ERROR_CODES",)
+    assert error_validation["normalized"] == {}
+    assert "free form event detail" not in _recursive_text(error_validation)
+
+
+@pytest.mark.parametrize("variant", FORBIDDEN_OUTPUT_VARIANTS)
+def test_forbidden_variants_fail_on_corpus_event_and_receipt_surfaces(
+    variant: str,
+) -> None:
+    corpus = _corpus()
+    corpus["cases"][0]["observations"]["normalized_output_shape"].append(variant)
+    corpus_result = run_measurement(
+        _request(),
+        corpus,
+        _actions(_corpus(), _request()),
+    )
+    assert corpus_result["is_valid"] is False
+    assert corpus_result["events"] == ()
+    assert corpus_result["receipt"] == {}
+    assert variant not in _recursive_text(corpus_result)
+
+    result = _valid_run()
+    events = list(copy.deepcopy(result["events"]))
+    events[1]["error_codes"] = (variant,)
+    event_result = validate_event_stream(
+        events,
+        run_id=_request()["run_id"],
+        selected_cases=_request()["case_selection"],
+    )
+    assert event_result["is_valid"] is False
+    assert event_result["normalized"] == {}
+    assert variant not in _recursive_text(event_result)
+
+    receipt = copy.deepcopy(result["receipt"])
+    receipt["hard_failures"] = (variant,)
+    receipt_result = validate_receipt(
+        receipt,
+        expected_run_id=_request()["run_id"],
+        expected_case_count=14,
+        expected_event_count=len(result["events"]),
+        expected_operator_action_count=14,
+    )
+    assert receipt_result["is_valid"] is False
+    assert receipt_result["normalized"] == {}
+    assert variant not in _recursive_text(receipt_result)
+
+
+def test_safe_structural_and_non_authority_text_is_not_overblocked() -> None:
+    safe_texts = (
+        "order-book normalization",
+        NON_AUTHORITY_NOTICE,
+        *SAFETY_GATES,
+        "BLOCKED_WAVE_2",
+        "neutral research review",
+        "paper-trading execution is not authorized",
+        "live-trading execution is forbidden",
+    )
+    assert all(harness._safety_error(text) is None for text in safe_texts)
+    assert load_and_validate_corpus(_corpus())["is_valid"] is True
+    assert _valid_run()["is_valid"] is True
 
 
 def test_receipt_rejects_missing_extra_fields_zero_denominator_and_reconciliation() -> None:
@@ -704,6 +1215,13 @@ def test_partial_selection_is_not_a_valid_complete_measurement() -> None:
     assert result["run_status"] == "RUN_FAILED_VALIDATION"
     assert result["receipt"]
     assert result["events"][-1]["event_type"] == "RUN_FAILED"
+    assert (
+        result["receipt"]["human_review_status"]
+        == "REJECT_RECEIPT_COVERAGE_FAILURE"
+    )
+    assert result["receipt"]["hard_failures"] == (
+        "MISSING_REQUIRED_CASE_COVERAGE",
+    )
     wave1 = [
         item for item in result["receipt"]["metric_results"] if item["wave"] == "WAVE_1"
     ]
@@ -717,13 +1235,15 @@ def test_missing_human_review_fails_run() -> None:
     assert result == {
         "is_valid": False,
         "run_status": "RUN_FAILED_VALIDATION",
-        "errors": ("HUMAN_REVIEW_REQUIRED",),
+        "errors": ("MISSING_FINAL_REVIEW_DISPOSITION",),
         "events": (),
         "receipt": {},
     }
 
 
-def test_repeatability_mismatch_fails_without_partial_receipt(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_repeatability_mismatch_returns_bounded_rejected_receipt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     original = harness._execute_case
 
     def mismatching_execute(case: dict, repeat_index: int) -> dict:
@@ -734,13 +1254,15 @@ def test_repeatability_mismatch_fails_without_partial_receipt(monkeypatch: pytes
 
     monkeypatch.setattr(harness, "_execute_case", mismatching_execute)
     result = _valid_run()
-    assert result == {
-        "is_valid": False,
-        "run_status": "RUN_FAILED_REPEATABILITY",
-        "errors": ("REPEATABILITY_MISMATCH",),
-        "events": (),
-        "receipt": {},
-    }
+    assert result["is_valid"] is False
+    assert result["run_status"] == "RUN_FAILED_REPEATABILITY"
+    assert result["errors"] == ("REPEATABILITY_MISMATCH",)
+    assert result["events"][-1]["event_type"] == "RUN_FAILED"
+    assert result["receipt"]["hard_failures"] == ("REPEATABILITY_MISMATCH",)
+    assert (
+        result["receipt"]["human_review_status"]
+        == "REJECT_RECEIPT_REPEATABILITY_FAILURE"
+    )
 
 
 def test_pytest_temporary_mode_writes_nothing_and_leaves_tmp_path_empty(
