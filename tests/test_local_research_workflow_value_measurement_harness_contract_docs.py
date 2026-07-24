@@ -649,6 +649,7 @@ def test_exact_six_file_scope_and_no_implementation_or_deferred_log_change():
             "src/data_layer/local_research_value_measurement/harness.py",
             "tests/fixtures/local_research_workflow_value_measurement_v1.json",
             "tests/test_architecture_boundaries.py",
+            "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
             "tests/test_local_research_workflow_value_measurement_harness.py",
             "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
             "tests/test_official_client_dependency_boundary.py",
