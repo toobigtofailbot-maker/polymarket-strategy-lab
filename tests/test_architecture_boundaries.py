@@ -69,6 +69,7 @@ def test_required_src_readmes_exist():
 # WP132 approves the local/offline/read-only in-memory manual research request validator at src/data_layer/hermes_candidate_review_manual_research_request.py.
 # WP133 approves the local/offline/read-only in-memory manual research response validator at src/data_layer/hermes_candidate_review_manual_research_response.py.
 # WP145 approves the local/offline/test-oriented deterministic no-network harness at src/data_layer/hermes_candidate_review_assisted_research_local_dry_run_harness.py.
+# WP152 approves the local/offline deterministic temporary Wave 1 measurement harness namespace.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -118,6 +119,7 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/hermes_candidate_review_manual_research_request.py",
     "src/data_layer/hermes_candidate_review_manual_research_response.py",
     "src/data_layer/hermes_candidate_review_assisted_research_local_dry_run_harness.py",
+    "src/data_layer/local_research_value_measurement",
 )
 
 

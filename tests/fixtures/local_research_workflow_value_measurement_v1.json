@@ -1,0 +1,332 @@
+{
+  "corpus_id": "local-research-workflow-value-measurement-v1",
+  "corpus_version": "1.0",
+  "corpus_posture": "SYNTHETIC_SANITIZED_OFFLINE_FIXED",
+  "metric_registry_version": "local-research-value-metrics-v1.0",
+  "stage_map_version": "local-research-value-stage-map-v1.0",
+  "cases": [
+    {
+      "case_id": "LVM-001",
+      "family": "market metadata parsing",
+      "stage_ids": ["LRW-02", "LRW-04"],
+      "metric_ids": ["RV-THR-01", "RV-REP-02"],
+      "input_artifact_shape": "fixed invented metadata mappings with stable IDs",
+      "expected_validation_state": "VALID",
+      "expected_metric_events": "count and identity coverage",
+      "negative_mutation_family": "missing/duplicate market ID",
+      "human_review": "REQUIRED",
+      "observations": {
+        "market_ids": ["SYNTH-MARKET-A"],
+        "identity_validated": true,
+        "normalized_output_shape": ["market_id", "summary"]
+      }
+    },
+    {
+      "case_id": "LVM-002",
+      "family": "order-book normalization",
+      "stage_ids": ["LRW-03", "LRW-04"],
+      "metric_ids": ["RV-THR-01", "RV-REP-02"],
+      "input_artifact_shape": "fixed invented unordered price/size labels, no venue call",
+      "expected_validation_state": "VALID",
+      "expected_metric_events": "count and identity coverage",
+      "negative_mutation_family": "malformed level/order mutation",
+      "human_review": "REQUIRED",
+      "observations": {
+        "market_ids": ["SYNTH-MARKET-B"],
+        "identity_validated": true,
+        "normalized_output_shape": ["market_id", "levels"]
+      }
+    },
+    {
+      "case_id": "LVM-003",
+      "family": "snapshot-quality failures",
+      "stage_ids": ["LRW-08"],
+      "metric_ids": ["RV-REJ-04", "RV-REJ-06", "RV-REJ-07"],
+      "input_artifact_shape": "seeded duplicate, missing, provenance, and gate cases",
+      "expected_validation_state": "EXPECTED_FAILURE_DETECTED",
+      "expected_metric_events": "issue, duplicate, and gate-rate events",
+      "negative_mutation_family": "remove/rename seeded failure",
+      "human_review": "REQUIRED",
+      "observations": {
+        "quality_results": [
+          {"issue_code": "MISSING_FIELD", "severity": "ERROR", "seeded_failure": true, "detected": true, "gate_passed": false},
+          {"issue_code": "DUPLICATE_ID", "severity": "ERROR", "seeded_failure": true, "detected": true, "gate_passed": false},
+          {"issue_code": "PROVENANCE_GAP", "severity": "ERROR", "seeded_failure": true, "detected": true, "gate_passed": false},
+          {"issue_code": "CONTROL", "severity": "NONE", "seeded_failure": false, "detected": false, "gate_passed": true}
+        ],
+        "seeded_duplicate_or_conflict_count": 1,
+        "detected_duplicate_or_conflict_count": 1,
+        "normalized_output_shape": ["issues", "gate_result"]
+      }
+    },
+    {
+      "case_id": "LVM-004",
+      "family": "replay ordering",
+      "stage_ids": ["LRW-07"],
+      "metric_ids": ["RV-THR-01", "RV-REP-06"],
+      "input_artifact_shape": "fixed snapshots with immutable logical sequence",
+      "expected_validation_state": "VALID",
+      "expected_metric_events": "count and repeatability events",
+      "negative_mutation_family": "reorder/equal-key mutation",
+      "human_review": "REQUIRED",
+      "observations": {
+        "market_ids": ["SYNTH-MARKET-C"],
+        "normalized_output_shape": ["sequence", "market_id"]
+      }
+    },
+    {
+      "case_id": "LVM-005",
+      "family": "candidate production/rejection",
+      "stage_ids": ["LRW-09", "LRW-10"],
+      "metric_ids": ["RV-THR-02", "RV-THR-06", "RV-REJ-01"],
+      "input_artifact_shape": "fixed candidate items with allowed labels/reasons",
+      "expected_validation_state": "VALID_AND_EXPECTED_REJECTIONS",
+      "expected_metric_events": "candidate counts, invalid counts, reason coverage",
+      "negative_mutation_family": "unknown/empty label or duplicate ID",
+      "human_review": "REQUIRED",
+      "observations": {
+        "candidate_items": [
+          {
+            "candidate_id": "SYNTH-CANDIDATE-A",
+            "candidate_label": "CANDIDATE_READY_FOR_MANUAL_RESEARCH_REVIEW",
+            "candidate_reason_labels": ["EVIDENCE_QUALITY_GAP"]
+          },
+          {
+            "candidate_id": "SYNTH-CANDIDATE-B",
+            "candidate_label": "CANDIDATE_DEFERRED_PENDING_MORE_CONTEXT",
+            "candidate_reason_labels": ["STALE_OR_MISSING_DATA_RISK"]
+          }
+        ],
+        "invalid_records": [
+          {"is_valid": false, "errors": ["MISSING_REQUIRED_FIELD"]}
+        ],
+        "normalized_output_shape": ["candidate_items", "invalid_records"]
+      }
+    },
+    {
+      "case_id": "LVM-006",
+      "family": "source/evidence conflict",
+      "stage_ids": ["LRW-13", "LRW-14"],
+      "metric_ids": ["RV-REJ-02", "RV-REJ-06", "RV-HYP-02", "RV-REP-07", "RV-HOF-02"],
+      "input_artifact_shape": "invented labeled evidence with explicit conflict",
+      "expected_validation_state": "VALID",
+      "expected_metric_events": "evidence, conflict, ambiguity, uncertainty events",
+      "negative_mutation_family": "silently remove conflict/counter-evidence",
+      "human_review": "REQUIRED",
+      "observations": {
+        "cited_source_references": ["SYNTH-SOURCE-A"],
+        "evidence_for": ["invented supporting observation"],
+        "evidence_against": ["invented counter observation"],
+        "completion_labels": ["EVIDENCE_FOR_RECORDED", "EVIDENCE_AGAINST_RECORDED"],
+        "seeded_duplicate_or_conflict_count": 1,
+        "detected_duplicate_or_conflict_count": 1,
+        "source_conflicts": ["invented source conflict disclosed"],
+        "uncertainties": ["invented uncertainty disclosed"],
+        "known_missing_data": ["invented missing item disclosed"],
+        "limitations": ["synthetic scope only"],
+        "uncertainty_notes": ["invented uncertainty note"],
+        "unresolved_questions": ["invented unresolved question"],
+        "normalized_output_shape": ["evidence", "conflicts", "uncertainty"]
+      }
+    },
+    {
+      "case_id": "LVM-007",
+      "family": "unsupported claims",
+      "stage_ids": ["LRW-13"],
+      "metric_ids": ["RV-REJ-05", "RV-REP-04"],
+      "input_artifact_shape": "invented unsupported material and expected rejection receipt",
+      "expected_validation_state": "EXPECTED_FAILURE_DETECTED",
+      "expected_metric_events": "rejection-rate and receipt events",
+      "negative_mutation_family": "accept unsupported claim",
+      "human_review": "REQUIRED",
+      "observations": {
+        "unsupported_case": true,
+        "unsupported_claims_identified": true,
+        "receipt_label": "REJECTED_UNSUPPORTED_CONTENT",
+        "validation_receipt_valid": true,
+        "normalized_output_shape": ["receipt_label", "review_flags"]
+      }
+    },
+    {
+      "case_id": "LVM-008",
+      "family": "missing citations",
+      "stage_ids": ["LRW-13"],
+      "metric_ids": ["RV-REJ-02", "RV-REJ-05", "RV-REP-04"],
+      "input_artifact_shape": "invented claim with missing citation disclosure",
+      "expected_validation_state": "EXPECTED_FAILURE_DETECTED",
+      "expected_metric_events": "coverage, rejection, receipt events",
+      "negative_mutation_family": "fabricate/add unregistered citation",
+      "human_review": "REQUIRED",
+      "observations": {
+        "cited_source_references": [],
+        "evidence_for": ["invented observation pending citation"],
+        "evidence_against": ["invented counter observation"],
+        "completion_labels": ["CITATION_GAP_DISCLOSED"],
+        "unsupported_case": true,
+        "unsupported_claims_identified": true,
+        "receipt_label": "REJECTED_UNSUPPORTED_CONTENT",
+        "validation_receipt_valid": true,
+        "normalized_output_shape": ["citation_gap", "receipt_label"]
+      }
+    },
+    {
+      "case_id": "LVM-009",
+      "family": "missing data",
+      "stage_ids": ["LRW-13", "LRW-14", "LRW-15"],
+      "metric_ids": ["RV-REJ-02", "RV-REP-07", "RV-HOF-02", "RV-HOF-04"],
+      "input_artifact_shape": "explicit missing-data labels and follow-up need",
+      "expected_validation_state": "VALID",
+      "expected_metric_events": "evidence, ambiguity, uncertainty, data-need events",
+      "negative_mutation_family": "omit missing-data disclosure",
+      "human_review": "REQUIRED",
+      "observations": {
+        "cited_source_references": ["SYNTH-SOURCE-B"],
+        "evidence_for": ["invented partial observation"],
+        "evidence_against": ["invented missing-data caveat"],
+        "completion_labels": ["MISSING_DATA_DISCLOSED"],
+        "source_conflicts": ["no conflict resolution inferred"],
+        "uncertainties": ["invented data uncertainty"],
+        "known_missing_data": ["invented missing record"],
+        "limitations": ["bounded synthetic coverage"],
+        "uncertainty_notes": ["invented missing-data uncertainty"],
+        "unresolved_questions": ["invented data question"],
+        "missing_data_to_resolve": ["invented missing record"],
+        "evidence_to_check": ["invented evidence item"],
+        "source_references_to_revisit": ["SYNTH-SOURCE-B"],
+        "uncertainty_to_reduce": ["invented data uncertainty"],
+        "normalized_output_shape": ["missing_data", "follow_up_need"]
+      }
+    },
+    {
+      "case_id": "LVM-010",
+      "family": "falsification/invalidation",
+      "stage_ids": ["LRW-13", "LRW-15"],
+      "metric_ids": ["RV-HYP-03", "RV-REP-07", "RV-HOF-06"],
+      "input_artifact_shape": "fixed invalidation condition and next validation step",
+      "expected_validation_state": "VALID",
+      "expected_metric_events": "invalidation, ambiguity, next-step events",
+      "negative_mutation_family": "remove invalidation or next step",
+      "human_review": "REQUIRED",
+      "observations": {
+        "what_would_change_the_conclusion": ["invented contradictory observation"],
+        "source_conflicts": ["no conflict silently resolved"],
+        "uncertainties": ["invented uncertainty remains"],
+        "known_missing_data": ["invented missing comparison"],
+        "limitations": ["synthetic invalidation case"],
+        "falsification_check_to_perform": ["check invented comparison"],
+        "blocking_reason": ["invented evidence gap"],
+        "next_manual_step": ["review invented comparison"],
+        "normalized_output_shape": ["invalidation", "next_step"]
+      }
+    },
+    {
+      "case_id": "LVM-011",
+      "family": "human decisions/follow-ups",
+      "stage_ids": ["LRW-14", "LRW-15", "LRW-17"],
+      "metric_ids": ["RV-HYP-02", "RV-HYP-03", "RV-REP-05", "RV-HOF-01", "RV-HOF-04", "RV-HOF-06", "RV-HOF-07"],
+      "input_artifact_shape": "explicit acknowledged decision and bounded follow-up",
+      "expected_validation_state": "VALID_REVIEW_REQUIRED",
+      "expected_metric_events": "review and handoff coverage events",
+      "negative_mutation_family": "missing acknowledgement/authority flag",
+      "human_review": "REQUIRED",
+      "observations": {
+        "evidence_for": ["invented supporting observation"],
+        "evidence_against": ["invented counter observation"],
+        "completion_labels": ["EVIDENCE_FOR_RECORDED", "EVIDENCE_AGAINST_RECORDED"],
+        "what_would_change_the_conclusion": ["invented contradictory observation"],
+        "reviewer_acknowledgement": true,
+        "human_review_required": true,
+        "non_authority_notice_valid": true,
+        "no_execution_authority": true,
+        "no_paper_or_live_authority": true,
+        "no_strategy_promotion_authority": true,
+        "forbidden_content_rejected": true,
+        "missing_data_to_resolve": ["invented missing comparison"],
+        "evidence_to_check": ["invented evidence item"],
+        "source_references_to_revisit": ["SYNTH-SOURCE-C"],
+        "uncertainty_to_reduce": ["invented uncertainty"],
+        "falsification_check_to_perform": ["check invented comparison"],
+        "blocking_reason": ["invented evidence gap"],
+        "next_manual_step": ["review invented comparison"],
+        "normalized_output_shape": ["human_review", "follow_up", "handoff"]
+      }
+    },
+    {
+      "case_id": "LVM-012",
+      "family": "non-authority leakage",
+      "stage_ids": ["LRW-13", "LRW-14", "LRW-17"],
+      "metric_ids": ["RV-REJ-05", "RV-REP-05", "RV-HOF-01", "RV-HOF-07"],
+      "input_artifact_shape": "invented prohibited action language for rejection",
+      "expected_validation_state": "EXPECTED_FAILURE_DETECTED",
+      "expected_metric_events": "rejection, review, separation, leakage events",
+      "negative_mutation_family": "weaken forbidden phrase or safety flag",
+      "human_review": "REQUIRED",
+      "observations": {
+        "unsupported_case": true,
+        "unsupported_claims_identified": true,
+        "receipt_label": "REJECTED_UNSUPPORTED_CONTENT",
+        "reviewer_acknowledgement": true,
+        "human_review_required": true,
+        "non_authority_notice_valid": true,
+        "no_execution_authority": true,
+        "no_paper_or_live_authority": true,
+        "no_strategy_promotion_authority": true,
+        "forbidden_content_rejected": true,
+        "normalized_output_shape": ["rejection_label", "safety_flags"]
+      }
+    },
+    {
+      "case_id": "LVM-013",
+      "family": "deterministic rerun equality",
+      "stage_ids": ["LRW-18", "LRW-20"],
+      "metric_ids": ["RV-REP-02", "RV-REP-06"],
+      "input_artifact_shape": "fixed case repeated three times with normalized output",
+      "expected_validation_state": "VALID",
+      "expected_metric_events": "identity and equality events",
+      "negative_mutation_family": "mutate one normalized repeat",
+      "human_review": "REQUIRED",
+      "observations": {
+        "identity_validated": true,
+        "normalized_output_shape": ["case_id", "validation_state", "metric_results"]
+      }
+    },
+    {
+      "case_id": "LVM-014",
+      "family": "malformed/incomplete records",
+      "stage_ids": ["LRW-08", "LRW-09", "LRW-10", "LRW-13", "LRW-20"],
+      "metric_ids": ["RV-THR-06", "RV-REJ-01", "RV-REJ-04", "RV-REJ-07", "RV-REP-01", "RV-REP-02", "RV-REP-04", "RV-REP-05", "RV-REP-07"],
+      "input_artifact_shape": "bounded missing/extra/unknown-field mutations",
+      "expected_validation_state": "EXPECTED_FAILURE_DETECTED",
+      "expected_metric_events": "invalid, quality, identity, receipt, review, ambiguity events",
+      "negative_mutation_family": "fixture/source/input mutation",
+      "human_review": "REQUIRED",
+      "observations": {
+        "candidate_items": [
+          {
+            "candidate_id": "SYNTH-CANDIDATE-C",
+            "candidate_label": "CANDIDATE_REJECTED_FOR_UNSAFE_OR_FORBIDDEN_CONTENT",
+            "candidate_reason_labels": ["EVIDENCE_QUALITY_GAP", "FALSIFICATION_CHECK_NEED"]
+          }
+        ],
+        "invalid_records": [
+          {"is_valid": false, "errors": ["UNKNOWN_FIELD"]},
+          {"is_valid": false, "errors": ["MISSING_REQUIRED_FIELD"]}
+        ],
+        "quality_results": [
+          {"issue_code": "UNKNOWN_FIELD", "severity": "ERROR", "seeded_failure": true, "detected": true, "gate_passed": false},
+          {"issue_code": "CONTROL", "severity": "NONE", "seeded_failure": false, "detected": false, "gate_passed": true}
+        ],
+        "exact_input_contract_validated": true,
+        "identity_validated": true,
+        "validation_receipt_valid": true,
+        "reviewer_acknowledgement": true,
+        "human_review_required": true,
+        "source_conflicts": ["unknown field rejected without inference"],
+        "uncertainties": ["malformed record remains invalid"],
+        "known_missing_data": ["required field absent"],
+        "limitations": ["invalid input is not normalized"],
+        "normalized_output_shape": ["errors", "safe_empty_normalized_record"]
+      }
+    }
+  ]
+}
