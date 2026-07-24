@@ -549,6 +549,12 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z236. `docs/status_entries/WP150.md` - WP150 stable committed status fragment for the documentation/status/Markdown-only tests local research workflow value-measurement readiness and paper-trading foundational-gap decision package.
 
+62z237. `docs/local_research_workflow_value_measurement_harness_contract.md` - WP151 canonical documentation-only contract preserving the exact WP150 39-metric registry and 22/17 Wave 1/Wave 2 split; mapping applicability across all 20 local workflow stages; defining a fixed 14-case/14-family synthetic sanitized offline corpus; fixing run, event, operator-action, receipt, scoring, three-repeat, temporary-output, human-review, safety, mutation, and seven-blocker contracts; deciding `COMPLETE_READY_FOR_BOUNDED_IMPLEMENTATION_WP`, `GROUNDED_22_METRICS_ONLY`, and `CONTRACT_DEFINED_IMPLEMENTATION_DEFERRED`; and separately gating Wave 1-only WP152 without implementing a fixture, harness, measurement, receipt, writer, schema change, runtime, provider/model/Hermes, paper/live, execution, or scheduler behavior.
+
+62z238. `tests/test_local_research_workflow_value_measurement_harness_contract_docs.py` - WP151 Markdown-only focused regression proving exact title/headings and decisions; identity/state equality with all 39 WP150 metrics; exact 22 concrete Wave 1 and 17 blocked Wave 2 rows; complete 20-stage applicability and 14-case corpus coverage; complete run/event/action/receipt schemas, formulas, statuses, repeats, output modes, human review, 12 safety gates, and 21 mutations; all seven blocker targets; Wave 1-only WP152 boundary; six-file scope; stable Model D status; and no implementation or deferred-log change.
+
+62z239. `docs/status_entries/WP151.md` - WP151 stable committed status fragment for the documentation/status/Markdown-only tests local research workflow value measurement harness contract and separately gated Wave 1-only implementation decision.
+
 Codex workflow docs are authoritative for Codex execution guidance, but they do not outrank `AGENTS.md`, `docs/project_status.md`, `docs/deferred_items_log.md`, or active work-package constraints.
 
 Any material policy or architecture change must update the relevant repo-truth file in the same WP.
