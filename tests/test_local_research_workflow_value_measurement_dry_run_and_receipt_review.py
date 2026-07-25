@@ -10,13 +10,13 @@ not a second accepted project run.
 
 from __future__ import annotations
 
+import ast
 import copy
 import hashlib
 import json
 import re
 from pathlib import Path
 
-import src.data_layer.local_research_value_measurement.harness as harness
 from src.data_layer.local_research_value_measurement import (
     CORPUS_ID,
     CORPUS_VERSION,
@@ -53,6 +53,50 @@ RECEIPT_SHA256 = (
 )
 PUBLIC_RESULT_SHA256 = (
     "f95101f9ed82ca32cc458f2133b8cb0c34e2adfccf0619b349c993fafcc8b514"
+)
+
+# Locked WP151/WP152 contract vocabulary, asserted directly as literals so the
+# focused replay depends only on the public package surface (no internal harness
+# module import). These mirror the exact frozen public contract field order.
+PUBLIC_RESULT_FIELDS = ("is_valid", "run_status", "errors", "events", "receipt")
+RECEIPT_FIELDS = (
+    "receipt_contract_version",
+    "receipt_id",
+    "run_contract_version",
+    "corpus_id",
+    "corpus_version",
+    "metric_registry_version",
+    "stage_map_version",
+    "run_id",
+    "case_count",
+    "repeat_count",
+    "event_count",
+    "metric_results",
+    "hard_failures",
+    "repeatability_results",
+    "operator_action_counts",
+    "run_status",
+    "human_review_status",
+    "temporary_output_status",
+    "non_authority_notice",
+    "safety_flags",
+)
+METRIC_RESULT_FIELDS = (
+    "metric_id",
+    "wave",
+    "measurement_type",
+    "numerator",
+    "denominator",
+    "count",
+    "duration_ns",
+    "boolean_result",
+    "set_coverage",
+    "repeatability_result",
+    "rubric_score",
+    "applicable_case_count",
+    "excluded_case_count",
+    "measurement_status",
+    "failure_codes",
 )
 
 VALUE_FIELDS = (
@@ -178,23 +222,16 @@ def test_request_fixture_and_actions_validate() -> None:
 def test_dry_run_public_result_fields_are_exact() -> None:
     result = _run()
     # Exact public key set and order from run_measurement; reject any missing or
-    # additional public field.
-    assert tuple(result.keys()) == harness.RUN_RESULT_FIELDS
-    assert harness.RUN_RESULT_FIELDS == (
-        "is_valid",
-        "run_status",
-        "errors",
-        "events",
-        "receipt",
-    )
+    # additional public field. Asserted against locked contract literals only.
+    assert tuple(result.keys()) == PUBLIC_RESULT_FIELDS
     assert result["is_valid"] is True
     assert result["run_status"] == "RUN_VALID_MEASUREMENT_COMPLETE"
     assert result["errors"] == ()
     receipt = result["receipt"]
-    # Exact receipt key set and order.
-    assert tuple(receipt.keys()) == harness.REQUIRED_RECEIPT_FIELDS
+    # Exact receipt and metric-result key sets and order.
+    assert tuple(receipt.keys()) == RECEIPT_FIELDS
     assert all(
-        tuple(metric.keys()) == harness.REQUIRED_METRIC_RESULT_FIELDS
+        tuple(metric.keys()) == METRIC_RESULT_FIELDS
         for metric in receipt["metric_results"]
     )
     assert receipt["run_id"] == RUN_ID
@@ -448,3 +485,34 @@ def test_dry_run_creates_no_file(tmp_path, monkeypatch) -> None:
     assert result["is_valid"] is True
     assert result["receipt"]["temporary_output_status"] == "IN_MEMORY_ONLY"
     assert list(tmp_path.iterdir()) == []
+
+
+def test_focused_replay_uses_only_the_public_package_surface() -> None:
+    """This WP153 replay must depend only on the public package surface: it may
+    import from `src.data_layer.local_research_value_measurement`, never from the
+    internal `...harness` module."""
+    source = Path(__file__).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    imported_modules: list[str] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported_modules.extend(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            imported_modules.append(node.module)
+    # The only allowed package import path is the public package root.
+    assert (
+        "src.data_layer.local_research_value_measurement" in imported_modules
+    )
+    for module in imported_modules:
+        assert not module.endswith(".harness"), module
+        assert ".harness" not in module, module
+        assert module in {
+            "__future__",
+            "ast",
+            "copy",
+            "hashlib",
+            "json",
+            "re",
+            "pathlib",
+            "src.data_layer.local_research_value_measurement",
+        }, module
