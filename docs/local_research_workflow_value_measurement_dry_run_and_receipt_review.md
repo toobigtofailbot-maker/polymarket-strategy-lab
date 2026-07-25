@@ -13,7 +13,7 @@ committed, and the run itself created no file.
 - Title: Bounded Local Research Workflow Value Measurement Dry Run And Receipt Review.
 - Package class: M — bounded local/offline execution evidence plus docs/status/tests.
 - Risk class: local/offline deterministic research measurement.
-- Branch: `codex/wp153-bounded-local-research-value-measurement-dry-run-receipt-review` (worktree execution branch).
+- Branch: `claude/wp153-bounded-research-dry-run-38944e` (actual isolated worktree execution branch). The preferred draft name `codex/wp153-bounded-local-research-value-measurement-dry-run-receipt-review` was not used; the work remains on exactly one branch, one worktree, and one PR (#153).
 - Base: synchronized merged WP152 `main`.
 - Previous package: WP152 bounded local research workflow value measurement harness implementation.
 - Capital at risk: USD 0.
@@ -46,9 +46,9 @@ executes the merged harness once and records deterministic summary evidence.
 
 ## 4. Source Commit / Harness Lineage
 
-- `base_merge_commit`: `051b7664f0c33498014772081c22b18ff2d421a9` (post-WP152 `main`).
-- `wp152_harness_head`: merged at `051b7664f0c33498014772081c22b18ff2d421a9`; the harness package `src/data_layer/local_research_value_measurement/` and fixture `tests/fixtures/local_research_workflow_value_measurement_v1.json` are byte-unchanged in WP153.
-- `final_wp153_head`: see GitHub PR metadata and PR body. This document is stable and non-self-referential; it does not encode the SHA of the commit that contains it.
+- `base_merge_commit`: `051b7664f0c33498014772081c22b18ff2d421a9` (the WP152 merge commit; post-WP152 `main`).
+- `wp152_harness_head`: `bd9ffdb8eb9a51fa47da3e48b8281d60877e0b4d` (the actual final WP152 implementation head — the last non-merge WP152 commit `Harden WP152 full-pass measurement validation`, the parent of the WP152 merge commit; not the merge commit itself). The harness package `src/data_layer/local_research_value_measurement/` and fixture `tests/fixtures/local_research_workflow_value_measurement_v1.json` are byte-unchanged in WP153.
+- `final_wp153_head`: see GitHub PR metadata and PR body; the exact final head SHA is also posted verbatim in the PR body. This document is stable and non-self-referential; it does not encode the SHA of the commit that contains it.
 
 ## 5. Run Input Identity
 
@@ -147,8 +147,20 @@ repeats.
 
 The in-memory receipt was validated independently with `validate_receipt`,
 using the exact expected arguments (expected run ID, case count 14, event count
-392, operator-action count 14, the receipt metric results, the selected case
-IDs in order, and the operator actions).
+392, operator-action count 14, the selected case IDs in order, and the operator
+actions).
+
+Independent here means non-circular cross-run reconciliation: the `expected`
+canonical metric results are taken from a *separate clean replay* that is
+reconstructed from independently rebuilt explicit inputs, not from the first
+run's own receipt. The first run's receipt reconciles exactly against the clean
+replay's metric results. A reviewer-trap regression additionally proves that a
+valid-shaped mutation of a first-run receipt metric (for example incrementing a
+`COUNT` result or reducing a `RATE` numerator while keeping it structurally
+valid) is rejected with exactly `("METRIC_RESULT_RECONCILIATION_FAILED",)` when
+validated against the clean replay's metric results, while the unmodified
+receipt still validates. The clean replay is deterministic regression evidence
+only, never a second accepted project run.
 
 ```text
 receipt validation is_valid   : True

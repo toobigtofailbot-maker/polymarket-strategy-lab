@@ -16,6 +16,7 @@ import json
 import re
 from pathlib import Path
 
+import src.data_layer.local_research_value_measurement.harness as harness
 from src.data_layer.local_research_value_measurement import (
     CORPUS_ID,
     CORPUS_VERSION,
@@ -23,11 +24,13 @@ from src.data_layer.local_research_value_measurement import (
     NON_AUTHORITY_NOTICE,
     REQUIRED_REPEATS,
     RUN_CONTRACT_VERSION,
+    SAFETY_GATES,
     STAGE_MAP_VERSION,
     load_and_validate_corpus,
     run_measurement,
     validate_event_stream,
     validate_operator_actions,
+    validate_receipt,
     validate_run_request,
 )
 
@@ -174,10 +177,26 @@ def test_request_fixture_and_actions_validate() -> None:
 
 def test_dry_run_public_result_fields_are_exact() -> None:
     result = _run()
+    # Exact public key set and order from run_measurement; reject any missing or
+    # additional public field.
+    assert tuple(result.keys()) == harness.RUN_RESULT_FIELDS
+    assert harness.RUN_RESULT_FIELDS == (
+        "is_valid",
+        "run_status",
+        "errors",
+        "events",
+        "receipt",
+    )
     assert result["is_valid"] is True
     assert result["run_status"] == "RUN_VALID_MEASUREMENT_COMPLETE"
     assert result["errors"] == ()
     receipt = result["receipt"]
+    # Exact receipt key set and order.
+    assert tuple(receipt.keys()) == harness.REQUIRED_RECEIPT_FIELDS
+    assert all(
+        tuple(metric.keys()) == harness.REQUIRED_METRIC_RESULT_FIELDS
+        for metric in receipt["metric_results"]
+    )
     assert receipt["run_id"] == RUN_ID
     assert receipt["receipt_id"] == f"{RUN_ID}_RECEIPT"
     assert receipt["case_count"] == 14
@@ -192,7 +211,20 @@ def test_dry_run_public_result_fields_are_exact() -> None:
     assert receipt["temporary_output_status"] == "IN_MEMORY_ONLY"
 
 
-def test_independent_event_and_receipt_validation_pass() -> None:
+def _clean_replay() -> tuple[dict, dict, list[dict]]:
+    """Independently reconstruct explicit inputs and run one clean replay.
+
+    The returned run is deterministic regression evidence only, never a second
+    accepted project run. It supplies the *expected* canonical metric results
+    for non-circular cross-run receipt reconciliation.
+    """
+    corpus = _corpus()
+    request = _request(corpus)
+    actions = _actions(corpus, request)
+    return run_measurement(request, corpus, actions), request, actions
+
+
+def test_independent_event_validation_passes() -> None:
     corpus = _corpus()
     request = _request(corpus)
     actions = _actions(corpus, request)
@@ -208,20 +240,105 @@ def test_independent_event_and_receipt_validation_pass() -> None:
     assert event_validation["run_status"] == "RUN_VALID_MEASUREMENT_COMPLETE"
     assert event_validation["errors"] == ()
 
-    from src.data_layer.local_research_value_measurement import validate_receipt
 
+def test_receipt_reconciles_against_a_separate_clean_replay_non_circular() -> None:
+    # First run.
+    corpus = _corpus()
+    request = _request(corpus)
+    actions = _actions(corpus, request)
+    first = run_measurement(request, corpus, actions)
+
+    # Separate clean replay from independently reconstructed explicit inputs.
+    replay, _, _ = _clean_replay()
+
+    # Non-circular: validate the first run's receipt against the CLEAN REPLAY's
+    # metric results, not the first receipt's own metric results.
     receipt_validation = validate_receipt(
-        result["receipt"],
+        first["receipt"],
         expected_run_id=request["run_id"],
         expected_case_count=len(request["case_selection"]),
-        expected_event_count=len(result["events"]),
+        expected_event_count=len(first["events"]),
         expected_operator_action_count=len(actions),
-        expected_metric_results=copy.deepcopy(result["receipt"]["metric_results"]),
+        expected_metric_results=copy.deepcopy(replay["receipt"]["metric_results"]),
         expected_case_ids=tuple(request["case_selection"]),
         expected_operator_actions=actions,
     )
     assert receipt_validation["is_valid"] is True
+    assert receipt_validation["run_status"] == "RUN_VALID_MEASUREMENT_COMPLETE"
     assert receipt_validation["errors"] == ()
+
+
+def test_valid_shaped_metric_mutation_fails_cross_run_reconciliation() -> None:
+    """Reviewer trap: a valid-shaped receipt mutation must not survive when the
+    expected metric results come from a separate clean replay (not the mutated
+    receipt itself)."""
+    corpus = _corpus()
+    request = _request(corpus)
+    actions = _actions(corpus, request)
+    first = run_measurement(request, corpus, actions)
+    replay, _, _ = _clean_replay()
+
+    clean_expected = copy.deepcopy(replay["receipt"]["metric_results"])
+
+    # Sanity: the unmodified first receipt reconciles against the clean replay.
+    baseline = validate_receipt(
+        first["receipt"],
+        expected_run_id=request["run_id"],
+        expected_case_count=len(request["case_selection"]),
+        expected_event_count=len(first["events"]),
+        expected_operator_action_count=len(actions),
+        expected_metric_results=copy.deepcopy(clean_expected),
+        expected_case_ids=tuple(request["case_selection"]),
+        expected_operator_actions=actions,
+    )
+    assert baseline["is_valid"] is True
+
+    # Valid-shaped mutation of one first-run receipt COUNT metric.
+    mutated = copy.deepcopy(first["receipt"])
+    count_metric = next(
+        m
+        for m in mutated["metric_results"]
+        if m["measurement_type"] == "COUNT"
+        and m["measurement_status"] == "MEASURED_VALID"
+    )
+    count_metric["count"] += 1
+
+    mutated_validation = validate_receipt(
+        mutated,
+        expected_run_id=request["run_id"],
+        expected_case_count=len(request["case_selection"]),
+        expected_event_count=len(first["events"]),
+        expected_operator_action_count=len(actions),
+        expected_metric_results=copy.deepcopy(clean_expected),
+        expected_case_ids=tuple(request["case_selection"]),
+        expected_operator_actions=actions,
+    )
+    assert mutated_validation["is_valid"] is False
+    assert mutated_validation["errors"] == ("METRIC_RESULT_RECONCILIATION_FAILED",)
+
+    # A valid-shaped RATE-numerator reduction is likewise rejected cross-run.
+    mutated_rate = copy.deepcopy(first["receipt"])
+    rate_metric = next(
+        m
+        for m in mutated_rate["metric_results"]
+        if m["measurement_type"] == "RATE"
+        and m["measurement_status"] == "MEASURED_VALID"
+        and isinstance(m["numerator"], int)
+        and m["numerator"] > 0
+    )
+    rate_metric["numerator"] -= 1
+    rate_validation = validate_receipt(
+        mutated_rate,
+        expected_run_id=request["run_id"],
+        expected_case_count=len(request["case_selection"]),
+        expected_event_count=len(first["events"]),
+        expected_operator_action_count=len(actions),
+        expected_metric_results=copy.deepcopy(clean_expected),
+        expected_case_ids=tuple(request["case_selection"]),
+        expected_operator_actions=actions,
+    )
+    assert rate_validation["is_valid"] is False
+    assert rate_validation["errors"] == ("METRIC_RESULT_RECONCILIATION_FAILED",)
 
 
 def test_inputs_remain_unchanged_by_the_run() -> None:
@@ -265,7 +382,12 @@ def test_repeatability_and_safety_gates_and_action_counts() -> None:
     receipt = _run()["receipt"]
     assert len(receipt["repeatability_results"]) == 14
     assert all(state == "PASS" for _, state in receipt["repeatability_results"])
-    assert len(receipt["safety_flags"]) == 12
+    # Exact safety-gate identities, order, and all-true values (public vocabulary).
+    assert len(SAFETY_GATES) == 12
+    assert tuple(receipt["safety_flags"]) == tuple(
+        (gate, True) for gate in SAFETY_GATES
+    )
+    assert [gate for gate, _ in receipt["safety_flags"]] == list(SAFETY_GATES)
     assert all(value is True for _, value in receipt["safety_flags"])
     action_counts = dict(receipt["operator_action_counts"])
     assert action_counts["ACKNOWLEDGE"] == 14
