@@ -640,7 +640,25 @@ def test_exact_six_file_scope_and_no_implementation_or_deferred_log_change():
         for line in (result.stdout + untracked_result.stdout).splitlines()
         if line
     }
-    if "docs/status_entries/WP152.md" in changed:
+    if "docs/status_entries/WP153.md" in changed:
+        assert changed == {
+            "docs/local_research_workflow_value_measurement_dry_run_and_receipt_review.md",
+            "docs/status_entries/WP153.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "tests/test_local_research_workflow_value_measurement_dry_run_and_receipt_review.py",
+            "tests/test_project_status_docs.py",
+            "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+        }
+        assert not changed & {
+            "docs/local_research_workflow_value_measurement_harness_contract.md",
+            "docs/status_entries/WP151.md",
+            "docs/status_entries/WP152.md",
+            "src/data_layer/local_research_value_measurement/__init__.py",
+            "src/data_layer/local_research_value_measurement/harness.py",
+            "tests/fixtures/local_research_workflow_value_measurement_v1.json",
+        }
+    elif "docs/status_entries/WP152.md" in changed:
         assert changed == {
             "docs/project_status.md",
             "docs/repo_truth_index.md",
