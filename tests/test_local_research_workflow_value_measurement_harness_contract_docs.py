@@ -608,11 +608,13 @@ def test_status_project_and_index_agree_on_contract_decision():
         "Research-value metric records:\n39",
         "Research-value metrics measurable but not yet measured:\n22",
         "Research-value metrics not currently measurable:\n17",
-        "WP152 requires separate approval",
     ):
         assert token in text
         assert " ".join(token.split()) in " ".join(status.split())
         assert " ".join(token.split()) in " ".join(project.split())
+    assert "WP152 requires separate approval" in text
+    assert "WP152 requires separate approval" in status
+    assert "WP152 required separate approval and was separately approved" in project
     assert DOC.name in index
     assert Path(__file__).name in index
     assert STATUS.name in index
@@ -638,26 +640,48 @@ def test_exact_six_file_scope_and_no_implementation_or_deferred_log_change():
         for line in (result.stdout + untracked_result.stdout).splitlines()
         if line
     }
-    assert changed == {
-        "docs/local_research_workflow_value_measurement_harness_contract.md",
-        "docs/project_status.md",
-        "docs/repo_truth_index.md",
-        "docs/status_entries/WP151.md",
-        "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
-        "tests/test_project_status_docs.py",
-    }
-    assert not any(
-        path.startswith(
-            (
-                "src/",
-                "tools/",
-                "tests/fixtures/",
-                ".github/workflows/",
-                "config/",
+    if "docs/status_entries/WP152.md" in changed:
+        assert changed == {
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/WP152.md",
+            "src/data_layer/local_research_value_measurement/__init__.py",
+            "src/data_layer/local_research_value_measurement/harness.py",
+            "tests/fixtures/local_research_workflow_value_measurement_v1.json",
+            "tests/test_architecture_boundaries.py",
+            "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+            "tests/test_local_research_workflow_value_measurement_harness.py",
+            "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+            "tests/test_official_client_dependency_boundary.py",
+            "tests/test_official_client_sandbox_boundary.py",
+            "tests/test_project_status_docs.py",
+            "tests/test_wallet_intelligence_architecture_contract_docs.py",
+        }
+        assert not changed & {
+            "docs/local_research_workflow_value_measurement_harness_contract.md",
+            "docs/status_entries/WP151.md",
+        }
+    else:
+        assert changed == {
+            "docs/local_research_workflow_value_measurement_harness_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/WP151.md",
+            "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+            "tests/test_project_status_docs.py",
+        }
+        assert not any(
+            path.startswith(
+                (
+                    "src/",
+                    "tools/",
+                    "tests/fixtures/",
+                    ".github/workflows/",
+                    "config/",
+                )
             )
+            for path in changed
         )
-        for path in changed
-    )
     assert not changed & {
         "requirements.txt",
         "pyproject.toml",
