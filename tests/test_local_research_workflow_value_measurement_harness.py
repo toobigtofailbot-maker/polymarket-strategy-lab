@@ -162,6 +162,26 @@ def _metric(result: dict, metric_id: str) -> dict:
     )
 
 
+def _receipt_validation_kwargs(result: dict, request: dict | None = None) -> dict:
+    request = request or _request()
+    return {
+        "expected_run_id": request["run_id"],
+        "expected_case_count": len(request["case_selection"]),
+        "expected_event_count": len(result["events"]),
+        "expected_operator_action_count": len(request["case_selection"]),
+        "expected_metric_results": copy.deepcopy(
+            result["receipt"]["metric_results"]
+        ),
+        "expected_case_ids": tuple(request["case_selection"]),
+    }
+
+
+def _renumber_events(events: list[dict]) -> None:
+    for index, event in enumerate(events, 1):
+        event["event_sequence"] = index
+        event["monotonic_elapsed_ns"] = index * 10
+
+
 def _recursive_text(value: object) -> str:
     if isinstance(value, str):
         return value
@@ -361,7 +381,7 @@ def test_follow_up_status_and_repo_truth_record_the_root_cause_and_resolution() 
     normalized_status = " ".join(status.split())
     for phrase in (
         "Review follow-up required: YES",
-        "Classification: F/G — human-review/action semantics and output-surface safety",
+        "Classification: F/G — implementation semantics and adversarial-test coverage",
         "Current PR reused: YES",
         "Separate hardening WP required: NO",
         "WP153 implemented: NO",
@@ -372,10 +392,14 @@ def test_follow_up_status_and_repo_truth_record_the_root_cause_and_resolution() 
         "six WP151 human-review outcomes",
         "mutually exclusive per-case final dispositions",
         "recursively validates event and receipt",
+        "three full deterministic measurement passes",
+        "canonical total order",
     ):
         assert phrase in normalized_status
     assert "six exact WP151 human-review outcomes" in index
     assert "action/event/receipt reconciliation" in index
+    assert "exactly three complete actual-metric measurement passes" in index
+    assert "complete-but-reordered stage/case/repeat/review event rejection" in index
 
 
 def test_complete_run_is_deterministic_and_measures_only_wave1() -> None:
@@ -527,6 +551,8 @@ def test_receipt_exact_fields_and_reconciliation() -> None:
         expected_case_count=14,
         expected_event_count=len(result["events"]),
         expected_operator_action_count=len(actions),
+        expected_metric_results=copy.deepcopy(receipt["metric_results"]),
+        expected_case_ids=request["case_selection"],
     )
     assert validation["is_valid"] is True
 
@@ -991,6 +1017,8 @@ def test_event_and_receipt_action_dispositions_reconcile_exactly() -> None:
         expected_case_count=14,
         expected_event_count=len(result["events"]),
         expected_operator_action_count=14,
+        expected_metric_results=copy.deepcopy(result["receipt"]["metric_results"]),
+        expected_case_ids=request["case_selection"],
         expected_operator_actions=actions,
     )["errors"] == ("ACTION_COUNT_RECONCILIATION_FAILED",)
 
@@ -1039,6 +1067,94 @@ def test_event_mutations_missing_duplicate_out_of_order_negative_and_unknown() -
     assert validate_event_stream(
         unknown, run_id=request["run_id"], selected_cases=request["case_selection"]
     )["errors"] == ("UNKNOWN_EVENT_TYPE",)
+
+
+def test_event_rejects_valid_complete_stream_reorderings() -> None:
+    result = _valid_run()
+    request = _request()
+
+    stage_swap = list(copy.deepcopy(result["events"]))
+    first_repeat_indices = [
+        index
+        for index, event in enumerate(stage_swap)
+        if event["case_id"] == "LVM-001" and event["repeat_index"] == 1
+    ]
+    first_stage_start = next(
+        index
+        for index in first_repeat_indices
+        if stage_swap[index]["event_type"] == "STAGE_STARTED"
+    )
+    stage_swap[first_stage_start : first_stage_start + 4] = (
+        stage_swap[first_stage_start + 2 : first_stage_start + 4]
+        + stage_swap[first_stage_start : first_stage_start + 2]
+    )
+    _renumber_events(stage_swap)
+
+    case_swap = list(copy.deepcopy(result["events"]))
+    first_case = [event for event in case_swap if event["case_id"] == "LVM-001"]
+    second_case = [event for event in case_swap if event["case_id"] == "LVM-002"]
+    other_events = [
+        event
+        for event in case_swap[1:-1]
+        if event["case_id"] not in {"LVM-001", "LVM-002"}
+    ]
+    case_swap = [case_swap[0], *second_case, *first_case, *other_events, case_swap[-1]]
+    _renumber_events(case_swap)
+
+    repeat_swap = list(copy.deepcopy(result["events"]))
+    repeat_one = [
+        event
+        for event in repeat_swap
+        if event["case_id"] == "LVM-001" and event["repeat_index"] == 1
+    ]
+    repeat_two = [
+        event
+        for event in repeat_swap
+        if event["case_id"] == "LVM-001" and event["repeat_index"] == 2
+    ]
+    case_tail = [
+        event
+        for event in repeat_swap
+        if event["case_id"] == "LVM-001" and event["repeat_index"] == 3
+    ]
+    remaining = [event for event in repeat_swap[1:-1] if event["case_id"] != "LVM-001"]
+    repeat_swap = [
+        repeat_swap[0],
+        *repeat_two,
+        *repeat_one,
+        *case_tail,
+        *remaining,
+        repeat_swap[-1],
+    ]
+    _renumber_events(repeat_swap)
+
+    review_early = list(copy.deepcopy(result["events"]))
+    review_index = next(
+        index
+        for index, event in enumerate(review_early)
+        if event["case_id"] == "LVM-001"
+        and event["repeat_index"] == 1
+        and event["event_type"] == "OPERATOR_REVIEW_REQUIRED"
+    )
+    last_completion_index = max(
+        index
+        for index, event in enumerate(review_early)
+        if event["case_id"] == "LVM-001"
+        and event["repeat_index"] == 1
+        and event["event_type"] == "STAGE_COMPLETED"
+    )
+    review_event = review_early.pop(review_index)
+    review_early.insert(last_completion_index, review_event)
+    _renumber_events(review_early)
+
+    for events in (stage_swap, case_swap, repeat_swap, review_early):
+        validation = validate_event_stream(
+            events,
+            run_id=request["run_id"],
+            selected_cases=request["case_selection"],
+        )
+        assert validation["is_valid"] is False
+        assert validation["errors"] == ("EVENT_ORDER_MISMATCH",)
 
 
 @pytest.mark.parametrize(
@@ -1134,6 +1250,8 @@ def test_forbidden_variants_fail_on_corpus_event_and_receipt_surfaces(
         expected_case_count=14,
         expected_event_count=len(result["events"]),
         expected_operator_action_count=14,
+        expected_metric_results=copy.deepcopy(result["receipt"]["metric_results"]),
+        expected_case_ids=_request()["case_selection"],
     )
     assert receipt_result["is_valid"] is False
     assert receipt_result["normalized"] == {}
@@ -1158,12 +1276,7 @@ def test_safe_structural_and_non_authority_text_is_not_overblocked() -> None:
 def test_receipt_rejects_missing_extra_fields_zero_denominator_and_reconciliation() -> None:
     result = _valid_run()
     receipt = copy.deepcopy(result["receipt"])
-    kwargs = {
-        "expected_run_id": _request()["run_id"],
-        "expected_case_count": 14,
-        "expected_event_count": len(result["events"]),
-        "expected_operator_action_count": 14,
-    }
+    kwargs = _receipt_validation_kwargs(result)
 
     missing = copy.deepcopy(receipt)
     missing.pop("event_count")
@@ -1187,6 +1300,110 @@ def test_receipt_rejects_missing_extra_fields_zero_denominator_and_reconciliatio
     )
 
 
+@pytest.mark.parametrize(
+    "set_coverage",
+    ("01/4", "5/4", "0/0", "+1/4", " 1/4"),
+)
+def test_receipt_rejects_noncanonical_or_impossible_set_coverage(
+    set_coverage: str,
+) -> None:
+    result = _valid_run()
+    receipt = copy.deepcopy(result["receipt"])
+    metric = next(
+        item
+        for item in receipt["metric_results"]
+        if item["measurement_type"] == "SET_COVERAGE"
+    )
+    metric["set_coverage"] = set_coverage
+    assert validate_receipt(
+        receipt,
+        **_receipt_validation_kwargs(result),
+    )["errors"] == ("INVALID_SET_COVERAGE",)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (("applicable_case_count", True), ("excluded_case_count", False)),
+)
+def test_receipt_rejects_boolean_metric_case_counts(field: str, value: bool) -> None:
+    result = _valid_run()
+    receipt = copy.deepcopy(result["receipt"])
+    receipt["metric_results"][0][field] = value
+    assert validate_receipt(
+        receipt,
+        **_receipt_validation_kwargs(result),
+    )["errors"] == ("METRIC_CASE_COUNT_MISMATCH",)
+
+
+@pytest.mark.parametrize(
+    ("metric_id", "mutation"),
+    (
+        ("RV-THR-01", "count"),
+        ("RV-REJ-04", "rate"),
+        ("RV-REJ-01", "boolean"),
+        ("RV-REJ-02", "set"),
+        ("RV-THR-01", "applicability"),
+        ("RV-THR-01", "failure"),
+        ("RV-REP-06", "repeatability"),
+    ),
+)
+def test_receipt_rejects_valid_shaped_noncanonical_metric_results(
+    metric_id: str,
+    mutation: str,
+) -> None:
+    result = _valid_run()
+    receipt = copy.deepcopy(result["receipt"])
+    metric = next(
+        item for item in receipt["metric_results"] if item["metric_id"] == metric_id
+    )
+    if mutation == "count":
+        metric["count"] += 1
+    elif mutation == "rate":
+        metric["numerator"] -= 1
+    elif mutation == "boolean":
+        metric["boolean_result"] = not metric["boolean_result"]
+    elif mutation == "set":
+        metric["set_coverage"] = "3/4"
+    elif mutation == "applicability":
+        metric["applicable_case_count"] -= 1
+        metric["excluded_case_count"] += 1
+    elif mutation == "failure":
+        metric["count"] = None
+        metric["measurement_status"] = "FAILED_VALIDATION"
+        metric["failure_codes"] = ("METRIC_DERIVATION_FAILED",)
+    else:
+        metric["repeatability_result"] = "FAIL"
+    validation = validate_receipt(
+        receipt,
+        **_receipt_validation_kwargs(result),
+    )
+    assert validation["is_valid"] is False
+
+
+def test_receipt_repeatability_case_identities_must_match_selection_order() -> None:
+    result = _valid_run()
+    receipt = copy.deepcopy(result["receipt"])
+    reordered = list(receipt["repeatability_results"])
+    reordered[0], reordered[1] = reordered[1], reordered[0]
+    receipt["repeatability_results"] = tuple(reordered)
+    assert validate_receipt(
+        receipt,
+        **_receipt_validation_kwargs(result),
+    )["errors"] == ("REPEATABILITY_RECONCILIATION_FAILED",)
+
+
+def test_receipt_repeatability_rejects_nonselected_case_identity() -> None:
+    corpus = _corpus()
+    request = _request(case_selection=["LVM-001"])
+    result = run_measurement(request, corpus, _actions(corpus, request))
+    receipt = copy.deepcopy(result["receipt"])
+    receipt["repeatability_results"] = (("LVM-002", "PASS"),)
+    assert validate_receipt(
+        receipt,
+        **_receipt_validation_kwargs(result, request),
+    )["errors"] == ("REPEATABILITY_RECONCILIATION_FAILED",)
+
+
 def test_wave2_false_measurement_fails_registry_and_safety_gate() -> None:
     result = _valid_run()
     receipt = copy.deepcopy(result["receipt"])
@@ -1199,6 +1416,8 @@ def test_wave2_false_measurement_fails_registry_and_safety_gate() -> None:
         expected_case_count=14,
         expected_event_count=len(result["events"]),
         expected_operator_action_count=14,
+        expected_metric_results=copy.deepcopy(result["receipt"]["metric_results"]),
+        expected_case_ids=_request()["case_selection"],
     )
     assert validation["run_status"] == "RUN_FAILED_METRIC_REGISTRY"
     assert validation["errors"] == (
@@ -1241,7 +1460,7 @@ def test_missing_human_review_fails_run() -> None:
     }
 
 
-def test_repeatability_mismatch_returns_bounded_rejected_receipt(
+def test_repeatability_mismatch_returns_no_measurement_receipt(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     original = harness._execute_case
@@ -1257,12 +1476,92 @@ def test_repeatability_mismatch_returns_bounded_rejected_receipt(
     assert result["is_valid"] is False
     assert result["run_status"] == "RUN_FAILED_REPEATABILITY"
     assert result["errors"] == ("REPEATABILITY_MISMATCH",)
-    assert result["events"][-1]["event_type"] == "RUN_FAILED"
-    assert result["receipt"]["hard_failures"] == ("REPEATABILITY_MISMATCH",)
-    assert (
-        result["receipt"]["human_review_status"]
-        == "REJECT_RECEIPT_REPEATABILITY_FAILURE"
-    )
+    assert result["events"] == ()
+    assert result["receipt"] == {}
+
+
+def test_clean_run_executes_exactly_three_full_measurement_passes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original = harness._measure_full_pass
+    calls: list[int] = []
+
+    def counted(cases: tuple[dict, ...], repeat_index: int) -> dict:
+        calls.append(repeat_index)
+        return original(cases, repeat_index)
+
+    monkeypatch.setattr(harness, "_measure_full_pass", counted)
+    assert _valid_run()["is_valid"] is True
+    assert calls == [1, 2, 3]
+
+
+@pytest.mark.parametrize(
+    ("metric_id", "mutation"),
+    (
+        ("RV-THR-01", "count"),
+        ("RV-REJ-04", "rate"),
+        ("RV-REJ-01", "boolean"),
+        ("RV-REJ-02", "set"),
+        ("RV-THR-01", "applicability"),
+        ("RV-THR-01", "failure"),
+        ("CASE_OUTPUT", "normalized_output"),
+        ("PASS_SAFETY", "safety"),
+        ("PASS_STATUS", "run_status"),
+    ),
+)
+def test_full_pass_drift_fails_repeatability_without_receipt(
+    monkeypatch: pytest.MonkeyPatch,
+    metric_id: str,
+    mutation: str,
+) -> None:
+    original = harness._measure_full_pass
+
+    def drifting(cases: tuple[dict, ...], repeat_index: int) -> dict:
+        result = original(cases, repeat_index)
+        if repeat_index != 2:
+            return result
+        result = copy.deepcopy(result)
+        if mutation == "normalized_output":
+            result["case_outputs"][0]["normalized_output_shape"] = ("DRIFT",)
+            return result
+        if mutation == "safety":
+            result["safety_flags"] = (
+                (result["safety_flags"][0][0], False),
+                *result["safety_flags"][1:],
+            )
+            return result
+        if mutation == "run_status":
+            result["run_status"] = "RUN_FAILED_VALIDATION"
+            return result
+        metric = next(
+            item
+            for item in result["metric_results"]
+            if item["metric_id"] == metric_id
+        )
+        if mutation == "count":
+            metric["count"] += 1
+        elif mutation == "rate":
+            metric["numerator"] -= 1
+        elif mutation == "boolean":
+            metric["boolean_result"] = not metric["boolean_result"]
+        elif mutation == "set":
+            metric["set_coverage"] = "3/4"
+        elif mutation == "applicability":
+            metric["applicable_case_count"] -= 1
+            metric["excluded_case_count"] += 1
+        else:
+            metric["failure_codes"] = ("METRIC_DERIVATION_FAILED",)
+        return result
+
+    monkeypatch.setattr(harness, "_measure_full_pass", drifting)
+    result = _valid_run()
+    assert result == {
+        "is_valid": False,
+        "run_status": "RUN_FAILED_REPEATABILITY",
+        "errors": ("REPEATABILITY_MISMATCH",),
+        "events": (),
+        "receipt": {},
+    }
 
 
 def test_pytest_temporary_mode_writes_nothing_and_leaves_tmp_path_empty(

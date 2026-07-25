@@ -1362,6 +1362,66 @@ def validate_event_stream(
                 "RUN_FAILED_EVENT_CONTRACT",
                 ("EVENT_ACTION_RECONCILIATION_FAILED",),
             )
+    expected_order: list[tuple[str, int, str, str]] = [
+        ("", 0, "RUN_STARTED", "")
+    ]
+    for case_id in selected_cases:
+        for repeat_index in range(1, REQUIRED_REPEATS + 1):
+            expected_order.append((case_id, repeat_index, "CASE_STARTED", ""))
+            for stage_id in _EXPECTED_CASE_MAP[case_id][0]:
+                expected_order.extend(
+                    (
+                        (case_id, repeat_index, "STAGE_STARTED", stage_id),
+                        (case_id, repeat_index, "STAGE_COMPLETED", stage_id),
+                    )
+                )
+            expected_order.extend(
+                (
+                    (case_id, repeat_index, "VALIDATION_PASSED", ""),
+                    (case_id, repeat_index, "OPERATOR_REVIEW_REQUIRED", ""),
+                )
+            )
+            disposition = review_dispositions[(case_id, repeat_index)]
+            expected_order.extend(
+                (
+                    (
+                        case_id,
+                        repeat_index,
+                        (
+                            "OPERATOR_ACKNOWLEDGED"
+                            if disposition == "ACKNOWLEDGE"
+                            else "CORRECTION_REQUESTED"
+                        ),
+                        "",
+                    ),
+                    (
+                        case_id,
+                        repeat_index,
+                        (
+                            "CASE_COMPLETED"
+                            if disposition == "ACKNOWLEDGE"
+                            else "CASE_FAILED"
+                        ),
+                        "",
+                    ),
+                )
+            )
+    expected_order.append(("", 0, events[-1]["event_type"], ""))
+    actual_order = tuple(
+        (
+            event["case_id"],
+            event["repeat_index"],
+            event["event_type"],
+            event["stage_id"],
+        )
+        for event in events
+    )
+    if actual_order != tuple(expected_order):
+        return _validation(
+            False,
+            "RUN_FAILED_EVENT_CONTRACT",
+            ("EVENT_ORDER_MISMATCH",),
+        )
     final = events[-1]
     if (
         final["event_type"] == "RUN_COMPLETED"
@@ -1635,17 +1695,50 @@ def _execute_case(case: Mapping[str, Any], repeat_index: int) -> dict[str, Any]:
     }
 
 
-def _repeat_cases(
+def _measure_full_pass(
     cases: Sequence[Mapping[str, Any]],
-) -> tuple[bool, dict[str, tuple[dict[str, Any], ...]]]:
-    results: dict[str, tuple[dict[str, Any], ...]] = {}
-    passed = True
-    for case in cases:
-        repeats = tuple(_execute_case(case, index) for index in range(1, REQUIRED_REPEATS + 1))
-        results[case["case_id"]] = repeats
-        if any(item != repeats[0] for item in repeats[1:]):
-            passed = False
-    return passed, results
+    repeat_index: int,
+) -> dict[str, Any]:
+    """Return one complete deterministic case-and-metric comparison surface."""
+    case_outputs = tuple(_execute_case(case, repeat_index) for case in cases)
+    metric_results = tuple(
+        _measure_wave_1(metric, cases, True)
+        if metric.wave == "WAVE_1"
+        else _empty_metric_result(
+            metric,
+            selected_count=0,
+            excluded_count=0,
+            status="BLOCKED_WAVE_2",
+            failure_codes=("BLOCKED_WAVE_2",),
+        )
+        for metric in METRIC_REGISTRY
+        if metric.metric_id != "RV-REP-06"
+    )
+    run_status = (
+        "RUN_VALID_MEASUREMENT_COMPLETE"
+        if all(
+            result["measurement_status"] == "MEASURED_VALID"
+            for result in metric_results
+            if result["wave"] == "WAVE_1"
+        )
+        else "RUN_FAILED_VALIDATION"
+    )
+    return {
+        "case_outputs": case_outputs,
+        "metric_results": metric_results,
+        "safety_flags": tuple((gate, True) for gate in SAFETY_GATES),
+        "run_status": run_status,
+    }
+
+
+def _repeat_full_measurement_passes(
+    cases: Sequence[Mapping[str, Any]],
+) -> tuple[bool, tuple[dict[str, Any], ...]]:
+    passes = tuple(
+        _measure_full_pass(cases, repeat_index)
+        for repeat_index in range(1, REQUIRED_REPEATS + 1)
+    )
+    return all(item == passes[0] for item in passes[1:]), passes
 
 
 def _build_events(
@@ -1789,26 +1882,27 @@ def _human_review_outcome(
     return "ACCEPT_MEASUREMENT_RECEIPT_FOR_RESEARCH_MEMORY_ONLY"
 
 
+def _canonical_metric_results(
+    cases: Sequence[Mapping[str, Any]],
+    canonical_pass: Mapping[str, Any],
+) -> tuple[dict[str, Any], ...]:
+    pass_results = iter(canonical_pass["metric_results"])
+    return tuple(
+        _measure_wave_1(metric, cases, True)
+        if metric.metric_id == "RV-REP-06"
+        else copy.deepcopy(next(pass_results))
+        for metric in METRIC_REGISTRY
+    )
+
+
 def _build_receipt(
     request: Mapping[str, Any],
     cases: Sequence[Mapping[str, Any]],
     events: Sequence[Mapping[str, Any]],
     actions: Sequence[Mapping[str, Any]],
-    repeatability_passed: bool,
-    repeatability_results: Mapping[str, Sequence[Mapping[str, Any]]],
+    canonical_metric_results: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    metric_results = tuple(
-        _measure_wave_1(metric, cases, repeatability_passed)
-        if metric.wave == "WAVE_1"
-        else _empty_metric_result(
-            metric,
-            selected_count=0,
-            excluded_count=0,
-            status="BLOCKED_WAVE_2",
-            failure_codes=("BLOCKED_WAVE_2",),
-        )
-        for metric in METRIC_REGISTRY
-    )
+    metric_results = tuple(copy.deepcopy(canonical_metric_results))
     complete = all(
         result["measurement_status"] == "MEASURED_VALID"
         for result in metric_results
@@ -1832,18 +1926,13 @@ def _build_receipt(
     run_status = (
         "RUN_VALID_MEASUREMENT_COMPLETE"
         if complete
-        and repeatability_passed
         and human_review_complete
         and not deferred
-        else "RUN_FAILED_REPEATABILITY"
-        if not repeatability_passed
         else "RUN_FAILED_VALIDATION"
     )
     hard_failures = (
         ("DEFER_RECEIPT_PENDING_CORRECTION",)
         if deferred
-        else ("REPEATABILITY_MISMATCH",)
-        if not repeatability_passed
         else ("MISSING_REQUIRED_CASE_COVERAGE",)
         if not coverage_complete
         else ("RECEIPT_CONTRACT_FAILURE",)
@@ -1852,7 +1941,7 @@ def _build_receipt(
     )
     human_review_status = _human_review_outcome(
         deferred=deferred,
-        repeatability_passed=repeatability_passed,
+        repeatability_passed=True,
         coverage_complete=coverage_complete,
         contract_valid=complete and human_review_complete,
     )
@@ -1872,8 +1961,8 @@ def _build_receipt(
         "metric_results": metric_results,
         "hard_failures": hard_failures,
         "repeatability_results": tuple(
-            (case_id, "PASS" if all(item == repeats[0] for item in repeats[1:]) else "FAIL")
-            for case_id, repeats in repeatability_results.items()
+            (case["case_id"], "PASS")
+            for case in cases
         ),
         "operator_action_counts": tuple(
             (action, action_counts.get(action, 0)) for action in ALLOWED_OPERATOR_ACTIONS
@@ -1893,6 +1982,8 @@ def validate_receipt(
     expected_case_count: int,
     expected_event_count: int,
     expected_operator_action_count: int,
+    expected_metric_results: Sequence[Mapping[str, Any]],
+    expected_case_ids: Sequence[str],
     expected_operator_actions: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Validate exact receipt/result fields and Wave 2 blocking."""
@@ -1953,7 +2044,9 @@ def validate_receipt(
             return _validation(False, "RUN_FAILED_METRIC_REGISTRY", ("METRIC_RESULT_IDENTITY_MISMATCH",))
         if (
             not isinstance(result["applicable_case_count"], int)
+            or isinstance(result["applicable_case_count"], bool)
             or not isinstance(result["excluded_case_count"], int)
+            or isinstance(result["excluded_case_count"], bool)
             or result["applicable_case_count"] < 0
             or result["excluded_case_count"] < 0
             or (
@@ -2035,8 +2128,10 @@ def validate_receipt(
                 return _validation(False, "RUN_FAILED_VALIDATION", ("INVALID_BOOLEAN_COVERAGE",))
             if expected_metric.measurement_type == "SET_COVERAGE" and not (
                 isinstance(result["set_coverage"], str)
-                and re.fullmatch(r"\d+/\d+", result["set_coverage"])
+                and re.fullmatch(r"(0|[1-9]\d*)/(0|[1-9]\d*)", result["set_coverage"])
                 and int(result["set_coverage"].split("/")[1]) > 0
+                and int(result["set_coverage"].split("/")[0])
+                <= int(result["set_coverage"].split("/")[1])
             ):
                 return _validation(False, "RUN_FAILED_VALIDATION", ("INVALID_SET_COVERAGE",))
             if (
@@ -2044,6 +2139,12 @@ def validate_receipt(
                 and result["repeatability_result"] != "PASS"
             ):
                 return _validation(False, "RUN_FAILED_REPEATABILITY", ("REPEATABILITY_MISMATCH",))
+    if tuple(metric_results) != tuple(expected_metric_results):
+        return _validation(
+            False,
+            "RUN_FAILED_VALIDATION",
+            ("METRIC_RESULT_RECONCILIATION_FAILED",),
+        )
     if receipt["temporary_output_status"] not in ALLOWED_OUTPUT_MODES:
         return _validation(False, "RUN_FAILED_VALIDATION", ("INVALID_OUTPUT_MODE",))
     flags = receipt["safety_flags"]
@@ -2062,7 +2163,8 @@ def validate_receipt(
     ):
         return _validation(False, "RUN_FAILED_VALIDATION", ("REPEATABILITY_RECONCILIATION_FAILED",))
     if (
-        len({item[0] for item in repeatability_results}) != expected_case_count
+        tuple(item[0] for item in repeatability_results) != tuple(expected_case_ids)
+        or len(tuple(expected_case_ids)) != expected_case_count
         or any(
             not _safe_identifier(item[0])
             or item[0] not in _CASE_IDS
@@ -2189,16 +2291,24 @@ def run_measurement(
     actions = actions_result["normalized"]["actions"]
     if any(action["action_type"] == "ABORT_RUN" for action in actions):
         return _run_failure("RUN_ABORTED_BY_OPERATOR", "ABORTED_BY_OPERATOR")
-    repeatability_passed, repeatability_results = _repeat_cases(selected_cases)
+    repeatability_passed, measurement_passes = _repeat_full_measurement_passes(
+        selected_cases
+    )
+    if not repeatability_passed:
+        return _run_failure("RUN_FAILED_REPEATABILITY", "REPEATABILITY_MISMATCH")
+    canonical_pass = measurement_passes[0]
+    canonical_metric_results = _canonical_metric_results(
+        selected_cases,
+        canonical_pass,
+    )
     deferred = any(
         action["action_type"] in {"REQUEST_CORRECTION", "RETRY_CASE", "DEFER_CASE"}
         for action in actions
     )
     provisional_status = (
         "RUN_VALID_MEASUREMENT_COMPLETE"
-        if repeatability_passed and not deferred
-        else "RUN_FAILED_REPEATABILITY"
-        if not repeatability_passed
+        if canonical_pass["run_status"] == "RUN_VALID_MEASUREMENT_COMPLETE"
+        and not deferred
         else "RUN_FAILED_VALIDATION"
     )
     events = _build_events(normalized_request, selected_cases, actions, provisional_status)
@@ -2207,8 +2317,7 @@ def run_measurement(
         selected_cases,
         events,
         actions,
-        repeatability_passed,
-        repeatability_results,
+        canonical_metric_results,
     )
     if receipt["run_status"] != provisional_status:
         events = _build_events(
@@ -2219,8 +2328,7 @@ def run_measurement(
             selected_cases,
             events,
             actions,
-            repeatability_passed,
-            repeatability_results,
+            canonical_metric_results,
         )
     event_result = validate_event_stream(
         events,
@@ -2236,6 +2344,8 @@ def run_measurement(
         expected_case_count=len(selected_cases),
         expected_event_count=len(events),
         expected_operator_action_count=len(actions),
+        expected_metric_results=canonical_metric_results,
+        expected_case_ids=normalized_request["case_selection"],
         expected_operator_actions=actions,
     )
     if not receipt_result["is_valid"]:

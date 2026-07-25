@@ -2006,7 +2006,7 @@ def test_wp131_through_wp151_dedicated_status_chain_is_consistent():
     for phrase in (
         "LOCAL_OFFLINE_DETERMINISTIC_WAVE_1_MEASUREMENT_HARNESS_REVIEW_TARGET",
         "Review follow-up required: YES",
-        "Classification: F/G — human-review/action semantics and output-surface safety",
+        "Classification: F/G — implementation semantics and adversarial-test coverage",
         "Current PR reused: YES",
         "Separate hardening WP required: NO",
         "WP153 implemented: NO",
