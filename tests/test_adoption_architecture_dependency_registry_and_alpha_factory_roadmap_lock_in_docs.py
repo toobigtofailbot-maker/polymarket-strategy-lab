@@ -14,6 +14,7 @@ DOC = (
     / "adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md"
 )
 STATUS = ROOT / "docs" / "status_entries" / "WP154.md"
+WP155_STATUS = ROOT / "docs" / "status_entries" / "WP155.md"
 PROJECT_STATUS = ROOT / "docs" / "project_status.md"
 INDEX = ROOT / "docs" / "repo_truth_index.md"
 DEFERRED = ROOT / "docs" / "deferred_items_log.md"
@@ -378,7 +379,7 @@ def test_all_fifteen_deferred_items_are_registered_with_required_fields() -> Non
     section = _section(
         log,
         "## WP154 Adoption Architecture, Dependency Registry And Alpha-Factory Roadmap Deferred Items",
-        "## WP6 Generated Artifact Incident Update",
+        "## WP155 Point-In-Time Market Research Data Foundation Deferred Items",
     )
     ids = re.findall(r"^\| (WP154-D\d{3}) \|", section, re.MULTILINE)
     assert ids == [f"WP154-D{index:03d}" for index in range(1, 16)]
@@ -411,9 +412,7 @@ def test_project_status_reconciles_wp153_and_has_one_wp154_review_target() -> No
     merged = next(
         line for line in project.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP154" in current
     assert "WP153" in merged
-    assert "WP154" not in merged
     assert current.count("sole review target") == 1
     assert (
         "WP153 bounded local research workflow value measurement dry run and receipt review sole review target"
@@ -423,11 +422,22 @@ def test_project_status_reconciles_wp153_and_has_one_wp154_review_target() -> No
         "LOCAL_OFFLINE_DETERMINISTIC_SYNTHETIC_DRY_RUN_AND_RECEIPT_REVIEW_REVIEW_TARGET"
         not in project
     )
-    assert (
-        "DOCS_STATUS_TESTS_ONLY_ADOPTION_ARCHITECTURE_DEPENDENCY_REGISTRY_ALPHA_FACTORY_ROADMAP_REVIEW_TARGET"
-        in project
-    )
-    assert "WP155 requires separate approval" in current
+    if WP155_STATUS.exists():
+        assert "WP155" in current
+        assert "WP154" in merged
+        assert (
+            "DOCS_STATUS_TESTS_ONLY_ADOPTION_ARCHITECTURE_DEPENDENCY_REGISTRY_ALPHA_FACTORY_ROADMAP_MERGED"
+            in project
+        )
+        assert "WP156 requires separate approval" in current
+    else:
+        assert "WP154" in current
+        assert "WP154" not in merged
+        assert (
+            "DOCS_STATUS_TESTS_ONLY_ADOPTION_ARCHITECTURE_DEPENDENCY_REGISTRY_ALPHA_FACTORY_ROADMAP_REVIEW_TARGET"
+            in project
+        )
+        assert "WP155 requires separate approval" in current
 
 
 def test_status_fragment_is_stable_and_contains_required_execution_package_sections() -> None:
@@ -504,7 +514,13 @@ def test_no_dependency_paper_live_provider_network_or_wp155_authority_is_granted
         "WP155 implemented:\nNO",
     ):
         assert phrase in doc or phrase in _read(STATUS)
-    assert not (ROOT / "docs" / "point_in_time_market_research_data_foundation_contract.md").exists()
+    wp155_doc = ROOT / "docs" / "point_in_time_market_research_data_foundation_contract.md"
+    if WP155_STATUS.exists():
+        assert wp155_doc.is_file()
+        assert "WP155 does not implement the data layer." in _read(wp155_doc)
+        assert "WP156 is not implemented." in _read(wp155_doc)
+    else:
+        assert not wp155_doc.exists()
 
 
 def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None:
@@ -527,16 +543,29 @@ def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None
         for line in (diff.stdout + untracked.stdout).splitlines()
         if line
     }
-    assert changed == {
-        "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
-        "docs/deferred_items_log.md",
-        "docs/project_status.md",
-        "docs/repo_truth_index.md",
-        "docs/status_entries/WP154.md",
-        "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
-        "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
-        "tests/test_project_status_docs.py",
-    }
+    if "docs/status_entries/WP155.md" in changed:
+        assert changed == {
+            "docs/deferred_items_log.md",
+            "docs/point_in_time_market_research_data_foundation_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/WP155.md",
+            "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+            "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+            "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+            "tests/test_project_status_docs.py",
+        }
+    elif changed:
+        assert changed == {
+            "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
+            "docs/deferred_items_log.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/WP154.md",
+            "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+            "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+            "tests/test_project_status_docs.py",
+        }
     assert not any(
         path.startswith(("src/", "tools/", "tests/fixtures/", ".github/workflows/", "config/"))
         for path in changed
