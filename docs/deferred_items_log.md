@@ -2123,6 +2123,35 @@ any future GitHub-aware private evidence verifier. Existing runtime, paper,
 live, credential, network/API, scheduler, dashboard, bot-loop, and dependency
 deferred items remain unchanged.
 
+## WP154 Adoption Architecture, Dependency Registry And Alpha-Factory Roadmap Deferred Items
+
+WP154 records architecture and adoption governance only. Each item below is
+`OPEN`, has no implementation authority, and requires a separately approved
+work package. `LISTED != APPROVED`, `EVALUATE != ADOPT`,
+`ADOPT != ACTIVATE`, and `ACTIVATE != AUTHORIZE`.
+
+| ID | Deferred item | Trigger | Prerequisite | Forbidden early interpretation | Separate approval requirement |
+|---|---|---|---|---|---|
+| WP154-D001 | Official Polymarket SDK compatibility/migration decision | A current adapter gap or V2 migration requirement is evidenced | Phase A identity/PIT requirements and refreshed official sources | Listing an SDK means migration, credentials, trading, or activation | YES — compatibility decision WP |
+| WP154-D002 | Parquet/Arrow point-in-time storage contract | WP155 is separately approved | Canonical identities, three-time semantics, correction, schema, and mutation rules | Preferred interchange means a production writer or database is authorized | YES — WP155 or later storage-contract WP |
+| WP154-D003 | DuckDB/Polars bounded benchmark | A representative PIT dataset contract exists | Exact local workloads, outputs, resource limits, and deterministic version policy | Preferred candidate means dependency adoption | YES — benchmark WP |
+| WP154-D004 | Graph schema and NetworkX prototype | Required relation queries and constraints are defined | Canonical node/edge identities and false-positive review method | Prototype means graph database, signal, or automatic equivalence authority | YES — graph contract/prototype WP |
+| WP154-D005 | Preregistration and experiment registry contract | Stable PIT lineage exists | Immutable hypothesis, split, metric, cost, exclusion, and failure fields | Experiment registry means strategy approval or promotion authority | YES — registry contract WP |
+| WP154-D006 | MLflow compatibility spike | Repository-native registry contract exists | Authority map plus local storage/network isolation rules | MLflow tracking/model registry means promotion or deployment authority | YES — isolated compatibility WP |
+| WP154-D007 | First resolution/source-integrity alpha program | Phase C/D contracts pass | Normalized rules, snapshots, relations, constraints, and false-positive process | A constraint violation means proven or tradable alpha | YES — research-program WP |
+| WP154-D008 | Wallet behavior persistence and copyability research | PIT wallet-observation use is approved | Look-ahead/survivorship controls, realized/MTM split, liquidity, size, and crowding treatment | Historical wallet profitability means copyability or automatic copy trading | YES — wallet research WP |
+| WP154-D009 | Calibration and market-disagreement program | Resolved PIT cohorts exist | Proper scoring rules, horizons, independent evidence, and OOS partitions | Probability disagreement alone means edge | YES — calibration research WP |
+| WP154-D010 | Fill/queue model | Granular book/event evidence exists | Timing, fees/rebates, cancellations, partial fills, latency, and opportunity cost | Visible spread means maker return or paper eligibility | YES — fill-model contract/implementation WPs |
+| WP154-D011 | NautilusTrader compatibility spike | Every Phase F prerequisite passes | PIT dataset, deterministic strategy input, explicit fill/cost assumptions, and boundary map | Spike means wholesale adoption, core replacement, Polymarket adapter, or live authority | YES — isolated spike WP |
+| WP154-D012 | Observability naming and sensitive-data policy | Deterministic paper event families are defined | Owners, redaction, retention, access, and runbooks | Dashboard or alert means accounting, risk, or state authority | YES — observability contract WP |
+| WP154-D013 | Prefect research-orchestration decision | Mature idempotent deterministic research jobs exist | Bounded retries/concurrency, exact inputs/outputs, and receipts | Research orchestration means trading scheduler or paper/live scheduling | YES — research-orchestration WP |
+| WP154-D014 | Paper-core implementation sequence | Foundational paper contracts are complete | Explicit paper-boundary authority, mode separation, fill/lifecycle/accounting/risk/reconciliation contracts | Paper-eligible means paper-authorized or live-ready | YES — protected paper WPs |
+| WP154-D015 | Restricted-live eligibility contract | Sufficient paper and operational evidence exists | Risk, reconciliation, incidents, observability, runbooks, and human approval gate | Restricted-live eligibility means live authorization | YES — restricted-live eligibility WP |
+
+WP154 changes no earlier deferred-item status. No dependency, SDK, storage
+engine, graph tool, experiment tracker, trading engine, orchestrator, or
+observability component is installed or activated by this registry.
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.

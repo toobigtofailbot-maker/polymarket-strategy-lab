@@ -1648,6 +1648,9 @@ def test_wp131_through_wp151_dedicated_status_chain_is_consistent():
     wp153_line = next(line for line in lines if line.startswith(
         "- Local research workflow value measurement dry run and receipt review status:"
     ))
+    wp154_line = next(line for line in lines if line.startswith(
+        "- Adoption architecture, dependency registry and alpha-factory roadmap status:"
+    ))
     current_phase_line = next(line for line in lines if line.startswith("- Current phase:"))
     merged_line = next(line for line in lines if line.startswith("- Merged WPs:"))
 
@@ -1710,12 +1713,13 @@ def test_wp131_through_wp151_dedicated_status_chain_is_consistent():
     assert "REVIEW_TARGET" not in wp150_line
     assert "REVIEW_TARGET" not in wp151_line
     assert "REVIEW_TARGET" not in wp152_line
-    assert "REVIEW_TARGET" in wp153_line
+    assert "REVIEW_TARGET" not in wp153_line
+    assert "REVIEW_TARGET" in wp154_line
     assert sum("REVIEW_TARGET" in line for line in (
         wp131_line, wp132_line, wp133_line, wp134_line, wp135_line, wp136_line,
         wp137_line, wp138_line, wp139_line, wp140_line, wp141_line, wp142_line,
         wp143_line, wp144_line, wp145_line, wp146_line, wp147_line, wp148_line,
-        wp149_line, wp150_line, wp151_line, wp152_line, wp153_line,
+        wp149_line, wp150_line, wp151_line, wp152_line, wp153_line, wp154_line,
     )) == 1
     assert "Manual six-record workflow status: CLOSED_COMPLETE_ENOUGH_FOR_BOUNDED_MANUAL_USE" in wp140_line
     assert "Default manual-chain extension: STOP" in wp140_line
@@ -2048,7 +2052,7 @@ def test_wp131_through_wp151_dedicated_status_chain_is_consistent():
     ):
         assert phrase in wp152_line
     for phrase in (
-        "LOCAL_OFFLINE_DETERMINISTIC_SYNTHETIC_DRY_RUN_AND_RECEIPT_REVIEW_REVIEW_TARGET",
+        "LOCAL_OFFLINE_DETERMINISTIC_SYNTHETIC_DRY_RUN_AND_RECEIPT_REVIEW_MERGED",
         "Synthetic project dry runs completed: 1",
         "Synthetic research-memory receipts accepted: 1",
         "Real workflow measurement runs accepted: 0",
@@ -2072,9 +2076,7 @@ def test_wp131_through_wp151_dedicated_status_chain_is_consistent():
         "receipt_sha256: 5a60772bec6c582a83a1e36bfeaa60de4a7aff7840f8ec9b7f33ad9f17234750",
         "public_result_sha256: f95101f9ed82ca32cc458f2133b8cb0c34e2adfccf0619b349c993fafcc8b514",
         "Paper-trading readiness: NOT_READY_FOUNDATIONAL_GAPS",
-        "Next phase: ADOPTION_ARCHITECTURE_DEPENDENCY_REGISTRY_AND_ALPHA_FACTORY_ROADMAP_LOCK_IN",
-        "WP154 requires separate approval",
-        "WP154 implemented: NO",
+        "Next sequence phase reconciled by the separately approved WP154 architecture decision",
         "docs/local_research_workflow_value_measurement_dry_run_and_receipt_review.md",
     ):
         assert phrase in wp153_line
@@ -2758,7 +2760,7 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp152_reconciled_as_merged_and_wp153_is_current_review_target():
+def test_wp153_reconciled_as_merged_and_wp154_is_current_review_target():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2766,9 +2768,18 @@ def test_wp152_reconciled_as_merged_and_wp153_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP153" in current_phase_line
-    assert "WP152" in merged_line
+    assert "WP154" in current_phase_line
+    assert "WP153" in merged_line
+    assert "WP154" not in merged_line
     for phrase in (
+        "sole review target",
+        "Finished-system architecture: MEASURABLE_ALPHA_FACTORY_PLUS_DETERMINISTIC_TRADING_KERNEL",
+        "Architecture posture: DECISION_AND_ROADMAP_ONLY",
+        "Dependency registry candidates: 15",
+        "Dependencies installed or activated by WP154: 0",
+        "Adoption phases: 10 (A-J)",
+        "Alpha priorities: 5",
+        "Alpha lineage stages: 9",
         "Synthetic project dry runs completed: 1",
         "Synthetic research-memory receipts accepted: 1",
         "Real workflow measurement runs accepted: 0",
@@ -2781,10 +2792,11 @@ def test_wp152_reconciled_as_merged_and_wp153_is_current_review_target():
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
         "Persistent raw measurement output: 0",
-        "Next phase: ADOPTION_ARCHITECTURE_DEPENDENCY_REGISTRY_AND_ALPHA_FACTORY_ROADMAP_LOCK_IN",
-        "WP154 requires separate approval",
+        "Next phase: POINT_IN_TIME_MARKET_RESEARCH_DATA_FOUNDATION_CONTRACT",
+        "WP155 requires separate approval",
     ):
         assert phrase in current_phase_line
+    assert current_phase_line.count("sole review target") == 1
 
 
 def test_wp153_synthetic_results_are_not_labeled_real_metrics():
@@ -2856,3 +2868,92 @@ def test_wp153_committed_status_docs_reject_stale_wording():
         r"Current live PR head:\s*`?[0-9a-f]{40}`?", re.IGNORECASE
     )
     assert fixed_live_head.search(wp153_text) is None
+
+
+# ── WP154: adoption architecture, dependency registry, alpha-factory roadmap ──
+
+
+def test_wp154_document_status_and_test_are_registered_in_repo_truth():
+    index_text = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(
+        encoding="utf-8"
+    )
+    status_text = _read()
+    for path in (
+        "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
+        "docs/status_entries/WP154.md",
+        "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    ):
+        assert path in index_text
+    assert (
+        "Adoption architecture, dependency registry and alpha-factory roadmap status:"
+        in status_text
+    )
+    assert (STATUS_ENTRIES / "WP154.md").is_file()
+
+
+def test_wp154_is_the_only_current_review_target_and_wp153_wording_is_merged():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    assert current_phase_line.count("sole review target") == 1
+    assert "WP154" in current_phase_line
+    assert (
+        "WP153 bounded local research workflow value measurement dry run and receipt review sole review target"
+        not in text
+    )
+    assert (
+        "LOCAL_OFFLINE_DETERMINISTIC_SYNTHETIC_DRY_RUN_AND_RECEIPT_REVIEW_MERGED"
+        in text
+    )
+    assert (
+        "LOCAL_OFFLINE_DETERMINISTIC_SYNTHETIC_DRY_RUN_AND_RECEIPT_REVIEW_REVIEW_TARGET"
+        not in text
+    )
+
+
+def test_wp154_project_status_preserves_non_authority_and_next_gate():
+    text = _read()
+    wp154_line = next(
+        line
+        for line in text.splitlines()
+        if line.startswith(
+            "- Adoption architecture, dependency registry and alpha-factory roadmap status:"
+        )
+    )
+    for phrase in (
+        "DOCS_STATUS_TESTS_ONLY_ADOPTION_ARCHITECTURE_DEPENDENCY_REGISTRY_ALPHA_FACTORY_ROADMAP_REVIEW_TARGET",
+        "MEASURABLE_ALPHA_FACTORY_PLUS_DETERMINISTIC_TRADING_KERNEL",
+        "Dependency registry candidates: 15",
+        "Listed dependencies approved: 0",
+        "Dependencies installed or activated: 0",
+        "Paper-trading execution: NOT AUTHORIZED",
+        "Restricted-live eligibility: NOT ESTABLISHED",
+        "Live-trading execution: FORBIDDEN",
+        "Capital at risk: USD 0",
+        "Provider/model/Hermes runtime calls: 0",
+        "Product/runtime network calls: 0",
+        "Credentials accessed: 0",
+        "Scheduler/tasks: 0",
+        "Source/dependency/lock/workflow changes: 0",
+        "Planning estimates only: YES",
+        "Next phase: POINT_IN_TIME_MARKET_RESEARCH_DATA_FOUNDATION_CONTRACT",
+        "WP155 requires separate approval",
+        "WP155 implemented: NO",
+    ):
+        assert phrase in wp154_line
+
+
+def test_wp154_status_fragment_is_stable_and_non_self_referential():
+    status = (STATUS_ENTRIES / "WP154.md").read_text(encoding="utf-8")
+    assert "WP153 is merged. WP154 is the sole current review target." in status
+    assert "Ready for review: YES only after final committed-head validation" in status
+    assert "PR: see GitHub PR metadata and PR body." in status
+    assert "Current live PR head: see GitHub PR metadata and PR body" in status
+    assert "stable, non-self-referential repo record" in status
+    assert "TBD" not in status
+    assert "LOCAL_DRAFT_VERIFIED" not in status
+    fixed_live_head = re.compile(
+        r"Current live PR head:\s*`?[0-9a-f]{40}`?", re.IGNORECASE
+    )
+    assert fixed_live_head.search(status) is None
