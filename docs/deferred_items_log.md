@@ -2125,9 +2125,10 @@ deferred items remain unchanged.
 
 ## WP154 Adoption Architecture, Dependency Registry And Alpha-Factory Roadmap Deferred Items
 
-WP154 records architecture and adoption governance only. Each item below is
-`OPEN`, has no implementation authority, and requires a separately approved
-work package. `LISTED != APPROVED`, `EVALUATE != ADOPT`,
+WP154 records architecture and adoption governance only. At WP154 publication,
+each item below was `OPEN`, had no implementation authority, and required a
+separately approved work package. Later status changes must remain explicit.
+`LISTED != APPROVED`, `EVALUATE != ADOPT`,
 `ADOPT != ACTIVATE`, and `ACTIVATE != AUTHORIZE`.
 
 | ID | Deferred item | Trigger | Prerequisite | Forbidden early interpretation | Separate approval requirement |
@@ -2151,6 +2152,43 @@ work package. `LISTED != APPROVED`, `EVALUATE != ADOPT`,
 WP154 changes no earlier deferred-item status. No dependency, SDK, storage
 engine, graph tool, experiment tracker, trading engine, orchestrator, or
 observability component is installed or activated by this registry.
+
+## WP155 Point-In-Time Market Research Data Foundation Deferred Items
+
+WP155 reconciles the WP154 storage and benchmark deferrals without converting
+contract work into implementation authority.
+
+- WP154-D002 is `RESOLVED_CONTRACT_ONLY` for the architecture-level
+  Parquet/Arrow point-in-time storage contract. The canonical identity,
+  three-time, append-only, correction, schema, partition, and non-authority
+  decisions now exist in
+  `docs/point_in_time_market_research_data_foundation_contract.md`. No schema
+  class, writer, dataset, dependency, storage engine, migration, or real-data
+  implementation is resolved.
+- WP154-D003 remains `OPEN`. WP155 defines a correctness-first bounded
+  DuckDB/Polars benchmark contract, but no representative implementation
+  dataset, dependency, benchmark runner, or benchmark execution exists.
+
+Every item below is `OPEN`, has no implementation authority, and requires a
+separately approved work package.
+
+| ID | Deferred item | Trigger | Prerequisite | Forbidden early interpretation | Separate approval requirement |
+|---|---|---|---|---|---|
+| WP155-D001 | Point-in-time observation schema and validator implementation | WP156 is separately approved | WP155 identities, three-time semantics, lifecycle, failures, and hash preimages | The contract means a schema class or accepted validator already exists | YES — WP156 or later validator WP |
+| WP155-D002 | Sanitized synthetic fixture corpus | WP156 is separately approved | Deterministic IDs, exact time precision cases, correction chains, and secret-safe content rules | Synthetic fixtures are real market data, benchmark evidence, or paper evidence | YES — WP156 or later fixture WP |
+| WP155-D003 | Source and resolution-rule snapshot schema/validator | Observation validator foundation exists | Source registry, rule snapshot fields, ambiguity vocabulary, and lineage validation | A source URL or current rule text is already a canonical snapshot | YES — source/rule snapshot implementation WP |
+| WP155-D004 | Append-only local manifest/reference implementation | Immutable record validation exists | Atomic publication, hashes, recovery, file limits, and retention boundaries | An append-only contract authorizes a persistent writer or database | YES — local manifest/storage implementation WP |
+| WP155-D005 | Parquet/Arrow dependency and schema implementation decision | Synthetic reference behavior and schema contract pass | Dependency/security audit, version pin, round-trip schema, null/time compatibility, and file contract | Preferred format means installed, adopted, or production-ready | YES — dependency/schema decision WP |
+| WP155-D006 | DuckDB/Polars bounded benchmark execution | Representative synthetic PIT dataset and reference query implementation exist | Exact workloads, resource bounds, deterministic versions, equality oracle, and approved dependencies | Benchmark contract means either engine is adopted | YES — bounded benchmark WP |
+| WP155-D007 | Migration and reprocessing contract/implementation | At least two supported schema versions require conversion | Append-only lineage, correction visibility, idempotency, rollback, and receipt design | Migration may overwrite legacy JSONL or backdate corrections | YES — migration contract then implementation WP |
+| WP155-D008 | Retention, deletion, legal, and privacy policy | Persistent raw or canonical storage is proposed | Data classification, jurisdiction, retention, deletion exceptions, audit, and legal review | Append-only logical history forbids all legally required deletion | YES — retention/privacy policy WP |
+| WP155-D009 | Real public market-data collector/capture decision | Validated schemas and authoritative rate-limit evidence exist | Provider terms, endpoint/rate limits, bounded scheduling policy, storage, observability, and failure controls | Existing manual public GET paths authorize a collector, WebSocket, daemon, or service | YES — collector/capture decision WP |
+| WP155-D010 | Relationship-graph prerequisites | Canonical PIT event/market/token/source identities and rule snapshots exist | Node/edge schema, temporal validity, false-positive review, and constraint queries | Metadata overlap means semantic equivalence, signal, or automatic relationship authority | YES — graph contract WP |
+
+WP155 does not change the status of unrelated deferred items. It adds no
+dependency, source/runtime behavior, collector, network call, credential,
+writer, query engine, benchmark execution, migration, strategy, paper, or live
+authority.
 
 ## WP6 Generated Artifact Incident Update
 
