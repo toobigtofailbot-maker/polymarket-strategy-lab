@@ -1654,6 +1654,9 @@ def test_wp131_through_wp151_dedicated_status_chain_is_consistent():
     wp155_line = next(line for line in lines if line.startswith(
         "- Point-in-time market research data foundation contract status:"
     ))
+    wp156_line = next(line for line in lines if line.startswith(
+        "- Point-in-time observation schema validator and synthetic fixture implementation status:"
+    ))
     current_phase_line = next(line for line in lines if line.startswith("- Current phase:"))
     merged_line = next(line for line in lines if line.startswith("- Merged WPs:"))
 
@@ -1718,13 +1721,14 @@ def test_wp131_through_wp151_dedicated_status_chain_is_consistent():
     assert "REVIEW_TARGET" not in wp152_line
     assert "REVIEW_TARGET" not in wp153_line
     assert "REVIEW_TARGET" not in wp154_line
-    assert "REVIEW_TARGET" in wp155_line
+    assert "REVIEW_TARGET" not in wp155_line
+    assert "REVIEW_TARGET" in wp156_line
     assert sum("REVIEW_TARGET" in line for line in (
         wp131_line, wp132_line, wp133_line, wp134_line, wp135_line, wp136_line,
         wp137_line, wp138_line, wp139_line, wp140_line, wp141_line, wp142_line,
         wp143_line, wp144_line, wp145_line, wp146_line, wp147_line, wp148_line,
         wp149_line, wp150_line, wp151_line, wp152_line, wp153_line, wp154_line,
-        wp155_line,
+        wp155_line, wp156_line,
     )) == 1
     assert "Manual six-record workflow status: CLOSED_COMPLETE_ENOUGH_FOR_BOUNDED_MANUAL_USE" in wp140_line
     assert "Default manual-chain extension: STOP" in wp140_line
@@ -2765,7 +2769,7 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp153_and_wp154_are_merged_and_wp155_is_current_review_target():
+def test_wp153_through_wp155_are_merged_and_wp156_is_current_review_target():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2773,33 +2777,27 @@ def test_wp153_and_wp154_are_merged_and_wp155_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP155" in current_phase_line
+    assert "WP156" in current_phase_line
     assert "WP153" in merged_line
     assert "WP154" in merged_line
+    assert "WP155" in merged_line
     for phrase in (
         "sole review target",
         "Finished-system architecture: MEASURABLE_ALPHA_FACTORY_PLUS_DETERMINISTIC_TRADING_KERNEL",
         "Foundation label: POINT_IN_TIME_APPEND_ONLY_MARKET_RESEARCH_DATA_CONTRACT",
-        "Contract posture: CONTRACT_ONLY_NO_WRITER_NO_DEPENDENCY_NO_COLLECTION",
-        "Dependency registry candidates: 15",
-        "Dependencies installed or activated by WP155: 0",
-        "Adoption phases: 10 (A-J)",
-        "Alpha priorities: 5",
-        "Alpha lineage stages: 9",
-        "Synthetic project dry runs completed: 1",
-        "Synthetic research-memory receipts accepted: 1",
-        "Real workflow measurement runs accepted: 0",
-        "Real workflow research-value metrics measured: 0",
-        "Wave 1 harness metrics implemented: 22",
-        "Wave 2 metrics implemented: 0",
-        "Wave 2 metrics blocked: 17",
-        "Research-value metrics measured: 0",
+        "Implementation posture: LOCAL_OFFLINE_STDLIB_ONLY_IN_MEMORY_VALIDATION",
+        "Supported record families: 3",
+        "Supported observation kinds: 3",
+        "Synthetic point-in-time cases: 20",
+        "Immutable public dataclasses: 8",
+        "Dependencies installed or activated by WP156: 0",
+        "Existing Polymarket snapshot behavior changed: NO",
         "Paper-trading readiness: NOT_READY_FOUNDATIONAL_GAPS",
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
-        "Persistent raw measurement output: 0",
-        "Next phase: BOUNDED_POINT_IN_TIME_OBSERVATION_SCHEMA_VALIDATOR_AND_SYNTHETIC_FIXTURE_IMPLEMENTATION",
-        "WP156 requires separate approval",
+        "Next phase: BOUNDED_IN_MEMORY_POINT_IN_TIME_RECORD_SET_RECONSTRUCTION_AND_AS_OF_QUERY_IMPLEMENTATION",
+        "WP157 requires separate approval",
+        "WP157 implemented: NO",
     ):
         assert phrase in current_phase_line
     assert current_phase_line.count("sole review target") == 1
@@ -2897,17 +2895,18 @@ def test_wp154_document_status_and_test_are_registered_in_repo_truth():
     assert (STATUS_ENTRIES / "WP154.md").is_file()
 
 
-def test_wp154_is_merged_and_wp155_is_the_only_current_review_target():
+def test_wp154_and_wp155_are_merged_and_wp156_is_the_only_current_review_target():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
     assert current_phase_line.count("sole review target") == 1
-    assert "WP155" in current_phase_line
+    assert "WP156" in current_phase_line
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
     assert "WP154" in merged_line
+    assert "WP155" in merged_line
     assert (
         "WP153 bounded local research workflow value measurement dry run and receipt review sole review target"
         not in text
@@ -3003,20 +3002,17 @@ def test_wp155_project_status_preserves_contract_only_posture_and_next_gate():
         )
     )
     for phrase in (
-        "POINT_IN_TIME_APPEND_ONLY_MARKET_RESEARCH_DATA_CONTRACT_REVIEW_TARGET",
+        "POINT_IN_TIME_APPEND_ONLY_MARKET_RESEARCH_DATA_CONTRACT_MERGED",
         "CONTRACT_ONLY_NO_WRITER_NO_DEPENDENCY_NO_COLLECTION",
         "AS_OF_INGESTION_TIME",
         "NO_DESTRUCTIVE_HISTORY_REWRITE",
         "PARQUET_ARROW_PREFERRED_BUT_NOT_INSTALLED",
         "record_family / schema_major / ingestion_date_utc",
         "BENCHMARK_REQUIRED_NO_ADOPTION_DECISION",
-        "Source/dependency/lock/workflow/config/tool/fixture changes: 0",
-        "Writers/readers/validators/fixtures/collectors/query engines/benchmarks/migrations implemented: 0",
         "Product/runtime network calls: 0",
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
-        "WP156 requires separate approval",
-        "WP156 implemented: NO",
+        "Next sequence phase reconciled by the separately approved WP156",
     ):
         assert phrase in wp155_line
 
@@ -3030,6 +3026,76 @@ def test_wp155_status_fragment_is_stable_and_non_self_referential():
     assert "stable and non-self-referential" in status
     assert "TBD" not in status
     assert "LOCAL_DRAFT_VERIFIED" not in status
+    fixed_live_head = re.compile(
+        r"Current live PR head:\s*`?[0-9a-f]{40}`?", re.IGNORECASE
+    )
+    assert fixed_live_head.search(status) is None
+
+
+# ── WP156: bounded point-in-time validator and synthetic corpus ─────────────
+
+
+def test_wp156_document_status_package_and_test_are_registered_in_repo_truth():
+    index_text = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(
+        encoding="utf-8"
+    )
+    status_text = _read()
+    for path in (
+        "docs/point_in_time_observation_schema_validator_and_synthetic_fixture_implementation.md",
+        "docs/status_entries/WP156.md",
+        "src/data_layer/point_in_time_market_research/",
+        "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+    ):
+        assert path in index_text
+    assert (
+        "Point-in-time observation schema validator and synthetic fixture implementation status:"
+        in status_text
+    )
+    assert (STATUS_ENTRIES / "WP156.md").is_file()
+
+
+def test_wp156_project_status_exact_implementation_posture_and_next_gate():
+    text = _read()
+    wp156_line = next(
+        line
+        for line in text.splitlines()
+        if line.startswith(
+            "- Point-in-time observation schema validator and synthetic fixture implementation status:"
+        )
+    )
+    for phrase in (
+        "LOCAL_OFFLINE_STDLIB_ONLY_IN_MEMORY_VALIDATION_REVIEW_TARGET",
+        "POINT_IN_TIME_APPEND_ONLY_MARKET_RESEARCH_DATA_CONTRACT",
+        "point-in-time-market-research-record@1.0.0",
+        "Record families: 3",
+        "Observation kinds: 3",
+        "Frozen public dataclasses: 8",
+        "Public functions: 8",
+        "Synthetic cases: 20",
+        "Maximum batch records: 256",
+        "Dependencies added: 0",
+        "Writers/readers/manifests/databases/query engines/collectors/migrations: 0",
+        "Existing Polymarket snapshot behavior changed: NO",
+        "Product/runtime network calls: 0",
+        "Credentials accessed: 0",
+        "Scheduler/tasks: 0",
+        "Strategy/signal/paper/order/risk/execution authority: NONE",
+        "Paper-trading execution: NOT AUTHORIZED",
+        "Live-trading execution: FORBIDDEN",
+        "WP157 requires separate approval",
+        "WP157 implemented: NO",
+    ):
+        assert phrase in wp156_line
+
+
+def test_wp156_status_fragment_is_stable_and_non_self_referential():
+    status = (STATUS_ENTRIES / "WP156.md").read_text(encoding="utf-8")
+    assert "PR: see GitHub PR metadata and PR body." in status
+    assert "Current live PR head: see GitHub PR metadata and PR body" in status
+    assert "stable and non-self-referential" in status
+    assert "Ready for review: YES only after final committed-head validation" in status
+    assert "LOCAL_DRAFT_VERIFIED" not in status
+    assert "PR: TBD" not in status
     fixed_live_head = re.compile(
         r"Current live PR head:\s*`?[0-9a-f]{40}`?", re.IGNORECASE
     )

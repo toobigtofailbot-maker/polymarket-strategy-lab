@@ -695,9 +695,13 @@ def test_no_src_implementation_for_wp98() -> None:
             # WP145: local/offline test-oriented deterministic one-case harness
             "src/data_layer/hermes_candidate_review_assisted_research_local_dry_run_harness.py",
             # WP152: bounded local/offline deterministic Wave 1 measurement harness
-            "src/data_layer/local_research_value_measurement/__init__.py",
-            "src/data_layer/local_research_value_measurement/harness.py",
-        }
+                "src/data_layer/local_research_value_measurement/__init__.py",
+                "src/data_layer/local_research_value_measurement/harness.py",
+                # WP156: bounded local/offline deterministic point-in-time validator
+                "src/data_layer/point_in_time_market_research/__init__.py",
+                "src/data_layer/point_in_time_market_research/records.py",
+                "src/data_layer/point_in_time_market_research/synthetic_corpus.py",
+            }
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (
             f"Forbidden src/ file changed: {f}"

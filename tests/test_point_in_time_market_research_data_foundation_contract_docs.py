@@ -413,7 +413,7 @@ def test_deferred_reconciliation_is_contract_only_and_ten_items_are_open() -> No
     section = _section(
         log,
         "## WP155 Point-In-Time Market Research Data Foundation Deferred Items",
-        "## WP6 Generated Artifact Incident Update",
+        "## WP156 Bounded Point-In-Time Validator Deferred-Item Reconciliation",
     )
     flat_section = _flat(section)
     assert "WP154-D002 is `RESOLVED_CONTRACT_ONLY`" in flat_section
@@ -432,7 +432,7 @@ def test_deferred_reconciliation_is_contract_only_and_ten_items_are_open() -> No
     assert section.count("| YES —") == 10
 
 
-def test_project_status_reconciles_wp154_and_has_one_wp155_review_target() -> None:
+def test_project_status_reconciles_wp155_and_has_one_wp156_review_target() -> None:
     project = _read(PROJECT_STATUS)
     current = next(
         line for line in project.splitlines() if line.startswith("- Current phase:")
@@ -440,16 +440,16 @@ def test_project_status_reconciles_wp154_and_has_one_wp155_review_target() -> No
     merged = next(
         line for line in project.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP155" in current
+    assert "WP156" in current
     assert "WP154" in merged
-    assert "WP155" not in merged
+    assert "WP155" in merged
     assert current.count("sole review target") == 1
     assert (
         "WP154 adoption architecture, dependency registry and alpha-factory roadmap lock-in sole review target"
         not in project
     )
-    assert "WP156 requires separate approval" in current
-    assert "WP156 implemented: NO" in current
+    assert "WP157 requires separate approval" in current
+    assert "WP157 implemented: NO" in current
 
 
 def test_repo_truth_index_registers_canonical_status_and_focused_test() -> None:
@@ -527,6 +527,17 @@ def test_false_capability_statement_matrix_is_rejected() -> None:
 
 
 def test_exact_nine_file_scope_and_no_protected_change() -> None:
+    merged_status = subprocess.run(
+        ["git", "cat-file", "-e", "origin/main:docs/status_entries/WP155.md"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if merged_status.returncode == 0:
+        # The exact nine-file assertion is a WP155 branch gate. Once WP155 is
+        # present on origin/main, successor WPs own their own exact-scope gates.
+        return
     changed = _changed_files()
     assert changed == EXPECTED_CHANGED
     assert not any(
@@ -555,6 +566,8 @@ def test_exact_nine_file_scope_and_no_protected_change() -> None:
 def test_wp156_has_not_been_implemented() -> None:
     assert not (ROOT / "src" / "data_layer" / "point_in_time_observation.py").exists()
     assert not (ROOT / "tests" / "fixtures" / "point_in_time_observations").exists()
-    combined = f"{_read(DOC)}\n{_read(STATUS)}\n{_read(PROJECT_STATUS)}"
+    # WP155's immutable historical surfaces correctly state their own
+    # pre-WP156 implementation state.
+    combined = f"{_read(DOC)}\n{_read(STATUS)}"
     assert "WP156 requires separate approval" in combined
-    assert "WP156 implemented: NO" in combined
+    assert "WP156 is not implemented." in combined
