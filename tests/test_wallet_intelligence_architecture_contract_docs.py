@@ -422,9 +422,13 @@ def test_only_allowed_wallet_src_files_changed() -> None:
             # WP145: one-case local/offline test-oriented deterministic no-network harness
             "src/data_layer/hermes_candidate_review_assisted_research_local_dry_run_harness.py",
             # WP152: bounded local/offline deterministic Wave 1 measurement harness
-            "src/data_layer/local_research_value_measurement/__init__.py",
-            "src/data_layer/local_research_value_measurement/harness.py",
-    }
+                "src/data_layer/local_research_value_measurement/__init__.py",
+                "src/data_layer/local_research_value_measurement/harness.py",
+                # WP156: bounded local/offline deterministic point-in-time validator
+                "src/data_layer/point_in_time_market_research/__init__.py",
+                "src/data_layer/point_in_time_market_research/records.py",
+                "src/data_layer/point_in_time_market_research/synthetic_corpus.py",
+        }
     assert set(src_changes) <= allowed_src_changes, (
         f"Unexpected src/ changes: {set(src_changes) - allowed_src_changes}"
     )

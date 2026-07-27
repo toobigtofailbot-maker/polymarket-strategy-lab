@@ -2169,8 +2169,10 @@ contract work into implementation authority.
   DuckDB/Polars benchmark contract, but no representative implementation
   dataset, dependency, benchmark runner, or benchmark execution exists.
 
-Every item below is `OPEN`, has no implementation authority, and requires a
-separately approved work package.
+The original WP155 disposition is preserved in the table below. WP156 later
+resolves D001–D003 only for its bounded local in-memory implementation; D004
+through D010 remain `OPEN`. Every broader interpretation still has no
+implementation authority and requires a separately approved work package.
 
 | ID | Deferred item | Trigger | Prerequisite | Forbidden early interpretation | Separate approval requirement |
 |---|---|---|---|---|---|
@@ -2189,6 +2191,44 @@ WP155 does not change the status of unrelated deferred items. It adds no
 dependency, source/runtime behavior, collector, network call, credential,
 writer, query engine, benchmark execution, migration, strategy, paper, or live
 authority.
+
+## WP156 Bounded Point-In-Time Validator Deferred-Item Reconciliation
+
+WP156 records these exact narrow resolutions:
+
+- WP155-D001:
+  `RESOLVED_BOUNDED_LOCAL_IN_MEMORY_VALIDATOR_ONLY`.
+- WP155-D002:
+  `RESOLVED_SYNTHETIC_IN_MEMORY_CORPUS_ONLY`.
+- WP155-D003:
+  `RESOLVED_BOUNDED_LOCAL_SOURCE_AND_RULE_VALIDATOR_ONLY`.
+
+Those statuses resolve only frozen caller-mapping validation, the sanitized
+in-memory corpus, and source/rule metadata validation. They do not authorize
+persistence, production or real market data, collectors, Arrow/Parquet,
+DuckDB/Polars, queries, migration, or legacy snapshot-model changes.
+
+WP155-D004 through WP155-D010 remain `OPEN`.
+
+Every WP156 item below is `OPEN`, has no implementation authority, and
+requires a separately approved work package.
+
+| ID | Deferred item | Trigger | Prerequisite | Forbidden early interpretation | Separate approval requirement |
+|---|---|---|---|---|---|
+| WP156-D001 | In-memory as-of query and record-set reconstruction | WP157 is separately approved | Valid WP156 record objects, exact cutoff semantics, visible-chain precedence, deterministic result receipt | Batch validation already reconstructs authoritative point-in-time state | YES — WP157 or later query WP |
+| WP156-D002 | Persisted append-only manifest/reference layer | Persistent research datasets are separately approved | Atomic publication, immutable file/hash contract, recovery, retention, small-file limits, and operator ownership | In-memory records authorize a writer, catalog, database, or durable quarantine | YES — manifest/storage implementation WP |
+| WP156-D003 | Arrow/Parquet dependency and physical schema decision | Reference behavior and representative schema cases pass | Dependency/security audit, version pin, null/time/decimal compatibility, round-trip equality, and file contract | Canonical JSON records mean Arrow/Parquet is installed, adopted, or authoritative | YES — dependency/physical-schema decision WP |
+| WP156-D004 | DuckDB/Polars bounded benchmark execution | Representative persisted or approved temporary columnar fixture exists | Approved dependencies, exact workloads, reference oracle, resource bounds, and deterministic versions | A benchmark contract means either engine is adopted | YES — bounded benchmark WP |
+| WP156-D005 | Migration and reprocessing | Multiple supported versions require conversion | Append-only migration contract, idempotency, visibility, lineage, rollback, and receipt design | A validator may overwrite legacy JSONL or backdate corrections | YES — migration contract then implementation WP |
+| WP156-D006 | Retention, deletion, legal, and privacy policy | Persistent raw or canonical storage is proposed | Data classification, jurisdiction, retention, deletion exceptions, access, audit, and legal review | Logical append-only history overrides required privacy or legal deletion | YES — retention/privacy policy WP |
+| WP156-D007 | Real public collector/capture | Valid schemas, storage decision, and authoritative rate-limit evidence exist | Provider terms, endpoints, rate limits, bounded orchestration, observability, failure recovery, and operator controls | Synthetic builders authorize real collection, polling, WebSockets, a daemon, or service | YES — collector/capture decision WP |
+| WP156-D008 | Relationship graph | Canonical PIT identity and resolution-rule histories exist | Temporal node/edge schema, deterministic constraints, query cases, and false-positive review | Shared IDs or payload similarity establish semantic equivalence, signal, or trade authority | YES — graph contract/implementation WP |
+| WP156-D009 | Persisted quarantine/operator-review workflow | Durable invalid-input handling is approved | Safe storage contract, access/retention, operator roles, promotion lineage, and audit receipts | In-memory quarantine descriptors are a durable queue or automatic promotion mechanism | YES — quarantine workflow WP |
+| WP156-D010 | Timestamp precision beyond six fractional digits | A real approved source proves higher precision is required | Canonical representation, comparison, round-trip, hash compatibility, and schema-version decision | The validator may truncate, round, or silently accept unsupported precision | YES — precision/schema WP |
+
+WP156 adds no dependency, file I/O, writer, query, collector, product/runtime
+network, credential, scheduler, strategy, paper/live, order, risk,
+reconciliation, accounting, or execution authority.
 
 ## WP6 Generated Artifact Incident Update
 
