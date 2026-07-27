@@ -13,7 +13,7 @@ from datetime import datetime
 import hashlib
 import json
 import re
-from typing import TypeAlias
+from typing import Callable, TypeAlias
 
 
 FOUNDATION_LABEL = "POINT_IN_TIME_APPEND_ONLY_MARKET_RESEARCH_DATA_CONTRACT"
@@ -202,6 +202,7 @@ _AUTHORITY_KEYS = frozenset(
 
 _ID_RE = re.compile(r"^[A-Za-z0-9._:-]+$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_RECORD_VERSION_ID_RE = re.compile(r"^record:sha256:[0-9a-f]{64}$")
 _DECIMAL_RE = re.compile(r"^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$")
 _TIMESTAMP_RE = re.compile(
     r"^(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2})T"
@@ -414,18 +415,6 @@ def sha256_hex(data: bytes | str) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _safe_string(record: Mapping[str, object], key: str) -> str | None:
-    value = record.get(key)
-    if (
-        isinstance(value, str)
-        and len(value) <= _MAX_ID
-        and value == value.strip()
-        and all(32 <= ord(char) <= 126 for char in value)
-    ):
-        return value
-    return None
-
-
 def _make_quarantine(
     input_record: object,
     errors: Sequence[str],
@@ -439,9 +428,6 @@ def _make_quarantine(
             type_names[key] = type(value).__name__
     safe = {
         "top_level_types": type_names,
-        "schema_id": _safe_string(input_record, "schema_id"),
-        "schema_version": _safe_string(input_record, "schema_version"),
-        "record_family": _safe_string(input_record, "record_family"),
     }
     try:
         fingerprint = sha256_hex(canonical_json_bytes(safe))
@@ -459,12 +445,12 @@ def _make_quarantine(
     )
     return QuarantineDescriptor(
         quarantine_id=quarantine_id,
-        schema_id=_safe_string(input_record, "schema_id"),
-        schema_version=_safe_string(input_record, "schema_version"),
-        record_family=_safe_string(input_record, "record_family"),
-        source_id=_safe_string(input_record, "source_id"),
-        observed_time=_safe_string(input_record, "observed_time"),
-        ingestion_time=_safe_string(input_record, "ingestion_time"),
+        schema_id=None,
+        schema_version=None,
+        record_family=None,
+        source_id=None,
+        observed_time=None,
+        ingestion_time=None,
         input_fingerprint_sha256=fingerprint,
         failure_codes=ordered_errors,
         warning_codes=ordered_warnings,
@@ -842,14 +828,97 @@ def _common_values(
     }
 
 
+def _market_record_specific_metadata(
+    *,
+    observation_kind: object,
+    platform_id: object,
+    event_id: object,
+    market_id: object,
+    token_id: object,
+    source_id: object,
+    source_assertion_id: object,
+) -> dict[str, object]:
+    return {
+        "observation_kind": observation_kind,
+        "platform_id": platform_id,
+        "event_id": event_id,
+        "market_id": market_id,
+        "token_id": token_id,
+        "source_id": source_id,
+        "source_assertion_id": source_assertion_id,
+    }
+
+
+def _source_record_specific_metadata(
+    *,
+    source_id: object,
+    source_type: object,
+    source_reference: object,
+    media_type: object,
+    raw_content_sha256: object,
+    byte_length: object,
+    retrieval_method: object,
+    retrieval_version: object,
+    upstream_revision: object,
+    prior_source_snapshot_id: object,
+    access_classification: object,
+) -> dict[str, object]:
+    return {
+        "source_id": source_id,
+        "source_type": source_type,
+        "source_reference": source_reference,
+        "media_type": media_type,
+        "raw_content_sha256": raw_content_sha256,
+        "byte_length": byte_length,
+        "retrieval_method": retrieval_method,
+        "retrieval_version": retrieval_version,
+        "upstream_revision": upstream_revision,
+        "prior_source_snapshot_id": prior_source_snapshot_id,
+        "access_classification": access_classification,
+    }
+
+
+def _rule_record_specific_metadata(
+    *,
+    platform_id: object,
+    event_id: object,
+    market_id: object,
+    resolution_source_id: object,
+    source_snapshot_id: object,
+    rule_content_sha256: object,
+    source_declared_effective_time: object,
+    ambiguity_labels: object,
+    source_hierarchy_rank: object,
+    human_review_state: object,
+) -> dict[str, object]:
+    return {
+        "platform_id": platform_id,
+        "event_id": event_id,
+        "market_id": market_id,
+        "resolution_source_id": resolution_source_id,
+        "source_snapshot_id": source_snapshot_id,
+        "rule_content_sha256": rule_content_sha256,
+        "source_declared_effective_time": source_declared_effective_time,
+        "ambiguity_labels": ambiguity_labels,
+        "source_hierarchy_rank": source_hierarchy_rank,
+        "human_review_state": human_review_state,
+    }
+
+
+def _record_specific_metadata_sha256(metadata: Mapping[str, object]) -> str:
+    return sha256_hex(canonical_json_bytes(metadata))
+
+
 def _record_version_preimage(
     *,
     record_family: str,
+    record_specific_metadata_sha256: str,
     canonical_payload_sha256: str,
     observation_id: str | None,
     snapshot_id: str,
     source_snapshot_id: str | None,
     resolution_rule_snapshot_id: str | None,
+    ingestion_batch_id: str,
     observed_time: str,
     ingestion_time: str,
     event_time: str | None,
@@ -860,16 +929,22 @@ def _record_version_preimage(
     normalizer_version: str,
     validator_version: str,
     parameter_set_id: str,
+    source_content_sha256: str | None,
+    human_review_required: bool,
+    advisory_only: bool,
+    no_execution_authority: bool,
 ) -> dict[str, object]:
     return {
         "schema_id": SUPPORTED_SCHEMA_ID,
         "schema_version": SUPPORTED_SCHEMA_VERSION,
         "record_family": record_family,
+        "record_specific_metadata_sha256": record_specific_metadata_sha256,
         "canonical_payload_sha256": canonical_payload_sha256,
         "observation_id": observation_id,
         "snapshot_id": snapshot_id,
         "source_snapshot_id": source_snapshot_id,
         "resolution_rule_snapshot_id": resolution_rule_snapshot_id,
+        "ingestion_batch_id": ingestion_batch_id,
         "observed_time": observed_time,
         "ingestion_time": ingestion_time,
         "event_time": event_time,
@@ -880,6 +955,10 @@ def _record_version_preimage(
         "normalizer_version": normalizer_version,
         "validator_version": validator_version,
         "parameter_set_id": parameter_set_id,
+        "source_content_sha256": source_content_sha256,
+        "human_review_required": human_review_required,
+        "advisory_only": advisory_only,
+        "no_execution_authority": no_execution_authority,
     }
 
 
@@ -892,14 +971,19 @@ def _make_envelope(
     source_snapshot_id: str | None,
     resolution_rule_snapshot_id: str | None,
     source_content_sha256: str | None,
+    record_specific_metadata: Mapping[str, object],
 ) -> PointInTimeEnvelope:
     preimage = _record_version_preimage(
         record_family=record_family,
+        record_specific_metadata_sha256=_record_specific_metadata_sha256(
+            record_specific_metadata
+        ),
         canonical_payload_sha256=str(common["payload_hash"]),
         observation_id=observation_id,
         snapshot_id=str(common["snapshot_id"]),
         source_snapshot_id=source_snapshot_id,
         resolution_rule_snapshot_id=resolution_rule_snapshot_id,
+        ingestion_batch_id=str(common["ingestion_batch_id"]),
         observed_time=str(common["observed_time"]),
         ingestion_time=str(common["ingestion_time"]),
         event_time=common["event_time"] if isinstance(common["event_time"], str) else None,
@@ -912,6 +996,10 @@ def _make_envelope(
         normalizer_version=str(common["normalizer_version"]),
         validator_version=str(common["validator_version"]),
         parameter_set_id=str(common["parameter_set_id"]),
+        source_content_sha256=source_content_sha256,
+        human_review_required=bool(record["human_review_required"]),
+        advisory_only=True,
+        no_execution_authority=True,
     )
     version_id = "record:sha256:" + sha256_hex(canonical_json_bytes(preimage))
     return PointInTimeEnvelope(
@@ -1072,6 +1160,15 @@ def build_market_observation(
     observation_id = "obs:sha256:" + sha256_hex(
         canonical_json_bytes(observation_preimage)
     )
+    record_specific_metadata = _market_record_specific_metadata(
+        observation_kind=kind,
+        platform_id=platform_id,
+        event_id=event_id,
+        market_id=market_id,
+        token_id=token_id,
+        source_id=source_id,
+        source_assertion_id=source_assertion_id,
+    )
     envelope = _make_envelope(
         record,
         common,
@@ -1080,6 +1177,7 @@ def build_market_observation(
         source_snapshot_id=source_snapshot_id,
         resolution_rule_snapshot_id=None,
         source_content_sha256=None,
+        record_specific_metadata=record_specific_metadata,
     )
     _check_expected_ids(record, errors, envelope, "observation_id", observation_id)
     if envelope.record_version_id in envelope.lineage_parent_ids:
@@ -1172,6 +1270,19 @@ def build_source_snapshot(
     source_snapshot_id = "srcsnap:sha256:" + sha256_hex(
         canonical_json_bytes(source_preimage)
     )
+    record_specific_metadata = _source_record_specific_metadata(
+        source_id=source_id,
+        source_type=source_type,
+        source_reference=source_reference,
+        media_type=media_type,
+        raw_content_sha256=raw_hash,
+        byte_length=byte_length,
+        retrieval_method=retrieval_method,
+        retrieval_version=retrieval_version,
+        upstream_revision=upstream_revision,
+        prior_source_snapshot_id=prior_source_snapshot_id,
+        access_classification=access,
+    )
     envelope = _make_envelope(
         record,
         common,
@@ -1180,6 +1291,7 @@ def build_source_snapshot(
         source_snapshot_id=source_snapshot_id,
         resolution_rule_snapshot_id=None,
         source_content_sha256=raw_hash,
+        record_specific_metadata=record_specific_metadata,
     )
     _check_expected_ids(
         record, errors, envelope, "source_snapshot_id", source_snapshot_id
@@ -1294,6 +1406,18 @@ def build_resolution_rule_snapshot(
     rule_snapshot_id = "rulesnap:sha256:" + sha256_hex(
         canonical_json_bytes(rule_preimage)
     )
+    record_specific_metadata = _rule_record_specific_metadata(
+        platform_id=platform_id,
+        event_id=event_id,
+        market_id=market_id,
+        resolution_source_id=resolution_source_id,
+        source_snapshot_id=source_snapshot_id,
+        rule_content_sha256=rule_hash,
+        source_declared_effective_time=effective_time,
+        ambiguity_labels=labels,
+        source_hierarchy_rank=rank,
+        human_review_state=review_state,
+    )
     envelope = _make_envelope(
         record,
         common,
@@ -1302,6 +1426,7 @@ def build_resolution_rule_snapshot(
         source_snapshot_id=source_snapshot_id,
         resolution_rule_snapshot_id=rule_snapshot_id,
         source_content_sha256=rule_hash,
+        record_specific_metadata=record_specific_metadata,
     )
     _check_expected_ids(
         record,
@@ -1353,15 +1478,58 @@ def _entity_identity(record: PointInTimeRecord) -> tuple[object, ...]:
     )
 
 
+def _record_specific_metadata(record: PointInTimeRecord) -> dict[str, object]:
+    if isinstance(record, MarketObservationRecord):
+        return _market_record_specific_metadata(
+            observation_kind=record.observation_kind,
+            platform_id=record.platform_id,
+            event_id=record.event_id,
+            market_id=record.market_id,
+            token_id=record.token_id,
+            source_id=record.source_id,
+            source_assertion_id=record.source_assertion_id,
+        )
+    if isinstance(record, SourceSnapshotRecord):
+        return _source_record_specific_metadata(
+            source_id=record.source_id,
+            source_type=record.source_type,
+            source_reference=record.source_reference,
+            media_type=record.media_type,
+            raw_content_sha256=record.raw_content_sha256,
+            byte_length=record.byte_length,
+            retrieval_method=record.retrieval_method,
+            retrieval_version=record.retrieval_version,
+            upstream_revision=record.upstream_revision,
+            prior_source_snapshot_id=record.prior_source_snapshot_id,
+            access_classification=record.access_classification,
+        )
+    return _rule_record_specific_metadata(
+        platform_id=record.platform_id,
+        event_id=record.event_id,
+        market_id=record.market_id,
+        resolution_source_id=record.resolution_source_id,
+        source_snapshot_id=record.source_snapshot_id,
+        rule_content_sha256=record.rule_content_sha256,
+        source_declared_effective_time=record.source_declared_effective_time,
+        ambiguity_labels=record.ambiguity_labels,
+        source_hierarchy_rank=record.source_hierarchy_rank,
+        human_review_state=record.human_review_state,
+    )
+
+
 def _recomputed_record_version_id(record: PointInTimeRecord) -> str:
     envelope = record.envelope
     preimage = _record_version_preimage(
         record_family=envelope.record_family,
+        record_specific_metadata_sha256=_record_specific_metadata_sha256(
+            _record_specific_metadata(record)
+        ),
         canonical_payload_sha256=envelope.canonical_payload_sha256,
         observation_id=envelope.observation_id,
         snapshot_id=envelope.snapshot_id,
         source_snapshot_id=envelope.source_snapshot_id,
         resolution_rule_snapshot_id=envelope.resolution_rule_snapshot_id,
+        ingestion_batch_id=envelope.ingestion_batch_id,
         observed_time=envelope.observed_time,
         ingestion_time=envelope.ingestion_time,
         event_time=envelope.event_time,
@@ -1372,6 +1540,10 @@ def _recomputed_record_version_id(record: PointInTimeRecord) -> str:
         normalizer_version=envelope.normalizer_version,
         validator_version=envelope.validator_version,
         parameter_set_id=envelope.parameter_set_id,
+        source_content_sha256=envelope.source_content_sha256,
+        human_review_required=envelope.human_review_required,
+        advisory_only=envelope.advisory_only,
+        no_execution_authority=envelope.no_execution_authority,
     )
     return "record:sha256:" + sha256_hex(canonical_json_bytes(preimage))
 
@@ -1460,6 +1632,100 @@ def _derived_family_ids_match(record: PointInTimeRecord) -> bool:
     )
 
 
+def _public_record_builder_input(
+    record: PointInTimeRecord,
+) -> tuple[dict[str, object], Callable[[Mapping[str, object]], PointInTimeBuildResult]]:
+    envelope = record.envelope
+    decoded_payload = json.loads(record.canonical_payload_json)
+    common: dict[str, object] = {
+        "schema_id": envelope.schema_id,
+        "schema_version": envelope.schema_version,
+        "record_family": envelope.record_family,
+        "record_version_id": envelope.record_version_id,
+        "snapshot_id": envelope.snapshot_id,
+        "ingestion_batch_id": envelope.ingestion_batch_id,
+        "event_time": envelope.event_time,
+        "observed_time": envelope.observed_time,
+        "ingestion_time": envelope.ingestion_time,
+        "lifecycle_state": envelope.lifecycle_state,
+        "classification": envelope.classification,
+        "lineage_parent_ids": envelope.lineage_parent_ids,
+        "supersedes_record_version_id": envelope.supersedes_record_version_id,
+        "normalizer_version": envelope.normalizer_version,
+        "validator_version": envelope.validator_version,
+        "parameter_set_id": envelope.parameter_set_id,
+        "human_review_required": envelope.human_review_required,
+        "canonical_payload": decoded_payload,
+        "canonical_payload_sha256": envelope.canonical_payload_sha256,
+    }
+    if isinstance(record, MarketObservationRecord):
+        common.update(
+            {
+                "observation_id": envelope.observation_id,
+                "observation_kind": record.observation_kind,
+                "platform_id": record.platform_id,
+                "event_id": record.event_id,
+                "market_id": record.market_id,
+                "token_id": record.token_id,
+                "source_id": record.source_id,
+                "source_assertion_id": record.source_assertion_id,
+                "source_snapshot_id": envelope.source_snapshot_id,
+            }
+        )
+        return common, build_market_observation
+    if isinstance(record, SourceSnapshotRecord):
+        common.update(
+            {
+                "source_snapshot_id": envelope.source_snapshot_id,
+                "source_id": record.source_id,
+                "source_type": record.source_type,
+                "source_reference": record.source_reference,
+                "media_type": record.media_type,
+                "raw_content_sha256": record.raw_content_sha256,
+                "byte_length": record.byte_length,
+                "retrieval_method": record.retrieval_method,
+                "retrieval_version": record.retrieval_version,
+                "upstream_revision": record.upstream_revision,
+                "prior_source_snapshot_id": record.prior_source_snapshot_id,
+                "access_classification": record.access_classification,
+            }
+        )
+        return common, build_source_snapshot
+    common.update(
+        {
+            "resolution_rule_snapshot_id": envelope.resolution_rule_snapshot_id,
+            "platform_id": record.platform_id,
+            "event_id": record.event_id,
+            "market_id": record.market_id,
+            "resolution_source_id": record.resolution_source_id,
+            "source_snapshot_id": record.source_snapshot_id,
+            "rule_content_sha256": record.rule_content_sha256,
+            "source_declared_effective_time": record.source_declared_effective_time,
+            "ambiguity_labels": record.ambiguity_labels,
+            "source_hierarchy_rank": record.source_hierarchy_rank,
+            "human_review_state": record.human_review_state,
+        }
+    )
+    return common, build_resolution_rule_snapshot
+
+
+def _revalidate_public_record(record: PointInTimeRecord) -> tuple[str, ...]:
+    if type(record.envelope) is not PointInTimeEnvelope:
+        return ("FIELD_TYPE_INVALID", "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+    try:
+        builder_input, builder = _public_record_builder_input(record)
+        rebuilt = builder(builder_input)
+    except (AttributeError, json.JSONDecodeError, TypeError, ValueError):
+        return (
+            "PAYLOAD_TYPE_UNSUPPORTED",
+            "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH",
+        )
+    errors = list(rebuilt.error_codes)
+    if not rebuilt.is_valid or rebuilt.record is None or rebuilt.record != record:
+        errors.append("RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+    return _ordered_unique(errors, _ERROR_ORDER)
+
+
 def validate_record_batch(
     records: Sequence[PointInTimeRecord],
     *,
@@ -1488,6 +1754,8 @@ def validate_record_batch(
     exact_duplicates: list[str] = []
     unique: dict[str, PointInTimeRecord] = {}
     fingerprints: dict[str, str] = {}
+    rejected_ids: set[str] = set()
+    diagnostic_graph: dict[str, tuple[str, ...]] = {}
     allowed_types = (
         MarketObservationRecord,
         SourceSnapshotRecord,
@@ -1498,35 +1766,28 @@ def validate_record_batch(
             errors.append("FIELD_TYPE_INVALID")
             continue
         record = candidate
+        if type(record.envelope) is not PointInTimeEnvelope:
+            errors.extend(
+                ("FIELD_TYPE_INVALID", "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+            )
+            continue
         record_id = record.envelope.record_version_id
         if _validate_id(record_id, errors) is None:
             continue
         envelope = record.envelope
-        envelope_errors: list[str] = []
-        if envelope.schema_id != SUPPORTED_SCHEMA_ID:
-            envelope_errors.append("SCHEMA_ID_MISMATCH")
-        if envelope.schema_version != SUPPORTED_SCHEMA_VERSION:
-            envelope_errors.append("SCHEMA_VERSION_UNSUPPORTED")
-        if envelope.record_family not in _FAMILIES:
-            envelope_errors.append("RECORD_FAMILY_UNSUPPORTED")
-        if envelope.lifecycle_state not in _LIFECYCLES or (
-            envelope.classification not in _CLASSIFICATIONS
+        if isinstance(envelope.lineage_parent_ids, tuple) and all(
+            isinstance(parent, str) for parent in envelope.lineage_parent_ids
         ):
-            envelope_errors.append("CLASSIFICATION_LIFECYCLE_MISMATCH")
-        if envelope.advisory_only is not True or envelope.no_execution_authority is not True:
-            envelope_errors.append("CLASSIFICATION_LIFECYCLE_MISMATCH")
-        for timestamp, required in (
-            (envelope.event_time, False),
-            (envelope.observed_time, True),
-            (envelope.ingestion_time, True),
-        ):
-            normalized, _ = _normalize_timestamp(
-                timestamp, envelope_errors, required=required
+            diagnostic_graph[record_id] = envelope.lineage_parent_ids
+        if _RECORD_VERSION_ID_RE.fullmatch(record_id) is None:
+            errors.extend(
+                ("ID_DERIVATION_MISMATCH", "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
             )
-            if timestamp is not None and normalized != timestamp:
-                envelope_errors.append("TIMESTAMP_FORMAT_INVALID")
-        if envelope_errors:
-            errors.extend(envelope_errors)
+            continue
+        record_errors = _revalidate_public_record(record)
+        if record_errors:
+            errors.extend(record_errors)
+            rejected_ids.add(record_id)
             continue
         try:
             fingerprint = _record_fingerprint(record)
@@ -1540,18 +1801,56 @@ def validate_record_batch(
             or not _derived_family_ids_match(record)
         ):
             errors.append("RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+            rejected_ids.add(record_id)
+            continue
         if record_id in unique:
             if fingerprints[record_id] == fingerprint:
                 exact_duplicates.append(record_id)
             else:
                 errors.append("RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+                rejected_ids.add(record_id)
             continue
         unique[record_id] = record
         fingerprints[record_id] = fingerprint
 
+    for rejected_id in rejected_ids:
+        unique.pop(rejected_id, None)
+        fingerprints.pop(rejected_id, None)
+    exact_duplicates = [
+        record_id for record_id in exact_duplicates if record_id not in rejected_ids
+    ]
+
+    diagnostic_available = set(diagnostic_graph) | known_external
+    for record_id, parents in diagnostic_graph.items():
+        if len(set(parents)) != len(parents):
+            errors.append("LINEAGE_PARENT_DUPLICATE")
+        if record_id in parents:
+            errors.append("LINEAGE_SELF_PARENT")
+        if any(parent not in diagnostic_available for parent in parents):
+            errors.append("LINEAGE_PARENT_UNKNOWN")
+
+    diagnostic_visiting: set[str] = set()
+    diagnostic_visited: set[str] = set()
+
+    def visit_diagnostic(record_id: str) -> None:
+        if record_id in diagnostic_visiting:
+            errors.append("LINEAGE_CYCLE")
+            return
+        if record_id in diagnostic_visited:
+            return
+        diagnostic_visiting.add(record_id)
+        for parent_id in diagnostic_graph.get(record_id, ()):
+            if parent_id in diagnostic_graph:
+                visit_diagnostic(parent_id)
+        diagnostic_visiting.remove(record_id)
+        diagnostic_visited.add(record_id)
+
+    for record_id in sorted(diagnostic_graph):
+        visit_diagnostic(record_id)
+
     available = set(unique) | known_external
     graph: dict[str, tuple[str, ...]] = {}
-    quarantined: list[str] = []
+    quarantined: list[str] = sorted(rejected_ids)
     for record_id, record in unique.items():
         envelope = record.envelope
         parents = envelope.lineage_parent_ids

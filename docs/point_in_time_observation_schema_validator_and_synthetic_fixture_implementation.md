@@ -236,16 +236,34 @@ The resolution-rule snapshot ID is `rulesnap:sha256:` plus the hash of:
 - source snapshot ID;
 - rule-content SHA-256.
 
-The record version ID is `record:sha256:` plus the hash of:
+Each record first computes `record_specific_metadata_sha256` over an explicit
+canonical mapping. Market-observation metadata contains observation kind,
+platform/event/market IDs, explicit token ID/null, source ID, and source
+assertion ID. Source-snapshot metadata contains source ID/type/reference,
+media type, raw-content SHA-256, byte length, retrieval method/version,
+explicit upstream revision/null, explicit prior source-snapshot ID/null, and
+access classification. Resolution-rule metadata contains
+platform/event/market IDs, resolution-source ID, source-snapshot ID,
+rule-content SHA-256, explicit source-declared effective time/null, ordered
+ambiguity labels, source hierarchy rank, and human-review state.
+
+The record version ID is `record:sha256:` plus the hash of the complete
+canonical preimage:
 
 - schema ID/version and record family;
+- `record_specific_metadata_sha256`;
 - canonical payload hash;
 - observation/snapshot/source-snapshot/rule-snapshot IDs;
+- ingestion-batch ID;
 - observed, ingestion, and explicit event-time/null;
 - ordered direct lineage parents;
 - explicit supersedes ID/null;
 - lifecycle and classification;
-- normalizer, validator, and parameter-set versions.
+- normalizer, validator, and parameter-set versions;
+- explicit source-content SHA-256/null;
+- `human_review_required`;
+- package-owned `advisory_only=True`;
+- package-owned `no_execution_authority=True`.
 
 Diagnostics, warnings, duration, environment, paths, process identity, object
 representation, and wall-clock generation time are excluded.
@@ -253,18 +271,39 @@ representation, and wall-clock generation time are excluded.
 Fixed synthetic record-version evidence includes:
 
 - C01:
-  `record:sha256:2dd194cb035ab38076c98b0fbbdd955cb59081a3e52398f8d885a1a83c96c04e`;
+  `record:sha256:4f4b89654077ff2e6e24cec53c3e976172abb9a71ef4ec08e4e459cb29d97e72`;
 - C02:
-  `record:sha256:6469a6762f56408ed8cfe0d97c70493814fceebedc869976edb598fac7540d69`;
+  `record:sha256:ff5df4b4293175aeebf40e41f0141f73d52fed69e3702ef63debe257859adbf3`;
 - C03:
-  `record:sha256:21dc52fd502baafcea537b5f2da73bc05c02c2f77132f0fcc5b4317335188be9`;
+  `record:sha256:a837dd270e7d89a5c17dfeabdd2075484876a2effd312f62e394465d1717f048`;
 - C04:
-  `record:sha256:3bb6ea87ab55516736ac96934c3079d32c2caf6d74e32940da457388cca7a623`;
+  `record:sha256:bfac30b3ff4838a1e33fb65de44425726d4571cbf4a8359b86a3285940424447`;
 - C05:
-  `record:sha256:24ba8feb38a42bbf112cc4813bb7998955986d99265131681e32219d1bedd852`.
+  `record:sha256:8f69de0782a7dda84ed58cf78a970cc47964219eef9818a1384dd8ee5feb224c`;
+- C06:
+  `record:sha256:1a9443d9b25f74afd0a4f92f8889006254c0ef7851ed18e6c96be3d28986dae9`;
+- C07:
+  `record:sha256:2e749ad9202902af554c9b3ca113f1ac6e827400285a59d09d8b8340e10ff97e`;
+- C08:
+  `record:sha256:c8c22907a21709407a66bb92b7282018a2a5ccfa19cb14ce873120785a0e9c67`;
+- C09:
+  `record:sha256:20b3c7025525a20feb649ffc235558ba4e22a842c066ba417441ca50bd60261e`;
+- C10:
+  `record:sha256:f6ab5a5465ebe2357c14e5f4b3da14e20a32ef26ab74bf1676ff1c7ed5f75180`;
+- C11:
+  `record:sha256:d5756fd61545b7fba3ce41c4ae4ab5181bb533c0282dfc8afb4bc6cba866456a`.
 
 Focused tests independently assert canonical bytes, empty/`abc` SHA-256, a
-canonical fixture digest, and these fixed record IDs.
+canonical fixture digest, independently reconstruct every record-version
+preimage, and assert these fixed record IDs. Fixed follow-up evidence also
+asserts quarantine fingerprint
+`664e9cb88e55aa2245bef8e62755af979d7a3bb1ea4c2f97302846ffd29e547b`,
+quarantine ID
+`quarantine:sha256:18a43e7bec2600c27d3f5e1fd19a3af6de1918682acba4710c47956067eab5f4`,
+valid three-family batch hash
+`82e37102a881cb4a3d60f8cd44f9a5a0abeeb68ae46e02d2a06dbaced0428375`,
+and rejected-tamper batch hash
+`02bf55747a37a0136f2e0f1c857efedb5e4629c779be79fb47c231427aa533d5`.
 
 ## 9. ID And Time Validation
 
@@ -319,10 +358,18 @@ No settlement or outcome decision is implemented.
 
 ## 11. Safe Quarantine
 
-`QuarantineDescriptor` is in-memory only. Its fingerprint uses sorted
-top-level key names, canonical type names, and allowlisted safe structural
-fields. It never retains raw input, raw source text, secret values, arbitrary
-exception messages, tracebacks, paths, or unbounded diagnostics.
+`QuarantineDescriptor` is in-memory only. Its fingerprint hashes only sorted
+top-level key names and canonical Python type names. It never consumes an
+arbitrary caller string value. All six optional caller-derived public fields
+(`schema_id`, `schema_version`, `record_family`, `source_id`,
+`observed_time`, and `ingestion_time`) are always `None` on failure. This
+all-`None` projection is intentionally stricter than retaining independently
+validated context and closes nominally safe top-level value channels.
+
+It never retains raw input, raw source text, secret-like or credential-like
+values, unsafe key names, arbitrary exception messages, tracebacks, paths, or
+unbounded diagnostics. Full results are recursively inspected through
+`dataclasses.asdict`.
 
 The ID is `quarantine:sha256:` plus a hash of the structural fingerprint and
 ordered codes. Operator review and safe-diagnostics-only flags are always
@@ -332,6 +379,14 @@ true. No automatic promotion exists.
 
 `validate_record_batch` accepts at most 256 exact public record objects and an
 optional finite set of known external parent IDs. It performs no lookup.
+
+Before a record ID can enter the accepted or lineage set, the validator
+reconstructs the exact builder input from the public frozen record, invokes
+the corresponding builder rules, and requires byte/field equality with the
+supplied record. This revalidates every envelope field, every family-specific
+field, canonical payload bytes/hash, derived family IDs, complete metadata
+digest, and complete record-version preimage. It never repairs or substitutes
+the rebuilt object.
 
 It verifies:
 
@@ -353,6 +408,13 @@ It verifies:
     time, and record-version ID;
 16. a canonical batch SHA-256 over accepted, duplicate, quarantined, error,
     and warning tuples.
+
+Any directly constructed or `dataclasses.replace()`-modified record that
+fails builder-equivalent validation is excluded from accepted IDs and cannot
+be a usable lineage parent. Its safe record ID is included only in bounded
+quarantine/failure evidence. If a valid original and same-ID tampered copy are
+both present, the shared ID is removed from acceptance and the batch fails
+closed. A tampered record supplied alone is also rejected.
 
 It does not reconstruct an as-of state, choose a source, resolve a conflict,
 migrate a schema, persist output, or implement WP157.
@@ -466,13 +528,13 @@ quarantine/review, and higher timestamp-precision work.
 ## 18. Validation And Negative Matrix
 
 The focused regression covers exact public surface, frozen fields, field
-coverage, invalid full-surface no-echo, caller immutability, canonical bytes
-and limits, fixed hashes, three builders, time normalization, ID derivation,
-recursive secret/authority keys, decimal strings, source/rule allowlists,
-lineage/supersession/cycle/backdating, exact and semantic duplicates, record
-hashes, batch bounds/order/hash, corpus order/mutation, no files, AST
-side-effect boundaries, no writer/query/collector/migration, and unchanged
-legacy snapshot paths.
+coverage, field-by-field invalid full-surface no-echo, caller immutability,
+canonical bytes and limits, fixed hashes, three builders, time normalization,
+ID derivation, recursive secret/authority keys, decimal strings, source/rule
+allowlists, lineage/supersession/cycle/backdating, exact and semantic
+duplicates, complete record hashes, batch bounds/order/hash, corpus
+order/mutation, no files, AST side-effect boundaries, no
+writer/query/collector/migration, and unchanged legacy snapshot paths.
 
 Negative test matrix required: YES. It covers missing/null/wrong/empty fields,
 unsupported schema/family/kind, unknown fields, IDs, derived-ID mismatch,
@@ -480,8 +542,31 @@ naive/non-UTC/precision/order times, floats/NaN/Infinity, unsupported objects,
 all payload bounds, nested secret and authority shapes, no unsafe echo,
 decimals, SHA-256, lineage duplicate/self/unknown/cycle, supersedes failures,
 backdating, identity changes, duplicate mismatches, conflict review, source
-access, rule allowlists, batch bound, mutation isolation, and side-effect/
-dependency/protected-boundary source inspection.
+access, rule allowlists, batch bound, mutation isolation, quarantine markers
+in all six nominally safe fields, top-level/nested/list unsafe-key placement,
+malformed quarantine fields, source/rule/market/envelope
+`dataclasses.replace()` matrices, every-family single-record and paired
+same-ID tampering, accepted-ID exclusion, valid metadata ID changes, and
+side-effect/dependency/protected-boundary source inspection.
+
+### Follow-Up Self-Diagnosis
+
+- Follow-up required: YES.
+- Preventable: YES.
+- Defect categories: F — deterministic record-integrity semantics; G —
+  adversarial-test coverage; H — fail-closed/no-unsafe-echo boundary.
+- Root cause: no-echo tests covered unsafe payload keys but not nominally safe
+  top-level value channels; record-version tests covered the generic
+  envelope/payload subset but not every public record-specific field; and
+  same-ID/different-content coverage depended on two records being present
+  together and missed a tampered single-record input.
+- What should have caught it: a public-output field-by-field threat model, a
+  `dataclasses.replace()` matrix over every public field, and a single-record
+  integrity-authentication test.
+- Correction: all caller-derived quarantine context is projected to `None`;
+  record-specific metadata and the remaining envelope integrity fields are
+  committed into the record-version ID; and builder-equivalent batch
+  revalidation excludes every invalid record before accepted/lineage use.
 
 Exact final validation commands, counts, exit codes, warnings, tool
 availability, diff scope, and evidence mode belong in the PR body.

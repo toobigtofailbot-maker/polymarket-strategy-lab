@@ -5,6 +5,8 @@ from __future__ import annotations
 import ast
 from dataclasses import FrozenInstanceError, asdict, fields, is_dataclass, replace
 from decimal import Decimal
+import hashlib
+import json
 import math
 from pathlib import Path
 
@@ -73,6 +75,97 @@ def _recursive_text(value: object) -> str:
     if isinstance(value, (list, tuple, set, frozenset)):
         return " ".join(_recursive_text(item) for item in value)
     return value if isinstance(value, str) else repr(value)
+
+
+def _assert_batch_rejects_record(
+    record: object, *expected_codes: str
+) -> pit.PointInTimeBatchValidationResult:
+    result = pit.validate_record_batch([record])
+    assert result.is_valid is False
+    for code in expected_codes:
+        assert code in result.error_codes
+    record_id = record.envelope.record_version_id
+    assert record_id not in result.accepted_record_version_ids
+    assert record_id in result.quarantined_record_version_ids
+    return result
+
+
+def _independent_record_version_id(record: object) -> str:
+    envelope = record.envelope
+    if isinstance(record, pit.MarketObservationRecord):
+        metadata = {
+            "observation_kind": record.observation_kind,
+            "platform_id": record.platform_id,
+            "event_id": record.event_id,
+            "market_id": record.market_id,
+            "token_id": record.token_id,
+            "source_id": record.source_id,
+            "source_assertion_id": record.source_assertion_id,
+        }
+    elif isinstance(record, pit.SourceSnapshotRecord):
+        metadata = {
+            "source_id": record.source_id,
+            "source_type": record.source_type,
+            "source_reference": record.source_reference,
+            "media_type": record.media_type,
+            "raw_content_sha256": record.raw_content_sha256,
+            "byte_length": record.byte_length,
+            "retrieval_method": record.retrieval_method,
+            "retrieval_version": record.retrieval_version,
+            "upstream_revision": record.upstream_revision,
+            "prior_source_snapshot_id": record.prior_source_snapshot_id,
+            "access_classification": record.access_classification,
+        }
+    else:
+        metadata = {
+            "platform_id": record.platform_id,
+            "event_id": record.event_id,
+            "market_id": record.market_id,
+            "resolution_source_id": record.resolution_source_id,
+            "source_snapshot_id": record.source_snapshot_id,
+            "rule_content_sha256": record.rule_content_sha256,
+            "source_declared_effective_time": record.source_declared_effective_time,
+            "ambiguity_labels": record.ambiguity_labels,
+            "source_hierarchy_rank": record.source_hierarchy_rank,
+            "human_review_state": record.human_review_state,
+        }
+
+    def digest(value: object) -> str:
+        encoded = json.dumps(
+            value,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
+
+    preimage = {
+        "schema_id": pit.SUPPORTED_SCHEMA_ID,
+        "schema_version": pit.SUPPORTED_SCHEMA_VERSION,
+        "record_family": envelope.record_family,
+        "record_specific_metadata_sha256": digest(metadata),
+        "canonical_payload_sha256": envelope.canonical_payload_sha256,
+        "observation_id": envelope.observation_id,
+        "snapshot_id": envelope.snapshot_id,
+        "source_snapshot_id": envelope.source_snapshot_id,
+        "resolution_rule_snapshot_id": envelope.resolution_rule_snapshot_id,
+        "ingestion_batch_id": envelope.ingestion_batch_id,
+        "observed_time": envelope.observed_time,
+        "ingestion_time": envelope.ingestion_time,
+        "event_time": envelope.event_time,
+        "lineage_parent_ids": envelope.lineage_parent_ids,
+        "supersedes_record_version_id": envelope.supersedes_record_version_id,
+        "lifecycle_state": envelope.lifecycle_state,
+        "classification": envelope.classification,
+        "normalizer_version": envelope.normalizer_version,
+        "validator_version": envelope.validator_version,
+        "parameter_set_id": envelope.parameter_set_id,
+        "source_content_sha256": envelope.source_content_sha256,
+        "human_review_required": envelope.human_review_required,
+        "advisory_only": envelope.advisory_only,
+        "no_execution_authority": envelope.no_execution_authority,
+    }
+    return "record:sha256:" + digest(preimage)
 
 
 def test_public_package_exports_exact_supported_surface() -> None:
@@ -199,6 +292,141 @@ def test_result_object_field_coverage_and_invalid_full_surface_scan() -> None:
     assert invalid.record is None
 
 
+@pytest.mark.parametrize(
+    ("field_name", "marker"),
+    (
+        ("schema_id", "QUARANTINE_MARKER_SCHEMA"),
+        ("schema_version", "QUARANTINE_MARKER_VERSION"),
+        ("record_family", "QUARANTINE_MARKER_FAMILY"),
+        ("source_id", "source:synthetic:QUARANTINE_MARKER_SOURCE"),
+        ("observed_time", "QUARANTINE_MARKER_OBSERVED"),
+        ("ingestion_time", "QUARANTINE_MARKER_INGESTION"),
+    ),
+)
+def test_quarantine_nominal_safe_field_value_channels_never_echo(
+    field_name: str, marker: str
+) -> None:
+    candidate = pit.load_synthetic_case_input(CASE_IDS[0])
+    candidate[field_name] = marker
+    candidate["canonical_payload"]["nested"] = {
+        "api_" + "key": "QUARANTINE_TRIGGER_VALUE"
+    }
+    first = pit.build_market_observation(candidate)
+    second = pit.build_market_observation(candidate)
+    assert first == second
+    assert first.is_valid is False
+    assert first.record is None
+    assert first.quarantine is not None
+    assert first.quarantine == second.quarantine
+    assert (
+        first.quarantine.schema_id,
+        first.quarantine.schema_version,
+        first.quarantine.record_family,
+        first.quarantine.source_id,
+        first.quarantine.observed_time,
+        first.quarantine.ingestion_time,
+    ) == (None, None, None, None, None, None)
+    full_output = asdict(first)
+    full_text = _recursive_text(full_output)
+    assert marker not in full_text
+    assert "api_" + "key" not in full_text
+    assert "QUARANTINE_TRIGGER_VALUE" not in full_text
+    assert "Traceback" not in full_text
+    assert "C:\\" not in full_text
+    assert candidate != full_output
+
+
+@pytest.mark.parametrize(
+    ("field_name", "malformed"),
+    (
+        ("schema_id", {"not": "a string"}),
+        ("schema_version", ["not", "a", "string"]),
+        ("record_family", 7),
+        ("source_id", {"not": "an id"}),
+        ("observed_time", ["not", "a", "timestamp"]),
+        ("ingestion_time", {"not": "a timestamp"}),
+    ),
+)
+def test_quarantine_malformed_nominal_safe_fields_are_none_and_bounded(
+    field_name: str, malformed: object
+) -> None:
+    candidate = pit.load_synthetic_case_input(CASE_IDS[0])
+    candidate[field_name] = malformed
+    result = pit.build_market_observation(candidate)
+    assert result.is_valid is False
+    assert result.record is None
+    assert result.quarantine is not None
+    assert all(
+        getattr(result.quarantine, name) is None
+        for name in (
+            "schema_id",
+            "schema_version",
+            "record_family",
+            "source_id",
+            "observed_time",
+            "ingestion_time",
+        )
+    )
+    assert len(result.quarantine.input_fingerprint_sha256) == 64
+    assert result.quarantine.quarantine_id.startswith("quarantine:sha256:")
+
+
+@pytest.mark.parametrize(
+    "placement",
+    ("top_level", "nested_mapping", "nested_list_mapping"),
+)
+def test_quarantine_unsafe_key_placements_never_echo_complete_output(
+    placement: str,
+) -> None:
+    unsafe_key = "api_" + "key"
+    marker = "QUARANTINE_UNSAFE_PLACEMENT_MARKER"
+    candidate = pit.load_synthetic_case_input(CASE_IDS[0])
+    if placement == "top_level":
+        candidate[unsafe_key] = marker
+    elif placement == "nested_mapping":
+        candidate["canonical_payload"]["nested"] = {unsafe_key: marker}
+    else:
+        candidate["canonical_payload"]["nested"] = [{"items": [{unsafe_key: marker}]}]
+    result = pit.build_market_observation(candidate)
+    output = _recursive_text(asdict(result))
+    assert result.is_valid is False
+    assert result.record is None
+    assert unsafe_key not in output
+    assert marker not in output
+    assert "Traceback" not in output
+    assert "C:\\" not in output
+
+
+def test_quarantine_hashes_are_fixed_independent_constants() -> None:
+    candidate = pit.load_synthetic_case_input(CASE_IDS[0])
+    candidate["schema_id"] = "QUARANTINE_MARKER_SCHEMA"
+    result = pit.build_market_observation(candidate)
+    assert result.quarantine is not None
+    assert result.quarantine.input_fingerprint_sha256 == (
+        "664e9cb88e55aa2245bef8e62755af979d7a3bb1ea4c2f97302846ffd29e547b"
+    )
+    assert result.quarantine.quarantine_id == (
+        "quarantine:sha256:18a43e7bec2600c27d3f5e1fd19a3af6de1918682acba4710c47956067eab5f4"
+    )
+
+
+def test_quarantine_structural_fingerprint_ignores_arbitrary_string_values() -> None:
+    first = pit.load_synthetic_case_input(CASE_IDS[0])
+    second = pit.load_synthetic_case_input(CASE_IDS[0])
+    first["source_id"] = "source:synthetic:QUARANTINE_MARKER_ONE"
+    second["source_id"] = "source:synthetic:QUARANTINE_MARKER_TWO"
+    first["observed_time"] = "QUARANTINE_TIME_MARKER_ONE"
+    second["observed_time"] = "QUARANTINE_TIME_MARKER_TWO"
+    first_result = pit.build_market_observation(first)
+    second_result = pit.build_market_observation(second)
+    assert first_result.quarantine is not None
+    assert second_result.quarantine is not None
+    assert (
+        first_result.quarantine.input_fingerprint_sha256
+        == second_result.quarantine.input_fingerprint_sha256
+    )
+
+
 def test_successful_record_retains_no_mutable_caller_references() -> None:
     caller = pit.load_synthetic_case_input("PIT-C02-VALID-ORDER-BOOK-MISSING-EVENT-TIME")
     payload = caller["canonical_payload"]
@@ -285,20 +513,22 @@ def test_first_twelve_corpus_cases_match_committed_expectations(case_id: str) ->
 
 def test_fixed_synthetic_record_ids_are_exact() -> None:
     expected = {
-        "PIT-C01-VALID-MARKET-METADATA": "record:sha256:2dd194cb035ab38076c98b0fbbdd955cb59081a3e52398f8d885a1a83c96c04e",
-        "PIT-C02-VALID-ORDER-BOOK-MISSING-EVENT-TIME": "record:sha256:6469a6762f56408ed8cfe0d97c70493814fceebedc869976edb598fac7540d69",
-        "PIT-C03-VALID-PUBLIC-TRADE": "record:sha256:21dc52fd502baafcea537b5f2da73bc05c02c2f77132f0fcc5b4317335188be9",
-        "PIT-C04-VALID-SOURCE-SNAPSHOT": "record:sha256:3bb6ea87ab55516736ac96934c3079d32c2caf6d74e32940da457388cca7a623",
-        "PIT-C05-VALID-RESOLUTION-RULE-SNAPSHOT": "record:sha256:24ba8feb38a42bbf112cc4813bb7998955986d99265131681e32219d1bedd852",
-        "PIT-C06-VALID-LATE-ARRIVAL": "record:sha256:ba708d3a557100bbced85211c84777a272601dce39700a12f8f701a2881093bd",
-        "PIT-C07-VALID-SOURCE-REVISION": "record:sha256:0ae288f99edfb00bacc75240e02809c1ce17de2e167084fa09445f9ea3d337c7",
-        "PIT-C08-VALID-PROJECT-CORRECTION": "record:sha256:ca7a5dbf71105b6be8fcf67170237449b0f4a4290a70ea4740124d3d103b6826",
-        "PIT-C09-VALID-SOURCE-RETRACTION": "record:sha256:34d3673ff654abdae6ea2beaab35c86d44da4aa65c6fe4852d5752d1d636736a",
-        "PIT-C10-VALID-EXACT-DUPLICATE": "record:sha256:98dc4e1c041de4d3bd1bb3e0d0c08b19eb656aee7c3b573912f82f282825de02",
-        "PIT-C11-VALID-SEMANTIC-DUPLICATE": "record:sha256:f007464a51c8da719a9cc245836d8d40be14f36de8e7dafa1dab04a46e5c5109",
+        "PIT-C01-VALID-MARKET-METADATA": "record:sha256:4f4b89654077ff2e6e24cec53c3e976172abb9a71ef4ec08e4e459cb29d97e72",
+        "PIT-C02-VALID-ORDER-BOOK-MISSING-EVENT-TIME": "record:sha256:ff5df4b4293175aeebf40e41f0141f73d52fed69e3702ef63debe257859adbf3",
+        "PIT-C03-VALID-PUBLIC-TRADE": "record:sha256:a837dd270e7d89a5c17dfeabdd2075484876a2effd312f62e394465d1717f048",
+        "PIT-C04-VALID-SOURCE-SNAPSHOT": "record:sha256:bfac30b3ff4838a1e33fb65de44425726d4571cbf4a8359b86a3285940424447",
+        "PIT-C05-VALID-RESOLUTION-RULE-SNAPSHOT": "record:sha256:8f69de0782a7dda84ed58cf78a970cc47964219eef9818a1384dd8ee5feb224c",
+        "PIT-C06-VALID-LATE-ARRIVAL": "record:sha256:1a9443d9b25f74afd0a4f92f8889006254c0ef7851ed18e6c96be3d28986dae9",
+        "PIT-C07-VALID-SOURCE-REVISION": "record:sha256:2e749ad9202902af554c9b3ca113f1ac6e827400285a59d09d8b8340e10ff97e",
+        "PIT-C08-VALID-PROJECT-CORRECTION": "record:sha256:c8c22907a21709407a66bb92b7282018a2a5ccfa19cb14ce873120785a0e9c67",
+        "PIT-C09-VALID-SOURCE-RETRACTION": "record:sha256:20b3c7025525a20feb649ffc235558ba4e22a842c066ba417441ca50bd60261e",
+        "PIT-C10-VALID-EXACT-DUPLICATE": "record:sha256:f6ab5a5465ebe2357c14e5f4b3da14e20a32ef26ab74bf1676ff1c7ed5f75180",
+        "PIT-C11-VALID-SEMANTIC-DUPLICATE": "record:sha256:d5756fd61545b7fba3ce41c4ae4ab5181bb533c0282dfc8afb4bc6cba866456a",
     }
     cases = {case.case_id: case for case in pit.get_synthetic_point_in_time_cases()}
     assert {case_id: cases[case_id].expected_record_version_id for case_id in expected} == expected
+    for case_id, expected_id in expected.items():
+        assert _independent_record_version_id(_record(case_id)) == expected_id
 
 
 def test_all_twenty_expected_outcomes_are_committed_exact_constants() -> None:
@@ -590,6 +820,20 @@ def test_batch_unknown_parent_cycle_hash_and_limit_negative_matrix() -> None:
     assert "RECORD_BATCH_LIMIT_EXCEEDED" in too_many.error_codes
 
 
+def test_invalid_record_id_marker_is_not_returned_in_batch_output() -> None:
+    original = _record(CASE_IDS[0])
+    marker = "record:synthetic:BATCH_OUTPUT_MARKER"
+    tampered = replace(
+        original,
+        envelope=replace(original.envelope, record_version_id=marker),
+    )
+    result = pit.validate_record_batch([tampered])
+    assert result.is_valid is False
+    assert result.accepted_record_version_ids == ()
+    assert result.quarantined_record_version_ids == ()
+    assert marker not in _recursive_text(asdict(result))
+
+
 def test_batch_backdated_and_identity_changing_correction_rejected() -> None:
     parent = _record(CASE_IDS[0])
     wrapper = pit.load_synthetic_case_input("PIT-C20-INVALID-CORRECTION-BACKDATE")
@@ -601,7 +845,9 @@ def test_batch_backdated_and_identity_changing_correction_rejected() -> None:
     correction = _record("PIT-C08-VALID-PROJECT-CORRECTION")
     changed = replace(correction, market_id="market:synthetic:changed")
     batch = pit.validate_record_batch([parent, changed])
-    assert "IDENTITY_CONFLICT" in batch.error_codes
+    assert "ID_DERIVATION_MISMATCH" in batch.error_codes
+    assert "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH" in batch.error_codes
+    assert changed.envelope.record_version_id not in batch.accepted_record_version_ids
 
 
 def test_exact_and_semantic_duplicate_mismatch_rejected() -> None:
@@ -616,7 +862,403 @@ def test_exact_and_semantic_duplicate_mismatch_rejected() -> None:
     semantic = _record("PIT-C11-VALID-SEMANTIC-DUPLICATE")
     wrong_semantic = replace(semantic, market_id="market:synthetic:other")
     result = pit.validate_record_batch([parent, wrong_semantic])
-    assert "SEMANTIC_DUPLICATE_IDENTITY_MISMATCH" in result.error_codes
+    assert "ID_DERIVATION_MISMATCH" in result.error_codes
+    assert "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH" in result.error_codes
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_code"),
+    (
+        (
+            lambda record: replace(record, source_id="source:synthetic:changed"),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (lambda record: replace(record, source_type="UNSUPPORTED"), "SOURCE_TYPE_UNSUPPORTED"),
+        (
+            lambda record: replace(record, access_classification="PRIVATE"),
+            "ACCESS_CLASSIFICATION_FORBIDDEN",
+        ),
+        (
+            lambda record: replace(
+                record, source_reference="https://example.invalid/wp156/source-v2"
+            ),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(record, source_reference="/synthetic/path"),
+            "FIELD_TYPE_INVALID",
+        ),
+        (
+            lambda record: replace(record, media_type="application/synthetic+json"),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(record, raw_content_sha256="9" * 64),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(record, byte_length=129),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(record, byte_length=True),
+            "FIELD_TYPE_INVALID",
+        ),
+        (
+            lambda record: replace(record, retrieval_method="SYNTHETIC_IN_MEMORY_V2"),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(record, retrieval_version="retrieval:wp156:v2"),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(record, upstream_revision="revision:synthetic:2"),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(
+                record, prior_source_snapshot_id="srcsnap:synthetic:prior"
+            ),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(
+                record,
+                envelope=replace(
+                    record.envelope,
+                    ingestion_batch_id="batch:synthetic:wp156:v2",
+                ),
+            ),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(
+                record,
+                canonical_payload_json=(
+                    '{"content_class":"SANITIZED_SYNTHETIC",'
+                    '"source_notice":"Changed synthetic notice."}'
+                ),
+            ),
+            "ID_DERIVATION_MISMATCH",
+        ),
+    ),
+)
+def test_source_snapshot_replace_tamper_matrix_fails_closed(
+    mutation, expected_code: str
+) -> None:
+    original = _record(CASE_IDS[3])
+    tampered = mutation(original)
+    _assert_batch_rejects_record(
+        tampered, expected_code, "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH"
+    )
+    assert pit.validate_record_batch([original]).is_valid is True
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_code"),
+    (
+        (
+            lambda record: replace(record, platform_id="platform:synthetic:v2"),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(record, event_id="event:synthetic:changed"),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(record, market_id="market:synthetic:changed"),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(
+                record,
+                resolution_source_id="resolution-source:synthetic:secondary",
+            ),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(
+                record, source_snapshot_id="srcsnap:synthetic:changed"
+            ),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(record, rule_content_sha256="9" * 64),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(
+                record, source_declared_effective_time="2026-01-01T00:00:02Z"
+            ),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(record, ambiguity_labels=("SOURCE_AMBIGUOUS",)),
+            "CONFLICT_REQUIRES_HUMAN_REVIEW",
+        ),
+        (
+            lambda record: replace(
+                record, source_hierarchy_rank="SECONDARY_OFFICIAL_SOURCE"
+            ),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(
+                record, human_review_state="REVIEWED_ACKNOWLEDGED"
+            ),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(
+                record, ambiguity_labels=("CONFLICTING_SOURCE_TEXT",)
+            ),
+            "CONFLICT_REQUIRES_HUMAN_REVIEW",
+        ),
+        (
+            lambda record: replace(
+                record,
+                ambiguity_labels=("CONFLICTING_SOURCE_TEXT",),
+                envelope=replace(record.envelope, classification="CONFLICT"),
+            ),
+            "CONFLICT_REQUIRES_HUMAN_REVIEW",
+        ),
+        (
+            lambda record: replace(
+                record,
+                envelope=replace(
+                    record.envelope,
+                    ingestion_batch_id="batch:synthetic:wp156:v2",
+                ),
+            ),
+            "ID_DERIVATION_MISMATCH",
+        ),
+        (
+            lambda record: replace(
+                record,
+                canonical_payload_json=(
+                    '{"normalized_rule_summary":"Changed synthetic rule.",'
+                    '"sanitized":true}'
+                ),
+            ),
+            "ID_DERIVATION_MISMATCH",
+        ),
+    ),
+)
+def test_resolution_rule_replace_tamper_matrix_fails_closed(
+    mutation, expected_code: str
+) -> None:
+    original = _record(CASE_IDS[4])
+    tampered = mutation(original)
+    _assert_batch_rejects_record(
+        tampered, expected_code, "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH"
+    )
+    assert pit.validate_record_batch([original]).is_valid is True
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        lambda record: replace(record, observation_kind="MARKET_METADATA"),
+        lambda record: replace(record, platform_id="platform:synthetic:changed"),
+        lambda record: replace(record, event_id="event:synthetic:changed"),
+        lambda record: replace(
+            record, source_assertion_id="assertion:book:changed"
+        ),
+        lambda record: replace(record, market_id="market:synthetic:changed"),
+        lambda record: replace(record, token_id="token:synthetic:no"),
+        lambda record: replace(record, source_id="source:synthetic:changed"),
+        lambda record: replace(
+            record,
+            envelope=replace(
+                record.envelope, ingestion_batch_id="batch:synthetic:wp156:v2"
+            ),
+        ),
+        lambda record: replace(
+            record,
+            envelope=replace(record.envelope, human_review_required=True),
+        ),
+        lambda record: replace(
+            record,
+            envelope=replace(record.envelope, advisory_only=False),
+        ),
+        lambda record: replace(
+            record,
+            envelope=replace(record.envelope, no_execution_authority=False),
+        ),
+        lambda record: replace(
+            record,
+            canonical_payload_json=(
+                '{"asks":[],"bids":[],"minimum_order_size":"1","tick_size":"0.02"}'
+            ),
+        ),
+        lambda record: replace(
+            record,
+            envelope=replace(
+                record.envelope, canonical_payload_sha256="0" * 64
+            ),
+        ),
+    ),
+)
+def test_market_and_envelope_replace_tamper_matrix_fails_closed(mutation) -> None:
+    original = _record(CASE_IDS[1])
+    tampered = mutation(original)
+    _assert_batch_rejects_record(
+        tampered, "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH"
+    )
+    assert pit.validate_record_batch([original]).is_valid is True
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        lambda envelope: replace(
+            envelope, record_version_id="record:sha256:" + "0" * 64
+        ),
+        lambda envelope: replace(envelope, schema_id="unsupported-schema"),
+        lambda envelope: replace(envelope, schema_version="9.9.9"),
+        lambda envelope: replace(envelope, record_family="SOURCE_SNAPSHOT"),
+        lambda envelope: replace(
+            envelope, observation_id="obs:sha256:" + "0" * 64
+        ),
+        lambda envelope: replace(envelope, snapshot_id="snapshot:synthetic:changed"),
+        lambda envelope: replace(
+            envelope, source_snapshot_id="srcsnap:synthetic:changed"
+        ),
+        lambda envelope: replace(
+            envelope, resolution_rule_snapshot_id="rulesnap:synthetic:changed"
+        ),
+        lambda envelope: replace(
+            envelope, ingestion_batch_id="batch:synthetic:changed"
+        ),
+        lambda envelope: replace(envelope, event_time="2026-01-01T00:00:04Z"),
+        lambda envelope: replace(envelope, observed_time="2026-01-01T00:00:04Z"),
+        lambda envelope: replace(envelope, ingestion_time="2026-01-01T00:00:07Z"),
+        lambda envelope: replace(envelope, lifecycle_state="SUPERSEDED"),
+        lambda envelope: replace(envelope, classification="LATE_ARRIVAL"),
+        lambda envelope: replace(
+            envelope,
+            supersedes_record_version_id="record:sha256:" + "1" * 64,
+        ),
+        lambda envelope: replace(
+            envelope, lineage_parent_ids=("record:sha256:" + "1" * 64,)
+        ),
+        lambda envelope: replace(envelope, canonical_payload_sha256="0" * 64),
+        lambda envelope: replace(envelope, source_content_sha256="1" * 64),
+        lambda envelope: replace(
+            envelope, normalizer_version="normalizer:wp156:v2"
+        ),
+        lambda envelope: replace(envelope, validator_version="validator:wp156:v2"),
+        lambda envelope: replace(
+            envelope, parameter_set_id="parameters:wp156:synthetic:v2"
+        ),
+        lambda envelope: replace(envelope, human_review_required=True),
+        lambda envelope: replace(envelope, advisory_only=False),
+        lambda envelope: replace(envelope, no_execution_authority=False),
+    ),
+)
+def test_every_envelope_integrity_field_tamper_fails_closed(mutation) -> None:
+    original = _record(CASE_IDS[1])
+    tampered = replace(original, envelope=mutation(original.envelope))
+    _assert_batch_rejects_record(
+        tampered, "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH"
+    )
+
+
+@pytest.mark.parametrize(
+    ("case_id", "mutation"),
+    (
+        (
+            CASE_IDS[0],
+            lambda record: replace(
+                record, source_assertion_id="assertion:metadata:changed"
+            ),
+        ),
+        (
+            CASE_IDS[3],
+            lambda record: replace(
+                record,
+                source_reference="https://example.invalid/wp156/source-changed",
+            ),
+        ),
+        (
+            CASE_IDS[4],
+            lambda record: replace(
+                record, source_hierarchy_rank="SECONDARY_OFFICIAL_SOURCE"
+            ),
+        ),
+    ),
+)
+def test_same_id_different_content_single_and_paired_records_fail_closed(
+    case_id: str, mutation
+) -> None:
+    original = _record(case_id)
+    tampered = mutation(original)
+    assert tampered.envelope.record_version_id == original.envelope.record_version_id
+    single = _assert_batch_rejects_record(
+        tampered, "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH"
+    )
+    assert single.accepted_record_version_ids == ()
+    paired = pit.validate_record_batch([original, tampered])
+    assert paired.is_valid is False
+    assert "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH" in paired.error_codes
+    assert original.envelope.record_version_id not in paired.accepted_record_version_ids
+    assert original.envelope.record_version_id in paired.quarantined_record_version_ids
+
+
+@pytest.mark.parametrize(
+    ("case_id", "field_name", "new_value", "builder"),
+    (
+        (
+            CASE_IDS[0],
+            "source_assertion_id",
+            "assertion:metadata:changed",
+            pit.build_market_observation,
+        ),
+        (
+            CASE_IDS[3],
+            "source_reference",
+            "https://example.invalid/wp156/source-changed",
+            pit.build_source_snapshot,
+        ),
+        (
+            CASE_IDS[4],
+            "source_hierarchy_rank",
+            "SECONDARY_OFFICIAL_SOURCE",
+            pit.build_resolution_rule_snapshot,
+        ),
+    ),
+)
+def test_valid_metadata_mutation_changes_record_version_id(
+    case_id: str, field_name: str, new_value: object, builder
+) -> None:
+    original = _record(case_id)
+    candidate = pit.load_synthetic_case_input(case_id)
+    candidate[field_name] = new_value
+    changed = builder(candidate)
+    assert changed.is_valid is True
+    assert changed.record is not None
+    assert changed.record.envelope.record_version_id != original.envelope.record_version_id
+
+
+def test_fixed_valid_and_tampered_batch_hashes_are_exact() -> None:
+    valid_records = [
+        _record(CASE_IDS[0]),
+        _record(CASE_IDS[3]),
+        _record(CASE_IDS[4]),
+    ]
+    valid = pit.validate_record_batch(valid_records)
+    tampered_source = replace(
+        valid_records[1],
+        access_classification="PRIVATE",
+    )
+    tampered = pit.validate_record_batch([tampered_source])
+    assert valid.canonical_batch_sha256 == (
+        "82e37102a881cb4a3d60f8cd44f9a5a0abeeb68ae46e02d2a06dbaced0428375"
+    )
+    assert tampered.canonical_batch_sha256 == (
+        "02bf55747a37a0136f2e0f1c857efedb5e4629c779be79fb47c231427aa533d5"
+    )
 
 
 def test_identical_second_execution_is_byte_and_hash_equal_and_inputs_unchanged() -> None:
@@ -748,7 +1390,12 @@ def test_canonical_docs_status_deferred_and_repo_truth_are_exactly_registered() 
         "WP157 requires separate approval",
         "WP157 requires separate approval and is not implemented",
         "Product/runtime network",
-            "exactly 16 files",
+        "exactly 16 files",
+        "record_specific_metadata_sha256",
+        "All six optional caller-derived public fields",
+        "Follow-up required: YES",
+        "Preventable: YES",
+        "Defect categories: F",
     ):
         assert token in f"{canonical}\n{status}"
     for item_id in ("WP155-D001", "WP155-D002", "WP155-D003"):

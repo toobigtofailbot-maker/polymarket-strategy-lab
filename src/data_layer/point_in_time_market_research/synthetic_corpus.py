@@ -35,6 +35,41 @@ class SyntheticPointInTimeCase:
 _SAFETY_NOTICE = (
     "SANITIZED_SYNTHETIC_ONLY_NO_EXECUTION_AUTHORITY_NO_REAL_MARKET_DATA"
 )
+_EXPECTED_RECORD_VERSION_IDS = {
+    "PIT-C01-VALID-MARKET-METADATA": (
+        "record:sha256:4f4b89654077ff2e6e24cec53c3e976172abb9a71ef4ec08e4e459cb29d97e72"
+    ),
+    "PIT-C02-VALID-ORDER-BOOK-MISSING-EVENT-TIME": (
+        "record:sha256:ff5df4b4293175aeebf40e41f0141f73d52fed69e3702ef63debe257859adbf3"
+    ),
+    "PIT-C03-VALID-PUBLIC-TRADE": (
+        "record:sha256:a837dd270e7d89a5c17dfeabdd2075484876a2effd312f62e394465d1717f048"
+    ),
+    "PIT-C04-VALID-SOURCE-SNAPSHOT": (
+        "record:sha256:bfac30b3ff4838a1e33fb65de44425726d4571cbf4a8359b86a3285940424447"
+    ),
+    "PIT-C05-VALID-RESOLUTION-RULE-SNAPSHOT": (
+        "record:sha256:8f69de0782a7dda84ed58cf78a970cc47964219eef9818a1384dd8ee5feb224c"
+    ),
+    "PIT-C06-VALID-LATE-ARRIVAL": (
+        "record:sha256:1a9443d9b25f74afd0a4f92f8889006254c0ef7851ed18e6c96be3d28986dae9"
+    ),
+    "PIT-C07-VALID-SOURCE-REVISION": (
+        "record:sha256:2e749ad9202902af554c9b3ca113f1ac6e827400285a59d09d8b8340e10ff97e"
+    ),
+    "PIT-C08-VALID-PROJECT-CORRECTION": (
+        "record:sha256:c8c22907a21709407a66bb92b7282018a2a5ccfa19cb14ce873120785a0e9c67"
+    ),
+    "PIT-C09-VALID-SOURCE-RETRACTION": (
+        "record:sha256:20b3c7025525a20feb649ffc235558ba4e22a842c066ba417441ca50bd60261e"
+    ),
+    "PIT-C10-VALID-EXACT-DUPLICATE": (
+        "record:sha256:f6ab5a5465ebe2357c14e5f4b3da14e20a32ef26ab74bf1676ff1c7ed5f75180"
+    ),
+    "PIT-C11-VALID-SEMANTIC-DUPLICATE": (
+        "record:sha256:d5756fd61545b7fba3ce41c4ae4ab5181bb533c0282dfc8afb4bc6cba866456a"
+    ),
+}
 
 
 def _common(
@@ -226,6 +261,11 @@ def _case(
             if result.record is not None
             else expected_record_version_id
         )
+        committed_record_id = _EXPECTED_RECORD_VERSION_IDS.get(case_id)
+        if committed_record_id is not None:
+            if record_id != committed_record_id:
+                raise AssertionError("SYNTHETIC_RECORD_VERSION_ID_MISMATCH")
+            record_id = committed_record_id
     else:
         valid = bool(expected_valid)
         status = str(expected_status)
