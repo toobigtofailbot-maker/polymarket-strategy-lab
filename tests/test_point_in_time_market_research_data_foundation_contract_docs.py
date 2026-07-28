@@ -440,7 +440,7 @@ def test_project_status_reconciles_wp155_and_has_one_wp156_review_target() -> No
     merged = next(
         line for line in project.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP156" in current
+    assert "WP156" in merged
     assert "WP154" in merged
     assert "WP155" in merged
     assert current.count("sole review target") == 1
@@ -448,8 +448,9 @@ def test_project_status_reconciles_wp155_and_has_one_wp156_review_target() -> No
         "WP154 adoption architecture, dependency registry and alpha-factory roadmap lock-in sole review target"
         not in project
     )
-    assert "WP157 requires separate approval" in current
-    assert "WP157 implemented: NO" in current
+    # WP156 is merged; the current review target gates the next WP forward.
+    assert "WP158 requires separate approval" in current
+    assert "WP158 implemented: NO" in current
 
 
 def test_repo_truth_index_registers_canonical_status_and_focused_test() -> None:

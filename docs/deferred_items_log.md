@@ -2230,6 +2230,40 @@ WP156 adds no dependency, file I/O, writer, query, collector, product/runtime
 network, credential, scheduler, strategy, paper/live, order, risk,
 reconciliation, accounting, or execution authority.
 
+## WP157 Bounded In-Memory As-Of Query Deferred-Item Reconciliation
+
+WP157 records this exact narrow resolution:
+
+- WP156-D001:
+  `RESOLVED_BOUNDED_IN_MEMORY_AS_OF_QUERY_ONLY`.
+
+That status resolves only the bounded in-memory point-in-time reconstruction and
+as-of query over already-valid WP156 record objects. It does not authorize
+persisted queries, manifests, catalogs, real datasets, provider capture,
+Arrow/Parquet, DuckDB/Polars, migration, or strategy/paper/live use.
+
+WP156-D002 through WP156-D010 remain `OPEN`.
+
+Every WP157 item below is `OPEN`, has no implementation authority, and requires
+a separately approved work package.
+
+| ID | Deferred item | Trigger | Prerequisite | Forbidden early interpretation | Separate approval requirement |
+|---|---|---|---|---|---|
+| WP157-D001 | Persisted append-only manifest/reference implementation | Persistent research datasets are separately approved | Immutable dataset/manifest identity, atomic publication, file/partition manifest, content/file/result hashes, recovery, small-file policy | In-memory reconstruction authorizes a writer, catalog, database, or durable manifest | YES — manifest/reference implementation WP |
+| WP157-D002 | Arrow/Parquet physical schema and dependency decision | Reference manifest behavior and representative schema cases pass | Dependency/security audit, version pin, null/time/decimal compatibility, round-trip equality, physical file contract | Canonical JSON records mean Arrow/Parquet is installed, adopted, or authoritative | YES — dependency/physical-schema decision WP |
+| WP157-D003 | DuckDB/Polars correctness/performance benchmark | Representative persisted or approved temporary columnar fixture exists | Approved dependencies, exact workloads, reference oracle, resource bounds, deterministic versions | A benchmark contract means either engine is adopted | YES — bounded benchmark WP |
+| WP157-D004 | Real public-data capture/adapter integration | Valid schemas, storage decision, and authoritative rate-limit evidence exist | Provider terms, endpoints, rate limits, bounded orchestration, observability, failure recovery, operator controls | Synthetic corpora authorize real collection, polling, WebSockets, a daemon, or service | YES — collector/capture decision WP |
+| WP157-D005 | Persisted quarantine/review workflow | Durable invalid-input and conflict-review handling is approved | Safe storage contract, access/retention, operator roles, promotion lineage, audit receipts | In-memory review-only conflict output is a durable queue or automatic promotion mechanism | YES — quarantine/review workflow WP |
+| WP157-D006 | Source hierarchy / conflict resolution policy | Human-review governance and precedence rules are approved | Source-rank precedence, deterministic conflict resolution, review roles, audit, and appeal | The query may pick a source-hierarchy winner or auto-resolve a conflict | YES — conflict-resolution policy WP |
+| WP157-D007 | Relationship graph | Canonical PIT identity and resolution-rule histories exist | Temporal node/edge schema, deterministic constraints, query cases, false-positive review | Shared ids or payload similarity establish semantic equivalence, signal, or trade authority | YES — graph contract/implementation WP |
+| WP157-D008 | Preregistered experiment registry | Reproducible as-of feature/label snapshots are approved | Registry schema, immutability, preregistration, leakage controls, audit | As-of queries authorize backtests, alpha claims, or preregistered experiments | YES — experiment registry WP |
+| WP157-D009 | Point-in-time feature/label construction | Approved as-of query snapshots and outcome data exist | Leakage-safe feature/label contract, horizon rules, deterministic joins, validation | Reconstruction authorizes feature engineering, labels, or model training | YES — feature/label construction WP |
+| WP157-D010 | Replay/paper consumption contract | Approved as-of snapshots and an execution-boundary policy exist | Deterministic replay contract, no-look-ahead proof, paper-boundary controls, audit | Query results authorize replay, paper, order, or live behavior | YES — replay/paper consumption WP |
+
+WP157 adds no dependency, file I/O, writer, persisted query, collector,
+product/runtime network, credential, scheduler, strategy, paper/live, order,
+risk, reconciliation, accounting, or execution authority.
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.

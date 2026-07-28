@@ -428,6 +428,9 @@ def test_only_allowed_wallet_src_files_changed() -> None:
                 "src/data_layer/point_in_time_market_research/__init__.py",
                 "src/data_layer/point_in_time_market_research/records.py",
                 "src/data_layer/point_in_time_market_research/synthetic_corpus.py",
+                # WP157: bounded in-memory point-in-time as-of query implementation
+                "src/data_layer/point_in_time_market_research/as_of_query.py",
+                "src/data_layer/point_in_time_market_research/as_of_synthetic_cases.py",
         }
     assert set(src_changes) <= allowed_src_changes, (
         f"Unexpected src/ changes: {set(src_changes) - allowed_src_changes}"

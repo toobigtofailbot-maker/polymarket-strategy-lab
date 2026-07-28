@@ -29,6 +29,22 @@ from .synthetic_corpus import (
     get_synthetic_point_in_time_cases,
     load_synthetic_case_input,
 )
+from .as_of_query import (
+    AS_OF_QUERY_LABEL,
+    AS_OF_QUERY_POSTURE,
+    EXCLUSION_REASONS,
+    QUERY_STATUSES,
+    SUPPORTED_CUTOFF_MODES,
+    SUPPORTED_RESULT_VIEWS,
+    EventTimeWindow,
+    PointInTimeQueryReceipt,
+    PointInTimeQuerySpec,
+    PointInTimeRecordSetResult,
+    SyntheticAsOfQueryCase,
+    get_synthetic_as_of_query_cases,
+    load_synthetic_as_of_query_case,
+    query_point_in_time_record_set,
+)
 
 __all__ = (
     "FOUNDATION_LABEL",
@@ -56,4 +72,19 @@ __all__ = (
     "validate_record_batch",
     "get_synthetic_point_in_time_cases",
     "load_synthetic_case_input",
+    # WP157 bounded in-memory as-of query surface.
+    "AS_OF_QUERY_LABEL",
+    "AS_OF_QUERY_POSTURE",
+    "SUPPORTED_CUTOFF_MODES",
+    "SUPPORTED_RESULT_VIEWS",
+    "QUERY_STATUSES",
+    "EXCLUSION_REASONS",
+    "EventTimeWindow",
+    "PointInTimeQuerySpec",
+    "PointInTimeQueryReceipt",
+    "PointInTimeRecordSetResult",
+    "SyntheticAsOfQueryCase",
+    "query_point_in_time_record_set",
+    "get_synthetic_as_of_query_cases",
+    "load_synthetic_as_of_query_case",
 )
