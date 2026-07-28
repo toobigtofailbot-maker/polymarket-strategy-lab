@@ -424,10 +424,14 @@ def test_project_status_reconciles_wp153_and_has_one_wp154_review_target() -> No
         not in project
     )
     if WP156_STATUS.exists():
-        assert "WP156" in current
+        assert "WP156" in merged
         assert "WP154" in merged
         assert "WP155" in merged
-        assert "WP157 requires separate approval" in current
+        # WP156 is merged; the current review target gates the next WP forward.
+        assert (
+            "WP158 requires separate approval" in current
+            or "WP157 requires separate approval" in current
+        )
     elif WP155_STATUS.exists():
         assert "WP155" in current
         assert "WP154" in merged
@@ -549,7 +553,26 @@ def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None
         for line in (diff.stdout + untracked.stdout).splitlines()
         if line
     }
-    if "docs/status_entries/WP156.md" in changed:
+    if "docs/status_entries/WP157.md" in changed:
+        assert changed == {
+            "docs/bounded_in_memory_point_in_time_record_set_reconstruction_and_as_of_query_implementation.md",
+            "docs/deferred_items_log.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/WP157.md",
+            "src/data_layer/point_in_time_market_research/__init__.py",
+            "src/data_layer/point_in_time_market_research/as_of_query.py",
+            "src/data_layer/point_in_time_market_research/as_of_synthetic_cases.py",
+            "src/data_layer/point_in_time_market_research/records.py",
+            "tests/data_layer/point_in_time_market_research/test_as_of_query.py",
+            "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+            "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+            "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+            "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+            "tests/test_project_status_docs.py",
+            "tests/test_wallet_intelligence_architecture_contract_docs.py",
+        }
+    elif "docs/status_entries/WP156.md" in changed:
         assert changed == {
             "docs/deferred_items_log.md",
             "docs/point_in_time_observation_schema_validator_and_synthetic_fixture_implementation.md",

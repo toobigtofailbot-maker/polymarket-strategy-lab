@@ -169,6 +169,8 @@ def _independent_record_version_id(record: object) -> str:
 
 
 def test_public_package_exports_exact_supported_surface() -> None:
+    # The WP156 validation surface is preserved verbatim; the WP157 bounded
+    # as-of query surface is appended by the separately approved successor WP.
     assert pit.__all__ == (
         "FOUNDATION_LABEL",
         "IMPLEMENTATION_POSTURE",
@@ -195,6 +197,20 @@ def test_public_package_exports_exact_supported_surface() -> None:
         "validate_record_batch",
         "get_synthetic_point_in_time_cases",
         "load_synthetic_case_input",
+        "AS_OF_QUERY_LABEL",
+        "AS_OF_QUERY_POSTURE",
+        "SUPPORTED_CUTOFF_MODES",
+        "SUPPORTED_RESULT_VIEWS",
+        "QUERY_STATUSES",
+        "EXCLUSION_REASONS",
+        "EventTimeWindow",
+        "PointInTimeQuerySpec",
+        "PointInTimeQueryReceipt",
+        "PointInTimeRecordSetResult",
+        "SyntheticAsOfQueryCase",
+        "query_point_in_time_record_set",
+        "get_synthetic_as_of_query_cases",
+        "load_synthetic_as_of_query_case",
     )
 
 
@@ -1336,14 +1352,31 @@ def test_source_ast_has_no_forbidden_imports_or_calls() -> None:
 
 
 def test_no_writer_reader_collector_query_or_migration_public_behavior() -> None:
+    # WP157 introduces the only authorized public surface whose names contain
+    # "query"/"as_of": a bounded in-memory reconstruction with no writer,
+    # reader, collector, poller, persistence, scheduler, or execution behavior.
+    authorized_query_surface = {
+        "AS_OF_QUERY_LABEL",
+        "AS_OF_QUERY_POSTURE",
+        "SUPPORTED_CUTOFF_MODES",
+        "SUPPORTED_RESULT_VIEWS",
+        "QUERY_STATUSES",
+        "EXCLUSION_REASONS",
+        "EventTimeWindow",
+        "PointInTimeQuerySpec",
+        "PointInTimeQueryReceipt",
+        "PointInTimeRecordSetResult",
+        "SyntheticAsOfQueryCase",
+        "query_point_in_time_record_set",
+        "get_synthetic_as_of_query_cases",
+        "load_synthetic_as_of_query_case",
+    }
     exported = set(pit.__all__)
-    forbidden_fragments = (
+    persistence_fragments = (
         "write",
         "read",
         "collect",
         "poll",
-        "query",
-        "as_of",
         "migrate",
         "persist",
         "schedule",
@@ -1352,8 +1385,13 @@ def test_no_writer_reader_collector_query_or_migration_public_behavior() -> None
     assert not any(
         fragment in name.lower()
         for name in exported
-        for fragment in forbidden_fragments
+        for fragment in persistence_fragments
     )
+    query_named = {
+        name for name in exported if "query" in name.lower() or "as_of" in name.lower()
+    }
+    assert query_named
+    assert query_named <= authorized_query_surface
 
 
 def test_legacy_polymarket_snapshot_modules_are_unchanged_by_wp156_diff() -> None:
@@ -1411,7 +1449,10 @@ def test_canonical_docs_status_deferred_and_repo_truth_are_exactly_registered() 
         assert path in index
 
 
-def test_exact_sixteen_file_wp156_scope() -> None:
+def test_exact_sixteen_file_wp157_scope() -> None:
+    # WP156 is merged; WP157 is the current review target. The prior WP156
+    # branch-scope guard failed on merged main (empty diff against origin/main),
+    # which is the clean-main proof that successor maintenance is required.
     import subprocess
 
     changed = subprocess.run(
@@ -1430,20 +1471,20 @@ def test_exact_sixteen_file_wp156_scope() -> None:
     ).stdout.splitlines()
     actual = {path.replace("\\", "/") for path in changed + untracked if path}
     assert actual == {
+        "docs/bounded_in_memory_point_in_time_record_set_reconstruction_and_as_of_query_implementation.md",
         "docs/deferred_items_log.md",
-        "docs/point_in_time_observation_schema_validator_and_synthetic_fixture_implementation.md",
         "docs/project_status.md",
         "docs/repo_truth_index.md",
-        "docs/status_entries/WP156.md",
+        "docs/status_entries/WP157.md",
         "src/data_layer/point_in_time_market_research/__init__.py",
+        "src/data_layer/point_in_time_market_research/as_of_query.py",
+        "src/data_layer/point_in_time_market_research/as_of_synthetic_cases.py",
         "src/data_layer/point_in_time_market_research/records.py",
-        "src/data_layer/point_in_time_market_research/synthetic_corpus.py",
-            "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
-            "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
-            "tests/test_architecture_boundaries.py",
-            "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
-            "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
-            "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
-            "tests/test_project_status_docs.py",
-            "tests/test_wallet_intelligence_architecture_contract_docs.py",
+        "tests/data_layer/point_in_time_market_research/test_as_of_query.py",
+        "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+        "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+        "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+        "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+        "tests/test_project_status_docs.py",
+        "tests/test_wallet_intelligence_architecture_contract_docs.py",
     }

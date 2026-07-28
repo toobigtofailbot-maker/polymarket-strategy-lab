@@ -725,7 +725,11 @@ def _validate_lineage(
 
 
 def _validate_lifecycle(
-    record: Mapping[str, object], errors: list[str], warnings: list[str]
+    record: Mapping[str, object],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    allow_review_conflict: bool = False,
 ) -> None:
     lifecycle = record.get("lifecycle_state")
     classification = record.get("classification")
@@ -744,9 +748,11 @@ def _validate_lifecycle(
         errors.append("CLASSIFICATION_LIFECYCLE_MISMATCH")
     if classification == "CONFLICT":
         warnings.append("CONFLICT_DECLARED")
-        if human_review is not True:
-            errors.append("CONFLICT_REQUIRES_HUMAN_REVIEW")
-        else:
+        # A conflict record always fails the standard builders and
+        # validate_record_batch. Only the additive WP157 review-only handoff
+        # (allow_review_conflict=True) tolerates a human-reviewed conflict as a
+        # structurally valid record; it never becomes authoritative downstream.
+        if human_review is not True or not allow_review_conflict:
             errors.append("CONFLICT_REQUIRES_HUMAN_REVIEW")
     if lifecycle in {"QUARANTINED", "INVALIDATED_BY_CONTRACT"} and human_review is not True:
         errors.append("CONFLICT_REQUIRES_HUMAN_REVIEW")
@@ -796,6 +802,7 @@ def _common_values(
     warnings: list[str],
     *,
     event_required: bool,
+    allow_review_conflict: bool = False,
 ) -> dict[str, object]:
     snapshot_id = _validate_id(record.get("snapshot_id"), errors)
     ingestion_batch_id = _validate_id(record.get("ingestion_batch_id"), errors)
@@ -806,7 +813,9 @@ def _common_values(
         record, errors, warnings, event_required=event_required
     )
     parents, supersedes = _validate_lineage(record, errors)
-    _validate_lifecycle(record, errors, warnings)
+    _validate_lifecycle(
+        record, errors, warnings, allow_review_conflict=allow_review_conflict
+    )
     payload_bytes = _validate_payload_tree(record.get("canonical_payload"), errors)
     payload_hash = sha256_hex(payload_bytes) if payload_bytes is not None else None
     expected_payload_hash = record.get("canonical_payload_sha256")
@@ -1064,6 +1073,8 @@ _MARKET_ALLOWED = _MARKET_REQUIRED | _EXPECTED_FIELDS | frozenset({"observation_
 
 def build_market_observation(
     input_record: Mapping[str, object],
+    *,
+    allow_review_conflict: bool = False,
 ) -> PointInTimeBuildResult:
     """Build one immutable validated market observation or fail closed."""
 
@@ -1092,7 +1103,11 @@ def build_market_observation(
     if kind in {"ORDER_BOOK", "PUBLIC_TRADE"} and record.get("token_id") is None:
         errors.append("REQUIRED_FIELD_MISSING")
     common = _common_values(
-        record, errors, warnings, event_required=kind == "PUBLIC_TRADE"
+        record,
+        errors,
+        warnings,
+        event_required=kind == "PUBLIC_TRADE",
+        allow_review_conflict=allow_review_conflict,
     )
     payload = record.get("canonical_payload")
     if isinstance(payload, Mapping):
@@ -1220,6 +1235,8 @@ _SOURCE_ALLOWED = _SOURCE_REQUIRED | _EXPECTED_FIELDS | frozenset(
 
 def build_source_snapshot(
     input_record: Mapping[str, object],
+    *,
+    allow_review_conflict: bool = False,
 ) -> PointInTimeBuildResult:
     """Build one immutable source snapshot metadata record or fail closed."""
 
@@ -1253,7 +1270,13 @@ def build_source_snapshot(
     prior_source_snapshot_id = _validate_id(
         record.get("prior_source_snapshot_id"), errors, nullable=True
     )
-    common = _common_values(record, errors, warnings, event_required=False)
+    common = _common_values(
+        record,
+        errors,
+        warnings,
+        event_required=False,
+        allow_review_conflict=allow_review_conflict,
+    )
     if record.get("lifecycle_state") != "RAW_CAPTURED" and record.get(
         "classification"
     ) == "PRIMARY_ASSERTION":
@@ -1339,6 +1362,8 @@ _RULE_ALLOWED = _RULE_REQUIRED | _EXPECTED_FIELDS | frozenset(
 
 def build_resolution_rule_snapshot(
     input_record: Mapping[str, object],
+    *,
+    allow_review_conflict: bool = False,
 ) -> PointInTimeBuildResult:
     """Build one immutable resolution-rule snapshot or fail closed."""
 
@@ -1393,7 +1418,13 @@ def build_resolution_rule_snapshot(
         or record.get("human_review_required") is not True
     ):
         errors.append("CONFLICT_REQUIRES_HUMAN_REVIEW")
-    common = _common_values(record, errors, warnings, event_required=False)
+    common = _common_values(
+        record,
+        errors,
+        warnings,
+        event_required=False,
+        allow_review_conflict=allow_review_conflict,
+    )
     if errors:
         return _invalid_result(record, errors, warnings)
     rule_preimage = {
@@ -1991,3 +2022,97 @@ def validate_record_batch(
         quarantined_record_version_ids=tuple(sorted(quarantined)),
         canonical_batch_sha256=batch_hash,
     )
+
+
+# ---------------------------------------------------------------------------
+# WP157 review-only conflict handoff (additive; standard builders and
+# validate_record_batch are unchanged and continue to reject conflicts).
+#
+# A CONFLICT record can never be authoritative and is never accepted by
+# validate_record_batch. These two additive surfaces expose a *structurally
+# valid* conflict record — one that satisfies every WP156 integrity rule except
+# the human-review gate — so the separately approved WP157 as-of query layer can
+# list conflict identities in a review-only result field. Neither surface
+# weakens any fail-closed guarantee: a conflict record is admitted only when its
+# classification is CONFLICT, human_review_required is True, and it reproduces
+# its committed record-version identity exactly.
+# ---------------------------------------------------------------------------
+
+
+def build_review_conflict_record(
+    input_record: Mapping[str, object],
+) -> PointInTimeBuildResult:
+    """Build one structurally valid review-only CONFLICT record or fail closed.
+
+    Identical to the family builders except that a ``CONFLICT`` classification
+    with ``human_review_required`` True is treated as structurally valid for
+    review-only handoff. The record is never authoritative. Non-conflict input
+    fails closed; the standard builders remain the only authoritative path.
+    """
+
+    if not isinstance(input_record, Mapping):
+        return _invalid_result(input_record, ["FIELD_TYPE_INVALID"])
+    if input_record.get("classification") != "CONFLICT":
+        return _invalid_result(input_record, ["CLASSIFICATION_LIFECYCLE_MISMATCH"])
+    family = input_record.get("record_family")
+    if family == "MARKET_OBSERVATION":
+        return build_market_observation(input_record, allow_review_conflict=True)
+    if family == "SOURCE_SNAPSHOT":
+        return build_source_snapshot(input_record, allow_review_conflict=True)
+    if family == "RESOLUTION_RULE_SNAPSHOT":
+        return build_resolution_rule_snapshot(input_record, allow_review_conflict=True)
+    return _invalid_result(input_record, ["RECORD_FAMILY_UNSUPPORTED"])
+
+
+def revalidate_review_conflict_record(record: PointInTimeRecord) -> tuple[str, ...]:
+    """Return ``()`` when ``record`` is a structurally valid review-only conflict.
+
+    Mirrors the per-record integrity checks applied by ``validate_record_batch``
+    but tolerates the human-reviewed conflict gate. Returns ordered WP156 error
+    codes otherwise. The record is required to be a CONFLICT classification with
+    ``human_review_required`` True and to reproduce its committed
+    ``record_version_id`` exactly. This surface never returns the record itself
+    for authoritative use.
+    """
+
+    if type(record) not in (
+        MarketObservationRecord,
+        SourceSnapshotRecord,
+        ResolutionRuleSnapshotRecord,
+    ):
+        return ("FIELD_TYPE_INVALID",)
+    if type(record.envelope) is not PointInTimeEnvelope:
+        return ("FIELD_TYPE_INVALID", "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+    envelope = record.envelope
+    errors: list[str] = []
+    if envelope.classification != "CONFLICT":
+        errors.append("CLASSIFICATION_LIFECYCLE_MISMATCH")
+    if envelope.human_review_required is not True:
+        errors.append("CONFLICT_REQUIRES_HUMAN_REVIEW")
+    record_id = envelope.record_version_id
+    if _validate_id(record_id, errors) is None:
+        return _ordered_unique(errors, _ERROR_ORDER)
+    if _RECORD_VERSION_ID_RE.fullmatch(record_id) is None:
+        errors.append("ID_DERIVATION_MISMATCH")
+        errors.append("RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+    try:
+        builder_input, builder = _public_record_builder_input(record)
+        rebuilt = builder(builder_input, allow_review_conflict=True)
+    except (AttributeError, json.JSONDecodeError, TypeError, ValueError):
+        errors.append("PAYLOAD_TYPE_UNSUPPORTED")
+        errors.append("RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+        return _ordered_unique(errors, _ERROR_ORDER)
+    if not rebuilt.is_valid or rebuilt.record is None or rebuilt.record != record:
+        errors.extend(rebuilt.error_codes)
+        errors.append("RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+    try:
+        recomputed = _recomputed_record_version_id(record)
+    except (TypeError, ValueError):
+        recomputed = None
+    if (
+        recomputed != record_id
+        or not _payload_matches_envelope(record)
+        or not _derived_family_ids_match(record)
+    ):
+        errors.append("RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+    return _ordered_unique(errors, _ERROR_ORDER)
