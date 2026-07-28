@@ -567,6 +567,7 @@ def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None
             "tests/data_layer/point_in_time_market_research/test_as_of_query.py",
             "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
             "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+            "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
             "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
             "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
             "tests/test_project_status_docs.py",

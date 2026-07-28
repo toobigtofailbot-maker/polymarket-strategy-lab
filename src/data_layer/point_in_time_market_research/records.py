@@ -1073,10 +1073,23 @@ _MARKET_ALLOWED = _MARKET_REQUIRED | _EXPECTED_FIELDS | frozenset({"observation_
 
 def build_market_observation(
     input_record: Mapping[str, object],
+) -> PointInTimeBuildResult:
+    """Build one immutable validated market observation or fail closed.
+
+    Public builders always reject ``CONFLICT`` input. Review-only conflict
+    tolerance exists exclusively on the private handoff path and is never
+    reachable through this signature.
+    """
+
+    return _build_market_observation(input_record)
+
+
+def _build_market_observation(
+    input_record: Mapping[str, object],
     *,
     allow_review_conflict: bool = False,
 ) -> PointInTimeBuildResult:
-    """Build one immutable validated market observation or fail closed."""
+    """Internal market-observation builder for the review-only conflict handoff."""
 
     errors, record = _validate_fields(
         input_record, frozenset(_MARKET_ALLOWED), frozenset(_MARKET_REQUIRED)
@@ -1235,10 +1248,22 @@ _SOURCE_ALLOWED = _SOURCE_REQUIRED | _EXPECTED_FIELDS | frozenset(
 
 def build_source_snapshot(
     input_record: Mapping[str, object],
+) -> PointInTimeBuildResult:
+    """Build one immutable source snapshot metadata record or fail closed.
+
+    Public builders always reject ``CONFLICT`` input. Review-only conflict
+    tolerance exists exclusively on the private handoff path.
+    """
+
+    return _build_source_snapshot(input_record)
+
+
+def _build_source_snapshot(
+    input_record: Mapping[str, object],
     *,
     allow_review_conflict: bool = False,
 ) -> PointInTimeBuildResult:
-    """Build one immutable source snapshot metadata record or fail closed."""
+    """Internal source-snapshot builder for the review-only conflict handoff."""
 
     errors, record = _validate_fields(
         input_record, frozenset(_SOURCE_ALLOWED), frozenset(_SOURCE_REQUIRED)
@@ -1362,10 +1387,22 @@ _RULE_ALLOWED = _RULE_REQUIRED | _EXPECTED_FIELDS | frozenset(
 
 def build_resolution_rule_snapshot(
     input_record: Mapping[str, object],
+) -> PointInTimeBuildResult:
+    """Build one immutable resolution-rule snapshot or fail closed.
+
+    Public builders always reject ``CONFLICT`` input. Review-only conflict
+    tolerance exists exclusively on the private handoff path.
+    """
+
+    return _build_resolution_rule_snapshot(input_record)
+
+
+def _build_resolution_rule_snapshot(
+    input_record: Mapping[str, object],
     *,
     allow_review_conflict: bool = False,
 ) -> PointInTimeBuildResult:
-    """Build one immutable resolution-rule snapshot or fail closed."""
+    """Internal resolution-rule builder for the review-only conflict handoff."""
 
     errors, record = _validate_fields(
         input_record, frozenset(_RULE_ALLOWED), frozenset(_RULE_REQUIRED)
@@ -1703,7 +1740,7 @@ def _public_record_builder_input(
                 "source_snapshot_id": envelope.source_snapshot_id,
             }
         )
-        return common, build_market_observation
+        return common, _build_market_observation
     if isinstance(record, SourceSnapshotRecord):
         common.update(
             {
@@ -1721,7 +1758,7 @@ def _public_record_builder_input(
                 "access_classification": record.access_classification,
             }
         )
-        return common, build_source_snapshot
+        return common, _build_source_snapshot
     common.update(
         {
             "resolution_rule_snapshot_id": envelope.resolution_rule_snapshot_id,
@@ -1737,7 +1774,7 @@ def _public_record_builder_input(
             "human_review_state": record.human_review_state,
         }
     )
-    return common, build_resolution_rule_snapshot
+    return common, _build_resolution_rule_snapshot
 
 
 def _revalidate_public_record(record: PointInTimeRecord) -> tuple[str, ...]:
@@ -2056,11 +2093,11 @@ def build_review_conflict_record(
         return _invalid_result(input_record, ["CLASSIFICATION_LIFECYCLE_MISMATCH"])
     family = input_record.get("record_family")
     if family == "MARKET_OBSERVATION":
-        return build_market_observation(input_record, allow_review_conflict=True)
+        return _build_market_observation(input_record, allow_review_conflict=True)
     if family == "SOURCE_SNAPSHOT":
-        return build_source_snapshot(input_record, allow_review_conflict=True)
+        return _build_source_snapshot(input_record, allow_review_conflict=True)
     if family == "RESOLUTION_RULE_SNAPSHOT":
-        return build_resolution_rule_snapshot(input_record, allow_review_conflict=True)
+        return _build_resolution_rule_snapshot(input_record, allow_review_conflict=True)
     return _invalid_result(input_record, ["RECORD_FAMILY_UNSUPPORTED"])
 
 

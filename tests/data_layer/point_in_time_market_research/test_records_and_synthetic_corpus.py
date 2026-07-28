@@ -1449,7 +1449,7 @@ def test_canonical_docs_status_deferred_and_repo_truth_are_exactly_registered() 
         assert path in index
 
 
-def test_exact_sixteen_file_wp157_scope() -> None:
+def test_exact_seventeen_file_wp157_scope() -> None:
     # WP156 is merged; WP157 is the current review target. The prior WP156
     # branch-scope guard failed on merged main (empty diff against origin/main),
     # which is the clean-main proof that successor maintenance is required.
@@ -1483,6 +1483,7 @@ def test_exact_sixteen_file_wp157_scope() -> None:
         "tests/data_layer/point_in_time_market_research/test_as_of_query.py",
         "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
         "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+        "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
         "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
         "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
         "tests/test_project_status_docs.py",

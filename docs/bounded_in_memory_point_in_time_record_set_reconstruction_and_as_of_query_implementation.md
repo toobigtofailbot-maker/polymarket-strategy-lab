@@ -128,25 +128,39 @@ partitions records by committed classification:
   `validate_record_batch`. If that batch is invalid the query returns
   `QUERY_REJECTED_RECORD_BATCH` with no records and no receipt.
 
-The WP156 batch `canonical_batch_sha256` is the validated-batch identity in the
-receipt. Records are never rebuilt, repaired, reinterpreted, or coerced by
-WP157.
+Records are never rebuilt, repaired, reinterpreted, or coerced by WP157.
 
-Conflict-review handoff: a batch may still yield review-only conflict output
-when every non-conflict record is valid and every conflict record is a
-structurally valid WP156 conflict record. WP156 exposes two additive, tested,
-purely fail-closed surfaces used only for this handoff:
+Full-input validated-batch identity. The receipt `validated_batch_sha256` is a
+single deterministic identity over the complete validated input set — ordinary
+valid record-version ids, review-conflict record-version ids, exact-duplicate
+acknowledgements, bounded warnings, and the fixed non-authority booleans
+(`review_conflicts_authoritative=False`, `advisory_only=True`,
+`no_execution_authority=True`). Because review conflicts are part of the batch
+identity even when excluded from the output, changing, adding, or removing any
+conflict identity changes both the receipt and result hashes; input permutation
+preserves both. The complete input graph is additionally checked for conflict
+same-id collisions, self-parent, duplicate parent, unknown parent, and
+conflict-to-conflict lineage cycles.
+
+Conflict-review handoff. A batch may yield review-only conflict output only when
+every non-conflict record is valid and every conflict record is a structurally
+valid conflict record. Review-conflict tolerance lives exclusively on a private
+internal builder path; the public builders keep their exact merged-WP156
+signatures and always reject `CONFLICT` input, so no public flag can enable
+conflict acceptance. Two additive, tested, purely fail-closed surfaces are used
+only for the handoff:
 
 - `build_review_conflict_record` builds a structurally valid `CONFLICT` record
-  (a record that satisfies every WP156 integrity rule except the human-review
-  gate, with `human_review_required` True).
+  (satisfying every WP156 integrity rule except the human-review gate, with
+  `human_review_required` True) through the private path.
 - `revalidate_review_conflict_record` confirms a conflict record object
   reproduces its committed record-version identity exactly.
 
-The standard family builders and `validate_record_batch` are unchanged and
-continue to reject conflicts; a conflict record can never be authoritative. If
-any conflict record is not structurally valid the query fails closed with
-`QUERY_REJECTED_RECORD_BATCH` and `CONFLICT_NOT_AUTHORIZED_FOR_REVIEW`.
+A conflict record can never be authoritative or appear in history. A conflict-only
+validated input requires `include_conflicts_for_review=True`; otherwise the query
+rejects closed with `CONFLICT_NOT_AUTHORIZED_FOR_REVIEW`. If any conflict record
+is not structurally valid the query fails closed with
+`QUERY_REJECTED_RECORD_BATCH`.
 
 ## 7. Visibility Order Of Operations
 
@@ -221,11 +235,18 @@ records:
   (`LATE_ARRIVAL_VISIBLE`) and is never backdated;
 - `CONFLICT` never enters authoritative current state.
 
-Because WP156 requires a correction/revision/retraction to have ingestion time
-no earlier than its parent, any visible child necessarily has a visible parent.
-An invisible future child never affects an earlier result. Original and
-superseding records remain available in history views; retracted history is
-available only when explicitly requested.
+Visible-parent state integrity. After visibility, filters, and the event-time
+window, and before state application, every visible `SOURCE_REVISION`,
+`PROJECT_CORRECTION`, or `SOURCE_RETRACTION` must have a non-null explicit
+supersedes target that is present in the complete validated record map, visible
+after the full pipeline, and of a compatible entity key. A parent absent from
+the validated input yields `VISIBLE_SUPERSEDES_PARENT_UNKNOWN`; a parent dropped
+by the event-time window yields `VISIBLE_CHILD_PARENT_NOT_VISIBLE`; an entity
+mismatch yields `STATE_ENTITY_MISMATCH`. Any such failure rejects the query with
+`QUERY_REJECTED_RECORD_BATCH` and no partial reconstruction. An invisible future
+child never affects an earlier result. Original and superseding records remain
+available in history views; retracted history is available only when explicitly
+requested.
 
 ## 11. Result Views
 
@@ -245,8 +266,11 @@ available only when explicitly requested.
 
 Canonical record order: ingestion time, observed time, event-time null-order
 marker (present sorts before missing), event time when present, record-family
-canonical order, record-version id. Authoritative current state is additionally
-ordered by canonical entity key, ingestion time, and record-version id. History
+canonical order, record-version id. Ingestion, observed, and present event
+times are compared as parsed UTC datetimes, never as raw strings, so fractional
+seconds (for example `…00Z` versus `…00.1Z`) order chronologically rather than
+lexicographically. Authoritative current state is additionally ordered by
+canonical entity key, ingestion time, and record-version id. History
 and timeline use canonical record order. Ordering never depends on input
 sequence order, dict/set iteration order, object identity, filesystem order, or
 locale. Any permutation of the same valid record set yields identical ids,
@@ -271,8 +295,9 @@ validated-batch identity and are not double counted.
 
 ## 14. Result Receipt And Hash Preimage
 
-`PointInTimeQueryReceipt` records the query id, query-spec hash, validated-batch
-hash, cutoff mode/time, event-window bounds, result view, input and validated
+`PointInTimeQueryReceipt` records the query id, query-spec hash, the full-input
+validated-batch hash (Section 6), cutoff mode/time, event-window bounds, result
+view, input and validated
 unique record counts, visible-before-state count, per-tuple counts, ordered
 result id tuples, exclusion counts, result hash, engine version
 (`point-in-time-as-of-query@1.0.0`), parameter-set id, and the fixed safety
@@ -342,12 +367,15 @@ daemon, or CLI is introduced.
 ## 18. Compatibility With WP155/WP156 And Legacy Snapshot Modules
 
 WP157 consumes WP155 contract semantics and WP156 public records unchanged. The
-only WP156 change is the narrow additive review-only conflict handoff
-(`build_review_conflict_record` and `revalidate_review_conflict_record` plus a
-default-off `allow_review_conflict` keyword threaded through the existing
-builders). The standard builders and `validate_record_batch` keep identical
-behavior; all previous WP156 tests are preserved. Legacy Polymarket snapshot
-readers, writers, replay, and catalog behavior are untouched.
+only WP156 change is the narrow additive review-only conflict handoff:
+`build_review_conflict_record` and `revalidate_review_conflict_record`, backed by
+private internal family builders that carry a default-off `allow_review_conflict`
+parameter. The public `build_market_observation`, `build_source_snapshot`, and
+`build_resolution_rule_snapshot` keep their exact merged-WP156 single-parameter
+signatures and always reject `CONFLICT` input, so no public flag can enable
+conflict acceptance. `validate_record_batch` keeps identical behavior; all
+previous WP156 tests pass unchanged. Legacy Polymarket snapshot readers,
+writers, replay, and catalog behavior are untouched.
 
 ## 19. Explicit Non-Authority
 
@@ -380,6 +408,8 @@ behavior. Every result carries `advisory_only=True` and
   (cascade scope guard admits the WP157 changed-file set)
 - `tests/test_wallet_intelligence_architecture_contract_docs.py`
   (allowed-src scope guard admits the two WP157 source files)
+- `tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py`
+  (src-allowlist scope guard admits the two WP157 source files)
 
 ## 21. Next Separately Gated Package
 

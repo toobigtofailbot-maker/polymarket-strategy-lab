@@ -353,11 +353,17 @@ def _validate_filter_tuple(
         return
     if len(value) > _MAX_FILTER_VALUES_PER_FIELD:
         errors.append("FILTER_LIMIT_EXCEEDED")
+    all_valid_strings = True
     for item in value:
         if not _valid_opaque_id(item, _MAX_ID):
             errors.append("FILTER_VALUE_INVALID")
+            all_valid_strings = False
         elif allowed is not None and item not in allowed:
             errors.append("FILTER_VALUE_INVALID")
+    # Only hashable, mutually orderable strings reach the duplicate/order checks;
+    # this keeps the validator fail-closed for unhashable or non-orderable input.
+    if not all_valid_strings:
+        return
     if len(set(value)) != len(value):
         errors.append("FILTER_DUPLICATE")
     if list(value) != sorted(value):
@@ -372,13 +378,13 @@ def _validate_spec(spec: object) -> tuple[str, ...]:
         errors.append("QUERY_ID_INVALID")
     if not _valid_opaque_id(spec.parameter_set_id, _MAX_ID):
         errors.append("PARAMETER_SET_ID_INVALID")
-    if spec.cutoff_mode not in _CUTOFF_MODES:
+    if not isinstance(spec.cutoff_mode, str) or spec.cutoff_mode not in _CUTOFF_MODES:
         errors.append("CUTOFF_MODE_UNSUPPORTED")
     if _normalize_utc(spec.cutoff_time) is None or spec.cutoff_time != _normalize_utc(
         spec.cutoff_time
     ):
         errors.append("CUTOFF_TIME_INVALID")
-    if spec.result_view not in _RESULT_VIEWS:
+    if not isinstance(spec.result_view, str) or spec.result_view not in _RESULT_VIEWS:
         errors.append("RESULT_VIEW_UNSUPPORTED")
 
     total_filter_values = 0
@@ -514,14 +520,20 @@ def _entity_key(record: PointInTimeRecord) -> tuple[str, ...]:
     )
 
 
+_EVENT_TIME_NULL_SENTINEL = _to_dt("0001-01-01T00:00:00Z")
+
+
 def _canonical_sort_key(record: PointInTimeRecord) -> tuple[object, ...]:
     envelope = record.envelope
     event_time = envelope.event_time
+    # Present event times are compared chronologically via the parsed UTC
+    # datetime (never the raw string, which mis-orders fractional seconds such
+    # as "…00Z" vs "…00.1Z"). Missing event times sort last via the null marker.
     return (
         _to_dt(envelope.ingestion_time),
         _to_dt(envelope.observed_time),
         1 if event_time is None else 0,
-        event_time if event_time is not None else "",
+        _to_dt(event_time) if event_time is not None else _EVENT_TIME_NULL_SENTINEL,
         _FAMILY_ORDER.get(envelope.record_family, len(_FAMILY_ORDER)),
         envelope.record_version_id,
     )
@@ -586,6 +598,87 @@ def _rejected_result(
         review_conflict_records=(),
         receipt=None,
     )
+
+
+# ── Full-input review-aware batch identity (WP157 Section 8) ──────────────────
+
+
+def _review_conflict_batch_errors(
+    unique_authoritative: dict[str, PointInTimeRecord],
+    unique_conflicts: dict[str, PointInTimeRecord],
+) -> list[str]:
+    """Return bounded batch errors for the full-input conflict lineage graph.
+
+    Each conflict is already structurally revalidated; here the complete input
+    graph is checked for same-ID collisions, self-parent, duplicate parent,
+    unknown parent, and conflict-to-conflict lineage cycles. Conflicts remain
+    review-only and never authoritative.
+    """
+
+    errors: list[str] = []
+    full_ids = set(unique_authoritative) | set(unique_conflicts)
+    conflict_graph: dict[str, tuple[str, ...]] = {}
+    for conflict_id, conflict in unique_conflicts.items():
+        parents = conflict.envelope.lineage_parent_ids
+        if conflict_id in unique_authoritative:
+            errors.append("RECORD_BATCH_INVALID")
+        if len(set(parents)) != len(parents):
+            errors.append("RECORD_BATCH_INVALID")
+        if conflict_id in parents:
+            errors.append("RECORD_BATCH_INVALID")
+        if any(parent not in full_ids for parent in parents):
+            errors.append("RECORD_BATCH_INVALID")
+        conflict_graph[conflict_id] = tuple(
+            parent for parent in parents if parent in unique_conflicts
+        )
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def _visit(node: str) -> None:
+        if node in visiting:
+            errors.append("RECORD_BATCH_INVALID")
+            return
+        if node in visited:
+            return
+        visiting.add(node)
+        for parent in conflict_graph.get(node, ()):
+            _visit(parent)
+        visiting.discard(node)
+        visited.add(node)
+
+    for conflict_id in sorted(conflict_graph):
+        _visit(conflict_id)
+    return errors
+
+
+def _full_input_batch_sha256(
+    *,
+    ordinary_ids: tuple[str, ...],
+    review_conflict_ids: tuple[str, ...],
+    exact_duplicate_ids: tuple[str, ...],
+    warning_codes: tuple[str, ...],
+) -> str:
+    """Return one deterministic identity over the complete validated input set.
+
+    The preimage covers ordinary valid IDs, review-conflict IDs, exact-duplicate
+    acknowledgements, and bounded warnings, plus the fixed non-authority
+    booleans, so that changing any conflict identity (even one excluded from the
+    output) changes the receipt and result hashes.
+    """
+
+    preimage = {
+        "schema": "point-in-time-review-batch",
+        "engine": QUERY_ENGINE_VERSION,
+        "ordinary_record_version_ids": list(ordinary_ids),
+        "review_conflict_record_version_ids": list(review_conflict_ids),
+        "exact_duplicate_record_version_ids": list(exact_duplicate_ids),
+        "warning_codes": list(warning_codes),
+        "review_conflicts_authoritative": False,
+        "advisory_only": True,
+        "no_execution_authority": True,
+    }
+    return sha256_hex(canonical_json_bytes(preimage))
 
 
 # ── Visibility (WP157 Section 9) ─────────────────────────────────────────────
@@ -657,8 +750,8 @@ def query_point_in_time_record_set(
             "QUERY_REJECTED_RECORD_BATCH", ("RECORD_BATCH_INVALID",)
         )
 
-    # Structurally validate every conflict record through the WP156 review-only
-    # handoff. Any invalid conflict fails the whole query closed.
+    # Structurally validate every conflict record through the private review-only
+    # rebuild path. Any invalid conflict fails the whole query closed.
     for conflict in conflict_candidates:
         if revalidate_review_conflict_record(conflict):
             return _rejected_result(
@@ -674,10 +767,52 @@ def query_point_in_time_record_set(
         if record_id in accepted_ids and record_id not in unique_authoritative:
             unique_authoritative[record_id] = record
     unique_conflicts: dict[str, PointInTimeRecord] = {}
+    exact_duplicate_conflict_ids: list[str] = []
     for conflict in conflict_candidates:
         conflict_id = conflict.envelope.record_version_id
-        if conflict_id not in unique_conflicts:
-            unique_conflicts[conflict_id] = conflict
+        if conflict_id in unique_conflicts:
+            # Identical committed identity ⇒ identical content ⇒ exact duplicate.
+            exact_duplicate_conflict_ids.append(conflict_id)
+            continue
+        unique_conflicts[conflict_id] = conflict
+
+    # Full-input review-aware batch integrity (conflict lineage / collisions).
+    conflict_batch_errors = _review_conflict_batch_errors(
+        unique_authoritative, unique_conflicts
+    )
+    if conflict_batch_errors:
+        return _rejected_result(
+            "QUERY_REJECTED_RECORD_BATCH",
+            _ordered_unique(conflict_batch_errors, _ERROR_ORDER),
+        )
+
+    # Conflict-only validated input requires explicit review authorization.
+    if (
+        unique_conflicts
+        and not unique_authoritative
+        and not spec.include_conflicts_for_review
+    ):
+        return _rejected_result(
+            "QUERY_REJECTED_RECORD_BATCH", ("CONFLICT_NOT_AUTHORIZED_FOR_REVIEW",)
+        )
+
+    # One deterministic identity over the complete validated input set. Review
+    # conflicts are part of the batch identity even when excluded from output.
+    review_conflict_batch_ids = tuple(
+        record.envelope.record_version_id
+        for record in sorted(unique_conflicts.values(), key=_canonical_sort_key)
+    )
+    validated_batch_hash = _full_input_batch_sha256(
+        ordinary_ids=batch.accepted_record_version_ids,
+        review_conflict_ids=review_conflict_batch_ids,
+        exact_duplicate_ids=tuple(
+            sorted(
+                tuple(batch.exact_duplicate_record_version_ids)
+                + tuple(exact_duplicate_conflict_ids)
+            )
+        ),
+        warning_codes=batch.warning_codes,
+    )
 
     cutoff = _to_dt(spec.cutoff_time)
     diagnostic = spec.cutoff_mode == "AS_OF_OBSERVED_TIME_DIAGNOSTIC"
@@ -726,6 +861,34 @@ def query_point_in_time_record_set(
 
     # State application over the visible authoritative candidates.
     visible_ids = {record.envelope.record_version_id for record in visible}
+
+    # Every visible superseding child must have a visible explicit parent of a
+    # compatible entity; otherwise the query rejects with no partial output. A
+    # parent can be dropped by the event-time window even when present/valid.
+    state_errors: list[str] = []
+    for record in visible:
+        envelope = record.envelope
+        if envelope.classification not in {
+            "SOURCE_REVISION",
+            "PROJECT_CORRECTION",
+            "SOURCE_RETRACTION",
+        }:
+            continue
+        target = envelope.supersedes_record_version_id
+        if target is None or target not in unique_authoritative:
+            state_errors.append("VISIBLE_SUPERSEDES_PARENT_UNKNOWN")
+            continue
+        if target not in visible_ids:
+            state_errors.append("VISIBLE_CHILD_PARENT_NOT_VISIBLE")
+            continue
+        if _entity_key(unique_authoritative[target]) != _entity_key(record):
+            state_errors.append("STATE_ENTITY_MISMATCH")
+    if state_errors:
+        return _rejected_result(
+            "QUERY_REJECTED_RECORD_BATCH",
+            _ordered_unique(state_errors, _ERROR_ORDER),
+        )
+
     superseded_ids: set[str] = set()
     retraction_targets: set[str] = set()
     for record in visible:
@@ -837,7 +1000,7 @@ def query_point_in_time_record_set(
     result_hash = _result_sha256(
         spec=spec,
         query_spec_hash=query_hash,
-        validated_batch_hash=batch.canonical_batch_sha256,
+        validated_batch_hash=validated_batch_hash,
         authoritative_ids=authoritative_ids,
         history_ids=history_ids,
         review_ids=review_ids,
@@ -874,7 +1037,7 @@ def query_point_in_time_record_set(
     receipt = PointInTimeQueryReceipt(
         query_id=spec.query_id,
         query_spec_sha256=query_hash,
-        validated_batch_sha256=batch.canonical_batch_sha256,
+        validated_batch_sha256=validated_batch_hash,
         cutoff_mode=spec.cutoff_mode,
         cutoff_time=spec.cutoff_time,
         event_window_start_inclusive=window.start_inclusive if window else None,

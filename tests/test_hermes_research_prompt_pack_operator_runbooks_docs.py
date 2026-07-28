@@ -701,6 +701,9 @@ def test_no_src_implementation_for_wp98() -> None:
                 "src/data_layer/point_in_time_market_research/__init__.py",
                 "src/data_layer/point_in_time_market_research/records.py",
                 "src/data_layer/point_in_time_market_research/synthetic_corpus.py",
+                # WP157: bounded in-memory point-in-time as-of query implementation
+                "src/data_layer/point_in_time_market_research/as_of_query.py",
+                "src/data_layer/point_in_time_market_research/as_of_synthetic_cases.py",
             }
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import FrozenInstanceError, replace
 import ast
+import inspect
 import pathlib
 
 import pytest
@@ -15,7 +16,9 @@ import pytest
 import src.data_layer.point_in_time_market_research as pit
 from src.data_layer.point_in_time_market_research import as_of_query as Q
 from src.data_layer.point_in_time_market_research import as_of_synthetic_cases as CASES
+from src.data_layer.point_in_time_market_research import records as R
 from src.data_layer.point_in_time_market_research.as_of_synthetic_cases import (
+    _meta,
     build_synthetic_as_of_query_records_for_case as records_for,
     build_synthetic_as_of_records,
 )
@@ -795,3 +798,414 @@ def test_legacy_snapshot_modules_untouched_by_import() -> None:
 def test_wp158_not_implemented() -> None:
     assert not (SRC_DIR / "manifest.py").exists()
     assert not (SRC_DIR / "dataset_snapshot_reference.py").exists()
+
+
+# ── Blocker A: query-spec validation never raises (fail-closed) ──────────────
+
+
+class _Unhashable:
+    __hash__ = None  # type: ignore[assignment]
+
+
+@pytest.mark.parametrize("field", Q._FILTER_FIELDS)
+@pytest.mark.parametrize(
+    "bad",
+    (
+        ["market:synthetic:001"],
+        {"market:synthetic:001"},
+        {"market:synthetic:001": 1},
+        b"market",
+        7,
+        ({"k": "v"},),
+        (["x"],),
+        ({"x"},),
+        (_Unhashable(),),
+        ("market:synthetic:001", 7),
+        ({"a"}, {"b"}),
+    ),
+)
+def test_malformed_filter_never_raises_and_rejects_spec(field, bad) -> None:
+    spec = _base_spec(**{field: bad})
+    result = Q.query_point_in_time_record_set([_records()["MKT-META-PRIMARY"]], spec)
+    assert result.status == "QUERY_REJECTED_SPEC"
+    assert result.receipt is None
+    assert result.error_codes
+    for code in result.error_codes:
+        assert code in Q.ERROR_CODES
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    (
+        {"cutoff_mode": ["AS_OF_INGESTION_TIME"]},
+        {"cutoff_mode": {"x"}},
+        {"cutoff_mode": _Unhashable()},
+        {"result_view": ["AUTHORITATIVE_CURRENT_STATE"]},
+        {"result_view": {"x"}},
+        {"query_id": ["x"]},
+        {"query_id": _Unhashable()},
+        {"parameter_set_id": {"x"}},
+        {"cutoff_time": ["x"]},
+        {"cutoff_time": _Unhashable()},
+    ),
+)
+def test_malformed_scalar_spec_fields_never_raise(overrides) -> None:
+    spec = _base_spec(**overrides)
+    result = Q.query_point_in_time_record_set([_records()["MKT-META-PRIMARY"]], spec)
+    assert result.status == "QUERY_REJECTED_SPEC"
+    assert result.receipt is None
+
+
+def test_two_non_orderable_filter_values_reject_without_raise() -> None:
+    spec = _base_spec(market_ids=({"a"}, {"b"}))
+    result = Q.query_point_in_time_record_set([_records()["MKT-META-PRIMARY"]], spec)
+    assert result.status == "QUERY_REJECTED_SPEC"
+    assert "FILTER_VALUE_INVALID" in result.error_codes
+
+
+def test_rejected_spec_never_echoes_marker_filter_value() -> None:
+    spec = _base_spec(market_ids=("zz-marker-secret", 7))
+    result = Q.query_point_in_time_record_set([_records()["MKT-META-PRIMARY"]], spec)
+    assert result.status == "QUERY_REJECTED_SPEC"
+    assert "zz-marker-secret" not in repr(result)
+
+
+# ── Blocker B: public builder boundary / private conflict path ───────────────
+
+_PUBLIC_BUILDERS = (
+    "build_market_observation",
+    "build_source_snapshot",
+    "build_resolution_rule_snapshot",
+)
+
+
+@pytest.mark.parametrize("builder_name", _PUBLIC_BUILDERS)
+def test_public_builder_signature_matches_merged_wp156(builder_name) -> None:
+    sig = inspect.signature(getattr(R, builder_name))
+    assert list(sig.parameters) == ["input_record"]
+    assert "allow_review_conflict" not in sig.parameters
+
+
+@pytest.mark.parametrize("builder_name", _PUBLIC_BUILDERS)
+def test_public_builder_rejects_conflict_keyword(builder_name) -> None:
+    with pytest.raises(TypeError):
+        getattr(R, builder_name)({}, allow_review_conflict=True)
+
+
+def _solo_conflict_input(source_assertion_id: str = "assertion:conflict:solo", **overrides):
+    params = dict(
+        source_assertion_id=source_assertion_id,
+        observed_time="2026-01-01T00:06:00Z",
+        ingestion_time="2026-01-01T00:06:01Z",
+        classification="CONFLICT",
+        human_review=True,
+    )
+    params.update(overrides)
+    return _meta(**params)
+
+
+def _solo_conflict(source_assertion_id: str = "assertion:conflict:solo", **overrides):
+    result = R.build_review_conflict_record(
+        _solo_conflict_input(source_assertion_id, **overrides)
+    )
+    assert result.is_valid and result.record is not None
+    return result.record
+
+
+def test_standard_builder_rejects_valid_conflict_input() -> None:
+    result = R.build_market_observation(_solo_conflict_input())
+    assert result.is_valid is False
+    assert "CONFLICT_REQUIRES_HUMAN_REVIEW" in result.error_codes
+
+
+def test_private_review_handoff_accepts_only_structural_conflict() -> None:
+    ok = R.build_review_conflict_record(_solo_conflict_input())
+    assert ok.is_valid and ok.record.envelope.classification == "CONFLICT"
+    non_conflict = _meta(
+        source_assertion_id="assertion:noncon",
+        observed_time="2026-01-01T00:00:01Z",
+        ingestion_time="2026-01-01T00:00:02Z",
+    )
+    assert R.build_review_conflict_record(non_conflict).is_valid is False
+    tampered = replace(ok.record, market_id="market:synthetic:tampered")
+    assert R.revalidate_review_conflict_record(tampered) != ()
+
+
+# ── Blocker C: conflict-only batch requires review authorization ─────────────
+
+
+def test_conflict_only_batch_requires_review_authorization() -> None:
+    conflict = _solo_conflict()
+    rejected = Q.query_point_in_time_record_set(
+        [conflict],
+        _base_spec(cutoff_time="2026-01-01T00:06:01Z", include_conflicts_for_review=False),
+    )
+    assert rejected.status == "QUERY_REJECTED_RECORD_BATCH"
+    assert "CONFLICT_NOT_AUTHORIZED_FOR_REVIEW" in rejected.error_codes
+    assert rejected.receipt is None
+
+    reviewed = Q.query_point_in_time_record_set(
+        [conflict],
+        _base_spec(cutoff_time="2026-01-01T00:06:01Z", include_conflicts_for_review=True),
+    )
+    assert reviewed.status == "QUERY_CONFLICT_REQUIRES_REVIEW"
+    assert (
+        conflict.envelope.record_version_id
+        in reviewed.receipt.review_conflict_record_version_ids
+    )
+
+
+def test_conflict_only_invisible_future_behavior() -> None:
+    conflict = _solo_conflict()
+    reviewed = Q.query_point_in_time_record_set(
+        [conflict],
+        _base_spec(cutoff_time="2026-01-01T00:00:00Z", include_conflicts_for_review=True),
+    )
+    assert reviewed.status == "QUERY_EMPTY"
+    assert reviewed.receipt is not None
+    assert dict(reviewed.receipt.exclusion_counts)["AFTER_INGESTION_CUTOFF"] == 1
+    rejected = Q.query_point_in_time_record_set(
+        [conflict],
+        _base_spec(cutoff_time="2026-01-01T00:00:00Z", include_conflicts_for_review=False),
+    )
+    assert rejected.status == "QUERY_REJECTED_RECORD_BATCH"
+
+
+def test_tampered_conflict_full_query_rejection() -> None:
+    tampered = replace(_solo_conflict(), market_id="market:synthetic:tampered")
+    result = Q.query_point_in_time_record_set(
+        [tampered],
+        _base_spec(cutoff_time="2026-01-01T00:06:01Z", include_conflicts_for_review=True),
+    )
+    assert result.status == "QUERY_REJECTED_RECORD_BATCH"
+    assert "CONFLICT_NOT_AUTHORIZED_FOR_REVIEW" in result.error_codes
+
+
+# ── Blocker D: full-input review-aware batch identity ────────────────────────
+
+
+def _review_spec(**overrides):
+    params = dict(cutoff_time="2026-01-01T00:06:01Z", include_conflicts_for_review=True)
+    params.update(overrides)
+    return _base_spec(**params)
+
+
+def test_conflict_only_batch_hash_differs_from_empty_input() -> None:
+    empty = Q.query_point_in_time_record_set([], _review_spec())
+    conflict_only = Q.query_point_in_time_record_set([_solo_conflict()], _review_spec())
+    assert (
+        empty.receipt.validated_batch_sha256
+        != conflict_only.receipt.validated_batch_sha256
+    )
+
+
+def test_adding_review_conflict_changes_batch_and_result_hash() -> None:
+    primary = _records()["MKT-META-PRIMARY"]
+    a = _solo_conflict("assertion:conflict:a")
+    b = _solo_conflict("assertion:conflict:b")
+    base = Q.query_point_in_time_record_set([primary, a], _review_spec())
+    more = Q.query_point_in_time_record_set([primary, a, b], _review_spec())
+    assert (
+        base.receipt.validated_batch_sha256 != more.receipt.validated_batch_sha256
+    )
+    assert base.receipt.result_sha256 != more.receipt.result_sha256
+
+
+def test_replacing_conflict_identity_changes_hashes_even_when_excluded() -> None:
+    primary = _records()["MKT-META-PRIMARY"]
+    a = _solo_conflict("assertion:conflict:a")
+    b = _solo_conflict("assertion:conflict:b")
+    excl = _base_spec(
+        cutoff_time="2026-01-01T00:06:01Z", include_conflicts_for_review=False
+    )
+    with_a = Q.query_point_in_time_record_set([primary, a], excl)
+    with_b = Q.query_point_in_time_record_set([primary, b], excl)
+    assert with_a.status == "QUERY_VALID_WITH_WARNINGS"
+    assert with_b.status == "QUERY_VALID_WITH_WARNINGS"
+    assert (
+        with_a.receipt.validated_batch_sha256 != with_b.receipt.validated_batch_sha256
+    )
+    assert with_a.receipt.result_sha256 != with_b.receipt.result_sha256
+
+
+def test_conflict_batch_and_result_hash_permutation_invariant() -> None:
+    primary = _records()["MKT-META-PRIMARY"]
+    a = _solo_conflict("assertion:conflict:a")
+    b = _solo_conflict("assertion:conflict:b")
+    base = Q.query_point_in_time_record_set([primary, a, b], _review_spec())
+    perm = Q.query_point_in_time_record_set([b, primary, a], _review_spec())
+    assert base.receipt.validated_batch_sha256 == perm.receipt.validated_batch_sha256
+    assert base.receipt.result_sha256 == perm.receipt.result_sha256
+
+
+def test_conflict_unknown_parent_rejects_batch() -> None:
+    orphan = _solo_conflict(
+        "assertion:conflict:orphan", parents=["record:sha256:" + "0" * 64]
+    )
+    result = Q.query_point_in_time_record_set([orphan], _review_spec())
+    assert result.status == "QUERY_REJECTED_RECORD_BATCH"
+    assert "RECORD_BATCH_INVALID" in result.error_codes
+
+
+def test_identical_duplicate_conflict_is_deterministic() -> None:
+    # An identical duplicate conflict is deduplicated to one unique record and
+    # acknowledged through the validated-batch identity; the result is stable.
+    a = _solo_conflict("assertion:conflict:a")
+    first = Q.query_point_in_time_record_set([a, a], _review_spec())
+    second = Q.query_point_in_time_record_set([a, a], _review_spec())
+    assert first.receipt.validated_unique_record_count == 1
+    assert first.receipt.review_conflict_record_version_ids == (
+        a.envelope.record_version_id,
+    )
+    assert first.receipt.result_sha256 == second.receipt.result_sha256
+
+
+@pytest.mark.parametrize(
+    "view", ("AUTHORITATIVE_CURRENT_STATE", "VISIBLE_HISTORY")
+)
+def test_conflict_never_in_authoritative_or_history_tuples(view) -> None:
+    primary = _records()["MKT-META-PRIMARY"]
+    a = _solo_conflict("assertion:conflict:a")
+    result = Q.query_point_in_time_record_set(
+        [primary, a], _review_spec(result_view=view)
+    )
+    aid = a.envelope.record_version_id
+    assert aid not in result.receipt.authoritative_record_version_ids
+    assert aid not in result.receipt.history_record_version_ids
+    assert aid in result.receipt.review_conflict_record_version_ids
+
+
+# ── Blocker E: visible superseding child requires a visible parent ───────────
+
+
+def _lineage_pair(child_classification: str):
+    primary = R.build_market_observation(
+        _meta(
+            source_assertion_id="assertion:lineage:001",
+            observed_time="2026-01-01T00:00:01Z",
+            ingestion_time="2026-01-01T00:00:02Z",
+            event_time="2026-01-01T00:00:00Z",
+        )
+    ).record
+    child = R.build_market_observation(
+        _meta(
+            source_assertion_id="assertion:lineage:001",
+            observed_time="2026-01-01T00:02:00Z",
+            ingestion_time="2026-01-01T00:02:01Z",
+            event_time="2026-01-01T05:00:00Z",
+            classification=child_classification,
+            parents=[primary.envelope.record_version_id],
+            supersedes=primary.envelope.record_version_id,
+        )
+    ).record
+    return primary, child
+
+
+@pytest.mark.parametrize("child_classification", ("PROJECT_CORRECTION", "SOURCE_REVISION"))
+def test_window_excluded_parent_with_visible_child_rejects(child_classification) -> None:
+    primary, child = _lineage_pair(child_classification)
+    spec = _base_spec(
+        cutoff_time="2026-01-01T00:02:01Z",
+        result_view="VISIBLE_HISTORY",
+        event_time_window=Q.EventTimeWindow(
+            "2026-01-01T04:00:00Z", "2026-01-01T06:00:00Z", False
+        ),
+    )
+    result = Q.query_point_in_time_record_set([primary, child], spec)
+    assert result.status == "QUERY_REJECTED_RECORD_BATCH"
+    assert "VISIBLE_CHILD_PARENT_NOT_VISIBLE" in result.error_codes
+    assert result.receipt is None
+
+
+def test_visible_parent_and_visible_correction_succeed() -> None:
+    primary, correction = _lineage_pair("PROJECT_CORRECTION")
+    spec = _base_spec(
+        cutoff_time="2026-01-01T00:02:01Z",
+        result_view="VISIBLE_HISTORY",
+        event_time_window=Q.EventTimeWindow(
+            "2026-01-01T00:00:00Z", "2026-01-01T06:00:00Z", False
+        ),
+    )
+    result = Q.query_point_in_time_record_set([primary, correction], spec)
+    assert result.is_valid is True
+    ids = result.receipt.history_record_version_ids
+    assert primary.envelope.record_version_id in ids
+    assert correction.envelope.record_version_id in ids
+
+
+@pytest.mark.parametrize("child_classification", ("PROJECT_CORRECTION", "SOURCE_REVISION"))
+def test_future_invisible_child_leaves_parent_authoritative(child_classification) -> None:
+    primary, child = _lineage_pair(child_classification)
+    # Cutoff before the child ingestion: the child is not visible, so no
+    # visible-parent check applies and the parent remains authoritative.
+    spec = _base_spec(cutoff_time="2026-01-01T00:02:00Z")
+    result = Q.query_point_in_time_record_set([primary, child], spec)
+    assert result.receipt.authoritative_record_version_ids == (
+        primary.envelope.record_version_id,
+    )
+
+
+# ── Blocker F: chronological event-time ordering ─────────────────────────────
+
+
+def _event_record(source_assertion: str, event_time: str):
+    return R.build_market_observation(
+        _meta(
+            source_assertion_id=source_assertion,
+            observed_time="2026-01-01T00:00:01Z",
+            ingestion_time="2026-01-01T00:00:02Z",
+            event_time=event_time,
+        )
+    ).record
+
+
+def test_event_time_ordering_is_chronological_not_lexicographic() -> None:
+    zero = _event_record("assertion:evt:zero", "2026-01-01T00:00:00Z")
+    frac = _event_record("assertion:evt:frac", "2026-01-01T00:00:00.1Z")
+    spec = _base_spec(cutoff_time="2026-01-01T00:00:06Z", result_view="VISIBLE_HISTORY")
+    result = Q.query_point_in_time_record_set([frac, zero], spec)
+    ids = list(result.receipt.history_record_version_ids)
+    assert ids.index(zero.envelope.record_version_id) < ids.index(
+        frac.envelope.record_version_id
+    )
+
+
+def _fractional_records():
+    return [
+        _event_record("assertion:evt:a", "2026-01-01T00:00:00Z"),
+        _event_record("assertion:evt:b", "2026-01-01T00:00:00.001Z"),
+        _event_record("assertion:evt:c", "2026-01-01T00:00:00.1Z"),
+        _event_record("assertion:evt:d", "2026-01-01T00:00:00.5Z"),
+    ]
+
+
+def test_multiple_fractional_precisions_order_chronologically() -> None:
+    recs = _fractional_records()
+    spec = _base_spec(cutoff_time="2026-01-01T00:00:06Z", result_view="VISIBLE_HISTORY")
+    result = Q.query_point_in_time_record_set(list(reversed(recs)), spec)
+    expected = tuple(r.envelope.record_version_id for r in recs)
+    assert result.receipt.history_record_version_ids == expected
+
+
+def test_fractional_event_order_permutation_invariant() -> None:
+    recs = _fractional_records()
+    spec = _base_spec(cutoff_time="2026-01-01T00:00:06Z", result_view="VISIBLE_HISTORY")
+    forward = Q.query_point_in_time_record_set(recs, spec)
+    backward = Q.query_point_in_time_record_set(list(reversed(recs)), spec)
+    assert (
+        forward.receipt.history_record_version_ids
+        == backward.receipt.history_record_version_ids
+    )
+    assert forward.receipt.result_sha256 == backward.receipt.result_sha256
+
+
+def test_normalized_offset_event_time_orders_with_z_form() -> None:
+    # "+00:00" normalizes to canonical "Z"; ordering must match the Z form.
+    z_form = _event_record("assertion:evt:z", "2026-01-01T00:00:03Z")
+    offset = _event_record("assertion:evt:o", "2026-01-01T00:00:03.5+00:00")
+    spec = _base_spec(cutoff_time="2026-01-01T00:00:06Z", result_view="VISIBLE_HISTORY")
+    result = Q.query_point_in_time_record_set([offset, z_form], spec)
+    ids = list(result.receipt.history_record_version_ids)
+    assert ids.index(z_form.envelope.record_version_id) < ids.index(
+        offset.envelope.record_version_id
+    )
