@@ -2770,7 +2770,7 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp153_through_wp156_are_merged_and_wp157_is_current_review_target():
+def test_wp153_through_wp157_are_merged_and_wp158_is_current_review_target():
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2778,11 +2778,12 @@ def test_wp153_through_wp156_are_merged_and_wp157_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP157" in current_phase_line
+    assert "WP158" in current_phase_line
     assert "WP153" in merged_line
     assert "WP154" in merged_line
     assert "WP155" in merged_line
     assert "WP156" in merged_line
+    assert "WP157" in merged_line
     for phrase in (
         "sole review target",
         "Finished-system architecture: MEASURABLE_ALPHA_FACTORY_PLUS_DETERMINISTIC_TRADING_KERNEL",
@@ -2790,21 +2791,26 @@ def test_wp153_through_wp156_are_merged_and_wp157_is_current_review_target():
         "As-of query label: POINT_IN_TIME_RECORD_SET_RECONSTRUCTION",
         "As-of query posture: BOUNDED_IN_MEMORY_AS_OF_INGESTION_TIME_RECONSTRUCTION",
         "Implementation posture: LOCAL_OFFLINE_STDLIB_ONLY_IN_MEMORY_VALIDATION",
+        "Manifest contract label: APPEND_ONLY_LOCAL_MANIFEST_AND_DETERMINISTIC_DATASET_SNAPSHOT_REFERENCE_CONTRACT",
+        "Manifest contract posture: CONTRACT_ONLY_NO_WRITER_NO_READER_NO_PERSISTENCE",
+        "Dataset snapshot reference schema: point-in-time-dataset-snapshot-reference@1.0.0",
+        "Local manifest entry schema: point-in-time-local-manifest-entry@1.0.0",
+        "Dataset derivation modes: 2",
+        "Manifest entry kinds: 3",
+        "Reference states: 3",
+        "Reason codes: 3",
         "Supported record families: 3",
         "Supported observation kinds: 3",
-        "Supported cutoff modes: 2",
-        "Supported result views: 3",
-        "Synthetic as-of query cases: 24",
-        "New frozen query dataclasses: 5",
-        "New public query functions: 3",
-        "Dependencies installed or activated by WP157: 0",
+        "New src files added by WP158: 0",
+        "New public exports added by WP158: 0",
+        "Dependencies installed or activated by WP158: 0",
         "Existing Polymarket snapshot behavior changed: NO",
         "Paper-trading readiness: NOT_READY_FOUNDATIONAL_GAPS",
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
-        "Next phase: APPEND_ONLY_LOCAL_MANIFEST_AND_DETERMINISTIC_DATASET_SNAPSHOT_REFERENCE_CONTRACT",
-        "WP158 requires separate approval",
-        "WP158 implemented: NO",
+        "Next phase: LOCAL_OFFLINE_STDLIB_ONLY_MANIFEST_ENTRY_AND_DATASET_SNAPSHOT_REFERENCE_VALIDATOR_WITH_SANITIZED_SYNTHETIC_CORPUS",
+        "WP159 requires separate approval",
+        "WP159 implemented: NO",
     ):
         assert phrase in current_phase_line
     assert current_phase_line.count("sole review target") == 1
@@ -3162,7 +3168,7 @@ def test_wp157_project_status_exact_posture_and_next_gate():
         )
     )
     for phrase in (
-        "BOUNDED_IN_MEMORY_AS_OF_INGESTION_TIME_RECONSTRUCTION_REVIEW_TARGET",
+        "BOUNDED_IN_MEMORY_AS_OF_INGESTION_TIME_RECONSTRUCTION_MERGED",
         "POINT_IN_TIME_RECORD_SET_RECONSTRUCTION",
         "Consumes: valid WP156 public record objects only",
         "Supported cutoff modes: 2",
@@ -3185,9 +3191,8 @@ def test_wp157_project_status_exact_posture_and_next_gate():
         "Strategy/signal/paper/order/risk/execution authority: NONE",
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
-        "Next phase: APPEND_ONLY_LOCAL_MANIFEST_AND_DETERMINISTIC_DATASET_SNAPSHOT_REFERENCE_CONTRACT",
-        "WP158 requires separate approval",
-        "WP158 implemented: NO",
+        "Next sequence phase reconciled by the separately approved WP158 append-only local manifest and deterministic dataset snapshot reference contract",
+        "WP158 implemented: YES",
     ):
         assert phrase in wp157_line
 
@@ -3207,6 +3212,110 @@ def test_wp157_status_fragment_is_stable_and_non_self_referential():
 
 
 def test_wp157_preserves_protected_boundary_statuses():
+    text = _read()
+    for phrase in (
+        "Live trading status: DISABLED",
+        "Credentials status: NOT_USED",
+        "Execution status: NOT_STARTED",
+        "Hermes status: NOT_INSTALLED_NOT_RUNTIME_DEPENDENCY",
+        "Agent runtime status: NOT_STARTED",
+        "Agent execution authority: FORBIDDEN",
+        "Scheduler status: NOT_STARTED",
+        "Bot loop status: NOT_STARTED",
+    ):
+        assert phrase in text
+
+
+# ── WP158: append-only local manifest and dataset snapshot reference contract ─
+
+
+def test_wp158_document_status_package_and_test_are_registered_in_repo_truth():
+    index_text = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(
+        encoding="utf-8"
+    )
+    status_text = _read()
+    for path in (
+        "docs/append_only_local_manifest_and_dataset_snapshot_reference_contract.md",
+        "docs/status_entries/WP158.md",
+        "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+    ):
+        assert path in index_text
+    assert (
+        "Append-only local manifest and deterministic dataset snapshot reference contract status:"
+        in status_text
+    )
+    assert (STATUS_ENTRIES / "WP158.md").is_file()
+    assert (
+        REPO_ROOT
+        / "docs"
+        / "append_only_local_manifest_and_dataset_snapshot_reference_contract.md"
+    ).is_file()
+
+
+def test_wp158_in_current_and_wp157_reconciled_as_merged():
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP158" in current_phase_line
+    assert "WP157" in merged_line
+    assert (
+        "BOUNDED_IN_MEMORY_AS_OF_INGESTION_TIME_RECONSTRUCTION_REVIEW_TARGET" not in text
+    )
+
+
+def test_wp158_project_status_exact_posture_and_next_gate():
+    text = _read()
+    wp158_line = next(
+        line
+        for line in text.splitlines()
+        if line.startswith(
+            "- Append-only local manifest and deterministic dataset snapshot reference contract status:"
+        )
+    )
+    for phrase in (
+        "APPEND_ONLY_LOCAL_MANIFEST_AND_DETERMINISTIC_DATASET_SNAPSHOT_REFERENCE_CONTRACT_REVIEW_TARGET",
+        "CONTRACT_ONLY_NO_WRITER_NO_READER_NO_PERSISTENCE",
+        "point-in-time-dataset-snapshot-reference@1.0.0",
+        "point-in-time-local-manifest-entry@1.0.0",
+        "Dataset derivation modes: 2",
+        "Manifest entry kinds: 3",
+        "Reference states: 3",
+        "Reason codes: 3",
+        "Reference identity prefix: datasetref:sha256:",
+        "Manifest entry identity prefix: manifestentry:sha256:",
+        "New src files: 0",
+        "New public exports: 0",
+        "Writers/readers/manifests/databases/query engines/collectors/migrations/persistence: 0",
+        "WP157 public surface changed: NO",
+        "Strategy/signal/paper/order/risk/execution authority: NONE",
+        "Paper-trading execution: NOT AUTHORIZED",
+        "Live-trading execution: FORBIDDEN",
+        "Next phase: LOCAL_OFFLINE_STDLIB_ONLY_MANIFEST_ENTRY_AND_DATASET_SNAPSHOT_REFERENCE_VALIDATOR_WITH_SANITIZED_SYNTHETIC_CORPUS",
+        "WP159 requires separate approval",
+        "WP159 implemented: NO",
+    ):
+        assert phrase in wp158_line
+
+
+def test_wp158_status_fragment_is_stable_and_non_self_referential():
+    status = (STATUS_ENTRIES / "WP158.md").read_text(encoding="utf-8")
+    assert "PR: see GitHub PR metadata and PR body." in status
+    assert "Current live PR head: see GitHub PR metadata and PR body" in status
+    assert "stable and non-self-referential" in status
+    assert "Ready for review: YES only after final committed-head validation" in status
+    assert "LOCAL_DRAFT_VERIFIED" not in status
+    assert "PR: TBD" not in status
+    fixed_live_head = re.compile(
+        r"Current live PR head:\s*`?[0-9a-f]{40}`?", re.IGNORECASE
+    )
+    assert fixed_live_head.search(status) is None
+
+
+def test_wp158_preserves_protected_boundary_statuses():
     text = _read()
     for phrase in (
         "Live trading status: DISABLED",
