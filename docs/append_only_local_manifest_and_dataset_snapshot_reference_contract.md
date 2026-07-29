@@ -151,8 +151,17 @@ All vocabularies are closed and canonically ordered exactly as listed.
   `query_result_sha256`, `cutoff_mode`, `cutoff_time`, `result_view`,
   `query_engine_version`) are null.
 - For `AS_OF_QUERY_RESULT`, all query fields are required.
-- `created_from_manifest_entry_id` is excluded from reference identity to avoid
-  circularity.
+- `created_from_manifest_entry_id` is a reserved field in schema version
+  `1.0.0`: it MUST be present and MUST be null. It is never populated after
+  registration and is excluded from reference identity to avoid circularity.
+  Registration provenance is one-way — a `ManifestEntry` points to its
+  `DatasetSnapshotReference` through `dataset_snapshot_reference_id`, never the
+  reverse. A future reader may derive the reverse lookup by scanning or indexing
+  manifest entries, but no backlink is ever stored by mutating the reference. Any
+  future non-null backlink requires a new schema version and a separately
+  approved migration / identity decision. A non-null
+  `created_from_manifest_entry_id` under schema `1.0.0` is rejected with
+  `FIELD_VALUE_INVALID`.
 - `human_review_required` is `true` when `review_conflict_record_version_ids` is
   non-empty.
 - `advisory_only` and `no_execution_authority` are fixed `true`.
@@ -164,6 +173,17 @@ question/rule text, prices/sizes, wallet/account/credential identifiers,
 strategy/signal/trade fields, filesystem path, hostname, process ID, runtime
 duration, current time, and object representation (`repr`/`str` of source
 objects).
+
+### 6.4 Reference Immutability Invariant
+
+The full canonical `DatasetSnapshotReference` content is immutable after
+`dataset_snapshot_reference_id` is derived. No field may change under the same
+ID — including a field that is excluded from the identity preimage, such as
+`created_from_manifest_entry_id`. Because `created_from_manifest_entry_id` is
+fixed null in `1.0.0`, one `dataset_snapshot_reference_id` always identifies
+exactly one canonical content; there is no before-registration versus
+after-registration divergence, and no excluded mutable field may create a
+same-ID / different-content ambiguity.
 
 ## 7. Dataset Snapshot Reference Identity
 
@@ -227,26 +247,70 @@ any single identity-committed field changes the reference ID.
 15. `advisory_only`
 16. `no_execution_authority`
 
-### 8.2 Rules
+### 8.2 Structural Rules
 
 - `schema_id` and `schema_version` are exact constants
   (`point-in-time-local-manifest-entry` and `1.0.0`).
 - `manifest_id` is a bounded opaque logical ID.
 - `sequence_number` is a non-negative integer; a boolean is invalid.
 - `sequence_number` 0 requires `previous_manifest_entry_id` null.
-- `sequence_number` greater than 0 requires the exact prior entry ID.
+- `sequence_number` greater than 0 requires the exact prior entry ID (the
+  immediately preceding sequence number's entry in the same chain).
 - One `manifest_id` per chain; entries from another manifest are rejected.
 - `sequence_number` values and `manifest_entry_id` values are unique.
-- `REGISTER_DATASET_SNAPSHOT_REFERENCE` uses `ACTIVE_REFERENCE`,
-  `INITIAL_REGISTRATION`, and no `supersedes_manifest_entry_id`.
-- `SUPERSEDE_DATASET_SNAPSHOT_REFERENCE` uses `SUPERSEDED_REFERENCE`,
-  `SOURCE_SUPERSEDED`, and an earlier same-chain target.
-- `INVALIDATE_DATASET_SNAPSHOT_REFERENCE` uses `INVALIDATED_REFERENCE`,
-  `REFERENCE_INVALIDATED`, an earlier same-chain target, and
-  `human_review_required=true`.
 - Append order is sequence / link based, never effective-time based.
 - `effective_time` cannot rewrite prior entries.
 - `advisory_only` and `no_execution_authority` are fixed `true`.
+
+### 8.3 Entry-Kind Subject And Target Semantics
+
+The manifest entry's `dataset_snapshot_reference_id` is always the entry's
+**subject reference**. What the entry does with that subject depends on the kind.
+
+**`REGISTER_DATASET_SNAPSHOT_REFERENCE`** — registers a new subject reference.
+
+- `dataset_snapshot_reference_id` is the newly registered subject reference.
+- `supersedes_manifest_entry_id` MUST be null.
+- `reference_state` = `ACTIVE_REFERENCE`.
+- `reason_code` = `INITIAL_REGISTRATION`.
+
+**`SUPERSEDE_DATASET_SNAPSHOT_REFERENCE`** — a state-transition record for an
+already-registered subject, not a replacement-registration record.
+
+- `supersedes_manifest_entry_id` MUST identify an earlier same-chain
+  `REGISTER_DATASET_SNAPSHOT_REFERENCE` (or other currently-effective entry) for
+  the same subject.
+- `dataset_snapshot_reference_id` MUST equal the target entry's
+  `dataset_snapshot_reference_id`.
+- `reference_state` = `SUPERSEDED_REFERENCE`.
+- `reason_code` = `SOURCE_SUPERSEDED`.
+- A replacement reference, when one exists, MUST be registered separately with
+  its own `REGISTER_DATASET_SNAPSHOT_REFERENCE` entry; this contract neither
+  infers nor requires a replacement.
+
+**`INVALIDATE_DATASET_SNAPSHOT_REFERENCE`** — a state-transition record for an
+already-registered subject.
+
+- `supersedes_manifest_entry_id` MUST identify an earlier same-chain
+  currently-effective entry for the same subject.
+- `dataset_snapshot_reference_id` MUST equal the target entry's
+  `dataset_snapshot_reference_id`.
+- `reference_state` = `INVALIDATED_REFERENCE`.
+- `reason_code` = `REFERENCE_INVALIDATED`.
+- `human_review_required` = `true`.
+
+### 8.4 State-Transition Integrity
+
+- A `SUPERSEDE`/`INVALIDATE` target MUST be currently effective. A target that
+  is already terminally `SUPERSEDED_REFERENCE` or `INVALIDATED_REFERENCE` is
+  rejected; schema version `1.0.0` defines no repeated terminal transition.
+- A target that is from another manifest, a future entry, the entry itself
+  (self-target), unknown, or whose `dataset_snapshot_reference_id` does not equal
+  the transition entry's `dataset_snapshot_reference_id` is rejected.
+- The append-chain head and the subject-reference state are separate concepts.
+  The highest-sequence entry is the chain head, but it is not automatically the
+  active dataset reference; a subject's effective state is determined by the last
+  `REGISTER`/`SUPERSEDE`/`INVALIDATE` entry naming that subject.
 
 ## 9. Manifest Entry Identity
 
@@ -272,6 +336,10 @@ parameter-set ID, human-review-required, and the safety booleans
 
 ## 10. Append-Chain Truth Table
 
+In the table, "same subject" means the transition entry's
+`dataset_snapshot_reference_id` equals the target entry's
+`dataset_snapshot_reference_id`.
+
 | Sequence | Previous ID | Entry kind | Supersedes target | Required result |
 |---:|---|---|---|---|
 | 0 | null | REGISTER | null | valid genesis |
@@ -280,18 +348,24 @@ parameter-set ID, human-review-required, and the safety booleans
 | >0 | exact prior | REGISTER | null | valid append |
 | >0 | unknown prior | any | any | reject |
 | >0 | prior from other manifest | any | any | reject |
-| >0 | exact prior | SUPERSEDE | earlier same-chain entry | valid |
-| >0 | exact prior | SUPERSEDE | null/unknown/future | reject |
-| >0 | exact prior | INVALIDATE | earlier same-chain entry | valid with review |
-| >0 | exact prior | INVALIDATE | null/unknown/future | reject |
+| >0 | exact prior | SUPERSEDE | earlier same-chain effective entry, same subject | valid |
+| >0 | exact prior | SUPERSEDE | null/unknown/future/self | reject |
+| >0 | exact prior | SUPERSEDE | target dataset-reference ID ≠ entry's | reject |
+| >0 | exact prior | SUPERSEDE | target already superseded/invalidated | reject |
+| >0 | exact prior | INVALIDATE | earlier same-chain effective entry, same subject | valid with review |
+| >0 | exact prior | INVALIDATE | null/unknown/future/self | reject |
+| >0 | exact prior | INVALIDATE | target dataset-reference ID ≠ entry's | reject |
+| >0 | exact prior | INVALIDATE | target already superseded/invalidated | reject |
 | duplicate sequence | any | any | any | reject |
 | duplicate ID/different content | any | any | any | reject |
 | cycle | any | any | any | reject |
 
 The chain explicitly rejects branching, multiple heads, sequence gaps, cycles,
-backward mutation, and implicit latest-by-time resolution. The single valid head
-is the entry with the highest sequence number reachable by exact previous-ID
-links from the genesis entry.
+backward mutation, and implicit latest-by-time resolution. The single valid chain
+head is the entry with the highest sequence number reachable by exact previous-ID
+links from the genesis entry. The chain head is distinct from any subject
+reference's effective state: a subject's state is the last `REGISTER`/`SUPERSEDE`/
+`INVALIDATE` entry naming that subject, not the chain head.
 
 ## 11. Public API Matrix
 
@@ -338,7 +412,7 @@ derived/recomputed, or explicitly excluded with reason. No field is omitted.
 | `query_engine_version` | caller | null for batch; required for query | YES | mode-conditional check | version or null |
 | `validator_version` | caller | always required | YES | shape check | version string |
 | `parameter_set_id` | caller | always required bounded ID | YES | bounded-ID check | opaque ID |
-| `created_from_manifest_entry_id` | caller | required after registration | NO (circularity) | provenance-only check | opaque ID |
+| `created_from_manifest_entry_id` | caller | reserved in 1.0.0: required present and null | NO (circularity) | fixed-null check | null |
 | `human_review_required` | derived | true iff conflicts non-empty | YES | recompute-and-compare | boolean |
 | `advisory_only` | constant | fixed true | YES | fixed-true check | boolean true |
 | `no_execution_authority` | constant | fixed true | YES | fixed-true check | boolean true |
@@ -354,10 +428,10 @@ derived/recomputed, or explicitly excluded with reason. No field is omitted.
 | `sequence_number` | caller | non-negative integer; bool invalid | YES | integer/bound check | integer |
 | `previous_manifest_entry_id` | caller | null at seq 0; exact prior at seq >0 | YES | link check | opaque ID or null |
 | `entry_kind` | caller | required closed vocabulary | YES | membership check | vocabulary token |
-| `dataset_snapshot_reference_id` | caller | required derived reference ID | YES | reference-shape check | derived ID |
-| `supersedes_manifest_entry_id` | caller | null for REGISTER; earlier same-chain otherwise | YES | supersedes check | opaque ID or null |
-| `reference_state` | caller | required, kind-consistent | YES | kind-consistency check | vocabulary token |
-| `reason_code` | caller | required, kind-consistent | YES | kind-consistency check | vocabulary token |
+| `dataset_snapshot_reference_id` | caller | subject reference; for SUPERSEDE/INVALIDATE must equal target entry's reference ID | YES | reference-shape + target-equality check | derived ID |
+| `supersedes_manifest_entry_id` | caller | null for REGISTER; earlier same-chain currently-effective same-subject target for SUPERSEDE/INVALIDATE | YES | target-existence/effective/same-subject check | opaque ID or null |
+| `reference_state` | caller | REGISTER→ACTIVE, SUPERSEDE→SUPERSEDED, INVALIDATE→INVALIDATED | YES | kind-consistency check | vocabulary token |
+| `reason_code` | caller | REGISTER→INITIAL_REGISTRATION, SUPERSEDE→SOURCE_SUPERSEDED, INVALIDATE→REFERENCE_INVALIDATED | YES | kind-consistency check | vocabulary token |
 | `effective_time` | caller | required UTC; never reorders chain | YES | UTC check | time string |
 | `parameter_set_id` | caller | always required bounded ID | YES | bounded-ID check | opaque ID |
 | `human_review_required` | derived | true for INVALIDATE and conflict lineage | YES | recompute-and-compare | boolean |
@@ -389,10 +463,14 @@ A future implementation must fail closed with these bounded categories:
 | IDs | empty/oversized/malformed | FIELD_VALUE_INVALID | no |
 | hashes | malformed/wrong derivation | ID_DERIVATION_MISMATCH | no |
 | record-ID tuples | duplicate/overlap/wrong type | FIELD_VALUE_INVALID | no |
+| reserved backlink | non-null `created_from_manifest_entry_id` in 1.0.0 | FIELD_VALUE_INVALID | no |
 | query fields | partial mode combination | REFERENCE_MODE_MISMATCH | no |
+| review-conflict authority | conflict ID placed in ordinary tuple | REVIEW_CONFLICT_AUTHORITY_FORBIDDEN | no |
 | sequence | bool/negative/gap/duplicate | MANIFEST_SEQUENCE_INVALID | no |
-| previous ID | unknown/wrong manifest | MANIFEST_PREVIOUS_ENTRY_UNKNOWN | no |
-| supersedes | null/unknown/future/self | MANIFEST_SUPERSEDES_INVALID | no |
+| previous ID | unknown | MANIFEST_PREVIOUS_ENTRY_UNKNOWN | no |
+| previous ID | belongs to other manifest | MANIFEST_CHAIN_MISMATCH | no |
+| supersedes | null/unknown/future/self/non-effective/already-terminal | MANIFEST_SUPERSEDES_INVALID | no |
+| supersedes | target dataset-reference ID ≠ entry's | MANIFEST_SUPERSEDES_INVALID | no |
 | safety flags | false/non-bool | SAFETY_POSTURE_INVALID | no |
 | unexpected fields | any | FIELD_VALUE_INVALID | no |
 
@@ -402,46 +480,402 @@ only a bounded category code and a bounded neutral message.
 
 ## 14. Deterministic Contract Examples
 
-All examples use fixed synthetic IDs only and are illustrative and non-runtime.
-No example is generated by executing code, and no example embeds raw payload,
-source text, prices, or any runtime value.
+The twelve examples below are concrete, sanitized, machine-readable JSON objects.
+Each is a wrapper with `example_id`, `expected_valid`, `expected_error_codes`,
+and an `input` object that is a complete `DatasetSnapshotReference` or
+`ManifestEntry`. They use fixed synthetic IDs only, every SHA-256 value is exactly
+64 lowercase hexadecimal characters, every derived ID uses its locked prefix over
+a fixed synthetic hash, explicit nulls are present, safety booleans are present
+and `true`, and every reference sets `created_from_manifest_entry_id: null` per
+the schema `1.0.0` reserved-null rule. The examples are illustrative and
+non-runtime: none is generated by executing code, and none embeds raw payload,
+source text, prices, real market/wallet/account/credential data, path, hostname,
+process value, current timestamp, or any generated runtime value. Invalid
+examples carry the exact bounded expected error category.
 
-1. Validated ordinary batch reference — `derivation_mode=VALIDATED_RECORD_BATCH`,
-   `validated_batch_sha256` present, ordinary IDs non-empty, review-conflict IDs
-   empty, all query fields null, `human_review_required=false`.
-2. As-of current-state reference — `derivation_mode=AS_OF_QUERY_RESULT`, all
-   query fields present (`cutoff_mode`, `cutoff_time`, `result_view`,
-   `query_spec_sha256`, `query_result_sha256`, `query_engine_version`), ordinary
-   IDs non-empty, review-conflict IDs empty.
-3. Empty valid as-of result reference — `AS_OF_QUERY_RESULT` with empty ordinary
-   IDs and empty review-conflict IDs; `validated_batch_sha256` still present;
-   `human_review_required=false`.
-4. Review-conflict-only reference — ordinary IDs empty, review-conflict IDs
-   non-empty, `human_review_required=true`; conflicts remain non-authoritative.
-5. Mixed ordinary/review reference — both tuples non-empty and non-overlapping,
-   `human_review_required=true`.
-6. Genesis registration — manifest entry `sequence_number=0`,
-   `previous_manifest_entry_id=null`,
-   `entry_kind=REGISTER_DATASET_SNAPSHOT_REFERENCE`,
-   `reference_state=ACTIVE_REFERENCE`, `reason_code=INITIAL_REGISTRATION`,
-   `supersedes_manifest_entry_id=null`.
-7. Second registration — `sequence_number=1`, `previous_manifest_entry_id` equal
-   to the genesis entry ID, `REGISTER_DATASET_SNAPSHOT_REFERENCE`,
-   `ACTIVE_REFERENCE`, `INITIAL_REGISTRATION`, no supersedes.
-8. Supersede entry — `sequence_number=2`, exact prior link,
-   `SUPERSEDE_DATASET_SNAPSHOT_REFERENCE`, `SUPERSEDED_REFERENCE`,
-   `SOURCE_SUPERSEDED`, `supersedes_manifest_entry_id` = an earlier same-chain
-   entry.
-9. Invalidate entry — `sequence_number=3`, exact prior link,
-   `INVALIDATE_DATASET_SNAPSHOT_REFERENCE`, `INVALIDATED_REFERENCE`,
-   `REFERENCE_INVALIDATED`, earlier same-chain target, `human_review_required=true`.
-10. Sequence gap — `sequence_number=5` following a head at `sequence_number=3`;
-    rejected with `MANIFEST_SEQUENCE_INVALID`.
-11. Cross-manifest previous ID — a `previous_manifest_entry_id` belonging to a
-    different `manifest_id`; rejected with `MANIFEST_CHAIN_MISMATCH`.
-12. Review-conflict authority mixing — an attempt to place a review-conflict
-    record-version ID into `ordinary_record_version_ids`; rejected with
-    `REVIEW_CONFLICT_AUTHORITY_FORBIDDEN`.
+Wrapper shape:
+
+```text
+{
+  "example_id": "WP158-EXAMPLE-NN",
+  "expected_valid": <bool>,
+  "expected_error_codes": [ ... bounded categories, empty when valid ... ],
+  "input": { ...complete DatasetSnapshotReference or ManifestEntry... }
+}
+```
+
+Manifest examples 6–9 form one coherent chain
+(`manifest:wp158-synthetic-chain-a`): genesis registers subject A, entry 1
+registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B.
+
+### Example 1 — validated ordinary batch reference (valid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-01",
+  "expected_valid": true,
+  "expected_error_codes": [],
+  "input": {
+    "schema_id": "point-in-time-dataset-snapshot-reference",
+    "schema_version": "1.0.0",
+    "dataset_snapshot_reference_id": "datasetref:sha256:1a2b3c4d1a2b3c4d1a2b3c4d1a2b3c4d1a2b3c4d1a2b3c4d1a2b3c4d1a2b3c4d",
+    "derivation_mode": "VALIDATED_RECORD_BATCH",
+    "validated_batch_sha256": "0a1b2c3d0a1b2c3d0a1b2c3d0a1b2c3d0a1b2c3d0a1b2c3d0a1b2c3d0a1b2c3d",
+    "ordinary_record_version_ids": [
+      "record:sha256:aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22",
+      "record:sha256:bb22cc33bb22cc33bb22cc33bb22cc33bb22cc33bb22cc33bb22cc33bb22cc33"
+    ],
+    "review_conflict_record_version_ids": [],
+    "query_spec_sha256": null,
+    "query_result_sha256": null,
+    "cutoff_mode": null,
+    "cutoff_time": null,
+    "result_view": null,
+    "query_engine_version": null,
+    "validator_version": "point-in-time-validator@1.0.0-synthetic",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "created_from_manifest_entry_id": null,
+    "human_review_required": false,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
+
+### Example 2 — as-of current-state reference (valid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-02",
+  "expected_valid": true,
+  "expected_error_codes": [],
+  "input": {
+    "schema_id": "point-in-time-dataset-snapshot-reference",
+    "schema_version": "1.0.0",
+    "dataset_snapshot_reference_id": "datasetref:sha256:3a4b5c6d3a4b5c6d3a4b5c6d3a4b5c6d3a4b5c6d3a4b5c6d3a4b5c6d3a4b5c6d",
+    "derivation_mode": "AS_OF_QUERY_RESULT",
+    "validated_batch_sha256": "2a3b4c5d2a3b4c5d2a3b4c5d2a3b4c5d2a3b4c5d2a3b4c5d2a3b4c5d2a3b4c5d",
+    "ordinary_record_version_ids": [
+      "record:sha256:aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22"
+    ],
+    "review_conflict_record_version_ids": [],
+    "query_spec_sha256": "4a5b6c7d4a5b6c7d4a5b6c7d4a5b6c7d4a5b6c7d4a5b6c7d4a5b6c7d4a5b6c7d",
+    "query_result_sha256": "5a6b7c8d5a6b7c8d5a6b7c8d5a6b7c8d5a6b7c8d5a6b7c8d5a6b7c8d5a6b7c8d",
+    "cutoff_mode": "AS_OF_INGESTION_TIME",
+    "cutoff_time": "2026-01-10T00:00:00Z",
+    "result_view": "AUTHORITATIVE_CURRENT_STATE",
+    "query_engine_version": "point-in-time-as-of-query@1.0.0-synthetic",
+    "validator_version": "point-in-time-validator@1.0.0-synthetic",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "created_from_manifest_entry_id": null,
+    "human_review_required": false,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
+
+### Example 3 — empty valid as-of result reference (valid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-03",
+  "expected_valid": true,
+  "expected_error_codes": [],
+  "input": {
+    "schema_id": "point-in-time-dataset-snapshot-reference",
+    "schema_version": "1.0.0",
+    "dataset_snapshot_reference_id": "datasetref:sha256:7a8b9c0d7a8b9c0d7a8b9c0d7a8b9c0d7a8b9c0d7a8b9c0d7a8b9c0d7a8b9c0d",
+    "derivation_mode": "AS_OF_QUERY_RESULT",
+    "validated_batch_sha256": "6a7b8c9d6a7b8c9d6a7b8c9d6a7b8c9d6a7b8c9d6a7b8c9d6a7b8c9d6a7b8c9d",
+    "ordinary_record_version_ids": [],
+    "review_conflict_record_version_ids": [],
+    "query_spec_sha256": "8a9b0c1d8a9b0c1d8a9b0c1d8a9b0c1d8a9b0c1d8a9b0c1d8a9b0c1d8a9b0c1d",
+    "query_result_sha256": "9a0b1c2d9a0b1c2d9a0b1c2d9a0b1c2d9a0b1c2d9a0b1c2d9a0b1c2d9a0b1c2d",
+    "cutoff_mode": "AS_OF_INGESTION_TIME",
+    "cutoff_time": "2026-01-10T00:00:00Z",
+    "result_view": "AUTHORITATIVE_CURRENT_STATE",
+    "query_engine_version": "point-in-time-as-of-query@1.0.0-synthetic",
+    "validator_version": "point-in-time-validator@1.0.0-synthetic",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "created_from_manifest_entry_id": null,
+    "human_review_required": false,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
+
+### Example 4 — review-conflict-only reference (valid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-04",
+  "expected_valid": true,
+  "expected_error_codes": [],
+  "input": {
+    "schema_id": "point-in-time-dataset-snapshot-reference",
+    "schema_version": "1.0.0",
+    "dataset_snapshot_reference_id": "datasetref:sha256:1b2c3d4e1b2c3d4e1b2c3d4e1b2c3d4e1b2c3d4e1b2c3d4e1b2c3d4e1b2c3d4e",
+    "derivation_mode": "AS_OF_QUERY_RESULT",
+    "validated_batch_sha256": "0b1c2d3e0b1c2d3e0b1c2d3e0b1c2d3e0b1c2d3e0b1c2d3e0b1c2d3e0b1c2d3e",
+    "ordinary_record_version_ids": [],
+    "review_conflict_record_version_ids": [
+      "record:sha256:cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44"
+    ],
+    "query_spec_sha256": "2b3c4d5e2b3c4d5e2b3c4d5e2b3c4d5e2b3c4d5e2b3c4d5e2b3c4d5e2b3c4d5e",
+    "query_result_sha256": "3b4c5d6e3b4c5d6e3b4c5d6e3b4c5d6e3b4c5d6e3b4c5d6e3b4c5d6e3b4c5d6e",
+    "cutoff_mode": "AS_OF_OBSERVED_TIME_DIAGNOSTIC",
+    "cutoff_time": "2026-01-10T00:00:00Z",
+    "result_view": "VISIBLE_HISTORY",
+    "query_engine_version": "point-in-time-as-of-query@1.0.0-synthetic",
+    "validator_version": "point-in-time-validator@1.0.0-synthetic",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "created_from_manifest_entry_id": null,
+    "human_review_required": true,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
+
+### Example 5 — mixed ordinary/review reference (valid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-05",
+  "expected_valid": true,
+  "expected_error_codes": [],
+  "input": {
+    "schema_id": "point-in-time-dataset-snapshot-reference",
+    "schema_version": "1.0.0",
+    "dataset_snapshot_reference_id": "datasetref:sha256:5b6c7d8e5b6c7d8e5b6c7d8e5b6c7d8e5b6c7d8e5b6c7d8e5b6c7d8e5b6c7d8e",
+    "derivation_mode": "AS_OF_QUERY_RESULT",
+    "validated_batch_sha256": "4b5c6d7e4b5c6d7e4b5c6d7e4b5c6d7e4b5c6d7e4b5c6d7e4b5c6d7e4b5c6d7e",
+    "ordinary_record_version_ids": [
+      "record:sha256:aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22aa11bb22"
+    ],
+    "review_conflict_record_version_ids": [
+      "record:sha256:dd44ee55dd44ee55dd44ee55dd44ee55dd44ee55dd44ee55dd44ee55dd44ee55"
+    ],
+    "query_spec_sha256": "6b7c8d9e6b7c8d9e6b7c8d9e6b7c8d9e6b7c8d9e6b7c8d9e6b7c8d9e6b7c8d9e",
+    "query_result_sha256": "7b8c9d0e7b8c9d0e7b8c9d0e7b8c9d0e7b8c9d0e7b8c9d0e7b8c9d0e7b8c9d0e",
+    "cutoff_mode": "AS_OF_INGESTION_TIME",
+    "cutoff_time": "2026-01-10T00:00:00Z",
+    "result_view": "ENTITY_TIMELINE",
+    "query_engine_version": "point-in-time-as-of-query@1.0.0-synthetic",
+    "validator_version": "point-in-time-validator@1.0.0-synthetic",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "created_from_manifest_entry_id": null,
+    "human_review_required": true,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
+
+### Example 6 — genesis registration (valid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-06",
+  "expected_valid": true,
+  "expected_error_codes": [],
+  "input": {
+    "schema_id": "point-in-time-local-manifest-entry",
+    "schema_version": "1.0.0",
+    "manifest_entry_id": "manifestentry:sha256:e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3",
+    "manifest_id": "manifest:wp158-synthetic-chain-a",
+    "sequence_number": 0,
+    "previous_manifest_entry_id": null,
+    "entry_kind": "REGISTER_DATASET_SNAPSHOT_REFERENCE",
+    "dataset_snapshot_reference_id": "datasetref:sha256:5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c",
+    "supersedes_manifest_entry_id": null,
+    "reference_state": "ACTIVE_REFERENCE",
+    "reason_code": "INITIAL_REGISTRATION",
+    "effective_time": "2026-01-15T00:00:00Z",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "human_review_required": false,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
+
+### Example 7 — second registration (valid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-07",
+  "expected_valid": true,
+  "expected_error_codes": [],
+  "input": {
+    "schema_id": "point-in-time-local-manifest-entry",
+    "schema_version": "1.0.0",
+    "manifest_entry_id": "manifestentry:sha256:e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4",
+    "manifest_id": "manifest:wp158-synthetic-chain-a",
+    "sequence_number": 1,
+    "previous_manifest_entry_id": "manifestentry:sha256:e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3",
+    "entry_kind": "REGISTER_DATASET_SNAPSHOT_REFERENCE",
+    "dataset_snapshot_reference_id": "datasetref:sha256:6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c",
+    "supersedes_manifest_entry_id": null,
+    "reference_state": "ACTIVE_REFERENCE",
+    "reason_code": "INITIAL_REGISTRATION",
+    "effective_time": "2026-01-16T00:00:00Z",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "human_review_required": false,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
+
+### Example 8 — supersede transition, same subject reference as target (valid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-08",
+  "expected_valid": true,
+  "expected_error_codes": [],
+  "input": {
+    "schema_id": "point-in-time-local-manifest-entry",
+    "schema_version": "1.0.0",
+    "manifest_entry_id": "manifestentry:sha256:e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5",
+    "manifest_id": "manifest:wp158-synthetic-chain-a",
+    "sequence_number": 2,
+    "previous_manifest_entry_id": "manifestentry:sha256:e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4",
+    "entry_kind": "SUPERSEDE_DATASET_SNAPSHOT_REFERENCE",
+    "dataset_snapshot_reference_id": "datasetref:sha256:5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c",
+    "supersedes_manifest_entry_id": "manifestentry:sha256:e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3",
+    "reference_state": "SUPERSEDED_REFERENCE",
+    "reason_code": "SOURCE_SUPERSEDED",
+    "effective_time": "2026-01-17T00:00:00Z",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "human_review_required": false,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
+
+### Example 9 — invalidate transition, same subject reference as target (valid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-09",
+  "expected_valid": true,
+  "expected_error_codes": [],
+  "input": {
+    "schema_id": "point-in-time-local-manifest-entry",
+    "schema_version": "1.0.0",
+    "manifest_entry_id": "manifestentry:sha256:e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6",
+    "manifest_id": "manifest:wp158-synthetic-chain-a",
+    "sequence_number": 3,
+    "previous_manifest_entry_id": "manifestentry:sha256:e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5",
+    "entry_kind": "INVALIDATE_DATASET_SNAPSHOT_REFERENCE",
+    "dataset_snapshot_reference_id": "datasetref:sha256:6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c",
+    "supersedes_manifest_entry_id": "manifestentry:sha256:e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4",
+    "reference_state": "INVALIDATED_REFERENCE",
+    "reason_code": "REFERENCE_INVALIDATED",
+    "effective_time": "2026-01-18T00:00:00Z",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "human_review_required": true,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
+
+### Example 10 — invalid sequence gap (invalid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-10",
+  "expected_valid": false,
+  "expected_error_codes": ["MANIFEST_SEQUENCE_INVALID"],
+  "input": {
+    "schema_id": "point-in-time-local-manifest-entry",
+    "schema_version": "1.0.0",
+    "manifest_entry_id": "manifestentry:sha256:e4d5c6b7e4d5c6b7e4d5c6b7e4d5c6b7e4d5c6b7e4d5c6b7e4d5c6b7e4d5c6b7",
+    "manifest_id": "manifest:wp158-synthetic-chain-a",
+    "sequence_number": 5,
+    "previous_manifest_entry_id": "manifestentry:sha256:e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6",
+    "entry_kind": "REGISTER_DATASET_SNAPSHOT_REFERENCE",
+    "dataset_snapshot_reference_id": "datasetref:sha256:1c2d3e4f1c2d3e4f1c2d3e4f1c2d3e4f1c2d3e4f1c2d3e4f1c2d3e4f1c2d3e4f",
+    "supersedes_manifest_entry_id": null,
+    "reference_state": "ACTIVE_REFERENCE",
+    "reason_code": "INITIAL_REGISTRATION",
+    "effective_time": "2026-01-19T00:00:00Z",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "human_review_required": false,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
+
+### Example 11 — invalid cross-manifest previous ID (invalid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-11",
+  "expected_valid": false,
+  "expected_error_codes": ["MANIFEST_CHAIN_MISMATCH"],
+  "input": {
+    "schema_id": "point-in-time-local-manifest-entry",
+    "schema_version": "1.0.0",
+    "manifest_entry_id": "manifestentry:sha256:e5d6c7b8e5d6c7b8e5d6c7b8e5d6c7b8e5d6c7b8e5d6c7b8e5d6c7b8e5d6c7b8",
+    "manifest_id": "manifest:wp158-synthetic-chain-b",
+    "sequence_number": 1,
+    "previous_manifest_entry_id": "manifestentry:sha256:e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3",
+    "entry_kind": "REGISTER_DATASET_SNAPSHOT_REFERENCE",
+    "dataset_snapshot_reference_id": "datasetref:sha256:2c3d4e5f2c3d4e5f2c3d4e5f2c3d4e5f2c3d4e5f2c3d4e5f2c3d4e5f2c3d4e5f",
+    "supersedes_manifest_entry_id": null,
+    "reference_state": "ACTIVE_REFERENCE",
+    "reason_code": "INITIAL_REGISTRATION",
+    "effective_time": "2026-01-20T00:00:00Z",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "human_review_required": false,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
+
+### Example 12 — invalid review-conflict authority mixing (invalid)
+
+```json
+{
+  "example_id": "WP158-EXAMPLE-12",
+  "expected_valid": false,
+  "expected_error_codes": ["REVIEW_CONFLICT_AUTHORITY_FORBIDDEN"],
+  "input": {
+    "schema_id": "point-in-time-dataset-snapshot-reference",
+    "schema_version": "1.0.0",
+    "dataset_snapshot_reference_id": "datasetref:sha256:7f8a9b0c7f8a9b0c7f8a9b0c7f8a9b0c7f8a9b0c7f8a9b0c7f8a9b0c7f8a9b0c",
+    "derivation_mode": "AS_OF_QUERY_RESULT",
+    "validated_batch_sha256": "8f9a0b1c8f9a0b1c8f9a0b1c8f9a0b1c8f9a0b1c8f9a0b1c8f9a0b1c8f9a0b1c",
+    "ordinary_record_version_ids": [
+      "record:sha256:cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44"
+    ],
+    "review_conflict_record_version_ids": [
+      "record:sha256:cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44cc33dd44"
+    ],
+    "query_spec_sha256": "9f0a1b2c9f0a1b2c9f0a1b2c9f0a1b2c9f0a1b2c9f0a1b2c9f0a1b2c9f0a1b2c",
+    "query_result_sha256": "0c1d2e3f0c1d2e3f0c1d2e3f0c1d2e3f0c1d2e3f0c1d2e3f0c1d2e3f0c1d2e3f",
+    "cutoff_mode": "AS_OF_INGESTION_TIME",
+    "cutoff_time": "2026-01-10T00:00:00Z",
+    "result_view": "AUTHORITATIVE_CURRENT_STATE",
+    "query_engine_version": "point-in-time-as-of-query@1.0.0-synthetic",
+    "validator_version": "point-in-time-validator@1.0.0-synthetic",
+    "parameter_set_id": "paramset:wp158-synthetic-default",
+    "created_from_manifest_entry_id": null,
+    "human_review_required": true,
+    "advisory_only": true,
+    "no_execution_authority": true
+  }
+}
+```
 
 ## 15. Non-Authority And Storage Boundaries
 

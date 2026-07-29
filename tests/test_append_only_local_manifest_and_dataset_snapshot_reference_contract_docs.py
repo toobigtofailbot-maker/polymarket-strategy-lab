@@ -9,9 +9,78 @@ artifact.
 
 from __future__ import annotations
 
+import json
 import pathlib
 import re
 import subprocess
+
+
+LOCKED_FAILURE_CATEGORIES = {
+    "SCHEMA_UNSUPPORTED",
+    "FIELD_MISSING",
+    "FIELD_TYPE_INVALID",
+    "FIELD_VALUE_INVALID",
+    "ID_DERIVATION_MISMATCH",
+    "REFERENCE_MODE_MISMATCH",
+    "REVIEW_CONFLICT_AUTHORITY_FORBIDDEN",
+    "MANIFEST_SEQUENCE_INVALID",
+    "MANIFEST_PREVIOUS_ENTRY_UNKNOWN",
+    "MANIFEST_CHAIN_MISMATCH",
+    "MANIFEST_SUPERSEDES_INVALID",
+    "MANIFEST_CYCLE",
+    "MANIFEST_ID_COLLISION_OR_MISMATCH",
+    "DATASET_REFERENCE_ID_COLLISION_OR_MISMATCH",
+    "SAFETY_POSTURE_INVALID",
+}
+
+REFERENCE_REQUIRED_FIELDS = {
+    "schema_id",
+    "schema_version",
+    "dataset_snapshot_reference_id",
+    "derivation_mode",
+    "validated_batch_sha256",
+    "ordinary_record_version_ids",
+    "review_conflict_record_version_ids",
+    "query_spec_sha256",
+    "query_result_sha256",
+    "cutoff_mode",
+    "cutoff_time",
+    "result_view",
+    "query_engine_version",
+    "validator_version",
+    "parameter_set_id",
+    "created_from_manifest_entry_id",
+    "human_review_required",
+    "advisory_only",
+    "no_execution_authority",
+}
+
+MANIFEST_REQUIRED_FIELDS = {
+    "schema_id",
+    "schema_version",
+    "manifest_entry_id",
+    "manifest_id",
+    "sequence_number",
+    "previous_manifest_entry_id",
+    "entry_kind",
+    "dataset_snapshot_reference_id",
+    "supersedes_manifest_entry_id",
+    "reference_state",
+    "reason_code",
+    "effective_time",
+    "parameter_set_id",
+    "human_review_required",
+    "advisory_only",
+    "no_execution_authority",
+}
+
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _json_examples() -> list[dict]:
+    """Parse every ```json fenced block in the canonical doc."""
+    blocks = re.findall(r"```json\n(.*?)\n```", _read(DOC), re.DOTALL)
+    return [json.loads(block) for block in blocks]
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -298,10 +367,14 @@ def test_append_chain_truth_table_is_complete() -> None:
         "| >0 | exact prior | REGISTER | null | valid append |",
         "| >0 | unknown prior | any | any | reject |",
         "| >0 | prior from other manifest | any | any | reject |",
-        "| >0 | exact prior | SUPERSEDE | earlier same-chain entry | valid |",
-        "| >0 | exact prior | SUPERSEDE | null/unknown/future | reject |",
-        "| >0 | exact prior | INVALIDATE | earlier same-chain entry | valid with review |",
-        "| >0 | exact prior | INVALIDATE | null/unknown/future | reject |",
+        "| >0 | exact prior | SUPERSEDE | earlier same-chain effective entry, same subject | valid |",
+        "| >0 | exact prior | SUPERSEDE | null/unknown/future/self | reject |",
+        "| >0 | exact prior | SUPERSEDE | target dataset-reference ID ≠ entry's | reject |",
+        "| >0 | exact prior | SUPERSEDE | target already superseded/invalidated | reject |",
+        "| >0 | exact prior | INVALIDATE | earlier same-chain effective entry, same subject | valid with review |",
+        "| >0 | exact prior | INVALIDATE | null/unknown/future/self | reject |",
+        "| >0 | exact prior | INVALIDATE | target dataset-reference ID ≠ entry's | reject |",
+        "| >0 | exact prior | INVALIDATE | target already superseded/invalidated | reject |",
         "| duplicate sequence | any | any | any | reject |",
         "| duplicate ID/different content | any | any | any | reject |",
         "| cycle | any | any | any | reject |",
@@ -317,6 +390,8 @@ def test_append_chain_truth_table_is_complete() -> None:
         "implicit latest-by-time resolution",
     ):
         assert rejected in flat
+    # The chain head is explicitly distinct from a subject reference's state.
+    assert "distinct from any subject reference's effective state" in flat
 
 
 def test_public_api_matrix_is_unchanged() -> None:
@@ -409,10 +484,14 @@ def test_failure_no_echo_matrix_is_complete() -> None:
         "| IDs | empty/oversized/malformed | FIELD_VALUE_INVALID | no |",
         "| hashes | malformed/wrong derivation | ID_DERIVATION_MISMATCH | no |",
         "| record-ID tuples | duplicate/overlap/wrong type | FIELD_VALUE_INVALID | no |",
+        "| reserved backlink | non-null `created_from_manifest_entry_id` in 1.0.0 | FIELD_VALUE_INVALID | no |",
         "| query fields | partial mode combination | REFERENCE_MODE_MISMATCH | no |",
+        "| review-conflict authority | conflict ID placed in ordinary tuple | REVIEW_CONFLICT_AUTHORITY_FORBIDDEN | no |",
         "| sequence | bool/negative/gap/duplicate | MANIFEST_SEQUENCE_INVALID | no |",
-        "| previous ID | unknown/wrong manifest | MANIFEST_PREVIOUS_ENTRY_UNKNOWN | no |",
-        "| supersedes | null/unknown/future/self | MANIFEST_SUPERSEDES_INVALID | no |",
+        "| previous ID | unknown | MANIFEST_PREVIOUS_ENTRY_UNKNOWN | no |",
+        "| previous ID | belongs to other manifest | MANIFEST_CHAIN_MISMATCH | no |",
+        "| supersedes | null/unknown/future/self/non-effective/already-terminal | MANIFEST_SUPERSEDES_INVALID | no |",
+        "| supersedes | target dataset-reference ID ≠ entry's | MANIFEST_SUPERSEDES_INVALID | no |",
         "| safety flags | false/non-bool | SAFETY_POSTURE_INVALID | no |",
         "| unexpected fields | any | FIELD_VALUE_INVALID | no |",
     ):
@@ -429,28 +508,191 @@ def test_failure_no_echo_matrix_is_complete() -> None:
         assert forbidden in flat
 
 
-def test_twelve_deterministic_examples_are_present_and_illustrative() -> None:
-    section = _section(_read(DOC), "## 14. Deterministic Contract Examples", "## 15.")
-    assert "illustrative and non-runtime" in section
-    assert "fixed synthetic IDs only" in section
-    numbers = re.findall(r"^(\d+)\. ", section, re.MULTILINE)
-    assert numbers == [str(n) for n in range(1, 13)]
-    flat = _flat(section)
-    for concept in (
-        "Validated ordinary batch reference",
-        "As-of current-state reference",
-        "Empty valid as-of result reference",
-        "Review-conflict-only reference",
-        "Mixed ordinary/review reference",
-        "Genesis registration",
-        "Second registration",
-        "Supersede entry",
-        "Invalidate entry",
-        "Sequence gap",
-        "Cross-manifest previous ID",
-        "Review-conflict authority mixing",
-    ):
-        assert concept in flat
+# ── Blocker A: reserved-null v1.0.0 backlink and reference immutability ───────
+
+
+def test_reserved_null_backlink_rule_and_immutability_invariant() -> None:
+    rules = _flat(_section(_read(DOC), "### 6.2 Rules", "### 6.3"))
+    assert "reserved field in schema version" in rules
+    assert "MUST be present and MUST be null" in rules
+    assert "never populated after registration" in rules
+    assert "Registration provenance is one-way" in rules
+    assert (
+        "non-null `created_from_manifest_entry_id` under schema `1.0.0` is rejected with `FIELD_VALUE_INVALID`"
+        in rules
+    )
+    invariant = _flat(
+        _section(_read(DOC), "### 6.4 Reference Immutability Invariant", "## 7.")
+    )
+    assert "immutable after `dataset_snapshot_reference_id` is derived" in invariant
+    assert "no excluded mutable field may create a same-ID / different-content ambiguity" in invariant
+    matrix_row = _section(_read(DOC), "| `created_from_manifest_entry_id` |", "\n")
+    assert "reserved in 1.0.0: required present and null" in matrix_row
+    assert "fixed-null check" in matrix_row
+
+
+# ── Blocker B: SUPERSEDE / INVALIDATE subject and target semantics ────────────
+
+
+def test_supersede_invalidate_subject_target_semantics() -> None:
+    section = _flat(_section(_read(DOC), "### 8.3 Entry-Kind Subject And Target Semantics", "## 9."))
+    # REGISTER
+    assert "is the newly registered subject reference" in section
+    # SUPERSEDE / INVALIDATE are state-transition records for the target
+    assert "a state-transition record for an already-registered subject, not a replacement-registration record" in section
+    assert section.count(
+        "MUST equal the target entry's `dataset_snapshot_reference_id`"
+    ) >= 2
+    assert "MUST be registered separately with its own `REGISTER_DATASET_SNAPSHOT_REFERENCE` entry" in section
+    assert "neither infers nor requires a replacement" in section
+    # State-transition integrity
+    assert "already terminally" in section
+    assert "no repeated terminal transition" in section
+    assert "self-target" in section
+    assert "The append-chain head and the subject-reference state are separate concepts" in section
+
+
+def test_twelve_json_examples_parse_and_satisfy_invariants() -> None:
+    examples = _json_examples()
+    assert len(examples) == 12
+
+    ids = [ex["example_id"] for ex in examples]
+    assert ids == [f"WP158-EXAMPLE-{n:02d}" for n in range(1, 13)]
+    assert len(set(ids)) == 12
+
+    valid_count = 0
+    invalid_count = 0
+    for ex in examples:
+        assert set(ex) == {"example_id", "expected_valid", "expected_error_codes", "input"}
+        assert isinstance(ex["expected_valid"], bool)
+        assert isinstance(ex["expected_error_codes"], list)
+        obj = ex["input"]
+        assert isinstance(obj, dict)
+
+        # Object-kind detection by schema_id.
+        schema_id = obj["schema_id"]
+        assert schema_id in {
+            "point-in-time-dataset-snapshot-reference",
+            "point-in-time-local-manifest-entry",
+        }
+        assert obj["schema_version"] == "1.0.0"
+
+        # Safety booleans present and fixed true on every example.
+        assert obj["advisory_only"] is True
+        assert obj["no_execution_authority"] is True
+
+        # No forbidden keys / unsafe marker values anywhere in the object.
+        forbidden_keys = {
+            "payload",
+            "source_text",
+            "question_text",
+            "rule_text",
+            "price",
+            "size",
+            "wallet",
+            "account",
+            "credential",
+            "api_key",
+            "path",
+            "hostname",
+            "pid",
+            "process_id",
+        }
+        assert not (set(obj) & forbidden_keys)
+
+        if schema_id == "point-in-time-dataset-snapshot-reference":
+            assert set(obj) == REFERENCE_REQUIRED_FIELDS
+            # Reserved-null v1.0.0 backlink on every reference.
+            assert obj["created_from_manifest_entry_id"] is None
+            assert obj["dataset_snapshot_reference_id"].startswith("datasetref:sha256:")
+            assert _HEX64.match(obj["dataset_snapshot_reference_id"].split(":")[-1])
+            assert _HEX64.match(obj["validated_batch_sha256"])
+            # Record-version IDs are prefixed and 64-hex; tuples never overlap
+            # UNLESS this is the authority-mixing negative example.
+            ordinary = obj["ordinary_record_version_ids"]
+            review = obj["review_conflict_record_version_ids"]
+            for rid in ordinary + review:
+                assert rid.startswith("record:sha256:")
+                assert _HEX64.match(rid.split(":")[-1])
+            if ex["expected_valid"]:
+                assert not (set(ordinary) & set(review))
+                # Conflict-derived human-review flag.
+                assert obj["human_review_required"] is bool(review)
+            # Explicit null rules by derivation mode.
+            query_fields = (
+                "query_spec_sha256",
+                "query_result_sha256",
+                "cutoff_mode",
+                "cutoff_time",
+                "result_view",
+                "query_engine_version",
+            )
+            if obj["derivation_mode"] == "VALIDATED_RECORD_BATCH":
+                assert all(obj[f] is None for f in query_fields)
+            else:
+                assert obj["derivation_mode"] == "AS_OF_QUERY_RESULT"
+                assert all(obj[f] is not None for f in query_fields)
+        else:
+            assert set(obj) == MANIFEST_REQUIRED_FIELDS
+            assert obj["manifest_entry_id"].startswith("manifestentry:sha256:")
+            assert _HEX64.match(obj["manifest_entry_id"].split(":")[-1])
+            assert obj["dataset_snapshot_reference_id"].startswith("datasetref:sha256:")
+            assert isinstance(obj["sequence_number"], int) and not isinstance(
+                obj["sequence_number"], bool
+            )
+            kind = obj["entry_kind"]
+            # Exact REGISTER / SUPERSEDE / INVALIDATE target semantics on valid entries.
+            if ex["expected_valid"]:
+                if kind == "REGISTER_DATASET_SNAPSHOT_REFERENCE":
+                    assert obj["supersedes_manifest_entry_id"] is None
+                    assert obj["reference_state"] == "ACTIVE_REFERENCE"
+                    assert obj["reason_code"] == "INITIAL_REGISTRATION"
+                elif kind == "SUPERSEDE_DATASET_SNAPSHOT_REFERENCE":
+                    assert obj["supersedes_manifest_entry_id"] is not None
+                    assert obj["reference_state"] == "SUPERSEDED_REFERENCE"
+                    assert obj["reason_code"] == "SOURCE_SUPERSEDED"
+                elif kind == "INVALIDATE_DATASET_SNAPSHOT_REFERENCE":
+                    assert obj["supersedes_manifest_entry_id"] is not None
+                    assert obj["reference_state"] == "INVALIDATED_REFERENCE"
+                    assert obj["reason_code"] == "REFERENCE_INVALIDATED"
+                    assert obj["human_review_required"] is True
+                else:  # pragma: no cover - closed vocabulary
+                    raise AssertionError(f"unexpected entry_kind {kind}")
+
+        # Valid/invalid classification and error-code discipline.
+        if ex["expected_valid"]:
+            assert ex["expected_error_codes"] == []
+            valid_count += 1
+        else:
+            assert ex["expected_error_codes"]
+            assert set(ex["expected_error_codes"]) <= LOCKED_FAILURE_CATEGORIES
+            invalid_count += 1
+
+    assert valid_count == 9
+    assert invalid_count == 3
+
+
+def test_supersede_and_invalidate_examples_target_same_subject() -> None:
+    by_id = {ex["example_id"]: ex["input"] for ex in _json_examples()}
+    genesis = by_id["WP158-EXAMPLE-06"]
+    second = by_id["WP158-EXAMPLE-07"]
+    supersede = by_id["WP158-EXAMPLE-08"]
+    invalidate = by_id["WP158-EXAMPLE-09"]
+
+    # Coherent single chain, exact previous-ID links, ascending sequence.
+    for entry in (genesis, second, supersede, invalidate):
+        assert entry["manifest_id"] == "manifest:wp158-synthetic-chain-a"
+    assert genesis["sequence_number"] == 0
+    assert genesis["previous_manifest_entry_id"] is None
+    assert second["previous_manifest_entry_id"] == genesis["manifest_entry_id"]
+    assert supersede["previous_manifest_entry_id"] == second["manifest_entry_id"]
+    assert invalidate["previous_manifest_entry_id"] == supersede["manifest_entry_id"]
+
+    # Transition entries carry the SAME subject reference as their target entry.
+    assert supersede["supersedes_manifest_entry_id"] == genesis["manifest_entry_id"]
+    assert supersede["dataset_snapshot_reference_id"] == genesis["dataset_snapshot_reference_id"]
+    assert invalidate["supersedes_manifest_entry_id"] == second["manifest_entry_id"]
+    assert invalidate["dataset_snapshot_reference_id"] == second["dataset_snapshot_reference_id"]
 
 
 def test_non_authority_storage_boundary_and_next_gate() -> None:
