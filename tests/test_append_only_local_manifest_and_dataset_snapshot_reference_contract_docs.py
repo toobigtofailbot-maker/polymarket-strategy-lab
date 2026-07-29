@@ -9,10 +9,84 @@ artifact.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
 import re
 import subprocess
+
+
+# Independent, standard-library-only canonicalization + derivation oracle.
+# This intentionally does NOT import any WP159 implementation (none exists); it
+# recomputes derived IDs from the exact preimage mappings locked in the contract
+# (Sections 7 and 9) so the doc's example self IDs are proven true, not merely
+# prefix/length shaped.
+
+_REFERENCE_PREIMAGE_KEYS = (
+    "schema_id",
+    "schema_version",
+    "derivation_mode",
+    "validated_batch_sha256",
+    "ordinary_record_version_ids",
+    "review_conflict_record_version_ids",
+    "query_spec_sha256",
+    "query_result_sha256",
+    "cutoff_mode",
+    "cutoff_time",
+    "result_view",
+    "query_engine_version",
+    "validator_version",
+    "parameter_set_id",
+    "human_review_required",
+    "advisory_only",
+    "no_execution_authority",
+)
+
+_MANIFEST_PREIMAGE_KEYS = (
+    "schema_id",
+    "schema_version",
+    "manifest_id",
+    "sequence_number",
+    "previous_manifest_entry_id",
+    "entry_kind",
+    "dataset_snapshot_reference_id",
+    "supersedes_manifest_entry_id",
+    "reference_state",
+    "reason_code",
+    "effective_time",
+    "parameter_set_id",
+    "human_review_required",
+    "advisory_only",
+    "no_execution_authority",
+)
+
+
+def _canonical_json_bytes(value: object) -> bytes:
+    return json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    ).encode("utf-8")
+
+
+def _derive_reference_id(obj: dict) -> str:
+    preimage = {k: obj[k] for k in _REFERENCE_PREIMAGE_KEYS}
+    return "datasetref:sha256:" + hashlib.sha256(
+        _canonical_json_bytes(preimage)
+    ).hexdigest()
+
+
+def _derive_manifest_entry_id(obj: dict) -> str:
+    preimage = {k: obj[k] for k in _MANIFEST_PREIMAGE_KEYS}
+    return "manifestentry:sha256:" + hashlib.sha256(
+        _canonical_json_bytes(preimage)
+    ).hexdigest()
+
+
+def _is_reference(obj: dict) -> bool:
+    return obj["schema_id"] == "point-in-time-dataset-snapshot-reference"
 
 
 LOCKED_FAILURE_CATEGORIES = {
@@ -231,7 +305,8 @@ def test_dataset_reference_required_fields_are_complete() -> None:
     flat = _flat(section)
     for rule in (
         "always required",
-        "immutable, ordered, unique, and non-overlapping",
+        "The record-version ID tuples are immutable and ordered",
+        "Cross-authority overlap takes precedence over the generic within-tuple duplicate rule",
         "never become authoritative",
         "excluded from reference identity to avoid",
         "fixed `true`",
@@ -262,23 +337,12 @@ def test_dataset_reference_forbidden_fields_are_explicit() -> None:
 def test_dataset_reference_identity_prefix_preimage_and_exclusions() -> None:
     section = _section(_read(DOC), "## 7. Dataset Snapshot Reference Identity", "## 8.")
     assert '"datasetref:sha256:" + SHA-256(canonical_preimage)' in section
+    # Exact preimage mapping keys are present (checked more fully by the oracle
+    # test); here we confirm identity prefix, exclusions, and canonical rules.
+    mapping = _section(section, "### 7.1 Exact Preimage Mapping", "### 7.2")
+    for key in _REFERENCE_PREIMAGE_KEYS:
+        assert f'"{key}"' in mapping
     flat = _flat(section)
-    for included in (
-        "schema ID and schema version",
-        "derivation mode",
-        "validated-batch SHA-256",
-        "ordered ordinary record-version IDs",
-        "ordered review-conflict record-version IDs",
-        "query-spec SHA-256 or null",
-        "cutoff mode or null",
-        "result view or null",
-        "validator version",
-        "parameter-set ID",
-        "human-review-required",
-        "advisory-only",
-        "no-execution-authority",
-    ):
-        assert included in flat
     for excluded in (
         "the self ID",
         "`created_from_manifest_entry_id`",
@@ -287,11 +351,11 @@ def test_dataset_reference_identity_prefix_preimage_and_exclusions() -> None:
     ):
         assert excluded in flat
     for canonical in (
-        "canonical UTF-8 JSON",
-        "explicit nulls",
-        "deterministic array order",
-        "no NaN or Infinity",
-        "one-field hash sensitivity",
+        "UTF-8 encoding",
+        "lexicographically sorted",
+        "explicit nulls preserved",
+        "`allow_nan=False`",
+        "One-field hash sensitivity holds",
     ):
         assert canonical in flat
 
@@ -332,21 +396,10 @@ def test_manifest_entry_required_fields_and_rules_are_complete() -> None:
 def test_manifest_entry_identity_prefix_preimage_and_exclusions() -> None:
     section = _section(_read(DOC), "## 9. Manifest Entry Identity", "## 10.")
     assert '"manifestentry:sha256:" + SHA-256(canonical_preimage)' in section
+    mapping = _section(section, "### 9.1 Exact Preimage Mapping", "### 9.2")
+    for key in _MANIFEST_PREIMAGE_KEYS:
+        assert f'"{key}"' in mapping
     flat = _flat(section)
-    for included in (
-        "manifest ID",
-        "sequence number",
-        "previous entry ID or null",
-        "entry kind",
-        "dataset-reference ID",
-        "supersedes ID or null",
-        "reference state",
-        "reason code",
-        "effective time",
-        "parameter-set ID",
-        "human-review-required",
-    ):
-        assert included in flat
     for excluded in (
         "the self ID",
         "file offset",
@@ -483,10 +536,10 @@ def test_failure_no_echo_matrix_is_complete() -> None:
     for row in (
         "| IDs | empty/oversized/malformed | FIELD_VALUE_INVALID | no |",
         "| hashes | malformed/wrong derivation | ID_DERIVATION_MISMATCH | no |",
-        "| record-ID tuples | duplicate/overlap/wrong type | FIELD_VALUE_INVALID | no |",
+        "| record-ID tuples | within-tuple duplicate or wrong member type | FIELD_VALUE_INVALID | no |",
+        "| record-ID tuples | overlap between ordinary and review tuples | REVIEW_CONFLICT_AUTHORITY_FORBIDDEN | no |",
         "| reserved backlink | non-null `created_from_manifest_entry_id` in 1.0.0 | FIELD_VALUE_INVALID | no |",
         "| query fields | partial mode combination | REFERENCE_MODE_MISMATCH | no |",
-        "| review-conflict authority | conflict ID placed in ordinary tuple | REVIEW_CONFLICT_AUTHORITY_FORBIDDEN | no |",
         "| sequence | bool/negative/gap/duplicate | MANIFEST_SEQUENCE_INVALID | no |",
         "| previous ID | unknown | MANIFEST_PREVIOUS_ENTRY_UNKNOWN | no |",
         "| previous ID | belongs to other manifest | MANIFEST_CHAIN_MISMATCH | no |",
@@ -506,6 +559,142 @@ def test_failure_no_echo_matrix_is_complete() -> None:
         "environment data",
     ):
         assert forbidden in flat
+    # Deterministic failure precedence for the record-version tuples.
+    assert (
+        "an overlap between `ordinary_record_version_ids` and `review_conflict_record_version_ids` is reported as `REVIEW_CONFLICT_AUTHORITY_FORBIDDEN`, which takes precedence over the generic within-tuple `FIELD_VALUE_INVALID` duplicate rule"
+        in flat
+    )
+
+
+# ── Derived-ID truth: examples recompute from the exact locked preimages ──────
+
+
+def test_preimage_mappings_are_locked_in_the_contract() -> None:
+    ref = _section(_read(DOC), "### 7.1 Exact Preimage Mapping", "### 7.2")
+    man = _section(_read(DOC), "### 9.1 Exact Preimage Mapping", "### 9.2")
+    for key in _REFERENCE_PREIMAGE_KEYS:
+        assert f'"{key}"' in ref
+    # Excluded keys must NOT appear in the reference preimage mapping block.
+    assert '"dataset_snapshot_reference_id"' not in ref
+    assert '"created_from_manifest_entry_id"' not in ref
+    for key in _MANIFEST_PREIMAGE_KEYS:
+        assert f'"{key}"' in man
+    assert '"manifest_entry_id"' not in man
+    canon = _flat(_section(_read(DOC), "### 7.3 Canonicalization And Derivation", "## 8."))
+    for rule in (
+        "`sort_keys=True`",
+        'separators exactly `(",", ":")`',
+        "`ensure_ascii=False`",
+        "`allow_nan=False`",
+        '"datasetref:sha256:" + sha256(canonical_json_bytes(preimage_mapping)).hexdigest()',
+    ):
+        assert rule in canon
+
+
+def test_every_example_self_id_recomputes_from_its_preimage() -> None:
+    for ex in _json_examples():
+        obj = ex["input"]
+        if _is_reference(obj):
+            assert obj["dataset_snapshot_reference_id"] == _derive_reference_id(obj), (
+                ex["example_id"]
+            )
+        else:
+            assert obj["manifest_entry_id"] == _derive_manifest_entry_id(obj), (
+                ex["example_id"]
+            )
+
+
+def test_examples_6_through_11_chain_links_are_actual_recomputed_ids() -> None:
+    by = {ex["example_id"]: ex["input"] for ex in _json_examples()}
+    g = by["WP158-EXAMPLE-06"]
+    s = by["WP158-EXAMPLE-07"]
+    u = by["WP158-EXAMPLE-08"]
+    v = by["WP158-EXAMPLE-09"]
+    gap = by["WP158-EXAMPLE-10"]
+    cross = by["WP158-EXAMPLE-11"]
+
+    id6 = _derive_manifest_entry_id(g)
+    id7 = _derive_manifest_entry_id(s)
+    id8 = _derive_manifest_entry_id(u)
+    id9 = _derive_manifest_entry_id(v)
+
+    assert g["previous_manifest_entry_id"] is None
+    assert s["previous_manifest_entry_id"] == id6
+    assert u["previous_manifest_entry_id"] == id7
+    assert u["supersedes_manifest_entry_id"] == id6
+    assert v["previous_manifest_entry_id"] == id8
+    assert v["supersedes_manifest_entry_id"] == id7
+    # Invalid entries still link to the actual recomputed IDs so their intended
+    # defect (sequence gap / cross-manifest) is the only fault.
+    assert gap["previous_manifest_entry_id"] == id9
+    assert gap["sequence_number"] == 5  # gap after seq 3 head
+    assert cross["previous_manifest_entry_id"] == id6
+    assert cross["manifest_id"] == "manifest:wp158-synthetic-chain-b"
+
+
+def test_one_field_identity_mutation_changes_the_derived_id() -> None:
+    by = {ex["example_id"]: ex["input"] for ex in _json_examples()}
+    ref = dict(by["WP158-EXAMPLE-01"])
+    ref["validated_batch_sha256"] = "f" * 64
+    assert _derive_reference_id(ref) != by["WP158-EXAMPLE-01"]["dataset_snapshot_reference_id"]
+
+    man = dict(by["WP158-EXAMPLE-06"])
+    man["effective_time"] = "2099-01-01T00:00:00Z"
+    assert _derive_manifest_entry_id(man) != by["WP158-EXAMPLE-06"]["manifest_entry_id"]
+
+
+def test_reserved_backlink_cannot_change_content_under_same_id() -> None:
+    # created_from_manifest_entry_id is excluded from identity AND fixed null in
+    # 1.0.0, so it can never legally vary under the same reference ID.
+    for ex in _json_examples():
+        obj = ex["input"]
+        if _is_reference(obj):
+            assert obj["created_from_manifest_entry_id"] is None
+            assert "created_from_manifest_entry_id" not in _REFERENCE_PREIMAGE_KEYS
+
+
+def test_example_12_is_single_fault_cross_authority_overlap() -> None:
+    obj = {ex["example_id"]: ex["input"] for ex in _json_examples()}["WP158-EXAMPLE-12"]
+    # The single intended fault is a cross-tuple overlap.
+    overlap = set(obj["ordinary_record_version_ids"]) & set(
+        obj["review_conflict_record_version_ids"]
+    )
+    assert overlap
+    # No within-tuple duplicate (that would be a different, competing fault).
+    assert len(obj["ordinary_record_version_ids"]) == len(
+        set(obj["ordinary_record_version_ids"])
+    )
+    assert len(obj["review_conflict_record_version_ids"]) == len(
+        set(obj["review_conflict_record_version_ids"])
+    )
+    # Self ID is correctly derived; the defect is not an ID mismatch.
+    assert obj["dataset_snapshot_reference_id"] == _derive_reference_id(obj)
+    # Deterministic precedence: overlap maps only to the authority category.
+    ex12 = {ex["example_id"]: ex for ex in _json_examples()}["WP158-EXAMPLE-12"]
+    assert ex12["expected_error_codes"] == ["REVIEW_CONFLICT_AUTHORITY_FORBIDDEN"]
+
+
+def test_invalid_examples_are_single_fault_with_correct_self_ids() -> None:
+    by = {ex["example_id"]: ex for ex in _json_examples()}
+    for eid, expected in (
+        ("WP158-EXAMPLE-10", "MANIFEST_SEQUENCE_INVALID"),
+        ("WP158-EXAMPLE-11", "MANIFEST_CHAIN_MISMATCH"),
+        ("WP158-EXAMPLE-12", "REVIEW_CONFLICT_AUTHORITY_FORBIDDEN"),
+    ):
+        ex = by[eid]
+        assert ex["expected_valid"] is False
+        assert ex["expected_error_codes"] == [expected]
+        obj = ex["input"]
+        # Correct self ID: the fault is never an accidental ID-derivation mismatch.
+        if _is_reference(obj):
+            assert obj["dataset_snapshot_reference_id"] == _derive_reference_id(obj)
+            assert set(obj) == REFERENCE_REQUIRED_FIELDS
+        else:
+            assert obj["manifest_entry_id"] == _derive_manifest_entry_id(obj)
+            assert set(obj) == MANIFEST_REQUIRED_FIELDS
+        # Safety posture intact (not a competing safety fault).
+        assert obj["advisory_only"] is True
+        assert obj["no_execution_authority"] is True
 
 
 # ── Blocker A: reserved-null v1.0.0 backlink and reference immutability ───────

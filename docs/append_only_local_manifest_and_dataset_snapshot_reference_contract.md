@@ -142,8 +142,13 @@ All vocabularies are closed and canonically ordered exactly as listed.
 - `dataset_snapshot_reference_id` is derived from the canonical preimage and is
   never trusted from caller input.
 - `validated_batch_sha256` is always required.
-- The record-version ID tuples are immutable, ordered, unique, and
-  non-overlapping; an ID may not appear in both tuples.
+- The record-version ID tuples are immutable and ordered. A duplicate ID within a
+  single tuple, or a malformed tuple member, is rejected with
+  `FIELD_VALUE_INVALID`. The two tuples MUST NOT overlap; any ID appearing in both
+  `ordinary_record_version_ids` and `review_conflict_record_version_ids` is
+  rejected with `REVIEW_CONFLICT_AUTHORITY_FORBIDDEN` (a review-conflict ID may
+  never gain ordinary / authoritative status). Cross-authority overlap takes
+  precedence over the generic within-tuple duplicate rule.
 - `ordinary_record_version_ids` may be empty only for an empty or review-only
   valid as-of result.
 - `review_conflict_record_version_ids` never become authoritative.
@@ -191,26 +196,37 @@ same-ID / different-content ambiguity.
 dataset_snapshot_reference_id = "datasetref:sha256:" + SHA-256(canonical_preimage)
 ```
 
-### 7.1 Exact Preimage
+### 7.1 Exact Preimage Mapping
 
-The canonical preimage covers, in order:
+The identity preimage is a JSON object with exactly these keys (and no others):
 
-- schema ID and schema version;
-- derivation mode;
-- validated-batch SHA-256;
-- ordered ordinary record-version IDs;
-- ordered review-conflict record-version IDs;
-- query-spec SHA-256 or null;
-- query-result SHA-256 or null;
-- cutoff mode or null;
-- cutoff time or null;
-- result view or null;
-- query-engine version or null;
-- validator version;
-- parameter-set ID;
-- human-review-required;
-- advisory-only;
-- no-execution-authority.
+```text
+{
+  "schema_id": ...,
+  "schema_version": ...,
+  "derivation_mode": ...,
+  "validated_batch_sha256": ...,
+  "ordinary_record_version_ids": [...],
+  "review_conflict_record_version_ids": [...],
+  "query_spec_sha256": ...,
+  "query_result_sha256": ...,
+  "cutoff_mode": ...,
+  "cutoff_time": ...,
+  "result_view": ...,
+  "query_engine_version": ...,
+  "validator_version": ...,
+  "parameter_set_id": ...,
+  "human_review_required": ...,
+  "advisory_only": true,
+  "no_execution_authority": true
+}
+```
+
+Each value is copied verbatim from the reference object. The mapping keys above
+are the logical preimage; canonical serialization sorts the keys lexicographically
+(Section 7.3), so conceptual field order, JSON key order, and serialization order
+are unambiguous and never conflict. Record-version ID arrays retain their given
+order.
 
 ### 7.2 Excluded From Identity
 
@@ -219,12 +235,29 @@ The canonical preimage covers, in order:
 - storage metadata;
 - all runtime / environment values.
 
-### 7.3 Canonicalization Requirements
+### 7.3 Canonicalization And Derivation
 
-The preimage requires canonical UTF-8 JSON compatible with the existing
-point-in-time canonical JSON rules: explicit nulls, deterministic array order,
-sorted object keys, no NaN or Infinity, and one-field hash sensitivity — changing
-any single identity-committed field changes the reference ID.
+Canonical bytes are produced by a repository-compatible canonical JSON
+serialization:
+
+- UTF-8 encoding;
+- JSON object keys lexicographically sorted (`sort_keys=True`);
+- separators exactly `(",", ":")` — no whitespace;
+- explicit nulls preserved;
+- array/sequence order preserved;
+- `ensure_ascii=False`;
+- `allow_nan=False` — no NaN or Infinity, and no floats appear in the preimage.
+
+Derivation:
+
+```text
+dataset_snapshot_reference_id =
+    "datasetref:sha256:" + sha256(canonical_json_bytes(preimage_mapping)).hexdigest()
+```
+
+The digest is a 64-character lowercase hexadecimal string. One-field hash
+sensitivity holds: changing any single identity-committed field changes the
+reference ID.
 
 ## 8. Manifest Entry Contract
 
@@ -318,13 +351,35 @@ already-registered subject.
 manifest_entry_id = "manifestentry:sha256:" + SHA-256(canonical_preimage)
 ```
 
-### 9.1 Exact Preimage
+### 9.1 Exact Preimage Mapping
 
-The canonical preimage covers, in order: schema ID and schema version, manifest
-ID, sequence number, previous entry ID or null, entry kind, dataset-reference ID,
-supersedes ID or null, reference state, reason code, effective time,
-parameter-set ID, human-review-required, and the safety booleans
-(`advisory_only`, `no_execution_authority`).
+The identity preimage is a JSON object with exactly these keys (and no others):
+
+```text
+{
+  "schema_id": ...,
+  "schema_version": ...,
+  "manifest_id": ...,
+  "sequence_number": ...,
+  "previous_manifest_entry_id": ...,
+  "entry_kind": ...,
+  "dataset_snapshot_reference_id": ...,
+  "supersedes_manifest_entry_id": ...,
+  "reference_state": ...,
+  "reason_code": ...,
+  "effective_time": ...,
+  "parameter_set_id": ...,
+  "human_review_required": ...,
+  "advisory_only": true,
+  "no_execution_authority": true
+}
+```
+
+Each value is copied verbatim from the manifest entry. Because
+`previous_manifest_entry_id` and `supersedes_manifest_entry_id` are part of the
+preimage, an entry's `manifest_entry_id` depends on the exact recomputed IDs of
+the entries it links to; a change to an earlier entry's ID changes every
+dependent later entry's ID.
 
 ### 9.2 Excluded From Identity
 
@@ -333,6 +388,17 @@ parameter-set ID, human-review-required, and the safety booleans
 - storage engine;
 - write time;
 - host / process / runtime values.
+
+### 9.3 Canonicalization And Derivation
+
+The manifest entry uses the same canonical JSON rules as Section 7.3 (UTF-8;
+`sort_keys=True`; separators `(",", ":")`; explicit nulls; sequence order
+preserved; `ensure_ascii=False`; `allow_nan=False`).
+
+```text
+manifest_entry_id =
+    "manifestentry:sha256:" + sha256(canonical_json_bytes(preimage_mapping)).hexdigest()
+```
 
 ## 10. Append-Chain Truth Table
 
@@ -462,10 +528,10 @@ A future implementation must fail closed with these bounded categories:
 |---|---|---|---:|
 | IDs | empty/oversized/malformed | FIELD_VALUE_INVALID | no |
 | hashes | malformed/wrong derivation | ID_DERIVATION_MISMATCH | no |
-| record-ID tuples | duplicate/overlap/wrong type | FIELD_VALUE_INVALID | no |
+| record-ID tuples | within-tuple duplicate or wrong member type | FIELD_VALUE_INVALID | no |
+| record-ID tuples | overlap between ordinary and review tuples | REVIEW_CONFLICT_AUTHORITY_FORBIDDEN | no |
 | reserved backlink | non-null `created_from_manifest_entry_id` in 1.0.0 | FIELD_VALUE_INVALID | no |
 | query fields | partial mode combination | REFERENCE_MODE_MISMATCH | no |
-| review-conflict authority | conflict ID placed in ordinary tuple | REVIEW_CONFLICT_AUTHORITY_FORBIDDEN | no |
 | sequence | bool/negative/gap/duplicate | MANIFEST_SEQUENCE_INVALID | no |
 | previous ID | unknown | MANIFEST_PREVIOUS_ENTRY_UNKNOWN | no |
 | previous ID | belongs to other manifest | MANIFEST_CHAIN_MISMATCH | no |
@@ -473,6 +539,14 @@ A future implementation must fail closed with these bounded categories:
 | supersedes | target dataset-reference ID ≠ entry's | MANIFEST_SUPERSEDES_INVALID | no |
 | safety flags | false/non-bool | SAFETY_POSTURE_INVALID | no |
 | unexpected fields | any | FIELD_VALUE_INVALID | no |
+
+Failure precedence is deterministic. When more than one condition could apply to
+the record-version tuples, an overlap between `ordinary_record_version_ids` and
+`review_conflict_record_version_ids` is reported as
+`REVIEW_CONFLICT_AUTHORITY_FORBIDDEN`, which takes precedence over the generic
+within-tuple `FIELD_VALUE_INVALID` duplicate rule. Example 12 is therefore a
+single-fault example whose deterministic category is
+`REVIEW_CONFLICT_AUTHORITY_FORBIDDEN`.
 
 Rejected results may never contain raw caller values, payload/source content,
 exception text, traceback, local path, or environment data. A rejection returns
@@ -483,15 +557,22 @@ only a bounded category code and a bounded neutral message.
 The twelve examples below are concrete, sanitized, machine-readable JSON objects.
 Each is a wrapper with `example_id`, `expected_valid`, `expected_error_codes`,
 and an `input` object that is a complete `DatasetSnapshotReference` or
-`ManifestEntry`. They use fixed synthetic IDs only, every SHA-256 value is exactly
-64 lowercase hexadecimal characters, every derived ID uses its locked prefix over
-a fixed synthetic hash, explicit nulls are present, safety booleans are present
-and `true`, and every reference sets `created_from_manifest_entry_id: null` per
-the schema `1.0.0` reserved-null rule. The examples are illustrative and
-non-runtime: none is generated by executing code, and none embeds raw payload,
-source text, prices, real market/wallet/account/credential data, path, hostname,
-process value, current timestamp, or any generated runtime value. Invalid
-examples carry the exact bounded expected error category.
+`ManifestEntry`. Every SHA-256 value is exactly 64 lowercase hexadecimal
+characters. Every **derived self ID is a true digest**: each
+`dataset_snapshot_reference_id` and `manifest_entry_id` is the real
+`sha256` of that object's exact canonical preimage (Sections 7 and 9), carrying
+the locked prefix, and is independently recomputed and compared by the focused
+test — no self ID is a decorative placeholder. Synthetic *reference* values that
+point at objects outside this example set (record-version IDs, and the subject
+reference IDs carried by manifest entries) remain fixed opaque synthetic IDs.
+Explicit nulls are present, safety booleans are present and `true`, and every
+reference sets `created_from_manifest_entry_id: null` per the schema `1.0.0`
+reserved-null rule. The examples are illustrative and non-runtime: none embeds
+raw payload, source text, prices, real market/wallet/account/credential data,
+path, hostname, process value, current timestamp, or any generated runtime value.
+Each invalid example carries a correctly derived self ID for its content and
+fails for exactly one intended bounded category (its stated defect is never
+masked by an unrelated ID mismatch).
 
 Wrapper shape:
 
@@ -518,7 +599,7 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
   "input": {
     "schema_id": "point-in-time-dataset-snapshot-reference",
     "schema_version": "1.0.0",
-    "dataset_snapshot_reference_id": "datasetref:sha256:1a2b3c4d1a2b3c4d1a2b3c4d1a2b3c4d1a2b3c4d1a2b3c4d1a2b3c4d1a2b3c4d",
+    "dataset_snapshot_reference_id": "datasetref:sha256:ead48fde9c77e8c4f589719833742f25f74f3dd182797abb4ac3b1c38a628f7a",
     "derivation_mode": "VALIDATED_RECORD_BATCH",
     "validated_batch_sha256": "0a1b2c3d0a1b2c3d0a1b2c3d0a1b2c3d0a1b2c3d0a1b2c3d0a1b2c3d0a1b2c3d",
     "ordinary_record_version_ids": [
@@ -552,7 +633,7 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
   "input": {
     "schema_id": "point-in-time-dataset-snapshot-reference",
     "schema_version": "1.0.0",
-    "dataset_snapshot_reference_id": "datasetref:sha256:3a4b5c6d3a4b5c6d3a4b5c6d3a4b5c6d3a4b5c6d3a4b5c6d3a4b5c6d3a4b5c6d",
+    "dataset_snapshot_reference_id": "datasetref:sha256:0186be1b690a89d0a734e2d38589657c1abcf476f515b76e6e2da579c40c08a3",
     "derivation_mode": "AS_OF_QUERY_RESULT",
     "validated_batch_sha256": "2a3b4c5d2a3b4c5d2a3b4c5d2a3b4c5d2a3b4c5d2a3b4c5d2a3b4c5d2a3b4c5d",
     "ordinary_record_version_ids": [
@@ -585,7 +666,7 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
   "input": {
     "schema_id": "point-in-time-dataset-snapshot-reference",
     "schema_version": "1.0.0",
-    "dataset_snapshot_reference_id": "datasetref:sha256:7a8b9c0d7a8b9c0d7a8b9c0d7a8b9c0d7a8b9c0d7a8b9c0d7a8b9c0d7a8b9c0d",
+    "dataset_snapshot_reference_id": "datasetref:sha256:3cfc6efb6ef77fe28a424d0fb46a48d537f3876a2c5d111ca2440a3fb76b791d",
     "derivation_mode": "AS_OF_QUERY_RESULT",
     "validated_batch_sha256": "6a7b8c9d6a7b8c9d6a7b8c9d6a7b8c9d6a7b8c9d6a7b8c9d6a7b8c9d6a7b8c9d",
     "ordinary_record_version_ids": [],
@@ -616,7 +697,7 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
   "input": {
     "schema_id": "point-in-time-dataset-snapshot-reference",
     "schema_version": "1.0.0",
-    "dataset_snapshot_reference_id": "datasetref:sha256:1b2c3d4e1b2c3d4e1b2c3d4e1b2c3d4e1b2c3d4e1b2c3d4e1b2c3d4e1b2c3d4e",
+    "dataset_snapshot_reference_id": "datasetref:sha256:4eaf8b11484328c409bf323bb9ba5557631d0529ea2ec1bfa7256264c6dab2d3",
     "derivation_mode": "AS_OF_QUERY_RESULT",
     "validated_batch_sha256": "0b1c2d3e0b1c2d3e0b1c2d3e0b1c2d3e0b1c2d3e0b1c2d3e0b1c2d3e0b1c2d3e",
     "ordinary_record_version_ids": [],
@@ -649,7 +730,7 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
   "input": {
     "schema_id": "point-in-time-dataset-snapshot-reference",
     "schema_version": "1.0.0",
-    "dataset_snapshot_reference_id": "datasetref:sha256:5b6c7d8e5b6c7d8e5b6c7d8e5b6c7d8e5b6c7d8e5b6c7d8e5b6c7d8e5b6c7d8e",
+    "dataset_snapshot_reference_id": "datasetref:sha256:bfb14c1981170260caa038eee1888dbbd66722ae902ced828afe4edea4172be8",
     "derivation_mode": "AS_OF_QUERY_RESULT",
     "validated_batch_sha256": "4b5c6d7e4b5c6d7e4b5c6d7e4b5c6d7e4b5c6d7e4b5c6d7e4b5c6d7e4b5c6d7e",
     "ordinary_record_version_ids": [
@@ -684,7 +765,7 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
   "input": {
     "schema_id": "point-in-time-local-manifest-entry",
     "schema_version": "1.0.0",
-    "manifest_entry_id": "manifestentry:sha256:e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3",
+    "manifest_entry_id": "manifestentry:sha256:f85273cc4989729042ce2f49ad3fe1e18204bd54f74191b0c4b26b8f232b65cc",
     "manifest_id": "manifest:wp158-synthetic-chain-a",
     "sequence_number": 0,
     "previous_manifest_entry_id": null,
@@ -712,10 +793,10 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
   "input": {
     "schema_id": "point-in-time-local-manifest-entry",
     "schema_version": "1.0.0",
-    "manifest_entry_id": "manifestentry:sha256:e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4",
+    "manifest_entry_id": "manifestentry:sha256:2e2a73b2c573d32f5c84f7a1dba57d319da11a1c2eae4620612e71cd57521f5e",
     "manifest_id": "manifest:wp158-synthetic-chain-a",
     "sequence_number": 1,
-    "previous_manifest_entry_id": "manifestentry:sha256:e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3",
+    "previous_manifest_entry_id": "manifestentry:sha256:f85273cc4989729042ce2f49ad3fe1e18204bd54f74191b0c4b26b8f232b65cc",
     "entry_kind": "REGISTER_DATASET_SNAPSHOT_REFERENCE",
     "dataset_snapshot_reference_id": "datasetref:sha256:6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c",
     "supersedes_manifest_entry_id": null,
@@ -740,13 +821,13 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
   "input": {
     "schema_id": "point-in-time-local-manifest-entry",
     "schema_version": "1.0.0",
-    "manifest_entry_id": "manifestentry:sha256:e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5",
+    "manifest_entry_id": "manifestentry:sha256:3db44833b12f3320b04853d2cc0bc283aeecb91e65fbd9dbb6768a22ef7275b2",
     "manifest_id": "manifest:wp158-synthetic-chain-a",
     "sequence_number": 2,
-    "previous_manifest_entry_id": "manifestentry:sha256:e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4",
+    "previous_manifest_entry_id": "manifestentry:sha256:2e2a73b2c573d32f5c84f7a1dba57d319da11a1c2eae4620612e71cd57521f5e",
     "entry_kind": "SUPERSEDE_DATASET_SNAPSHOT_REFERENCE",
     "dataset_snapshot_reference_id": "datasetref:sha256:5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c5f6a7b8c",
-    "supersedes_manifest_entry_id": "manifestentry:sha256:e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3",
+    "supersedes_manifest_entry_id": "manifestentry:sha256:f85273cc4989729042ce2f49ad3fe1e18204bd54f74191b0c4b26b8f232b65cc",
     "reference_state": "SUPERSEDED_REFERENCE",
     "reason_code": "SOURCE_SUPERSEDED",
     "effective_time": "2026-01-17T00:00:00Z",
@@ -768,13 +849,13 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
   "input": {
     "schema_id": "point-in-time-local-manifest-entry",
     "schema_version": "1.0.0",
-    "manifest_entry_id": "manifestentry:sha256:e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6",
+    "manifest_entry_id": "manifestentry:sha256:582036714b2d7a2fec579f96e79d209cc65b0e77b9eebfae48a6817de6cd5821",
     "manifest_id": "manifest:wp158-synthetic-chain-a",
     "sequence_number": 3,
-    "previous_manifest_entry_id": "manifestentry:sha256:e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5e2d3c4b5",
+    "previous_manifest_entry_id": "manifestentry:sha256:3db44833b12f3320b04853d2cc0bc283aeecb91e65fbd9dbb6768a22ef7275b2",
     "entry_kind": "INVALIDATE_DATASET_SNAPSHOT_REFERENCE",
     "dataset_snapshot_reference_id": "datasetref:sha256:6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c6f7a8b9c",
-    "supersedes_manifest_entry_id": "manifestentry:sha256:e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4e1d2c3b4",
+    "supersedes_manifest_entry_id": "manifestentry:sha256:2e2a73b2c573d32f5c84f7a1dba57d319da11a1c2eae4620612e71cd57521f5e",
     "reference_state": "INVALIDATED_REFERENCE",
     "reason_code": "REFERENCE_INVALIDATED",
     "effective_time": "2026-01-18T00:00:00Z",
@@ -792,14 +873,16 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
 {
   "example_id": "WP158-EXAMPLE-10",
   "expected_valid": false,
-  "expected_error_codes": ["MANIFEST_SEQUENCE_INVALID"],
+  "expected_error_codes": [
+    "MANIFEST_SEQUENCE_INVALID"
+  ],
   "input": {
     "schema_id": "point-in-time-local-manifest-entry",
     "schema_version": "1.0.0",
-    "manifest_entry_id": "manifestentry:sha256:e4d5c6b7e4d5c6b7e4d5c6b7e4d5c6b7e4d5c6b7e4d5c6b7e4d5c6b7e4d5c6b7",
+    "manifest_entry_id": "manifestentry:sha256:9f4c43a7a3fbc19b9877866328f9d19f230a3b8d97445b1d937314cecc260596",
     "manifest_id": "manifest:wp158-synthetic-chain-a",
     "sequence_number": 5,
-    "previous_manifest_entry_id": "manifestentry:sha256:e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6e3d4c5b6",
+    "previous_manifest_entry_id": "manifestentry:sha256:582036714b2d7a2fec579f96e79d209cc65b0e77b9eebfae48a6817de6cd5821",
     "entry_kind": "REGISTER_DATASET_SNAPSHOT_REFERENCE",
     "dataset_snapshot_reference_id": "datasetref:sha256:1c2d3e4f1c2d3e4f1c2d3e4f1c2d3e4f1c2d3e4f1c2d3e4f1c2d3e4f1c2d3e4f",
     "supersedes_manifest_entry_id": null,
@@ -820,14 +903,16 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
 {
   "example_id": "WP158-EXAMPLE-11",
   "expected_valid": false,
-  "expected_error_codes": ["MANIFEST_CHAIN_MISMATCH"],
+  "expected_error_codes": [
+    "MANIFEST_CHAIN_MISMATCH"
+  ],
   "input": {
     "schema_id": "point-in-time-local-manifest-entry",
     "schema_version": "1.0.0",
-    "manifest_entry_id": "manifestentry:sha256:e5d6c7b8e5d6c7b8e5d6c7b8e5d6c7b8e5d6c7b8e5d6c7b8e5d6c7b8e5d6c7b8",
+    "manifest_entry_id": "manifestentry:sha256:f2f77482368c290d8238b3a1660a2e36364c0f68ef124764b2e8eda5d1c15520",
     "manifest_id": "manifest:wp158-synthetic-chain-b",
     "sequence_number": 1,
-    "previous_manifest_entry_id": "manifestentry:sha256:e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3e0d1c2b3",
+    "previous_manifest_entry_id": "manifestentry:sha256:f85273cc4989729042ce2f49ad3fe1e18204bd54f74191b0c4b26b8f232b65cc",
     "entry_kind": "REGISTER_DATASET_SNAPSHOT_REFERENCE",
     "dataset_snapshot_reference_id": "datasetref:sha256:2c3d4e5f2c3d4e5f2c3d4e5f2c3d4e5f2c3d4e5f2c3d4e5f2c3d4e5f2c3d4e5f",
     "supersedes_manifest_entry_id": null,
@@ -848,11 +933,13 @@ registers subject B, entry 2 supersedes subject A, entry 3 invalidates subject B
 {
   "example_id": "WP158-EXAMPLE-12",
   "expected_valid": false,
-  "expected_error_codes": ["REVIEW_CONFLICT_AUTHORITY_FORBIDDEN"],
+  "expected_error_codes": [
+    "REVIEW_CONFLICT_AUTHORITY_FORBIDDEN"
+  ],
   "input": {
     "schema_id": "point-in-time-dataset-snapshot-reference",
     "schema_version": "1.0.0",
-    "dataset_snapshot_reference_id": "datasetref:sha256:7f8a9b0c7f8a9b0c7f8a9b0c7f8a9b0c7f8a9b0c7f8a9b0c7f8a9b0c7f8a9b0c",
+    "dataset_snapshot_reference_id": "datasetref:sha256:041a2ca8e89ea6a0c6df0d1f94ecdc6193aef3e5ecd10508db0e6a78b22b09ef",
     "derivation_mode": "AS_OF_QUERY_RESULT",
     "validated_batch_sha256": "8f9a0b1c8f9a0b1c8f9a0b1c8f9a0b1c8f9a0b1c8f9a0b1c8f9a0b1c8f9a0b1c",
     "ordinary_record_version_ids": [
