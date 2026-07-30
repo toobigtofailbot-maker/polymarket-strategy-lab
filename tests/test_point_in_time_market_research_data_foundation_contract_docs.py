@@ -449,8 +449,8 @@ def test_project_status_reconciles_wp155_and_has_one_wp156_review_target() -> No
         not in project
     )
     # WP156 is merged; the current review target gates the next WP forward.
-    assert "WP158 requires separate approval" in current
-    assert "WP158 implemented: NO" in current
+    assert "WP159 requires separate approval" in current
+    assert "WP159 implemented: NO" in current
 
 
 def test_repo_truth_index_registers_canonical_status_and_focused_test() -> None:

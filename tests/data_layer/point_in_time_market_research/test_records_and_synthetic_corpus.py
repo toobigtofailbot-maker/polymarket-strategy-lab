@@ -1455,6 +1455,19 @@ def test_exact_seventeen_file_wp157_scope() -> None:
     # which is the clean-main proof that successor maintenance is required.
     import subprocess
 
+    merged = subprocess.run(
+        ["git", "cat-file", "-e", "origin/main:docs/status_entries/WP157.md"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if merged.returncode == 0:
+        # Once WP157 is present on origin/main, successor WPs own their own
+        # exact-scope guards; the WP157 branch-scope assertion no longer applies
+        # to an empty or successor diff.
+        return
+
     changed = subprocess.run(
         ["git", "diff", "--name-only", "origin/main"],
         cwd=ROOT,

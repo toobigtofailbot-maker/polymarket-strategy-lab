@@ -2264,6 +2264,30 @@ WP157 adds no dependency, file I/O, writer, persisted query, collector,
 product/runtime network, credential, scheduler, strategy, paper/live, order,
 risk, reconciliation, accounting, or execution authority.
 
+## WP158 Append-Only Local Manifest And Deterministic Dataset Snapshot Reference Deferred Items
+
+WP158 is a contract-only package. WP157-D001 through WP157-D010 remain `OPEN` and
+separately gated. Every WP158 item below is `OPEN`, has no implementation
+authority, and requires a separately approved work package.
+
+| ID | Deferred item | Trigger | Prerequisite | Forbidden early interpretation | Separate approval requirement |
+|---|---|---|---|---|---|
+| WP158-D001 | Manifest writer | A persisted append-only manifest is separately approved | Approved storage container, atomic append policy, and identity/verification contract | This contract authorizes a manifest writer or any file emission | YES — manifest writer WP |
+| WP158-D002 | Manifest reader/verifier | Persisted manifest entries exist under an approved storage decision | Reader boundary, chain re-verification, and recompute-and-compare identity checks | This contract authorizes a reader, verifier, or chain loader | YES — reader/verifier WP |
+| WP158-D003 | Storage path/container selection | Persistence is separately approved | Storage decision, path/container contract, and durability/atomicity requirements | Logical identity implies a JSONL/SQLite/columnar container is chosen | YES — storage decision WP |
+| WP158-D004 | Atomic append and file locking | A writer and storage container are approved | Atomic append semantics, lock strategy, and concurrent-writer policy | The append-chain contract designs atomic append or file locking | YES — atomic-append/locking WP |
+| WP158-D005 | Crash recovery and torn-write policy | A writer and storage container are approved | Torn-write detection, recovery contract, and durability proof | The chain invariants imply crash recovery is implemented | YES — crash-recovery WP |
+| WP158-D006 | Schema migration and version compatibility | New schema majors are separately approved | Fail-closed migration, lineage preservation, and version-compatibility matrix | Fixed `1.0.0` schemas mean migration or multi-version support exists | YES — schema-migration WP |
+| WP158-D007 | Compaction | Persisted manifests exist and compaction is separately approved | Compaction that preserves append-only lineage and identity, with audit | Append-only permits history rewrite or compaction | YES — compaction WP (forbidden until approved) |
+| WP158-D008 | Arrow/Parquet materialization | Dependency and physical-schema decisions are approved | Dependency/security audit, round-trip equality, and physical file contract | Canonical JSON identity means Arrow/Parquet is installed or authoritative | YES — Arrow/Parquet materialization WP |
+| WP158-D009 | DuckDB/Polars query layer | Approved persisted or temporary columnar fixtures exist | Approved dependencies, exact workloads, reference oracle, and resource bounds | A reference contract adopts DuckDB or Polars | YES — DuckDB/Polars query WP |
+| WP158-D010 | Signing and external attestation | External trust requirements are approved | Signing scheme, key custody, and attestation/audit contract | Identity hashes imply signing or external attestation exists | YES — signing/attestation WP |
+
+WP158 adds no dependency, file I/O, writer, reader, persistence, persisted
+query, collector, product/runtime network, credential, scheduler, strategy,
+paper/live, order, risk, reconciliation, accounting, or execution authority, and
+no new `src` module or package export.
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.

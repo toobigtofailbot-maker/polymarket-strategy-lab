@@ -640,7 +640,32 @@ def test_exact_six_file_scope_and_no_implementation_or_deferred_log_change():
         for line in (result.stdout + untracked_result.stdout).splitlines()
         if line
     }
-    if "docs/status_entries/WP157.md" in changed:
+    if "docs/status_entries/WP158.md" in changed:
+        assert changed == {
+            "docs/append_only_local_manifest_and_dataset_snapshot_reference_contract.md",
+            "docs/deferred_items_log.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/WP158.md",
+            "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+            "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+            "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+            "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+            "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+            "tests/test_project_status_docs.py",
+        }
+        assert not changed & {
+            "docs/local_research_workflow_value_measurement_harness_contract.md",
+            "docs/local_research_workflow_value_measurement_dry_run_and_receipt_review.md",
+            "docs/status_entries/WP151.md",
+            "docs/status_entries/WP152.md",
+            "docs/status_entries/WP153.md",
+            "docs/status_entries/WP154.md",
+            "src/data_layer/local_research_value_measurement/__init__.py",
+            "src/data_layer/local_research_value_measurement/harness.py",
+            "tests/fixtures/local_research_workflow_value_measurement_v1.json",
+        }
+    elif "docs/status_entries/WP157.md" in changed:
         assert changed == {
             "docs/bounded_in_memory_point_in_time_record_set_reconstruction_and_as_of_query_implementation.md",
             "docs/deferred_items_log.md",
@@ -804,6 +829,7 @@ def test_exact_six_file_scope_and_no_implementation_or_deferred_log_change():
         and "docs/status_entries/WP155.md" not in changed
         and "docs/status_entries/WP156.md" not in changed
         and "docs/status_entries/WP157.md" not in changed
+        and "docs/status_entries/WP158.md" not in changed
         and changed
     ):
         assert "docs/deferred_items_log.md" not in changed
