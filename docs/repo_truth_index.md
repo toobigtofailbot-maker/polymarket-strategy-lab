@@ -613,11 +613,11 @@ Repo-truth files are authoritative project memory. They override chat memory, ol
 
 62z268. `tools/git/diff_scope_summary.py` - existing local diff-scope helper extended by WP159 with schema-2 WP-spec exact mode while preserving schema-1 legacy behavior; exact mode includes tracked/untracked paths, rename/copy source and destination policy, deletions, required presence, maximum count, authority, protected/generated/dependency checks, whitespace checks, and fail-closed git operation handling.
 
-62z269. `docs/wp_specs/WP159/wp_prompt.txt` and `docs/wp_specs/WP159/wp_spec.json` - exact immutable explicitly authorized XL21 WP159 prompt/specification bytes identified by SHA-256 `5385ba464b241a076eebf26c6ba1f854f7ea989487cb0a2f238d4195c15c8736` and `73eaf8c032de08425e68f60eb275b8fb4575fc5f46175290633d523e87c51b6a`.
+62z269. `docs/wp_specs/WP159/wp_prompt.txt` and `docs/wp_specs/WP159/wp_spec.json` - exact immutable explicitly authorized XL23 WP159 prompt/specification bytes identified by SHA-256 `ddaeaaa774cf81437ad7bf5e9e54403722190e49acdd92be547e5ebb5b3f9a40` and `207b84aebd21e0a1bb7dc0675234b9e77aa1f58baa2d0e951d8076189d1ca87b`.
 
 62z270. `docs/wp_specs/WP159/draftability_certificate.json` - explicit-user-authorization low-risk draft-PR implementation waiver; not a PASS certificate, not review-readiness authority, not merge authority, and requires independent live-PR review.
 
-62z271. `docs/status_entries/WP159.md` - stable Model D WP159 status fragment recording WP158 lineage, explicitly authorized XL exact 21-file scope, immutable package hashes, constrained waiver posture, implementation surface, unchanged protected boundaries, `BLOCKED_NOT_READY` evidence posture, and separately gated WP160/WP161 successors.
+62z271. `docs/status_entries/WP159.md` - stable Model D WP159 status fragment recording WP158 lineage, explicitly authorized XL exact 23-file scope, immutable package hashes, constrained waiver posture, implementation surface, unchanged protected boundaries, `BLOCKED_NOT_READY` evidence posture, and separately gated WP160/WP161 successors.
 
 62z272. `tests/tools/git/test_diff_scope_summary.py` - existing helper regression extended by WP159 with legacy compatibility plus exact command arrays, NUL parsing, tracked/untracked set semantics, rename/copy sources, deletion presence, count, authority, ambiguous CLI rejection, git-failure exit 2, and exact-failure exit 1.
 

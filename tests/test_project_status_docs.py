@@ -2796,7 +2796,7 @@ def test_wp153_through_wp158_are_merged_and_wp159_is_current_review_target():
         "Ready for review: NO",
         "Merge authorized: NO",
         "Independent live PR review required: YES",
-        "Exact changed-file scope: 21",
+        "Exact changed-file scope: 23",
         "Runtime impact: NONE",
         "Product impact: NONE",
         "Product/runtime network calls: 0",
@@ -3341,10 +3341,10 @@ def test_wp159_package_files_hashes_and_waiver_are_exact():
         (package / "draftability_certificate.json").read_text(encoding="utf-8")
     )
     assert hashlib.sha256(wp_bytes).hexdigest() == (
-        "5385ba464b241a076eebf26c6ba1f854f7ea989487cb0a2f238d4195c15c8736"
+        "ddaeaaa774cf81437ad7bf5e9e54403722190e49acdd92be547e5ebb5b3f9a40"
     )
     assert hashlib.sha256(spec_bytes).hexdigest() == (
-        "73eaf8c032de08425e68f60eb275b8fb4575fc5f46175290633d523e87c51b6a"
+        "207b84aebd21e0a1bb7dc0675234b9e77aa1f58baa2d0e951d8076189d1ca87b"
     )
     assert waiver == {
         "schema_id": "polymarket-wp-draftability-waiver",
@@ -3396,6 +3396,8 @@ def test_wp159_spec_exact_topology_lenses_errors_and_scope():
         "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
         "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
         "tests/test_wallet_intelligence_architecture_contract_docs.py",
+        "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+        "tests/test_human_review_label_workflow_docs.py",
         "docs/wp_specs/WP159/wp_prompt.txt",
         "docs/wp_specs/WP159/wp_spec.json",
         "docs/wp_specs/WP159/draftability_certificate.json",
@@ -3409,11 +3411,13 @@ def test_wp159_spec_exact_topology_lenses_errors_and_scope():
     assert spec["identity"]["package_size_class"] == "XL"
     assert spec["identity"]["xl_explicit_authorization"] is True
     assert spec["identity"]["xl_authorization_basis"] == (
-        "Explicit user authorization for one additional merged historical "
-        "compatibility regression test required by the full repository suite."
+        "Explicit user authorization for six merged historical compatibility "
+        "regression tests required to preserve the full repository suite while "
+        "WP159 adds and modifies local governance tools."
     )
-    assert spec["scope"]["max_changed_files"] == 21
+    assert spec["scope"]["max_changed_files"] == 23
     assert spec["scope"]["exact_scope_required"] is True
+    assert spec["scope"]["historical_compatibility_edits"] == expected_files[10:16]
     assert [item["category"] for item in spec["failure_precedence"]["items"]] == [
         "FILE_READ_ERROR",
         "JSON_PARSE_INVALID",

@@ -80,10 +80,10 @@ def test_exact_v6_package_and_waiver_pass():
     assert parsed["status"] == "PASS"
     assert parsed["errors"] == []
     assert parsed["wp_text_sha256"] == (
-        "5385ba464b241a076eebf26c6ba1f854f7ea989487cb0a2f238d4195c15c8736"
+        "ddaeaaa774cf81437ad7bf5e9e54403722190e49acdd92be547e5ebb5b3f9a40"
     )
     assert parsed["wp_spec_sha256"] == (
-        "73eaf8c032de08425e68f60eb275b8fb4575fc5f46175290633d523e87c51b6a"
+        "207b84aebd21e0a1bb7dc0675234b9e77aa1f58baa2d0e951d8076189d1ca87b"
     )
 
 
@@ -207,7 +207,7 @@ def test_duplicate_path_rejects_at_second_location():
     )
     _, errors = guard.validate_spec_document(document)
     assert any(
-        error["field_path"].endswith("allowed_changed_files[21]")
+        error["field_path"].endswith("allowed_changed_files[23]")
         for error in errors
     )
 

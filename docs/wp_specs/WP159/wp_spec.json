@@ -18,7 +18,7 @@
     "objective": "Make the existing canonical WP drafting process enforceable through a separate machine-readable WP specification, an independent draftability certificate, a deterministic local guard, and exact scope enforcement.",
     "capital_at_risk_usd": 0,
     "xl_explicit_authorization": true,
-    "xl_authorization_basis": "Explicit user authorization for one additional merged historical compatibility regression test required by the full repository suite."
+    "xl_authorization_basis": "Explicit user authorization for six merged historical compatibility regression tests required to preserve the full repository suite while WP159 adds and modifies local governance tools."
   },
   "scope": {
     "required_changed_files": [
@@ -36,6 +36,8 @@
       "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
       "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
       "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
       "docs/wp_specs/WP159/wp_prompt.txt",
       "docs/wp_specs/WP159/wp_spec.json",
       "docs/wp_specs/WP159/draftability_certificate.json",
@@ -59,6 +61,8 @@
       "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
       "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
       "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
       "docs/wp_specs/WP159/wp_prompt.txt",
       "docs/wp_specs/WP159/wp_spec.json",
       "docs/wp_specs/WP159/draftability_certificate.json",
@@ -80,13 +84,15 @@
       "tools/hermes/",
       "tools/polymarket/"
     ],
-    "max_changed_files": 21,
+    "max_changed_files": 23,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
       "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
       "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
-      "tests/test_wallet_intelligence_architecture_contract_docs.py"
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_human_review_label_workflow_docs.py"
     ],
     "rollback_surface": "Revert the WP159 governance commit. No runtime, dependency, data, credential, strategy, paper, live, or execution state exists to unwind.",
     "mode_boundaries": [
@@ -728,9 +734,9 @@
     "items": [
       {
         "requirement_id": "R01",
-        "source": "WP_DRAFTING_STANDARD, WP_SPEC_STANDARD, project status, WP158 successor assertions, and four merged historical scope-compatibility regressions",
-        "test": "the six authorized project-status and historical scope-compatibility test files",
-        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py tests/test_local_research_workflow_value_measurement_harness_contract_docs.py tests/test_point_in_time_market_research_data_foundation_contract_docs.py tests/test_wallet_intelligence_architecture_contract_docs.py",
+        "source": "WP_DRAFTING_STANDARD, WP_SPEC_STANDARD, project status, WP158 successor assertions, and six merged historical scope-compatibility regressions",
+        "test": "the eight authorized project-status, successor, and historical scope-compatibility test files",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py tests/test_local_research_workflow_value_measurement_harness_contract_docs.py tests/test_point_in_time_market_research_data_foundation_contract_docs.py tests/test_wallet_intelligence_architecture_contract_docs.py tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py tests/test_human_review_label_workflow_docs.py",
         "expected_result": "PASS"
       },
       {

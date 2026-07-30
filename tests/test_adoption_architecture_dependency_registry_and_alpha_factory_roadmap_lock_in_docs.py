@@ -558,7 +558,7 @@ def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None
                 encoding="utf-8"
             )
         )["scope"]["required_changed_files"])
-        assert len(expected) == 21
+        assert len(expected) == 23
         assert changed == expected
         return
     if "docs/status_entries/WP158.md" in changed:

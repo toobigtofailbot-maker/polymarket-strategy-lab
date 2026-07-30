@@ -1030,7 +1030,7 @@ def test_no_dependency_workflow_or_generated_artifact_in_scope() -> None:
                 encoding="utf-8"
             )
         )["scope"]["required_changed_files"])
-        assert len(expected) == 21
+        assert len(expected) == 23
         assert changed == expected
         assert not any(path.startswith("src/") for path in changed)
         return
@@ -1065,7 +1065,7 @@ def test_exact_scope_is_docs_and_tests_only() -> None:
                 encoding="utf-8"
             )
         )["scope"]["required_changed_files"])
-        assert len(expected) == 21
+        assert len(expected) == 23
         assert changed == expected
         return
     # Once WP158 is present on origin/main, successor WPs own their own scope

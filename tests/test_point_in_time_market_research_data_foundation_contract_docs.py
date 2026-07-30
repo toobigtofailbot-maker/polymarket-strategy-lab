@@ -547,7 +547,7 @@ def test_exact_nine_file_scope_and_no_protected_change() -> None:
                 encoding="utf-8"
             )
         )["scope"]["required_changed_files"])
-        assert len(expected) == 21
+        assert len(expected) == 23
         assert changed == expected
         return
     assert changed == EXPECTED_CHANGED

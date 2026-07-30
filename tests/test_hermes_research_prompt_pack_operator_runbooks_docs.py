@@ -664,6 +664,14 @@ def test_no_src_implementation_for_wp98() -> None:
         cwd=str(REPO_ROOT),
     )
     changed_files = result.stdout.strip().splitlines()
+    allowed_later_tools = {
+        "tools/hermes_candidate_review_manual_export_cli.py",
+    }
+    if "docs/status_entries/WP159.md" in changed_files:
+        allowed_later_tools.update({
+            "tools/wp/wp_spec_guard.py",
+            "tools/git/diff_scope_summary.py",
+        })
     later_authorized_src = {
         "src/data_layer/hermes_advisory_output_validator.py",
         "src/data_layer/hermes_context_packet_exporter.py",
@@ -709,9 +717,6 @@ def test_no_src_implementation_for_wp98() -> None:
         assert not f.startswith("src/") or f in later_authorized_src, (
             f"Forbidden src/ file changed: {f}"
         )
-        allowed_later_tools = {
-            "tools/hermes_candidate_review_manual_export_cli.py",
-        }
         assert not f.startswith("tools/") or f in allowed_later_tools, (
             f"Forbidden tools/ file changed: {f}"
         )

@@ -44,11 +44,12 @@ Package size:
 XL
 
 Exact changed-file budget:
-21 files maximum and exactly the 21 files in Section 11.
+23 files maximum and exactly the 23 files in Section 11.
 
 XL authorization:
-Explicit user authorization for one additional merged historical compatibility
-regression test required by the full repository suite.
+Explicit user authorization for six merged historical compatibility regression
+tests required to preserve the full repository suite while WP159 adds and
+modifies local governance tools.
 
 Evidence mode target:
 PRIVATE_REPO_MANUAL_VERIFIED
@@ -108,8 +109,8 @@ remain backward-compatible.
 
 Escalate or STOP if:
 
-- exact scope exceeds 21 files;
-- a shared helper/module beyond the 21-file set appears necessary;
+- exact scope exceeds 23 files;
+- a shared helper/module beyond the 23-file set appears necessary;
 - a dependency or lock-file change appears;
 - a `src/` change appears necessary;
 - existing `diff_scope_summary.py` behavior cannot remain backward-compatible;
@@ -360,8 +361,10 @@ Mode-boundary table:
 | Hermes runtime | NO |
 | live trading | NO |
 
-The package must remain at exactly 21 changed files under explicit XL
-authorization. Any twenty-second file requires STOP and user review.
+The package must remain at exactly 23 changed files under explicit XL
+authorization. Any twenty-fourth file requires:
+
+`ARCHITECTURE STOP — WP159 REQUIRES RE-SCOPING, NOT ANOTHER INCREMENTAL EXPANSION`
 
 ======================================================================
 10. LOCKED ARCHITECTURE DECISIONS
@@ -418,7 +421,7 @@ validator moves to WP161.
 11. EXACT CHANGED-FILE SET
 ======================================================================
 
-Exactly 21 files in the exact declared order below. `(N)` means new and `(M)`
+Exactly 23 files in the exact declared order below. `(N)` means new and `(M)`
 means modified. This order must equal both spec scope arrays.
 
 1. `(M)` `docs/ai/codex/WP_DRAFTING_STANDARD.md`
@@ -435,17 +438,19 @@ means modified. This order must equal both spec scope arrays.
 12. `(M)` `tests/test_local_research_workflow_value_measurement_harness_contract_docs.py`
 13. `(M)` `tests/test_point_in_time_market_research_data_foundation_contract_docs.py`
 14. `(M)` `tests/test_wallet_intelligence_architecture_contract_docs.py`
-15. `(N)` `docs/wp_specs/WP159/wp_prompt.txt`
-16. `(N)` `docs/wp_specs/WP159/wp_spec.json`
-17. `(N)` `docs/wp_specs/WP159/draftability_certificate.json`
-18. `(N)` `docs/status_entries/WP159.md`
-19. `(M)` `docs/project_status.md`
-20. `(M)` `docs/repo_truth_index.md`
-21. `(M)` `docs/deferred_items_log.md`
+15. `(M)` `tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py`
+16. `(M)` `tests/test_human_review_label_workflow_docs.py`
+17. `(N)` `docs/wp_specs/WP159/wp_prompt.txt`
+18. `(N)` `docs/wp_specs/WP159/wp_spec.json`
+19. `(N)` `docs/wp_specs/WP159/draftability_certificate.json`
+20. `(N)` `docs/status_entries/WP159.md`
+21. `(M)` `docs/project_status.md`
+22. `(M)` `docs/repo_truth_index.md`
+23. `(M)` `docs/deferred_items_log.md`
 
 No other file is authorized.
 
-The four merged compatibility tests at items 11–14 are mandatory because
+The six merged compatibility tests at items 11–16 are mandatory because
 they otherwise classify any successor diff containing `docs/status_entries/WP159.md`
 as an older-WP scope violation or require the stale
 `WP159 requires separate approval` / `WP159 implemented: NO` current-phase
@@ -453,10 +458,10 @@ phrases. Their edits may only add the exact WP159 compatibility branch and
 current-phase transition; historical assertions remain unchanged.
 
 The specification field `scope.historical_compatibility_edits` must contain
-exactly these four paths, in the same declared order as items 11–14. An
+exactly these six paths, in the same declared order as items 11–16. An
 empty list or any additional path is a specification contradiction.
 
-Within the explicitly authorized XL 21-file ceiling, WP159 does not modify
+Within the explicitly authorized XL 23-file ceiling, WP159 does not modify
 `docs/work_package_template.md`, `docs/ai/codex/PR_REVIEW_CHECKLIST.md`, or
 `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md`. The canonical V3 rules live in
 `WP_DRAFTING_STANDARD.md`; the exact schemas and both tool contracts live in
@@ -1370,15 +1375,15 @@ must verify:
 - separate spec and certificate;
 - no certificate field inside `wp_spec.json`;
 - exact schema/lens/error order;
-- WP159 exact 21-file scope;
+- WP159 exact 23-file scope;
 - WP158 merged and WP159 current;
 - WP160/WP161 deferrals;
 - no runtime/dependency/trading authority;
 - status fragment Model D stability.
 
-The four historical compatibility tests in Section 11 must each gain a
+The six historical compatibility tests in Section 11 must each gain a
 WP159-specific branch before their older-WP fallback. Together they must assert
-the same exact 21-file set, accept WP159 as the sole current review target,
+the same exact 23-file set, accept WP159 as the sole current review target,
 require WP158 in the merged-WP list, reject the stale
 `WP159 requires separate approval` and `WP159 implemented: NO` phrases from the
 current-phase line, and preserve every older-WP scope assertion unchanged.
@@ -1423,6 +1428,8 @@ python -m pytest -q tests/test_adoption_architecture_dependency_registry_and_alp
 python -m pytest -q tests/test_local_research_workflow_value_measurement_harness_contract_docs.py
 python -m pytest -q tests/test_point_in_time_market_research_data_foundation_contract_docs.py
 python -m pytest -q tests/test_wallet_intelligence_architecture_contract_docs.py
+python -m pytest -q tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py
+python -m pytest -q tests/test_human_review_label_workflow_docs.py
 python -m pytest -q tests/test_codex_workflow_docs.py
 python tools/wp/wp_spec_guard.py --wp docs/wp_specs/WP159/wp_prompt.txt --spec docs/wp_specs/WP159/wp_spec.json --certificate docs/wp_specs/WP159/draftability_certificate.json --format text
 python tools/git/diff_scope_summary.py --base origin/main --head HEAD --wp-spec docs/wp_specs/WP159/wp_spec.json --require-exact-scope --format text
@@ -1457,7 +1464,7 @@ The PR body must include:
 
 - exact base/head/branch;
 - package class and size;
-- exact 21-file inventory;
+- exact 23-file inventory;
 - requirement-to-evidence table;
 - focused/full validation;
 - WP-spec guard result;
@@ -1517,7 +1524,7 @@ Return:
 4. exact head SHA
 5. branch
 6. commit count
-7. exact 21-file inventory
+7. exact 23-file inventory
 8. copied WP/spec/certificate hash evidence
 9. WP-spec guard command/result
 10. exact-scope command/result
@@ -1545,8 +1552,8 @@ STOP and report before continuing if:
 
 - certificate or hashes fail;
 - WP/spec semantic edit is needed;
-- scope exceeds 21 files;
-- a twenty-second file appears;
+- scope exceeds 23 files;
+- a twenty-fourth file appears;
 - a new shared module is required;
 - backward compatibility cannot be preserved;
 - a dependency/lock/workflow/src change appears;

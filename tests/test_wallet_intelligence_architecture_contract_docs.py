@@ -448,7 +448,7 @@ def test_no_tools_files_changed() -> None:
                 encoding="utf-8"
             )
         )["scope"]["required_changed_files"])
-        assert len(expected) == 21
+        assert len(expected) == 23
         assert set(changed) == expected
         allowed_tools_changes.update({
             "tools/wp/wp_spec_guard.py",

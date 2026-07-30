@@ -647,7 +647,7 @@ def test_exact_six_file_scope_and_no_implementation_or_deferred_log_change():
                 encoding="utf-8"
             )
         )["scope"]["required_changed_files"])
-        assert len(expected) == 21
+        assert len(expected) == 23
         assert changed == expected
         return
     if "docs/status_entries/WP158.md" in changed:
