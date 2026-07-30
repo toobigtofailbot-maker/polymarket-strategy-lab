@@ -7,12 +7,43 @@
 - Runtime impact: NO_RUNTIME_CHANGE
 - Dependency impact: NO_DEPENDENCY_CHANGE
 - Introduced: WP86
+- Current foundation: V3 (WP159)
 
 ## Purpose
 
 Every future work package must be drafted to execution-package discipline. This document defines the mandatory sections and quality gates that prevent recurring follow-up loops.
 
 The goal is not to add bureaucracy. The goal is to stop paying for avoidable follow-up loops by making every WP self-verifying before the reviewer sees it.
+
+## V3 Immutable Draftability Package
+
+Before implementation authorization, every new governed WP must be represented
+by three separate immutable artifacts:
+
+1. `docs/wp_specs/<WP>/wp_prompt.txt`
+2. `docs/wp_specs/<WP>/wp_spec.json`
+3. `docs/wp_specs/<WP>/draftability_certificate.json`
+
+The prompt and specification are hashed as exact raw bytes by a separate
+certificate. The certificate is not embedded in the specification. A semantic
+change to either hashed artifact invalidates the review and requires
+recertification.
+
+The execution agent must not create, modify, or claim its own independent PASS
+certificate. Reviewer independence is human-controlled and declared; the guard
+can check schema, hashes, lens coverage, decisions, and implementability but
+cannot technically prove separate human control.
+
+Draftability review should be consolidated: one reviewer evaluates objective
+and class, public API, mutability, identity/serialization, transitions,
+batch/set behavior, error precedence, no-echo behavior, example truth, scope
+compatibility, evidence publication, and successor boundary as one package.
+Fragmented approvals do not substitute for that complete review.
+
+The machine-readable schema, exact certificate contract, diagnostic order, and
+local guard behavior are canonical in
+`docs/ai/codex/WP_SPEC_STANDARD.md`. WP160 controls are future separately gated
+work and must not be claimed as present.
 
 ## 1. Mandatory WP Front Matter
 

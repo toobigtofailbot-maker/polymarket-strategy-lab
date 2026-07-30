@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pathlib
+import json
 import re
 import subprocess
 
@@ -443,14 +444,14 @@ def test_project_status_reconciles_wp155_and_has_one_wp156_review_target() -> No
     assert "WP156" in merged
     assert "WP154" in merged
     assert "WP155" in merged
-    assert current.count("sole review target") == 1
+    assert current.count("sole draft PR review target") == 1
     assert (
         "WP154 adoption architecture, dependency registry and alpha-factory roadmap lock-in sole review target"
         not in project
     )
     # WP156 is merged; the current review target gates the next WP forward.
-    assert "WP159 requires separate approval" in current
-    assert "WP159 implemented: NO" in current
+    assert "WP159" in current
+    assert "Ready for review: NO" in current
 
 
 def test_repo_truth_index_registers_canonical_status_and_focused_test() -> None:
@@ -540,6 +541,15 @@ def test_exact_nine_file_scope_and_no_protected_change() -> None:
         # present on origin/main, successor WPs own their own exact-scope gates.
         return
     changed = _changed_files()
+    if "docs/status_entries/WP159.md" in changed:
+        expected = set(json.loads(
+            (ROOT / "docs/wp_specs/WP159/wp_spec.json").read_text(
+                encoding="utf-8"
+            )
+        )["scope"]["required_changed_files"])
+        assert len(expected) == 21
+        assert changed == expected
+        return
     assert changed == EXPECTED_CHANGED
     assert not any(
         path.startswith(

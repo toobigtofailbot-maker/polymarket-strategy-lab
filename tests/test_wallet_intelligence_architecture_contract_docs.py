@@ -442,6 +442,18 @@ def test_no_tools_files_changed() -> None:
     allowed_tools_changes = {
         "tools/hermes_candidate_review_manual_export_cli.py",
     }
+    if "docs/status_entries/WP159.md" in changed:
+        expected = set(json.loads(
+            (ROOT / "docs/wp_specs/WP159/wp_spec.json").read_text(
+                encoding="utf-8"
+            )
+        )["scope"]["required_changed_files"])
+        assert len(expected) == 21
+        assert set(changed) == expected
+        allowed_tools_changes.update({
+            "tools/wp/wp_spec_guard.py",
+            "tools/git/diff_scope_summary.py",
+        })
     tools_changes = {path for path in changed if path.startswith("tools/")}
     assert tools_changes <= allowed_tools_changes, (
         f"Unexpected tools/ changes: {tools_changes - allowed_tools_changes}"

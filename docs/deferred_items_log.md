@@ -2288,6 +2288,24 @@ query, collector, product/runtime network, credential, scheduler, strategy,
 paper/live, order, risk, reconciliation, accounting, or execution authority, and
 no new `src` module or package export.
 
+## WP159 Draftability Foundation And Exact Scope Enforcement Deferred Items
+
+WP159 is a local/offline/stdlib-only governance-helper package. Every item below
+is `OPEN`, separately gated, and outside WP159 implementation authority.
+
+| ID | Deferred item | Target | Status | Forbidden early interpretation |
+|---|---|---|---|---|
+| WP159-D001 | Class-specific WP template pack | WP160 | OPEN | WP159 creates or authorizes class-specific templates |
+| WP159-D002 | Pre-ready semantic certificate and evidence enforcement | WP160 | OPEN | A `PRE_READY_SEMANTIC_PASS` control already exists |
+| WP159-D003 | PR evidence renderer | WP160 | OPEN | WP159 automatically renders or publishes PR evidence |
+| WP159-D004 | Active historical exact-diff migration | WP160 | OPEN | Existing historical WPs are retroactively migrated by WP159 |
+| WP159-D005 | Manifest-entry and dataset-snapshot-reference validator | WP161 | OPEN | Governance tooling grants feature-validator, persistence, or runtime authority |
+| WP159-D006 | Secondary template/checklist/diff-helper-guide propagation | WP160 | OPEN | `docs/work_package_template.md`, PR checklist, or diff-helper guide are updated in WP159 |
+
+WP159 adds no source/runtime behavior, workflow file, dependency, product
+network behavior, credential use, scheduler, Hermes runtime, strategy, signal,
+paper/live, order, risk, reconciliation, accounting, or execution authority.
+
 ## WP6 Generated Artifact Incident Update
 
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.

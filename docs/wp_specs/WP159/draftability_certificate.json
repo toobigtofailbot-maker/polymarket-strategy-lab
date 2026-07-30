@@ -1,0 +1,14 @@
+{
+  "schema_id": "polymarket-wp-draftability-waiver",
+  "schema_version": "1.0.0",
+  "wp_id": "WP159",
+  "waiver_mode": "WAIVED_FOR_LOW_RISK_DRAFT_PR_IMPLEMENTATION",
+  "authorization_source": "EXPLICIT_USER_AUTHORIZATION",
+  "wp_text_sha256": "5385ba464b241a076eebf26c6ba1f854f7ea989487cb0a2f238d4195c15c8736",
+  "wp_spec_sha256": "73eaf8c032de08425e68f60eb275b8fb4575fc5f46175290633d523e87c51b6a",
+  "implementation_authorized": true,
+  "ready_for_review_authorized": false,
+  "merge_authorized": false,
+  "independent_live_pr_review_required": true,
+  "unresolved_decisions": []
+}

@@ -1,3 +1,4 @@
+import json
 import re
 import subprocess
 from pathlib import Path
@@ -640,6 +641,15 @@ def test_exact_six_file_scope_and_no_implementation_or_deferred_log_change():
         for line in (result.stdout + untracked_result.stdout).splitlines()
         if line
     }
+    if "docs/status_entries/WP159.md" in changed:
+        expected = set(json.loads(
+            (REPO_ROOT / "docs/wp_specs/WP159/wp_spec.json").read_text(
+                encoding="utf-8"
+            )
+        )["scope"]["required_changed_files"])
+        assert len(expected) == 21
+        assert changed == expected
+        return
     if "docs/status_entries/WP158.md" in changed:
         assert changed == {
             "docs/append_only_local_manifest_and_dataset_snapshot_reference_contract.md",

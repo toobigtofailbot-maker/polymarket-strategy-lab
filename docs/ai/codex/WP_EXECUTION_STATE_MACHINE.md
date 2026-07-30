@@ -14,6 +14,7 @@ If another workflow doc conflicts with this state machine, this document wins un
 0. Receive WP
 1. Startup read
 2. Repo-truth preflight
+2A. Draftability gate and explicit implementation authorization
 3. Branch creation
 4. Scoped implementation
 5. Validation
@@ -25,6 +26,29 @@ If another workflow doc conflicts with this state machine, this document wins un
 11. Review/merge decision
 12. Post-merge reconciliation
 ```
+
+The authorization state chain is:
+
+```
+LOCAL_DRAFT -> DRAFTABILITY_PASS -> AUTHORIZED -> IMPLEMENTED_LOCAL
+```
+
+`DRAFTABILITY_PASS` requires a separate certificate covering the exact
+prompt/spec raw-byte hashes, all twelve lenses, an empty unresolved-decision
+set, and PASS implementability simulation. The execution agent cannot create
+or alter its own PASS certificate. Any prompt/spec semantic edit or exact hash
+mismatch stops execution and requires recertification.
+
+WP159 has one explicit bootstrap waiver for its own low-risk draft-PR
+implementation. It is accepted only when the schema guard proves Risk Level
+0/1, zero capital, no runtime/workflow/dependency/network/credential or trading
+authority, explicit user authorization, implementation-only authority,
+review-ready=false, merge=false, and mandatory independent live-PR review. The
+waiver does not equal `DRAFTABILITY_PASS`, cannot authorize readiness or merge,
+and is unavailable to higher-risk packages.
+
+There is no automated `PRE_READY_SEMANTIC_PASS` state in this version. That is
+separately gated WP160 scope.
 
 ---
 

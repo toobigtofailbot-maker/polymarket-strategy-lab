@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pathlib
+import json
 import re
 import subprocess
 
@@ -414,7 +415,7 @@ def test_project_status_reconciles_wp153_and_has_one_wp154_review_target() -> No
         line for line in project.splitlines() if line.startswith("- Merged WPs:")
     )
     assert "WP153" in merged
-    assert current.count("sole review target") == 1
+    assert current.count("sole draft PR review target") == 1
     assert (
         "WP153 bounded local research workflow value measurement dry run and receipt review sole review target"
         not in project
@@ -428,10 +429,8 @@ def test_project_status_reconciles_wp153_and_has_one_wp154_review_target() -> No
         assert "WP154" in merged
         assert "WP155" in merged
         # WP156 is merged; the current review target gates the next WP forward.
-        assert (
-            "WP159 requires separate approval" in current
-            or "WP158 requires separate approval" in current
-        )
+        assert "WP159" in current
+        assert "Ready for review: NO" in current
     elif WP155_STATUS.exists():
         assert "WP155" in current
         assert "WP154" in merged
@@ -553,6 +552,15 @@ def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None
         for line in (diff.stdout + untracked.stdout).splitlines()
         if line
     }
+    if "docs/status_entries/WP159.md" in changed:
+        expected = set(json.loads(
+            (ROOT / "docs/wp_specs/WP159/wp_spec.json").read_text(
+                encoding="utf-8"
+            )
+        )["scope"]["required_changed_files"])
+        assert len(expected) == 21
+        assert changed == expected
+        return
     if "docs/status_entries/WP158.md" in changed:
         assert changed == {
             "docs/append_only_local_manifest_and_dataset_snapshot_reference_contract.md",

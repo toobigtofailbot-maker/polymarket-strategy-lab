@@ -1,0 +1,788 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP159",
+    "title": "V6 Corrected Draftability Foundation, Machine-Readable WP Specification, And Exact Scope Enforcement",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "GOVERNANCE",
+    "package_size_class": "XL",
+    "risk_level": 1,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 158,
+      "head_sha": "c7e59f2287501ea2ecab9b7d13d1a4b751f6c0b0",
+      "merge_sha": "056f0074b55c3d12cedbb9dfbdb43f7f668df0c3"
+    },
+    "suggested_branch": "codex/wp159-v3-draftability-scope-foundation",
+    "objective": "Make the existing canonical WP drafting process enforceable through a separate machine-readable WP specification, an independent draftability certificate, a deterministic local guard, and exact scope enforcement.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Explicit user authorization for one additional merged historical compatibility regression test required by the full repository suite."
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/ai/codex/WP_DRAFTING_STANDARD.md",
+      "docs/ai/codex/WP_SPEC_STANDARD.md",
+      "docs/ai/codex/VALIDATION_MATRIX.md",
+      "docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md",
+      "tools/wp/wp_spec_guard.py",
+      "tools/git/diff_scope_summary.py",
+      "tests/tools/wp/test_wp_spec_guard.py",
+      "tests/tools/git/test_diff_scope_summary.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+      "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "docs/wp_specs/WP159/wp_prompt.txt",
+      "docs/wp_specs/WP159/wp_spec.json",
+      "docs/wp_specs/WP159/draftability_certificate.json",
+      "docs/status_entries/WP159.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md"
+    ],
+    "allowed_changed_files": [
+      "docs/ai/codex/WP_DRAFTING_STANDARD.md",
+      "docs/ai/codex/WP_SPEC_STANDARD.md",
+      "docs/ai/codex/VALIDATION_MATRIX.md",
+      "docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md",
+      "tools/wp/wp_spec_guard.py",
+      "tools/git/diff_scope_summary.py",
+      "tests/tools/wp/test_wp_spec_guard.py",
+      "tests/tools/git/test_diff_scope_summary.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+      "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "docs/wp_specs/WP159/wp_prompt.txt",
+      "docs/wp_specs/WP159/wp_spec.json",
+      "docs/wp_specs/WP159/draftability_certificate.json",
+      "docs/status_entries/WP159.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "local_data/",
+      "src/",
+      "tests/fixtures/",
+      "tools/advisory/",
+      "tools/agent/",
+      "tools/hermes/",
+      "tools/polymarket/"
+    ],
+    "max_changed_files": 21,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+      "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py"
+    ],
+    "rollback_surface": "Revert the WP159 governance commit. No runtime, dependency, data, credential, strategy, paper, live, or execution state exists to unwind.",
+    "mode_boundaries": [
+      {
+        "boundary": "research_only",
+        "crossed": false
+      },
+      {
+        "boundary": "local_reporting",
+        "crossed": false
+      },
+      {
+        "boundary": "paper_trading",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler_bot_loop",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "live_trading",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": true,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP159 adds one local CLI and extends one existing local CLI.",
+    "items": [
+      {
+        "surface": "tools/wp/wp_spec_guard.py CLI",
+        "before": "ABSENT",
+        "after": "--wp PATH, --spec PATH, --certificate PATH, --format text|json (default text); exit 0 PASS, 1 invalid package, 2 usage/file access/size failure",
+        "change_authorized": true,
+        "compatibility_requirement": "New isolated stdlib-only CLI; no package export.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_VALIDATION"
+      },
+      {
+        "surface": "tools/wp/wp_spec_guard.py import API",
+        "before": "ABSENT",
+        "after": "validate_spec_document(document) and read_and_validate_spec_scope(path) with the exact signatures and bounded return shapes locked by the WP",
+        "change_authorized": true,
+        "compatibility_requirement": "Import-safe, side-effect-free, stdlib-only; invalid caller content returns sanitized errors and does not raise.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_VALIDATION"
+      },
+      {
+        "surface": "tools/git/diff_scope_summary.py CLI",
+        "before": "Manual --allowed-file/--allowed-prefix/--forbidden-prefix scope",
+        "after": "Adds --wp-spec PATH and --require-exact-scope; spec mode rejects manual scope flags, explicit package class, and --output",
+        "change_authorized": true,
+        "compatibility_requirement": "Legacy mode keeps schema 1.0, call signatures, serialized fields, output, and exit behavior; spec mode alone uses schema 2.0 and additive fields.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_DIFF_INSPECTION"
+      },
+      {
+        "surface": "tools/git/diff_scope_summary.py Python helper API",
+        "before": "Existing build_summary first ten parameters and existing render/classification/parsing helper signatures",
+        "after": "build_summary adds only the locked trailing keyword-only spec-mode parameters; all other public helper signatures are unchanged",
+        "change_authorized": true,
+        "compatibility_requirement": "Neutral defaults produce byte-for-byte legacy render output and legacy exit behavior.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_DIFF_INSPECTION"
+      },
+      {
+        "surface": "Python product/runtime public API",
+        "before": "Existing repository state",
+        "after": "UNCHANGED",
+        "change_authorized": false,
+        "compatibility_requirement": "No src module or package-root export.",
+        "authority": "NONE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The new guard exposes bounded deterministic inputs and a result object.",
+    "items": [
+      {
+        "path": "guard.input.wp_file",
+        "source": "CALLER",
+        "type": "local_path",
+        "required_rule": "required readable file",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "read exact bytes; no normalization",
+        "failure_category": "FILE_READ_ERROR",
+        "safe_output": "path label only; no file content",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "guard.input.spec_file",
+        "source": "CALLER",
+        "type": "local_json_path",
+        "required_rule": "required readable UTF-8 JSON file",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "parse and validate exact schema",
+        "failure_category": "JSON_PARSE_INVALID",
+        "safe_output": "path label only; no JSON value echo",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "guard.input.certificate_file",
+        "source": "CALLER",
+        "type": "local_json_path",
+        "required_rule": "required readable UTF-8 JSON file",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "parse and validate separate certificate",
+        "failure_category": "JSON_PARSE_INVALID",
+        "safe_output": "path label only; no JSON value echo",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "guard.input.format",
+        "source": "CALLER",
+        "type": "enum",
+        "required_rule": "text or json; defaults to text",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "closed vocabulary",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "enum token",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "draftability_certificate.wp_text_sha256",
+        "source": "DERIVED",
+        "type": "sha256_hex",
+        "required_rule": "required exact digest of wp_prompt.txt bytes",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "recompute and compare",
+        "failure_category": "CERTIFICATE_HASH_MISMATCH",
+        "safe_output": "64 lowercase hex",
+        "derivation_rule_id": "wp_text_raw_sha256"
+      },
+      {
+        "path": "draftability_certificate.wp_spec_sha256",
+        "source": "DERIVED",
+        "type": "sha256_hex",
+        "required_rule": "required exact digest of wp_spec.json bytes",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "recompute and compare",
+        "failure_category": "CERTIFICATE_HASH_MISMATCH",
+        "safe_output": "64 lowercase hex",
+        "derivation_rule_id": "wp_spec_raw_sha256"
+      },
+      {
+        "path": "guard.result.schema_id",
+        "source": "CONSTANT",
+        "type": "string",
+        "required_rule": "polymarket-wp-spec-guard-result",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "fixed constant",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "constant",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "guard.result.schema_version",
+        "source": "CONSTANT",
+        "type": "string",
+        "required_rule": "1.0.0",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "fixed constant",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "constant",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "guard.result.status",
+        "source": "DERIVED",
+        "type": "enum",
+        "required_rule": "PASS, FAIL, or USAGE_ERROR",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "derived from bounded validation result",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "enum token",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "guard.result.wp_id",
+        "source": "DERIVED",
+        "type": "string_or_null",
+        "required_rule": "validated WP ID or null when unavailable",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "copy only after validated identity section",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "bounded WP ID or null",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "guard.result.wp_text_sha256",
+        "source": "DERIVED",
+        "type": "sha256_hex_or_null",
+        "required_rule": "digest when WP bytes are readable",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "SHA-256 exact bytes",
+        "failure_category": "CERTIFICATE_HASH_MISMATCH",
+        "safe_output": "64 lowercase hex or null",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "guard.result.wp_spec_sha256",
+        "source": "DERIVED",
+        "type": "sha256_hex_or_null",
+        "required_rule": "digest when spec bytes are readable",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "SHA-256 exact bytes",
+        "failure_category": "CERTIFICATE_HASH_MISMATCH",
+        "safe_output": "64 lowercase hex or null",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "guard.result.checked_sections",
+        "source": "DERIVED",
+        "type": "ordered_string_array",
+        "required_rule": "only sections actually checked",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "closed canonical order",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "bounded section labels",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "guard.result.errors",
+        "source": "DERIVED",
+        "type": "ordered_error_array",
+        "required_rule": "empty on PASS; non-empty on FAIL or USAGE_ERROR",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "priority, canonical field path, then code; no raw keys, values, or exception text",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "code, canonical field path, closed neutral message",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_cli.wp_spec",
+        "source": "CALLER",
+        "type": "local_json_path_or_null",
+        "required_rule": "optional; non-null activates spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "read through read_and_validate_spec_scope; do not merge with manual scope",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "normalized path label",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_cli.require_exact_scope",
+        "source": "CALLER",
+        "type": "boolean_flag",
+        "required_rule": "optional; valid only with wp_spec",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "effective requirement is the spec flag OR this flag",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "boolean",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_cli.base",
+        "source": "CALLER",
+        "type": "git_ref",
+        "required_rule": "optional; defaults to main",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "valid in both modes; git success required in spec mode",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "bounded ref label",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_cli.head",
+        "source": "CALLER",
+        "type": "git_ref",
+        "required_rule": "optional; defaults to HEAD",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "valid in both modes; git success required in spec mode",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "bounded ref label",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_cli.manual_scope_flags",
+        "source": "CALLER",
+        "type": "legacy_flag_group",
+        "required_rule": "allowed-file, allowed-prefix, forbidden-prefix, and explicit package-class reject in spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "internal package-class default None distinguishes omission",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "fixed flag names only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_cli.legacy_neutral_flags",
+        "source": "CALLER",
+        "type": "legacy_flag_group",
+        "required_rule": "format and fail-on-warning remain valid; output rejects only in spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "legacy behavior unchanged",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "fixed flag names and validated enum",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_summary.wp_spec_path",
+        "source": "DERIVED",
+        "type": "normalized_path",
+        "required_rule": "present only in spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "slash-normalized CLI path label",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "normalized path label",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_summary.wp_spec_schema_version",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "present only in spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "copy only after schema validation",
+        "failure_category": "SCHEMA_UNSUPPORTED",
+        "safe_output": "validated version",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_summary.required_changed_files",
+        "source": "DERIVED",
+        "type": "ordered_path_array",
+        "required_rule": "present only in spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "validated declared order",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "normalized repository-relative paths",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_summary.allowed_changed_files",
+        "source": "DERIVED",
+        "type": "ordered_path_array",
+        "required_rule": "present only in spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "validated declared order",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "normalized repository-relative paths",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_summary.missing_required_files",
+        "source": "DERIVED",
+        "type": "ordered_path_array",
+        "required_rule": "required in wp-spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "declared required order filtered by absence from tracked-destination plus untracked union",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "normalized repository-relative paths",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_summary.untracked_files",
+        "source": "DERIVED",
+        "type": "ordered_path_array",
+        "required_rule": "always present in wp-spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "git ls-files --others --exclude-standard -z; normalize, deduplicate, lexicographically sort",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "normalized repository-relative paths",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_summary.total_changed_files",
+        "source": "DERIVED",
+        "type": "integer",
+        "required_rule": "unique tracked-destination plus untracked union size in wp-spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "rename and copy sources do not add to the count; deletions do; untracked files do",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "bounded non-negative integer",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_summary.counts.added",
+        "source": "DERIVED",
+        "type": "integer",
+        "required_rule": "tracked additions plus unique untracked files in wp-spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "counts sum equals total_changed_files; legacy semantics remain unchanged outside wp-spec mode",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "bounded non-negative integer",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_summary.exact_scope_pass",
+        "source": "DERIVED",
+        "type": "boolean",
+        "required_rule": "required in wp-spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "true only when every exact-scope condition passes",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "boolean",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope_summary.exact_scope_required",
+        "source": "DERIVED",
+        "type": "boolean",
+        "required_rule": "present only in spec mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "spec exact_scope_required OR CLI require-exact-scope",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "boolean",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": true,
+    "reason": "The separate certificate commits the exact WP and specification bytes.",
+    "items": [
+      {
+        "rule_id": "wp_text_raw_sha256",
+        "target_path": "draftability_certificate.wp_text_sha256",
+        "algorithm": "SHA256_RAW_BYTES",
+        "source_paths": [
+          "$external.wp_file_bytes"
+        ],
+        "excluded_paths": [],
+        "prefix": "",
+        "canonicalization": null
+      },
+      {
+        "rule_id": "wp_spec_raw_sha256",
+        "target_path": "draftability_certificate.wp_spec_sha256",
+        "algorithm": "SHA256_RAW_BYTES",
+        "source_paths": [
+          "$external.wp_spec_file_bytes"
+        ],
+        "excluded_paths": [],
+        "prefix": "",
+        "canonicalization": null
+      }
+    ]
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "WP159 adds the mandatory draftability gate before implementation authorization.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Separate certificate validates exact WP/spec hashes, all twelve lenses, no unresolved decisions, and implementability simulation PASS.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Explicit user authorization after independent draftability PASS.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Executor implements the immutable certified package without architecture changes.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "The guard must produce deterministic bounded failure ordering.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "WP159 defines workflow tooling rather than a product data contract. Complete synthetic valid/invalid documents are generated in tmp_path tests.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Every WP159 requirement maps to a deterministic file, test, and command.",
+    "items": [
+      {
+        "requirement_id": "R01",
+        "source": "WP_DRAFTING_STANDARD, WP_SPEC_STANDARD, project status, WP158 successor assertions, and four merged historical scope-compatibility regressions",
+        "test": "the six authorized project-status and historical scope-compatibility test files",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py tests/test_local_research_workflow_value_measurement_harness_contract_docs.py tests/test_point_in_time_market_research_data_foundation_contract_docs.py tests/test_wallet_intelligence_architecture_contract_docs.py",
+        "expected_result": "PASS"
+      },
+      {
+        "requirement_id": "R02",
+        "source": "tools/wp/wp_spec_guard.py",
+        "test": "tests/tools/wp/test_wp_spec_guard.py",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_spec_guard.py",
+        "expected_result": "PASS"
+      },
+      {
+        "requirement_id": "R03",
+        "source": "tools/git/diff_scope_summary.py",
+        "test": "tests/tools/git/test_diff_scope_summary.py",
+        "command": "python -m pytest -q tests/tools/git/test_diff_scope_summary.py",
+        "expected_result": "PASS"
+      },
+      {
+        "requirement_id": "R04",
+        "source": "WP159 certified package",
+        "test": "wp_spec_guard self-application",
+        "command": "python tools/wp/wp_spec_guard.py --wp docs/wp_specs/WP159/wp_prompt.txt --spec docs/wp_specs/WP159/wp_spec.json --certificate docs/wp_specs/WP159/draftability_certificate.json --format text",
+        "expected_result": "PASS; exit 0"
+      },
+      {
+        "requirement_id": "R05",
+        "source": "WP159 exact scope",
+        "test": "diff scope exact mode",
+        "command": "python tools/git/diff_scope_summary.py --base origin/main --head HEAD --wp-spec docs/wp_specs/WP159/wp_spec.json --require-exact-scope --format text",
+        "expected_result": "exact_scope_pass true; exit 0"
+      },
+      {
+        "requirement_id": "R06",
+        "source": "Repository regression surface",
+        "test": "full pytest",
+        "command": "python -m pytest -q",
+        "expected_result": "PASS"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP160",
+    "next_title": "V3 Pre-Ready Semantic Review, Publication Evidence Automation, Class-Specific Templates, And Active Historical Scope Migration",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP161",
+    "forbidden_in_this_wp": [
+      "pre-ready semantic certificate enforcement in PR evidence tools",
+      "PR evidence renderer",
+      "class-specific WP template pack",
+      "secondary work-package-template, PR-checklist, and diff-helper-guide propagation",
+      "historical exact-diff test migration",
+      "manifest entry or dataset snapshot reference runtime validator",
+      "persistence, writer, reader, storage, or query-engine adoption"
+    ]
+  }
+}

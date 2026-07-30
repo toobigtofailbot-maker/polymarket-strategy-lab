@@ -1,0 +1,1577 @@
+WP159 — V6 CORRECTED DRAFTABILITY FOUNDATION, MACHINE-READABLE WP SPECIFICATION,
+AND EXACT SCOPE ENFORCEMENT
+
+Repository:
+toobigtofailbot-maker/polymarket-strategy-lab
+
+Status:
+CONSOLIDATED CORRECTED DRAFT AFTER INDEPENDENT DRAFTABILITY FAIL
+REQUIRES A NEW INDEPENDENT REVIEW OF THESE EXACT V5 BYTES
+NOT YET AUTHORIZED FOR CODEX OR CLAUDE CODE EXECUTION
+PREPARED DOES NOT MEAN AUTHORIZED
+
+======================================================================
+0. PACKAGE IDENTITY
+======================================================================
+
+Work Package ID:
+WP159
+
+Title:
+V6 Corrected Draftability Foundation, Machine-Readable WP Specification, And Exact
+Scope Enforcement
+
+Required predecessor:
+- PR #158: MERGED
+- WP158 final implementation head:
+  c7e59f2287501ea2ecab9b7d13d1a4b751f6c0b0
+- WP158 merge commit:
+  056f0074b55c3d12cedbb9dfbdb43f7f668df0c3
+
+Base branch:
+main
+
+Suggested work branch:
+codex/wp159-v3-draftability-scope-foundation
+
+Primary package class:
+GOVERNANCE
+
+Repository validation class:
+local-offline-stdlib-governance-helper-hardening
+
+Package size:
+XL
+
+Exact changed-file budget:
+21 files maximum and exactly the 21 files in Section 11.
+
+XL authorization:
+Explicit user authorization for one additional merged historical compatibility
+regression test required by the full repository suite.
+
+Evidence mode target:
+PRIVATE_REPO_MANUAL_VERIFIED
+
+Capital at risk:
+USD 0
+
+======================================================================
+1. EXECUTION AUTHORIZATION GATE
+======================================================================
+
+This file is not executable by itself.
+
+Before Codex or Claude Code may begin WP159, the operator must provide all
+three exact files:
+
+1. `WP159_V6_Draftability_Foundation_And_Exact_Scope_Enforcement.txt`
+2. `WP159_wp_spec.json`
+3. `WP159_draftability_certificate.json`
+
+The certificate must have been produced in a separate independent review
+context after reviewing the exact WP text, the exact specification, and merged
+repo truth at `056f0074b55c3d12cedbb9dfbdb43f7f668df0c3`.
+
+STOP before branch creation if:
+
+- any of the three files is missing;
+- the certificate result is not `PASS`;
+- the certificate does not cover all twelve required lenses;
+- `unresolved_decisions` is not empty;
+- `implementability_simulation` is not `PASS`;
+- the certificate's WP/spec SHA-256 values do not match the exact input bytes;
+- the certificate was created or altered by the execution agent;
+- the WP or specification needs any semantic edit.
+
+The executor may copy the supplied WP, specification, and certificate byte for
+byte into their exact repository paths. The executor may not draft, repair,
+self-certify, or rewrite the certificate.
+
+If any architecture change becomes necessary after certification, return:
+
+`ARCHITECTURE STOP — RECERTIFICATION REQUIRED`
+
+Do not continue implementation under an altered WP or specification.
+
+======================================================================
+2. RECOMMENDED CODEX / CLAUDE MODE
+======================================================================
+
+Recommended model/reasoning:
+Highest available coding/reasoning mode.
+
+Reason:
+This is an XL-size governance package that introduces a generic validator,
+extends a shared scope helper, changes canonical workflow policy, and must
+remain backward-compatible.
+
+Escalate or STOP if:
+
+- exact scope exceeds 21 files;
+- a shared helper/module beyond the 21-file set appears necessary;
+- a dependency or lock-file change appears;
+- a `src/` change appears necessary;
+- existing `diff_scope_summary.py` behavior cannot remain backward-compatible;
+- the separate certificate design cannot be implemented without circularity;
+- the active policy documents conflict in a way not resolved by this WP;
+- WP160 or WP161 behavior would be required to finish WP159.
+
+======================================================================
+3. AUTHORITY / NON-AUTHORITY POSTURE
+======================================================================
+
+Authorized:
+
+- update the existing canonical WP drafting standard to the V3 foundation;
+- define the machine-readable WP specification and separate certificate;
+- add one local/offline/read-only/stdlib-only WP specification guard;
+- extend the existing local/offline/read-only diff scope helper;
+- update focused workflow documentation, tests, status, repo truth, and
+  deferred-item records;
+- commit the exact certified WP prompt, specification, and certificate.
+
+Not authorized:
+
+- any `src/` or product-runtime code;
+- any market-data, Polymarket API, provider, account, or wallet behavior;
+- network behavior in the new or modified tools;
+- credentials, environment-secret reads, private endpoints, or authentication;
+- dependencies, lock files, package installation, or workflow files;
+- persistence, storage, writer, reader, database, Arrow/Parquet,
+  DuckDB/Polars, or migration behavior;
+- strategy, signal, paper trading, execution, orders, risk, accounting,
+  reconciliation, scheduler, bot loop, Hermes runtime, restricted live, or live;
+- WP160 pre-ready semantic-review/evidence automation;
+- WP161 manifest/reference validator implementation.
+
+Authority fields:
+
+- Implementation authority: workflow governance and local stdlib tooling only.
+- Report/export authority: none.
+- Paper authority: none.
+- Execution authority: none.
+- Live authority: none.
+- Credential authority: none.
+- Runtime/scheduler authority: none.
+- Canonical evidence authority: WP drafting/specification policy only.
+- Network authority: none for product or tools; git/PR publication only.
+- Dependency-change authority: none.
+
+======================================================================
+4. HARD MERGE AND REMOTE-MAIN GATE
+======================================================================
+
+Before substantive work:
+
+```bash
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+git merge-base --is-ancestor c7e59f2287501ea2ecab9b7d13d1a4b751f6c0b0 main
+git cat-file -e 056f0074b55c3d12cedbb9dfbdb43f7f668df0c3^{commit}
+gh pr view 158 --json state,mergedAt,mergeCommit,headRefOid,baseRefName
+```
+
+Required result:
+
+- local `main == origin/main == 056f0074b55c3d12cedbb9dfbdb43f7f668df0c3`;
+- PR #158 state is merged;
+- PR #158 head is `c7e59f2287501ea2ecab9b7d13d1a4b751f6c0b0`;
+- PR #158 merge commit is `056f0074b55c3d12cedbb9dfbdb43f7f668df0c3`;
+- no newer conflicting merge changes the governance baseline;
+- no local or remote WP159 branch exists;
+- no open WP159 PR exists;
+- working tree is clean;
+- generated-artifact guard passes.
+
+This certificate is baseline-bound. If `main` or `origin/main` has advanced
+beyond `056f0074b55c3d12cedbb9dfbdb43f7f668df0c3`, STOP with
+`BASELINE ADVANCED — NEW INDEPENDENT REVIEW REQUIRED`. Do not ask the executor
+to decide whether later commits are "conflicting." A new corrected WP/spec and
+certificate must bind the actual synchronized base before branch creation.
+
+Do not silently use the historical WP158 base commit
+`583a0ab0bd85810f2865eb15553a58d44bd9f65f`.
+
+======================================================================
+5. BOOTSTRAP HASH VERIFICATION BEFORE THE NEW GUARD EXISTS
+======================================================================
+
+Before copying or editing repository files, parse the supplied JSON files and
+compute hashes over exact bytes without line-ending normalization:
+
+```bash
+python -m json.tool WP159_wp_spec.json > /dev/null
+python -m json.tool WP159_draftability_certificate.json > /dev/null
+python -c "import hashlib,pathlib; print(hashlib.sha256(pathlib.Path('WP159_V6_Draftability_Foundation_And_Exact_Scope_Enforcement.txt').read_bytes()).hexdigest())"
+python -c "import hashlib,pathlib; print(hashlib.sha256(pathlib.Path('WP159_wp_spec.json').read_bytes()).hexdigest())"
+```
+
+Compare both digests with the certificate.
+
+Also verify manually:
+
+- certificate `schema_id` =
+  `polymarket-wp-draftability-certificate`;
+- certificate `schema_version` = `1.0.0`;
+- certificate `wp_id` = `WP159`;
+- `reviewed_repository` = `toobigtofailbot-maker/polymarket-strategy-lab`;
+- `reviewed_base_merge_sha` = `056f0074b55c3d12cedbb9dfbdb43f7f668df0c3`;
+- reviewer role = `INDEPENDENT_DRAFTABILITY_REVIEWER`;
+- independence attestation =
+  `SEPARATE_REVIEW_CONTEXT_DECLARED`;
+- result = `PASS`;
+- all twelve lens names appear once, in canonical order, with `PASS`;
+- unresolved decisions = empty;
+- implementability simulation = `PASS`.
+
+If any check fails, STOP.
+
+After branch creation, copy the exact supplied bytes to:
+
+- `docs/wp_specs/WP159/wp_prompt.txt`;
+- `docs/wp_specs/WP159/wp_spec.json`;
+- `docs/wp_specs/WP159/draftability_certificate.json`.
+
+Do not reserialize the JSON files.
+
+======================================================================
+6. CONTEXT BUDGET
+======================================================================
+
+Read first:
+
+- `AGENTS.md`
+- `AI_CODING_AGENT_START_HERE.md`
+- `CODEX_START_HERE.md`
+- `CLAUDE_START_HERE.md`
+- `docs/project_status.md`
+- `docs/repo_truth_index.md`
+- `docs/deferred_items_log.md`
+- `docs/ai/codex/README.md`
+
+Read for this WP:
+
+- `docs/ai/codex/WP_DRAFTING_STANDARD.md`
+- `docs/work_package_template.md`
+- `docs/ai/codex/VALIDATION_MATRIX.md`
+- `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`
+- `docs/ai/codex/PR_REVIEW_CHECKLIST.md`
+- `docs/ai/codex/WP_BUNDLING_POLICY.md`
+- `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`
+- `docs/ai/codex/REPO_TRUTH_POLICY_GUARD.md`
+- `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`
+- `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md`
+- `docs/ai/codex/PROTECTED_PATHS.md`
+- `docs/ai/codex/RESULT_OUTPUT_INVARIANT_STANDARD.md`
+- `docs/status_entries/README.md`
+- `tools/git/diff_scope_summary.py`
+- `tests/tools/git/test_diff_scope_summary.py`
+- `tests/test_project_status_docs.py`
+- `tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py`
+- merged WP158 contract and status fragment.
+
+Read only if blocked:
+
+- `tools/git/pr_evidence_consistency_guard.py`
+- `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`
+- historical workflow tests directly failing after the authorized edits.
+
+Do not read or touch:
+
+- `src/`;
+- `.github/workflows/`;
+- dependency or lock files;
+- `local_data/`;
+- `tests/fixtures/`;
+- credentials or environment files;
+- Polymarket/provider/runtime/execution modules;
+- Hermes runtime or memory paths.
+
+======================================================================
+7. OBJECTIVE
+======================================================================
+
+Convert the existing mandatory but predominantly prose-based WP drafting
+discipline into an enforceable V3 foundation.
+
+WP159 must deliver four connected controls:
+
+1. one canonical V3 drafting foundation, integrated into the existing
+   `WP_DRAFTING_STANDARD.md`, not a competing rulebook;
+2. one exact machine-readable `wp_spec.json` standard;
+3. one separate independent draftability certificate that hashes the exact WP
+   and exact specification without self-reference;
+4. local deterministic tooling that validates the package and enforces its
+   exact changed-file scope.
+
+The final GitHub review must no longer be the first place where draftability,
+identity contradictions, missing precedence, example truth, or file-scope drift
+are discovered.
+
+======================================================================
+8. COMPATIBILITY / IMPOSSIBILITY TABLE
+======================================================================
+
+| Required behavior | Controlling mechanism | Authorized files | Compatible? | Required action |
+|---|---|---|---:|---|
+| Make V3 canonical | Existing `WP_DRAFTING_STANDARD.md` is mandatory | canonical docs/tests | YES | amend existing standard; do not add parallel V3 rulebook |
+| Hash exact WP/spec | Separate certificate | spec standard, guard, committed package | YES | raw-byte SHA-256; certificate outside spec |
+| Validate spec semantics | New local guard | `tools/wp/`, focused tests | YES | stdlib-only, deterministic, bounded |
+| Enforce exact scope | Existing diff helper | existing helper/doc/test | YES | extend; do not create duplicate scope helper |
+| Preserve old helper CLI | Existing users/tests | helper/test | YES | new mode additive; legacy mode unchanged |
+| Independent review proof | Human-controlled separate context | certificate | PARTIAL BY DESIGN | validate attestation and hashes; do not claim technical proof of independence |
+| Pre-ready PR semantic gate | Future WP160 | none in WP159 | NO | defer |
+| Class-specific template pack | Future WP160 | none in WP159 | NO | defer |
+| Historical exact-diff migration | Future WP160 | none in WP159 | NO | defer |
+| Manifest/reference validator | Future WP161 | none in WP159 | NO | defer |
+
+If implementation requires any incompatible row, STOP rather than expanding
+scope.
+
+======================================================================
+9. L-PACKAGE BUNDLE JUSTIFICATION
+======================================================================
+
+Why one bundle is safe:
+
+- all changes are workflow governance or local/offline/read-only tooling;
+- all files serve one objective: enforce certified WP draftability and scope;
+- no mode boundary is crossed;
+- no product/runtime surface is touched;
+- one rollback reverts the complete governance foundation;
+- one focused validation surface covers the specification guard, scope helper,
+  and canonical policy wiring.
+
+Mode-boundary table:
+
+| Boundary | Crossed? |
+|---|---:|
+| research-only to product runtime | NO |
+| local reporting | NO |
+| paper trading | NO |
+| credentials | NO |
+| execution | NO |
+| scheduler/bot loop | NO |
+| Hermes runtime | NO |
+| live trading | NO |
+
+The package must remain at exactly 21 changed files under explicit XL
+authorization. Any twenty-second file requires STOP and user review.
+
+======================================================================
+10. LOCKED ARCHITECTURE DECISIONS
+======================================================================
+
+A. No parallel V3 rulebook
+
+`docs/ai/codex/WP_DRAFTING_STANDARD.md` remains the single canonical drafting
+authority and is amended to the V3 foundation.
+
+`docs/ai/codex/WP_SPEC_STANDARD.md` is a technical companion defining JSON
+schemas and guard behavior. It must not restate a second competing workflow.
+
+B. Three immutable package artifacts
+
+Every governed WP package consists of:
+
+- exact WP prompt text;
+- exact `wp_spec.json`;
+- separate exact `draftability_certificate.json`.
+
+The certificate is never embedded in `wp_spec.json`.
+
+C. Exact-byte hashes
+
+Certificate hashes use SHA-256 over exact file bytes. No UTF-8 decoding,
+newline normalization, JSON reserialization, or whitespace normalization occurs
+before hashing.
+
+D. Human-controlled independence
+
+The repository cannot prove that two model contexts are independent.
+
+The certificate records an independence attestation. The operator controls
+whether it was produced in a separate context. The executor may validate the
+attestation but may not claim cryptographic proof of reviewer independence.
+
+E. Immutable certified package
+
+Any semantic change to the WP or specification invalidates the certificate and
+requires a new independent review.
+
+F. Existing scope helper is extended
+
+Do not create a second diff/scope helper.
+
+G. WP159 is foundation only
+
+Draft-PR semantic certification, evidence rendering, class-specific templates,
+and historical exact-diff migration remain WP160. The manifest/reference
+validator moves to WP161.
+
+======================================================================
+11. EXACT CHANGED-FILE SET
+======================================================================
+
+Exactly 21 files in the exact declared order below. `(N)` means new and `(M)`
+means modified. This order must equal both spec scope arrays.
+
+1. `(M)` `docs/ai/codex/WP_DRAFTING_STANDARD.md`
+2. `(N)` `docs/ai/codex/WP_SPEC_STANDARD.md`
+3. `(M)` `docs/ai/codex/VALIDATION_MATRIX.md`
+4. `(M)` `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`
+5. `(N)` `tools/wp/wp_spec_guard.py`
+6. `(M)` `tools/git/diff_scope_summary.py`
+7. `(N)` `tests/tools/wp/test_wp_spec_guard.py`
+8. `(M)` `tests/tools/git/test_diff_scope_summary.py`
+9. `(M)` `tests/test_project_status_docs.py`
+10. `(M)` `tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py`
+11. `(M)` `tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py`
+12. `(M)` `tests/test_local_research_workflow_value_measurement_harness_contract_docs.py`
+13. `(M)` `tests/test_point_in_time_market_research_data_foundation_contract_docs.py`
+14. `(M)` `tests/test_wallet_intelligence_architecture_contract_docs.py`
+15. `(N)` `docs/wp_specs/WP159/wp_prompt.txt`
+16. `(N)` `docs/wp_specs/WP159/wp_spec.json`
+17. `(N)` `docs/wp_specs/WP159/draftability_certificate.json`
+18. `(N)` `docs/status_entries/WP159.md`
+19. `(M)` `docs/project_status.md`
+20. `(M)` `docs/repo_truth_index.md`
+21. `(M)` `docs/deferred_items_log.md`
+
+No other file is authorized.
+
+The four merged compatibility tests at items 11–14 are mandatory because
+they otherwise classify any successor diff containing `docs/status_entries/WP159.md`
+as an older-WP scope violation or require the stale
+`WP159 requires separate approval` / `WP159 implemented: NO` current-phase
+phrases. Their edits may only add the exact WP159 compatibility branch and
+current-phase transition; historical assertions remain unchanged.
+
+The specification field `scope.historical_compatibility_edits` must contain
+exactly these four paths, in the same declared order as items 11–14. An
+empty list or any additional path is a specification contradiction.
+
+Within the explicitly authorized XL 21-file ceiling, WP159 does not modify
+`docs/work_package_template.md`, `docs/ai/codex/PR_REVIEW_CHECKLIST.md`, or
+`docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md`. The canonical V3 rules live in
+`WP_DRAFTING_STANDARD.md`; the exact schemas and both tool contracts live in
+`WP_SPEC_STANDARD.md`; the execution gate lives in
+`WP_EXECUTION_STATE_MACHINE.md`. Secondary template/checklist/user-guide
+propagation remains separately gated with WP160.
+
+======================================================================
+12. MACHINE-READABLE WP SPECIFICATION STANDARD
+======================================================================
+
+Add `docs/ai/codex/WP_SPEC_STANDARD.md`.
+
+It must lock schema `polymarket-work-package-spec@1.0.0` with these exact
+top-level keys and no others:
+
+- `schema_id`
+- `schema_version`
+- `identity`
+- `scope`
+- `authority`
+- `api_matrix`
+- `semantic_fields`
+- `identity_derivations`
+- `state_transitions`
+- `failure_precedence`
+- `examples`
+- `evidence_plan`
+- `successor_boundary`
+
+Applicability sections use exactly:
+
+```json
+{
+  "applicable": true,
+  "reason": "bounded explanation",
+  "items": []
+}
+```
+
+Rules:
+
+- `applicable=true` requires non-empty `items`;
+- `applicable=false` requires a non-empty reason and empty `items`;
+- unknown fields reject;
+- booleans are not accepted as integers;
+- all list ordering is preserved for deterministic validation and output;
+  identity effect is governed by the declared derivation algorithm (in
+  particular canonical-JSON source-path order is preserved for diagnostics but
+  is not identity-bearing because preimage object keys are sorted);
+- all paths are normalized repository-relative forward-slash paths;
+- absolute paths, `..`, backslashes, duplicates, empty paths, and NUL reject;
+- package size budgets are S<=5, M<=10, L<=20;
+- XL requires explicit authorization fields;
+- `required_changed_files` must be a subset of `allowed_changed_files`;
+- `max_changed_files` cannot exceed the package-size budget;
+- authority and path scope may not contradict;
+- semantic-field paths are unique;
+- a field marked `identity_role=EXCLUDED` may not be mutable;
+- a DERIVED field with `identity_role=COMMITTED` must reference an existing
+  derivation rule; operational DERIVED fields with `identity_role=NONE` may
+  use a null derivation-rule reference when their deterministic validation
+  rule is stated;
+- derivation targets, source paths, and excluded paths may not conflict;
+- `SHA256_RAW_BYTES` requires exactly one approved `$external.*_bytes`
+  source path, null canonicalization, and hashes exact bytes;
+- `SHA256_CANONICAL_JSON` uses dot paths relative to each example `input`,
+  requires the complete canonicalization object, preserves array order, and
+  recomputes the target value with the declared prefix;
+- canonical-JSON derivations use exact canonicalization;
+- failure-precedence priorities are unique positive integers;
+- state-transition pairs are unique;
+- examples, when applicable, use complete wrappers:
+  `example_id`, `expected_valid`, `expected_error_codes`,
+  `intended_fault_count`, `derivation_rule_ids`, `input`;
+- valid examples require zero errors and zero faults;
+- invalid examples require one intended fault and non-empty errors;
+- applicable canonical-JSON derivations are independently recomputed;
+- evidence requirement IDs are unique;
+- successor boundary must be separately gated.
+
+The document must also lock the separate certificate schema.
+
+Certificate exact top-level keys:
+
+- `schema_id`
+- `schema_version`
+- `wp_id`
+- `reviewed_repository`
+- `reviewed_base_merge_sha`
+- `wp_text_sha256`
+- `wp_spec_sha256`
+- `reviewer_role`
+- `independence_attestation`
+- `result`
+- `covered_lenses`
+- `unresolved_decisions`
+- `implementability_simulation`
+
+Exact constants:
+
+- schema ID: `polymarket-wp-draftability-certificate`
+- schema version: `1.0.0`
+- reviewer role: `INDEPENDENT_DRAFTABILITY_REVIEWER`
+- independence attestation: `SEPARATE_REVIEW_CONTEXT_DECLARED`
+- result: `PASS`
+- implementability simulation: `PASS`
+
+Canonical lens order:
+
+1. `objective_and_class`
+2. `public_api`
+3. `mutability`
+4. `identity_and_serialization`
+5. `state_transitions`
+6. `batch_set_behavior`
+7. `error_precedence`
+8. `invalid_input_no_echo`
+9. `example_truth`
+10. `scope_compatibility`
+11. `evidence_publication`
+12. `successor_boundary`
+
+Every lens appears exactly once with result `PASS`.
+`unresolved_decisions` must be empty.
+
+----------------------------------------------------------------------
+12A. COMPLETE META-SCHEMA, BOUNDS, SET RULES, AND GENERIC DERIVATION
+----------------------------------------------------------------------
+
+`WP_SPEC_STANDARD.md` and the guard must implement the following rules exactly.
+The executor may not invent another nested schema, vocabulary, bound, ordering
+rule, or derivation algorithm.
+
+A. Input bounds and JSON parsing
+
+- Maximum WP prompt bytes: 1,048,576.
+- Maximum specification bytes: 1,048,576.
+- Maximum certificate bytes: 262,144.
+- JSON must be UTF-8 without a BOM.
+- Duplicate JSON object keys reject as `JSON_PARSE_INVALID`.
+- `NaN`, `Infinity`, and `-Infinity` reject as `JSON_PARSE_INVALID`.
+- Numeric literals that decode to a non-finite value, including exponent
+  overflow such as `1e9999`, reject as `JSON_PARSE_INVALID`.
+- Maximum JSON nesting depth after parse: 32, where the root is depth 1.
+- Maximum string length: 16,384 Unicode code points unless a smaller field
+  bound below applies.
+- Maximum array length: 1,024 unless a smaller field bound below applies.
+- JSON booleans never satisfy integer or number types.
+
+B. Exact object keys and field types
+
+Every object below rejects unknown keys. `string[a,b]` means a string whose
+Unicode-code-point length is in the inclusive range. `token` means
+`^[A-Z][A-Z0-9_]{0,127}$`. `sha40` means exactly 40 lowercase hexadecimal
+characters. `sha256` means exactly 64 lowercase hexadecimal characters.
+
+`identity` has exactly:
+
+- `wp_id`: string matching `^WP[1-9][0-9]*(?:[A-Z])?$`;
+- `title`: string[1,200];
+- `repository`: string[3,200] matching one `owner/name` pair;
+- `package_class`: token;
+- `package_size_class`: one of `S`, `M`, `L`, `XL`;
+- `risk_level`: integer 0..4;
+- `base_branch`: repository-relative ref token string[1,200], with no
+  whitespace, control character, `..`, `~`, `^`, `:`, `?`, `*`, `[`, or
+  backslash;
+- `required_predecessor`: object with exactly `pr_number` (positive integer),
+  `head_sha` (sha40), and `merge_sha` (sha40);
+- `suggested_branch`: string[1,200] satisfying the same ref restrictions;
+- `objective`: string[1,2000];
+- `capital_at_risk_usd`: finite JSON number >= 0;
+- `xl_explicit_authorization`: boolean;
+- `xl_authorization_basis`: null unless size is XL; for XL it is
+  string[1,1000] and `xl_explicit_authorization` is true.
+
+`scope` has exactly:
+
+- `required_changed_files`, `allowed_changed_files`,
+  `historical_compatibility_edits`: arrays of normalized paths;
+- `forbidden_prefixes`: array of normalized directory prefixes ending `/`;
+- `max_changed_files`: positive integer;
+- `exact_scope_required`: boolean;
+- `rollback_surface`: string[1,2000];
+- `mode_boundaries`: array of objects with exactly `boundary` (lowercase token
+  matching `^[a-z][a-z0-9_]{0,127}$`) and `crossed` (boolean).
+
+Normalized paths are non-empty repository-relative forward-slash paths. They
+reject absolute paths, drive letters, empty segments, `.`/`..` segments,
+backslashes, NUL/control characters, a trailing slash, and leading `./`.
+Path comparison is case-sensitive. Lists are order-preserving but duplicate
+paths reject. Required and allowed lists contain at most 35 paths; forbidden
+prefixes at most 64. Historical compatibility paths must be a subset of allowed
+paths. Mode-boundary names are unique.
+
+Package budgets are S<=5, M<=10, L<=20. For S/M/L,
+`max_changed_files` must not exceed the budget. For XL, explicit authorization
+and basis are mandatory. `len(required_changed_files)` must be <=
+`max_changed_files`; required must be a subset of allowed.
+
+`authority` has exactly these sixteen boolean fields:
+`workflow_governance`, `local_offline_tooling`,
+`canonical_evidence_policy`, `docs`, `tests`, `source_runtime`,
+`workflow_files`, `dependencies`, `network`, `credentials`, `scheduler`,
+`hermes_runtime`, `strategy`, `paper`, `execution`, `live`.
+
+Every applicability object has exactly `applicable`, `reason`, `items`.
+`applicable` is boolean; `reason` is string[1,1000]. True requires 1..1024
+items. False requires zero items. The reason is always required; it explains
+either applicability or non-applicability.
+
+`api_matrix.items[]` has exactly:
+`surface` string[1,300], `before` string[1,1000], `after` string[1,1000],
+`change_authorized` boolean, `compatibility_requirement` string[1,1000], and
+`authority` token. Surfaces are unique.
+
+`semantic_fields.items[]` has exactly:
+`path`, `source`, `type`, `required_rule`, `mutable`, `identity_role`,
+`exclusion_reason`, `validation_rule`, `failure_category`, `safe_output`,
+`derivation_rule_id`. `path` is a unique dot path whose segments match
+`^[A-Za-z_][A-Za-z0-9_]{0,127}$`; `source` is one of
+`CALLER`, `CONSTANT`, `DERIVED`; `type` is string[1,128];
+`required_rule`, `validation_rule`, and `safe_output` are string[1,1000];
+`mutable` is boolean; `identity_role` is `COMMITTED`, `EXCLUDED`, or `NONE`;
+`failure_category` must name a category in `failure_precedence`;
+`exclusion_reason` is string[1,1000] exactly when identity role is EXCLUDED and
+null otherwise; `derivation_rule_id` is a rule ID or null. EXCLUDED may not be
+mutable. DERIVED+COMMITTED requires an existing derivation. DERIVED+NONE may
+use null only when `validation_rule` is non-empty.
+
+`identity_derivations.items[]` has exactly:
+`rule_id`, `target_path`, `algorithm`, `source_paths`, `excluded_paths`,
+`prefix`, `canonicalization`. Rule IDs and target paths are unique. Rule IDs
+match `^[a-z][a-z0-9_]{0,127}$`. Target/source/excluded paths are dot paths;
+within each list paths are unique and source/excluded sets are disjoint.
+`algorithm` is `SHA256_RAW_BYTES` or `SHA256_CANONICAL_JSON`; `prefix` is
+string[0,128].
+
+For `SHA256_RAW_BYTES`: there is exactly one source path; it is exactly one of
+`$external.wp_file_bytes` or `$external.wp_spec_file_bytes`; excluded paths are
+empty; prefix is empty; canonicalization is null; the target is
+`prefix + sha256(exact_source_bytes).hexdigest()`.
+
+For `SHA256_CANONICAL_JSON`: the target, every source path, and every excluded
+path are dot paths relative to the same example `input`. Canonicalization has
+exactly:
+
+```json
+{
+  "sort_keys": true,
+  "separators": [",", ":"],
+  "ensure_ascii": false,
+  "allow_nan": false,
+  "encoding": "utf-8",
+  "preserve_explicit_nulls": true,
+  "preserve_array_order": true
+}
+```
+
+Every source and excluded path must exist. Source paths may not equal or be an
+ancestor/descendant of another source path. Each excluded path must be a strict
+descendant of exactly one source path; it may not equal a source path. Resolve
+each source value, deep-copy it, and remove the excluded descendant paths from
+that copy. Excluded paths may traverse JSON objects only; array-index path
+segments are not supported. If `target_path` is equal to or below a source
+path, it must be listed in `excluded_paths`; otherwise the derivation is
+self-referential and rejects as `IDENTITY_DERIVATION_INVALID`.
+
+The preimage is a JSON object whose keys are the full source-path strings in
+declared order and whose values are the corresponding projected source copies.
+Object-key sorting during serialization makes source declaration order
+non-identity-bearing; array order within values remains identity-bearing.
+Serialize with the exact canonicalization object above. Resolve the expected
+target at `target_path` in the original example input. Its required value is
+`prefix + sha256(canonical_bytes).hexdigest()`. Missing paths, invalid
+exclusions, a non-string target, or a mismatch reject as
+`EXAMPLE_TRUTH_INVALID`, except the self-reference rule above.
+
+Focused tests for the generic algorithm must use an applicable canonical-JSON
+example and prove: every included scalar-leaf mutation changes the digest; an
+excluded scalar-leaf mutation does not change it; array reordering changes it;
+object insertion-order changes do not; prefix changes alter only the prefixed
+result; and the target is resolved relative to `input`, never relative to the
+wrapper or the specification root.
+
+`state_transitions.items[]` has exactly:
+`from_state`, `to_state`, `condition`, `failure_category`. States are tokens;
+condition is string[1,2000]; category must exist in precedence. Transition pairs
+are unique; self-transitions reject.
+
+`failure_precedence.items[]` has exactly:
+`condition_id`, `category`, `priority`. Condition IDs match the derivation-rule
+ID grammar and are unique. Categories are tokens and unique. Priorities are
+unique positive integers. For schema 1.0.0 the items must be exactly the fifteen
+conditions/categories/priorities in the WP159 spec and in the order shown there.
+
+`examples.items[]` has exactly:
+`example_id`, `expected_valid`, `expected_error_codes`,
+`intended_fault_count`, `derivation_rule_ids`, `input`.
+Example IDs are unique string[1,200]; booleans and fault count have their normal
+types; error codes are unique precedence categories in canonical precedence
+order; derivation IDs are unique and existing; input is a JSON object. A valid
+example has no errors, zero faults, and every listed canonical derivation
+recomputes. An invalid example has exactly one fault and one or more expected
+errors. The guard validates the wrapper and derivations; domain-specific example
+validity is asserted by the WP's focused tests and must equal the wrapper claim.
+
+`evidence_plan.items[]` has exactly:
+`requirement_id`, `source`, `test`, `command`, `expected_result`.
+Requirement IDs are unique and match `^R[0-9]{2,4}$`; all other fields are
+string[1,4000]. Commands must not contain NUL or a newline.
+
+`successor_boundary` has exactly:
+`next_wp`, `next_title`, `separately_gated`, `feature_validator_moved_to`,
+`forbidden_in_this_wp`. The WP fields match the WP-ID grammar;
+`next_title` is string[1,300]; `separately_gated` must be true;
+`forbidden_in_this_wp` contains 1..128 unique string[1,500] items.
+
+C. Mechanical authority/path mapping
+
+The guard applies this closed mapping to every required and allowed path:
+
+- `docs/` requires `docs=true`;
+- `tests/` requires `tests=true`;
+- `src/` requires `source_runtime=true`;
+- `.github/workflows/` requires `workflow_files=true`;
+- `tools/` requires `local_offline_tooling=true`;
+- a dependency/lock basename recognized by the merged diff helper requires
+  `dependencies=true`;
+- `tools/hermes/`, `agent_runtime/`, or `agent_memory/` additionally requires
+  `hermes_runtime=true`;
+- any credential-like path recognized by the merged diff helper additionally
+  requires `credentials=true`;
+- the three `docs/wp_specs/<WP>/` artifacts additionally require
+  `canonical_evidence_policy=true`;
+- any path under a declared forbidden prefix rejects as
+  `SCOPE_POLICY_INVALID` before authority checks.
+
+Unknown top-level path families reject as `AUTHORITY_CONTRADICTION`; they are not
+implicitly authorized. This table is the mechanical implementation of the
+centralized `PROTECTED_PATHS.md` boundary reference for this schema version.
+For the artifact rule, `<WP>` must equal `identity.wp_id` and the three exact
+filenames are `wp_prompt.txt`, `wp_spec.json`, and
+`draftability_certificate.json`; no other filename gains artifact authority.
+
+D. Set/batch ordering
+
+All arrays preserve declared order in parsed/validated data. Duplicate identity
+keys reject. Guard errors are collected without set iteration. Errors sort by:
+failure priority, then canonical schema field path, then error code. Unknown
+object keys produce one `UNKNOWN_FIELD` error at the known parent path; the
+untrusted key is never echoed. Array-item errors use a numeric index in the
+field path. This ordering applies identically to text and JSON formats.
+
+E. Certificate schema
+
+The certificate is a separate JSON document and is never a field of the spec.
+It has exactly the thirteen keys listed in Section 12. Strings use the exact
+constants already listed. `wp_text_sha256` and `wp_spec_sha256` are sha256;
+`reviewed_base_merge_sha` is sha40; `covered_lenses` has exactly twelve objects,
+each with exactly `lens` and `result`, in canonical order, each result PASS.
+`unresolved_decisions` is exactly an empty array. No certificate hash, bytes, or
+content is included in the specification. Therefore the only hash edges are
+`certificate -> WP bytes` and `certificate -> spec bytes`; no cycle exists.
+
+`wp_id` uses the WP-ID grammar and must equal `spec.identity.wp_id`.
+`reviewed_repository` is string[3,200], uses the same exact repository grammar
+as `spec.identity.repository`, and must equal it.
+`reviewed_base_merge_sha` must equal
+`spec.identity.required_predecessor.merge_sha`. A syntactically valid mismatch
+in any of these three cross-document identity fields is
+`DRAFTABILITY_INCOMPLETE`. A malformed field is `FIELD_TYPE_INVALID` or
+`FIELD_VALUE_INVALID` as applicable. A syntactically valid but unequal raw-byte
+digest is `CERTIFICATE_HASH_MISMATCH`. Certificate constant, lens, result,
+attestation, unresolved-decision, or implementability defects are
+`DRAFTABILITY_INCOMPLETE`.
+
+The repository grammar is exactly
+`^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})/[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})$`.
+This same expression applies to `identity.repository`; no executor-selected
+repository regex is permitted.
+
+F. Diagnostic field paths, cardinality, and phase gating
+
+Diagnostic `field_path` values are trusted schema locations, never
+caller-supplied field values. Root labels are exactly `cli`, `files.wp`,
+`files.spec`, `files.certificate`, `spec`, and `certificate`. Nested object
+locations use dots. Array locations use zero-based brackets, for example
+`spec.api_matrix.items[0].surface`.
+
+- a missing field names the trusted expected field location;
+- an invalid present field names that field location;
+- an unknown-key error names only the known parent object;
+- each object emits at most one `UNKNOWN_FIELD` error regardless of how many
+  unknown keys it contains;
+- duplicate JSON keys emit one `JSON_PARSE_INVALID` error at `spec` or
+  `certificate`;
+- duplicate array identities emit one error for each second-or-later
+  occurrence at that occurrence's trusted identity-field location;
+- identical `(code, field_path, message)` errors deduplicate by first
+  occurrence without set iteration.
+
+The guard uses the following closed phase gate:
+
+1. CLI usage validation. A usage defect returns `USAGE_ERROR`, one
+   `FIELD_VALUE_INVALID` error at `cli`, empty `checked_sections`, and exit 2.
+2. `files`. Attempt bounded regular-file reads for all three roles. Any missing,
+   unreadable, non-regular, or over-limit role emits `FILE_READ_ERROR` at its
+   fixed `files.*` path, returns `USAGE_ERROR`, stops before JSON parsing, and
+   exits 2.
+3. `spec_json`. Strictly decode/parse the spec. On failure, return `FAIL`,
+   stop all later sections, and exit 1.
+4. `spec_schema`. Check exact keys, types, bounds, constants, and field-local
+   grammar. Any error through `FIELD_VALUE_INVALID` stops later sections.
+5. `spec_semantics`. Check applicability, uniqueness, scope/budgets,
+   authority, cross-references, derivations, transitions, fixed precedence,
+   examples, evidence, and successor rules. Any semantic error stops before
+   certificate checks.
+6. `certificate_json`. Strictly decode/parse the certificate. Parse failure
+   stops later certificate sections.
+7. `certificate_schema`. Check exact keys, types, bounds, and field-local
+   grammar. Any schema error stops later certificate sections.
+8. `certificate_hashes`. Compare the two certificate digests with the already
+   computed exact raw-byte digests.
+9. `certificate_draftability`. Check cross-document identity, constants,
+   attestation, exact lens order/results, empty unresolved decisions, and
+   implementability PASS. This phase runs even if the preceding hash comparison
+   found mismatches, so both bounded categories may be reported.
+
+`checked_sections` is the exact prefix of the canonical section list whose
+phases started. The fixed built-in precedence table, not an invalid
+document-supplied table, sorts diagnostics. Within a category, sort by the
+diagnostic path grammar above and then code; stable first occurrence breaks a
+fully equal tie.
+
+`validate_spec_document` applies `spec_schema` and `spec_semantics` only. It
+accepts JSON-compatible built-in values, detects cycles, non-finite numbers,
+and excessive depth, and returns sanitized errors for caller-controlled invalid
+content. Expected `TypeError`, `ValueError`, `UnicodeError`, `OSError`, and
+`RecursionError` conditions are converted to closed errors; exception text is
+never returned. A defect in the guard's own internal constants is a programmer
+error and may raise.
+
+======================================================================
+13. WP SPECIFICATION GUARD
+======================================================================
+
+Add `tools/wp/wp_spec_guard.py`.
+
+Posture:
+
+- local;
+- offline;
+- read-only;
+- deterministic;
+- Python standard library only;
+- no environment-variable reads;
+- no subprocess;
+- no network;
+- no file writes;
+- no imports from product/runtime packages;
+- no approval, merge, or execution authority.
+
+CLI:
+
+```bash
+python tools/wp/wp_spec_guard.py   --wp docs/wp_specs/WP159/wp_prompt.txt   --spec docs/wp_specs/WP159/wp_spec.json   --certificate docs/wp_specs/WP159/draftability_certificate.json   --format text
+```
+
+Arguments:
+
+- `--wp`: required;
+- `--spec`: required;
+- `--certificate`: required;
+- `--format`: `text` or `json`, default `text`.
+
+Exit codes:
+
+- 0: PASS;
+- 1: parsed package is invalid;
+- 2: CLI usage, missing file, unreadable file, non-regular file, or file-size
+  limit failure.
+
+Malformed or duplicate-key JSON is a parsed-package validation failure:
+status `FAIL`, `JSON_PARSE_INVALID`, exit 1. A format token outside
+`text|json` is a neutral usage failure: status `USAGE_ERROR`, exit 2, without
+echoing the supplied token. Override argparse usage/error rendering as needed so
+no untrusted CLI value is echoed.
+
+Closed validation error order:
+
+1. `FILE_READ_ERROR`
+2. `JSON_PARSE_INVALID`
+3. `SCHEMA_UNSUPPORTED`
+4. `UNKNOWN_FIELD`
+5. `FIELD_MISSING`
+6. `FIELD_TYPE_INVALID`
+7. `FIELD_VALUE_INVALID`
+8. `CERTIFICATE_HASH_MISMATCH`
+9. `DRAFTABILITY_INCOMPLETE`
+10. `SCOPE_POLICY_INVALID`
+11. `AUTHORITY_CONTRADICTION`
+12. `SEMANTIC_CONTRADICTION`
+13. `IDENTITY_DERIVATION_INVALID`
+14. `FAILURE_PRECEDENCE_INVALID`
+15. `EXAMPLE_TRUTH_INVALID`
+
+Result object exact fields:
+
+- `schema_id`
+- `schema_version`
+- `status`
+- `wp_id`
+- `wp_text_sha256`
+- `wp_spec_sha256`
+- `checked_sections`
+- `errors`
+
+Result constants:
+
+- schema ID: `polymarket-wp-spec-guard-result`
+- schema version: `1.0.0`
+- status: `PASS`, `FAIL`, or `USAGE_ERROR`.
+
+Each error object contains exactly:
+
+- `code`
+- `field_path`
+- `message`
+
+No raw JSON value, WP text, certificate value, exception string, traceback,
+environment value, or file content may appear in output.
+
+Expose pure import-safe functions needed by the diff scope helper:
+
+- `validate_spec_document(document: object) -> tuple[dict[str, object] | None,
+  tuple[dict[str, str], ...]]`;
+- `read_and_validate_spec_scope(path: str | pathlib.Path) ->
+  tuple[dict[str, object] | None, tuple[dict[str, str], ...]]`.
+
+On success, the first function returns the validated full spec as an ordinary
+deep-copied dict and an empty error tuple. The second returns a dict with exactly:
+`schema_version`, `package_class`, `required_changed_files`,
+`allowed_changed_files`, `forbidden_prefixes`, `max_changed_files`,
+`exact_scope_required`, `authority`; lists are tuples in declared order and
+authority is a copied dict. On failure either function returns `None` plus
+ordered sanitized error dicts with exactly `code`, `field_path`, `message`.
+These functions never write, invoke subprocesses, read environment variables,
+or raise for caller-controlled invalid content. Programmer errors may raise.
+
+`read_and_validate_spec_scope` applies the specification byte limit, regular-file
+rule, strict UTF-8/BOM/duplicate/non-finite JSON policy, and then calls
+`validate_spec_document`. File access or size failure returns
+`FILE_READ_ERROR` at `files.spec`; decode/parse failure returns
+`JSON_PARSE_INVALID` at `spec`. It never includes the supplied path or exception
+text in its errors.
+
+Importing the module must not execute the CLI.
+
+`checked_sections` uses this exact order and contains only sections whose check
+started: `files`, `spec_json`, `spec_schema`, `spec_semantics`,
+`certificate_json`, `certificate_schema`, `certificate_hashes`,
+`certificate_draftability`.
+
+Each error code has this exact neutral message:
+
+1. FILE_READ_ERROR — `required file is unavailable`
+2. JSON_PARSE_INVALID — `JSON document is invalid`
+3. SCHEMA_UNSUPPORTED — `schema identifier or version is unsupported`
+4. UNKNOWN_FIELD — `object contains an unknown field`
+5. FIELD_MISSING — `required field is missing`
+6. FIELD_TYPE_INVALID — `field type is invalid`
+7. FIELD_VALUE_INVALID — `field value is invalid`
+8. CERTIFICATE_HASH_MISMATCH — `certificate hash does not match exact bytes`
+9. DRAFTABILITY_INCOMPLETE — `draftability certificate is incomplete`
+10. SCOPE_POLICY_INVALID — `scope policy is invalid`
+11. AUTHORITY_CONTRADICTION — `path scope contradicts authority`
+12. SEMANTIC_CONTRADICTION — `specification semantics contradict`
+13. IDENTITY_DERIVATION_INVALID — `identity derivation is invalid`
+14. FAILURE_PRECEDENCE_INVALID — `failure precedence is invalid`
+15. EXAMPLE_TRUTH_INVALID — `example truth is invalid`
+
+Text output is deterministic and contains one `key: value` line for each result
+field in the result-field order above. Validated non-null string scalars render
+without quotes; null renders exactly `null`; arrays and objects render as compact
+JSON using `ensure_ascii=False`, `allow_nan=False`, and
+`separators=(",",":")`, preserving insertion order. Every text result ends with
+exactly one newline. JSON output is
+`json.dumps(result, ensure_ascii=False, allow_nan=False, separators=(",",":"))`
+plus one newline, preserving result-field insertion order. Neither format emits
+timestamps or platform-dependent exception text.
+
+======================================================================
+14. EXTEND THE EXISTING DIFF SCOPE HELPER
+======================================================================
+
+Modify `tools/git/diff_scope_summary.py`; do not replace it.
+
+Add:
+
+- `--wp-spec PATH`
+- `--require-exact-scope`
+
+Locked behavior:
+
+- `--require-exact-scope` is valid only with `--wp-spec`;
+- when `--wp-spec` is used, manual scope flags and manual package-class
+  overrides are rejected rather than merged ambiguously;
+- implement package-class argument detection without changing legacy output:
+  use an internal `None` parser default, resolve it to `unspecified` only in
+  legacy mode, and reject any explicit package-class value in spec mode;
+- `--base` and `--head` remain valid;
+- load and validate the spec through import-safe WP-spec guard functions;
+- package class, required files, allowed files, forbidden prefixes, maximum
+  count, and authority permissions come from the spec;
+- include untracked files from
+  `git ls-files --others --exclude-standard -z`;
+- use NUL-delimited tracked and untracked git output;
+- normalize, case-sensitively deduplicate, and lexicographically sort the union
+  of tracked destination paths and untracked paths;
+- a rename/copy source and destination must both pass allowed, forbidden,
+  generated, protected, dependency, and authority checks; only the destination
+  participates in required-file presence;
+- a deleted path counts as a changed required path but must still pass policy;
+- exact scope passes only when:
+  - every actual changed/untracked path is allowed;
+  - every required path is present;
+  - changed count is within the declared maximum;
+  - no forbidden/protected/generated path is present;
+  - no unauthorized dependency, workflow, source-runtime, or tool path exists;
+  - `git diff --check` is clean;
+- all git operations succeeded.
+
+The spec-mode git command set is exact:
+
+- `git diff --name-status -z --find-renames=50% --find-copies=50%
+  --find-copies-harder <base>...<head>`;
+- `git diff --stat <base>...<head>`;
+- `git diff --check <base>...<head>`;
+- `git ls-files --others --exclude-standard -z`.
+
+Git command arguments are passed as argument arrays, never through a shell.
+Tracked entries retain their Git order for status parsing; all spec-mode
+published path arrays are then deterministically ordered as stated below.
+
+New additive result fields:
+
+- `wp_spec_path`
+- `wp_spec_schema_version`
+- `required_changed_files`
+- `allowed_changed_files`
+- `missing_required_files`
+- `untracked_files`
+- `exact_scope_required`
+- `exact_scope_pass`
+
+Keep legacy summary schema version `1.0` and legacy serialized output unchanged.
+Spec mode uses summary schema version `2.0` and adds the fields above. New fields
+are absent, not null-filled, in legacy mode.
+
+Spec-mode field semantics:
+
+- `wp_spec_path`: normalized CLI path label exactly as supplied after slash
+  normalization;
+- `wp_spec_schema_version`: validated spec schema version;
+- `required_changed_files` and `allowed_changed_files`: declared order;
+- `missing_required_files`: declared required order filtered to paths absent
+  from the tracked-destination/untracked union;
+- `untracked_files`: lexicographically sorted normalized untracked paths;
+- `exact_scope_required`: `spec.scope.exact_scope_required OR
+  --require-exact-scope`;
+- `exact_scope_pass`: true only when every exact condition passes.
+
+In spec mode, `total_changed_files` is the size of the unique union of tracked
+destination paths and untracked paths. Rename/copy sources do not increase that
+count. A deletion destination does count. Untracked files count as `added` in
+`counts` and appear in the `A` list in `changed_files_by_status`; the separate
+`untracked_files` field preserves their provenance. Each spec-mode status list,
+`out_of_scope_files`, protected/generated/dependency lists, and the combined
+changed-path view are case-sensitive, deduplicated, and lexicographically
+sorted. The `counts` sum therefore equals `total_changed_files`. A rename/copy
+source that fails policy is included in the applicable violation list but not
+in the changed-file count or required-file-presence set.
+
+Required-file presence uses the destination/untracked union. A required
+deletion is present. A rename/copy source never satisfies required presence;
+its destination may. Allowed/forbidden/generated/protected/dependency and
+authority checks run over tracked sources, tracked destinations, and untracked
+paths. Maximum-count enforcement uses `total_changed_files`.
+
+`--wp-spec` activates spec mode. Manual scope flags are exactly
+`--allowed-file`, `--allowed-prefix`, `--forbidden-prefix`, and an explicitly
+supplied `--package-class`; any one is a usage error in spec mode.
+`--base`, `--head`, `--format`, and `--fail-on-warning` remain valid.
+`--output` is rejected in spec mode because writing a new local_data artifact
+after the untracked-file scan would make the exact-scope result stale. Its
+legacy behavior is unchanged.
+
+If the spec declares `exact_scope_required=true`, exact failure exits 1 even
+when `--require-exact-scope` is omitted. The flag may force enforcement for a
+future valid spec that declares false. In spec mode, git-not-found, an invalid
+ref, or any git command operational failure is a usage/configuration failure
+with exit 2 and a bounded neutral message. A successful `git diff --check`
+command that reports whitespace defects is an exact-scope failure with exit 1.
+
+Backward compatibility:
+
+- all existing CLI flags remain available without `--wp-spec`;
+- existing public helper functions remain callable; add new parameters only
+  as trailing optional keyword parameters with neutral defaults so existing
+  unit tests and callers do not require edits;
+- existing output fields remain;
+- existing exit behavior remains in legacy mode;
+- legacy tests remain valid;
+- no new dependency or network behavior.
+
+In exact-scope mode, any exact-scope failure returns exit 1.
+Usage/configuration errors return exit 2.
+
+Lock the public helper extension:
+
+```python
+def build_summary(
+    base,
+    head,
+    package_class,
+    allowed_files,
+    allowed_prefixes,
+    forbidden_prefixes,
+    entries,
+    diff_stat,
+    diff_check_errors,
+    git_errors,
+    *,
+    wp_spec_path=None,
+    wp_spec_schema_version=None,
+    required_changed_files=(),
+    untracked_files=(),
+    max_changed_files=None,
+    exact_scope_required=False,
+    authority=None,
+    git_operations_succeeded=True,
+):
+```
+
+The first ten parameters and all legacy semantics are unchanged. The new
+parameters are keyword-only and neutral at their defaults. `render_text`,
+`render_json`, classification helpers, and parsing helpers retain their existing
+call signatures. New private helpers may be added without becoming public API.
+
+======================================================================
+15. CANONICAL WORKFLOW DOCUMENT UPDATES
+======================================================================
+
+A. `WP_DRAFTING_STANDARD.md`
+
+- revise the existing mandatory standard to the V3 foundation;
+- require the three immutable package artifacts;
+- distinguish human-controlled reviewer independence from mechanical checks;
+- prohibit executor self-certification;
+- require recertification after semantic WP/spec edits;
+- introduce the one-consolidated-review principle;
+- retain existing authority, merge-gate, context-budget, stop-condition,
+  evidence, and safety rules;
+- do not claim WP160 controls already exist.
+
+B. `VALIDATION_MATRIX.md`
+
+Add the Risk Level 1 class:
+
+`local-offline-stdlib-governance-helper-hardening`
+
+Require:
+
+- WP-spec guard focused tests;
+- scope-helper compatibility and exact-mode tests;
+- negative-test matrix;
+- workflow-doc tests;
+- adjacent project-status/repo-truth checks;
+- full pytest;
+- exact scope;
+- artifact guard;
+- honest security-tool availability;
+- live GitHub evidence re-fetch.
+
+C. `WP_EXECUTION_STATE_MACHINE.md`
+
+Add a mandatory draftability gate before implementation authorization and branch
+creation:
+
+`LOCAL_DRAFT -> DRAFTABILITY_PASS -> AUTHORIZED -> IMPLEMENTED_LOCAL`
+
+Do not yet add automated `PRE_READY_SEMANTIC_PASS`; that belongs to WP160.
+
+State explicitly:
+
+- the execution agent cannot create its own PASS certificate;
+- exact WP/spec hash mismatch stops execution;
+- semantic change requires recertification.
+
+D. Deliberately deferred secondary propagation
+
+WP159 does not modify `docs/work_package_template.md`,
+`docs/ai/codex/PR_REVIEW_CHECKLIST.md`, or
+`docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md`. The canonical drafting standard,
+technical specification standard, validation matrix, execution state machine,
+tool help text, and focused tests are the complete WP159 authority surface.
+Template/checklist/user-guide propagation is part of WP160 and is not required
+to implement or validate WP159.
+
+======================================================================
+16. STATUS, REPO TRUTH, AND DEFERRED ITEMS
+======================================================================
+
+`docs/project_status.md` must:
+
+- mark WP158 merged;
+- add WP158 to merged WPs;
+- make WP159 the sole current review target;
+- label WP159 as V3 draftability/spec/scope governance;
+- state WP159 runtime/product/trading impact is none;
+- move pre-ready semantic/evidence automation to WP160;
+- move manifest/reference validator to WP161;
+- retain all protected boundaries.
+
+`docs/repo_truth_index.md` must index:
+
+- the WP-spec standard;
+- the WP-spec guard;
+- WP159 spec/certificate/prompt;
+- WP159 status fragment;
+- focused tests;
+- the extended diff helper implementation and its exact-mode tests.
+
+`docs/deferred_items_log.md` must add:
+
+- WP159-D001: class-specific template pack — WP160;
+- WP159-D002: pre-ready semantic certificate/evidence enforcement — WP160;
+- WP159-D003: PR evidence renderer — WP160;
+- WP159-D004: active historical exact-diff migration — WP160;
+- WP159-D005: manifest/reference validator — WP161.
+- WP159-D006: secondary template/checklist/diff-helper-guide propagation —
+  WP160.
+
+All remain OPEN and separately gated.
+
+======================================================================
+17. NEGATIVE TEST MATRIX
+======================================================================
+
+`tests/tools/wp/test_wp_spec_guard.py` must cover at least:
+
+- missing/unreadable files;
+- malformed JSON;
+- unknown top-level key;
+- unsupported schema/version;
+- missing section;
+- wrong field type, including bool-as-int;
+- invalid package class or size;
+- S/M/L budget violation;
+- XL without explicit authorization;
+- absolute/traversal/backslash/duplicate/empty/NUL path;
+- required files not subset of allowed;
+- max count below required count;
+- authority/path contradiction;
+- mutable identity-excluded field;
+- DERIVED field without derivation rule;
+- derivation target/source/exclusion conflict;
+- canonical-JSON derivation with incomplete canonicalization;
+- duplicate transition pair;
+- duplicate/non-positive precedence priority;
+- applicable section with empty items;
+- non-applicable section with items or empty reason;
+- valid example with errors or fault count;
+- invalid example without exactly one intended fault;
+- canonical example with wrong derived hash;
+- certificate wrong WP ID/repository/base;
+- certificate hash mismatch;
+- missing/duplicate/out-of-order lens;
+- lens not PASS;
+- unresolved decisions non-empty;
+- implementability simulation not PASS;
+- independence attestation absent;
+- deterministic repeated output;
+- result field coverage;
+- no raw-value/exception/traceback echo;
+- no network, environment read, subprocess, or mutation.
+
+`tests/tools/git/test_diff_scope_summary.py` must add:
+
+- spec-mode loading;
+- manual flag conflict;
+- exact pass;
+- out-of-scope failure;
+- missing required failure;
+- maximum-count failure;
+- forbidden/protected failure;
+- unauthorized dependency/workflow/src/tools failure;
+- untracked allowed and untracked forbidden;
+- malformed spec failure;
+- `--require-exact-scope` without spec;
+- legacy CLI/output/exit compatibility.
+
+The WP159 additions to `tests/test_project_status_docs.py` and the WP158
+successor assertions in
+`tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py`
+must verify:
+
+- one canonical drafting standard, not parallel V3 rules;
+- separate spec and certificate;
+- no certificate field inside `wp_spec.json`;
+- exact schema/lens/error order;
+- WP159 exact 21-file scope;
+- WP158 merged and WP159 current;
+- WP160/WP161 deferrals;
+- no runtime/dependency/trading authority;
+- status fragment Model D stability.
+
+The four historical compatibility tests in Section 11 must each gain a
+WP159-specific branch before their older-WP fallback. Together they must assert
+the same exact 21-file set, accept WP159 as the sole current review target,
+require WP158 in the merged-WP list, reject the stale
+`WP159 requires separate approval` and `WP159 implemented: NO` phrases from the
+current-phase line, and preserve every older-WP scope assertion unchanged.
+
+======================================================================
+18. IMPLEMENTATION ORDER
+======================================================================
+
+1. Verify merge/base and the external certificate hashes.
+2. Create the WP159 branch from synchronized main.
+3. Copy the exact certified prompt/spec/certificate into repo.
+4. Add `WP_SPEC_STANDARD.md`.
+5. Implement `wp_spec_guard.py`.
+6. Run focused guard tests.
+7. Extend `diff_scope_summary.py`.
+8. Run legacy and new scope-helper tests.
+9. Update canonical workflow docs.
+10. Update status/repo truth/deferred items.
+11. Run focused docs tests.
+12. Run adjacent workflow/status and WP158-successor tests.
+13. Run the new guard against the committed WP159 package.
+14. Run exact scope mode against the branch.
+15. Run full pytest and all final guards.
+16. Commit and push.
+17. Open a DRAFT PR.
+18. Re-fetch the live draft PR and report for independent pre-ready review.
+
+Do not mark the PR ready.
+
+======================================================================
+19. REQUIRED VALIDATION
+======================================================================
+
+Run on the exact final committed head:
+
+```bash
+python -m pytest -q tests/tools/wp/test_wp_spec_guard.py
+python -m pytest -q tests/tools/git/test_diff_scope_summary.py
+python -m pytest -q tests/test_project_status_docs.py
+python -m pytest -q tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py
+python -m pytest -q tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py
+python -m pytest -q tests/test_local_research_workflow_value_measurement_harness_contract_docs.py
+python -m pytest -q tests/test_point_in_time_market_research_data_foundation_contract_docs.py
+python -m pytest -q tests/test_wallet_intelligence_architecture_contract_docs.py
+python -m pytest -q tests/test_codex_workflow_docs.py
+python tools/wp/wp_spec_guard.py --wp docs/wp_specs/WP159/wp_prompt.txt --spec docs/wp_specs/WP159/wp_spec.json --certificate docs/wp_specs/WP159/draftability_certificate.json --format text
+python tools/git/diff_scope_summary.py --base origin/main --head HEAD --wp-spec docs/wp_specs/WP159/wp_spec.json --require-exact-scope --format text
+python tools/git/preflight_generated_artifact_guard.py
+git diff --check origin/main...HEAD
+python -m pytest -q
+```
+
+Also run:
+
+- the active canonical policy-doc old-phrase sweep required by
+  `REPO_TRUTH_POLICY_GUARD.md`;
+- dependency/lock inventory;
+- exact changed-file inventory including untracked files;
+- security-tool availability checks;
+- `git status --short --branch`.
+
+Security tools unavailable in the environment must be reported as unavailable,
+not passed.
+
+======================================================================
+20. DRAFT PR AND EVIDENCE PROCESS
+======================================================================
+
+Create the PR as DRAFT.
+
+Initial PR body must begin:
+
+`Ready for review: NO — awaiting independent review of the implemented draft PR.`
+
+The PR body must include:
+
+- exact base/head/branch;
+- package class and size;
+- exact 21-file inventory;
+- requirement-to-evidence table;
+- focused/full validation;
+- WP-spec guard result;
+- exact-scope result;
+- one-shot policy gate;
+- evidence mode;
+- current versus historical follow-up wording;
+- network wording;
+- authority/non-authority;
+- explicit WP160/WP161 absence.
+
+The merged PR-evidence guard still requires `--final-comment` at its CLI even
+though post-WP91 policy makes final comments optional. Do not alter that guard
+in WP159. Create two ignored temporary local files outside the repository:
+`wp159_pr_body.txt` and `wp159_compatibility_mirror.txt`; the second must be a
+byte-for-byte copy of the first. Run:
+
+```bash
+python tools/git/pr_evidence_consistency_guard.py --pr-body <absolute-temporary-wp159-pr-body-path> --final-comment <absolute-temporary-byte-identical-compatibility-mirror-path> --expected-head <exact-final-head-sha> --require-standard-network-wording --forbid-inline-test-counts --forbid-placeholder-evidence
+```
+
+Do not pass `--require-ready-yes`, `--require-current-final-marker`,
+`--require-posted-evidence-note`, or `--require-guard-result`. Report that the
+second input is a local compatibility mirror and was not posted as a final
+comment. Absolute temporary paths are report-time values, not committed WP
+content and not validation-command placeholders in the posted body: replace
+all three angle-bracket tokens with actual values before running or posting.
+This compatibility invocation is temporary; changing the evidence guard belongs
+to WP160.
+
+Network wording:
+
+> Network was used only for Remote Main Sync Gate / git remote synchronization
+> and PR push/publication. This WP adds no runtime network behavior, no API
+> polling, no account access, and no product network behavior.
+
+Perform authenticated live re-fetch.
+
+Do not:
+
+- mark ready;
+- request merge;
+- merge;
+- claim `PRE_READY_SEMANTIC_PASS`;
+- create the independent review certificate;
+- implement WP160 or WP161.
+
+======================================================================
+21. REPORT BACK
+======================================================================
+
+Return:
+
+1. `READY FOR INDEPENDENT PRE-READY REVIEW: YES/NO`
+2. draft PR number and URL
+3. exact base SHA
+4. exact head SHA
+5. branch
+6. commit count
+7. exact 21-file inventory
+8. copied WP/spec/certificate hash evidence
+9. WP-spec guard command/result
+10. exact-scope command/result
+11. focused test commands/results
+12. adjacent test commands/results
+13. full pytest result
+14. diff/artifact/dependency/security results
+15. policy phrase-sweep result
+16. draft PR evidence-guard result
+17. authenticated live re-fetch
+18. comments/reviews/threads/workflows/status counts
+19. current unresolved blockers
+20. non-blocking future hardening
+21. confirmation no runtime/network/dependency/trading authority was added
+22. confirmation WP160 and WP161 remain unimplemented
+23. `DO NOT MERGE — awaiting independent pre-ready semantic review and user authorization`
+
+Do not return an implementation-progress narration as the final report.
+
+======================================================================
+22. STOP CONDITIONS
+======================================================================
+
+STOP and report before continuing if:
+
+- certificate or hashes fail;
+- WP/spec semantic edit is needed;
+- scope exceeds 21 files;
+- a twenty-second file appears;
+- a new shared module is required;
+- backward compatibility cannot be preserved;
+- a dependency/lock/workflow/src change appears;
+- output would echo raw values or exception text;
+- exact-scope mode cannot include untracked files safely;
+- old policy phrases become active without classification;
+- WP160 or WP161 functionality is needed;
+- any protected boundary changes.
+
+======================================================================
+23. SUCCESSOR BOUNDARY
+======================================================================
+
+WP160, separately gated:
+
+V3 Pre-Ready Semantic Review, Publication Evidence Automation,
+Class-Specific Templates, And Active Historical Scope Migration.
+
+WP161, separately gated:
+
+Local Offline Stdlib-Only Manifest Entry And Dataset Snapshot Reference
+Validator With Sanitized Synthetic Corpus.
+
+WP159 does not implement either successor.
+
+Prepared does not mean authorized.
+Do not execute without the independent PASS certificate and explicit user
+authorization.
