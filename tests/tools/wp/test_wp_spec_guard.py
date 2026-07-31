@@ -39,11 +39,17 @@ def _codes(errors) -> list[str]:
     return [error["code"] for error in errors]
 
 
-def _write_package(tmp_path: pathlib.Path, *, spec=None, cert=None):
+def _write_package(
+    tmp_path: pathlib.Path,
+    *,
+    spec=None,
+    cert=None,
+    wp_bytes: bytes | None = None,
+):
     wp = tmp_path / "wp.txt"
     spec_file = tmp_path / "spec.json"
     cert_file = tmp_path / "certificate.json"
-    wp.write_bytes(WP_PATH.read_bytes())
+    wp.write_bytes(WP_PATH.read_bytes() if wp_bytes is None else wp_bytes)
     spec_bytes = json.dumps(
         spec if spec is not None else _spec(),
         ensure_ascii=False,
@@ -55,6 +61,63 @@ def _write_package(tmp_path: pathlib.Path, *, spec=None, cert=None):
     certificate["wp_spec_sha256"] = hashlib.sha256(spec_bytes).hexdigest()
     cert_file.write_text(json.dumps(certificate), encoding="utf-8")
     return wp, spec_file, cert_file
+
+
+def _run_package(wp, spec_file, cert_file):
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(GUARD_PATH),
+            "--wp",
+            str(wp),
+            "--spec",
+            str(spec_file),
+            "--certificate",
+            str(cert_file),
+            "--format",
+            "json",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return result, json.loads(result.stdout)
+
+
+def _normal_certificate(document: dict) -> dict:
+    identity = document["identity"]
+    return {
+        "schema_id": "polymarket-wp-draftability-certificate",
+        "schema_version": "1.0.0",
+        "wp_id": identity["wp_id"],
+        "reviewed_repository": identity["repository"],
+        "reviewed_base_merge_sha": identity["required_predecessor"]["merge_sha"],
+        "wp_text_sha256": "0" * 64,
+        "wp_spec_sha256": "0" * 64,
+        "reviewer_role": "INDEPENDENT_DRAFTABILITY_REVIEWER",
+        "independence_attestation": "SEPARATE_REVIEW_CONTEXT_DECLARED",
+        "result": "PASS",
+        "covered_lenses": [
+            {"lens": lens, "result": "PASS"} for lens in guard.LENS_ORDER
+        ],
+        "unresolved_decisions": [],
+        "implementability_simulation": "PASS",
+    }
+
+
+def _generic_normal_spec(wp_id: str = "WP777") -> dict:
+    document = _spec()
+    document["identity"]["wp_id"] = wp_id
+    old_prefix = "docs/wp_specs/WP159/"
+    new_prefix = f"docs/wp_specs/{wp_id}/"
+    for field in ("required_changed_files", "allowed_changed_files"):
+        document["scope"][field] = [
+            new_prefix + path.removeprefix(old_prefix)
+            if path.startswith(old_prefix)
+            else path
+            for path in document["scope"][field]
+        ]
+    return document
 
 
 def test_exact_v6_package_and_waiver_pass():
@@ -80,11 +143,13 @@ def test_exact_v6_package_and_waiver_pass():
     assert parsed["status"] == "PASS"
     assert parsed["errors"] == []
     assert parsed["wp_text_sha256"] == (
-        "ddaeaaa774cf81437ad7bf5e9e54403722190e49acdd92be547e5ebb5b3f9a40"
+        "7dfd1e826b688873c3303dcf89d13522d82620840b17f1a40812c3ceb2c74911"
     )
     assert parsed["wp_spec_sha256"] == (
-        "207b84aebd21e0a1bb7dc0675234b9e77aa1f58baa2d0e951d8076189d1ca87b"
+        "2300bd295bdd0f679857d2aec0d007d296ef05421095e77e69937b457ad094b3"
     )
+    assert guard.WP159_WAIVER_WP_SHA256 == parsed["wp_text_sha256"]
+    assert guard.WP159_WAIVER_SPEC_SHA256 == parsed["wp_spec_sha256"]
 
 
 def test_import_api_signatures_are_exact():
@@ -371,6 +436,144 @@ def test_generic_example_mismatch_is_example_truth_invalid():
     assert "EXAMPLE_TRUTH_INVALID" in _codes(errors)
 
 
+@pytest.mark.parametrize(
+    "artifact_path",
+    [
+        "docs/wp_specs/WP158/wp_prompt.txt",
+        "docs/wp_specs/WP158/wp_spec.json",
+        "docs/wp_specs/WP158/draftability_certificate.json",
+        "docs/wp_specs/WP159/extra.json",
+    ],
+)
+def test_cross_wp_and_extra_package_artifacts_are_reserved(artifact_path):
+    document = _spec()
+    document["scope"]["required_changed_files"][0] = artifact_path
+    document["scope"]["allowed_changed_files"][0] = artifact_path
+    validated, errors = guard.validate_spec_document(document)
+    assert validated is None
+    assert "SCOPE_POLICY_INVALID" in _codes(errors)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda d: d["semantic_fields"]["items"][10].update(
+            derivation_rule_id="missing_rule"
+        ),
+        lambda d: d["semantic_fields"]["items"][0].update(
+            derivation_rule_id="wp_text_raw_sha256"
+        ),
+        lambda d: d["semantic_fields"]["items"][6].update(
+            derivation_rule_id="wp_text_raw_sha256"
+        ),
+    ],
+)
+def test_semantic_derivation_references_are_closed(mutation):
+    document = _spec()
+    mutation(document)
+    _, errors = guard.validate_spec_document(document)
+    assert "SEMANTIC_CONTRADICTION" in _codes(errors)
+
+
+def test_derived_committed_requires_non_null_existing_derivation():
+    document = _spec()
+    committed = next(
+        item
+        for item in document["semantic_fields"]["items"]
+        if item["source"] == "DERIVED" and item["identity_role"] == "COMMITTED"
+    )
+    committed["derivation_rule_id"] = None
+    _, errors = guard.validate_spec_document(document)
+    assert "SEMANTIC_CONTRADICTION" in _codes(errors)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda d: d["identity_derivations"]["items"][-1].update(
+            source_paths=["$external.wp_file_bytes"]
+        ),
+        lambda d: d["identity_derivations"]["items"][-1].update(source_paths=[]),
+    ],
+)
+def test_canonical_derivation_paths_are_input_relative_and_nonempty(mutation):
+    document = _canonical_rule_and_example()
+    mutation(document)
+    _, errors = guard.validate_spec_document(document)
+    assert "IDENTITY_DERIVATION_INVALID" in _codes(errors)
+
+
+def test_canonical_rule_requires_valid_example_coverage():
+    document = _canonical_rule_and_example()
+    document["examples"]["items"][0]["derivation_rule_ids"] = []
+    _, errors = guard.validate_spec_document(document)
+    assert "EXAMPLE_TRUTH_INVALID" in _codes(errors)
+
+
+@pytest.mark.parametrize("missing_kind", ["source", "exclusion", "target"])
+def test_canonical_example_requires_every_declared_path(missing_kind):
+    document = _canonical_rule_and_example()
+    rule = document["identity_derivations"]["items"][-1]
+    if missing_kind == "source":
+        rule["source_paths"] = ["missing"]
+        rule["excluded_paths"] = []
+    elif missing_kind == "exclusion":
+        rule["excluded_paths"] = ["payload.missing"]
+    else:
+        rule["target_path"] = "result.missing"
+    _, errors = guard.validate_spec_document(document)
+    assert "EXAMPLE_TRUTH_INVALID" in _codes(errors)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda d: d.update(_replace_with=_generic_normal_spec("WP160")),
+        lambda d: d["identity"].update(repository="other/repository"),
+        lambda d: d["identity"].update(package_class="OTHER_GOVERNANCE"),
+        lambda d: d["identity"].update(base_branch="develop"),
+        lambda d: d["identity"]["required_predecessor"].update(pr_number=157),
+        lambda d: d["identity"]["required_predecessor"].update(
+            head_sha="1" * 40
+        ),
+        lambda d: d["identity"]["required_predecessor"].update(
+            merge_sha="2" * 40
+        ),
+    ],
+)
+def test_waiver_is_exactly_wp159_identity_bound(tmp_path, mutation):
+    document = _spec()
+    mutation(document)
+    if "_replace_with" in document:
+        document = document.pop("_replace_with")
+    certificate = _waiver()
+    certificate["wp_id"] = document["identity"]["wp_id"]
+    wp, spec_file, cert_file = _write_package(
+        tmp_path, spec=document, cert=certificate
+    )
+    result, parsed = _run_package(wp, spec_file, cert_file)
+    assert result.returncode == 1
+    assert "DRAFTABILITY_INCOMPLETE" in _codes(parsed["errors"])
+
+
+def test_waiver_rejects_rehashed_one_byte_prompt_change_without_echo(tmp_path):
+    changed = WP_PATH.read_bytes() + b"\n"
+    wp, spec_file, cert_file = _write_package(tmp_path, wp_bytes=changed)
+    result, parsed = _run_package(wp, spec_file, cert_file)
+    assert result.returncode == 1
+    assert _codes(parsed["errors"]) == ["DRAFTABILITY_INCOMPLETE"]
+    assert "V6 CORRECTED" not in result.stdout
+
+
+def test_waiver_rejects_rehashed_semantically_valid_spec_change(tmp_path):
+    document = _spec()
+    document["identity"]["objective"] += " "
+    wp, spec_file, cert_file = _write_package(tmp_path, spec=document)
+    result, parsed = _run_package(wp, spec_file, cert_file)
+    assert result.returncode == 1
+    assert _codes(parsed["errors"]) == ["DRAFTABILITY_INCOMPLETE"]
+
+
 def test_waiver_rejects_risk_level_two(tmp_path):
     document = _spec()
     document["identity"]["risk_level"] = 2
@@ -394,6 +597,87 @@ def test_waiver_rejects_risk_level_two(tmp_path):
     )
     assert result.returncode == 1
     assert "DRAFTABILITY_INCOMPLETE" in _codes(json.loads(result.stdout)["errors"])
+
+
+def test_valid_generic_normal_certificate_passes(tmp_path):
+    document = _generic_normal_spec()
+    certificate = _normal_certificate(document)
+    wp, spec_file, cert_file = _write_package(
+        tmp_path, spec=document, cert=certificate
+    )
+    result, parsed = _run_package(wp, spec_file, cert_file)
+    assert result.returncode == 0
+    assert parsed["status"] == "PASS"
+    assert parsed["wp_id"] == "WP777"
+    assert parsed["errors"] == []
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda c: c.update(wp_id="WP778"),
+        lambda c: c.update(reviewed_repository="other/repository"),
+        lambda c: c.update(reviewed_base_merge_sha="3" * 40),
+        lambda c: c.update(reviewer_role="EXECUTION_AGENT"),
+        lambda c: c.update(independence_attestation="SAME_CONTEXT"),
+        lambda c: c.update(result="FAIL"),
+        lambda c: c["covered_lenses"].pop(),
+        lambda c: c["covered_lenses"].append(copy.deepcopy(c["covered_lenses"][0])),
+        lambda c: c["covered_lenses"].append(
+            {"lens": "extra_lens", "result": "PASS"}
+        ),
+        lambda c: c["covered_lenses"].reverse(),
+        lambda c: c["covered_lenses"][0].update(result="FAIL"),
+        lambda c: c["unresolved_decisions"].append("unresolved"),
+        lambda c: c.update(implementability_simulation="FAIL"),
+    ],
+)
+def test_normal_certificate_draftability_negative_matrix(tmp_path, mutation):
+    document = _generic_normal_spec()
+    certificate = _normal_certificate(document)
+    mutation(certificate)
+    wp, spec_file, cert_file = _write_package(
+        tmp_path, spec=document, cert=certificate
+    )
+    result, parsed = _run_package(wp, spec_file, cert_file)
+    assert result.returncode == 1
+    assert "DRAFTABILITY_INCOMPLETE" in _codes(parsed["errors"])
+
+
+def test_normal_certificate_missing_or_extra_lens_wrapper_rejects(tmp_path):
+    document = _generic_normal_spec()
+    for mutate in (
+        lambda c: c.pop("covered_lenses"),
+        lambda c: c.update(extra="forbidden"),
+    ):
+        certificate = _normal_certificate(document)
+        mutate(certificate)
+        wp, spec_file, cert_file = _write_package(
+            tmp_path, spec=document, cert=certificate
+        )
+        result, parsed = _run_package(wp, spec_file, cert_file)
+        assert result.returncode == 1
+        assert set(_codes(parsed["errors"])).intersection(
+            {"FIELD_MISSING", "UNKNOWN_FIELD"}
+        )
+
+
+def test_normal_certificate_hash_and_draftability_errors_are_canonical(tmp_path):
+    document = _generic_normal_spec()
+    certificate = _normal_certificate(document)
+    certificate["result"] = "FAIL"
+    wp, spec_file, cert_file = _write_package(
+        tmp_path, spec=document, cert=certificate
+    )
+    rewritten = json.loads(cert_file.read_text(encoding="utf-8"))
+    rewritten["wp_text_sha256"] = "0" * 64
+    cert_file.write_text(json.dumps(rewritten), encoding="utf-8")
+    result, parsed = _run_package(wp, spec_file, cert_file)
+    assert result.returncode == 1
+    assert _codes(parsed["errors"]) == [
+        "CERTIFICATE_HASH_MISMATCH",
+        "DRAFTABILITY_INCOMPLETE",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -456,7 +740,11 @@ def test_hash_mismatch_and_draftability_defect_both_report(tmp_path):
         check=False,
     )
     codes = _codes(json.loads(result.stdout)["errors"])
-    assert codes == ["CERTIFICATE_HASH_MISMATCH", "DRAFTABILITY_INCOMPLETE"]
+    assert codes == [
+        "CERTIFICATE_HASH_MISMATCH",
+        "DRAFTABILITY_INCOMPLETE",
+        "DRAFTABILITY_INCOMPLETE",
+    ]
 
 
 def test_usage_error_is_neutral_and_exit_two():

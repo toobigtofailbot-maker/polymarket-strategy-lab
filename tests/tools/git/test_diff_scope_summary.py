@@ -22,6 +22,10 @@ dss = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(dss)
 
 REPO_ROOT = pathlib.Path(__file__).parent.parent.parent.parent
+_GUARD_PATH = REPO_ROOT / "tools" / "wp" / "wp_spec_guard.py"
+_guard_spec = importlib.util.spec_from_file_location("wp_spec_guard_parity", _GUARD_PATH)
+guard = importlib.util.module_from_spec(_guard_spec)
+_guard_spec.loader.exec_module(guard)
 
 
 # ── 1. Parse name-status output ─────────────────────────────────────────────
@@ -891,3 +895,115 @@ def test_spec_mode_exact_failure_exits_one(monkeypatch, capsys):
     monkeypatch.setattr(dss, "_get_untracked_spec", lambda: ([], None))
     assert dss.main(["--wp-spec", "spec.json", "--format", "json"]) == 1
     assert json.loads(capsys.readouterr().out)["exact_scope_pass"] is False
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        ".env",
+        ".env.production",
+        "id_rsa",
+        "id_ed25519",
+        ".keystore",
+        "credentials.json",
+        "secret.pem",
+        "secret.p12",
+        "secret.pfx",
+        "tools/hermes/runner.py",
+        "agent_runtime/runner.py",
+        "agent_memory/state.json",
+        "local_data/output.json",
+        ".pytest_cache/state",
+        ".coverage",
+        "scan.sarif",
+        "requirements.txt",
+        "requirements-dev.txt",
+        "pyproject.toml",
+        "setup.cfg",
+        "setup.py",
+        "Pipfile",
+        "Pipfile.lock",
+        "poetry.lock",
+        "uv.lock",
+        "package.json",
+        "package-lock.json",
+        "Cargo.toml",
+        "Cargo.lock",
+        "custom.lock",
+    ],
+)
+def test_guard_and_diff_helper_classifier_tables_are_identical(path):
+    assert guard._is_dependency_or_lock(path) is dss.is_dependency_or_lock(path)
+    assert guard._is_generated_artifact(path) is dss.is_generated_artifact(path)
+    assert guard._is_protected_builtin(path) is dss.is_protected_builtin(path)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        ".env",
+        ".env.production",
+        "id_rsa",
+        "id_ed25519",
+        ".keystore",
+        "credentials.json",
+        "secret.pem",
+        "secret.p12",
+        "secret.pfx",
+        "tools/hermes/runner.py",
+        "agent_runtime/runner.py",
+        "agent_memory/state.json",
+        "local_data/output.json",
+        ".pytest_cache/state",
+        ".coverage",
+        "scan.sarif",
+    ],
+)
+def test_exact_spec_guard_rejects_every_helper_protected_or_generated_path(path):
+    document = json.loads(
+        (REPO_ROOT / "docs/wp_specs/WP159/wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    document["scope"]["required_changed_files"][0] = path
+    document["scope"]["allowed_changed_files"][0] = path
+    validated, errors = guard.validate_spec_document(document)
+    assert validated is None
+    assert any(error["code"] == "SCOPE_POLICY_INVALID" for error in errors)
+    assert dss.is_protected_builtin(path) or dss.is_generated_artifact(path)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "requirements.txt",
+        "requirements-dev.txt",
+        "pyproject.toml",
+        "setup.cfg",
+        "setup.py",
+        "Pipfile",
+        "Pipfile.lock",
+        "poetry.lock",
+        "uv.lock",
+        "package.json",
+        "package-lock.json",
+        "Cargo.toml",
+        "Cargo.lock",
+        "custom.lock",
+    ],
+)
+def test_dependency_classifier_parity_uses_dependency_authority(path):
+    document = json.loads(
+        (REPO_ROOT / "docs/wp_specs/WP159/wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    document["scope"]["required_changed_files"][0] = path
+    document["scope"]["allowed_changed_files"][0] = path
+    document["authority"]["dependencies"] = True
+    validated, errors = guard.validate_spec_document(document)
+    assert validated is not None
+    assert errors == ()
+    assert dss.is_dependency_or_lock(path)
+    assert not dss.is_protected_builtin(path)
+    assert not dss.is_generated_artifact(path)

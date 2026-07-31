@@ -2789,13 +2789,14 @@ def test_wp153_through_wp158_are_merged_and_wp159_is_current_review_target():
     assert "WP158" in merged_line
     for phrase in (
         "sole draft PR review target",
-        "Package class: local-offline-stdlib-governance-helper-hardening",
+        "Primary package class: GOVERNANCE",
+        "Repository validation class: local-offline-stdlib-governance-helper-hardening",
         "Package size class: XL",
         "Risk level: 1",
-        "Draftability posture: EXPLICIT_LOW_RISK_DRAFT_PR_WAIVER_NOT_PASS_CERTIFICATE",
+        "Draftability posture: EXACT_WP159_ONLY_LOW_RISK_DRAFT_PR_WAIVER_NOT_PASS_CERTIFICATE",
         "Ready for review: NO",
         "Merge authorized: NO",
-        "Independent live PR review required: YES",
+        "Independent live PR re-review required: YES",
         "Exact changed-file scope: 23",
         "Runtime impact: NONE",
         "Product impact: NONE",
@@ -3341,10 +3342,10 @@ def test_wp159_package_files_hashes_and_waiver_are_exact():
         (package / "draftability_certificate.json").read_text(encoding="utf-8")
     )
     assert hashlib.sha256(wp_bytes).hexdigest() == (
-        "ddaeaaa774cf81437ad7bf5e9e54403722190e49acdd92be547e5ebb5b3f9a40"
+        "7dfd1e826b688873c3303dcf89d13522d82620840b17f1a40812c3ceb2c74911"
     )
     assert hashlib.sha256(spec_bytes).hexdigest() == (
-        "207b84aebd21e0a1bb7dc0675234b9e77aa1f58baa2d0e951d8076189d1ca87b"
+        "2300bd295bdd0f679857d2aec0d007d296ef05421095e77e69937b457ad094b3"
     )
     assert waiver == {
         "schema_id": "polymarket-wp-draftability-waiver",
@@ -3360,6 +3361,28 @@ def test_wp159_package_files_hashes_and_waiver_are_exact():
         "independent_live_pr_review_required": True,
         "unresolved_decisions": [],
     }
+    prompt = wp_bytes.decode("utf-8")
+    for stale in (
+        "V5",
+        "\n9. L-PACKAGE BUNDLE JUSTIFICATION",
+        "REQUIRES A NEW INDEPENDENT REVIEW OF THESE EXACT",
+        "NOT YET AUTHORIZED FOR CODEX OR CLAUDE CODE EXECUTION",
+        "Do not execute without the independent PASS certificate",
+    ):
+        assert stale not in prompt
+    for current in (
+        "V6 / XL23",
+        "one-time bootstrap path",
+        "READY FOR REVIEW IS NOT AUTHORIZED",
+        "MERGE IS NOT AUTHORIZED",
+        "Normal future governed WPs",
+    ):
+        assert current in prompt
+    guard_source = (
+        REPO_ROOT / "tools" / "wp" / "wp_spec_guard.py"
+    ).read_text(encoding="utf-8")
+    assert waiver["wp_text_sha256"] in guard_source
+    assert waiver["wp_spec_sha256"] in guard_source
 
 
 def test_wp159_spec_exact_topology_lenses_errors_and_scope():
@@ -3445,7 +3468,7 @@ def test_wp159_status_is_stable_model_d_and_not_ready():
         "stable and non-self-referential",
         "Ready for review: NO",
         "Merge authorized: NO",
-        "Independent live PR review required: YES",
+        "Independent live PR re-review required: YES",
         "Independent draftability PASS certificate: NOT CREATED",
         "BLOCKED_NOT_READY",
         "WP160",

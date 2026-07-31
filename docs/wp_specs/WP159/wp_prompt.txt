@@ -5,10 +5,10 @@ Repository:
 toobigtofailbot-maker/polymarket-strategy-lab
 
 Status:
-CONSOLIDATED CORRECTED DRAFT AFTER INDEPENDENT DRAFTABILITY FAIL
-REQUIRES A NEW INDEPENDENT REVIEW OF THESE EXACT V5 BYTES
-NOT YET AUTHORIZED FOR CODEX OR CLAUDE CODE EXECUTION
-PREPARED DOES NOT MEAN AUTHORIZED
+V6 / XL23 IMPLEMENTED UNDER THE EXACT ONE-TIME WP159 BOOTSTRAP WAIVER
+DRAFT PR REQUIRES INDEPENDENT REVIEW OF THE CURRENT LIVE IMPLEMENTATION
+READY FOR REVIEW IS NOT AUTHORIZED
+MERGE IS NOT AUTHORIZED
 
 ======================================================================
 0. PACKAGE IDENTITY
@@ -63,31 +63,36 @@ USD 0
 
 This file is not executable by itself.
 
-Before Codex or Claude Code may begin WP159, the operator must provide all
-three exact files:
+Normal future governed WPs require all three exact files before implementation:
 
-1. `WP159_V6_Draftability_Foundation_And_Exact_Scope_Enforcement.txt`
-2. `WP159_wp_spec.json`
-3. `WP159_draftability_certificate.json`
+1. exact `wp_prompt.txt`;
+2. exact `wp_spec.json`;
+3. a separate normal independent PASS `draftability_certificate.json`.
 
-The certificate must have been produced in a separate independent review
-context after reviewing the exact WP text, the exact specification, and merged
-repo truth at `056f0074b55c3d12cedbb9dfbdb43f7f668df0c3`.
+That normal certificate must cover the exact prompt/spec bytes, the canonical
+twelve lenses, an empty unresolved-decision set, and PASS implementability
+simulation. It remains the generic future path.
 
-STOP before branch creation if:
+WP159 alone used the separate
+`polymarket-wp-draftability-waiver@1.0.0` one-time bootstrap path. The waiver
+authorized only this exact low-risk V6/XL23 implementation and publication of
+a draft PR. It did not grant `DRAFTABILITY_PASS`, readiness, or merge. The
+current live implementation requires independent review.
 
-- any of the three files is missing;
-- the certificate result is not `PASS`;
-- the certificate does not cover all twelve required lenses;
-- `unresolved_decisions` is not empty;
-- `implementability_simulation` is not `PASS`;
-- the certificate's WP/spec SHA-256 values do not match the exact input bytes;
-- the certificate was created or altered by the execution agent;
-- the WP or specification needs any semantic edit.
+WP159 waiver acceptance requires:
 
-The executor may copy the supplied WP, specification, and certificate byte for
-byte into their exact repository paths. The executor may not draft, repair,
-self-certify, or rewrite the certificate.
+- exact WP ID, repository, primary package class, base branch, and locked
+  predecessor PR/head/merge;
+- Risk Level 0 or 1 and capital at risk exactly zero;
+- every dangerous authority field false;
+- the closed waiver constants and authorization booleans;
+- empty unresolved decisions;
+- prompt/spec digests equal to the exact input bytes, the waiver record, and
+  the final code-bound WP159 guard constants.
+
+Rehashing an altered prompt or specification cannot reuse the waiver. Any
+normal future certificate remains independently produced and must not be
+created, altered, or claimed by the execution agent.
 
 If any architecture change becomes necessary after certification, return:
 
@@ -130,7 +135,7 @@ Authorized:
 - extend the existing local/offline/read-only diff scope helper;
 - update focused workflow documentation, tests, status, repo truth, and
   deferred-item records;
-- commit the exact certified WP prompt, specification, and certificate.
+- commit the exact WP159 prompt, specification, and constrained waiver.
 
 Not authorized:
 
@@ -189,46 +194,49 @@ Required result:
 - working tree is clean;
 - generated-artifact guard passes.
 
-This certificate is baseline-bound. If `main` or `origin/main` has advanced
+This WP159 waiver is baseline-bound. If `main` or `origin/main` has advanced
 beyond `056f0074b55c3d12cedbb9dfbdb43f7f668df0c3`, STOP with
 `BASELINE ADVANCED — NEW INDEPENDENT REVIEW REQUIRED`. Do not ask the executor
 to decide whether later commits are "conflicting." A new corrected WP/spec and
-certificate must bind the actual synchronized base before branch creation.
+applicable independent certificate must bind the actual synchronized base
+before branch creation; the one-time WP159 waiver cannot be moved to a new
+base.
 
 Do not silently use the historical WP158 base commit
 `583a0ab0bd85810f2865eb15553a58d44bd9f65f`.
 
 ======================================================================
-5. BOOTSTRAP HASH VERIFICATION BEFORE THE NEW GUARD EXISTS
+5. EXACT WP159 BOOTSTRAP WAIVER VERIFICATION
 ======================================================================
 
-Before copying or editing repository files, parse the supplied JSON files and
-compute hashes over exact bytes without line-ending normalization:
+Parse the committed JSON files and compute hashes over exact bytes without
+line-ending normalization:
 
 ```bash
-python -m json.tool WP159_wp_spec.json > /dev/null
-python -m json.tool WP159_draftability_certificate.json > /dev/null
-python -c "import hashlib,pathlib; print(hashlib.sha256(pathlib.Path('WP159_V6_Draftability_Foundation_And_Exact_Scope_Enforcement.txt').read_bytes()).hexdigest())"
-python -c "import hashlib,pathlib; print(hashlib.sha256(pathlib.Path('WP159_wp_spec.json').read_bytes()).hexdigest())"
+python -m json.tool docs/wp_specs/WP159/wp_spec.json > /dev/null
+python -m json.tool docs/wp_specs/WP159/draftability_certificate.json > /dev/null
+python -c "import hashlib,pathlib; print(hashlib.sha256(pathlib.Path('docs/wp_specs/WP159/wp_prompt.txt').read_bytes()).hexdigest())"
+python -c "import hashlib,pathlib; print(hashlib.sha256(pathlib.Path('docs/wp_specs/WP159/wp_spec.json').read_bytes()).hexdigest())"
 ```
 
-Compare both digests with the certificate.
+Compare both digests with the waiver record and the exact
+`WP159_WAIVER_WP_SHA256` / `WP159_WAIVER_SPEC_SHA256` guard constants.
 
 Also verify manually:
 
-- certificate `schema_id` =
-  `polymarket-wp-draftability-certificate`;
-- certificate `schema_version` = `1.0.0`;
-- certificate `wp_id` = `WP159`;
-- `reviewed_repository` = `toobigtofailbot-maker/polymarket-strategy-lab`;
-- `reviewed_base_merge_sha` = `056f0074b55c3d12cedbb9dfbdb43f7f668df0c3`;
-- reviewer role = `INDEPENDENT_DRAFTABILITY_REVIEWER`;
-- independence attestation =
-  `SEPARATE_REVIEW_CONTEXT_DECLARED`;
-- result = `PASS`;
-- all twelve lens names appear once, in canonical order, with `PASS`;
+- waiver `schema_id` = `polymarket-wp-draftability-waiver`;
+- waiver `schema_version` = `1.0.0`;
+- waiver `wp_id` = `WP159`;
+- waiver mode = `WAIVED_FOR_LOW_RISK_DRAFT_PR_IMPLEMENTATION`;
+- authorization source = `EXPLICIT_USER_AUTHORIZATION`;
+- implementation authorized = true;
+- ready for review authorized = false;
+- merge authorized = false;
+- independent live-PR review required = true;
 - unresolved decisions = empty;
-- implementability simulation = `PASS`.
+- spec repository, primary package class, base, and predecessor equal the
+  locked WP159 values;
+- spec risk is 0 or 1, capital is zero, and every dangerous authority is false.
 
 If any check fails, STOP.
 
@@ -305,8 +313,9 @@ WP159 must deliver four connected controls:
 1. one canonical V3 drafting foundation, integrated into the existing
    `WP_DRAFTING_STANDARD.md`, not a competing rulebook;
 2. one exact machine-readable `wp_spec.json` standard;
-3. one separate independent draftability certificate that hashes the exact WP
-   and exact specification without self-reference;
+3. one separate normal independent draftability-certificate path that hashes
+   the exact WP and exact specification without self-reference, plus only the
+   exact one-time WP159 bootstrap waiver described above;
 4. local deterministic tooling that validates the package and enforces its
    exact changed-file scope.
 
@@ -335,7 +344,7 @@ If implementation requires any incompatible row, STOP rather than expanding
 scope.
 
 ======================================================================
-9. L-PACKAGE BUNDLE JUSTIFICATION
+9. XL-PACKAGE BUNDLE JUSTIFICATION
 ======================================================================
 
 Why one bundle is safe:
@@ -402,10 +411,12 @@ The certificate records an independence attestation. The operator controls
 whether it was produced in a separate context. The executor may validate the
 attestation but may not claim cryptographic proof of reviewer independence.
 
-E. Immutable certified package
+E. Immutable package identity
 
-Any semantic change to the WP or specification invalidates the certificate and
-requires a new independent review.
+For normal future packages, any semantic change to the WP or specification
+invalidates the certificate and requires a new independent review. For the
+one-time WP159 waiver, any byte change also fails the code-bound digest
+constants and cannot be reauthorized by recomputing the waiver file.
 
 F. Existing scope helper is extended
 
@@ -798,6 +809,13 @@ The guard applies this closed mapping to every required and allowed path:
   requires `credentials=true`;
 - the three `docs/wp_specs/<WP>/` artifacts additionally require
   `canonical_evidence_policy=true`;
+- every path beginning `docs/wp_specs/` must be one of the exact three
+  artifacts for `identity.wp_id`; another WP directory or extra filename is
+  `SCOPE_POLICY_INVALID`;
+- dependency/lock, protected, credential-like, and generated-artifact
+  classification must equal the existing diff helper;
+- when exact scope is required, every helper-classified protected or generated
+  path is `SCOPE_POLICY_INVALID` before authority checks;
 - any path under a declared forbidden prefix rejects as
   `SCOPE_POLICY_INVALID` before authority checks.
 
@@ -817,11 +835,11 @@ object keys produce one `UNKNOWN_FIELD` error at the known parent path; the
 untrusted key is never echoed. Array-item errors use a numeric index in the
 field path. This ordering applies identically to text and JSON formats.
 
-E. Certificate schema
+E. Normal certificate and exact WP159 waiver schemas
 
-The certificate is a separate JSON document and is never a field of the spec.
-It has exactly the thirteen keys listed in Section 12. Strings use the exact
-constants already listed. `wp_text_sha256` and `wp_spec_sha256` are sha256;
+The normal certificate is a separate JSON document and is never a field of the
+spec. It has exactly the thirteen keys listed in Section 12. Strings use the
+exact constants already listed. `wp_text_sha256` and `wp_spec_sha256` are sha256;
 `reviewed_base_merge_sha` is sha40; `covered_lenses` has exactly twelve objects,
 each with exactly `lens` and `result`, in canonical order, each result PASS.
 `unresolved_decisions` is exactly an empty array. No certificate hash, bytes, or
@@ -839,6 +857,14 @@ in any of these three cross-document identity fields is
 digest is `CERTIFICATE_HASH_MISMATCH`. Certificate constant, lens, result,
 attestation, unresolved-decision, or implementability defects are
 `DRAFTABILITY_INCOMPLETE`.
+
+Normal certificate support is generic and not restricted to WP159. The
+separate waiver schema is accepted only for the exact WP159 identity,
+repository, primary package class, base, predecessor PR/head/merge, Risk Level
+0/1, zero capital, false dangerous authorities, closed authorization fields,
+empty decisions, and final code-bound WP/spec hashes. Any mismatch is
+`DRAFTABILITY_INCOMPLETE`. Recomputed hashes for altered valid bytes do not
+reuse the waiver.
 
 The repository grammar is exactly
 `^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})/[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})$`.
@@ -1261,7 +1287,8 @@ State explicitly:
 
 - the execution agent cannot create its own PASS certificate;
 - exact WP/spec hash mismatch stops execution;
-- semantic change requires recertification.
+- semantic change requires recertification on the normal path;
+- the WP159 waiver is exact-byte-bound and cannot be reused.
 
 D. Deliberately deferred secondary propagation
 
@@ -1325,12 +1352,17 @@ All remain OPEN and separately gated.
 - S/M/L budget violation;
 - XL without explicit authorization;
 - absolute/traversal/backslash/duplicate/empty/NUL path;
+- another WP artifact or extra current-WP artifact;
+- exact-scope protected, credential-like, or generated path;
 - required files not subset of allowed;
 - max count below required count;
 - authority/path contradiction;
 - mutable identity-excluded field;
 - DERIVED field without derivation rule;
+- derivation reference on a CALLER or CONSTANT field;
 - derivation target/source/exclusion conflict;
+- canonical derivation with an external path, no source, missing path, or no
+  valid-example coverage;
 - canonical-JSON derivation with incomplete canonicalization;
 - duplicate transition pair;
 - duplicate/non-positive precedence priority;
@@ -1340,6 +1372,8 @@ All remain OPEN and separately gated.
 - invalid example without exactly one intended fault;
 - canonical example with wrong derived hash;
 - certificate wrong WP ID/repository/base;
+- valid generic normal certificate;
+- exact WP159-only waiver identity and immutable-hash rejection matrix;
 - certificate hash mismatch;
 - missing/duplicate/out-of-order lens;
 - lens not PASS;
@@ -1365,6 +1399,8 @@ All remain OPEN and separately gated.
 - malformed spec failure;
 - `--require-exact-scope` without spec;
 - legacy CLI/output/exit compatibility.
+- guard/helper dependency, protected, credential, and generated classifier
+  parity.
 
 The WP159 additions to `tests/test_project_status_docs.py` and the WP158
 successor assertions in
@@ -1392,24 +1428,21 @@ current-phase line, and preserve every older-WP scope assertion unchanged.
 18. IMPLEMENTATION ORDER
 ======================================================================
 
-1. Verify merge/base and the external certificate hashes.
-2. Create the WP159 branch from synchronized main.
-3. Copy the exact certified prompt/spec/certificate into repo.
-4. Add `WP_SPEC_STANDARD.md`.
-5. Implement `wp_spec_guard.py`.
-6. Run focused guard tests.
-7. Extend `diff_scope_summary.py`.
-8. Run legacy and new scope-helper tests.
-9. Update canonical workflow docs.
-10. Update status/repo truth/deferred items.
-11. Run focused docs tests.
-12. Run adjacent workflow/status and WP158-successor tests.
-13. Run the new guard against the committed WP159 package.
-14. Run exact scope mode against the branch.
-15. Run full pytest and all final guards.
-16. Commit and push.
-17. Open a DRAFT PR.
-18. Re-fetch the live draft PR and report for independent pre-ready review.
+1. Preserve the existing draft PR and reviewed commits.
+2. Correct the canonical V6/XL23 prompt, standard, and state-machine wording.
+3. Correct waiver binding, artifact reservation, classifier parity, normal
+   certificate coverage, and derivation closure.
+4. Finalize `wp_prompt.txt` and `wp_spec.json`.
+5. Compute their exact raw-byte hashes.
+6. Place those hashes in the code-bound WP159 constants and waiver record.
+7. Update focused hash expectations and status/repo-truth records.
+8. Run focused tests.
+9. Add one visible same-PR follow-up commit.
+10. Run all authoritative checks on that committed head.
+11. Push without marking ready.
+12. Update and locally guard the PR body with a byte-identical compatibility
+    mirror.
+13. Perform authenticated live re-fetch and report for independent re-review.
 
 Do not mark the PR ready.
 
@@ -1458,7 +1491,7 @@ Create the PR as DRAFT.
 
 Initial PR body must begin:
 
-`Ready for review: NO — awaiting independent review of the implemented draft PR.`
+`Ready for review: NO — awaiting independent re-review of corrected live head.`
 
 The PR body must include:
 
@@ -1518,29 +1551,34 @@ Do not:
 
 Return:
 
-1. `READY FOR INDEPENDENT PRE-READY REVIEW: YES/NO`
+1. `READY FOR INDEPENDENT RE-REVIEW: YES/NO`
 2. draft PR number and URL
 3. exact base SHA
-4. exact head SHA
-5. branch
-6. commit count
-7. exact 23-file inventory
-8. copied WP/spec/certificate hash evidence
-9. WP-spec guard command/result
-10. exact-scope command/result
-11. focused test commands/results
-12. adjacent test commands/results
-13. full pytest result
-14. diff/artifact/dependency/security results
-15. policy phrase-sweep result
-16. draft PR evidence-guard result
-17. authenticated live re-fetch
-18. comments/reviews/threads/workflows/status counts
-19. current unresolved blockers
-20. non-blocking future hardening
-21. confirmation no runtime/network/dependency/trading authority was added
-22. confirmation WP160 and WP161 remain unimplemented
-23. `DO NOT MERGE — awaiting independent pre-ready semantic review and user authorization`
+4. previous reviewed head
+5. corrected final head
+6. branch and commit count
+7. confirmation the change remained within the same 23 files
+8. exact corrected WP/spec hashes
+9. exact code-bound WP159 waiver constants
+10. waiver record contents
+11. WP159-only waiver negative-test results
+12. normal-certificate positive/negative-test results
+13. artifact-reservation tests
+14. classifier-parity tests
+15. derivation-closure tests
+16. complete focused-suite results
+17. WP-spec self-validation
+18. exact-scope result
+19. full pytest result
+20. artifact/diff/dependency/security results
+21. policy and stale-phrase sweep
+22. evidence-guard result
+23. authenticated live re-fetch result
+24. current comments/reviews/threads/workflows/status counts
+25. unresolved blockers
+26. confirmation WP160 and WP161 remain unimplemented
+27. confirmation PR remains draft and not merge-authorized
+28. `DO NOT MERGE — awaiting independent re-review and explicit user authorization`
 
 Do not return an implementation-progress narration as the final report.
 
@@ -1550,7 +1588,7 @@ Do not return an implementation-progress narration as the final report.
 
 STOP and report before continuing if:
 
-- certificate or hashes fail;
+- normal certificate, WP159 waiver, or hashes fail;
 - WP/spec semantic edit is needed;
 - scope exceeds 23 files;
 - a twenty-fourth file appears;
@@ -1579,6 +1617,6 @@ Validator With Sanitized Synthetic Corpus.
 
 WP159 does not implement either successor.
 
-Prepared does not mean authorized.
-Do not execute without the independent PASS certificate and explicit user
-authorization.
+Prepared does not mean authorized. WP159 implementation and draft publication
+used only the exact one-time waiver; independent re-review is still required,
+and readiness and merge remain unauthorized.

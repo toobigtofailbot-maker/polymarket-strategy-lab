@@ -39,13 +39,15 @@ set, and PASS implementability simulation. The execution agent cannot create
 or alter its own PASS certificate. Any prompt/spec semantic edit or exact hash
 mismatch stops execution and requires recertification.
 
-WP159 has one explicit bootstrap waiver for its own low-risk draft-PR
-implementation. It is accepted only when the schema guard proves Risk Level
-0/1, zero capital, no runtime/workflow/dependency/network/credential or trading
-authority, explicit user authorization, implementation-only authority,
-review-ready=false, merge=false, and mandatory independent live-PR review. The
-waiver does not equal `DRAFTABILITY_PASS`, cannot authorize readiness or merge,
-and is unavailable to higher-risk packages.
+WP159 has one exact, one-time bootstrap waiver for its own low-risk draft-PR
+implementation. It is accepted only when the schema guard proves the locked
+WP159 repository, primary package class, base, predecessor PR/head/merge,
+Risk Level 0/1, zero capital, no runtime/workflow/dependency/network/credential
+or trading authority, explicit user authorization, implementation-only
+authority, review-ready=false, merge=false, mandatory independent live-PR
+review, and the code-bound final WP159 prompt/spec hashes. The waiver does not
+equal `DRAFTABILITY_PASS`, cannot authorize readiness or merge, cannot be
+rehashed for altered bytes, and is unavailable to every non-WP159 package.
 
 There is no automated `PRE_READY_SEMANTIC_PASS` state in this version. That is
 separately gated WP160 scope.

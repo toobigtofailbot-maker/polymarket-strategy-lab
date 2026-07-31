@@ -33,15 +33,19 @@ certificate. Human-controlled reviewer separation is an operator assertion;
 the guard verifies the attestation, hashes, schema, and semantics but cannot
 technically prove reviewer independence.
 
-WP159 itself has one narrowly bounded bootstrap exception:
-`polymarket-wp-draftability-waiver@1.0.0`. It is valid only for an explicitly
-authorized Risk Level 0 or 1, zero-capital, draft-PR implementation with no
-source-runtime, workflow-file, dependency, network, credential, scheduler,
-Hermes-runtime, strategy, paper, execution, or live authority. The waiver must
-state that implementation is authorized, review readiness and merge are not
-authorized, independent live-PR review remains required, and unresolved
-decisions are empty. This exception is not a PASS certificate and does not
-create a default waiver route for higher-risk packages.
+WP159 itself has one exact, one-time bootstrap exception:
+`polymarket-wp-draftability-waiver@1.0.0`. The guard accepts that mode only for
+WP159 in `toobigtofailbot-maker/polymarket-strategy-lab`, primary package class
+`GOVERNANCE`, base branch `main`, predecessor PR 158 at the locked predecessor
+head and merge SHA, Risk Level 0 or 1, zero capital, and no source-runtime,
+workflow-file, dependency, network, credential, scheduler, Hermes-runtime,
+strategy, paper, execution, or live authority. The waiver must state that
+implementation is authorized, review readiness and merge are not authorized,
+independent live-PR review remains required, and unresolved decisions are
+empty. Its two digests must equal both the exact input bytes and the final
+code-bound WP159 digest constants. Rehashing an altered but otherwise valid
+prompt or specification cannot reuse the waiver. This exception is not a PASS
+certificate and creates no generic waiver route for any other WP.
 
 ## Input and JSON policy
 
@@ -105,6 +109,10 @@ and boolean `crossed`.
 Budgets are S<=5, M<=10, L<=20. XL requires its explicit identity
 authorization. `max_changed_files` may not exceed the applicable budget.
 Required count may not exceed the maximum, and required is a subset of allowed.
+Every path beginning `docs/wp_specs/` is reserved. It must be exactly one of the
+three artifact paths for `identity.wp_id`; another WP directory and any extra
+filename in the current WP directory are scope failures in both required and
+allowed arrays.
 
 ### Authority
 
@@ -130,6 +138,11 @@ Mechanical mapping:
   require `canonical_evidence_policy`
 
 A path under a forbidden prefix is a scope failure before authority checks.
+For schema 1.0.0, dependency/lock, built-in protected, credential-like, and
+generated-artifact classification is mechanically identical to
+`tools/git/diff_scope_summary.py`. When `exact_scope_required` is true, every
+path that the exact-scope helper necessarily classifies as protected or
+generated is a `SCOPE_POLICY_INVALID` failure before authority checks.
 Unknown top-level path families are authority contradictions.
 
 ## Applicability sections and nested item schemas
@@ -163,8 +176,10 @@ items. Item schemas are:
 
 Semantic sources are `CALLER`, `CONSTANT`, or `DERIVED`; identity roles are
 `COMMITTED`, `EXCLUDED`, or `NONE`. EXCLUDED requires a reason and cannot be
-mutable. DERIVED+COMMITTED references an existing derivation. Failure categories
-reference the fixed precedence table.
+mutable. DERIVED+COMMITTED requires a non-null existing derivation.
+DERIVED+NONE may use null when its deterministic validation rule is present,
+but every non-null derivation ID must exist. Non-DERIVED fields cannot carry a
+derivation ID. Failure categories reference the fixed precedence table.
 
 ## Identity derivation rules
 
@@ -173,8 +188,9 @@ reference the fixed precedence table.
 empty, prefix is empty, canonicalization is null, and the digest covers exact
 bytes.
 
-`SHA256_CANONICAL_JSON` uses dot paths relative to the same example `input`.
-Its canonicalization is exactly:
+`SHA256_CANONICAL_JSON` has at least one source. Its source, exclusion, and
+target paths are dot paths relative to the same example `input`; `$external.*`
+is forbidden. Its canonicalization is exactly:
 
 ```json
 {"sort_keys":true,"separators":[",",":"],"ensure_ascii":false,"allow_nan":false,"encoding":"utf-8","preserve_explicit_nulls":true,"preserve_array_order":true}
@@ -192,8 +208,10 @@ object insertion-order insensitivity, prefix behavior, and input-relative
 target resolution.
 
 Valid examples have zero faults and errors. Invalid examples have exactly one
-intended fault and non-empty errors in canonical precedence order. Listed
-canonical derivations are recomputed independently.
+intended fault and non-empty errors in canonical precedence order. Every
+canonical-JSON rule is referenced and independently recomputed successfully by
+at least one valid example, proving that every required source, exclusion, and
+target path exists.
 
 ## Fixed failure order and diagnostics
 
@@ -248,6 +266,13 @@ The twelve lenses, each exactly once with PASS, are:
 `scope_compatibility`, `evidence_publication`, `successor_boundary`.
 Unresolved decisions is exactly empty. Repository, WP ID, and reviewed base
 match the spec. Both lowercase SHA-256 values match exact raw bytes.
+
+The normal certificate path remains generic and is not restricted to WP159.
+The WP159 waiver is a separate one-time path. In addition to its exact schema
+and authorization booleans, it requires the locked WP159 identity, repository,
+primary package class, base, predecessor PR/head/merge, safe authority posture,
+and code-bound final prompt/spec hashes. Any mismatch is the closed
+`DRAFTABILITY_INCOMPLETE` diagnostic without input echo.
 
 ## Guard phase gate
 

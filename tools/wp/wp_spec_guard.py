@@ -25,6 +25,25 @@ SPEC_SCHEMA_VERSION = "1.0.0"
 CERTIFICATE_SCHEMA_ID = "polymarket-wp-draftability-certificate"
 WAIVER_SCHEMA_ID = "polymarket-wp-draftability-waiver"
 
+# The waiver is a one-time bootstrap exception for these exact WP159 bytes.
+# Normal independent certificates remain generic.
+WP159_WAIVER_WP_SHA256 = (
+    "7dfd1e826b688873c3303dcf89d13522d82620840b17f1a40812c3ceb2c74911"
+)
+WP159_WAIVER_SPEC_SHA256 = (
+    "2300bd295bdd0f679857d2aec0d007d296ef05421095e77e69937b457ad094b3"
+)
+WP159_WAIVER_REPOSITORY = "toobigtofailbot-maker/polymarket-strategy-lab"
+WP159_WAIVER_PACKAGE_CLASS = "GOVERNANCE"
+WP159_WAIVER_BASE_BRANCH = "main"
+WP159_WAIVER_PREDECESSOR_PR = 158
+WP159_WAIVER_PREDECESSOR_HEAD = (
+    "c7e59f2287501ea2ecab9b7d13d1a4b751f6c0b0"
+)
+WP159_WAIVER_PREDECESSOR_MERGE = (
+    "056f0074b55c3d12cedbb9dfbdb43f7f668df0c3"
+)
+
 MAX_WP_BYTES = 1_048_576
 MAX_SPEC_BYTES = 1_048_576
 MAX_CERTIFICATE_BYTES = 262_144
@@ -285,6 +304,62 @@ WAIVER_KEYS = (
     "merge_authorized",
     "independent_live_pr_review_required",
     "unresolved_decisions",
+)
+
+DEPENDENCY_LOCK_BASENAMES = (
+    "requirements.txt",
+    "requirements-dev.txt",
+    "pyproject.toml",
+    "setup.cfg",
+    "setup.py",
+    "Pipfile",
+    "Pipfile.lock",
+    "poetry.lock",
+    "uv.lock",
+    "package.json",
+    "package-lock.json",
+    "Cargo.toml",
+    "Cargo.lock",
+)
+DEPENDENCY_LOCK_SUFFIXES = (".lock",)
+GENERATED_ARTIFACT_PREFIXES = (
+    "local_data/",
+    ".venv-security/",
+    ".venv-official-client/",
+    "tools/.bin/",
+    "tools/security/.cache/",
+    "security-scan-output/",
+    "official-client-sandbox-output/",
+    ".pytest_cache/",
+    "__pycache__/",
+)
+GENERATED_ARTIFACT_EXACT = (".coverage",)
+GENERATED_ARTIFACT_SUFFIXES = (".sarif",)
+PROTECTED_PREFIXES_BUILTIN = (
+    "tools/hermes/",
+    "agent_runtime/",
+    "agent_memory/",
+)
+PROTECTED_EXACT_BUILTIN = (".env",)
+PROTECTED_STARTSWITH_BUILTIN = (".env.",)
+CREDENTIAL_LIKE_PATTERNS = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"private.?key",
+        r"wallet.?key",
+        r"mnemonic",
+        r"passphrase",
+        r"api.?key",
+        r"secret.?key",
+        r"\.pem$",
+        r"\.p12$",
+        r"\.pfx$",
+        r"id_rsa",
+        r"id_ed25519",
+        r"credentials\.json",
+        r"keystore",
+        r"\.keystore",
+    )
 )
 
 
@@ -890,6 +965,51 @@ def _unique_error(
         seen.append(value)
 
 
+def _is_dependency_or_lock(path: str) -> bool:
+    basename = path.rsplit("/", 1)[-1]
+    return basename in DEPENDENCY_LOCK_BASENAMES or any(
+        basename.endswith(suffix) for suffix in DEPENDENCY_LOCK_SUFFIXES
+    )
+
+
+def _is_generated_artifact(path: str) -> bool:
+    if any(
+        path.startswith(prefix) or path == prefix.rstrip("/")
+        for prefix in GENERATED_ARTIFACT_PREFIXES
+    ):
+        return True
+    basename = path.rsplit("/", 1)[-1]
+    return basename in GENERATED_ARTIFACT_EXACT or any(
+        basename.endswith(suffix) for suffix in GENERATED_ARTIFACT_SUFFIXES
+    )
+
+
+def _is_protected_builtin(path: str) -> bool:
+    basename = path.rsplit("/", 1)[-1]
+    if any(path.startswith(prefix) for prefix in PROTECTED_PREFIXES_BUILTIN):
+        return True
+    if basename in PROTECTED_EXACT_BUILTIN:
+        return True
+    if any(
+        path.startswith(prefix)
+        or basename.startswith(prefix.lstrip("."))
+        for prefix in PROTECTED_STARTSWITH_BUILTIN
+    ):
+        return True
+    return any(pattern.search(path) for pattern in CREDENTIAL_LIKE_PATTERNS)
+
+
+def _wp_artifact_paths(wp_id: str) -> frozenset[str]:
+    prefix = f"docs/wp_specs/{wp_id}/"
+    return frozenset(
+        {
+            f"{prefix}wp_prompt.txt",
+            f"{prefix}wp_spec.json",
+            f"{prefix}draftability_certificate.json",
+        }
+    )
+
+
 def _authority_requirements(path: str, wp_id: str) -> tuple[str, ...] | None:
     requirements: list[str] = []
     if path.startswith("docs/"):
@@ -903,53 +1023,20 @@ def _authority_requirements(path: str, wp_id: str) -> tuple[str, ...] | None:
     elif path.startswith("tools/"):
         requirements.append("local_offline_tooling")
     else:
-        basename = path.rsplit("/", 1)[-1]
-        if basename in {
-            "requirements.txt",
-            "requirements-dev.txt",
-            "pyproject.toml",
-            "setup.cfg",
-            "setup.py",
-            "Pipfile",
-            "Pipfile.lock",
-            "poetry.lock",
-            "uv.lock",
-            "package.json",
-            "package-lock.json",
-            "Cargo.toml",
-            "Cargo.lock",
-        } or basename.endswith(".lock"):
+        if _is_dependency_or_lock(path):
             requirements.append("dependencies")
         else:
             return None
-    basename = path.rsplit("/", 1)[-1].lower()
+    if _is_dependency_or_lock(path) and "dependencies" not in requirements:
+        requirements.append("dependencies")
     if path.startswith(("tools/hermes/", "agent_runtime/", "agent_memory/")):
         requirements.append("hermes_runtime")
-    if any(
-        marker in path.lower()
-        for marker in (
-            "private_key",
-            "private-key",
-            "wallet_key",
-            "wallet-key",
-            "mnemonic",
-            "passphrase",
-            "api_key",
-            "api-key",
-            "secret_key",
-            "secret-key",
-            "credentials.json",
-            "keystore",
-        )
-    ) or basename.endswith((".pem", ".p12", ".pfx")):
+    if _is_protected_builtin(path) and not path.startswith(
+        ("tools/hermes/", "agent_runtime/", "agent_memory/")
+    ):
         requirements.append("credentials")
-    artifact_prefix = f"docs/wp_specs/{wp_id}/"
-    if path.startswith(artifact_prefix):
-        if path not in {
-            f"{artifact_prefix}wp_prompt.txt",
-            f"{artifact_prefix}wp_spec.json",
-            f"{artifact_prefix}draftability_certificate.json",
-        }:
+    if path.startswith("docs/wp_specs/"):
+        if path not in _wp_artifact_paths(wp_id):
             return None
         requirements.append("canonical_evidence_policy")
     return tuple(requirements)
@@ -1022,19 +1109,24 @@ def _semantic_errors(spec: dict[str, Any]) -> list[dict[str, str]]:
         )
     for field in ("required_changed_files", "allowed_changed_files"):
         for index, path in enumerate(scope[field]):
+            field_path = f"spec.scope.{field}[{index}]"
+            if (
+                path.startswith("docs/wp_specs/")
+                and path not in _wp_artifact_paths(identity["wp_id"])
+            ):
+                errors.append(_error("SCOPE_POLICY_INVALID", field_path))
+                continue
             if any(path.startswith(prefix) for prefix in scope["forbidden_prefixes"]):
-                errors.append(
-                    _error("SCOPE_POLICY_INVALID", f"spec.scope.{field}[{index}]")
-                )
+                errors.append(_error("SCOPE_POLICY_INVALID", field_path))
+                continue
+            if scope["exact_scope_required"] and (
+                _is_protected_builtin(path) or _is_generated_artifact(path)
+            ):
+                errors.append(_error("SCOPE_POLICY_INVALID", field_path))
                 continue
             needs = _authority_requirements(path, identity["wp_id"])
             if needs is None or any(authority[need] is not True for need in needs):
-                errors.append(
-                    _error(
-                        "AUTHORITY_CONTRADICTION",
-                        f"spec.scope.{field}[{index}]",
-                    )
-                )
+                errors.append(_error("AUTHORITY_CONTRADICTION", field_path))
 
     categories = [
         item["category"] for item in spec["failure_precedence"]["items"]
@@ -1094,6 +1186,32 @@ def _semantic_errors(spec: dict[str, Any]) -> list[dict[str, str]]:
             ):
                 errors.append(_error("IDENTITY_DERIVATION_INVALID", path))
         else:
+            if not sources:
+                errors.append(
+                    _error(
+                        "IDENTITY_DERIVATION_INVALID",
+                        f"{path}.source_paths",
+                    )
+                )
+            for field_name, values in (
+                ("source_paths", sources),
+                ("excluded_paths", excluded),
+            ):
+                for item_index, value in enumerate(values):
+                    if value.startswith("$external."):
+                        errors.append(
+                            _error(
+                                "IDENTITY_DERIVATION_INVALID",
+                                f"{path}.{field_name}[{item_index}]",
+                            )
+                        )
+            if rule["target_path"].startswith("$external."):
+                errors.append(
+                    _error(
+                        "IDENTITY_DERIVATION_INVALID",
+                        f"{path}.target_path",
+                    )
+                )
             if rule["canonicalization"] != CANONICALIZATION:
                 errors.append(
                     _error(
@@ -1141,11 +1259,23 @@ def _semantic_errors(spec: dict[str, Any]) -> list[dict[str, str]]:
                 errors.append(_error("SEMANTIC_CONTRADICTION", path))
         elif item["exclusion_reason"] is not None:
             errors.append(_error("SEMANTIC_CONTRADICTION", f"{path}.exclusion_reason"))
+        derivation_rule_id = item["derivation_rule_id"]
         if (
             item["source"] == "DERIVED"
             and item["identity_role"] == "COMMITTED"
-            and item["derivation_rule_id"] not in derivation_ids
+            and (
+                derivation_rule_id is None
+                or derivation_rule_id not in derivation_ids
+            )
         ):
+            errors.append(_error("SEMANTIC_CONTRADICTION", f"{path}.derivation_rule_id"))
+        elif (
+            item["source"] == "DERIVED"
+            and derivation_rule_id is not None
+            and derivation_rule_id not in derivation_ids
+        ):
+            errors.append(_error("SEMANTIC_CONTRADICTION", f"{path}.derivation_rule_id"))
+        elif item["source"] != "DERIVED" and derivation_rule_id is not None:
             errors.append(_error("SEMANTIC_CONTRADICTION", f"{path}.derivation_rule_id"))
 
     transitions = spec["state_transitions"]["items"]
@@ -1166,6 +1296,7 @@ def _semantic_errors(spec: dict[str, Any]) -> list[dict[str, str]]:
 
     examples = spec["examples"]["items"]
     example_ids: list[str] = []
+    covered_canonical_rules: set[str] = set()
     for index, item in enumerate(examples):
         path = f"spec.examples.items[{index}]"
         if item["example_id"] in example_ids:
@@ -1192,8 +1323,21 @@ def _semantic_errors(spec: dict[str, Any]) -> list[dict[str, str]]:
                 derived = _canonical_derived_value(rule, item["input"])
                 if not isinstance(actual, str) or actual != derived:
                     raise ValueError()
+                if item["expected_valid"] is True:
+                    covered_canonical_rules.add(rule_id)
             except (KeyError, TypeError, ValueError, UnicodeError):
                 errors.append(_error("EXAMPLE_TRUTH_INVALID", path))
+    for index, rule in enumerate(derivations):
+        if (
+            rule["algorithm"] == "SHA256_CANONICAL_JSON"
+            and rule["rule_id"] not in covered_canonical_rules
+        ):
+            errors.append(
+                _error(
+                    "EXAMPLE_TRUTH_INVALID",
+                    f"spec.identity_derivations.items[{index}].rule_id",
+                )
+            )
 
     evidence = spec["evidence_plan"]["items"]
     _unique_error(
@@ -1406,10 +1550,26 @@ def _certificate_draftability_errors(
             "execution",
             "live",
         )
+        predecessor = identity["required_predecessor"]
+        fixed_identity_matches = (
+            identity["wp_id"] == "WP159"
+            and identity["repository"] == WP159_WAIVER_REPOSITORY
+            and identity["package_class"] == WP159_WAIVER_PACKAGE_CLASS
+            and identity["base_branch"] == WP159_WAIVER_BASE_BRANCH
+            and predecessor["pr_number"] == WP159_WAIVER_PREDECESSOR_PR
+            and predecessor["head_sha"] == WP159_WAIVER_PREDECESSOR_HEAD
+            and predecessor["merge_sha"] == WP159_WAIVER_PREDECESSOR_MERGE
+        )
+        fixed_hashes_match = (
+            cert["wp_text_sha256"] == WP159_WAIVER_WP_SHA256
+            and cert["wp_spec_sha256"] == WP159_WAIVER_SPEC_SHA256
+        )
         if (
-            identity["risk_level"] > 1
+            not fixed_identity_matches
+            or identity["risk_level"] not in (0, 1)
             or identity["capital_at_risk_usd"] != 0
-            or any(spec["authority"][key] is True for key in dangerous)
+            or any(spec["authority"][key] is not False for key in dangerous)
+            or not fixed_hashes_match
         ):
             errors.append(
                 _error("DRAFTABILITY_INCOMPLETE", "certificate.waiver_mode")

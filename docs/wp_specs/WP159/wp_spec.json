@@ -15,7 +15,7 @@
       "merge_sha": "056f0074b55c3d12cedbb9dfbdb43f7f668df0c3"
     },
     "suggested_branch": "codex/wp159-v3-draftability-scope-foundation",
-    "objective": "Make the existing canonical WP drafting process enforceable through a separate machine-readable WP specification, an independent draftability certificate, a deterministic local guard, and exact scope enforcement.",
+    "objective": "Make the existing canonical WP drafting process enforceable through a separate machine-readable WP specification, a generic normal independent draftability certificate path, one exact byte-bound WP159 bootstrap waiver, a deterministic local guard, and exact scope enforcement.",
     "capital_at_risk_usd": 0,
     "xl_explicit_authorization": true,
     "xl_authorization_basis": "Explicit user authorization for six merged historical compatibility regression tests required to preserve the full repository suite while WP159 adds and modifies local governance tools."
@@ -620,7 +620,7 @@
   },
   "state_transitions": {
     "applicable": true,
-    "reason": "WP159 adds the mandatory draftability gate before implementation authorization.",
+    "reason": "Normal future governed WPs use the mandatory independent draftability gate; WP159 alone used the exact byte-bound implementation-and-draft-only bootstrap waiver without gaining DRAFTABILITY_PASS, readiness, or merge authority.",
     "items": [
       {
         "from_state": "LOCAL_DRAFT",
