@@ -33,6 +33,7 @@ All Risk Level 0 WPs must also confirm:
 | local/offline source WP | Focused unit tests, negative-test matrix | Architecture boundary | Required | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
 | local report/export WP | Offline tests with local fixtures | No credential/network tests | Required | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
 | github-aware-readonly-workflow-helper WP | Focused helper tests with fake responses | Docs workflow tests | Required | Required | Required | gitleaks if available | Required — posted verifier after PR posted | Required (WP86+) |
+| local-offline-stdlib-governance-helper-hardening | WP-spec guard focused tests; scope-helper compatibility and exact-mode tests; negative-test matrix | Workflow-doc tests; project-status and repo-truth checks | Required | Exact scope required | Required | Honest availability; gitleaks if available | Required — authenticated live re-fetch | Required (WP86+) |
 
 All Risk Level 1 WPs must also confirm:
 - Output under ignored `local_data/` only (for report/export WPs).

@@ -976,11 +976,11 @@ def test_project_status_registers_wp158_review_target_and_next_gate() -> None:
     merged = next(
         line for line in project.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP158" in current
-    assert "WP157" in merged
-    assert current.count("sole review target") == 1
-    assert "WP159 requires separate approval" in current
-    assert "WP159 implemented: NO" in current
+    assert "WP159" in current
+    assert "WP158" in merged
+    assert current.count("sole draft PR review target") == 1
+    assert "Ready for review: NO" in current
+    assert "Feature validator moved to: WP161" in current
     assert (
         "Append-only local manifest and deterministic dataset snapshot reference contract status:"
         in project
@@ -1024,6 +1024,16 @@ def test_status_fragment_is_stable_model_d() -> None:
 
 def test_no_dependency_workflow_or_generated_artifact_in_scope() -> None:
     changed = _changed_files()
+    if "docs/status_entries/WP159.md" in changed:
+        expected = set(json.loads(
+            (ROOT / "docs/wp_specs/WP159/wp_spec.json").read_text(
+                encoding="utf-8"
+            )
+        )["scope"]["required_changed_files"])
+        assert len(expected) == 23
+        assert changed == expected
+        assert not any(path.startswith("src/") for path in changed)
+        return
     assert not (changed & {
         "requirements.txt",
         "pyproject.toml",
@@ -1049,6 +1059,15 @@ def test_no_dependency_workflow_or_generated_artifact_in_scope() -> None:
 
 def test_exact_scope_is_docs_and_tests_only() -> None:
     changed = _changed_files()
+    if "docs/status_entries/WP159.md" in changed:
+        expected = set(json.loads(
+            (ROOT / "docs/wp_specs/WP159/wp_spec.json").read_text(
+                encoding="utf-8"
+            )
+        )["scope"]["required_changed_files"])
+        assert len(expected) == 23
+        assert changed == expected
+        return
     # Once WP158 is present on origin/main, successor WPs own their own scope
     # gates; until then this branch owns the exact contract-only file set.
     merged = subprocess.run(

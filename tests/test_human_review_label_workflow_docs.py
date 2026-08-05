@@ -612,6 +612,11 @@ def test_no_tools_files_modified():
     allowed_tools_changes = {
         "tools/hermes_candidate_review_manual_export_cli.py",
     }
+    if "docs/status_entries/WP159.md" in changed:
+        allowed_tools_changes.update({
+            "tools/wp/wp_spec_guard.py",
+            "tools/git/diff_scope_summary.py",
+        })
     tools_changes = [
         f for f in changed
         if f.startswith("tools/") and f not in allowed_tools_changes

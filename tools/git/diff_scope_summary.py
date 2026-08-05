@@ -6,6 +6,7 @@ Does not replace pytest, security checks, preflight tools, or human review.
 """
 
 import argparse
+import importlib.util
 import json
 import os
 import pathlib
@@ -15,6 +16,7 @@ import sys
 
 # ── Schema version ──────────────────────────────────────────────────────────
 SUMMARY_SCHEMA_VERSION = "1.0"
+SPEC_SUMMARY_SCHEMA_VERSION = "2.0"
 
 # ── Built-in pattern tables ──────────────────────────────────────────────────
 
@@ -283,9 +285,52 @@ def get_name_status(base: str, head: str) -> tuple[list[dict], str | None]:
     return entries, None
 
 
+def _get_name_status_spec(base: str, head: str) -> tuple[list[dict], str | None]:
+    stdout, stderr, rc = _run_git([
+        "diff", "--name-status", "-z", "--find-renames=50%",
+        "--find-copies=50%", "--find-copies-harder", f"{base}...{head}",
+    ])
+    if rc != 0:
+        return [], "git operation failed"
+    return parse_name_status(stdout), None
+
+
+def _get_untracked_spec() -> tuple[list[str], str | None]:
+    stdout, stderr, rc = _run_git(
+        ["ls-files", "--others", "--exclude-standard", "-z"]
+    )
+    if rc != 0:
+        return [], "git operation failed"
+    return sorted({_norm(path) for path in stdout.split("\0") if path}), None
+
+
 def parse_name_status(raw: str) -> list[dict]:
     """Parse git diff --name-status output into structured records."""
     entries = []
+    if "\0" in raw:
+        fields = raw.split("\0")
+        if fields and fields[-1] == "":
+            fields.pop()
+        index = 0
+        while index < len(fields):
+            status_raw = fields[index]
+            index += 1
+            if status_raw.startswith(("R", "C")) and index + 1 < len(fields):
+                entries.append({
+                    "status": status_raw[0],
+                    "status_detail": status_raw,
+                    "old_path": _norm(fields[index]),
+                    "path": _norm(fields[index + 1]),
+                })
+                index += 2
+            elif index < len(fields):
+                entries.append({
+                    "status": status_raw[0] if status_raw else "?",
+                    "status_detail": status_raw,
+                    "path": _norm(fields[index]),
+                })
+                index += 1
+        return entries
     for line in raw.splitlines():
         line = line.strip()
         if not line:
@@ -391,11 +436,21 @@ def build_summary(
     diff_stat: str,
     diff_check_errors: list[str],
     git_errors: list[str],
+    *,
+    wp_spec_path=None,
+    wp_spec_schema_version=None,
+    required_changed_files=(),
+    untracked_files=(),
+    max_changed_files=None,
+    exact_scope_required=False,
+    authority=None,
+    git_operations_succeeded=True,
 ) -> dict:
     """
     Build a structured summary dict from parsed diff data.
     All classification and warning logic lives here for testability.
     """
+    spec_mode = wp_spec_path is not None
     warnings = list(git_errors)
 
     # Count by status
@@ -403,43 +458,100 @@ def build_summary(
     all_paths = []
     by_status: dict[str, list[str]] = {"A": [], "M": [], "D": [], "R": [], "C": [], "other": []}
 
-    for e in entries:
-        s = e["status"]
-        p = e["path"]
-        all_paths.append(p)
-        if s in counts:
-            counts[s] += 1
-            by_status[s].append(p)
-        else:
-            counts["other"] += 1
-            by_status["other"].append(p)
-
-    total = len(all_paths)
+    if spec_mode:
+        seen_destinations = set()
+        for e in entries:
+            s = e["status"]
+            p = e["path"]
+            if p in seen_destinations:
+                continue
+            seen_destinations.add(p)
+            all_paths.append(p)
+            if s in counts:
+                counts[s] += 1
+                by_status[s].append(p)
+            else:
+                counts["other"] += 1
+                by_status["other"].append(p)
+        normalized_untracked = sorted({_norm(path) for path in untracked_files})
+        for path in normalized_untracked:
+            if path not in seen_destinations:
+                seen_destinations.add(path)
+                all_paths.append(path)
+                counts["A"] += 1
+                by_status["A"].append(path)
+        all_paths = sorted(seen_destinations)
+        for key in by_status:
+            by_status[key] = sorted(set(by_status[key]))
+        policy_paths = sorted(set(
+            all_paths
+            + [
+                e["old_path"] for e in entries
+                if e.get("status") in ("R", "C") and "old_path" in e
+            ]
+        ))
+        total = len(all_paths)
+    else:
+        normalized_untracked = []
+        policy_paths = all_paths
+        for e in entries:
+            s = e["status"]
+            p = e["path"]
+            all_paths.append(p)
+            if s in counts:
+                counts[s] += 1
+                by_status[s].append(p)
+            else:
+                counts["other"] += 1
+                by_status["other"].append(p)
+        policy_paths = all_paths
+        total = len(all_paths)
 
     # Scope classification
     out_of_scope = []
     scope_declared = bool(allowed_files or allowed_prefixes)
     if scope_declared:
-        for p in all_paths:
+        for p in policy_paths:
             in_scope = is_in_scope(p, allowed_files, allowed_prefixes)
             if in_scope is False:
                 out_of_scope.append(p)
+    if spec_mode:
+        out_of_scope = sorted(set(out_of_scope))
 
     # Protected paths (builtin + explicit forbidden)
-    protected_hits_builtin = [p for p in all_paths if is_protected_builtin(p)]
+    protected_hits_builtin = [p for p in policy_paths if is_protected_builtin(p)]
     protected_hits_explicit = [
-        p for p in all_paths if is_protected_explicit(p, forbidden_prefixes)
+        p for p in policy_paths if is_protected_explicit(p, forbidden_prefixes)
     ]
+    if spec_mode:
+        protected_hits_builtin = sorted(set(protected_hits_builtin))
+        protected_hits_explicit = sorted(set(protected_hits_explicit))
     all_protected = sorted(set(protected_hits_builtin + protected_hits_explicit))
 
     # Dependency/lock
-    dep_lock_hits = [p for p in all_paths if is_dependency_or_lock(p)]
+    dep_lock_hits = [p for p in policy_paths if is_dependency_or_lock(p)]
+    if spec_mode:
+        dep_lock_hits = sorted(set(dep_lock_hits))
 
     # Generated artifacts
-    generated_hits = [p for p in all_paths if is_generated_artifact(p)]
+    generated_hits = [p for p in policy_paths if is_generated_artifact(p)]
+    if spec_mode:
+        generated_hits = sorted(set(generated_hits))
 
     # Package-class warnings
-    pc_warnings = package_class_warnings(package_class, all_paths, allowed_files, allowed_prefixes)
+    pc_warnings = package_class_warnings(package_class, policy_paths, allowed_files, allowed_prefixes)
+
+    unauthorized_hits = []
+    if spec_mode:
+        effective_authority = authority or {}
+        for path in policy_paths:
+            needed = _authority_for_path(path)
+            if needed is None or any(
+                effective_authority.get(permission) is not True
+                for permission in needed
+            ):
+                unauthorized_hits.append(path)
+        unauthorized_hits = sorted(set(unauthorized_hits))
 
     # Accumulate warnings
     if out_of_scope:
@@ -464,6 +576,16 @@ def build_summary(
             f"{len(diff_check_errors)} whitespace error(s) from git diff --check: "
             f"{diff_check_errors[:5]}"
         )
+    if spec_mode and max_changed_files is not None and total > max_changed_files:
+        warnings.append(
+            f"Changed-file count {total} exceeds the declared maximum "
+            f"{max_changed_files}."
+        )
+    if unauthorized_hits:
+        warnings.append(
+            f"{len(unauthorized_hits)} path(s) contradict declared authority: "
+            f"{unauthorized_hits[:10]}"
+        )
 
     # Suggested review attention areas
     attention = []
@@ -479,11 +601,15 @@ def build_summary(
         attention.append("Review package-class warnings: confirm WP class matches scope.")
     if diff_check_errors:
         attention.append("Fix whitespace errors detected by git diff --check.")
+    if unauthorized_hits:
+        attention.append("Review authority violations: the WP specification does not authorize these paths.")
     if not attention:
         attention.append("No specific attention areas flagged by this summary.")
 
-    return {
-        "summary_schema_version": SUMMARY_SCHEMA_VERSION,
+    summary = {
+        "summary_schema_version": (
+            SPEC_SUMMARY_SCHEMA_VERSION if spec_mode else SUMMARY_SCHEMA_VERSION
+        ),
         "base": base,
         "head": head,
         "package_class": package_class,
@@ -517,6 +643,64 @@ def build_summary(
             "Exit 0 (summary generated, no warnings)."
         ),
     }
+    if spec_mode:
+        required = list(required_changed_files)
+        present = set(all_paths)
+        missing = [path for path in required if path not in present]
+        exact_pass = (
+            not out_of_scope
+            and not missing
+            and max_changed_files is not None
+            and total <= max_changed_files
+            and not all_protected
+            and not generated_hits
+            and not unauthorized_hits
+            and not diff_check_errors
+            and git_operations_succeeded
+        )
+        summary.update({
+            "wp_spec_path": _norm(wp_spec_path),
+            "wp_spec_schema_version": wp_spec_schema_version,
+            "required_changed_files": required,
+            "allowed_changed_files": list(allowed_files),
+            "missing_required_files": missing,
+            "untracked_files": normalized_untracked,
+            "exact_scope_required": bool(exact_scope_required),
+            "exact_scope_pass": exact_pass,
+        })
+    return summary
+
+
+def _authority_for_path(path: str) -> list[str] | None:
+    """Return the closed WP-spec authority requirements for one path."""
+    p = _norm(path)
+    basename = p.rsplit("/", 1)[-1]
+    requirements = []
+    if p.startswith("docs/"):
+        requirements.append("docs")
+    elif p.startswith("tests/"):
+        requirements.append("tests")
+    elif p.startswith("src/"):
+        requirements.append("source_runtime")
+    elif p.startswith(".github/workflows/"):
+        requirements.append("workflow_files")
+    elif p.startswith("tools/"):
+        requirements.append("local_offline_tooling")
+    elif is_dependency_or_lock(p):
+        requirements.append("dependencies")
+    else:
+        return None
+    if is_dependency_or_lock(p):
+        requirements.append("dependencies")
+    if p.startswith("docs/wp_specs/"):
+        requirements.append("canonical_evidence_policy")
+    if p.startswith(("tools/hermes/", "agent_runtime/", "agent_memory/")):
+        requirements.append("hermes_runtime")
+    if is_protected_builtin(p) and not p.startswith(
+        ("tools/hermes/", "agent_runtime/", "agent_memory/")
+    ):
+        requirements.append("credentials")
+    return requirements
 
 
 # ── Renderers ────────────────────────────────────────────────────────────────
@@ -530,6 +714,11 @@ def render_text(summary: dict) -> str:
     lines.append(f"Head:           {summary['head']}")
     lines.append(f"Package class:  {summary['package_class']}")
     lines.append(f"Schema version: {summary['summary_schema_version']}")
+    if summary["summary_schema_version"] == SPEC_SUMMARY_SCHEMA_VERSION:
+        lines.append(f"WP spec:        {summary['wp_spec_path']}")
+        lines.append(
+            f"WP spec schema: {summary['wp_spec_schema_version']}"
+        )
     lines.append("")
 
     c = summary["counts"]
@@ -610,6 +799,22 @@ def render_text(summary: dict) -> str:
     lines.append(f"Total warnings: {summary['warning_count']}")
     lines.append("")
 
+    if summary["summary_schema_version"] == SPEC_SUMMARY_SCHEMA_VERSION:
+        missing = summary["missing_required_files"]
+        if missing:
+            lines.append(f"Missing required files ({len(missing)}):")
+            for path in missing:
+                lines.append(f"  {path}")
+        else:
+            lines.append("Missing required files: none.")
+        lines.append(
+            f"Exact scope required: {str(summary['exact_scope_required']).lower()}"
+        )
+        lines.append(
+            f"Exact scope pass: {str(summary['exact_scope_pass']).lower()}"
+        )
+        lines.append("")
+
     lines.append("Suggested review attention areas:")
     for a in summary["suggested_review_attention"]:
         lines.append(f"  - {a}")
@@ -642,8 +847,19 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--head", default="HEAD", help="Head ref (default: HEAD)")
     p.add_argument(
         "--package-class",
-        default="unspecified",
+        default=None,
         help="Active WP package class (e.g. docs-only, design, local-tooling)",
+    )
+    p.add_argument(
+        "--wp-spec",
+        default=None,
+        metavar="PATH",
+        help="Validated machine-readable WP specification (activates exact scope mode)",
+    )
+    p.add_argument(
+        "--require-exact-scope",
+        action="store_true",
+        help="Require exact-scope pass (valid only with --wp-spec)",
     )
     p.add_argument(
         "--allowed-file",
@@ -696,6 +912,20 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
+    if args.require_exact_scope and not args.wp_spec:
+        print("ERROR: --require-exact-scope requires --wp-spec.", file=sys.stderr)
+        return 2
+
+    if args.wp_spec and (
+        args.allowed_files
+        or args.allowed_prefixes
+        or args.forbidden_prefixes
+        or args.package_class is not None
+        or args.output is not None
+    ):
+        print("ERROR: WP-spec mode does not accept manual scope or output flags.", file=sys.stderr)
+        return 2
+
     # Validate output path before doing any git work
     if args.output:
         err = validate_output_path(args.output)
@@ -704,8 +934,27 @@ def main(argv: list[str] | None = None) -> int:
             return 2
 
     git_errors: list[str] = []
+    spec_mode = args.wp_spec is not None
+    spec_scope = None
+    if spec_mode:
+        spec_scope, spec_errors = _read_wp_spec_scope(args.wp_spec)
+        if spec_scope is None:
+            print("ERROR: WP specification is invalid.", file=sys.stderr)
+            return 2
+        package_class = spec_scope["package_class"]
+        allowed_files = list(spec_scope["allowed_changed_files"])
+        allowed_prefixes = []
+        forbidden_prefixes = list(spec_scope["forbidden_prefixes"])
+    else:
+        package_class = args.package_class or "unspecified"
+        allowed_files = [_norm(f) for f in args.allowed_files]
+        allowed_prefixes = [_norm(p) for p in args.allowed_prefixes]
+        forbidden_prefixes = [_norm(p) for p in args.forbidden_prefixes]
 
-    entries, err = get_name_status(args.base, args.head)
+    if spec_mode:
+        entries, err = _get_name_status_spec(args.base, args.head)
+    else:
+        entries, err = get_name_status(args.base, args.head)
     if err:
         git_errors.append(f"git diff --name-status: {err}")
 
@@ -717,17 +966,45 @@ def main(argv: list[str] | None = None) -> int:
     if err:
         git_errors.append(f"git diff --check: {err}")
 
+    if spec_mode:
+        untracked_files, err = _get_untracked_spec()
+        if err:
+            git_errors.append("git ls-files operation failed")
+    else:
+        untracked_files = []
+
+    if spec_mode and git_errors:
+        print("ERROR: required git operation failed.", file=sys.stderr)
+        return 2
+
     summary = build_summary(
         base=args.base,
         head=args.head,
-        package_class=args.package_class,
-        allowed_files=[_norm(f) for f in args.allowed_files],
-        allowed_prefixes=[_norm(p) for p in args.allowed_prefixes],
-        forbidden_prefixes=[_norm(p) for p in args.forbidden_prefixes],
+        package_class=package_class,
+        allowed_files=allowed_files,
+        allowed_prefixes=allowed_prefixes,
+        forbidden_prefixes=forbidden_prefixes,
         entries=entries,
         diff_stat=diff_stat,
         diff_check_errors=diff_check_errors,
         git_errors=git_errors,
+        wp_spec_path=args.wp_spec if spec_mode else None,
+        wp_spec_schema_version=(
+            spec_scope["schema_version"] if spec_mode else None
+        ),
+        required_changed_files=(
+            spec_scope["required_changed_files"] if spec_mode else ()
+        ),
+        untracked_files=untracked_files,
+        max_changed_files=(
+            spec_scope["max_changed_files"] if spec_mode else None
+        ),
+        exact_scope_required=(
+            spec_scope["exact_scope_required"] or args.require_exact_scope
+            if spec_mode else False
+        ),
+        authority=spec_scope["authority"] if spec_mode else None,
+        git_operations_succeeded=not git_errors,
     )
 
     if args.format == "json":
@@ -747,7 +1024,26 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.fail_on_warning and summary["warning_count"] > 0:
         return 1
+    if (
+        spec_mode
+        and summary["exact_scope_required"]
+        and not summary["exact_scope_pass"]
+    ):
+        return 1
     return 0
+
+
+def _read_wp_spec_scope(path: str):
+    """Load the sibling guard without changing this module's public imports."""
+    guard_path = pathlib.Path(__file__).resolve().parents[1] / "wp" / "wp_spec_guard.py"
+    module_spec = importlib.util.spec_from_file_location(
+        "_wp159_wp_spec_guard", guard_path
+    )
+    if module_spec is None or module_spec.loader is None:
+        return None, ()
+    module = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(module)
+    return module.read_and_validate_spec_scope(path)
 
 
 if __name__ == "__main__":
