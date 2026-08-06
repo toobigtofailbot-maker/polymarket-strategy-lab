@@ -612,6 +612,15 @@ def test_no_tools_files_modified():
     allowed_tools_changes = {
         "tools/hermes_candidate_review_manual_export_cli.py",
     }
+    if "docs/status_entries/WP160.md" in changed:
+        # Functional WP160 (the bounded in-memory manifest/reference validator)
+        # adds no tools/ files within its exact 17-file scope.
+        assert not [
+            f
+            for f in changed
+            if f.startswith("tools/") and f not in allowed_tools_changes
+        ]
+        return
     if "docs/status_entries/WP159.md" in changed:
         allowed_tools_changes.update({
             "tools/wp/wp_spec_guard.py",

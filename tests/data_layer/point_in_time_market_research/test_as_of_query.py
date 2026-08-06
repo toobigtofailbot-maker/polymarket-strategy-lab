@@ -99,6 +99,28 @@ def test_public_package_exports_exact_supported_surface() -> None:
         "query_point_in_time_record_set",
         "get_synthetic_as_of_query_cases",
         "load_synthetic_as_of_query_case",
+        # WP160 bounded in-memory manifest chain and dataset snapshot reference
+        # validation surface (appended by the separately approved successor WP).
+        "MANIFEST_REFERENCE_LABEL",
+        "MANIFEST_REFERENCE_POSTURE",
+        "DATASET_REFERENCE_SCHEMA_ID",
+        "DATASET_REFERENCE_SCHEMA_VERSION",
+        "MANIFEST_ENTRY_SCHEMA_ID",
+        "MANIFEST_ENTRY_SCHEMA_VERSION",
+        "DATASET_DERIVATION_MODES",
+        "MANIFEST_ENTRY_KINDS",
+        "REFERENCE_STATES",
+        "MANIFEST_REASON_CODES",
+        "MANIFEST_REFERENCE_VALIDATION_STATUSES",
+        "MANIFEST_REFERENCE_ERROR_CODES",
+        "DatasetSnapshotReference",
+        "ManifestEntry",
+        "DatasetSnapshotReferenceBuildResult",
+        "ManifestEntryBuildResult",
+        "ManifestChainValidationResult",
+        "build_dataset_snapshot_reference",
+        "build_manifest_entry",
+        "validate_manifest_chain",
     )
 
 
