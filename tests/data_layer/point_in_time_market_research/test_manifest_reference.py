@@ -826,7 +826,9 @@ def test_chain_multiple_manifest_ids() -> None:
     assert "MANIFEST_CHAIN_MISMATCH" in result.error_codes
 
 
-def test_chain_self_link_is_cycle() -> None:
+def test_chain_tampered_self_link_is_collision() -> None:
+    # A self-linked entry is necessarily a tampered (non-self-consistent) direct
+    # construction, so the integrity boundary rejects it before cycle detection.
     ref = _build_ref()
     e0 = _build_entry(dataset_snapshot_reference_id=ref.dataset_snapshot_reference_id)
     self_id = "manifestentry:sha256:" + _hex("self")
@@ -839,6 +841,32 @@ def test_chain_self_link_is_cycle() -> None:
         }
     )
     result = M.validate_manifest_chain([e0, e1], dataset_references=[ref])
+    assert result.error_codes == ("MANIFEST_ID_COLLISION_OR_MISMATCH",)
+
+
+def test_chain_repeated_previous_branch_is_cycle() -> None:
+    # A self-consistent branch (two entries sharing one previous) reaches the
+    # link resolver and is a MANIFEST_CYCLE (repeated node).
+    ref_a = _build_ref(validated_batch_sha256=_hex("A"), ordinary_record_version_ids=[_record_id("A")])
+    ref_b = _build_ref(validated_batch_sha256=_hex("B"), ordinary_record_version_ids=[_record_id("B")])
+    ref_c = _build_ref(validated_batch_sha256=_hex("C"), ordinary_record_version_ids=[_record_id("C")])
+    e0 = _build_entry(dataset_snapshot_reference_id=ref_a.dataset_snapshot_reference_id)
+    e1 = _build_entry(
+        sequence_number=1,
+        previous_manifest_entry_id=e0.manifest_entry_id,
+        dataset_snapshot_reference_id=ref_b.dataset_snapshot_reference_id,
+        effective_time="2026-01-16T00:00:00Z",
+    )
+    # e2 branches: its previous points at e0 instead of the immediately prior e1.
+    e2 = _build_entry(
+        sequence_number=2,
+        previous_manifest_entry_id=e0.manifest_entry_id,
+        dataset_snapshot_reference_id=ref_c.dataset_snapshot_reference_id,
+        effective_time="2026-01-17T00:00:00Z",
+    )
+    result = M.validate_manifest_chain(
+        [e0, e1, e2], dataset_references=[ref_a, ref_b, ref_c]
+    )
     assert "MANIFEST_CYCLE" in result.error_codes
 
 
@@ -1138,3 +1166,185 @@ def _entry_to_dict(entry: M.ManifestEntry) -> dict:
 
 def _reference_to_dict(reference: M.DatasetSnapshotReference) -> dict:
     return {f.name: getattr(reference, f.name) for f in fields(M.DatasetSnapshotReference)}
+
+
+# ── Same-PR review follow-up: malformed / unhashable fail-closed hardening ────
+
+_SENTINEL = "MALFORMED_LEAK_SENTINEL_XYZ"
+_UNHASHABLE = [[], {}, [_SENTINEL], {_SENTINEL: 1}, {"outer": [_SENTINEL]}]
+
+
+def _assert_reference_fail_closed(result) -> None:
+    assert result.is_valid is False
+    assert result.reference is None
+    assert result.warning_codes == ()
+    assert set(result.error_codes) <= set(M.MANIFEST_REFERENCE_ERROR_CODES)
+    assert "FIELD_TYPE_INVALID" in result.error_codes
+    assert _SENTINEL not in _all_strings(asdict(result))
+
+
+def _assert_entry_fail_closed(result) -> None:
+    assert result.is_valid is False
+    assert result.entry is None
+    assert result.warning_codes == ()
+    assert set(result.error_codes) <= set(M.MANIFEST_REFERENCE_ERROR_CODES)
+    assert "FIELD_TYPE_INVALID" in result.error_codes
+    assert _SENTINEL not in _all_strings(asdict(result))
+
+
+@pytest.mark.parametrize("value", _UNHASHABLE)
+def test_reference_unhashable_batch_derivation_mode_fails_closed(value) -> None:
+    data = _ref_input(derivation_mode=value)
+    first = M.build_dataset_snapshot_reference(data)
+    second = M.build_dataset_snapshot_reference(data)
+    assert first == second  # deterministic across repeated calls
+    _assert_reference_fail_closed(first)
+
+
+@pytest.mark.parametrize("value", _UNHASHABLE)
+@pytest.mark.parametrize("field", ["cutoff_mode", "result_view"])
+def test_reference_unhashable_query_vocab_fails_closed(field, value) -> None:
+    data = _asof_ref_input(**{field: value})
+    first = M.build_dataset_snapshot_reference(data)
+    second = M.build_dataset_snapshot_reference(data)
+    assert first == second
+    _assert_reference_fail_closed(first)
+
+
+@pytest.mark.parametrize("value", _UNHASHABLE)
+@pytest.mark.parametrize("field", ["entry_kind", "reference_state", "reason_code"])
+def test_entry_unhashable_vocab_fails_closed(field, value) -> None:
+    data = _entry_input(**{field: value})
+    first = M.build_manifest_entry(data)
+    second = M.build_manifest_entry(data)
+    assert first == second
+    _assert_entry_fail_closed(first)
+
+
+# ── Same-PR review follow-up: malformed direct dataclasses in the chain ───────
+
+_TAMPERED_ENTRY_FIELDS = [
+    {"manifest_id": []},
+    {"entry_kind": {}},
+    {"dataset_snapshot_reference_id": []},
+    {"reference_state": {}},
+    {"reason_code": []},
+    {"sequence_number": []},
+    {"previous_manifest_entry_id": {}},
+    {"supersedes_manifest_entry_id": []},
+]
+
+_TAMPERED_REFERENCE_FIELDS = [
+    {"derivation_mode": {}},
+    {"cutoff_mode": []},
+    {"result_view": []},
+    {"validated_batch_sha256": []},
+]
+
+
+@pytest.mark.parametrize("override", _TAMPERED_ENTRY_FIELDS)
+def test_chain_malformed_direct_entry_fails_closed(override) -> None:
+    ref = _build_ref()
+    valid = _build_entry(dataset_snapshot_reference_id=ref.dataset_snapshot_reference_id)
+    tampered = M.ManifestEntry(**{**_entry_to_dict(valid), **override})
+    result = M.validate_manifest_chain([tampered], dataset_references=[ref])
+    assert result.status == "CHAIN_REJECTED"
+    assert "MANIFEST_ID_COLLISION_OR_MISMATCH" in result.error_codes
+    assert set(result.error_codes) <= set(M.MANIFEST_REFERENCE_ERROR_CODES)
+    assert result.manifest_id is None
+    assert result.ordered_entry_ids == ()
+    assert result.head_manifest_entry_id is None
+    assert result.active_reference_ids == ()
+    assert result.superseded_reference_ids == ()
+    assert result.invalidated_reference_ids == ()
+    assert _SENTINEL not in _all_strings(asdict(result))
+
+
+@pytest.mark.parametrize("override", _TAMPERED_REFERENCE_FIELDS)
+def test_chain_malformed_direct_reference_fails_closed(override) -> None:
+    ref = _build_ref()
+    entry = _build_entry(dataset_snapshot_reference_id=ref.dataset_snapshot_reference_id)
+    asof = M.build_dataset_snapshot_reference(_asof_ref_input()).reference
+    tampered = M.DatasetSnapshotReference(**{**_reference_to_dict(asof), **override})
+    result = M.validate_manifest_chain([entry], dataset_references=[ref, tampered])
+    assert result.status == "CHAIN_REJECTED"
+    assert "DATASET_REFERENCE_ID_COLLISION_OR_MISMATCH" in result.error_codes
+    assert set(result.error_codes) <= set(M.MANIFEST_REFERENCE_ERROR_CODES)
+    assert result.manifest_id is None
+    assert result.ordered_entry_ids == ()
+
+
+def test_chain_malformed_direct_objects_never_raise() -> None:
+    # Every listed tampering case returns a bounded result, never an exception.
+    ref = _build_ref()
+    valid_entry = _build_entry(dataset_snapshot_reference_id=ref.dataset_snapshot_reference_id)
+    for override in _TAMPERED_ENTRY_FIELDS:
+        tampered = M.ManifestEntry(**{**_entry_to_dict(valid_entry), **override})
+        result = M.validate_manifest_chain([tampered], dataset_references=[ref])
+        assert result.is_valid is False
+
+
+# ── Same-PR review follow-up: human-review aggregation over the registry ──────
+
+
+def _build_review_reference(seed: str) -> M.DatasetSnapshotReference:
+    result = M.build_dataset_snapshot_reference(
+        _asof_ref_input(
+            validated_batch_sha256=_hex(seed),
+            ordinary_record_version_ids=[],
+            review_conflict_record_version_ids=[_record_id(seed)],
+            human_review_required=True,
+        )
+    )
+    assert result.is_valid, result.error_codes
+    return result.reference
+
+
+def test_chain_unreferenced_non_review_reference_does_not_force_review() -> None:
+    ref = _build_ref()
+    spare = _build_ref(
+        validated_batch_sha256=_hex("spare"),
+        ordinary_record_version_ids=[_record_id("spare")],
+    )
+    entry = _build_entry(dataset_snapshot_reference_id=ref.dataset_snapshot_reference_id)
+    result = M.validate_manifest_chain(
+        [entry], dataset_references=[ref, spare]
+    )
+    assert result.is_valid
+    assert result.human_review_required is False
+
+
+def test_chain_unreferenced_review_required_reference_forces_review() -> None:
+    ref = _build_ref()
+    review_ref = _build_review_reference("unreferenced-review")
+    entry = _build_entry(dataset_snapshot_reference_id=ref.dataset_snapshot_reference_id)
+    result = M.validate_manifest_chain(
+        [entry], dataset_references=[ref, review_ref]
+    )
+    assert result.is_valid
+    assert result.human_review_required is True
+    # An unreferenced reference never enters the reference-state tuples.
+    subject = review_ref.dataset_snapshot_reference_id
+    assert subject not in result.active_reference_ids
+    assert subject not in result.superseded_reference_ids
+    assert subject not in result.invalidated_reference_ids
+    assert result.active_reference_ids == (ref.dataset_snapshot_reference_id,)
+
+
+def test_chain_registered_review_required_reference_forces_review() -> None:
+    review_ref = _build_review_reference("registered-review")
+    entry = _build_entry(
+        dataset_snapshot_reference_id=review_ref.dataset_snapshot_reference_id,
+        human_review_required=True,
+    )
+    result = M.validate_manifest_chain([entry], dataset_references=[review_ref])
+    assert result.is_valid
+    assert result.human_review_required is True
+    assert result.active_reference_ids == (review_ref.dataset_snapshot_reference_id,)
+
+
+def test_chain_invalidation_entry_forces_review() -> None:
+    entries, references = _coherent_chain()
+    result = M.validate_manifest_chain(entries, dataset_references=references)
+    assert result.is_valid
+    assert result.human_review_required is True

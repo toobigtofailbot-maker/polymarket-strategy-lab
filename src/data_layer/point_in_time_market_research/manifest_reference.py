@@ -303,6 +303,26 @@ def _ordered(codes: Sequence[str]) -> tuple[str, ...]:
     )
 
 
+def _check_vocabulary(
+    value: object, vocabulary: frozenset[str], errors: list[str]
+) -> bool:
+    """Type-gate a caller closed-vocabulary value before any set membership.
+
+    A non-string value is ``FIELD_TYPE_INVALID`` and a string outside the
+    closed vocabulary is ``FIELD_VALUE_INVALID``. Membership is only tested once
+    the value is proven to be a hashable string, so an unhashable ``list``/
+    ``dict`` can never raise ``TypeError`` from a frozenset membership test.
+    """
+
+    if not isinstance(value, str):
+        errors.append("FIELD_TYPE_INVALID")
+        return False
+    if value not in vocabulary:
+        errors.append("FIELD_VALUE_INVALID")
+        return False
+    return True
+
+
 def _is_bool(value: object) -> bool:
     return isinstance(value, bool)
 
@@ -455,8 +475,7 @@ def build_dataset_snapshot_reference(
     errors: list[str] = []
 
     derivation_mode = input_mapping["derivation_mode"]
-    if derivation_mode not in _DERIVATION_MODES:
-        errors.append("FIELD_VALUE_INVALID")
+    _check_vocabulary(derivation_mode, _DERIVATION_MODES, errors)
 
     validated_batch_sha256 = input_mapping["validated_batch_sha256"]
     if not _valid_sha256(validated_batch_sha256):
@@ -606,7 +625,7 @@ def _validate_reference_mode(
 ) -> None:
     """Enforce the mode-conditional query-field null/non-null combination."""
 
-    if derivation_mode not in _DERIVATION_MODES:
+    if not isinstance(derivation_mode, str) or derivation_mode not in _DERIVATION_MODES:
         return
     query_values = {field: input_mapping[field] for field in _QUERY_FIELDS}
     if derivation_mode == "VALIDATED_RECORD_BATCH":
@@ -621,10 +640,8 @@ def _validate_reference_mode(
         errors.append("FIELD_VALUE_INVALID")
     if not _valid_sha256(query_values["query_result_sha256"]):
         errors.append("FIELD_VALUE_INVALID")
-    if query_values["cutoff_mode"] not in _CUTOFF_MODES:
-        errors.append("FIELD_VALUE_INVALID")
-    if query_values["result_view"] not in _RESULT_VIEWS:
-        errors.append("FIELD_VALUE_INVALID")
+    _check_vocabulary(query_values["cutoff_mode"], _CUTOFF_MODES, errors)
+    _check_vocabulary(query_values["result_view"], _RESULT_VIEWS, errors)
     if not _valid_utc(query_values["cutoff_time"]):
         errors.append("FIELD_VALUE_INVALID")
     if not _bounded_str(query_values["query_engine_version"]):
@@ -692,8 +709,7 @@ def build_manifest_entry(input_mapping: object) -> ManifestEntryBuildResult:
             errors.append("MANIFEST_SEQUENCE_INVALID")
 
     entry_kind = input_mapping["entry_kind"]
-    if entry_kind not in _ENTRY_KINDS:
-        errors.append("FIELD_VALUE_INVALID")
+    entry_kind_ok = _check_vocabulary(entry_kind, _ENTRY_KINDS, errors)
 
     dataset_reference_id = input_mapping["dataset_snapshot_reference_id"]
     if not _valid_dataset_reference_id(dataset_reference_id):
@@ -707,15 +723,15 @@ def build_manifest_entry(input_mapping: object) -> ManifestEntryBuildResult:
     _validate_supersedes_shape(entry_kind, supersedes, errors)
 
     reference_state = input_mapping["reference_state"]
-    if reference_state not in _REFERENCE_STATES:
-        errors.append("FIELD_VALUE_INVALID")
-    elif entry_kind in _ENTRY_KINDS and reference_state != _KIND_STATE[entry_kind]:
+    if not _check_vocabulary(reference_state, _REFERENCE_STATES, errors):
+        pass
+    elif entry_kind_ok and reference_state != _KIND_STATE[entry_kind]:
         errors.append("FIELD_VALUE_INVALID")
 
     reason_code = input_mapping["reason_code"]
-    if reason_code not in _REASON_CODES:
-        errors.append("FIELD_VALUE_INVALID")
-    elif entry_kind in _ENTRY_KINDS and reason_code != _KIND_REASON[entry_kind]:
+    if not _check_vocabulary(reason_code, _REASON_CODES, errors):
+        pass
+    elif entry_kind_ok and reason_code != _KIND_REASON[entry_kind]:
         errors.append("FIELD_VALUE_INVALID")
 
     effective_time = input_mapping["effective_time"]
@@ -803,13 +819,15 @@ def _validate_supersedes_shape(
 ) -> None:
     """Enforce per-kind supersedes nullness / shape (local structure only)."""
 
+    # Tuple membership compares with ``==`` (never hashes ``entry_kind``), so an
+    # unhashable caller value can never raise ``TypeError`` here.
     if entry_kind == "REGISTER_DATASET_SNAPSHOT_REFERENCE":
         if supersedes is not None:
             errors.append("MANIFEST_SUPERSEDES_INVALID")
-    elif entry_kind in {
+    elif entry_kind in (
         "SUPERSEDE_DATASET_SNAPSHOT_REFERENCE",
         "INVALIDATE_DATASET_SNAPSHOT_REFERENCE",
-    }:
+    ):
         if supersedes is None or not _valid_manifest_entry_id(supersedes):
             errors.append("MANIFEST_SUPERSEDES_INVALID")
     # Unknown kind: the entry_kind vocabulary error is reported separately.
@@ -885,6 +903,15 @@ def validate_manifest_chain(
             errors.append("MANIFEST_SEQUENCE_INVALID")
         else:
             seen_sequences.add(entry.sequence_number)
+
+    # Integrity boundary: reject before any cross-entry set/dict/state-machine
+    # operation once a non-self-consistent reference or entry is present. Every
+    # object surviving to this point rebuilt identically through the public
+    # builders, so all its fields are normalized, correctly typed, and hashable;
+    # a malformed direct dataclass (e.g. an unhashable field value) can never
+    # reach — and therefore never raise from — the operations below.
+    if errors:
+        return _rejected_chain(errors)
 
     # One manifest per chain.
     manifest_ids = {entry.manifest_id for entry in entry_tuple}
@@ -1024,10 +1051,12 @@ def _valid_chain_result(
         if final_state[subject] == "INVALIDATED_REFERENCE"
     )
 
-    human_review = any(entry.human_review_required for entry in entry_tuple) or any(
-        registry[subject].human_review_required
-        for subject in registration_order
-        if subject in registry
+    # Review posture aggregates every valid supplied registry reference (whether
+    # or not a manifest entry references it) and every manifest entry.
+    human_review = any(
+        entry.human_review_required for entry in entry_tuple
+    ) or any(
+        reference.human_review_required for reference in registry.values()
     )
 
     return ManifestChainValidationResult(
