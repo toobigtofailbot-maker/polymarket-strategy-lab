@@ -1239,6 +1239,15 @@ _TAMPERED_REFERENCE_FIELDS = [
     {"cutoff_mode": []},
     {"result_view": []},
     {"validated_batch_sha256": []},
+    # Non-iterable / wrong-type sequence fields must fail closed (never raise
+    # from an eager list() coercion before the builder validates).
+    {"ordinary_record_version_ids": 123},
+    {"ordinary_record_version_ids": None},
+    {"ordinary_record_version_ids": {}},
+    {"ordinary_record_version_ids": {_record_id("s")}},
+    {"review_conflict_record_version_ids": 123},
+    {"review_conflict_record_version_ids": None},
+    {"review_conflict_record_version_ids": {}},
 ]
 
 
@@ -1272,6 +1281,26 @@ def test_chain_malformed_direct_reference_fails_closed(override) -> None:
     assert set(result.error_codes) <= set(M.MANIFEST_REFERENCE_ERROR_CODES)
     assert result.manifest_id is None
     assert result.ordered_entry_ids == ()
+
+
+def test_chain_malformed_direct_reference_generator_not_consumed() -> None:
+    # A generator sequence field is rejected on type without being iterated, so
+    # caller-owned state is neither consumed nor mutated by the decision.
+    ref = _build_ref()
+    entry = _build_entry(dataset_snapshot_reference_id=ref.dataset_snapshot_reference_id)
+    asof = M.build_dataset_snapshot_reference(_asof_ref_input()).reference
+    items = [_record_id("g1"), _record_id("g2")]
+    generator = (item for item in items)
+    tampered = M.DatasetSnapshotReference(
+        **{**_reference_to_dict(asof), "ordinary_record_version_ids": generator}
+    )
+    result = M.validate_manifest_chain([entry], dataset_references=[ref, tampered])
+    assert result.status == "CHAIN_REJECTED"
+    assert "DATASET_REFERENCE_ID_COLLISION_OR_MISMATCH" in result.error_codes
+    assert result.manifest_id is None
+    assert result.ordered_entry_ids == ()
+    # The generator was not consumed while deciding the object is invalid.
+    assert list(generator) == items
 
 
 def test_chain_malformed_direct_objects_never_raise() -> None:

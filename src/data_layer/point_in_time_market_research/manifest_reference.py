@@ -1097,8 +1097,13 @@ def _reference_to_mapping(reference: DatasetSnapshotReference) -> dict[str, obje
         "dataset_snapshot_reference_id": reference.dataset_snapshot_reference_id,
         "derivation_mode": reference.derivation_mode,
         "validated_batch_sha256": reference.validated_batch_sha256,
-        "ordinary_record_version_ids": list(reference.ordinary_record_version_ids),
-        "review_conflict_record_version_ids": list(
+        # Pass the raw attributes through: the public builder owns the
+        # sequence-type validation boundary (list/tuple only). Eager coercion
+        # here would raise on a directly constructed reference whose sequence
+        # field is a non-iterable (e.g. an int or None) before the builder can
+        # return the required bounded rejection, and could consume a generator.
+        "ordinary_record_version_ids": reference.ordinary_record_version_ids,
+        "review_conflict_record_version_ids": (
             reference.review_conflict_record_version_ids
         ),
         "query_spec_sha256": reference.query_spec_sha256,
