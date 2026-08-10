@@ -178,6 +178,31 @@ EXPECTED_CHANGED = {
     "tests/test_project_status_docs.py",
 }
 
+# Functional WP160 implements the WP158 contract as a bounded in-memory
+# validator. Its exact authorized changed-file scope (17 paths under explicit
+# user authorization for the two additional package-export compatibility
+# regressions) is checked here without weakening any dependency, workflow,
+# fixture, or protected-path assertion.
+WP160_AUTHORIZED_FILES = {
+    "src/data_layer/point_in_time_market_research/manifest_reference.py",
+    "src/data_layer/point_in_time_market_research/__init__.py",
+    "tests/data_layer/point_in_time_market_research/test_manifest_reference.py",
+    "tests/data_layer/point_in_time_market_research/test_as_of_query.py",
+    "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+    "docs/append_only_local_manifest_and_dataset_snapshot_reference_contract.md",
+    "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+    "tests/test_project_status_docs.py",
+    "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+    "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+    "tests/test_wallet_intelligence_architecture_contract_docs.py",
+    "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+    "tests/test_human_review_label_workflow_docs.py",
+    "docs/status_entries/WP160.md",
+    "docs/project_status.md",
+    "docs/repo_truth_index.md",
+}
+
 
 def _read(path: pathlib.Path) -> str:
     return path.read_text(encoding="utf-8")
@@ -980,7 +1005,7 @@ def test_project_status_registers_wp158_review_target_and_next_gate() -> None:
     assert "WP158" in merged
     assert current.count("sole draft PR review target") == 1
     assert "Ready for review: NO" in current
-    assert "Feature validator moved to: WP161" in current
+    assert "Manifest and dataset snapshot reference validator implemented by: WP160" in current
     assert (
         "Append-only local manifest and deterministic dataset snapshot reference contract status:"
         in project
@@ -1024,6 +1049,32 @@ def test_status_fragment_is_stable_model_d() -> None:
 
 def test_no_dependency_workflow_or_generated_artifact_in_scope() -> None:
     changed = _changed_files()
+    if "docs/status_entries/WP160.md" in changed:
+        # Functional WP160 owns its exact 17-file scope; source and test paths
+        # are authorized, but dependency, workflow, tool, fixture, config, and
+        # generated-artifact paths remain forbidden.
+        assert changed == WP160_AUTHORIZED_FILES
+        assert not (changed & {
+            "requirements.txt",
+            "pyproject.toml",
+            "package.json",
+            "package-lock.json",
+            "Cargo.toml",
+            "Cargo.lock",
+        })
+        assert not any(
+            path.startswith(
+                (
+                    "tools/",
+                    "tests/fixtures/",
+                    ".github/workflows/",
+                    "config/",
+                    "local_data/",
+                )
+            )
+            for path in changed
+        )
+        return
     if "docs/status_entries/WP159.md" in changed:
         expected = set(json.loads(
             (ROOT / "docs/wp_specs/WP159/wp_spec.json").read_text(
@@ -1080,3 +1131,37 @@ def test_exact_scope_is_docs_and_tests_only() -> None:
     if merged.returncode == 0:
         return
     assert changed == EXPECTED_CHANGED
+
+
+def test_wp160_implementation_addendum_is_recorded() -> None:
+    # The functional WP160 realization is recorded as a clearly marked addendum
+    # that does not disturb the historical WP158 contract or its twelve examples.
+    assert len(_json_examples()) == 12
+    section = _flat(_section(_read(DOC), "## 19. WP160 Implementation Addendum"))
+    for phrase in (
+        "APPEND_ONLY_LOCAL_MANIFEST_AND_DATASET_SNAPSHOT_REFERENCE_VALIDATION",
+        "BOUNDED_LOCAL_OFFLINE_STDLIB_ONLY_IN_MEMORY_VALIDATION",
+        "src/data_layer/point_in_time_market_research/manifest_reference.py",
+        "build_dataset_snapshot_reference",
+        "build_manifest_entry",
+        "validate_manifest_chain",
+        "DatasetSnapshotReference",
+        "ManifestEntry",
+        "re-derives and revalidates every supplied entry",
+        "must resolve to a registry reference",
+        "Input order is authoritative",
+        "registered exactly once",
+        "MANIFEST_SUPERSEDES_INVALID",
+        "must equal the referenced",
+        "implements no manifest writer, reader, verifier",
+        "WP161",
+    ):
+        assert phrase in section
+    # The addendum must not fabricate merged persistence or WP161 authority.
+    lowered = section.lower()
+    for forbidden in (
+        "writer is implemented",
+        "persistence is active",
+        "wp161 is implemented",
+    ):
+        assert forbidden not in lowered

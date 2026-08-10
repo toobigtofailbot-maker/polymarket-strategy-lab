@@ -532,6 +532,27 @@ def test_no_dependency_paper_live_provider_network_or_wp155_authority_is_granted
         assert not wp155_doc.exists()
 
 
+_WP160_AUTHORIZED_FILES = {
+    "docs/append_only_local_manifest_and_dataset_snapshot_reference_contract.md",
+    "docs/project_status.md",
+    "docs/repo_truth_index.md",
+    "docs/status_entries/WP160.md",
+    "src/data_layer/point_in_time_market_research/__init__.py",
+    "src/data_layer/point_in_time_market_research/manifest_reference.py",
+    "tests/data_layer/point_in_time_market_research/test_as_of_query.py",
+    "tests/data_layer/point_in_time_market_research/test_manifest_reference.py",
+    "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+    "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+    "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+    "tests/test_human_review_label_workflow_docs.py",
+    "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+    "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+    "tests/test_project_status_docs.py",
+    "tests/test_wallet_intelligence_architecture_contract_docs.py",
+}
+
+
 def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None:
     diff = subprocess.run(
         ["git", "diff", "--name-only", "origin/main"],
@@ -552,6 +573,13 @@ def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None
         for line in (diff.stdout + untracked.stdout).splitlines()
         if line
     }
+    if "docs/status_entries/WP160.md" in changed:
+        # Functional WP160 owns its exact 17-file scope (fifteen authorized files
+        # plus the two explicitly user-authorized package-export compatibility
+        # regressions). The exact-set assertion preserves every protected-path
+        # guarantee for this branch.
+        assert changed == _WP160_AUTHORIZED_FILES
+        return
     if "docs/status_entries/WP159.md" in changed:
         expected = set(json.loads(
             (ROOT / "docs/wp_specs/WP159/wp_spec.json").read_text(

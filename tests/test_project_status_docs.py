@@ -2772,7 +2772,10 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp153_through_wp158_are_merged_and_wp159_is_current_review_target():
+def test_wp153_through_wp159_are_merged_and_wp160_is_current_review_target():
+    # Functional WP160 (the bounded in-memory manifest/reference validator) is
+    # the current draft PR review target following merged WP159. The abandoned
+    # governance-oriented WP160 draft was never implemented.
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2780,6 +2783,7 @@ def test_wp153_through_wp158_are_merged_and_wp159_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
+    assert "WP160" in current_phase_line
     assert "WP159" in current_phase_line
     assert "WP153" in merged_line
     assert "WP154" in merged_line
@@ -2787,25 +2791,27 @@ def test_wp153_through_wp158_are_merged_and_wp159_is_current_review_target():
     assert "WP156" in merged_line
     assert "WP157" in merged_line
     assert "WP158" in merged_line
+    assert "WP159" in merged_line
     for phrase in (
         "sole draft PR review target",
-        "Primary package class: GOVERNANCE",
-        "Repository validation class: local-offline-stdlib-governance-helper-hardening",
-        "Package size class: XL",
+        "Primary package class: DATA_LAYER_VALIDATOR",
+        "Repository validation class: local-offline-stdlib-in-memory-manifest-reference-validator",
+        "Package size class: L",
         "Risk level: 1",
-        "Draftability posture: EXACT_WP159_ONLY_LOW_RISK_DRAFT_PR_WAIVER_NOT_PASS_CERTIFICATE",
+        "Implementation posture: BOUNDED_LOCAL_OFFLINE_STDLIB_ONLY_IN_MEMORY_VALIDATION",
         "Ready for review: NO",
         "Merge authorized: NO",
         "Independent live PR re-review required: YES",
-        "Exact changed-file scope: 23",
+        "Exact changed-file scope: 17",
         "Runtime impact: NONE",
         "Product impact: NONE",
         "Product/runtime network calls: 0",
         "Dependencies installed or activated: 0",
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
-        "Feature validator moved to: WP161",
-        "WP160 implemented: NO",
+        "Abandoned governance-oriented WP160 draft: NEVER_IMPLEMENTED",
+        "Manifest and dataset snapshot reference validator implemented by: WP160",
+        "WP160 implemented: YES",
         "WP161 implemented: NO",
     ):
         assert phrase in current_phase_line

@@ -1004,3 +1004,139 @@ legacy runtime behavior. Persistence, writers, readers, real datasets,
 collectors, Arrow/Parquet, DuckDB/Polars, migrations, dependencies, credentials,
 scheduling, strategy, paper/live, and execution remain incompatible with the
 authorized package and are excluded.
+
+## 19. WP160 Implementation Addendum
+
+This addendum records the functional WP160 realization of the WP158 contract as
+a bounded in-memory validation and identity-derivation layer. It does not
+rewrite any WP158 historical fact, vocabulary, preimage, truth table, or
+example in Sections 1 through 18; those remain authoritative. Where WP160 makes
+a more specific implementation decision (for example the fail-closed error-code
+precedence below), that decision governs the implementation only.
+
+### 19.1 Implementation Label And Posture
+
+- Implementation label:
+  `APPEND_ONLY_LOCAL_MANIFEST_AND_DATASET_SNAPSHOT_REFERENCE_VALIDATION`.
+- Implementation posture:
+  `BOUNDED_LOCAL_OFFLINE_STDLIB_ONLY_IN_MEMORY_VALIDATION`.
+- The layer is import-safe, side-effect-free, deterministic, standard-library
+  only, local, offline, and in memory. It has no file, environment, subprocess,
+  socket, HTTP, credential, scheduler, strategy, paper, execution, or live
+  behavior.
+
+### 19.2 Exact Source Module
+
+- `src/data_layer/point_in_time_market_research/manifest_reference.py`.
+- The approved public surface is re-exported from the package `__init__.py`.
+
+### 19.3 Exact Public API
+
+Immutable frozen dataclasses: `DatasetSnapshotReference`, `ManifestEntry`,
+`DatasetSnapshotReferenceBuildResult`, `ManifestEntryBuildResult`, and
+`ManifestChainValidationResult`.
+
+Public functions:
+
+- `build_dataset_snapshot_reference(input_mapping)` — builds one immutable
+  dataset snapshot reference from an explicit mapping or fails closed.
+- `build_manifest_entry(input_mapping)` — builds one immutable manifest entry
+  from an explicit mapping or fails closed.
+- `validate_manifest_chain(entries, *, dataset_references)` — validates a
+  complete linear manifest chain over immutable objects.
+
+Public constants: `MANIFEST_REFERENCE_LABEL`, `MANIFEST_REFERENCE_POSTURE`,
+`DATASET_REFERENCE_SCHEMA_ID`, `DATASET_REFERENCE_SCHEMA_VERSION`,
+`MANIFEST_ENTRY_SCHEMA_ID`, `MANIFEST_ENTRY_SCHEMA_VERSION`,
+`DATASET_DERIVATION_MODES`, `MANIFEST_ENTRY_KINDS`, `REFERENCE_STATES`,
+`MANIFEST_REASON_CODES`, `MANIFEST_REFERENCE_VALIDATION_STATUSES`, and
+`MANIFEST_REFERENCE_ERROR_CODES`. Schema version `1.0.0` defines no warning
+codes; every result reports an empty `warning_codes` tuple.
+
+### 19.4 Bounds
+
+- Maximum ID / token / version opaque string: 256 code points.
+- Maximum combined ordinary and review-conflict record IDs: 256.
+- Maximum manifest entries per chain: 256.
+- Maximum supplied dataset references: 256.
+- SHA-256 values: exactly 64 lowercase hexadecimal characters.
+- Namespaced identities: `record:sha256:`, `datasetref:sha256:`, and
+  `manifestentry:sha256:` each followed by 64 lowercase hexadecimal characters.
+- Timestamps: UTC `Z` or `+00:00`, at most six fractional digits.
+- Booleans never satisfy integer fields; no float is accepted; unknown fields
+  are rejected; invalid raw values are never echoed.
+
+### 19.5 Builder Versus Chain-Validator Responsibility
+
+- The two builders validate one object's local structure, closed vocabularies,
+  bounds, safety posture, and self-derived identity only. They never reason
+  about other entries or references. Each builder recomputes the self identity
+  from the canonical preimage (Sections 7 and 9) and compares it; a
+  caller-supplied identity is never trusted.
+- `validate_manifest_chain` re-derives and revalidates every supplied entry and
+  reference through the public builders, then enforces all cross-object
+  semantics: the single-manifest hash-linked append chain, subject-reference
+  resolution against the registry, the register/supersede/invalidate state
+  machine, and human-review binding.
+
+### 19.6 Reference-Registry Requirement
+
+- `validate_manifest_chain` accepts the manifest entries and a supplied registry
+  of dataset snapshot references. Every reference is recomputed and revalidated,
+  reference identities must be unique, and every manifest subject
+  `dataset_snapshot_reference_id` must resolve to a registry reference. Valid
+  references that no entry names are permitted.
+
+### 19.7 Input-Order Rule
+
+- Input order is authoritative. The validator never silently sorts. Entries must
+  already be in ascending sequence order, sequence numbers must equal `0`
+  through `len(entries) - 1`, and each later entry's
+  `previous_manifest_entry_id` must equal the exact immediately prior entry's
+  `manifest_entry_id`.
+
+### 19.8 Duplicate Registration Rejection
+
+- Each dataset snapshot reference may be registered exactly once. A second
+  `REGISTER` of a known subject, a transition targeting a non-effective or
+  already-terminal entry, and any reactivation are rejected with
+  `MANIFEST_SUPERSEDES_INVALID`.
+
+### 19.9 Human-Review Binding
+
+- For `REGISTER` and `SUPERSEDE`, the entry `human_review_required` must equal
+  the referenced `DatasetSnapshotReference.human_review_required`. For
+  `INVALIDATE`, `human_review_required` is fixed `true`. The chain result
+  `human_review_required` is `true` when any referenced dataset or entry
+  requires review.
+
+### 19.10 Fail-Closed Error-Code Precedence
+
+The implementation reports bounded closed codes from `MANIFEST_REFERENCE_ERROR_CODES`
+in that locked precedence order. The specific per-field mapping is: a wrong
+Python type is `FIELD_TYPE_INVALID`; a malformed value shape (bad SHA-256,
+malformed namespaced ID, out-of-range vocabulary, invalid timestamp, oversized
+string or count, within-tuple duplicate) is `FIELD_VALUE_INVALID`; a
+cross-authority overlap is `REVIEW_CONFLICT_AUTHORITY_FORBIDDEN` and takes
+precedence over the generic duplicate rule; a mode-conditional query-field
+combination fault is `REFERENCE_MODE_MISMATCH`; a recomputed self identity that
+does not match is `ID_DERIVATION_MISMATCH`; and a false or non-boolean
+`advisory_only` / `no_execution_authority` is `SAFETY_POSTURE_INVALID`. Invalid
+results carry only a fixed status, the ordered closed codes, an empty warning
+tuple, null object fields, empty safe tuples, and the fixed advisory /
+no-execution booleans.
+
+### 19.11 No Writer, Reader, Or Persistence Authority
+
+- WP160 implements no manifest writer, reader, verifier, file loader, storage
+  container, path, atomic append, file locking, crash recovery, migration,
+  compaction, Arrow/Parquet, DuckDB/Polars, real collection, feature or label
+  construction, replay, paper, or execution behavior. All WP158 deferred items
+  remain deferred.
+
+### 19.12 Successor Boundary
+
+- The next separately gated package is WP161 — bounded local persistence design
+  and implementation decision for the manifest container, writer, and
+  reader/verifier. WP160 grants none of those authorities and does not implement
+  WP161.
