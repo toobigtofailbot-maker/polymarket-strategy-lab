@@ -1399,7 +1399,7 @@ def test_wp151_is_reconciled_as_merged_and_wp159_is_current_review_target_state(
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP159" in current_phase_line
+    assert "WP161" in current_phase_line
     assert "WP111" in merged_line
     assert "WP112" in merged_line
     assert "WP113" in merged_line
@@ -2008,7 +2008,7 @@ def test_wp131_through_wp151_dedicated_status_chain_is_consistent():
         "WP152 required separate approval and was separately approved",
     ):
         assert phrase in wp151_line
-    assert "WP159" in current_phase_line
+        assert "WP161" in current_phase_line
     assert "WP153" in merged_line
     assert "WP152" in merged_line
     assert "WP138" in merged_line
@@ -2772,10 +2772,9 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp153_through_wp159_are_merged_and_wp160_is_current_review_target():
-    # Functional WP160 (the bounded in-memory manifest/reference validator) is
-    # the current draft PR review target following merged WP159. The abandoned
-    # governance-oriented WP160 draft was never implemented.
+def test_wp153_through_wp160_are_merged_and_wp161_is_current_review_target():
+    # Functional WP161 is the current bounded SQLite persistence draft following
+    # the exact merged WP160 implementation baseline.
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2783,8 +2782,8 @@ def test_wp153_through_wp159_are_merged_and_wp160_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
+    assert "WP161" in current_phase_line
     assert "WP160" in current_phase_line
-    assert "WP159" in current_phase_line
     assert "WP153" in merged_line
     assert "WP154" in merged_line
     assert "WP155" in merged_line
@@ -2792,30 +2791,107 @@ def test_wp153_through_wp159_are_merged_and_wp160_is_current_review_target():
     assert "WP157" in merged_line
     assert "WP158" in merged_line
     assert "WP159" in merged_line
+    assert "WP160" in merged_line
     for phrase in (
         "sole draft PR review target",
-        "Primary package class: DATA_LAYER_VALIDATOR",
-        "Repository validation class: local-offline-stdlib-in-memory-manifest-reference-validator",
+        "Primary package class: DATA_LAYER_PERSISTENCE",
+        "Repository validation class: local-offline-stdlib-sqlite-transactional-manifest-store",
         "Package size class: L",
         "Risk level: 1",
-        "Implementation posture: BOUNDED_LOCAL_OFFLINE_STDLIB_ONLY_IN_MEMORY_VALIDATION",
+        "Implementation posture: BOUNDED_LOCAL_SQLITE_TRANSACTIONAL_APPEND_AND_VERIFIED_READ",
         "Ready for review: NO",
         "Merge authorized: NO",
-        "Independent live PR re-review required: YES",
-        "Exact changed-file scope: 17",
-        "Runtime impact: NONE",
+        "Independent live PR review required: YES",
+        "Exact changed-file scope: 18",
+        "Runtime impact: BOUNDED_EXPLICIT_CALLER_SELECTED_LOCAL_SQLITE_FILE_ONLY",
         "Product impact: NONE",
         "Product/runtime network calls: 0",
         "Dependencies installed or activated: 0",
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
-        "Abandoned governance-oriented WP160 draft: NEVER_IMPLEMENTED",
         "Manifest and dataset snapshot reference validator implemented by: WP160",
-        "WP160 implemented: YES",
-        "WP161 implemented: NO",
+        "WP160 merged: YES",
+        "WP160 PR: 160",
+        "WP160 final head: 2b2ef59926d07d34372e3f2999c199ffc43bab2c",
+        "WP160 merge commit: a6f88051d13aca137dfe036784f1376b5dc0c635",
+        "WP160 implemented and merged: YES",
+        "WP161 implemented as draft PR: YES",
+        "WP161 Ready for review: NO",
     ):
         assert phrase in current_phase_line
     assert current_phase_line.count("sole draft PR review target") == 1
+
+
+def test_wp161_sqlite_status_repo_truth_and_deferred_items_are_registered():
+    text = _read()
+    line = next(
+        item for item in text.splitlines()
+        if item.startswith("- Bounded local SQLite manifest store status:")
+    )
+    for phrase in (
+        "POINT_IN_TIME_LOCAL_SQLITE_MANIFEST_STORE",
+        "BOUNDED_LOCAL_SQLITE_TRANSACTIONAL_APPEND_AND_VERIFIED_READ",
+        "manifest_store.py",
+        "Python standard-library sqlite3",
+        "Application tables: 3",
+        "Journal mode: DELETE",
+        "Writable synchronous: FULL",
+        "Writable foreign_keys: ON",
+        "Transaction start: BEGIN IMMEDIATE",
+        "Read URI mode: ro",
+        "Existing-write URI mode: rw",
+        "Creation URI mode: rwc",
+        "Maximum dataset references: 256",
+        "Maximum manifest entries: 256",
+        "Maximum canonical payload bytes per row: 65536",
+        "Idempotent retry uses UPDATE: NO",
+        "Public persisted-row DELETE path: NO",
+        "Schema migration: NOT AUTHORIZED",
+        "WAL: FORBIDDEN",
+        "Dependencies added: 0",
+        "Product/runtime network calls: 0",
+        "Strategy/signal/paper/order/risk/execution authority: NONE",
+        "WP161 Ready for review: NO",
+        "Merge authorized: NO",
+    ):
+        assert phrase in line
+
+    status = (STATUS_ENTRIES / "WP161.md").read_text(encoding="utf-8")
+    for phrase in (
+        "stable and non-self-referential",
+        "Ready for review: NO",
+        "Merge authorized: NO",
+        "BLOCKED_NOT_READY",
+        "exactly these 18 paths",
+        "R001",
+        "R032",
+        "WP161-D007",
+    ):
+        assert phrase in status
+    assert re.search(
+        r"Current live PR head:\s*`?[0-9a-f]{40}`?", status, re.IGNORECASE
+    ) is None
+
+    index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    for path in (
+        "src/data_layer/point_in_time_market_research/manifest_store.py",
+        "docs/status_entries/WP161.md",
+        "tests/data_layer/point_in_time_market_research/test_manifest_store.py",
+    ):
+        assert path in index
+    deferred = (REPO_ROOT / "docs" / "deferred_items_log.md").read_text(
+        encoding="utf-8"
+    )
+    for phrase in (
+        "RESOLVED_BOUNDED_SQLITE_APPEND",
+        "RESOLVED_BOUNDED_SQLITE_VERIFIED_READ",
+        "RESOLVED_SQLITE_SINGLE_FILE_EXPLICIT_CALLER_PATH",
+        "RESOLVED_BOUNDED_SQLITE_TRANSACTION_AND_FAIL_FAST_SINGLE_WRITER",
+        "RESOLVED_BOUNDED_SQLITE_ATOMIC_TRANSACTION_PRIMITIVE",
+    ):
+        assert phrase in deferred
+    for index_value in range(1, 8):
+        assert f"WP161-D{index_value:03d}" in deferred
 
 
 def test_wp153_synthetic_results_are_not_labeled_real_metrics():
@@ -2916,7 +2992,7 @@ def test_wp154_through_wp158_are_merged_and_wp159_is_the_only_current_review_tar
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
     assert current_phase_line.count("sole draft PR review target") == 1
-    assert "WP159" in current_phase_line
+    assert "WP161" in current_phase_line
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
@@ -3156,7 +3232,7 @@ def test_wp157_and_wp158_merged_and_wp159_current():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP159" in current_phase_line
+    assert "WP161" in current_phase_line
     assert "WP156" in merged_line
     assert "WP157" in merged_line
     assert "WP158" in merged_line
@@ -3267,7 +3343,7 @@ def test_wp159_in_current_and_wp158_reconciled_as_merged():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP159" in current_phase_line
+    assert "WP161" in current_phase_line
     assert "WP158" in merged_line
     assert (
         "BOUNDED_IN_MEMORY_AS_OF_INGESTION_TIME_RECONSTRUCTION_REVIEW_TARGET" not in text

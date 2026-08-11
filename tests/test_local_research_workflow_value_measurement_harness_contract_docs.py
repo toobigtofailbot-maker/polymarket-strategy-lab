@@ -641,6 +641,27 @@ _WP160_AUTHORIZED_FILES = {
     "tests/test_wallet_intelligence_architecture_contract_docs.py",
 }
 
+_WP161_AUTHORIZED_FILES = {
+    "src/data_layer/point_in_time_market_research/manifest_store.py",
+    "src/data_layer/point_in_time_market_research/__init__.py",
+    "tests/data_layer/point_in_time_market_research/test_manifest_store.py",
+    "tests/data_layer/point_in_time_market_research/test_as_of_query.py",
+    "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+    "docs/append_only_local_manifest_and_dataset_snapshot_reference_contract.md",
+    "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+    "tests/test_project_status_docs.py",
+    "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+    "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+    "tests/test_wallet_intelligence_architecture_contract_docs.py",
+    "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+    "tests/test_human_review_label_workflow_docs.py",
+    "docs/status_entries/WP161.md",
+    "docs/project_status.md",
+    "docs/repo_truth_index.md",
+    "docs/deferred_items_log.md",
+}
+
 
 def test_exact_six_file_scope_and_no_implementation_or_deferred_log_change():
     result = subprocess.run(
@@ -662,6 +683,9 @@ def test_exact_six_file_scope_and_no_implementation_or_deferred_log_change():
         for line in (result.stdout + untracked_result.stdout).splitlines()
         if line
     }
+    if "docs/status_entries/WP161.md" in changed:
+        assert changed == _WP161_AUTHORIZED_FILES
+        return
     if "docs/status_entries/WP160.md" in changed:
         # Functional WP160 owns its exact 17-file scope; the exact-set assertion
         # preserves every protected-path guarantee for this branch.

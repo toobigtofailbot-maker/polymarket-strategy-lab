@@ -2272,16 +2272,28 @@ authority, and requires a separately approved work package.
 
 | ID | Deferred item | Trigger | Prerequisite | Forbidden early interpretation | Separate approval requirement |
 |---|---|---|---|---|---|
-| WP158-D001 | Manifest writer | A persisted append-only manifest is separately approved | Approved storage container, atomic append policy, and identity/verification contract | This contract authorizes a manifest writer or any file emission | YES — manifest writer WP |
-| WP158-D002 | Manifest reader/verifier | Persisted manifest entries exist under an approved storage decision | Reader boundary, chain re-verification, and recompute-and-compare identity checks | This contract authorizes a reader, verifier, or chain loader | YES — reader/verifier WP |
-| WP158-D003 | Storage path/container selection | Persistence is separately approved | Storage decision, path/container contract, and durability/atomicity requirements | Logical identity implies a JSONL/SQLite/columnar container is chosen | YES — storage decision WP |
-| WP158-D004 | Atomic append and file locking | A writer and storage container are approved | Atomic append semantics, lock strategy, and concurrent-writer policy | The append-chain contract designs atomic append or file locking | YES — atomic-append/locking WP |
-| WP158-D005 | Crash recovery and torn-write policy | A writer and storage container are approved | Torn-write detection, recovery contract, and durability proof | The chain invariants imply crash recovery is implemented | YES — crash-recovery WP |
+| WP158-D001 | Manifest writer | RESOLVED_BOUNDED_SQLITE_APPEND | WP161 implements parameterized INSERT-only bounded append over already-valid WP160 objects | Resolution is limited to the explicit-path SQLite schema-1 store | NO for bounded WP161 scope; broader writers remain separately gated |
+| WP158-D002 | Manifest reader/verifier | RESOLVED_BOUNDED_SQLITE_VERIFIED_READ | WP161 read-only reopen reconstructs every row through WP160 and revalidates the complete chain | Resolution grants no generic loader or raw-data reader | NO for bounded WP161 scope; broader readers remain separately gated |
+| WP158-D003 | Storage path/container selection | RESOLVED_SQLITE_SINGLE_FILE_EXPLICIT_CALLER_PATH | WP161 selects one stdlib SQLite file at an explicit caller path | No default/global/discovered path or analytical container is selected | NO for bounded WP161 scope |
+| WP158-D004 | Atomic append and file locking | RESOLVED_BOUNDED_SQLITE_TRANSACTION_AND_FAIL_FAST_SINGLE_WRITER | WP161 uses `BEGIN IMMEDIATE`, rollback/commit, `timeout=0.0`, and no retry | No multi-writer service coordination or backoff is implemented | NO for bounded WP161 scope; service concurrency remains gated |
+| WP158-D005 | Crash recovery and torn-write policy | RESOLVED_BOUNDED_SQLITE_ATOMIC_TRANSACTION_PRIMITIVE | SQLite DELETE-journal atomic transactions are the bounded durability primitive; rollback injection proves no partial batch | No destructive power-failure simulator, backup, or recovery service is implemented | NO for bounded WP161 scope |
 | WP158-D006 | Schema migration and version compatibility | New schema majors are separately approved | Fail-closed migration, lineage preservation, and version-compatibility matrix | Fixed `1.0.0` schemas mean migration or multi-version support exists | YES — schema-migration WP |
 | WP158-D007 | Compaction | Persisted manifests exist and compaction is separately approved | Compaction that preserves append-only lineage and identity, with audit | Append-only permits history rewrite or compaction | YES — compaction WP (forbidden until approved) |
 | WP158-D008 | Arrow/Parquet materialization | Dependency and physical-schema decisions are approved | Dependency/security audit, round-trip equality, and physical file contract | Canonical JSON identity means Arrow/Parquet is installed or authoritative | YES — Arrow/Parquet materialization WP |
 | WP158-D009 | DuckDB/Polars query layer | Approved persisted or temporary columnar fixtures exist | Approved dependencies, exact workloads, reference oracle, and resource bounds | A reference contract adopts DuckDB or Polars | YES — DuckDB/Polars query WP |
 | WP158-D010 | Signing and external attestation | External trust requirements are approved | Signing scheme, key custody, and attestation/audit contract | Identity hashes imply signing or external attestation exists | YES — signing/attestation WP |
+
+## WP161 Bounded Local SQLite Manifest Store Deferred Items
+
+| ID | Deferred item | Status | Required future gate | Non-implication |
+|---|---|---|---|---|
+| WP161-D001 | Multi-writer retry, backoff, and service concurrency | OPEN | Separate scheduler/service/concurrency WP with bounded retry and observability policy | Fail-fast SQLite locking is not multi-writer coordination |
+| WP161-D002 | Schema migration beyond version 1 | OPEN | Separate migration WP with lineage preservation and compatibility matrix | `user_version=1` does not authorize migration |
+| WP161-D003 | Storage scale above 256 references or entries | OPEN | Separate scale/storage WP with resource and failure bounds | The bounded store is not a general database service |
+| WP161-D004 | Adapters from WP156/WP157 outputs into persistence | OPEN | Separate adapter WP with exact source-to-reference traceability | The store does not collect or transform upstream records |
+| WP161-D005 | Persisted raw or real market data | OPEN | Separate public-data population WP with leakage and retention review | Manifest metadata persistence is not raw-data collection |
+| WP161-D006 | Arrow/Parquet analytical materialization | OPEN | Dependency/security and physical-schema WP | Canonical SQLite metadata does not adopt analytical formats |
+| WP161-D007 | Backup, export, compaction, or signing | OPEN | Separate durability/audit WP for each capability | Atomic local append does not provide backup or attestation |
 
 WP158 adds no dependency, file I/O, writer, reader, persistence, persisted
 query, collector, product/runtime network, credential, scheduler, strategy,
