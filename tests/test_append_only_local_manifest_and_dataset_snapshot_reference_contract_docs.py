@@ -203,6 +203,27 @@ WP160_AUTHORIZED_FILES = {
     "docs/repo_truth_index.md",
 }
 
+WP161_AUTHORIZED_FILES = {
+    "src/data_layer/point_in_time_market_research/manifest_store.py",
+    "src/data_layer/point_in_time_market_research/__init__.py",
+    "tests/data_layer/point_in_time_market_research/test_manifest_store.py",
+    "tests/data_layer/point_in_time_market_research/test_as_of_query.py",
+    "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+    "docs/append_only_local_manifest_and_dataset_snapshot_reference_contract.md",
+    "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+    "tests/test_project_status_docs.py",
+    "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+    "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+    "tests/test_wallet_intelligence_architecture_contract_docs.py",
+    "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+    "tests/test_human_review_label_workflow_docs.py",
+    "docs/status_entries/WP161.md",
+    "docs/project_status.md",
+    "docs/repo_truth_index.md",
+    "docs/deferred_items_log.md",
+}
+
 
 def _read(path: pathlib.Path) -> str:
     return path.read_text(encoding="utf-8")
@@ -1001,8 +1022,8 @@ def test_project_status_registers_wp158_review_target_and_next_gate() -> None:
     merged = next(
         line for line in project.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP159" in current
-    assert "WP158" in merged
+    assert "WP161" in current
+    assert "WP160" in merged
     assert current.count("sole draft PR review target") == 1
     assert "Ready for review: NO" in current
     assert "Manifest and dataset snapshot reference validator implemented by: WP160" in current
@@ -1049,6 +1070,14 @@ def test_status_fragment_is_stable_model_d() -> None:
 
 def test_no_dependency_workflow_or_generated_artifact_in_scope() -> None:
     changed = _changed_files()
+    if "docs/status_entries/WP161.md" in changed:
+        assert changed == WP161_AUTHORIZED_FILES
+        assert not any(
+            path.startswith(("tools/", "tests/fixtures/", ".github/workflows/", "local_data/"))
+            for path in changed
+        )
+        assert not (changed & {"requirements.txt", "pyproject.toml", "package.json"})
+        return
     if "docs/status_entries/WP160.md" in changed:
         # Functional WP160 owns its exact 17-file scope; source and test paths
         # are authorized, but dependency, workflow, tool, fixture, config, and
@@ -1165,3 +1194,40 @@ def test_wp160_implementation_addendum_is_recorded() -> None:
         "wp161 is implemented",
     ):
         assert forbidden not in lowered
+
+
+def test_wp161_sqlite_persistence_addendum_is_recorded() -> None:
+    assert len(_json_examples()) == 12
+    section = _flat(_section(_read(DOC), "## 20. WP161 Bounded SQLite Persistence Addendum"))
+    for phrase in (
+        "POINT_IN_TIME_LOCAL_SQLITE_MANIFEST_STORE",
+        "BOUNDED_LOCAL_SQLITE_TRANSACTIONAL_APPEND_AND_VERIFIED_READ",
+        "manifest_store.py",
+        "initialize_manifest_store",
+        "append_manifest_store_batch",
+        "load_and_verify_manifest_store",
+        "CREATE TABLE store_meta",
+        "CREATE TABLE dataset_references",
+        "CREATE TABLE manifest_entries",
+        "PRAGMA user_version",
+        "journal_mode=DELETE",
+        "synchronous=FULL",
+        "foreign_keys=ON",
+        "BEGIN IMMEDIATE",
+        "mode=rwc",
+        "mode=rw",
+        "mode=ro",
+        "canonical_json_bytes",
+        "sha256_hex",
+        "integrity_check",
+        "foreign_key_check",
+        "STORE_APPEND_IDEMPOTENT",
+        "65,536",
+        "exposes no UPDATE or DELETE path",
+        "no path, raw payload, SQL, exception, traceback, or OS detail is echoed",
+        "no migration",
+        "no WAL",
+        "no network",
+        "no live-trading behavior",
+    ):
+        assert phrase.lower() in section.lower()

@@ -1140,3 +1140,129 @@ no-execution booleans.
   and implementation decision for the manifest container, writer, and
   reader/verifier. WP160 grants none of those authorities and does not implement
   WP161.
+
+## 20. WP161 Bounded SQLite Persistence Addendum
+
+WP161 realizes the durable portion of the WP158 contract without changing the
+WP160 identity or chain state machine. Its label is
+`POINT_IN_TIME_LOCAL_SQLITE_MANIFEST_STORE` and its posture is
+`BOUNDED_LOCAL_SQLITE_TRANSACTIONAL_APPEND_AND_VERIFIED_READ`. The only
+implementation module is
+`src/data_layer/point_in_time_market_research/manifest_store.py`.
+
+### 20.1 Public API
+
+The package exports the constants `MANIFEST_STORE_LABEL`,
+`MANIFEST_STORE_POSTURE`, `MANIFEST_STORE_FORMAT_ID`,
+`MANIFEST_STORE_SCHEMA_VERSION`, `MANIFEST_STORE_STATUSES`, and
+`MANIFEST_STORE_ERROR_CODES`; the frozen dataclasses `ManifestStoreSnapshot`
+and `ManifestStoreResult`; and the functions `initialize_manifest_store`,
+`append_manifest_store_batch`, and `load_and_verify_manifest_store`.
+
+### 20.2 Exact SQLite Schema And Configuration
+
+The schema format is `point-in-time-manifest-store`, schema version and
+`PRAGMA user_version` are exactly `1`, and the database contains exactly these
+three application tables:
+
+```sql
+CREATE TABLE store_meta (
+    singleton INTEGER PRIMARY KEY NOT NULL CHECK (singleton = 1),
+    format_id TEXT NOT NULL CHECK (format_id = 'point-in-time-manifest-store'),
+    schema_version INTEGER NOT NULL CHECK (schema_version = 1)
+)
+```
+
+```sql
+CREATE TABLE dataset_references (
+    dataset_snapshot_reference_id TEXT PRIMARY KEY NOT NULL,
+    payload_json TEXT NOT NULL,
+    payload_sha256 TEXT NOT NULL
+)
+```
+
+```sql
+CREATE TABLE manifest_entries (
+    manifest_entry_id TEXT PRIMARY KEY NOT NULL,
+    manifest_id TEXT NOT NULL,
+    sequence_number INTEGER NOT NULL CHECK (sequence_number >= 0),
+    dataset_snapshot_reference_id TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    payload_sha256 TEXT NOT NULL,
+    UNIQUE (manifest_id, sequence_number),
+    FOREIGN KEY (dataset_snapshot_reference_id)
+        REFERENCES dataset_references(dataset_snapshot_reference_id)
+        ON UPDATE RESTRICT
+        ON DELETE RESTRICT
+)
+```
+
+There is exactly one `store_meta` row:
+`(1, 'point-in-time-manifest-store', 1)`. There are no application-defined
+views, triggers, or indexes. SQLite-managed primary-key and unique-constraint
+indexes are verified. Writable connections require `journal_mode=DELETE`,
+`synchronous=FULL` (value 2), and `foreign_keys=ON` (value 1). WAL, MEMORY, and
+OFF journal modes are forbidden. The Python >=3.11-compatible connection uses
+`isolation_level=None`, `timeout=0.0`, and explicit SQL transaction control;
+it does not use the Python 3.12 `autocommit` parameter.
+
+### 20.3 Explicit Path And Transaction Rules
+
+The database path is explicit caller input only (`str` or
+`os.PathLike[str]`), normalized to an absolute `Path`, and never returned in a
+public result. No default, environment-derived, discovered, or global path
+exists, and parent directories are never created. Initialization alone may use
+SQLite URI `mode=rwc`; append requires an existing regular non-symlink file and
+uses `mode=rw`; verified load uses `mode=ro`. Missing targets are never created
+by append or load.
+
+Every non-empty append begins with `BEGIN IMMEDIATE`, validates the existing
+store while holding the writer transaction, validates the complete prospective
+WP160 chain, inserts references before entries using parameter binding, checks
+foreign keys, and commits only after every check and insert succeeds. Any
+failure rolls back. Lock contention fails immediately as `STORE_BUSY`; there is
+no sleep, retry loop, daemon, or multi-writer coordination. Successful
+transactions leave no persistent WAL, SHM, or rollback-journal side file.
+
+### 20.4 Canonical Payload, Verified Read, And Idempotency
+
+Every row stores the complete public dataclass content as canonical UTF-8 JSON
+produced by `canonical_json_bytes`, plus `sha256_hex` of those exact bytes.
+Payloads are limited to 65,536 bytes. Strict decode rejects duplicate keys,
+non-finite numbers, non-object top levels, malformed text, and noncanonical
+JSON. Every row is re-canonicalized, its digest is recomputed, and its object is
+rebuilt through the WP160 public builder. The rebuilt self-ID must equal the row
+primary key, and manifest redundant columns must equal the rebuilt fields.
+
+Verified load also requires exact schema/meta/version, `PRAGMA integrity_check`
+equal to `ok`, an empty `PRAGMA foreign_key_check`, and a complete successful
+`validate_manifest_chain` result whenever entries exist. Read-only load does
+not alter the database bytes. Empty and reference-only stores are valid.
+
+Exact-content retries are deterministic no-ops: no historical row is rewritten
+and status is `STORE_APPEND_IDEMPOTENT`. A conflicting identity or
+manifest-sequence collision rejects the complete batch. The store is bounded to
+256 dataset references, 256 manifest entries, one manifest ID in a non-empty
+chain, and 65,536 canonical payload bytes per row.
+
+### 20.5 Append-Only, Corruption, And Authority Boundary
+
+The production module uses CREATE, SELECT, and parameterized INSERT for
+persisted rows. It exposes no UPDATE or DELETE path, repairs no payload, and
+performs no schema migration. Schema drift, configuration drift, SQLite
+integrity failure, malformed payloads, semantic tampering, identity mismatch,
+invalid input, lock contention, and transaction failure all return bounded
+`STORE_REJECTED` results with closed ordered error codes, empty warnings, no
+snapshot, empty inserted/idempotent ID tuples, and fixed advisory/no-execution
+flags. No path, raw payload, SQL, exception, traceback, or OS detail is echoed.
+
+WP161 authorizes no migration, compaction, VACUUM policy, backup/export,
+signing/attestation, Arrow/Parquet, DuckDB/Polars, analytics, market-data
+collection, feature or label construction, backtest/replay engine, strategy,
+paper trading, account/portfolio/risk/reconciliation, order, execution,
+credential, network, scheduler, bot-loop, or live-trading behavior. Adapters
+from WP156/WP157 outputs, real/public dataset population, and every later layer
+remain separately gated successor work.
+
+No WAL is enabled, no network behavior is added, no live-trading behavior is
+authorized, and no successor capability is implemented by this package.

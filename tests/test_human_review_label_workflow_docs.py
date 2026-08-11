@@ -612,9 +612,12 @@ def test_no_tools_files_modified():
     allowed_tools_changes = {
         "tools/hermes_candidate_review_manual_export_cli.py",
     }
-    if "docs/status_entries/WP160.md" in changed:
-        # Functional WP160 (the bounded in-memory manifest/reference validator)
-        # adds no tools/ files within its exact 17-file scope.
+    if (
+        "docs/status_entries/WP160.md" in changed
+        or "docs/status_entries/WP161.md" in changed
+    ):
+        # Functional WP160/WP161 packages add no tools/ files within their
+        # exact authorized scopes.
         assert not [
             f
             for f in changed

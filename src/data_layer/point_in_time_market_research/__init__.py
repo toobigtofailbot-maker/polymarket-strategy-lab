@@ -67,6 +67,19 @@ from .manifest_reference import (
     build_manifest_entry,
     validate_manifest_chain,
 )
+from .manifest_store import (
+    MANIFEST_STORE_ERROR_CODES,
+    MANIFEST_STORE_FORMAT_ID,
+    MANIFEST_STORE_LABEL,
+    MANIFEST_STORE_POSTURE,
+    MANIFEST_STORE_SCHEMA_VERSION,
+    MANIFEST_STORE_STATUSES,
+    ManifestStoreResult,
+    ManifestStoreSnapshot,
+    append_manifest_store_batch,
+    initialize_manifest_store,
+    load_and_verify_manifest_store,
+)
 
 __all__ = (
     "FOUNDATION_LABEL",
@@ -131,4 +144,16 @@ __all__ = (
     "build_dataset_snapshot_reference",
     "build_manifest_entry",
     "validate_manifest_chain",
+    # WP161 bounded local SQLite transactional manifest store.
+    "MANIFEST_STORE_LABEL",
+    "MANIFEST_STORE_POSTURE",
+    "MANIFEST_STORE_FORMAT_ID",
+    "MANIFEST_STORE_SCHEMA_VERSION",
+    "MANIFEST_STORE_STATUSES",
+    "MANIFEST_STORE_ERROR_CODES",
+    "ManifestStoreSnapshot",
+    "ManifestStoreResult",
+    "initialize_manifest_store",
+    "append_manifest_store_batch",
+    "load_and_verify_manifest_store",
 )

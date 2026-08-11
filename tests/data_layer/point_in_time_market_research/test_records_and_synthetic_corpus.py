@@ -233,6 +233,18 @@ def test_public_package_exports_exact_supported_surface() -> None:
         "build_dataset_snapshot_reference",
         "build_manifest_entry",
         "validate_manifest_chain",
+        # WP161 bounded local SQLite transactional manifest store.
+        "MANIFEST_STORE_LABEL",
+        "MANIFEST_STORE_POSTURE",
+        "MANIFEST_STORE_FORMAT_ID",
+        "MANIFEST_STORE_SCHEMA_VERSION",
+        "MANIFEST_STORE_STATUSES",
+        "MANIFEST_STORE_ERROR_CODES",
+        "ManifestStoreSnapshot",
+        "ManifestStoreResult",
+        "initialize_manifest_store",
+        "append_manifest_store_batch",
+        "load_and_verify_manifest_store",
     )
 
 
@@ -1353,14 +1365,20 @@ def test_source_ast_has_no_forbidden_imports_or_calls() -> None:
         "os.environ",
     }
     for path in sorted(SOURCE_DIR.glob("*.py")):
+        # WP161's exact explicit-path SQLite boundary requires only these two
+        # stdlib path modules; every earlier source module retains the original
+        # side-effect-free import prohibition.
+        wp161_path_imports = {"os", "pathlib"} if path.name == "manifest_store.py" else set()
         tree = ast.parse(path.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 assert not {
                     alias.name.split(".")[0] for alias in node.names
-                } & forbidden_import_roots
+                } & (forbidden_import_roots - wp161_path_imports)
             if isinstance(node, ast.ImportFrom) and node.module:
-                assert node.module.split(".")[0] not in forbidden_import_roots
+                assert node.module.split(".")[0] not in (
+                    forbidden_import_roots - wp161_path_imports
+                )
             if isinstance(node, ast.Call):
                 if isinstance(node.func, ast.Name):
                     call_name = node.func.id
