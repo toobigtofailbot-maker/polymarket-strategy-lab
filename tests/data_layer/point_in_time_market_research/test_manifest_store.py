@@ -11,6 +11,7 @@ from dataclasses import FrozenInstanceError, fields, replace
 import hashlib
 import inspect
 import json
+import os
 from pathlib import Path
 import re
 import sqlite3
@@ -136,6 +137,22 @@ def _assert_rejected(result: S.ManifestStoreResult, code: str) -> None:
     )
 
 
+def _result_strings(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, tuple):
+        for item in value:
+            yield from _result_strings(item)
+    elif hasattr(value, "__dataclass_fields__"):
+        for field in fields(value):
+            yield from _result_strings(getattr(value, field.name))
+
+
+def _assert_no_echo(result: S.ManifestStoreResult, *markers: str) -> None:
+    rendered = " ".join(_result_strings(result))
+    assert all(marker not in rendered for marker in markers)
+
+
 def _db_sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -206,6 +223,48 @@ def test_r001_r030_invalid_path_matrix_is_closed(bad) -> None:
     _assert_rejected(S.initialize_manifest_store(bad), "STORE_PATH_INVALID")
     _assert_rejected(S.load_and_verify_manifest_store(bad), "STORE_PATH_INVALID")
     _assert_rejected(S.append_manifest_store_batch(bad), "STORE_PATH_INVALID")
+
+
+@pytest.mark.parametrize("error_type", [RuntimeError, ValueError])
+def test_r001_hostile_pathlike_exceptions_fail_closed_for_all_public_functions(
+    error_type,
+) -> None:
+    marker = f"HOSTILE_PATHLIKE_{error_type.__name__}"
+
+    class ExplodingPathLike(os.PathLike):
+        def __fspath__(self):
+            raise error_type(marker)
+
+    hostile = ExplodingPathLike()
+    results = (
+        S.initialize_manifest_store(hostile),
+        S.load_and_verify_manifest_store(hostile),
+        S.append_manifest_store_batch(hostile),
+    )
+    for result in results:
+        _assert_rejected(result, "STORE_PATH_INVALID")
+        _assert_no_echo(result, marker, error_type.__name__)
+
+
+def test_r001_hostile_str_subclass_strip_exception_fails_closed_for_all_public_functions(
+) -> None:
+    marker = "HOSTILE_STR_STRIP_RUNTIME_ERROR"
+
+    class ExplodingStr(str):
+        def strip(self, *args, **kwargs):
+            raise RuntimeError(marker)
+
+    hostile = ExplodingStr("store.sqlite")
+    if type(os.fspath(hostile)) is not ExplodingStr:
+        pytest.skip("os.fspath does not preserve str subclasses on this runtime")
+    results = (
+        S.initialize_manifest_store(hostile),
+        S.load_and_verify_manifest_store(hostile),
+        S.append_manifest_store_batch(hostile),
+    )
+    for result in results:
+        _assert_rejected(result, "STORE_PATH_INVALID")
+        _assert_no_echo(result, marker, "RuntimeError")
 
 
 def test_r001_r030_path_matrix_missing_parent_directory_symlink_and_missing_target(
@@ -286,6 +345,46 @@ def test_failed_new_initialization_removes_only_new_file(tmp_path: Path, monkeyp
     assert not path.exists()
 
 
+def test_post_commit_verification_failure_removes_new_store(
+    tmp_path: Path, monkeypatch
+) -> None:
+    path = tmp_path / "post-commit-failed-new.sqlite"
+    calls = 0
+
+    def fail_final_verification(_path: Path) -> S.ManifestStoreResult:
+        nonlocal calls
+        calls += 1
+        return S._rejected("STORE_OPEN_FAILED")
+
+    monkeypatch.setattr(S, "_load_path", fail_final_verification)
+    _assert_rejected(S.initialize_manifest_store(path), "STORE_OPEN_FAILED")
+    assert calls == 1
+    assert not path.exists()
+
+
+def test_post_commit_verification_failure_preserves_preexisting_pristine_store(
+    tmp_path: Path, monkeypatch
+) -> None:
+    path = tmp_path / "post-commit-failed-pristine.sqlite"
+    sqlite3.connect(path).close()
+    calls = 0
+
+    def fail_verification(_path: Path) -> S.ManifestStoreResult:
+        nonlocal calls
+        calls += 1
+        return S._rejected("STORE_OPEN_FAILED")
+
+    monkeypatch.setattr(S, "_load_path", fail_verification)
+    _assert_rejected(S.initialize_manifest_store(path), "STORE_OPEN_FAILED")
+    assert calls == 2
+    assert path.is_file()
+    with sqlite3.connect(path) as connection:
+        assert connection.execute("PRAGMA user_version").fetchone() == (1,)
+        assert connection.execute(
+            "SELECT COUNT(*) FROM store_meta"
+        ).fetchone() == (1,)
+
+
 def test_schema_with_matching_columns_but_missing_check_is_not_adopted(tmp_path: Path) -> None:
     path = tmp_path / "near-schema.sqlite"
     with sqlite3.connect(path) as connection:
@@ -332,6 +431,37 @@ def test_r014_r030_batch_boundary_rejects_before_file_access(tmp_path: Path) -> 
         _assert_rejected(result, "STORE_REFERENCE_INVALID")
     result = S.append_manifest_store_batch(missing, manifest_entries=[_reference()])  # type: ignore[list-item]
     _assert_rejected(result, "STORE_ENTRY_INVALID")
+
+
+def test_r014_list_and_tuple_subclasses_reject_without_custom_iteration(
+    tmp_path: Path,
+) -> None:
+    missing = tmp_path / "MISSING_PATH_MUST_NOT_BE_ACCESSED.sqlite"
+    marker = "HOSTILE_CONTAINER_ITERATION"
+    side_effect = {"called": False}
+
+    class ExplodingList(list):
+        def __iter__(self):
+            side_effect["called"] = True
+            raise RuntimeError(marker)
+
+    class ExplodingTuple(tuple):
+        def __iter__(self):
+            side_effect["called"] = True
+            raise RuntimeError(marker)
+
+    hostile_values = (ExplodingList(), ExplodingTuple())
+    for hostile in hostile_values:
+        for field_name in ("dataset_references", "manifest_entries"):
+            side_effect["called"] = False
+            result = S.append_manifest_store_batch(
+                missing,
+                **{field_name: hostile},
+            )
+            _assert_rejected(result, "STORE_INPUT_INVALID")
+            assert side_effect["called"] is False
+            assert not missing.exists()
+            _assert_no_echo(result, marker, str(missing))
 
 
 def test_r014_r030_direct_malformed_dataclasses_reject_before_write(tmp_path: Path) -> None:
@@ -657,19 +787,7 @@ def test_r031_invalid_result_recursive_no_echo_and_field_coverage(tmp_path: Path
     result = S.load_and_verify_manifest_store(tmp_path / marker)
     _assert_rejected(result, "STORE_NOT_FOUND")
 
-    def strings(value):
-        if isinstance(value, str):
-            yield value
-        elif isinstance(value, tuple):
-            for item in value:
-                yield from strings(item)
-        elif hasattr(value, "__dataclass_fields__"):
-            for field in fields(value):
-                yield from strings(getattr(value, field.name))
-
-    rendered = " ".join(strings(result))
-    assert marker not in rendered
-    assert str(tmp_path) not in rendered
+    _assert_no_echo(result, marker, str(tmp_path))
     assert set(result.__dataclass_fields__) == {field.name for field in fields(result)}
 
 

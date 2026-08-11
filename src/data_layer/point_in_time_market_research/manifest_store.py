@@ -189,15 +189,12 @@ def _valid_result(
 
 
 def _normalize_path(path: object, *, must_exist: bool) -> Path:
-    if isinstance(path, (bool, bytes)) or not isinstance(path, (str, os.PathLike)):
-        raise _StoreFailure("STORE_PATH_INVALID")
     try:
+        if isinstance(path, (bool, bytes)) or not isinstance(path, (str, os.PathLike)):
+            raise _StoreFailure("STORE_PATH_INVALID")
         raw = os.fspath(path)
-    except (TypeError, ValueError, OSError):
-        raise _StoreFailure("STORE_PATH_INVALID") from None
-    if not isinstance(raw, str) or not raw.strip() or "\x00" in raw:
-        raise _StoreFailure("STORE_PATH_INVALID")
-    try:
+        if not isinstance(raw, str) or not raw.strip() or "\x00" in raw:
+            raise _StoreFailure("STORE_PATH_INVALID")
         normalized = Path(raw).absolute()
         if normalized.is_symlink():
             raise _StoreFailure("STORE_PATH_INVALID")
@@ -214,9 +211,28 @@ def _normalize_path(path: object, *, must_exist: bool) -> Path:
                 raise _StoreFailure("STORE_PATH_INVALID")
     except _StoreFailure:
         raise
-    except (OSError, RuntimeError, ValueError):
+    except Exception:
         raise _StoreFailure("STORE_PATH_INVALID") from None
     return normalized
+
+
+def _path_exists(path: Path) -> bool:
+    try:
+        return path.exists()
+    except Exception:
+        raise _StoreFailure("STORE_PATH_INVALID") from None
+
+
+def _remove_created_store(path: Path) -> None:
+    """Remove only a regular non-symlink target created by this operation."""
+
+    try:
+        if path.is_symlink() or not path.is_file() or path.is_symlink():
+            return
+        path.unlink()
+    except Exception:
+        # Cleanup must not replace the original bounded store failure.
+        pass
 
 
 def _uri(path: Path, mode: str) -> str:
@@ -524,10 +540,10 @@ def initialize_manifest_store(path: object) -> ManifestStoreResult:
 
     try:
         normalized = _normalize_path(path, must_exist=False)
+        existed = _path_exists(normalized)
     except _StoreFailure as failure:
         return _rejected(failure.code)
 
-    existed = normalized.exists()
     if existed:
         existing = _load_path(normalized)
         if existing.is_valid and existing.snapshot is not None:
@@ -588,17 +604,15 @@ def initialize_manifest_store(path: object) -> ManifestStoreResult:
     finally:
         if connection is not None:
             connection.close()
-        if created_here and not committed and normalized.exists():
+        if created_here and not committed:
             # Never remove pre-existing caller data.  A brand-new file that did
             # not commit the exact schema is cleaned up before returning.
-            try:
-                if normalized.is_file() and not normalized.is_symlink():
-                    normalized.unlink()
-            except OSError:
-                pass
+            _remove_created_store(normalized)
 
     verified = _load_path(normalized)
     if not verified.is_valid or verified.snapshot is None:
+        if created_here:
+            _remove_created_store(normalized)
         return verified
     return _valid_result("STORE_INITIALIZED", verified.snapshot)
 
@@ -641,8 +655,9 @@ def _validated_batch(
     dataset_references: object,
     manifest_entries: object,
 ) -> tuple[tuple[DatasetSnapshotReference, ...], tuple[ManifestEntry, ...]]:
-    if not isinstance(dataset_references, (list, tuple)) or not isinstance(
-        manifest_entries, (list, tuple)
+    if type(dataset_references) not in (list, tuple) or type(manifest_entries) not in (
+        list,
+        tuple,
     ):
         raise _StoreFailure("STORE_INPUT_INVALID")
     reference_tuple = tuple(dataset_references)
