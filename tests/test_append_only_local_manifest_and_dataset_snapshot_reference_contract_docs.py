@@ -224,6 +224,28 @@ WP161_AUTHORIZED_FILES = {
     "docs/deferred_items_log.md",
 }
 
+WP162_AUTHORIZED_FILES = {
+    "src/data_layer/point_in_time_market_research/dataset_persistence_adapter.py",
+    "src/data_layer/point_in_time_market_research/__init__.py",
+    "tests/data_layer/point_in_time_market_research/test_dataset_persistence_adapter.py",
+    "tests/data_layer/point_in_time_market_research/test_manifest_store.py",
+    "tests/data_layer/point_in_time_market_research/test_as_of_query.py",
+    "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+    "docs/append_only_local_manifest_and_dataset_snapshot_reference_contract.md",
+    "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+    "tests/test_project_status_docs.py",
+    "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+    "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+    "tests/test_wallet_intelligence_architecture_contract_docs.py",
+    "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+    "tests/test_human_review_label_workflow_docs.py",
+    "docs/status_entries/WP162.md",
+    "docs/project_status.md",
+    "docs/repo_truth_index.md",
+    "docs/deferred_items_log.md",
+}
+
 
 def _read(path: pathlib.Path) -> str:
     return path.read_text(encoding="utf-8")
@@ -1024,8 +1046,8 @@ def test_project_status_registers_wp158_review_target_and_next_gate() -> None:
     )
     assert "WP161" in current
     assert "WP160" in merged
-    assert current.count("sole draft PR review target") == 1
-    assert "Ready for review: NO" in current
+    assert current.count("current review target") == 1
+    assert "Ready for review: YES" in current
     assert "Manifest and dataset snapshot reference validator implemented by: WP160" in current
     assert (
         "Append-only local manifest and deterministic dataset snapshot reference contract status:"
@@ -1070,6 +1092,14 @@ def test_status_fragment_is_stable_model_d() -> None:
 
 def test_no_dependency_workflow_or_generated_artifact_in_scope() -> None:
     changed = _changed_files()
+    if "docs/status_entries/WP162.md" in changed:
+        assert changed == WP162_AUTHORIZED_FILES
+        assert not any(
+            path.startswith(("tools/", "tests/fixtures/", ".github/workflows/", "local_data/"))
+            for path in changed
+        )
+        assert not (changed & {"requirements.txt", "pyproject.toml", "package.json"})
+        return
     if "docs/status_entries/WP161.md" in changed:
         assert changed == WP161_AUTHORIZED_FILES
         assert not any(
@@ -1231,3 +1261,54 @@ def test_wp161_sqlite_persistence_addendum_is_recorded() -> None:
         "no live-trading behavior",
     ):
         assert phrase.lower() in section.lower()
+
+
+def test_wp162_dataset_persistence_adapter_addendum_is_recorded() -> None:
+    assert len(_json_examples()) == 12
+    section = _flat(
+        _section(_read(DOC), "## 21. WP162 Dataset Persistence Adapter Addendum")
+    )
+    for phrase in (
+        "POINT_IN_TIME_RESEARCH_DATASET_PERSISTENCE_ADAPTER",
+        "BOUNDED_DETERMINISTIC_WP156_WP157_TO_WP160_WP161_HANDOFF",
+        "dataset_persistence_adapter.py",
+        "persist_validated_record_batch_snapshot",
+        "persist_as_of_query_snapshot",
+        "DatasetPersistenceAdapterResult",
+        "ADAPTER_PERSISTED",
+        "ADAPTER_ALREADY_PERSISTED",
+        "ADAPTER_REJECTED",
+        "validate_record_batch",
+        "canonical_batch_sha256",
+        "query_point_in_time_record_set",
+        "AUTHORITATIVE_CURRENT_STATE",
+        "VISIBLE_HISTORY",
+        "ENTITY_TIMELINE",
+        "parameter_set_id",
+        "validator_version",
+        "canonical_json_bytes",
+        "sha256_hex",
+        "build_dataset_snapshot_reference",
+        "build_manifest_entry",
+        "load_and_verify_manifest_store",
+        "STORE_LOADED_VERIFIED",
+        "append_manifest_store_batch",
+        "without writing",
+        "ADAPTER_REGISTRATION_CONFLICT",
+        "must already exist",
+        "no wall clock",
+        "no raw record or source payload",
+        "no external known-parent context",
+        "automatic supersede or invalidate",
+        "imports no SQLite and issues no direct SQL",
+        "separately gated successor work",
+    ):
+        assert phrase.lower() in section.lower()
+    # The adapter addendum must not fabricate raw-record persistence or merge.
+    lowered = section.lower()
+    for forbidden in (
+        "raw records themselves are stored",
+        "merge authorized: yes",
+        "live-trading",
+    ):
+        assert forbidden not in lowered

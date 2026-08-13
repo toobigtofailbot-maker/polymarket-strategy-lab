@@ -716,6 +716,8 @@ def test_no_src_implementation_for_wp98() -> None:
                 "src/data_layer/point_in_time_market_research/manifest_reference.py",
                 # WP161: bounded local SQLite manifest store
                 "src/data_layer/point_in_time_market_research/manifest_store.py",
+                # WP162: bounded WP156/WP157 -> WP160 -> WP161 dataset persistence adapter
+                "src/data_layer/point_in_time_market_research/dataset_persistence_adapter.py",
             }
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (

@@ -245,6 +245,15 @@ def test_public_package_exports_exact_supported_surface() -> None:
         "initialize_manifest_store",
         "append_manifest_store_batch",
         "load_and_verify_manifest_store",
+        # WP162 bounded deterministic WP156/WP157 -> WP160 -> WP161 dataset
+        # persistence and registration adapters.
+        "DATASET_PERSISTENCE_ADAPTER_LABEL",
+        "DATASET_PERSISTENCE_ADAPTER_POSTURE",
+        "DATASET_PERSISTENCE_ADAPTER_STATUSES",
+        "DATASET_PERSISTENCE_ADAPTER_ERROR_CODES",
+        "DatasetPersistenceAdapterResult",
+        "persist_validated_record_batch_snapshot",
+        "persist_as_of_query_snapshot",
     )
 
 
@@ -1412,6 +1421,31 @@ def test_no_writer_reader_collector_query_or_migration_public_behavior() -> None
         "load_synthetic_as_of_query_case",
     }
     exported = set(pit.__all__)
+    # WP161/WP162 introduce the only authorized persistence-adjacent public
+    # surface: the bounded local SQLite manifest store and the deterministic
+    # WP156/WP157 -> WP160 -> WP161 dataset persistence/registration adapters.
+    # These append no writer, reader, collector, poller, scheduler, or execution
+    # behavior to the WP156 records layer itself.
+    authorized_persistence_surface = {
+        "MANIFEST_STORE_LABEL",
+        "MANIFEST_STORE_POSTURE",
+        "MANIFEST_STORE_FORMAT_ID",
+        "MANIFEST_STORE_SCHEMA_VERSION",
+        "MANIFEST_STORE_STATUSES",
+        "MANIFEST_STORE_ERROR_CODES",
+        "ManifestStoreSnapshot",
+        "ManifestStoreResult",
+        "initialize_manifest_store",
+        "append_manifest_store_batch",
+        "load_and_verify_manifest_store",
+        "DATASET_PERSISTENCE_ADAPTER_LABEL",
+        "DATASET_PERSISTENCE_ADAPTER_POSTURE",
+        "DATASET_PERSISTENCE_ADAPTER_STATUSES",
+        "DATASET_PERSISTENCE_ADAPTER_ERROR_CODES",
+        "DatasetPersistenceAdapterResult",
+        "persist_validated_record_batch_snapshot",
+        "persist_as_of_query_snapshot",
+    }
     persistence_fragments = (
         "write",
         "read",
@@ -1424,11 +1458,13 @@ def test_no_writer_reader_collector_query_or_migration_public_behavior() -> None
     )
     assert not any(
         fragment in name.lower()
-        for name in exported
+        for name in exported - authorized_persistence_surface
         for fragment in persistence_fragments
     )
     query_named = {
-        name for name in exported if "query" in name.lower() or "as_of" in name.lower()
+        name
+        for name in exported - authorized_persistence_surface
+        if "query" in name.lower() or "as_of" in name.lower()
     }
     assert query_named
     assert query_named <= authorized_query_surface

@@ -1266,3 +1266,127 @@ remain separately gated successor work.
 
 No WAL is enabled, no network behavior is added, no live-trading behavior is
 authorized, and no successor capability is implemented by this package.
+
+## 21. WP162 Dataset Persistence Adapter Addendum
+
+WP162 connects the merged point-in-time research layers into one deterministic
+persistence handoff without changing the WP156, WP157, WP160, or WP161 modules.
+Its label is `POINT_IN_TIME_RESEARCH_DATASET_PERSISTENCE_ADAPTER` and its posture
+is `BOUNDED_DETERMINISTIC_WP156_WP157_TO_WP160_WP161_HANDOFF`. The only
+implementation module is
+`src/data_layer/point_in_time_market_research/dataset_persistence_adapter.py`,
+and it reaches persistence solely through the WP161 public functions.
+
+### 21.1 Public API
+
+The package exports the constants `DATASET_PERSISTENCE_ADAPTER_LABEL`,
+`DATASET_PERSISTENCE_ADAPTER_POSTURE`, `DATASET_PERSISTENCE_ADAPTER_STATUSES`
+(`ADAPTER_PERSISTED`, `ADAPTER_ALREADY_PERSISTED`, `ADAPTER_REJECTED`), and
+`DATASET_PERSISTENCE_ADAPTER_ERROR_CODES` (twelve ordered codes:
+`ADAPTER_INPUT_INVALID`, `ADAPTER_BATCH_INVALID`, `ADAPTER_QUERY_INVALID`,
+`ADAPTER_PARAMETER_SET_MISMATCH`, `ADAPTER_VALIDATOR_VERSION_MISMATCH`,
+`ADAPTER_REFERENCE_BUILD_FAILED`, `ADAPTER_STORE_LOAD_FAILED`,
+`ADAPTER_MANIFEST_ID_MISMATCH`, `ADAPTER_REGISTRATION_CONFLICT`,
+`ADAPTER_STORE_STATE_INVALID`, `ADAPTER_ENTRY_BUILD_FAILED`,
+`ADAPTER_STORE_APPEND_FAILED`); the frozen dataclass
+`DatasetPersistenceAdapterResult`; and the functions
+`persist_validated_record_batch_snapshot` and `persist_as_of_query_snapshot`.
+Schema 1 defines no adapter warning codes, so `warning_codes` is always empty.
+
+### 21.2 Batch Derivation
+
+`persist_validated_record_batch_snapshot` re-runs the WP156
+`validate_record_batch` over the caller records (with no external
+`known_parent_record_ids`), requires `batch.is_valid` and at least one accepted
+record ID, and builds a `VALIDATED_RECORD_BATCH` reference whose
+`validated_batch_sha256` is `batch.canonical_batch_sha256`, whose ordinary IDs
+equal the accepted record-version IDs (exact duplicates are committed by the
+batch digest but never appear twice), whose review tuple is empty, and whose six
+query fields are null. An empty valid batch is not persisted. Standard WP156
+conflict/quarantine batches are rejected. No external lineage-parent context is
+accepted, because the WP158 reference schema commits none.
+
+### 21.3 As-Of Result-View Mapping
+
+`persist_as_of_query_snapshot` requires `type(spec) is PointInTimeQuerySpec`,
+re-runs the WP157 `query_point_in_time_record_set`, and requires a valid result
+with a non-null receipt whose safety posture is advisory-only/no-execution. It
+builds an `AS_OF_QUERY_RESULT` reference from the receipt. Ordinary IDs follow
+the exact result view: `AUTHORITATIVE_CURRENT_STATE` uses
+`authoritative_record_version_ids`; `VISIBLE_HISTORY` and `ENTITY_TIMELINE` use
+`history_record_version_ids`, because the entity-timeline history is the complete
+ordinary timeline view and its authoritative terminal tuple is a subset that must
+not be duplicated in the single WP158 ordinary-ID tuple. Review-conflict IDs are
+carried in the separate review tuple, never in the ordinary tuple, and set
+`human_review_required`. A valid empty result persists a reference with empty
+ordinary and review tuples.
+
+### 21.4 Explicit Provenance Consistency
+
+Both adapters require every input record's envelope to share one provenance. In
+the batch adapter every record's `parameter_set_id` and `validator_version` must
+equal the caller values. In the as-of adapter every record's `parameter_set_id`
+must equal `receipt.parameter_set_id`, `receipt.parameter_set_id` must equal
+`spec.parameter_set_id`, and every record's `validator_version` must equal the
+caller value. A mismatch rejects with `ADAPTER_PARAMETER_SET_MISMATCH` or
+`ADAPTER_VALIDATOR_VERSION_MISMATCH`. This is a deliberate bounded v1 rule;
+mixed validator-version or parameter-set snapshots remain separately gated.
+
+### 21.5 Reference And Entry Identity Then WP160 Rebuild
+
+The adapter never relies on private WP160 helpers. It derives each identity from
+a local preimage that is exactly the WP158/WP160 `DatasetSnapshotReference`
+identity mapping (excluding `dataset_snapshot_reference_id` and the reserved
+`created_from_manifest_entry_id`) or the WP160 `ManifestEntry` mapping (excluding
+`manifest_entry_id`), using the public `canonical_json_bytes` and `sha256_hex`,
+yielding the `datasetref:sha256:` and `manifestentry:sha256:` identities. It then
+passes the complete object mapping through the public
+`build_dataset_snapshot_reference` and `build_manifest_entry`; WP160 remains the
+final authority and the local derivation is construction only.
+
+### 21.6 Verified Store, Manifest ID, And Sequence Derivation
+
+The store must already exist. After a valid reference is built, the adapter calls
+`load_and_verify_manifest_store` and requires a `STORE_LOADED_VERIFIED` result
+with a non-null snapshot; a missing, uninitialized, corrupt, incompatible, or WAL
+store fails closed with `ADAPTER_STORE_LOAD_FAILED` and copies only closed WP161
+codes into `store_error_codes`, never creating or repairing a file and never
+exposing the built reference. Input and upstream validation always precede the
+store, so malformed records/specs beat missing-path errors. A genesis store
+adopts the caller `manifest_id`; a non-empty chain must match it exactly, or the
+adapter rejects with `ADAPTER_MANIFEST_ID_MISMATCH` and never infers or replaces
+it. For a new registration the sequence number and previous head are derived from
+the verified snapshot (`sequence_number=0`, `previous_manifest_entry_id=None` for
+genesis; otherwise `len(entries)` and the last entry ID). No wall clock, no
+generated current timestamp, no caller-supplied sequence, and no caller-supplied
+previous ID are ever used.
+
+### 21.7 Register Construction, Append, And Idempotency
+
+The adapter constructs exactly one `REGISTER_DATASET_SNAPSHOT_REFERENCE` entry
+(`reference_state=ACTIVE_REFERENCE`, `reason_code=INITIAL_REGISTRATION`,
+`supersedes_manifest_entry_id=None`, caller `effective_time`, reference
+`parameter_set_id` and `human_review_required`) and appends it with the reference
+through `append_manifest_store_batch` only; there is no direct SQL, no store
+initialization, and no retry/backoff. If an equal reference is already registered
+by exactly one REGISTER entry whose `manifest_id`, `parameter_set_id`,
+`human_review_required`, and `effective_time` match, the adapter returns
+`ADAPTER_ALREADY_PERSISTED` without writing, and this remains true after later
+entries advance the chain. A changed `effective_time` or registration intent is
+an `ADAPTER_REGISTRATION_CONFLICT`; a persisted-but-unregistered reference may be
+registered now (WP161 treats the reference as idempotent and appends only the new
+entry); a differing persisted reference under the same ID, or more than one
+REGISTER entry for the subject, is `ADAPTER_STORE_STATE_INVALID`. A stale-head
+race fails closed and may be retried as a fresh adapter invocation.
+
+### 21.8 Authority Boundary
+
+The adapter persists no raw record or source payload, accepts no external
+known-parent context, performs no automatic supersede or invalidate transition,
+reads no wall clock, imports no SQLite and issues no direct SQL, creates or
+migrates no store, and adds no new SQL/storage/dependency/workflow/network or
+trading authority. Every rejected result is bounded and echo-free: fixed status,
+ordered closed adapter codes, closed upstream/store codes, empty warnings, null
+object fields, `human_review_required=False`, and the fixed advisory/no-execution
+flags. Durable raw/real record materialization and every later layer remain
+separately gated successor work.

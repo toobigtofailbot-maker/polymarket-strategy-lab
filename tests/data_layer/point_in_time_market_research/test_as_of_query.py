@@ -133,6 +133,16 @@ def test_public_package_exports_exact_supported_surface() -> None:
         "initialize_manifest_store",
         "append_manifest_store_batch",
         "load_and_verify_manifest_store",
+        # WP162 bounded deterministic WP156/WP157 -> WP160 -> WP161 dataset
+        # persistence and registration adapters (appended by the separately
+        # approved successor WP).
+        "DATASET_PERSISTENCE_ADAPTER_LABEL",
+        "DATASET_PERSISTENCE_ADAPTER_POSTURE",
+        "DATASET_PERSISTENCE_ADAPTER_STATUSES",
+        "DATASET_PERSISTENCE_ADAPTER_ERROR_CODES",
+        "DatasetPersistenceAdapterResult",
+        "persist_validated_record_batch_snapshot",
+        "persist_as_of_query_snapshot",
     )
 
 

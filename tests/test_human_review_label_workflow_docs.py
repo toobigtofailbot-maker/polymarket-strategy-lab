@@ -615,8 +615,9 @@ def test_no_tools_files_modified():
     if (
         "docs/status_entries/WP160.md" in changed
         or "docs/status_entries/WP161.md" in changed
+        or "docs/status_entries/WP162.md" in changed
     ):
-        # Functional WP160/WP161 packages add no tools/ files within their
+        # Functional WP160/WP161/WP162 packages add no tools/ files within their
         # exact authorized scopes.
         assert not [
             f

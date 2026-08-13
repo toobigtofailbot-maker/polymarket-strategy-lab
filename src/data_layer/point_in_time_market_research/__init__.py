@@ -80,6 +80,15 @@ from .manifest_store import (
     initialize_manifest_store,
     load_and_verify_manifest_store,
 )
+from .dataset_persistence_adapter import (
+    DATASET_PERSISTENCE_ADAPTER_ERROR_CODES,
+    DATASET_PERSISTENCE_ADAPTER_LABEL,
+    DATASET_PERSISTENCE_ADAPTER_POSTURE,
+    DATASET_PERSISTENCE_ADAPTER_STATUSES,
+    DatasetPersistenceAdapterResult,
+    persist_as_of_query_snapshot,
+    persist_validated_record_batch_snapshot,
+)
 
 __all__ = (
     "FOUNDATION_LABEL",
@@ -156,4 +165,13 @@ __all__ = (
     "initialize_manifest_store",
     "append_manifest_store_batch",
     "load_and_verify_manifest_store",
+    # WP162 bounded deterministic WP156/WP157 -> WP160 -> WP161 dataset
+    # persistence and registration adapters.
+    "DATASET_PERSISTENCE_ADAPTER_LABEL",
+    "DATASET_PERSISTENCE_ADAPTER_POSTURE",
+    "DATASET_PERSISTENCE_ADAPTER_STATUSES",
+    "DATASET_PERSISTENCE_ADAPTER_ERROR_CODES",
+    "DatasetPersistenceAdapterResult",
+    "persist_validated_record_batch_snapshot",
+    "persist_as_of_query_snapshot",
 )
