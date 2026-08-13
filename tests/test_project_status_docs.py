@@ -2772,9 +2772,9 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp153_through_wp160_are_merged_and_wp161_is_current_review_target():
-    # Functional WP161 is the current bounded SQLite persistence draft following
-    # the exact merged WP160 implementation baseline.
+def test_wp153_through_wp161_are_merged_and_wp162_is_current_review_target():
+    # Functional WP162 is the current non-draft review target following the exact
+    # merged WP161 SQLite persistence baseline.
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2782,8 +2782,8 @@ def test_wp153_through_wp160_are_merged_and_wp161_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
+    assert "WP162" in current_phase_line
     assert "WP161" in current_phase_line
-    assert "WP160" in current_phase_line
     assert "WP153" in merged_line
     assert "WP154" in merged_line
     assert "WP155" in merged_line
@@ -2792,17 +2792,18 @@ def test_wp153_through_wp160_are_merged_and_wp161_is_current_review_target():
     assert "WP158" in merged_line
     assert "WP159" in merged_line
     assert "WP160" in merged_line
+    assert "WP161" in merged_line
     for phrase in (
-        "sole draft PR review target",
-        "Primary package class: DATA_LAYER_PERSISTENCE",
-        "Repository validation class: local-offline-stdlib-sqlite-transactional-manifest-store",
+        "current review target",
+        "Primary package class: DATA_LAYER_ADAPTER",
+        "Repository validation class: bounded-deterministic-wp156-wp157-to-wp160-wp161-dataset-persistence-handoff",
         "Package size class: L",
         "Risk level: 1",
-        "Implementation posture: BOUNDED_LOCAL_SQLITE_TRANSACTIONAL_APPEND_AND_VERIFIED_READ",
-        "Ready for review: NO",
+        "Implementation posture: BOUNDED_DETERMINISTIC_WP156_WP157_TO_WP160_WP161_HANDOFF",
+        "Ready for review: YES",
         "Merge authorized: NO",
         "Independent live PR review required: YES",
-        "Exact changed-file scope: 18",
+        "Exact changed-file scope: 19",
         "Runtime impact: BOUNDED_EXPLICIT_CALLER_SELECTED_LOCAL_SQLITE_FILE_ONLY",
         "Product impact: NONE",
         "Product/runtime network calls: 0",
@@ -2810,16 +2811,17 @@ def test_wp153_through_wp160_are_merged_and_wp161_is_current_review_target():
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
         "Manifest and dataset snapshot reference validator implemented by: WP160",
+        "Dataset persistence adapter implemented by: WP162",
         "WP160 merged: YES",
-        "WP160 PR: 160",
-        "WP160 final head: 2b2ef59926d07d34372e3f2999c199ffc43bab2c",
-        "WP160 merge commit: a6f88051d13aca137dfe036784f1376b5dc0c635",
-        "WP160 implemented and merged: YES",
-        "WP161 implemented as draft PR: YES",
-        "WP161 Ready for review: NO",
+        "WP161 merged: YES",
+        "WP161 PR: 161",
+        "WP161 final head: e1c2fb64a1231e6040a8830bcd533fd414675dbf",
+        "WP161 merge commit: 2ac6975d0710bbdfd73e940bb6f1ef47bdc51d65",
+        "WP161 implemented and merged: YES",
+        "WP162 Ready for review: YES",
     ):
         assert phrase in current_phase_line
-    assert current_phase_line.count("sole draft PR review target") == 1
+    assert current_phase_line.count("current review target") == 1
 
 
 def test_wp161_sqlite_status_repo_truth_and_deferred_items_are_registered():
@@ -2991,7 +2993,7 @@ def test_wp154_through_wp158_are_merged_and_wp159_is_the_only_current_review_tar
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
     )
-    assert current_phase_line.count("sole draft PR review target") == 1
+    assert current_phase_line.count("current review target") == 1
     assert "WP161" in current_phase_line
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")

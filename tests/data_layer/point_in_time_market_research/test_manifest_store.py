@@ -214,7 +214,12 @@ def test_exact_package_exports_append_wp161_surface() -> None:
         "initialize_manifest_store", "append_manifest_store_batch",
         "load_and_verify_manifest_store",
     )
-    assert pit.__all__[-11:] == expected
+    # WP161 no longer needs to be the final package tail (a successor WP may
+    # append its own surface after it); locate the WP161 block by its label and
+    # assert the eleven-symbol run is exact and contiguous, still bound to the
+    # manifest_store module objects.
+    start = pit.__all__.index("MANIFEST_STORE_LABEL")
+    assert pit.__all__[start:start + 11] == expected
     assert all(getattr(pit, name) is getattr(S, name) for name in expected)
 
 

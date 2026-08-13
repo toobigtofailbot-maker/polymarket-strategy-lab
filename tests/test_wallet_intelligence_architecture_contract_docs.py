@@ -435,6 +435,8 @@ def test_only_allowed_wallet_src_files_changed() -> None:
                 "src/data_layer/point_in_time_market_research/manifest_reference.py",
                 # WP161: bounded local SQLite manifest store
                 "src/data_layer/point_in_time_market_research/manifest_store.py",
+                # WP162: bounded WP156/WP157 -> WP160 -> WP161 dataset persistence adapter
+                "src/data_layer/point_in_time_market_research/dataset_persistence_adapter.py",
         }
     assert set(src_changes) <= allowed_src_changes, (
         f"Unexpected src/ changes: {set(src_changes) - allowed_src_changes}"
