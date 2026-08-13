@@ -2772,9 +2772,9 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp153_through_wp161_are_merged_and_wp162_is_current_review_target():
-    # Functional WP162 is the current non-draft review target following the exact
-    # merged WP161 SQLite persistence baseline.
+def test_wp153_through_wp162_are_merged_and_wp163_is_current_review_target():
+    # Functional WP163 is the current non-draft review target following the exact
+    # merged WP162 dataset persistence adapter baseline.
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2782,6 +2782,7 @@ def test_wp153_through_wp161_are_merged_and_wp162_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
+    assert "WP163" in current_phase_line
     assert "WP162" in current_phase_line
     assert "WP161" in current_phase_line
     assert "WP153" in merged_line
@@ -2793,17 +2794,18 @@ def test_wp153_through_wp161_are_merged_and_wp162_is_current_review_target():
     assert "WP159" in merged_line
     assert "WP160" in merged_line
     assert "WP161" in merged_line
+    assert "WP162" in merged_line
     for phrase in (
         "current review target",
-        "Primary package class: DATA_LAYER_ADAPTER",
-        "Repository validation class: bounded-deterministic-wp156-wp157-to-wp160-wp161-dataset-persistence-handoff",
-        "Package size class: L",
+        "Primary package class: DATA_LAYER_PERSISTENCE",
+        "Repository validation class: bounded-durable-local-sqlite-point-in-time-record-store-and-materialization",
+        "Package size class: XL",
         "Risk level: 1",
-        "Implementation posture: BOUNDED_DETERMINISTIC_WP156_WP157_TO_WP160_WP161_HANDOFF",
+        "Implementation posture: BOUNDED_LOCAL_SQLITE_APPEND_ONLY_RECORD_PERSISTENCE_AND_MATERIALIZATION",
         "Ready for review: YES",
         "Merge authorized: NO",
         "Independent live PR review required: YES",
-        "Exact changed-file scope: 19",
+        "Exact changed-file scope: 20",
         "Runtime impact: BOUNDED_EXPLICIT_CALLER_SELECTED_LOCAL_SQLITE_FILE_ONLY",
         "Product impact: NONE",
         "Product/runtime network calls: 0",
@@ -2812,16 +2814,90 @@ def test_wp153_through_wp161_are_merged_and_wp162_is_current_review_target():
         "Live-trading execution: FORBIDDEN",
         "Manifest and dataset snapshot reference validator implemented by: WP160",
         "Dataset persistence adapter implemented by: WP162",
+        "Durable point-in-time record store implemented by: WP163",
         "WP160 merged: YES",
         "WP161 merged: YES",
-        "WP161 PR: 161",
-        "WP161 final head: e1c2fb64a1231e6040a8830bcd533fd414675dbf",
-        "WP161 merge commit: 2ac6975d0710bbdfd73e940bb6f1ef47bdc51d65",
-        "WP161 implemented and merged: YES",
-        "WP162 Ready for review: YES",
+        "WP162 merged: YES",
+        "WP162 PR: 162",
+        "WP162 final head: b101f5c81be447404750c178dc2ed9edfc7fa764",
+        "WP162 merge commit: 5e914b92a6a957dcd982702f3d47de6b64f5a691",
+        "WP162 implemented and merged: YES",
+        "WP163 Ready for review: YES",
     ):
         assert phrase in current_phase_line
     assert current_phase_line.count("current review target") == 1
+
+
+def test_wp163_record_store_status_repo_truth_and_deferred_items_are_registered():
+    text = _read()
+    line = next(
+        item for item in text.splitlines()
+        if item.startswith("- Bounded durable point-in-time record store status:")
+    )
+    for phrase in (
+        "POINT_IN_TIME_DURABLE_RECORD_STORE",
+        "BOUNDED_LOCAL_SQLITE_APPEND_ONLY_RECORD_PERSISTENCE_AND_MATERIALIZATION",
+        "record_store.py",
+        "Python standard-library sqlite3",
+        "Store format: point-in-time-record-store",
+        "Application tables: 2",
+        "Explicit indexes: 5",
+        "Journal mode: DELETE",
+        "Writable synchronous: FULL",
+        "Transaction start: BEGIN IMMEDIATE",
+        "Read URI mode: ro",
+        "Existing-write URI mode: rw",
+        "Creation URI mode: rwc",
+        "Maximum records per append: 256",
+        "Maximum records in store: 4096",
+        "Maximum canonical full-record payload bytes per row: 131072",
+        "Maximum total canonical payload bytes: 134217728",
+        "Conflict record ever ordinary authority: NO",
+        "Idempotent retry uses UPDATE: NO",
+        "Public persisted-row DELETE path: NO",
+        "Schema migration: NOT AUTHORIZED",
+        "WAL: FORBIDDEN",
+        "Parquet/Arrow/DuckDB/Polars adopted: NO",
+        "Raw HTTP/source-response bytes stored: NO",
+        "Real/public network collection performed: NO",
+        "Dependencies added: 0",
+        "Strategy/signal/paper/order/risk/execution authority: NONE",
+        "WP163 Ready for review: YES",
+        "Merge authorized: NO",
+    ):
+        assert phrase in line
+
+    status = (STATUS_ENTRIES / "WP163.md").read_text(encoding="utf-8")
+    for phrase in (
+        "stable and non-self-referential",
+        "Ready for review: YES",
+        "Merge authorized: NO",
+        "R001",
+        "R040",
+        "WP163-D007",
+    ):
+        assert phrase in status
+    assert re.search(
+        r"Current live PR head:\s*`?[0-9a-f]{40}`?", status, re.IGNORECASE
+    ) is None
+
+    index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    for path in (
+        "src/data_layer/point_in_time_market_research/record_store.py",
+        "docs/status_entries/WP163.md",
+        "docs/point_in_time_record_store_contract.md",
+        "tests/data_layer/point_in_time_market_research/test_record_store.py",
+    ):
+        assert path in index
+    deferred = (REPO_ROOT / "docs" / "deferred_items_log.md").read_text(
+        encoding="utf-8"
+    )
+    assert (
+        "RESOLVED_BOUNDED_WP163_SQLITE_RECORD_STORE_AND_REFERENCE_MATERIALIZATION"
+        in deferred
+    )
+    for index_value in range(1, 8):
+        assert f"WP163-D{index_value:03d}" in deferred
 
 
 def test_wp161_sqlite_status_repo_truth_and_deferred_items_are_registered():

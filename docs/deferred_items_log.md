@@ -2291,7 +2291,7 @@ authority, and requires a separately approved work package.
 | WP161-D002 | Schema migration beyond version 1 | OPEN | Separate migration WP with lineage preservation and compatibility matrix | `user_version=1` does not authorize migration |
 | WP161-D003 | Storage scale above 256 references or entries | OPEN | Separate scale/storage WP with resource and failure bounds | The bounded store is not a general database service |
 | WP161-D004 | Adapters from WP156/WP157 outputs into persistence | RESOLVED_BOUNDED_WP162_REFERENCE_AND_REGISTRATION_ADAPTER | Resolved by WP162 for existing in-memory validated records/query computation into a WP160 logical reference plus registration persisted through the WP161 store; durable raw/real record storage remains separately gated | Resolution does not mean raw records themselves are stored |
-| WP161-D005 | Persisted raw or real market data | OPEN | Separate public-data population WP with leakage and retention review | Manifest metadata persistence is not raw-data collection |
+| WP161-D005 | Persisted raw or real market data | PARTIALLY_RESOLVED_WP163_RECORD_STORAGE_REAL_DATA_POPULATION_OPEN | WP163 durably stores immutable WP156/WP157 record objects and their canonical full-record payloads, but no real/public network collection has occurred and raw HTTP/source-response bytes are still not stored; real/public data population remains separately gated (WP163-D001) | Durable record-object storage is not raw-byte capture or real-data collection |
 | WP161-D006 | Arrow/Parquet analytical materialization | OPEN | Dependency/security and physical-schema WP | Canonical SQLite metadata does not adopt analytical formats |
 | WP161-D007 | Backup, export, compaction, or signing | OPEN | Separate durability/audit WP for each capability | Atomic local append does not provide backup or attestation |
 
@@ -2303,13 +2303,31 @@ implementation authority.
 
 | ID | Deferred item | Status | Required future gate | Non-implication |
 |---|---|---|---|---|
-| WP162-D001 | Durable raw/public point-in-time record storage/materialization | OPEN | Separate durable record-substrate WP with retention and leakage review | Registering a logical reference is not storing raw records |
+| WP162-D001 | Durable raw/public point-in-time record storage/materialization | RESOLVED_BOUNDED_WP163_SQLITE_RECORD_STORE_AND_REFERENCE_MATERIALIZATION | Resolved by WP163 for the bounded local SQLite record store: immutable WP156/WP157 record objects and their canonical full-record payloads are durably stored and a WP160 DatasetSnapshotReference resolves to the exact durable record objects; no real/public network collection has occurred and raw HTTP/source-response bytes are not stored | Durable record-object storage is not real/public network collection or raw-byte capture |
 | WP162-D002 | Real/public market-data population through a bounded collection path | OPEN | Separate public-data collection WP with source and retention policy | The adapter recomputes only caller-provided in-memory records |
 | WP162-D003 | Mixed validator-version or parameter-set snapshots | OPEN | Separate multi-provenance WP with committed aggregate semantics | Bounded v1 provenance requires a single validator and parameter set |
 | WP162-D004 | External known-parent lineage context committed into adapter provenance | OPEN | Separate lineage WP with a committed reference-schema field | The WP158 reference schema commits no external known-parent context |
 | WP162-D005 | Automated supersede/invalidate lifecycle transitions | OPEN | Separate lifecycle WP with a bounded transition policy | The adapter registers only; it never supersedes or invalidates |
 | WP162-D006 | Automated retry/backoff/concurrent adapter orchestration | OPEN | Separate orchestration WP with concurrency and observability policy | A stale-head conflict fails closed and is retried as a fresh invocation |
 | WP162-D007 | Feature/label materialization and experiment registry | OPEN | Separate feature/experiment WP with leakage-safe construction review | Dataset lineage registration is not feature or label construction |
+
+## WP163 Bounded Durable Point-In-Time Record Store Deferred Items
+
+WP162-D001 is resolved by WP163 for the bounded local SQLite record-store and
+reference-materialization scope, and WP161-D005 is partially resolved (record
+objects and canonical payloads can be durably stored; no real/public collection
+has occurred and raw HTTP/source-response bytes are not stored). Every item below
+is `OPEN`, separately gated, and outside WP163 implementation authority.
+
+| ID | Deferred item | Status | Required future gate | Non-implication |
+|---|---|---|---|---|
+| WP163-D001 | Real/public Polymarket data population into WP163 through bounded existing read-only collection architecture | OPEN | Separate public-data collection WP with source, leakage, and retention policy | WP163 stores only caller-supplied already-built records; it performs no network collection |
+| WP163-D002 | Cross-store coordinator for record-store append plus WP162 manifest registration | OPEN | Separate coordinator WP; do not claim true cross-file atomicity | Two independent local SQLite files are not one atomic transaction |
+| WP163-D003 | Scale above 4096 records or 128 MiB | OPEN | Separate scale/storage WP with resource and failure bounds | The bounded record store is not a general database service |
+| WP163-D004 | Parquet/Arrow analytical materialization | OPEN | Dependency/security and physical-schema WP | Canonical SQLite record storage does not adopt analytical formats |
+| WP163-D005 | DuckDB/Polars analytical query layer | OPEN | Dependency/security and query-engine WP | The canonical store exposes no analytical query engine |
+| WP163-D006 | Persisted full WP157 query spec and full input provenance for exact as-of replay | OPEN | Separate provenance WP with a committed query/provenance schema | AS_OF_QUERY_RESULT materialization resolves IDs only and never claims query replay |
+| WP163-D007 | Migration, backup, export, compaction, or signing | OPEN | Separate durability/audit WP for each capability | Atomic local append does not provide migration, backup, or attestation |
 
 WP158 adds no dependency, file I/O, writer, reader, persistence, persisted
 query, collector, product/runtime network, credential, scheduler, strategy,
