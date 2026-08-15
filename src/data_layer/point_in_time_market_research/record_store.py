@@ -20,6 +20,7 @@ path, SQL string, payload, record repr, exception text, or environment value.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, fields
 from datetime import datetime
 import json
@@ -37,7 +38,6 @@ from .records import (
     PointInTimeEnvelope,
     ResolutionRuleSnapshotRecord,
     SourceSnapshotRecord,
-    canonical_json_bytes,
     revalidate_review_conflict_record,
     sha256_hex,
     validate_record_batch,
@@ -557,15 +557,64 @@ def _canonical_record_mapping(record: object) -> dict[str, object]:
     return mapping
 
 
+def _canonical_outer_bytes(mapping: object) -> bytes:
+    """Deterministically encode the WP163 OUTER full-record mapping.
+
+    The complete stored record embeds ``record.canonical_payload_json`` as one
+    string field that itself may be up to WP156's 65,536-byte canonical payload,
+    so applying WP156's per-string (4,096) and per-payload (65,536) bounds to the
+    OUTER mapping would reject valid records. This encoder is equivalent
+    deterministic JSON (sorted keys, ``(",", ":")`` separators,
+    ``ensure_ascii=False``, ``allow_nan=False``) with WP163's own wider
+    131,072-byte per-row bound; WP156 remains the semantic authority for the
+    embedded record and its canonical market payload. The same encoder is used on
+    both the write path and the read-verification path so a stored row and its
+    reconstruction canonicalize identically.
+    """
+
+    def normalize(value: object) -> object:
+        if value is None or isinstance(value, bool):
+            return value
+        if isinstance(value, int):
+            return value
+        if isinstance(value, float):
+            raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
+        if isinstance(value, str):
+            return value
+        if isinstance(value, Mapping):
+            normalized: dict[str, object] = {}
+            for key in value:
+                if not isinstance(key, str):
+                    raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
+                normalized[key] = normalize(value[key])
+            return normalized
+        if isinstance(value, (list, tuple)):
+            return [normalize(item) for item in value]
+        raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
+
+    normalized = normalize(mapping)
+    try:
+        encoded = json.dumps(
+            normalized,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+            allow_nan=False,
+        ).encode("utf-8")
+    except (TypeError, ValueError, UnicodeError):
+        raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID") from None
+    if len(encoded) > _MAX_PAYLOAD_BYTES_PER_ROW:
+        raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
+    return encoded
+
+
 def _serialize(record: object) -> tuple[str, str]:
     try:
-        payload = canonical_json_bytes(_canonical_record_mapping(record))
+        payload = _canonical_outer_bytes(_canonical_record_mapping(record))
     except _StoreFailure:
         raise
     except (AttributeError, TypeError, ValueError, UnicodeError):
         raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID") from None
-    if len(payload) > _MAX_PAYLOAD_BYTES_PER_ROW:
-        raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
     return payload.decode("utf-8"), sha256_hex(payload)
 
 
@@ -599,9 +648,9 @@ def _decode_payload(payload_json: object, payload_sha256: object) -> dict[str, o
         )
         if not isinstance(decoded, dict):
             raise ValueError("top-level object required")
-        canonical = canonical_json_bytes(decoded)
     except (TypeError, ValueError, UnicodeError, json.JSONDecodeError):
         raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID") from None
+    canonical = _canonical_outer_bytes(decoded)
     if canonical != payload_bytes or sha256_hex(canonical) != payload_sha256:
         raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
     return decoded
@@ -941,26 +990,50 @@ def _load_snapshot(connection: sqlite3.Connection) -> PointInTimeRecordStoreSnap
     _require_delete_journal(connection)
     _verify_schema(connection)
     _verify_sqlite_integrity(connection)
-    rows = connection.execute(_ROW_SELECT).fetchall()
+
+    # Bounded-reader preflight: reject an over-limit store from a scalar aggregate
+    # BEFORE materializing any payload row, so a tampered or corrupt file cannot
+    # force an arbitrarily large fetch.
+    aggregate = connection.execute(
+        "SELECT COUNT(*), "
+        "COALESCE(SUM(length(CAST(payload_json AS BLOB))), 0), "
+        "COALESCE(MAX(length(CAST(payload_json AS BLOB))), 0) FROM records"
+    ).fetchone()
+    if (
+        aggregate is None
+        or len(aggregate) != 3
+        or any(not isinstance(value, int) or isinstance(value, bool) for value in aggregate)
+    ):
+        raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
+    row_count, total_payload_bytes, max_row_bytes = aggregate
+    if row_count > _MAX_RECORDS_IN_STORE:
+        raise _StoreFailure("RECORD_STORE_LIMIT_EXCEEDED")
+    if total_payload_bytes > _MAX_TOTAL_PAYLOAD_BYTES:
+        raise _StoreFailure("RECORD_STORE_LIMIT_EXCEEDED")
+    if max_row_bytes > _MAX_PAYLOAD_BYTES_PER_ROW:
+        raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
+
+    # Bounded fetch: never an unbounded payload fetchall before the gate.
+    rows = connection.execute(_ROW_SELECT).fetchmany(_MAX_RECORDS_IN_STORE + 1)
     if len(rows) > _MAX_RECORDS_IN_STORE:
         raise _StoreFailure("RECORD_STORE_LIMIT_EXCEEDED")
 
-    total_payload_bytes = 0
+    records_by_id: dict[str, object] = {}
+    recomputed_total = 0
+    recomputed_max = 0
     for row in rows:
+        if len(row) != 19 or not isinstance(row[0], str):
+            raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
         payload_json = row[17]
         if not isinstance(payload_json, str):
             raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
         try:
-            total_payload_bytes += len(payload_json.encode("utf-8"))
+            row_bytes = len(payload_json.encode("utf-8"))
         except UnicodeError:
             raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID") from None
-    if total_payload_bytes > _MAX_TOTAL_PAYLOAD_BYTES:
-        raise _StoreFailure("RECORD_STORE_LIMIT_EXCEEDED")
-
-    records_by_id: dict[str, object] = {}
-    for row in rows:
-        if len(row) != 19 or not isinstance(row[0], str):
-            raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
+        recomputed_total += row_bytes
+        if row_bytes > recomputed_max:
+            recomputed_max = row_bytes
         mapping = _decode_payload(row[17], row[18])
         record = _reconstruct_record(mapping)
         if record.envelope.record_version_id != row[0]:
@@ -973,6 +1046,14 @@ def _load_snapshot(connection: sqlite3.Connection) -> PointInTimeRecordStoreSnap
         if record.envelope.record_version_id in records_by_id:
             raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
         records_by_id[record.envelope.record_version_id] = record
+
+    # The independently recomputed exact byte totals must agree with the aggregate.
+    if (
+        len(rows) != row_count
+        or recomputed_total != total_payload_bytes
+        or recomputed_max != max_row_bytes
+    ):
+        raise _StoreFailure("RECORD_STORE_PAYLOAD_INVALID")
 
     _validate_store_lineage(records_by_id)
 

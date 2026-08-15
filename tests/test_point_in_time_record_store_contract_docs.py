@@ -94,6 +94,23 @@ def test_payload_lineage_and_integrity_are_documented() -> None:
         "ordinary authority",
         "RECORD_STORE_LINEAGE_INVALID",
         "RECORD_STORE_AUTHORITY_VIOLATION",
+        # The outer full-record encoding is WP163's own canonicalizer, not WP156's
+        # bounded helper applied to the whole record.
+        "does **not**",
+        "allow_nan=False",
+        "131,072-byte per-row",
+        "semantic authority for the embedded record",
+    ):
+        assert phrase in text
+
+
+def test_bounded_reader_preflight_is_documented() -> None:
+    text = _read()
+    for phrase in (
+        "bounded-reader preflight",
+        "scalar aggregate",
+        "**before** any payload row",
+        "independently recomputed",
     ):
         assert phrase in text
 

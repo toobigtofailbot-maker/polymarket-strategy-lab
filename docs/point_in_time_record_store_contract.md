@@ -85,14 +85,28 @@ Exactly five explicit indexes:
 The complete immutable record object is persisted, not only the canonical market
 payload. The canonical stored mapping is
 `{"record_type": <exact class name>, "envelope": {every envelope field},
-<every top-level record field except "envelope">}`, serialized with the public
-`canonical_json_bytes` and digested with the public `sha256_hex`. Strict decode
-rejects duplicate keys, NaN/Infinity, a non-object top level, unknown or missing
-structural keys, a noncanonical representation, an oversized payload, and any hash
-mismatch. Reconstruction rebuilds the exact envelope and record dataclass,
-converting only schema-defined tuple fields from JSON arrays back to tuples. The
-indexed columns are the exact projection of the reconstructed object and must
-match it exactly.
+<every top-level record field except "envelope">}`.
+
+Because this outer mapping embeds `record.canonical_payload_json` as one string
+field — itself up to WP156's 65,536-byte canonical payload — the store does **not**
+apply WP156's `canonical_json_bytes` (with its 4,096-byte per-string and
+65,536-byte per-payload bounds) to the outer mapping; doing so would reject valid
+records (for example a review-conflict record whose payload exceeds 4,096 bytes).
+Instead a private WP163 outer canonicalizer produces equivalent deterministic
+JSON — sorted keys, `(",", ":")` separators, `ensure_ascii=False`,
+`allow_nan=False`, UTF-8 — and enforces WP163's own wider 131,072-byte per-row
+bound; the digest is the public `sha256_hex` of those complete canonical bytes.
+WP156 remains the semantic authority for the embedded record and its canonical
+market payload (`canonical_json_bytes` still validates that payload during record
+self-validation). The identical WP163 outer canonicalizer is used on both the
+write path and the read-verification path.
+
+Strict decode rejects duplicate keys, NaN/Infinity, a non-object top level,
+unknown or missing structural keys, a noncanonical representation, an oversized
+row, and any hash mismatch. Reconstruction rebuilds the exact envelope and record
+dataclass, converting only schema-defined tuple fields from JSON arrays back to
+tuples. The indexed columns are the exact projection of the reconstructed object
+and must match it exactly.
 
 ## Ordinary versus review-conflict integrity
 
@@ -136,9 +150,15 @@ OFF/NORMAL, `executescript`, and `check_same_thread=False` are forbidden.
 ## Corruption and no-echo
 
 Read and load verify DELETE journal, the exact schema, meta row, `user_version`,
-indexes, `integrity_check`, and `foreign_key_check`, enforce the record and total
-payload bounds, and strictly decode, reconstruct, and revalidate every record and
-the complete lineage. Any schema drift, configuration drift, stored-payload
+indexes, `integrity_check`, and `foreign_key_check`. A bounded-reader preflight
+then evaluates a single scalar aggregate (`COUNT`, `SUM(length(...))`,
+`MAX(length(...))` over `payload_json`) and rejects an over-limit store — too many
+records, too many total bytes, or an over-limit row — **before** any payload row is
+materialized, so a tampered or corrupt file cannot force an arbitrarily large
+fetch. Rows are then read with a bounded fetch, the exact UTF-8 byte totals are
+independently recomputed and required to agree with the aggregate, and the store
+strictly decodes, reconstructs, and revalidates every record and the complete
+lineage. Any schema drift, configuration drift, stored-payload
 tampering, or lineage violation fails closed. No public malformed case escapes as
 a raw `TypeError`, `KeyError`, `ValueError`, JSON error, `sqlite3.Error`,
 `OSError`, `RuntimeError`, or traceback, and `BaseException` is never caught. An

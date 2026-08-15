@@ -131,6 +131,57 @@ def _raw_connect(path: pathlib.Path) -> sqlite3.Connection:
     return sqlite3.connect(str(path), isolation_level=None)
 
 
+def _big_conflict_record(n_labels: int, label_len: int, assertion: str = "assertion:big"):
+    """Build a standalone WP156-valid review-CONFLICT record with a large payload.
+
+    Review-conflict records self-validate through ``revalidate_review_conflict_record``,
+    which (unlike ``validate_record_batch``) does not re-fingerprint the record, so a
+    valid conflict record can carry a canonical payload well above WP156's 4,096-byte
+    per-string bound. It is the concrete WP156-valid record whose complete WP163
+    outer representation exceeds the WP156 payload bounds.
+    """
+
+    payload = {
+        "question_text": "Will the large synthetic condition be true?",
+        "market_status": "OPEN_SYNTHETIC",
+        "outcome_labels": [f"L{i}_" + ("x" * label_len) for i in range(n_labels)],
+    }
+    result = R.build_review_conflict_record(
+        _meta(
+            source_assertion_id=assertion,
+            observed_time="2026-01-01T00:06:00Z",
+            ingestion_time="2026-01-01T00:06:01Z",
+            classification="CONFLICT",
+            human_review=True,
+            payload=payload,
+        )
+    )
+    assert result.is_valid and result.record is not None
+    return result.record
+
+
+def _tamper_row_payload(path: pathlib.Path, record_id: str, mutate) -> None:
+    """Decode one stored row, mutate the outer mapping, re-encode with a valid
+    canonical form and matching digest, and write it back (defeating the sha
+    guard so a deeper structural/self-validation check must catch the tamper)."""
+
+    con = _raw_connect(path)
+    try:
+        payload_json = con.execute(
+            "SELECT payload_json FROM records WHERE record_version_id=?", (record_id,)
+        ).fetchone()[0]
+        mapping = json.loads(payload_json)
+        mutate(mapping)
+        encoded = RS._canonical_outer_bytes(mapping)
+        con.execute(
+            "UPDATE records SET payload_json=?, payload_sha256=? "
+            "WHERE record_version_id=?",
+            (encoded.decode("utf-8"), RS.sha256_hex(encoded), record_id),
+        )
+    finally:
+        con.close()
+
+
 # ── Public surface (Sections 8) ──────────────────────────────────────────────
 
 
@@ -947,3 +998,511 @@ def test_production_source_does_not_catch_base_exception() -> None:
     tokens = tokenize.generate_tokens(io.StringIO(source).readline)
     names = [tok.string for tok in tokens if tok.type == tokenize.NAME]
     assert "BaseException" not in names
+
+
+# ── Blocker A: WP163 outer full-record canonicalization, not WP156 bounds ─────
+
+
+def test_large_canonical_payload_over_wp156_string_limit_persists(tmp_path) -> None:
+    # A WP156-valid record whose canonical_payload_json exceeds WP156's 4,096
+    # per-string bound must persist: WP163 canonicalizes the OUTER record itself.
+    record = _big_conflict_record(40, 100, "assertion:bigA")
+    assert len(record.canonical_payload_json) > 4096
+    assert R.revalidate_review_conflict_record(record) == ()
+    path = _new_store(tmp_path)
+    result = pit.append_point_in_time_records(str(path), [record])
+    assert result.is_valid and result.status == "RECORD_STORE_APPEND_COMMITTED"
+    reopened = pit.load_and_verify_point_in_time_record_store(str(path))
+    stored = {r.envelope.record_version_id: r for r in reopened.snapshot.records}
+    assert stored[record.envelope.record_version_id] == record
+
+
+def test_full_record_over_65536_bytes_persists(tmp_path) -> None:
+    # A complete stored representation above WP156's 65,536-byte payload bound but
+    # within WP163's 131,072-byte per-row bound must persist.
+    record = _big_conflict_record(255, 244, "assertion:bigB")
+    outer = len(RS._canonical_outer_bytes(RS._canonical_record_mapping(record)))
+    assert 65536 < outer <= 131072
+    path = _new_store(tmp_path)
+    result = pit.append_point_in_time_records(str(path), [record])
+    assert result.is_valid
+    reopened = pit.load_and_verify_point_in_time_record_store(str(path))
+    ids = {r.envelope.record_version_id for r in reopened.snapshot.records}
+    assert record.envelope.record_version_id in ids
+
+
+def test_over_131072_row_fails_via_bounded_seam(tmp_path, monkeypatch) -> None:
+    # Controlled private seam: a normal record exceeds a tightened per-row bound.
+    path = _new_store(tmp_path)
+    monkeypatch.setattr(RS, "_MAX_PAYLOAD_BYTES_PER_ROW", 200)
+    result = pit.append_point_in_time_records(
+        str(path), [_records()["MKT-META-PRIMARY"]]
+    )
+    assert result.error_codes == ("RECORD_STORE_PAYLOAD_INVALID",)
+
+
+def test_full_record_serialization_is_byte_and_digest_stable() -> None:
+    record = _big_conflict_record(80, 120, "assertion:stable")
+    first = RS._canonical_outer_bytes(RS._canonical_record_mapping(record))
+    second = RS._canonical_outer_bytes(RS._canonical_record_mapping(record))
+    assert first == second
+    assert RS.sha256_hex(first) == RS.sha256_hex(second)
+    # decode -> re-encode is byte-identical.
+    reencoded = RS._canonical_outer_bytes(json.loads(first.decode("utf-8")))
+    assert reencoded == first
+
+
+# ── Blocker B: bounded reader preflight before payload fetch ──────────────────
+
+
+def test_load_rejects_over_row_count_before_fetch(tmp_path, monkeypatch) -> None:
+    path = _seed_store(tmp_path)
+    monkeypatch.setattr(RS, "_MAX_RECORDS_IN_STORE", 2)
+    result = pit.load_and_verify_point_in_time_record_store(str(path))
+    assert result.error_codes == ("RECORD_STORE_LIMIT_EXCEEDED",)
+
+
+def test_load_rejects_over_per_row_bytes_before_decode(tmp_path, monkeypatch) -> None:
+    path = _seed_store(tmp_path)
+    monkeypatch.setattr(RS, "_MAX_PAYLOAD_BYTES_PER_ROW", 50)
+    result = pit.load_and_verify_point_in_time_record_store(str(path))
+    assert result.error_codes == ("RECORD_STORE_PAYLOAD_INVALID",)
+
+
+def test_load_rejects_over_total_bytes_before_decode(tmp_path, monkeypatch) -> None:
+    path = _seed_store(tmp_path)
+    monkeypatch.setattr(RS, "_MAX_TOTAL_PAYLOAD_BYTES", 100)
+    result = pit.load_and_verify_point_in_time_record_store(str(path))
+    assert result.error_codes == ("RECORD_STORE_LIMIT_EXCEEDED",)
+
+
+def test_normal_store_preserves_snapshot_after_bounded_reader(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    snap = pit.load_and_verify_point_in_time_record_store(str(path)).snapshot
+    assert len(snap.records) == len(_records())
+    ingestion = [r.envelope.ingestion_time for r in snap.records]
+    assert ingestion == sorted(ingestion)
+
+
+# ── Expanded path / init coverage ─────────────────────────────────────────────
+
+
+def test_hostile_pathlike_across_all_entry_points(tmp_path) -> None:
+    hostile = _HostilePathLike()
+    assert pit.load_and_verify_point_in_time_record_store(hostile).error_codes == (
+        "RECORD_STORE_PATH_INVALID",
+    )
+    assert pit.append_point_in_time_records(hostile, []).error_codes == (
+        "RECORD_STORE_PATH_INVALID",
+    )
+    recs = _records()
+    reference = _batch_reference([recs["MKT-LATE"]])
+    assert pit.materialize_dataset_snapshot_reference(hostile, reference).error_codes == (
+        "RECORD_STORE_PATH_INVALID",
+    )
+
+
+def test_tuple_subclass_is_rejected_without_iteration(tmp_path) -> None:
+    path = _new_store(tmp_path)
+
+    class _HostileTuple(tuple):
+        def __iter__(self):
+            raise RuntimeError("must not iterate a tuple subclass")
+
+    result = pit.append_point_in_time_records(str(path), _HostileTuple())
+    assert result.error_codes == ("RECORD_STORE_INPUT_INVALID",)
+
+
+def test_symlink_db_target_is_rejected(tmp_path) -> None:
+    real = _seed_store(tmp_path)
+    link = tmp_path / "link.sqlite3"
+    try:
+        link.symlink_to(real)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlink creation not permitted in this environment")
+    result = pit.load_and_verify_point_in_time_record_store(str(link))
+    assert result.error_codes == ("RECORD_STORE_PATH_INVALID",)
+
+
+def test_post_commit_failure_preserves_preexisting_pristine_file(
+    tmp_path, monkeypatch
+) -> None:
+    path = tmp_path / "pristine.sqlite3"
+    con = _raw_connect(path)
+    con.close()  # a pre-existing, caller-owned, pristine (empty) SQLite file
+
+    def _boom(_path):
+        return RS._rejected("RECORD_STORE_SCHEMA_UNSUPPORTED")
+
+    monkeypatch.setattr(RS, "_load_path", _boom)
+    result = pit.initialize_point_in_time_record_store(str(path))
+    assert not result.is_valid
+    # A pre-existing caller file is never removed by init cleanup.
+    assert path.exists()
+
+
+# ── Expanded schema tamper coverage ───────────────────────────────────────────
+
+
+def test_extra_view_is_rejected(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    con = _raw_connect(path)
+    con.execute("CREATE VIEW leak AS SELECT * FROM records")
+    con.close()
+    assert pit.load_and_verify_point_in_time_record_store(str(path)).error_codes == (
+        "RECORD_STORE_SCHEMA_UNSUPPORTED",
+    )
+
+
+def test_extra_trigger_is_rejected(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    con = _raw_connect(path)
+    con.execute(
+        "CREATE TRIGGER t AFTER INSERT ON records BEGIN SELECT 1; END"
+    )
+    con.close()
+    assert pit.load_and_verify_point_in_time_record_store(str(path)).error_codes == (
+        "RECORD_STORE_SCHEMA_UNSUPPORTED",
+    )
+
+
+def test_extra_index_is_rejected(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    con = _raw_connect(path)
+    con.execute("CREATE INDEX extra_idx ON records(classification)")
+    con.close()
+    assert pit.load_and_verify_point_in_time_record_store(str(path)).error_codes == (
+        "RECORD_STORE_SCHEMA_UNSUPPORTED",
+    )
+
+
+def test_wrong_index_columns_are_rejected(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    con = _raw_connect(path)
+    con.execute("DROP INDEX idx_pit_records_market_id")
+    con.execute("CREATE INDEX idx_pit_records_market_id ON records(source_id)")
+    con.close()
+    assert pit.load_and_verify_point_in_time_record_store(str(path)).error_codes == (
+        "RECORD_STORE_SCHEMA_UNSUPPORTED",
+    )
+
+
+def test_missing_meta_row_is_rejected(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    con = _raw_connect(path)
+    con.execute("DELETE FROM record_store_meta")
+    con.close()
+    assert pit.load_and_verify_point_in_time_record_store(str(path)).error_codes == (
+        "RECORD_STORE_SCHEMA_UNSUPPORTED",
+    )
+
+
+# ── Expanded stored-payload tamper coverage ───────────────────────────────────
+
+
+def test_nan_payload_is_rejected(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    con = _raw_connect(path)
+    victim = con.execute("SELECT record_version_id FROM records LIMIT 1").fetchone()[0]
+    con.execute(
+        'UPDATE records SET payload_json=\'{"x": NaN}\' WHERE record_version_id=?',
+        (victim,),
+    )
+    con.close()
+    assert pit.load_and_verify_point_in_time_record_store(str(path)).error_codes == (
+        "RECORD_STORE_PAYLOAD_INVALID",
+    )
+
+
+def test_non_object_payload_is_rejected(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    con = _raw_connect(path)
+    victim = con.execute("SELECT record_version_id FROM records LIMIT 1").fetchone()[0]
+    con.execute(
+        "UPDATE records SET payload_json='[1,2,3]' WHERE record_version_id=?",
+        (victim,),
+    )
+    con.close()
+    assert pit.load_and_verify_point_in_time_record_store(str(path)).error_codes == (
+        "RECORD_STORE_PAYLOAD_INVALID",
+    )
+
+
+def test_noncanonical_payload_is_rejected(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    con = _raw_connect(path)
+    victim, payload = con.execute(
+        "SELECT record_version_id, payload_json FROM records LIMIT 1"
+    ).fetchone()
+    con.execute(
+        "UPDATE records SET payload_json=? WHERE record_version_id=?",
+        (" " + payload, victim),  # leading space -> not canonical
+    )
+    con.close()
+    assert pit.load_and_verify_point_in_time_record_store(str(path)).error_codes == (
+        "RECORD_STORE_PAYLOAD_INVALID",
+    )
+
+
+def test_payload_sha_mismatch_alone_is_rejected(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    con = _raw_connect(path)
+    victim = con.execute("SELECT record_version_id FROM records LIMIT 1").fetchone()[0]
+    con.execute(
+        "UPDATE records SET payload_sha256=? WHERE record_version_id=?",
+        ("0" * 64, victim),
+    )
+    con.close()
+    assert pit.load_and_verify_point_in_time_record_store(str(path)).error_codes == (
+        "RECORD_STORE_PAYLOAD_INVALID",
+    )
+
+
+@pytest.mark.parametrize(
+    "column,value",
+    [
+        ("parameter_set_id", "parameters:tampered"),
+        ("validator_version", "validator:tampered"),
+        ("platform_id", "platform:tampered"),
+        ("human_review_required", 1),
+    ],
+)
+def test_indexed_column_row_payload_mismatch_is_rejected(tmp_path, column, value) -> None:
+    path = _new_store(tmp_path)
+    # Use a market record so platform_id/human_review columns are populated.
+    primary = _records()["MKT-META-PRIMARY"]
+    pit.append_point_in_time_records(str(path), [primary])
+    con = _raw_connect(path)
+    con.execute(
+        f"UPDATE records SET {column}=? WHERE record_version_id=?",
+        (value, primary.envelope.record_version_id),
+    )
+    con.close()
+    assert pit.load_and_verify_point_in_time_record_store(str(path)).error_codes == (
+        "RECORD_STORE_PAYLOAD_INVALID",
+    )
+
+
+def test_safety_posture_tamper_in_payload_is_rejected(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    primary = _records()["MKT-META-PRIMARY"]
+    pit.append_point_in_time_records(str(path), [primary])
+
+    def _flip_safety(mapping):
+        mapping["envelope"]["advisory_only"] = False
+
+    _tamper_row_payload(path, primary.envelope.record_version_id, _flip_safety)
+    result = pit.load_and_verify_point_in_time_record_store(str(path))
+    # The tampered envelope no longer reproduces its committed identity.
+    assert not result.is_valid
+    assert result.error_codes[0] in {
+        "RECORD_STORE_RECORD_INVALID",
+        "RECORD_STORE_PAYLOAD_INVALID",
+    }
+
+
+# ── Expanded lineage / authority coverage ─────────────────────────────────────
+
+
+def _corrected(
+    *,
+    market_id=None,
+    observed="2026-01-01T00:04:30Z",
+    ingestion="2026-01-01T00:05:00Z",
+    parent_id,
+    sup_id,
+):
+    inp = _meta(
+        source_assertion_id="assertion:metadata:001",
+        observed_time=observed,
+        ingestion_time=ingestion,
+        classification="PROJECT_CORRECTION",
+        parents=[parent_id],
+        supersedes=sup_id,
+        payload={
+            "question_text": "Will the corrected synthetic condition be true?",
+            "market_status": "RESOLVED_SYNTHETIC",
+            "outcome_labels": ["YES_SYNTHETIC", "NO_SYNTHETIC"],
+        },
+    )
+    if market_id is not None:
+        inp["market_id"] = market_id
+    return _require(pit.build_market_observation(inp))
+
+
+def test_correction_wrong_entity_is_lineage_invalid(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    primary = _records()["MKT-META-PRIMARY"]
+    pid = primary.envelope.record_version_id
+    # A self-consistent correction whose supersedes target is a different entity.
+    wrong = _corrected(market_id="market:synthetic:other", parent_id=pid, sup_id=pid)
+    result = pit.append_point_in_time_records(str(path), [primary, wrong])
+    assert result.error_codes == ("RECORD_STORE_LINEAGE_INVALID",)
+
+
+def test_correction_earlier_than_parent_is_lineage_invalid(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    primary = _records()["MKT-META-PRIMARY"]  # ingestion 2026-01-01T00:00:02Z
+    pid = primary.envelope.record_version_id
+    early = _corrected(
+        observed="2026-01-01T00:00:00Z",
+        ingestion="2026-01-01T00:00:01Z",
+        parent_id=pid,
+        sup_id=pid,
+    )
+    result = pit.append_point_in_time_records(str(path), [primary, early])
+    assert result.error_codes == ("RECORD_STORE_LINEAGE_INVALID",)
+
+
+def test_exact_duplicate_payload_mismatch_is_lineage_invalid(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    primary = _records()["MKT-META-PRIMARY"]
+    pid = primary.envelope.record_version_id
+    # EXACT_DUPLICATE whose payload differs from the parent's payload.
+    inp = _meta(
+        source_assertion_id="assertion:metadata:001",
+        observed_time="2026-01-01T00:04:00Z",
+        ingestion_time="2026-01-01T00:04:01Z",
+        classification="EXACT_DUPLICATE",
+        parents=[pid],
+        payload={
+            "question_text": "A DIFFERENT question entirely.",
+            "market_status": "OPEN_SYNTHETIC",
+            "outcome_labels": ["YES_SYNTHETIC", "NO_SYNTHETIC"],
+        },
+    )
+    dup = _require(pit.build_market_observation(inp))
+    result = pit.append_point_in_time_records(str(path), [primary, dup])
+    assert result.error_codes == ("RECORD_STORE_LINEAGE_INVALID",)
+
+
+def test_semantic_duplicate_identity_mismatch_is_lineage_invalid(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    primary = _records()["MKT-META-PRIMARY"]
+    pid = primary.envelope.record_version_id
+    # SEMANTIC_DUPLICATE against a parent of a different entity/observation.
+    inp = _meta(
+        source_assertion_id="assertion:metadata:001",
+        observed_time="2026-01-01T00:05:00Z",
+        ingestion_time="2026-01-01T00:05:01Z",
+        classification="SEMANTIC_DUPLICATE",
+        parents=[pid],
+        payload={
+            "market_status": "OPEN_SYNTHETIC",
+            "outcome_labels": ["YES_SYNTHETIC", "NO_SYNTHETIC"],
+            "question_text": "Will the synthetic condition be true?",
+            "source_representation": "ALTERNATE_SYNTHETIC",
+        },
+    )
+    inp["market_id"] = "market:synthetic:other"
+    dup = _require(pit.build_market_observation(inp))
+    result = pit.append_point_in_time_records(str(path), [primary, dup])
+    assert result.error_codes == ("RECORD_STORE_LINEAGE_INVALID",)
+
+
+def test_self_parent_and_duplicate_parent_are_caught_by_self_validation(tmp_path) -> None:
+    # Duplicate/self parents break the committed record-version identity, so WP156
+    # self-validation is the first gate and they fail closed as RECORD_INVALID
+    # before store-level lineage is reached.
+    path = _new_store(tmp_path)
+    primary = _records()["MKT-META-PRIMARY"]
+    self_env = dataclasses.replace(
+        primary.envelope, lineage_parent_ids=(primary.envelope.record_version_id,)
+    )
+    self_parent = dataclasses.replace(primary, envelope=self_env)
+    assert pit.append_point_in_time_records(str(path), [self_parent]).error_codes == (
+        "RECORD_STORE_RECORD_INVALID",
+    )
+
+
+# ── Expanded materialization coverage ─────────────────────────────────────────
+
+
+def test_malformed_direct_reference_dataclass_is_rejected(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    recs = _records()
+    valid = _batch_reference([recs["MKT-LATE"]])
+    # A directly-mutated dataclass that no longer rebuilds through WP160.
+    broken = dataclasses.replace(valid, ordinary_record_version_ids=("not-an-id",))
+    result = pit.materialize_dataset_snapshot_reference(str(path), broken)
+    assert result.error_codes == ("RECORD_STORE_REFERENCE_INVALID",)
+    assert result.dataset_reference is None
+
+
+def test_empty_asof_materialization_succeeds(tmp_path) -> None:
+    path = _seed_store(tmp_path)
+    reference = _asof_reference([])
+    result = pit.materialize_dataset_snapshot_reference(str(path), reference)
+    assert result.is_valid
+    assert result.verification_mode == "AS_OF_REFERENCE_IDS_RESOLVED"
+    assert result.ordinary_records == ()
+    assert result.review_conflict_records == ()
+
+
+def test_asof_review_conflict_materialization(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    recs = _records()
+    pit.append_point_in_time_records(
+        str(path), [recs["MKT-META-PRIMARY"], recs["MKT-CONFLICT"]]
+    )
+    reference = _asof_reference([recs["MKT-META-PRIMARY"]], [recs["MKT-CONFLICT"]])
+    result = pit.materialize_dataset_snapshot_reference(str(path), reference)
+    assert result.is_valid and result.human_review_required is True
+    assert [r.envelope.record_version_id for r in result.review_conflict_records] == [
+        recs["MKT-CONFLICT"].envelope.record_version_id
+    ]
+
+
+def test_missing_reference_id_yields_no_partial_output(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    recs = _records()
+    pit.append_point_in_time_records(str(path), [recs["MKT-LATE"]])
+    reference = _asof_reference([recs["MKT-LATE"], recs["MKT-BOOK-NOEVENT"]])
+    result = pit.materialize_dataset_snapshot_reference(str(path), reference)
+    assert result.error_codes == ("RECORD_STORE_REFERENCE_MISSING_RECORD",)
+    assert result.ordinary_records == ()
+    assert result.review_conflict_records == ()
+    assert result.verification_mode is None
+
+
+# ── Boundary and no-echo coverage ─────────────────────────────────────────────
+
+
+def test_canonical_payload_4096_4097_boundary() -> None:
+    # A single WP156 payload string of exactly 4,096 is valid; 4,097 is rejected
+    # by WP156 (per-string bound), confirming WP163 defers embedded-payload
+    # validation to WP156 while the OUTER record uses the wider WP163 bound.
+    def build(length):
+        payload = {
+            "question_text": "x" * length,
+            "market_status": "OPEN_SYNTHETIC",
+            "outcome_labels": ["YES_SYNTHETIC"],
+        }
+        return pit.build_market_observation(
+            _meta(
+                source_assertion_id="assertion:boundary",
+                observed_time="2026-01-01T00:00:01Z",
+                ingestion_time="2026-01-01T00:00:02Z",
+                payload=payload,
+            )
+        )
+
+    assert build(4096).is_valid
+    assert not build(4097).is_valid
+
+
+def test_no_echo_recursive_over_expanded_invalid_cases(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    primary = _records()["MKT-META-PRIMARY"]
+    pit.append_point_in_time_records(str(path), [primary])
+
+    def _leak(mapping):
+        mapping["envelope"]["advisory_only"] = False
+        mapping["source_assertion_id"] = "assertion:SENSITIVE_LEAK_MARKER"
+
+    _tamper_row_payload(path, primary.envelope.record_version_id, _leak)
+    result = pit.load_and_verify_point_in_time_record_store(str(path))
+    assert not result.is_valid
+    strings = list(_iter_strings(result))
+    assert all(str(path) not in text for text in strings)
+    assert all("SENSITIVE_LEAK_MARKER" not in text for text in strings)
