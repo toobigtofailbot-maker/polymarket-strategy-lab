@@ -105,6 +105,16 @@ from .record_store import (
     load_and_verify_point_in_time_record_store,
     materialize_dataset_snapshot_reference,
 )
+from .polymarket_public_population import (
+    POLYMARKET_PUBLIC_POPULATION_ERROR_CODES,
+    POLYMARKET_PUBLIC_POPULATION_LABEL,
+    POLYMARKET_PUBLIC_POPULATION_POSTURE,
+    POLYMARKET_PUBLIC_POPULATION_STATUSES,
+    PolymarketPublicPopulationConfig,
+    PolymarketPublicPopulationResult,
+    populate_initial_polymarket_public_data,
+    recover_initial_polymarket_public_registration,
+)
 
 __all__ = (
     "FOUNDATION_LABEL",
@@ -206,4 +216,14 @@ __all__ = (
     "append_point_in_time_records",
     "load_and_verify_point_in_time_record_store",
     "materialize_dataset_snapshot_reference",
+    # WP164 bounded real/public initial Polymarket point-in-time population
+    # coordinator and offline registration recovery.
+    "POLYMARKET_PUBLIC_POPULATION_LABEL",
+    "POLYMARKET_PUBLIC_POPULATION_POSTURE",
+    "POLYMARKET_PUBLIC_POPULATION_STATUSES",
+    "POLYMARKET_PUBLIC_POPULATION_ERROR_CODES",
+    "PolymarketPublicPopulationConfig",
+    "PolymarketPublicPopulationResult",
+    "populate_initial_polymarket_public_data",
+    "recover_initial_polymarket_public_registration",
 )

@@ -1,0 +1,212 @@
+# Polymarket Point-In-Time Public Population Contract (WP164)
+
+## Label and posture
+
+- Label: `POLYMARKET_REAL_PUBLIC_INITIAL_POINT_IN_TIME_POPULATION`
+- Posture: `EXPLICIT_NETWORK_GET_ONLY_BOUNDED_INITIAL_SEED_NO_TRADING_AUTHORITY`
+- Source module:
+  `src/data_layer/point_in_time_market_research/polymarket_public_population.py`
+- Package class: `DATA_LAYER_PUBLIC_POPULATION`; size class L; risk level 1;
+  capital at risk USD 0.
+
+WP164 is the first bounded real/public Polymarket population into the merged
+point-in-time research foundation. It coordinates existing merged layers; it does
+not redesign them.
+
+## Official public endpoint basis
+
+Re-verified against current official Polymarket documentation at implementation
+time (drafting-time basis 2026-08):
+
+- Gamma API base `https://gamma-api.polymarket.com`; `GET /markets` is a public,
+  no-authentication market-list read.
+- CLOB API base `https://clob.polymarket.com`; `GET /book?token_id=...` is a
+  public, no-authentication single-token order-book read.
+- Gamma returns `clobTokenIds`, `outcomes`, and `outcomePrices` as JSON-encoded
+  strings and uses the integer `id` field as the market identifier.
+
+If the official public endpoint semantics change materially before execution, the
+correct response is an explicit architecture stop, not a silent scope adaptation.
+WP164 does not touch the Data API, positions, wallet/user activity, authenticated
+CLOB endpoints, `POST /books`, or any trading endpoint.
+
+## GET-only, no-authentication boundary
+
+WP164 performs network reads only through the existing GET-only public client
+(`PolymarketPublicClient`), constructed by default with
+`allow_unverified_endpoints=False`. The only client methods it may call are
+`get_markets` and `get_order_book_snapshot`. It never imports `urllib`,
+`requests`, `httpx`, `aiohttp`, `websockets`, `socket`, `subprocess`,
+`os.environ`, a credential/wallet module, or an order/execution module. It handles
+no credentials and performs no authenticated request.
+
+## Local rate-limit guard remains the runtime authority
+
+The existing conservative local polling policy (`default_polling_policy()` plus
+`validate_polling_policy()`) and `RateLimitGuard` remain the sole runtime request
+authority. WP164 does not increase, redesign, or reconcile the repo's local
+budgets against the venue's published limits (that reconciliation is deferred as
+`WP164-D006`). The guard is consulted immediately before the single possible Gamma
+request and before every CLOB book request; a guard denial makes no call and, for
+a book denial, rejects the whole run before any persistence.
+
+## Initial-seed-only design and the empty-store requirement
+
+WP164 performs an INITIAL SEED only. A new network population requires the WP163
+record store to be empty. If the record store is non-empty, the network-capable
+function makes zero network calls and rejects with
+`POPULATION_RECORD_STORE_NOT_EMPTY`.
+
+The seed records are fixed as classification `PRIMARY_ASSERTION`, lifecycle
+`NORMALIZED_ACCEPTED`, empty lineage parents, and no supersedes. WP164 never
+invents uncommitted cross-run lineage/provenance; incremental/repeated capture
+with committed external-parent lineage is a separately gated successor
+(`WP164-D001`).
+
+## Public API
+
+- Constants: `POLYMARKET_PUBLIC_POPULATION_LABEL`,
+  `POLYMARKET_PUBLIC_POPULATION_POSTURE`,
+  `POLYMARKET_PUBLIC_POPULATION_STATUSES` (six ordered statuses),
+  `POLYMARKET_PUBLIC_POPULATION_ERROR_CODES` (fourteen ordered codes).
+- Frozen dataclasses: `PolymarketPublicPopulationConfig`,
+  `PolymarketPublicPopulationResult`.
+- Functions: `populate_initial_polymarket_public_data(...)` and
+  `recover_initial_polymarket_public_registration(...)`.
+
+`PolymarketPublicPopulationConfig` fixes `markets_limit` (0..25, default 3),
+`order_books_limit` (0..20, default 0), and `allow_network` (default `False`). No
+path, URL, header, endpoint choice, or HTTP method is caller-configurable. The
+optional `client`, `guard`, `now_provider`, and `utcnow_provider` arguments are
+testing/injection seams only. Schema v1 defines no warning codes, so
+`warning_codes` is always empty; every result fixes `advisory_only=True` and
+`no_execution_authority=True`.
+
+## Dry-run posture
+
+With the default `allow_network=False`, after verifying valid stores, an empty
+record store, and a valid polling policy, the coordinator returns a valid
+`POPULATION_DRY_RUN` result with `network_used=False`, zero fetched/built/inserted
+counts, and no store write and no client method call. A dry run is a valid safety
+result, not an error.
+
+## Gamma normalization
+
+Each parsed Gamma market becomes one WP156 `MARKET_METADATA` observation:
+
+- `platform_id = platform:polymarket`; `market_id = market:polymarket:<gamma id>`;
+  `event_id = event:polymarket:<condition id>` when a condition id is present,
+  otherwise `event:polymarket:market-<gamma id>`;
+  `source_id = source:polymarket:gamma-markets`; `token_id = None`; content-addressed
+  `source_snapshot_id` and `source_assertion_id`.
+- Canonical payload: `question_text`, `market_status`, ordered `outcome_labels`,
+  `condition_id`, ordered `token_ids`, `resolution_date` (string or null),
+  `category` (string or null), and sorted `raw_field_names`. The full raw Gamma
+  object is not stored and no float value enters the canonical payload.
+
+Every selected market is parsed through the public `parse_market_summary`; a
+malformed selected market or a duplicate market id rejects the whole run rather
+than being silently skipped. `markets_limit == 0` in a network run is rejected as
+`POPULATION_INPUT_INVALID` rather than registering an empty seed.
+
+## Optional CLOB normalization
+
+Each selected token becomes one WP156 `ORDER_BOOK` observation whose parent is the
+unique Gamma market that owns the token. Token IDs come only from successfully
+parsed Gamma markets; any token that maps to more than one market rejects the run.
+Token selection is deterministic: markets sorted by namespaced market id, token
+order preserved within each market, exact duplicate token IDs removed, first
+`bounded_order_books_limit` taken.
+
+- Identifiers: parent `event_id`/`market_id`;
+  `token_id = token:polymarket:<raw token id>`;
+  `source_id = source:polymarket:clob-book`; content-addressed source ids.
+- Canonical payload: ordered `bids`/`asks` levels each with exactly `price` and
+  `size` string fields, `tick_size`, `minimum_order_size`, and the bounded extras
+  `clob_timestamp`, `book_hash`, `last_trade_price` (each string or null), and
+  sorted `raw_field_names`. `asset_id`, when present, must equal the requested raw
+  token id. A malformed requested book rejects the entire run.
+
+## Deterministic run identities and record order
+
+After all requested network reads succeed, a single UTC timestamp is captured
+(canonical `Z`, at most six fractional digits) and used as `observed_time`,
+`ingestion_time`, and manifest `effective_time` for every record. Deterministic
+run identities are content-addressed from the captured timestamp, the ordered
+normalized Gamma and CLOB payload hashes, and the config parameter set and
+normalizer/validator versions:
+
+- `snapshot_id = "snapshot:sha256:" + SHA256(canonical preimage)`
+- `ingestion_batch_id = "ingest:sha256:" + SHA256(canonical preimage)`
+
+No random UUID is used and API response order never controls dataset identity. The
+final record order is Gamma `MARKET_METADATA` sorted by namespaced `market_id`,
+then `ORDER_BOOK` sorted by `market_id` then `token_id`.
+
+## WP156 validation before persistence
+
+Every record is built only through the public `build_market_observation`. Before
+any persistence call the complete batch is validated with `validate_record_batch`
+and no external known parents; the batch must be valid, carry no quarantine, have
+accepted ids equal to and matching the built records uniquely, and stay within 256
+records.
+
+## Records-first, reference-second ordering
+
+Records are persisted through WP163 `append_point_in_time_records` (requiring
+`RECORD_STORE_APPEND_COMMITTED` and inserted ids exactly equal to the validated
+built ids) before the exact validated batch is registered through WP162
+`persist_validated_record_batch_snapshot` into WP161. This fail-safe ordering is
+locked: records first, reference second.
+
+- A record-append failure never registers a manifest reference and returns
+  `POPULATION_REJECTED` / `POPULATION_RECORD_APPEND_FAILED`, copying only closed
+  WP163 error codes.
+- A registration failure after a committed append never deletes the immutable
+  WP163 records and never fabricates cross-store rollback; it returns
+  `POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED` with `recovery_required=True`.
+
+WP164 makes no cross-file atomicity claim; a true cross-store coordinator is
+deferred (`WP164-D007`, tracking `WP163-D002`).
+
+## Offline registration recovery
+
+`recover_initial_polymarket_public_registration` performs zero network activity,
+constructs no client, and never writes records. It re-registers a store proven to
+be exactly one valid unregistered/retryable WP164 seed: 1..45 total records
+(at most 25 Gamma metadata plus at most 20 books), every record an exact
+`MarketObservationRecord` on `platform:polymarket` with a WP164 source id matching
+its observation kind, `PRIMARY_ASSERTION`/`NORMALIZED_ACCEPTED`, no lineage parents
+or supersedes, and config-matching parameter/normalizer/validator versions, all
+sharing exactly one `snapshot_id`, one `ingestion_batch_id`, and one
+`observed_time == ingestion_time`. It re-sorts into WP164 order, re-runs
+`validate_record_batch`, and re-registers through WP162 using the unique ingestion
+time as `effective_time`.
+
+## No raw-response persistence, no old JSONL write path
+
+WP164 persists only normalized WP156 observations; it never stores raw
+HTTP/source-response bytes (deferred as `WP164-D002`). WP164 does not write WP10
+JSONL snapshots and does not import or call `snapshot_writer`, `write_snapshots`,
+`capture_market_snapshots`, or any `local_data/` path. The durable authority is the
+WP163 SQLite record store plus the WP161 manifest store. The historical WP10 JSONL
+snapshot infrastructure remains historical and is not a WP164 write authority.
+
+## No scheduler, retry, or incremental authority
+
+WP164 adds no scheduler, daemon, cron, background loop, retry, backoff, or sleep.
+It contains ordinary `Exception` around every policy, guard, client, parser,
+normalization, builder, validation, store, registration, and clock call; it never
+catches `BaseException` and never echoes a path, URL, raw response, question text,
+source payload, record repr, exception text, or credential.
+
+## Successor boundary
+
+Repeated/incremental public capture into a non-empty store, automatic
+`SOURCE_REVISION`/`EXACT_DUPLICATE` cross-run lineage, external committed parent
+context, wider keyset/pagination active-market coverage, order-book depth/history
+scaling, historical trades / Data API ingestion, official rate-limit reconciliation,
+and a cross-file transaction coordinator or stronger recovery ledger are all
+separately gated successors (`WP164-D001` through `WP164-D007`). This document does
+not amend the WP163 record-store contract, which remains historically correct that
+WP163 itself had no real/public population authority.

@@ -720,6 +720,8 @@ def test_no_src_implementation_for_wp98() -> None:
                 "src/data_layer/point_in_time_market_research/dataset_persistence_adapter.py",
                 # WP163: bounded durable local SQLite point-in-time record store
                 "src/data_layer/point_in_time_market_research/record_store.py",
+                # WP164: bounded real/public initial Polymarket point-in-time population
+                "src/data_layer/point_in_time_market_research/polymarket_public_population.py",
             }
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (
