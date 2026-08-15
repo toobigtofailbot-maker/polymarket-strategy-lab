@@ -148,6 +148,158 @@ def _stores():
     return record_path, manifest_path
 
 
+def _advancing_now():
+    """An injected monotonic surrogate that satisfies every conservative interval.
+
+    This lives only in tests; production never fabricates elapsed guard time.
+    """
+
+    state = {"t": 0.0}
+
+    def _next() -> float:
+        state["t"] += 3600.0
+        return state["t"]
+
+    return _next
+
+
+def _raise(exc):
+    def _boom(*args, **kwargs):
+        raise exc
+
+    return _boom
+
+
+# ── Forgery builders for recovery re-proof tests ──────────────────────────────
+
+from src.data_layer.point_in_time_market_research.records import (  # noqa: E402
+    SUPPORTED_SCHEMA_ID,
+    SUPPORTED_SCHEMA_VERSION,
+    build_market_observation,
+)
+
+
+def _gamma_payload(condition="0xcond100", tokens=("tokA",)):
+    return {
+        "question_text": "Q",
+        "market_status": "open",
+        "outcome_labels": ["Yes", "No"],
+        "condition_id": condition,
+        "token_ids": list(tokens),
+        "resolution_date": None,
+        "category": None,
+        "raw_field_names": ["id"],
+    }
+
+
+def _clob_payload():
+    return {
+        "bids": [{"price": "0.4", "size": "1"}],
+        "asks": [{"price": "0.6", "size": "1"}],
+        "tick_size": "0.01",
+        "minimum_order_size": "1",
+        "clob_timestamp": None,
+        "book_hash": None,
+        "last_trade_price": None,
+        "raw_field_names": ["asks", "bids"],
+    }
+
+
+def _make_gamma_record(
+    cfg,
+    *,
+    snapshot_id,
+    ingestion_batch_id,
+    captured,
+    market_id="market:polymarket:100",
+    event_id="event:polymarket:0xcond100",
+    payload=None,
+    source_snapshot_id=None,
+    source_assertion_id=None,
+):
+    payload = payload if payload is not None else _gamma_payload()
+    if source_snapshot_id is None:
+        source_snapshot_id = pop._content_id(
+            "srcsnap:sha256:",
+            {
+                "source_id": pop._GAMMA_SOURCE_ID,
+                "market_id": market_id,
+                "snapshot_id": snapshot_id,
+                "canonical_payload": payload,
+            },
+        )
+    if source_assertion_id is None:
+        source_assertion_id = pop._content_id(
+            "assertion:sha256:",
+            {
+                "source_snapshot_id": source_snapshot_id,
+                "observation_kind": "MARKET_METADATA",
+                "market_id": market_id,
+                "event_id": event_id,
+                "token_id": None,
+            },
+        )
+    inp = {
+        "schema_id": SUPPORTED_SCHEMA_ID,
+        "schema_version": SUPPORTED_SCHEMA_VERSION,
+        "record_family": "MARKET_OBSERVATION",
+        "observation_kind": "MARKET_METADATA",
+        "platform_id": pop._PLATFORM_ID,
+        "event_id": event_id,
+        "market_id": market_id,
+        "token_id": None,
+        "source_id": pop._GAMMA_SOURCE_ID,
+        "source_assertion_id": source_assertion_id,
+        "source_snapshot_id": source_snapshot_id,
+        "snapshot_id": snapshot_id,
+        "ingestion_batch_id": ingestion_batch_id,
+        "event_time": None,
+        "observed_time": captured,
+        "ingestion_time": captured,
+        "lifecycle_state": "NORMALIZED_ACCEPTED",
+        "classification": "PRIMARY_ASSERTION",
+        "lineage_parent_ids": [],
+        "supersedes_record_version_id": None,
+        "normalizer_version": cfg.normalizer_version,
+        "validator_version": cfg.validator_version,
+        "parameter_set_id": cfg.parameter_set_id,
+        "human_review_required": False,
+        "canonical_payload": payload,
+    }
+    result = build_market_observation(inp)
+    assert result.is_valid, result.error_codes
+    return result.record
+
+
+def _make_book_record(
+    cfg,
+    *,
+    snapshot_id,
+    ingestion_batch_id,
+    captured,
+    raw_token,
+    market_id="market:polymarket:100",
+    event_id="event:polymarket:0xcond100",
+    payload=None,
+):
+    payload = payload if payload is not None else _clob_payload()
+    parent = {"market_id": market_id, "event_id": event_id}
+    return pop._build_order_book_record(
+        parent,
+        raw_token,
+        payload,
+        snapshot_id=snapshot_id,
+        ingestion_batch_id=ingestion_batch_id,
+        captured_at_utc=captured,
+        config=cfg,
+    )
+
+
+_ARB_SNAPSHOT = "snapshot:sha256:" + "a" * 64
+_ARB_INGEST = "ingest:sha256:" + "b" * 64
+_ARB_TIME = "2026-08-14T12:00:00Z"
+
+
 # ── Public surface ────────────────────────────────────────────────────────────
 
 
@@ -406,14 +558,19 @@ def test_response_order_does_not_change_identity():
             books={f"tok{mid}a": _book(f"tok{mid}a") for mid in order}
             | {f"tok{mid}b": _book(f"tok{mid}b") for mid in order},
         )
+        # An injected time sequence satisfying the guard intervals lets the
+        # multi-book run complete so identity determinism is actually proven.
         return populate_initial_polymarket_public_data(
             record_path, manifest_path,
             _config(allow_network=True, markets_limit=2, order_books_limit=4),
-            client=client, utcnow_provider=_clock,
+            client=client, now_provider=_advancing_now(), utcnow_provider=_clock,
         )
 
     forward = run(["100", "200"])
     reverse = run(["200", "100"])
+    assert forward.status == "POPULATION_PERSISTED_AND_REGISTERED"
+    assert reverse.status == "POPULATION_PERSISTED_AND_REGISTERED"
+    assert forward.snapshot_id is not None
     assert forward.snapshot_id == reverse.snapshot_id
     assert forward.dataset_snapshot_reference_id == reverse.dataset_snapshot_reference_id
     assert forward.manifest_entry_id == reverse.manifest_entry_id
@@ -896,3 +1053,284 @@ def test_module_only_uses_get_only_client_methods():
     assert "get_order_book_snapshot" in attributes
     for forbidden in ("get_health", "get_market", "get_books", "post"):
         assert forbidden not in attributes, forbidden
+
+
+# ── Blocker A: the local guard is the runtime authority ───────────────────────
+
+
+def test_production_default_has_no_fabricated_guard_clock():
+    source = _module_source()
+    assert "_default_now_provider" not in source
+    assert "3600" not in source
+
+
+def test_real_guard_constant_time_denies_second_book():
+    # Real RateLimitGuard (default) + a constant injected time: the conservative
+    # minimum interval must deny the second back-to-back CLOB book.
+    record_path, manifest_path = _stores()
+    client = FakeClient(
+        [_market("100", ["tokA", "tokB"])],
+        books={"tokA": _book("tokA"), "tokB": _book("tokB")},
+    )
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path,
+        _config(allow_network=True, markets_limit=1, order_books_limit=2),
+        client=client, now_provider=lambda: 1000.0, utcnow_provider=_clock,
+    )
+    assert result.error_codes == ("POPULATION_GUARD_DENIED",)
+    assert result.network_used is True
+    # First book fetched; second denied before its client call; nothing persisted.
+    assert client.book_calls == ["tokA"]
+    assert load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
+
+
+def test_injected_advancing_time_allows_multiple_books():
+    record_path, manifest_path = _stores()
+    client = FakeClient(
+        [_market("100", ["tokA", "tokB"])],
+        books={"tokA": _book("tokA"), "tokB": _book("tokB")},
+    )
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path,
+        _config(allow_network=True, markets_limit=1, order_books_limit=2),
+        client=client, now_provider=_advancing_now(), utcnow_provider=_clock,
+    )
+    assert result.status == "POPULATION_PERSISTED_AND_REGISTERED"
+    assert result.fetched_order_book_count == 2
+    assert client.book_calls == ["tokA", "tokB"]
+
+
+# ── Observability: network_used is truthful ───────────────────────────────────
+
+
+def test_gamma_guard_denial_reports_network_used_false():
+    record_path, manifest_path = _stores()
+    client = FakeClient([_market("100", ["a"])])
+    guard = DenyGuard(deny_key="gamma_markets")
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, guard=guard, utcnow_provider=_clock,
+    )
+    assert result.error_codes == ("POPULATION_GUARD_DENIED",)
+    assert result.network_used is False
+    assert client.markets_calls == 0
+
+
+def test_book_guard_denial_after_gamma_reports_network_used_true():
+    record_path, manifest_path = _stores()
+    client = FakeClient([_market("100", ["tokA"])], books={"tokA": _book("tokA")})
+    guard = DenyGuard(deny_key="clob_book")
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path,
+        _config(allow_network=True, markets_limit=1, order_books_limit=1),
+        client=client, guard=guard, utcnow_provider=_clock,
+    )
+    assert result.error_codes == ("POPULATION_GUARD_DENIED",)
+    assert result.network_used is True
+    assert client.markets_calls == 1
+
+
+# ── Blocker B: registration exception after committed append is recoverable ───
+
+
+def test_registration_exception_after_commit_preserves_recovery(monkeypatch):
+    record_path, manifest_path = _stores()
+    marker = "SECRET_REG_MARKER_beef"
+    url = "https://reg.invalid/leak?token=xyz"
+    monkeypatch.setattr(
+        pop,
+        "persist_validated_record_batch_snapshot",
+        _raise(RuntimeError(f"{marker} {url}")),
+    )
+    client = FakeClient([_market("100", ["a"])])
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock,
+    )
+    assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.is_valid is False
+    assert result.recovery_required is True
+    assert result.network_used is True
+    assert result.record_store_status == "RECORD_STORE_APPEND_COMMITTED"
+    assert result.registration_error_codes == ()  # a raised exception echoes nothing
+    assert result.dataset_snapshot_reference_id is None
+    assert result.manifest_entry_id is None
+    text = repr(result)
+    assert marker not in text and url not in text
+    # Records remain committed; manifest untouched.
+    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+    assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
+
+
+def test_offline_recovery_after_raised_registration_exception(monkeypatch):
+    record_path, manifest_path = _stores()
+    cfg = _config(allow_network=True, markets_limit=1, order_books_limit=1)
+    monkeypatch.setattr(
+        pop,
+        "persist_validated_record_batch_snapshot",
+        _raise(RuntimeError("boom during population registration")),
+    )
+    client = FakeClient([_market("100", ["tokA"])], books={"tokA": _book("tokA")})
+    first = populate_initial_polymarket_public_data(
+        record_path, manifest_path, cfg, client=client, utcnow_provider=_clock
+    )
+    assert first.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    monkeypatch.undo()
+    recovered = recover_initial_polymarket_public_registration(
+        record_path, manifest_path, cfg
+    )
+    assert recovered.status == "POPULATION_RECOVERED_REGISTRATION"
+    assert recovered.network_used is False
+    assert len(load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries) == 1
+
+
+def test_recovery_side_registration_exception_fails_closed(monkeypatch):
+    record_path, manifest_path = _stores()
+    cfg = _config(allow_network=True, markets_limit=1, order_books_limit=1)
+    _seed_unregistered(None, record_path, manifest_path, cfg)
+    before = len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+    marker = "SECRET_RECOVER_MARKER_cafe"
+    url = "https://recover.invalid/leak"
+    monkeypatch.setattr(
+        pop,
+        "persist_validated_record_batch_snapshot",
+        _raise(RuntimeError(f"{marker} {url}")),
+    )
+    result = recover_initial_polymarket_public_registration(
+        record_path, manifest_path, cfg
+    )
+    assert result.is_valid is False
+    assert result.error_codes == ("POPULATION_REGISTRATION_FAILED",)
+    text = repr(result)
+    assert marker not in text and url not in text
+    # Recovery never mutates records.
+    assert (
+        len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+        == before
+    )
+
+
+# ── Blocker C: recovery re-proves genuine WP164 construction ──────────────────
+
+
+def test_recovery_rejects_forged_seed_with_arbitrary_identity_ids():
+    record_path, manifest_path = _stores()
+    cfg = _config()
+    # A WP156-valid record reusing WP164 source IDs but with arbitrary, self-
+    # consistent snapshot/batch IDs (source ids derived from the arbitrary snapshot).
+    forged = _make_gamma_record(
+        cfg, snapshot_id=_ARB_SNAPSHOT, ingestion_batch_id=_ARB_INGEST, captured=_ARB_TIME
+    )
+    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+
+    append_point_in_time_records(record_path, (forged,))
+    result = recover_initial_polymarket_public_registration(
+        record_path, manifest_path, cfg
+    )
+    assert result.error_codes == ("POPULATION_RECOVERY_INVALID",)
+    assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
+
+
+def test_recovery_rejects_book_only_store():
+    record_path, manifest_path = _stores()
+    cfg = _config()
+    book = _make_book_record(
+        cfg,
+        snapshot_id=_ARB_SNAPSHOT,
+        ingestion_batch_id=_ARB_INGEST,
+        captured=_ARB_TIME,
+        raw_token="tokA",
+    )
+    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+
+    append_point_in_time_records(record_path, (book,))
+    result = recover_initial_polymarket_public_registration(
+        record_path, manifest_path, cfg
+    )
+    assert result.error_codes == ("POPULATION_RECOVERY_INVALID",)
+
+
+def test_recovery_rejects_orphan_clob_token():
+    record_path, manifest_path = _stores()
+    cfg = _config()
+    gamma = _make_gamma_record(
+        cfg,
+        snapshot_id=_ARB_SNAPSHOT,
+        ingestion_batch_id=_ARB_INGEST,
+        captured=_ARB_TIME,
+        payload=_gamma_payload(tokens=("tokA",)),
+    )
+    orphan = _make_book_record(
+        cfg,
+        snapshot_id=_ARB_SNAPSHOT,
+        ingestion_batch_id=_ARB_INGEST,
+        captured=_ARB_TIME,
+        raw_token="tokORPHAN",
+    )
+    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+
+    append_point_in_time_records(record_path, (gamma, orphan))
+    result = recover_initial_polymarket_public_registration(
+        record_path, manifest_path, cfg
+    )
+    assert result.error_codes == ("POPULATION_RECOVERY_INVALID",)
+
+
+def test_recovery_rejects_misparented_clob():
+    record_path, manifest_path = _stores()
+    cfg = _config()
+    g1 = _make_gamma_record(
+        cfg,
+        snapshot_id=_ARB_SNAPSHOT,
+        ingestion_batch_id=_ARB_INGEST,
+        captured=_ARB_TIME,
+        market_id="market:polymarket:100",
+        event_id="event:polymarket:0xcond100",
+        payload=_gamma_payload(condition="0xcond100", tokens=("tokA",)),
+    )
+    g2 = _make_gamma_record(
+        cfg,
+        snapshot_id=_ARB_SNAPSHOT,
+        ingestion_batch_id=_ARB_INGEST,
+        captured=_ARB_TIME,
+        market_id="market:polymarket:200",
+        event_id="event:polymarket:0xcond200",
+        payload=_gamma_payload(condition="0xcond200", tokens=("tokC",)),
+    )
+    # A book for tokA (owned by market 100) parented to market 200.
+    misparented = _make_book_record(
+        cfg,
+        snapshot_id=_ARB_SNAPSHOT,
+        ingestion_batch_id=_ARB_INGEST,
+        captured=_ARB_TIME,
+        raw_token="tokA",
+        market_id="market:polymarket:200",
+        event_id="event:polymarket:0xcond200",
+    )
+    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+
+    append_point_in_time_records(record_path, (g1, g2, misparented))
+    result = recover_initial_polymarket_public_registration(
+        record_path, manifest_path, cfg
+    )
+    assert result.error_codes == ("POPULATION_RECOVERY_INVALID",)
+
+
+def test_recovery_rejects_wrong_source_snapshot_id():
+    record_path, manifest_path = _stores()
+    cfg = _config()
+    forged = _make_gamma_record(
+        cfg,
+        snapshot_id=_ARB_SNAPSHOT,
+        ingestion_batch_id=_ARB_INGEST,
+        captured=_ARB_TIME,
+        source_snapshot_id="srcsnap:sha256:" + "c" * 64,  # not the WP164 derivation
+    )
+    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+
+    append_point_in_time_records(record_path, (forged,))
+    result = recover_initial_polymarket_public_registration(
+        record_path, manifest_path, cfg
+    )
+    assert result.error_codes == ("POPULATION_RECOVERY_INVALID",)

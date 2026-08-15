@@ -57,6 +57,10 @@ def test_local_guard_remains_runtime_authority():
     assert "default_polling_policy()" in text
     assert "RateLimitGuard" in text
     assert "sole runtime request authority" in text
+    assert "never fabricates elapsed guard time" in text
+    assert "native monotonic clock" in text
+    assert "only an upper bound" in text
+    assert "network_used` is truthful" in text
 
 
 def test_initial_seed_and_empty_store_requirement_documented():
@@ -89,6 +93,18 @@ def test_records_first_then_registration_ordering_documented():
     assert "append_point_in_time_records" in text
     assert "persist_validated_record_batch_snapshot" in text
     assert "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED" in text
+    assert "EVERY registration failure mode" in text
+    assert "raised registration exception is contained" in text
+
+
+def test_recovery_reproves_wp164_construction_documented():
+    text = _flat(_contract())
+    assert "re-proves the WP164 construction invariants" in text
+    assert "a book-only store is rejected" in text
+    assert "canonical payload key sets" in text
+    assert "re-derived from the stored snapshot and payload" in text
+    assert "recomputed from the unique" in text
+    assert "owned by exactly one Gamma market" in text
 
 
 def test_deterministic_identity_and_order_documented():

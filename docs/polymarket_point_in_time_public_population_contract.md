@@ -50,6 +50,14 @@ budgets against the venue's published limits (that reconciliation is deferred as
 request and before every CLOB book request; a guard denial makes no call and, for
 a book denial, rejects the whole run before any persistence.
 
+The coordinator never fabricates elapsed guard time. When no `now_provider` is
+injected the guard uses its native monotonic clock, so back-to-back requests
+inside the conservative minimum interval are denied and the run is rejected;
+`order_books_limit` is therefore only an upper bound, not a guarantee. A denial is
+never followed by a sleep, wait, backoff, or retry. `network_used` is truthful: it
+is `False` until the Gamma GET is actually attempted (so a guard denial before the
+first GET reports no network use) and `True` from that GET onward.
+
 ## Initial-seed-only design and the empty-store requirement
 
 WP164 performs an INITIAL SEED only. A new network population requires the WP163
@@ -162,9 +170,14 @@ locked: records first, reference second.
 - A record-append failure never registers a manifest reference and returns
   `POPULATION_REJECTED` / `POPULATION_RECORD_APPEND_FAILED`, copying only closed
   WP163 error codes.
-- A registration failure after a committed append never deletes the immutable
-  WP163 records and never fabricates cross-store rollback; it returns
-  `POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED` with `recovery_required=True`.
+- After a committed append, EVERY registration failure mode — an invalid adapter
+  result, a raised exception, or a malformed result — returns
+  `POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED` with `recovery_required=True`,
+  the committed `record_store_status` and counts preserved, and null
+  reference/entry IDs. It never deletes the immutable WP163 records, never
+  fabricates cross-store rollback, and never echoes an exception. A raised
+  registration exception is contained into the same recoverable partial result, so
+  committed records can never be stranded under a generic unrecoverable rejection.
 
 WP164 makes no cross-file atomicity claim; a true cross-store coordinator is
 deferred (`WP164-D007`, tracking `WP163-D002`).
@@ -179,9 +192,22 @@ be exactly one valid unregistered/retryable WP164 seed: 1..45 total records
 its observation kind, `PRIMARY_ASSERTION`/`NORMALIZED_ACCEPTED`, no lineage parents
 or supersedes, and config-matching parameter/normalizer/validator versions, all
 sharing exactly one `snapshot_id`, one `ingestion_batch_id`, and one
-`observed_time == ingestion_time`. It re-sorts into WP164 order, re-runs
-`validate_record_batch`, and re-registers through WP162 using the unique ingestion
-time as `effective_time`.
+`observed_time == ingestion_time`.
+
+Because a caller can craft WP156-valid records that merely reuse the WP164 source
+IDs and share arbitrary snapshot/batch IDs, recovery additionally re-proves the
+WP164 construction invariants before it trusts the store: at least one Gamma
+`MARKET_METADATA` record (a book-only store is rejected); the exact Gamma and CLOB
+canonical payload key sets; the exact Gamma and CLOB identifier derivations
+(`market:polymarket:`/`event:polymarket:`/`token:polymarket:` and `token_id=None`
+for metadata); each token owned by exactly one Gamma market's `token_ids` with the
+book parented to that market; the content-addressed `source_snapshot_id` and
+`source_assertion_id` re-derived from the stored snapshot and payload; and the
+content-addressed `snapshot_id`/`ingestion_batch_id` recomputed from the unique
+captured time, the ordered payload hashes, and the config, requiring an exact
+match. Only then does it re-sort into WP164 order, re-run `validate_record_batch`,
+and re-register through WP162 using the unique ingestion time as `effective_time`.
+A forged or mismatched store fails closed as `POPULATION_RECOVERY_INVALID`.
 
 ## No raw-response persistence, no old JSONL write path
 

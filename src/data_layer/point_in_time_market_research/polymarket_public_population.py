@@ -33,6 +33,7 @@ always escapes.
 from __future__ import annotations
 
 import datetime
+import json
 from dataclasses import dataclass
 
 from ..polymarket.polling_policy import default_polling_policy, validate_polling_policy
@@ -107,6 +108,32 @@ _MAX_MARKETS_LIMIT = 25
 _MAX_ORDER_BOOKS_LIMIT = 20
 _MAX_SCALAR = 256
 _MAX_RECOVERY_RECORDS = 45
+
+# Exact WP164 canonical payload key sets, re-proved during offline recovery.
+_GAMMA_PAYLOAD_KEYS = frozenset(
+    {
+        "question_text",
+        "market_status",
+        "outcome_labels",
+        "condition_id",
+        "token_ids",
+        "resolution_date",
+        "category",
+        "raw_field_names",
+    }
+)
+_CLOB_PAYLOAD_KEYS = frozenset(
+    {
+        "bids",
+        "asks",
+        "tick_size",
+        "minimum_order_size",
+        "clob_timestamp",
+        "book_hash",
+        "last_trade_price",
+        "raw_field_names",
+    }
+)
 
 
 # ── Public immutable config and result ────────────────────────────────────────
@@ -324,25 +351,22 @@ def _build_guard(guard: object | None) -> RateLimitGuard:
     return RateLimitGuard(default_polling_policy().endpoint_budgets())
 
 
-def _default_now_provider():
-    counter = [0.0]
-
-    def _next() -> float:
-        # A strictly-increasing local monotonic surrogate; each guard consult is
-        # spaced far beyond every window/interval so the conservative guard never
-        # blocks a bounded single-seed run. This is not a sleep, retry, or clock.
-        counter[0] += 3600.0
-        return counter[0]
-
-    return _next
-
-
 # ── Guarded GET-only reads (R012-R018) ────────────────────────────────────────
 
 
 def _consult_guard(guard: RateLimitGuard, endpoint_key: str, now_provider) -> None:
+    """Consult the existing local guard, which remains the request authority.
+
+    When no ``now_provider`` is injected the guard uses its native monotonic
+    clock; back-to-back requests inside the conservative interval are denied.
+    A denial never sleeps, waits, or retries.
+    """
+
     try:
-        decision = guard.record_allowed(endpoint_key, now=float(now_provider()))
+        if now_provider is None:
+            decision = guard.record_allowed(endpoint_key)
+        else:
+            decision = guard.record_allowed(endpoint_key, now=float(now_provider()))
     except Exception:
         raise _PopulationReject("POPULATION_GUARD_DENIED")
     if not getattr(decision, "allowed", False):
@@ -360,13 +384,12 @@ def _require_get_2xx(result: object) -> None:
         raise _PopulationReject("POPULATION_RESPONSE_INVALID")
 
 
-def _fetch_markets(
+def _get_markets(
     client: PolymarketPublicClient,
-    guard: RateLimitGuard,
-    now_provider,
     bounded_markets_limit: int,
 ) -> list[dict]:
-    _consult_guard(guard, _GAMMA_ENDPOINT_KEY, now_provider)
+    # The caller consults the guard immediately before this GET so network use is
+    # tracked truthfully; this helper is a pure GET plus response boundary.
     try:
         result = client.get_markets(limit=bounded_markets_limit)
     except _PopulationReject:
@@ -385,13 +408,11 @@ def _fetch_markets(
     return data
 
 
-def _fetch_order_book(
+def _get_order_book(
     client: PolymarketPublicClient,
-    guard: RateLimitGuard,
-    now_provider,
     raw_token_id: str,
 ) -> dict:
-    _consult_guard(guard, _CLOB_ENDPOINT_KEY, now_provider)
+    # The caller consults the guard immediately before this GET.
     try:
         result = client.get_order_book_snapshot(raw_token_id)
     except _PopulationReject:
@@ -733,7 +754,7 @@ def _append_records(
     try:
         appended = append_point_in_time_records(record_store_path, records)
     except Exception:
-        raise _PopulationReject("POPULATION_RECORD_APPEND_FAILED")
+        raise _AppendFailure(())
     expected = {record.envelope.record_version_id for record in records}
     if (
         not appended.is_valid
@@ -748,6 +769,41 @@ def _append_records(
 class _AppendFailure(Exception):
     def __init__(self, store_error_codes: tuple[str, ...]):
         self.store_error_codes = store_error_codes
+
+
+def _safe_register(
+    manifest_store_path: object,
+    records: tuple[MarketObservationRecord, ...],
+    config: PolymarketPublicPopulationConfig,
+    *,
+    effective_time: str,
+) -> tuple[bool, object, tuple[str, ...]]:
+    """Register the validated batch, containing every ordinary failure mode.
+
+    Returns ``(ok, registration_or_none, closed_error_codes)``. A raised
+    ``Exception`` yields ``(False, None, ())`` with no echo; an invalid adapter
+    result yields ``(False, result, closed_adapter_codes)``. This never raises, so
+    a registration failure after a committed record append can never be reported
+    as a generic unrecoverable rejection.
+    """
+
+    try:
+        registration = persist_validated_record_batch_snapshot(
+            manifest_store_path,
+            records,
+            manifest_id=config.manifest_id,
+            effective_time=effective_time,
+            parameter_set_id=config.parameter_set_id,
+            validator_version=config.validator_version,
+        )
+    except Exception:
+        return False, None, ()
+    if registration.is_valid is not True or registration.status not in (
+        "ADAPTER_PERSISTED",
+        "ADAPTER_ALREADY_PERSISTED",
+    ):
+        return False, registration, tuple(getattr(registration, "error_codes", ()))
+    return True, registration, ()
 
 
 # ── Public coordinator ────────────────────────────────────────────────────────
@@ -804,31 +860,21 @@ def populate_initial_polymarket_public_data(
                 network_used=False,
             )
 
-        try:
-            return _run_network_population(
-                record_store_path,
-                manifest_store_path,
-                config,
-                client=client,
-                guard=guard,
-                now_provider=now_provider,
-                utcnow_provider=utcnow_provider,
-                requested_markets=requested_markets,
-                requested_books=requested_books,
-                bounded_markets=bounded_markets,
-                bounded_books=bounded_books,
-            )
-        except _PopulationReject as reject:
-            return _result(
-                is_valid=False,
-                status="POPULATION_REJECTED",
-                error_codes=(reject.code,),
-                requested_markets_limit=requested_markets,
-                bounded_markets_limit=bounded_markets,
-                requested_order_books_limit=requested_books,
-                bounded_order_books_limit=bounded_books,
-                network_used=True,
-            )
+        # ``_run_network_population`` owns its own rejection handling so that
+        # ``network_used`` is truthful (False until the Gamma GET is attempted).
+        return _run_network_population(
+            record_store_path,
+            manifest_store_path,
+            config,
+            client=client,
+            guard=guard,
+            now_provider=now_provider,
+            utcnow_provider=utcnow_provider,
+            requested_markets=requested_markets,
+            requested_books=requested_books,
+            bounded_markets=bounded_markets,
+            bounded_books=bounded_books,
+        )
     except Exception:
         return _result(
             is_valid=False,
@@ -851,84 +897,121 @@ def _run_network_population(
     bounded_markets: int,
     bounded_books: int,
 ) -> PolymarketPublicPopulationResult:
+    limits = dict(
+        requested_markets_limit=requested_markets,
+        bounded_markets_limit=bounded_markets,
+        requested_order_books_limit=requested_books,
+        bounded_order_books_limit=bounded_books,
+    )
+
     if bounded_markets <= 0:
         # A network population must fetch at least one market; an empty network
-        # seed is rejected rather than registered.
-        raise _PopulationReject("POPULATION_INPUT_INVALID")
+        # seed is rejected rather than registered. No GET is attempted.
+        return _result(
+            is_valid=False,
+            status="POPULATION_REJECTED",
+            error_codes=("POPULATION_INPUT_INVALID",),
+            network_used=False,
+            **limits,
+        )
 
-    active_client = client
-    if active_client is None:
-        try:
-            active_client = PolymarketPublicClient(allow_unverified_endpoints=False)
-        except Exception:
-            raise _PopulationReject("POPULATION_FETCH_FAILED")
     rate_guard = _build_guard(guard)
-    now = _default_now_provider() if now_provider is None else now_provider
     utc_now = (
         (lambda: datetime.datetime.now(datetime.UTC))
         if utcnow_provider is None
         else utcnow_provider
     )
 
-    raw_markets = _fetch_markets(active_client, rate_guard, now, bounded_markets)
-    fetched_market_count = len(raw_markets)
-    parsed_markets = _parse_markets(raw_markets)
+    # ``network_used`` stays False until the Gamma GET is actually attempted, so a
+    # guard denial before the first GET is reported honestly as no network use.
+    network_used = False
+    try:
+        active_client = client
+        if active_client is None:
+            try:
+                active_client = PolymarketPublicClient(allow_unverified_endpoints=False)
+            except Exception:
+                raise _PopulationReject("POPULATION_FETCH_FAILED")
 
-    selected_tokens, token_to_market = _select_tokens(parsed_markets, bounded_books)
-    raw_books: list[tuple[dict, str, dict]] = []
-    for raw_token in selected_tokens:
-        parent = token_to_market[raw_token]
-        raw_book = _fetch_order_book(active_client, rate_guard, now, raw_token)
-        payload = _normalize_order_book(raw_book, raw_token)
-        raw_books.append((parent, raw_token, payload))
-    fetched_order_book_count = len(raw_books)
+        _consult_guard(rate_guard, _GAMMA_ENDPOINT_KEY, now_provider)
+        network_used = True
+        raw_markets = _get_markets(active_client, bounded_markets)
+        fetched_market_count = len(raw_markets)
+        parsed_markets = _parse_markets(raw_markets)
 
-    captured_at_utc = _capture_time(utc_now)
+        selected_tokens, token_to_market = _select_tokens(parsed_markets, bounded_books)
+        raw_books: list[tuple[dict, str, dict]] = []
+        for raw_token in selected_tokens:
+            _consult_guard(rate_guard, _CLOB_ENDPOINT_KEY, now_provider)
+            parent = token_to_market[raw_token]
+            raw_book = _get_order_book(active_client, raw_token)
+            payload = _normalize_order_book(raw_book, raw_token)
+            raw_books.append((parent, raw_token, payload))
+        fetched_order_book_count = len(raw_books)
 
-    gamma_payload_hashes = [
-        sha256_hex(canonical_json_bytes(normalized["payload"]))
-        for _market_id, _raw_gamma_id, normalized in parsed_markets
-    ]
-    clob_payload_hashes = [
-        sha256_hex(canonical_json_bytes(payload)) for _parent, _token, payload in raw_books
-    ]
-    snapshot_id, ingestion_batch_id = _run_identities(
-        captured_at_utc=captured_at_utc,
-        gamma_payload_hashes=gamma_payload_hashes,
-        clob_payload_hashes=clob_payload_hashes,
-        config=config,
-    )
+        captured_at_utc = _capture_time(utc_now)
 
-    gamma_records = [
-        _build_gamma_record(
-            normalized,
-            snapshot_id=snapshot_id,
-            ingestion_batch_id=ingestion_batch_id,
+        # Payload hashes computed in the deterministic WP164 record order so an
+        # offline recovery can recompute the exact same run identities.
+        gamma_sorted = sorted(parsed_markets, key=lambda entry: entry[0])
+        book_sorted = sorted(
+            raw_books,
+            key=lambda item: (item[0]["market_id"], "token:polymarket:" + item[1]),
+        )
+        gamma_payload_hashes = [
+            sha256_hex(canonical_json_bytes(normalized["payload"]))
+            for _market_id, _raw_gamma_id, normalized in gamma_sorted
+        ]
+        clob_payload_hashes = [
+            sha256_hex(canonical_json_bytes(payload))
+            for _parent, _token, payload in book_sorted
+        ]
+        snapshot_id, ingestion_batch_id = _run_identities(
             captured_at_utc=captured_at_utc,
+            gamma_payload_hashes=gamma_payload_hashes,
+            clob_payload_hashes=clob_payload_hashes,
             config=config,
         )
-        for _market_id, _raw_gamma_id, normalized in parsed_markets
-    ]
-    book_records = [
-        _build_order_book_record(
-            parent,
-            raw_token,
-            payload,
-            snapshot_id=snapshot_id,
-            ingestion_batch_id=ingestion_batch_id,
-            captured_at_utc=captured_at_utc,
-            config=config,
+
+        gamma_records = [
+            _build_gamma_record(
+                normalized,
+                snapshot_id=snapshot_id,
+                ingestion_batch_id=ingestion_batch_id,
+                captured_at_utc=captured_at_utc,
+                config=config,
+            )
+            for _market_id, _raw_gamma_id, normalized in parsed_markets
+        ]
+        book_records = [
+            _build_order_book_record(
+                parent,
+                raw_token,
+                payload,
+                snapshot_id=snapshot_id,
+                ingestion_batch_id=ingestion_batch_id,
+                captured_at_utc=captured_at_utc,
+                config=config,
+            )
+            for parent, raw_token, payload in raw_books
+        ]
+
+        gamma_records.sort(key=lambda record: record.market_id)
+        book_records.sort(key=lambda record: (record.market_id, record.token_id or ""))
+        records = tuple(gamma_records) + tuple(book_records)
+        built_record_count = len(records)
+
+        _validate_batch(records)
+    except _PopulationReject as reject:
+        return _result(
+            is_valid=False,
+            status="POPULATION_REJECTED",
+            error_codes=(reject.code,),
+            network_used=network_used,
+            **limits,
         )
-        for parent, raw_token, payload in raw_books
-    ]
 
-    gamma_records.sort(key=lambda record: record.market_id)
-    book_records.sort(key=lambda record: (record.market_id, record.token_id or ""))
-    records = tuple(gamma_records) + tuple(book_records)
-    built_record_count = len(records)
-
-    _validate_batch(records)
-
+    # ── Records first (locked), then reference registration. ──────────────────
     try:
         record_store_status, inserted_ids = _append_records(record_store_path, records)
     except _AppendFailure as failure:
@@ -939,39 +1022,30 @@ def _run_network_population(
             record_store_error_codes=failure.store_error_codes,
             snapshot_id=snapshot_id,
             captured_at_utc=captured_at_utc,
-            requested_markets_limit=requested_markets,
-            bounded_markets_limit=bounded_markets,
-            requested_order_books_limit=requested_books,
-            bounded_order_books_limit=bounded_books,
             fetched_market_count=fetched_market_count,
             fetched_order_book_count=fetched_order_book_count,
             built_record_count=built_record_count,
             network_used=True,
+            **limits,
         )
 
     inserted_record_count = len(inserted_ids)
 
-    registration = _register(
+    ok, registration, registration_error_codes = _safe_register(
         manifest_store_path, records, config, effective_time=captured_at_utc
     )
-
-    if registration.is_valid is not True or registration.status not in (
-        "ADAPTER_PERSISTED",
-        "ADAPTER_ALREADY_PERSISTED",
-    ):
+    if not ok:
         # Records committed (fail-safe ordering); the immutable WP163 records are
-        # never deleted. Recovery can re-register offline without re-fetching.
+        # never deleted. EVERY registration failure mode after a committed append
+        # — invalid result, raised exception, or malformed result — reports the
+        # recoverable partial status. Recovery re-registers offline with no fetch.
         return _result(
             is_valid=False,
             status="POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED",
             error_codes=("POPULATION_REGISTRATION_FAILED",),
-            registration_error_codes=tuple(registration.error_codes),
+            registration_error_codes=registration_error_codes,
             snapshot_id=snapshot_id,
             captured_at_utc=captured_at_utc,
-            requested_markets_limit=requested_markets,
-            bounded_markets_limit=bounded_markets,
-            requested_order_books_limit=requested_books,
-            bounded_order_books_limit=bounded_books,
             fetched_market_count=fetched_market_count,
             fetched_order_book_count=fetched_order_book_count,
             built_record_count=built_record_count,
@@ -980,6 +1054,7 @@ def _run_network_population(
             registration_status=None,
             network_used=True,
             recovery_required=True,
+            **limits,
         )
 
     status = (
@@ -992,10 +1067,6 @@ def _run_network_population(
         status=status,
         snapshot_id=snapshot_id,
         captured_at_utc=captured_at_utc,
-        requested_markets_limit=requested_markets,
-        bounded_markets_limit=bounded_markets,
-        requested_order_books_limit=requested_books,
-        bounded_order_books_limit=bounded_books,
         fetched_market_count=fetched_market_count,
         fetched_order_book_count=fetched_order_book_count,
         built_record_count=built_record_count,
@@ -1013,21 +1084,8 @@ def _run_network_population(
         record_store_status=record_store_status,
         registration_status=registration.status,
         network_used=True,
+        **limits,
     )
-
-
-def _register(manifest_store_path, records, config, *, effective_time):
-    try:
-        return persist_validated_record_batch_snapshot(
-            manifest_store_path,
-            records,
-            manifest_id=config.manifest_id,
-            effective_time=effective_time,
-            parameter_set_id=config.parameter_set_id,
-            validator_version=config.validator_version,
-        )
-    except Exception:
-        raise _PopulationReject("POPULATION_REGISTRATION_FAILED")
 
 
 # ── Offline registration recovery (R033-R035) ─────────────────────────────────
@@ -1056,6 +1114,7 @@ def recover_initial_polymarket_public_registration(
             records = _load_recovery_records(record_store_path)
             _verify_manifest_store(manifest_store_path)
             _verify_recovery_records(records, config)
+            _prove_wp164_construction(records, config)
         except _PopulationReject as reject:
             return _result(
                 is_valid=False,
@@ -1071,18 +1130,15 @@ def recover_initial_polymarket_public_registration(
 
         _validate_batch(ordered)
 
-        registration = _register(
+        ok, registration, registration_error_codes = _safe_register(
             manifest_store_path, ordered, config, effective_time=ingestion_time
         )
-        if registration.is_valid is not True or registration.status not in (
-            "ADAPTER_PERSISTED",
-            "ADAPTER_ALREADY_PERSISTED",
-        ):
+        if not ok:
             return _result(
                 is_valid=False,
                 status="POPULATION_REJECTED",
                 error_codes=("POPULATION_REGISTRATION_FAILED",),
-                registration_error_codes=tuple(registration.error_codes),
+                registration_error_codes=registration_error_codes,
                 snapshot_id=snapshot_id,
                 captured_at_utc=ingestion_time,
                 requested_markets_limit=config.markets_limit,
@@ -1199,6 +1255,163 @@ def _verify_recovery_records(
     ):
         raise _PopulationReject("POPULATION_RECOVERY_INVALID")
     if next(iter(observed_times)) != next(iter(ingestion_times)):
+        raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+
+
+def _parse_recovery_payload(canonical_payload_json: object) -> dict:
+    if type(canonical_payload_json) is not str:
+        raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+    try:
+        payload = json.loads(canonical_payload_json)
+    except Exception:
+        raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+    if type(payload) is not dict:
+        raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+    return payload
+
+
+def _prove_wp164_construction(
+    records: tuple[object, ...], config: PolymarketPublicPopulationConfig
+) -> None:
+    """Re-prove that the stored records are a genuine WP164 build, not a forgery.
+
+    A caller can craft WP156-valid records that merely reuse the WP164 source IDs
+    and share arbitrary snapshot/batch IDs. This re-derives every WP164
+    construction invariant — payload key sets, identifiers, content-addressed
+    source-snapshot/assertion IDs, unique token parentage, and the content-addressed
+    run identities — and requires an exact match. Any deviation rejects.
+    """
+
+    gamma = [r for r in records if r.source_id == _GAMMA_SOURCE_ID]
+    clob = [r for r in records if r.source_id == _CLOB_SOURCE_ID]
+    if not gamma:
+        # A book-only store cannot be a genuine WP164 seed.
+        raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+
+    unique_snapshot_id = records[0].envelope.snapshot_id
+    unique_captured = records[0].envelope.observed_time
+
+    # Token ownership derived only from parsed Gamma payloads.
+    token_owner: dict[str, list[tuple[str, str]]] = {}
+    gamma_payloads: dict[str, dict] = {}
+    for record in gamma:
+        payload = _parse_recovery_payload(record.canonical_payload_json)
+        if frozenset(payload) != _GAMMA_PAYLOAD_KEYS:
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        prefix = "market:polymarket:"
+        if not record.market_id.startswith(prefix):
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        raw_gamma_id = record.market_id[len(prefix):]
+        if not raw_gamma_id:
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        if record.token_id is not None:
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        condition_id = payload["condition_id"]
+        condition_norm = (
+            condition_id.strip() if isinstance(condition_id, str) and condition_id else ""
+        )
+        expected_event = (
+            "event:polymarket:" + condition_norm
+            if condition_norm
+            else "event:polymarket:market-" + raw_gamma_id
+        )
+        if record.event_id != expected_event:
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        expected_srcsnap = _content_id(
+            "srcsnap:sha256:",
+            {
+                "source_id": _GAMMA_SOURCE_ID,
+                "market_id": record.market_id,
+                "snapshot_id": unique_snapshot_id,
+                "canonical_payload": payload,
+            },
+        )
+        if record.envelope.source_snapshot_id != expected_srcsnap:
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        expected_assertion = _content_id(
+            "assertion:sha256:",
+            {
+                "source_snapshot_id": expected_srcsnap,
+                "observation_kind": "MARKET_METADATA",
+                "market_id": record.market_id,
+                "event_id": record.event_id,
+                "token_id": None,
+            },
+        )
+        if record.source_assertion_id != expected_assertion:
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        token_ids = payload["token_ids"]
+        if type(token_ids) is not list:
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        for raw_token in token_ids:
+            if type(raw_token) is not str:
+                raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+            token_owner.setdefault(raw_token, []).append(
+                (record.market_id, record.event_id)
+            )
+        gamma_payloads[record.market_id] = payload
+
+    for record in clob:
+        payload = _parse_recovery_payload(record.canonical_payload_json)
+        if frozenset(payload) != _CLOB_PAYLOAD_KEYS:
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        prefix = "token:polymarket:"
+        if record.token_id is None or not record.token_id.startswith(prefix):
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        raw_token = record.token_id[len(prefix):]
+        owners = token_owner.get(raw_token, [])
+        if len(owners) != 1:
+            # Orphan (no Gamma parent) or ambiguous (multiple parents).
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        parent_market_id, parent_event_id = owners[0]
+        if record.market_id != parent_market_id or record.event_id != parent_event_id:
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        expected_srcsnap = _content_id(
+            "srcsnap:sha256:",
+            {
+                "source_id": _CLOB_SOURCE_ID,
+                "market_id": record.market_id,
+                "token_id": record.token_id,
+                "snapshot_id": unique_snapshot_id,
+                "canonical_payload": payload,
+            },
+        )
+        if record.envelope.source_snapshot_id != expected_srcsnap:
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+        expected_assertion = _content_id(
+            "assertion:sha256:",
+            {
+                "source_snapshot_id": expected_srcsnap,
+                "observation_kind": "ORDER_BOOK",
+                "market_id": record.market_id,
+                "event_id": record.event_id,
+                "token_id": record.token_id,
+            },
+        )
+        if record.source_assertion_id != expected_assertion:
+            raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+
+    # Recompute the content-addressed run identities in deterministic WP164 order
+    # and require exact equality with the stored unique identities.
+    gamma_sorted = sorted(gamma, key=lambda record: record.market_id)
+    clob_sorted = sorted(
+        clob, key=lambda record: (record.market_id, record.token_id or "")
+    )
+    gamma_payload_hashes = [
+        sha256_hex(record.canonical_payload_json) for record in gamma_sorted
+    ]
+    clob_payload_hashes = [
+        sha256_hex(record.canonical_payload_json) for record in clob_sorted
+    ]
+    recomputed_snapshot_id, recomputed_ingestion_batch_id = _run_identities(
+        captured_at_utc=unique_captured,
+        gamma_payload_hashes=gamma_payload_hashes,
+        clob_payload_hashes=clob_payload_hashes,
+        config=config,
+    )
+    if recomputed_snapshot_id != unique_snapshot_id:
+        raise _PopulationReject("POPULATION_RECOVERY_INVALID")
+    if recomputed_ingestion_batch_id != records[0].envelope.ingestion_batch_id:
         raise _PopulationReject("POPULATION_RECOVERY_INVALID")
 
 
