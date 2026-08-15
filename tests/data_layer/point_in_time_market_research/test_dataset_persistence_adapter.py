@@ -244,7 +244,10 @@ def test_public_constants_and_vocabularies_are_exact() -> None:
     )
 
 
-def test_package_exports_end_with_the_seven_wp162_symbols() -> None:
+def test_package_exports_contain_the_seven_wp162_symbols_as_a_block() -> None:
+    # WP163 appends a further public surface after WP162, so the seven WP162
+    # symbols are no longer the package tail. Assert the exact contiguous WP162
+    # block located from its label anchor, plus object identity.
     expected = (
         "DATASET_PERSISTENCE_ADAPTER_LABEL",
         "DATASET_PERSISTENCE_ADAPTER_POSTURE",
@@ -254,7 +257,8 @@ def test_package_exports_end_with_the_seven_wp162_symbols() -> None:
         "persist_validated_record_batch_snapshot",
         "persist_as_of_query_snapshot",
     )
-    assert pit.__all__[-7:] == expected
+    start = pit.__all__.index("DATASET_PERSISTENCE_ADAPTER_LABEL")
+    assert pit.__all__[start : start + 7] == expected
     assert all(getattr(pit, name) is getattr(A, name) for name in expected)
 
 

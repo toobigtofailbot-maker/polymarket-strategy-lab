@@ -254,6 +254,23 @@ def test_public_package_exports_exact_supported_surface() -> None:
         "DatasetPersistenceAdapterResult",
         "persist_validated_record_batch_snapshot",
         "persist_as_of_query_snapshot",
+        # WP163 bounded durable local SQLite point-in-time record store and
+        # dataset snapshot materialization (appended by the separately approved
+        # successor WP).
+        "POINT_IN_TIME_RECORD_STORE_LABEL",
+        "POINT_IN_TIME_RECORD_STORE_POSTURE",
+        "POINT_IN_TIME_RECORD_STORE_FORMAT_ID",
+        "POINT_IN_TIME_RECORD_STORE_SCHEMA_VERSION",
+        "POINT_IN_TIME_RECORD_STORE_STATUSES",
+        "POINT_IN_TIME_RECORD_STORE_ERROR_CODES",
+        "DATASET_MATERIALIZATION_VERIFICATION_MODES",
+        "PointInTimeRecordStoreSnapshot",
+        "PointInTimeRecordStoreResult",
+        "DatasetSnapshotMaterializationResult",
+        "initialize_point_in_time_record_store",
+        "append_point_in_time_records",
+        "load_and_verify_point_in_time_record_store",
+        "materialize_dataset_snapshot_reference",
     )
 
 
@@ -1374,10 +1391,15 @@ def test_source_ast_has_no_forbidden_imports_or_calls() -> None:
         "os.environ",
     }
     for path in sorted(SOURCE_DIR.glob("*.py")):
-        # WP161's exact explicit-path SQLite boundary requires only these two
-        # stdlib path modules; every earlier source module retains the original
+        # WP161's manifest store and WP163's durable record store both realize an
+        # exact explicit-path SQLite boundary requiring only these two stdlib path
+        # modules; every earlier source module retains the original
         # side-effect-free import prohibition.
-        wp161_path_imports = {"os", "pathlib"} if path.name == "manifest_store.py" else set()
+        wp161_path_imports = (
+            {"os", "pathlib"}
+            if path.name in ("manifest_store.py", "record_store.py")
+            else set()
+        )
         tree = ast.parse(path.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):

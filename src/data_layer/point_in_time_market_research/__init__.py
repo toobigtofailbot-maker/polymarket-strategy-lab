@@ -89,6 +89,22 @@ from .dataset_persistence_adapter import (
     persist_as_of_query_snapshot,
     persist_validated_record_batch_snapshot,
 )
+from .record_store import (
+    DATASET_MATERIALIZATION_VERIFICATION_MODES,
+    POINT_IN_TIME_RECORD_STORE_ERROR_CODES,
+    POINT_IN_TIME_RECORD_STORE_FORMAT_ID,
+    POINT_IN_TIME_RECORD_STORE_LABEL,
+    POINT_IN_TIME_RECORD_STORE_POSTURE,
+    POINT_IN_TIME_RECORD_STORE_SCHEMA_VERSION,
+    POINT_IN_TIME_RECORD_STORE_STATUSES,
+    DatasetSnapshotMaterializationResult,
+    PointInTimeRecordStoreResult,
+    PointInTimeRecordStoreSnapshot,
+    append_point_in_time_records,
+    initialize_point_in_time_record_store,
+    load_and_verify_point_in_time_record_store,
+    materialize_dataset_snapshot_reference,
+)
 
 __all__ = (
     "FOUNDATION_LABEL",
@@ -174,4 +190,20 @@ __all__ = (
     "DatasetPersistenceAdapterResult",
     "persist_validated_record_batch_snapshot",
     "persist_as_of_query_snapshot",
+    # WP163 bounded durable local SQLite point-in-time record store and dataset
+    # snapshot materialization.
+    "POINT_IN_TIME_RECORD_STORE_LABEL",
+    "POINT_IN_TIME_RECORD_STORE_POSTURE",
+    "POINT_IN_TIME_RECORD_STORE_FORMAT_ID",
+    "POINT_IN_TIME_RECORD_STORE_SCHEMA_VERSION",
+    "POINT_IN_TIME_RECORD_STORE_STATUSES",
+    "POINT_IN_TIME_RECORD_STORE_ERROR_CODES",
+    "DATASET_MATERIALIZATION_VERIFICATION_MODES",
+    "PointInTimeRecordStoreSnapshot",
+    "PointInTimeRecordStoreResult",
+    "DatasetSnapshotMaterializationResult",
+    "initialize_point_in_time_record_store",
+    "append_point_in_time_records",
+    "load_and_verify_point_in_time_record_store",
+    "materialize_dataset_snapshot_reference",
 )

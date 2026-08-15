@@ -246,6 +246,33 @@ WP162_AUTHORIZED_FILES = {
     "docs/deferred_items_log.md",
 }
 
+# WP163 uses a separate canonical contract document rather than an addendum to the
+# append-only contract, so this file is only touched to keep this changed-file
+# scope guard future-safe; that self-reference makes the WP163 authorized set 20
+# files (the 19 record-store package files plus this guard).
+WP163_AUTHORIZED_FILES = {
+    "src/data_layer/point_in_time_market_research/record_store.py",
+    "src/data_layer/point_in_time_market_research/__init__.py",
+    "tests/data_layer/point_in_time_market_research/test_record_store.py",
+    "tests/data_layer/point_in_time_market_research/test_dataset_persistence_adapter.py",
+    "tests/data_layer/point_in_time_market_research/test_as_of_query.py",
+    "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+    "docs/point_in_time_record_store_contract.md",
+    "tests/test_point_in_time_record_store_contract_docs.py",
+    "tests/test_project_status_docs.py",
+    "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+    "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+    "tests/test_wallet_intelligence_architecture_contract_docs.py",
+    "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+    "tests/test_human_review_label_workflow_docs.py",
+    "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+    "docs/status_entries/WP163.md",
+    "docs/project_status.md",
+    "docs/repo_truth_index.md",
+    "docs/deferred_items_log.md",
+}
+
 
 def _read(path: pathlib.Path) -> str:
     return path.read_text(encoding="utf-8")
@@ -1092,6 +1119,32 @@ def test_status_fragment_is_stable_model_d() -> None:
 
 def test_no_dependency_workflow_or_generated_artifact_in_scope() -> None:
     changed = _changed_files()
+    if "docs/status_entries/WP163.md" in changed:
+        # WP163 authorizes source and test paths within its exact 20-file scope;
+        # dependency, workflow, tool, fixture, config, and generated-artifact
+        # paths remain forbidden.
+        assert changed == WP163_AUTHORIZED_FILES
+        assert not (changed & {
+            "requirements.txt",
+            "pyproject.toml",
+            "package.json",
+            "package-lock.json",
+            "Cargo.toml",
+            "Cargo.lock",
+        })
+        assert not any(
+            path.startswith(
+                (
+                    "tools/",
+                    "tests/fixtures/",
+                    ".github/workflows/",
+                    "config/",
+                    "local_data/",
+                )
+            )
+            for path in changed
+        )
+        return
     if "docs/status_entries/WP162.md" in changed:
         assert changed == WP162_AUTHORIZED_FILES
         assert not any(
