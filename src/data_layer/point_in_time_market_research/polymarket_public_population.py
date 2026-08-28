@@ -40,9 +40,11 @@ from ..polymarket.polling_policy import default_polling_policy, validate_polling
 from ..polymarket.public_client import PolymarketPublicClient
 from ..polymarket.rate_limit_guard import RateLimitGuard
 from .dataset_persistence_adapter import (
+    DATASET_PERSISTENCE_ADAPTER_ERROR_CODES,
     DatasetPersistenceAdapterResult,
     persist_validated_record_batch_snapshot,
 )
+from .manifest_reference import DatasetSnapshotReference, ManifestEntry
 from .manifest_store import load_and_verify_manifest_store
 from .record_store import (
     append_point_in_time_records,
@@ -774,9 +776,19 @@ class _AppendFailure(Exception):
         self.store_error_codes = store_error_codes
 
 
-def _safe_error_codes(value: object) -> tuple[str, ...]:
+_ADAPTER_ERROR_CODES = frozenset(DATASET_PERSISTENCE_ADAPTER_ERROR_CODES)
+
+
+def _closed_adapter_codes(value: object) -> tuple[str, ...]:
+    """Keep only exact built-in strings that are members of the closed WP162
+    adapter vocabulary; drop anything else. No arbitrary string crosses out."""
+
     try:
-        return tuple(code for code in value if type(code) is str)
+        return tuple(
+            code
+            for code in value
+            if type(code) is str and code in _ADAPTER_ERROR_CODES
+        )
     except Exception:
         return ()
 
@@ -787,21 +799,22 @@ def _safe_register(
     config: PolymarketPublicPopulationConfig,
     *,
     effective_time: str,
-) -> tuple[bool, object, tuple[str, ...]]:
-    """Register the validated batch, containing every ordinary failure mode.
+) -> tuple[bool, str | None, str | None, str | None, tuple[str, ...]]:
+    """Register the validated batch and extract only trusted scalar values.
 
-    The adapter call AND the inspection of its returned object are one ordinary-
-    ``Exception`` boundary, so a raised exception, ``None``, an object missing the
-    expected fields, or a property that raises can never escape after a committed
-    record append. Returns ``(ok, registration_or_none, closed_error_codes)``:
+    The adapter call AND the full inspection of its returned object are one
+    ordinary-``Exception`` boundary. Nothing but already-validated immutable
+    scalars leaves this function — the raw registration object is never returned,
+    so no caller can dereference an untrusted nested field. Returns
+    ``(ok, status, dataset_snapshot_reference_id, manifest_entry_id, closed_codes)``.
 
-    * a genuine success requires the exact ``DatasetPersistenceAdapterResult`` type
-      with a ``str`` reference id and manifest-entry id later consumed;
-    * anything else fails closed — a raised exception, ``None``, or a fake-success
-      result missing those fields yields ``(False, None, ())`` with no echo, and an
-      invalid adapter result yields ``(False, None, closed_adapter_codes)``.
-
-    ``BaseException`` is never caught and no repr/exception text is exposed.
+    A genuine success requires the exact ``DatasetPersistenceAdapterResult`` with a
+    genuine ``DatasetSnapshotReference``/``ManifestEntry`` and ``str`` ids. Any
+    raised exception, ``None``, wrong type, fake nested reference/entry, or raising
+    nested id fails closed with null status/ids and ``()``. An invalid exact
+    adapter result preserves only closed WP162 error codes; every other shape
+    yields ``()``. ``BaseException`` is never caught and no repr/exception text is
+    exposed.
     """
 
     try:
@@ -813,28 +826,29 @@ def _safe_register(
             parameter_set_id=config.parameter_set_id,
             validator_version=config.validator_version,
         )
-        is_valid = getattr(registration, "is_valid", None)
-        status = getattr(registration, "status", None)
-        if is_valid is True and status in (
-            "ADAPTER_PERSISTED",
-            "ADAPTER_ALREADY_PERSISTED",
+        if type(registration) is not DatasetPersistenceAdapterResult:
+            return False, None, None, None, ()
+        if (
+            registration.is_valid is True
+            and type(registration.status) is str
+            and registration.status in ("ADAPTER_PERSISTED", "ADAPTER_ALREADY_PERSISTED")
         ):
-            reference = getattr(registration, "dataset_reference", None)
-            entry = getattr(registration, "manifest_entry", None)
-            reference_id = getattr(reference, "dataset_snapshot_reference_id", None)
-            entry_id = getattr(entry, "manifest_entry_id", None)
+            reference = registration.dataset_reference
+            entry = registration.manifest_entry
             if (
-                type(registration) is DatasetPersistenceAdapterResult
-                and type(reference_id) is str
-                and type(entry_id) is str
+                type(reference) is not DatasetSnapshotReference
+                or type(entry) is not ManifestEntry
             ):
-                return True, registration, ()
-            # Claims success but is malformed or missing consumed fields: this is a
-            # registration failure, not a success and not a generic exception.
-            return False, None, ()
-        return False, None, _safe_error_codes(getattr(registration, "error_codes", ()))
+                # Claims success but carries a malformed nested object.
+                return False, None, None, None, ()
+            reference_id = reference.dataset_snapshot_reference_id
+            entry_id = entry.manifest_entry_id
+            if type(reference_id) is not str or type(entry_id) is not str:
+                return False, None, None, None, ()
+            return True, registration.status, reference_id, entry_id, ()
+        return False, None, None, None, _closed_adapter_codes(registration.error_codes)
     except Exception:
-        return False, None, ()
+        return False, None, None, None, ()
 
 
 # ── Public coordinator ────────────────────────────────────────────────────────
@@ -1062,7 +1076,13 @@ def _run_network_population(
 
     inserted_record_count = len(inserted_ids)
 
-    ok, registration, registration_error_codes = _safe_register(
+    (
+        ok,
+        registration_status,
+        dataset_reference_id,
+        manifest_entry_id,
+        registration_error_codes,
+    ) = _safe_register(
         manifest_store_path, records, config, effective_time=captured_at_utc
     )
     if not ok:
@@ -1090,7 +1110,7 @@ def _run_network_population(
 
     status = (
         "POPULATION_PERSISTED_AND_REGISTERED"
-        if registration.status == "ADAPTER_PERSISTED"
+        if registration_status == "ADAPTER_PERSISTED"
         else "POPULATION_ALREADY_REGISTERED"
     )
     return _result(
@@ -1102,18 +1122,10 @@ def _run_network_population(
         fetched_order_book_count=fetched_order_book_count,
         built_record_count=built_record_count,
         inserted_record_count=inserted_record_count,
-        dataset_snapshot_reference_id=(
-            registration.dataset_reference.dataset_snapshot_reference_id
-            if registration.dataset_reference is not None
-            else None
-        ),
-        manifest_entry_id=(
-            registration.manifest_entry.manifest_entry_id
-            if registration.manifest_entry is not None
-            else None
-        ),
+        dataset_snapshot_reference_id=dataset_reference_id,
+        manifest_entry_id=manifest_entry_id,
         record_store_status=record_store_status,
-        registration_status=registration.status,
+        registration_status=registration_status,
         network_used=True,
         **limits,
     )
@@ -1161,7 +1173,13 @@ def recover_initial_polymarket_public_registration(
 
         _validate_batch(ordered)
 
-        ok, registration, registration_error_codes = _safe_register(
+        (
+            ok,
+            registration_status,
+            dataset_reference_id,
+            manifest_entry_id,
+            registration_error_codes,
+        ) = _safe_register(
             manifest_store_path, ordered, config, effective_time=ingestion_time
         )
         if not ok:
@@ -1180,7 +1198,7 @@ def recover_initial_polymarket_public_registration(
 
         status = (
             "POPULATION_RECOVERED_REGISTRATION"
-            if registration.status == "ADAPTER_PERSISTED"
+            if registration_status == "ADAPTER_PERSISTED"
             else "POPULATION_ALREADY_REGISTERED"
         )
         return _result(
@@ -1192,17 +1210,9 @@ def recover_initial_polymarket_public_registration(
             requested_order_books_limit=config.order_books_limit,
             built_record_count=len(ordered),
             record_store_status="RECORD_STORE_LOADED_VERIFIED",
-            dataset_snapshot_reference_id=(
-                registration.dataset_reference.dataset_snapshot_reference_id
-                if registration.dataset_reference is not None
-                else None
-            ),
-            manifest_entry_id=(
-                registration.manifest_entry.manifest_entry_id
-                if registration.manifest_entry is not None
-                else None
-            ),
-            registration_status=registration.status,
+            dataset_snapshot_reference_id=dataset_reference_id,
+            manifest_entry_id=manifest_entry_id,
+            registration_status=registration_status,
             network_used=False,
             recovery_required=False,
         )

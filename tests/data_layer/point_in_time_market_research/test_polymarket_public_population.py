@@ -300,6 +300,60 @@ _ARB_INGEST = "ingest:sha256:" + "b" * 64
 _ARB_TIME = "2026-08-14T12:00:00Z"
 
 
+from src.data_layer.point_in_time_market_research.dataset_persistence_adapter import (  # noqa: E402
+    DatasetPersistenceAdapterResult as _AdapterResult,
+)
+
+
+def _adapter_rejected(error_codes):
+    """A genuine invalid DatasetPersistenceAdapterResult carrying arbitrary codes."""
+
+    return _AdapterResult(
+        is_valid=False,
+        status="ADAPTER_REJECTED",
+        error_codes=error_codes,
+        upstream_error_codes=(),
+        store_error_codes=(),
+        warning_codes=(),
+        dataset_reference=None,
+        manifest_entry=None,
+        store_status=None,
+        human_review_required=False,
+        advisory_only=True,
+        no_execution_authority=True,
+    )
+
+
+def _adapter_success(reference, entry):
+    """A genuine-typed success result with caller-supplied nested objects."""
+
+    return _AdapterResult(
+        is_valid=True,
+        status="ADAPTER_PERSISTED",
+        error_codes=(),
+        upstream_error_codes=(),
+        store_error_codes=(),
+        warning_codes=(),
+        dataset_reference=reference,
+        manifest_entry=entry,
+        store_status="STORE_APPEND_COMMITTED",
+        human_review_required=False,
+        advisory_only=True,
+        no_execution_authority=True,
+    )
+
+
+def _genuine_reference_and_entry():
+    record_path, manifest_path = _stores()
+    client = FakeClient([_market("999", ["ztok"])])
+    populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock,
+    )
+    snapshot = load_and_verify_manifest_store(manifest_path).snapshot
+    return snapshot.dataset_references[0], snapshot.manifest_entries[0]
+
+
 # ── Public surface ────────────────────────────────────────────────────────────
 
 
@@ -810,15 +864,11 @@ def test_record_append_failure_creates_no_manifest_reference(monkeypatch):
 def test_registration_failure_keeps_records_and_requires_recovery(monkeypatch):
     record_path, manifest_path = _stores()
 
-    class _Rejected:
-        is_valid = False
-        status = "ADAPTER_REJECTED"
-        error_codes = ("ADAPTER_STORE_APPEND_FAILED",)
-        dataset_reference = None
-        manifest_entry = None
-
+    # A genuine invalid adapter result carrying a known closed WP162 code.
     monkeypatch.setattr(
-        pop, "persist_validated_record_batch_snapshot", lambda *a, **k: _Rejected()
+        pop,
+        "persist_validated_record_batch_snapshot",
+        lambda *a, **k: _adapter_rejected(("ADAPTER_STORE_APPEND_FAILED",)),
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
@@ -843,15 +893,10 @@ def test_registration_failure_keeps_records_and_requires_recovery(monkeypatch):
 def _seed_unregistered(monkeypatch_ctx, record_path, manifest_path, cfg):
     """Populate records but force registration to fail, leaving an unregistered seed."""
 
-    class _Rejected:
-        is_valid = False
-        status = "ADAPTER_REJECTED"
-        error_codes = ("ADAPTER_STORE_APPEND_FAILED",)
-        dataset_reference = None
-        manifest_entry = None
-
     original = pop.persist_validated_record_batch_snapshot
-    pop.persist_validated_record_batch_snapshot = lambda *a, **k: _Rejected()
+    pop.persist_validated_record_batch_snapshot = lambda *a, **k: _adapter_rejected(
+        ("ADAPTER_STORE_APPEND_FAILED",)
+    )
     try:
         client = FakeClient(
             [_market("100", ["tokA"])], books={"tokA": _book("tokA")}
@@ -1445,15 +1490,10 @@ def test_recovery_accepts_same_market_duplicate_token_ids(monkeypatch):
         [_market("100", ["tokA", "tokA"])], books={"tokA": _book("tokA")}
     )
 
-    class _Rejected:
-        is_valid = False
-        status = "ADAPTER_REJECTED"
-        error_codes = ("ADAPTER_STORE_APPEND_FAILED",)
-        dataset_reference = None
-        manifest_entry = None
-
     monkeypatch.setattr(
-        pop, "persist_validated_record_batch_snapshot", lambda *a, **k: _Rejected()
+        pop,
+        "persist_validated_record_batch_snapshot",
+        lambda *a, **k: _adapter_rejected(("ADAPTER_STORE_APPEND_FAILED",)),
     )
     seed = populate_initial_polymarket_public_data(
         record_path, manifest_path, cfg, client=client, utcnow_provider=_clock
@@ -1504,3 +1544,166 @@ def test_recovery_rejects_cross_market_ambiguous_token():
         record_path, manifest_path, cfg
     )
     assert result.error_codes == ("POPULATION_RECOVERY_INVALID",)
+
+
+# ── registration_error_codes is closed and no-echo safe ───────────────────────
+
+
+def test_registration_arbitrary_error_code_string_is_not_echoed(monkeypatch):
+    record_path, manifest_path = _stores()
+    marker = "SECRET_MARKER_face https://secret.invalid/leak"
+    monkeypatch.setattr(
+        pop,
+        "persist_validated_record_batch_snapshot",
+        lambda *a, **k: _adapter_rejected((marker,)),
+    )
+    client = FakeClient([_market("100", ["a"])])
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock,
+    )
+    assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.recovery_required is True
+    # Arbitrary (non-closed) codes are dropped; nothing echoed.
+    assert result.registration_error_codes == ()
+    text = repr(result)
+    assert "SECRET_MARKER_face" not in text and "secret.invalid" not in text
+    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+    assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
+
+
+def test_registration_known_closed_code_is_preserved(monkeypatch):
+    record_path, manifest_path = _stores()
+    # A mix of a known closed code and an arbitrary string: keep only the closed one.
+    monkeypatch.setattr(
+        pop,
+        "persist_validated_record_batch_snapshot",
+        lambda *a, **k: _adapter_rejected(
+            ("ADAPTER_STORE_APPEND_FAILED", "SECRET leak")
+        ),
+    )
+    client = FakeClient([_market("100", ["a"])])
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock,
+    )
+    assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.registration_error_codes == ("ADAPTER_STORE_APPEND_FAILED",)
+    assert "SECRET" not in repr(result)
+
+
+def test_registration_error_codes_raising_iterable_fails_closed(monkeypatch):
+    record_path, manifest_path = _stores()
+
+    class _RaisingIterable:
+        def __iter__(self):
+            raise RuntimeError("SECRET_ITER https://iter.invalid")
+
+    monkeypatch.setattr(
+        pop,
+        "persist_validated_record_batch_snapshot",
+        lambda *a, **k: _adapter_rejected(_RaisingIterable()),
+    )
+    client = FakeClient([_market("100", ["a"])])
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock,
+    )
+    assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.recovery_required is True
+    assert result.registration_error_codes == ()
+    assert "SECRET_ITER" not in repr(result)
+    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+
+
+# ── Nested success-object fields are validated, never blindly dereferenced ─────
+
+
+def test_success_result_with_fake_dataset_reference_fails_closed(monkeypatch):
+    record_path, manifest_path = _stores()
+    _reference, entry = _genuine_reference_and_entry()
+    monkeypatch.setattr(
+        pop,
+        "persist_validated_record_batch_snapshot",
+        lambda *a, **k: _adapter_success(object(), entry),
+    )
+    client = FakeClient([_market("100", ["a"])])
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock,
+    )
+    assert result.is_valid is False
+    assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.recovery_required is True
+    assert result.dataset_snapshot_reference_id is None
+    assert result.manifest_entry_id is None
+    assert "POPULATION_UNEXPECTED_ERROR" not in result.error_codes
+    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+
+
+def test_success_result_with_fake_manifest_entry_fails_closed(monkeypatch):
+    record_path, manifest_path = _stores()
+    reference, _entry = _genuine_reference_and_entry()
+    monkeypatch.setattr(
+        pop,
+        "persist_validated_record_batch_snapshot",
+        lambda *a, **k: _adapter_success(reference, object()),
+    )
+    client = FakeClient([_market("100", ["a"])])
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock,
+    )
+    assert result.is_valid is False
+    assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.recovery_required is True
+    assert result.dataset_snapshot_reference_id is None
+    assert result.manifest_entry_id is None
+    assert "POPULATION_UNEXPECTED_ERROR" not in result.error_codes
+
+
+def test_success_result_with_raising_nested_id_property_fails_closed(monkeypatch):
+    record_path, manifest_path = _stores()
+    _reference, entry = _genuine_reference_and_entry()
+    marker = "SECRET_NESTED_ID https://nested.invalid"
+
+    class _RaisingReference:
+        @property
+        def dataset_snapshot_reference_id(self):
+            raise RuntimeError(marker)
+
+    monkeypatch.setattr(
+        pop,
+        "persist_validated_record_batch_snapshot",
+        lambda *a, **k: _adapter_success(_RaisingReference(), entry),
+    )
+    client = FakeClient([_market("100", ["a"])])
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock,
+    )
+    # The exact-type gate rejects the fake reference before its id is ever read.
+    assert result.is_valid is False
+    assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.recovery_required is True
+    assert "POPULATION_UNEXPECTED_ERROR" not in result.error_codes
+    assert "SECRET_NESTED_ID" not in repr(result)
+
+
+def test_genuine_already_persisted_recovery_uses_extracted_values(monkeypatch):
+    # A genuine ADAPTER_ALREADY_PERSISTED path (idempotent recovery) still yields
+    # a valid result built from extracted trusted scalars.
+    record_path, manifest_path = _stores()
+    cfg = _config(allow_network=True, markets_limit=1)
+    client = FakeClient([_market("100", ["a"])])
+    populate_initial_polymarket_public_data(
+        record_path, manifest_path, cfg, client=client, utcnow_provider=_clock
+    )
+    recovered = recover_initial_polymarket_public_registration(
+        record_path, manifest_path, cfg
+    )
+    assert recovered.status == "POPULATION_ALREADY_REGISTERED"
+    assert recovered.is_valid is True
+    assert recovered.network_used is False
+    assert type(recovered.dataset_snapshot_reference_id) is str
+    assert type(recovered.manifest_entry_id) is str

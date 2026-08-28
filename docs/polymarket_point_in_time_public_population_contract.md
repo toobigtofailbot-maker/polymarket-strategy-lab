@@ -178,6 +178,14 @@ locked: records first, reference second.
   fabricates cross-store rollback, and never echoes an exception. A raised
   registration exception is contained into the same recoverable partial result, so
   committed records can never be stranded under a generic unrecoverable rejection.
+- The adapter call and the inspection of its returned object are one exception
+  boundary that extracts only already-validated immutable scalars — the status and
+  the reference/entry IDs — from an exact `DatasetPersistenceAdapterResult` with a
+  genuine `DatasetSnapshotReference`/`ManifestEntry`; the raw adapter object is
+  never dereferenced afterward. `registration_error_codes` carries only exact
+  members of the closed WP162 `DATASET_PERSISTENCE_ADAPTER_ERROR_CODES` vocabulary;
+  any arbitrary string, unknown code, hostile iterable, or malformed shape yields
+  an empty tuple, so no arbitrary string, URL, or payload ever crosses the boundary.
 
 WP164 makes no cross-file atomicity claim; a true cross-store coordinator is
 deferred (`WP164-D007`, tracking `WP163-D002`).

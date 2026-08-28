@@ -95,6 +95,9 @@ def test_records_first_then_registration_ordering_documented():
     assert "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED" in text
     assert "EVERY registration failure mode" in text
     assert "raised registration exception is contained" in text
+    assert "raw adapter object is never dereferenced" in text
+    assert "DATASET_PERSISTENCE_ADAPTER_ERROR_CODES" in text
+    assert "no arbitrary string, URL, or payload ever crosses the boundary" in text
 
 
 def test_recovery_reproves_wp164_construction_documented():
