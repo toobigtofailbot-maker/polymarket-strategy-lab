@@ -227,8 +227,13 @@ def test_public_constants_are_exact() -> None:
     )
 
 
-def test_package_exports_end_with_the_fourteen_wp163_symbols() -> None:
-    assert pit.__all__[-14:] == (
+def test_package_exports_include_the_fourteen_wp163_symbols_as_a_block() -> None:
+    # WP164 appended its own exports after WP163, so the WP163 block is no longer
+    # the final tail. Anchor on the WP163 label and assert the exact 14-symbol
+    # block that follows.
+    start = pit.__all__.index("POINT_IN_TIME_RECORD_STORE_LABEL")
+    wp163_block = pit.__all__[start : start + 14]
+    assert wp163_block == (
         "POINT_IN_TIME_RECORD_STORE_LABEL",
         "POINT_IN_TIME_RECORD_STORE_POSTURE",
         "POINT_IN_TIME_RECORD_STORE_FORMAT_ID",
@@ -244,7 +249,7 @@ def test_package_exports_end_with_the_fourteen_wp163_symbols() -> None:
         "load_and_verify_point_in_time_record_store",
         "materialize_dataset_snapshot_reference",
     )
-    assert all(getattr(pit, name) is getattr(RS, name) for name in pit.__all__[-14:])
+    assert all(getattr(pit, name) is getattr(RS, name) for name in wp163_block)
 
 
 def test_result_dataclasses_are_frozen() -> None:

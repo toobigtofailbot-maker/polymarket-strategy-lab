@@ -271,6 +271,17 @@ def test_public_package_exports_exact_supported_surface() -> None:
         "append_point_in_time_records",
         "load_and_verify_point_in_time_record_store",
         "materialize_dataset_snapshot_reference",
+        # WP164 bounded real/public initial Polymarket point-in-time population
+        # coordinator and offline registration recovery (appended by the
+        # separately approved successor WP).
+        "POLYMARKET_PUBLIC_POPULATION_LABEL",
+        "POLYMARKET_PUBLIC_POPULATION_POSTURE",
+        "POLYMARKET_PUBLIC_POPULATION_STATUSES",
+        "POLYMARKET_PUBLIC_POPULATION_ERROR_CODES",
+        "PolymarketPublicPopulationConfig",
+        "PolymarketPublicPopulationResult",
+        "populate_initial_polymarket_public_data",
+        "recover_initial_polymarket_public_registration",
     )
 
 

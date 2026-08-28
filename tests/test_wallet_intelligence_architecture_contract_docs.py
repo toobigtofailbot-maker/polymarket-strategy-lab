@@ -439,6 +439,8 @@ def test_only_allowed_wallet_src_files_changed() -> None:
                 "src/data_layer/point_in_time_market_research/dataset_persistence_adapter.py",
                 # WP163: bounded durable local SQLite point-in-time record store
                 "src/data_layer/point_in_time_market_research/record_store.py",
+                # WP164: bounded real/public initial Polymarket point-in-time population
+                "src/data_layer/point_in_time_market_research/polymarket_public_population.py",
         }
     assert set(src_changes) <= allowed_src_changes, (
         f"Unexpected src/ changes: {set(src_changes) - allowed_src_changes}"

@@ -2304,7 +2304,7 @@ implementation authority.
 | ID | Deferred item | Status | Required future gate | Non-implication |
 |---|---|---|---|---|
 | WP162-D001 | Durable raw/public point-in-time record storage/materialization | RESOLVED_BOUNDED_WP163_SQLITE_RECORD_STORE_AND_REFERENCE_MATERIALIZATION | Resolved by WP163 for the bounded local SQLite record store: immutable WP156/WP157 record objects and their canonical full-record payloads are durably stored and a WP160 DatasetSnapshotReference resolves to the exact durable record objects; no real/public network collection has occurred and raw HTTP/source-response bytes are not stored | Durable record-object storage is not real/public network collection or raw-byte capture |
-| WP162-D002 | Real/public market-data population through a bounded collection path | OPEN | Separate public-data collection WP with source and retention policy | The adapter recomputes only caller-provided in-memory records |
+| WP162-D002 | Real/public market-data population through a bounded collection path | RESOLVED_BOUNDED_WP164_INITIAL_PUBLIC_MARKET_POPULATION | Resolved by WP164 for a bounded initial-seed only: WP164 performs explicit GET-only Gamma/CLOB reads under the existing local guard, normalizes them into WP156 records, and registers the batch through WP162; repeated/incremental population with committed cross-run lineage remains open (WP164-D001) | An initial-seed public population is not continuous or incremental collection |
 | WP162-D003 | Mixed validator-version or parameter-set snapshots | OPEN | Separate multi-provenance WP with committed aggregate semantics | Bounded v1 provenance requires a single validator and parameter set |
 | WP162-D004 | External known-parent lineage context committed into adapter provenance | OPEN | Separate lineage WP with a committed reference-schema field | The WP158 reference schema commits no external known-parent context |
 | WP162-D005 | Automated supersede/invalidate lifecycle transitions | OPEN | Separate lifecycle WP with a bounded transition policy | The adapter registers only; it never supersedes or invalidates |
@@ -2321,13 +2321,34 @@ is `OPEN`, separately gated, and outside WP163 implementation authority.
 
 | ID | Deferred item | Status | Required future gate | Non-implication |
 |---|---|---|---|---|
-| WP163-D001 | Real/public Polymarket data population into WP163 through bounded existing read-only collection architecture | OPEN | Separate public-data collection WP with source, leakage, and retention policy | WP163 stores only caller-supplied already-built records; it performs no network collection |
+| WP163-D001 | Real/public Polymarket data population into WP163 through bounded existing read-only collection architecture | RESOLVED_BOUNDED_WP164_INITIAL_PUBLIC_MARKET_POPULATION | Resolved by WP164 for a bounded initial-seed only: WP164 fetches public Gamma/CLOB reads under the existing guard and appends normalized WP156 records into the empty WP163 store before WP162 registration; repeated/incremental population remains open (WP164-D001) | WP163 itself performs no network collection; an initial-seed population is not continuous collection |
 | WP163-D002 | Cross-store coordinator for record-store append plus WP162 manifest registration | OPEN | Separate coordinator WP; do not claim true cross-file atomicity | Two independent local SQLite files are not one atomic transaction |
 | WP163-D003 | Scale above 4096 records or 128 MiB | OPEN | Separate scale/storage WP with resource and failure bounds | The bounded record store is not a general database service |
 | WP163-D004 | Parquet/Arrow analytical materialization | OPEN | Dependency/security and physical-schema WP | Canonical SQLite record storage does not adopt analytical formats |
 | WP163-D005 | DuckDB/Polars analytical query layer | OPEN | Dependency/security and query-engine WP | The canonical store exposes no analytical query engine |
 | WP163-D006 | Persisted full WP157 query spec and full input provenance for exact as-of replay | OPEN | Separate provenance WP with a committed query/provenance schema | AS_OF_QUERY_RESULT materialization resolves IDs only and never claims query replay |
 | WP163-D007 | Migration, backup, export, compaction, or signing | OPEN | Separate durability/audit WP for each capability | Atomic local append does not provide migration, backup, or attestation |
+
+## WP164 Bounded Real/Public Initial Polymarket Population Deferred Items
+
+WP162-D002 and WP163-D001 are resolved by WP164 for the bounded initial-seed
+public population only: WP164 performs explicit GET-only Gamma/CLOB reads under the
+existing conservative local guard, normalizes them into WP156 records, appends them
+into an empty WP163 store, and registers the exact validated batch through WP162.
+No credentials, authenticated endpoints, trading, scheduler, or incremental
+cross-run lineage are introduced. Every item below is `OPEN`, separately gated, and
+outside WP164 implementation authority. The local guard remains the runtime
+authority.
+
+| ID | Deferred item | Status | Required future gate | Non-implication |
+|---|---|---|---|---|
+| WP164-D001 | Incremental/repeated public capture with committed external-parent lineage | OPEN | Separate successor WP resolving committed cross-run parent provenance before SOURCE_REVISION/EXACT_DUPLICATE registration | WP164 seeds only into an empty store and invents no cross-run lineage |
+| WP164-D002 | Persisted source-snapshot/wire-response fidelity beyond normalized public observations | OPEN | Separate raw-capture WP with retention and security policy | WP164 persists only normalized WP156 observations, never raw HTTP/source bytes |
+| WP164-D003 | Pagination/keyset active-market universe beyond one bounded `/markets` request | OPEN | Separate coverage WP with bounded keyset pagination | One bounded market-list read is not a full active-market universe |
+| WP164-D004 | Historical public trades / Data API ingestion | OPEN | Separate ingestion WP with source and leakage policy | WP164 reads only Gamma markets and CLOB books |
+| WP164-D005 | Automated scheduler/orchestrated polling | OPEN | Separate orchestration WP with concurrency and observability policy | WP164 is a single manual invocation with no loop, retry, or sleep |
+| WP164-D006 | Official rate-limit-policy reconciliation versus conservative repo-local guard | OPEN | Separate policy WP reconciling venue limits; the local guard remains runtime authority | WP164 does not increase or redesign the existing local budgets |
+| WP164-D007 | Cross-file transaction coordinator or stronger recovery ledger | OPEN | Separate coordinator/durability WP; do not claim true cross-file atomicity | Records-first/reference-second ordering plus offline recovery is not one atomic transaction |
 
 WP158 adds no dependency, file I/O, writer, reader, persistence, persisted
 query, collector, product/runtime network, credential, scheduler, strategy,
