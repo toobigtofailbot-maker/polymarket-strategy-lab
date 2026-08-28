@@ -1334,3 +1334,173 @@ def test_recovery_rejects_wrong_source_snapshot_id():
         record_path, manifest_path, cfg
     )
     assert result.error_codes == ("POPULATION_RECOVERY_INVALID",)
+
+
+# ── Malformed / hostile adapter registration results are contained ────────────
+
+
+def test_registration_none_result_after_commit_is_recoverable(monkeypatch):
+    record_path, manifest_path = _stores()
+    monkeypatch.setattr(
+        pop, "persist_validated_record_batch_snapshot", lambda *a, **k: None
+    )
+    client = FakeClient([_market("100", ["a"])])
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock,
+    )
+    assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.recovery_required is True
+    assert result.record_store_status == "RECORD_STORE_APPEND_COMMITTED"
+    assert result.dataset_snapshot_reference_id is None
+    assert result.manifest_entry_id is None
+    assert "POPULATION_UNEXPECTED_ERROR" not in result.error_codes
+    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+    assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
+
+
+def test_registration_result_with_raising_property_is_recoverable(monkeypatch):
+    record_path, manifest_path = _stores()
+    marker = "SECRET_RAISE_MARKER_1a2b"
+    url = "https://raise.invalid/leak"
+
+    class _Raising:
+        @property
+        def is_valid(self):
+            raise RuntimeError(f"{marker} {url}")
+
+    monkeypatch.setattr(
+        pop, "persist_validated_record_batch_snapshot", lambda *a, **k: _Raising()
+    )
+    client = FakeClient([_market("100", ["a"])])
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock,
+    )
+    assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.recovery_required is True
+    assert "POPULATION_UNEXPECTED_ERROR" not in result.error_codes
+    text = repr(result)
+    assert marker not in text and url not in text
+    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+
+
+def test_registration_fake_success_missing_fields_is_registration_failure(monkeypatch):
+    record_path, manifest_path = _stores()
+
+    class _FakeSuccess:
+        is_valid = True
+        status = "ADAPTER_PERSISTED"
+        dataset_reference = None
+        manifest_entry = None
+        error_codes = ()
+
+    monkeypatch.setattr(
+        pop, "persist_validated_record_batch_snapshot", lambda *a, **k: _FakeSuccess()
+    )
+    client = FakeClient([_market("100", ["a"])])
+    result = populate_initial_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock,
+    )
+    # Not a success and not a generic exception.
+    assert result.is_valid is False
+    assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.recovery_required is True
+    assert result.dataset_snapshot_reference_id is None
+    assert result.manifest_entry_id is None
+    assert "POPULATION_UNEXPECTED_ERROR" not in result.error_codes
+    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+
+
+def test_recovery_side_malformed_registration_result_fails_closed(monkeypatch):
+    record_path, manifest_path = _stores()
+    cfg = _config(allow_network=True, markets_limit=1, order_books_limit=1)
+    _seed_unregistered(None, record_path, manifest_path, cfg)
+    before = len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+    monkeypatch.setattr(
+        pop, "persist_validated_record_batch_snapshot", lambda *a, **k: None
+    )
+    result = recover_initial_polymarket_public_registration(
+        record_path, manifest_path, cfg
+    )
+    assert result.is_valid is False
+    assert result.error_codes == ("POPULATION_REGISTRATION_FAILED",)
+    assert result.network_used is False
+    assert (
+        len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+        == before
+    )
+
+
+# ── Same-market duplicate token IDs vs cross-market ambiguity ─────────────────
+
+
+def test_recovery_accepts_same_market_duplicate_token_ids(monkeypatch):
+    record_path, manifest_path = _stores()
+    cfg = _config(allow_network=True, markets_limit=1, order_books_limit=1)
+    # One market whose token list repeats the same raw token; WP164 dedupes it to
+    # a single book, so this is a genuine seed the network path can create.
+    client = FakeClient(
+        [_market("100", ["tokA", "tokA"])], books={"tokA": _book("tokA")}
+    )
+
+    class _Rejected:
+        is_valid = False
+        status = "ADAPTER_REJECTED"
+        error_codes = ("ADAPTER_STORE_APPEND_FAILED",)
+        dataset_reference = None
+        manifest_entry = None
+
+    monkeypatch.setattr(
+        pop, "persist_validated_record_batch_snapshot", lambda *a, **k: _Rejected()
+    )
+    seed = populate_initial_polymarket_public_data(
+        record_path, manifest_path, cfg, client=client, utcnow_provider=_clock
+    )
+    assert seed.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    monkeypatch.undo()
+    recovered = recover_initial_polymarket_public_registration(
+        record_path, manifest_path, cfg
+    )
+    assert recovered.status == "POPULATION_RECOVERED_REGISTRATION"
+    assert recovered.network_used is False
+
+
+def test_recovery_rejects_cross_market_ambiguous_token():
+    record_path, manifest_path = _stores()
+    cfg = _config()
+    g1 = _make_gamma_record(
+        cfg,
+        snapshot_id=_ARB_SNAPSHOT,
+        ingestion_batch_id=_ARB_INGEST,
+        captured=_ARB_TIME,
+        market_id="market:polymarket:100",
+        event_id="event:polymarket:0xcond100",
+        payload=_gamma_payload(condition="0xcond100", tokens=("tokA",)),
+    )
+    g2 = _make_gamma_record(
+        cfg,
+        snapshot_id=_ARB_SNAPSHOT,
+        ingestion_batch_id=_ARB_INGEST,
+        captured=_ARB_TIME,
+        market_id="market:polymarket:200",
+        event_id="event:polymarket:0xcond200",
+        payload=_gamma_payload(condition="0xcond200", tokens=("tokA",)),
+    )
+    book = _make_book_record(
+        cfg,
+        snapshot_id=_ARB_SNAPSHOT,
+        ingestion_batch_id=_ARB_INGEST,
+        captured=_ARB_TIME,
+        raw_token="tokA",
+        market_id="market:polymarket:100",
+        event_id="event:polymarket:0xcond100",
+    )
+    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+
+    append_point_in_time_records(record_path, (g1, g2, book))
+    result = recover_initial_polymarket_public_registration(
+        record_path, manifest_path, cfg
+    )
+    assert result.error_codes == ("POPULATION_RECOVERY_INVALID",)

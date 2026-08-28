@@ -39,7 +39,10 @@ from dataclasses import dataclass
 from ..polymarket.polling_policy import default_polling_policy, validate_polling_policy
 from ..polymarket.public_client import PolymarketPublicClient
 from ..polymarket.rate_limit_guard import RateLimitGuard
-from .dataset_persistence_adapter import persist_validated_record_batch_snapshot
+from .dataset_persistence_adapter import (
+    DatasetPersistenceAdapterResult,
+    persist_validated_record_batch_snapshot,
+)
 from .manifest_store import load_and_verify_manifest_store
 from .record_store import (
     append_point_in_time_records,
@@ -771,6 +774,13 @@ class _AppendFailure(Exception):
         self.store_error_codes = store_error_codes
 
 
+def _safe_error_codes(value: object) -> tuple[str, ...]:
+    try:
+        return tuple(code for code in value if type(code) is str)
+    except Exception:
+        return ()
+
+
 def _safe_register(
     manifest_store_path: object,
     records: tuple[MarketObservationRecord, ...],
@@ -780,11 +790,18 @@ def _safe_register(
 ) -> tuple[bool, object, tuple[str, ...]]:
     """Register the validated batch, containing every ordinary failure mode.
 
-    Returns ``(ok, registration_or_none, closed_error_codes)``. A raised
-    ``Exception`` yields ``(False, None, ())`` with no echo; an invalid adapter
-    result yields ``(False, result, closed_adapter_codes)``. This never raises, so
-    a registration failure after a committed record append can never be reported
-    as a generic unrecoverable rejection.
+    The adapter call AND the inspection of its returned object are one ordinary-
+    ``Exception`` boundary, so a raised exception, ``None``, an object missing the
+    expected fields, or a property that raises can never escape after a committed
+    record append. Returns ``(ok, registration_or_none, closed_error_codes)``:
+
+    * a genuine success requires the exact ``DatasetPersistenceAdapterResult`` type
+      with a ``str`` reference id and manifest-entry id later consumed;
+    * anything else fails closed — a raised exception, ``None``, or a fake-success
+      result missing those fields yields ``(False, None, ())`` with no echo, and an
+      invalid adapter result yields ``(False, None, closed_adapter_codes)``.
+
+    ``BaseException`` is never caught and no repr/exception text is exposed.
     """
 
     try:
@@ -796,14 +813,28 @@ def _safe_register(
             parameter_set_id=config.parameter_set_id,
             validator_version=config.validator_version,
         )
+        is_valid = getattr(registration, "is_valid", None)
+        status = getattr(registration, "status", None)
+        if is_valid is True and status in (
+            "ADAPTER_PERSISTED",
+            "ADAPTER_ALREADY_PERSISTED",
+        ):
+            reference = getattr(registration, "dataset_reference", None)
+            entry = getattr(registration, "manifest_entry", None)
+            reference_id = getattr(reference, "dataset_snapshot_reference_id", None)
+            entry_id = getattr(entry, "manifest_entry_id", None)
+            if (
+                type(registration) is DatasetPersistenceAdapterResult
+                and type(reference_id) is str
+                and type(entry_id) is str
+            ):
+                return True, registration, ()
+            # Claims success but is malformed or missing consumed fields: this is a
+            # registration failure, not a success and not a generic exception.
+            return False, None, ()
+        return False, None, _safe_error_codes(getattr(registration, "error_codes", ()))
     except Exception:
         return False, None, ()
-    if registration.is_valid is not True or registration.status not in (
-        "ADAPTER_PERSISTED",
-        "ADAPTER_ALREADY_PERSISTED",
-    ):
-        return False, registration, tuple(getattr(registration, "error_codes", ()))
-    return True, registration, ()
 
 
 # ── Public coordinator ────────────────────────────────────────────────────────
@@ -1291,8 +1322,11 @@ def _prove_wp164_construction(
     unique_snapshot_id = records[0].envelope.snapshot_id
     unique_captured = records[0].envelope.observed_time
 
-    # Token ownership derived only from parsed Gamma payloads.
-    token_owner: dict[str, list[tuple[str, str]]] = {}
+    # Token ownership derived only from parsed Gamma payloads, as the set of
+    # UNIQUE parent identities: a token repeated inside one market has a single
+    # owner (WP164 dedupes it to one book), while the same token in two distinct
+    # markets is genuinely ambiguous and rejected.
+    token_owner: dict[str, set[tuple[str, str]]] = {}
     gamma_payloads: dict[str, dict] = {}
     for record in gamma:
         payload = _parse_recovery_payload(record.canonical_payload_json)
@@ -1346,7 +1380,7 @@ def _prove_wp164_construction(
         for raw_token in token_ids:
             if type(raw_token) is not str:
                 raise _PopulationReject("POPULATION_RECOVERY_INVALID")
-            token_owner.setdefault(raw_token, []).append(
+            token_owner.setdefault(raw_token, set()).add(
                 (record.market_id, record.event_id)
             )
         gamma_payloads[record.market_id] = payload
@@ -1359,11 +1393,12 @@ def _prove_wp164_construction(
         if record.token_id is None or not record.token_id.startswith(prefix):
             raise _PopulationReject("POPULATION_RECOVERY_INVALID")
         raw_token = record.token_id[len(prefix):]
-        owners = token_owner.get(raw_token, [])
+        owners = token_owner.get(raw_token, set())
         if len(owners) != 1:
-            # Orphan (no Gamma parent) or ambiguous (multiple parents).
+            # Zero unique owners (orphan) or more than one distinct owner
+            # (ambiguous cross-market ownership).
             raise _PopulationReject("POPULATION_RECOVERY_INVALID")
-        parent_market_id, parent_event_id = owners[0]
+        parent_market_id, parent_event_id = next(iter(owners))
         if record.market_id != parent_market_id or record.event_id != parent_event_id:
             raise _PopulationReject("POPULATION_RECOVERY_INVALID")
         expected_srcsnap = _content_id(
