@@ -402,8 +402,11 @@ def test_config_and_result_are_frozen():
         result.status = "x"  # type: ignore[misc]
 
 
-def test_package_exports_end_with_the_eight_wp164_symbols():
-    assert pit.__all__[-8:] == (
+def test_package_exports_contain_the_exact_contiguous_wp164_block():
+    # Future-safe: the eight WP164 symbols must appear as one contiguous block
+    # starting at POLYMARKET_PUBLIC_POPULATION_LABEL, wherever successor WPs append
+    # their own exports afterward.
+    expected = (
         "POLYMARKET_PUBLIC_POPULATION_LABEL",
         "POLYMARKET_PUBLIC_POPULATION_POSTURE",
         "POLYMARKET_PUBLIC_POPULATION_STATUSES",
@@ -413,9 +416,9 @@ def test_package_exports_end_with_the_eight_wp164_symbols():
         "populate_initial_polymarket_public_data",
         "recover_initial_polymarket_public_registration",
     )
-    assert all(
-        getattr(pit, name) is getattr(pop, name) for name in pit.__all__[-8:]
-    )
+    start = pit.__all__.index("POLYMARKET_PUBLIC_POPULATION_LABEL")
+    assert pit.__all__[start:start + 8] == expected
+    assert all(getattr(pit, name) is getattr(pop, name) for name in expected)
 
 
 # ── Dry run ───────────────────────────────────────────────────────────────────

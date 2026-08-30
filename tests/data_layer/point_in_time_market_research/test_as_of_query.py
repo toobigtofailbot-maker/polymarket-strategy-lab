@@ -171,6 +171,16 @@ def test_public_package_exports_exact_supported_surface() -> None:
         "PolymarketPublicPopulationResult",
         "populate_initial_polymarket_public_data",
         "recover_initial_polymarket_public_registration",
+        # WP165 bounded incremental/repeated public Polymarket cumulative cross-run
+        # lineage capture coordinator and offline registration recovery (appended by
+        # the separately approved successor WP).
+        "POLYMARKET_INCREMENTAL_POPULATION_LABEL",
+        "POLYMARKET_INCREMENTAL_POPULATION_POSTURE",
+        "POLYMARKET_INCREMENTAL_POPULATION_STATUSES",
+        "POLYMARKET_INCREMENTAL_POPULATION_ERROR_CODES",
+        "PolymarketIncrementalPopulationResult",
+        "capture_incremental_polymarket_public_data",
+        "recover_incremental_polymarket_public_registration",
     )
 
 

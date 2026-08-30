@@ -115,6 +115,15 @@ from .polymarket_public_population import (
     populate_initial_polymarket_public_data,
     recover_initial_polymarket_public_registration,
 )
+from .polymarket_incremental_population import (
+    POLYMARKET_INCREMENTAL_POPULATION_ERROR_CODES,
+    POLYMARKET_INCREMENTAL_POPULATION_LABEL,
+    POLYMARKET_INCREMENTAL_POPULATION_POSTURE,
+    POLYMARKET_INCREMENTAL_POPULATION_STATUSES,
+    PolymarketIncrementalPopulationResult,
+    capture_incremental_polymarket_public_data,
+    recover_incremental_polymarket_public_registration,
+)
 
 __all__ = (
     "FOUNDATION_LABEL",
@@ -226,4 +235,13 @@ __all__ = (
     "PolymarketPublicPopulationResult",
     "populate_initial_polymarket_public_data",
     "recover_initial_polymarket_public_registration",
+    # WP165 bounded incremental/repeated public Polymarket cumulative cross-run
+    # lineage capture coordinator and offline registration recovery.
+    "POLYMARKET_INCREMENTAL_POPULATION_LABEL",
+    "POLYMARKET_INCREMENTAL_POPULATION_POSTURE",
+    "POLYMARKET_INCREMENTAL_POPULATION_STATUSES",
+    "POLYMARKET_INCREMENTAL_POPULATION_ERROR_CODES",
+    "PolymarketIncrementalPopulationResult",
+    "capture_incremental_polymarket_public_data",
+    "recover_incremental_polymarket_public_registration",
 )
