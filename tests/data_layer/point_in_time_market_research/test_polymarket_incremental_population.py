@@ -28,6 +28,7 @@ from src.data_layer.point_in_time_market_research import (
 )
 from src.data_layer.point_in_time_market_research import (
     PolymarketPublicPopulationConfig as Cfg,
+    append_manifest_store_batch,
     append_point_in_time_records,
     initialize_manifest_store,
     initialize_point_in_time_record_store,
@@ -36,6 +37,10 @@ from src.data_layer.point_in_time_market_research import (
     populate_initial_polymarket_public_data,
     capture_incremental_polymarket_public_data,
     recover_incremental_polymarket_public_registration,
+    validate_record_batch,
+)
+from src.data_layer.point_in_time_market_research import (
+    dataset_persistence_adapter as _dpa,
 )
 
 
@@ -1380,10 +1385,213 @@ def test_genuine_registration_persists_and_reverifies():
         if r.dataset_snapshot_reference_id == result.dataset_snapshot_reference_id
     )
     # The registered cumulative reference recomputes to the full store batch.
-    from src.data_layer.point_in_time_market_research import validate_record_batch
     batch = validate_record_batch(_store_records(record_path))
     assert reference.ordinary_record_version_ids == batch.accepted_record_version_ids
     assert reference.validated_batch_sha256 == batch.canonical_batch_sha256
+
+
+# ── Registered-baseline reference proof against the record store ─────────────
+
+
+def _make_genuine_orphan(record_path, manifest_path, markets):
+    """Leave exactly one genuine failed-registration WP165 orphan run in the store."""
+
+    real = inc.persist_validated_record_batch_snapshot
+    inc.persist_validated_record_batch_snapshot = lambda *a, **k: _adapter_rejected(())
+    try:
+        result = _capture(record_path, manifest_path, markets)
+    finally:
+        inc.persist_validated_record_batch_snapshot = real
+    assert result.status == "INCREMENTAL_RECORDS_PERSISTED_REGISTRATION_FAILED"
+
+
+def _register_forged_reference(
+    manifest_path, config, *, ordinary_ids, batch_sha,
+    effective_time="2026-08-25T00:00:00Z",
+):
+    """Register an internally self-consistent VALIDATED_RECORD_BATCH reference whose
+    ordinary ids/hash are caller-chosen, at the append-chain head, via the public
+    WP160 builders and WP161 store append."""
+
+    reference = _dpa._build_reference(
+        derivation_mode="VALIDATED_RECORD_BATCH",
+        validated_batch_sha256=batch_sha,
+        ordinary_ids=tuple(ordinary_ids),
+        review_ids=(),
+        query_spec_sha256=None,
+        query_result_sha256=None,
+        cutoff_mode=None,
+        cutoff_time=None,
+        result_view=None,
+        query_engine_version=None,
+        validator_version=config.validator_version,
+        parameter_set_id=config.parameter_set_id,
+    )
+    assert reference is not None
+    entries = _manifest_snapshot(manifest_path).manifest_entries
+    head = max(entries, key=lambda e: e.sequence_number)
+    entry = _dpa._build_register_entry(
+        manifest_id=config.manifest_id,
+        sequence_number=len(entries),
+        previous_manifest_entry_id=head.manifest_entry_id,
+        dataset_snapshot_reference_id=reference.dataset_snapshot_reference_id,
+        effective_time=effective_time,
+        parameter_set_id=config.parameter_set_id,
+        human_review_required=False,
+    )
+    assert entry is not None
+    appended = append_manifest_store_batch(
+        manifest_path, dataset_references=(reference,), manifest_entries=(entry,)
+    )
+    assert appended.is_valid, appended.error_codes
+    return reference
+
+
+def test_strict_superset_materialization_failure_blocks_capture(monkeypatch):
+    record_path, manifest_path = _seeded()
+    _make_genuine_orphan(record_path, manifest_path, [_market("200", ["tok2"])])
+    before_records = _store_records(record_path)
+    before_entries = _manifest_snapshot(manifest_path).manifest_entries
+
+    def boom(*a, **k):
+        raise RuntimeError("materialization exploded")
+
+    monkeypatch.setattr(inc, "materialize_dataset_snapshot_reference", boom)
+    client = FakeClient([_market("300", ["tok3"])])
+    result = capture_incremental_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock(18),
+    )
+    assert result.error_codes == ("INCREMENTAL_BASELINE_REFERENCE_INVALID",)
+    assert result.recovery_required is False
+    assert result.network_used is False
+    assert client.markets_calls == 0
+    assert _store_records(record_path) == before_records
+    assert _manifest_snapshot(manifest_path).manifest_entries == before_entries
+
+
+def test_strict_superset_materialization_failure_blocks_recovery(monkeypatch):
+    record_path, manifest_path = _seeded()
+    _make_genuine_orphan(record_path, manifest_path, [_market("200", ["tok2"])])
+    before_records = _store_records(record_path)
+    before_entries = _manifest_snapshot(manifest_path).manifest_entries
+
+    seen = []
+    real_persist = inc.persist_validated_record_batch_snapshot
+
+    def spy_persist(*a, **k):
+        seen.append(True)
+        return real_persist(*a, **k)
+
+    monkeypatch.setattr(inc, "persist_validated_record_batch_snapshot", spy_persist)
+
+    def boom(*a, **k):
+        raise RuntimeError("materialization exploded")
+
+    monkeypatch.setattr(inc, "materialize_dataset_snapshot_reference", boom)
+    result = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config()
+    )
+    assert result.error_codes == ("INCREMENTAL_BASELINE_REFERENCE_INVALID",)
+    assert result.recovery_required is False
+    assert result.network_used is False
+    assert seen == []  # WP162 registration never reached
+    assert _store_records(record_path) == before_records
+    assert _manifest_snapshot(manifest_path).manifest_entries == before_entries
+
+
+def test_wrong_registered_batch_hash_rejected_before_network_and_registration():
+    record_path, manifest_path = _seeded()
+    registered = _store_records(record_path)
+    ordinary = validate_record_batch(registered).accepted_record_version_ids
+    # Leave a genuine orphan suffix, THEN make the latest reference name the genuine
+    # baseline records with a different valid SHA-256 value.
+    _make_genuine_orphan(record_path, manifest_path, [_market("200", ["tok2"])])
+    _register_forged_reference(
+        manifest_path, _config(), ordinary_ids=ordinary, batch_sha="f" * 64
+    )
+    before_entries = _manifest_snapshot(manifest_path).manifest_entries
+
+    # Capture must not heal the reference.
+    client = FakeClient([_market("300", ["tok3"])])
+    cap = capture_incremental_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock(18),
+    )
+    assert cap.error_codes == ("INCREMENTAL_BASELINE_REFERENCE_INVALID",)
+    assert client.markets_calls == 0
+    # Recovery must not heal the reference.
+    rec = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config()
+    )
+    assert rec.error_codes == ("INCREMENTAL_BASELINE_REFERENCE_INVALID",)
+    assert _manifest_snapshot(manifest_path).manifest_entries == before_entries
+
+
+def test_wrong_registered_ordinary_id_order_rejected():
+    record_path, manifest_path = _seeded(
+        [_market("100", ["a"]), _market("101", ["b"])], markets_limit=2
+    )
+    registered = _store_records(record_path)
+    batch = validate_record_batch(registered)
+    assert len(batch.accepted_record_version_ids) >= 2
+    reversed_ids = tuple(reversed(batch.accepted_record_version_ids))
+    _make_genuine_orphan(record_path, manifest_path, [_market("200", ["tok2"])])
+    # Same records, same (correct) hash, but a noncanonical ordinary-id order.
+    _register_forged_reference(
+        manifest_path, _config(),
+        ordinary_ids=reversed_ids, batch_sha=batch.canonical_batch_sha256,
+    )
+    before_entries = _manifest_snapshot(manifest_path).manifest_entries
+
+    client = FakeClient([_market("300", ["tok3"])])
+    cap = capture_incremental_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock(18),
+    )
+    assert cap.error_codes == ("INCREMENTAL_BASELINE_REFERENCE_INVALID",)
+    assert client.markets_calls == 0
+    rec = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config()
+    )
+    assert rec.error_codes == ("INCREMENTAL_BASELINE_REFERENCE_INVALID",)
+    assert _manifest_snapshot(manifest_path).manifest_entries == before_entries
+
+
+def test_genuine_strict_superset_recovers_through_shared_reference_proof():
+    record_path, manifest_path = _seeded()
+    _make_genuine_orphan(record_path, manifest_path, [_market("200", ["tok2"])])
+    # A subsequent capture attempt recognizes the recoverable orphan.
+    client = FakeClient([_market("300", ["tok3"])])
+    blocked = capture_incremental_polymarket_public_data(
+        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
+        client=client, utcnow_provider=_clock(18),
+    )
+    assert blocked.error_codes == ("INCREMENTAL_BASELINE_UNREGISTERED",)
+    assert blocked.recovery_required is True
+    assert client.markets_calls == 0
+    # Offline recovery completes with zero network.
+    recovered = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config()
+    )
+    assert recovered.is_valid
+    assert recovered.status == "INCREMENTAL_RECOVERED_REGISTRATION"
+    assert recovered.network_used is False
+
+
+def test_equal_baseline_dry_run_uses_shared_reference_proof():
+    record_path, manifest_path = _seeded()
+    result = capture_incremental_polymarket_public_data(
+        record_path, manifest_path, _config(markets_limit=1)
+    )
+    assert result.is_valid
+    assert result.status == "INCREMENTAL_DRY_RUN"
+    assert result.network_used is False
+    # The converged reference still materializes through the shared proof.
+    recovered = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config()
+    )
+    assert recovered.status == "INCREMENTAL_ALREADY_REGISTERED"
 
 
 # ── Config boundary ──────────────────────────────────────────────────────────

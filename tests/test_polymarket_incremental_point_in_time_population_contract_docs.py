@@ -70,6 +70,14 @@ def test_manifest_id_binding_documented():
     assert "closed pre-network `INCREMENTAL_PROVENANCE_MISMATCH`" in text
 
 
+def test_registered_reference_proved_against_store_documented():
+    text = _flat(_contract())
+    assert "applied FIRST in every baseline path" in text
+    assert "even when the physical WP163 store holds an unregistered orphan suffix" in text
+    assert "never trusted as authoritative lineage parents" in text
+    assert "never heals the reference through a new cumulative registration" in text
+
+
 def test_strict_superset_recoverability_documented():
     text = _flat(_contract())
     assert "recovery_required` is `True` ONLY when the extra suffix is provably" in text

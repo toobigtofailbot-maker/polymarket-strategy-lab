@@ -57,12 +57,27 @@ validator/parameter versions. It then proves exact convergence:
 - `materialize_dataset_snapshot_reference` succeeds with
   `VALIDATED_BATCH_RECOMPUTED`.
 
+This registered-reference proof (unique ordinary ids, every referenced record
+present, `validate_record_batch` over ONLY the referenced subset with accepted ids
+and batch hash equal to the reference, and a `VALIDATED_BATCH_RECOMPUTED`
+materialization against the actual physical store) is applied FIRST in every
+baseline path — the converged case, the strict-superset capture case, and offline
+recovery — even when the physical WP163 store holds an unregistered orphan suffix.
+A WP160 reference can be internally self-consistent without being a genuine
+record-store materialization, so its records are never trusted as authoritative
+lineage parents until the reference recomputes exactly against the store; a wrong
+`validated_batch_sha256`, a noncanonical ordinary-id order, a missing referenced
+record, or a materialization failure fails closed as
+`INCREMENTAL_BASELINE_REFERENCE_INVALID` and never heals the reference through a new
+cumulative registration.
+
 Any divergence yields zero network. A strict-superset store (unregistered records
 present) is blocked before any network as `INCREMENTAL_BASELINE_UNREGISTERED`, but
 `recovery_required` is `True` ONLY when the extra suffix is provably exactly one
-genuine failed WP165 incremental run (the same offline orphan proof recovery uses);
-an arbitrary WP156-looking record, a forged run, or two distinct orphan batches is
-blocked with `recovery_required=False`.
+genuine failed WP165 incremental run (the same offline orphan proof recovery uses)
+AND the registered baseline reference itself is proven; an arbitrary WP156-looking
+record, a forged run, or two distinct orphan batches is blocked with
+`recovery_required=False`.
 
 ## Public API
 

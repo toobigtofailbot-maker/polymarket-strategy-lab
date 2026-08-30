@@ -529,44 +529,36 @@ def _latest_registered_reference(
     return reference
 
 
-def _prove_baseline_convergence(
+def _prove_registered_reference_materialization(
     record_store_path: object,
-    records: tuple[MarketObservationRecord, ...],
+    all_store_records: tuple[MarketObservationRecord, ...],
     reference: DatasetSnapshotReference,
-    config: PolymarketPublicPopulationConfig,
-) -> None:
-    """Prove the latest registered reference is exactly the current store portion."""
+) -> tuple[MarketObservationRecord, ...]:
+    """Prove a registered reference against ONLY its registered record subset.
 
-    store_ids = {record.envelope.record_version_id for record in records}
-    registered_ids = set(reference.ordinary_record_version_ids)
-    if len(registered_ids) != len(reference.ordinary_record_version_ids):
+    This holds even when the physical WP163 store is a strict superset (an
+    unregistered orphan suffix is present): a WP160 reference can be internally
+    self-consistent yet not be a genuine record-store materialization, so before
+    its records are ever trusted as authoritative lineage parents the reference
+    must recompute exactly against the actual store. Returns the proven registered
+    record tuple or fails closed with ``INCREMENTAL_BASELINE_REFERENCE_INVALID``.
+    """
+
+    ordinary_ids = reference.ordinary_record_version_ids
+    if len(set(ordinary_ids)) != len(ordinary_ids):
         raise _IncrementalReject("INCREMENTAL_BASELINE_REFERENCE_INVALID")
-    if store_ids != registered_ids:
-        if registered_ids < store_ids:
-            # The store strictly extends the registered set. It is recoverable
-            # ONLY when the extra suffix is provably exactly one genuine failed
-            # WP165 incremental run; an arbitrary WP156-looking record, a forged
-            # run, or two distinct orphan batches is blocked before any network
-            # with recovery_required=False.
-            registered_records = tuple(
-                r for r in records if r.envelope.record_version_id in registered_ids
-            )
-            orphan_records = tuple(
-                r for r in records if r.envelope.record_version_id not in registered_ids
-            )
-            try:
-                _prove_orphan_run(registered_records, orphan_records, config)
-            except _IncrementalReject:
-                raise _IncrementalReject(
-                    "INCREMENTAL_BASELINE_UNREGISTERED", recovery=False
-                )
-            raise _IncrementalReject(
-                "INCREMENTAL_BASELINE_UNREGISTERED", recovery=True
-            )
+    by_id = {r.envelope.record_version_id: r for r in all_store_records}
+    registered: list[MarketObservationRecord] = []
+    for record_id in ordinary_ids:
+        record = by_id.get(record_id)
+        if record is None:
+            raise _IncrementalReject("INCREMENTAL_BASELINE_REFERENCE_INVALID")
+        registered.append(record)
+    if len(registered) != len(ordinary_ids):
         raise _IncrementalReject("INCREMENTAL_BASELINE_REFERENCE_INVALID")
 
     try:
-        batch = validate_record_batch(records)
+        batch = validate_record_batch(tuple(registered))
     except Exception:
         raise _IncrementalReject("INCREMENTAL_BASELINE_REFERENCE_INVALID")
     if (
@@ -577,6 +569,7 @@ def _prove_baseline_convergence(
     ):
         raise _IncrementalReject("INCREMENTAL_BASELINE_REFERENCE_INVALID")
 
+    # Materialize against the actual physical store even when it holds a superset.
     try:
         materialization = materialize_dataset_snapshot_reference(
             record_store_path, reference
@@ -588,6 +581,49 @@ def _prove_baseline_convergence(
         or materialization.verification_mode != "VALIDATED_BATCH_RECOMPUTED"
     ):
         raise _IncrementalReject("INCREMENTAL_BASELINE_REFERENCE_INVALID")
+    return tuple(registered)
+
+
+def _prove_baseline_convergence(
+    record_store_path: object,
+    records: tuple[MarketObservationRecord, ...],
+    reference: DatasetSnapshotReference,
+    config: PolymarketPublicPopulationConfig,
+) -> tuple[MarketObservationRecord, ...]:
+    """Prove the latest registered reference against the store (superset-aware).
+
+    The registered reference is ALWAYS proven first (validate + materialize against
+    the physical store). A converged store returns; a strict-superset store then
+    evaluates the orphan suffix to decide ``recovery_required`` — but only after the
+    registered baseline itself is proven. Returns the proven registered record tuple.
+    """
+
+    store_ids = {record.envelope.record_version_id for record in records}
+    registered_ids = set(reference.ordinary_record_version_ids)
+    if len(registered_ids) != len(reference.ordinary_record_version_ids):
+        raise _IncrementalReject("INCREMENTAL_BASELINE_REFERENCE_INVALID")
+
+    # Prove the registered reference FIRST. Success guarantees every referenced id
+    # exists in the store, so registered_ids is a subset of store_ids.
+    registered_records = _prove_registered_reference_materialization(
+        record_store_path, records, reference
+    )
+
+    if store_ids == registered_ids:
+        return registered_records
+
+    # Strict superset: an unregistered suffix is present. It is recoverable ONLY
+    # when that suffix is provably exactly one genuine failed WP165 incremental
+    # run; an arbitrary WP156-looking record, a forged run, or two distinct orphan
+    # batches is blocked before any network with recovery_required=False.
+    orphan_records = tuple(
+        r for r in records if r.envelope.record_version_id not in registered_ids
+    )
+    try:
+        _prove_orphan_run(registered_records, orphan_records, config)
+    except _IncrementalReject:
+        raise _IncrementalReject("INCREMENTAL_BASELINE_UNREGISTERED", recovery=False)
+    raise _IncrementalReject("INCREMENTAL_BASELINE_UNREGISTERED", recovery=True)
 
 
 # ── Guarded reuse of the WP164 GET-only capture boundary ──────────────────────
@@ -1350,10 +1386,14 @@ def recover_incremental_polymarket_public_registration(
             registered_ids = set(reference.ordinary_record_version_ids)
             store_ids = {r.envelope.record_version_id for r in store_records}
 
+            # Prove the registered baseline reference against the store FIRST, in
+            # both the converged and the strict-superset cases, before any of its
+            # records are trusted as authoritative lineage parents.
+            registered_records = _prove_registered_reference_materialization(
+                record_store_path, store_records, reference
+            )
+
             if store_ids == registered_ids:
-                _prove_baseline_convergence(
-                    record_store_path, store_records, reference, config
-                )
                 return _result(
                     is_valid=True,
                     status="INCREMENTAL_ALREADY_REGISTERED",
@@ -1368,9 +1408,6 @@ def recover_incremental_polymarket_public_registration(
             if not registered_ids < store_ids:
                 raise _IncrementalReject("INCREMENTAL_RECOVERY_INVALID")
 
-            registered_records = tuple(
-                r for r in store_records if r.envelope.record_version_id in registered_ids
-            )
             orphan_records = tuple(
                 r for r in store_records if r.envelope.record_version_id not in registered_ids
             )
