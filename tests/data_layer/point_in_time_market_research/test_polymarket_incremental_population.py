@@ -376,18 +376,51 @@ def test_store_manifest_divergence_rejected_without_network():
     assert client.markets_calls == 0
 
 
-def test_orphan_store_blocks_new_network_run():
+def test_forged_strict_superset_blocks_network_and_is_not_recoverable():
+    # An arbitrary WP156-looking record that is not a genuine failed WP165 run is
+    # still blocked before any network, but recovery_required is False because the
+    # difference could never be one genuine incremental run.
     record_path, manifest_path = _seeded()
-    # Commit an extra genuine record without registering it: strict superset.
     extra = _seed_extra_record(record_path)
     append_point_in_time_records(record_path, (extra,))
     client = FakeClient([_market("100", ["tok1"])])
     result = _capture(record_path, manifest_path, [_market("100", ["tok1"])], client=client)
     assert not result.is_valid
     assert result.error_codes == ("INCREMENTAL_BASELINE_UNREGISTERED",)
+    assert result.recovery_required is False
+    assert client.markets_calls == 0
+    assert result.network_used is False
+
+
+def test_genuine_failed_run_strict_superset_is_recoverable():
+    record_path, manifest_path = _seeded()
+    # A genuine failed-registration run leaves a recoverable orphan suffix.
+    real = inc.persist_validated_record_batch_snapshot
+    inc.persist_validated_record_batch_snapshot = lambda *a, **k: _adapter_rejected(())
+    try:
+        _capture(record_path, manifest_path, [_market("200", ["tok2"])])
+    finally:
+        inc.persist_validated_record_batch_snapshot = real
+    client = FakeClient([_market("300", ["tok3"])])
+    result = _capture(record_path, manifest_path, [_market("300", ["tok3"])], client=client, day=17)
+    assert result.error_codes == ("INCREMENTAL_BASELINE_UNREGISTERED",)
     assert result.recovery_required is True
     assert client.markets_calls == 0
     assert result.network_used is False
+
+
+def test_two_orphan_batches_strict_superset_is_not_recoverable():
+    record_path, manifest_path = _seeded()
+    orphan_a = _forge_gamma("501", ["t501"], snap="a" * 64, batch="a" * 64,
+                            captured="2026-08-21T00:00:00Z")
+    orphan_b = _forge_gamma("502", ["t502"], snap="b" * 64, batch="b" * 64,
+                            captured="2026-08-22T00:00:00Z")
+    append_point_in_time_records(record_path, (orphan_a, orphan_b))
+    client = FakeClient([_market("100", ["tok1"])])
+    result = _capture(record_path, manifest_path, [_market("100", ["tok1"])], client=client)
+    assert result.error_codes == ("INCREMENTAL_BASELINE_UNREGISTERED",)
+    assert result.recovery_required is False
+    assert client.markets_calls == 0
 
 
 def test_mixed_provenance_store_rejected_without_network():
@@ -429,6 +462,72 @@ def _seed_extra_record(record_path):
         snapshot_id=snap,
         ingestion_batch_id=batch,
         captured_at_utc="2026-08-20T00:00:00Z",
+        config=_config(),
+    )
+
+
+_ORPHAN_SNAP = "snapshot:sha256:" + "c" * 64
+_ORPHAN_BATCH = "ingest:sha256:" + "c" * 64
+_ORPHAN_TIME = "2026-08-20T00:00:00Z"
+
+
+def _clob_payload_dict():
+    return {
+        "bids": [{"price": "0.40", "size": "10"}],
+        "asks": [{"price": "0.60", "size": "5"}],
+        "tick_size": "0.01",
+        "minimum_order_size": "1",
+        "clob_timestamp": None,
+        "book_hash": None,
+        "last_trade_price": None,
+        "raw_field_names": ["asks", "bids"],
+    }
+
+
+def _forge_gamma(gid, tokens, *, snap=None, batch=None, captured=_ORPHAN_TIME):
+    """A structurally genuine WP164-shaped Gamma record with caller-chosen ids."""
+
+    snapshot_id = ("snapshot:sha256:" + snap) if snap else _ORPHAN_SNAP
+    batch_id = ("ingest:sha256:" + batch) if batch else _ORPHAN_BATCH
+    payload = {
+        "question_text": "Q",
+        "market_status": "open",
+        "outcome_labels": ["Yes", "No"],
+        "condition_id": "0xc" + gid,
+        "token_ids": list(tokens),
+        "resolution_date": None,
+        "category": None,
+        "raw_field_names": ["id"],
+    }
+    return pop._build_gamma_record(
+        {
+            "market_id": "market:polymarket:" + gid,
+            "event_id": "event:polymarket:0xc" + gid,
+            "payload": payload,
+        },
+        snapshot_id=snapshot_id,
+        ingestion_batch_id=batch_id,
+        captured_at_utc=captured,
+        config=_config(),
+    )
+
+
+def _forge_book(market_gid, raw_token, *, snap=None, batch=None, captured=_ORPHAN_TIME):
+    """A structurally genuine WP164-shaped order-book record parented to ``market_gid``."""
+
+    snapshot_id = ("snapshot:sha256:" + snap) if snap else _ORPHAN_SNAP
+    batch_id = ("ingest:sha256:" + batch) if batch else _ORPHAN_BATCH
+    parent = {
+        "market_id": "market:polymarket:" + market_gid,
+        "event_id": "event:polymarket:0xc" + market_gid,
+    }
+    return pop._build_order_book_record(
+        parent,
+        raw_token,
+        _clob_payload_dict(),
+        snapshot_id=snapshot_id,
+        ingestion_batch_id=batch_id,
+        captured_at_utc=captured,
         config=_config(),
     )
 
@@ -859,6 +958,25 @@ def _adapter_rejected(error_codes):
     )
 
 
+def _adapter_success(reference, entry):
+    """A genuine-typed ADAPTER_PERSISTED result with caller-supplied nested objects."""
+
+    return _AdapterResult(
+        is_valid=True,
+        status="ADAPTER_PERSISTED",
+        error_codes=(),
+        upstream_error_codes=(),
+        store_error_codes=(),
+        warning_codes=(),
+        dataset_reference=reference,
+        manifest_entry=entry,
+        store_status="STORE_APPEND_COMMITTED",
+        human_review_required=False,
+        advisory_only=True,
+        no_execution_authority=True,
+    )
+
+
 @pytest.mark.parametrize(
     "adapter",
     [
@@ -980,6 +1098,292 @@ def test_recovery_rejects_non_config_object():
         record_path, manifest_path, object()
     )
     assert result.error_codes == ("INCREMENTAL_INPUT_INVALID",)
+
+
+# ── Blocker A: latest prior uses timestamp chronology, not string order ───────
+
+
+def test_latest_prior_uses_timestamp_chronology_not_string_order():
+    record_path, manifest_path = _stores()
+    # Seed v1 at a whole-second time on the SAME second as the fractional v2.
+    _seed(record_path, manifest_path, [_market("100", ["tok1"])], day=15)
+    v1 = _store_records(record_path)[0]
+    assert v1.envelope.ingestion_time == "2026-08-15T12:00:00Z"
+
+    # v2 at a FRACTIONAL time that is chronologically LATER than v1 but sorts
+    # BEFORE it lexically ("...:00.500000Z" < "...:00Z" because '.' < 'Z').
+    r2 = capture_incremental_polymarket_public_data(
+        record_path, manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=FakeClient([_market("100", ["tok1"], question="v2")]),
+        now_provider=_advancing_now(),
+        utcnow_provider=lambda: datetime.datetime(
+            2026, 8, 15, 12, 0, 0, 500000, tzinfo=datetime.UTC
+        ),
+    )
+    assert r2.is_valid and r2.source_revision_count == 1
+    v2 = next(
+        r for r in _store_records(record_path)
+        if r.envelope.classification == "SOURCE_REVISION"
+    )
+    # Confirm the trap: lexically v2 sorts BEFORE v1, so string ordering would
+    # wrongly keep v1 as the latest prior.
+    assert v2.envelope.ingestion_time < v1.envelope.ingestion_time
+
+    # v3 is chronologically after both; it must parent/supersede v2 (the true
+    # latest), never v1.
+    r3 = capture_incremental_polymarket_public_data(
+        record_path, manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=FakeClient([_market("100", ["tok1"], question="v3")]),
+        now_provider=_advancing_now(),
+        utcnow_provider=lambda: datetime.datetime(
+            2026, 8, 15, 12, 0, 1, tzinfo=datetime.UTC
+        ),
+    )
+    assert r3.is_valid and r3.source_revision_count == 1
+    v3 = next(
+        r for r in _store_records(record_path)
+        if r.envelope.classification == "SOURCE_REVISION"
+        and r.envelope.record_version_id != v2.envelope.record_version_id
+    )
+    assert v3.envelope.supersedes_record_version_id == v2.envelope.record_version_id
+    assert v3.envelope.lineage_parent_ids == (v2.envelope.record_version_id,)
+
+
+def test_malformed_prior_timestamp_helper_fails_closed():
+    with pytest.raises(inc._IncrementalReject) as excinfo:
+        inc._parse_utc("not-a-timestamp")
+    assert excinfo.value.code == "INCREMENTAL_RECORD_STORE_INVALID"
+    with pytest.raises(inc._IncrementalReject):
+        inc._parse_utc("2026-08-15T12:00:00")  # naive, no zone
+
+
+# ── Blocker B: config manifest_id bound before network ───────────────────────
+
+
+def test_manifest_id_mismatch_rejected_before_network():
+    record_path, manifest_path = _seeded()
+    before_records = _store_records(record_path)
+    before_entries = _manifest_snapshot(manifest_path).manifest_entries
+    client = FakeClient([_market("200", ["tok2"])])
+    result = capture_incremental_polymarket_public_data(
+        record_path, manifest_path,
+        _config(allow_network=True, markets_limit=1, manifest_id="manifest:polymarket:OTHER"),
+        client=client, utcnow_provider=_clock(15),
+    )
+    assert result.error_codes == ("INCREMENTAL_PROVENANCE_MISMATCH",)
+    assert result.network_used is False
+    assert result.recovery_required is False
+    assert client.markets_calls == 0
+    assert _store_records(record_path) == before_records
+    assert _manifest_snapshot(manifest_path).manifest_entries == before_entries
+
+
+# ── Blocker C: recovery proves the config-bounded capture shape ──────────────
+
+
+def test_recovery_rejects_book_only_orphan_run():
+    record_path, manifest_path = _seeded()
+    append_point_in_time_records(record_path, (_forge_book("300", "tokX"),))
+    result = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config(order_books_limit=1)
+    )
+    assert result.error_codes == ("INCREMENTAL_RECOVERY_INVALID",)
+
+
+def test_recovery_rejects_clob_orphan_when_books_disabled():
+    record_path, manifest_path = _seeded()
+    append_point_in_time_records(
+        record_path,
+        (_forge_gamma("300", ["tokX"]), _forge_book("300", "tokX")),
+    )
+    # order_books_limit == 0 -> bounded_books == 0 -> a CLOB orphan is impossible.
+    result = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config(order_books_limit=0)
+    )
+    assert result.error_codes == ("INCREMENTAL_RECOVERY_INVALID",)
+
+
+def test_recovery_rejects_more_gamma_than_markets_limit():
+    record_path, manifest_path = _seeded()
+    append_point_in_time_records(
+        record_path,
+        (_forge_gamma("301", ["t301"]), _forge_gamma("302", ["t302"])),
+    )
+    result = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config(markets_limit=1)
+    )
+    assert result.error_codes == ("INCREMENTAL_RECOVERY_INVALID",)
+
+
+def test_recovery_rejects_clob_token_absent_from_same_run_gamma():
+    record_path, manifest_path = _seeded()
+    # Gamma 300 owns only tokA; a book for an unrelated token cannot belong.
+    append_point_in_time_records(
+        record_path,
+        (_forge_gamma("300", ["tokA"]), _forge_book("300", "tokZZZ")),
+    )
+    result = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config(order_books_limit=1)
+    )
+    assert result.error_codes == ("INCREMENTAL_RECOVERY_INVALID",)
+
+
+def test_recovery_rejects_misparented_same_run_clob():
+    record_path, manifest_path = _seeded()
+    # tokA is owned by Gamma 300, but the book claims market/event 400.
+    append_point_in_time_records(
+        record_path,
+        (_forge_gamma("300", ["tokA"]), _forge_book("400", "tokA")),
+    )
+    result = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config(order_books_limit=1)
+    )
+    assert result.error_codes == ("INCREMENTAL_RECOVERY_INVALID",)
+
+
+def test_recovery_rejects_book_not_matching_deterministic_selection():
+    record_path, manifest_path = _seeded()
+    # Gamma 300 offers tokA,tokB; bounded_books=1 selects tokA, but the orphan
+    # carries tokB instead of the deterministically selected tokA.
+    append_point_in_time_records(
+        record_path,
+        (_forge_gamma("300", ["tokA", "tokB"]), _forge_book("300", "tokB")),
+    )
+    result = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config(order_books_limit=1)
+    )
+    assert result.error_codes == ("INCREMENTAL_RECOVERY_INVALID",)
+
+
+def test_recovery_accepts_genuine_run_with_book():
+    record_path, manifest_path = _seeded(
+        [_market("100", ["tok1"])], {"tok1": _book("tok1")},
+        markets_limit=1, order_books_limit=1,
+    )
+    real = inc.persist_validated_record_batch_snapshot
+    inc.persist_validated_record_batch_snapshot = lambda *a, **k: _adapter_rejected(())
+    try:
+        _capture(
+            record_path, manifest_path, [_market("100", ["tok1"], question="v2")],
+            {"tok1": _book("tok1", bids=(("0.55", "3"),))},
+            markets_limit=1, order_books_limit=1,
+        )
+    finally:
+        inc.persist_validated_record_batch_snapshot = real
+    result = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config(markets_limit=1, order_books_limit=1)
+    )
+    assert result.is_valid
+    assert result.status == "INCREMENTAL_RECOVERED_REGISTRATION"
+    assert result.new_record_count == 2
+
+
+def test_recovery_accepts_same_market_duplicate_token_once():
+    record_path, manifest_path = _seeded(
+        [_market("100", ["dup", "dup"])], {"dup": _book("dup")},
+        markets_limit=1, order_books_limit=2,
+    )
+    # The seed already de-duplicated the repeated token into a single book.
+    real = inc.persist_validated_record_batch_snapshot
+    inc.persist_validated_record_batch_snapshot = lambda *a, **k: _adapter_rejected(())
+    try:
+        _capture(
+            record_path, manifest_path, [_market("100", ["dup", "dup"], question="v2")],
+            {"dup": _book("dup", bids=(("0.55", "3"),))},
+            markets_limit=1, order_books_limit=2,
+        )
+    finally:
+        inc.persist_validated_record_batch_snapshot = real
+    result = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config(markets_limit=1, order_books_limit=2)
+    )
+    assert result.is_valid
+    assert result.status == "INCREMENTAL_RECOVERED_REGISTRATION"
+
+
+# ── Blocker D: typed-but-false WP162 success is proven, not trusted ──────────
+
+
+def _unrelated_reference_and_entry():
+    """A genuine registered reference/entry from an INDEPENDENT dataset/manifest."""
+    record_path, manifest_path = _seeded([_market("888", ["zzz"])])
+    _capture(record_path, manifest_path, [_market("889", ["yyy"])])
+    snapshot = _manifest_snapshot(manifest_path)
+    reference = max(
+        snapshot.dataset_references, key=lambda r: len(r.ordinary_record_version_ids)
+    )
+    entry = next(
+        e for e in snapshot.manifest_entries
+        if e.dataset_snapshot_reference_id == reference.dataset_snapshot_reference_id
+    )
+    return reference, entry
+
+
+def test_typed_success_with_unrelated_reference_entry_rejected():
+    record_path, manifest_path = _seeded()
+    unrelated_ref, unrelated_entry = _unrelated_reference_and_entry()
+    real = inc.persist_validated_record_batch_snapshot
+    inc.persist_validated_record_batch_snapshot = lambda *a, **k: _adapter_success(
+        unrelated_ref, unrelated_entry
+    )
+    try:
+        result = _capture(record_path, manifest_path, [_market("200", ["tok2"])])
+    finally:
+        inc.persist_validated_record_batch_snapshot = real
+    assert result.status == "INCREMENTAL_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.error_codes == ("INCREMENTAL_REGISTRATION_FAILED",)
+    assert result.recovery_required is True
+    assert result.dataset_snapshot_reference_id is None
+    # The real manifest was never actually written by the fake adapter.
+    assert len(_manifest_snapshot(manifest_path).manifest_entries) == 1
+
+
+def test_typed_success_without_manifest_write_rejected():
+    record_path, manifest_path = _seeded()
+    other_manifest = os.path.join(tempfile.mkdtemp(), "other.sqlite3")
+    initialize_manifest_store(other_manifest)
+    real = inc.persist_validated_record_batch_snapshot
+
+    def redirect(path, records, **kwargs):
+        # Genuine typed success whose reference/entry match THIS batch, but the
+        # write lands in an unrelated manifest — the real manifest stays empty.
+        return real(other_manifest, records, **kwargs)
+
+    inc.persist_validated_record_batch_snapshot = redirect
+    try:
+        result = _capture(record_path, manifest_path, [_market("200", ["tok2"])])
+    finally:
+        inc.persist_validated_record_batch_snapshot = real
+    assert result.status == "INCREMENTAL_RECORDS_PERSISTED_REGISTRATION_FAILED"
+    assert result.error_codes == ("INCREMENTAL_REGISTRATION_FAILED",)
+    assert result.recovery_required is True
+    # The reference is genuinely absent from the real manifest.
+    assert len(_manifest_snapshot(manifest_path).manifest_entries) == 1
+    # And offline recovery can still complete the registration for real.
+    recovered = recover_incremental_polymarket_public_registration(
+        record_path, manifest_path, _config()
+    )
+    assert recovered.is_valid
+    assert recovered.status == "INCREMENTAL_RECOVERED_REGISTRATION"
+
+
+def test_genuine_registration_persists_and_reverifies():
+    record_path, manifest_path = _seeded()
+    result = _capture(record_path, manifest_path, [_market("200", ["tok2"])])
+    assert result.is_valid
+    assert result.status == "INCREMENTAL_PERSISTED_AND_REGISTERED"
+    snapshot = _manifest_snapshot(manifest_path)
+    reference = next(
+        r for r in snapshot.dataset_references
+        if r.dataset_snapshot_reference_id == result.dataset_snapshot_reference_id
+    )
+    # The registered cumulative reference recomputes to the full store batch.
+    from src.data_layer.point_in_time_market_research import validate_record_batch
+    batch = validate_record_batch(_store_records(record_path))
+    assert reference.ordinary_record_version_ids == batch.accepted_record_version_ids
+    assert reference.validated_batch_sha256 == batch.canonical_batch_sha256
 
 
 # ── Config boundary ──────────────────────────────────────────────────────────

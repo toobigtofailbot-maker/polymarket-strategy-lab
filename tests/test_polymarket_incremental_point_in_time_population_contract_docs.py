@@ -64,6 +64,39 @@ def test_baseline_convergence_proof_documented():
     assert "recovery_required=True" in text
 
 
+def test_manifest_id_binding_documented():
+    text = _flat(_contract())
+    assert "binds the chain's `manifest_id` to `config.manifest_id` BEFORE any network" in text
+    assert "closed pre-network `INCREMENTAL_PROVENANCE_MISMATCH`" in text
+
+
+def test_strict_superset_recoverability_documented():
+    text = _flat(_contract())
+    assert "recovery_required` is `True` ONLY when the extra suffix is provably" in text
+    assert "two distinct orphan batches is blocked with `recovery_required=False`" in text
+
+
+def test_parsed_time_chronology_documented():
+    text = _flat(_contract())
+    assert "true chronology, never by lexical string order" in text
+    assert "12:00:00.500000Z" in text
+
+
+def test_registration_success_is_proven_documented():
+    text = _flat(_contract())
+    assert "A typed adapter success is never trusted on its type alone" in text
+    assert "independent WP161 reload shows the exact reference and entry durably persisted" in text
+    assert "never actually wrote the registration is treated as a registration failure" in text
+
+
+def test_recovery_config_bounded_shape_documented():
+    text = _flat(_contract())
+    assert "at least one and at most `bounded_markets` Gamma records" in text
+    assert "zero CLOB records when `bounded_books == 0`" in text
+    assert "reproduces the exact deterministic `_select_tokens` selection" in text
+    assert "each parented to its same-run Gamma owner" in text
+
+
 def test_public_api_symbols_are_documented():
     text = _contract()
     for symbol in (

@@ -223,10 +223,15 @@ class PolymarketIncrementalPopulationResult:
 
 
 class _IncrementalReject(Exception):
-    """Carry only a closed WP165 error code out of a bounded helper."""
+    """Carry only a closed WP165 error code out of a bounded helper.
 
-    def __init__(self, code: str):
+    ``recovery`` is set only for a strict-superset baseline that is provably one
+    genuine failed incremental run; every other rejection is not recoverable.
+    """
+
+    def __init__(self, code: str, *, recovery: bool = False):
         self.code = code
+        self.recovery = recovery
 
 
 class _AppendFailure(Exception):
@@ -383,9 +388,38 @@ def _entity_identity(record: MarketObservationRecord) -> tuple[object, ...]:
     )
 
 
-def _time_key(record: MarketObservationRecord) -> tuple[str, str, str]:
+def _parse_utc(value: object) -> datetime.datetime:
+    """Parse a WP156 UTC timestamp (optional 1..6 fractional digits) to an aware
+    UTC datetime.
+
+    Latest-prior selection must use true timestamp chronology, not lexical string
+    order: ``12:00:00Z`` and ``12:00:00.500000Z`` sort chronologically but not
+    lexically. A malformed timestamp fails closed; there is never a lexical
+    fallback.
+    """
+
+    if type(value) is not str:
+        raise _IncrementalReject("INCREMENTAL_RECORD_STORE_INVALID")
+    try:
+        parsed = datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except Exception:
+        raise _IncrementalReject("INCREMENTAL_RECORD_STORE_INVALID")
+    if parsed.tzinfo is None:
+        raise _IncrementalReject("INCREMENTAL_RECORD_STORE_INVALID")
+    return parsed.astimezone(datetime.UTC)
+
+
+def _time_key(
+    record: MarketObservationRecord,
+) -> tuple[datetime.datetime, datetime.datetime, str]:
+    # Parsed ingestion datetime, then parsed observed datetime, then the
+    # content-addressed record_version_id as a deterministic tie-break.
     envelope = record.envelope
-    return (envelope.ingestion_time, envelope.observed_time, envelope.record_version_id)
+    return (
+        _parse_utc(envelope.ingestion_time),
+        _parse_utc(envelope.observed_time),
+        envelope.record_version_id,
+    )
 
 
 def _load_verified_store_records(
@@ -458,6 +492,13 @@ def _latest_registered_reference(
     if snapshot.chain_validation is None or not snapshot.chain_validation.is_valid:
         raise _IncrementalReject("INCREMENTAL_MANIFEST_STORE_INVALID")
 
+    # Bind the verified chain's manifest_id to config.manifest_id BEFORE any
+    # network. A mismatch would otherwise fetch and append records first and only
+    # then be rejected by WP162 as ADAPTER_MANIFEST_ID_MISMATCH, needlessly
+    # creating orphan/recovery state. The whole chain shares one manifest_id.
+    if any(entry.manifest_id != config.manifest_id for entry in entries):
+        raise _IncrementalReject("INCREMENTAL_PROVENANCE_MISMATCH")
+
     latest = max(entries, key=lambda entry: entry.sequence_number)
     if (
         latest.entry_kind != "REGISTER_DATASET_SNAPSHOT_REFERENCE"
@@ -492,6 +533,7 @@ def _prove_baseline_convergence(
     record_store_path: object,
     records: tuple[MarketObservationRecord, ...],
     reference: DatasetSnapshotReference,
+    config: PolymarketPublicPopulationConfig,
 ) -> None:
     """Prove the latest registered reference is exactly the current store portion."""
 
@@ -501,9 +543,26 @@ def _prove_baseline_convergence(
         raise _IncrementalReject("INCREMENTAL_BASELINE_REFERENCE_INVALID")
     if store_ids != registered_ids:
         if registered_ids < store_ids:
-            # The store strictly extends the registered set: exactly the shape an
-            # orphaned committed-but-unregistered incremental run leaves behind.
-            raise _IncrementalReject("INCREMENTAL_BASELINE_UNREGISTERED")
+            # The store strictly extends the registered set. It is recoverable
+            # ONLY when the extra suffix is provably exactly one genuine failed
+            # WP165 incremental run; an arbitrary WP156-looking record, a forged
+            # run, or two distinct orphan batches is blocked before any network
+            # with recovery_required=False.
+            registered_records = tuple(
+                r for r in records if r.envelope.record_version_id in registered_ids
+            )
+            orphan_records = tuple(
+                r for r in records if r.envelope.record_version_id not in registered_ids
+            )
+            try:
+                _prove_orphan_run(registered_records, orphan_records, config)
+            except _IncrementalReject:
+                raise _IncrementalReject(
+                    "INCREMENTAL_BASELINE_UNREGISTERED", recovery=False
+                )
+            raise _IncrementalReject(
+                "INCREMENTAL_BASELINE_UNREGISTERED", recovery=True
+            )
         raise _IncrementalReject("INCREMENTAL_BASELINE_REFERENCE_INVALID")
 
     try:
@@ -836,7 +895,10 @@ def _classify_new_records(
 def _validate_cumulative(
     cumulative_records: tuple[MarketObservationRecord, ...],
     new_ids: set[str],
-) -> None:
+) -> tuple[tuple[str, ...], str]:
+    """Validate the complete cumulative batch and return the trusted registration
+    expectations ``(accepted_record_version_ids, canonical_batch_sha256)``."""
+
     if not cumulative_records or len(cumulative_records) > _MAX_CUMULATIVE:
         raise _IncrementalReject("INCREMENTAL_BATCH_INVALID")
     try:
@@ -850,6 +912,10 @@ def _validate_cumulative(
         raise _IncrementalReject("INCREMENTAL_BATCH_INVALID")
     if not new_ids <= accepted:
         raise _IncrementalReject("INCREMENTAL_BATCH_INVALID")
+    return (
+        tuple(batch.accepted_record_version_ids),
+        batch.canonical_batch_sha256,
+    )
 
 
 def _append_new_records(
@@ -897,17 +963,86 @@ def _closed_store_codes(value: object) -> tuple[str, ...]:
         return ()
 
 
+def _reference_entry_proven(
+    reference: DatasetSnapshotReference,
+    entry: ManifestEntry,
+    config: PolymarketPublicPopulationConfig,
+    *,
+    effective_time: str,
+    expected_accepted_ids: tuple[str, ...],
+    expected_batch_hash: str,
+) -> bool:
+    """Prove a typed adapter success actually represents THIS cumulative batch.
+
+    A genuine ``DatasetSnapshotReference``/``ManifestEntry`` pair could still name
+    an unrelated dataset; require every field to match the cumulative batch, the
+    config identity, the effective time, and the fixed safety posture.
+    """
+
+    return bool(
+        reference.derivation_mode == "VALIDATED_RECORD_BATCH"
+        and tuple(reference.ordinary_record_version_ids) == expected_accepted_ids
+        and reference.review_conflict_record_version_ids == ()
+        and reference.validated_batch_sha256 == expected_batch_hash
+        and reference.validator_version == config.validator_version
+        and reference.parameter_set_id == config.parameter_set_id
+        and reference.advisory_only is True
+        and reference.no_execution_authority is True
+        and entry.manifest_id == config.manifest_id
+        and entry.dataset_snapshot_reference_id
+        == reference.dataset_snapshot_reference_id
+        and entry.entry_kind == "REGISTER_DATASET_SNAPSHOT_REFERENCE"
+        and entry.reference_state == "ACTIVE_REFERENCE"
+        and entry.reason_code == "INITIAL_REGISTRATION"
+        and entry.effective_time == effective_time
+        and entry.parameter_set_id == config.parameter_set_id
+        and entry.advisory_only is True
+        and entry.no_execution_authority is True
+    )
+
+
+def _manifest_persisted(
+    manifest_store_path: object,
+    reference: DatasetSnapshotReference,
+    entry: ManifestEntry,
+) -> bool:
+    """Independently reload WP161 and require the exact reference and entry to be
+    durably persisted in a valid chain (defeats a claimed success that never
+    actually wrote the cumulative registration)."""
+
+    loaded = load_and_verify_manifest_store(manifest_store_path)
+    if (
+        not loaded.is_valid
+        or loaded.status != "STORE_LOADED_VERIFIED"
+        or loaded.snapshot is None
+    ):
+        return False
+    snapshot = loaded.snapshot
+    return bool(
+        reference in snapshot.dataset_references
+        and entry in snapshot.manifest_entries
+        and snapshot.chain_validation is not None
+        and snapshot.chain_validation.is_valid
+    )
+
+
 def _safe_register(
     manifest_store_path: object,
     records: tuple[MarketObservationRecord, ...],
     config: PolymarketPublicPopulationConfig,
     *,
     effective_time: str,
+    expected_accepted_ids: tuple[str, ...],
+    expected_batch_hash: str,
 ) -> tuple[bool, str | None, str | None, str | None, tuple[str, ...]]:
     """Register the cumulative validated batch and extract only trusted scalars.
 
     The adapter call AND the full inspection of its returned object are one ordinary
-    ``Exception`` boundary. Only already-validated immutable scalars leave this
+    ``Exception`` boundary. A claimed success is accepted only after proving the
+    returned reference/entry represent exactly this cumulative batch (accepted ids,
+    batch hash, config identity, effective time, REGISTER/ACTIVE/INITIAL posture)
+    AND an independent WP161 reload shows the exact reference and entry durably
+    persisted in a valid chain. Only already-validated immutable scalars leave this
     function — the raw registration object never escapes. Returns
     ``(ok, status, dataset_snapshot_reference_id, manifest_entry_id, closed_codes)``.
     ``BaseException`` is never caught and no repr/exception text is exposed.
@@ -936,6 +1071,17 @@ def _safe_register(
                 type(reference) is not DatasetSnapshotReference
                 or type(entry) is not ManifestEntry
             ):
+                return False, None, None, None, ()
+            if not _reference_entry_proven(
+                reference,
+                entry,
+                config,
+                effective_time=effective_time,
+                expected_accepted_ids=expected_accepted_ids,
+                expected_batch_hash=expected_batch_hash,
+            ):
+                return False, None, None, None, ()
+            if not _manifest_persisted(manifest_store_path, reference, entry):
                 return False, None, None, None, ()
             reference_id = reference.dataset_snapshot_reference_id
             entry_id = entry.manifest_entry_id
@@ -979,16 +1125,17 @@ def capture_incremental_polymarket_public_data(
             prior_records = _load_verified_store_records(record_store_path)
             _require_supported_store(prior_records, config)
             reference = _latest_registered_reference(manifest_store_path, config)
-            _prove_baseline_convergence(record_store_path, prior_records, reference)
+            _prove_baseline_convergence(
+                record_store_path, prior_records, reference, config
+            )
             bounded_markets, bounded_books = _bounded_limits_wp165(config)
             _require_capacity(len(prior_records), bounded_markets, bounded_books)
         except _IncrementalReject as reject:
-            recovery = reject.code == "INCREMENTAL_BASELINE_UNREGISTERED"
             return _result(
                 is_valid=False,
                 status="INCREMENTAL_REJECTED",
                 error_codes=(reject.code,),
-                recovery_required=recovery,
+                recovery_required=reject.recovery,
             )
 
         prior_count = len(prior_records)
@@ -1079,7 +1226,9 @@ def _run_network_capture(
         )
         cumulative_records = tuple(prior_records) + tuple(new_records)
         new_ids = {record.envelope.record_version_id for record in new_records}
-        _validate_cumulative(cumulative_records, new_ids)
+        expected_accepted_ids, expected_batch_hash = _validate_cumulative(
+            cumulative_records, new_ids
+        )
     except _IncrementalReject as reject:
         return _result(
             is_valid=False,
@@ -1129,6 +1278,8 @@ def _run_network_capture(
         cumulative_records,
         config,
         effective_time=captured_at_utc,
+        expected_accepted_ids=expected_accepted_ids,
+        expected_batch_hash=expected_batch_hash,
     )
     if not ok:
         # New records committed (fail-safe ordering); the immutable WP163 records
@@ -1201,7 +1352,7 @@ def recover_incremental_polymarket_public_registration(
 
             if store_ids == registered_ids:
                 _prove_baseline_convergence(
-                    record_store_path, store_records, reference
+                    record_store_path, store_records, reference, config
                 )
                 return _result(
                     is_valid=True,
@@ -1227,7 +1378,9 @@ def recover_incremental_polymarket_public_registration(
                 _prove_orphan_run(registered_records, orphan_records, config)
             )
             cumulative_records = tuple(store_records)
-            _validate_cumulative(cumulative_records, store_ids)
+            expected_accepted_ids, expected_batch_hash = _validate_cumulative(
+                cumulative_records, store_ids
+            )
         except _IncrementalReject as reject:
             return _result(
                 is_valid=False,
@@ -1246,6 +1399,8 @@ def recover_incremental_polymarket_public_registration(
             cumulative_records,
             config,
             effective_time=captured_at_utc,
+            expected_accepted_ids=expected_accepted_ids,
+            expected_batch_hash=expected_batch_hash,
         )
         counts = dict(
             prior_registered_record_count=len(registered_ids),
@@ -1422,8 +1577,6 @@ def _prove_orphan_run(
     stored_snapshot_id = next(iter(snapshot_ids))
     stored_batch_id = next(iter(batch_ids))
 
-    # Recompute the WP165 run identity from only the orphan payload hashes in the
-    # deterministic WP164 record order and require an exact match.
     gamma_orphans = sorted(
         (o for o in orphan_records if o.source_id == _GAMMA_SOURCE_ID),
         key=lambda record: record.market_id,
@@ -1432,6 +1585,79 @@ def _prove_orphan_run(
         (o for o in orphan_records if o.source_id == _CLOB_SOURCE_ID),
         key=lambda record: (record.market_id, record.token_id or ""),
     )
+
+    # Prove the orphan run is a shape the config-bounded capture path could
+    # actually produce: a real WP165 run fetches at most ``bounded_markets`` Gamma
+    # markets (always >=1) and derives its books ONLY from the same run's Gamma
+    # response via the deterministic ``_select_tokens`` selection.
+    bounded_markets, bounded_books = _bounded_limits_wp165(config)
+    gamma_count = len(gamma_orphans)
+    clob_count = len(clob_orphans)
+    if not (1 <= gamma_count <= bounded_markets):
+        raise _IncrementalReject("INCREMENTAL_RECOVERY_INVALID")
+    if clob_count > bounded_books:
+        raise _IncrementalReject("INCREMENTAL_RECOVERY_INVALID")
+    if bounded_books == 0 and clob_count != 0:
+        raise _IncrementalReject("INCREMENTAL_RECOVERY_INVALID")
+
+    parsed_markets: list[tuple[str, str, dict]] = []
+    market_prefix = "market:polymarket:"
+    for gamma in gamma_orphans:
+        payload = _parse_payload(gamma.canonical_payload_json)
+        if frozenset(payload) != _GAMMA_PAYLOAD_KEYS:
+            raise _IncrementalReject("INCREMENTAL_RECOVERY_INVALID")
+        if not gamma.market_id.startswith(market_prefix):
+            raise _IncrementalReject("INCREMENTAL_RECOVERY_INVALID")
+        raw_gamma_id = gamma.market_id[len(market_prefix):]
+        raw_token_ids = payload["token_ids"]
+        if type(raw_token_ids) is not list or any(
+            type(token) is not str for token in raw_token_ids
+        ):
+            raise _IncrementalReject("INCREMENTAL_RECOVERY_INVALID")
+        parsed_markets.append(
+            (
+                gamma.market_id,
+                raw_gamma_id,
+                {
+                    "market_id": gamma.market_id,
+                    "event_id": gamma.event_id,
+                    "raw_token_ids": list(raw_token_ids),
+                    "payload": payload,
+                },
+            )
+        )
+    parsed_markets.sort(key=lambda entry: entry[0])
+
+    # Reproduce the deterministic bounded token selection (and its same-market
+    # de-duplication and cross-market-ambiguity rejection). The CLOB orphans must be
+    # exactly the selected tokens, each parented to its same-run Gamma owner.
+    selected_tokens, token_to_market = _call_wp164(
+        _select_tokens,
+        parsed_markets,
+        bounded_books,
+        default_code="INCREMENTAL_RECOVERY_INVALID",
+    )
+    token_prefix = "token:polymarket:"
+    orphan_book_tokens: list[str] = []
+    for book in clob_orphans:
+        if book.token_id is None or not book.token_id.startswith(token_prefix):
+            raise _IncrementalReject("INCREMENTAL_RECOVERY_INVALID")
+        orphan_book_tokens.append(book.token_id[len(token_prefix):])
+    if len(orphan_book_tokens) != len(set(orphan_book_tokens)):
+        raise _IncrementalReject("INCREMENTAL_RECOVERY_INVALID")
+    if sorted(orphan_book_tokens) != sorted(selected_tokens):
+        raise _IncrementalReject("INCREMENTAL_RECOVERY_INVALID")
+    for book in clob_orphans:
+        owner = token_to_market.get(book.token_id[len(token_prefix):])
+        if (
+            owner is None
+            or book.market_id != owner["market_id"]
+            or book.event_id != owner["event_id"]
+        ):
+            raise _IncrementalReject("INCREMENTAL_RECOVERY_INVALID")
+
+    # Recompute the WP165 run identity from only the orphan payload hashes in the
+    # deterministic WP164 record order and require an exact match.
     gamma_hashes = [sha256_hex(o.canonical_payload_json) for o in gamma_orphans]
     clob_hashes = [sha256_hex(o.canonical_payload_json) for o in clob_orphans]
     recomputed_snapshot_id, recomputed_batch_id = _run_identities(

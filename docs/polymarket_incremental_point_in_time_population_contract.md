@@ -39,8 +39,12 @@ store whose records are all supported WP164-shaped observations
 (`platform:polymarket`, Gamma `MARKET_METADATA` or CLOB `ORDER_BOOK`) carrying only
 the three cross-run lineage classifications, with config-matching provenance.
 
-It then loads the WP161 manifest, requires a valid nonempty chain, takes the highest
-`sequence_number` entry, and requires it to be a
+It then loads the WP161 manifest, requires a valid nonempty chain, and binds the
+chain's `manifest_id` to `config.manifest_id` BEFORE any network — a mismatch is a
+closed pre-network `INCREMENTAL_PROVENANCE_MISMATCH` rejection with zero GET, zero
+append, `network_used=False`, and `recovery_required=False`, so a wrong
+`manifest_id` can never fetch and append records only to be rejected later by WP162.
+It takes the highest `sequence_number` entry, and requires it to be a
 `REGISTER_DATASET_SNAPSHOT_REFERENCE` / `ACTIVE_REFERENCE` / `INITIAL_REGISTRATION`
 entry whose `DatasetSnapshotReference` exists exactly once with derivation mode
 `VALIDATED_RECORD_BATCH`, no review conflicts, and config-matching
@@ -53,10 +57,12 @@ validator/parameter versions. It then proves exact convergence:
 - `materialize_dataset_snapshot_reference` succeeds with
   `VALIDATED_BATCH_RECOMPUTED`.
 
-Any divergence yields zero network. If the store is a strict superset of the
-registered ids, WP165 returns `INCREMENTAL_BASELINE_UNREGISTERED` with
-`recovery_required=True` — exactly the shape a committed-but-unregistered orphan run
-leaves behind.
+Any divergence yields zero network. A strict-superset store (unregistered records
+present) is blocked before any network as `INCREMENTAL_BASELINE_UNREGISTERED`, but
+`recovery_required` is `True` ONLY when the extra suffix is provably exactly one
+genuine failed WP165 incremental run (the same offline orphan proof recovery uses);
+an arbitrary WP156-looking record, a forged run, or two distinct orphan batches is
+blocked with `recovery_required=False`.
 
 ## Public API
 
@@ -121,7 +127,10 @@ Each new capture becomes one temporary current-capture `PRIMARY_ASSERTION`
 candidate, built through the WP164 normalization/build helpers with the WP165
 snapshot/batch identities. The latest prior record for the same WP156 entity —
 identity `(platform, event, market, token, source, observation_kind)` — is chosen by
-ingestion time, then observed time, then `record_version_id`. Each candidate is
+ingestion time, then observed time, then `record_version_id`, where the times are
+parsed as UTC timestamps and compared by true chronology, never by lexical string
+order (so `12:00:00Z` and `12:00:00.500000Z` rank correctly and a malformed
+timestamp fails closed). Each candidate is
 classified deterministically and the FINAL record is rebuilt through the public
 `build_market_observation`, replacing only classification, lifecycle, lineage
 parents, and supersedes:
@@ -161,6 +170,19 @@ the captured time. This fail-safe ordering is locked: new records first, cumulat
 reference second. The new reference contains the exact prior-plus-new accepted ids,
 and the prior reference remains immutable.
 
+A typed adapter success is never trusted on its type alone. Cumulative validation
+returns the trusted `accepted_record_version_ids` and `canonical_batch_sha256`, and a
+claimed `ADAPTER_PERSISTED`/`ADAPTER_ALREADY_PERSISTED` is accepted only after
+proving the returned `DatasetSnapshotReference` represents exactly this cumulative
+batch (`VALIDATED_RECORD_BATCH`, ordinary ids equal to the accepted ids, empty review
+conflicts, matching `validated_batch_sha256`, matching validator/parameter versions,
+`advisory_only`/`no_execution_authority`) and the returned `ManifestEntry` matches
+(`manifest_id`, reference id, `REGISTER`/`ACTIVE`/`INITIAL`, `effective_time`,
+parameter set, safety flags), AND an independent WP161 reload shows the exact
+reference and entry durably persisted in a valid chain. A claimed success that names
+an unrelated dataset or that never actually wrote the registration is treated as a
+registration failure, never a success.
+
 ## Registration failure and offline recovery
 
 A record-append failure never registers a reference and returns
@@ -184,15 +206,24 @@ no-op. When the registered ids are a strict subset of the store, the orphan suff
 must be exactly one genuine WP165 incremental run: 1..45 orphan records, total store
 at most 256, all supported observations sharing exactly one snapshot id, one
 ingestion batch id, and one `observed_time == ingestion_time`, with config-matching
-provenance. The WP165 run identity is recomputed from only the orphan payload hashes
-and must equal the single stored snapshot/batch ids, and every orphan is
-reconstructed from only the registered prior state through the exact WP165 lineage
-and required to be equal object-for-object. Only then does it re-run
+provenance. The orphan run must additionally match a shape the config-bounded capture
+path could actually produce: re-running the bounded limits offline, it requires at
+least one and at most `bounded_markets` Gamma records and at most `bounded_books`
+CLOB records (and zero CLOB records when `bounded_books == 0`), reproduces the exact
+deterministic `_select_tokens` selection (same market ordering, same-market
+de-duplication, cross-market ambiguity rejection) from the same run's Gamma payloads,
+and requires the CLOB orphan tokens to equal precisely the selected tokens, each
+parented to its same-run Gamma owner. The WP165 run identity is recomputed from only
+the orphan payload hashes and must equal the single stored snapshot/batch ids, and
+every orphan is reconstructed from only the registered prior state through the exact
+WP165 lineage and required to be equal object-for-object. Only then does it re-run
 `validate_record_batch` over the complete store and re-register through WP162 using
-the orphan ingestion time as `effective_time`. A forged orphan, a wrong
-parent/supersedes, two distinct orphan batches, identity drift, or any non-WP165
-classification fails closed as `INCREMENTAL_RECOVERY_INVALID`. WP165 keeps no queue
-of failed runs.
+the orphan ingestion time as `effective_time`. A book-only run, a CLOB record when
+books are disabled, more Gamma than the limit permits, a token absent from or
+mis-parented against the same-run Gamma, a token that is not the deterministic
+selection, a forged orphan, a wrong parent/supersedes, two distinct orphan batches,
+identity drift, or any non-WP165 classification fails closed as
+`INCREMENTAL_RECOVERY_INVALID`. WP165 keeps no queue of failed runs.
 
 ## No raw bytes, keyset, scheduler, authentication, or trading
 
