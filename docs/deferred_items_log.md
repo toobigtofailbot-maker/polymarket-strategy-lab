@@ -2342,13 +2342,37 @@ authority.
 
 | ID | Deferred item | Status | Required future gate | Non-implication |
 |---|---|---|---|---|
-| WP164-D001 | Incremental/repeated public capture with committed external-parent lineage | OPEN | Separate successor WP resolving committed cross-run parent provenance before SOURCE_REVISION/EXACT_DUPLICATE registration | WP164 seeds only into an empty store and invents no cross-run lineage |
+| WP164-D001 | Incremental/repeated public capture with committed external-parent lineage | PARTIALLY_RESOLVED_WP165_CUMULATIVE_INTERNAL_PARENT_LINEAGE | Partially resolved by WP165: bounded incremental capture now commits deterministic cross-run SOURCE_REVISION/EXACT_DUPLICATE lineage where every parent is a committed internal record inside one cumulative registered snapshot (<=256 records). The scalable external-parent/reference-schema extension beyond 256 remains open as WP165-D001 | WP164 seeds only into an empty store; WP165 keeps every parent committed internally and does not add an external known-parent schema |
 | WP164-D002 | Persisted source-snapshot/wire-response fidelity beyond normalized public observations | OPEN | Separate raw-capture WP with retention and security policy | WP164 persists only normalized WP156 observations, never raw HTTP/source bytes |
 | WP164-D003 | Pagination/keyset active-market universe beyond one bounded `/markets` request | OPEN | Separate coverage WP with bounded keyset pagination | One bounded market-list read is not a full active-market universe |
 | WP164-D004 | Historical public trades / Data API ingestion | OPEN | Separate ingestion WP with source and leakage policy | WP164 reads only Gamma markets and CLOB books |
 | WP164-D005 | Automated scheduler/orchestrated polling | OPEN | Separate orchestration WP with concurrency and observability policy | WP164 is a single manual invocation with no loop, retry, or sleep |
 | WP164-D006 | Official rate-limit-policy reconciliation versus conservative repo-local guard | OPEN | Separate policy WP reconciling venue limits; the local guard remains runtime authority | WP164 does not increase or redesign the existing local budgets |
 | WP164-D007 | Cross-file transaction coordinator or stronger recovery ledger | OPEN | Separate coordinator/durability WP; do not claim true cross-file atomicity | Records-first/reference-second ordering plus offline recovery is not one atomic transaction |
+
+## WP165 Bounded Incremental Public Polymarket Cumulative Cross-Run Lineage Deferred Items
+
+WP164-D001 is `PARTIALLY_RESOLVED_WP165_CUMULATIVE_INTERNAL_PARENT_LINEAGE` for the
+bounded cumulative case only: WP165 commits deterministic cross-run
+SOURCE_REVISION/EXACT_DUPLICATE lineage where every parent is a committed internal
+record and the complete prior-plus-new dataset is registered as one WP160
+`DatasetSnapshotReference` (<=256 records). WP162-D004 remains OPEN because WP165
+does not add an external known-parent reference-context schema; WP164-D003 remains
+OPEN because WP165 adds no keyset/pagination; WP164-D002, WP164-D004, WP164-D005,
+WP164-D006, WP164-D007 and WP163-D003, WP163-D004, WP163-D005 remain OPEN. No
+credentials, authenticated endpoints, trading, scheduler, or manifest/dataset schema
+migration are introduced. Every item below is `OPEN`, separately gated, and outside
+WP165 implementation authority. The local guard remains the runtime authority.
+
+| ID | Deferred item | Status | Priority | Required future gate | Non-implication |
+|---|---|---|---|---|---|
+| WP165-D001 | Scalable lineage beyond 256 / external-parent reference schema | OPEN | P1 | Separate successor WP committing an external-parent/reference-context schema so cross-run parents need not all live in one cumulative <=256 snapshot | WP165 keeps every parent committed internally inside one cumulative registered snapshot bounded to 256 records |
+| WP165-D002 | Gamma keyset broader active-market universe | OPEN | P2 | Separate coverage WP with bounded keyset/cursor pagination across a materially broader active-market universe | WP165 issues at most one bounded Gamma market-list read per run |
+| WP165-D003 | Store growth/partitioning beyond the bounded research horizon | OPEN | P2 | Separate durability/partitioning WP for datasets beyond the bounded research horizon | WP165 stays within the existing bounded SQLite record store and the 256 cumulative cap |
+| WP165-D004 | Scheduled recurring collection | OPEN | P2 | Separate orchestration WP with concurrency and observability policy | WP165 is a single manual invocation with no loop, retry, sleep, or scheduler |
+| WP165-D005 | Raw source/wire preservation | OPEN | P3 | Separate raw-capture WP with retention and security policy | WP165 persists only normalized WP156 observations, never raw HTTP/source bytes |
+| WP165-D006 | Historical public trades / Data API ingestion | OPEN | P2 | Separate ingestion WP with source and leakage policy | WP165 reads only Gamma markets and CLOB books |
+| WP165-D007 | Analytical columnar/query layer | OPEN | P2 | Separate analytics WP adopting Parquet/Arrow/DuckDB/Polars | WP165 adds no analytical columnar or query layer |
 
 WP158 adds no dependency, file I/O, writer, reader, persistence, persisted
 query, collector, product/runtime network, credential, scheduler, strategy,

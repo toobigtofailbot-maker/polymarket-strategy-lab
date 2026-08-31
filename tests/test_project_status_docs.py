@@ -2772,9 +2772,9 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp153_through_wp163_are_merged_and_wp164_is_current_review_target():
-    # Functional WP164 is the current non-draft review target following the exact
-    # merged WP163 durable record-store baseline.
+def test_wp153_through_wp164_are_merged_and_wp165_is_current_review_target():
+    # Functional WP165 is the current non-draft review target following the exact
+    # merged WP164 initial-seed baseline.
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2782,8 +2782,8 @@ def test_wp153_through_wp163_are_merged_and_wp164_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
+    assert "WP165" in current_phase_line
     assert "WP164" in current_phase_line
-    assert "WP163" in current_phase_line
     assert "WP161" in current_phase_line
     assert "WP153" in merged_line
     assert "WP154" in merged_line
@@ -2796,13 +2796,14 @@ def test_wp153_through_wp163_are_merged_and_wp164_is_current_review_target():
     assert "WP161" in merged_line
     assert "WP162" in merged_line
     assert "WP163" in merged_line
+    assert "WP164" in merged_line
     for phrase in (
         "current review target",
         "Primary package class: DATA_LAYER_PUBLIC_POPULATION",
-        "Repository validation class: bounded-real-public-initial-polymarket-point-in-time-population",
+        "Repository validation class: bounded-incremental-cumulative-polymarket-point-in-time-population",
         "Package size class: L",
         "Risk level: 1",
-        "Implementation posture: EXPLICIT_NETWORK_GET_ONLY_BOUNDED_INITIAL_SEED_NO_TRADING_AUTHORITY",
+        "Implementation posture: MANUAL_GET_ONLY_CUMULATIVE_256_RECORD_CROSS_RUN_LINEAGE_NO_TRADING_AUTHORITY",
         "Ready for review: YES",
         "Merge authorized: NO",
         "Independent live PR review required: YES",
@@ -2818,15 +2819,17 @@ def test_wp153_through_wp163_are_merged_and_wp164_is_current_review_target():
         "Dataset persistence adapter implemented by: WP162",
         "Durable point-in-time record store implemented by: WP163",
         "Real/public initial population implemented by: WP164",
+        "Bounded incremental cumulative population implemented by: WP165",
         "WP160 merged: YES",
         "WP161 merged: YES",
         "WP162 merged: YES",
         "WP163 merged: YES",
-        "WP163 PR: 163",
-        "WP163 final head: 98d8e5813efddddca87608c6965bbbb5346cb371",
-        "WP163 merge commit: 889a249c54aac589d952827425eadfc0aae1606a",
-        "WP163 implemented and merged: YES",
-        "WP164 Ready for review: YES",
+        "WP164 merged: YES",
+        "WP164 PR: 164",
+        "WP164 final head: 0f3f29e32f7bb404f1156afba83ea33c3ee5cb1b",
+        "WP164 merge commit: 652ac21547db42512e7f9360986e1616c6622384",
+        "WP164 implemented and merged: YES",
+        "WP165 Ready for review: YES",
     ):
         assert phrase in current_phase_line
     assert current_phase_line.count("current review target") == 1
@@ -2900,6 +2903,83 @@ def test_wp164_public_population_status_repo_truth_and_deferred_items_are_regist
     assert "RESOLVED_BOUNDED_WP164_INITIAL_PUBLIC_MARKET_POPULATION" in deferred
     for index_value in range(1, 8):
         assert f"WP164-D{index_value:03d}" in deferred
+
+
+def test_wp165_incremental_population_status_repo_truth_and_deferred_items_are_registered():
+    text = _read()
+    line = next(
+        item for item in text.splitlines()
+        if item.startswith(
+            "- Bounded incremental cumulative Polymarket population status:"
+        )
+    )
+    for phrase in (
+        "POLYMARKET_BOUNDED_CUMULATIVE_INCREMENTAL_POINT_IN_TIME_POPULATION",
+        "MANUAL_GET_ONLY_CUMULATIVE_256_RECORD_CROSS_RUN_LINEAGE_NO_TRADING_AUTHORITY",
+        "polymarket_incremental_population.py",
+        "Package class: DATA_LAYER_PUBLIC_POPULATION",
+        "Default network posture: OFF",
+        "Endpoints: Gamma GET /markets and optional CLOB GET /book only",
+        "Authenticated endpoints used: NONE",
+        "POST /books used: NO",
+        "Keyset/pagination used: NO",
+        "Data API used: NO",
+        "Trading/order/execution methods used: NONE",
+        "Local guard remains runtime request authority: YES",
+        "Cumulative record cap: 256",
+        "Populated and registered WP163 record store required: YES",
+        "Latest registered VALIDATED_RECORD_BATCH reference convergence proven before network: YES",
+        "Store strict-superset yields recoverable baseline-unregistered: YES",
+        "Worst-case capacity checked before any client call: YES",
+        "Identity drift rejected: YES",
+        "External known_parent_record_ids passed through WP162: NO",
+        "Manifest/dataset snapshot reference schema migration: NONE",
+        "Only new records appended through WP163: YES",
+        "Complete cumulative dataset registered through WP162: YES",
+        "New records appended before cumulative registration: YES",
+        "Old registered reference remains immutable: YES",
+        "Registration failure recoverable offline without deletion or re-fetch: YES",
+        "Recovery performs zero network: YES",
+        "Raw HTTP/source-response bytes stored: NO",
+        "Direct network library in new module: NO",
+        "Scheduler/retry/backoff/sleep: NO",
+        "Package export inventory grew by: 7",
+        "Dependencies added: 0",
+        "WP164-D001 partially resolved for bounded cumulative internal-parent lineage scope: YES",
+        "WP162-D004 remains open: YES",
+        "WP165 Ready for review: YES",
+        "Merge authorized: NO",
+    ):
+        assert phrase in line
+
+    status = (STATUS_ENTRIES / "WP165.md").read_text(encoding="utf-8")
+    for phrase in (
+        "stable and non-self-referential",
+        "Ready for review: YES",
+        "Merge authorized: NO",
+        "0f3f29e32f7bb404f1156afba83ea33c3ee5cb1b",
+        "652ac21547db42512e7f9360986e1616c6622384",
+        "WP165-D007",
+    ):
+        assert phrase in status
+    assert re.search(
+        r"Current live PR head:\s*`?[0-9a-f]{40}`?", status, re.IGNORECASE
+    ) is None
+
+    index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    for path in (
+        "src/data_layer/point_in_time_market_research/polymarket_incremental_population.py",
+        "docs/status_entries/WP165.md",
+        "docs/polymarket_incremental_point_in_time_population_contract.md",
+        "tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py",
+    ):
+        assert path in index
+    deferred = (REPO_ROOT / "docs" / "deferred_items_log.md").read_text(
+        encoding="utf-8"
+    )
+    assert "PARTIALLY_RESOLVED_WP165_CUMULATIVE_INTERNAL_PARENT_LINEAGE" in deferred
+    for index_value in range(1, 8):
+        assert f"WP165-D{index_value:03d}" in deferred
 
 
 def test_wp163_record_store_status_repo_truth_and_deferred_items_are_registered():

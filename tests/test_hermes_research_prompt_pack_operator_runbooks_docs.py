@@ -722,6 +722,8 @@ def test_no_src_implementation_for_wp98() -> None:
                 "src/data_layer/point_in_time_market_research/record_store.py",
                 # WP164: bounded real/public initial Polymarket point-in-time population
                 "src/data_layer/point_in_time_market_research/polymarket_public_population.py",
+                # WP165: bounded incremental/repeated public Polymarket cumulative cross-run lineage capture
+                "src/data_layer/point_in_time_market_research/polymarket_incremental_population.py",
             }
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (
