@@ -63,6 +63,7 @@ from .record_store import (
     POINT_IN_TIME_RECORD_STORE_ERROR_CODES,
     append_point_in_time_records,
     load_and_verify_point_in_time_record_store,
+    materialize_dataset_snapshot_reference,
 )
 from .records import (
     MarketObservationRecord,
@@ -153,6 +154,15 @@ _CLOB_KIND = "ORDER_BOOK"
 _ALLOWED_CLASSIFICATIONS = frozenset(
     {"PRIMARY_ASSERTION", "EXACT_DUPLICATE", "SOURCE_REVISION"}
 )
+
+# The exact WP163 materialization mode each derivation mode must reproduce when a
+# registered reference is materialized against the physical record store. A
+# self-consistent reference with a wrong batch hash / ordinary-id order fails these.
+_EXPECTED_MATERIALIZATION_MODE = {
+    "VALIDATED_RECORD_BATCH": "VALIDATED_BATCH_RECOMPUTED",
+    "LINEAGE_DELTA_RECORD_BATCH": "LINEAGE_DELTA_PARENT_CONTEXT_RECOMPUTED",
+    "AS_OF_QUERY_RESULT": "AS_OF_REFERENCE_IDS_RESOLVED",
+}
 
 _CONTROL_RE = re.compile(r"[\x00-\x1f\x7f]")
 
@@ -682,6 +692,64 @@ def _registered_union(snapshot, config: PolymarketScaledPopulationConfig) -> tup
     return union, head
 
 
+def _prove_registered_baseline_materialization(
+    record_store_path: object,
+    snapshot,
+    config: PolymarketScaledPopulationConfig,
+) -> None:
+    """Materialize every registered reference against the actual WP163 store.
+
+    Exact physical id-set equality alone does not prove a registered reference is a
+    genuine record-store materialization: a self-consistent reference (valid self
+    id, structurally rebuilt through the verified chain) can still carry a wrong
+    ``validated_batch_sha256`` or ordinary-id order. Before any registered ordinary
+    id is trusted as lineage authority — in capture pre-network AND in offline
+    recovery — every ``REGISTER`` reference must materialize against the actual store
+    through the public materializer with the exact ordinary records in reference
+    order and the derivation mode's exact verification mode. The materializer
+    resolves only the referenced ids, so this holds even against a strict-superset
+    physical store. Manifest ancestry authority remains the already-verified
+    WP160/WP161 chain and is never duplicated or claimed by the record-store-only
+    materializer. Any failure fails closed with ``SCALED_BASELINE_REFERENCE_INVALID``.
+    """
+
+    references = {
+        reference.dataset_snapshot_reference_id: reference
+        for reference in snapshot.dataset_references
+    }
+    seen: set[str] = set()
+    for entry in snapshot.manifest_entries:
+        if entry.entry_kind != "REGISTER_DATASET_SNAPSHOT_REFERENCE":
+            continue
+        subject = entry.dataset_snapshot_reference_id
+        reference = references.get(subject)
+        # Each registered subject must resolve exactly once.
+        if reference is None or subject in seen:
+            raise _ScaledReject("SCALED_BASELINE_REFERENCE_INVALID")
+        seen.add(subject)
+        expected_mode = _EXPECTED_MATERIALIZATION_MODE.get(reference.derivation_mode)
+        if expected_mode is None:
+            raise _ScaledReject("SCALED_BASELINE_REFERENCE_INVALID")
+        try:
+            materialization = materialize_dataset_snapshot_reference(
+                record_store_path, reference
+            )
+        except Exception:
+            raise _ScaledReject("SCALED_BASELINE_REFERENCE_INVALID")
+        if (
+            not materialization.is_valid
+            or materialization.status != "DATASET_REFERENCE_MATERIALIZED"
+            or materialization.verification_mode != expected_mode
+        ):
+            raise _ScaledReject("SCALED_BASELINE_REFERENCE_INVALID")
+        materialized_ids = tuple(
+            record.envelope.record_version_id
+            for record in materialization.ordinary_records
+        )
+        if materialized_ids != tuple(reference.ordinary_record_version_ids):
+            raise _ScaledReject("SCALED_BASELINE_REFERENCE_INVALID")
+
+
 def _orphan_suffix_plausible(
     orphan_records: tuple[MarketObservationRecord, ...],
 ) -> bool:
@@ -1103,7 +1171,16 @@ def _prove_convergence(
     *,
     expected_accepted_ids: tuple[str, ...],
 ) -> bool:
-    """Independently reload WP161 and WP163 and prove full convergence."""
+    """Independently reload WP161 and WP163 and prove EXACT convergence.
+
+    A typed adapter success plus a subset check is not convergence. This reloads
+    both stores and requires: the returned reference and entry persist in a valid
+    reloaded chain; the returned entry is the reloaded chain head (no silent
+    post-registration head drift); the physical record-id set EXACTLY equals the
+    ordinary-id union registered by the reloaded chain (no extra unregistered
+    record); every newly-registered current id is present; and every registered
+    reference still materializes against the reloaded physical store.
+    """
 
     manifest_loaded = load_and_verify_manifest_store(manifest_store_path)
     if (
@@ -1113,12 +1190,16 @@ def _prove_convergence(
     ):
         return False
     manifest_snapshot = manifest_loaded.snapshot
+    chain = manifest_snapshot.chain_validation
     if not (
         reference in manifest_snapshot.dataset_references
         and entry in manifest_snapshot.manifest_entries
-        and manifest_snapshot.chain_validation is not None
-        and manifest_snapshot.chain_validation.is_valid
+        and chain is not None
+        and chain.is_valid
     ):
+        return False
+    # The returned registration entry must be the reloaded chain head.
+    if chain.head_manifest_entry_id != entry.manifest_entry_id:
         return False
     record_loaded = load_and_verify_point_in_time_record_store(record_store_path)
     if (
@@ -1131,8 +1212,25 @@ def _prove_convergence(
         record.envelope.record_version_id
         for record in record_loaded.snapshot.records
     }
-    # Every newly-registered current id must now be physically present.
-    return set(expected_accepted_ids) <= store_ids
+    try:
+        registered_union, _reloaded_head = _registered_union(manifest_snapshot, config)
+    except _ScaledReject:
+        return False
+    # Exact convergence: physical ids == registered ordinary-id union (not subset),
+    # and the newly-registered current ids are present.
+    if store_ids != registered_union:
+        return False
+    if not set(expected_accepted_ids) <= store_ids:
+        return False
+    # The union is materialized, not merely an id-set: every registered reference
+    # must materialize against the reloaded physical store.
+    try:
+        _prove_registered_baseline_materialization(
+            record_store_path, manifest_snapshot, config
+        )
+    except _ScaledReject:
+        return False
+    return True
 
 
 def _safe_register_delta(
@@ -1247,6 +1345,13 @@ def capture_scaled_polymarket_public_page(
             _require_supported_store(store_records, config)
             snapshot = _load_verified_chain(manifest_store_path)
             registered_union, baseline_head = _registered_union(snapshot, config)
+            # Prove the registered baseline FIRST: every registered reference must
+            # materialize against the actual store before its ordinary ids are
+            # trusted. Only then is the physical superset tested for a recoverable
+            # orphan page, so a failed baseline never grants recovery authority.
+            _prove_registered_baseline_materialization(
+                record_store_path, snapshot, config
+            )
             _prove_baseline_convergence(store_records, registered_union)
             _require_capacity(len(store_records), snapshot, config)
         except _ScaledReject as reject:
@@ -1472,6 +1577,12 @@ def recover_scaled_polymarket_public_registration(
             _require_supported_store(store_records, config)
             snapshot = _load_verified_chain(manifest_store_path)
             registered_union, baseline_head = _registered_union(snapshot, config)
+            # Prove the registered baseline materializes FIRST — in both the
+            # converged no-op and the strict-superset recovery cases — before any
+            # orphan is interpreted as a recoverable page.
+            _prove_registered_baseline_materialization(
+                record_store_path, snapshot, config
+            )
             store_ids = {r.envelope.record_version_id for r in store_records}
             if not registered_union <= store_ids:
                 raise _ScaledReject("SCALED_BASELINE_REFERENCE_INVALID")

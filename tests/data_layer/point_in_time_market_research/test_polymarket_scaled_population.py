@@ -36,6 +36,10 @@ from src.data_layer.point_in_time_market_research import (
     populate_initial_polymarket_public_data,
     capture_scaled_polymarket_public_page,
     recover_scaled_polymarket_public_registration,
+    append_manifest_store_batch,
+)
+from src.data_layer.point_in_time_market_research import (
+    dataset_persistence_adapter as _dpa,
 )
 
 
@@ -754,3 +758,256 @@ def test_module_imports_no_network_or_execution_dependency() -> None:
             imported.append(node.module)
     for banned in ("urllib", "socket", "http", "requests", "subprocess", "os.environ"):
         assert not any(name.startswith(banned) for name in imported), banned
+
+
+# ── WP166 follow-up: registered-baseline materialization + exact convergence ──
+
+
+def _manifest_snapshot(manifest_path):
+    loaded = load_and_verify_manifest_store(manifest_path)
+    assert loaded.is_valid, loaded.error_codes
+    return loaded.snapshot
+
+
+def _head_entry(manifest_path):
+    entries = _manifest_snapshot(manifest_path).manifest_entries
+    return max(entries, key=lambda e: e.sequence_number), len(entries)
+
+
+def _register_forged_v1(manifest_path, *, ordinary_ids, batch_sha,
+                        effective_time="2026-08-20T00:00:00Z"):
+    """Register a self-consistent VALIDATED_RECORD_BATCH reference (caller-chosen
+    ordinary ids / batch hash) at the append-chain head via the public builders."""
+
+    ref = _dpa._build_reference(
+        derivation_mode="VALIDATED_RECORD_BATCH",
+        validated_batch_sha256=batch_sha,
+        ordinary_ids=tuple(ordinary_ids),
+        review_ids=(),
+        query_spec_sha256=None,
+        query_result_sha256=None,
+        cutoff_mode=None,
+        cutoff_time=None,
+        result_view=None,
+        query_engine_version=None,
+        validator_version=PROV["validator_version"],
+        parameter_set_id=PROV["parameter_set_id"],
+    )
+    assert ref is not None
+    head, count = _head_entry(manifest_path)
+    entry = _dpa._build_register_entry(
+        manifest_id=MANIFEST_ID,
+        sequence_number=count,
+        previous_manifest_entry_id=head.manifest_entry_id,
+        dataset_snapshot_reference_id=ref.dataset_snapshot_reference_id,
+        effective_time=effective_time,
+        parameter_set_id=PROV["parameter_set_id"],
+        human_review_required=False,
+    )
+    assert entry is not None
+    appended = append_manifest_store_batch(
+        manifest_path, dataset_references=(ref,), manifest_entries=(entry,)
+    )
+    assert appended.is_valid, appended.error_codes
+    return ref
+
+
+def _register_forged_v2(manifest_path, *, ordinary_ids, external_ids, batch_sha,
+                        effective_time="2026-08-20T00:00:00Z"):
+    """Register a self-consistent LINEAGE_DELTA_RECORD_BATCH reference at the head."""
+
+    head, count = _head_entry(manifest_path)
+    ref = _dpa._build_lineage_delta_reference(
+        validated_batch_sha256=batch_sha,
+        ordinary_ids=tuple(ordinary_ids),
+        external_parent_ids=tuple(sorted(external_ids)),
+        created_from_manifest_entry_id=head.manifest_entry_id,
+        validator_version=PROV["validator_version"],
+        parameter_set_id=PROV["parameter_set_id"],
+    )
+    assert ref is not None
+    entry = _dpa._build_register_entry(
+        manifest_id=MANIFEST_ID,
+        sequence_number=count,
+        previous_manifest_entry_id=head.manifest_entry_id,
+        dataset_snapshot_reference_id=ref.dataset_snapshot_reference_id,
+        effective_time=effective_time,
+        parameter_set_id=PROV["parameter_set_id"],
+        human_review_required=False,
+    )
+    assert entry is not None
+    appended = append_manifest_store_batch(
+        manifest_path, dataset_references=(ref,), manifest_entries=(entry,)
+    )
+    assert appended.is_valid, appended.error_codes
+    return ref
+
+
+def _v1_seed_reference(manifest_path):
+    return next(
+        r for r in _manifest_snapshot(manifest_path).dataset_references
+        if r.derivation_mode == "VALIDATED_RECORD_BATCH"
+    )
+
+
+def _v2_reference(manifest_path):
+    return next(
+        r for r in _manifest_snapshot(manifest_path).dataset_references
+        if r.derivation_mode == "LINEAGE_DELTA_RECORD_BATCH"
+    )
+
+
+def test_baseline_v1_wrong_batch_hash_blocks_capture_before_network() -> None:
+    record_path, manifest_path = _seeded()
+    seed = _v1_seed_reference(manifest_path)
+    _register_forged_v1(
+        manifest_path,
+        ordinary_ids=seed.ordinary_record_version_ids,
+        batch_sha="f" * 64,  # does not match the actual records
+    )
+    before_records = _record_ids(record_path)
+    before_entries = len(_manifest_snapshot(manifest_path).manifest_entries)
+    guard = AllowGuard()
+    client = KeysetClient([_market("300", ["t9"])])
+    result = capture_scaled_polymarket_public_page(
+        record_path, manifest_path,
+        _scfg(allow_network=True, allow_documented_unverified_keyset=True),
+        client=client, guard=guard, utcnow_provider=_clock(16),
+    )
+    assert not result.is_valid
+    assert result.error_codes == ("SCALED_BASELINE_REFERENCE_INVALID",)
+    assert result.recovery_required is False
+    assert result.network_used is False
+    assert guard.calls == [] and client.keyset_calls == []
+    assert _record_ids(record_path) == before_records
+    assert len(_manifest_snapshot(manifest_path).manifest_entries) == before_entries
+
+
+def test_baseline_v1_wrong_ordinary_order_blocks_capture() -> None:
+    record_path, manifest_path = _seeded()
+    seed = _v1_seed_reference(manifest_path)
+    reversed_ids = tuple(reversed(seed.ordinary_record_version_ids))
+    assert reversed_ids != tuple(seed.ordinary_record_version_ids)
+    # Correct batch hash but an invalid materialization order.
+    _register_forged_v1(
+        manifest_path,
+        ordinary_ids=reversed_ids,
+        batch_sha=seed.validated_batch_sha256,
+    )
+    result = capture_scaled_polymarket_public_page(
+        record_path, manifest_path,
+        _scfg(allow_network=True, allow_documented_unverified_keyset=True),
+        client=KeysetClient([_market("300", ["t9"])]), guard=AllowGuard(),
+        utcnow_provider=_clock(16),
+    )
+    assert not result.is_valid
+    assert result.error_codes == ("SCALED_BASELINE_REFERENCE_INVALID",)
+    assert result.network_used is False
+
+
+def test_strict_superset_with_invalid_baseline_blocks_and_denies_recovery() -> None:
+    record_path, manifest_path = _seeded()
+    # A genuine orphan suffix is present...
+    _failing_capture(record_path, manifest_path, [_market("102", ["t3"])], cursor="CX")
+    # ...but the registered baseline itself fails materialization.
+    seed = _v1_seed_reference(manifest_path)
+    _register_forged_v1(
+        manifest_path, ordinary_ids=seed.ordinary_record_version_ids, batch_sha="f" * 64
+    )
+    before_records = _record_ids(record_path)
+    guard = AllowGuard()
+    result = capture_scaled_polymarket_public_page(
+        record_path, manifest_path,
+        _scfg(allow_network=True, allow_documented_unverified_keyset=True),
+        client=KeysetClient([_market("300", ["t9"])]), guard=guard,
+        utcnow_provider=_clock(17),
+    )
+    assert not result.is_valid
+    assert result.error_codes == ("SCALED_BASELINE_REFERENCE_INVALID",)
+    # The invalid baseline must NOT be converted into a recovery authorization.
+    assert result.recovery_required is False
+    assert result.network_used is False and guard.calls == []
+    assert _record_ids(record_path) == before_records
+
+
+def test_offline_recovery_with_invalid_baseline_rejected() -> None:
+    record_path, manifest_path = _seeded()
+    _failing_capture(record_path, manifest_path, [_market("102", ["t3"])], cursor="CX")
+    seed = _v1_seed_reference(manifest_path)
+    _register_forged_v1(
+        manifest_path, ordinary_ids=seed.ordinary_record_version_ids, batch_sha="f" * 64
+    )
+    before_records = _record_ids(record_path)
+    before_entries = len(_manifest_snapshot(manifest_path).manifest_entries)
+    result = recover_scaled_polymarket_public_registration(
+        record_path, manifest_path, _scfg(after_cursor="CX")
+    )
+    assert not result.is_valid
+    assert result.error_codes == ("SCALED_BASELINE_REFERENCE_INVALID",)
+    assert result.network_used is False
+    assert _record_ids(record_path) == before_records
+    assert len(_manifest_snapshot(manifest_path).manifest_entries) == before_entries
+
+
+def test_valid_v2_predecessor_materializes_and_next_capture_valid() -> None:
+    record_path, manifest_path = _seeded()
+    first, _ = _capture(record_path, manifest_path, [_market("102", ["t3"])])
+    assert first.is_valid, (first.status, first.error_codes)
+    v2 = _v2_reference(manifest_path)
+    mat = materialize_dataset_snapshot_reference(record_path, v2)
+    assert mat.is_valid
+    assert mat.verification_mode == "LINEAGE_DELTA_PARENT_CONTEXT_RECOMPUTED"
+    second, _ = _capture(record_path, manifest_path, [_market("103", ["t4"])], day=16)
+    assert second.is_valid and second.status == "SCALED_PERSISTED_AND_REGISTERED"
+
+
+def test_malformed_v2_predecessor_blocks_next_capture() -> None:
+    record_path, manifest_path = _seeded()
+    first, _ = _capture(record_path, manifest_path, [_market("102", ["t3"])])
+    assert first.is_valid
+    v2 = _v2_reference(manifest_path)
+    # A self-consistent v2 reference with the genuine current/external ids but a
+    # wrong committed batch hash (same current records, same external parents).
+    _register_forged_v2(
+        manifest_path,
+        ordinary_ids=v2.ordinary_record_version_ids,
+        external_ids=v2.external_parent_record_version_ids,
+        batch_sha="f" * 64,
+    )
+    guard = AllowGuard()
+    result = capture_scaled_polymarket_public_page(
+        record_path, manifest_path,
+        _scfg(allow_network=True, allow_documented_unverified_keyset=True),
+        client=KeysetClient([_market("300", ["t9"])]), guard=guard,
+        utcnow_provider=_clock(17),
+    )
+    assert not result.is_valid
+    assert result.error_codes == ("SCALED_BASELINE_REFERENCE_INVALID",)
+    assert result.network_used is False and guard.calls == []
+
+
+def test_prove_convergence_requires_exact_union_not_subset() -> None:
+    record_path, manifest_path = _seeded()
+    first, _ = _capture(record_path, manifest_path, [_market("102", ["t3"])])
+    assert first.is_valid
+    snap = _manifest_snapshot(manifest_path)
+    v2 = _v2_reference(manifest_path)
+    v2_entry = next(
+        e for e in snap.manifest_entries
+        if e.dataset_snapshot_reference_id == v2.dataset_snapshot_reference_id
+    )
+    cfg = _scfg()
+    # Sanity: the just-registered delta converges exactly.
+    assert scaled._prove_convergence(
+        record_path, manifest_path, v2, v2_entry, cfg,
+        expected_accepted_ids=v2.ordinary_record_version_ids,
+    ) is True
+    # Inject an extra unregistered physical record; exact convergence now fails
+    # even though the newly-registered current ids remain a subset of the store.
+    extra = _orphan_records_for([_market("777", ["t7"])], cursor="CE", day=16)
+    appended = append_point_in_time_records(record_path, extra)
+    assert appended.is_valid, appended.error_codes
+    assert scaled._prove_convergence(
+        record_path, manifest_path, v2, v2_entry, cfg,
+        expected_accepted_ids=v2.ordinary_record_version_ids,
+    ) is False
