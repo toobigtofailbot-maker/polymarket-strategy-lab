@@ -2772,9 +2772,9 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp153_through_wp164_are_merged_and_wp165_is_current_review_target():
-    # Functional WP165 is the current non-draft review target following the exact
-    # merged WP164 initial-seed baseline.
+def test_wp153_through_wp165_are_merged_and_wp166_is_current_review_target():
+    # Functional WP166 is the current non-draft review target following the exact
+    # merged WP165 incremental cumulative baseline.
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2782,6 +2782,7 @@ def test_wp153_through_wp164_are_merged_and_wp165_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
+    assert "WP166" in current_phase_line
     assert "WP165" in current_phase_line
     assert "WP164" in current_phase_line
     assert "WP161" in current_phase_line
@@ -2797,17 +2798,18 @@ def test_wp153_through_wp164_are_merged_and_wp165_is_current_review_target():
     assert "WP162" in merged_line
     assert "WP163" in merged_line
     assert "WP164" in merged_line
+    assert "WP165" in merged_line
     for phrase in (
         "current review target",
         "Primary package class: DATA_LAYER_PUBLIC_POPULATION",
-        "Repository validation class: bounded-incremental-cumulative-polymarket-point-in-time-population",
-        "Package size class: L",
+        "Repository validation class: bounded-scalable-lineage-delta-keyset-polymarket-point-in-time-population",
+        "Package size class: XL",
         "Risk level: 1",
-        "Implementation posture: MANUAL_GET_ONLY_CUMULATIVE_256_RECORD_CROSS_RUN_LINEAGE_NO_TRADING_AUTHORITY",
+        "Implementation posture: MANUAL_ONE_PAGE_KEYSET_GET_ONLY_EXTERNAL_PARENT_COMMITTED_NO_TRADING_AUTHORITY",
         "Ready for review: YES",
         "Merge authorized: NO",
         "Independent live PR review required: YES",
-        "Exact changed-file scope: 20",
+        "Exact changed-file scope: 33",
         "Default network posture: OFF",
         "Public GET-only network reads when explicitly enabled: YES",
         "Product impact: NONE",
@@ -2820,19 +2822,57 @@ def test_wp153_through_wp164_are_merged_and_wp165_is_current_review_target():
         "Durable point-in-time record store implemented by: WP163",
         "Real/public initial population implemented by: WP164",
         "Bounded incremental cumulative population implemented by: WP165",
+        "Bounded scalable lineage-delta keyset population implemented by: WP166",
         "WP160 merged: YES",
         "WP161 merged: YES",
         "WP162 merged: YES",
         "WP163 merged: YES",
         "WP164 merged: YES",
-        "WP164 PR: 164",
-        "WP164 final head: 0f3f29e32f7bb404f1156afba83ea33c3ee5cb1b",
-        "WP164 merge commit: 652ac21547db42512e7f9360986e1616c6622384",
-        "WP164 implemented and merged: YES",
-        "WP165 Ready for review: YES",
+        "WP165 merged: YES",
+        "WP165 PR: 165",
+        "WP165 final head: 883d806ce979b2671dc22378ff9d4faaac5bcf40",
+        "WP165 merge commit: 6cfb3a8913661401635e8b7ce1d55219098bb9dd",
+        "WP165 implemented and merged: YES",
+        "v1 references remain supported: YES",
+        "v2 lineage-delta reference exists: YES",
+        "Keyset is manual one-page only: YES",
+        "No scheduler or trading: YES",
+        "WP166 Ready for review: YES",
     ):
         assert phrase in current_phase_line
     assert current_phase_line.count("current review target") == 1
+
+
+def test_wp166_scaled_population_status_is_registered():
+    text = _read()
+    line = next(
+        item for item in text.splitlines()
+        if item.startswith(
+            "- Bounded scalable lineage-delta keyset Polymarket population status:"
+        )
+    )
+    for phrase in (
+        "POLYMARKET_SCALABLE_KEYSET_LINEAGE_DELTA_POPULATION",
+        "MANUAL_ONE_PAGE_KEYSET_GET_ONLY_EXTERNAL_PARENT_COMMITTED_NO_TRADING_AUTHORITY",
+        "polymarket_scaled_population.py",
+        "Endpoints: Gamma GET /markets/keyset and optional CLOB GET /book only",
+        "Keyset endpoint repo-verified: NO",
+        "Double opt-in required for real keyset use: YES",
+        "Offset ever sent: NO",
+        "Maximum keyset page requests per invocation: 1",
+        "Maximum markets per page: 100",
+        "Automatic cursor loop: NO",
+        "Only current records registered as v2 lineage-delta reference: YES",
+        "Physical history beyond 256 supported within WP163 4096 horizon: YES",
+        "v1 dataset snapshot references remain supported: YES",
+        "SQLite schema or user_version migration: NONE",
+        "next_cursor part of immutable record identity: NO",
+        "Package export inventory grew by: 8",
+        "WP162-D004 resolved for bounded registered external-parent context: YES",
+        "WP165-D001 resolved by lineage-delta within current physical horizon: YES",
+        "WP166 Ready for review: YES",
+    ):
+        assert phrase in line
 
 
 def test_wp164_public_population_status_repo_truth_and_deferred_items_are_registered():

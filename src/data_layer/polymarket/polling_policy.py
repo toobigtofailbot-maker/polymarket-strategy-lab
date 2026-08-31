@@ -15,6 +15,7 @@ from .rate_limit_guard import EndpointBudget, RateLimitWindow
 NETWORK_ENDPOINT_KEYS = frozenset(
     {
         "gamma_markets",
+        "gamma_markets_keyset",
         "gamma_market_detail",
         "clob_book",
         "clob_price",
@@ -132,6 +133,22 @@ def default_polling_policy() -> PollingPolicy:
             requires_explicit_network=True,
             allow_automated_loop=False,
             notes="Manual bounded market-list checks only until public rate limits are confirmed.",
+        ),
+        "gamma_markets_keyset": PollingEndpointPolicy(
+            endpoint_key="gamma_markets_keyset",
+            enabled_by_default=False,
+            max_requests_per_window=6,
+            window_seconds=60,
+            minimum_interval_seconds=10.0,
+            max_markets_per_run=100,
+            max_tokens_per_run=0,
+            requires_explicit_network=True,
+            allow_automated_loop=False,
+            notes=(
+                "Manual one-page keyset market checks only; documented-but-repo-"
+                "unverified, at most one page (<=100 markets) per invocation, no "
+                "automatic cursor loop until public rate limits are confirmed."
+            ),
         ),
         "gamma_market_detail": PollingEndpointPolicy(
             endpoint_key="gamma_market_detail",

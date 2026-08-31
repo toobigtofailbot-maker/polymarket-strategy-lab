@@ -2306,7 +2306,7 @@ implementation authority.
 | WP162-D001 | Durable raw/public point-in-time record storage/materialization | RESOLVED_BOUNDED_WP163_SQLITE_RECORD_STORE_AND_REFERENCE_MATERIALIZATION | Resolved by WP163 for the bounded local SQLite record store: immutable WP156/WP157 record objects and their canonical full-record payloads are durably stored and a WP160 DatasetSnapshotReference resolves to the exact durable record objects; no real/public network collection has occurred and raw HTTP/source-response bytes are not stored | Durable record-object storage is not real/public network collection or raw-byte capture |
 | WP162-D002 | Real/public market-data population through a bounded collection path | RESOLVED_BOUNDED_WP164_INITIAL_PUBLIC_MARKET_POPULATION | Resolved by WP164 for a bounded initial-seed only: WP164 performs explicit GET-only Gamma/CLOB reads under the existing local guard, normalizes them into WP156 records, and registers the batch through WP162; repeated/incremental population with committed cross-run lineage remains open (WP164-D001) | An initial-seed public population is not continuous or incremental collection |
 | WP162-D003 | Mixed validator-version or parameter-set snapshots | OPEN | Separate multi-provenance WP with committed aggregate semantics | Bounded v1 provenance requires a single validator and parameter set |
-| WP162-D004 | External known-parent lineage context committed into adapter provenance | OPEN | Separate lineage WP with a committed reference-schema field | The WP158 reference schema commits no external known-parent context |
+| WP162-D004 | External known-parent lineage context committed into adapter provenance | RESOLVED_BOUNDED_WP166_REGISTERED_EXTERNAL_PARENT_CONTEXT | Resolved by WP166 for the bounded registered external-parent context: the schema-2.0.0 `LINEAGE_DELTA_RECORD_BATCH` reference validates actual parent record objects, commits the exact sorted external-parent ids into the v2 reference identity, requires that authority to pre-exist in an earlier manifest entry, and keeps the current and direct-parent contexts each bounded at 256 | Actual parent objects are validated and their ids committed; the current/direct-parent contexts each remain bounded at 256 |
 | WP162-D005 | Automated supersede/invalidate lifecycle transitions | OPEN | Separate lifecycle WP with a bounded transition policy | The adapter registers only; it never supersedes or invalidates |
 | WP162-D006 | Automated retry/backoff/concurrent adapter orchestration | OPEN | Separate orchestration WP with concurrency and observability policy | A stale-head conflict fails closed and is retried as a fresh invocation |
 | WP162-D007 | Feature/label materialization and experiment registry | OPEN | Separate feature/experiment WP with leakage-safe construction review | Dataset lineage registration is not feature or label construction |
@@ -2344,7 +2344,7 @@ authority.
 |---|---|---|---|---|
 | WP164-D001 | Incremental/repeated public capture with committed external-parent lineage | PARTIALLY_RESOLVED_WP165_CUMULATIVE_INTERNAL_PARENT_LINEAGE | Partially resolved by WP165: bounded incremental capture now commits deterministic cross-run SOURCE_REVISION/EXACT_DUPLICATE lineage where every parent is a committed internal record inside one cumulative registered snapshot (<=256 records). The scalable external-parent/reference-schema extension beyond 256 remains open as WP165-D001 | WP164 seeds only into an empty store; WP165 keeps every parent committed internally and does not add an external known-parent schema |
 | WP164-D002 | Persisted source-snapshot/wire-response fidelity beyond normalized public observations | OPEN | Separate raw-capture WP with retention and security policy | WP164 persists only normalized WP156 observations, never raw HTTP/source bytes |
-| WP164-D003 | Pagination/keyset active-market universe beyond one bounded `/markets` request | OPEN | Separate coverage WP with bounded keyset pagination | One bounded market-list read is not a full active-market universe |
+| WP164-D003 | Pagination/keyset active-market universe beyond one bounded `/markets` request | PARTIALLY_RESOLVED_WP166_MANUAL_ONE_PAGE_KEYSET | Partially resolved by WP166: one manual `GET /markets/keyset` page per invocation captures at most 100 markets and returns the response `next_cursor` for a later manual invocation; there is no automatic page loop, scheduler, or full-universe walk | One manual keyset page per invocation is not an automatic full active-market universe walk |
 | WP164-D004 | Historical public trades / Data API ingestion | OPEN | Separate ingestion WP with source and leakage policy | WP164 reads only Gamma markets and CLOB books |
 | WP164-D005 | Automated scheduler/orchestrated polling | OPEN | Separate orchestration WP with concurrency and observability policy | WP164 is a single manual invocation with no loop, retry, or sleep |
 | WP164-D006 | Official rate-limit-policy reconciliation versus conservative repo-local guard | OPEN | Separate policy WP reconciling venue limits; the local guard remains runtime authority | WP164 does not increase or redesign the existing local budgets |
@@ -2366,8 +2366,8 @@ WP165 implementation authority. The local guard remains the runtime authority.
 
 | ID | Deferred item | Status | Priority | Required future gate | Non-implication |
 |---|---|---|---|---|---|
-| WP165-D001 | Scalable lineage beyond 256 / external-parent reference schema | OPEN | P1 | Separate successor WP committing an external-parent/reference-context schema so cross-run parents need not all live in one cumulative <=256 snapshot | WP165 keeps every parent committed internally inside one cumulative registered snapshot bounded to 256 records |
-| WP165-D002 | Gamma keyset broader active-market universe | OPEN | P2 | Separate coverage WP with bounded keyset/cursor pagination across a materially broader active-market universe | WP165 issues at most one bounded Gamma market-list read per run |
+| WP165-D001 | Scalable lineage beyond 256 / external-parent reference schema | RESOLVED_BY_WP166_LINEAGE_DELTA | P1 | Resolved by WP166 within the current physical horizon: the schema-2.0.0 `LINEAGE_DELTA_RECORD_BATCH` reference registers only the current records with an explicit external-parent set already committed by an earlier manifest entry, so physical history grows to the WP163 4096-record horizon with a WP161 256-entry/reference horizon without a cumulative <=256 snapshot | Cross-run parents no longer need to all live in one cumulative <=256 snapshot; growth beyond WP163 4096 records or WP161 256 entries remains open |
+| WP165-D002 | Gamma keyset broader active-market universe | PARTIALLY_RESOLVED_WP166_MANUAL_ONE_PAGE_KEYSET | P2 | Partially resolved by WP166: one manual bounded `GET /markets/keyset` page per invocation (<=100 markets) returns the response `next_cursor` for a later manual invocation; an automatic multi-page cursor walk remains open | One manual keyset page per invocation is not an automatic broader-universe walk |
 | WP165-D003 | Store growth/partitioning beyond the bounded research horizon | OPEN | P2 | Separate durability/partitioning WP for datasets beyond the bounded research horizon | WP165 stays within the existing bounded SQLite record store and the 256 cumulative cap |
 | WP165-D004 | Scheduled recurring collection | OPEN | P2 | Separate orchestration WP with concurrency and observability policy | WP165 is a single manual invocation with no loop, retry, sleep, or scheduler |
 | WP165-D005 | Raw source/wire preservation | OPEN | P3 | Separate raw-capture WP with retention and security policy | WP165 persists only normalized WP156 observations, never raw HTTP/source bytes |
@@ -2378,6 +2378,23 @@ WP158 adds no dependency, file I/O, writer, reader, persistence, persisted
 query, collector, product/runtime network, credential, scheduler, strategy,
 paper/live, order, risk, reconciliation, accounting, or execution authority, and
 no new `src` module or package export.
+
+## WP166 Scalable Lineage-Delta References And Manual Keyset Market-Universe Expansion Deferred Items
+
+WP166 resolves `WP162-D004` as
+`RESOLVED_BOUNDED_WP166_REGISTERED_EXTERNAL_PARENT_CONTEXT`, resolves `WP165-D001`
+as `RESOLVED_BY_WP166_LINEAGE_DELTA` within the current physical horizon (WP163 4096
+records, WP161 256 entries/references), and partially resolves `WP164-D003` and
+`WP165-D002` as `PARTIALLY_RESOLVED_WP166_MANUAL_ONE_PAGE_KEYSET` (one manual keyset
+page per invocation, at most 100 markets, `next_cursor` returned, no automatic page
+loop). Every WP166 item below is `OPEN`, separately gated, and outside WP166
+implementation authority.
+
+| ID | Deferred item | Status | Priority | Required future gate | Non-implication |
+|---|---|---|---|---|---|
+| WP166-D001 | Analytical research store and query layer | OPEN | P2 | Separate WP167 analytics WP adopting derived Parquet/Arrow materialization and DuckDB/Polars point-in-time/leakage-safe queries while SQLite stays the canonical integrity authority | WP166 adds no analytical columnar or query layer |
+| WP166-D002 | Automated cursor orchestration / scheduler | OPEN | P2 | Separate orchestration WP with concurrency, retry, and observability policy | WP166 is a single manual invocation that fetches exactly one keyset page with no loop, retry, sleep, or scheduler |
+| WP166-D003 | Record store growth and partitioning beyond 4096 records / manifest beyond 256 entries | OPEN | P2 | Separate durability/partitioning WP for datasets beyond the bounded research horizon | WP166 stays within the WP163 4096-record and WP161 256-entry/reference horizons and performs no pruning, compaction, or rollover |
 
 ## WP159 Draftability Foundation And Exact Scope Enforcement Deferred Items
 

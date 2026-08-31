@@ -292,6 +292,17 @@ def test_public_package_exports_exact_supported_surface() -> None:
         "PolymarketIncrementalPopulationResult",
         "capture_incremental_polymarket_public_data",
         "recover_incremental_polymarket_public_registration",
+        # WP166 bounded scalable one-page keyset lineage-delta public Polymarket
+        # capture coordinator and offline registration recovery (appended by the
+        # separately approved successor WP).
+        "POLYMARKET_SCALED_POPULATION_LABEL",
+        "POLYMARKET_SCALED_POPULATION_POSTURE",
+        "POLYMARKET_SCALED_POPULATION_STATUSES",
+        "POLYMARKET_SCALED_POPULATION_ERROR_CODES",
+        "PolymarketScaledPopulationConfig",
+        "PolymarketScaledPopulationResult",
+        "capture_scaled_polymarket_public_page",
+        "recover_scaled_polymarket_public_registration",
     )
 
 
@@ -1523,8 +1534,16 @@ def test_legacy_polymarket_snapshot_modules_are_unchanged_by_wp156_diff() -> Non
         capture_output=True,
         check=True,
     ).stdout.splitlines()
+    # WP166 authorizes exactly the read-only public client and polling policy under
+    # this directory (the Gamma keyset endpoint and its conservative budget); every
+    # other legacy Polymarket snapshot module remains untouched.
+    wp166_authorized = {
+        "src/data_layer/polymarket/public_client.py",
+        "src/data_layer/polymarket/polling_policy.py",
+    }
     assert not any(
         path.replace("\\", "/").startswith("src/data_layer/polymarket/")
+        and path.replace("\\", "/") not in wp166_authorized
         for path in diff
     )
 
@@ -1621,3 +1640,168 @@ def test_exact_seventeen_file_wp157_scope() -> None:
         "tests/test_project_status_docs.py",
         "tests/test_wallet_intelligence_architecture_contract_docs.py",
     }
+
+
+# ── WP166: external known-parent record context for validate_record_batch ──────
+
+
+def _market_input(**overrides) -> dict:
+    """A fresh mutable market-metadata builder input based on the C01 fixture."""
+
+    base = pit.load_synthetic_case_input("PIT-C01-VALID-MARKET-METADATA")
+    base.update(overrides)
+    return base
+
+
+def _built_market(**overrides):
+    result = pit.build_market_observation(_market_input(**overrides))
+    assert result.is_valid and result.record is not None, result.error_codes
+    return result.record
+
+
+def test_external_parent_empty_context_preserves_legacy_batch_ids_and_hash() -> None:
+    records = [
+        _record("PIT-C01-VALID-MARKET-METADATA"),
+        _record("PIT-C10-VALID-EXACT-DUPLICATE"),
+    ]
+    legacy = pit.validate_record_batch(records)
+    explicit_empty = pit.validate_record_batch(records, known_parent_records=())
+    assert explicit_empty.canonical_batch_sha256 == legacy.canonical_batch_sha256
+    assert explicit_empty.accepted_record_version_ids == legacy.accepted_record_version_ids
+    # No external key is committed for the empty context.
+    assert legacy.canonical_batch_sha256 == pit.validate_record_batch(records).canonical_batch_sha256
+
+
+def test_external_source_revision_validates_against_actual_parent_object() -> None:
+    parent = _record("PIT-C04-VALID-SOURCE-SNAPSHOT")
+    revision = _record("PIT-C07-VALID-SOURCE-REVISION")
+    result = pit.validate_record_batch([revision], known_parent_records=[parent])
+    assert result.is_valid is True, result.error_codes
+    assert result.accepted_record_version_ids == (revision.envelope.record_version_id,)
+
+
+def test_external_exact_duplicate_validates_against_actual_parent_object() -> None:
+    parent = _record("PIT-C01-VALID-MARKET-METADATA")
+    duplicate = _record("PIT-C10-VALID-EXACT-DUPLICATE")
+    result = pit.validate_record_batch([duplicate], known_parent_records=[parent])
+    assert result.is_valid is True, result.error_codes
+
+
+def test_external_semantic_duplicate_validates_against_actual_parent_object() -> None:
+    parent = _record("PIT-C01-VALID-MARKET-METADATA")
+    semantic = _record("PIT-C11-VALID-SEMANTIC-DUPLICATE")
+    result = pit.validate_record_batch([semantic], known_parent_records=[parent])
+    assert result.is_valid is True, result.error_codes
+
+
+def test_external_exact_duplicate_payload_mismatch_rejected() -> None:
+    parent = _built_market()  # primary assertion
+    # A duplicate that claims the parent but carries a divergent payload.
+    diverging_payload = dict(json.loads(parent.canonical_payload_json))
+    diverging_payload["question_text"] = "DIVERGENT QUESTION"
+    child = _built_market(
+        classification="EXACT_DUPLICATE",
+        lineage_parent_ids=[parent.envelope.record_version_id],
+        canonical_payload=diverging_payload,
+    )
+    result = pit.validate_record_batch([child], known_parent_records=[parent])
+    assert result.is_valid is False
+    assert "EXACT_DUPLICATE_CONTENT_MISMATCH" in result.error_codes
+
+
+def test_external_source_revision_entity_mismatch_rejected() -> None:
+    parent = _built_market()
+    child = _built_market(
+        market_id="market:synthetic:999",
+        classification="SOURCE_REVISION",
+        lineage_parent_ids=[parent.envelope.record_version_id],
+        supersedes_record_version_id=parent.envelope.record_version_id,
+    )
+    result = pit.validate_record_batch([child], known_parent_records=[parent])
+    assert result.is_valid is False
+    assert "IDENTITY_CONFLICT" in result.error_codes
+
+
+def test_external_source_revision_earlier_than_parent_rejected() -> None:
+    parent = _built_market(
+        observed_time="2026-06-01T00:00:00Z", ingestion_time="2026-06-01T00:00:02Z"
+    )
+    child = _built_market(
+        classification="SOURCE_REVISION",
+        lineage_parent_ids=[parent.envelope.record_version_id],
+        supersedes_record_version_id=parent.envelope.record_version_id,
+        observed_time="2026-01-01T00:00:00Z",
+        ingestion_time="2026-01-01T00:00:02Z",
+    )
+    result = pit.validate_record_batch([child], known_parent_records=[parent])
+    assert result.is_valid is False
+    assert "CORRECTION_VISIBILITY_VIOLATION" in result.error_codes
+
+
+def test_external_conflict_parent_object_is_forbidden() -> None:
+    conflict = record_module.build_review_conflict_record(
+        pit.load_synthetic_case_input("PIT-C12-CONFLICT-REQUIRES-REVIEW")
+    ).record
+    assert conflict is not None
+    child = _record("PIT-C10-VALID-EXACT-DUPLICATE")
+    result = pit.validate_record_batch([child], known_parent_records=[conflict])
+    assert result.is_valid is False
+    assert "CONFLICT_REQUIRES_HUMAN_REVIEW" in result.error_codes
+
+
+def test_external_parent_tampered_object_rejected() -> None:
+    parent = _record("PIT-C01-VALID-MARKET-METADATA")
+    tampered = replace(
+        parent, envelope=replace(parent.envelope, canonical_payload_sha256="0" * 64)
+    )
+    child = _record("PIT-C10-VALID-EXACT-DUPLICATE")
+    result = pit.validate_record_batch([child], known_parent_records=[tampered])
+    assert result.is_valid is False
+    assert "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH" in result.error_codes
+
+
+def test_external_parent_ids_committed_to_new_batch_hash() -> None:
+    parent = _record("PIT-C01-VALID-MARKET-METADATA")
+    duplicate = _record("PIT-C10-VALID-EXACT-DUPLICATE")
+    without = pit.validate_record_batch([duplicate])
+    with_parent = pit.validate_record_batch([duplicate], known_parent_records=[parent])
+    assert with_parent.canonical_batch_sha256 != without.canonical_batch_sha256
+    # Deterministic under repetition.
+    assert with_parent.canonical_batch_sha256 == pit.validate_record_batch(
+        [duplicate], known_parent_records=[parent]
+    ).canonical_batch_sha256
+
+
+def test_external_parent_ids_must_be_unique() -> None:
+    parent = _record("PIT-C01-VALID-MARKET-METADATA")
+    duplicate = _record("PIT-C10-VALID-EXACT-DUPLICATE")
+    result = pit.validate_record_batch(
+        [duplicate], known_parent_records=[parent, parent]
+    )
+    assert result.is_valid is False
+    assert "LINEAGE_PARENT_DUPLICATE" in result.error_codes
+
+
+def test_legacy_known_parent_record_ids_behavior_retained() -> None:
+    parent = _record("PIT-C01-VALID-MARKET-METADATA")
+    duplicate = _record("PIT-C10-VALID-EXACT-DUPLICATE")
+    # The bare-id existence path still satisfies lineage existence checks.
+    with_ids = pit.validate_record_batch(
+        [duplicate], known_parent_record_ids=[parent.envelope.record_version_id]
+    )
+    assert with_ids.is_valid is True
+    assert with_ids.accepted_record_version_ids == (
+        duplicate.envelope.record_version_id,
+    )
+    # The bare-id path commits no external-parent key, so its hash differs from
+    # the object path (which does commit the sorted external-parent id set).
+    with_objects = pit.validate_record_batch([duplicate], known_parent_records=[parent])
+    assert with_objects.is_valid is True
+    assert with_ids.canonical_batch_sha256 != with_objects.canonical_batch_sha256
+
+
+def test_external_parent_record_context_bounded() -> None:
+    parent = _record("PIT-C01-VALID-MARKET-METADATA")
+    child = _record("PIT-C10-VALID-EXACT-DUPLICATE")
+    result = pit.validate_record_batch([child], known_parent_records=[parent] * 257)
+    assert "RECORD_BATCH_LIMIT_EXCEEDED" in result.error_codes

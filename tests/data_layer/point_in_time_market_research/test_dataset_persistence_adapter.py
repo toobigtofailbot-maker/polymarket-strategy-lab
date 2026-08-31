@@ -241,6 +241,9 @@ def test_public_constants_and_vocabularies_are_exact() -> None:
         "ADAPTER_STORE_STATE_INVALID",
         "ADAPTER_ENTRY_BUILD_FAILED",
         "ADAPTER_STORE_APPEND_FAILED",
+        "ADAPTER_PARENT_CONTEXT_INVALID",
+        "ADAPTER_PARENT_CONTEXT_UNREGISTERED",
+        "ADAPTER_PARENT_CONTEXT_HEAD_CHANGED",
     )
 
 
@@ -894,3 +897,130 @@ def test_adapter_imports_only_sibling_public_modules() -> None:
 def test_adapter_does_not_import_sqlite_or_filesystem_modules() -> None:
     for name in ("os", "pathlib", "sqlite3", "socket", "subprocess"):
         assert not hasattr(A, name), name
+
+
+# ── WP166: lineage-delta (v2) persistence adapter ─────────────────────────────
+
+
+def _dup_record():
+    # PIT-C10 is an EXACT_DUPLICATE whose lineage parent is PIT-C01.
+    result = pit.build_market_observation(
+        pit.load_synthetic_case_input("PIT-C10-VALID-EXACT-DUPLICATE")
+    )
+    assert result.is_valid and result.record is not None
+    return result.record
+
+
+def _parent_record():
+    return _batch_record("PIT-C01-VALID-MARKET-METADATA")
+
+
+def _seed_v1_with_parent(tmp_path):
+    """Register a v1 batch containing the parent (PIT-C01) and return the path."""
+
+    path = _store(tmp_path)
+    seed = _persist_batch(path, [_parent_record()])
+    assert seed.is_valid, seed.error_codes
+    return path
+
+
+def _persist_delta(path, current, parents, **overrides):
+    kwargs = dict(
+        manifest_id=MANIFEST_ID,
+        effective_time=EFFECTIVE,
+        parameter_set_id=BATCH_PARAM,
+        validator_version=BATCH_VALIDATOR,
+    )
+    kwargs.update(overrides)
+    return A.persist_lineage_delta_record_batch_snapshot(
+        path, current, parents, **kwargs
+    )
+
+
+def test_lineage_delta_success_registers_v2_reference(tmp_path) -> None:
+    path = _seed_v1_with_parent(tmp_path)
+    parent = _parent_record()
+    dup = _dup_record()
+    result = _persist_delta(path, [dup], [parent])
+    _assert_persisted(result, "ADAPTER_PERSISTED")
+    ref = result.dataset_reference
+    assert ref.derivation_mode == "LINEAGE_DELTA_RECORD_BATCH"
+    assert ref.ordinary_record_version_ids == (dup.envelope.record_version_id,)
+    assert ref.external_parent_record_version_ids == (
+        parent.envelope.record_version_id,
+    )
+    assert ref.created_from_manifest_entry_id is not None
+    assert result.manifest_entry.entry_kind == "REGISTER_DATASET_SNAPSHOT_REFERENCE"
+
+
+def test_lineage_delta_missing_parent_object_rejected(tmp_path) -> None:
+    path = _seed_v1_with_parent(tmp_path)
+    dup = _dup_record()
+    # Required external parent (PIT-C01) not supplied.
+    result = _persist_delta(path, [dup], [])
+    _assert_rejected(result, "ADAPTER_PARENT_CONTEXT_INVALID")
+
+
+def test_lineage_delta_extra_unused_parent_object_rejected(tmp_path) -> None:
+    path = _seed_v1_with_parent(tmp_path)
+    parent = _parent_record()
+    dup = _dup_record()
+    # An extra parent object that no current record references.
+    extra = _batch_record("PIT-C04-VALID-SOURCE-SNAPSHOT")
+    result = _persist_delta(path, [dup], [parent, extra])
+    _assert_rejected(result, "ADAPTER_PARENT_CONTEXT_INVALID")
+
+
+def test_lineage_delta_unregistered_parent_rejected(tmp_path) -> None:
+    # Seed a v1 baseline that does NOT contain the parent PIT-C01.
+    path = _store(tmp_path)
+    seed = _persist_batch(path, [_batch_record("PIT-C04-VALID-SOURCE-SNAPSHOT")])
+    assert seed.is_valid, seed.error_codes
+    parent = _parent_record()
+    dup = _dup_record()
+    result = _persist_delta(path, [dup], [parent])
+    _assert_rejected(result, "ADAPTER_PARENT_CONTEXT_UNREGISTERED")
+
+
+def test_lineage_delta_parameter_set_mismatch_rejected(tmp_path) -> None:
+    path = _seed_v1_with_parent(tmp_path)
+    parent = _parent_record()
+    dup = _dup_record()
+    result = _persist_delta(path, [dup], [parent], parameter_set_id="params:other")
+    _assert_rejected(result, "ADAPTER_PARAMETER_SET_MISMATCH")
+
+
+def test_lineage_delta_validator_version_mismatch_rejected(tmp_path) -> None:
+    path = _seed_v1_with_parent(tmp_path)
+    parent = _parent_record()
+    dup = _dup_record()
+    result = _persist_delta(path, [dup], [parent], validator_version="val:other")
+    _assert_rejected(result, "ADAPTER_VALIDATOR_VERSION_MISMATCH")
+
+
+def test_lineage_delta_requires_nonempty_existing_chain(tmp_path) -> None:
+    # A freshly-initialized store has no chain; a lineage delta needs a baseline.
+    path = _store(tmp_path)
+    parent = _parent_record()
+    dup = _dup_record()
+    result = _persist_delta(path, [dup], [parent])
+    _assert_rejected(result, "ADAPTER_STORE_STATE_INVALID")
+
+
+def test_lineage_delta_input_boundary_rejects_non_records(tmp_path) -> None:
+    path = _seed_v1_with_parent(tmp_path)
+    result = _persist_delta(path, "not-a-list", [_parent_record()])
+    _assert_rejected(result, "ADAPTER_INPUT_INVALID")
+    result = _persist_delta(path, [_dup_record()], object())
+    _assert_rejected(result, "ADAPTER_INPUT_INVALID")
+
+
+def test_existing_v1_adapters_unchanged(tmp_path) -> None:
+    # The WP156 batch adapter still produces a v1 reference with no external
+    # parents and a null backlink.
+    path = _store(tmp_path)
+    result = _persist_batch(path, _single_record())
+    _assert_persisted(result, "ADAPTER_PERSISTED")
+    assert result.dataset_reference.derivation_mode == "VALIDATED_RECORD_BATCH"
+    assert result.dataset_reference.external_parent_record_version_ids == ()
+    assert result.dataset_reference.created_from_manifest_entry_id is None

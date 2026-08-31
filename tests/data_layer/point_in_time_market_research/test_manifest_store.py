@@ -847,3 +847,139 @@ def test_r030_256_entry_chain_is_accepted(tmp_path: Path) -> None:
     assert result.is_valid and result.snapshot is not None
     assert len(result.snapshot.dataset_references) == 256
     assert len(result.snapshot.manifest_entries) == 256
+
+
+# ── WP166: mixed v1/v2 persistence without SQLite migration ───────────────────
+
+
+def _v2_reference(seed, ordinary_ids, external_ids, created_from):
+    data = {
+        "schema_id": MR.DATASET_REFERENCE_SCHEMA_ID,
+        "schema_version": MR.DATASET_REFERENCE_SCHEMA_VERSION_LINEAGE,
+        "dataset_snapshot_reference_id": "PENDING",
+        "derivation_mode": "LINEAGE_DELTA_RECORD_BATCH",
+        "validated_batch_sha256": _hex("v2batch-" + seed),
+        "ordinary_record_version_ids": list(ordinary_ids),
+        "review_conflict_record_version_ids": [],
+        "query_spec_sha256": None,
+        "query_result_sha256": None,
+        "cutoff_mode": None,
+        "cutoff_time": None,
+        "result_view": None,
+        "query_engine_version": None,
+        "validator_version": "validator@wp161-test",
+        "parameter_set_id": "paramset:wp161-test",
+        "created_from_manifest_entry_id": created_from,
+        "human_review_required": False,
+        "advisory_only": True,
+        "no_execution_authority": True,
+        "external_parent_record_version_ids": sorted(external_ids),
+    }
+    preimage = {k: data[k] for k in data if k != "dataset_snapshot_reference_id"}
+    data["dataset_snapshot_reference_id"] = (
+        "datasetref:sha256:" + pit.sha256_hex(pit.canonical_json_bytes(preimage))
+    )
+    result = MR.build_dataset_snapshot_reference(data)
+    assert result.is_valid and result.reference is not None, result.error_codes
+    return result.reference
+
+
+def _mixed_chain_store(path):
+    """Return (ref_v1, ref_v2, e0, e1) for a persisted mixed v1/v2 chain."""
+
+    init = S.initialize_manifest_store(path)
+    assert init.is_valid
+    ref_v1 = _reference("A")  # ordinary = [_record_id("A")]
+    e0 = _entry(ref_v1, sequence=0, previous=None)
+    ref_v2 = _v2_reference(
+        "B",
+        ordinary_ids=[_record_id("B")],
+        external_ids=[_record_id("A")],
+        created_from=e0.manifest_entry_id,
+    )
+    e1 = _entry(ref_v2, sequence=1, previous=e0.manifest_entry_id)
+    result = S.append_manifest_store_batch(
+        path,
+        dataset_references=(ref_v1, ref_v2),
+        manifest_entries=(e0, e1),
+    )
+    assert result.is_valid, result.error_codes
+    return ref_v1, ref_v2, e0, e1
+
+
+def test_wp161_mixed_v1_v2_chain_persists_and_reloads(tmp_path) -> None:
+    path = tmp_path / "mixed.sqlite3"
+    ref_v1, ref_v2, e0, e1 = _mixed_chain_store(path)
+    loaded = S.load_and_verify_manifest_store(path)
+    assert loaded.is_valid and loaded.status == "STORE_LOADED_VERIFIED", loaded.error_codes
+    snapshot = loaded.snapshot
+    # v2 reference reloads with its external parents and backlink intact.
+    reloaded_v2 = next(
+        r for r in snapshot.dataset_references
+        if r.dataset_snapshot_reference_id == ref_v2.dataset_snapshot_reference_id
+    )
+    assert reloaded_v2 == ref_v2
+    assert reloaded_v2.external_parent_record_version_ids == (_record_id("A"),)
+    assert reloaded_v2.created_from_manifest_entry_id == e0.manifest_entry_id
+    assert snapshot.chain_validation is not None and snapshot.chain_validation.is_valid
+
+
+def test_wp161_legacy_v1_payload_without_external_key_reloads(tmp_path) -> None:
+    path = tmp_path / "v1.sqlite3"
+    references, entries, _ = _valid_store(path, entries=1)
+    # Simulate a pre-WP166 stored payload that lacks the external-parent key.
+    with sqlite3.connect(path) as connection:
+        payload = json.loads(
+            connection.execute("SELECT payload_json FROM dataset_references").fetchone()[0]
+        )
+        payload.pop("external_parent_record_version_ids", None)
+        encoded = pit.canonical_json_bytes(payload).decode("utf-8")
+        connection.execute(
+            "UPDATE dataset_references SET payload_json=?, payload_sha256=?",
+            (encoded, pit.sha256_hex(encoded)),
+        )
+    loaded = S.load_and_verify_manifest_store(path)
+    assert loaded.is_valid and loaded.status == "STORE_LOADED_VERIFIED", loaded.error_codes
+    assert loaded.snapshot.dataset_references[0] == references[0]
+
+
+def test_wp161_schema_and_user_version_unchanged_by_wp166(tmp_path) -> None:
+    path = tmp_path / "schema.sqlite3"
+    _mixed_chain_store(path)
+    with sqlite3.connect(path) as connection:
+        assert connection.execute("PRAGMA user_version").fetchone() == (1,)
+        objects = connection.execute(
+            "SELECT type, name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' "
+            "ORDER BY type, name"
+        ).fetchall()
+        assert objects == [
+            ("table", "dataset_references"),
+            ("table", "manifest_entries"),
+            ("table", "store_meta"),
+        ]
+        cols = connection.execute("PRAGMA table_info(dataset_references)").fetchall()
+        assert [c[1] for c in cols] == [
+            "dataset_snapshot_reference_id",
+            "payload_json",
+            "payload_sha256",
+        ]
+
+
+def test_wp161_v2_payload_tamper_fails_closed(tmp_path) -> None:
+    path = tmp_path / "tamper.sqlite3"
+    _mixed_chain_store(path)
+    with sqlite3.connect(path) as connection:
+        row = connection.execute(
+            "SELECT dataset_snapshot_reference_id, payload_json FROM dataset_references "
+            "WHERE payload_json LIKE '%LINEAGE_DELTA_RECORD_BATCH%'"
+        ).fetchone()
+        payload = json.loads(row[1])
+        payload["external_parent_record_version_ids"] = [_record_id("ZZZ")]
+        encoded = pit.canonical_json_bytes(payload).decode("utf-8")
+        connection.execute(
+            "UPDATE dataset_references SET payload_json=?, payload_sha256=? "
+            "WHERE dataset_snapshot_reference_id=?",
+            (encoded, pit.sha256_hex(encoded), row[0]),
+        )
+    loaded = S.load_and_verify_manifest_store(path)
+    assert not loaded.is_valid

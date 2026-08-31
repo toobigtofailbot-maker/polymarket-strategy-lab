@@ -256,7 +256,11 @@ def test_labels_and_schema_constants_are_exact() -> None:
 
 
 def test_closed_vocabularies_are_exact_ordered_tuples() -> None:
-    assert M.DATASET_DERIVATION_MODES == ("VALIDATED_RECORD_BATCH", "AS_OF_QUERY_RESULT")
+    assert M.DATASET_DERIVATION_MODES == (
+        "VALIDATED_RECORD_BATCH",
+        "AS_OF_QUERY_RESULT",
+        "LINEAGE_DELTA_RECORD_BATCH",
+    )
     assert M.MANIFEST_ENTRY_KINDS == (
         "REGISTER_DATASET_SNAPSHOT_REFERENCE",
         "SUPERSEDE_DATASET_SNAPSHOT_REFERENCE",
@@ -298,6 +302,8 @@ def test_closed_vocabularies_are_exact_ordered_tuples() -> None:
         "MANIFEST_ID_COLLISION_OR_MISMATCH",
         "DATASET_REFERENCE_ID_COLLISION_OR_MISMATCH",
         "SAFETY_POSTURE_INVALID",
+        "REFERENCE_PARENT_CONTEXT_INVALID",
+        "REFERENCE_PARENT_CONTEXT_UNCOMMITTED",
     )
 
 
@@ -361,7 +367,8 @@ def test_reference_missing_field() -> None:
 
 
 def test_reference_unsupported_schema() -> None:
-    for override in ({"schema_id": "other"}, {"schema_version": "2.0.0"}):
+    # WP166 adds schema 2.0.0, so an unsupported version is now e.g. 3.0.0.
+    for override in ({"schema_id": "other"}, {"schema_version": "3.0.0"}):
         result = M.build_dataset_snapshot_reference(_ref_input(**override))
         assert result.status == "REFERENCE_UNSUPPORTED_SCHEMA"
         assert result.error_codes == ("SCHEMA_UNSUPPORTED",)
@@ -1028,6 +1035,7 @@ def test_reference_field_coverage_is_complete() -> None:
         "human_review_required",
         "advisory_only",
         "no_execution_authority",
+        "external_parent_record_version_ids",
     }
     names = {f.name for f in fields(M.DatasetSnapshotReference)}
     assert names == expected
@@ -1377,3 +1385,249 @@ def test_chain_invalidation_entry_forces_review() -> None:
     result = M.validate_manifest_chain(entries, dataset_references=references)
     assert result.is_valid
     assert result.human_review_required is True
+
+
+# ── WP166: v2 lineage-delta references and mixed-chain parent-context authority ─
+
+
+def _entry_id(seed: str) -> str:
+    return "manifestentry:sha256:" + _hex(seed)
+
+
+def _derive_v2_ref_id(data: dict) -> str:
+    preimage = {key: data[key] for key in _REF_PREIMAGE_KEYS}
+    preimage["ordinary_record_version_ids"] = list(data["ordinary_record_version_ids"])
+    preimage["review_conflict_record_version_ids"] = list(
+        data["review_conflict_record_version_ids"]
+    )
+    preimage["external_parent_record_version_ids"] = list(
+        data["external_parent_record_version_ids"]
+    )
+    preimage["created_from_manifest_entry_id"] = data["created_from_manifest_entry_id"]
+    return "datasetref:sha256:" + sha256_hex(canonical_json_bytes(preimage))
+
+
+def _v2_ref_input(**overrides) -> dict:
+    data = {
+        "schema_id": "point-in-time-dataset-snapshot-reference",
+        "schema_version": "2.0.0",
+        "dataset_snapshot_reference_id": "PENDING",
+        "derivation_mode": "LINEAGE_DELTA_RECORD_BATCH",
+        "validated_batch_sha256": _hex("v2batch"),
+        "ordinary_record_version_ids": [_record_id("cur1"), _record_id("cur2")],
+        "review_conflict_record_version_ids": [],
+        "query_spec_sha256": None,
+        "query_result_sha256": None,
+        "cutoff_mode": None,
+        "cutoff_time": None,
+        "result_view": None,
+        "query_engine_version": None,
+        "validator_version": "point-in-time-validator@1.0.0-synthetic",
+        "parameter_set_id": "paramset:wp160-synthetic",
+        "created_from_manifest_entry_id": _entry_id("head"),
+        "human_review_required": False,
+        "advisory_only": True,
+        "no_execution_authority": True,
+        "external_parent_record_version_ids": sorted(
+            [_record_id("pa"), _record_id("pb")]
+        ),
+    }
+    data.update(overrides)
+    if "dataset_snapshot_reference_id" not in overrides:
+        data["dataset_snapshot_reference_id"] = _derive_v2_ref_id(data)
+    return data
+
+
+def _build_v2_ref(**overrides) -> M.DatasetSnapshotReference:
+    result = M.build_dataset_snapshot_reference(_v2_ref_input(**overrides))
+    assert result.is_valid, result.error_codes
+    return result.reference
+
+
+def test_wp166_new_schema_constants_are_exact() -> None:
+    assert M.DATASET_REFERENCE_SCHEMA_VERSION_LINEAGE == "2.0.0"
+    assert M.DATASET_REFERENCE_SUPPORTED_SCHEMA_VERSIONS == ("1.0.0", "2.0.0")
+
+
+def test_v2_reference_identity_is_deterministic() -> None:
+    ref1 = _build_v2_ref()
+    ref2 = _build_v2_ref()
+    assert ref1 == ref2
+    assert ref1.derivation_mode == "LINEAGE_DELTA_RECORD_BATCH"
+    assert ref1.schema_version == "2.0.0"
+    assert ref1.external_parent_record_version_ids == tuple(
+        sorted([_record_id("pa"), _record_id("pb")])
+    )
+    assert ref1.created_from_manifest_entry_id == _entry_id("head")
+
+
+def test_v2_external_parents_must_be_sorted_unique_and_disjoint() -> None:
+    unsorted = sorted([_record_id("pb"), _record_id("pa")], reverse=True)
+    data = _v2_ref_input(external_parent_record_version_ids=unsorted)
+    data["dataset_snapshot_reference_id"] = _derive_v2_ref_id(data)
+    result = M.build_dataset_snapshot_reference(data)
+    assert not result.is_valid and "FIELD_VALUE_INVALID" in result.error_codes
+    # overlap with ordinary ids
+    overlap = _v2_ref_input()
+    overlap["external_parent_record_version_ids"] = sorted(
+        [overlap["ordinary_record_version_ids"][0], _record_id("pz")]
+    )
+    overlap["dataset_snapshot_reference_id"] = _derive_v2_ref_id(overlap)
+    result = M.build_dataset_snapshot_reference(overlap)
+    assert not result.is_valid and "FIELD_VALUE_INVALID" in result.error_codes
+
+
+def test_v2_backlink_required_non_null() -> None:
+    data = _v2_ref_input(created_from_manifest_entry_id=None)
+    data["dataset_snapshot_reference_id"] = _derive_v2_ref_id(data)
+    result = M.build_dataset_snapshot_reference(data)
+    assert not result.is_valid
+    assert "FIELD_TYPE_INVALID" in result.error_codes
+
+
+def test_v2_query_fields_must_be_null() -> None:
+    data = _v2_ref_input(query_spec_sha256=_hex("q"))
+    data["dataset_snapshot_reference_id"] = _derive_v2_ref_id(data)
+    result = M.build_dataset_snapshot_reference(data)
+    assert not result.is_valid and "REFERENCE_MODE_MISMATCH" in result.error_codes
+
+
+def test_v2_wrong_self_id_rejected() -> None:
+    data = _v2_ref_input(
+        dataset_snapshot_reference_id="datasetref:sha256:" + _hex("wrong")
+    )
+    result = M.build_dataset_snapshot_reference(data)
+    assert not result.is_valid and result.error_codes == ("ID_DERIVATION_MISMATCH",)
+
+
+def test_v1_nonempty_external_parent_rejected() -> None:
+    data = _ref_input()
+    data["external_parent_record_version_ids"] = [_record_id("bad")]
+    result = M.build_dataset_snapshot_reference(data)
+    assert not result.is_valid and "FIELD_VALUE_INVALID" in result.error_codes
+
+
+def test_v1_backlink_non_null_rejected() -> None:
+    data = _ref_input(created_from_manifest_entry_id=_entry_id("nope"))
+    result = M.build_dataset_snapshot_reference(data)
+    assert not result.is_valid and "FIELD_VALUE_INVALID" in result.error_codes
+
+
+def test_v1_reference_id_exact_regression_and_missing_external_key_reloads() -> None:
+    # A pre-WP166 v1 payload lacks the external-parent key entirely.
+    legacy = _ref_input()
+    legacy.pop("external_parent_record_version_ids", None)
+    result = M.build_dataset_snapshot_reference(legacy)
+    assert result.is_valid, result.error_codes
+    assert result.reference.external_parent_record_version_ids == ()
+    assert result.reference.created_from_manifest_entry_id is None
+    # Adding an explicit empty key yields the identical v1 identity.
+    with_empty = _ref_input()
+    with_empty["external_parent_record_version_ids"] = []
+    result2 = M.build_dataset_snapshot_reference(with_empty)
+    assert result2.is_valid
+    assert (
+        result2.reference.dataset_snapshot_reference_id
+        == result.reference.dataset_snapshot_reference_id
+    )
+
+
+def _v2_mixed_chain():
+    # A v1 REGISTER (ref_a) then a v2 REGISTER whose external parent is A0.
+    ref_a = _build_ref(
+        validated_batch_sha256=_hex("A"),
+        ordinary_record_version_ids=[_record_id("A0"), _record_id("A1")],
+    )
+    subject_a = ref_a.dataset_snapshot_reference_id
+    e0 = _build_entry(
+        sequence_number=0,
+        previous_manifest_entry_id=None,
+        dataset_snapshot_reference_id=subject_a,
+        effective_time="2026-02-01T00:00:00Z",
+    )
+    ref_b = _build_v2_ref(
+        validated_batch_sha256=_hex("B"),
+        ordinary_record_version_ids=[_record_id("B0")],
+        external_parent_record_version_ids=[_record_id("A0")],
+        created_from_manifest_entry_id=e0.manifest_entry_id,
+    )
+    subject_b = ref_b.dataset_snapshot_reference_id
+    e1 = _build_entry(
+        sequence_number=1,
+        previous_manifest_entry_id=e0.manifest_entry_id,
+        dataset_snapshot_reference_id=subject_b,
+        effective_time="2026-02-02T00:00:00Z",
+    )
+    return [e0, e1], [ref_a, ref_b]
+
+
+def test_mixed_v1_v2_chain_accepted() -> None:
+    entries, references = _v2_mixed_chain()
+    result = M.validate_manifest_chain(entries, dataset_references=references)
+    assert result.is_valid and result.status == "CHAIN_VALID", result.error_codes
+
+
+def test_v2_wrong_head_backlink_rejected() -> None:
+    entries, references = _v2_mixed_chain()
+    ref_a = references[0]
+    e0 = entries[0]
+    bad_ref_b = _build_v2_ref(
+        validated_batch_sha256=_hex("B"),
+        ordinary_record_version_ids=[_record_id("B0")],
+        external_parent_record_version_ids=[_record_id("A0")],
+        created_from_manifest_entry_id=_entry_id("some-other-head"),
+    )
+    e1 = _build_entry(
+        sequence_number=1,
+        previous_manifest_entry_id=e0.manifest_entry_id,
+        dataset_snapshot_reference_id=bad_ref_b.dataset_snapshot_reference_id,
+        effective_time="2026-02-02T00:00:00Z",
+    )
+    result = M.validate_manifest_chain([e0, e1], dataset_references=[ref_a, bad_ref_b])
+    assert not result.is_valid
+    assert "REFERENCE_PARENT_CONTEXT_INVALID" in result.error_codes
+
+
+def test_v2_unregistered_external_parent_rejected() -> None:
+    entries, references = _v2_mixed_chain()
+    ref_a = references[0]
+    e0 = entries[0]
+    orphan_ref_b = _build_v2_ref(
+        validated_batch_sha256=_hex("B"),
+        ordinary_record_version_ids=[_record_id("B0")],
+        external_parent_record_version_ids=[_record_id("NEVER_REGISTERED")],
+        created_from_manifest_entry_id=e0.manifest_entry_id,
+    )
+    e1 = _build_entry(
+        sequence_number=1,
+        previous_manifest_entry_id=e0.manifest_entry_id,
+        dataset_snapshot_reference_id=orphan_ref_b.dataset_snapshot_reference_id,
+        effective_time="2026-02-02T00:00:00Z",
+    )
+    result = M.validate_manifest_chain(
+        [e0, e1], dataset_references=[ref_a, orphan_ref_b]
+    )
+    assert not result.is_valid
+    assert "REFERENCE_PARENT_CONTEXT_UNCOMMITTED" in result.error_codes
+
+
+def test_v2_external_parent_authorized_by_earlier_v2_accepted() -> None:
+    entries, references = _v2_mixed_chain()
+    e0, e1 = entries
+    ref_a, ref_b = references
+    ref_c = _build_v2_ref(
+        validated_batch_sha256=_hex("C"),
+        ordinary_record_version_ids=[_record_id("C0")],
+        external_parent_record_version_ids=[_record_id("B0")],
+        created_from_manifest_entry_id=e1.manifest_entry_id,
+    )
+    e2 = _build_entry(
+        sequence_number=2,
+        previous_manifest_entry_id=e1.manifest_entry_id,
+        dataset_snapshot_reference_id=ref_c.dataset_snapshot_reference_id,
+        effective_time="2026-02-03T00:00:00Z",
+    )
+    result = M.validate_manifest_chain(
+        [e0, e1, e2], dataset_references=[ref_a, ref_b, ref_c]
+    )
+    assert result.is_valid and result.status == "CHAIN_VALID", result.error_codes

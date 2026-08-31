@@ -181,6 +181,17 @@ def test_public_package_exports_exact_supported_surface() -> None:
         "PolymarketIncrementalPopulationResult",
         "capture_incremental_polymarket_public_data",
         "recover_incremental_polymarket_public_registration",
+        # WP166 bounded scalable one-page keyset lineage-delta public Polymarket
+        # capture coordinator and offline registration recovery (appended by the
+        # separately approved successor WP).
+        "POLYMARKET_SCALED_POPULATION_LABEL",
+        "POLYMARKET_SCALED_POPULATION_POSTURE",
+        "POLYMARKET_SCALED_POPULATION_STATUSES",
+        "POLYMARKET_SCALED_POPULATION_ERROR_CODES",
+        "PolymarketScaledPopulationConfig",
+        "PolymarketScaledPopulationResult",
+        "capture_scaled_polymarket_public_page",
+        "recover_scaled_polymarket_public_registration",
     )
 
 

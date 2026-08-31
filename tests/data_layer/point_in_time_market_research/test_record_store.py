@@ -224,6 +224,7 @@ def test_public_constants_are_exact() -> None:
     assert pit.DATASET_MATERIALIZATION_VERIFICATION_MODES == (
         "VALIDATED_BATCH_RECOMPUTED",
         "AS_OF_REFERENCE_IDS_RESOLVED",
+        "LINEAGE_DELTA_PARENT_CONTEXT_RECOMPUTED",
     )
 
 
@@ -1511,3 +1512,123 @@ def test_no_echo_recursive_over_expanded_invalid_cases(tmp_path) -> None:
     strings = list(_iter_strings(result))
     assert all(str(path) not in text for text in strings)
     assert all("SENSITIVE_LEAK_MARKER" not in text for text in strings)
+
+
+# ── WP166: v2 lineage-delta dataset materialization ───────────────────────────
+
+
+def _corpus_record(case_id: str):
+    builder = {
+        "MARKET_OBSERVATION": pit.build_market_observation,
+        "SOURCE_SNAPSHOT": pit.build_source_snapshot,
+        "RESOLUTION_RULE_SNAPSHOT": pit.build_resolution_rule_snapshot,
+    }
+    inp = pit.load_synthetic_case_input(case_id)
+    result = builder[inp["record_family"]](inp)
+    assert result.is_valid and result.record is not None, result.error_codes
+    return result.record
+
+
+def _lineage_delta_reference(
+    current_records,
+    parent_records,
+    *,
+    created_from="manifestentry:sha256:" + hashlib.sha256(b"head").hexdigest(),
+    validator="validator:wp156:v1",
+    parameter_set="parameters:wp156:synthetic:v1",
+):
+    from src.data_layer.point_in_time_market_research.manifest_reference import (
+        DATASET_REFERENCE_SCHEMA_VERSION_LINEAGE,
+    )
+
+    batch = R.validate_record_batch(
+        list(current_records), known_parent_records=list(parent_records)
+    )
+    assert batch.is_valid, batch.error_codes
+    external_ids = sorted(p.envelope.record_version_id for p in parent_records)
+    preimage = {
+        "schema_id": DATASET_REFERENCE_SCHEMA_ID,
+        "schema_version": DATASET_REFERENCE_SCHEMA_VERSION_LINEAGE,
+        "derivation_mode": "LINEAGE_DELTA_RECORD_BATCH",
+        "validated_batch_sha256": batch.canonical_batch_sha256,
+        "ordinary_record_version_ids": list(batch.accepted_record_version_ids),
+        "review_conflict_record_version_ids": [],
+        "query_spec_sha256": None,
+        "query_result_sha256": None,
+        "cutoff_mode": None,
+        "cutoff_time": None,
+        "result_view": None,
+        "query_engine_version": None,
+        "validator_version": validator,
+        "parameter_set_id": parameter_set,
+        "human_review_required": False,
+        "advisory_only": True,
+        "no_execution_authority": True,
+        "external_parent_record_version_ids": external_ids,
+        "created_from_manifest_entry_id": created_from,
+    }
+    ref_id = "datasetref:sha256:" + R.sha256_hex(R.canonical_json_bytes(preimage))
+    mapping = dict(preimage)
+    mapping["dataset_snapshot_reference_id"] = ref_id
+    result = build_dataset_snapshot_reference(mapping)
+    assert result.is_valid, result.error_codes
+    return result.reference, batch
+
+
+def test_v2_materialization_resolves_current_and_external_parents(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    parent = _corpus_record("PIT-C01-VALID-MARKET-METADATA")
+    dup = _corpus_record("PIT-C10-VALID-EXACT-DUPLICATE")
+    appended = pit.append_point_in_time_records(str(path), [parent, dup])
+    assert appended.is_valid, appended.error_codes
+    ref, _batch = _lineage_delta_reference([dup], [parent])
+    result = pit.materialize_dataset_snapshot_reference(str(path), ref)
+    assert result.is_valid, result.error_codes
+    assert result.verification_mode == "LINEAGE_DELTA_PARENT_CONTEXT_RECOMPUTED"
+    assert tuple(r.envelope.record_version_id for r in result.ordinary_records) == (
+        dup.envelope.record_version_id,
+    )
+    assert tuple(
+        r.envelope.record_version_id for r in result.external_parent_records
+    ) == (parent.envelope.record_version_id,)
+
+
+def test_v2_materialization_missing_external_parent_rejected(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    parent = _corpus_record("PIT-C01-VALID-MARKET-METADATA")
+    dup = _corpus_record("PIT-C10-VALID-EXACT-DUPLICATE")
+    # Store only the current record; the external parent is absent.
+    appended = pit.append_point_in_time_records(str(path), [dup, parent])
+    assert appended.is_valid
+    ref, _ = _lineage_delta_reference([dup], [parent])
+    # Rebuild a fresh store containing only the current record.
+    path2 = _new_store(tmp_path, "store2.sqlite3")
+    pit.append_point_in_time_records(str(path2), [dup])
+    result = pit.materialize_dataset_snapshot_reference(str(path2), ref)
+    assert not result.is_valid
+    assert "RECORD_STORE_REFERENCE_MISSING_RECORD" in result.error_codes
+
+
+def test_v2_materialization_batch_hash_mismatch_rejected(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    parent = _corpus_record("PIT-C01-VALID-MARKET-METADATA")
+    dup = _corpus_record("PIT-C10-VALID-EXACT-DUPLICATE")
+    pit.append_point_in_time_records(str(path), [parent, dup])
+    ref, _ = _lineage_delta_reference([dup], [parent])
+    tampered = dataclasses.replace(ref, validated_batch_sha256="0" * 64)
+    result = pit.materialize_dataset_snapshot_reference(str(path), tampered)
+    assert not result.is_valid
+    # A tampered reference fails to rebuild through the public builder first.
+    assert "RECORD_STORE_REFERENCE_INVALID" in result.error_codes
+
+
+def test_v1_materialization_regression_unchanged(tmp_path) -> None:
+    path = _new_store(tmp_path)
+    records = list(_records().values())
+    ordinary = [r for r in records if r.envelope.classification != "CONFLICT"][:3]
+    pit.append_point_in_time_records(str(path), ordinary)
+    ref = _batch_reference(ordinary)
+    result = pit.materialize_dataset_snapshot_reference(str(path), ref)
+    assert result.is_valid
+    assert result.verification_mode == "VALIDATED_BATCH_RECOMPUTED"
+    assert result.external_parent_records == ()

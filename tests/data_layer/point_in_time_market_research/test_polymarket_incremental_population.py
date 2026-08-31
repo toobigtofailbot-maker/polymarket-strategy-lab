@@ -281,8 +281,12 @@ def test_result_is_frozen():
     assert result.no_execution_authority is True
 
 
-def test_package_exports_end_with_the_seven_wp165_symbols():
-    assert pit.__all__[-7:] == (
+def test_package_exports_contain_the_seven_wp165_symbols_as_a_block():
+    # WP166 appended its own exports after WP165, so the WP165 block is no longer
+    # the package tail; it remains a future-safe contiguous seven-symbol block.
+    start = pit.__all__.index("POLYMARKET_INCREMENTAL_POPULATION_LABEL")
+    block = pit.__all__[start : start + 7]
+    assert block == (
         "POLYMARKET_INCREMENTAL_POPULATION_LABEL",
         "POLYMARKET_INCREMENTAL_POPULATION_POSTURE",
         "POLYMARKET_INCREMENTAL_POPULATION_STATUSES",
@@ -291,9 +295,7 @@ def test_package_exports_end_with_the_seven_wp165_symbols():
         "capture_incremental_polymarket_public_data",
         "recover_incremental_polymarket_public_registration",
     )
-    assert all(
-        getattr(pit, name) is getattr(inc, name) for name in pit.__all__[-7:]
-    )
+    assert all(getattr(pit, name) is getattr(inc, name) for name in block)
 
 
 def test_incremental_reuses_the_exact_wp164_config():
