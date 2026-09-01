@@ -229,3 +229,48 @@ def test_reordered_inputs_produce_equal_complete_descriptors():
     assert forward.event_types == reordered.event_types
     assert list(forward.source_objects) == sorted(forward.source_objects, key=lambda e: e.object_name)
     assert list(forward.event_types) == sorted(forward.event_types)
+
+
+# ── Blocker B (round 3): source-object capacity matches identity ─────────────
+
+
+def _n_objects(n):
+    return [_obj(f"o{i:05d}.parquet", "1", 10 + i, f"p{i}") for i in range(n)]
+
+
+def test_external_descriptor_supports_257_objects():
+    result = build_external_dataset_descriptor(**_base(source_objects=_n_objects(257)))
+    assert result.is_valid, result.error_codes
+    assert len(result.descriptor.source_objects) == 257
+
+
+def test_external_descriptor_supports_1024_objects():
+    result = build_external_dataset_descriptor(**_base(source_objects=_n_objects(1024)))
+    assert result.is_valid, result.error_codes
+    assert len(result.descriptor.source_objects) == 1024
+
+
+def test_external_descriptor_rejects_1025_objects():
+    result = build_external_dataset_descriptor(**_base(source_objects=_n_objects(1025)))
+    assert not result.is_valid
+    assert result.error_codes == ("EXTERNAL_SOURCE_FILE_INVALID",)
+
+
+def test_1024_object_reorder_preserves_full_descriptor_and_id():
+    objects = _n_objects(1024)
+    forward = build_external_dataset_descriptor(**_base(source_objects=objects)).descriptor
+    reordered = build_external_dataset_descriptor(
+        **_base(source_objects=list(reversed(objects)))
+    ).descriptor
+    assert forward == reordered
+    assert forward.external_dataset_id == reordered.external_dataset_id
+    assert forward.source_objects == reordered.source_objects
+
+
+def test_1024_object_source_mutation_changes_id():
+    objects = _n_objects(1024)
+    base = build_external_dataset_descriptor(**_base(source_objects=objects)).descriptor
+    mutated = list(objects)
+    mutated[500] = _obj(mutated[500].object_name, "9", mutated[500].byte_length, mutated[500].partition_identity)
+    changed = build_external_dataset_descriptor(**_base(source_objects=mutated)).descriptor
+    assert base.external_dataset_id != changed.external_dataset_id

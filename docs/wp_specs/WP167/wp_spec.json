@@ -356,9 +356,9 @@
       {
         "requirement_id": "R010",
         "source": "pytest",
-        "test": "test_float_decimal_column_is_rejected",
+        "test": "test_wrong_decimal_precision_is_rejected",
         "command": "python -m pytest -q tests/data_layer/analytical_research/test_pmxt_v2.py",
-        "expected_result": "binary-float decimal columns are rejected"
+        "expected_result": "exact decimal precision/scale is enforced; non-exact decimal typing is rejected"
       },
       {
         "requirement_id": "R011",

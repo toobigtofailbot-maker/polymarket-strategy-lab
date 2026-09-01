@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.metadata
+import json
 import platform
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -45,11 +46,64 @@ from ..point_in_time_market_research import (
     MarketObservationRecord,
     ResolutionRuleSnapshotRecord,
     SourceSnapshotRecord,
-    canonical_json_bytes,
     load_and_verify_point_in_time_record_store,
     materialize_dataset_snapshot_reference,
     sha256_hex,
 )
+
+# Generous per-object bound for analytical outer canonicalization. A valid
+# canonical PIT record embeds ``canonical_payload_json`` up to WP156's 65,536-byte
+# payload, so the complete analytical row can approach a few hundred KB once
+# JSON-escaped; this bound comfortably exceeds any valid row and the largest
+# supported 1,024-object external descriptor preimage.
+_MAX_ANALYTICAL_OBJECT_BYTES = 4_194_304  # 4 MiB
+
+
+def analytical_canonical_bytes(obj: object) -> bytes:
+    """Deterministically encode an analytical outer object for identity/hashing.
+
+    This mirrors the merged WP163 OUTER-record canonicalization precedent
+    (``record_store._canonical_outer_bytes``): equivalent deterministic JSON
+    (sorted keys, ``(",", ":")`` separators, ``ensure_ascii=False``,
+    ``allow_nan=False``) with a wide per-object byte bound and a binary-float
+    rejection, and WITHOUT the WP156 payload canonicalizer's per-string (4,096) and
+    per-sequence (256) limits. Those WP156 limits are correct for the embedded
+    canonical market payload but must never be applied to the OUTER analytical row,
+    whose ``canonical_payload_json`` string may itself be up to 65,536 bytes, or to
+    an external descriptor preimage carrying up to 1,024 source objects. WP156
+    remains the semantic authority for the embedded record and its payload.
+    """
+
+    def normalize(value: object) -> object:
+        if value is None or isinstance(value, bool):
+            return value
+        if isinstance(value, int):
+            return value
+        if isinstance(value, float):
+            raise ValueError("binary float is not permitted in analytical identity")
+        if isinstance(value, str):
+            return value
+        if isinstance(value, dict):
+            normalized: dict[str, object] = {}
+            for key in value:
+                if not isinstance(key, str):
+                    raise ValueError("analytical identity keys must be strings")
+                normalized[key] = normalize(value[key])
+            return normalized
+        if isinstance(value, (list, tuple)):
+            return [normalize(item) for item in value]
+        raise ValueError("unsupported value in analytical identity")
+
+    encoded = json.dumps(
+        normalize(obj),
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+        allow_nan=False,
+    ).encode("utf-8")
+    if len(encoded) > _MAX_ANALYTICAL_OBJECT_BYTES:
+        raise ValueError("analytical canonical object exceeds the supported bound")
+    return encoded
 
 # ── Locked labels, posture, and versions ─────────────────────────────────────
 
@@ -493,7 +547,7 @@ def _logical_rows_sha256(rows: list[dict[str, object]]) -> str:
     hasher.update(str(len(ordered)).encode("utf-8"))
     for row in ordered:
         hasher.update(b"\x00")
-        hasher.update(sha256_hex(canonical_json_bytes(row)).encode("ascii"))
+        hasher.update(sha256_hex(analytical_canonical_bytes(row)).encode("ascii"))
     return hasher.hexdigest()
 
 
@@ -508,7 +562,7 @@ def _arrow_schema(table_name: str) -> pa.Schema:
 
 def _schema_fingerprint(schema: pa.Schema) -> str:
     descriptor = [[field.name, str(field.type)] for field in schema]
-    return sha256_hex(canonical_json_bytes(descriptor))
+    return sha256_hex(analytical_canonical_bytes(descriptor))
 
 
 def _build_arrow_table(records: list[Any], table_name: str, role: str) -> pa.Table:
@@ -707,7 +761,7 @@ def materialize_canonical_pit_dataset(
     }
     logical_dataset_id = (
         ANALYTICAL_LOGICAL_DATASET_ID_PREFIX
-        + sha256_hex(canonical_json_bytes(logical_preimage))
+        + sha256_hex(analytical_canonical_bytes(logical_preimage))
     )
 
     manifest = AnalyticalDatasetManifest(

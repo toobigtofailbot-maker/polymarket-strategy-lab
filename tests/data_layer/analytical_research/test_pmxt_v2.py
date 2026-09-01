@@ -67,6 +67,7 @@ def _write_pmxt(
     null_ts_received=False,
     malformed_market=False,
     malformed_asset_id=False,
+    unicode_asset_id=False,
     event_override=None,
     side_override=None,
 ):
@@ -110,7 +111,11 @@ def _write_pmxt(
         return ("0x" + f"{i % 65536:0{hexlen}x}").encode("ascii")
 
     def asset_value(i):
-        return "not-a-decimal" if malformed_asset_id else _ASSET_IDS[i % len(_ASSET_IDS)]
+        if malformed_asset_id:
+            return "not-a-decimal"
+        if unicode_asset_id:
+            return "١٢٣"  # Arabic-Indic digits (str.isdigit True, not ASCII)
+        return _ASSET_IDS[i % len(_ASSET_IDS)]
 
     ts_received = [_TS0 + dt.timedelta(seconds=i) for i in range(rows)]
     if null_ts_received and rows:
@@ -271,6 +276,23 @@ def test_malformed_market_bytes_are_rejected(tmp_path):
 def test_malformed_asset_id_is_rejected(tmp_path):
     path = _write_pmxt(tmp_path / "pmxt.parquet", malformed_asset_id=True)
     assert _describe([_source_file(path)]).error_codes == ("EXTERNAL_SOURCE_SCHEMA_INVALID",)
+
+
+def test_unicode_digit_asset_id_is_rejected(tmp_path):
+    # A Unicode-digit asset_id passes str.isdigit() but is not a valid ASCII
+    # decimal-string token id and must be rejected.
+    path = _write_pmxt(tmp_path / "pmxt.parquet", unicode_asset_id=True)
+    assert _describe([_source_file(path)]).error_codes == ("EXTERNAL_SOURCE_SCHEMA_INVALID",)
+
+
+def test_required_and_always_populated_constants_are_distinct():
+    # All sixteen columns are required; five of them are always populated.
+    assert set(PX.PMXT_V2_REQUIRED_COLUMNS) == set(PX.PMXT_V2_SCHEMA_COLUMNS)
+    assert len(PX.PMXT_V2_REQUIRED_COLUMNS) == 16
+    assert PX.PMXT_V2_ALWAYS_POPULATED_COLUMNS == (
+        "timestamp_received", "timestamp", "market", "event_type", "asset_id",
+    )
+    assert set(PX.PMXT_V2_ALWAYS_POPULATED_COLUMNS) < set(PX.PMXT_V2_REQUIRED_COLUMNS)
 
 
 def test_unsupported_event_type_is_rejected(tmp_path):

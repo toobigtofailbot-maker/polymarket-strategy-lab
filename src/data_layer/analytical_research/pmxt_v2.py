@@ -70,7 +70,10 @@ PMXT_V2_RECEIVE_TIMESTAMP_SEMANTICS = "EXPORTER_RECEIVE_TIME_UTC_MS"
 PMXT_V2_TIMESTAMP_UNIT = "ms"
 PMXT_V2_MARKET_BYTE_WIDTH = 66  # "0x" + 64 hex characters
 
-PMXT_V2_REQUIRED_COLUMNS = (
+# The five columns that are always populated (validated non-null row-wise). Every
+# schema column (all sixteen, below) is required to be present with its exact type;
+# the event-specific columns are nullable *values*, not optional schema columns.
+PMXT_V2_ALWAYS_POPULATED_COLUMNS = (
     "timestamp_received",
     "timestamp",
     "market",
@@ -114,7 +117,12 @@ PMXT_V2_SCHEMA_COLUMNS = (
     "new_tick_size",
 )
 
+# All sixteen documented columns must be present (event-specific columns are
+# nullable values, not optional schema columns).
+PMXT_V2_REQUIRED_COLUMNS = PMXT_V2_SCHEMA_COLUMNS
+
 _UTC_TZ_NAMES = frozenset({"UTC", "Etc/UTC", "+00:00", "Z", "00:00"})
+_ASCII_DIGITS = frozenset("0123456789")
 _HEX_BYTES = frozenset(b"0123456789abcdefABCDEF")
 
 PMXT_V2_STATUSES = ("PMXT_V2_DESCRIBED", "PMXT_V2_REJECTED")
@@ -231,8 +239,9 @@ def _valid_market_bytes(value: object) -> bool:
 
 
 def _valid_asset_id(value: object) -> bool:
-    # Documented decimal-string token id form.
-    return isinstance(value, str) and value != "" and value.isdigit()
+    # Documented decimal-string token id form: ASCII 0-9 only (str.isdigit would
+    # accept Unicode digits, which are not a valid token id).
+    return isinstance(value, str) and value != "" and all(ch in _ASCII_DIGITS for ch in value)
 
 
 def _epoch_to_utc(epoch: int, unit: str) -> datetime:
@@ -275,7 +284,7 @@ def _validate_and_scan_file(
         batch_size=MAX_ROW_BATCH, columns=scan_columns
     ):
         # Always-populated columns must never be null.
-        for column in ("timestamp_received", "timestamp", "market", "event_type", "asset_id"):
+        for column in PMXT_V2_ALWAYS_POPULATED_COLUMNS:
             if batch.column(column).null_count > 0:
                 raise _PmxtFailure("EXTERNAL_SOURCE_SCHEMA_INVALID")
 

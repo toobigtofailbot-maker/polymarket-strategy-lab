@@ -19,7 +19,8 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from ..point_in_time_market_research import canonical_json_bytes, sha256_hex
+from ..point_in_time_market_research import sha256_hex
+from .research_dataset import analytical_canonical_bytes
 
 # ── Locked labels, posture, and vocabularies ─────────────────────────────────
 
@@ -237,7 +238,11 @@ def _descriptor_identity_preimage(
 
 
 def compute_external_dataset_id(preimage: dict[str, object]) -> str:
-    return EXTERNAL_DATASET_ID_PREFIX + sha256_hex(canonical_json_bytes(preimage))
+    # Uses the analytical outer canonicalizer (WP163 precedent), not the WP156
+    # payload canonicalizer, so a preimage carrying up to the declared 1,024 source
+    # objects is committed deterministically rather than rejected by the WP156
+    # 256-item sequence limit.
+    return EXTERNAL_DATASET_ID_PREFIX + sha256_hex(analytical_canonical_bytes(preimage))
 
 
 # ── Public builder ───────────────────────────────────────────────────────────
@@ -342,7 +347,12 @@ def build_external_dataset_descriptor(
         license_id=license_id,
         attribution=attribution,
     )
-    external_dataset_id = compute_external_dataset_id(preimage)
+    try:
+        external_dataset_id = compute_external_dataset_id(preimage)
+    except Exception:
+        # Any unexpected identity-construction failure fails closed as a bounded,
+        # non-echoing rejection rather than a raw exception.
+        return _rejected("EXTERNAL_DESCRIPTOR_INVALID")
 
     descriptor = ExternalDatasetDescriptor(
         schema_id=EXTERNAL_DATASET_SCHEMA_ID,

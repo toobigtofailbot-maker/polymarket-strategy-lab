@@ -527,3 +527,53 @@ def test_runtime_dependency_mismatch_rejects_materialization(tmp_path, monkeypat
     assert not result.is_valid
     assert result.error_codes == ("ANALYTICS_DEPENDENCY_VERSION_INVALID",)
     assert not (out / f"{ar.TABLE_MARKET_OBSERVATIONS}.parquet").exists()
+
+
+# ── Blocker A (round 3): analytical row hashing supports large valid payloads ──
+
+from src.data_layer.point_in_time_market_research.as_of_synthetic_cases import _meta
+
+
+def _big_conflict_record(n_labels=40, label_len=200, assertion="assertion:big"):
+    payload = {
+        "question_text": "Will the large synthetic condition be true?",
+        "market_status": "OPEN_SYNTHETIC",
+        "outcome_labels": [f"L{i}_" + ("x" * label_len) for i in range(n_labels)],
+    }
+    result = R.build_review_conflict_record(
+        _meta(
+            source_assertion_id=assertion,
+            observed_time="2026-01-01T00:06:00Z",
+            ingestion_time="2026-01-01T00:06:01Z",
+            classification="CONFLICT",
+            human_review=True,
+            payload=payload,
+        )
+    )
+    assert result.is_valid and result.record is not None
+    return result.record
+
+
+def test_valid_pit_record_with_large_payload_materializes(tmp_path):
+    conflict = _big_conflict_record()
+    # The canonical payload exceeds WP156's 4096-byte per-string bound; applying the
+    # WP156 canonicalizer to the outer analytical row would wrongly reject it.
+    assert len(conflict.canonical_payload_json) > 4096
+    recs = build_synthetic_as_of_records()
+    ordinary = [recs["MKT-META-PRIMARY"]]
+    store = _store(tmp_path, [recs["MKT-META-PRIMARY"], conflict])
+    reference = _asof_reference(ordinary, [conflict])
+    out_a = _outdir(tmp_path, "big_a")
+    out_b = _outdir(tmp_path, "big_b")
+    result = ar.materialize_canonical_pit_dataset(str(store), reference, str(out_a))
+    assert result.is_valid, result.error_codes
+
+    frame = _read_parquet(out_a / f"{ar.TABLE_REVIEW_CONFLICTS}.parquet")
+    stored = frame.filter(
+        frame["record_version_id"] == conflict.envelope.record_version_id
+    )["canonical_payload_json"][0]
+    assert stored == conflict.canonical_payload_json
+
+    # Deterministic logical identity for the large-payload record.
+    result_b = ar.materialize_canonical_pit_dataset(str(store), reference, str(out_b))
+    assert result.logical_dataset_id == result_b.logical_dataset_id

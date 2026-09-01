@@ -271,10 +271,14 @@ strict hosted CI (WP167_STRICT_DUCKDB=1), and a required job must fail on any Du
 import failure or DuckDB test skip. Hosted CI is the authoritative DuckDB execution
 proof for import/version, Parquet query, COUNT/filter/group, timestamp/decimal/null
 handling, and DuckDB<->Polars parity. Do not claim a local DuckDB PASS or baseline
-equivalence for a DuckDB test never executed locally. PR evidence reports separately:
-local DuckDB execution BLOCKED_BY_WINDOWS_SMART_APP_CONTROL; installation/pip check
-PASS; hosted Windows DuckDB execution PASS/FAIL; hosted Linux DuckDB execution
-PASS/FAIL.
+equivalence for a DuckDB test not actually executed locally. PR evidence reports the
+observed status separately, without asserting a fixed local outcome: local DuckDB
+execution reported as actually observed (PASS when the pinned module loads, or
+BLOCKED_BY_WINDOWS_SMART_APP_CONTROL when the OS security policy blocks it — the
+reputation state can change over time); installation/pip check PASS; hosted Windows
+DuckDB execution PASS/FAIL; hosted Linux DuckDB execution PASS/FAIL. Hosted strict
+Windows/Linux CI is the authoritative cross-platform DuckDB proof regardless of the
+local status.
 
 ===============================================================================
 8. SECURITY / DEPENDENCY GATE
