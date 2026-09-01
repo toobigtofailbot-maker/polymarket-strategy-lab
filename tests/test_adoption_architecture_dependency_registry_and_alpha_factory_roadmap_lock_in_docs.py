@@ -17,6 +17,7 @@ DOC = (
 STATUS = ROOT / "docs" / "status_entries" / "WP154.md"
 WP155_STATUS = ROOT / "docs" / "status_entries" / "WP155.md"
 WP156_STATUS = ROOT / "docs" / "status_entries" / "WP156.md"
+WP167_STATUS = ROOT / "docs" / "status_entries" / "WP167.md"
 PROJECT_STATUS = ROOT / "docs" / "project_status.md"
 INDEX = ROOT / "docs" / "repo_truth_index.md"
 DEFERRED = ROOT / "docs" / "deferred_items_log.md"
@@ -424,6 +425,12 @@ def test_project_status_reconciles_wp153_and_has_one_wp154_review_target() -> No
         "LOCAL_OFFLINE_DETERMINISTIC_SYNTHETIC_DRY_RUN_AND_RECEIPT_REVIEW_REVIEW_TARGET"
         not in project
     )
+    if WP167_STATUS.exists():
+        # WP167 is the current review target; it advances past the WP156-era markers.
+        assert "WP167" in current
+        assert "WP166" in merged
+        assert current.count("current review target") == 1
+        return
     if WP156_STATUS.exists():
         assert "WP156" in merged
         assert "WP154" in merged
@@ -595,6 +602,37 @@ _WP162_AUTHORIZED_FILES = {
     "docs/deferred_items_log.md",
 }
 
+_WP167_AUTHORIZED_FILES = {
+    "docs/wp_specs/WP167/wp_prompt.txt",
+    "docs/wp_specs/WP167/wp_spec.json",
+    "docs/wp_specs/WP167/draftability_certificate.json",
+    "pyproject.toml",
+    ".github/workflows/ci.yml",
+    "src/data_layer/analytical_research/__init__.py",
+    "src/data_layer/analytical_research/research_dataset.py",
+    "src/data_layer/analytical_research/external_dataset.py",
+    "src/data_layer/analytical_research/pmxt_v2.py",
+    "tests/data_layer/analytical_research/test_research_dataset.py",
+    "tests/data_layer/analytical_research/test_external_dataset.py",
+    "tests/data_layer/analytical_research/test_pmxt_v2.py",
+    "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py",
+    "docs/analytical_research_layer_contract.md",
+    "tests/test_analytical_research_layer_contract_docs.py",
+    "docs/status_entries/WP167.md",
+    "docs/project_status.md",
+    "docs/repo_truth_index.md",
+    "docs/deferred_items_log.md",
+    "docs/security_tooling_status.md",
+    "tests/test_architecture_boundaries.py",
+    "tests/test_project_status_docs.py",
+    "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+    "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+    "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+    "tests/test_wallet_intelligence_architecture_contract_docs.py",
+}
+
+
 _WP166_AUTHORIZED_FILES = {
     "src/data_layer/point_in_time_market_research/records.py",
     "src/data_layer/point_in_time_market_research/manifest_reference.py",
@@ -722,6 +760,10 @@ def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None
         for line in (diff.stdout + untracked.stdout).splitlines()
         if line
     }
+    if "docs/status_entries/WP167.md" in changed:
+        # WP167 owns its exact 27-file XL scope (analytical research foundation).
+        assert changed == _WP167_AUTHORIZED_FILES
+        return
     if "docs/status_entries/WP166.md" in changed:
         assert changed == _WP166_AUTHORIZED_FILES
         return

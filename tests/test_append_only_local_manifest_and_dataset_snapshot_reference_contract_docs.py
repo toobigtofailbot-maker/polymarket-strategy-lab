@@ -261,6 +261,37 @@ WP162_AUTHORIZED_FILES = {
 # keep the WP166 branch future-safe. WP166 spans a larger 33-file scope because it
 # extends the shared record/manifest/adapter/record-store layers plus the public
 # client and polling policy, and adds the new scaled-population coordinator module.
+WP167_AUTHORIZED_FILES = {
+    "docs/wp_specs/WP167/wp_prompt.txt",
+    "docs/wp_specs/WP167/wp_spec.json",
+    "docs/wp_specs/WP167/draftability_certificate.json",
+    "pyproject.toml",
+    ".github/workflows/ci.yml",
+    "src/data_layer/analytical_research/__init__.py",
+    "src/data_layer/analytical_research/research_dataset.py",
+    "src/data_layer/analytical_research/external_dataset.py",
+    "src/data_layer/analytical_research/pmxt_v2.py",
+    "tests/data_layer/analytical_research/test_research_dataset.py",
+    "tests/data_layer/analytical_research/test_external_dataset.py",
+    "tests/data_layer/analytical_research/test_pmxt_v2.py",
+    "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py",
+    "docs/analytical_research_layer_contract.md",
+    "tests/test_analytical_research_layer_contract_docs.py",
+    "docs/status_entries/WP167.md",
+    "docs/project_status.md",
+    "docs/repo_truth_index.md",
+    "docs/deferred_items_log.md",
+    "docs/security_tooling_status.md",
+    "tests/test_architecture_boundaries.py",
+    "tests/test_project_status_docs.py",
+    "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+    "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+    "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+    "tests/test_wallet_intelligence_architecture_contract_docs.py",
+}
+
+
 WP166_AUTHORIZED_FILES = {
     "src/data_layer/point_in_time_market_research/records.py",
     "src/data_layer/point_in_time_market_research/manifest_reference.py",
@@ -1166,6 +1197,16 @@ def test_project_status_registers_wp158_review_target_and_next_gate() -> None:
     merged = next(
         line for line in project.splitlines() if line.startswith("- Merged WPs:")
     )
+    if (ROOT / "docs" / "status_entries" / "WP167.md").exists():
+        # WP167 is the current review target; it advances past the WP158/WP160-era markers.
+        assert "WP167" in current
+        assert "WP166" in merged
+        assert current.count("current review target") == 1
+        assert (
+            "Append-only local manifest and deterministic dataset snapshot reference contract status:"
+            in project
+        )
+        return
     assert "WP161" in current
     assert "WP160" in merged
     assert current.count("current review target") == 1
@@ -1214,6 +1255,11 @@ def test_status_fragment_is_stable_model_d() -> None:
 
 def test_no_dependency_workflow_or_generated_artifact_in_scope() -> None:
     changed = _changed_files()
+    if "docs/status_entries/WP167.md" in changed:
+        # WP167 owns its exact 27-file XL scope; dependency (pyproject.toml) and
+        # workflow (.github/workflows/ci.yml) files are explicitly authorized for WP167.
+        assert changed == WP167_AUTHORIZED_FILES
+        return
     if "docs/status_entries/WP166.md" in changed:
         # WP166 authorizes source and test paths within its exact 33-file scope;
         # dependency, workflow, tool, fixture, config, and generated-artifact

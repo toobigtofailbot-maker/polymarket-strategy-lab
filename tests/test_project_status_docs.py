@@ -2772,9 +2772,10 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp153_through_wp165_are_merged_and_wp166_is_current_review_target():
-    # Functional WP166 is the current non-draft review target following the exact
-    # merged WP165 incremental cumulative baseline.
+def test_wp153_through_wp166_are_merged_and_wp167_is_current_review_target():
+    # Functional WP167 is the current non-draft review target following the exact
+    # merged WP166 scalable lineage-delta baseline. WP167 is the first runtime-
+    # dependency analytical/external-history/materialization foundation.
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2782,10 +2783,9 @@ def test_wp153_through_wp165_are_merged_and_wp166_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
+    assert "WP167" in current_phase_line
     assert "WP166" in current_phase_line
-    assert "WP165" in current_phase_line
-    assert "WP164" in current_phase_line
-    assert "WP161" in current_phase_line
+    assert "WP130" in current_phase_line
     assert "WP153" in merged_line
     assert "WP154" in merged_line
     assert "WP155" in merged_line
@@ -2799,48 +2799,76 @@ def test_wp153_through_wp165_are_merged_and_wp166_is_current_review_target():
     assert "WP163" in merged_line
     assert "WP164" in merged_line
     assert "WP165" in merged_line
+    assert "WP166" in merged_line
     for phrase in (
         "current review target",
-        "Primary package class: DATA_LAYER_PUBLIC_POPULATION",
-        "Repository validation class: bounded-scalable-lineage-delta-keyset-polymarket-point-in-time-population",
+        "Primary package class: RUNTIME_DEPENDENCY_ANALYTICAL_RESEARCH_FOUNDATION",
         "Package size class: XL",
-        "Risk level: 1",
-        "Implementation posture: MANUAL_ONE_PAGE_KEYSET_GET_ONLY_EXTERNAL_PARENT_COMMITTED_NO_TRADING_AUTHORITY",
-        "Ready for review: YES",
+        "XL explicit authorization: YES",
+        "Risk level: 3",
+        "Implementation posture: LOCAL_OFFLINE_DERIVED_ANALYTICAL_MATERIALIZATION_AND_EXTERNAL_HISTORY_NO_EXECUTION_AUTHORITY",
+        "Ready for review: PENDING_HOSTED_CI_AND_INDEPENDENT_CERTIFICATE",
         "Merge authorized: NO",
         "Independent live PR review required: YES",
-        "Exact changed-file scope: 33",
+        "Exact changed-file scope: 27",
+        "Python support floor: >=3.12,<3.15",
+        "New direct runtime dependencies: pyarrow==25.0.1, duckdb==1.5.5, polars==1.44.1",
+        "Dependencies installed or activated: 3",
         "Default network posture: OFF",
-        "Public GET-only network reads when explicitly enabled: YES",
-        "Product impact: NONE",
+        "External data downloader: NONE",
         "Product/runtime network calls: 0",
-        "Dependencies installed or activated: 0",
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
-        "Manifest and dataset snapshot reference validator implemented by: WP160",
-        "Dataset persistence adapter implemented by: WP162",
-        "Durable point-in-time record store implemented by: WP163",
-        "Real/public initial population implemented by: WP164",
-        "Bounded incremental cumulative population implemented by: WP165",
-        "Bounded scalable lineage-delta keyset population implemented by: WP166",
+        "Canonical PIT authority unchanged: YES",
+        "Derived Parquet is analytical materialization only: YES",
+        "External pmxt v2 classified THIRD_PARTY_NATIVE_FRAME_ARCHIVE: YES",
+        "No downloader: YES",
+        "No NautilusTrader: YES",
+        "No WebSocket runtime: YES",
+        "No Data API: YES",
+        "No Hermes/strategy/paper/execution/live: YES",
+        "DuckDB local execution: BLOCKED_BY_WINDOWS_SMART_APP_CONTROL",
+        "DuckDB validated by hosted CI: REQUIRED",
         "WP160 merged: YES",
         "WP161 merged: YES",
         "WP162 merged: YES",
         "WP163 merged: YES",
         "WP164 merged: YES",
         "WP165 merged: YES",
-        "WP165 PR: 165",
-        "WP165 final head: 883d806ce979b2671dc22378ff9d4faaac5bcf40",
-        "WP165 merge commit: 6cfb3a8913661401635e8b7ce1d55219098bb9dd",
-        "WP165 implemented and merged: YES",
-        "v1 references remain supported: YES",
-        "v2 lineage-delta reference exists: YES",
-        "Keyset is manual one-page only: YES",
-        "No scheduler or trading: YES",
-        "WP166 Ready for review: YES",
+        "WP166 merged: YES",
+        "WP166 PR: 166",
+        "WP166 final head: f310d96c2f5c9ae6ec589239e945ab5746463911",
+        "WP166 merge commit: 35f4042a595ae58bf8b71a986eaefac0d3fe3dc8",
+        "Analytical research store and query layer implemented by: WP167",
+        "Next phase: WP168_NAUTILUSTRADER_OFFLINE_KERNEL_SEPARATELY_GATED",
     ):
-        assert phrase in current_phase_line
+        assert phrase in current_phase_line, phrase
     assert current_phase_line.count("current review target") == 1
+
+
+def test_wp167_analytical_research_foundation_status_is_registered():
+    text = _read()
+    line = next(
+        item
+        for item in text.splitlines()
+        if item.startswith("- Analytical research foundation status:")
+    )
+    for phrase in (
+        "LOCAL_OFFLINE_DERIVED_ANALYTICAL_MATERIALIZATION_AND_EXTERNAL_HISTORY_FOUNDATION",
+        "Implemented by: WP167",
+        "src/data_layer/analytical_research/",
+        "New direct runtime dependencies: pyarrow==25.0.1, duckdb==1.5.5, polars==1.44.1",
+        "Python support floor: >=3.12,<3.15",
+        "Canonical PIT authority unchanged: YES",
+        "Logical dataset identity independent of physical Parquet bytes: YES",
+        "External pmxt v2 provenance classified THIRD_PARTY_NATIVE_FRAME_ARCHIVE: YES",
+        "External downloader: NONE",
+        "DuckDB local execution: BLOCKED_BY_WINDOWS_SMART_APP_CONTROL",
+        "DuckDB/Polars parity validated by hosted CI: REQUIRED",
+        "No NautilusTrader/WebSocket/Data API/Hermes/strategy/paper/execution/live: YES",
+        "docs/analytical_research_layer_contract.md",
+    ):
+        assert phrase in line, phrase
 
 
 def test_wp166_scaled_population_status_is_registered():

@@ -1,0 +1,369 @@
+WP167 — ANALYTICS, EXTERNAL HISTORY & MATERIALIZATION FOUNDATION
+(Normative execution prompt. The machine-readable companion is wp_spec.json; the
+independent draftability certificate is draftability_certificate.json.)
+
+===============================================================================
+0. PACKAGE IDENTITY
+===============================================================================
+
+WP ID: WP167
+Title: Analytics, External History & Materialization Foundation
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Base branch: main
+Required predecessor PR: #166
+Required predecessor final head: f310d96c2f5c9ae6ec589239e945ab5746463911
+Required predecessor merge commit: 35f4042a595ae58bf8b71a986eaefac0d3fe3dc8
+Suggested branch: claude/wp167-analytics-external-history-foundation
+Package class: RUNTIME_DEPENDENCY_ANALYTICAL_RESEARCH_FOUNDATION
+Package size class: XL (explicitly authorized)
+XL explicit authorization: YES
+Risk level: 3
+Capital at risk USD: 0
+Runtime impact: LOCAL_OFFLINE_ANALYTICAL_RUNTIME_AND_PYTHON_FLOOR_CHANGE
+Product impact: NONE
+Network impact: NO_PRODUCT_RUNTIME_NETWORK. Hosted CI may use normal GitHub/PyPI
+  network for checkout and package installation only. No external historical-data
+  downloader is authorized.
+Credential impact: NONE
+Dependency impact: EXACTLY THREE NEW DIRECT RUNTIME DEPENDENCIES plus a Python
+  support-floor change:
+    pyarrow==25.0.1
+    duckdb==1.5.5
+    polars==1.44.1
+  Python floor: requires-python = ">=3.12,<3.15". No NautilusTrader in WP167.
+Trading impact: NONE
+
+XL AUTHORIZATION BASIS
+WP167 remains a single coherent vertical capability: the analytical/external-history
+foundation. Seven files added beyond the original 20-file L draft are mandatory
+repository-governance regression guards caused directly by the authorized
+implementation, updated with the narrowest WP167 branch and preserving every
+historical WP's exact-scope assertions:
+  - tests/test_architecture_boundaries.py must recognize the new
+    src/data_layer/analytical_research package in its hard-coded approved-source scope.
+  - tests/test_project_status_docs.py must advance docs/project_status.md current-phase
+    repo truth rather than preserve a knowingly stale assertion to stay under the L
+    ceiling.
+  - Five historical scope/reconciliation guards
+    (tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py,
+    tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py,
+    tests/test_local_research_workflow_value_measurement_harness_contract_docs.py,
+    tests/test_point_in_time_market_research_data_foundation_contract_docs.py,
+    tests/test_wallet_intelligence_architecture_contract_docs.py) whose branch-specific
+    exact-scope logic would otherwise reject WP167's analytical package, dependency,
+    and workflow files must gain a narrow WP167 branch. WP166 updated the same class of
+    guards in its 33-file scope.
+This does not represent a second capability or scope expansion. All 27 files remain
+within the same dependency/analytical-materialization/external-history/CI validation
+surface. Splitting these governance changes into another WP would reduce correctness
+and create unnecessary fragmentation.
+
+===============================================================================
+1. HARD MERGE / START GATE
+===============================================================================
+
+Before branch creation or dependency installation prove: PR #166 merged; final head
+exactly f310d96c2f5c9ae6ec589239e945ab5746463911; merge commit exactly
+35f4042a595ae58bf8b71a986eaefac0d3fe3dc8; current main contains both; working tree
+clean; generated-artifact preflight passes; no WP167 local/remote branch and no
+WP167 PR; repo truth still names the analytical layer unimplemented. Any failure =>
+STOP and report.
+
+===============================================================================
+2. OBJECTIVE
+===============================================================================
+
+Create the first scalable LOCAL/OFFLINE analytical research plane on top of the
+merged deterministic point-in-time evidence system:
+
+  verified canonical PIT truth -> deterministic analytical materialization ->
+  Parquet/Arrow research datasets -> DuckDB relational access -> Polars lazy
+  transforms
+
+and one bounded external-history proof:
+
+  immutable local external-history Parquet -> deterministic ExternalDatasetDescriptor
+  -> strict source/schema/hash validation -> read-only research registration ->
+  DuckDB/Polars queryability
+
+The representative external source is the pmxt Polymarket Orderbook Archive v2 only.
+WP167 integrates no other archive (pmxt v1, Jon Becker, Kalshi, OpenMarket,
+Goldsky/Dune, Data API). WP167 resolves/narrows WP165-D007 and WP166-D001.
+
+===============================================================================
+3. LOCKED TECHNICAL DECISIONS
+===============================================================================
+
+3.1 Python support floor: requires-python = ">=3.12,<3.15". Python 3.11 is retired.
+3.2 Exact direct dependency pins: pyarrow==25.0.1, duckdb==1.5.5, polars==1.44.1.
+    Add no other direct runtime dependency (no pandas, no explicit numpy, no MLflow,
+    Optuna, NetworkX, CVXPY, Z3, NautilusTrader, HTTP clients, or cloud SDKs).
+3.3 Responsibility split: PyArrow owns explicit analytical schemas, Arrow
+    interchange, canonical-to-derived table construction, deterministic Parquet
+    writing, and external Parquet schema inspection. DuckDB owns SQL over Parquet
+    (read-only counts/groups/filters/timestamp cross-checks). Polars owns lazy
+    scans and deterministic projection/group/time transforms. No Hermes SQL tool;
+    no model-generated SQL.
+3.4 Canonical authority: SQLite/WP156-WP166 PIT records and manifests remain the
+    canonical evidence authority. Parquet is derived analytical materialization
+    only; external pmxt history is external research evidence only; neither becomes
+    canonical repo truth.
+3.5 No duplicate external-history copy: validate, hash, describe, and register local
+    immutable pmxt v2 Parquet objects for analytical use; do not copy/rewrite pmxt
+    files. DuckDB/Polars scan the verified source files directly.
+
+===============================================================================
+4. AUTHORITY / NON-AUTHORITY POSTURE
+===============================================================================
+
+Authorized: the exact Python range and three pins; a new local/offline/read-only
+src/data_layer/analytical_research package; deterministic derived Parquet
+materialization; an ExternalDatasetDescriptor; the pmxt v2 local adapter; DuckDB and
+Polars read-only queries; exactly one hosted CI workflow; docs/tests; and the two
+mandated governance-test updates.
+
+Protected boundary groups (see docs/ai/codex/PROTECTED_PATHS.md): dependency/lock
+changes CROSSED and explicitly authorized; source_runtime CROSSED (new analytical
+package); workflow_files CROSSED (one CI workflow). NOT crossed: credentials/secrets,
+authenticated clients, wallet/account behavior, order placement/cancel, execution
+gateway, paper engine, scheduler/bot loop, runtime/daemon, dashboard/deployment,
+external code copying, external downloader/product network, Hermes runtime,
+strategy, and live. Generated artifacts are never committed.
+
+Report/export authority: local analytical manifests/summaries only. Paper, execution,
+and live authority: NO. Merge authority: NO.
+
+===============================================================================
+5. EXACT CHANGED-FILE SCOPE (27 FILES; XL)
+===============================================================================
+
+1. docs/wp_specs/WP167/wp_prompt.txt
+2. docs/wp_specs/WP167/wp_spec.json
+3. docs/wp_specs/WP167/draftability_certificate.json
+4. pyproject.toml
+5. .github/workflows/ci.yml
+6. src/data_layer/analytical_research/__init__.py
+7. src/data_layer/analytical_research/research_dataset.py
+8. src/data_layer/analytical_research/external_dataset.py
+9. src/data_layer/analytical_research/pmxt_v2.py
+10. tests/data_layer/analytical_research/test_research_dataset.py
+11. tests/data_layer/analytical_research/test_external_dataset.py
+12. tests/data_layer/analytical_research/test_pmxt_v2.py
+13. tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py
+14. docs/analytical_research_layer_contract.md
+15. tests/test_analytical_research_layer_contract_docs.py
+16. docs/status_entries/WP167.md
+17. docs/project_status.md
+18. docs/repo_truth_index.md
+19. docs/deferred_items_log.md
+20. docs/security_tooling_status.md
+21. tests/test_architecture_boundaries.py
+22. tests/test_project_status_docs.py
+23. tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py
+24. tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py
+25. tests/test_local_research_workflow_value_measurement_harness_contract_docs.py
+26. tests/test_point_in_time_market_research_data_foundation_contract_docs.py
+27. tests/test_wallet_intelligence_architecture_contract_docs.py
+
+No twenty-eighth file. Exact scope is required. Files 21-27 are governance guards
+updated with the narrowest WP167 branch; historical WP exact-scope assertions are
+preserved unchanged.
+
+===============================================================================
+6. ANALYTICAL PACKAGE, IDENTITY, MANIFEST, EXTERNAL DESCRIPTOR, PMXT
+===============================================================================
+
+6.1 materialize_canonical_pit_dataset(record_store_path, dataset_reference,
+    output_directory) -> AnalyticalMaterializationResult. It verifies the store via
+    the WP163 public API, requires a genuine DatasetSnapshotReference, materializes
+    via materialize_dataset_snapshot_reference, requires a valid materialization
+    status/mode, preserves ordinary/review role, and never accepts bare caller IDs.
+    Derived table families: market_observations, source_snapshots,
+    resolution_rule_snapshots, and review_conflicts (to preserve review-role
+    semantics). Every row retains canonical identity/provenance fields, family
+    fields, and canonical_payload_json. UTC analytical timestamps. No binary float
+    for exact decimal identity fields.
+6.2 Analytical identity: logical analytical dataset identity is derived from the
+    analytical schema/version, source kind, canonical DatasetSnapshotReference id or
+    ExternalDatasetDescriptor id, materializer/importer semantic version, ordered
+    tables/partitions, row counts, and deterministic bounded streaming logical row
+    digests in explicit row order. It is never defined by physical Parquet bytes.
+    Same logical input across Windows/Linux yields the same logical row digest and
+    logical dataset id; physical Parquet bytes may differ. Physical materialization
+    evidence records the relative file, exact file SHA-256, byte length, schema
+    fingerprint, row count, logical row digest, and library/Python versions.
+6.3 Analytical manifest: frozen AnalyticalPartitionManifest and
+    AnalyticalDatasetManifest carry the fields above plus pyarrow/duckdb/polars/
+    python versions, advisory_only=True, and no_execution_authority=True. Forbidden
+    from identity/output: absolute local paths, environment values,
+    username/hostname, wall-clock creation time, secrets, and raw exception strings.
+6.4 External descriptor: a frozen ExternalDatasetDescriptor with schema id/version,
+    external_dataset_id, provider, dataset name/version, source_class, UTC
+    coverage_start/end, source objects (stable object name, exact source SHA-256,
+    byte length, partition/hour identity), source schema fingerprint, timestamp
+    semantics, event types, gap policy, quality tier, importer id/version, license,
+    attribution, advisory_only=True, no_execution_authority=True. No absolute local
+    path in identity/output. Source classes: NATIVE_OFFICIAL_CAPTURE,
+    OFFICIAL_HISTORICAL_EXPORT, THIRD_PARTY_NATIVE_FRAME_ARCHIVE,
+    DERIVED_RESEARCH_DATASET, BENCHMARK_ONLY. pmxt v2 MUST be
+    THIRD_PARTY_NATIVE_FRAME_ARCHIVE.
+6.5 pmxt v2 adapter (PMXT_V2_POLYMARKET_ORDERBOOK_ARCHIVE): input is explicitly
+    supplied LOCAL Parquet file paths only. No URL retrieval, HTTP, Polymarket API,
+    object-store SDK, or downloader. For each file compute the exact SHA-256 and
+    byte length, inspect the Arrow/Parquet schema, validate required columns/types,
+    event types, UTC timestamps, and decimal/side semantics, record the schema
+    fingerprint, and reject unsupported material schema drift. Never require
+    whole-file Python materialization; use metadata/lazy/batched access with a
+    default max row batch of 131072. Tests generate representative tmp_path Parquet
+    fixtures only; no large committed fixtures; no duplicate archive copy.
+6.6 DuckDB proves SQL over repo-derived PIT Parquet and registered pmxt external
+    Parquet: COUNT, min/max timestamp, group count, deterministic filter. Polars
+    proves scan_parquet/lazy scan, projection, filter, group/count, timestamp and
+    decimal/null semantics. DuckDB and Polars must agree on total rows, one grouped
+    count, and timestamp min/max for the same fixture.
+6.7 Parquet writer rules: PyArrow explicit schema, deterministic column order,
+    deterministic row sort, UTC, no random ids, no wall-clock metadata, no
+    environment metadata, stable compression (zstd), stable partition naming, schema
+    v1 only, no implicit schema union/evolution.
+6.8 Result/error safety: frozen typed results and a closed error vocabulary that at
+    minimum distinguishes ANALYTICAL_INPUT_INVALID, ANALYTICAL_CANONICAL_STORE_INVALID,
+    ANALYTICAL_REFERENCE_INVALID, ANALYTICAL_MATERIALIZATION_FAILED,
+    ANALYTICAL_SCHEMA_INVALID, ANALYTICAL_IDENTITY_MISMATCH,
+    ANALYTICAL_FILE_INTEGRITY_INVALID, ANALYTICAL_QUERY_VALIDATION_FAILED,
+    EXTERNAL_DESCRIPTOR_INVALID, EXTERNAL_SOURCE_FILE_INVALID,
+    EXTERNAL_SOURCE_SCHEMA_INVALID, EXTERNAL_SOURCE_HASH_INVALID,
+    EXTERNAL_SOURCE_TIMESTAMP_INVALID, EXTERNAL_SOURCE_EVENT_INVALID,
+    EXTERNAL_SOURCE_UNSUPPORTED, EXTERNAL_QUERY_VALIDATION_FAILED,
+    ANALYTICS_DEPENDENCY_VERSION_INVALID, and ANALYTICS_RUNTIME_UNSUPPORTED. Invalid
+    results carry no exception text, absolute paths, raw source rows, arbitrary
+    metadata, secrets, or trading-authority wording.
+
+===============================================================================
+7. HOSTED CI AND DUCKDB VALIDATION AUTHORITY
+===============================================================================
+
+Create .github/workflows/ci.yml. Triggers: pull_request and push to main; no
+schedule; no secrets; no product API; no external archive download; no trading.
+Compatibility matrix: ubuntu-24.04 and windows-2022 with Python 3.12 and 3.14; set
+git core.autocrlf false before checkout; checkout; setup Python; install the exact
+pins and pytest; pip check; assert direct dependency versions; run focused WP167
+tests; generated-artifact guard; full suite. A dependency-audit job on ubuntu-24.04
+/ Python 3.12 installs the project, runs pip check, and runs pip-audit on the
+resolved environment. Minimum required: ubuntu-24.04/3.12 and windows-2022/3.12.
+Hosted CI must be GREEN at the exact final PR head for review readiness.
+
+DuckDB local blocker: the DuckDB native module may be blocked on a local Windows
+environment by Smart App Control (an OS security policy). This is recorded as an
+environmental restriction, never as a dependency incompatibility, and is never a WP
+stop condition. Do not disable or weaken Smart App Control and do not change the
+locked duckdb==1.5.5 pin. DuckDB is imported lazily so the block never prevents
+PyArrow/Polars/PIT collection. DuckDB-dependent tests may be skipped locally only
+with an explicit reason tied to this restriction; they must run without skips under
+strict hosted CI (WP167_STRICT_DUCKDB=1), and a required job must fail on any DuckDB
+import failure or DuckDB test skip. Hosted CI is the authoritative DuckDB execution
+proof for import/version, Parquet query, COUNT/filter/group, timestamp/decimal/null
+handling, and DuckDB<->Polars parity. Do not claim a local DuckDB PASS or baseline
+equivalence for a DuckDB test never executed locally. PR evidence reports separately:
+local DuckDB execution BLOCKED_BY_WINDOWS_SMART_APP_CONTROL; installation/pip check
+PASS; hosted Windows DuckDB execution PASS/FAIL; hosted Linux DuckDB execution
+PASS/FAIL.
+
+===============================================================================
+8. SECURITY / DEPENDENCY GATE
+===============================================================================
+
+Read the security tooling status and protected-paths docs; restore project-local
+security tooling if needed; after installing the WP167 dependencies run pip check,
+pip-audit against the resolved environment, and gitleaks/semgrep through the
+project-local paths if available; update docs/security_tooling_status.md honestly.
+STOP on an unresolved material vulnerability in a WP167 dependency or an unsupported
+source-build-only dependency path.
+
+===============================================================================
+9. VALIDATION PLAN
+===============================================================================
+
+Preflight: git status --short --branch; python tools/git/preflight_generated_artifact_guard.py.
+Runtime/dependency: python --version; python -m pip check; exact version assertions.
+Focused: the four analytical test modules and the contract-docs test.
+Predecessor compatibility: the merged PIT/record-store/manifest/adapter tests, the
+scalable-lineage contract-docs test, project-status docs, and architecture boundaries.
+Security: check_security_tools.py, run_available_security_checks.py, plus
+pip-audit/gitleaks/semgrep as available/restored.
+Scope: exact 27-file scope through the current diff-scope helper.
+Artifact guard: python tools/git/preflight_generated_artifact_guard.py.
+Diff: git diff --check <EXACT_WP167_BASE_SHA> HEAD.
+Full: python -m pytest -q; report raw exit. Any nonzero result: run identical failing
+node IDs on the exact base in the same environment before any baseline-equivalent
+claim. Hosted CI: final-head required jobs green; fetch exact run/check state.
+
+===============================================================================
+10. REQUIREMENT-TO-EVIDENCE TRACEABILITY
+===============================================================================
+
+R001 predecessor merge; R002 Python range; R003 exact dependency pins; R004
+dependency/security audit; R005 no canonical mutation; R006 verified reference
+materialization; R007 deterministic logical dataset id; R008 physical integrity
+separate from logical id; R009 UTC timestamps; R010 exact decimal semantics; R011
+record-family preservation; R012 external descriptor identity; R013 source-class
+separation; R014 pmxt schema; R015 pmxt source hashes; R016 no downloader/network;
+R017 bounded/lazy pmxt handling; R018 DuckDB; R019 Polars; R020 parity; R021 exact
+27-file scope; R022 no NautilusTrader; R023 no WebSocket runtime; R024 no Data API;
+R025 no Hermes/strategy; R026 no paper/execution/live; R027 hosted Windows/Linux CI;
+R028 line-ending-safe Windows; R029 pip-audit/security; R030 predecessor
+compatibility; R031 full pytest; R032 artifact guard; R033 diff check; R034 V3 guard;
+R035 status/repo/deferred/security docs; R036 successor separate.
+
+===============================================================================
+11. STOP CONDITIONS
+===============================================================================
+
+STOP if predecessor state differs materially; dirty worktree/generated artifacts;
+locked wheels unavailable on Python 3.12 targets; a WP167 dependency has an
+unresolved material vulnerability; Python 3.12/3.14 causes new merged-repo failures
+not proven environmental; canonical analytics require predecessor identity/migration
+changes; the logical id depends only on Parquet bytes; pmxt material schema drift;
+an HTTP/downloader, NautilusTrader, WebSocket/Data API, or experiment/Hermes/strategy
+capability becomes necessary; a twenty-third file is required; the V3 prompt/spec
+changes after certification; final validation cannot be rerun; required hosted CI is
+red from a WP167-caused issue; or invalid-result no-echo/path safety cannot be tested.
+
+===============================================================================
+12. V3 PACKAGE AND CERTIFICATE
+===============================================================================
+
+The governed package is these three artifacts: docs/wp_specs/WP167/wp_prompt.txt (this
+normative prompt), docs/wp_specs/WP167/wp_spec.json (its exact machine-readable
+companion), and docs/wp_specs/WP167/draftability_certificate.json. The execution
+agent MUST NOT create, alter, or claim its own independent PASS certificate. A normal
+polymarket-wp-draftability-certificate@1.0.0 PASS certificate requires a separately
+declared independent review context and the exact prompt/spec byte hashes; any
+post-certificate semantic edit to the prompt or spec invalidates it. Until that
+independent certificate exists, Ready for review is NO.
+
+===============================================================================
+13. DEFINITION OF DONE
+===============================================================================
+
+Predecessor verified; Python range changed; exact three pins; no extra direct
+dependency; security gate complete; canonical PIT -> derived Parquet; canonical
+identity unchanged; deterministic logical id; physical hashes recorded; external
+descriptor deterministic; pmxt local Parquet validated and correctly classified; no
+pmxt network/downloader; DuckDB works (hosted CI); Polars works; parity passes;
+bounded large-file behavior; exactly 27 files; hosted CI required jobs green; focused
+and predecessor tests pass; no WP167-caused full-suite failure; artifact/diff/V3
+guards addressed; posted PR evidence current; no NautilusTrader/WebSocket/Data
+API/Hermes/strategy/paper/execution/live; WP168 separately gated; independent
+certificate required before draftability PASS; MERGE AUTHORIZED: NO.
+
+===============================================================================
+14. SUCCESSOR BOUNDARY
+===============================================================================
+
+WP168 — NautilusTrader Offline Kernel, ParquetDataCatalog & Replay Foundation — is
+separately gated and not authorized by WP167. WP167 forbids NautilusTrader, a public
+WebSocket collector, Data API activity ingestion, an experiment registry, Hermes
+runtime, formal solver/alpha, execution-simulation qualification, paper,
+credentials/auth, live, and any scheduler.
+
+END WP167 NORMATIVE PROMPT
