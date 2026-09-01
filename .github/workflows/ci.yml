@@ -67,11 +67,13 @@ jobs:
       - name: Focused WP167 tests (DuckDB strict, no skips permitted)
         run: |
           set -o pipefail
+          # Write the captured output outside the repository so it does not appear
+          # as an untracked file to the branch-scope governance guards run later.
           python -m pytest -rs -q \
             tests/data_layer/analytical_research \
             tests/test_analytical_research_layer_contract_docs.py \
-            | tee wp167_focused.txt
-          if grep -Eq "[0-9]+ skipped" wp167_focused.txt; then
+            | tee "$RUNNER_TEMP/wp167_focused.txt"
+          if grep -Eq "[0-9]+ skipped" "$RUNNER_TEMP/wp167_focused.txt"; then
             echo "::error::A WP167 analytical test was skipped under strict hosted CI"
             exit 1
           fi

@@ -35,25 +35,29 @@ Trading impact: NONE
 
 XL AUTHORIZATION BASIS
 WP167 remains a single coherent vertical capability: the analytical/external-history
-foundation. Seven files added beyond the original 20-file L draft are mandatory
+foundation. Nine files added beyond the original 20-file L draft are mandatory
 repository-governance regression guards caused directly by the authorized
 implementation, updated with the narrowest WP167 branch and preserving every
-historical WP's exact-scope assertions:
+historical WP's exact-scope assertions (the seven-guard set WP166 also updated,
+plus the two dependency/workflow-checking guards that did not apply to WP166
+because it added no dependency):
   - tests/test_architecture_boundaries.py must recognize the new
     src/data_layer/analytical_research package in its hard-coded approved-source scope.
   - tests/test_project_status_docs.py must advance docs/project_status.md current-phase
     repo truth rather than preserve a knowingly stale assertion to stay under the L
     ceiling.
-  - Five historical scope/reconciliation guards
+  - Seven historical scope/reconciliation guards
     (tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py,
     tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py,
     tests/test_local_research_workflow_value_measurement_harness_contract_docs.py,
     tests/test_point_in_time_market_research_data_foundation_contract_docs.py,
-    tests/test_wallet_intelligence_architecture_contract_docs.py) whose branch-specific
+    tests/test_wallet_intelligence_architecture_contract_docs.py,
+    tests/test_human_review_label_workflow_docs.py,
+    tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py) whose branch-specific
     exact-scope logic would otherwise reject WP167's analytical package, dependency,
     and workflow files must gain a narrow WP167 branch. WP166 updated the same class of
     guards in its 33-file scope.
-This does not represent a second capability or scope expansion. All 27 files remain
+This does not represent a second capability or scope expansion. All 29 files remain
 within the same dependency/analytical-materialization/external-history/CI validation
 surface. Splitting these governance changes into another WP would reduce correctness
 and create unnecessary fragmentation.
@@ -119,8 +123,8 @@ Goldsky/Dune, Data API). WP167 resolves/narrows WP165-D007 and WP166-D001.
 Authorized: the exact Python range and three pins; a new local/offline/read-only
 src/data_layer/analytical_research package; deterministic derived Parquet
 materialization; an ExternalDatasetDescriptor; the pmxt v2 local adapter; DuckDB and
-Polars read-only queries; exactly one hosted CI workflow; docs/tests; and the two
-mandated governance-test updates.
+Polars read-only queries; exactly one hosted CI workflow; docs/tests; and the
+mandated governance-guard updates.
 
 Protected boundary groups (see docs/ai/codex/PROTECTED_PATHS.md): dependency/lock
 changes CROSSED and explicitly authorized; source_runtime CROSSED (new analytical
@@ -134,7 +138,7 @@ Report/export authority: local analytical manifests/summaries only. Paper, execu
 and live authority: NO. Merge authority: NO.
 
 ===============================================================================
-5. EXACT CHANGED-FILE SCOPE (27 FILES; XL)
+5. EXACT CHANGED-FILE SCOPE (29 FILES; XL)
 ===============================================================================
 
 1. docs/wp_specs/WP167/wp_prompt.txt
@@ -164,8 +168,10 @@ and live authority: NO. Merge authority: NO.
 25. tests/test_local_research_workflow_value_measurement_harness_contract_docs.py
 26. tests/test_point_in_time_market_research_data_foundation_contract_docs.py
 27. tests/test_wallet_intelligence_architecture_contract_docs.py
+28. tests/test_human_review_label_workflow_docs.py
+29. tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py
 
-No twenty-eighth file. Exact scope is required. Files 21-27 are governance guards
+No thirtieth file. Exact scope is required. Files 21-29 are governance guards
 updated with the narrowest WP167 branch; historical WP exact-scope assertions are
 preserved unchanged.
 
@@ -290,7 +296,7 @@ Predecessor compatibility: the merged PIT/record-store/manifest/adapter tests, t
 scalable-lineage contract-docs test, project-status docs, and architecture boundaries.
 Security: check_security_tools.py, run_available_security_checks.py, plus
 pip-audit/gitleaks/semgrep as available/restored.
-Scope: exact 27-file scope through the current diff-scope helper.
+Scope: exact 29-file scope through the current diff-scope helper.
 Artifact guard: python tools/git/preflight_generated_artifact_guard.py.
 Diff: git diff --check <EXACT_WP167_BASE_SHA> HEAD.
 Full: python -m pytest -q; report raw exit. Any nonzero result: run identical failing
@@ -308,7 +314,7 @@ separate from logical id; R009 UTC timestamps; R010 exact decimal semantics; R01
 record-family preservation; R012 external descriptor identity; R013 source-class
 separation; R014 pmxt schema; R015 pmxt source hashes; R016 no downloader/network;
 R017 bounded/lazy pmxt handling; R018 DuckDB; R019 Polars; R020 parity; R021 exact
-27-file scope; R022 no NautilusTrader; R023 no WebSocket runtime; R024 no Data API;
+29-file scope; R022 no NautilusTrader; R023 no WebSocket runtime; R024 no Data API;
 R025 no Hermes/strategy; R026 no paper/execution/live; R027 hosted Windows/Linux CI;
 R028 line-ending-safe Windows; R029 pip-audit/security; R030 predecessor
 compatibility; R031 full pytest; R032 artifact guard; R033 diff check; R034 V3 guard;
@@ -350,7 +356,7 @@ dependency; security gate complete; canonical PIT -> derived Parquet; canonical
 identity unchanged; deterministic logical id; physical hashes recorded; external
 descriptor deterministic; pmxt local Parquet validated and correctly classified; no
 pmxt network/downloader; DuckDB works (hosted CI); Polars works; parity passes;
-bounded large-file behavior; exactly 27 files; hosted CI required jobs green; focused
+bounded large-file behavior; exactly 29 files; hosted CI required jobs green; focused
 and predecessor tests pass; no WP167-caused full-suite failure; artifact/diff/V3
 guards addressed; posted PR evidence current; no NautilusTrader/WebSocket/Data
 API/Hermes/strategy/paper/execution/live; WP168 separately gated; independent

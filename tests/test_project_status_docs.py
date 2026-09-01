@@ -2810,7 +2810,7 @@ def test_wp153_through_wp166_are_merged_and_wp167_is_current_review_target():
         "Ready for review: PENDING_HOSTED_CI_AND_INDEPENDENT_CERTIFICATE",
         "Merge authorized: NO",
         "Independent live PR review required: YES",
-        "Exact changed-file scope: 27",
+        "Exact changed-file scope: 29",
         "Python support floor: >=3.12,<3.15",
         "New direct runtime dependencies: pyarrow==25.0.1, duckdb==1.5.5, polars==1.44.1",
         "Dependencies installed or activated: 3",

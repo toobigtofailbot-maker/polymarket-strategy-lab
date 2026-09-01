@@ -289,6 +289,8 @@ WP167_AUTHORIZED_FILES = {
     "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
     "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
     "tests/test_wallet_intelligence_architecture_contract_docs.py",
+    "tests/test_human_review_label_workflow_docs.py",
+    "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
 }
 
 

@@ -18,7 +18,7 @@
     "objective": "Create the first local, offline, read-only-against-canonical analytical research plane over the merged point-in-time evidence system: deterministic derived Parquet materialization of verified dataset snapshot references with logical-versus-physical identity separation, a provenance-separated external-history descriptor proven with the pmxt v2 representative local adapter (no downloader, no network), and DuckDB/Polars read-only queries with parity. Canonical SQLite records and manifests remain the sole integrity authority; Parquet is derived only. Adds exactly pyarrow==25.0.1, duckdb==1.5.5, polars==1.44.1 and moves the Python floor to >=3.12,<3.15. No NautilusTrader, WebSocket, Data API, Hermes, strategy, paper, credentials, execution, live, or scheduler.",
     "capital_at_risk_usd": 0,
     "xl_explicit_authorization": true,
-    "xl_authorization_basis": "Explicit user XL authorization, expanded in a second explicit authorization to 27 files. WP167 is one coherent capability; the seven files beyond the original 20 are mandatory governance regression guards caused by the authorized implementation (the architecture-boundary approved-source guard, the project-status current-phase guard, and five historical scope/reconciliation guards that must gain a narrow WP167 branch), each preserving every historical WP's exact-scope assertions. WP166 updated the same class of guards. Exact governed scope is 27 files."
+    "xl_authorization_basis": "Explicit user XL authorization, expanded in two further explicit authorizations to 29 files. WP167 is one coherent capability; the nine files beyond the original 20 are mandatory governance regression guards caused by the authorized implementation (the architecture-boundary approved-source guard, the project-status current-phase guard, and seven historical scope/reconciliation guards that must gain a narrow WP167 branch), each preserving every historical WP's exact-scope assertions. WP166 updated the same class of guards. Exact governed scope is 29 files."
   },
   "scope": {
     "required_changed_files": [
@@ -48,7 +48,9 @@
       "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
       "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
       "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
-      "tests/test_wallet_intelligence_architecture_contract_docs.py"
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
     ],
     "allowed_changed_files": [
       "docs/wp_specs/WP167/wp_prompt.txt",
@@ -77,7 +79,9 @@
       "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
       "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
       "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
-      "tests/test_wallet_intelligence_architecture_contract_docs.py"
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
     ],
     "forbidden_prefixes": [
       "src/execution_gateway/",
@@ -89,10 +93,10 @@
       "agent_memory/",
       "local_data/"
     ],
-    "max_changed_files": 27,
+    "max_changed_files": 29,
     "exact_scope_required": true,
     "historical_compatibility_edits": [],
-    "rollback_surface": "Revert the WP167 branch. The change is additive: one new src/data_layer/analytical_research package, one CI workflow, the three dependency pins and Python floor in pyproject.toml, the analytical contract doc, focused tests, seven governance-guard updates, and status/repo-truth/deferred/security doc reconciliation. There is no predecessor mutation, no SQLite or manifest migration, no data migration, and no committed generated artifact.",
+    "rollback_surface": "Revert the WP167 branch. The change is additive: one new src/data_layer/analytical_research package, one CI workflow, the three dependency pins and Python floor in pyproject.toml, the analytical contract doc, focused tests, nine governance-guard updates, and status/repo-truth/deferred/security doc reconciliation. There is no predecessor mutation, no SQLite or manifest migration, no data migration, and no committed generated artifact.",
     "mode_boundaries": [
       {
         "boundary": "dependencies",
@@ -421,7 +425,7 @@
         "source": "diff-scope",
         "test": "exact scope",
         "command": "git diff --name-only main HEAD",
-        "expected_result": "exactly the 27 governed files changed"
+        "expected_result": "exactly the 29 governed files changed"
       },
       {
         "requirement_id": "R022",
