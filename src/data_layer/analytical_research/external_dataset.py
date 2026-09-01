@@ -317,6 +317,12 @@ def build_external_dataset_descriptor(
     if len(set(names)) != len(names):
         return _rejected("EXTERNAL_SOURCE_FILE_INVALID")
 
+    # Canonicalize the stored source objects and event types into the exact
+    # deterministic order used for identity, so two calls with reordered inputs
+    # return structurally equal descriptors, not merely equal ids.
+    canonical_objects = tuple(sorted(objects, key=lambda entry: entry.object_name))
+    canonical_events = tuple(sorted(events))
+
     preimage = _descriptor_identity_preimage(
         provider_id=provider_id,
         dataset_name=dataset_name,
@@ -324,11 +330,11 @@ def build_external_dataset_descriptor(
         source_class=source_class,
         coverage_start=coverage_start,
         coverage_end=coverage_end,
-        source_objects=objects,
+        source_objects=canonical_objects,
         source_schema_fingerprint_sha256=source_schema_fingerprint_sha256,
         source_timestamp_semantics=source_timestamp_semantics,
         receive_timestamp_semantics=receive_timestamp_semantics,
-        event_types=events,
+        event_types=canonical_events,
         known_gap_policy=known_gap_policy,
         quality_tier=quality_tier,
         importer_id=importer_id,
@@ -348,11 +354,11 @@ def build_external_dataset_descriptor(
         source_class=source_class,
         coverage_start=coverage_start,
         coverage_end=coverage_end,
-        source_objects=objects,
+        source_objects=canonical_objects,
         source_schema_fingerprint_sha256=source_schema_fingerprint_sha256,
         source_timestamp_semantics=source_timestamp_semantics,
         receive_timestamp_semantics=receive_timestamp_semantics,
-        event_types=events,
+        event_types=canonical_events,
         known_gap_policy=known_gap_policy,
         quality_tier=quality_tier,
         importer_id=importer_id,

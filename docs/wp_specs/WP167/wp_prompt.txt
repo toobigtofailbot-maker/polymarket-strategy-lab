@@ -251,7 +251,9 @@ preserved unchanged.
 Create .github/workflows/ci.yml. Triggers: pull_request and push to main; no
 schedule; no secrets; no product API; no external archive download; no trading.
 Compatibility matrix: ubuntu-24.04 and windows-2022 with Python 3.12 and 3.14; set
-git core.autocrlf false before checkout; checkout; setup Python; install the exact
+git core.autocrlf false and core.eol lf before checkout (so `.gitattributes`
+text=auto checks out LF on Windows, keeping byte-hash tests platform-identical);
+checkout; setup Python; install the exact
 pins and pytest; pip check; assert direct dependency versions; run focused WP167
 tests; generated-artifact guard; full suite. A dependency-audit job on ubuntu-24.04
 / Python 3.12 installs the project, runs pip check, and runs pip-audit on the
@@ -330,7 +332,7 @@ unresolved material vulnerability; Python 3.12/3.14 causes new merged-repo failu
 not proven environmental; canonical analytics require predecessor identity/migration
 changes; the logical id depends only on Parquet bytes; pmxt material schema drift;
 an HTTP/downloader, NautilusTrader, WebSocket/Data API, or experiment/Hermes/strategy
-capability becomes necessary; a twenty-third file is required; the V3 prompt/spec
+capability becomes necessary; a thirtieth changed file is required; the V3 prompt/spec
 changes after certification; final validation cannot be rerun; required hosted CI is
 red from a WP167-caused issue; or invalid-result no-echo/path safety cannot be tested.
 

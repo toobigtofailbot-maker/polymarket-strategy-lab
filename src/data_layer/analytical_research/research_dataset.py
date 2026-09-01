@@ -3,9 +3,11 @@
 This module is the local, offline, read-only-against-canonical, derived-data
 writer for the WP167 analytical research plane. It reads verified canonical
 point-in-time evidence exclusively through the merged WP163 public API, projects
-it into deterministic Arrow tables, and writes derived Parquet partitions whose
-*logical* identity is defined by the canonical record content and explicit row
-order, never by the physical Parquet bytes.
+it into deterministic Arrow tables that preserve the COMPLETE canonical
+``PointInTimeEnvelope`` provenance/lineage semantics and all record-family fields,
+and writes derived Parquet partitions whose *logical* identity is defined by the
+canonical record content and explicit row order, never by the physical Parquet
+bytes.
 
 Authority posture: LOCAL, OFFLINE, READ-ONLY AGAINST CANONICAL PIT,
 DERIVED-DATA WRITER ONLY, NO EXECUTION AUTHORITY. It never writes the canonical
@@ -119,88 +121,130 @@ MAX_ROW_BATCH = 131_072
 
 _PARQUET_COMPRESSION = "zstd"
 
-# Common logical/identity columns shared by every derived row, in order.
-_COMMON_COLUMNS = (
-    "record_version_id",
-    "record_type",
+# ── Complete canonical projection schema (WP167 Blocker A) ───────────────────
+# Every derived row retains the COMPLETE canonical PointInTimeEnvelope semantics,
+# the record-family fields, and canonical_payload_json. Family columns are
+# namespaced by family (mo_/ss_/rr_) so envelope/family and cross-family names
+# never collide and the review-conflicts union table stays lossless.
+
+# Envelope columns, in canonical PointInTimeEnvelope field order.
+_ENVELOPE_COLUMNS = (
+    "schema_id",
+    "schema_version",
     "record_family",
-    "classification",
-    "analytical_role",
-    "human_review_required",
+    "record_version_id",
+    "observation_id",
+    "snapshot_id",
+    "source_snapshot_id",
+    "resolution_rule_snapshot_id",
+    "ingestion_batch_id",
+    "event_time",
     "observed_time",
     "ingestion_time",
-    "event_time",
-    "parameter_set_id",
-    "validator_version",
+    "lifecycle_state",
+    "classification",
+    "supersedes_record_version_id",
+    "lineage_parent_ids",
     "canonical_payload_sha256",
+    "source_content_sha256",
+    "normalizer_version",
+    "validator_version",
+    "parameter_set_id",
+    "human_review_required",
+    "advisory_only",
+    "no_execution_authority",
 )
+_ENVELOPE_BOOL_COLUMNS = frozenset(
+    {"human_review_required", "advisory_only", "no_execution_authority"}
+)
+_ENVELOPE_LIST_COLUMNS = frozenset({"lineage_parent_ids"})
 
-# Family-specific logical columns appended after the common columns.
-_FAMILY_COLUMNS = {
+_COMMON_COLUMNS = _ENVELOPE_COLUMNS + ("analytical_role",)
+
+# Family column specs: (analytical column name, record attribute, kind).
+# kind is "str" | "int" | "list".
+_FAMILY_COLUMN_SPECS: dict[str, tuple[tuple[str, str, str], ...]] = {
     TABLE_MARKET_OBSERVATIONS: (
-        "observation_kind",
-        "platform_id",
-        "event_id",
-        "market_id",
-        "token_id",
-        "source_id",
+        ("mo_observation_kind", "observation_kind", "str"),
+        ("mo_platform_id", "platform_id", "str"),
+        ("mo_event_id", "event_id", "str"),
+        ("mo_market_id", "market_id", "str"),
+        ("mo_token_id", "token_id", "str"),
+        ("mo_source_id", "source_id", "str"),
+        ("mo_source_assertion_id", "source_assertion_id", "str"),
     ),
     TABLE_SOURCE_SNAPSHOTS: (
-        "source_id",
-        "source_type",
-        "media_type",
-        "byte_length",
-        "retrieval_method",
-        "access_classification",
+        ("ss_source_id", "source_id", "str"),
+        ("ss_source_type", "source_type", "str"),
+        ("ss_source_reference", "source_reference", "str"),
+        ("ss_media_type", "media_type", "str"),
+        ("ss_raw_content_sha256", "raw_content_sha256", "str"),
+        ("ss_byte_length", "byte_length", "int"),
+        ("ss_retrieval_method", "retrieval_method", "str"),
+        ("ss_retrieval_version", "retrieval_version", "str"),
+        ("ss_upstream_revision", "upstream_revision", "str"),
+        ("ss_prior_source_snapshot_id", "prior_source_snapshot_id", "str"),
+        ("ss_access_classification", "access_classification", "str"),
     ),
     TABLE_RESOLUTION_RULE_SNAPSHOTS: (
-        "platform_id",
-        "event_id",
-        "market_id",
-        "resolution_source_id",
-        "source_hierarchy_rank",
+        ("rr_platform_id", "platform_id", "str"),
+        ("rr_event_id", "event_id", "str"),
+        ("rr_market_id", "market_id", "str"),
+        ("rr_resolution_source_id", "resolution_source_id", "str"),
+        ("rr_source_snapshot_id", "source_snapshot_id", "str"),
+        ("rr_rule_content_sha256", "rule_content_sha256", "str"),
+        ("rr_source_declared_effective_time", "source_declared_effective_time", "str"),
+        ("rr_ambiguity_labels", "ambiguity_labels", "list"),
+        ("rr_source_hierarchy_rank", "source_hierarchy_rank", "str"),
+        ("rr_human_review_state", "human_review_state", "str"),
     ),
-    TABLE_REVIEW_CONFLICTS: (),
 }
 
-_STRING_COLUMNS = frozenset(
-    {
-        "record_version_id",
-        "record_type",
-        "record_family",
-        "classification",
-        "analytical_role",
-        "observed_time",
-        "ingestion_time",
-        "event_time",
-        "parameter_set_id",
-        "validator_version",
-        "canonical_payload_sha256",
-        "observation_kind",
-        "platform_id",
-        "event_id",
-        "market_id",
-        "token_id",
-        "source_id",
-        "source_type",
-        "media_type",
-        "retrieval_method",
-        "access_classification",
-        "resolution_source_id",
-        "source_hierarchy_rank",
-        "canonical_payload_json",
-    }
+# The review-conflicts union preserves every family's complete columns.
+_REVIEW_FAMILY_SPECS: tuple[tuple[str, str, str], ...] = (
+    _FAMILY_COLUMN_SPECS[TABLE_MARKET_OBSERVATIONS]
+    + _FAMILY_COLUMN_SPECS[TABLE_SOURCE_SNAPSHOTS]
+    + _FAMILY_COLUMN_SPECS[TABLE_RESOLUTION_RULE_SNAPSHOTS]
 )
-_INT_COLUMNS = frozenset({"byte_length"})
-_BOOL_COLUMNS = frozenset({"human_review_required"})
+
 # Derived analytical UTC timestamp columns (physical only; excluded from logical
-# identity so identity stays defined by canonical string fields).
+# identity so identity stays defined by canonical string fields). Stored tz-naive
+# (UTC wall-clock) so DuckDB/Polars queries need no timezone database.
 _UTC_TIMESTAMP_COLUMNS = ("observed_time_utc", "ingestion_time_utc", "event_time_utc")
 _UTC_SOURCE = {
     "observed_time_utc": "observed_time",
     "ingestion_time_utc": "ingestion_time",
     "event_time_utc": "event_time",
 }
+
+
+def _family_specs_for_table(table_name: str) -> tuple[tuple[str, str, str], ...]:
+    if table_name == TABLE_REVIEW_CONFLICTS:
+        return _REVIEW_FAMILY_SPECS
+    return _FAMILY_COLUMN_SPECS[table_name]
+
+
+def _table_columns(table_name: str) -> tuple[str, ...]:
+    family = tuple(col for col, _attr, _kind in _family_specs_for_table(table_name))
+    return _COMMON_COLUMNS + family + _UTC_TIMESTAMP_COLUMNS + ("canonical_payload_json",)
+
+
+def _column_arrow_type(name: str) -> pa.DataType:
+    if name in _UTC_TIMESTAMP_COLUMNS:
+        return pa.timestamp("us")
+    if name in _ENVELOPE_BOOL_COLUMNS:
+        return pa.bool_()
+    if name in _ENVELOPE_LIST_COLUMNS:
+        return pa.list_(pa.string())
+    for specs in (_REVIEW_FAMILY_SPECS,):
+        for col, _attr, kind in specs:
+            if col == name:
+                if kind == "int":
+                    return pa.int64()
+                if kind == "list":
+                    return pa.list_(pa.string())
+                return pa.string()
+    return pa.string()
 
 
 # ── Public immutable result dataclasses ──────────────────────────────────────
@@ -372,68 +416,73 @@ def _parse_utc(value: object) -> datetime | None:
     return parsed.astimezone(timezone.utc)
 
 
-# ── Canonical projection ─────────────────────────────────────────────────────
+# ── Canonical + family projection ────────────────────────────────────────────
 
 
-def _common_values(record: Any, role: str) -> dict[str, object]:
-    envelope = record.envelope
-    return {
-        "record_version_id": envelope.record_version_id,
-        "record_type": type(record).__name__,
-        "record_family": envelope.record_family,
-        "classification": envelope.classification,
-        "analytical_role": role,
-        "human_review_required": bool(envelope.human_review_required),
-        "observed_time": envelope.observed_time,
-        "ingestion_time": envelope.ingestion_time,
-        "event_time": envelope.event_time,
-        "parameter_set_id": envelope.parameter_set_id,
-        "validator_version": envelope.validator_version,
-        "canonical_payload_sha256": envelope.canonical_payload_sha256,
-    }
+def _envelope_value(record: Any, name: str) -> object:
+    value = getattr(record.envelope, name)
+    if name in _ENVELOPE_LIST_COLUMNS:
+        return list(value)
+    if name in _ENVELOPE_BOOL_COLUMNS:
+        return bool(value)
+    return value
 
 
-def _family_values(record: Any, table_name: str) -> dict[str, object]:
-    values: dict[str, object] = {}
-    if table_name == TABLE_MARKET_OBSERVATIONS:
-        values["observation_kind"] = record.observation_kind
-        values["platform_id"] = record.platform_id
-        values["event_id"] = record.event_id
-        values["market_id"] = record.market_id
-        values["token_id"] = record.token_id
-        values["source_id"] = record.source_id
-    elif table_name == TABLE_SOURCE_SNAPSHOTS:
-        values["source_id"] = record.source_id
-        values["source_type"] = record.source_type
-        values["media_type"] = record.media_type
-        values["byte_length"] = record.byte_length
-        values["retrieval_method"] = record.retrieval_method
-        values["access_classification"] = record.access_classification
-    elif table_name == TABLE_RESOLUTION_RULE_SNAPSHOTS:
-        values["platform_id"] = record.platform_id
-        values["event_id"] = record.event_id
-        values["market_id"] = record.market_id
-        values["resolution_source_id"] = record.resolution_source_id
-        values["source_hierarchy_rank"] = record.source_hierarchy_rank
-    return values
+def _family_value(record: Any, attr: str, kind: str) -> object:
+    value = getattr(record, attr)
+    if kind == "list":
+        return None if value is None else list(value)
+    if kind == "int":
+        return None if value is None else int(value)
+    return value
+
+
+def _row_values(record: Any, table_name: str, role: str) -> dict[str, object]:
+    """Return the full analytical column->value map for one record.
+
+    Includes the complete envelope, the analytical role, the family fields (the
+    record's own family for the review-conflicts union, with other families'
+    columns null), the derived tz-naive UTC timestamps, and canonical_payload_json.
+    """
+
+    row: dict[str, object] = {}
+    for name in _ENVELOPE_COLUMNS:
+        row[name] = _envelope_value(record, name)
+    row["analytical_role"] = role
+
+    active_table = _FAMILY_TO_ORDINARY_TABLE[record.envelope.record_family]
+    if table_name == TABLE_REVIEW_CONFLICTS:
+        for owner in (
+            TABLE_MARKET_OBSERVATIONS,
+            TABLE_SOURCE_SNAPSHOTS,
+            TABLE_RESOLUTION_RULE_SNAPSHOTS,
+        ):
+            for col, attr, kind in _FAMILY_COLUMN_SPECS[owner]:
+                row[col] = (
+                    _family_value(record, attr, kind) if owner == active_table else None
+                )
+    else:
+        for col, attr, kind in _FAMILY_COLUMN_SPECS[table_name]:
+            row[col] = _family_value(record, attr, kind)
+
+    for name in _UTC_TIMESTAMP_COLUMNS:
+        parsed = _parse_utc(getattr(record.envelope, _UTC_SOURCE[name]))
+        row[name] = parsed.replace(tzinfo=None) if parsed is not None else None
+    row["canonical_payload_json"] = record.canonical_payload_json
+    return row
 
 
 def _logical_row(record: Any, table_name: str, role: str) -> dict[str, object]:
     """Return the canonical logical row dict used for deterministic identity.
 
-    Only canonical scalar/string fields plus the exact canonical payload string
-    participate; the derived UTC timestamp columns are physical conveniences and
-    are intentionally excluded so logical identity is byte-stable across
-    platforms and independent of the physical Parquet writer.
+    Commits the complete envelope provenance/lineage, the family fields, and the
+    exact canonical payload string. The derived UTC timestamp columns are physical
+    conveniences and are intentionally excluded so logical identity is byte-stable
+    across platforms and independent of the physical Parquet writer.
     """
 
-    row: dict[str, object] = {}
-    for name in _COMMON_COLUMNS:
-        row[name] = _common_values(record, role)[name]
-    for name in _FAMILY_COLUMNS[table_name]:
-        row[name] = _family_values(record, table_name).get(name)
-    row["canonical_payload_json"] = record.canonical_payload_json
-    return row
+    values = _row_values(record, table_name, role)
+    return {name: values[name] for name in values if name not in _UTC_TIMESTAMP_COLUMNS}
 
 
 def _logical_rows_sha256(rows: list[dict[str, object]]) -> str:
@@ -451,33 +500,10 @@ def _logical_rows_sha256(rows: list[dict[str, object]]) -> str:
 # ── Arrow schema and table construction ──────────────────────────────────────
 
 
-def _table_columns(table_name: str) -> tuple[str, ...]:
-    return (
-        _COMMON_COLUMNS
-        + _FAMILY_COLUMNS[table_name]
-        + _UTC_TIMESTAMP_COLUMNS
-        + ("canonical_payload_json",)
-    )
-
-
-def _arrow_field(name: str) -> pa.Field:
-    if name in _UTC_TIMESTAMP_COLUMNS:
-        # Tz-naive UTC microsecond timestamps. The values are UTC (parsed and
-        # validated as UTC from the canonical string columns, which are retained
-        # verbatim for provenance); storing them tz-naive keeps DuckDB and Polars
-        # timestamp queries free of any timezone-database dependency (DuckDB's
-        # TIMESTAMPTZ path requires pytz and Windows tz conversion requires tzdata,
-        # neither of which is a permitted WP167 dependency).
-        return pa.field(name, pa.timestamp("us"))
-    if name in _BOOL_COLUMNS:
-        return pa.field(name, pa.bool_())
-    if name in _INT_COLUMNS:
-        return pa.field(name, pa.int64())
-    return pa.field(name, pa.string())
-
-
 def _arrow_schema(table_name: str) -> pa.Schema:
-    return pa.schema([_arrow_field(name) for name in _table_columns(table_name)])
+    return pa.schema(
+        [pa.field(name, _column_arrow_type(name)) for name in _table_columns(table_name)]
+    )
 
 
 def _schema_fingerprint(schema: pa.Schema) -> str:
@@ -492,21 +518,9 @@ def _build_arrow_table(records: list[Any], table_name: str, role: str) -> pa.Tab
 
     data: dict[str, list[object]] = {name: [] for name in columns}
     for record in ordered:
-        common = _common_values(record, role)
-        family = _family_values(record, table_name)
+        row = _row_values(record, table_name, role)
         for name in columns:
-            if name in _UTC_TIMESTAMP_COLUMNS:
-                parsed = _parse_utc(common.get(_UTC_SOURCE[name]))
-                # Store the UTC wall-clock as a tz-naive datetime (no tz database).
-                data[name].append(
-                    parsed.replace(tzinfo=None) if parsed is not None else None
-                )
-            elif name == "canonical_payload_json":
-                data[name].append(record.canonical_payload_json)
-            elif name in _COMMON_COLUMNS:
-                data[name].append(common[name])
-            else:
-                data[name].append(family.get(name))
+            data[name].append(row[name])
     arrays = [pa.array(data[name], type=schema.field(name).type) for name in columns]
     return pa.table(arrays, schema=schema)
 
@@ -566,11 +580,26 @@ def materialize_canonical_pit_dataset(
 ) -> AnalyticalMaterializationResult:
     """Materialize a verified WP160 dataset snapshot reference into research Parquet.
 
-    The record store is verified through the WP163 public API, the reference must
-    be a genuine ``DatasetSnapshotReference`` re-materialized through the public
-    materializer, and the derived logical dataset identity is defined by canonical
-    record content and explicit row order, never by physical Parquet bytes.
+    The runtime compatibility (exact dependency pins + supported Python floor) is
+    proven from installed package metadata before any derived output is claimed
+    successful, and the manifest reports the actual installed versions. The record
+    store is verified through the WP163 public API, the reference must be a genuine
+    ``DatasetSnapshotReference`` re-materialized through the public materializer, and
+    the derived logical dataset identity is defined by canonical record content
+    (the complete envelope, family fields, and canonical payload) and explicit row
+    order, never by physical Parquet bytes.
     """
+
+    runtime = check_analytical_runtime()
+    if not runtime.is_valid:
+        return _rejected(*runtime.error_codes)
+    if (
+        runtime.pyarrow_version is None
+        or runtime.duckdb_version is None
+        or runtime.polars_version is None
+        or runtime.python_version is None
+    ):
+        return _rejected("ANALYTICS_DEPENDENCY_VERSION_INVALID")
 
     if type(dataset_reference) is not DatasetSnapshotReference:
         return _rejected("ANALYTICAL_REFERENCE_INVALID")
@@ -691,10 +720,10 @@ def materialize_canonical_pit_dataset(
         materializer_version=ANALYTICAL_MATERIALIZER_VERSION,
         partition_manifests=tuple(partitions),
         total_row_count=total_rows,
-        pyarrow_version=str(pa.__version__),
-        duckdb_version=EXPECTED_DUCKDB_VERSION,
-        polars_version=str(pl.__version__),
-        python_version=platform.python_version(),
+        pyarrow_version=runtime.pyarrow_version,
+        duckdb_version=runtime.duckdb_version,
+        polars_version=runtime.polars_version,
+        python_version=runtime.python_version,
         advisory_only=True,
         no_execution_authority=True,
     )

@@ -95,7 +95,17 @@
     ],
     "max_changed_files": 29,
     "exact_scope_required": true,
-    "historical_compatibility_edits": [],
+    "historical_compatibility_edits": [
+      "tests/test_architecture_boundaries.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+      "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
+    ],
     "rollback_surface": "Revert the WP167 branch. The change is additive: one new src/data_layer/analytical_research package, one CI workflow, the three dependency pins and Python floor in pyproject.toml, the analytical contract doc, focused tests, nine governance-guard updates, and status/repo-truth/deferred/security doc reconciliation. There is no predecessor mutation, no SQLite or manifest migration, no data migration, and no committed generated artifact.",
     "mode_boundaries": [
       {
@@ -374,9 +384,9 @@
       {
         "requirement_id": "R014",
         "source": "pytest",
-        "test": "test_missing_required_column_is_rejected",
+        "test": "test_valid_pmxt_v2_archive_is_described and test_string_market_column_is_rejected",
         "command": "python -m pytest -q tests/data_layer/analytical_research/test_pmxt_v2.py",
-        "expected_result": "pmxt required columns and types are validated"
+        "expected_result": "the exact documented pmxt v2 16-column schema (fixed_size_binary[66] market, decimal-string asset_id, timestamp[ms,UTC], exact decimals, uint16 fee_rate_bps) is accepted and any type/width/unit drift is rejected"
       },
       {
         "requirement_id": "R015",
@@ -473,8 +483,8 @@
         "requirement_id": "R028",
         "source": "github-actions",
         "test": "line-ending safety",
-        "command": "git config --global core.autocrlf false",
-        "expected_result": "Windows CI uses an LF-normalized checkout"
+        "command": "git config --global core.autocrlf false && git config --global core.eol lf",
+        "expected_result": "Windows CI checks out LF despite .gitattributes text=auto; byte-hash tests pass on Windows and Linux"
       },
       {
         "requirement_id": "R029",

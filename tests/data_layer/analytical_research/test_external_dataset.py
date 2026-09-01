@@ -208,3 +208,24 @@ def test_rejected_result_carries_only_closed_codes():
     for text in _all_strings(result):
         assert "/secret/path" not in text
         assert text in ar.EXTERNAL_DATASET_ERROR_CODES or text in ("EXTERNAL_REJECTED",)
+
+
+def test_reordered_inputs_produce_equal_complete_descriptors():
+    forward = build_external_dataset_descriptor(
+        **_base(
+            source_objects=[_obj("a.parquet", "1"), _obj("b.parquet", "2", 20, "p2")],
+            event_types=["book", "price_change"],
+        )
+    ).descriptor
+    reordered = build_external_dataset_descriptor(
+        **_base(
+            source_objects=[_obj("b.parquet", "2", 20, "p2"), _obj("a.parquet", "1")],
+            event_types=["price_change", "book"],
+        )
+    ).descriptor
+    # Not merely equal ids: the full frozen descriptors are structurally equal.
+    assert forward == reordered
+    assert forward.source_objects == reordered.source_objects
+    assert forward.event_types == reordered.event_types
+    assert list(forward.source_objects) == sorted(forward.source_objects, key=lambda e: e.object_name)
+    assert list(forward.event_types) == sorted(forward.event_types)

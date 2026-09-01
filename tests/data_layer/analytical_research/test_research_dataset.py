@@ -401,3 +401,129 @@ def test_duckdb_is_not_imported_at_module_load():
     assert "src.data_layer.analytical_research.research_dataset" in sys.modules
     # Fresh import of the module object does not require duckdb.
     assert RD.materialize_canonical_pit_dataset is not None
+
+
+# ── Blocker A: complete canonical PIT projection ─────────────────────────────
+
+import importlib.metadata
+
+from src.data_layer.point_in_time_market_research.as_of_synthetic_cases import (
+    build_synthetic_as_of_records,
+)
+
+
+def _read_parquet(path):
+    import polars as pl
+
+    return pl.read_parquet(str(path))
+
+
+def test_logical_row_commits_full_envelope_and_family(tmp_path):
+    _, chosen = _clean_records()
+    market = chosen[0]
+    row = RD._logical_row(market, ar.TABLE_MARKET_OBSERVATIONS, "ORDINARY")
+    # Every envelope field is committed to the logical row.
+    for name in RD._ENVELOPE_COLUMNS:
+        assert name in row
+    # Family fields and the canonical payload are committed.
+    for name in ("mo_observation_kind", "mo_source_assertion_id", "canonical_payload_json"):
+        assert name in row
+    assert row["lifecycle_state"] == market.envelope.lifecycle_state
+    assert row["snapshot_id"] == market.envelope.snapshot_id
+
+
+def test_supersedes_change_alters_logical_digest():
+    _, chosen = _clean_records()
+    record = chosen[0]
+    base = RD._logical_rows_sha256([RD._logical_row(record, ar.TABLE_MARKET_OBSERVATIONS, "ORDINARY")])
+    mutated_env = dataclasses.replace(record.envelope, supersedes_record_version_id="record:sha256:other")
+    mutated = dataclasses.replace(record, envelope=mutated_env)
+    changed = RD._logical_rows_sha256([RD._logical_row(mutated, ar.TABLE_MARKET_OBSERVATIONS, "ORDINARY")])
+    assert base != changed
+
+
+def test_lineage_parent_ids_change_and_order_alter_logical_digest():
+    _, chosen = _clean_records()
+    record = chosen[0]
+    env_ab = dataclasses.replace(record.envelope, lineage_parent_ids=("p1", "p2"))
+    env_ba = dataclasses.replace(record.envelope, lineage_parent_ids=("p2", "p1"))
+    env_none = dataclasses.replace(record.envelope, lineage_parent_ids=())
+    d_ab = RD._logical_rows_sha256([RD._logical_row(dataclasses.replace(record, envelope=env_ab), ar.TABLE_MARKET_OBSERVATIONS, "ORDINARY")])
+    d_ba = RD._logical_rows_sha256([RD._logical_row(dataclasses.replace(record, envelope=env_ba), ar.TABLE_MARKET_OBSERVATIONS, "ORDINARY")])
+    d_none = RD._logical_rows_sha256([RD._logical_row(dataclasses.replace(record, envelope=env_none), ar.TABLE_MARKET_OBSERVATIONS, "ORDINARY")])
+    assert d_ab != d_ba != d_none and d_ab != d_none
+
+
+def test_complete_provenance_and_family_columns_survive(tmp_path):
+    _, chosen = _clean_records()
+    reference = _batch_reference(chosen)
+    store = _store(tmp_path, chosen)
+    out = _outdir(tmp_path, "proj")
+    assert ar.materialize_canonical_pit_dataset(str(store), reference, str(out)).is_valid
+
+    market = _read_parquet(out / f"{ar.TABLE_MARKET_OBSERVATIONS}.parquet")
+    for col in ("snapshot_id", "source_snapshot_id", "resolution_rule_snapshot_id",
+                "ingestion_batch_id", "lifecycle_state", "source_content_sha256",
+                "lineage_parent_ids", "mo_observation_kind", "mo_source_assertion_id"):
+        assert col in market.columns
+    source = _read_parquet(out / f"{ar.TABLE_SOURCE_SNAPSHOTS}.parquet")
+    for col in ("ss_source_type", "ss_source_reference", "ss_raw_content_sha256",
+                "ss_byte_length", "ss_retrieval_version", "ss_access_classification"):
+        assert col in source.columns
+    assert source["ss_byte_length"].dtype.__class__.__name__ in ("Int64", "Int64Type") or str(source["ss_byte_length"].dtype).startswith("Int")
+    rule = _read_parquet(out / f"{ar.TABLE_RESOLUTION_RULE_SNAPSHOTS}.parquet")
+    for col in ("rr_resolution_source_id", "rr_source_snapshot_id", "rr_rule_content_sha256",
+                "rr_ambiguity_labels", "rr_source_hierarchy_rank", "rr_human_review_state"):
+        assert col in rule.columns
+    assert rule["rr_ambiguity_labels"][0].to_list() == list(
+        [v for v in chosen if v.envelope.record_family == "RESOLUTION_RULE_SNAPSHOT"][0].ambiguity_labels
+    )
+
+
+def test_review_conflict_retains_complete_family_semantics(tmp_path):
+    recs = build_synthetic_as_of_records()
+    ordinary = [recs["MKT-META-PRIMARY"]]
+    review = [recs["MKT-CONFLICT"]]
+    store = _store(tmp_path, [recs["MKT-META-PRIMARY"], recs["MKT-CONFLICT"]])
+    reference = _asof_reference(ordinary, review)
+    out = _outdir(tmp_path, "review_family")
+    assert ar.materialize_canonical_pit_dataset(str(store), reference, str(out)).is_valid
+
+    frame = _read_parquet(out / f"{ar.TABLE_REVIEW_CONFLICTS}.parquet")
+    # The union table carries every family's columns.
+    for col in ("mo_observation_kind", "ss_source_type", "rr_resolution_source_id"):
+        assert col in frame.columns
+    # The market-family conflict populates mo_* and leaves other families null.
+    assert frame["mo_market_id"][0] is not None
+    assert frame["ss_source_type"][0] is None
+    assert frame["rr_resolution_source_id"][0] is None
+
+
+# ── Blocker C: manifest version truth and runtime gate ───────────────────────
+
+
+def test_manifest_reports_actual_installed_versions(tmp_path):
+    _, chosen = _clean_records()
+    reference = _batch_reference(chosen)
+    store = _store(tmp_path, chosen)
+    out = _outdir(tmp_path, "versions")
+    manifest = ar.materialize_canonical_pit_dataset(str(store), reference, str(out)).manifest
+    assert manifest.duckdb_version == importlib.metadata.version("duckdb")
+    assert manifest.pyarrow_version == importlib.metadata.version("pyarrow")
+    assert manifest.polars_version == importlib.metadata.version("polars")
+
+
+def test_runtime_dependency_mismatch_rejects_materialization(tmp_path, monkeypatch):
+    _, chosen = _clean_records()
+    reference = _batch_reference(chosen)
+    store = _store(tmp_path, chosen)
+    out = _outdir(tmp_path, "mismatch")
+    real = RD._installed_version
+    monkeypatch.setattr(
+        RD, "_installed_version",
+        lambda dist: "0.0.0" if dist == "duckdb" else real(dist),
+    )
+    result = ar.materialize_canonical_pit_dataset(str(store), reference, str(out))
+    assert not result.is_valid
+    assert result.error_codes == ("ANALYTICS_DEPENDENCY_VERSION_INVALID",)
+    assert not (out / f"{ar.TABLE_MARKET_OBSERVATIONS}.parquet").exists()

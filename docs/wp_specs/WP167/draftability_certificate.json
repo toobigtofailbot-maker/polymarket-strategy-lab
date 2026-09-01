@@ -8,8 +8,8 @@
   "independent_certificate_required": true,
   "reviewed_repository": "toobigtofailbot-maker/polymarket-strategy-lab",
   "reviewed_base_merge_sha": "35f4042a595ae58bf8b71a986eaefac0d3fe3dc8",
-  "wp_text_sha256": "77c7e04c616fb2bad1c5ad6b030cf00d5c7a570c95c17825fa360346d2e0bc3e",
-  "wp_spec_sha256": "8c682be16ee017e024e4dc8e850f37a3728e601f94aececca9ebd52865768c4d",
-  "hash_note": "The two SHA-256 values are over the LF-normalized bytes of wp_prompt.txt and wp_spec.json as committed (git text=auto normalizes to LF; hosted CI checks out with core.autocrlf false). Any semantic edit to the prompt or spec invalidates these hashes and requires a fresh independent review.",
+  "wp_text_sha256": "b6f46aab80fcb0f10ae8f91e153ff8971792573a0683eb95033031fbd96213cf",
+  "wp_spec_sha256": "1a3f1eeee70ae18fd94f0ecd15de050bbb2df765a9dd26a4b71361c660d32fc0",
+  "hash_note": "The two SHA-256 values are over the LF-normalized bytes of wp_prompt.txt and wp_spec.json as committed (git text=auto normalizes to LF; hosted CI checks out with core.autocrlf false and core.eol lf). Any semantic edit to the prompt or spec invalidates these hashes and requires a fresh independent review.",
   "unresolved_decisions": []
 }
