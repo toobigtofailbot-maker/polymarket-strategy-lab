@@ -87,6 +87,9 @@ POINT_IN_TIME_RECORD_STORE_ERROR_CODES = (
 DATASET_MATERIALIZATION_VERIFICATION_MODES = (
     "VALIDATED_BATCH_RECOMPUTED",
     "AS_OF_REFERENCE_IDS_RESOLVED",
+    # WP166 v2 lineage-delta: current records recomputed against resolved
+    # external direct-parent objects.
+    "LINEAGE_DELTA_PARENT_CONTEXT_RECOMPUTED",
 )
 
 _ERROR_ORDER = {
@@ -294,6 +297,13 @@ class DatasetSnapshotMaterializationResult:
     human_review_required: bool
     advisory_only: bool
     no_execution_authority: bool
+    # WP166 additive trailing field with a default so v1 materialization results
+    # are construction-compatible; the resolved external direct-parent records of
+    # a v2 lineage-delta reference (empty for every v1 reference).
+    external_parent_records: tuple[
+        MarketObservationRecord | SourceSnapshotRecord | ResolutionRuleSnapshotRecord,
+        ...,
+    ] = ()
 
 
 class _StoreFailure(Exception):
@@ -1429,6 +1439,28 @@ def _resolve_reference_ids(
     return tuple(ordinary), tuple(review)
 
 
+def _resolve_external_parents(
+    reference: DatasetSnapshotReference,
+    records_by_id: dict[str, object],
+) -> tuple[object, ...]:
+    """Resolve a v2 reference's external direct-parent ids to durable records.
+
+    Every v1 reference carries no external parents and resolves to (). A v2
+    external parent must exist in the store and may never be a CONFLICT record.
+    """
+
+    external = getattr(reference, "external_parent_record_version_ids", ())
+    resolved: list[object] = []
+    for identity in external:
+        record = records_by_id.get(identity)
+        if record is None:
+            raise _StoreFailure("RECORD_STORE_REFERENCE_MISSING_RECORD")
+        if record.envelope.classification == "CONFLICT":
+            raise _StoreFailure("RECORD_STORE_AUTHORITY_VIOLATION")
+        resolved.append(record)
+    return tuple(resolved)
+
+
 def materialize_dataset_snapshot_reference(
     path: object,
     reference: object,
@@ -1462,8 +1494,9 @@ def materialize_dataset_snapshot_reference(
         ordinary_records, review_records = _resolve_reference_ids(
             rebuilt, records_by_id
         )
+        external_parent_records = _resolve_external_parents(rebuilt, records_by_id)
         verification_mode = _verify_materialization_mode(
-            rebuilt, ordinary_records, review_records
+            rebuilt, ordinary_records, review_records, external_parent_records
         )
     except _StoreFailure as failure:
         return _rejected_materialization(failure.code)
@@ -1480,6 +1513,7 @@ def materialize_dataset_snapshot_reference(
         human_review_required=bool(rebuilt.human_review_required),
         advisory_only=True,
         no_execution_authority=True,
+        external_parent_records=external_parent_records,
     )
 
 
@@ -1487,9 +1521,10 @@ def _verify_materialization_mode(
     reference: DatasetSnapshotReference,
     ordinary_records: tuple[object, ...],
     review_records: tuple[object, ...],
+    external_parent_records: tuple[object, ...],
 ) -> str:
     if reference.derivation_mode == "VALIDATED_RECORD_BATCH":
-        if review_records or not ordinary_records:
+        if review_records or not ordinary_records or external_parent_records:
             raise _StoreFailure("RECORD_STORE_REFERENCE_CONTENT_MISMATCH")
         try:
             batch = validate_record_batch(ordinary_records)
@@ -1504,8 +1539,32 @@ def _verify_materialization_mode(
             raise _StoreFailure("RECORD_STORE_REFERENCE_CONTENT_MISMATCH")
         return "VALIDATED_BATCH_RECOMPUTED"
 
+    if reference.derivation_mode == "LINEAGE_DELTA_RECORD_BATCH":
+        # v2: recompute the current-record batch against the resolved external
+        # direct-parent objects and require the accepted-id set and committed batch
+        # hash to match the reference exactly. External parents were already proven
+        # to exist and to carry no CONFLICT authority during resolution.
+        if review_records or not ordinary_records:
+            raise _StoreFailure("RECORD_STORE_REFERENCE_CONTENT_MISMATCH")
+        try:
+            batch = validate_record_batch(
+                ordinary_records, known_parent_records=external_parent_records
+            )
+        except Exception:
+            raise _StoreFailure("RECORD_STORE_REFERENCE_CONTENT_MISMATCH") from None
+        if (
+            not batch.is_valid
+            or batch.accepted_record_version_ids
+            != reference.ordinary_record_version_ids
+            or batch.canonical_batch_sha256 != reference.validated_batch_sha256
+        ):
+            raise _StoreFailure("RECORD_STORE_REFERENCE_CONTENT_MISMATCH")
+        return "LINEAGE_DELTA_PARENT_CONTEXT_RECOMPUTED"
+
     # AS_OF_QUERY_RESULT: honest ID-resolution only. The reference alone cannot
     # replay the original WP157 query, so no query/batch hash is recomputed from
     # the output subset. Existence, authority, and reference-owned order were
     # already enforced during ID resolution.
+    if external_parent_records:
+        raise _StoreFailure("RECORD_STORE_REFERENCE_CONTENT_MISMATCH")
     return "AS_OF_REFERENCE_IDS_RESOLVED"

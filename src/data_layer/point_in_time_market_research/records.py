@@ -1794,12 +1794,85 @@ def _revalidate_public_record(record: PointInTimeRecord) -> tuple[str, ...]:
     return _ordered_unique(errors, _ERROR_ORDER)
 
 
+def _validate_external_parent_record(
+    candidate: object, errors: list[str]
+) -> str | None:
+    """Fully revalidate one supplied external-parent record object, or fail.
+
+    Mirrors the per-record integrity gate ``validate_record_batch`` applies to a
+    current record: exact WP156 ordinary record class, exact ``PointInTimeEnvelope``,
+    namespaced ``record:sha256:`` id grammar, complete public revalidation,
+    recomputed record-version identity, payload/envelope agreement, and
+    family-derived id agreement. A ``CONFLICT`` parent never carries authority and
+    is rejected. Returns the proven ``record_version_id`` or ``None`` (codes are
+    appended to ``errors``). Ancestors are never required recursively; the caller's
+    manifest authority proves the parent itself was previously committed.
+    """
+
+    allowed_types = (
+        MarketObservationRecord,
+        SourceSnapshotRecord,
+        ResolutionRuleSnapshotRecord,
+    )
+    if type(candidate) not in allowed_types:
+        errors.append("FIELD_TYPE_INVALID")
+        return None
+    if type(candidate.envelope) is not PointInTimeEnvelope:
+        errors.extend(
+            ("FIELD_TYPE_INVALID", "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+        )
+        return None
+    record_id = candidate.envelope.record_version_id
+    if _validate_id(record_id, errors) is None:
+        return None
+    if _RECORD_VERSION_ID_RE.fullmatch(record_id) is None:
+        errors.extend(
+            ("ID_DERIVATION_MISMATCH", "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+        )
+        return None
+    if candidate.envelope.classification == "CONFLICT":
+        errors.append("CONFLICT_REQUIRES_HUMAN_REVIEW")
+        return None
+    record_errors = _revalidate_public_record(candidate)
+    if record_errors:
+        errors.extend(record_errors)
+        return None
+    try:
+        recomputed = _recomputed_record_version_id(candidate)
+    except (TypeError, ValueError):
+        errors.append("RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+        return None
+    if (
+        recomputed != record_id
+        or not _payload_matches_envelope(candidate)
+        or not _derived_family_ids_match(candidate)
+    ):
+        errors.append("RECORD_VERSION_HASH_COLLISION_OR_MISMATCH")
+        return None
+    return record_id
+
+
 def validate_record_batch(
     records: Sequence[PointInTimeRecord],
     *,
     known_parent_record_ids: Sequence[str] = (),
+    known_parent_records: Sequence[PointInTimeRecord] = (),
 ) -> PointInTimeBatchValidationResult:
-    """Validate a finite in-memory record set without reconstructing as-of state."""
+    """Validate a finite in-memory record set without reconstructing as-of state.
+
+    ``known_parent_record_ids`` remains the legacy existence-only authority: it
+    proves a referenced parent id exists elsewhere but cannot compare a current
+    record against the parent's semantics.
+
+    ``known_parent_records`` (WP166) additionally supplies the actual immutable
+    external-parent record objects. Each is fully revalidated, and every current
+    record whose relevant lineage parent is external is checked against the actual
+    parent object with the SAME entity/content/time semantics used when the parent
+    is inside the batch. When ``known_parent_records`` is non-empty the canonical
+    batch material additionally commits the sorted external-parent id set; when it
+    is empty the legacy batch material and hash are byte-for-byte unchanged.
+    ``accepted_record_version_ids`` always names only the current records.
+    """
 
     errors: list[str] = []
     warnings: list[str] = []
@@ -1818,6 +1891,27 @@ def validate_record_batch(
             validated = _validate_id(parent, errors)
             if validated is not None:
                 known_external.add(validated)
+
+    # WP166 external-parent record objects: fully revalidated, bounded, unique.
+    external_parent_map: dict[str, PointInTimeRecord] = {}
+    external_parents_supplied = False
+    if isinstance(known_parent_records, (str, bytes)) or not isinstance(
+        known_parent_records, Sequence
+    ):
+        errors.append("FIELD_TYPE_INVALID")
+    else:
+        external_parents_supplied = len(known_parent_records) > 0
+        if len(known_parent_records) > _MAX_BATCH:
+            errors.append("RECORD_BATCH_LIMIT_EXCEEDED")
+        for parent_candidate in list(known_parent_records)[:_MAX_BATCH]:
+            parent_id = _validate_external_parent_record(parent_candidate, errors)
+            if parent_id is None:
+                continue
+            if parent_id in external_parent_map:
+                errors.append("LINEAGE_PARENT_DUPLICATE")
+                continue
+            external_parent_map[parent_id] = parent_candidate
+    known_external |= set(external_parent_map)
 
     exact_duplicates: list[str] = []
     unique: dict[str, PointInTimeRecord] = {}
@@ -1969,6 +2063,10 @@ def validate_record_batch(
         }:
             reference_id = parents[0] if parents else None
         parent = unique.get(reference_id) if reference_id is not None else None
+        if parent is None and reference_id is not None:
+            # WP166: the relevant parent is external; run the same semantics
+            # against the actual supplied immutable parent object.
+            parent = external_parent_map.get(reference_id)
         if parent is not None:
             if envelope.classification in {
                 "SOURCE_REVISION",
@@ -2041,6 +2139,12 @@ def validate_record_batch(
         "error_codes": ordered_errors,
         "warning_codes": ordered_warnings,
     }
+    if external_parents_supplied:
+        # Only present when external parent objects were supplied, so a legacy
+        # call with no external parents keeps its byte-for-byte identical hash.
+        batch_material["external_parent_record_version_ids"] = tuple(
+            sorted(external_parent_map)
+        )
     batch_hash = sha256_hex(canonical_json_bytes(batch_material))
     is_valid = not ordered_errors and not quarantined
     if is_valid:

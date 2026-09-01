@@ -595,6 +595,42 @@ _WP162_AUTHORIZED_FILES = {
     "docs/deferred_items_log.md",
 }
 
+_WP166_AUTHORIZED_FILES = {
+    "src/data_layer/point_in_time_market_research/records.py",
+    "src/data_layer/point_in_time_market_research/manifest_reference.py",
+    "src/data_layer/point_in_time_market_research/manifest_store.py",
+    "src/data_layer/point_in_time_market_research/dataset_persistence_adapter.py",
+    "src/data_layer/point_in_time_market_research/record_store.py",
+    "src/data_layer/polymarket/public_client.py",
+    "src/data_layer/polymarket/polling_policy.py",
+    "src/data_layer/point_in_time_market_research/polymarket_scaled_population.py",
+    "src/data_layer/point_in_time_market_research/__init__.py",
+    "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+    "tests/data_layer/point_in_time_market_research/test_manifest_reference.py",
+    "tests/data_layer/point_in_time_market_research/test_manifest_store.py",
+    "tests/data_layer/point_in_time_market_research/test_dataset_persistence_adapter.py",
+    "tests/data_layer/point_in_time_market_research/test_record_store.py",
+    "tests/data_layer/polymarket/test_public_client.py",
+    "tests/data_layer/polymarket/test_polling_policy.py",
+    "tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py",
+    "tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py",
+    "tests/data_layer/point_in_time_market_research/test_as_of_query.py",
+    "docs/scalable_lineage_delta_and_keyset_population_contract.md",
+    "tests/test_scalable_lineage_delta_and_keyset_population_contract_docs.py",
+    "docs/status_entries/WP166.md",
+    "docs/project_status.md",
+    "docs/repo_truth_index.md",
+    "docs/deferred_items_log.md",
+    "tests/test_project_status_docs.py",
+    "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+    "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+    "tests/test_wallet_intelligence_architecture_contract_docs.py",
+    "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+    "tests/test_human_review_label_workflow_docs.py",
+    "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+}
+
 _WP165_AUTHORIZED_FILES = {
     "src/data_layer/point_in_time_market_research/polymarket_incremental_population.py",
     "src/data_layer/point_in_time_market_research/__init__.py",
@@ -686,6 +722,9 @@ def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None
         for line in (diff.stdout + untracked.stdout).splitlines()
         if line
     }
+    if "docs/status_entries/WP166.md" in changed:
+        assert changed == _WP166_AUTHORIZED_FILES
+        return
     if "docs/status_entries/WP165.md" in changed:
         assert changed == _WP165_AUTHORIZED_FILES
         return

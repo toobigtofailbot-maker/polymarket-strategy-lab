@@ -93,6 +93,22 @@ _ENDPOINT_MAP = {
             "Not confirmed for any production use. Kept in map as unverified candidate."
         ),
     },
+    "gamma_markets_keyset": {
+        "base_url_key": "gamma_base_url",
+        "path": "/markets/keyset",
+        "verified": False,
+        "verified_in_wp": None,
+        "verified_at_utc": None,
+        "notes": (
+            "Official Polymarket documentation checked 2026-08-30: GET-only Gamma "
+            "keyset pagination endpoint. Documented limit range 1..100 (default 20); "
+            "after_cursor accepts the previous next_cursor; offset is explicitly "
+            "rejected. The response is a wrapper object with a markets list and an "
+            "optional next_cursor omitted on the last page. NOT historically "
+            "live-probed by this repo's WP9 process; documented-but-repo-unverified "
+            "and gated behind an explicit opt-in before any real network use."
+        ),
+    },
 }
 
 DEFAULT_GAMMA_BASE_URL = "https://gamma-api.polymarket.com"
@@ -198,6 +214,33 @@ class PolymarketPublicClient:
             query["limit"] = str(limit)
         data, info = self._get_json(
             self._gamma_base_url, "/markets", query=query or None, endpoint_key="gamma_markets"
+        )
+        return AdapterResult(data=data, request_info=info)
+
+    def get_markets_keyset(
+        self,
+        *,
+        limit: int = 100,
+        after_cursor: Optional[str] = None,
+    ) -> AdapterResult:
+        """Fetch exactly ONE Gamma keyset page of markets.
+
+        Endpoint: GET /markets/keyset
+        Contract status: UNVERIFIED — documented 2026-08-30 but not live-probed by
+        this repo. GET-only. The query always includes ``limit``; ``after_cursor``
+        is included only when non-null. ``offset`` is NEVER sent. There is no
+        automatic cursor loop; the caller receives the response ``next_cursor`` (if
+        present) for a later manual invocation.
+        """
+        self._check_endpoint_verified("gamma_markets_keyset")
+        query: dict[str, str] = {"limit": str(limit)}
+        if after_cursor is not None:
+            query["after_cursor"] = str(after_cursor)
+        data, info = self._get_json(
+            self._gamma_base_url,
+            "/markets/keyset",
+            query=query,
+            endpoint_key="gamma_markets_keyset",
         )
         return AdapterResult(data=data, request_info=info)
 

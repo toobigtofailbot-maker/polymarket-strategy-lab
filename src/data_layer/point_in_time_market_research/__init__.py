@@ -124,6 +124,16 @@ from .polymarket_incremental_population import (
     capture_incremental_polymarket_public_data,
     recover_incremental_polymarket_public_registration,
 )
+from .polymarket_scaled_population import (
+    POLYMARKET_SCALED_POPULATION_ERROR_CODES,
+    POLYMARKET_SCALED_POPULATION_LABEL,
+    POLYMARKET_SCALED_POPULATION_POSTURE,
+    POLYMARKET_SCALED_POPULATION_STATUSES,
+    PolymarketScaledPopulationConfig,
+    PolymarketScaledPopulationResult,
+    capture_scaled_polymarket_public_page,
+    recover_scaled_polymarket_public_registration,
+)
 
 __all__ = (
     "FOUNDATION_LABEL",
@@ -244,4 +254,14 @@ __all__ = (
     "PolymarketIncrementalPopulationResult",
     "capture_incremental_polymarket_public_data",
     "recover_incremental_polymarket_public_registration",
+    # WP166 bounded scalable one-page keyset lineage-delta public Polymarket
+    # capture coordinator and offline registration recovery.
+    "POLYMARKET_SCALED_POPULATION_LABEL",
+    "POLYMARKET_SCALED_POPULATION_POSTURE",
+    "POLYMARKET_SCALED_POPULATION_STATUSES",
+    "POLYMARKET_SCALED_POPULATION_ERROR_CODES",
+    "PolymarketScaledPopulationConfig",
+    "PolymarketScaledPopulationResult",
+    "capture_scaled_polymarket_public_page",
+    "recover_scaled_polymarket_public_registration",
 )

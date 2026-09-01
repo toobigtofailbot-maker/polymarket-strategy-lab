@@ -39,6 +39,7 @@ from .as_of_query import PointInTimeQuerySpec, query_point_in_time_record_set
 from .manifest_reference import (
     DATASET_REFERENCE_SCHEMA_ID,
     DATASET_REFERENCE_SCHEMA_VERSION,
+    DATASET_REFERENCE_SCHEMA_VERSION_LINEAGE,
     MANIFEST_ENTRY_SCHEMA_ID,
     MANIFEST_ENTRY_SCHEMA_VERSION,
     DatasetSnapshotReference,
@@ -86,6 +87,10 @@ DATASET_PERSISTENCE_ADAPTER_ERROR_CODES = (
     "ADAPTER_STORE_STATE_INVALID",
     "ADAPTER_ENTRY_BUILD_FAILED",
     "ADAPTER_STORE_APPEND_FAILED",
+    # WP166 lineage-delta external-parent-context adapter codes.
+    "ADAPTER_PARENT_CONTEXT_INVALID",
+    "ADAPTER_PARENT_CONTEXT_UNREGISTERED",
+    "ADAPTER_PARENT_CONTEXT_HEAD_CHANGED",
 )
 
 # Schema 1 defines no adapter warning codes; ``warning_codes`` is always empty.
@@ -351,12 +356,19 @@ def _register_reference(
     *,
     manifest_id: str,
     effective_time: str,
+    expected_created_from: str | None = None,
 ) -> DatasetPersistenceAdapterResult:
     """Register one already-built reference at the verified append-chain head.
 
     The store must already exist and verify; this adapter never initializes,
     repairs, or migrates a store. Sequence/previous-head are derived from the
     verified snapshot, never accepted from the caller.
+
+    When ``expected_created_from`` is supplied (a WP166 v2 lineage-delta
+    registration whose reference identity binds the prior head), the head the new
+    entry will link to must equal it exactly; a head change between the coordinator's
+    pre-read and this append fails closed with ``ADAPTER_PARENT_CONTEXT_HEAD_CHANGED``
+    rather than silently retargeting the backlink.
     """
 
     try:
@@ -424,6 +436,14 @@ def _register_reference(
     else:
         sequence_number = 0
         previous_manifest_entry_id = None
+
+    # WP166: fail closed if the head moved since the reference's backlink was
+    # fixed. This runs only after the idempotent already-persisted short-circuit.
+    if (
+        expected_created_from is not None
+        and previous_manifest_entry_id != expected_created_from
+    ):
+        return _rejected(("ADAPTER_PARENT_CONTEXT_HEAD_CHANGED",))
 
     entry = _build_register_entry(
         manifest_id=manifest_id,
@@ -608,4 +628,202 @@ def persist_as_of_query_snapshot(
 
     return _register_reference(
         path, reference, manifest_id=manifest_id, effective_time=effective_time
+    )
+
+
+# ── WP166 lineage-delta reference (v2) identity derivation ────────────────────
+
+
+def _build_lineage_delta_reference(
+    *,
+    validated_batch_sha256: str,
+    ordinary_ids: tuple[str, ...],
+    external_parent_ids: tuple[str, ...],
+    created_from_manifest_entry_id: str,
+    validator_version: str,
+    parameter_set_id: str,
+) -> DatasetSnapshotReference | None:
+    """Derive the WP160 v2 lineage-delta reference preimage/identity and rebuild.
+
+    The preimage is the schema-2.0.0 identity mapping including the sorted external
+    direct-parent set and the prior-head backlink. The recomputed identity is handed
+    to the public builder, which remains the sole authority.
+    """
+
+    try:
+        preimage: dict[str, object] = {
+            "schema_id": DATASET_REFERENCE_SCHEMA_ID,
+            "schema_version": DATASET_REFERENCE_SCHEMA_VERSION_LINEAGE,
+            "derivation_mode": "LINEAGE_DELTA_RECORD_BATCH",
+            "validated_batch_sha256": validated_batch_sha256,
+            "ordinary_record_version_ids": list(ordinary_ids),
+            "review_conflict_record_version_ids": [],
+            "query_spec_sha256": None,
+            "query_result_sha256": None,
+            "cutoff_mode": None,
+            "cutoff_time": None,
+            "result_view": None,
+            "query_engine_version": None,
+            "validator_version": validator_version,
+            "parameter_set_id": parameter_set_id,
+            "human_review_required": False,
+            "advisory_only": True,
+            "no_execution_authority": True,
+            "external_parent_record_version_ids": list(external_parent_ids),
+            "created_from_manifest_entry_id": created_from_manifest_entry_id,
+        }
+        reference_id = _reference_id(preimage)
+        mapping = dict(preimage)
+        mapping["dataset_snapshot_reference_id"] = reference_id
+        result = build_dataset_snapshot_reference(mapping)
+    except Exception:
+        return None
+    if not result.is_valid or result.reference is None:
+        return None
+    if result.reference.dataset_snapshot_reference_id != reference_id:
+        return None
+    return result.reference
+
+
+# ── Public adapter: WP166 lineage-delta current-record batch → registration ───
+
+
+def persist_lineage_delta_record_batch_snapshot(
+    path: object,
+    records: object,
+    parent_records: object,
+    *,
+    manifest_id: object,
+    effective_time: object,
+    parameter_set_id: object,
+    validator_version: object,
+) -> DatasetPersistenceAdapterResult:
+    """Persist ONLY the current records as a v2 lineage-delta dataset reference.
+
+    The current records' direct external lineage parents are supplied as actual
+    immutable record objects. The supplied parent id set must be exactly the set of
+    current lineage-parent ids not present among the current records, every supplied
+    parent must already be authorized by an earlier registered reference in the
+    verified chain, and the current records are validated against the actual parent
+    objects. Only the current records are registered as the v2 reference's ordinary
+    ids; the external direct parents and the prior manifest head are bound into its
+    identity. A nonempty valid existing chain is required, and a head change between
+    pre-read and append fails closed. Behavior of the WP156/WP157 adapters is
+    unchanged.
+    """
+
+    current_tuple = _copy_records(records)
+    if current_tuple is None or not _records_are_bounded(current_tuple):
+        return _rejected(("ADAPTER_INPUT_INVALID",))
+    parent_tuple = _copy_records(parent_records)
+    if parent_tuple is None or not _records_are_bounded(parent_tuple):
+        return _rejected(("ADAPTER_INPUT_INVALID",))
+    if not (1 <= len(current_tuple) <= _MAX_SCALAR):
+        return _rejected(("ADAPTER_INPUT_INVALID",))
+    if len(parent_tuple) > _MAX_SCALAR:
+        return _rejected(("ADAPTER_INPUT_INVALID",))
+    if not (
+        _valid_scalar(manifest_id)
+        and _valid_scalar(effective_time)
+        and _valid_scalar(parameter_set_id)
+        and _valid_scalar(validator_version)
+    ):
+        return _rejected(("ADAPTER_INPUT_INVALID",))
+
+    # Provenance binds BOTH the current records and the actual parent records.
+    for record in current_tuple + parent_tuple:
+        if record.envelope.parameter_set_id != parameter_set_id:
+            return _rejected(("ADAPTER_PARAMETER_SET_MISMATCH",))
+    for record in current_tuple + parent_tuple:
+        if record.envelope.validator_version != validator_version:
+            return _rejected(("ADAPTER_VALIDATOR_VERSION_MISMATCH",))
+
+    # Current ids must be unique among themselves; the required external parents
+    # are exactly the current lineage-parent ids that are not current records.
+    current_ids = tuple(record.envelope.record_version_id for record in current_tuple)
+    current_id_set = set(current_ids)
+    if len(current_id_set) != len(current_ids):
+        return _rejected(("ADAPTER_BATCH_INVALID",))
+    required_external: set[str] = set()
+    for record in current_tuple:
+        for parent_id in record.envelope.lineage_parent_ids:
+            if parent_id not in current_id_set:
+                required_external.add(parent_id)
+    supplied_ids = [record.envelope.record_version_id for record in parent_tuple]
+    supplied_set = set(supplied_ids)
+    if len(supplied_set) != len(supplied_ids):
+        return _rejected(("ADAPTER_PARENT_CONTEXT_INVALID",))
+    if supplied_set != required_external:
+        # A missing or unused-extra parent object.
+        return _rejected(("ADAPTER_PARENT_CONTEXT_INVALID",))
+
+    # Load and fully verify the existing (nonempty) chain BEFORE any registration.
+    try:
+        loaded = load_and_verify_manifest_store(path)
+    except Exception:
+        return _rejected(("ADAPTER_STORE_LOAD_FAILED",))
+    if (
+        not loaded.is_valid
+        or loaded.status != "STORE_LOADED_VERIFIED"
+        or loaded.snapshot is None
+    ):
+        return _rejected(
+            ("ADAPTER_STORE_LOAD_FAILED",), store=tuple(loaded.error_codes)
+        )
+    snapshot = loaded.snapshot
+    entries = snapshot.manifest_entries
+    references = snapshot.dataset_references
+    if not entries:
+        return _rejected(("ADAPTER_STORE_STATE_INVALID",))
+    if manifest_id != entries[0].manifest_id:
+        return _rejected(("ADAPTER_MANIFEST_ID_MISMATCH",))
+    chain = snapshot.chain_validation
+    if (
+        chain is None
+        or not chain.is_valid
+        or chain.head_manifest_entry_id is None
+    ):
+        return _rejected(("ADAPTER_STORE_STATE_INVALID",))
+    head = chain.head_manifest_entry_id
+
+    # Every supplied parent must already be authorized by an earlier registered
+    # reference (the union of every registered reference's ordinary ids).
+    registered_union: set[str] = set()
+    for reference in references:
+        registered_union.update(reference.ordinary_record_version_ids)
+    if not supplied_set <= registered_union:
+        return _rejected(("ADAPTER_PARENT_CONTEXT_UNREGISTERED",))
+
+    # Validate the current records against the ACTUAL direct external parents.
+    try:
+        batch = validate_record_batch(
+            current_tuple, known_parent_records=parent_tuple
+        )
+    except Exception:
+        return _rejected(("ADAPTER_BATCH_INVALID",))
+    if batch.is_valid is not True or batch.quarantined_record_version_ids:
+        return _rejected(
+            ("ADAPTER_BATCH_INVALID",), upstream=tuple(batch.error_codes)
+        )
+    accepted = tuple(batch.accepted_record_version_ids)
+    if set(accepted) != current_id_set or len(accepted) != len(current_ids):
+        return _rejected(("ADAPTER_BATCH_INVALID",))
+
+    reference = _build_lineage_delta_reference(
+        validated_batch_sha256=batch.canonical_batch_sha256,
+        ordinary_ids=accepted,
+        external_parent_ids=tuple(sorted(supplied_set)),
+        created_from_manifest_entry_id=head,
+        validator_version=validator_version,
+        parameter_set_id=parameter_set_id,
+    )
+    if reference is None:
+        return _rejected(("ADAPTER_REFERENCE_BUILD_FAILED",))
+
+    return _register_reference(
+        path,
+        reference,
+        manifest_id=manifest_id,
+        effective_time=effective_time,
+        expected_created_from=head,
     )

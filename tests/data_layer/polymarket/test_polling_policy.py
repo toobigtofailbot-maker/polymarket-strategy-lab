@@ -131,3 +131,29 @@ def test_polling_docs_keep_wp8_d002_open_and_deny_runtime_authority():
 
     for text in required:
         assert text in doc
+
+
+def test_gamma_markets_keyset_policy_is_present_and_conservative():
+    policy = default_polling_policy()
+    assert "gamma_markets_keyset" in NETWORK_ENDPOINT_KEYS
+    keyset = policy.endpoints["gamma_markets_keyset"]
+    assert keyset.enabled_by_default is False
+    assert keyset.requires_explicit_network is True
+    assert keyset.allow_automated_loop is False
+    assert keyset.max_requests_per_window == 6
+    assert keyset.window_seconds == 60
+    assert keyset.minimum_interval_seconds == 10.0
+    assert keyset.max_markets_per_run == 100
+    assert keyset.max_tokens_per_run == 0
+    assert keyset.notes.strip()
+    validation = validate_polling_policy(policy)
+    assert validation.passed
+
+
+def test_existing_endpoint_budgets_are_unchanged_by_wp166():
+    policy = default_polling_policy()
+    gamma = policy.endpoints["gamma_markets"]
+    assert gamma.max_requests_per_window == 6 and gamma.max_markets_per_run == 25
+    clob = policy.endpoints["clob_book"]
+    assert clob.max_requests_per_window == 10 and clob.max_tokens_per_run == 20
+    assert clob.minimum_interval_seconds == 6.0

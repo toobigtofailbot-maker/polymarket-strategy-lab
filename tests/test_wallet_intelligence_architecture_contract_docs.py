@@ -443,6 +443,11 @@ def test_only_allowed_wallet_src_files_changed() -> None:
                 "src/data_layer/point_in_time_market_research/polymarket_public_population.py",
                 # WP165: bounded incremental/repeated public Polymarket cumulative cross-run lineage capture
                 "src/data_layer/point_in_time_market_research/polymarket_incremental_population.py",
+                # WP166: bounded scalable one-page keyset lineage-delta public Polymarket capture,
+                # plus the read-only Gamma keyset client endpoint and its conservative polling budget.
+                "src/data_layer/point_in_time_market_research/polymarket_scaled_population.py",
+                "src/data_layer/polymarket/public_client.py",
+                "src/data_layer/polymarket/polling_policy.py",
         }
     assert set(src_changes) <= allowed_src_changes, (
         f"Unexpected src/ changes: {set(src_changes) - allowed_src_changes}"

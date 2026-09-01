@@ -58,6 +58,11 @@ MANIFEST_REFERENCE_POSTURE = (
 
 DATASET_REFERENCE_SCHEMA_ID = "point-in-time-dataset-snapshot-reference"
 DATASET_REFERENCE_SCHEMA_VERSION = "1.0.0"
+# WP166 additive lineage-delta reference schema. Version 1.0.0 references remain
+# byte-for-byte identity-compatible; version 2.0.0 references additionally commit
+# an explicit external direct-parent id set and the exact prior manifest head.
+DATASET_REFERENCE_SCHEMA_VERSION_LINEAGE = "2.0.0"
+DATASET_REFERENCE_SUPPORTED_SCHEMA_VERSIONS = ("1.0.0", "2.0.0")
 MANIFEST_ENTRY_SCHEMA_ID = "point-in-time-local-manifest-entry"
 MANIFEST_ENTRY_SCHEMA_VERSION = "1.0.0"
 
@@ -67,6 +72,7 @@ MANIFEST_ENTRY_SCHEMA_VERSION = "1.0.0"
 DATASET_DERIVATION_MODES = (
     "VALIDATED_RECORD_BATCH",
     "AS_OF_QUERY_RESULT",
+    "LINEAGE_DELTA_RECORD_BATCH",
 )
 MANIFEST_ENTRY_KINDS = (
     "REGISTER_DATASET_SNAPSHOT_REFERENCE",
@@ -109,6 +115,9 @@ MANIFEST_REFERENCE_ERROR_CODES = (
     "MANIFEST_ID_COLLISION_OR_MISMATCH",
     "DATASET_REFERENCE_ID_COLLISION_OR_MISMATCH",
     "SAFETY_POSTURE_INVALID",
+    # WP166 lineage-delta parent-context chain authority.
+    "REFERENCE_PARENT_CONTEXT_INVALID",
+    "REFERENCE_PARENT_CONTEXT_UNCOMMITTED",
 )
 
 # Schema version 1.0.0 defines no warning codes; every result reports an empty
@@ -141,6 +150,9 @@ _MAX_STR = 256
 _MAX_RECORD_IDS = 256
 _MAX_ENTRIES = 256
 _MAX_REFERENCES = 256
+# WP166: cumulative unique ordinary record ids tracked across a whole chain,
+# matching the WP163 physical research-store horizon.
+_MAX_REGISTERED_RECORD_IDS = 4_096
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _RECORD_VERSION_ID_RE = re.compile(r"^record:sha256:[0-9a-f]{64}$")
@@ -186,6 +198,11 @@ _REFERENCE_FIELDS = (
     "no_execution_authority",
 )
 _REFERENCE_FIELD_SET = frozenset(_REFERENCE_FIELDS)
+# WP166: an optional additive input key. A v1 (schema 1.0.0) payload that predates
+# WP166 lacks it and decodes as the empty tuple, preserving v1 identity exactly; a
+# v2 (schema 2.0.0) payload always carries it.
+_EXTERNAL_PARENT_FIELD = "external_parent_record_version_ids"
+_REFERENCE_ALLOWED_FIELD_SET = _REFERENCE_FIELD_SET | frozenset({_EXTERNAL_PARENT_FIELD})
 
 _ENTRY_FIELDS = (
     "schema_id",
@@ -228,10 +245,16 @@ class DatasetSnapshotReference:
     query_engine_version: str | None
     validator_version: str
     parameter_set_id: str
-    created_from_manifest_entry_id: None
+    # WP166: v1 references keep this None; a v2 lineage-delta reference carries the
+    # exact manifest head that existed immediately before its registration.
+    created_from_manifest_entry_id: str | None
     human_review_required: bool
     advisory_only: bool
     no_execution_authority: bool
+    # WP166 additive trailing field with a default so v1 positional/keyword
+    # construction is unchanged and v1 identity is unaffected. Empty for v1
+    # references; the sorted external direct-parent id set for v2 references.
+    external_parent_record_version_ids: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -447,9 +470,12 @@ def build_dataset_snapshot_reference(
     """Build one immutable dataset snapshot reference or fail closed.
 
     Validates local structure, closed vocabularies, bounds, mode-conditional
-    query fields, record-version tuples, reserved-null backlink, safety posture,
-    and the recomputed self identity from an explicit caller mapping. The
-    caller-provided ``dataset_snapshot_reference_id`` is never trusted; it is
+    query fields, record-version tuples, the version-conditional backlink and
+    external-parent set, safety posture, and the recomputed self identity from an
+    explicit caller mapping. Both schema 1.0.0 (``VALIDATED_RECORD_BATCH`` /
+    ``AS_OF_QUERY_RESULT``) and schema 2.0.0 (``LINEAGE_DELTA_RECORD_BATCH``) are
+    accepted; the v1 preimage, identity, and behavior are byte-for-byte unchanged.
+    The caller-provided ``dataset_snapshot_reference_id`` is never trusted; it is
     recomputed from the canonical preimage and compared.
     """
 
@@ -458,7 +484,9 @@ def build_dataset_snapshot_reference(
 
     keys = set(input_mapping.keys())
     structural: list[str] = []
-    if keys - _REFERENCE_FIELD_SET:
+    # ``external_parent_record_version_ids`` is allowed but optional: a pre-WP166
+    # v1 payload omits it and decodes as (), so it is never a required field.
+    if keys - _REFERENCE_ALLOWED_FIELD_SET:
         structural.append("FIELD_VALUE_INVALID")
     if _REFERENCE_FIELD_SET - keys:
         structural.append("FIELD_MISSING")
@@ -466,16 +494,31 @@ def build_dataset_snapshot_reference(
         return _rejected_reference(structural)
 
     # Schema takes precedence over all field-value checks.
+    schema_version = input_mapping["schema_version"]
     if (
         input_mapping["schema_id"] != DATASET_REFERENCE_SCHEMA_ID
-        or input_mapping["schema_version"] != DATASET_REFERENCE_SCHEMA_VERSION
+        or schema_version not in DATASET_REFERENCE_SUPPORTED_SCHEMA_VERSIONS
     ):
         return _rejected_reference(("SCHEMA_UNSUPPORTED",))
+    is_lineage = schema_version == DATASET_REFERENCE_SCHEMA_VERSION_LINEAGE
 
     errors: list[str] = []
 
     derivation_mode = input_mapping["derivation_mode"]
-    _check_vocabulary(derivation_mode, _DERIVATION_MODES, errors)
+    # The derivation-mode vocabulary is bound to the schema version: a lineage
+    # reference must be LINEAGE_DELTA_RECORD_BATCH, a v1 reference must not be.
+    if is_lineage:
+        if derivation_mode != "LINEAGE_DELTA_RECORD_BATCH":
+            errors.append(
+                "FIELD_TYPE_INVALID"
+                if not isinstance(derivation_mode, str)
+                else "REFERENCE_MODE_MISMATCH"
+            )
+    else:
+        if not _check_vocabulary(derivation_mode, _DERIVATION_MODES, errors):
+            pass
+        elif derivation_mode == "LINEAGE_DELTA_RECORD_BATCH":
+            errors.append("REFERENCE_MODE_MISMATCH")
 
     validated_batch_sha256 = input_mapping["validated_batch_sha256"]
     if not _valid_sha256(validated_batch_sha256):
@@ -515,11 +558,39 @@ def build_dataset_snapshot_reference(
             else "FIELD_VALUE_INVALID"
         )
 
-    # Reserved backlink: present and null in schema 1.0.0.
-    if input_mapping["created_from_manifest_entry_id"] is not None:
-        errors.append("FIELD_VALUE_INVALID")
-
-    _validate_reference_mode(input_mapping, derivation_mode, errors)
+    created_from = input_mapping["created_from_manifest_entry_id"]
+    external_raw = input_mapping.get(_EXTERNAL_PARENT_FIELD, ())
+    external: list[str] | None = None
+    if is_lineage:
+        # v2 backlink: the exact prior manifest head, required and non-null.
+        if not _valid_manifest_entry_id(created_from):
+            errors.append(
+                "FIELD_TYPE_INVALID"
+                if not isinstance(created_from, str)
+                else "FIELD_VALUE_INVALID"
+            )
+        # v2 external direct-parent set: bounded, unique, sorted ascending, and
+        # disjoint from the ordinary current ids.
+        external = _validate_record_id_tuple(external_raw, errors)
+        if external is not None:
+            if list(external) != sorted(external) or len(set(external)) != len(external):
+                errors.append("FIELD_VALUE_INVALID")
+            if ordinary is not None and set(external) & set(ordinary):
+                errors.append("FIELD_VALUE_INVALID")
+        # A v2 lineage-delta reference is an advisory batch registration: every
+        # query field is null and there is never a review-conflict authority set.
+        if any(input_mapping[field] is not None for field in _QUERY_FIELDS):
+            errors.append("REFERENCE_MODE_MISMATCH")
+        if review:
+            errors.append("REVIEW_CONFLICT_AUTHORITY_FORBIDDEN")
+    else:
+        # Reserved backlink: present and null in schema 1.0.0.
+        if created_from is not None:
+            errors.append("FIELD_VALUE_INVALID")
+        # A v1 reference never carries a non-empty external-parent set.
+        if _EXTERNAL_PARENT_FIELD in input_mapping and external_raw not in ((), []):
+            errors.append("FIELD_VALUE_INVALID")
+        _validate_reference_mode(input_mapping, derivation_mode, errors)
 
     # Derived human-review posture and fixed safety flags.
     human_review = input_mapping["human_review_required"]
@@ -539,11 +610,12 @@ def build_dataset_snapshot_reference(
 
     ordinary_tuple = tuple(ordinary)  # type: ignore[arg-type]
     review_tuple = tuple(review)  # type: ignore[arg-type]
+    external_tuple = tuple(external) if (is_lineage and external is not None) else ()
     canonical_review = bool(review_tuple)
 
     preimage = {
         "schema_id": DATASET_REFERENCE_SCHEMA_ID,
-        "schema_version": DATASET_REFERENCE_SCHEMA_VERSION,
+        "schema_version": schema_version,
         "derivation_mode": derivation_mode,
         "validated_batch_sha256": validated_batch_sha256,
         "ordinary_record_version_ids": list(ordinary_tuple),
@@ -560,6 +632,11 @@ def build_dataset_snapshot_reference(
         "advisory_only": True,
         "no_execution_authority": True,
     }
+    if is_lineage:
+        # v2 identity binds the external direct-parent set and the prior head. The
+        # v1 preimage (no such keys) is therefore byte-for-byte unchanged.
+        preimage["external_parent_record_version_ids"] = list(external_tuple)
+        preimage["created_from_manifest_entry_id"] = created_from
     reference_id = _digest(_DATASET_REFERENCE_ID_PREFIX, preimage)
     if reference_id is None:
         return _rejected_reference(("FIELD_VALUE_INVALID",))
@@ -568,7 +645,7 @@ def build_dataset_snapshot_reference(
 
     reference = DatasetSnapshotReference(
         schema_id=DATASET_REFERENCE_SCHEMA_ID,
-        schema_version=DATASET_REFERENCE_SCHEMA_VERSION,
+        schema_version=str(schema_version),
         dataset_snapshot_reference_id=reference_id,
         derivation_mode=str(derivation_mode),
         validated_batch_sha256=str(validated_batch_sha256),
@@ -582,10 +659,11 @@ def build_dataset_snapshot_reference(
         query_engine_version=input_mapping["query_engine_version"],
         validator_version=str(validator_version),
         parameter_set_id=str(parameter_set_id),
-        created_from_manifest_entry_id=None,
+        created_from_manifest_entry_id=(str(created_from) if is_lineage else None),
         human_review_required=canonical_review,
         advisory_only=True,
         no_execution_authority=True,
+        external_parent_record_version_ids=external_tuple,
     )
     return DatasetSnapshotReferenceBuildResult(
         is_valid=True,
@@ -957,10 +1035,52 @@ def validate_manifest_chain(
     # Subject registry existence and the register/supersede/invalidate machine.
     _validate_subject_state(entry_tuple, registry, id_to_index, errors)
 
+    # WP166: v2 lineage-delta parent-context authority over the whole chain.
+    _validate_lineage_delta_parent_context(entry_tuple, registry, errors)
+
     if errors:
         return _rejected_chain(errors)
 
     return _valid_chain_result(entry_tuple, registry)
+
+
+def _validate_lineage_delta_parent_context(
+    entry_tuple: tuple[ManifestEntry, ...],
+    registry: Mapping[str, DatasetSnapshotReference],
+    errors: list[str],
+) -> None:
+    """Enforce WP166 v2 lineage-delta parent-context authority across the chain.
+
+    Entries are walked in sequence order (already proven to equal input order). A
+    bounded set of record ids authorized by EARLIER ``REGISTER`` entries is
+    maintained. For each v2 ``LINEAGE_DELTA_RECORD_BATCH`` ``REGISTER`` the backlink
+    must equal the previous entry id, and every external direct-parent id must
+    already be in the earlier-registered authority set — an external parent first
+    introduced in this same entry or a later entry is forbidden. A reference's
+    ordinary current ids join the authority set only AFTER the entry is validated,
+    and the cumulative unique ordinary id count is bounded at the WP163 horizon.
+    """
+
+    registered_ids: set[str] = set()
+    for entry in entry_tuple:
+        if entry.entry_kind != "REGISTER_DATASET_SNAPSHOT_REFERENCE":
+            continue
+        reference = registry.get(entry.dataset_snapshot_reference_id)
+        if reference is None:
+            # Subject-existence is separately reported by _validate_subject_state.
+            continue
+        if reference.derivation_mode == "LINEAGE_DELTA_RECORD_BATCH":
+            if (
+                entry.previous_manifest_entry_id
+                != reference.created_from_manifest_entry_id
+            ):
+                errors.append("REFERENCE_PARENT_CONTEXT_INVALID")
+            for parent_id in reference.external_parent_record_version_ids:
+                if parent_id not in registered_ids:
+                    errors.append("REFERENCE_PARENT_CONTEXT_UNCOMMITTED")
+        registered_ids.update(reference.ordinary_record_version_ids)
+        if len(registered_ids) > _MAX_REGISTERED_RECORD_IDS:
+            errors.append("REFERENCE_PARENT_CONTEXT_INVALID")
 
 
 def _validate_subject_state(
@@ -1118,6 +1238,10 @@ def _reference_to_mapping(reference: DatasetSnapshotReference) -> dict[str, obje
         "human_review_required": reference.human_review_required,
         "advisory_only": reference.advisory_only,
         "no_execution_authority": reference.no_execution_authority,
+        # Pass the raw attribute through: the builder owns the sequence-type
+        # boundary. A v1 reference carries the empty tuple, so this round-trips to
+        # the same v1 identity whether or not the persisted payload had the key.
+        _EXTERNAL_PARENT_FIELD: reference.external_parent_record_version_ids,
     }
 
 

@@ -388,6 +388,12 @@ def _verify_sqlite_integrity(connection: sqlite3.Connection) -> None:
 
 
 def _object_mapping(value: object) -> dict[str, object]:
+    # Field-driven serialization: whatever dataclass fields WP160 defines are
+    # persisted and rebuilt through the public builders. This is why WP166's
+    # schema-2.0.0 lineage-delta references (which add the external-parent id set
+    # and the prior-head backlink field) round-trip with NO SQLite table, column,
+    # index, or PRAGMA user_version change, and why a pre-WP166 v1 payload that
+    # lacks the new field still decodes to its identical v1 identity.
     return {field.name: getattr(value, field.name) for field in fields(value)}
 
 

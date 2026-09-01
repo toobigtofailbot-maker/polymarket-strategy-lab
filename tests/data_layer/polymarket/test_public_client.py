@@ -234,3 +234,62 @@ class TestRequestInfoGetOnly:
         from src.data_layer.polymarket.models import ReadOnlyRequestInfo
         with pytest.raises(ValueError):
             ReadOnlyRequestInfo(method="POST", url="http://x", status_code=200, latency_ms=0)
+
+
+FAKE_KEYSET_RESPONSE = {
+    "markets": [
+        {"id": "1", "conditionId": "0xabc", "question": "Q1", "active": "true",
+         "outcomes": ["Yes", "No"], "clobTokenIds": json.dumps(["111", "222"])},
+    ],
+    "next_cursor": "OPAQUE_CURSOR_ABC",
+}
+
+
+class TestGetMarketsKeyset(unittest.TestCase):
+    @patch("urllib.request.urlopen")
+    def test_keyset_uses_get_and_exact_path(self, mock_urlopen):
+        mock_urlopen.return_value = _make_mock_response(FAKE_KEYSET_RESPONSE)
+        client = PolymarketPublicClient(gamma_base_url="http://fake-gamma")
+        result = client.get_markets_keyset(limit=100)
+        req = mock_urlopen.call_args[0][0]
+        assert req.method == "GET"
+        assert req.full_url.startswith("http://fake-gamma/markets/keyset?")
+        assert isinstance(result, AdapterResult)
+        assert result.data["next_cursor"] == "OPAQUE_CURSOR_ABC"
+
+    @patch("urllib.request.urlopen")
+    def test_keyset_always_includes_limit(self, mock_urlopen):
+        mock_urlopen.return_value = _make_mock_response(FAKE_KEYSET_RESPONSE)
+        client = PolymarketPublicClient(gamma_base_url="http://fake-gamma")
+        client.get_markets_keyset(limit=42)
+        req = mock_urlopen.call_args[0][0]
+        assert "limit=42" in req.full_url
+
+    @patch("urllib.request.urlopen")
+    def test_keyset_after_cursor_only_when_provided(self, mock_urlopen):
+        mock_urlopen.return_value = _make_mock_response(FAKE_KEYSET_RESPONSE)
+        client = PolymarketPublicClient(gamma_base_url="http://fake-gamma")
+        client.get_markets_keyset(limit=10)
+        assert "after_cursor" not in mock_urlopen.call_args[0][0].full_url
+        client.get_markets_keyset(limit=10, after_cursor="CURS")
+        assert "after_cursor=CURS" in mock_urlopen.call_args[0][0].full_url
+
+    @patch("urllib.request.urlopen")
+    def test_keyset_never_sends_offset(self, mock_urlopen):
+        mock_urlopen.return_value = _make_mock_response(FAKE_KEYSET_RESPONSE)
+        client = PolymarketPublicClient(gamma_base_url="http://fake-gamma")
+        client.get_markets_keyset(limit=10, after_cursor="CURS")
+        assert "offset" not in mock_urlopen.call_args[0][0].full_url
+
+    def test_keyset_endpoint_remains_repo_unverified(self):
+        from src.data_layer.polymarket.public_client import _ENDPOINT_MAP
+        from src.data_layer.polymarket import PolymarketEndpointNotVerifiedError
+
+        entry = _ENDPOINT_MAP["gamma_markets_keyset"]
+        assert entry["verified"] is False
+        assert entry["path"] == "/markets/keyset"
+        assert entry["base_url_key"] == "gamma_base_url"
+        # A strict client refuses the unverified endpoint before any request.
+        strict = PolymarketPublicClient(allow_unverified_endpoints=False)
+        with pytest.raises(PolymarketEndpointNotVerifiedError):
+            strict.get_markets_keyset(limit=10)

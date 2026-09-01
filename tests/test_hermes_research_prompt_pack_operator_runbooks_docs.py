@@ -724,6 +724,11 @@ def test_no_src_implementation_for_wp98() -> None:
                 "src/data_layer/point_in_time_market_research/polymarket_public_population.py",
                 # WP165: bounded incremental/repeated public Polymarket cumulative cross-run lineage capture
                 "src/data_layer/point_in_time_market_research/polymarket_incremental_population.py",
+                # WP166: bounded scalable one-page keyset lineage-delta public Polymarket capture,
+                # plus the read-only Gamma keyset client endpoint and its conservative polling budget.
+                "src/data_layer/point_in_time_market_research/polymarket_scaled_population.py",
+                "src/data_layer/polymarket/public_client.py",
+                "src/data_layer/polymarket/polling_policy.py",
             }
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (
