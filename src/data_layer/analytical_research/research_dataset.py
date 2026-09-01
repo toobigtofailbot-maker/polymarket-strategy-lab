@@ -462,7 +462,13 @@ def _table_columns(table_name: str) -> tuple[str, ...]:
 
 def _arrow_field(name: str) -> pa.Field:
     if name in _UTC_TIMESTAMP_COLUMNS:
-        return pa.field(name, pa.timestamp("us", tz="UTC"))
+        # Tz-naive UTC microsecond timestamps. The values are UTC (parsed and
+        # validated as UTC from the canonical string columns, which are retained
+        # verbatim for provenance); storing them tz-naive keeps DuckDB and Polars
+        # timestamp queries free of any timezone-database dependency (DuckDB's
+        # TIMESTAMPTZ path requires pytz and Windows tz conversion requires tzdata,
+        # neither of which is a permitted WP167 dependency).
+        return pa.field(name, pa.timestamp("us"))
     if name in _BOOL_COLUMNS:
         return pa.field(name, pa.bool_())
     if name in _INT_COLUMNS:
@@ -490,7 +496,11 @@ def _build_arrow_table(records: list[Any], table_name: str, role: str) -> pa.Tab
         family = _family_values(record, table_name)
         for name in columns:
             if name in _UTC_TIMESTAMP_COLUMNS:
-                data[name].append(_parse_utc(common.get(_UTC_SOURCE[name])))
+                parsed = _parse_utc(common.get(_UTC_SOURCE[name]))
+                # Store the UTC wall-clock as a tz-naive datetime (no tz database).
+                data[name].append(
+                    parsed.replace(tzinfo=None) if parsed is not None else None
+                )
             elif name == "canonical_payload_json":
                 data[name].append(record.canonical_payload_json)
             elif name in _COMMON_COLUMNS:

@@ -293,7 +293,11 @@ def test_utc_timestamp_columns_and_null_event_time(tmp_path):
     import polars as pl
 
     source_frame = pl.read_parquet(str(out / f"{ar.TABLE_SOURCE_SNAPSHOTS}.parquet"))
-    assert source_frame["observed_time_utc"].dtype == pl.Datetime("us", "UTC")
+    # Derived UTC timestamps are stored tz-naive (UTC wall-clock) so DuckDB/Polars
+    # queries need no timezone database; the canonical string columns retain the
+    # explicit UTC offset for provenance.
+    assert source_frame["observed_time_utc"].dtype == pl.Datetime("us")
+    assert source_frame["observed_time"][0].endswith("Z")
     # The source snapshot has a null event_time; the derived UTC column must be null.
     assert source_frame["event_time_utc"].null_count() == source_frame.height
 

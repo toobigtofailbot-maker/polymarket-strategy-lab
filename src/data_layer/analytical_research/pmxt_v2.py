@@ -25,12 +25,17 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
+import pyarrow.compute as pc
 import pyarrow.parquet as pq
+
+_EPOCH_UTC = datetime(1970, 1, 1, tzinfo=timezone.utc)
+_UNIT_TO_MICROS = {"s": 1_000_000, "ms": 1_000, "us": 1, "ns": None}
 
 from ..point_in_time_market_research import canonical_json_bytes, sha256_hex
 from .external_dataset import (
@@ -194,15 +199,34 @@ def _decimal_ok(value: object) -> bool:
     return isinstance(value, int)
 
 
-def _validate_and_scan_file(
-    parquet_file: pq.ParquetFile, present_columns: set[str]
-) -> tuple[int, Any, Any]:
-    """Batched validation of one pmxt file; returns (rows, min_ts, max_ts).
+def _epoch_to_utc(epoch: int, unit: str) -> datetime:
+    """Convert an integer timestamp epoch (in ``unit``) to an aware UTC datetime.
 
-    Never reads the whole file into one Python list; each batch is bounded by
-    ``MAX_ROW_BATCH``. Raises ``_PmxtFailure`` with a closed code on any fault.
+    Uses only a fixed UTC offset and ``timedelta``, so no timezone database
+    (``pytz``/``tzdata``) is required on any platform.
     """
 
+    if unit == "ns":
+        micros = epoch // 1_000
+    else:
+        micros = epoch * _UNIT_TO_MICROS[unit]
+    return _EPOCH_UTC + timedelta(microseconds=micros)
+
+
+def _validate_and_scan_file(
+    parquet_file: pq.ParquetFile, schema: pa.Schema
+) -> tuple[int, datetime, datetime]:
+    """Batched validation of one pmxt file; returns (rows, min_utc, max_utc).
+
+    Never reads the whole file into one Python list; each batch is bounded by
+    ``MAX_ROW_BATCH``. Timestamp columns are inspected as their underlying int64
+    epochs (via a zero-copy cast) rather than converted to Python datetimes, so no
+    timezone database is required to compute coverage. Raises ``_PmxtFailure`` with
+    a closed code on any fault.
+    """
+
+    present_columns = set(schema.names)
+    ts_unit = schema.field("timestamp").type.unit
     scan_columns = [
         column
         for column in (
@@ -216,36 +240,31 @@ def _validate_and_scan_file(
         if column in present_columns
     ]
     total_rows = 0
-    min_ts: Any = None
-    max_ts: Any = None
+    min_epoch: int | None = None
+    max_epoch: int | None = None
     decimal_present = [c for c in PMXT_V2_DECIMAL_COLUMNS if c in present_columns]
     side_present = PMXT_V2_SIDE_COLUMN in present_columns
 
     for batch in parquet_file.iter_batches(
         batch_size=MAX_ROW_BATCH, columns=scan_columns
     ):
-        event_types = batch.column("event_type").to_pylist()
-        for value in event_types:
+        for value in batch.column("event_type").to_pylist():
             if value is None:
                 raise _PmxtFailure("EXTERNAL_SOURCE_SCHEMA_INVALID")
             if value not in PMXT_V2_EVENT_TYPES:
                 raise _PmxtFailure("EXTERNAL_SOURCE_EVENT_INVALID")
         for column in ("market", "asset_id"):
-            for value in batch.column(column).to_pylist():
-                if value is None:
-                    raise _PmxtFailure("EXTERNAL_SOURCE_SCHEMA_INVALID")
-        timestamps = batch.column("timestamp").to_pylist()
-        for value in timestamps:
-            if value is None:
+            if batch.column(column).null_count > 0:
                 raise _PmxtFailure("EXTERNAL_SOURCE_SCHEMA_INVALID")
-            if getattr(value, "tzinfo", None) is None:
-                raise _PmxtFailure("EXTERNAL_SOURCE_TIMESTAMP_INVALID")
-            if value.utcoffset().total_seconds() != 0:
-                raise _PmxtFailure("EXTERNAL_SOURCE_TIMESTAMP_INVALID")
-            if min_ts is None or value < min_ts:
-                min_ts = value
-            if max_ts is None or value > max_ts:
-                max_ts = value
+        timestamp_column = batch.column("timestamp")
+        if timestamp_column.null_count > 0:
+            raise _PmxtFailure("EXTERNAL_SOURCE_SCHEMA_INVALID")
+        epochs = timestamp_column.cast(pa.int64())
+        batch_min = pc.min(epochs).as_py()
+        batch_max = pc.max(epochs).as_py()
+        if batch_min is not None:
+            min_epoch = batch_min if min_epoch is None else min(min_epoch, batch_min)
+            max_epoch = batch_max if max_epoch is None else max(max_epoch, batch_max)
         if side_present:
             for value in batch.column(PMXT_V2_SIDE_COLUMN).to_pylist():
                 if value is not None and value not in PMXT_V2_VALID_SIDES:
@@ -256,9 +275,9 @@ def _validate_and_scan_file(
                     raise _PmxtFailure("EXTERNAL_SOURCE_SCHEMA_INVALID")
         total_rows += batch.num_rows
 
-    if total_rows == 0 or min_ts is None or max_ts is None:
+    if total_rows == 0 or min_epoch is None or max_epoch is None:
         raise _PmxtFailure("EXTERNAL_SOURCE_FILE_INVALID")
-    return total_rows, min_ts, max_ts
+    return total_rows, _epoch_to_utc(min_epoch, ts_unit), _epoch_to_utc(max_epoch, ts_unit)
 
 
 def _file_sha256_and_length(path: Path) -> tuple[str, int]:
@@ -345,29 +364,31 @@ def validate_and_describe_pmxt_v2_archive(
     try:
         for entry in files:
             resolved = _normalize_local_path(entry.path)
+            source_sha256, byte_length = _file_sha256_and_length(resolved)
+            # Open the file explicitly so the handle is always closed (pyarrow's
+            # ParquetFile otherwise leaves a lingering handle, which locks the file
+            # on Windows). Everything read from the file happens inside this block.
             try:
-                parquet_file = pq.ParquetFile(resolved)
+                with resolved.open("rb") as handle:
+                    parquet_file = pq.ParquetFile(handle)
+                    schema = parquet_file.schema_arrow
+                    _validate_schema(schema)
+                    file_fingerprint = pmxt_v2_schema_fingerprint(schema)
+                    if fingerprint is None:
+                        fingerprint = file_fingerprint
+                    elif file_fingerprint != fingerprint:
+                        raise _PmxtFailure("EXTERNAL_SOURCE_SCHEMA_INVALID")
+                    rows, min_ts, max_ts = _validate_and_scan_file(parquet_file, schema)
+            except _PmxtFailure:
+                raise
             except Exception:
                 raise _PmxtFailure("EXTERNAL_SOURCE_FILE_INVALID") from None
-            schema = parquet_file.schema_arrow
-            _validate_schema(schema)
-
-            file_fingerprint = pmxt_v2_schema_fingerprint(schema)
-            if fingerprint is None:
-                fingerprint = file_fingerprint
-            elif file_fingerprint != fingerprint:
-                raise _PmxtFailure("EXTERNAL_SOURCE_SCHEMA_INVALID")
-
-            rows, min_ts, max_ts = _validate_and_scan_file(
-                parquet_file, set(schema.names)
-            )
             total_rows += rows
             if coverage_min is None or min_ts < coverage_min:
                 coverage_min = min_ts
             if coverage_max is None or max_ts > coverage_max:
                 coverage_max = max_ts
 
-            source_sha256, byte_length = _file_sha256_and_length(resolved)
             objects.append(
                 ExternalSourceObject(
                     object_name=entry.object_name,
