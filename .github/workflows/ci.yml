@@ -38,7 +38,13 @@ jobs:
         python: ["3.12", "3.14"]
     steps:
       - name: Normalize line endings before checkout
-        run: git config --global core.autocrlf false
+        # `.gitattributes` marks files `text=auto`, which checks out with the
+        # platform-native EOL (CRLF on Windows) unless core.eol is pinned. Force LF
+        # on every runner so line-ending-sensitive byte-hash tests (e.g. the WP159
+        # package hashes) see identical bytes on Windows and Linux.
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
 
       - name: Checkout
         uses: actions/checkout@v4
