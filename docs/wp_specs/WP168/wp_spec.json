@@ -195,7 +195,7 @@
   },
   "api_matrix": {
     "applicable": false,
-    "reason": "WP168 changes no existing predecessor public API. It adds a net-new src/research_runtime/nautilus_offline package surface documented in docs/nautilus_offline_kernel_contract.md and imports predecessors and NautilusTrader only through their existing public API.",
+    "reason": "WP168 changes no existing predecessor public API, so the machine api_matrix (which encodes deltas to a pre-existing public surface) is applicable:false. WP168's public surface is entirely net-new and is frozen instead in docs/wp_specs/WP168/wp_prompt.txt and docs/nautilus_offline_kernel_contract.md, which are the canonical location for net-new API; predecessors and NautilusTrader are imported only through their existing public API.",
     "items": []
   },
   "semantic_fields": {
@@ -301,7 +301,7 @@
   },
   "evidence_plan": {
     "applicable": true,
-    "reason": "Requirement-to-evidence traceability R001-R049 mapping each WP168 requirement to a command and expected result, including the deterministic canonical-source-ordering, duplicate-multiplicity, frozen event_kind_rank, and tick-size exact-multiple proofs; every pytest node refers to a test module in the frozen exact scope.",
+    "reason": "Requirement-to-evidence traceability R001-R050 mapping each WP168 requirement to a command and expected result; every new-capability pytest node lives in the frozen exact-scope test modules, and governance reconciliation is proven by in-scope governance guards plus the full suite. Includes receive-time-primary deterministic ordering, physical-order-independent canonical serialization, duplicate multiplicity, frozen event_kind_rank, tick-size exact-multiple, and two-distinct-surface PR evidence.",
     "items": [
       {
         "requirement_id": "R001",
@@ -326,10 +326,10 @@
       },
       {
         "requirement_id": "R004",
-        "source": "pip-audit",
-        "test": "dependency-audit job",
-        "command": "python -m pip_audit",
-        "expected_result": "WP168 pins (nautilus_trader==1.231.0 + WP167 pins) have no known vulnerabilities in the isolated hosted CI environment"
+        "source": "pip-audit-ci",
+        "test": "isolated dependency-audit hosted CI job",
+        "command": "gh api \"repos/toobigtofailbot-maker/polymarket-strategy-lab/commits/$(git rev-parse HEAD)/check-runs\" --jq \".check_runs[] | select(.name|test(\\\"dependency-audit\\\")) | .conclusion\"",
+        "expected_result": "the isolated dependency-audit job (python -m pip_audit over the exact installed WP168 closure: nautilus_trader==1.231.0 + WP167 pins) for the exact current head SHA reports conclusion success; this binds the audit to the isolated hosted closure, not a local interpreter"
       },
       {
         "requirement_id": "R005",
@@ -404,9 +404,9 @@
       {
         "requirement_id": "R015",
         "source": "pytest",
-        "test": "test_equal_ts_init_events_have_deterministic_event_kind_rank_order",
+        "test": "test_equal_ts_init_events_have_deterministic_tie_order",
         "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
-        "expected_result": "two distinct events with identical ts_event and ts_init are ordered deterministically by the frozen total key (ts_event, ts_init, event_kind_rank, canonical_row_digest, canonical_row_bytes) with event_kind_rank book=0 < price_change=1 < last_trade_price=2 < tick_size_change=3"
+        "expected_result": "two distinct events with identical ts_init are ordered deterministically by the frozen total key (ts_init, ts_event, event_kind_rank, canonical_row_digest, canonical_row_bytes) with event_kind_rank book=0 < price_change=1 < last_trade_price=2 < tick_size_change=3"
       },
       {
         "requirement_id": "R016",
@@ -495,16 +495,16 @@
       {
         "requirement_id": "R028",
         "source": "diff-scope",
-        "test": "exact scope",
-        "command": "git diff --name-only main HEAD",
-        "expected_result": "exactly the 35 governed WP168 files changed and nothing else"
+        "test": "exact scope vs frozen base",
+        "command": "git fetch origin && git diff --name-only b79049e9330cc3a94721f0b0653b48f66e31551b...HEAD",
+        "expected_result": "exactly the 35 governed WP168 files differ from the frozen base merge-base b79049e (three-dot diff against the exact certified base SHA, not a drifting local main), and nothing else"
       },
       {
         "requirement_id": "R029",
-        "source": "grep",
-        "test": "no forbidden runtime",
-        "command": "git diff main HEAD",
-        "expected_result": "no live data client, execution client, Polymarket authenticated adapter, credentials, WebSocket, Data API, order placement, paper, live, strategy/alpha, fill model, Redis, scheduler, or Hermes runtime is added"
+        "source": "pytest",
+        "test": "test_package_imports_no_forbidden_runtime_and_no_network",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_runtime_compatibility.py",
+        "expected_result": "a scoped import/no-network test proves the nautilus_offline package imports no live data/execution client, no authenticated Polymarket client, no WebSocket/Data API, no credentials, no Redis, no scheduler, and opens no product/runtime network socket (a human git diff is supporting, not the mechanical proof)"
       },
       {
         "requirement_id": "R030",
@@ -516,9 +516,9 @@
       {
         "requirement_id": "R031",
         "source": "github-actions",
-        "test": "five hosted jobs bound to the exact head",
-        "command": "gh api \"repos/toobigtofailbot-maker/polymarket-strategy-lab/commits/$(git rev-parse HEAD)/check-runs\" --jq \".check_runs[] | [.name, .conclusion] | @tsv\"",
-        "expected_result": "check-runs for the exact current head include ubuntu-24.04 and windows-2022 with Python 3.12 and 3.14 plus the dependency-audit job, each conclusion success"
+        "test": "five hosted jobs verified against the exact head SHA",
+        "command": "HEAD_SHA=\"$(git rev-parse HEAD)\" && gh api \"repos/toobigtofailbot-maker/polymarket-strategy-lab/commits/$HEAD_SHA/check-runs\" --jq \".check_runs[] | [.name,.head_sha,.conclusion] | @tsv\"",
+        "expected_result": "check-runs whose head_sha equals the resolved 40-char HEAD_SHA include ubuntu-24.04 and windows-2022 with Python 3.12 and 3.14 plus the dependency-audit job, and every one reports conclusion success; presence of a name alone is insufficient without the matching head_sha"
       },
       {
         "requirement_id": "R032",
@@ -544,9 +544,9 @@
       {
         "requirement_id": "R035",
         "source": "pytest",
-        "test": "full suite",
+        "test": "full suite with explicit environmental classification",
         "command": "python -m pytest -q",
-        "expected_result": "full suite is green on hosted CI; locally it passes except environmental baselines proven on the exact base with the identical command/environment (e.g., the Windows MAX_PATH pyo3 import from an over-long path)"
+        "expected_result": "the full suite is green on hosted CI; locally it passes except pre-existing repository baselines reproduced on the exact base with the identical command/environment (e.g., WP159 CRLF); any Nautilus-specific Windows limitation (e.g., the MAX_PATH pyo3 import from an over-long path) is classified explicitly as a NEW limitation, is NOT treated as a pre-existing base failure, and the required hosted Windows jobs must pass"
       },
       {
         "requirement_id": "R036",
@@ -559,8 +559,8 @@
         "requirement_id": "R037",
         "source": "pytest",
         "test": "status/repo/deferred/security governance",
-        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py tests/test_deferred_items_log.py",
-        "expected_result": "status/project-status/repo-truth/deferred/security docs are updated and internally consistent with no contradiction; WP168 is the registered current review target"
+        "command": "python -m pytest -q tests/test_project_status_docs.py",
+        "expected_result": "the in-scope project-status guard passes and registers WP168 as the current review target; the repo-truth, deferred-items, and security-tooling doc edits are additionally validated by their existing repository tests under the full suite (R035), which must remain green with no contradiction"
       },
       {
         "requirement_id": "R038",
@@ -579,16 +579,16 @@
       {
         "requirement_id": "R040",
         "source": "pr-evidence-guard",
-        "test": "pr_evidence_consistency_guard.py two-pass with the resolved head SHA",
-        "command": "HEAD_SHA=\"$(git rev-parse HEAD)\" && python tools/git/pr_evidence_consistency_guard.py --pr-body wp168_pr_body.txt --final-comment wp168_pr_body.txt --expected-head \"$HEAD_SHA\" --require-standard-network-wording --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
-        "expected_result": "git rev-parse HEAD resolves the real 40-character head SHA, which appears in the PR body; the guard exits 0; before the independent PASS certificate exists evidence mode is BLOCKED_NOT_READY with the independent certificate as the sole named blocker"
+        "test": "pr_evidence_consistency_guard.py over two DISTINCT posted surfaces",
+        "command": "HEAD_SHA=\"$(git rev-parse HEAD)\" && python tools/git/pr_evidence_consistency_guard.py --pr-body wp168_pr_body.txt --final-comment wp168_optional_evidence_comment.txt --expected-head \"$HEAD_SHA\" --require-standard-network-wording --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
+        "expected_result": "the PR body is the canonical current-review surface; one REAL optional non-canonical evidence-mirror comment (marked OPTIONAL NON-CANONICAL) exists solely because the current guard CLI still requires a second --final-comment input after WP91; the re-fetched posted PR body and the re-fetched posted optional comment are saved to TWO DISTINCT files (never the same file twice), and the guard run with the resolved 40-char HEAD_SHA (which must appear in the PR body) exits 0; before the independent PASS certificate exists evidence mode is BLOCKED_NOT_READY with the independent certificate as the sole named blocker"
       },
       {
         "requirement_id": "R041",
         "source": "pytest",
         "test": "test_input_enumeration_order_invariance",
         "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py tests/research_runtime/nautilus_offline/test_replay.py",
-        "expected_result": "the same validated semantic rows presented in different input/file enumeration order produce an identical canonical source ordering and an identical replay digest"
+        "expected_result": "the same validated semantic rows presented in different input/file enumeration order produce an identical canonical source ordering (ts_init primary) and an identical replay digest"
       },
       {
         "requirement_id": "R042",
@@ -621,16 +621,16 @@
       {
         "requirement_id": "R046",
         "source": "pytest",
-        "test": "test_event_kind_rank_orders_equal_timestamp_mixed_types",
+        "test": "test_event_kind_rank_orders_equal_ts_init_mixed_types",
         "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
-        "expected_result": "equal ts_event and equal ts_init with different event types are ordered by the frozen event_kind_rank book<price_change<last_trade_price<tick_size_change"
+        "expected_result": "equal ts_init and equal ts_event with different event types are ordered by the frozen event_kind_rank book<price_change<last_trade_price<tick_size_change"
       },
       {
         "requirement_id": "R047",
         "source": "pytest",
         "test": "test_equal_timestamp_same_kind_orders_by_canonical_row_bytes",
         "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
-        "expected_result": "equal timestamps and the same event kind but different semantic row content are ordered deterministically by canonical_row_digest then canonical_row_bytes"
+        "expected_result": "equal ts_init and ts_event and the same event kind but different semantic row content are ordered deterministically by canonical_row_digest then canonical_row_bytes"
       },
       {
         "requirement_id": "R048",
@@ -645,6 +645,13 @@
         "test": "test_all_prices_are_exact_multiples_of_finest_increment",
         "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py tests/research_runtime/nautilus_offline/test_instruments.py",
         "expected_result": "every validated historical price is an exact integer multiple of the selected finest price increment; conversion fails closed with NAUTILUS_EVENT_CONVERSION_INVALID otherwise"
+      },
+      {
+        "requirement_id": "R050",
+        "source": "pytest",
+        "test": "test_receive_time_primary_ordering_when_event_time_disagrees",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "when venue ts_event order disagrees with receive ts_init order, the canonical ordering and engine dispatch follow ts_init (point-in-time knowability); the implementation test also proves the engine (add_data sort=True, or sort=False if required on 1.231.0) preserves the canonical equal-ts_init tie order"
       }
     ]
   },
