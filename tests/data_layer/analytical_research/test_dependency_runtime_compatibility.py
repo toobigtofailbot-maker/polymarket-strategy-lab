@@ -90,9 +90,11 @@ def test_duckdb_native_module_executes_under_strict_ci():
     strict = os.environ.get("WP167_STRICT_DUCKDB") == "1"
     if not strict:
         pytest.skip(
-            "DuckDB native execution proof runs under strict hosted CI "
-            "(WP167_STRICT_DUCKDB=1); local environment blocks the native module "
-            "via Windows Smart App Control"
+            "DuckDB native execution proof is asserted only under strict hosted CI "
+            "(WP167_STRICT_DUCKDB=1); it is gated off in the local/non-strict "
+            "environment regardless of local native-module availability (which is "
+            "observational and can change as Windows Smart App Control reputation "
+            "evolves)"
         )
     import duckdb
 

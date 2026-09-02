@@ -288,14 +288,14 @@
   },
   "evidence_plan": {
     "applicable": true,
-    "reason": "Requirement-to-evidence traceability R001-R036 mapping each WP167 requirement to a command and expected result.",
+    "reason": "Requirement-to-evidence traceability R001-R040 mapping each WP167 requirement to a command and expected result.",
     "items": [
       {
         "requirement_id": "R001",
         "source": "git",
-        "test": "predecessor merge and base binding",
-        "command": "git merge-base --is-ancestor 35f4042a595ae58bf8b71a986eaefac0d3fe3dc8 origin/main && git rev-parse origin/main",
-        "expected_result": "origin/main contains the PR166 merge commit 35f4042 and final head f310d96; PR166 is merged"
+        "test": "predecessor final head and merge/base binding",
+        "command": "git merge-base --is-ancestor f310d96c2f5c9ae6ec589239e945ab5746463911 origin/main && git merge-base --is-ancestor 35f4042a595ae58bf8b71a986eaefac0d3fe3dc8 origin/main && git rev-parse origin/main",
+        "expected_result": "both --is-ancestor checks exit 0, proving origin/main contains the PR166 predecessor final head f310d96c2f5c9ae6ec589239e945ab5746463911 and the merge commit 35f4042a595ae58bf8b71a986eaefac0d3fe3dc8; git rev-parse origin/main prints 35f4042a595ae58bf8b71a986eaefac0d3fe3dc8; PR166 is merged"
       },
       {
         "requirement_id": "R002",
@@ -475,9 +475,9 @@
       {
         "requirement_id": "R027",
         "source": "github-actions",
-        "test": "compatibility matrix",
-        "command": "gh run list --workflow ci.yml",
-        "expected_result": "ubuntu-24.04 and windows-2022 with Python 3.12 and 3.14 green at final head"
+        "test": "compatibility matrix bound to the exact head",
+        "command": "gh api \"repos/toobigtofailbot-maker/polymarket-strategy-lab/commits/$(git rev-parse HEAD)/check-runs\" --jq \".check_runs[] | [.name, .conclusion] | @tsv\"",
+        "expected_result": "the check-runs for the exact current head SHA (resolved by git rev-parse HEAD) include ubuntu-24.04 and windows-2022 with Python 3.12 and 3.14 plus the dependency-audit job, and every one reports conclusion success"
       },
       {
         "requirement_id": "R028",
@@ -566,9 +566,9 @@
       {
         "requirement_id": "R040",
         "source": "pr-evidence-guard",
-        "test": "pr_evidence_consistency_guard.py two-pass",
-        "command": "python tools/git/pr_evidence_consistency_guard.py --pr-body wp167_pr_body.txt --expected-head HEAD --require-standard-network-wording --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
-        "expected_result": "PR body evidence is consistent and the guard exits 0; evidence mode is BLOCKED_NOT_READY with the independent certificate as the sole named blocker"
+        "test": "pr_evidence_consistency_guard.py two-pass with the resolved 40-char head SHA",
+        "command": "HEAD_SHA=\"$(git rev-parse HEAD)\" && python tools/git/pr_evidence_consistency_guard.py --pr-body wp167_pr_body.txt --final-comment wp167_pr_body.txt --expected-head \"$HEAD_SHA\" --require-standard-network-wording --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
+        "expected_result": "git rev-parse HEAD resolves the real 40-character head SHA, which is passed to --expected-head and must appear in the PR body; the guard exits 0; evidence mode is BLOCKED_NOT_READY with the independent certificate as the sole named blocker"
       }
     ]
   },

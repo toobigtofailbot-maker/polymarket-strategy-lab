@@ -32,6 +32,39 @@ Dependency impact: EXACTLY THREE NEW DIRECT RUNTIME DEPENDENCIES plus a Python
     polars==1.44.1
   Python floor: requires-python = ">=3.12,<3.15". No NautilusTrader in WP167.
 Trading impact: NONE
+Evidence mode expected: BLOCKED_NOT_READY until the independent PASS certificate
+  exists (Ready for review: NO; the sole named blocker is the pending independent
+  draftability certificate).
+
+RECOMMENDED CLAUDE/CODEX MODE
+Model/reasoning: highest available Claude Code reasoning tier.
+Reason: WP167 is the first runtime-dependency + columnar analytical package that
+  crosses the dependency and workflow-file boundaries while preserving canonical
+  point-in-time authority; the schema, identity, and evidence surface are unusually
+  wide for one WP.
+Escalate to higher reasoning or STOP if: a pin will not install on a supported
+  target; the pmxt v2 schema materially differs from the locked 16-column contract;
+  the exact 29-file scope cannot be preserved; canonical PIT identity/serialization
+  would have to change; or any forbidden successor/protected capability becomes
+  necessary.
+
+AUTHORITY POSTURE (FULL FIELD SET)
+Implementation authority: YES (this authorized package and its authorized
+  same-PR corrections).
+Report/export authority: local analytical manifests/summaries only.
+Paper authority: NO.
+Execution authority: NO.
+Live authority: NO.
+Credential authority: NO.
+Runtime/scheduler authority: NO.
+Canonical evidence authority: canonical PIT (SQLite records/manifests) remains
+  repo-controlled and unchanged; WP167 derives references/outputs only.
+Network authority: product runtime network NO; external downloader NO; hosted CI
+  checkout/package/security-tool install only.
+Dependency-change authority: YES, limited to requires-python ">=3.12,<3.15" and
+  the exact pins pyarrow==25.0.1, duckdb==1.5.5, polars==1.44.1.
+Workflow-file authority: YES, exactly one hosted CI workflow.
+Merge authority: NO. WP168 authority: NO.
 
 XL AUTHORIZATION BASIS
 WP167 remains a single coherent vertical capability: the analytical/external-history
@@ -392,23 +425,14 @@ blocker is the pending independent draftability certificate). Do not claim a fin
 PUBLIC_VERIFIER_PASS or PRIVATE_REPO_MANUAL_VERIFIED before that verification occurs.
 
 15.2 RECOMMENDED MODE
-Model/reasoning: highest available Claude Code reasoning tier. Reason: first
-runtime-dependency + columnar analytical package crossing dependency/workflow
-boundaries while preserving canonical PIT authority. Escalate or STOP if a pin will
-not install on a supported target, the pmxt v2 schema materially differs from the
-locked contract, the exact scope cannot be preserved, or any forbidden capability
-becomes necessary.
+See the front-matter "RECOMMENDED CLAUDE/CODEX MODE" block in Section 0, which is the
+single authoritative statement. This appendix does not restate it and introduces no
+contradictory duplicate value.
 
 15.3 FULL AUTHORITY POSTURE FIELDS
-Implementation authority: YES (this authorized correction). Report/export authority:
-local analytical manifests/summaries only. Paper authority: NO. Execution authority:
-NO. Live authority: NO. Credential authority: NO. Runtime/scheduler authority: NO.
-Canonical evidence authority: canonical PIT remains repo-controlled; WP167 derives
-references/outputs only. Network authority: product runtime NO; external downloader
-NO; hosted CI checkout/package/security-tool install only. Dependency-change
-authority: YES, limited to requires-python >=3.12,<3.15 and pyarrow==25.0.1,
-duckdb==1.5.5, polars==1.44.1. Workflow-file authority: YES, exactly one hosted CI
-workflow. No new authority is granted by this appendix.
+See the front-matter "AUTHORITY POSTURE (FULL FIELD SET)" block in Section 0, which is
+the single authoritative statement. Section 4 gives the narrative authority/non-authority
+posture; this appendix adds no new authority and no contradictory duplicate value.
 
 15.4 HARD MERGE GATE — EXACT COMMANDS AND RESULT FIELDS
 Initial start-gate commands (run before the WP167 branch was created):
@@ -442,19 +466,22 @@ moved governance/PIT paths.
 15.7 COMPATIBILITY / IMPOSSIBILITY TABLE
 Every required behavior below is allowed and compatible with the controlling repo
 mechanism; no unresolved incompatible row remains.
-- predecessor PIT identity/serialization | WP156-WP166 | predecessor files | YES | YES (no mutation) | preserve
-- canonical store read-only authority | WP163 public API | analytical_research | YES | YES | read-only
-- Python >=3.12,<3.15 | pyproject | pyproject.toml | YES | YES | pin floor
-- exact three pins | dependency boundary | pyproject.toml | YES | YES | pin exact
-- PyArrow/DuckDB/Polars split | analytical package | research_dataset.py | YES | YES | implement
-- derived Parquet identity | analytical package | research_dataset.py | YES | YES | logical vs physical
-- ExternalDatasetDescriptor | analytical package | external_dataset.py | YES | YES | provenance-separated
-- real pmxt v2 16-column schema | external boundary | pmxt_v2.py | YES | YES | lock schema
-- bounded 1024-object external history | analytical outer canonicalizer | external_dataset.py | YES | YES | deterministic id
-- hosted CI | workflow boundary | ci.yml | YES | YES | no secrets/product API
-- security dependency audit | CI job | ci.yml | YES | YES | isolated closure
-- nine historical governance guards | tests | seven guard test files + 2 | YES | YES | narrow WP167 branch
-- no Nautilus/WebSocket/Data API/Hermes/strategy/paper/auth/execution/live/scheduler | successor boundaries | N/A | NO | N/A | separate
+
+| Required behavior | Controlling repo mechanism | Files likely needed | Allowed in this WP? | Compatible? | Action |
+|---|---|---|---|---|---|
+| Predecessor PIT identity/serialization preserved | WP156–WP166 PIT record/manifest identity | predecessor PIT files (read-only) | YES | YES (no mutation) | preserve unchanged |
+| Canonical store read-only access | WP163 public load/verify/materialize API | src/data_layer/analytical_research/ | YES | YES | read-only import |
+| Python support floor >=3.12,<3.15 | pyproject requires-python | pyproject.toml | YES | YES | pin floor |
+| Exactly three dependency pins | dependency/lock boundary | pyproject.toml | YES | YES | pin exact 25.0.1/1.5.5/1.44.1 |
+| PyArrow/DuckDB/Polars responsibility split | new analytical package | research_dataset.py | YES | YES | implement split |
+| Derived Parquet logical-vs-physical identity | analytical materializer | research_dataset.py | YES | YES | separate logical id from bytes |
+| Provenance-separated external descriptor | analytical package | external_dataset.py | YES | YES | frozen deterministic descriptor |
+| Exact pmxt v2 16-column schema | external adapter boundary | pmxt_v2.py | YES | YES | lock schema, reject drift |
+| Bounded 1024-object external history | analytical outer canonicalizer | external_dataset.py | YES | YES | deterministic id at capacity |
+| Hosted CI compatibility matrix | workflow-file boundary | .github/workflows/ci.yml | YES | YES | no secrets/product API |
+| Isolated dependency audit | CI dependency-audit job | .github/workflows/ci.yml | YES | YES | audit WP167 closure only |
+| Nine governance regression guards | branch-diff scope guards | 9 governance test files | YES | YES | narrowest WP167 branch |
+| Forbidden successor/protected capabilities | PROTECTED_PATHS / successor boundary | none (must not appear) | NO | N/A | separately gated (WP168+) |
 
 15.8 NEGATIVE TEST MATRIX
 Negative test matrix required: YES. Applicable categories map to focused tests:
