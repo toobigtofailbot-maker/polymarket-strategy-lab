@@ -1,0 +1,674 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP168",
+    "title": "NautilusTrader Offline Kernel, ParquetDataCatalog and Deterministic Replay Foundation",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "OFFLINE_REPLAY_RUNTIME_FOUNDATION",
+    "package_size_class": "XL",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 167,
+      "head_sha": "557127fc04b75e75bb5594ab47df10a25f94d72d",
+      "merge_sha": "b79049e9330cc3a94721f0b0653b48f66e31551b"
+    },
+    "suggested_branch": "claude/wp168-nautilus-offline-kernel",
+    "objective": "Create the repository's first deterministic offline event-replay foundation by adopting NautilusTrader (BinaryOption, InstrumentId/Venue/Price/Quantity, order-book/trade data objects, ParquetDataCatalog, offline BacktestEngine replay) in a new top-level src/research_runtime/nautilus_offline boundary. Verified WP167 pmxt v2 history is deterministically mapped to Nautilus prediction-market instruments and market-data events, registered in a local ParquetDataCatalog, queried, and replayed through the offline engine into a repo-controlled path-independent, mutation-sensitive NautilusReplayReceipt. Adds exactly nautilus_trader==1.231.0 (base install; no Polymarket extra, no Redis, no network). Canonical WP167/PIT truth is read-only and unchanged. Tick-size changes use the finest-tick single-instrument model with a committed regime schedule. No strategy, alpha, fill model, execution edge, paper, live, credentials, WebSocket, Data API, experiment registry, or scheduler.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Explicit user XL authorization with the frozen decision to create a new top-level src/research_runtime boundary rather than nest under src/data_layer. WP168 is one coherent capability: an offline Nautilus replay kernel (compatibility, instruments, conversion, catalog, replay) plus its focused tests and contract doc. The governance files beyond the capability are mandatory: a new dependency and a new top-level src package trip the architecture-boundary guard, the WP167 exact-pins dependency test, the current-review-target status guards, and the adoption/dependency registry, each preserving every prior WP's exact-scope assertions. Exact governed scope is 35 files, which is the coherent minimum and the schema maximum."
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/wp_specs/WP168/wp_prompt.txt",
+      "docs/wp_specs/WP168/wp_spec.json",
+      "docs/wp_specs/WP168/draftability_certificate.json",
+      "pyproject.toml",
+      ".github/workflows/ci.yml",
+      "src/research_runtime/README.md",
+      "src/research_runtime/nautilus_offline/__init__.py",
+      "src/research_runtime/nautilus_offline/runtime_compatibility.py",
+      "src/research_runtime/nautilus_offline/instruments.py",
+      "src/research_runtime/nautilus_offline/conversion.py",
+      "src/research_runtime/nautilus_offline/catalog.py",
+      "src/research_runtime/nautilus_offline/replay.py",
+      "tests/research_runtime/nautilus_offline/test_runtime_compatibility.py",
+      "tests/research_runtime/nautilus_offline/test_instruments.py",
+      "tests/research_runtime/nautilus_offline/test_conversion.py",
+      "tests/research_runtime/nautilus_offline/test_catalog.py",
+      "tests/research_runtime/nautilus_offline/test_replay.py",
+      "docs/nautilus_offline_kernel_contract.md",
+      "tests/test_nautilus_offline_kernel_contract_docs.py",
+      "docs/status_entries/WP168.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/security_tooling_status.md",
+      "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+      "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py"
+    ],
+    "allowed_changed_files": [
+      "docs/wp_specs/WP168/wp_prompt.txt",
+      "docs/wp_specs/WP168/wp_spec.json",
+      "docs/wp_specs/WP168/draftability_certificate.json",
+      "pyproject.toml",
+      ".github/workflows/ci.yml",
+      "src/research_runtime/README.md",
+      "src/research_runtime/nautilus_offline/__init__.py",
+      "src/research_runtime/nautilus_offline/runtime_compatibility.py",
+      "src/research_runtime/nautilus_offline/instruments.py",
+      "src/research_runtime/nautilus_offline/conversion.py",
+      "src/research_runtime/nautilus_offline/catalog.py",
+      "src/research_runtime/nautilus_offline/replay.py",
+      "tests/research_runtime/nautilus_offline/test_runtime_compatibility.py",
+      "tests/research_runtime/nautilus_offline/test_instruments.py",
+      "tests/research_runtime/nautilus_offline/test_conversion.py",
+      "tests/research_runtime/nautilus_offline/test_catalog.py",
+      "tests/research_runtime/nautilus_offline/test_replay.py",
+      "docs/nautilus_offline_kernel_contract.md",
+      "tests/test_nautilus_offline_kernel_contract_docs.py",
+      "docs/status_entries/WP168.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/security_tooling_status.md",
+      "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+      "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py"
+    ],
+    "forbidden_prefixes": [
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/strategy_modules/",
+      "src/paper_trading/",
+      "tools/hermes/",
+      "agent_runtime/",
+      "agent_memory/",
+      "local_data/"
+    ],
+    "max_changed_files": 35,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_architecture_boundaries.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+      "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py"
+    ],
+    "rollback_surface": "Revert the WP168 branch. The change is additive: one new top-level src/research_runtime/nautilus_offline package with its README, the single dependency nautilus_trader==1.231.0 in pyproject.toml, the CI matrix extension, one contract doc, five focused tests plus one contract-docs test, ten historical governance-guard updates, and status/repo-truth/deferred/security/adoption-registry reconciliation. There is no predecessor mutation, no canonical SQLite/manifest/identity change, no data migration, and no committed generated catalog or dataset.",
+    "mode_boundaries": [
+      {
+        "boundary": "dependencies",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": true,
+    "dependencies": true,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "WP168 changes no existing predecessor public API. It adds a net-new src/research_runtime/nautilus_offline package surface documented in docs/nautilus_offline_kernel_contract.md and imports predecessors and NautilusTrader only through their existing public API.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": false,
+    "reason": "The NautilusReplayReceipt and mapping/conversion identity fields are documented in the contract doc and proven by the focused tests and the result-object field-coverage gate; this spec does not re-encode them as governed semantic fields.",
+    "items": []
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "The deterministic instrument identity and replay digest are implemented in code and proven by independent recomputation and mutation-sensitivity tests; this spec does not restate them in the canonical-JSON derivation DSL.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": false,
+    "reason": "WP168 defines no governed state machine; results are single-shot frozen objects with a closed error vocabulary.",
+    "items": []
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed schema-1.0.0 failure precedence for the WP-spec guard.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No canonical-JSON identity derivations are declared in this spec, so no worked derivation examples are required.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Requirement-to-evidence traceability R001-R049 mapping each WP168 requirement to a command and expected result, including the deterministic canonical-source-ordering, duplicate-multiplicity, frozen event_kind_rank, and tick-size exact-multiple proofs; every pytest node refers to a test module in the frozen exact scope.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "git",
+        "test": "predecessor final head + merge binding",
+        "command": "git merge-base --is-ancestor 557127fc04b75e75bb5594ab47df10a25f94d72d origin/main && git merge-base --is-ancestor b79049e9330cc3a94721f0b0653b48f66e31551b origin/main && git rev-parse origin/main",
+        "expected_result": "both --is-ancestor checks exit 0 (origin/main contains PR167 final head 557127f and merge commit b79049e); git rev-parse origin/main prints b79049e9330cc3a94721f0b0653b48f66e31551b; PR167 is merged"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pyproject",
+        "test": "test_pyproject_declares_nautilus_and_wp167_pins_and_range",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_runtime_compatibility.py",
+        "expected_result": "requires-python is >=3.12,<3.15 and dependencies are exactly pyarrow==25.0.1, duckdb==1.5.5, polars==1.44.1, nautilus_trader==1.231.0"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_installed_metadata_matches_nautilus_pin",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_runtime_compatibility.py",
+        "expected_result": "installed nautilus_trader distribution metadata equals the exact pin 1.231.0"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pip-audit",
+        "test": "dependency-audit job",
+        "command": "python -m pip_audit",
+        "expected_result": "WP168 pins (nautilus_trader==1.231.0 + WP167 pins) have no known vulnerabilities in the isolated hosted CI environment"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_compatibility_result_supported_and_no_echo",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_runtime_compatibility.py",
+        "expected_result": "the compatibility result reports NAUTILUS_OFFLINE_RUNTIME_SUPPORTED with empty error codes and execution_authority false; invalid results carry no raw exception or path"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_required_offline_modules_import_and_no_polymarket_extra",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_runtime_compatibility.py",
+        "expected_result": "required Nautilus offline modules import and the Polymarket extra (py_clob_client_v2) and Redis are not required for the offline path"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_binary_option_identity_is_deterministic_and_path_independent",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_instruments.py",
+        "expected_result": "the BinaryOption InstrumentId is deterministically derived from conditionId + outcome token id on venue POLYMARKET and is path-independent"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_instrument_uses_usdc_and_exact_precision",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_instruments.py",
+        "expected_result": "collateral currency is USDC, asset class ALTERNATIVE, and price/size precision and increments are exact with no float"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_missing_or_malformed_market_identity_is_rejected",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_instruments.py",
+        "expected_result": "missing instrument identity and malformed binary market identifier fail closed with NAUTILUS_INSTRUMENT_MAPPING_INVALID and no echo"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_book_snapshot_conversion",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "event_type book converts to an OrderBookDeltas snapshot (CLEAR then ADD deltas) preserving levels"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_price_change_conversion",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "event_type price_change converts to an OrderBookDelta UPDATE, or DELETE on zero size"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_last_trade_price_to_trade_tick",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "event_type last_trade_price converts to a TradeTick with exact price/size, aggressor side, and trade id"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_event_and_receive_timestamp_mapping",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "timestamp maps to ts_event and timestamp_received maps to ts_init in nanoseconds"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_decimal_to_price_quantity_is_exact_no_float",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "exact Decimal to Nautilus Price/Quantity conversion with no float and no precision loss within FIXED_PRECISION 9"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_equal_ts_init_events_have_deterministic_event_kind_rank_order",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "two distinct events with identical ts_event and ts_init are ordered deterministically by the frozen total key (ts_event, ts_init, event_kind_rank, canonical_row_digest, canonical_row_bytes) with event_kind_rank book=0 < price_change=1 < last_trade_price=2 < tick_size_change=3"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_unsupported_pmxt_event_and_malformed_book_rejected",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "unsupported pmxt events and malformed book payloads fail closed with NAUTILUS_EVENT_CONVERSION_INVALID and no echo"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_tick_size_change_committed_as_regime_metadata",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "a tick_size_change is committed as a repo-controlled tick-size regime transition (finest-tick single-instrument model) and never as a second economic market"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_catalog_write_registers_instrument_before_data",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_catalog.py",
+        "expected_result": "the ParquetDataCatalog registers the instrument definition before market data and the catalog path is caller-provided and excluded from logical identity"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_catalog_query_round_trip",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_catalog.py",
+        "expected_result": "catalog query reproduces the converted deltas and trades by count and representative price/size/timestamp"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_catalog_corruption_or_query_mismatch_rejected",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_catalog.py",
+        "expected_result": "catalog write/query failures fail closed with NAUTILUS_CATALOG_WRITE_INVALID or NAUTILUS_CATALOG_QUERY_INVALID and no echo"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "pytest",
+        "test": "test_offline_replay_processes_all_events",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "the bounded offline engine replays one BinaryOption instrument and processes every converted event in the declared deterministic order with no strategy, order, or fill logic"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "pytest",
+        "test": "test_repeat_replay_digest_is_identical",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "a second replay run produces a byte-identical repo-controlled NautilusReplayReceipt and replay digest"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "pytest",
+        "test": "test_receipt_identity_is_path_independent_and_mutation_sensitive",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "the receipt identity excludes absolute paths, temp dirs, wall-clock, env and CI identifiers, and mutating committed input changes the replay digest"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "pytest",
+        "test": "test_source_counts_equal_converted_counts",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "source event counts by type equal converted and replay-processed counts under the declared conversion rules"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "pytest",
+        "test": "test_replay_count_or_digest_mismatch_rejected",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "replay count or digest mismatch fails closed with NAUTILUS_REPLAY_INVALID or NAUTILUS_REPLAY_PARITY_INVALID and no echo"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "pytest",
+        "test": "test_receipt_field_coverage_and_invalid_result_no_echo",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline",
+        "expected_result": "every public NautilusReplayReceipt/result field is enumerated and classified and invalid public results are recursively no-echo scanned"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "pytest",
+        "test": "test_negative_matrix_categories_map_to_tests",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline",
+        "expected_result": "the negative-test matrix maps each applicable category (unsupported python/version/import/instrument/market-id/precision/order/decimal/event/book/catalog/replay-count/replay-digest/no-echo) to a focused test and accounts for all 15 repo negative-test categories"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "diff-scope",
+        "test": "exact scope",
+        "command": "git diff --name-only main HEAD",
+        "expected_result": "exactly the 35 governed WP168 files changed and nothing else"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "grep",
+        "test": "no forbidden runtime",
+        "command": "git diff main HEAD",
+        "expected_result": "no live data client, execution client, Polymarket authenticated adapter, credentials, WebSocket, Data API, order placement, paper, live, strategy/alpha, fill model, Redis, scheduler, or Hermes runtime is added"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "predecessor compatibility suite",
+        "command": "python -m pytest -q tests/data_layer/analytical_research tests/data_layer/point_in_time_market_research",
+        "expected_result": "no canonical WP167/PIT SQLite, manifest, or identity change; predecessor suites pass"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "github-actions",
+        "test": "five hosted jobs bound to the exact head",
+        "command": "gh api \"repos/toobigtofailbot-maker/polymarket-strategy-lab/commits/$(git rev-parse HEAD)/check-runs\" --jq \".check_runs[] | [.name, .conclusion] | @tsv\"",
+        "expected_result": "check-runs for the exact current head include ubuntu-24.04 and windows-2022 with Python 3.12 and 3.14 plus the dependency-audit job, each conclusion success"
+      },
+      {
+        "requirement_id": "R032",
+        "source": "security",
+        "test": "pip check",
+        "command": "python -m pip check",
+        "expected_result": "no broken requirements for the resolved WP168 dependency environment (nautilus_trader==1.231.0 with the WP167 pins); pip-audit is R004"
+      },
+      {
+        "requirement_id": "R033",
+        "source": "artifact-guard",
+        "test": "generated artifact guard",
+        "command": "python tools/git/preflight_generated_artifact_guard.py",
+        "expected_result": "generated artifact guard passes; no committed catalog or generated dataset"
+      },
+      {
+        "requirement_id": "R034",
+        "source": "git",
+        "test": "diff check",
+        "command": "git diff --check main HEAD",
+        "expected_result": "no whitespace or conflict diff errors"
+      },
+      {
+        "requirement_id": "R035",
+        "source": "pytest",
+        "test": "full suite",
+        "command": "python -m pytest -q",
+        "expected_result": "full suite is green on hosted CI; locally it passes except environmental baselines proven on the exact base with the identical command/environment (e.g., the Windows MAX_PATH pyo3 import from an over-long path)"
+      },
+      {
+        "requirement_id": "R036",
+        "source": "wp-spec-guard",
+        "test": "V3 guard",
+        "command": "python tools/wp/wp_spec_guard.py --wp docs/wp_specs/WP168/wp_prompt.txt --spec docs/wp_specs/WP168/wp_spec.json --certificate docs/wp_specs/WP168/draftability_certificate.json",
+        "expected_result": "spec schema and semantics pass; a normal independent PASS certificate hashing these exact bytes makes the guard exit 0; the pre-review certificate phase correctly reports draftability incomplete (PENDING_INDEPENDENT_REVIEW placeholder)"
+      },
+      {
+        "requirement_id": "R037",
+        "source": "pytest",
+        "test": "status/repo/deferred/security governance",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py tests/test_deferred_items_log.py",
+        "expected_result": "status/project-status/repo-truth/deferred/security docs are updated and internally consistent with no contradiction; WP168 is the registered current review target"
+      },
+      {
+        "requirement_id": "R038",
+        "source": "pytest",
+        "test": "architecture boundary + dependency registry reconciliation",
+        "command": "python -m pytest -q tests/test_architecture_boundaries.py tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+        "expected_result": "the new src/research_runtime boundary README and nautilus_offline approved scope are registered, and the adoption/dependency registry promotes NautilusTrader to APPROVED FOR WP168 OFFLINE RESEARCH RUNTIME ONLY with the LGPL-3.0 posture and no vendoring"
+      },
+      {
+        "requirement_id": "R039",
+        "source": "docs",
+        "test": "contract doc + successor separation",
+        "command": "python -m pytest -q tests/test_nautilus_offline_kernel_contract_docs.py",
+        "expected_result": "the nautilus offline kernel contract doc states the offline-replay-only boundary, the tick-size and determinism policy, the closed error taxonomy, and that WP169/WP170 remain separately gated"
+      },
+      {
+        "requirement_id": "R040",
+        "source": "pr-evidence-guard",
+        "test": "pr_evidence_consistency_guard.py two-pass with the resolved head SHA",
+        "command": "HEAD_SHA=\"$(git rev-parse HEAD)\" && python tools/git/pr_evidence_consistency_guard.py --pr-body wp168_pr_body.txt --final-comment wp168_pr_body.txt --expected-head \"$HEAD_SHA\" --require-standard-network-wording --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
+        "expected_result": "git rev-parse HEAD resolves the real 40-character head SHA, which appears in the PR body; the guard exits 0; before the independent PASS certificate exists evidence mode is BLOCKED_NOT_READY with the independent certificate as the sole named blocker"
+      },
+      {
+        "requirement_id": "R041",
+        "source": "pytest",
+        "test": "test_input_enumeration_order_invariance",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "the same validated semantic rows presented in different input/file enumeration order produce an identical canonical source ordering and an identical replay digest"
+      },
+      {
+        "requirement_id": "R042",
+        "source": "pytest",
+        "test": "test_parquet_physical_reorder_invariance",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "the same rows after a Parquet physical reorder/rewrite produce an identical canonical ordering and replay digest; source_row_index never derives from physical row position"
+      },
+      {
+        "requirement_id": "R043",
+        "source": "pytest",
+        "test": "test_two_byte_identical_duplicates_retain_multiplicity_two",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "two byte-identical duplicate source rows are never silently deduplicated and retain multiplicity 2 with deterministic duplicate ordinals 0,1"
+      },
+      {
+        "requirement_id": "R044",
+        "source": "pytest",
+        "test": "test_three_byte_identical_duplicates_retain_multiplicity_three",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "three byte-identical duplicate source rows retain multiplicity 3 with deterministic duplicate ordinals 0,1,2"
+      },
+      {
+        "requirement_id": "R045",
+        "source": "pytest",
+        "test": "test_duplicate_multiplicity_changes_replay_digest",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "duplicate multiplicity 2 versus multiplicity 3 produces a different replay digest (the digest is sensitive to multiplicity)"
+      },
+      {
+        "requirement_id": "R046",
+        "source": "pytest",
+        "test": "test_event_kind_rank_orders_equal_timestamp_mixed_types",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "equal ts_event and equal ts_init with different event types are ordered by the frozen event_kind_rank book<price_change<last_trade_price<tick_size_change"
+      },
+      {
+        "requirement_id": "R047",
+        "source": "pytest",
+        "test": "test_equal_timestamp_same_kind_orders_by_canonical_row_bytes",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "equal timestamps and the same event kind but different semantic row content are ordered deterministically by canonical_row_digest then canonical_row_bytes"
+      },
+      {
+        "requirement_id": "R048",
+        "source": "pytest",
+        "test": "test_physical_row_index_not_in_logical_replay_identity",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "raw source/query/Parquet physical row index is never part of the logical replay identity; the replay digest is insensitive to arbitrary physical ordering but sensitive to semantic content and multiplicity"
+      },
+      {
+        "requirement_id": "R049",
+        "source": "pytest",
+        "test": "test_all_prices_are_exact_multiples_of_finest_increment",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py tests/research_runtime/nautilus_offline/test_instruments.py",
+        "expected_result": "every validated historical price is an exact integer multiple of the selected finest price increment; conversion fails closed with NAUTILUS_EVENT_CONVERSION_INVALID otherwise"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP169",
+    "next_title": "Public Realtime WebSocket and Public Activity/Wallet Data Plane",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP169",
+    "forbidden_in_this_wp": [
+      "NautilusTrader live data client",
+      "NautilusTrader live execution client",
+      "Polymarket authenticated client",
+      "public WebSocket collector",
+      "Data API activity/wallet ingestion",
+      "experiment registry",
+      "Hermes runtime",
+      "strategy/alpha logic",
+      "execution-edge fill model",
+      "paper trading",
+      "credentials/auth/order signing",
+      "live trading",
+      "scheduler/daemon/bot loop",
+      "Redis",
+      "external data downloader"
+    ]
+  }
+}
