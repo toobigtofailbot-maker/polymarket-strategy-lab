@@ -293,9 +293,9 @@
       {
         "requirement_id": "R001",
         "source": "git",
-        "test": "start gate",
-        "command": "git rev-parse HEAD",
-        "expected_result": "main contains PR166 head f310d96 and merge 35f4042"
+        "test": "predecessor merge and base binding",
+        "command": "git merge-base --is-ancestor 35f4042a595ae58bf8b71a986eaefac0d3fe3dc8 origin/main && git rev-parse origin/main",
+        "expected_result": "origin/main contains the PR166 merge commit 35f4042 and final head f310d96; PR166 is merged"
       },
       {
         "requirement_id": "R002",
@@ -306,10 +306,10 @@
       },
       {
         "requirement_id": "R003",
-        "source": "pip",
+        "source": "pytest",
         "test": "test_installed_metadata_matches_pins",
-        "command": "python -m pip check",
-        "expected_result": "pyarrow==25.0.1, duckdb==1.5.5, polars==1.44.1 installed; no broken requirements"
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py",
+        "expected_result": "installed pyarrow/duckdb/polars distribution metadata equals the exact pins 25.0.1/1.5.5/1.44.1"
       },
       {
         "requirement_id": "R004",
@@ -489,9 +489,9 @@
       {
         "requirement_id": "R029",
         "source": "security",
-        "test": "pip check and pip-audit",
+        "test": "pip check",
         "command": "python -m pip check",
-        "expected_result": "security gate satisfied for the WP167 pins"
+        "expected_result": "no broken requirements for the resolved WP167 dependency environment (pip-audit is R004)"
       },
       {
         "requirement_id": "R030",
@@ -505,7 +505,7 @@
         "source": "pytest",
         "test": "full suite",
         "command": "python -m pytest -q",
-        "expected_result": "full suite passes except environmental CRLF baseline and DuckDB-in-CI"
+        "expected_result": "full suite is green on hosted CI; locally it passes except the environmental WP159 CRLF byte-hash baseline, and DuckDB-dependent tests run when the pinned module loads or skip with an explicit reason otherwise"
       },
       {
         "requirement_id": "R032",
@@ -526,7 +526,7 @@
         "source": "wp-spec-guard",
         "test": "V3 guard",
         "command": "python tools/wp/wp_spec_guard.py --wp docs/wp_specs/WP167/wp_prompt.txt --spec docs/wp_specs/WP167/wp_spec.json --certificate docs/wp_specs/WP167/draftability_certificate.json",
-        "expected_result": "spec schema and semantics pass; certificate awaits independent review"
+        "expected_result": "final DoD: spec schema+semantics pass and a normal independent PASS certificate makes the guard exit 0; the pre-certificate execution head correctly reports the certificate phase pending (non-PASS placeholder)"
       },
       {
         "requirement_id": "R035",
@@ -541,6 +541,34 @@
         "test": "successor separate",
         "command": "cat docs/analytical_research_layer_contract.md",
         "expected_result": "WP168 successor is separately gated"
+      },
+      {
+        "requirement_id": "R037",
+        "source": "pytest",
+        "test": "test_research_dataclass_field_coverage_is_complete and test_invalid_materialization_result_recursive_no_echo",
+        "command": "python -m pytest -q tests/data_layer/analytical_research",
+        "expected_result": "every public WP167 dataclass field is enumerated/classified and invalid public results are recursively no-echo scanned"
+      },
+      {
+        "requirement_id": "R038",
+        "source": "pytest",
+        "test": "test_unicode_digit_asset_id_is_rejected and the pmxt/external negative suites",
+        "command": "python -m pytest -q tests/data_layer/analytical_research",
+        "expected_result": "the negative-test matrix categories map to focused tests (schema/type/null/timestamp/event/side/market/asset-id/version/runtime/store/reference/no-echo)"
+      },
+      {
+        "requirement_id": "R039",
+        "source": "pytest",
+        "test": "test_wp167_analytical_research_foundation_status_is_registered",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_analytical_research_layer_contract_docs.py",
+        "expected_result": "Model D status fragment, the Product One-Shot Readiness Gate, the field-coverage gate doc, and status/PR/repo-truth consistency hold with no contradiction"
+      },
+      {
+        "requirement_id": "R040",
+        "source": "pr-evidence-guard",
+        "test": "pr_evidence_consistency_guard.py two-pass",
+        "command": "python tools/git/pr_evidence_consistency_guard.py --pr-body wp167_pr_body.txt --expected-head HEAD --require-standard-network-wording --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
+        "expected_result": "PR body evidence is consistent and the guard exits 0; evidence mode is BLOCKED_NOT_READY with the independent certificate as the sole named blocker"
       }
     ]
   },

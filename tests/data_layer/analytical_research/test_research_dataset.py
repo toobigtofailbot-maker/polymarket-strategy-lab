@@ -3,9 +3,11 @@
 Local, offline, deterministic. Every store lives below pytest ``tmp_path`` and
 every derived Parquet partition is written into ``tmp_path``; nothing is written
 into the repository. Canonical evidence is produced exclusively through the merged
-WP163 public API. DuckDB-dependent assertions are executed under strict hosted CI
-and skipped locally with an explicit reason only, because the DuckDB native
-extension is blocked by Windows Smart App Control in the local environment.
+WP163 public API. DuckDB-dependent assertions are executed without skips under
+strict hosted CI (the authoritative cross-platform proof); locally they run when
+the pinned DuckDB native module loads and are otherwise skipped with an explicit
+reason when a local OS security policy (Windows Smart App Control) blocks the
+binary. That local state is environmental and can change over time.
 """
 
 from __future__ import annotations
@@ -577,3 +579,62 @@ def test_valid_pit_record_with_large_payload_materializes(tmp_path):
     # Deterministic logical identity for the large-payload record.
     result_b = ar.materialize_canonical_pit_dataset(str(store), reference, str(out_b))
     assert result.logical_dataset_id == result_b.logical_dataset_id
+
+
+# ── Final round: result-object field-coverage gate (WP88+) ───────────────────
+
+_PARTITION_MANIFEST_FIELDS = {
+    "table_name": "SCANNED", "relative_path": "SCANNED", "row_count": "EXEMPT_INT",
+    "logical_rows_sha256": "SCANNED", "parquet_file_sha256": "SCANNED",
+    "parquet_byte_length": "EXEMPT_INT", "schema_fingerprint_sha256": "SCANNED",
+}
+_DATASET_MANIFEST_FIELDS = {
+    "schema_id": "SCANNED", "schema_version": "SCANNED", "logical_dataset_id": "SCANNED",
+    "source_kind": "SCANNED", "source_reference_id": "SCANNED",
+    "analytical_schema_version": "SCANNED", "materializer_version": "SCANNED",
+    "partition_manifests": "SCANNED", "total_row_count": "EXEMPT_INT",
+    "pyarrow_version": "SCANNED", "duckdb_version": "SCANNED", "polars_version": "SCANNED",
+    "python_version": "SCANNED", "advisory_only": "EXEMPT_BOOL", "no_execution_authority": "EXEMPT_BOOL",
+}
+_MATERIALIZATION_RESULT_FIELDS = {
+    "is_valid": "EXEMPT_BOOL", "status": "SCANNED", "error_codes": "SCANNED",
+    "manifest": "SCANNED", "logical_dataset_id": "SCANNED",
+    "advisory_only": "EXEMPT_BOOL", "no_execution_authority": "EXEMPT_BOOL",
+}
+_RUNTIME_RESULT_FIELDS = {
+    "is_valid": "EXEMPT_BOOL", "status": "SCANNED", "error_codes": "SCANNED",
+    "pyarrow_version": "SCANNED", "duckdb_version": "SCANNED", "polars_version": "SCANNED",
+    "python_version": "SCANNED", "advisory_only": "EXEMPT_BOOL", "no_execution_authority": "EXEMPT_BOOL",
+}
+
+
+def test_research_dataclass_field_coverage_is_complete():
+    assert {f.name for f in dataclasses.fields(ar.AnalyticalPartitionManifest)} == set(_PARTITION_MANIFEST_FIELDS)
+    assert {f.name for f in dataclasses.fields(ar.AnalyticalDatasetManifest)} == set(_DATASET_MANIFEST_FIELDS)
+    assert {f.name for f in dataclasses.fields(ar.AnalyticalMaterializationResult)} == set(_MATERIALIZATION_RESULT_FIELDS)
+    assert {f.name for f in dataclasses.fields(ar.AnalyticalRuntimeCompatibilityResult)} == set(_RUNTIME_RESULT_FIELDS)
+
+
+def test_invalid_materialization_result_recursive_no_echo(tmp_path):
+    token_dir = tmp_path / "HOSTILE_SENTINEL_dir"
+    token_dir.mkdir()
+    result = ar.materialize_canonical_pit_dataset(
+        str(tmp_path / "HOSTILE_SENTINEL_missing.sqlite3"),
+        {"hostile": "HOSTILE_SENTINEL_reference"},
+        str(token_dir),
+    )
+    assert not result.is_valid and result.manifest is None
+    for text in _all_strings(result):
+        assert "HOSTILE_SENTINEL" not in text
+        assert text in ar.ANALYTICAL_RESEARCH_ERROR_CODES or text == "ANALYTICAL_REJECTED"
+
+
+def test_valid_materialization_result_is_recursively_scannable(tmp_path):
+    _, chosen = _clean_records()
+    reference = _batch_reference(chosen)
+    store = _store(tmp_path, chosen)
+    out = _outdir(tmp_path, "scan")
+    result = ar.materialize_canonical_pit_dataset(str(store), reference, str(out))
+    # A valid result (with nested manifest + partition manifests) scans without error.
+    strings = _all_strings(result)
+    assert strings and all(isinstance(s, str) for s in strings)

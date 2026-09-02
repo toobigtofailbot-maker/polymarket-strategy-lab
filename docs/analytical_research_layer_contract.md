@@ -132,9 +132,37 @@ matrix runs on ubuntu-24.04 and windows-2022 with Python 3.12 and 3.14 to prove
 that the pinned dependencies install and the analytical package behaves
 identically across platforms. It uses no secrets, no product API, and no external
 archive download. DuckDB-dependent tests are executed without skips under strict
-hosted CI; where the local DuckDB native module is blocked by Windows Smart App
-Control the DuckDB proofs are skipped locally with an explicit reason and executed
-in hosted CI instead.
+hosted CI, which is the authoritative cross-platform DuckDB proof. Local DuckDB
+execution is observational: it runs when the pinned `duckdb==1.5.5` native module
+loads and is otherwise skipped with an explicit reason when a local OS security
+policy (Windows Smart App Control) blocks the native binary. That local state is
+environmental and can change over time (the OS reputation check may later allow the
+binary); it is never a dependency incompatibility and never a WP stop condition, and
+hosted strict CI remains authoritative regardless of the local observation.
+
+## Result object field-coverage gate
+
+WP167 exports public result dataclasses, so the WP88+ result-output invariant
+applies. Every public field of every WP167 public dataclass is enumerated and
+classified as SCANNED, EXEMPT (with a non-text-bearing reason: booleans and
+integers), or FORBIDDEN from public output:
+
+- `research_dataset`: `AnalyticalPartitionManifest`, `AnalyticalDatasetManifest`,
+  `AnalyticalMaterializationResult`, `AnalyticalRuntimeCompatibilityResult`.
+- `external_dataset`: `ExternalSourceObject`, `ExternalDatasetDescriptor`,
+  `ExternalDatasetBuildResult`.
+- `pmxt_v2`: `PmxtV2SourceFile`, `PmxtV2DescribeResult`.
+
+`PmxtV2SourceFile.path` is input-only and FORBIDDEN from any returned output or
+descriptor identity: a rejected `PmxtV2DescribeResult` never echoes the caller
+path. All string, tuple-of-string, nested-dataclass, status, error-code, coverage
+and descriptor fields returned on a public surface are recursively scanned;
+booleans and integers are EXEMPT as non-text-bearing. Invalid result objects are
+recursively scanned for hostile sentinel input, not only their `error_codes`
+field. Serializer losslessness: NOT_APPLICABLE — direct recursive dataclass
+scanning is used, with no hand-built serializer. Mechanical field-coverage tests
+prove `dataclasses.fields(...)` for every public dataclass is fully covered by the
+declared classification set, so a future unclassified field fails the gate.
 
 ## Successor boundary
 

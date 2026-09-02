@@ -274,3 +274,69 @@ def test_1024_object_source_mutation_changes_id():
     mutated[500] = _obj(mutated[500].object_name, "9", mutated[500].byte_length, mutated[500].partition_identity)
     changed = build_external_dataset_descriptor(**_base(source_objects=mutated)).descriptor
     assert base.external_dataset_id != changed.external_dataset_id
+
+
+# ── Final round: 256 boundary + identity fail-closed + field coverage ─────────
+
+import src.data_layer.analytical_research.external_dataset as ED
+
+
+def test_external_descriptor_supports_256_objects():
+    result = build_external_dataset_descriptor(**_base(source_objects=_n_objects(256)))
+    assert result.is_valid, result.error_codes
+    assert len(result.descriptor.source_objects) == 256
+
+
+def test_identity_construction_failure_is_closed(monkeypatch):
+    def boom(_preimage):
+        raise RuntimeError("HOSTILE_SENTINEL identity encoder blew up")
+
+    monkeypatch.setattr(ED, "compute_external_dataset_id", boom)
+    result = build_external_dataset_descriptor(**_base())
+    assert not result.is_valid
+    assert result.descriptor is None
+    assert result.error_codes == ("EXTERNAL_DESCRIPTOR_INVALID",)
+    for text in _all_strings(result):
+        assert "HOSTILE_SENTINEL" not in text
+        assert "RuntimeError" not in text
+        assert "Traceback" not in text
+
+
+# Result-object field-coverage gate (RESULT_OUTPUT_INVARIANT_STANDARD, WP88+).
+# Every public field is enumerated and classified; a future unclassified field fails.
+_EXTERNAL_SOURCE_OBJECT_FIELDS = {
+    "object_name": "SCANNED", "source_sha256": "SCANNED",
+    "byte_length": "EXEMPT_INT", "partition_identity": "SCANNED",
+}
+_EXTERNAL_DESCRIPTOR_FIELDS = {
+    "schema_id": "SCANNED", "schema_version": "SCANNED", "external_dataset_id": "SCANNED",
+    "provider_id": "SCANNED", "dataset_name": "SCANNED", "dataset_version": "SCANNED",
+    "source_class": "SCANNED", "coverage_start": "SCANNED", "coverage_end": "SCANNED",
+    "source_objects": "SCANNED", "source_schema_fingerprint_sha256": "SCANNED",
+    "source_timestamp_semantics": "SCANNED", "receive_timestamp_semantics": "SCANNED",
+    "event_types": "SCANNED", "known_gap_policy": "SCANNED", "quality_tier": "SCANNED",
+    "importer_id": "SCANNED", "importer_version": "SCANNED", "license_id": "SCANNED",
+    "attribution": "SCANNED", "advisory_only": "EXEMPT_BOOL", "no_execution_authority": "EXEMPT_BOOL",
+}
+_EXTERNAL_BUILD_RESULT_FIELDS = {
+    "is_valid": "EXEMPT_BOOL", "status": "SCANNED", "error_codes": "SCANNED",
+    "descriptor": "SCANNED", "advisory_only": "EXEMPT_BOOL", "no_execution_authority": "EXEMPT_BOOL",
+}
+
+
+def test_external_dataclass_field_coverage_is_complete():
+    from src.data_layer.analytical_research.external_dataset import (
+        ExternalDatasetBuildResult, ExternalDatasetDescriptor,
+    )
+    assert {f.name for f in dataclasses.fields(ExternalSourceObject)} == set(_EXTERNAL_SOURCE_OBJECT_FIELDS)
+    assert {f.name for f in dataclasses.fields(ExternalDatasetDescriptor)} == set(_EXTERNAL_DESCRIPTOR_FIELDS)
+    assert {f.name for f in dataclasses.fields(ExternalDatasetBuildResult)} == set(_EXTERNAL_BUILD_RESULT_FIELDS)
+
+
+def test_invalid_external_build_result_recursive_no_echo():
+    # Hostile sentinel input must not appear anywhere in the complete invalid output.
+    result = build_external_dataset_descriptor(**_base(source_class="HOSTILE_SENTINEL_CLASS"))
+    assert not result.is_valid and result.descriptor is None
+    for text in _all_strings(result):
+        assert "HOSTILE_SENTINEL" not in text
+        assert text in ar.EXTERNAL_DATASET_ERROR_CODES or text == "EXTERNAL_REJECTED"

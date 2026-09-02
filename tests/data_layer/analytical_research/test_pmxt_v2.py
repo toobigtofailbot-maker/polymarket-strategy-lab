@@ -391,3 +391,45 @@ def test_polars_scan_over_pmxt_source_without_duckdb(tmp_path):
     assert ar.polars_row_count(str(path)) == 8
     grouped = ar.polars_group_count(str(path), "event_type")
     assert sum(grouped.values()) == 8
+
+
+# ── Final round: field-coverage gate + input-only path non-leak ──────────────
+
+import dataclasses as _dc
+
+
+def _pmxt_all_strings(value):
+    out = []
+    if _dc.is_dataclass(value) and not isinstance(value, type):
+        for f in _dc.fields(value):
+            out.extend(_pmxt_all_strings(getattr(value, f.name)))
+    elif isinstance(value, str):
+        out.append(value)
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            out.extend(_pmxt_all_strings(item))
+    return out
+
+
+_PMXT_SOURCE_FILE_FIELDS = {"path": "FORBIDDEN_INPUT_ONLY", "object_name": "SCANNED", "partition_identity": "SCANNED"}
+_PMXT_DESCRIBE_RESULT_FIELDS = {
+    "is_valid": "EXEMPT_BOOL", "status": "SCANNED", "error_codes": "SCANNED",
+    "descriptor": "SCANNED", "total_row_count": "EXEMPT_INT",
+    "coverage_start": "SCANNED", "coverage_end": "SCANNED",
+    "advisory_only": "EXEMPT_BOOL", "no_execution_authority": "EXEMPT_BOOL",
+}
+
+
+def test_pmxt_dataclass_field_coverage_is_complete():
+    assert {f.name for f in _dc.fields(PmxtV2SourceFile)} == set(_PMXT_SOURCE_FILE_FIELDS)
+    assert {f.name for f in _dc.fields(PX.PmxtV2DescribeResult)} == set(_PMXT_DESCRIBE_RESULT_FIELDS)
+
+
+def test_invalid_pmxt_result_does_not_leak_input_path(tmp_path):
+    # PmxtV2SourceFile.path is input-only and must never appear in an invalid result.
+    hostile = tmp_path / "HOSTILE_SENTINEL_absent.parquet"
+    result = _describe([PmxtV2SourceFile(path=str(hostile), object_name="o.parquet", partition_identity="p")])
+    assert not result.is_valid and result.descriptor is None
+    for text in _pmxt_all_strings(result):
+        assert "HOSTILE_SENTINEL" not in text
+        assert str(hostile) not in text

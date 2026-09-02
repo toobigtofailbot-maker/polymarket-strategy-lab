@@ -38,7 +38,7 @@ global environment.
 | npm audit | NOT_APPLICABLE | NOT_APPLICABLE | `npm --version` | Not run | SKIPPED_NOT_APPLICABLE | WP3-D003 remains DEFERRED | No `package.json`. |
 | pip-audit (project-local) | NOT_AVAILABLE | NOT_AVAILABLE | project-local pip-audit | Not run from project-local path | SKIPPED_NOT_AVAILABLE | WP3-D004 remains READY_FOR_WP | Project-local `.venv-security/` absent. |
 | pip-audit (interpreter, local) | AVAILABLE | INTERPRETER_INSTALL | `python -m pip_audit --version` | `python -m pip_audit --progress-spinner off` | 14 VULNS IN UNRELATED GLOBAL PACKAGES; WP167 PINS CLEAN | WP3-D004 remains READY_FOR_WP | Findings are in `idna`/`pip`/`pydantic-settings`/`requests`/`urllib3`/`uv`, none of which WP167 adds; `pyarrow`/`duckdb`/`polars` have no reported vulnerabilities. |
-| pip-audit (hosted CI) | NOT_RUN | HOSTED_CI | `python -m pip_audit` | `.github/workflows/ci.yml` dependency-audit job | See hosted CI run at the final PR head | WP3-D004 remains READY_FOR_WP | Not run locally; the authoritative WP167 audit runs in the isolated ubuntu-24.04 / Python 3.12 CI environment auditing only the WP167 dependency closure. |
+| pip-audit (hosted CI) | NOT_RUN | HOSTED_CI | `python -m pip_audit` | `.github/workflows/ci.yml` dependency-audit job | PASS on hosted CI (isolated closure); exact live run at the current PR head is recorded in the PR body | WP3-D004 remains READY_FOR_WP | Not run in this local environment; the authoritative WP167 audit is the isolated ubuntu-24.04 / Python 3.12 CI job auditing only the WP167 dependency closure, which passed. |
 | pip check | AVAILABLE | INTERPRETER | `python -m pip check` | `python -m pip check` | PASS | — | No broken requirements after installing the exact pins. |
 | cargo audit | NOT_APPLICABLE | NOT_APPLICABLE | `cargo audit --version` | Not run | SKIPPED_NOT_APPLICABLE | WP3-D005 remains DEFERRED | No `Cargo.lock`. |
 
@@ -59,7 +59,7 @@ python -m pip_audit --progress-spinner off
 - `pyarrow==25.0.1`, `duckdb==1.5.5`, `polars==1.44.1`: no known vulnerabilities in the local pip-audit run.
 - Local pip-audit exit 1 is attributable entirely to unrelated pre-existing global-environment packages, not to any WP167 dependency; the hosted CI dependency-audit job is the authoritative WP167 audit surface.
 - gitleaks and semgrep: SKIPPED_NOT_AVAILABLE (project-local tooling absent); unavailable tools are not passing results.
-- DuckDB note: the DuckDB native module is blocked locally by Windows Smart App Control (an OS security policy, not disabled or weakened by WP167), so DuckDB-dependent tests execute under strict hosted CI; local DuckDB execution is `BLOCKED_BY_WINDOWS_SMART_APP_CONTROL`.
+- DuckDB note: local DuckDB execution is observational. Windows Smart App Control (an OS security policy, never disabled or weakened by WP167) may block the pinned native module; when it does, local DuckDB execution is `BLOCKED_BY_WINDOWS_SMART_APP_CONTROL` and DuckDB-dependent tests skip locally with an explicit reason, and when the OS reputation check allows the binary the pinned module loads and those tests run locally. This local state is environmental and can change over time; strict hosted Windows/Linux CI is the authoritative cross-platform DuckDB proof either way. The exact final observed local status is recorded in the PR body.
 
 ## WP15 Status Summary
 

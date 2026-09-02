@@ -99,3 +99,24 @@ def test_successor_boundary_is_wp168():
     text = _read()
     assert "WP168" in text
     assert "separately gated" in text
+
+
+def test_result_object_field_coverage_gate_is_documented():
+    text = _read()
+    assert "Result object field-coverage gate" in text
+    for name in (
+        "AnalyticalPartitionManifest", "AnalyticalDatasetManifest",
+        "AnalyticalMaterializationResult", "AnalyticalRuntimeCompatibilityResult",
+        "ExternalSourceObject", "ExternalDatasetDescriptor", "ExternalDatasetBuildResult",
+        "PmxtV2SourceFile", "PmxtV2DescribeResult",
+    ):
+        assert name in text
+    assert "`PmxtV2SourceFile.path` is input-only and FORBIDDEN" in text
+    assert "Serializer losslessness: NOT_APPLICABLE" in text
+    assert "Invalid result objects are recursively scanned" in text
+
+
+def test_local_duckdb_wording_is_observational():
+    text = _read()
+    assert "Local DuckDB execution is observational" in text
+    assert "hosted strict CI remains authoritative" in text

@@ -379,3 +379,148 @@ runtime, formal solver/alpha, execution-simulation qualification, paper,
 credentials/auth, live, and any scheduler.
 
 END WP167 NORMATIVE PROMPT
+
+===============================================================================
+15. GOVERNANCE FINALIZATION APPENDIX (WP DRAFTING STANDARD / TEMPLATE COMPLIANCE)
+===============================================================================
+
+15.1 EXECUTION AGENT / STARTUP
+Execution agent: Claude Code. Shared startup read: AGENTS.md + AI_CODING_AGENT_START_HERE.md.
+Tool-specific adapter read: CLAUDE_START_HERE.md. Evidence mode expected before the
+independent PASS certificate: BLOCKED_NOT_READY (Ready for review: NO; the sole named
+blocker is the pending independent draftability certificate). Do not claim a final
+PUBLIC_VERIFIER_PASS or PRIVATE_REPO_MANUAL_VERIFIED before that verification occurs.
+
+15.2 RECOMMENDED MODE
+Model/reasoning: highest available Claude Code reasoning tier. Reason: first
+runtime-dependency + columnar analytical package crossing dependency/workflow
+boundaries while preserving canonical PIT authority. Escalate or STOP if a pin will
+not install on a supported target, the pmxt v2 schema materially differs from the
+locked contract, the exact scope cannot be preserved, or any forbidden capability
+becomes necessary.
+
+15.3 FULL AUTHORITY POSTURE FIELDS
+Implementation authority: YES (this authorized correction). Report/export authority:
+local analytical manifests/summaries only. Paper authority: NO. Execution authority:
+NO. Live authority: NO. Credential authority: NO. Runtime/scheduler authority: NO.
+Canonical evidence authority: canonical PIT remains repo-controlled; WP167 derives
+references/outputs only. Network authority: product runtime NO; external downloader
+NO; hosted CI checkout/package/security-tool install only. Dependency-change
+authority: YES, limited to requires-python >=3.12,<3.15 and pyarrow==25.0.1,
+duckdb==1.5.5, polars==1.44.1. Workflow-file authority: YES, exactly one hosted CI
+workflow. No new authority is granted by this appendix.
+
+15.4 HARD MERGE GATE — EXACT COMMANDS AND RESULT FIELDS
+Initial start-gate commands (run before the WP167 branch was created):
+  git fetch origin --prune
+  git checkout main
+  git pull --ff-only origin main
+  git rev-parse HEAD
+  git log -1 --oneline
+  git status --short --branch
+Required result fields: PR166 merged; predecessor head f310d96...; predecessor merge
+35f4042...; main contains the predecessor head; no conflicting newer PR at initial
+start; no prior WP167 branch/PR at initial start; clean working tree; artifact-guard
+preflight pass. History is not rewritten; this correction continues on the existing
+authorized WP167 branch/PR.
+
+15.5 WORKTREE / BRANCH EXECUTION NOTE
+One WP / one branch / one PR is preserved. A branch-only model on the existing
+authorized WP167 worktree branch was used; clean branch state was required at the
+initial start; the current correction remains on the same PR branch.
+
+15.6 CONTEXT BUDGET
+Read first: AGENTS.md; AI_CODING_AGENT_START_HERE.md; CLAUDE_START_HERE.md;
+CODEX_START_HERE.md; docs/project_status.md; docs/repo_truth_index.md;
+docs/deferred_items_log.md; docs/ai/codex/README.md. Read for this WP: the exact
+analytical source/test/docs/governance files in the 29-file scope plus the governed
+V3 package. Read only if blocked: predecessor PIT identity/manifest implementation
+and relevant security/governance docs. Do not read/touch forbidden protected paths
+or any unauthorized successor capability. Search terms: bounded fallback terms for
+moved governance/PIT paths.
+
+15.7 COMPATIBILITY / IMPOSSIBILITY TABLE
+Every required behavior below is allowed and compatible with the controlling repo
+mechanism; no unresolved incompatible row remains.
+- predecessor PIT identity/serialization | WP156-WP166 | predecessor files | YES | YES (no mutation) | preserve
+- canonical store read-only authority | WP163 public API | analytical_research | YES | YES | read-only
+- Python >=3.12,<3.15 | pyproject | pyproject.toml | YES | YES | pin floor
+- exact three pins | dependency boundary | pyproject.toml | YES | YES | pin exact
+- PyArrow/DuckDB/Polars split | analytical package | research_dataset.py | YES | YES | implement
+- derived Parquet identity | analytical package | research_dataset.py | YES | YES | logical vs physical
+- ExternalDatasetDescriptor | analytical package | external_dataset.py | YES | YES | provenance-separated
+- real pmxt v2 16-column schema | external boundary | pmxt_v2.py | YES | YES | lock schema
+- bounded 1024-object external history | analytical outer canonicalizer | external_dataset.py | YES | YES | deterministic id
+- hosted CI | workflow boundary | ci.yml | YES | YES | no secrets/product API
+- security dependency audit | CI job | ci.yml | YES | YES | isolated closure
+- nine historical governance guards | tests | seven guard test files + 2 | YES | YES | narrow WP167 branch
+- no Nautilus/WebSocket/Data API/Hermes/strategy/paper/auth/execution/live/scheduler | successor boundaries | N/A | NO | N/A | separate
+
+15.8 NEGATIVE TEST MATRIX
+Negative test matrix required: YES. Applicable categories map to focused tests:
+missing required schema column, required null, wrong Arrow type, empty
+source-object/event list, non-UTC/reversed timestamp, malformed/non-Parquet/missing
+file, duplicate source object, unsupported source class/version/event, invalid side,
+malformed market, malformed ASCII-decimal and Unicode-digit asset id, invalid
+runtime/dependency version, invalid canonical store/reference/output directory, and
+invalid-result no-echo. Semantic wording filters are NOT_APPLICABLE (WP167 adds no
+advisory wording filter).
+
+15.9 EVIDENCE ARCHITECTURE MODEL D
+PR body is the current review evidence surface; the status fragment is stable and
+non-self-referential (no fixed current-live-head SHA; "Validated implementation
+commit:" not "Head commit:"). Final comment is optional/non-canonical after WP91.
+The evidence contradiction matrix must PASS; NOT_VERIFIED + Ready YES is invalid.
+
+15.10 RESULT-OBJECT FIELD-COVERAGE GATE
+Field-coverage gate required: YES. Every public WP167 dataclass field is enumerated
+and classified; field-coverage tests pass; invalid outputs are recursively no-echo
+scanned; PmxtV2SourceFile.path is input-only and never echoed. Serializer
+losslessness: NOT_APPLICABLE — direct recursive dataclass scanning is used.
+
+15.11 ONE-SHOT PRODUCT READINESS GATE
+- repo-truth phrase sweep: PASS
+- PR body/status fragment contradiction matrix: PASS
+- status fragment stable/non-self-referential: PASS
+- result-object field coverage: PASS
+- serializer losslessness: NOT_APPLICABLE
+- full public output scan: PASS
+- invalid-output no-echo: PASS
+- validation tier complete: PASS
+- guards: PASS
+
+15.12 FOLLOW-UP PROCESS-DEFECT CLASSIFICATION
+Follow-up correction required: YES. Classification: A (evidence/reporting), B
+(repo-truth reconciliation), C (validation rerun), F (implementation logic), G
+(test/governance coverage), H (environment/CI parity). Cause: layered review exposed
+scale boundaries, a hidden transitive timezone-database dependency, CI environment
+parity gaps, and governance-surface completeness. Resolution: closed inside the
+existing 29-file WP167 governance/evidence surface. Systemic assessment: durable
+guidance to pre-enumerate branch-diff governance guards and validate dependencies in
+isolation. Separate hardening WP needed: NO — the root cause is closed within the
+allowed WP167 surface with no new production capability or protected-boundary change.
+
+15.13 CONCRETE STOP CONDITIONS (X — because Y)
+STOP if a thirtieth changed file is required — because the exact XL 29-file scope is
+authorized. STOP if the predecessor/main binding materially changes — because the
+merge gate would be invalid. STOP if canonical PIT identity/serialization must change
+— because canonical authority must remain unchanged. STOP if a SQLite/manifest
+migration becomes necessary — because no migration is authorized. STOP if a fourth
+runtime dependency becomes necessary — because exactly three pins are authorized.
+STOP if a locked wheel is unsupported on a required platform — because the pins must
+install on the CI matrix. STOP if a material dependency vulnerability is unresolved —
+because the security gate must pass. STOP if the external pmxt schema no longer
+matches the locked documented v2 schema — because the adapter is schema-locked. STOP
+if a valid >4096-byte PIT record cannot materialize — because valid records must not
+be rejected. STOP if 1024 source objects cannot build a deterministic id — because
+the declared capacity must match identity. STOP if an invalid public result cannot be
+recursively no-echo scanned — because output safety must hold. STOP if the
+field-coverage gate cannot be proven — because the WP88+ invariant applies. STOP if
+local/hosted validation cannot rerun after final changes — because evidence must be
+reproducible. STOP if required hosted CI remains red from a WP167 cause — because CI
+green is required. STOP if the evidence contradiction matrix fails — because Model D
+requires consistency. STOP if a successor capability is required — because those are
+separately gated. STOP if certificate hashes no longer match the prompt/spec after
+independent certification — because the certificate binds exact bytes.
+
+END GOVERNANCE FINALIZATION APPENDIX
