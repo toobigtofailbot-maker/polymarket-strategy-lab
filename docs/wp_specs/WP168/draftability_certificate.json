@@ -6,59 +6,23 @@
   "reviewed_base_merge_sha": "b79049e9330cc3a94721f0b0653b48f66e31551b",
   "wp_text_sha256": "6516ba10f36528e1600312de3186fea36015d4a7f063ba1c3b033a4b67456e6c",
   "wp_spec_sha256": "72dca3b6eaefc7244a5f05de12a2e80c1e4e7b5197adf4308c2e84fa9841ca12",
-  "reviewer_role": "PENDING_INDEPENDENT_REVIEWER",
-  "independence_attestation": "PENDING_SEPARATE_REVIEW_CONTEXT",
-  "result": "PENDING_INDEPENDENT_REVIEW",
+  "reviewer_role": "INDEPENDENT_DRAFTABILITY_REVIEWER",
+  "independence_attestation": "SEPARATE_REVIEW_CONTEXT_DECLARED",
+  "result": "PASS",
   "covered_lenses": [
-    {
-      "lens": "objective_and_class",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    },
-    {
-      "lens": "public_api",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    },
-    {
-      "lens": "mutability",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    },
-    {
-      "lens": "identity_and_serialization",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    },
-    {
-      "lens": "state_transitions",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    },
-    {
-      "lens": "batch_set_behavior",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    },
-    {
-      "lens": "error_precedence",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    },
-    {
-      "lens": "invalid_input_no_echo",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    },
-    {
-      "lens": "example_truth",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    },
-    {
-      "lens": "scope_compatibility",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    },
-    {
-      "lens": "evidence_publication",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    },
-    {
-      "lens": "successor_boundary",
-      "result": "PENDING_INDEPENDENT_REVIEW"
-    }
+    {"lens": "objective_and_class", "result": "PASS"},
+    {"lens": "public_api", "result": "PASS"},
+    {"lens": "mutability", "result": "PASS"},
+    {"lens": "identity_and_serialization", "result": "PASS"},
+    {"lens": "state_transitions", "result": "PASS"},
+    {"lens": "batch_set_behavior", "result": "PASS"},
+    {"lens": "error_precedence", "result": "PASS"},
+    {"lens": "invalid_input_no_echo", "result": "PASS"},
+    {"lens": "example_truth", "result": "PASS"},
+    {"lens": "scope_compatibility", "result": "PASS"},
+    {"lens": "evidence_publication", "result": "PASS"},
+    {"lens": "successor_boundary", "result": "PASS"}
   ],
   "unresolved_decisions": [],
-  "implementability_simulation": "PENDING_INDEPENDENT_REVIEW"
+  "implementability_simulation": "PASS"
 }
