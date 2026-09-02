@@ -2807,7 +2807,7 @@ def test_wp153_through_wp166_are_merged_and_wp167_is_current_review_target():
         "XL explicit authorization: YES",
         "Risk level: 3",
         "Implementation posture: LOCAL_OFFLINE_DERIVED_ANALYTICAL_MATERIALIZATION_AND_EXTERNAL_HISTORY_NO_EXECUTION_AUTHORITY",
-        "Ready for review: NO_INDEPENDENT_CERTIFICATE_PENDING",
+        "Ready for review: YES_INDEPENDENTLY_CERTIFIED",
         "Merge authorized: NO",
         "Independent live PR review required: YES",
         "Exact changed-file scope: 29",
