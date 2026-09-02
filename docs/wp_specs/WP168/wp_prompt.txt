@@ -251,15 +251,18 @@ REQUIRED CAPABILITIES
    pin 1.231.0; exact direct dependency metadata; importability of the required offline
    modules; and that no live/auth/Polymarket-extra/Redis dependency is required for the
    offline path. Success status token NAUTILUS_OFFLINE_RUNTIME_SUPPORTED. Fail closed.
-2. BINARYOPTION MAPPING (instruments.py): deterministic mapper to Nautilus BinaryOption
-   (venue POLYMARKET; raw symbol "{conditionId}-{tokenId}"; outcome token identity;
-   currency USDC; AssetClass.ALTERNATIVE; exact price/size precision & increment;
-   activation/expiration only where source truth exists; maker/taker fee only where known;
-   documented ts_event/ts_init). No guessed metadata; deterministic, path-independent.
-3. WP167 -> NAUTILUS CONVERSION (conversion.py): book -> OrderBookDeltas snapshot
-   (CLEAR + ADD); price_change -> OrderBookDelta (UPDATE, or DELETE on zero size);
-   last_trade_price -> TradeTick; tick_size_change -> repo-controlled regime metadata.
-   Preserve ordering and timestamps; exact Decimal semantics; no float; no caller path in
+2. BINARYOPTION MAPPING (instruments.py): deterministic mapper from the frozen
+   BinaryOptionMarketContext (see PUBLIC API) to a Nautilus BinaryOption (venue POLYMARKET;
+   raw symbol "{condition_id}-{outcome_token_id}"; currency USDC; AssetClass.ALTERNATIVE;
+   exact price/size precision & increment; the frozen absent-value policy for activation/
+   expiration/fee; no fabricated outcome/description). Deterministic, path-independent.
+3. WP167 -> NAUTILUS CONVERSION (conversion.py): consume the frozen PmxtV2ReplaySource
+   (ExternalDatasetDescriptor + PmxtV2SourceFile tuple), validate provenance and revalidate
+   hashes (see EXTERNAL REPLAY-SOURCE PROVENANCE), validate per-event semantics (see PMXT-V2
+   EVENT-SEMANTIC MATRIX), then: book -> OrderBookDeltas snapshot (CLEAR + ADD);
+   price_change -> OrderBookDelta (UPDATE, or DELETE on zero size); last_trade_price ->
+   TradeTick; tick_size_change -> repo-controlled regime metadata. Preserve the frozen
+   canonical ordering and timestamps; exact Decimal semantics; no float; no caller path in
    identity; no raw echo on failure.
 4. PARQUETDATACATALOG ADOPTION (catalog.py): deterministic local catalog build/registrar;
    instrument registered before data where required; caller-provided local path excluded
@@ -326,75 +329,199 @@ CANONICAL SEMANTIC ROW SERIALIZATION (frozen normalization contract):
   scale (chosen fixed representation; no float, no scientific notation);
 - nullable values preserve explicit null;
 - side and other enums use their exact validated tokens;
-- book bids/asks use one deterministic validated semantic representation (ordered by price
-  then a fixed rule) serialized as normalized decimal text;
+- book bids/asks use the frozen canonical order defined in the PMXT-V2 EVENT-SEMANTIC
+  MATRIX (bids sorted strictly by DESCENDING numeric price; asks strictly by ASCENDING
+  numeric price; a duplicate price level on one side fails closed), serialized as
+  normalized fixed-point decimal text pairs [["price","size"], ...];
 - object/dict keys are sorted; array order is preserved only where source semantics make
-  order meaningful (e.g., book levels by the fixed rule);
+  order meaningful (book levels by the frozen descending/ascending price rule);
 - serialization is UTF-8, ensure_ascii=false, compact separators (",",":"), allow_nan=false;
 - hash algorithm SHA-256; canonical bytes are produced by bounded per-row processing.
 Reuse a repo-proven canonical outer-JSON mechanic only after normalizing Decimal/datetime/
 bytes to text/int first; never feed raw Decimal/datetime/bytes to a canonicalizer that
 cannot encode them.
 
-REPLAY IDENTITY: the repo-controlled NautilusReplayReceipt identity is derived from the
-frozen conversion-policy version token, the exact source dataset id, the exact nautilus
-version, the deterministic instrument semantic identity, the ordered converted-event
-semantic digests (which include duplicate ordinals), the committed tick-regime schedule,
-and deterministic offline-replay settings. Preimage fields are exactly those; excluded
-fields are absolute paths, temp/output dirs, physical Parquet bytes/row positions,
-wall-clock time, environment identifiers, CI run ids, hostnames, and raw exception text.
-Prefix: none. Duplicate ordinal participates in identity. The replay digest is therefore
-SENSITIVE to duplicate multiplicity but INSENSITIVE to arbitrary physical ordering. Raw
-source/query/physical row index is never part of logical replay identity. Mutation-
-sensitivity tests are required. If the exact Nautilus or WP167 data model makes this
-ordering or serialization impossible, STOP rather than introducing a physical-order
-dependency.
+FROZEN IDENTITY CONSTANTS (literal; implementation may not invent them):
+- CONVERSION_POLICY_VERSION = "wp168-nautilus-pmxt-v2-conversion/1.0.0"
+- REPLAY_RECEIPT_SCHEMA_ID  = "polymarket-nautilus-offline-replay-receipt"
+- REPLAY_RECEIPT_SCHEMA_VERSION = "1.0.0"
+- REPLAY_IDENTITY_PREFIX    = "nautilusreplay:sha256:"
+- REPLAY_DIGEST_ALGORITHM   = SHA-256 over the canonical-JSON preimage below.
+
+REPLAY IDENTITY: the repo-controlled NautilusReplayReceipt.replay_digest is
+REPLAY_IDENTITY_PREFIX followed by the SHA-256 hex of the canonical-JSON preimage whose
+keys are exactly (sorted): conversion_policy_version (= CONVERSION_POLICY_VERSION);
+source_dataset_kind (= "WP167_EXTERNAL_DATASET_DESCRIPTOR"); source_external_dataset_id
+(= ExternalDatasetDescriptor.external_dataset_id); nautilus_version; instrument_semantic_id
+(the deterministic InstrumentId string "{condition_id}-{outcome_token_id}.POLYMARKET");
+ordered_event_semantic_digests (the ordered tuple of per-event canonical_row_digest values,
+each paired with its duplicate ordinal); tick_size_regime_sequence (the ordered tuple of
+{old_tick, new_tick, transition_ns}); replay_settings (the deterministic offline-replay
+settings). EXCLUDED from the preimage: absolute paths, temp/output dirs, caller catalog_dir,
+physical Parquet bytes/row positions, wall-clock time, environment identifiers, CI run ids,
+hostnames, and raw exception text. The digest is SENSITIVE to duplicate multiplicity and to
+external_dataset_id/source-hash mutation, but INSENSITIVE to arbitrary physical ordering.
+Raw source/query/physical row index is never part of logical replay identity. Independent-
+recomputation and mutation-sensitivity tests are required. If the exact Nautilus or WP167
+data model makes this ordering or serialization impossible, STOP rather than introducing a
+physical-order dependency.
 
 ===============================================================================
 PROJECT-OWNED PUBLIC API & MUTABILITY (FROZEN)
 ===============================================================================
-The full net-new public API is frozen here and in docs/nautilus_offline_kernel_contract.md.
-wp_spec.json api_matrix stays applicable:false because the machine api_matrix encodes
-DELTAS to a pre-existing predecessor public API, whereas WP168's surface is entirely
-net-new and is frozen in this prompt and the contract doc (the canonical location for
-net-new API); its reason field states this explicitly.
+The full net-new public API is FROZEN here and in docs/nautilus_offline_kernel_contract.md.
+Names and signatures below are EXACT and final: no placeholder ellipsis, no open-ended
+argument lists, and no reviewer-refinement or implementation-choice escape is permitted in
+any public signature. wp_spec.json api_matrix stays applicable:false because the
+machine api_matrix encodes DELTAS to a pre-existing predecessor public API, whereas WP168's
+surface is entirely net-new and is frozen here and in the contract doc (the canonical
+location for net-new API); its reason field states this explicitly. Any helper not listed
+here is private/internal. All public inputs and results are @dataclass(frozen=True); no
+public mutable dict/list is exposed — collections are tuples or tuples of 2-tuples.
 
-Every public function (module :: name(args) -> return; success; failure) — exact final
-names may be refined by the reviewer but the shape, types, authority and error behavior
-are frozen:
-- runtime_compatibility :: evaluate_offline_runtime() -> NautilusRuntimeCompatibilityResult;
-  success sets status NAUTILUS_OFFLINE_RUNTIME_SUPPORTED with empty error codes; on any
-  unsupported Python / wrong version / missing import returns a closed error code; no
-  network, no path echo, no execution authority.
-- instruments :: build_binary_option(market_context) -> BinaryOptionMappingResult (wraps a
-  Nautilus BinaryOption or a closed NAUTILUS_INSTRUMENT_MAPPING_INVALID); inputs are
-  validated repo-controlled market context values; deterministic and path-independent.
-- conversion :: convert_pmxt_v2_events(validated_rows, policy) -> ConvertedEventStream (the
-  canonical ordered event stream + regime schedule + per-type counts) or closed
-  NAUTILUS_EVENT_CONVERSION_INVALID; no float; no raw echo.
-- catalog :: build_catalog(converted_stream, catalog_dir) -> CatalogBuildResult and
-  query_catalog(catalog_dir, ...) -> CatalogQueryResult; closed NAUTILUS_CATALOG_WRITE_INVALID
-  / NAUTILUS_CATALOG_QUERY_INVALID; catalog_dir is caller-provided and excluded from identity.
-- replay :: run_offline_replay(converted_stream, catalog_dir) -> NautilusReplayReceipt or
-  closed NAUTILUS_REPLAY_INVALID / NAUTILUS_REPLAY_PARITY_INVALID; bounded; no strategy/
-  order/execution/fill.
-Accepted inputs are typed, validated repo-controlled values only; callers never pass raw
-file paths into logical identity. Return objects are immutable frozen dataclasses.
+FROZEN PUBLIC INPUT DATACLASSES (all @dataclass(frozen=True); raw file paths are INPUT-ONLY
+and never enter identity or result output):
+- PmxtV2ReplaySource: descriptor: ExternalDatasetDescriptor (WP167 public type, unmodified);
+  source_files: tuple[PmxtV2SourceFile, ...] (WP167 public type). This is the ONLY replay
+  source shape; there is no generic validated_rows input.
+- BinaryOptionMarketContext: condition_id: str (validated "0x"+64 lowercase-hex);
+  outcome_token_id: str (validated ASCII decimal digits); outcome_label: str (REQUIRED
+  source truth; never fabricated from the token id); description: str | None (source truth
+  only; None -> "" empty, never fabricated); activation_ns: int | None; expiration_ns:
+  int | None; price_increment: str (exact fixed-point decimal text; the finest valid
+  historical increment); size_increment: str (exact fixed-point decimal text); maker_fee:
+  str | None; taker_fee: str | None; ts_event_ns: int; ts_init_ns: int. Absent-value policy
+  (frozen): activation_ns None -> 0 (upstream "no activation constraint"); expiration_ns
+  None -> FAIL CLOSED NAUTILUS_INSTRUMENT_MAPPING_INVALID (never guessed); maker_fee/taker_fee
+  None -> Decimal("0") placeholder AND a FEE_METADATA_UNKNOWN warning (non-authoritative; no
+  fee/economic claim); min_quantity = one size_increment; max_quantity = None. No network,
+  no Gamma/API lookup, no guessed metadata.
 
-Public result/receipt dataclasses (all frozen/immutable; no public mutable dict/list
-surface unless returned as an immutable copy — prefer tuples / frozen dataclasses):
-- NautilusRuntimeCompatibilityResult, BinaryOptionMappingResult, ConvertedEventStream,
-  CatalogBuildResult, CatalogQueryResult, NautilusReplayReceipt.
-NautilusReplayReceipt fields (each classified scanned/exempt/forbidden; identity role
-noted): source_analytical_dataset_id (scanned; COMMITTED); nautilus_version (scanned;
-COMMITTED); conversion_policy_version (scanned; COMMITTED); instrument_id (scanned;
-COMMITTED); input_event_counts_by_type (scanned; COMMITTED); first_event_time_ns /
-last_event_time_ns (scanned; COMMITTED); tick_size_regime_sequence (scanned; COMMITTED);
-replay_processed_event_count (scanned; COMMITTED); replay_digest (scanned; COMMITTED);
-warnings (scanned; NONE-role); error_codes (scanned; NONE-role); execution_authority
-(exempt constant false; forbidden to be true). Catalog physical evidence, if present, is
-EXCLUDED from identity. A mechanical field-coverage test fails if any future public field
-is unclassified. Public API is not implementation-defined.
+FROZEN PUBLIC FUNCTIONS (module :: signature -> return; success; failure):
+- runtime_compatibility :: evaluate_offline_runtime() -> NautilusRuntimeCompatibilityResult.
+  Success: status NAUTILUS_OFFLINE_RUNTIME_SUPPORTED, error_codes (). Failure: closed code
+  from {NAUTILUS_RUNTIME_UNSUPPORTED, NAUTILUS_DEPENDENCY_VERSION_INVALID,
+  NAUTILUS_IMPORT_UNAVAILABLE}. No network, no path echo, no execution authority.
+- instruments :: build_binary_option(context: BinaryOptionMarketContext) ->
+  BinaryOptionMappingResult. Deterministic, path-independent. Failure: closed
+  NAUTILUS_INSTRUMENT_MAPPING_INVALID.
+- conversion :: convert_pmxt_v2_events(source: PmxtV2ReplaySource, context:
+  BinaryOptionMarketContext) -> ConvertedEventStream. Validates descriptor provenance and
+  revalidates every source-file hash (see EXTERNAL REPLAY-SOURCE PROVENANCE), parses/validates
+  pmxt-v2 event semantics, and produces the canonical ordered event stream + regime schedule
+  + per-type counts. Failure: closed NAUTILUS_EVENT_CONVERSION_INVALID (also covers descriptor/
+  source-mapping/hash failures). No float; no raw path/source-row/exception echo.
+- catalog :: build_catalog(stream: ConvertedEventStream, catalog_dir: pathlib.Path) ->
+  CatalogBuildResult. Registers the instrument before market data; catalog_dir is
+  caller-provided and EXCLUDED from identity. Failure: closed NAUTILUS_CATALOG_WRITE_INVALID.
+- catalog :: query_catalog(build_result: CatalogBuildResult) -> CatalogQueryResult. Complete
+  frozen signature (no ellipsis); reads back the just-built catalog and reports round-trip
+  counts/match. Failure: closed NAUTILUS_CATALOG_QUERY_INVALID.
+- replay :: run_offline_replay(stream: ConvertedEventStream, catalog_dir: pathlib.Path) ->
+  NautilusReplayReceipt. Bounded; no strategy/order/execution/fill. Failure surfaces as a
+  receipt with error_codes from {NAUTILUS_REPLAY_INVALID, NAUTILUS_REPLAY_PARITY_INVALID}.
+
+FROZEN PUBLIC RESULT DATACLASSES (all @dataclass(frozen=True); every field classified
+scanned/exempt/forbidden with identity role; on any invalid result all *_id / Nautilus-object
+/ digest fields are None, all counts 0, and error_codes is non-empty — recursive no-echo):
+- NautilusRuntimeCompatibilityResult: is_valid: bool (exempt); status: str (scanned; NONE);
+  error_codes: tuple[str, ...] (scanned; NONE); nautilus_version: str | None (scanned; NONE);
+  python_version: str (scanned; NONE); advisory_only: bool (exempt True); no_execution_authority:
+  bool (exempt True).
+- BinaryOptionMappingResult: is_valid: bool (exempt); status: str (scanned; NONE); error_codes:
+  tuple[str, ...] (scanned; NONE); instrument_id: str | None (scanned; COMMITTED); price_increment:
+  str | None (scanned; COMMITTED); size_increment: str | None (scanned; COMMITTED); warnings:
+  tuple[str, ...] (scanned; NONE); binary_option: object | None (EXCLUDED; a Nautilus BinaryOption
+  on success, None on invalid; its opaque internals are never treated as project identity).
+- ConvertedEventStream: is_valid: bool (exempt); status: str (scanned; NONE); error_codes:
+  tuple[str, ...] (scanned; NONE); instrument_id: str | None (scanned; COMMITTED);
+  source_dataset_kind: str | None (scanned; COMMITTED constant "WP167_EXTERNAL_DATASET_DESCRIPTOR");
+  source_external_dataset_id: str | None (scanned; COMMITTED); conversion_policy_version: str |
+  None (scanned; COMMITTED); ordered_event_digests: tuple[str, ...] (scanned; COMMITTED, each the
+  per-event canonical_row_digest with its duplicate ordinal); input_event_counts_by_type:
+  tuple[tuple[str, int], ...] (scanned; COMMITTED); tick_size_regime_sequence: tuple[tuple[str,
+  str, int], ...] (scanned; COMMITTED as {old_tick, new_tick, transition_ns}); first_event_time_ns:
+  int | None (scanned; COMMITTED); last_event_time_ns: int | None (scanned; COMMITTED); warnings:
+  tuple[str, ...] (scanned; NONE); converted_events: tuple[object, ...] (EXCLUDED; Nautilus data
+  objects for the engine/catalog, empty on invalid).
+- CatalogBuildResult: is_valid: bool (exempt); status: str (scanned; NONE); error_codes:
+  tuple[str, ...] (scanned; NONE); instrument_registered: bool (scanned; NONE); written_delta_count:
+  int (scanned; NONE); written_trade_count: int (scanned; NONE); catalog_dir: str | None (EXCLUDED
+  physical evidence; never in identity); stream_ref_digest: str | None (scanned; COMMITTED, equals
+  the source ConvertedEventStream identity digest).
+- CatalogQueryResult: is_valid: bool (exempt); status: str (scanned; NONE); error_codes:
+  tuple[str, ...] (scanned; NONE); queried_delta_count: int (scanned; NONE); queried_trade_count:
+  int (scanned; NONE); round_trip_matches: bool (scanned; NONE).
+- NautilusReplayReceipt: is_valid: bool (exempt); status: str (scanned; NONE); error_codes:
+  tuple[str, ...] (scanned; NONE); schema_id: str (scanned; COMMITTED constant
+  REPLAY_RECEIPT_SCHEMA_ID); schema_version: str (scanned; COMMITTED constant
+  REPLAY_RECEIPT_SCHEMA_VERSION); source_dataset_kind: str (scanned; COMMITTED constant
+  "WP167_EXTERNAL_DATASET_DESCRIPTOR"); source_external_dataset_id: str | None (scanned; COMMITTED;
+  equals ExternalDatasetDescriptor.external_dataset_id); conversion_policy_version: str | None
+  (scanned; COMMITTED constant CONVERSION_POLICY_VERSION); nautilus_version: str | None (scanned;
+  COMMITTED); instrument_id: str | None (scanned; COMMITTED); input_event_counts_by_type:
+  tuple[tuple[str, int], ...] (scanned; COMMITTED); first_event_time_ns: int | None (scanned;
+  COMMITTED); last_event_time_ns: int | None (scanned; COMMITTED); tick_size_regime_sequence:
+  tuple[tuple[str, str, int], ...] (scanned; COMMITTED); replay_processed_event_count: int
+  (scanned; COMMITTED); replay_digest: str | None (scanned; COMMITTED, REPLAY_IDENTITY_PREFIX +
+  SHA-256 hex); warnings: tuple[str, ...] (scanned; NONE); execution_authority: bool (exempt
+  constant False; forbidden to be True).
+
+Field-coverage rule: for every public dataclass, set(dataclasses.fields(T)) must be exactly
+covered by the classification table above; a future unclassified field fails a mechanical
+test. Public API is fully frozen and not implementation-defined.
+
+===============================================================================
+EXTERNAL REPLAY-SOURCE PROVENANCE (FROZEN — BOUND TO WP167)
+===============================================================================
+WP168 replays WP167 EXTERNAL research evidence. The source is the WP167 public
+ExternalDatasetDescriptor (with tuple[ExternalSourceObject, ...]) and the matching
+tuple[PmxtV2SourceFile, ...]; WP168 does not invent a generic row input and does not mutate
+or redefine ExternalDatasetDescriptor. convert_pmxt_v2_events validates, before any
+conversion, using WP167 public constants/boundaries:
+- descriptor.provider_id == PMXT_V2_PROVIDER_ID ("pmxt");
+- descriptor.dataset_name == PMXT_V2_DATASET_NAME ("pmxt_polymarket_orderbook_archive");
+- descriptor.dataset_version == PMXT_V2_DATASET_VERSION ("v2");
+- descriptor.source_class == PMXT_V2_SOURCE_CLASS ("THIRD_PARTY_NATIVE_FRAME_ARCHIVE");
+- descriptor.event_types are within PMXT_V2_EVENT_TYPES and the importer/source/receive
+  timestamp semantics are compatible with the WP167 pmxt-v2 contract;
+- every source_files[i] maps to exactly ONE descriptor.source_objects[j] by identical
+  object_name AND identical partition_identity; object_name values are unique; no descriptor
+  object is unmatched; no extra source file exists (strict 1:1 bijection);
+- each local source file's exact content hash is revalidated against the matched
+  ExternalSourceObject.source_sha256 via the WP167 public boundary
+  revalidate_pmxt_v2_source_hash(path, expected_sha256); any mismatch fails closed;
+- PmxtV2SourceFile.path is INPUT-ONLY: it is used to open/hash the file and NEVER enters
+  logical identity, the receipt, or any public output.
+On any provenance/mapping/hash failure return a closed NAUTILUS_EVENT_CONVERSION_INVALID with
+no raw path/source-row/exception echo. The receipt commits exactly
+descriptor.external_dataset_id as source_external_dataset_id; a physical Parquet SHA is never
+the top-level dataset identity, and no caller-invented dataset string is accepted. WP168 is
+the bounded pmxt-v2 EXTERNAL-history replay proof only; it does NOT also generalize to
+canonical/analytical sources — STOP rather than silently broadening the source API.
+
+===============================================================================
+PMXT-V2 EVENT-SEMANTIC VALIDATION MATRIX (FROZEN)
+===============================================================================
+Owned fields must be present and non-null; unowned event-specific fields must be null;
+otherwise fail closed NAUTILUS_EVENT_CONVERSION_INVALID (strict). Sides are within
+PMXT_V2_VALID_SIDES ("BUY","SELL"). Owned fields per event_type:
+- book: bids, asks (the always-populated market/asset_id/timestamps aside).
+- price_change: price, size, side, best_bid, best_ask.
+- last_trade_price: price, size, side, fee_rate_bps, transaction_hash.
+- tick_size_change: old_tick_size, new_tick_size.
+Decimal columns normalize at their documented exact (precision, scale) as fixed-point text;
+no float; positive/zero-size rules are explicit (a book/price_change level size of 0 encodes
+a DELETE; a negative size fails closed). market normalizes to canonical "0x"+64-lowercase-hex;
+asset_id to canonical ASCII decimal digits.
+BOOK JSON SHAPE (frozen): bids and asks are each a strict JSON array of 2-item pairs
+[["price","size"], ...]; each pair is exactly two strings; price/size normalize at the exact
+documented scales (no float). Canonical order: bids sorted strictly by DESCENDING numeric
+price; asks strictly by ASCENDING numeric price. A duplicate price level on one side FAILS
+CLOSED (no implicit merge) unless the source contract explicitly guarantees a merge rule
+(it does not). Malformed JSON, a non-2-item pair, a non-exact decimal, or a duplicate
+price-level each fail closed. Tests cover malformed JSON, malformed pair, duplicate level,
+non-exact decimal, owned-null, and unowned-non-null cases.
 
 ===============================================================================
 PRODUCT ERROR PRECEDENCE & NO-ECHO (FROZEN)

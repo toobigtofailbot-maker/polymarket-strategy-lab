@@ -301,7 +301,7 @@
   },
   "evidence_plan": {
     "applicable": true,
-    "reason": "Requirement-to-evidence traceability R001-R050 mapping each WP168 requirement to a command and expected result; every new-capability pytest node lives in the frozen exact-scope test modules, and governance reconciliation is proven by in-scope governance guards plus the full suite. Includes receive-time-primary deterministic ordering, physical-order-independent canonical serialization, duplicate multiplicity, frozen event_kind_rank, tick-size exact-multiple, and two-distinct-surface PR evidence.",
+    "reason": "Requirement-to-evidence traceability R001-R062 mapping each WP168 requirement to a command and expected result; new-capability pytest nodes live in the frozen exact-scope test modules and the contract-doc test; covers receive-time-primary ordering, canonical serialization and literal identity constants, WP167 external-dataset provenance binding and hash revalidation, the frozen public API/dataclass contract, the pmxt-v2 event-semantic matrix, and two-distinct-surface PR evidence.",
     "items": [
       {
         "requirement_id": "R001",
@@ -652,6 +652,90 @@
         "test": "test_receive_time_primary_ordering_when_event_time_disagrees",
         "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py tests/research_runtime/nautilus_offline/test_replay.py",
         "expected_result": "when venue ts_event order disagrees with receive ts_init order, the canonical ordering and engine dispatch follow ts_init (point-in-time knowability); the implementation test also proves the engine (add_data sort=True, or sort=False if required on 1.231.0) preserves the canonical equal-ts_init tie order"
+      },
+      {
+        "requirement_id": "R051",
+        "source": "docs",
+        "test": "test_public_api_and_dataclasses_are_exactly_frozen",
+        "command": "python -m pytest -q tests/test_nautilus_offline_kernel_contract_docs.py",
+        "expected_result": "the contract-doc test asserts every public function signature (evaluate_offline_runtime, build_binary_option, convert_pmxt_v2_events, build_catalog, query_catalog, run_offline_replay) and every public dataclass field/type exactly, and that the contract contains no ellipsis or may-be-refined language"
+      },
+      {
+        "requirement_id": "R052",
+        "source": "pytest",
+        "test": "test_descriptor_provider_version_source_class_mismatch_rejected",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "convert_pmxt_v2_events fails closed NAUTILUS_EVENT_CONVERSION_INVALID when descriptor.provider_id/dataset_name/dataset_version/source_class do not equal PMXT_V2_PROVIDER_ID/PMXT_V2_DATASET_NAME/PMXT_V2_DATASET_VERSION/PMXT_V2_SOURCE_CLASS"
+      },
+      {
+        "requirement_id": "R053",
+        "source": "pytest",
+        "test": "test_source_files_map_one_to_one_to_descriptor_objects",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "an extra source file, a missing descriptor object, or a duplicate object_name each fail closed; a strict 1:1 bijection by identical object_name and partition_identity is required"
+      },
+      {
+        "requirement_id": "R054",
+        "source": "pytest",
+        "test": "test_source_hash_revalidation_failure_fails_closed",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "a local file whose content no longer matches the matched ExternalSourceObject.source_sha256 (revalidated via revalidate_pmxt_v2_source_hash) fails closed with no raw path/exception echo"
+      },
+      {
+        "requirement_id": "R055",
+        "source": "pytest",
+        "test": "test_reordered_source_file_list_yields_identical_replay",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "presenting the same source files/rows in a different physical enumeration order yields identical canonical ordering and an identical replay_digest"
+      },
+      {
+        "requirement_id": "R056",
+        "source": "pytest",
+        "test": "test_absolute_source_path_never_in_identity_or_output",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "PmxtV2SourceFile.path is input-only: no absolute/relative source path or temp/catalog_dir appears in any ConvertedEventStream/NautilusReplayReceipt identity field or public output"
+      },
+      {
+        "requirement_id": "R057",
+        "source": "pytest",
+        "test": "test_receipt_commits_external_dataset_id_and_is_mutation_sensitive",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "NautilusReplayReceipt.source_external_dataset_id equals ExternalDatasetDescriptor.external_dataset_id and source_dataset_kind == WP167_EXTERNAL_DATASET_DESCRIPTOR; mutating external_dataset_id or a source hash changes or invalidates the replay identity"
+      },
+      {
+        "requirement_id": "R058",
+        "source": "pytest",
+        "test": "test_event_semantic_matrix_owned_and_null_fields",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "owned fields per event_type (book: bids/asks; price_change: price/size/side/best_bid/best_ask; last_trade_price: price/size/side/fee_rate_bps/transaction_hash; tick_size_change: old_tick_size/new_tick_size) are required non-null, unowned event-specific fields must be null, and side is within BUY/SELL; violations fail closed"
+      },
+      {
+        "requirement_id": "R059",
+        "source": "pytest",
+        "test": "test_book_json_shape_and_canonical_ordering",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py",
+        "expected_result": "book bids/asks parse as strict JSON arrays of 2-string pairs; bids canonicalize to strictly descending price and asks to strictly ascending price; malformed JSON, a non-2-item pair, a non-exact decimal, or a duplicate price level on one side each fail closed"
+      },
+      {
+        "requirement_id": "R060",
+        "source": "pytest",
+        "test": "test_identity_constants_and_digest_recomputation",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "the literal constants CONVERSION_POLICY_VERSION=wp168-nautilus-pmxt-v2-conversion/1.0.0, REPLAY_RECEIPT_SCHEMA_ID/VERSION, and REPLAY_IDENTITY_PREFIX=nautilusreplay:sha256: are present; an independent recomputation of the SHA-256 canonical-JSON preimage reproduces replay_digest; mutating an included preimage field changes it while changing an excluded path/temp value does not"
+      },
+      {
+        "requirement_id": "R061",
+        "source": "pytest",
+        "test": "test_every_public_dataclass_field_is_classified",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline",
+        "expected_result": "for every public dataclass (NautilusRuntimeCompatibilityResult, BinaryOptionMappingResult, ConvertedEventStream, CatalogBuildResult, CatalogQueryResult, NautilusReplayReceipt, BinaryOptionMarketContext), set(dataclasses.fields(T)) is exactly covered by the scanned/exempt/forbidden classification and a synthetic unclassified field fails the coverage test"
+      },
+      {
+        "requirement_id": "R062",
+        "source": "pytest",
+        "test": "test_binary_option_absent_value_policy",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_instruments.py",
+        "expected_result": "expiration_ns None fails closed NAUTILUS_INSTRUMENT_MAPPING_INVALID; activation_ns None maps to 0; maker_fee/taker_fee None map to Decimal 0 with a FEE_METADATA_UNKNOWN warning; a missing outcome_label fails closed; outcome/description are never fabricated from the token id"
       }
     ]
   },
