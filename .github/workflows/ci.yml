@@ -1,0 +1,114 @@
+name: WP167 Analytical Research CI
+
+# Hosted compatibility evidence only. No secrets, no product API, no external
+# archive download, no trading. This workflow proves the exact WP167 dependency
+# pins install and the analytical research package behaves identically across the
+# supported Windows/Linux targets, and it is the authoritative environment for the
+# DuckDB-dependent tests that cannot run on developer machines where the DuckDB
+# native module is blocked by Windows Smart App Control.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  # Exact WP167 direct runtime dependency pins.
+  WP167_DEPS: "pyarrow==25.0.1 duckdb==1.5.5 polars==1.44.1"
+  # Strict DuckDB mode: DuckDB-dependent tests must execute; any import failure or
+  # skip in a required hosted job fails the job rather than producing green CI.
+  WP167_STRICT_DUCKDB: "1"
+
+jobs:
+  compatibility:
+    name: compat (${{ matrix.os }} / py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+        python: ["3.12", "3.14"]
+    steps:
+      - name: Normalize line endings before checkout
+        # `.gitattributes` marks files `text=auto`, which checks out with the
+        # platform-native EOL (CRLF on Windows) unless core.eol is pinned. Force LF
+        # on every runner so line-ending-sensitive byte-hash tests (e.g. the WP159
+        # package hashes) see identical bytes on Windows and Linux.
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base branch for repository scope guards
+        run: git fetch --no-tags origin main:refs/remotes/origin/main
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install exact dependency pins and test tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install $WP167_DEPS "pytest>=8.0"
+
+      - name: pip check
+        run: python -m pip check
+
+      - name: Assert exact direct dependency versions and Python floor
+        run: python -m pytest -q tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py
+
+      - name: Focused WP167 tests (DuckDB strict, no skips permitted)
+        run: |
+          set -o pipefail
+          # Write the captured output outside the repository so it does not appear
+          # as an untracked file to the branch-scope governance guards run later.
+          python -m pytest -rs -q \
+            tests/data_layer/analytical_research \
+            tests/test_analytical_research_layer_contract_docs.py \
+            | tee "$RUNNER_TEMP/wp167_focused.txt"
+          if grep -Eq "[0-9]+ skipped" "$RUNNER_TEMP/wp167_focused.txt"; then
+            echo "::error::A WP167 analytical test was skipped under strict hosted CI"
+            exit 1
+          fi
+
+      - name: Generated artifact guard
+        run: python tools/git/preflight_generated_artifact_guard.py
+
+      - name: Full test suite
+        run: python -m pytest -q
+
+  dependency-audit:
+    name: dependency-audit (ubuntu-24.04 / py3.12)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install exact dependency pins and audit tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install $WP167_DEPS "pytest>=8.0" pip-audit
+
+      - name: pip check
+        run: python -m pip check
+
+      - name: pip-audit resolved environment
+        run: python -m pip_audit

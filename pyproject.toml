@@ -2,8 +2,12 @@
 name = "polymarket-strategy-lab"
 version = "0.1.0"
 description = "Repo-first governance foundation for a deterministic Polymarket and Kalshi strategy lab."
-requires-python = ">=3.11"
-dependencies = []
+requires-python = ">=3.12,<3.15"
+dependencies = [
+  "pyarrow==25.0.1",
+  "duckdb==1.5.5",
+  "polars==1.44.1",
+]
 
 [project.optional-dependencies]
 test = [
@@ -13,4 +17,3 @@ test = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-

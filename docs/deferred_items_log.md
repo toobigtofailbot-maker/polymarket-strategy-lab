@@ -2372,7 +2372,7 @@ WP165 implementation authority. The local guard remains the runtime authority.
 | WP165-D004 | Scheduled recurring collection | OPEN | P2 | Separate orchestration WP with concurrency and observability policy | WP165 is a single manual invocation with no loop, retry, sleep, or scheduler |
 | WP165-D005 | Raw source/wire preservation | OPEN | P3 | Separate raw-capture WP with retention and security policy | WP165 persists only normalized WP156 observations, never raw HTTP/source bytes |
 | WP165-D006 | Historical public trades / Data API ingestion | OPEN | P2 | Separate ingestion WP with source and leakage policy | WP165 reads only Gamma markets and CLOB books |
-| WP165-D007 | Analytical columnar/query layer | OPEN | P2 | Separate analytics WP adopting Parquet/Arrow/DuckDB/Polars | WP165 adds no analytical columnar or query layer |
+| WP165-D007 | Analytical columnar/query layer | RESOLVED_BOUNDED_WP167_ANALYTICAL_RESEARCH_FOUNDATION | P2 | Resolved (bounded) by WP167: a local/offline derived Parquet/Arrow materialization and DuckDB/Polars analytical layer with SQLite as the canonical integrity authority | WP165 added no analytical columnar or query layer; WP167 delivers the bounded analytical foundation while additional adapters and scale remain open successors |
 
 WP158 adds no dependency, file I/O, writer, reader, persistence, persisted
 query, collector, product/runtime network, credential, scheduler, strategy,
@@ -2392,9 +2392,29 @@ implementation authority.
 
 | ID | Deferred item | Status | Priority | Required future gate | Non-implication |
 |---|---|---|---|---|---|
-| WP166-D001 | Analytical research store and query layer | OPEN | P2 | Separate WP167 analytics WP adopting derived Parquet/Arrow materialization and DuckDB/Polars point-in-time/leakage-safe queries while SQLite stays the canonical integrity authority | WP166 adds no analytical columnar or query layer |
+| WP166-D001 | Analytical research store and query layer | RESOLVED_BOUNDED_WP167_ANALYTICAL_RESEARCH_FOUNDATION | P2 | Resolved (bounded) by WP167: derived Parquet/Arrow materialization and DuckDB/Polars queries with SQLite as the canonical integrity authority | WP166 added no analytical columnar or query layer; WP167 delivers the bounded analytical foundation |
 | WP166-D002 | Automated cursor orchestration / scheduler | OPEN | P2 | Separate orchestration WP with concurrency, retry, and observability policy | WP166 is a single manual invocation that fetches exactly one keyset page with no loop, retry, sleep, or scheduler |
 | WP166-D003 | Record store growth and partitioning beyond 4096 records / manifest beyond 256 entries | OPEN | P2 | Separate durability/partitioning WP for datasets beyond the bounded research horizon | WP166 stays within the WP163 4096-record and WP161 256-entry/reference horizons and performs no pruning, compaction, or rollover |
+
+## WP167 Analytics, External History And Materialization Foundation Deferred Items
+
+WP167 resolves `WP165-D007` and `WP166-D001` as
+`RESOLVED_BOUNDED_WP167_ANALYTICAL_RESEARCH_FOUNDATION`: a local, offline,
+read-only-against-canonical derived Parquet/Arrow materialization plane with DuckDB
+and Polars analytical access and a provenance-separated external-history descriptor,
+proven with the pmxt v2 representative adapter, while canonical SQLite records and
+manifests stay the sole integrity authority. Every WP167 item below is `OPEN`,
+separately gated, and outside WP167 implementation authority.
+
+| ID | Deferred item | Status | Priority | Required future gate | Non-implication |
+|---|---|---|---|---|---|
+| WP167-D001 | Additional external history adapters (pmxt v1, Jon Becker, Kalshi, OpenMarket) | OPEN | P2 | Separate adapter WPs each with source, schema, license, and provenance policy | WP167 integrates only the pmxt Polymarket Orderbook Archive v2 representative source |
+| WP167-D002 | NautilusTrader offline kernel / ParquetDataCatalog (WP168) | OPEN | P2 | Separate WP168 adding NautilusTrader, instrument mapping, catalog, and offline replay parity | WP167 installs no NautilusTrader and builds no catalog or replay engine |
+| WP167-D003 | Public WebSocket raw/realtime capture (WP169) | OPEN | P2 | Separate realtime-capture WP with rate-limit, retention, and security policy | WP167 has no WebSocket runtime and no realtime collector |
+| WP167-D004 | Public Data API activity/wallet plane (WP169 or narrow successor) | OPEN | P2 | Separate ingestion WP with source and leakage policy | WP167 reads no Data API, wallet, or account activity |
+| WP167-D005 | Experiment registry / feature-label identity (WP170) | OPEN | P2 | Separate experiment-registry WP with feature/label lineage and leakage policy | WP167 provides a materialization and query substrate but no experiment or feature/label registry |
+| WP167-D006 | Automated external downloader / refresh | OPEN | P3 | Separate network-gated WP with download provenance, retention, and security policy | WP167 accepts only explicitly supplied local Parquet paths and performs no download or network access |
+| WP167-D007 | Analytical partition/compaction at scale | OPEN | P3 | Separate durability/partitioning WP if analytical scale proves it necessary | WP167 writes one derived partition per table and performs no rollover, compaction, or pruning |
 
 ## WP159 Draftability Foundation And Exact Scope Enforcement Deferred Items
 

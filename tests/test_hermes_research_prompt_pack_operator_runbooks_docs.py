@@ -664,6 +664,30 @@ def test_no_src_implementation_for_wp98() -> None:
         cwd=str(REPO_ROOT),
     )
     changed_files = result.stdout.strip().splitlines()
+    if "docs/status_entries/WP167.md" in changed_files:
+        # WP167 explicitly authorizes its analytical source package, exactly one
+        # workflow file (.github/workflows/ci.yml), one dependency file
+        # (pyproject.toml), and no tools/ files. Historical assertions are unchanged.
+        wp167_src = {
+            "src/data_layer/analytical_research/__init__.py",
+            "src/data_layer/analytical_research/research_dataset.py",
+            "src/data_layer/analytical_research/external_dataset.py",
+            "src/data_layer/analytical_research/pmxt_v2.py",
+        }
+        for f in changed_files:
+            if f.startswith("src/"):
+                assert f in wp167_src, f"Forbidden src/ file changed: {f}"
+            if f.startswith("tools/"):
+                assert False, f"Forbidden tools/ file changed: {f}"
+            if f.startswith(".github/workflows/"):
+                assert f == ".github/workflows/ci.yml", f"Forbidden workflow file changed: {f}"
+        dep_files = {
+            f for f in changed_files
+            if f in ("requirements.txt", "pyproject.toml", "package.json",
+                     "package-lock.json", "poetry.lock", "Cargo.toml", "Cargo.lock")
+        }
+        assert dep_files == {"pyproject.toml"}, dep_files
+        return
     allowed_later_tools = {
         "tools/hermes_candidate_review_manual_export_cli.py",
     }

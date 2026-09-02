@@ -4,6 +4,63 @@
 
 This document records local security-tool availability and scan results through WP15. It is status evidence only; it does not authorize runtime dependency integration, copied external code, venue API integration, or live trading.
 
+## WP167 Status Summary
+
+WP167 is the project's first runtime-dependency package. It moves the Python
+support floor to `>=3.12,<3.15` and adds exactly three direct runtime
+dependencies: `pyarrow==25.0.1`, `duckdb==1.5.5`, `polars==1.44.1`. Before
+implementation the project-local security baseline was rerun. Gitleaks, semgrep,
+and pip-audit were all `NOT_AVAILABLE` from project-local paths (`tools/.bin/` and
+`.venv-security/` are absent in this worktree), consistent with the historical
+baseline. `python -m pip check` passed with no broken requirements after the exact
+pins were installed.
+
+A local pip-audit was additionally run by installing `pip-audit` into the active
+interpreter and auditing the resolved environment. It reported 14 known
+vulnerabilities across 6 packages: `idna`, `pip`, `pydantic-settings`, `requests`,
+`urllib3`, and `uv`. **None of the three WP167 runtime dependencies
+(`pyarrow`, `duckdb`, `polars`) are implicated.** Every flagged package is a
+pre-existing package in the shared global interpreter used by unrelated local
+projects (two of which, `pionex-risk-monitor` and `solana-mirror-engine`, pip-audit
+skipped as not-on-PyPI); WP167 neither adds nor declares any of them in
+`pyproject.toml`. The authoritative WP167 dependency audit therefore runs in the
+hosted CI `dependency-audit` job on ubuntu-24.04 / Python 3.12, whose isolated
+environment installs only the exact WP167 pins plus pytest and pip-audit, so its
+`pip-audit` sees WP167's actual dependency closure rather than the polluted local
+global environment.
+
+### WP167 Tool Status Table
+
+| Tool | Availability | Source | Version command | Scan command attempted | Result | Deferred item impact | Notes |
+|---|---|---|---|---|---|---|---|
+| gitleaks | NOT_AVAILABLE | NOT_AVAILABLE | `tools/.bin/gitleaks.exe version` | `gitleaks detect --source . --redact` | SKIPPED_NOT_AVAILABLE | WP3-D001 remains READY_FOR_WP | Project-local `tools/.bin/` absent in this worktree; rerun `tools/security/setup_project_gitleaks.py` to restore. |
+| semgrep | NOT_AVAILABLE | NOT_AVAILABLE | project-local or PATH semgrep | `semgrep scan --config auto .` | SKIPPED_NOT_AVAILABLE | WP3-D002 remains READY_FOR_WP | `.venv-security/` absent; rerun `tools/security/setup_project_security_tools.py` to restore. |
+| npm audit | NOT_APPLICABLE | NOT_APPLICABLE | `npm --version` | Not run | SKIPPED_NOT_APPLICABLE | WP3-D003 remains DEFERRED | No `package.json`. |
+| pip-audit (project-local) | NOT_AVAILABLE | NOT_AVAILABLE | project-local pip-audit | Not run from project-local path | SKIPPED_NOT_AVAILABLE | WP3-D004 remains READY_FOR_WP | Project-local `.venv-security/` absent. |
+| pip-audit (interpreter, local) | AVAILABLE | INTERPRETER_INSTALL | `python -m pip_audit --version` | `python -m pip_audit --progress-spinner off` | 14 VULNS IN UNRELATED GLOBAL PACKAGES; WP167 PINS CLEAN | WP3-D004 remains READY_FOR_WP | Findings are in `idna`/`pip`/`pydantic-settings`/`requests`/`urllib3`/`uv`, none of which WP167 adds; `pyarrow`/`duckdb`/`polars` have no reported vulnerabilities. |
+| pip-audit (hosted CI) | AVAILABLE | HOSTED_CI | `python -m pip_audit` | `.github/workflows/ci.yml` dependency-audit job | PASS on the exact final validated hosted run (isolated WP167 closure) | WP3-D004 remains READY_FOR_WP | Available and run in hosted CI only, not in this local environment; the authoritative WP167 audit is the isolated ubuntu-24.04 / Python 3.12 CI job auditing only the WP167 dependency closure. The exact live run at the current PR head is recorded in the PR body. |
+| pip check | AVAILABLE | INTERPRETER | `python -m pip check` | `python -m pip check` | PASS | — | No broken requirements after installing the exact pins. |
+| cargo audit | NOT_APPLICABLE | NOT_APPLICABLE | `cargo audit --version` | Not run | SKIPPED_NOT_APPLICABLE | WP3-D005 remains DEFERRED | No `Cargo.lock`. |
+
+### WP167 Commands Run
+
+```bash
+python -m pip install "pyarrow==25.0.1" "duckdb==1.5.5" "polars==1.44.1"
+python -m pip check
+python tools/security/check_security_tools.py
+python tools/security/run_available_security_checks.py
+python -m pip install pip-audit
+python -m pip_audit --progress-spinner off
+```
+
+### WP167 Results
+
+- `pip check`: PASS (no broken requirements).
+- `pyarrow==25.0.1`, `duckdb==1.5.5`, `polars==1.44.1`: no known vulnerabilities in the local pip-audit run.
+- Local pip-audit exit 1 is attributable entirely to unrelated pre-existing global-environment packages, not to any WP167 dependency; the hosted CI dependency-audit job is the authoritative WP167 audit surface.
+- gitleaks and semgrep: SKIPPED_NOT_AVAILABLE (project-local tooling absent); unavailable tools are not passing results.
+- DuckDB note: local DuckDB execution is observational. Windows Smart App Control (an OS security policy, never disabled or weakened by WP167) may block the pinned native module; when it does, local DuckDB execution is `BLOCKED_BY_WINDOWS_SMART_APP_CONTROL` and DuckDB-dependent tests skip locally with an explicit reason, and when the OS reputation check allows the binary the pinned module loads and those tests run locally. This local state is environmental and can change over time; strict hosted Windows/Linux CI is the authoritative cross-platform DuckDB proof either way. The exact final observed local status is recorded in the PR body.
+
 ## WP15 Status Summary
 
 WP15 reran the project-local security baseline before implementation. Gitleaks v8.27.2 was available from ignored `tools/.bin/`. The first scan reported a documentation false positive in `docs/deferred_items_log.md` for the exact phrase "credential/key/security boundary"; WP15 added a narrow `.gitleaks.toml` allowlist scoped to that file and exact phrase, then reran the scan successfully. Semgrep and pip-audit were unavailable because `.venv-security/` is absent after generated artifact cleanup. WP15 adds no runtime dependency, no external repo code, no copied source, no venue API client in runtime paths, and no live/API execution path.

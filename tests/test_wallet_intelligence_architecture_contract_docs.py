@@ -380,6 +380,15 @@ def test_project_status_marks_wp79_current_branch_phase() -> None:
 def test_only_allowed_wallet_src_files_changed() -> None:
     changed = _changed_files()
     src_changes = sorted(path for path in changed if path.startswith("src/"))
+    if "docs/status_entries/WP167.md" in changed:
+        # WP167 authorizes exactly its analytical research source package.
+        assert set(src_changes) == {
+        "src/data_layer/analytical_research/__init__.py",
+        "src/data_layer/analytical_research/external_dataset.py",
+        "src/data_layer/analytical_research/pmxt_v2.py",
+        "src/data_layer/analytical_research/research_dataset.py",
+    }
+        return
     allowed_src_changes = {
         "src/data_layer/wallet_trade_event_fixtures.py",
         "src/data_layer/wallet_signal_research_profile.py",
@@ -479,6 +488,14 @@ def test_no_tools_files_changed() -> None:
 
 def test_no_dependency_or_lock_files_changed() -> None:
     changed = _changed_files()
+    if "docs/status_entries/WP167.md" in changed:
+        # WP167 authorizes exactly one dependency file, pyproject.toml, and no lock file.
+        dep_changes = {Path(path).name for path in changed if Path(path).name in {
+            "requirements.txt", "requirements-dev.txt", "pyproject.toml", "package.json",
+            "package-lock.json", "poetry.lock", "uv.lock", "pdm.lock", "Pipfile.lock",
+        }}
+        assert dep_changes == {"pyproject.toml"}
+        return
     forbidden_names = {
         "requirements.txt",
         "requirements-dev.txt",

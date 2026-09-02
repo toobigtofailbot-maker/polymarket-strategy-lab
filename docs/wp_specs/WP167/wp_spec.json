@@ -1,0 +1,595 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP167",
+    "title": "Analytics, External History and Materialization Foundation",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "RUNTIME_DEPENDENCY_ANALYTICAL_RESEARCH_FOUNDATION",
+    "package_size_class": "XL",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 166,
+      "head_sha": "f310d96c2f5c9ae6ec589239e945ab5746463911",
+      "merge_sha": "35f4042a595ae58bf8b71a986eaefac0d3fe3dc8"
+    },
+    "suggested_branch": "claude/wp167-analytics-external-history-foundation",
+    "objective": "Create the first local, offline, read-only-against-canonical analytical research plane over the merged point-in-time evidence system: deterministic derived Parquet materialization of verified dataset snapshot references with logical-versus-physical identity separation, a provenance-separated external-history descriptor proven with the pmxt v2 representative local adapter (no downloader, no network), and DuckDB/Polars read-only queries with parity. Canonical SQLite records and manifests remain the sole integrity authority; Parquet is derived only. Adds exactly pyarrow==25.0.1, duckdb==1.5.5, polars==1.44.1 and moves the Python floor to >=3.12,<3.15. No NautilusTrader, WebSocket, Data API, Hermes, strategy, paper, credentials, execution, live, or scheduler.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Explicit user XL authorization, expanded in two further explicit authorizations to 29 files. WP167 is one coherent capability; the nine files beyond the original 20 are mandatory governance regression guards caused by the authorized implementation (the architecture-boundary approved-source guard, the project-status current-phase guard, and seven historical scope/reconciliation guards that must gain a narrow WP167 branch), each preserving every historical WP's exact-scope assertions. WP166 updated the same class of guards. Exact governed scope is 29 files."
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/wp_specs/WP167/wp_prompt.txt",
+      "docs/wp_specs/WP167/wp_spec.json",
+      "docs/wp_specs/WP167/draftability_certificate.json",
+      "pyproject.toml",
+      ".github/workflows/ci.yml",
+      "src/data_layer/analytical_research/__init__.py",
+      "src/data_layer/analytical_research/research_dataset.py",
+      "src/data_layer/analytical_research/external_dataset.py",
+      "src/data_layer/analytical_research/pmxt_v2.py",
+      "tests/data_layer/analytical_research/test_research_dataset.py",
+      "tests/data_layer/analytical_research/test_external_dataset.py",
+      "tests/data_layer/analytical_research/test_pmxt_v2.py",
+      "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py",
+      "docs/analytical_research_layer_contract.md",
+      "tests/test_analytical_research_layer_contract_docs.py",
+      "docs/status_entries/WP167.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/security_tooling_status.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+      "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/wp_specs/WP167/wp_prompt.txt",
+      "docs/wp_specs/WP167/wp_spec.json",
+      "docs/wp_specs/WP167/draftability_certificate.json",
+      "pyproject.toml",
+      ".github/workflows/ci.yml",
+      "src/data_layer/analytical_research/__init__.py",
+      "src/data_layer/analytical_research/research_dataset.py",
+      "src/data_layer/analytical_research/external_dataset.py",
+      "src/data_layer/analytical_research/pmxt_v2.py",
+      "tests/data_layer/analytical_research/test_research_dataset.py",
+      "tests/data_layer/analytical_research/test_external_dataset.py",
+      "tests/data_layer/analytical_research/test_pmxt_v2.py",
+      "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py",
+      "docs/analytical_research_layer_contract.md",
+      "tests/test_analytical_research_layer_contract_docs.py",
+      "docs/status_entries/WP167.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/security_tooling_status.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+      "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
+    ],
+    "forbidden_prefixes": [
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/strategy_modules/",
+      "src/paper_trading/",
+      "tools/hermes/",
+      "agent_runtime/",
+      "agent_memory/",
+      "local_data/"
+    ],
+    "max_changed_files": 29,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_architecture_boundaries.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+      "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
+    ],
+    "rollback_surface": "Revert the WP167 branch. The change is additive: one new src/data_layer/analytical_research package, one CI workflow, the three dependency pins and Python floor in pyproject.toml, the analytical contract doc, focused tests, nine governance-guard updates, and status/repo-truth/deferred/security doc reconciliation. There is no predecessor mutation, no SQLite or manifest migration, no data migration, and no committed generated artifact.",
+    "mode_boundaries": [
+      {
+        "boundary": "dependencies",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": true,
+    "dependencies": true,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "WP167 changes no existing predecessor public API. It adds a net-new src/data_layer/analytical_research package surface documented in docs/analytical_research_layer_contract.md and imports predecessors only through their existing public API.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": false,
+    "reason": "The analytical result and identity fields are documented in the contract doc and proven by the focused tests; this spec does not re-encode them as governed semantic fields.",
+    "items": []
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "The deterministic logical dataset id and external descriptor id are implemented in code and proven by independent recomputation tests; this spec does not restate them in the canonical-JSON derivation DSL.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": false,
+    "reason": "WP167 defines no governed state machine; results are single-shot frozen objects with a closed error vocabulary.",
+    "items": []
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed schema-1.0.0 failure precedence for the WP-spec guard.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No canonical-JSON identity derivations are declared in this spec, so no worked derivation examples are required.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Requirement-to-evidence traceability R001-R040 mapping each WP167 requirement to a command and expected result.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "git",
+        "test": "predecessor final head and merge/base binding",
+        "command": "git merge-base --is-ancestor f310d96c2f5c9ae6ec589239e945ab5746463911 origin/main && git merge-base --is-ancestor 35f4042a595ae58bf8b71a986eaefac0d3fe3dc8 origin/main && git rev-parse origin/main",
+        "expected_result": "both --is-ancestor checks exit 0, proving origin/main contains the PR166 predecessor final head f310d96c2f5c9ae6ec589239e945ab5746463911 and the merge commit 35f4042a595ae58bf8b71a986eaefac0d3fe3dc8; git rev-parse origin/main prints 35f4042a595ae58bf8b71a986eaefac0d3fe3dc8; PR166 is merged"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pyproject",
+        "test": "test_pyproject_declares_exactly_the_three_pins_and_range",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py",
+        "expected_result": "requires-python is >=3.12,<3.15"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_installed_metadata_matches_pins",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py",
+        "expected_result": "installed pyarrow/duckdb/polars distribution metadata equals the exact pins 25.0.1/1.5.5/1.44.1"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pip-audit",
+        "test": "dependency-audit job",
+        "command": "python -m pip_audit",
+        "expected_result": "WP167 pins have no known vulnerabilities in the isolated hosted CI environment"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "predecessor compatibility suite",
+        "command": "python -m pytest -q tests/data_layer/point_in_time_market_research",
+        "expected_result": "no canonical SQLite/manifest mutation or identity change"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_materialize_validated_batch_across_families",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_research_dataset.py",
+        "expected_result": "materialization requires a verified DatasetSnapshotReference"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_logical_id_is_path_independent",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_research_dataset.py",
+        "expected_result": "logical dataset id is deterministic and path-independent"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_physical_integrity_is_separate_from_logical_identity",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_research_dataset.py",
+        "expected_result": "file integrity is recorded and verified separately from logical identity"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_utc_timestamp_columns_and_null_event_time",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_research_dataset.py",
+        "expected_result": "derived timestamp columns are UTC and null event_time is preserved"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_wrong_decimal_precision_is_rejected",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_pmxt_v2.py",
+        "expected_result": "exact decimal precision/scale is enforced; non-exact decimal typing is rejected"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_review_conflict_role_is_preserved",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_research_dataset.py",
+        "expected_result": "ordinary and review-conflict roles are preserved across tables"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_descriptor_id_matches_independent_recomputation",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_external_dataset.py",
+        "expected_result": "external descriptor id is deterministic and independently recomputable"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_native_capture_class_is_refused",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_pmxt_v2.py",
+        "expected_result": "pmxt v2 is THIRD_PARTY_NATIVE_FRAME_ARCHIVE and native capture is refused"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_valid_pmxt_v2_archive_is_described and test_string_market_column_is_rejected",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_pmxt_v2.py",
+        "expected_result": "the exact documented pmxt v2 16-column schema (fixed_size_binary[66] market, decimal-string asset_id, timestamp[ms,UTC], exact decimals, uint16 fee_rate_bps) is accepted and any type/width/unit drift is rejected"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_source_hash_revalidation",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_pmxt_v2.py",
+        "expected_result": "pmxt per-file source hashes are recorded and revalidated"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_adapter_source_contains_no_network_dependency",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_pmxt_v2.py",
+        "expected_result": "no downloader or network dependency in the adapter source"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_adapter_uses_batched_iteration_not_whole_file_reads",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_pmxt_v2.py",
+        "expected_result": "bounded batched iteration and no whole-file materialization"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest-ci",
+        "test": "test_duckdb_polars_row_and_group_parity",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_research_dataset.py",
+        "expected_result": "DuckDB queries execute under strict hosted CI"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_polars_queries_available_without_duckdb",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_research_dataset.py",
+        "expected_result": "Polars lazy scans and transforms work"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest-ci",
+        "test": "test_duckdb_polars_count_parity_over_pmxt_source",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_pmxt_v2.py",
+        "expected_result": "DuckDB and Polars agree on rows and grouped counts"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "diff-scope",
+        "test": "exact scope",
+        "command": "git diff --name-only main HEAD",
+        "expected_result": "exactly the 29 governed files changed"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "grep",
+        "test": "no nautilus",
+        "command": "git diff main HEAD",
+        "expected_result": "no NautilusTrader import or dependency"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "grep",
+        "test": "no websocket",
+        "command": "git diff main HEAD",
+        "expected_result": "no WebSocket runtime"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "grep",
+        "test": "no data api",
+        "command": "git diff main HEAD",
+        "expected_result": "no Data API ingestion"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "grep",
+        "test": "no hermes or strategy",
+        "command": "git diff main HEAD",
+        "expected_result": "no Hermes runtime or strategy path"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "grep",
+        "test": "no paper/execution/live",
+        "command": "git diff main HEAD",
+        "expected_result": "no paper, execution, or live authority"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "github-actions",
+        "test": "compatibility matrix bound to the exact head",
+        "command": "gh api \"repos/toobigtofailbot-maker/polymarket-strategy-lab/commits/$(git rev-parse HEAD)/check-runs\" --jq \".check_runs[] | [.name, .conclusion] | @tsv\"",
+        "expected_result": "the check-runs for the exact current head SHA (resolved by git rev-parse HEAD) include ubuntu-24.04 and windows-2022 with Python 3.12 and 3.14 plus the dependency-audit job, and every one reports conclusion success"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "github-actions",
+        "test": "line-ending safety",
+        "command": "git config --global core.autocrlf false && git config --global core.eol lf",
+        "expected_result": "Windows CI checks out LF despite .gitattributes text=auto; byte-hash tests pass on Windows and Linux"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "security",
+        "test": "pip check",
+        "command": "python -m pip check",
+        "expected_result": "no broken requirements for the resolved WP167 dependency environment (pip-audit is R004)"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "predecessor compatibility",
+        "command": "python -m pytest -q tests/test_scalable_lineage_delta_and_keyset_population_contract_docs.py",
+        "expected_result": "predecessor suites pass"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "pytest",
+        "test": "full suite",
+        "command": "python -m pytest -q",
+        "expected_result": "full suite is green on hosted CI; locally it passes except the environmental WP159 CRLF byte-hash baseline, and DuckDB-dependent tests run when the pinned module loads or skip with an explicit reason otherwise"
+      },
+      {
+        "requirement_id": "R032",
+        "source": "artifact-guard",
+        "test": "generated artifact guard",
+        "command": "python tools/git/preflight_generated_artifact_guard.py",
+        "expected_result": "generated artifact guard passes"
+      },
+      {
+        "requirement_id": "R033",
+        "source": "git",
+        "test": "diff check",
+        "command": "git diff --check main HEAD",
+        "expected_result": "no whitespace or conflict diff errors"
+      },
+      {
+        "requirement_id": "R034",
+        "source": "wp-spec-guard",
+        "test": "V3 guard",
+        "command": "python tools/wp/wp_spec_guard.py --wp docs/wp_specs/WP167/wp_prompt.txt --spec docs/wp_specs/WP167/wp_spec.json --certificate docs/wp_specs/WP167/draftability_certificate.json",
+        "expected_result": "final DoD: spec schema+semantics pass and a normal independent PASS certificate makes the guard exit 0; the pre-certificate execution head correctly reports the certificate phase pending (non-PASS placeholder)"
+      },
+      {
+        "requirement_id": "R035",
+        "source": "pytest",
+        "test": "status/repo/deferred/security docs",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_deferred_items_log.py",
+        "expected_result": "docs updated and consistent"
+      },
+      {
+        "requirement_id": "R036",
+        "source": "docs",
+        "test": "successor separate",
+        "command": "cat docs/analytical_research_layer_contract.md",
+        "expected_result": "WP168 successor is separately gated"
+      },
+      {
+        "requirement_id": "R037",
+        "source": "pytest",
+        "test": "test_research_dataclass_field_coverage_is_complete and test_invalid_materialization_result_recursive_no_echo",
+        "command": "python -m pytest -q tests/data_layer/analytical_research",
+        "expected_result": "every public WP167 dataclass field is enumerated/classified and invalid public results are recursively no-echo scanned"
+      },
+      {
+        "requirement_id": "R038",
+        "source": "pytest",
+        "test": "test_unicode_digit_asset_id_is_rejected and the pmxt/external negative suites",
+        "command": "python -m pytest -q tests/data_layer/analytical_research",
+        "expected_result": "the negative-test matrix categories map to focused tests (schema/type/null/timestamp/event/side/market/asset-id/version/runtime/store/reference/no-echo)"
+      },
+      {
+        "requirement_id": "R039",
+        "source": "pytest",
+        "test": "test_wp167_analytical_research_foundation_status_is_registered",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_analytical_research_layer_contract_docs.py",
+        "expected_result": "Model D status fragment, the Product One-Shot Readiness Gate, the field-coverage gate doc, and status/PR/repo-truth consistency hold with no contradiction"
+      },
+      {
+        "requirement_id": "R040",
+        "source": "pr-evidence-guard",
+        "test": "pr_evidence_consistency_guard.py two-pass with the resolved 40-char head SHA",
+        "command": "HEAD_SHA=\"$(git rev-parse HEAD)\" && python tools/git/pr_evidence_consistency_guard.py --pr-body wp167_pr_body.txt --final-comment wp167_pr_body.txt --expected-head \"$HEAD_SHA\" --require-standard-network-wording --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
+        "expected_result": "git rev-parse HEAD resolves the real 40-character head SHA, which is passed to --expected-head and must appear in the PR body; the guard exits 0; evidence mode is BLOCKED_NOT_READY with the independent certificate as the sole named blocker"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP168",
+    "next_title": "NautilusTrader Offline Kernel, ParquetDataCatalog and Replay Foundation",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP168",
+    "forbidden_in_this_wp": [
+      "NautilusTrader",
+      "public WebSocket collector",
+      "Data API activity/wallet ingestion",
+      "experiment registry",
+      "Hermes runtime",
+      "formal solver/alpha",
+      "execution-simulation qualification",
+      "paper trading",
+      "credentials/auth",
+      "live trading",
+      "scheduler/daemon/bot loop",
+      "external data downloader"
+    ]
+  }
+}
