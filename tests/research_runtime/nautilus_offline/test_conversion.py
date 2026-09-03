@@ -25,6 +25,7 @@ from src.data_layer.analytical_research import (
 )
 
 import src.research_runtime.nautilus_offline as offline
+from src.research_runtime.nautilus_offline.conversion import _scan_public_result_for_echo
 from src.research_runtime.nautilus_offline import (
     CONVERSION_ERROR,
     CONVERSION_POLICY_VERSION,
@@ -166,15 +167,43 @@ def valid_stream(tmp_path, rows=None):
 # --------------------------- conversion happy path ---------------------------
 
 def test_book_snapshot_conversion(tmp_path):
-    stream = valid_stream(tmp_path)
+    from nautilus_trader.model.data import OrderBookDeltas
+    from nautilus_trader.model.enums import BookAction, OrderSide
+    rows = [book(1000, 1005, [["0.4000", "50.000000"], ["0.3900", "10.000000"]],
+                 [["0.6000", "20.000000"]])]
+    stream = valid_stream(tmp_path, rows=rows)
     assert stream.is_valid
-    counts = dict(stream.input_event_counts_by_type)
-    assert counts["book"] == 1
+    assert dict(stream.input_event_counts_by_type)["book"] == 1
+    snapshots = [o for o in stream.converted_events if isinstance(o, OrderBookDeltas)]
+    assert len(snapshots) == 1                        # exactly one snapshot
+    deltas = snapshots[0].deltas
+    assert deltas[0].action == BookAction.CLEAR       # CLEAR first
+    adds = [d for d in deltas if d.action == BookAction.ADD]
+    assert len(adds) == 3                             # 2 bids + 1 ask preserved
+    bids = [(str(d.order.price), str(d.order.size)) for d in adds if d.order.side == OrderSide.BUY]
+    asks = [(str(d.order.price), str(d.order.size)) for d in adds if d.order.side == OrderSide.SELL]
+    assert bids == [("0.400", "50.000000"), ("0.390", "10.000000")]   # descending, sizes preserved
+    assert asks == [("0.600", "20.000000")]
 
 
 def test_price_change_conversion(tmp_path):
+    from nautilus_trader.model.data import OrderBookDelta
+    from nautilus_trader.model.enums import BookAction, OrderSide
     stream = valid_stream(tmp_path)
     assert dict(stream.input_event_counts_by_type)["price_change"] == 2
+    # positive size -> UPDATE with exact side/price/size.
+    upd = valid_stream(tmp_path / "u", rows=[price_change(1, 2, "0.4100", "3.000000", "SELL")])
+    delta = next(o for o in upd.converted_events if isinstance(o, OrderBookDelta))
+    assert delta.action == BookAction.UPDATE
+    assert delta.order.side == OrderSide.SELL
+    assert str(delta.order.price) == "0.410"
+    assert str(delta.order.size) == "3.000000"
+    # zero size -> DELETE.
+    zero = valid_stream(tmp_path / "z", rows=[price_change(1, 2, "0.4100", "0.000000", "BUY")])
+    assert next(o for o in zero.converted_events if isinstance(o, OrderBookDelta)).action == BookAction.DELETE
+    # negative size -> fail closed.
+    neg = valid_stream(tmp_path / "n", rows=[price_change(1, 2, "0.4100", "-1.000000", "BUY")])
+    assert neg.is_valid is False and neg.error_codes == (CONVERSION_ERROR,)
 
 
 def test_last_trade_price_to_trade_tick(tmp_path):
@@ -208,12 +237,25 @@ def test_tick_size_change_committed_as_regime_metadata(tmp_path):
 
 
 def test_all_prices_are_exact_multiples_of_finest_increment(tmp_path):
-    # 0.5850 is a multiple of 0.001; 0.5855 is not -> fail closed.
-    ok = valid_stream(tmp_path, rows=[price_change(1, 2, "0.5850", "1.000000", "BUY")])
-    assert ok.is_valid
-    bad = valid_stream(tmp_path, rows=[price_change(1, 2, "0.5855", "1.000000", "BUY")])
-    assert bad.is_valid is False
-    assert bad.error_codes == (CONVERSION_ERROR,)
+    # Every validated historical price FIELD must be an exact multiple of the finest increment
+    # (0.001): the traded price, best_bid, best_ask, book bid/ask prices, and the trade price.
+    def pc(price, best_bid, best_ask):
+        return row("price_change", 1, 2, price=Decimal(price), size=Decimal("1.000000"),
+                   side="BUY", best_bid=Decimal(best_bid), best_ask=Decimal(best_ask))
+
+    assert valid_stream(tmp_path / "ok", rows=[pc("0.5850", "0.4000", "0.6000")]).is_valid
+    assert valid_stream(tmp_path / "p", rows=[pc("0.5855", "0.4000", "0.6000")]).is_valid is False   # price
+    assert valid_stream(tmp_path / "bb", rows=[pc("0.5850", "0.4005", "0.6000")]).is_valid is False  # best_bid
+    assert valid_stream(tmp_path / "ba", rows=[pc("0.5850", "0.4000", "0.6005")]).is_valid is False  # best_ask
+    # book bid / ask prices.
+    assert valid_stream(tmp_path / "bkb",
+        rows=[book(1, 2, [["0.4005", "1.000000"]], [["0.6000", "1.000000"]])]).is_valid is False
+    assert valid_stream(tmp_path / "bka",
+        rows=[book(1, 2, [["0.4000", "1.000000"]], [["0.6005", "1.000000"]])]).is_valid is False
+    # trade price.
+    bad_trade = valid_stream(tmp_path / "tr",
+        rows=[trade(1, 2, "0.4005", "1.000000", "BUY", "0x" + "a" * 64)])
+    assert bad_trade.is_valid is False and bad_trade.error_codes == (CONVERSION_ERROR,)
 
 
 # --------------------------- ordering / duplicates ---------------------------
@@ -291,10 +333,21 @@ def test_equal_timestamp_same_kind_orders_by_canonical_row_bytes(tmp_path):
 # --------------------------- provenance / semantics --------------------------
 
 def test_descriptor_provider_version_source_class_mismatch_rejected(tmp_path):
-    source = _write_files(tmp_path, [default_rows()], wrong_provider=True)
-    stream = convert_pmxt_v2_events(source, _context())
-    assert stream.is_valid is False
-    assert stream.error_codes == (CONVERSION_ERROR,)
+    source = _write_files(tmp_path, [default_rows()])
+    desc = source.descriptor
+    # Independently mutate each of the four provenance fields -> fail closed.
+    for bad in (
+        dataclasses.replace(desc, provider_id="not-pmxt"),
+        dataclasses.replace(desc, dataset_name="some_other_archive"),
+        dataclasses.replace(desc, dataset_version="v1"),
+        dataclasses.replace(desc, source_class="NATIVE_OFFICIAL_CAPTURE"),
+    ):
+        bad_source = PmxtV2ReplaySource(descriptor=bad, source_files=source.source_files)
+        result = convert_pmxt_v2_events(bad_source, _context())
+        assert result.is_valid is False
+        assert result.error_codes == (CONVERSION_ERROR,)
+    # exact provider/dataset/version/source_class passes.
+    assert convert_pmxt_v2_events(source, _context()).is_valid is True
 
 
 def test_descriptor_importer_and_timestamp_semantics_mismatch_rejected(tmp_path):
@@ -310,7 +363,7 @@ def test_descriptor_importer_and_timestamp_semantics_mismatch_rejected(tmp_path)
         result = convert_pmxt_v2_events(bad_source, _context())
         assert result.is_valid is False
         assert result.error_codes == (CONVERSION_ERROR,)
-        assert offline.scan_public_result_for_echo(result, ("Traceback", "\\", str(tmp_path))) == ()
+        assert _scan_public_result_for_echo(result, ("Traceback", "\\", str(tmp_path))) == ()
     # exact WP167 importer/timestamp semantics pass.
     assert convert_pmxt_v2_events(source, _context()).is_valid is True
 
@@ -344,10 +397,22 @@ def test_book_snapshot_tied_with_other_event_orders_deterministically(tmp_path):
 
 
 def test_source_files_map_one_to_one_to_descriptor_objects(tmp_path):
+    # extra descriptor object with no matching source file -> reject.
     extra = _write_files(tmp_path / "extra", [default_rows()], extra_object=True)
     assert convert_pmxt_v2_events(extra, _context()).is_valid is False
+    # missing descriptor object for a supplied source file -> reject.
+    missing = _write_files(tmp_path / "missing", [default_rows(), default_rows()], missing_object=True)
+    assert convert_pmxt_v2_events(missing, _context()).is_valid is False
+    # duplicate object_name -> reject.
     dup = _write_files(tmp_path / "dup", [default_rows(), default_rows()], duplicate_name=True)
     assert convert_pmxt_v2_events(dup, _context()).is_valid is False
+    # matching object_name but wrong partition_identity -> reject (name AND partition bijection).
+    good = _write_files(tmp_path / "wrongpart", [default_rows()])
+    bad_file = dataclasses.replace(good.source_files[0], partition_identity="pDIFFERENT")
+    wrong_partition = PmxtV2ReplaySource(descriptor=good.descriptor, source_files=(bad_file,))
+    assert convert_pmxt_v2_events(wrong_partition, _context()).is_valid is False
+    # valid strict bijection passes.
+    assert convert_pmxt_v2_events(good, _context()).is_valid is True
 
 
 def test_source_hash_revalidation_failure_fails_closed(tmp_path):
@@ -355,7 +420,7 @@ def test_source_hash_revalidation_failure_fails_closed(tmp_path):
     stream = convert_pmxt_v2_events(source, _context())
     assert stream.is_valid is False
     assert stream.error_codes == (CONVERSION_ERROR,)
-    assert offline.scan_public_result_for_echo(stream, ("Traceback", "\\", str(tmp_path))) == ()
+    assert _scan_public_result_for_echo(stream, ("Traceback", "\\", str(tmp_path))) == ()
 
 
 def test_event_semantic_matrix_owned_and_null_fields(tmp_path):
@@ -395,50 +460,127 @@ def test_book_json_shape_and_canonical_ordering(tmp_path):
     # duplicate price on one side -> fail closed
     dup = [book(1, 2, [["0.4000", "1.000000"], ["0.4000", "2.000000"]], [["0.6000", "1.000000"]])]
     assert valid_stream(tmp_path / "dup", rows=dup).is_valid is False
+    # numeric JSON value where a string is required -> fail closed.
+    numeric = [book(1, 2, [[0.4, "1.000000"]], [["0.6000", "1.000000"]])]
+    assert valid_stream(tmp_path / "num", rows=numeric).is_valid is False
+    # non-2-item pair -> fail closed.
+    triple = [book(1, 2, [["0.4000", "1.000000", "x"]], [["0.6000", "1.000000"]])]
+    assert valid_stream(tmp_path / "tri", rows=triple).is_valid is False
+    # non-exact decimal (too many places for the documented scale) -> fail closed.
+    inexact = [book(1, 2, [["0.40005", "1.000000"]], [["0.6000", "1.000000"]])]
+    assert valid_stream(tmp_path / "inx", rows=inexact).is_valid is False
+    # malformed JSON string -> fail closed.
+    malformed = [row("book", 1, 2, bids="not json", asks=json.dumps([["0.6000", "1.000000"]]))]
+    assert valid_stream(tmp_path / "mal", rows=malformed).is_valid is False
 
 
 # --------------------------- field coverage (R061) ---------------------------
 
 def test_every_public_dataclass_field_is_classified():
-    # Exact frozen field sets for every public dataclass (mechanical completeness gate).
-    expected = {
+    # R061: every public dataclass field carries an explicit output-handling classification
+    # (SCANNED / EXEMPT / OPAQUE_EXCLUDED). A future unclassified field fails the coverage gate.
+    S, E, X = "SCANNED", "EXEMPT", "OPAQUE_EXCLUDED"
+    classification = {
         NautilusRuntimeCompatibilityResult: {
-            "is_valid", "status", "error_codes", "nautilus_version",
-            "python_version", "advisory_only", "no_execution_authority"},
+            "is_valid": E, "status": S, "error_codes": S, "nautilus_version": S,
+            "python_version": S, "advisory_only": E, "no_execution_authority": E},
         BinaryOptionMarketContext: {
-            "condition_id", "outcome_token_id", "outcome_label", "description",
-            "activation_ns", "expiration_ns", "price_increment", "size_increment",
-            "maker_fee", "taker_fee", "ts_event_ns", "ts_init_ns"},
+            "condition_id": S, "outcome_token_id": S, "outcome_label": S, "description": S,
+            "activation_ns": S, "expiration_ns": S, "price_increment": S, "size_increment": S,
+            "maker_fee": S, "taker_fee": S, "ts_event_ns": S, "ts_init_ns": S},
         BinaryOptionMappingResult: {
-            "is_valid", "status", "error_codes", "instrument_id", "price_increment",
-            "size_increment", "warnings", "binary_option"},
-        PmxtV2ReplaySource: {"descriptor", "source_files"},
+            "is_valid": E, "status": S, "error_codes": S, "instrument_id": S,
+            "price_increment": S, "size_increment": S, "warnings": S, "binary_option": X},
+        PmxtV2ReplaySource: {"descriptor": X, "source_files": X},
         ConvertedEventStream: {
-            "is_valid", "status", "error_codes", "instrument_id", "source_dataset_kind",
-            "source_external_dataset_id", "conversion_policy_version", "ordered_event_digests",
-            "input_event_counts_by_type", "tick_size_regime_sequence", "first_event_time_ns",
-            "last_event_time_ns", "warnings", "converted_events"},
+            "is_valid": E, "status": S, "error_codes": S, "instrument_id": S,
+            "source_dataset_kind": S, "source_external_dataset_id": S,
+            "conversion_policy_version": S, "ordered_event_digests": S,
+            "input_event_counts_by_type": S, "tick_size_regime_sequence": S,
+            "first_event_time_ns": S, "last_event_time_ns": S, "warnings": S,
+            "converted_events": X},
         CatalogBuildResult: {
-            "is_valid", "status", "error_codes", "instrument_registered", "written_delta_count",
-            "written_trade_count", "catalog_dir", "stream_ref_digest"},
+            "is_valid": E, "status": S, "error_codes": S, "instrument_registered": S,
+            "written_delta_count": S, "written_trade_count": S, "catalog_dir": X,
+            "stream_ref_digest": S},
         CatalogQueryResult: {
-            "is_valid", "status", "error_codes", "queried_delta_count",
-            "queried_trade_count", "round_trip_matches"},
+            "is_valid": E, "status": S, "error_codes": S, "queried_delta_count": S,
+            "queried_trade_count": S, "round_trip_matches": S},
         NautilusReplayReceipt: {
-            "is_valid", "status", "error_codes", "schema_id", "schema_version",
-            "source_dataset_kind", "source_external_dataset_id", "conversion_policy_version",
-            "nautilus_version", "instrument_id", "input_event_counts_by_type",
-            "first_event_time_ns", "last_event_time_ns", "tick_size_regime_sequence",
-            "replay_processed_event_count", "replay_digest", "warnings", "execution_authority"},
+            "is_valid": E, "status": S, "error_codes": S, "schema_id": S, "schema_version": S,
+            "source_dataset_kind": S, "source_external_dataset_id": S,
+            "conversion_policy_version": S, "nautilus_version": S, "instrument_id": S,
+            "input_event_counts_by_type": S, "first_event_time_ns": S, "last_event_time_ns": S,
+            "tick_size_regime_sequence": S, "replay_processed_event_count": S,
+            "replay_digest": S, "warnings": S, "execution_authority": E},
     }
-    for cls, fields in expected.items():
+
+    def _coverage_ok(cls, table) -> bool:
+        return {f.name for f in dataclasses.fields(cls)} == set(table)
+
+    for cls, table in classification.items():
         assert dataclasses.is_dataclass(cls)
-        assert {f.name for f in dataclasses.fields(cls)} == fields, cls.__name__
+        assert _coverage_ok(cls, table), cls.__name__
+        assert set(table.values()) <= {S, E, X}
+
+    # A synthetic dataclass with a new, unclassified field must fail the same coverage gate.
+    @dataclasses.dataclass(frozen=True)
+    class _Synthetic:
+        is_valid: bool
+        new_unclassified_field: int
+
+    assert _coverage_ok(_Synthetic, {"is_valid": E}) is False
 
 
 def test_converted_stream_source_external_dataset_id(tmp_path):
     stream = valid_stream(tmp_path)
     assert stream.source_external_dataset_id == "ext:pmxt:test0001"
+
+
+def test_negative_matrix_categories_map_to_tests():
+    # R027: all 15 repo negative-test categories are accounted for by a focused TEST node or
+    # an explicit NOT_APPLICABLE reason (no invented wording filters).
+    import pathlib
+
+    matrix = {
+        1: ("TEST", ["test_missing_or_malformed_market_identity_is_rejected",
+                     "test_event_semantic_matrix_owned_and_null_fields"]),
+        2: ("TEST", ["test_event_semantic_matrix_owned_and_null_fields"]),
+        3: ("TEST", ["test_book_json_shape_and_canonical_ordering"]),
+        4: ("TEST", ["test_unsupported_pmxt_event_and_malformed_book_rejected"]),
+        5: ("TEST", ["test_receive_time_primary_ordering_when_event_time_disagrees",
+                     "test_event_and_receive_timestamp_mapping"]),
+        6: ("TEST", ["test_receipt_field_coverage_and_invalid_result_no_echo"]),
+        7: ("NOT_APPLICABLE", "WP168 emits no free-text advisory surface; no wording filter exists."),
+        8: ("NOT_APPLICABLE", "No credential inputs or outputs exist; no-echo scanning still guards leakage."),
+        9: ("NOT_APPLICABLE", "No advisory/strategy output surface exists."),
+        10: ("TEST", ["test_package_imports_no_forbidden_runtime_and_no_network"]),
+        11: ("TEST", ["test_unsupported_pmxt_event_and_malformed_book_rejected",
+                      "test_source_hash_revalidation_failure_fails_closed"]),
+        12: ("TEST", ["test_two_byte_identical_duplicates_retain_multiplicity_two",
+                      "test_source_files_map_one_to_one_to_descriptor_objects"]),
+        13: ("NOT_APPLICABLE", "Inputs are typed pmxt-v2 columns/tokens, not free-text subject to typos."),
+        14: ("TEST", ["test_missing_or_malformed_market_identity_is_rejected"]),
+        15: ("TEST", ["test_book_snapshot_conversion", "test_offline_replay_processes_all_events"]),
+    }
+    assert set(matrix) == set(range(1, 16))
+
+    # Collect every test function name defined in the scoped WP168 test files.
+    test_dir = pathlib.Path(__file__).resolve().parent
+    contract = test_dir.parents[1] / "test_nautilus_offline_kernel_contract_docs.py"
+    defined = set()
+    for path in list(test_dir.glob("test_*.py")) + [contract]:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line.startswith("def test_") and "(" in line:
+                defined.add(line[4:line.index("(")])
+
+    for number, (kind, payload) in matrix.items():
+        if kind == "TEST":
+            for node in payload:
+                assert node in defined, f"category {number} names missing test {node}"
+        else:
+            assert kind == "NOT_APPLICABLE" and isinstance(payload, str) and payload
 
 
 def test_bounded_iter_batches_source_processing(tmp_path, monkeypatch):
@@ -447,10 +589,16 @@ def test_bounded_iter_batches_source_processing(tmp_path, monkeypatch):
     import pyarrow.parquet as pq
     import src.research_runtime.nautilus_offline.conversion as conv
 
-    source_text = inspect.getsource(conv._read_rows)
+    # Bounded reader is a generator (yields rows), not a whole-file list return.
+    assert not hasattr(conv, "_read_rows")
+    source_text = inspect.getsource(conv._iter_source_rows)
     assert "iter_batches" in source_text
     assert "MAX_ROW_BATCH" in source_text
-    assert "pq.read_table(" not in source_text  # no whole-file table read
+    assert "yield " in source_text                 # generator, not a materialized list
+    assert "return rows" not in source_text        # no whole-file raw accumulation
+    assert "pq.read_table(" not in source_text     # no whole-file table read
+    import inspect as _inspect
+    assert _inspect.isgeneratorfunction(conv._iter_source_rows)
 
     # Dynamic proof: if conversion called read_table it would raise here.
     def _forbidden_read_table(*args, **kwargs):

@@ -65,14 +65,14 @@ _EVENT_SPECIFIC_FIELDS = (
 )
 
 
-def canonical_json_bytes(value: object) -> bytes:
+def _canonical_json_bytes(value: object) -> bytes:
     """Deterministic UTF-8 canonical JSON (sorted keys, compact, no NaN)."""
     return json.dumps(
         value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
     ).encode("utf-8")
 
 
-def scan_public_result_for_echo(value: object, forbidden: tuple[str, ...]) -> tuple[str, ...]:
+def _scan_public_result_for_echo(value: object, forbidden: tuple[str, ...]) -> tuple[str, ...]:
     """Recursively scan a public result for forbidden substrings; return the hits found.
 
     Nautilus third-party objects and bytes are treated as opaque (never traversed for
@@ -101,7 +101,7 @@ def scan_public_result_for_echo(value: object, forbidden: tuple[str, ...]) -> tu
     return tuple(dict.fromkeys(hits))
 
 
-def stream_identity_preimage(stream: "ConvertedEventStream") -> dict[str, object]:
+def _stream_identity_preimage(stream: "ConvertedEventStream") -> dict[str, object]:
     """The committed-identity preimage of a converted stream (path-independent)."""
     return {
         "conversion_policy_version": stream.conversion_policy_version,
@@ -116,9 +116,9 @@ def stream_identity_preimage(stream: "ConvertedEventStream") -> dict[str, object
     }
 
 
-def stream_identity_digest(stream: "ConvertedEventStream") -> str:
+def _stream_identity_digest(stream: "ConvertedEventStream") -> str:
     """Deterministic SHA-256 hex over the committed stream-identity preimage."""
-    return hashlib.sha256(canonical_json_bytes(stream_identity_preimage(stream))).hexdigest()
+    return hashlib.sha256(_canonical_json_bytes(_stream_identity_preimage(stream))).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -233,21 +233,23 @@ def _map_sources_one_to_one(
     return mapped
 
 
-def _read_rows(source_file: PmxtV2SourceFile) -> list[dict[str, object]]:
+def _iter_source_rows(source_file: PmxtV2SourceFile):
+    """Yield raw source rows one bounded batch at a time (no whole-file materialization).
+
+    Bounded per-row processing: decode the source file in batches of at most ``MAX_ROW_BATCH``
+    rows (no whole-file ``pq.read_table``, no whole-file column arrays retained). The caller
+    normalizes each yielded row immediately, so only one compact normalized representation is
+    ever held. Global canonical ordering and duplicate multiplicity are recovered later from
+    the canonical multiset, so physical batch/file order does not affect the result.
+    """
     import pyarrow.parquet as pq  # local import; offline, no network
 
-    # Bounded per-row processing: decode the source file in bounded batches (no whole-file
-    # pq.read_table, no whole-file column materialization). Global canonical ordering and
-    # duplicate multiplicity are recovered later from the canonical multiset, so physical
-    # batch/file order does not affect the result.
     parquet_file = pq.ParquetFile(source_file.path)
-    rows: list[dict[str, object]] = []
     for batch in parquet_file.iter_batches(batch_size=MAX_ROW_BATCH):
         names = batch.schema.names
         columns = {name: batch.column(index).to_pylist() for index, name in enumerate(names)}
         for index in range(batch.num_rows):
-            rows.append({name: columns[name][index] for name in names})
-    return rows
+            yield {name: columns[name][index] for name in names}
 
 
 def _normalize_market(value: object) -> str:
@@ -371,11 +373,13 @@ def convert_pmxt_v2_events(
         asset_expected = context.outcome_token_id
 
         # Read + validate every row into a canonical intermediate representation.
+        # One compact normalized materialization only: each raw row is consumed from the
+        # bounded batch iterator and normalized immediately; no whole raw-file list is retained.
         canonical_rows: list[dict[str, object]] = []
         for source_file, _obj in mapped:
-            for row in _read_rows(source_file):
+            for raw_row in _iter_source_rows(source_file):
                 canonical_rows.append(
-                    _validate_and_normalize_row(row, market_expected, asset_expected)
+                    _validate_and_normalize_row(raw_row, market_expected, asset_expected)
                 )
         if not canonical_rows:
             raise _ConversionError()
@@ -383,7 +387,7 @@ def convert_pmxt_v2_events(
         # Canonical bytes + digest per row; total order key; duplicate expansion.
         keyed: list[tuple[tuple[int, int, int, str, bytes], dict[str, object]]] = []
         for norm in canonical_rows:
-            row_bytes = canonical_json_bytes(norm["_canonical"])
+            row_bytes = _canonical_json_bytes(norm["_canonical"])
             digest = hashlib.sha256(row_bytes).hexdigest()
             key = (
                 norm["ts_init"],
@@ -457,7 +461,11 @@ def convert_pmxt_v2_events(
             elif event_type == "price_change":
                 price = norm["price"]
                 size = norm["size"]
+                # Every validated historical price field must be an exact multiple of the
+                # finest increment: the traded price and the best_bid/best_ask quotes.
                 _require_price_multiple(price, price_increment)
+                _require_price_multiple(norm["_best_bid_dec"], price_increment)
+                _require_price_multiple(norm["_best_ask_dec"], price_increment)
                 side = OrderSide.BUY if norm["side"] == "BUY" else OrderSide.SELL
                 action = BookAction.DELETE if size == 0 else BookAction.UPDATE
                 converted_events.append(
@@ -588,6 +596,10 @@ def _validate_and_normalize_row(
             best_ask = _decimal_at_scale(row.get("best_ask"), PMXT_V2_DECIMAL_SPECS["best_ask"][1])
             norm["best_bid"] = _decimal_text(best_bid, PMXT_V2_DECIMAL_SPECS["best_bid"][1])
             norm["best_ask"] = _decimal_text(best_ask, PMXT_V2_DECIMAL_SPECS["best_ask"][1])
+            # Retain the exact decimals so the finest-increment check applies to every
+            # validated historical price field (price, best_bid, best_ask).
+            norm["_best_bid_dec"] = best_bid
+            norm["_best_ask_dec"] = best_ask
         else:
             fee_rate_bps = row.get("fee_rate_bps")
             if not isinstance(fee_rate_bps, int) or isinstance(fee_rate_bps, bool) or fee_rate_bps < 0:
@@ -600,6 +612,8 @@ def _validate_and_normalize_row(
     else:  # tick_size_change
         old_tick = _decimal_at_scale(row.get("old_tick_size"), PMXT_V2_DECIMAL_SPECS["old_tick_size"][1])
         new_tick = _decimal_at_scale(row.get("new_tick_size"), PMXT_V2_DECIMAL_SPECS["new_tick_size"][1])
+        if old_tick <= 0 or new_tick <= 0:
+            raise _ConversionError()
         norm["old_tick_size"] = _decimal_text(old_tick, PMXT_V2_DECIMAL_SPECS["old_tick_size"][1])
         norm["new_tick_size"] = _decimal_text(new_tick, PMXT_V2_DECIMAL_SPECS["new_tick_size"][1])
 

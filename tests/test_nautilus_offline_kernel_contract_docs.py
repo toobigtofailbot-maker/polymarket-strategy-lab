@@ -82,6 +82,115 @@ def test_contract_lists_error_taxonomy_and_successor_gate() -> None:
     assert "install" in CONTRACT and "not vendored" in CONTRACT
 
 
+def test_public_api_and_dataclasses_are_exactly_frozen() -> None:
+    # R051: the package-root public surface is exactly the six frozen functions and eight
+    # frozen dataclasses; helper functions are private; signatures/fields/types are exact.
+    import inspect
+
+    frozen_functions = {
+        "evaluate_offline_runtime",
+        "build_binary_option",
+        "convert_pmxt_v2_events",
+        "build_catalog",
+        "query_catalog",
+        "run_offline_replay",
+    }
+    frozen_dataclasses = {
+        "NautilusRuntimeCompatibilityResult",
+        "BinaryOptionMarketContext",
+        "BinaryOptionMappingResult",
+        "PmxtV2ReplaySource",
+        "ConvertedEventStream",
+        "CatalogBuildResult",
+        "CatalogQueryResult",
+        "NautilusReplayReceipt",
+    }
+    assert set(offline.__all__) == frozen_functions | frozen_dataclasses
+    assert len(offline.__all__) == 14
+
+    # No private helper is root-exported.
+    for helper in (
+        "canonical_json_bytes", "_canonical_json_bytes",
+        "scan_public_result_for_echo", "_scan_public_result_for_echo",
+        "stream_identity_digest", "_stream_identity_digest",
+        "stream_identity_preimage", "_stream_identity_preimage",
+    ):
+        assert helper not in offline.__all__
+        assert not hasattr(offline, helper)
+
+    expected_signatures = {
+        "evaluate_offline_runtime": [],
+        "build_binary_option": ["context"],
+        "convert_pmxt_v2_events": ["source", "context"],
+        "build_catalog": ["stream", "catalog_dir"],
+        "query_catalog": ["build_result"],
+        "run_offline_replay": ["stream", "catalog_dir"],
+    }
+    for name, params in expected_signatures.items():
+        func = getattr(offline, name)
+        assert callable(func)
+        assert list(inspect.signature(func).parameters) == params, name
+
+    expected_fields = {
+        "NautilusRuntimeCompatibilityResult": {
+            "is_valid": "bool", "status": "str", "error_codes": "tuple[str, ...]",
+            "nautilus_version": "str | None", "python_version": "str",
+            "advisory_only": "bool", "no_execution_authority": "bool"},
+        "BinaryOptionMarketContext": {
+            "condition_id": "str", "outcome_token_id": "str", "outcome_label": "str",
+            "description": "str | None", "activation_ns": "int | None",
+            "expiration_ns": "int | None", "price_increment": "str", "size_increment": "str",
+            "maker_fee": "str | None", "taker_fee": "str | None", "ts_event_ns": "int",
+            "ts_init_ns": "int"},
+        "BinaryOptionMappingResult": {
+            "is_valid": "bool", "status": "str", "error_codes": "tuple[str, ...]",
+            "instrument_id": "str | None", "price_increment": "str | None",
+            "size_increment": "str | None", "warnings": "tuple[str, ...]",
+            "binary_option": "object | None"},
+        "PmxtV2ReplaySource": {
+            "descriptor": "ExternalDatasetDescriptor",
+            "source_files": "tuple[PmxtV2SourceFile, ...]"},
+        "ConvertedEventStream": {
+            "is_valid": "bool", "status": "str", "error_codes": "tuple[str, ...]",
+            "instrument_id": "str | None", "source_dataset_kind": "str | None",
+            "source_external_dataset_id": "str | None", "conversion_policy_version": "str | None",
+            "ordered_event_digests": "tuple[str, ...]",
+            "input_event_counts_by_type": "tuple[tuple[str, int], ...]",
+            "tick_size_regime_sequence": "tuple[tuple[str, str, int], ...]",
+            "first_event_time_ns": "int | None", "last_event_time_ns": "int | None",
+            "warnings": "tuple[str, ...]", "converted_events": "tuple[object, ...]"},
+        "CatalogBuildResult": {
+            "is_valid": "bool", "status": "str", "error_codes": "tuple[str, ...]",
+            "instrument_registered": "bool", "written_delta_count": "int",
+            "written_trade_count": "int", "catalog_dir": "str | None",
+            "stream_ref_digest": "str | None"},
+        "CatalogQueryResult": {
+            "is_valid": "bool", "status": "str", "error_codes": "tuple[str, ...]",
+            "queried_delta_count": "int", "queried_trade_count": "int",
+            "round_trip_matches": "bool"},
+        "NautilusReplayReceipt": {
+            "is_valid": "bool", "status": "str", "error_codes": "tuple[str, ...]",
+            "schema_id": "str", "schema_version": "str", "source_dataset_kind": "str",
+            "source_external_dataset_id": "str | None", "conversion_policy_version": "str | None",
+            "nautilus_version": "str | None", "instrument_id": "str | None",
+            "input_event_counts_by_type": "tuple[tuple[str, int], ...]",
+            "first_event_time_ns": "int | None", "last_event_time_ns": "int | None",
+            "tick_size_regime_sequence": "tuple[tuple[str, str, int], ...]",
+            "replay_processed_event_count": "int", "replay_digest": "str | None",
+            "warnings": "tuple[str, ...]", "execution_authority": "bool"},
+    }
+    for name, fields in expected_fields.items():
+        cls = getattr(offline, name)
+        assert dataclasses.is_dataclass(cls), name
+        assert cls.__dataclass_params__.frozen is True, name
+        actual = {f.name: f.type for f in dataclasses.fields(cls)}
+        assert actual == fields, name
+        # public collection fields use immutable tuple shapes (no mutable list/dict).
+        for field_name, type_str in fields.items():
+            if "[" in type_str:
+                assert type_str.startswith("tuple"), f"{name}.{field_name}"
+
+
 def test_contract_states_offline_replay_only_boundary() -> None:
     assert "event-replay proof only" in CONTRACT
     assert "no paper/live" in CONTRACT

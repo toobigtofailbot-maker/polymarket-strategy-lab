@@ -7,6 +7,10 @@ import dataclasses
 import pytest
 
 import src.research_runtime.nautilus_offline as offline
+from src.research_runtime.nautilus_offline.conversion import (
+    _scan_public_result_for_echo,
+    _stream_identity_digest,
+)
 from src.research_runtime.nautilus_offline import (
     CATALOG_QUERY_ERROR,
     CATALOG_WRITE_ERROR,
@@ -14,21 +18,40 @@ from src.research_runtime.nautilus_offline import (
     CatalogQueryResult,
     build_catalog,
     query_catalog,
-    stream_identity_digest,
 )
 
 from test_conversion import valid_stream
 
 
-def test_catalog_write_registers_instrument_before_data(tmp_path):
+def test_catalog_write_registers_instrument_before_data(tmp_path, monkeypatch):
+    from nautilus_trader.model.instruments import BinaryOption
+    from nautilus_trader.persistence.catalog import parquet as pcat
+
     stream = valid_stream(tmp_path / "src")
+
+    # Record the order of write_data calls (instrument definition vs market data) while
+    # delegating to the real catalog writer.
+    call_kinds: list = []
+    real_write = pcat.ParquetDataCatalog.write_data
+
+    def _recording_write(self, data, *args, **kwargs):
+        first = data[0] if data else None
+        call_kinds.append("instrument" if isinstance(first, BinaryOption) else "data")
+        return real_write(self, data, *args, **kwargs)
+
+    monkeypatch.setattr(pcat.ParquetDataCatalog, "write_data", _recording_write)
+
     result = build_catalog(stream, tmp_path / "catalog")
     assert result.is_valid
     assert result.instrument_registered is True
     assert result.written_delta_count == 5
     assert result.written_trade_count == 1
-    assert result.stream_ref_digest == stream_identity_digest(stream)
-    # caller catalog_dir is physical evidence, not identity.
+    assert call_kinds[0] == "instrument"           # instrument registered before market data
+    assert "data" in call_kinds[1:]
+    assert result.stream_ref_digest == _stream_identity_digest(stream)
+    # caller catalog_dir is physical evidence, not identity: same stream in two dirs -> same digest.
+    other = build_catalog(stream, tmp_path / "other_dir")
+    assert other.stream_ref_digest == result.stream_ref_digest
     assert result.catalog_dir is not None
 
 
@@ -102,7 +125,7 @@ def test_catalog_real_count_mismatch_fails_closed(tmp_path):
     # Every invalid public result carries zero counts.
     assert result.queried_delta_count == 0
     assert result.queried_trade_count == 0
-    assert offline.scan_public_result_for_echo(result, ("Traceback", "\\", str(tmp_path))) == ()
+    assert _scan_public_result_for_echo(result, ("Traceback", "\\", str(tmp_path))) == ()
 
 
 def test_catalog_build_write_failure_fails_closed(tmp_path, monkeypatch):
@@ -124,7 +147,7 @@ def test_catalog_build_write_failure_fails_closed(tmp_path, monkeypatch):
     assert result.written_trade_count == 0
     assert result.catalog_dir is None
     assert result.stream_ref_digest is None
-    assert offline.scan_public_result_for_echo(
+    assert _scan_public_result_for_echo(
         result, ("Traceback", "forced catalog write failure", "\\", str(tmp_path))
     ) == ()
 
@@ -155,7 +178,7 @@ def test_catalog_corruption_or_query_mismatch_rejected(tmp_path):
     query_rejected = query_catalog(build_rejected)
     assert query_rejected.is_valid is False
     assert query_rejected.error_codes == (CATALOG_QUERY_ERROR,)
-    assert offline.scan_public_result_for_echo(query_rejected, ("Traceback", "\\")) == ()
+    assert _scan_public_result_for_echo(query_rejected, ("Traceback", "\\")) == ()
 
 
 def test_catalog_results_are_frozen(tmp_path):

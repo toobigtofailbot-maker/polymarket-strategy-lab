@@ -10,6 +10,7 @@ from nautilus_trader.model.currencies import USDC
 from nautilus_trader.model.instruments import BinaryOption
 
 import src.research_runtime.nautilus_offline as offline
+from src.research_runtime.nautilus_offline.conversion import _scan_public_result_for_echo
 from src.research_runtime.nautilus_offline import (
     FEE_METADATA_UNKNOWN_WARNING,
     INSTRUMENT_MAPPING_ERROR,
@@ -72,7 +73,7 @@ def test_missing_or_malformed_market_identity_is_rejected() -> None:
         assert result.error_codes == (INSTRUMENT_MAPPING_ERROR,)
         assert result.instrument_id is None
         assert result.binary_option is None
-        assert offline.scan_public_result_for_echo(result, ("Traceback", "0x" + "A" * 64)) == ()
+        assert _scan_public_result_for_echo(result, ("Traceback", "0x" + "A" * 64)) == ()
 
 
 def test_binary_option_absent_value_policy() -> None:

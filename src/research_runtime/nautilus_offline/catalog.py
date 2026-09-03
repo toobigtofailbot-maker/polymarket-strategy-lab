@@ -11,7 +11,7 @@ from __future__ import annotations
 import pathlib
 from dataclasses import dataclass
 
-from .conversion import ConvertedEventStream, stream_identity_digest
+from .conversion import ConvertedEventStream, _stream_identity_digest
 
 CATALOG_BUILD_STATUS_OK = "NAUTILUS_CATALOG_BUILT"
 CATALOG_BUILD_STATUS_REJECTED = "NAUTILUS_CATALOG_BUILD_REJECTED"
@@ -110,7 +110,7 @@ def build_catalog(stream: ConvertedEventStream, catalog_dir: pathlib.Path) -> Ca
             written_delta_count=len(deltas),
             written_trade_count=len(trades),
             catalog_dir=str(catalog_dir),
-            stream_ref_digest=stream_identity_digest(stream),
+            stream_ref_digest=_stream_identity_digest(stream),
         )
     except Exception:
         return _build_rejected()

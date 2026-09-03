@@ -16,7 +16,7 @@ from .conversion import (
     CONVERSION_POLICY_VERSION,
     SOURCE_DATASET_KIND,
     ConvertedEventStream,
-    canonical_json_bytes,
+    _canonical_json_bytes,
 )
 
 REPLAY_RECEIPT_SCHEMA_ID = "polymarket-nautilus-offline-replay-receipt"
@@ -83,6 +83,14 @@ def _rejected(code: str) -> NautilusReplayReceipt:
     )
 
 
+def _semantic_order_matches(expected: list, observed: list) -> bool:
+    """Pure comparison of the declared vs engine-observed semantic event traces.
+
+    Isolated so a focused test can force a mismatch without patching immutable Cython types.
+    """
+    return tuple(expected) == tuple(observed)
+
+
 def _replay_digest(stream: ConvertedEventStream, nautilus_version: str) -> str:
     preimage = {
         "conversion_policy_version": CONVERSION_POLICY_VERSION,
@@ -94,7 +102,7 @@ def _replay_digest(stream: ConvertedEventStream, nautilus_version: str) -> str:
         "tick_size_regime_sequence": [list(item) for item in stream.tick_size_regime_sequence],
         "replay_settings": REPLAY_SETTINGS,
     }
-    return REPLAY_IDENTITY_PREFIX + hashlib.sha256(canonical_json_bytes(preimage)).hexdigest()
+    return REPLAY_IDENTITY_PREFIX + hashlib.sha256(_canonical_json_bytes(preimage)).hexdigest()
 
 
 def run_offline_replay(
@@ -125,24 +133,38 @@ def run_offline_replay(
         # metadata and no engine event. The book snapshot is replayed as one whole
         # OrderBookDeltas so the engine-observed order can be verified per semantic event.
         counts = dict(stream.input_event_counts_by_type)
-        semantic_count = (
-            counts.get("book", 0) + counts.get("price_change", 0) + counts.get("last_trade_price", 0)
-        )
+        book_c = counts.get("book", 0)
+        pc_c = counts.get("price_change", 0)
+        ltp_c = counts.get("last_trade_price", 0)
+        tsc_c = counts.get("tick_size_change", 0)
+        semantic_count = book_c + pc_c + ltp_c
         semantic_objects = [
             obj for obj in events[1:] if isinstance(obj, (OrderBookDeltas, OrderBookDelta, TradeTick))
         ]
         if not semantic_objects or semantic_count == 0:
             return _rejected(REPLAY_ERROR_INVALID)
 
-        def _kind(obj) -> str:
-            if isinstance(obj, OrderBookDeltas):
-                return "book"
-            if isinstance(obj, OrderBookDelta):
-                return "price_change"
-            return "trade"
+        # R025: the declared counts must reconcile with the actual semantic objects and the
+        # committed tick-regime schedule; an internally inconsistent (but is_valid) stream
+        # fails closed with a parity error before the engine runs.
+        actual_book = sum(1 for obj in semantic_objects if isinstance(obj, OrderBookDeltas))
+        actual_pc = sum(1 for obj in semantic_objects if isinstance(obj, OrderBookDelta))
+        actual_trade = sum(1 for obj in semantic_objects if isinstance(obj, TradeTick))
+        if (actual_book, actual_pc, actual_trade) != (book_c, pc_c, ltp_c):
+            return _rejected(REPLAY_ERROR_PARITY_INVALID)
+        if len(stream.tick_size_regime_sequence) != tsc_c:
+            return _rejected(REPLAY_ERROR_PARITY_INVALID)
 
-        expected_order = [_kind(obj) for obj in semantic_objects]
-        observed_order: list = []
+        def _expected_token(obj) -> tuple:
+            # Exact per-event distinguisher so same-kind reordering is detectable, not just kind.
+            if isinstance(obj, OrderBookDeltas):
+                return ("book", obj.deltas[0].sequence, obj.ts_init, obj.ts_event)
+            if isinstance(obj, OrderBookDelta):
+                return ("price_change", obj.sequence, obj.ts_init, obj.ts_event)
+            return ("last_trade_price", str(obj.trade_id), obj.ts_init, obj.ts_event)
+
+        expected_trace = [_expected_token(obj) for obj in semantic_objects]
+        observed_trace: list = []
 
         class _ReplayObserver(Actor):
             def on_start(self) -> None:
@@ -150,21 +172,22 @@ def run_offline_replay(
                 self.subscribe_trade_ticks(instrument.id)
 
             def on_order_book_deltas(self, _deltas) -> None:
-                # Group by per-event `sequence` (a book snapshot shares one sequence across
-                # its CLEAR/ADD records; each price_change has its own) so the semantic event
-                # order is recovered even if the engine coalesces same-ts_init deltas.
+                # Group by per-event `sequence` (a book snapshot shares one sequence across its
+                # CLEAR/ADD records; each price_change has its own) so every distinct semantic
+                # event is recovered even if the engine coalesces same-ts_init deltas.
                 groups: list = []
                 for delta in _deltas.deltas:
                     seq = delta.sequence
                     if not groups or groups[-1][0] != seq:
-                        groups.append([seq, delta.action == BookAction.CLEAR])
+                        groups.append([seq, delta.action == BookAction.CLEAR, delta.ts_init, delta.ts_event])
                     elif delta.action == BookAction.CLEAR:
                         groups[-1][1] = True
-                for _seq, has_clear in groups:
-                    observed_order.append("book" if has_clear else "price_change")
+                for seq, has_clear, ts_init, ts_event in groups:
+                    kind = "book" if has_clear else "price_change"
+                    observed_trace.append((kind, seq, ts_init, ts_event))
 
             def on_trade_tick(self, _tick) -> None:
-                observed_order.append("trade")
+                observed_trace.append(("last_trade_price", str(_tick.trade_id), _tick.ts_init, _tick.ts_event))
 
         engine = BacktestEngine(config=BacktestEngineConfig(trader_id="WP168-REPLAY-001", logging=None))
         engine.add_venue(
@@ -177,14 +200,14 @@ def run_offline_replay(
         )
         engine.add_instrument(instrument)
         engine.add_actor(_ReplayObserver(config=ActorConfig()))
-        # Stable sort by ts_init preserves the precomputed canonical order (including the
-        # book<price_change<last_trade_price tie order) for equal ts_init.
-        engine.add_data(sorted(semantic_objects, key=lambda obj: obj.ts_init))
+        # semantic_objects are already in canonical order; the engine's stable ts_init sort
+        # preserves the canonical secondary tie order (book<price_change<last_trade_price).
+        engine.add_data(list(semantic_objects), sort=True)
         engine.run()
         engine.dispose()
 
-        # The engine-observed semantic event order must equal the declared canonical order.
-        if observed_order != expected_order:
+        # The engine-observed per-event semantic order must equal the declared canonical order.
+        if not _semantic_order_matches(expected_trace, observed_trace):
             return _rejected(REPLAY_ERROR_PARITY_INVALID)
 
         nautilus_version = nt.__version__

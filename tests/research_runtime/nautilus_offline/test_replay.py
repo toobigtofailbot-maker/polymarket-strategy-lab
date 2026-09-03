@@ -11,21 +11,43 @@ import hashlib
 import pytest
 
 import src.research_runtime.nautilus_offline as offline
+from src.research_runtime.nautilus_offline.conversion import (
+    _canonical_json_bytes,
+    _scan_public_result_for_echo,
+)
 from src.research_runtime.nautilus_offline import (
+    CATALOG_QUERY_ERROR,
+    CATALOG_WRITE_ERROR,
+    CONVERSION_ERROR,
     CONVERSION_POLICY_VERSION,
+    INSTRUMENT_MAPPING_ERROR,
     REPLAY_ERROR_INVALID,
     REPLAY_ERROR_PARITY_INVALID,
     REPLAY_IDENTITY_PREFIX,
     REPLAY_RECEIPT_SCHEMA_ID,
     SOURCE_DATASET_KIND,
+    BinaryOptionMarketContext,
     ConvertedEventStream,
     NautilusReplayReceipt,
-    canonical_json_bytes,
+    PmxtV2ReplaySource,
+    build_binary_option,
+    build_catalog,
+    convert_pmxt_v2_events,
+    query_catalog,
     run_offline_replay,
 )
 from src.research_runtime.nautilus_offline.replay import REPLAY_SETTINGS
 
-from test_conversion import book, default_rows, price_change, tick_change, trade, valid_stream
+from test_conversion import (
+    _context,
+    _write_files,
+    book,
+    default_rows,
+    price_change,
+    tick_change,
+    trade,
+    valid_stream,
+)
 
 
 def test_offline_replay_processes_all_events(tmp_path):
@@ -101,7 +123,7 @@ def test_replay_count_or_digest_mismatch_rejected(tmp_path):
     assert receipt.is_valid is False
     assert receipt.error_codes == (REPLAY_ERROR_INVALID,)
     assert receipt.replay_digest is None
-    assert offline.scan_public_result_for_echo(receipt, ("Traceback", "\\", str(tmp_path))) == ()
+    assert _scan_public_result_for_echo(receipt, ("Traceback", "\\", str(tmp_path))) == ()
 
 
 def test_parquet_physical_reorder_invariance(tmp_path):
@@ -128,7 +150,7 @@ def test_physical_row_index_not_in_logical_replay_identity(tmp_path):
     stream = valid_stream(tmp_path / "src")
     receipt = run_offline_replay(stream, tmp_path / "catalog")
     # No absolute path / catalog dir appears anywhere in the public receipt.
-    assert offline.scan_public_result_for_echo(receipt, (str(tmp_path), "\\", "catalog")) == ()
+    assert _scan_public_result_for_echo(receipt, (str(tmp_path), "\\", "catalog")) == ()
 
 
 def test_receipt_commits_external_dataset_id_and_is_mutation_sensitive(tmp_path):
@@ -151,7 +173,7 @@ def test_identity_constants_and_digest_recomputation(tmp_path):
         "tick_size_regime_sequence": [list(item) for item in stream.tick_size_regime_sequence],
         "replay_settings": REPLAY_SETTINGS,
     }
-    expected = REPLAY_IDENTITY_PREFIX + hashlib.sha256(canonical_json_bytes(preimage)).hexdigest()
+    expected = REPLAY_IDENTITY_PREFIX + hashlib.sha256(_canonical_json_bytes(preimage)).hexdigest()
     assert receipt.replay_digest == expected
     assert CONVERSION_POLICY_VERSION == "wp168-nautilus-pmxt-v2-conversion/1.0.0"
     assert REPLAY_IDENTITY_PREFIX == "nautilusreplay:sha256:"
@@ -194,12 +216,112 @@ def test_engine_observed_order_is_repeatable(tmp_path):
     assert first.replay_digest == second.replay_digest
 
 
-# Note: a deliberately simulated engine-observed-order mismatch is not implemented as a
-# test because the NautilusTrader Actor/BacktestEngine are immutable Cython types that cannot
-# be monkeypatched to drop or reorder dispatched events; the REPLAY_PARITY_INVALID branch is
-# defensive. Positive order proofs above (declared order, equal-ts tie, repeatability) plus
-# the R024 reconciliation exercise the engine-observed-order path.
-REPLAY_ERROR_PARITY_INVALID  # referenced: parity-invalid is the closed code for order divergence
+def test_engine_order_mismatch_fails_closed(tmp_path, monkeypatch):
+    # Force the pure semantic-order comparison to report a mismatch (the immutable Cython
+    # engine/actor need not be patched) and prove run_offline_replay fails closed.
+    from src.research_runtime.nautilus_offline import replay as replay_mod
+    monkeypatch.setattr(replay_mod, "_semantic_order_matches", lambda expected, observed: False)
+    stream = valid_stream(tmp_path / "src")
+    receipt = run_offline_replay(stream, tmp_path / "catalog")
+    assert receipt.is_valid is False
+    assert receipt.error_codes == (REPLAY_ERROR_PARITY_INVALID,)
+    assert receipt.replay_digest is None
+
+
+def test_replay_real_count_mismatch_fails_closed(tmp_path):
+    # R025: a valid stream whose declared counts disagree with the actual semantic objects
+    # fails closed with a parity error before/without a successful replay.
+    stream = valid_stream(tmp_path / "src")
+    tampered = dataclasses.replace(
+        stream,
+        input_event_counts_by_type=(("book", 1), ("price_change", 99),
+                                    ("last_trade_price", 1), ("tick_size_change", 1)),
+    )
+    receipt = run_offline_replay(tampered, tmp_path / "catalog")
+    assert receipt.is_valid is False
+    assert receipt.error_codes == (REPLAY_ERROR_PARITY_INVALID,)
+    assert receipt.replay_digest is None
+    assert receipt.replay_processed_event_count == 0
+
+
+def test_reordered_source_file_list_yields_identical_replay(tmp_path):
+    # R055: FILE enumeration order invariance (two actual source files).
+    rows_a = [book(1000, 1005, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
+              price_change(1000, 1006, "0.4100", "1.000000", "BUY")]
+    rows_b = [trade(1200, 1205, "0.4100", "1.000000", "BUY", "0x" + "a" * 64),
+              price_change(1300, 1305, "0.5850", "1.000000", "SELL")]
+    source = _write_files(tmp_path / "src", [rows_a, rows_b])
+    forward = convert_pmxt_v2_events(source, _context())
+    reordered = PmxtV2ReplaySource(descriptor=source.descriptor,
+                                   source_files=tuple(reversed(source.source_files)))
+    backward = convert_pmxt_v2_events(reordered, _context())
+    assert forward.is_valid and backward.is_valid
+    assert forward.ordered_event_digests == backward.ordered_event_digests
+    r_forward = run_offline_replay(forward, tmp_path / "cf")
+    r_backward = run_offline_replay(backward, tmp_path / "cb")
+    assert r_forward.replay_digest == r_backward.replay_digest
+
+
+def test_absolute_source_path_never_in_identity_or_output(tmp_path):
+    # R056: the same semantic source in different absolute directories has identical identity
+    # and no source path appears in any project-owned public output.
+    stream_a = convert_pmxt_v2_events(_write_files(tmp_path / "dir_alpha", [default_rows()]), _context())
+    stream_b = convert_pmxt_v2_events(
+        _write_files(tmp_path / "dir_beta_much_longer_path", [default_rows()]), _context())
+    assert stream_a.is_valid and stream_b.is_valid
+    assert stream_a.ordered_event_digests == stream_b.ordered_event_digests
+    receipt_a = run_offline_replay(stream_a, tmp_path / "c1")
+    receipt_b = run_offline_replay(stream_b, tmp_path / "c2")
+    assert receipt_a.replay_digest == receipt_b.replay_digest
+    frags = (str(tmp_path / "dir_alpha"), str(tmp_path / "dir_beta_much_longer_path"), str(tmp_path))
+    # converted_events holds opaque Nautilus objects (excluded); scan project-owned fields.
+    for result in (stream_a, stream_b, receipt_a, receipt_b):
+        assert _scan_public_result_for_echo(result, frags) == ()
+
+
+def test_receipt_field_coverage_and_invalid_result_no_echo(tmp_path):
+    # R026: every public result dataclass field is classified, and invalid results across all
+    # operations obey the frozen invalid shape and are recursively no-echo.
+    forbidden = ("Traceback", str(tmp_path), "\\", "site-packages", "forced")
+
+    # Build one invalid result per operation.
+    bad_context = BinaryOptionMarketContext(
+        condition_id="0x" + "Z" * 64, outcome_token_id=TOKEN, outcome_label="Yes",
+        description="d", activation_ns=0, expiration_ns=1, price_increment="0.001",
+        size_increment="0.01", maker_fee="0", taker_fee="0", ts_event_ns=0, ts_init_ns=0)
+    invalid_instrument = build_binary_option(bad_context)
+
+    wrong = _write_files(tmp_path / "wrong", [default_rows()], wrong_provider=True)
+    invalid_stream = convert_pmxt_v2_events(wrong, _context())
+
+    build_invalid = build_catalog(invalid_stream, tmp_path / "c")
+    query_invalid = query_catalog(build_invalid)
+    replay_invalid = run_offline_replay(invalid_stream, tmp_path / "r")
+
+    assert invalid_instrument.is_valid is False
+    assert invalid_instrument.error_codes == (INSTRUMENT_MAPPING_ERROR,)
+    assert invalid_instrument.instrument_id is None and invalid_instrument.binary_option is None
+
+    assert invalid_stream.is_valid is False
+    assert invalid_stream.error_codes == (CONVERSION_ERROR,)
+    assert invalid_stream.instrument_id is None and invalid_stream.ordered_event_digests == ()
+
+    assert build_invalid.is_valid is False and build_invalid.error_codes == (CATALOG_WRITE_ERROR,)
+    assert build_invalid.written_delta_count == 0 and build_invalid.written_trade_count == 0
+    assert build_invalid.catalog_dir is None and build_invalid.stream_ref_digest is None
+
+    assert query_invalid.is_valid is False and query_invalid.error_codes == (CATALOG_QUERY_ERROR,)
+    assert query_invalid.queried_delta_count == 0 and query_invalid.queried_trade_count == 0
+
+    assert replay_invalid.is_valid is False and replay_invalid.error_codes == (REPLAY_ERROR_INVALID,)
+    assert replay_invalid.replay_digest is None and replay_invalid.replay_processed_event_count == 0
+
+    # Recursive no-echo over every invalid public result.
+    for result in (invalid_instrument, invalid_stream, build_invalid, query_invalid, replay_invalid):
+        assert _scan_public_result_for_echo(result, forbidden) == ()
+
+
+TOKEN = "92544998123698303655208967887569360731013655782348975589292031774495159624905"
 
 
 def test_receipt_is_frozen(tmp_path):
