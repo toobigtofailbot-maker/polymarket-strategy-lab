@@ -280,10 +280,12 @@ def test_invalid_timestamp_value_fails_closed():
 
 def test_decimal_to_price_quantity_is_exact_no_float(tmp_path):
     # R014: Price/Quantity are integer-backed fixed-point (no binary float), for both book
-    # deltas and trades, at Nautilus FIXED_PRECISION (9).
+    # deltas and trades, at Nautilus FIXED_PRECISION. FIXED_PRECISION is a build-dependent
+    # constant (9 on standard-precision wheels, 16 on high-precision), so the invariant is the
+    # exact integer-backed scaling, not a hard-coded 9.
     from nautilus_trader.model.data import OrderBookDeltas, TradeTick
     from nautilus_trader.model.objects import FIXED_PRECISION, Price, Quantity
-    assert FIXED_PRECISION == 9
+    assert isinstance(FIXED_PRECISION, int) and FIXED_PRECISION >= 9
 
     stream = valid_stream(tmp_path)
     tick = next(o for o in stream.converted_events if isinstance(o, TradeTick))
@@ -291,7 +293,9 @@ def test_decimal_to_price_quantity_is_exact_no_float(tmp_path):
     # Trade price/size are Nautilus Price/Quantity, integer-backed, exact, not Python floats.
     assert isinstance(tick.price, Price) and isinstance(tick.size, Quantity)
     assert isinstance(tick.price.raw, int) and isinstance(tick.size.raw, int)
-    assert tick.price.raw == 410 * 10 ** (FIXED_PRECISION - 3)   # 0.410 at fixed precision
+    # 0.410 is stored exactly as an integer at the build's fixed precision (no binary float).
+    assert tick.price.raw == 410 * 10 ** (FIXED_PRECISION - 3)
+    assert tick.price == Price.from_str("0.410")
 
     # Book delta prices/sizes are likewise integer-backed Price/Quantity.
     snapshot = next(o for o in stream.converted_events if isinstance(o, OrderBookDeltas))
