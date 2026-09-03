@@ -27,7 +27,13 @@ from src.data_layer.analytical_research import (
     PmxtV2SourceFile,
     revalidate_pmxt_v2_source_hash,
 )
-from src.data_layer.analytical_research.pmxt_v2 import PMXT_V2_DECIMAL_SPECS
+from src.data_layer.analytical_research.pmxt_v2 import (
+    PMXT_V2_DECIMAL_SPECS,
+    PMXT_V2_IMPORTER_ID,
+    PMXT_V2_IMPORTER_VERSION,
+    PMXT_V2_RECEIVE_TIMESTAMP_SEMANTICS,
+    PMXT_V2_SOURCE_TIMESTAMP_SEMANTICS,
+)
 
 from .instruments import BinaryOptionMarketContext, build_binary_option
 
@@ -179,6 +185,16 @@ def _validate_descriptor(descriptor: ExternalDatasetDescriptor) -> None:
     if not descriptor.event_types or any(
         event not in PMXT_V2_EVENT_TYPES for event in descriptor.event_types
     ):
+        raise _ConversionError()
+    # Importer and timestamp semantics must be exactly compatible with the WP167 pmxt-v2
+    # contract, so the receive/event-time replay semantics are bound to the verified source.
+    if descriptor.importer_id != PMXT_V2_IMPORTER_ID:
+        raise _ConversionError()
+    if descriptor.importer_version != PMXT_V2_IMPORTER_VERSION:
+        raise _ConversionError()
+    if descriptor.source_timestamp_semantics != PMXT_V2_SOURCE_TIMESTAMP_SEMANTICS:
+        raise _ConversionError()
+    if descriptor.receive_timestamp_semantics != PMXT_V2_RECEIVE_TIMESTAMP_SEMANTICS:
         raise _ConversionError()
     if not isinstance(descriptor.source_objects, tuple) or not descriptor.source_objects:
         raise _ConversionError()
@@ -426,7 +442,12 @@ def convert_pmxt_v2_events(
                             0, sequence, ts_event, ts_init,
                         )
                     )
-                converted_events.extend(deltas)
+                # Certified mapping: one source `book` event becomes exactly one Nautilus
+                # OrderBookDeltas snapshot (CLEAR + canonical ADDs). Persistence/replay
+                # flatten it internally; the public semantic remains one snapshot.
+                converted_events.append(
+                    OrderBookDeltas(instrument_id=instrument_id, deltas=deltas)
+                )
             elif event_type == "price_change":
                 price = norm["price"]
                 size = norm["size"]

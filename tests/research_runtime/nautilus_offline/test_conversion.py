@@ -185,11 +185,12 @@ def test_last_trade_price_to_trade_tick(tmp_path):
 
 
 def test_event_and_receive_timestamp_mapping(tmp_path):
-    from nautilus_trader.model.data import OrderBookDelta
+    from nautilus_trader.model.data import OrderBookDeltas
     stream = valid_stream(tmp_path)
-    first_delta = next(o for o in stream.converted_events if isinstance(o, OrderBookDelta))
-    assert first_delta.ts_event == 1000 * 1_000_000
-    assert first_delta.ts_init == 1005 * 1_000_000
+    snapshot = next(o for o in stream.converted_events if isinstance(o, OrderBookDeltas))
+    first_delta = snapshot.deltas[0]
+    assert first_delta.ts_event == 1000 * 1_000_000   # source event time
+    assert first_delta.ts_init == 1005 * 1_000_000    # source receive time
 
 
 def test_decimal_to_price_quantity_is_exact_no_float(tmp_path):
@@ -296,6 +297,52 @@ def test_descriptor_provider_version_source_class_mismatch_rejected(tmp_path):
     assert stream.error_codes == (CONVERSION_ERROR,)
 
 
+def test_descriptor_importer_and_timestamp_semantics_mismatch_rejected(tmp_path):
+    source = _write_files(tmp_path, [default_rows()])
+    desc = source.descriptor
+    for bad in (
+        dataclasses.replace(desc, importer_id="not-the-wp167-adapter"),
+        dataclasses.replace(desc, importer_version="9.9.9"),
+        dataclasses.replace(desc, source_timestamp_semantics="WRONG_EVENT_SEMANTICS"),
+        dataclasses.replace(desc, receive_timestamp_semantics="WRONG_RECEIVE_SEMANTICS"),
+    ):
+        bad_source = PmxtV2ReplaySource(descriptor=bad, source_files=source.source_files)
+        result = convert_pmxt_v2_events(bad_source, _context())
+        assert result.is_valid is False
+        assert result.error_codes == (CONVERSION_ERROR,)
+        assert offline.scan_public_result_for_echo(result, ("Traceback", "\\", str(tmp_path))) == ()
+    # exact WP167 importer/timestamp semantics pass.
+    assert convert_pmxt_v2_events(source, _context()).is_valid is True
+
+
+def test_book_source_event_becomes_one_orderbookdeltas_snapshot(tmp_path):
+    from nautilus_trader.model.data import OrderBookDeltas
+    from nautilus_trader.model.enums import BookAction
+    rows = [book(1, 2, [["0.4000", "1.000000"], ["0.3000", "2.000000"]],
+                 [["0.6000", "1.000000"]])]
+    stream = valid_stream(tmp_path, rows=rows)
+    assert stream.is_valid
+    snapshots = [o for o in stream.converted_events if isinstance(o, OrderBookDeltas)]
+    assert len(snapshots) == 1  # one source book event -> exactly one snapshot
+    deltas = snapshots[0].deltas
+    assert deltas[0].action == BookAction.CLEAR
+    adds = [d for d in deltas if d.action == BookAction.ADD]
+    assert len(adds) == 3  # 2 bids + 1 ask
+
+
+def test_book_snapshot_tied_with_other_event_orders_deterministically(tmp_path):
+    from nautilus_trader.model.data import OrderBookDeltas, TradeTick
+    # book (rank 0) and a trade (rank 2) at the same ts_init/ts_event.
+    rows = [
+        trade(1000, 1000, "0.4000", "1.000000", "BUY", "0x" + "7" * 64),
+        book(1000, 1000, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
+    ]
+    stream = valid_stream(tmp_path, rows=rows)
+    kinds = [type(o).__name__ for o in stream.converted_events
+             if isinstance(o, (OrderBookDeltas, TradeTick))]
+    assert kinds == ["OrderBookDeltas", "TradeTick"]  # book rank 0 before trade rank 2
+
+
 def test_source_files_map_one_to_one_to_descriptor_objects(tmp_path):
     extra = _write_files(tmp_path / "extra", [default_rows()], extra_object=True)
     assert convert_pmxt_v2_events(extra, _context()).is_valid is False
@@ -333,16 +380,16 @@ def test_unsupported_pmxt_event_and_malformed_book_rejected(tmp_path):
 
 
 def test_book_json_shape_and_canonical_ordering(tmp_path):
-    from nautilus_trader.model.data import OrderBookDelta
+    from nautilus_trader.model.data import OrderBookDeltas
     from nautilus_trader.model.enums import BookAction, OrderSide
     rows = [book(1, 2, [["0.3000", "1.000000"], ["0.4000", "2.000000"]],
                  [["0.7000", "1.000000"], ["0.6000", "2.000000"]])]
     stream = valid_stream(tmp_path / "ok", rows=rows)
     assert stream.is_valid
-    adds = [o for o in stream.converted_events
-            if isinstance(o, OrderBookDelta) and o.action == BookAction.ADD]
-    bid_prices = [str(o.order.price) for o in adds if o.order.side == OrderSide.BUY]
-    ask_prices = [str(o.order.price) for o in adds if o.order.side == OrderSide.SELL]
+    snapshot = next(o for o in stream.converted_events if isinstance(o, OrderBookDeltas))
+    adds = [d for d in snapshot.deltas if d.action == BookAction.ADD]
+    bid_prices = [str(d.order.price) for d in adds if d.order.side == OrderSide.BUY]
+    ask_prices = [str(d.order.price) for d in adds if d.order.side == OrderSide.SELL]
     assert bid_prices == ["0.400", "0.300"]   # descending
     assert ask_prices == ["0.600", "0.700"]   # ascending
     # duplicate price on one side -> fail closed

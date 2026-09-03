@@ -57,8 +57,15 @@ never enter logical identity or public output. Every public input/result is
   `replay_digest`, `warnings`, `execution_authority`.
 
 `converted_events` is an identity-excluded tuple carrying, in order, the Nautilus
-`BinaryOption` instrument definition followed by the canonical ordered market-data objects
-(`OrderBookDelta`/`TradeTick`) for the engine and catalog.
+`BinaryOption` instrument definition followed by the canonical ordered market-data objects.
+Each source `book` event is one Nautilus `OrderBookDeltas` snapshot (CLEAR + canonical ADDs);
+each `price_change` is one `OrderBookDelta`; each `last_trade_price` is one `TradeTick`. The
+`OrderBookDeltas` snapshot is the public semantic; `catalog` and `replay` flatten it into its
+individual `OrderBookDelta` records internally for Parquet persistence and engine delivery.
+`replay_processed_event_count` is the semantic replay-event count (book + price_change +
+last_trade_price source events; `tick_size_change` is regime metadata and no engine event),
+and engine processing is additionally parity-checked against the flattened individual-record
+count.
 
 ## External-dataset provenance (bound to WP167)
 

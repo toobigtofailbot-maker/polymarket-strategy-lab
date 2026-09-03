@@ -105,7 +105,7 @@ def run_offline_replay(
     from nautilus_trader.backtest.engine import BacktestEngine, BacktestEngineConfig
     from nautilus_trader.common.actor import Actor, ActorConfig
     from nautilus_trader.model.currencies import USDC
-    from nautilus_trader.model.data import OrderBookDelta, TradeTick
+    from nautilus_trader.model.data import OrderBookDelta, OrderBookDeltas, TradeTick
     from nautilus_trader.model.enums import AccountType, BookType, OmsType
     from nautilus_trader.model.identifiers import Venue
     from nautilus_trader.model.objects import Money
@@ -119,9 +119,23 @@ def run_offline_replay(
         if not events:
             return _rejected(REPLAY_ERROR_INVALID)
         instrument = events[0]
-        data = [obj for obj in events[1:] if isinstance(obj, (OrderBookDelta, TradeTick))]
-        expected_count = len(data)
-        if expected_count == 0:
+
+        # Semantic replay accounting (certified R024): each source book/price_change/
+        # last_trade_price event is one semantic replay event; tick_size_change is regime
+        # metadata and no engine event. Flatten the book OrderBookDeltas snapshots into their
+        # individual OrderBookDelta records only for the engine data stream + parity.
+        counts = dict(stream.input_event_counts_by_type)
+        semantic_count = (
+            counts.get("book", 0) + counts.get("price_change", 0) + counts.get("last_trade_price", 0)
+        )
+        flat_records: list = []
+        for obj in events[1:]:
+            if isinstance(obj, OrderBookDeltas):
+                flat_records.extend(obj.deltas)
+            elif isinstance(obj, (OrderBookDelta, TradeTick)):
+                flat_records.append(obj)
+        expected_individual = len(flat_records)
+        if expected_individual == 0 or semantic_count == 0:
             return _rejected(REPLAY_ERROR_INVALID)
 
         processed = {"count": 0}
@@ -149,11 +163,12 @@ def run_offline_replay(
         )
         engine.add_instrument(instrument)
         engine.add_actor(_ReplayCounter(config=ActorConfig()))
-        engine.add_data(sorted(data, key=lambda obj: obj.ts_init))
+        engine.add_data(sorted(flat_records, key=lambda obj: obj.ts_init))
         engine.run()
         engine.dispose()
 
-        if processed["count"] != expected_count:
+        # Parity on individual records dispatched by the engine.
+        if processed["count"] != expected_individual:
             return _rejected(REPLAY_ERROR_PARITY_INVALID)
 
         nautilus_version = nt.__version__
@@ -172,7 +187,7 @@ def run_offline_replay(
             first_event_time_ns=stream.first_event_time_ns,
             last_event_time_ns=stream.last_event_time_ns,
             tick_size_regime_sequence=stream.tick_size_regime_sequence,
-            replay_processed_event_count=expected_count,
+            replay_processed_event_count=semantic_count,
             replay_digest=_replay_digest(stream, nautilus_version),
             warnings=stream.warnings,
             execution_authority=False,

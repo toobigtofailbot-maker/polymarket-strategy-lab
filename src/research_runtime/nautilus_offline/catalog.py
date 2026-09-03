@@ -69,7 +69,7 @@ def _query_rejected() -> CatalogQueryResult:
 
 def build_catalog(stream: ConvertedEventStream, catalog_dir: pathlib.Path) -> CatalogBuildResult:
     """Register the instrument then market data in a local catalog. Never raises/echoes."""
-    from nautilus_trader.model.data import OrderBookDelta, TradeTick
+    from nautilus_trader.model.data import OrderBookDelta, OrderBookDeltas, TradeTick
     from nautilus_trader.persistence.catalog.parquet import ParquetDataCatalog
 
     try:
@@ -82,8 +82,17 @@ def build_catalog(stream: ConvertedEventStream, catalog_dir: pathlib.Path) -> Ca
             return _build_rejected()
         instrument = events[0]
         data = events[1:]
-        deltas = [obj for obj in data if isinstance(obj, OrderBookDelta)]
-        trades = [obj for obj in data if isinstance(obj, TradeTick)]
+        # A book snapshot is carried as one OrderBookDeltas; flatten it to individual
+        # OrderBookDelta rows for Parquet persistence (a derived persistence adaptation).
+        deltas: list = []
+        trades: list = []
+        for obj in data:
+            if isinstance(obj, OrderBookDeltas):
+                deltas.extend(obj.deltas)
+            elif isinstance(obj, OrderBookDelta):
+                deltas.append(obj)
+            elif isinstance(obj, TradeTick):
+                trades.append(obj)
 
         catalog_dir.mkdir(parents=True, exist_ok=True)
         catalog = ParquetDataCatalog(str(catalog_dir))
@@ -126,13 +135,23 @@ def query_catalog(build_result: CatalogBuildResult) -> CatalogQueryResult:
             delta_count == build_result.written_delta_count
             and trade_count == build_result.written_trade_count
         )
+        if not matches:
+            # A real round-trip count mismatch is a closed query failure, not a valid query.
+            return CatalogQueryResult(
+                is_valid=False,
+                status=CATALOG_QUERY_STATUS_REJECTED,
+                error_codes=(CATALOG_QUERY_ERROR,),
+                queried_delta_count=delta_count,
+                queried_trade_count=trade_count,
+                round_trip_matches=False,
+            )
         return CatalogQueryResult(
             is_valid=True,
             status=CATALOG_QUERY_STATUS_OK,
             error_codes=(),
             queried_delta_count=delta_count,
             queried_trade_count=trade_count,
-            round_trip_matches=matches,
+            round_trip_matches=True,
         )
     except Exception:
         return _query_rejected()

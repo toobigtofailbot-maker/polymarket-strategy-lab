@@ -24,7 +24,7 @@ from src.research_runtime.nautilus_offline import (
 )
 from src.research_runtime.nautilus_offline.replay import REPLAY_SETTINGS
 
-from test_conversion import book, default_rows, trade, valid_stream
+from test_conversion import book, default_rows, price_change, tick_change, trade, valid_stream
 
 
 def test_offline_replay_processes_all_events(tmp_path):
@@ -32,7 +32,9 @@ def test_offline_replay_processes_all_events(tmp_path):
     receipt = run_offline_replay(stream, tmp_path / "catalog")
     assert receipt.is_valid
     assert receipt.status == "NAUTILUS_REPLAYED"
-    assert receipt.replay_processed_event_count == 6  # 5 deltas + 1 trade
+    # Semantic replay-event count: 1 book + 2 price_change + 1 last_trade_price = 4
+    # (tick_size_change is regime metadata, not an engine event).
+    assert receipt.replay_processed_event_count == 4
     assert receipt.execution_authority is False
     assert receipt.schema_id == REPLAY_RECEIPT_SCHEMA_ID
 
@@ -57,12 +59,34 @@ def test_receipt_identity_is_path_independent_and_mutation_sensitive(tmp_path):
     assert mutated_receipt.replay_digest != base.replay_digest
 
 
-def test_source_counts_equal_converted_counts(tmp_path):
-    stream = valid_stream(tmp_path / "src")
+def test_source_counts_equal_converted_and_replayed_counts(tmp_path):
+    # R024 reconciliation with a multi-level book and all four event types.
+    rows = [
+        book(1000, 1005, [["0.4000", "50.000000"], ["0.3900", "10.000000"]],
+             [["0.6000", "50.000000"], ["0.6100", "10.000000"]]),
+        price_change(1000, 1006, "0.4100", "10.000000", "BUY"),
+        trade(1000, 1007, "0.4100", "5.000000", "BUY", "0x" + "d" * 64),
+        tick_change(1100, 1101, "0.0100", "0.0010"),
+        price_change(1200, 1205, "0.5850", "7.000000", "SELL"),
+    ]
+    stream = valid_stream(tmp_path / "src", rows=rows)
     receipt = run_offline_replay(stream, tmp_path / "catalog")
-    total = sum(count for _name, count in receipt.input_event_counts_by_type)
-    assert total == 5  # book + 2 price_change + trade + tick_size_change
-    assert dict(receipt.input_event_counts_by_type)["tick_size_change"] == 1
+    assert receipt.is_valid
+    counts = dict(receipt.input_event_counts_by_type)
+    book_c, pc_c, ltp_c, tsc_c = (counts["book"], counts["price_change"],
+                                  counts["last_trade_price"], counts["tick_size_change"])
+    assert (book_c, pc_c, ltp_c, tsc_c) == (1, 2, 1, 1)
+    source_total = book_c + pc_c + ltp_c + tsc_c
+    replayable = book_c + pc_c + ltp_c
+    tick_regime_transitions = len(receipt.tick_size_regime_sequence)
+    # source_total = replayable_source_events + tick-regime transitions
+    assert source_total == replayable + tick_regime_transitions
+    assert tick_regime_transitions == tsc_c == 1
+    # one source book event stays one semantic snapshot; replay count = replayable events
+    assert receipt.replay_processed_event_count == replayable == 4
+
+
+test_source_counts_equal_converted_counts = test_source_counts_equal_converted_and_replayed_counts
 
 
 def test_replay_count_or_digest_mismatch_rejected(tmp_path):
