@@ -27,6 +27,8 @@ EXPECTED_DIRECT_DEPENDENCIES = {
     "pyarrow": "25.0.1",
     "duckdb": "1.5.5",
     "polars": "1.44.1",
+    # WP168 adds the offline NautilusTrader kernel dependency (base install only).
+    "nautilus_trader": "1.231.0",
 }
 
 

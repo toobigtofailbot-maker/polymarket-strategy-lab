@@ -20,6 +20,8 @@ SRC_READMES = [
     "src/paper_trading/README.md",
     "src/monitoring/README.md",
     "src/shared/README.md",
+    # WP168 introduces the research-runtime boundary (offline Nautilus replay kernel).
+    "src/research_runtime/README.md",
 ]
 
 
@@ -126,6 +128,10 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/local_research_value_measurement",
     "src/data_layer/point_in_time_market_research",
     "src/data_layer/analytical_research",
+    # WP168 approves the local/offline/read-only NautilusTrader offline replay kernel,
+    # ParquetDataCatalog adoption, and deterministic replay package (no live/auth clients,
+    # no Polymarket extra, no Redis, no network, no strategy/order/fill/paper/live).
+    "src/research_runtime/nautilus_offline",
 )
 
 

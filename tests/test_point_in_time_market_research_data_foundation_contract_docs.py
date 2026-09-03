@@ -449,6 +449,11 @@ def test_project_status_reconciles_wp155_and_has_one_wp156_review_target() -> No
         "WP154 adoption architecture, dependency registry and alpha-factory roadmap lock-in sole review target"
         not in project
     )
+    if (ROOT / "docs" / "status_entries" / "WP168.md").exists():
+        # WP168 is the current review target following merged WP167.
+        assert "WP168" in current
+        assert "WP167" in merged
+        return
     if (ROOT / "docs" / "status_entries" / "WP167.md").exists():
         # WP167 is the current review target; it advances past the WP156-era markers.
         assert "WP167" in current
@@ -597,6 +602,45 @@ _WP162_AUTHORIZED_FILES = {
 }
 
 
+_WP168_AUTHORIZED_FILES = {
+    "docs/wp_specs/WP168/wp_prompt.txt",
+    "docs/wp_specs/WP168/wp_spec.json",
+    "docs/wp_specs/WP168/draftability_certificate.json",
+    "pyproject.toml",
+    ".github/workflows/ci.yml",
+    "src/research_runtime/README.md",
+    "src/research_runtime/nautilus_offline/__init__.py",
+    "src/research_runtime/nautilus_offline/runtime_compatibility.py",
+    "src/research_runtime/nautilus_offline/instruments.py",
+    "src/research_runtime/nautilus_offline/conversion.py",
+    "src/research_runtime/nautilus_offline/catalog.py",
+    "src/research_runtime/nautilus_offline/replay.py",
+    "tests/research_runtime/nautilus_offline/test_runtime_compatibility.py",
+    "tests/research_runtime/nautilus_offline/test_instruments.py",
+    "tests/research_runtime/nautilus_offline/test_conversion.py",
+    "tests/research_runtime/nautilus_offline/test_catalog.py",
+    "tests/research_runtime/nautilus_offline/test_replay.py",
+    "docs/nautilus_offline_kernel_contract.md",
+    "tests/test_nautilus_offline_kernel_contract_docs.py",
+    "docs/status_entries/WP168.md",
+    "docs/project_status.md",
+    "docs/repo_truth_index.md",
+    "docs/deferred_items_log.md",
+    "docs/security_tooling_status.md",
+    "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
+    "tests/test_architecture_boundaries.py",
+    "tests/test_project_status_docs.py",
+    "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+    "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+    "tests/test_point_in_time_market_research_data_foundation_contract_docs.py",
+    "tests/test_wallet_intelligence_architecture_contract_docs.py",
+    "tests/test_human_review_label_workflow_docs.py",
+    "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+    "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py",
+}
+
+
 _WP167_AUTHORIZED_FILES = {
     "docs/wp_specs/WP167/wp_prompt.txt",
     "docs/wp_specs/WP167/wp_spec.json",
@@ -738,6 +782,10 @@ _WP163_AUTHORIZED_FILES = {
 
 
 def test_exact_nine_file_scope_and_no_protected_change() -> None:
+    if "docs/status_entries/WP168.md" in _changed_files():
+        # WP168 owns its exact 35-file XL scope (offline NautilusTrader replay kernel).
+        assert _changed_files() == _WP168_AUTHORIZED_FILES
+        return
     if "docs/status_entries/WP167.md" in _changed_files():
         # WP167 owns its exact 27-file XL scope (analytical research foundation).
         assert _changed_files() == _WP167_AUTHORIZED_FILES

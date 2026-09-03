@@ -2416,6 +2416,19 @@ separately gated, and outside WP167 implementation authority.
 | WP167-D006 | Automated external downloader / refresh | OPEN | P3 | Separate network-gated WP with download provenance, retention, and security policy | WP167 accepts only explicitly supplied local Parquet paths and performs no download or network access |
 | WP167-D007 | Analytical partition/compaction at scale | OPEN | P3 | Separate durability/partitioning WP if analytical scale proves it necessary | WP167 writes one derived partition per table and performs no rollover, compaction, or pruning |
 
+## WP168 NautilusTrader Offline Kernel And Deterministic Replay Deferred Items
+
+WP168 resolves `WP167-D002` as `RESOLVED_BOUNDED_WP168_NAUTILUS_OFFLINE_REPLAY_FOUNDATION`: a local, offline, deterministic NautilusTrader event-replay foundation with `ParquetDataCatalog` adoption over verified WP167 pmxt-v2 external history. Canonical WP167/PIT truth stays the sole integrity authority. Every WP168 item below is `OPEN`, separately gated, and outside WP168 implementation authority.
+
+| ID | Deferred item | Status | Priority | Required future gate | Non-implication |
+|---|---|---|---|---|---|
+| WP167-D002 | NautilusTrader offline kernel / ParquetDataCatalog (WP168) | RESOLVED_BOUNDED_WP168_NAUTILUS_OFFLINE_REPLAY_FOUNDATION | P2 | Resolved (bounded) by WP168: offline instrument mapping, catalog build/query, and deterministic replay parity | WP168 delivers the bounded offline replay foundation while realistic fills, executable edge, paper, and live remain open successors |
+| WP168-D001 | Public realtime WebSocket + public activity/wallet data plane (WP169) | OPEN | P2 | Separate WP169 with rate-limit, gap/reconnect, retention, and security policy | WP168 has no WebSocket runtime, no Data API, and no realtime collector |
+| WP168-D002 | Leakage-safe experiment registry & research-dataset OS (WP170) | OPEN | P2 | Separate WP170 with experiment/feature/label identity, preregistration, and purged CV | WP168 provides an offline replay substrate but no experiment or feature/label registry |
+| WP168-D003 | Executable-edge fill/queue/slippage/latency modelling | OPEN | P2 | Separate execution-realism WP with fill-model and queue-position evidence | WP168 is an event-replay proof only and makes no fill, queue, slippage, latency, or executable-edge claim |
+| WP168-D004 | Live Polymarket adapter / authenticated execution | OPEN | P1 | Separate credentialed WP with signing, execution, and risk/reconciliation authority | WP168 uses no live data client, no live execution client, no authenticated Polymarket client, and no credentials |
+| WP168-D005 | Deterministic tick-regime segmentation | OPEN | P3 | Separate WP only if a valid dataset defeats the finest-tick single-instrument model | WP168 uses one stable instrument at the finest valid increment and does not implement segmentation |
+
 ## WP159 Draftability Foundation And Exact Scope Enforcement Deferred Items
 
 WP159 is a local/offline/stdlib-only governance-helper package. Every item below

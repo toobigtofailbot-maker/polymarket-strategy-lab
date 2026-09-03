@@ -4,6 +4,23 @@
 
 This document records local security-tool availability and scan results through WP15. It is status evidence only; it does not authorize runtime dependency integration, copied external code, venue API integration, or live trading.
 
+## WP168 Status Summary
+
+WP168 adds exactly one further direct runtime dependency, `nautilus_trader==1.231.0`
+(base install only — no `polymarket` extra `py-clob-client-v2`, no Redis, no network),
+on top of the WP167 pins, keeping the Python floor `>=3.12,<3.15`. NautilusTrader is
+installed from upstream and is **not vendored or modified**; its upstream LGPL-3.0
+notices are preserved and its live/authenticated surface is not used. Gitleaks, semgrep,
+and pip-audit remain `NOT_AVAILABLE` from project-local paths in this worktree, consistent
+with the historical baseline; they are never claimed to have run when they did not.
+`python -m pip check` passes with no broken requirements after the exact pins (WP167 pins
+plus `nautilus_trader==1.231.0`) are installed together. As with WP167, the authoritative
+WP168 dependency audit runs in the hosted CI `dependency-audit` job on ubuntu-24.04 /
+Python 3.12, whose isolated environment installs only the exact pins plus pytest and
+pip-audit, so its `pip-audit` sees WP168's actual dependency closure rather than the
+polluted local global interpreter. WP168 adds no credentials, no product/runtime network,
+and no copied external code.
+
 ## WP167 Status Summary
 
 WP167 is the project's first runtime-dependency package. It moves the Python

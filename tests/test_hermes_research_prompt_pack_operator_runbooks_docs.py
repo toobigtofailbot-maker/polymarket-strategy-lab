@@ -664,6 +664,33 @@ def test_no_src_implementation_for_wp98() -> None:
         cwd=str(REPO_ROOT),
     )
     changed_files = result.stdout.strip().splitlines()
+    if "docs/status_entries/WP168.md" in changed_files:
+        # WP168 explicitly authorizes its offline NautilusTrader research-runtime source
+        # package, exactly one workflow file (.github/workflows/ci.yml), one dependency
+        # file (pyproject.toml), and no tools/ files. Historical assertions are unchanged.
+        wp168_src = {
+            "src/research_runtime/README.md",
+            "src/research_runtime/nautilus_offline/__init__.py",
+            "src/research_runtime/nautilus_offline/runtime_compatibility.py",
+            "src/research_runtime/nautilus_offline/instruments.py",
+            "src/research_runtime/nautilus_offline/conversion.py",
+            "src/research_runtime/nautilus_offline/catalog.py",
+            "src/research_runtime/nautilus_offline/replay.py",
+        }
+        for f in changed_files:
+            if f.startswith("src/"):
+                assert f in wp168_src, f"Forbidden src/ file changed: {f}"
+            if f.startswith("tools/"):
+                assert False, f"Forbidden tools/ file changed: {f}"
+            if f.startswith(".github/workflows/"):
+                assert f == ".github/workflows/ci.yml", f"Forbidden workflow file changed: {f}"
+        dep_files = {
+            f for f in changed_files
+            if f in ("requirements.txt", "pyproject.toml", "package.json",
+                     "package-lock.json", "poetry.lock", "Cargo.toml", "Cargo.lock")
+        }
+        assert dep_files == {"pyproject.toml"}, dep_files
+        return
     if "docs/status_entries/WP167.md" in changed_files:
         # WP167 explicitly authorizes its analytical source package, exactly one
         # workflow file (.github/workflows/ci.yml), one dependency file

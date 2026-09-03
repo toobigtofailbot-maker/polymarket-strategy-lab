@@ -380,6 +380,18 @@ def test_project_status_marks_wp79_current_branch_phase() -> None:
 def test_only_allowed_wallet_src_files_changed() -> None:
     changed = _changed_files()
     src_changes = sorted(path for path in changed if path.startswith("src/"))
+    if "docs/status_entries/WP168.md" in changed:
+        # WP168 authorizes exactly its offline NautilusTrader research-runtime package.
+        assert set(src_changes) == {
+            "src/research_runtime/README.md",
+            "src/research_runtime/nautilus_offline/__init__.py",
+            "src/research_runtime/nautilus_offline/runtime_compatibility.py",
+            "src/research_runtime/nautilus_offline/instruments.py",
+            "src/research_runtime/nautilus_offline/conversion.py",
+            "src/research_runtime/nautilus_offline/catalog.py",
+            "src/research_runtime/nautilus_offline/replay.py",
+        }
+        return
     if "docs/status_entries/WP167.md" in changed:
         # WP167 authorizes exactly its analytical research source package.
         assert set(src_changes) == {
@@ -488,8 +500,8 @@ def test_no_tools_files_changed() -> None:
 
 def test_no_dependency_or_lock_files_changed() -> None:
     changed = _changed_files()
-    if "docs/status_entries/WP167.md" in changed:
-        # WP167 authorizes exactly one dependency file, pyproject.toml, and no lock file.
+    if "docs/status_entries/WP168.md" in changed or "docs/status_entries/WP167.md" in changed:
+        # WP167 and WP168 each authorize exactly one dependency file, pyproject.toml, and no lock file.
         dep_changes = {Path(path).name for path in changed if Path(path).name in {
             "requirements.txt", "requirements-dev.txt", "pyproject.toml", "package.json",
             "package-lock.json", "poetry.lock", "uv.lock", "pdm.lock", "Pipfile.lock",
