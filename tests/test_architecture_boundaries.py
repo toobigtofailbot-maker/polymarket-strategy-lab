@@ -130,8 +130,10 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/analytical_research",
     # WP168 approves the local/offline/read-only NautilusTrader offline replay kernel,
     # ParquetDataCatalog adoption, and deterministic replay package (no live/auth clients,
-    # no Polymarket extra, no Redis, no network, no strategy/order/fill/paper/live).
+    # no Polymarket extra, no Redis, no network, no strategy/order/fill/paper/live), plus
+    # the new research-runtime boundary README.
     "src/research_runtime/nautilus_offline",
+    "src/research_runtime/README.md",
 )
 
 
