@@ -51,14 +51,28 @@ def test_binary_option_identity_is_deterministic_and_path_independent() -> None:
 
 
 def test_instrument_uses_usdc_and_exact_precision() -> None:
+    from decimal import Decimal
+    from nautilus_trader.model.enums import AssetClass
     result = build_binary_option(_context(price_increment="0.001", size_increment="0.01"))
     assert result.is_valid
-    assert isinstance(result.binary_option, BinaryOption)
-    assert result.binary_option.quote_currency == USDC
-    assert result.binary_option.price_precision == 3
-    assert result.binary_option.size_precision == 2
+    instrument = result.binary_option
+    assert isinstance(instrument, BinaryOption)
+    assert instrument.quote_currency == USDC
+    assert instrument.asset_class == AssetClass.ALTERNATIVE
+    assert instrument.price_precision == 3
+    assert str(instrument.price_increment) == "0.001"
+    assert instrument.size_precision == 2
+    assert str(instrument.size_increment) == "0.01"
     assert result.price_increment == "0.001"
     assert result.size_increment == "0.01"
+    # No binary-float path: increments are exact fixed-point.
+    assert Decimal(str(instrument.price_increment)) == Decimal("0.001")
+    assert Decimal(str(instrument.size_increment)) == Decimal("0.01")
+    # A finer representative fixed-point scale remains exact.
+    fine = build_binary_option(_context(price_increment="0.0001", size_increment="0.000001"))
+    assert fine.is_valid
+    assert str(fine.binary_option.price_increment) == "0.0001"
+    assert str(fine.binary_option.size_increment) == "0.000001"
 
 
 def test_missing_or_malformed_market_identity_is_rejected() -> None:
@@ -77,20 +91,34 @@ def test_missing_or_malformed_market_identity_is_rejected() -> None:
 
 
 def test_binary_option_absent_value_policy() -> None:
+    from decimal import Decimal
     # expiration_ns None -> fail closed.
     assert build_binary_option(_context(expiration_ns=None)).is_valid is False
     # missing outcome_label -> fail closed.
     assert build_binary_option(_context(outcome_label="")).is_valid is False
-    # activation_ns None -> 0 (accepted).
+    # activation_ns None -> actual BinaryOption.activation_ns == 0.
     activated = build_binary_option(_context(activation_ns=None))
     assert activated.is_valid is True
     assert activated.binary_option.activation_ns == 0
-    # fee None -> Decimal(0) placeholder + FEE_METADATA_UNKNOWN warning.
+    # fee None -> actual maker_fee/taker_fee == Decimal("0") + FEE_METADATA_UNKNOWN warning.
     fee_unknown = build_binary_option(_context(maker_fee=None, taker_fee=None))
     assert fee_unknown.is_valid is True
     assert FEE_METADATA_UNKNOWN_WARNING in fee_unknown.warnings
+    assert fee_unknown.binary_option.maker_fee == Decimal("0")
+    assert fee_unknown.binary_option.taker_fee == Decimal("0")
+    # supplied outcome_label / description preserved exactly; token id never substituted.
+    labeled = build_binary_option(_context(outcome_label="No", description="Resolves to No?"))
+    assert labeled.is_valid is True
+    assert labeled.binary_option.outcome == "No"
+    assert labeled.binary_option.description == "Resolves to No?"
+    assert TOKEN not in labeled.binary_option.outcome
+    assert TOKEN not in (labeled.binary_option.description or "")
     # description None -> empty string only; Nautilus rejects empty -> fail closed (never fabricated).
     assert build_binary_option(_context(description=None)).is_valid is False
+    # scientific-notation / non-fixed-point increments -> fail closed.
+    for bad in ("1e-3", "1E-3", "+0.001", " 0.001", "0.001 ", "NaN"):
+        assert build_binary_option(_context(price_increment=bad)).is_valid is False
+        assert build_binary_option(_context(size_increment=bad)).is_valid is False
 
 
 def test_mapping_result_is_frozen_and_fields_classified() -> None:

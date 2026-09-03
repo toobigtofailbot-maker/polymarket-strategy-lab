@@ -119,17 +119,28 @@ def test_public_api_and_dataclasses_are_exactly_frozen() -> None:
         assert not hasattr(offline, helper)
 
     expected_signatures = {
-        "evaluate_offline_runtime": [],
-        "build_binary_option": ["context"],
-        "convert_pmxt_v2_events": ["source", "context"],
-        "build_catalog": ["stream", "catalog_dir"],
-        "query_catalog": ["build_result"],
-        "run_offline_replay": ["stream", "catalog_dir"],
+        # name: ([(param, annotation), ...], return_annotation)
+        "evaluate_offline_runtime": ([], "NautilusRuntimeCompatibilityResult"),
+        "build_binary_option": ([("context", "BinaryOptionMarketContext")], "BinaryOptionMappingResult"),
+        "convert_pmxt_v2_events": (
+            [("source", "PmxtV2ReplaySource"), ("context", "BinaryOptionMarketContext")],
+            "ConvertedEventStream"),
+        "build_catalog": ([("stream", "ConvertedEventStream"), ("catalog_dir", "pathlib.Path")],
+                          "CatalogBuildResult"),
+        "query_catalog": ([("build_result", "CatalogBuildResult")], "CatalogQueryResult"),
+        "run_offline_replay": ([("stream", "ConvertedEventStream"), ("catalog_dir", "pathlib.Path")],
+                               "NautilusReplayReceipt"),
     }
-    for name, params in expected_signatures.items():
+    for name, (params, return_annotation) in expected_signatures.items():
         func = getattr(offline, name)
         assert callable(func)
-        assert list(inspect.signature(func).parameters) == params, name
+        sig = inspect.signature(func)
+        assert [(p.name, p.annotation) for p in sig.parameters.values()] == params, name
+        assert sig.return_annotation == return_annotation, name
+        # no *args / **kwargs, and no defaults.
+        for p in sig.parameters.values():
+            assert p.kind in (p.POSITIONAL_OR_KEYWORD, p.POSITIONAL_ONLY), name
+            assert p.default is inspect.Parameter.empty, name
 
     expected_fields = {
         "NautilusRuntimeCompatibilityResult": {

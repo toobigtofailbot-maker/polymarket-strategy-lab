@@ -66,23 +66,72 @@ def test_repeat_replay_digest_is_identical(tmp_path):
     stream = valid_stream(tmp_path / "src")
     first = run_offline_replay(stream, tmp_path / "c1")
     second = run_offline_replay(stream, tmp_path / "c2")
+    # Whole frozen receipt is byte-identical across runs with different physical catalog dirs.
+    assert first == second
     assert first.replay_digest == second.replay_digest
     assert first.replay_digest.startswith(REPLAY_IDENTITY_PREFIX)
 
 
-def test_receipt_identity_is_path_independent_and_mutation_sensitive(tmp_path):
+def test_engine_same_kind_price_change_tie_order(tmp_path):
+    # Two same-kind price_change events at identical ts_init/ts_event, different content:
+    # a valid receipt requires the engine-observed per-event trace (distinguished by sequence)
+    # to equal the canonical (digest/bytes) order.
+    rows = [book(500, 500, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
+            price_change(1000, 1000, "0.4100", "1.000000", "BUY"),
+            price_change(1000, 1000, "0.4200", "1.000000", "BUY")]
+    stream = valid_stream(tmp_path / "src", rows=rows)
+    receipt = run_offline_replay(stream, tmp_path / "r")
+    assert receipt.is_valid
+    assert receipt.replay_processed_event_count == 3
+
+
+def test_engine_same_kind_trade_tie_order(tmp_path):
+    # Two same-kind trades at identical timestamps, different content: the engine trace
+    # (distinguished by deterministic TradeId) must equal the canonical order.
+    rows = [book(500, 500, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
+            trade(1000, 1000, "0.4100", "1.000000", "BUY", "0x" + "1" * 64),
+            trade(1000, 1000, "0.4200", "1.000000", "BUY", "0x" + "2" * 64)]
+    stream = valid_stream(tmp_path / "src", rows=rows)
+    receipt = run_offline_replay(stream, tmp_path / "r")
+    assert receipt.is_valid
+    assert receipt.replay_processed_event_count == 3
+
+
+def test_receipt_identity_is_path_independent_and_mutation_sensitive(tmp_path, monkeypatch):
+    import dataclasses as _dc
     stream = valid_stream(tmp_path / "src")
     base = run_offline_replay(stream, tmp_path / "cat_a")
     other_dir = run_offline_replay(stream, tmp_path / "different_catalog_dir")
     assert base.replay_digest == other_dir.replay_digest  # path-independent
+    assert base == other_dir                              # whole receipt identical
+
+    # Changing harmless environment identifiers between runs must not change the receipt.
+    monkeypatch.setenv("CI", "true")
+    monkeypatch.setenv("GITHUB_RUN_ID", "999999999")
+    monkeypatch.setenv("HOSTNAME", "some-other-host")
+    env_run = run_offline_replay(stream, tmp_path / "cat_env")
+    assert env_run == base
+
+    # The receipt carries no wall-clock/current-time field.
+    field_names = {f.name for f in _dc.fields(base)}
+    assert not any(tok in name for name in field_names for tok in ("wall", "clock", "now", "current_time", "created_at"))
+
     # Mutate a committed input value (a price) -> different replay identity.
     mutated_rows = default_rows()[:2] + [trade(1000, 1007, "0.4200", "5.000000", "BUY", "0x" + "d" * 64)]
     mutated = valid_stream(tmp_path / "mut", rows=mutated_rows)
-    mutated_receipt = run_offline_replay(mutated, tmp_path / "cat_m")
-    assert mutated_receipt.replay_digest != base.replay_digest
+    assert run_offline_replay(mutated, tmp_path / "cat_m").replay_digest != base.replay_digest
+
+    # Mutate the committed external_dataset_id -> different replay identity.
+    src = _write_files(tmp_path / "extid", [default_rows()])
+    other_id = PmxtV2ReplaySource(
+        descriptor=dataclasses.replace(src.descriptor, external_dataset_id="ext:pmxt:OTHER"),
+        source_files=src.source_files)
+    other_stream = convert_pmxt_v2_events(other_id, _context())
+    assert other_stream.is_valid
+    assert run_offline_replay(other_stream, tmp_path / "cat_x").replay_digest != base.replay_digest
 
 
-def test_source_counts_equal_converted_and_replayed_counts(tmp_path):
+def test_source_counts_equal_converted_counts(tmp_path):
     # R024 reconciliation with a multi-level book and all four event types.
     rows = [
         book(1000, 1005, [["0.4000", "50.000000"], ["0.3900", "10.000000"]],
@@ -107,9 +156,6 @@ def test_source_counts_equal_converted_and_replayed_counts(tmp_path):
     assert tick_regime_transitions == tsc_c == 1
     # one source book event stays one semantic snapshot; replay count = replayable events
     assert receipt.replay_processed_event_count == replayable == 4
-
-
-test_source_counts_equal_converted_counts = test_source_counts_equal_converted_and_replayed_counts
 
 
 def test_replay_count_or_digest_mismatch_rejected(tmp_path):
@@ -154,10 +200,26 @@ def test_physical_row_index_not_in_logical_replay_identity(tmp_path):
 
 
 def test_receipt_commits_external_dataset_id_and_is_mutation_sensitive(tmp_path):
+    # R057: the receipt commits exactly the descriptor external_dataset_id; changing that id
+    # changes both the committed field and the replay identity; a path-only change does not.
     stream = valid_stream(tmp_path / "src")
     receipt = run_offline_replay(stream, tmp_path / "catalog")
     assert receipt.source_dataset_kind == SOURCE_DATASET_KIND
     assert receipt.source_external_dataset_id == "ext:pmxt:test0001"
+
+    # Mutate the committed external_dataset_id -> different committed field AND different digest.
+    src = _write_files(tmp_path / "m", [default_rows()])
+    other = PmxtV2ReplaySource(
+        descriptor=dataclasses.replace(src.descriptor, external_dataset_id="ext:pmxt:OTHER0002"),
+        source_files=src.source_files)
+    other_stream = convert_pmxt_v2_events(other, _context())
+    other_receipt = run_offline_replay(other_stream, tmp_path / "catalog_other")
+    assert other_receipt.source_external_dataset_id == "ext:pmxt:OTHER0002"
+    assert other_receipt.replay_digest != receipt.replay_digest
+
+    # A path-only change (same dataset id, different catalog dir) leaves identity unchanged.
+    same_id = run_offline_replay(stream, tmp_path / "catalog_path2")
+    assert same_id.replay_digest == receipt.replay_digest
 
 
 def test_identity_constants_and_digest_recomputation(tmp_path):
@@ -177,6 +239,13 @@ def test_identity_constants_and_digest_recomputation(tmp_path):
     assert receipt.replay_digest == expected
     assert CONVERSION_POLICY_VERSION == "wp168-nautilus-pmxt-v2-conversion/1.0.0"
     assert REPLAY_IDENTITY_PREFIX == "nautilusreplay:sha256:"
+    # Frozen schema identity on the receipt.
+    assert receipt.schema_id == REPLAY_RECEIPT_SCHEMA_ID == "polymarket-nautilus-offline-replay-receipt"
+    assert receipt.schema_version == "1.0.0"
+    assert receipt.replay_digest.startswith(REPLAY_IDENTITY_PREFIX)
+    # The digest is exactly prefix + 64 lowercase hex characters.
+    hexpart = receipt.replay_digest[len(REPLAY_IDENTITY_PREFIX):]
+    assert len(hexpart) == 64 and all(c in "0123456789abcdef" for c in hexpart)
 
 
 def test_engine_observed_order_matches_declared_order(tmp_path):
@@ -322,6 +391,31 @@ def test_receipt_field_coverage_and_invalid_result_no_echo(tmp_path):
 
 
 TOKEN = "92544998123698303655208967887569360731013655782348975589292031774495159624905"
+
+
+def test_execution_authority_is_constant_false(tmp_path):
+    # R027 category 6: execution_authority is a hard constant False on every receipt (valid and
+    # invalid), and no source line can set it True. WP168 is event-replay proof only.
+    import pathlib
+    valid = run_offline_replay(valid_stream(tmp_path / "ok"), tmp_path / "cok")
+    assert valid.is_valid and valid.execution_authority is False
+    invalid = run_offline_replay(
+        convert_pmxt_v2_events(_write_files(tmp_path / "bad", [default_rows()], wrong_provider=True),
+                               _context()),
+        tmp_path / "cbad")
+    assert invalid.is_valid is False and invalid.execution_authority is False
+    # The compatibility result likewise advertises no execution authority.
+    from src.research_runtime.nautilus_offline import evaluate_offline_runtime
+    compat = evaluate_offline_runtime()
+    assert compat.no_execution_authority is True and compat.advisory_only is True
+    # No source line grants execution authority: the receipt's execution_authority is never
+    # set True, and the compat result's no_execution_authority is never set False.
+    import re
+    pkg = pathlib.Path(offline.__file__).resolve().parent
+    for path in pkg.glob("*.py"):
+        compact = path.read_text(encoding="utf-8").replace(" ", "").replace("\n", "")
+        assert re.search(r"(?<!no_)execution_authority=True", compact) is None, path.name
+        assert "no_execution_authority=False" not in compact, path.name
 
 
 def test_receipt_is_frozen(tmp_path):

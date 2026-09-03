@@ -36,7 +36,7 @@ from src.data_layer.analytical_research.pmxt_v2 import (
     PMXT_V2_SOURCE_TIMESTAMP_SEMANTICS,
 )
 
-from .instruments import BinaryOptionMarketContext, build_binary_option
+from .instruments import BinaryOptionMarketContext, _is_fixed_point_text, build_binary_option
 
 CONVERSION_POLICY_VERSION = "wp168-nautilus-pmxt-v2-conversion/1.0.0"
 SOURCE_DATASET_KIND = "WP167_EXTERNAL_DATASET_DESCRIPTOR"
@@ -327,6 +327,10 @@ def _normalize_book_side(raw: object, ascending: bool) -> list[tuple[Decimal, De
     for level in parsed:
         if not isinstance(level, list) or len(level) != 2:
             raise _ConversionError()
+        # Book levels are exactly two strict fixed-point decimal strings (no exponent/sign/
+        # space/NaN/Unicode digits, and not JSON numbers).
+        if not (_is_fixed_point_text(level[0]) and _is_fixed_point_text(level[1])):
+            raise _ConversionError()
         price = _decimal_at_scale(level[0], price_scale)
         size = _decimal_at_scale(level[1], size_scale)
         if size < 0:
@@ -424,37 +428,28 @@ def convert_pmxt_v2_events(
 
             if event_type == "book":
                 deltas = [OrderBookDelta.clear(instrument_id, sequence, ts_event, ts_init)]
-                for price, size in norm["bids"]:
-                    _require_price_multiple(price, price_increment)
-                    deltas.append(
-                        OrderBookDelta(
-                            instrument_id, BookAction.ADD,
-                            BookOrder(
-                                OrderSide.BUY,
-                                Price.from_str(_decimal_text(price, price_precision)),
-                                Quantity.from_str(_decimal_text(size, size_precision)),
-                                0,
-                            ),
-                            0, sequence, ts_event, ts_init,
+                for side_enum, side_levels in ((OrderSide.BUY, norm["bids"]), (OrderSide.SELL, norm["asks"])):
+                    for price, size in side_levels:
+                        _require_price_multiple(price, price_increment)
+                        # A book level with size == 0 encodes a DELETE; size > 0 is an ADD
+                        # (size < 0 already failed closed during normalization).
+                        action = BookAction.DELETE if size == 0 else BookAction.ADD
+                        deltas.append(
+                            OrderBookDelta(
+                                instrument_id, action,
+                                BookOrder(
+                                    side_enum,
+                                    Price.from_str(_decimal_text(price, price_precision)),
+                                    Quantity.from_str(_decimal_text(size, size_precision)),
+                                    0,
+                                ),
+                                0, sequence, ts_event, ts_init,
+                            )
                         )
-                    )
-                for price, size in norm["asks"]:
-                    _require_price_multiple(price, price_increment)
-                    deltas.append(
-                        OrderBookDelta(
-                            instrument_id, BookAction.ADD,
-                            BookOrder(
-                                OrderSide.SELL,
-                                Price.from_str(_decimal_text(price, price_precision)),
-                                Quantity.from_str(_decimal_text(size, size_precision)),
-                                0,
-                            ),
-                            0, sequence, ts_event, ts_init,
-                        )
-                    )
                 # Certified mapping: one source `book` event becomes exactly one Nautilus
-                # OrderBookDeltas snapshot (CLEAR + canonical ADDs). Persistence/replay
-                # flatten it internally; the public semantic remains one snapshot.
+                # OrderBookDeltas snapshot (CLEAR + canonical ADD/DELETE level deltas). The
+                # catalog flattens it to individual delta rows for Parquet persistence; replay
+                # keeps the whole OrderBookDeltas as one semantic replay object.
                 converted_events.append(
                     OrderBookDeltas(instrument_id=instrument_id, deltas=deltas)
                 )

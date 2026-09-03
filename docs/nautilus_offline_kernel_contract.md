@@ -58,20 +58,28 @@ never enter logical identity or public output. Every public input/result is
 
 `converted_events` is an identity-excluded tuple carrying, in order, the Nautilus
 `BinaryOption` instrument definition followed by the canonical ordered market-data objects.
-Each source `book` event is one Nautilus `OrderBookDeltas` snapshot (CLEAR + canonical ADDs);
-each `price_change` is one `OrderBookDelta`; each `last_trade_price` is one `TradeTick`. The
-`OrderBookDeltas` snapshot is the public semantic; `catalog` and `replay` flatten it into its
-individual `OrderBookDelta` records internally for Parquet persistence and engine delivery.
-`replay_processed_event_count` is the semantic replay-event count (book + price_change +
-last_trade_price source events; `tick_size_change` is regime metadata and no engine event),
-and engine processing is additionally parity-checked against the flattened individual-record
-count.
+Each source `book` event is exactly one Nautilus `OrderBookDeltas` snapshot (a `CLEAR`
+followed by the canonical bid/ask level deltas); each `price_change` is one `OrderBookDelta`;
+each `last_trade_price` is one `TradeTick`. A level whose size is `0` is a `DELETE` and a
+negative size fails closed, for both a `book` level and a `price_change`; a positive size is a
+snapshot rebuild `ADD` within a `book` and an incremental `UPDATE` for a `price_change`. The `OrderBookDeltas` snapshot is the public semantic: `catalog`
+flattens it into its individual `OrderBookDelta` rows only for Parquet persistence, while
+`replay` keeps the whole `OrderBookDeltas` as one semantic replay object so the engine-observed
+order can be verified. `replay_processed_event_count` is the semantic replay-event count
+(book + price_change + last_trade_price source events; `tick_size_change` is regime metadata
+and produces no engine event). Engine-order parity compares an exact per-event semantic-token
+trace (event kind plus the per-event `sequence` for order-book events or the deterministic
+`TradeId` for trades, with `ts_init`/`ts_event`) against the declared canonical order; any
+divergence, or a declared-count reconciliation failure, fails closed
+`NAUTILUS_REPLAY_PARITY_INVALID`.
 
 ## External-dataset provenance (bound to WP167)
 
 The replay source is the WP167 public `ExternalDatasetDescriptor` plus its
 `PmxtV2SourceFile` tuple. Before conversion the descriptor `provider_id`, `dataset_name`,
-`dataset_version`, and `source_class` must equal the WP167 pmxt-v2 constants; every source
+`dataset_version`, `source_class`, `importer_id`, `importer_version`,
+`source_timestamp_semantics`, and `receive_timestamp_semantics` must equal the WP167 pmxt-v2
+constants; every source
 file maps to exactly one descriptor source object by identical `object_name` and
 `partition_identity` (a strict 1:1 bijection with unique object names, no extra/missing);
 and every source file hash is revalidated with `revalidate_pmxt_v2_source_hash`. Failures
@@ -94,7 +102,10 @@ Canonical row bytes are UTF-8 canonical JSON (sorted keys, compact separators,
 `ensure_ascii=false`, `allow_nan=false`): no float; timestamps as UTC integer nanoseconds;
 `market` as canonical `0x` + 64 lowercase-hex; `asset_id` as canonical ASCII decimal digits;
 decimals as fixed-point text at the documented pmxt-v2 scale; unowned event-specific fields as
-explicit null; book bids/asks as `[["price","size"], ...]` with bids sorted strictly
+explicit null; the context `price_increment`/`size_increment` and every book bid/ask
+`price`/`size` string are strict fixed-point decimal text (ASCII digits with an optional
+single fractional part — no exponent, leading sign, whitespace, `NaN`/`Infinity`, Unicode
+digits, or JSON number), rejected otherwise; book bids/asks as `[["price","size"], ...]` with bids sorted strictly
 descending by price and asks strictly ascending, a duplicate price level on one side failing
 closed.
 

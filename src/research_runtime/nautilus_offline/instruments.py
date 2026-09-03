@@ -26,6 +26,14 @@ FEE_METADATA_UNKNOWN_WARNING = "FEE_METADATA_UNKNOWN"
 
 _CONDITION_ID_RE = re.compile(r"^0x[0-9a-f]{64}$")
 _TOKEN_ID_RE = re.compile(r"^[0-9]+$")
+# Strict fixed-point decimal text: ASCII digits with an optional single fractional part.
+# No exponent, no leading '+', no whitespace, no NaN/Infinity, no Unicode digits.
+_FIXED_POINT_RE = re.compile(r"^[0-9]+(?:\.[0-9]+)?$")
+
+
+def _is_fixed_point_text(value: object) -> bool:
+    """True only for strict ASCII fixed-point decimal text (no exponent/sign/space/NaN)."""
+    return isinstance(value, str) and _FIXED_POINT_RE.fullmatch(value) is not None
 
 
 @dataclass(frozen=True)
@@ -103,6 +111,9 @@ def build_binary_option(context: BinaryOptionMarketContext) -> BinaryOptionMappi
     if context.expiration_ns is None or not _is_int(context.expiration_ns):
         return _rejected()
 
+    # Increments must be strict fixed-point decimal text (no exponent/sign/space/NaN/Unicode).
+    if not (_is_fixed_point_text(context.price_increment) and _is_fixed_point_text(context.size_increment)):
+        return _rejected()
     price_increment = _decimal_text(context.price_increment)
     size_increment = _decimal_text(context.size_increment)
     if price_increment is None or size_increment is None:

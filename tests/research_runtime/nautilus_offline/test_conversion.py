@@ -11,6 +11,8 @@ import hashlib
 import json
 from decimal import Decimal
 
+import pytest
+
 import pyarrow as pa
 import pyarrow.parquet as pq
 
@@ -39,6 +41,7 @@ from src.research_runtime.nautilus_offline import (
     NautilusRuntimeCompatibilityResult,
     PmxtV2ReplaySource,
     convert_pmxt_v2_events,
+    run_offline_replay,
 )
 
 MARKET = "0x" + "a" * 64
@@ -185,6 +188,22 @@ def test_book_snapshot_conversion(tmp_path):
     assert bids == [("0.400", "50.000000"), ("0.390", "10.000000")]   # descending, sizes preserved
     assert asks == [("0.600", "20.000000")]
 
+    # A book level with size 0 is a DELETE (not ADD); CLEAR still first, order preserved.
+    zero_rows = [book(1000, 1005, [["0.4000", "0.000000"], ["0.3900", "10.000000"]],
+                      [["0.6000", "20.000000"]])]
+    z_stream = valid_stream(tmp_path / "zero", rows=zero_rows)
+    z_deltas = next(o for o in z_stream.converted_events if isinstance(o, OrderBookDeltas)).deltas
+    assert z_deltas[0].action == BookAction.CLEAR
+    non_clear = z_deltas[1:]
+    delete_prices = [str(d.order.price) for d in non_clear if d.action == BookAction.DELETE]
+    add_prices = [str(d.order.price) for d in non_clear if d.action == BookAction.ADD]
+    assert delete_prices == ["0.400"]                 # zero-size bid -> DELETE
+    assert add_prices == ["0.390", "0.600"]           # positive levels -> ADD
+
+    # A negative book level fails closed.
+    neg_rows = [book(1, 2, [["0.4000", "-1.000000"]], [["0.6000", "1.000000"]])]
+    assert valid_stream(tmp_path / "negbook", rows=neg_rows).is_valid is False
+
 
 def test_price_change_conversion(tmp_path):
     from nautilus_trader.model.data import OrderBookDelta
@@ -208,9 +227,29 @@ def test_price_change_conversion(tmp_path):
 
 def test_last_trade_price_to_trade_tick(tmp_path):
     from nautilus_trader.model.data import TradeTick
+    from nautilus_trader.model.enums import AggressorSide
     stream = valid_stream(tmp_path)
     assert dict(stream.input_event_counts_by_type)["last_trade_price"] == 1
-    assert any(isinstance(obj, TradeTick) for obj in stream.converted_events)
+    # BUY -> BUYER, exact price/size/timestamps, deterministic nonempty TradeId.
+    buy = valid_stream(tmp_path / "buy", rows=[trade(1000, 1007, "0.4100", "5.000000", "BUY", "0x" + "a" * 64)])
+    tick = next(o for o in buy.converted_events if isinstance(o, TradeTick))
+    assert str(tick.price) == "0.410"
+    assert str(tick.size) == "5.000000"
+    assert tick.aggressor_side == AggressorSide.BUYER
+    assert str(tick.trade_id) != ""
+    assert tick.ts_event == 1000 * 1_000_000
+    assert tick.ts_init == 1007 * 1_000_000
+    # SELL -> SELLER.
+    sell = valid_stream(tmp_path / "sell", rows=[trade(1000, 1007, "0.4100", "5.000000", "SELL", "0x" + "b" * 64)])
+    assert next(o for o in sell.converted_events if isinstance(o, TradeTick)).aggressor_side == AggressorSide.SELLER
+    # Repeat conversion -> same TradeId (deterministic).
+    buy2 = valid_stream(tmp_path / "buy2", rows=[trade(1000, 1007, "0.4100", "5.000000", "BUY", "0x" + "a" * 64)])
+    assert str(next(o for o in buy2.converted_events if isinstance(o, TradeTick)).trade_id) == str(tick.trade_id)
+    # Byte-identical duplicate rows -> deterministic UNIQUE TradeIds (via duplicate ordinal).
+    tx = "0x" + "c" * 64
+    dup = valid_stream(tmp_path / "dup", rows=[trade(1000, 1000, "0.4100", "5.000000", "BUY", tx)] * 2)
+    dup_ids = [str(o.trade_id) for o in dup.converted_events if isinstance(o, TradeTick)]
+    assert len(dup_ids) == 2 and dup_ids[0] != dup_ids[1]
 
 
 def test_event_and_receive_timestamp_mapping(tmp_path):
@@ -222,18 +261,74 @@ def test_event_and_receive_timestamp_mapping(tmp_path):
     assert first_delta.ts_init == 1005 * 1_000_000    # source receive time
 
 
+def test_invalid_timestamp_value_fails_closed():
+    # R027 category 5: an invalid timestamp (timezone-naive datetime, or a wrong-typed value)
+    # is a real closed conversion failure, not silently coerced to a wall-clock or zero.
+    import datetime as _dt
+    from src.research_runtime.nautilus_offline.conversion import _as_ns, _ConversionError
+
+    # A valid tz-aware datetime and integer-ms both normalize to exact nanoseconds.
+    aware = _dt.datetime(1970, 1, 1, tzinfo=_dt.timezone.utc) + _dt.timedelta(milliseconds=1500)
+    assert _as_ns(aware) == 1500 * 1_000_000
+    assert _as_ns(1500) == 1500 * 1_000_000
+
+    # Timezone-naive datetime, string, float, bool, and None all fail closed.
+    for bad in (_dt.datetime(1970, 1, 1, 0, 0, 1), "1500", 1500.0, True, None):
+        with pytest.raises(_ConversionError):
+            _as_ns(bad)
+
+
 def test_decimal_to_price_quantity_is_exact_no_float(tmp_path):
-    from nautilus_trader.model.data import TradeTick
+    # R014: Price/Quantity are integer-backed fixed-point (no binary float), for both book
+    # deltas and trades, at Nautilus FIXED_PRECISION (9).
+    from nautilus_trader.model.data import OrderBookDeltas, TradeTick
+    from nautilus_trader.model.objects import FIXED_PRECISION, Price, Quantity
+    assert FIXED_PRECISION == 9
+
     stream = valid_stream(tmp_path)
     tick = next(o for o in stream.converted_events if isinstance(o, TradeTick))
     assert str(tick.price) == "0.410"
+    # Trade price/size are Nautilus Price/Quantity, integer-backed, exact, not Python floats.
+    assert isinstance(tick.price, Price) and isinstance(tick.size, Quantity)
+    assert isinstance(tick.price.raw, int) and isinstance(tick.size.raw, int)
+    assert tick.price.raw == 410 * 10 ** (FIXED_PRECISION - 3)   # 0.410 at fixed precision
+
+    # Book delta prices/sizes are likewise integer-backed Price/Quantity.
+    snapshot = next(o for o in stream.converted_events if isinstance(o, OrderBookDeltas))
+    add = next(d for d in snapshot.deltas if d.order.size.raw > 0)
+    assert isinstance(add.order.price, Price) and isinstance(add.order.size, Quantity)
+    assert isinstance(add.order.price.raw, int) and isinstance(add.order.size.raw, int)
 
 
 def test_tick_size_change_committed_as_regime_metadata(tmp_path):
+    from nautilus_trader.model.data import OrderBookDeltas, OrderBookDelta, TradeTick
+    from nautilus_trader.model.instruments import BinaryOption
     stream = valid_stream(tmp_path)
     assert stream.tick_size_regime_sequence == (("0.0100", "0.0010", 1100 * 1_000_000),)
     assert stream.source_dataset_kind == SOURCE_DATASET_KIND
     assert stream.conversion_policy_version == CONVERSION_POLICY_VERSION
+
+    # A tick_size_change is regime metadata ONLY: it produces no market-data event, keeps the
+    # single instrument identity, and is excluded from the semantic replay-event count.
+    tick_only = valid_stream(tmp_path / "tickonly", rows=[
+        tick_change(1100, 1101, "0.0100", "0.0010"),
+        tick_change(1300, 1301, "0.0010", "0.0005")])
+    assert tick_only.is_valid
+    instruments = [o for o in tick_only.converted_events if isinstance(o, BinaryOption)]
+    market_data = [o for o in tick_only.converted_events
+                   if isinstance(o, (OrderBookDeltas, OrderBookDelta, TradeTick))]
+    assert len(instruments) == 1
+    assert market_data == []
+    assert tick_only.tick_size_regime_sequence == (
+        ("0.0100", "0.0010", 1100 * 1_000_000), ("0.0010", "0.0005", 1300 * 1_000_000))
+    # No replayable (book/price_change/last_trade_price) event is counted for tick metadata.
+    replayable = {"book", "price_change", "last_trade_price"}
+    counts = dict(tick_only.input_event_counts_by_type)
+    assert sum(v for k, v in counts.items() if k in replayable) == 0
+
+    # A nonpositive tick size fails closed.
+    assert valid_stream(tmp_path / "zt", rows=[tick_change(1, 2, "0.0000", "0.0010")]).is_valid is False
+    assert valid_stream(tmp_path / "nt", rows=[tick_change(1, 2, "0.0100", "-0.0010")]).is_valid is False
 
 
 def test_all_prices_are_exact_multiples_of_finest_increment(tmp_path):
@@ -262,31 +357,70 @@ def test_all_prices_are_exact_multiples_of_finest_increment(tmp_path):
 
 def test_receive_time_primary_ordering_when_event_time_disagrees(tmp_path):
     # Event A: ts_event=2000, ts_init=1000. Event B: ts_event=1000, ts_init=2000.
-    # Receive-time-primary => A (ts_init 1000) before B (ts_init 2000).
+    # Receive-time-primary => A (ts_init 1000) before B (ts_init 2000). A book snapshot at an
+    # earlier receive time lets the offline engine replay so engine dispatch is also proven.
     rows = [
+        book(400, 500, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
         trade(2000, 1000, "0.4000", "1.000000", "BUY", "0x" + "a" * 64),
         trade(1000, 2000, "0.4000", "1.000000", "BUY", "0x" + "b" * 64),
     ]
-    stream = valid_stream(tmp_path, rows=rows)
+    stream = valid_stream(tmp_path / "src", rows=rows)
     from nautilus_trader.model.data import TradeTick
     ticks = [o for o in stream.converted_events if isinstance(o, TradeTick)]
+    # 1. converted canonical order follows ts_init.
     assert [t.ts_init for t in ticks] == [1000 * 1_000_000, 2000 * 1_000_000]
+    # 2/3. the BacktestEngine dispatches in the declared ts_init order (a valid receipt means
+    # the engine-observed per-event trace equals the ts_init-primary canonical order).
+    receipt = run_offline_replay(stream, tmp_path / "replay")
+    assert receipt.is_valid
+    assert receipt.replay_processed_event_count == 3
 
 
 def test_equal_ts_init_events_have_deterministic_tie_order(tmp_path):
-    # Same ts_init and ts_event, different event kinds -> event_kind_rank orders them.
+    # R015: two distinct events with identical ts_init are ordered deterministically by the
+    # frozen total key; here equal ts_init/ts_event with different kinds tie-break by
+    # event_kind_rank (price_change=1 before last_trade_price=2), independent of input order.
+    from nautilus_trader.model.data import OrderBookDelta, TradeTick
     rows = [
         trade(1000, 1000, "0.4000", "1.000000", "BUY", "0x" + "c" * 64),        # rank 2
         price_change(1000, 1000, "0.4000", "1.000000", "BUY"),                   # rank 1
     ]
-    stream = valid_stream(tmp_path, rows=rows)
-    from nautilus_trader.model.data import OrderBookDelta, TradeTick
-    kinds = [type(o).__name__ for o in stream.converted_events
+    forward = valid_stream(tmp_path / "f", rows=rows)
+    backward = valid_stream(tmp_path / "b", rows=list(reversed(rows)))
+    kinds = [type(o).__name__ for o in forward.converted_events
              if isinstance(o, (OrderBookDelta, TradeTick))]
     assert kinds == ["OrderBookDelta", "TradeTick"]  # price_change (1) before trade (2)
+    # Deterministic regardless of physical input order.
+    assert forward.ordered_event_digests == backward.ordered_event_digests
 
 
-test_event_kind_rank_orders_equal_ts_init_mixed_types = test_equal_ts_init_events_have_deterministic_tie_order
+def test_event_kind_rank_orders_equal_ts_init_mixed_types(tmp_path):
+    # R046: equal ts_init AND equal ts_event across all four event kinds are ordered by the
+    # frozen event_kind_rank book < price_change < last_trade_price < tick_size_change,
+    # independent of physical input order.
+    from nautilus_trader.model.data import OrderBookDeltas, OrderBookDelta, TradeTick
+    bk = book(1000, 1000, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]])
+    pc = price_change(1000, 1000, "0.4000", "1.000000", "BUY")
+    tr = trade(1000, 1000, "0.4000", "1.000000", "BUY", "0x" + "c" * 64)
+    tk = tick_change(1000, 1000, "0.0100", "0.0010")
+
+    def base_digest(single_row):
+        st = valid_stream(tmp_path / f"one{single_row['event_type']}", rows=[single_row])
+        assert st.is_valid and len(st.ordered_event_digests) == 1
+        return st.ordered_event_digests[0].rsplit(":", 1)[0]
+
+    expected = [base_digest(bk), base_digest(pc), base_digest(tr), base_digest(tk)]
+
+    # Feed the four events in reversed rank order; canonical order must still be by rank.
+    stream = valid_stream(tmp_path / "mixed", rows=[tk, tr, pc, bk])
+    assert stream.is_valid
+    got = [d.rsplit(":", 1)[0] for d in stream.ordered_event_digests]
+    assert got == expected  # book(0) < price_change(1) < last_trade_price(2) < tick_size_change(3)
+
+    # The three market-data objects also appear in book < price_change < trade order.
+    md_kinds = [type(o).__name__ for o in stream.converted_events
+                if isinstance(o, (OrderBookDeltas, OrderBookDelta, TradeTick))]
+    assert md_kinds == ["OrderBookDeltas", "OrderBookDelta", "TradeTick"]
 
 
 def test_input_enumeration_order_invariance(tmp_path):
@@ -439,9 +573,17 @@ def test_event_semantic_matrix_owned_and_null_fields(tmp_path):
 
 def test_unsupported_pmxt_event_and_malformed_book_rejected(tmp_path):
     bad_event = row("weird_event", 1, 2)
-    assert valid_stream(tmp_path / "a", rows=[bad_event]).is_valid is False
+    unsupported = valid_stream(tmp_path / "a", rows=[bad_event])
+    assert unsupported.is_valid is False
+    assert unsupported.error_codes == (CONVERSION_ERROR,)  # exactly NAUTILUS_EVENT_CONVERSION_INVALID
+    # No raw event token / exception / traceback echoed in the closed result.
+    assert _scan_public_result_for_echo(unsupported, ("weird_event", "Traceback", "Error")) == ()
+
     malformed = book(1, 2, [["0.4000"]], [["0.6000", "1.000000"]])  # bid pair has 1 item
-    assert valid_stream(tmp_path / "b", rows=[malformed]).is_valid is False
+    bad_book = valid_stream(tmp_path / "b", rows=[malformed])
+    assert bad_book.is_valid is False
+    assert bad_book.error_codes == (CONVERSION_ERROR,)
+    assert _scan_public_result_for_echo(bad_book, ("Traceback", "0.4000")) == ()
 
 
 def test_book_json_shape_and_canonical_ordering(tmp_path):
@@ -472,6 +614,14 @@ def test_book_json_shape_and_canonical_ordering(tmp_path):
     # malformed JSON string -> fail closed.
     malformed = [row("book", 1, 2, bids="not json", asks=json.dumps([["0.6000", "1.000000"]]))]
     assert valid_stream(tmp_path / "mal", rows=malformed).is_valid is False
+    # Non-fixed-point book price/size strings fail closed: scientific notation, leading '+',
+    # surrounding whitespace, NaN/Infinity, and non-ASCII (Unicode) digits.
+    for i, bad in enumerate(("4e-1", "4E-1", "+0.4000", " 0.4000", "0.4000 ", "NaN",
+                             "Infinity", "０.4000", "0.4０００")):
+        bad_price = [book(1, 2, [[bad, "1.000000"]], [["0.6000", "1.000000"]])]
+        assert valid_stream(tmp_path / f"bp{i}", rows=bad_price).is_valid is False
+        bad_size = [book(1, 2, [["0.4000", bad]], [["0.6000", "1.000000"]])]
+        assert valid_stream(tmp_path / f"bs{i}", rows=bad_size).is_valid is False
 
 
 # --------------------------- field coverage (R061) ---------------------------
@@ -523,6 +673,48 @@ def test_every_public_dataclass_field_is_classified():
         assert _coverage_ok(cls, table), cls.__name__
         assert set(table.values()) <= {S, E, X}
 
+    # Second, orthogonal dimension: each field's role in the committed replay identity.
+    # C = committed into the identity preimage; XI = deliberately excluded; N = not an
+    # identity input at all (control/echo/input field).
+    C, XI, N = "COMMITTED", "EXCLUDED", "NONE"
+    identity_role = {
+        NautilusRuntimeCompatibilityResult: {k: N for k in classification[NautilusRuntimeCompatibilityResult]},
+        BinaryOptionMarketContext: {k: N for k in classification[BinaryOptionMarketContext]},
+        BinaryOptionMappingResult: {
+            "is_valid": N, "status": N, "error_codes": N, "instrument_id": N,
+            "price_increment": N, "size_increment": N, "warnings": N, "binary_option": XI},
+        PmxtV2ReplaySource: {"descriptor": XI, "source_files": XI},
+        ConvertedEventStream: {
+            "is_valid": N, "status": N, "error_codes": N, "instrument_id": C,
+            "source_dataset_kind": C, "source_external_dataset_id": C,
+            "conversion_policy_version": C, "ordered_event_digests": C,
+            "input_event_counts_by_type": C, "tick_size_regime_sequence": C,
+            "first_event_time_ns": C, "last_event_time_ns": C, "warnings": N,
+            "converted_events": XI},
+        CatalogBuildResult: {
+            "is_valid": N, "status": N, "error_codes": N, "instrument_registered": N,
+            "written_delta_count": N, "written_trade_count": N, "catalog_dir": XI,
+            "stream_ref_digest": C},
+        CatalogQueryResult: {k: N for k in classification[CatalogQueryResult]},
+        NautilusReplayReceipt: {
+            "is_valid": N, "status": N, "error_codes": N, "schema_id": C, "schema_version": C,
+            "source_dataset_kind": C, "source_external_dataset_id": C,
+            "conversion_policy_version": C, "nautilus_version": C, "instrument_id": C,
+            "input_event_counts_by_type": C, "first_event_time_ns": C, "last_event_time_ns": C,
+            "tick_size_regime_sequence": C, "replay_processed_event_count": C,
+            "replay_digest": C, "warnings": N, "execution_authority": N},
+    }
+    for cls, table in identity_role.items():
+        assert _coverage_ok(cls, table), cls.__name__
+        assert set(table.values()) <= {C, XI, N}
+    # Anchor roles: the digest is committed; opaque payloads and caller paths are excluded;
+    # control/exempt fields are never an identity input.
+    assert identity_role[NautilusReplayReceipt]["replay_digest"] == C
+    assert identity_role[ConvertedEventStream]["converted_events"] == XI
+    assert identity_role[CatalogBuildResult]["catalog_dir"] == XI
+    assert identity_role[NautilusReplayReceipt]["status"] == N
+    assert identity_role[NautilusReplayReceipt]["execution_authority"] == N
+
     # A synthetic dataclass with a new, unclassified field must fail the same coverage gate.
     @dataclasses.dataclass(frozen=True)
     class _Synthetic:
@@ -548,9 +740,10 @@ def test_negative_matrix_categories_map_to_tests():
         2: ("TEST", ["test_event_semantic_matrix_owned_and_null_fields"]),
         3: ("TEST", ["test_book_json_shape_and_canonical_ordering"]),
         4: ("TEST", ["test_unsupported_pmxt_event_and_malformed_book_rejected"]),
-        5: ("TEST", ["test_receive_time_primary_ordering_when_event_time_disagrees",
-                     "test_event_and_receive_timestamp_mapping"]),
-        6: ("TEST", ["test_receipt_field_coverage_and_invalid_result_no_echo"]),
+        5: ("TEST", ["test_invalid_timestamp_value_fails_closed",
+                     "test_receive_time_primary_ordering_when_event_time_disagrees"]),
+        6: ("TEST", ["test_receipt_field_coverage_and_invalid_result_no_echo",
+                     "test_execution_authority_is_constant_false"]),
         7: ("NOT_APPLICABLE", "WP168 emits no free-text advisory surface; no wording filter exists."),
         8: ("NOT_APPLICABLE", "No credential inputs or outputs exist; no-echo scanning still guards leakage."),
         9: ("NOT_APPLICABLE", "No advisory/strategy output surface exists."),

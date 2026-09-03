@@ -108,6 +108,46 @@ def test_catalog_query_representative_values_round_trip(tmp_path):
     assert got_trade.ts_init == exp_trade.ts_init
 
 
+def test_catalog_physical_parquet_reorder_is_logically_invariant(tmp_path):
+    # R048: physically rewriting the on-disk Parquet with reversed row order does not change
+    # the logical round-trip result (counts and the multiset of representative values).
+    import pathlib
+    import pyarrow.parquet as pq
+    from nautilus_trader.model.data import OrderBookDelta, TradeTick
+    from nautilus_trader.persistence.catalog.parquet import ParquetDataCatalog
+
+    stream = valid_stream(tmp_path / "src")
+    build_result = build_catalog(stream, tmp_path / "catalog")
+    assert build_result.is_valid
+
+    def _fingerprint(dir_path):
+        cat = ParquetDataCatalog(dir_path)
+        deltas = sorted((str(d.action), str(d.order.price), str(d.order.size), d.ts_event, d.ts_init)
+                        for d in cat.query(data_cls=OrderBookDelta))
+        trades = sorted((str(t.price), str(t.size), t.ts_event, t.ts_init)
+                        for t in cat.query(data_cls=TradeTick))
+        return deltas, trades
+
+    before = _fingerprint(build_result.catalog_dir)
+
+    # Physically reverse the row order of every persisted parquet file.
+    parquet_files = list(pathlib.Path(build_result.catalog_dir).rglob("*.parquet"))
+    assert parquet_files, "expected persisted parquet files"
+    for path in parquet_files:
+        table = pq.read_table(path)
+        reversed_table = table.take(list(range(table.num_rows - 1, -1, -1)))
+        pq.write_table(reversed_table, path)
+
+    after = _fingerprint(build_result.catalog_dir)
+    assert after == before  # physical order changed; logical content identical
+
+    # The public query result is unchanged and still reports round-trip parity.
+    result = query_catalog(build_result)
+    assert result.is_valid and result.round_trip_matches is True
+    assert result.queried_delta_count == build_result.written_delta_count
+    assert result.queried_trade_count == build_result.written_trade_count
+
+
 def test_catalog_real_count_mismatch_fails_closed(tmp_path):
     # A real round-trip count mismatch must fail closed, not report a valid query.
     stream = valid_stream(tmp_path / "src")
