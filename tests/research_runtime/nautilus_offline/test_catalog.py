@@ -99,7 +99,34 @@ def test_catalog_real_count_mismatch_fails_closed(tmp_path):
     assert result.status == "NAUTILUS_CATALOG_QUERY_REJECTED"
     assert result.error_codes == (CATALOG_QUERY_ERROR,)
     assert result.round_trip_matches is False
+    # Every invalid public result carries zero counts.
+    assert result.queried_delta_count == 0
+    assert result.queried_trade_count == 0
     assert offline.scan_public_result_for_echo(result, ("Traceback", "\\", str(tmp_path))) == ()
+
+
+def test_catalog_build_write_failure_fails_closed(tmp_path, monkeypatch):
+    # R020: a real write failure on a VALID build path fails closed with the full rejected shape.
+    from nautilus_trader.persistence.catalog import parquet as pcat
+    stream = valid_stream(tmp_path / "src")
+    assert stream.is_valid
+
+    def _boom(self, *args, **kwargs):
+        raise RuntimeError("forced catalog write failure")
+
+    monkeypatch.setattr(pcat.ParquetDataCatalog, "write_data", _boom)
+    result = build_catalog(stream, tmp_path / "catalog")
+    assert result.is_valid is False
+    assert result.status == "NAUTILUS_CATALOG_BUILD_REJECTED"
+    assert result.error_codes == (CATALOG_WRITE_ERROR,)
+    assert result.instrument_registered is False
+    assert result.written_delta_count == 0
+    assert result.written_trade_count == 0
+    assert result.catalog_dir is None
+    assert result.stream_ref_digest is None
+    assert offline.scan_public_result_for_echo(
+        result, ("Traceback", "forced catalog write failure", "\\", str(tmp_path))
+    ) == ()
 
 
 def test_catalog_query_exception_fails_closed(tmp_path):

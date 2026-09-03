@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
 from src.data_layer.analytical_research import (
+    MAX_ROW_BATCH,
     PMXT_V2_DATASET_NAME,
     PMXT_V2_DATASET_VERSION,
     PMXT_V2_EVENT_TYPES,
@@ -235,12 +236,17 @@ def _map_sources_one_to_one(
 def _read_rows(source_file: PmxtV2SourceFile) -> list[dict[str, object]]:
     import pyarrow.parquet as pq  # local import; offline, no network
 
-    table = pq.read_table(source_file.path)
-    columns = {name: table.column(name).to_pylist() for name in table.column_names}
-    row_count = table.num_rows
+    # Bounded per-row processing: decode the source file in bounded batches (no whole-file
+    # pq.read_table, no whole-file column materialization). Global canonical ordering and
+    # duplicate multiplicity are recovered later from the canonical multiset, so physical
+    # batch/file order does not affect the result.
+    parquet_file = pq.ParquetFile(source_file.path)
     rows: list[dict[str, object]] = []
-    for index in range(row_count):
-        rows.append({name: columns[name][index] for name in columns})
+    for batch in parquet_file.iter_batches(batch_size=MAX_ROW_BATCH):
+        names = batch.schema.names
+        columns = {name: batch.column(index).to_pylist() for index, name in enumerate(names)}
+        for index in range(batch.num_rows):
+            rows.append({name: columns[name][index] for name in names})
     return rows
 
 

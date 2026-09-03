@@ -439,3 +439,31 @@ def test_every_public_dataclass_field_is_classified():
 def test_converted_stream_source_external_dataset_id(tmp_path):
     stream = valid_stream(tmp_path)
     assert stream.source_external_dataset_id == "ext:pmxt:test0001"
+
+
+def test_bounded_iter_batches_source_processing(tmp_path, monkeypatch):
+    # The certified prompt requires bounded per-row processing: iter_batches, not read_table.
+    import inspect
+    import pyarrow.parquet as pq
+    import src.research_runtime.nautilus_offline.conversion as conv
+
+    source_text = inspect.getsource(conv._read_rows)
+    assert "iter_batches" in source_text
+    assert "MAX_ROW_BATCH" in source_text
+    assert "pq.read_table(" not in source_text  # no whole-file table read
+
+    # Dynamic proof: if conversion called read_table it would raise here.
+    def _forbidden_read_table(*args, **kwargs):
+        raise AssertionError("conversion must not call pq.read_table")
+
+    monkeypatch.setattr(pq, "read_table", _forbidden_read_table)
+    baseline = convert_pmxt_v2_events(_write_files(tmp_path / "base", [default_rows()]), _context())
+    assert baseline.is_valid
+
+    # Multi-batch determinism: forcing batch_size 1 (several batches over the file) yields
+    # identical canonical ordering and digests.
+    monkeypatch.setattr(conv, "MAX_ROW_BATCH", 1)
+    multi_batch = convert_pmxt_v2_events(_write_files(tmp_path / "multi", [default_rows()]), _context())
+    assert multi_batch.is_valid
+    assert multi_batch.ordered_event_digests == baseline.ordered_event_digests
+    assert multi_batch.input_event_counts_by_type == baseline.input_event_counts_by_type

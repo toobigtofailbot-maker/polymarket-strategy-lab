@@ -106,7 +106,7 @@ def run_offline_replay(
     from nautilus_trader.common.actor import Actor, ActorConfig
     from nautilus_trader.model.currencies import USDC
     from nautilus_trader.model.data import OrderBookDelta, OrderBookDeltas, TradeTick
-    from nautilus_trader.model.enums import AccountType, BookType, OmsType
+    from nautilus_trader.model.enums import AccountType, BookAction, BookType, OmsType
     from nautilus_trader.model.identifiers import Venue
     from nautilus_trader.model.objects import Money
 
@@ -122,35 +122,49 @@ def run_offline_replay(
 
         # Semantic replay accounting (certified R024): each source book/price_change/
         # last_trade_price event is one semantic replay event; tick_size_change is regime
-        # metadata and no engine event. Flatten the book OrderBookDeltas snapshots into their
-        # individual OrderBookDelta records only for the engine data stream + parity.
+        # metadata and no engine event. The book snapshot is replayed as one whole
+        # OrderBookDeltas so the engine-observed order can be verified per semantic event.
         counts = dict(stream.input_event_counts_by_type)
         semantic_count = (
             counts.get("book", 0) + counts.get("price_change", 0) + counts.get("last_trade_price", 0)
         )
-        flat_records: list = []
-        for obj in events[1:]:
-            if isinstance(obj, OrderBookDeltas):
-                flat_records.extend(obj.deltas)
-            elif isinstance(obj, (OrderBookDelta, TradeTick)):
-                flat_records.append(obj)
-        expected_individual = len(flat_records)
-        if expected_individual == 0 or semantic_count == 0:
+        semantic_objects = [
+            obj for obj in events[1:] if isinstance(obj, (OrderBookDeltas, OrderBookDelta, TradeTick))
+        ]
+        if not semantic_objects or semantic_count == 0:
             return _rejected(REPLAY_ERROR_INVALID)
 
-        processed = {"count": 0}
+        def _kind(obj) -> str:
+            if isinstance(obj, OrderBookDeltas):
+                return "book"
+            if isinstance(obj, OrderBookDelta):
+                return "price_change"
+            return "trade"
 
-        class _ReplayCounter(Actor):
+        expected_order = [_kind(obj) for obj in semantic_objects]
+        observed_order: list = []
+
+        class _ReplayObserver(Actor):
             def on_start(self) -> None:
                 self.subscribe_order_book_deltas(instrument.id)
                 self.subscribe_trade_ticks(instrument.id)
 
             def on_order_book_deltas(self, _deltas) -> None:
-                # One deltas batch may carry several individual OrderBookDelta records.
-                processed["count"] += len(_deltas.deltas)
+                # Group by per-event `sequence` (a book snapshot shares one sequence across
+                # its CLEAR/ADD records; each price_change has its own) so the semantic event
+                # order is recovered even if the engine coalesces same-ts_init deltas.
+                groups: list = []
+                for delta in _deltas.deltas:
+                    seq = delta.sequence
+                    if not groups or groups[-1][0] != seq:
+                        groups.append([seq, delta.action == BookAction.CLEAR])
+                    elif delta.action == BookAction.CLEAR:
+                        groups[-1][1] = True
+                for _seq, has_clear in groups:
+                    observed_order.append("book" if has_clear else "price_change")
 
             def on_trade_tick(self, _tick) -> None:
-                processed["count"] += 1
+                observed_order.append("trade")
 
         engine = BacktestEngine(config=BacktestEngineConfig(trader_id="WP168-REPLAY-001", logging=None))
         engine.add_venue(
@@ -162,13 +176,15 @@ def run_offline_replay(
             book_type=BookType.L2_MBP,
         )
         engine.add_instrument(instrument)
-        engine.add_actor(_ReplayCounter(config=ActorConfig()))
-        engine.add_data(sorted(flat_records, key=lambda obj: obj.ts_init))
+        engine.add_actor(_ReplayObserver(config=ActorConfig()))
+        # Stable sort by ts_init preserves the precomputed canonical order (including the
+        # book<price_change<last_trade_price tie order) for equal ts_init.
+        engine.add_data(sorted(semantic_objects, key=lambda obj: obj.ts_init))
         engine.run()
         engine.dispose()
 
-        # Parity on individual records dispatched by the engine.
-        if processed["count"] != expected_individual:
+        # The engine-observed semantic event order must equal the declared canonical order.
+        if observed_order != expected_order:
             return _rejected(REPLAY_ERROR_PARITY_INVALID)
 
         nautilus_version = nt.__version__

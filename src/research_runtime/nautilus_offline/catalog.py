@@ -136,15 +136,9 @@ def query_catalog(build_result: CatalogBuildResult) -> CatalogQueryResult:
             and trade_count == build_result.written_trade_count
         )
         if not matches:
-            # A real round-trip count mismatch is a closed query failure, not a valid query.
-            return CatalogQueryResult(
-                is_valid=False,
-                status=CATALOG_QUERY_STATUS_REJECTED,
-                error_codes=(CATALOG_QUERY_ERROR,),
-                queried_delta_count=delta_count,
-                queried_trade_count=trade_count,
-                round_trip_matches=False,
-            )
+            # A real round-trip count mismatch is a closed query failure, not a valid query;
+            # every invalid public result carries zero counts (canonical rejected shape).
+            return _query_rejected()
         return CatalogQueryResult(
             is_valid=True,
             status=CATALOG_QUERY_STATUS_OK,

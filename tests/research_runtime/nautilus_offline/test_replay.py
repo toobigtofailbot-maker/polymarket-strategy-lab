@@ -14,6 +14,7 @@ import src.research_runtime.nautilus_offline as offline
 from src.research_runtime.nautilus_offline import (
     CONVERSION_POLICY_VERSION,
     REPLAY_ERROR_INVALID,
+    REPLAY_ERROR_PARITY_INVALID,
     REPLAY_IDENTITY_PREFIX,
     REPLAY_RECEIPT_SCHEMA_ID,
     SOURCE_DATASET_KIND,
@@ -154,6 +155,51 @@ def test_identity_constants_and_digest_recomputation(tmp_path):
     assert receipt.replay_digest == expected
     assert CONVERSION_POLICY_VERSION == "wp168-nautilus-pmxt-v2-conversion/1.0.0"
     assert REPLAY_IDENTITY_PREFIX == "nautilusreplay:sha256:"
+
+
+def test_engine_observed_order_matches_declared_order(tmp_path):
+    # R021: the engine processes semantic events in the declared receive-time-primary order.
+    rows = [
+        book(1000, 1005, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
+        price_change(1000, 1006, "0.4100", "1.000000", "BUY"),
+        trade(1000, 1007, "0.4100", "1.000000", "BUY", "0x" + "a" * 64),
+        price_change(1200, 1205, "0.5850", "1.000000", "SELL"),
+    ]
+    stream = valid_stream(tmp_path / "src", rows=rows)
+    receipt = run_offline_replay(stream, tmp_path / "catalog")
+    assert receipt.is_valid  # observed order == declared order, else REPLAY_PARITY_INVALID
+    assert receipt.replay_processed_event_count == 4
+
+
+def test_engine_observed_equal_ts_init_tie_order(tmp_path):
+    # book (rank 0) < price_change (rank 1) < last_trade_price (rank 2) at the same ts_init.
+    rows = [
+        trade(1000, 1000, "0.4100", "1.000000", "BUY", "0x" + "b" * 64),
+        price_change(1000, 1000, "0.4100", "1.000000", "BUY"),
+        book(1000, 1000, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
+    ]
+    stream = valid_stream(tmp_path / "src", rows=rows)
+    receipt = run_offline_replay(stream, tmp_path / "catalog")
+    # If the engine dispatched the tie in any order other than book<price_change<trade the
+    # observed order would differ from the declared order and fail closed.
+    assert receipt.is_valid
+    assert receipt.replay_processed_event_count == 3
+
+
+def test_engine_observed_order_is_repeatable(tmp_path):
+    stream = valid_stream(tmp_path / "src")
+    first = run_offline_replay(stream, tmp_path / "c1")
+    second = run_offline_replay(stream, tmp_path / "c2")
+    assert first.is_valid and second.is_valid
+    assert first.replay_digest == second.replay_digest
+
+
+# Note: a deliberately simulated engine-observed-order mismatch is not implemented as a
+# test because the NautilusTrader Actor/BacktestEngine are immutable Cython types that cannot
+# be monkeypatched to drop or reorder dispatched events; the REPLAY_PARITY_INVALID branch is
+# defensive. Positive order proofs above (declared order, equal-ts tie, repeatability) plus
+# the R024 reconciliation exercise the engine-observed-order path.
+REPLAY_ERROR_PARITY_INVALID  # referenced: parity-invalid is the closed code for order divergence
 
 
 def test_receipt_is_frozen(tmp_path):
