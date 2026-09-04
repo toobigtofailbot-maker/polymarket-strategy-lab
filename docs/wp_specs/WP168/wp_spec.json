@@ -301,7 +301,7 @@
   },
   "evidence_plan": {
     "applicable": true,
-    "reason": "Requirement-to-evidence traceability R001-R062 mapping each WP168 requirement to a command and expected result; new-capability pytest nodes live in the frozen exact-scope test modules and the contract-doc test; covers receive-time-primary ordering, canonical serialization and literal identity constants, WP167 external-dataset provenance binding and hash revalidation, the frozen public API/dataclass contract, the pmxt-v2 event-semantic matrix, and two-distinct-surface PR evidence.",
+    "reason": "Requirement-to-evidence traceability R001-R063 mapping each WP168 requirement to a command and expected result; new-capability pytest nodes live in the frozen exact-scope test modules and the contract-doc test; covers receive-time-primary ordering, canonical serialization and literal identity constants, WP167 external-dataset provenance binding and hash revalidation, the frozen public API/dataclass contract, the pmxt-v2 event-semantic matrix, and two-distinct-surface PR evidence.",
     "items": [
       {
         "requirement_id": "R001",
@@ -364,7 +364,7 @@
         "source": "pytest",
         "test": "test_missing_or_malformed_market_identity_is_rejected",
         "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_instruments.py",
-        "expected_result": "missing instrument identity and malformed binary market identifier fail closed with NAUTILUS_INSTRUMENT_MAPPING_INVALID and no echo"
+        "expected_result": "at the BinaryOptionMarketContext boundary a missing instrument identity and a malformed/noncanonical condition_id fail closed with NAUTILUS_INSTRUMENT_MAPPING_INVALID and no echo; an uppercase (alternate-case) condition_id is rejected because condition_id must already be canonical '0x'+64 lowercase hex (this public context boundary performs no silent normalization; it is distinct from the WP167 source-row market which is case-normalized)"
       },
       {
         "requirement_id": "R010",
@@ -490,7 +490,7 @@
         "source": "pytest",
         "test": "test_negative_matrix_categories_map_to_tests",
         "command": "python -m pytest -q tests/research_runtime/nautilus_offline",
-        "expected_result": "the negative-test matrix maps each applicable category (unsupported python/version/import/instrument/market-id/precision/order/decimal/event/book/catalog/replay-count/replay-digest/no-echo) to a focused test and accounts for all 15 repo negative-test categories"
+        "expected_result": "the negative-test matrix maps each applicable category (unsupported python/version/import/instrument/market-id/precision/order/decimal/event/book/catalog/replay-count/replay-digest/no-echo) to a focused test and accounts for all 15 repo negative-test categories; category 14 (case normalization) distinguishes two input domains: an uppercase/alternate-case BinaryOptionMarketContext.condition_id is rejected, while an uppercase/mixed-case WP167 source-row market is accepted and canonicalized to lowercase, and wrong-prefix/wrong-length/non-hex/non-ASCII variants fail closed"
       },
       {
         "requirement_id": "R028",
@@ -736,6 +736,13 @@
         "test": "test_binary_option_absent_value_policy",
         "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_instruments.py",
         "expected_result": "expiration_ns None fails closed NAUTILUS_INSTRUMENT_MAPPING_INVALID; activation_ns None maps to 0; maker_fee/taker_fee None map to Decimal 0 with a FEE_METADATA_UNKNOWN warning; a missing outcome_label fails closed; outcome/description are never fabricated from the token id"
+      },
+      {
+        "requirement_id": "R063",
+        "source": "pytest",
+        "test": "test_wp167_source_market_case_normalizes_to_lowercase",
+        "command": "python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py tests/research_runtime/nautilus_offline/test_replay.py",
+        "expected_result": "a WP167-valid source-row market encoded with uppercase/mixed-case A-F is accepted, normalizes to the identical lowercase canonical market as the equivalent lowercase row, compares successfully to the canonical lowercase BinaryOptionMarketContext.condition_id, and produces identical canonical event digests/canonical ordering/replay identity; invalid non-hex/wrong-prefix/wrong-length/non-ASCII variants fail closed"
       }
     ]
   },

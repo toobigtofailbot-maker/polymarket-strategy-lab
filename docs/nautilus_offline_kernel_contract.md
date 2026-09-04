@@ -100,7 +100,13 @@ in that canonical expanded sequence — never a filesystem/query/Parquet-physica
 
 Canonical row bytes are UTF-8 canonical JSON (sorted keys, compact separators,
 `ensure_ascii=false`, `allow_nan=false`): no float; timestamps as UTC integer nanoseconds;
-`market` as canonical `0x` + 64 lowercase-hex; `asset_id` as canonical ASCII decimal digits;
+the source-row `market` as canonical `0x` + 64 lowercase-hex — the WP167 pmxt-v2 source-row
+`market` accepts WP167-valid ASCII hex in either case (`a-f` or `A-F`) and its 64-hex body is
+canonicalized to lowercase before comparison, serialization, and identity, so upper/mixed-case
+and lowercase source representations of the same market yield identical canonical
+bytes/digests/replay identity (this is distinct from the repo-owned
+`BinaryOptionMarketContext.condition_id`, which must already be canonical `0x` + 64 lowercase-hex
+and rejects alternate case at that public boundary); `asset_id` as canonical ASCII decimal digits;
 decimals as fixed-point text at the documented pmxt-v2 scale; unowned event-specific fields as
 explicit null; the context `price_increment`/`size_increment` and every book bid/ask
 `price`/`size` string are strict fixed-point decimal text (ASCII digits with an optional

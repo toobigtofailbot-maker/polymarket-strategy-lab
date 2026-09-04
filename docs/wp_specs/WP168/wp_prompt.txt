@@ -320,7 +320,13 @@ canonical input order. This must never be left implementation-defined.
 CANONICAL SEMANTIC ROW SERIALIZATION (frozen normalization contract):
 - no binary float anywhere;
 - timestamps normalize to exact UTC integer nanoseconds;
-- market normalizes to its validated canonical ASCII "0x" + 64 lowercase-hex form;
+- market here means the WP167 pmxt-v2 SOURCE-ROW market field: it accepts the full
+  WP167-valid ASCII hex case domain ("0x" + 64 hex, digits 0-9 with a-f OR A-F), and its
+  64-hex body normalizes to its validated canonical ASCII "0x" + 64 lowercase-hex form before
+  canonical serialization/identity; wrong prefix, wrong length, non-hex, and non-ASCII/Unicode
+  lookalikes are rejected. This is distinct from BinaryOptionMarketContext.condition_id, which
+  is a repo-owned context input that must ALREADY be canonical "0x" + 64 lowercase-hex and
+  rejects alternate case at that public boundary (no silent normalization there);
 - asset_id normalizes to validated canonical ASCII decimal digits (no alternate Unicode
   digit forms);
 - event_type uses the exact frozen pmxt v2 token (book / price_change / last_trade_price /
@@ -384,7 +390,11 @@ and never enter identity or result output):
 - PmxtV2ReplaySource: descriptor: ExternalDatasetDescriptor (WP167 public type, unmodified);
   source_files: tuple[PmxtV2SourceFile, ...] (WP167 public type). This is the ONLY replay
   source shape; there is no generic validated_rows input.
-- BinaryOptionMarketContext: condition_id: str (validated "0x"+64 lowercase-hex);
+- BinaryOptionMarketContext: condition_id: str (repo-owned context input that must ALREADY be
+  canonical "0x"+64 lowercase-hex; alternate case at this public context boundary is invalid and
+  rejected, as are wrong prefix, wrong length, non-hex, and non-ASCII/Unicode lookalikes; no
+  silent normalization here — this is separate from the WP167 source-row market, which accepts
+  WP167-valid upper/lower ASCII hex and is canonicalized to lowercase);
   outcome_token_id: str (validated ASCII decimal digits); outcome_label: str (REQUIRED
   source truth; never fabricated from the token id); description: str | None (source truth
   only; None -> "" empty, never fabricated); activation_ns: int | None; expiration_ns:
@@ -512,8 +522,11 @@ PMXT_V2_VALID_SIDES ("BUY","SELL"). Owned fields per event_type:
 - tick_size_change: old_tick_size, new_tick_size.
 Decimal columns normalize at their documented exact (precision, scale) as fixed-point text;
 no float; positive/zero-size rules are explicit (a book/price_change level size of 0 encodes
-a DELETE; a negative size fails closed). market normalizes to canonical "0x"+64-lowercase-hex;
-asset_id to canonical ASCII decimal digits.
+a DELETE; a negative size fails closed). The source-row market accepts WP167-valid ASCII hex in
+either case ("0x" + 64 hex, a-f OR A-F) and its canonicalized value is lowercase before
+comparison to the (already-lowercase) context condition_id and before serialization; wrong
+prefix, wrong length, non-hex, and non-ASCII/Unicode lookalikes are rejected. asset_id
+normalizes to canonical ASCII decimal digits.
 BOOK JSON SHAPE (frozen): bids and asks are each a strict JSON array of 2-item pairs
 [["price","size"], ...]; each pair is exactly two strings; price/size normalize at the exact
 documented scales (no float). Canonical order: bids sorted strictly by DESCENDING numeric
@@ -583,8 +596,12 @@ Negative test matrix required: YES.
    conflicting instrument identity rejected).
 13 Edge spelling variants: NOT_APPLICABLE — inputs are typed pmxt v2 columns/tokens, not
    free-text wording subject to typo variants.
-14 Case-insensitive variant: TEST (market must be canonical lowercase hex; alternate case /
-   Unicode-digit asset_id rejected).
+14 Case-normalization variants: TEST — two distinct input domains:
+   BinaryOptionMarketContext.condition_id must ALREADY be canonical lowercase and alternate case
+   is rejected at that public context boundary; separately, a WP167-valid source-row market
+   containing uppercase A-F is ACCEPTED and canonicalized to lowercase (identical canonical
+   bytes/digests/replay identity as the lowercase form), while wrong-prefix, wrong-length,
+   non-hex, and non-ASCII/Unicode lookalikes (including Unicode-digit asset_id) are rejected.
 15 Safe allowed wording / positive case: TEST (a valid pmxt v2 stream converts, catalogs,
    and replays successfully — the required positive case).
 Wording filters are never invented merely to make a category applicable.
@@ -792,6 +809,23 @@ until the full self-audit is all YES. Durable guidance change needed: YES — af
 create a governance-hardening package that mechanically checks human-prompt/template
 requirements and fixes the post-WP91 final-comment guard mismatch. No such governance tool
 change is authorized inside WP168.
+
+V3 SOURCE-MARKET-CASE CORRECTION (this revision): the prior independent PASS missed an
+internal semantic contradiction/ambiguity — the canonical-serialization and event-semantic
+matrix said the source `market` normalizes to lowercase, while negative-matrix category 14 was
+worded so it could also mean uppercase source-row market is REJECTED, and it did not name which
+input domain it constrained. Adjudicated split (frozen intent): the WP167 pmxt-v2 SOURCE-ROW
+market accepts WP167-valid upper/lower ASCII hex and is canonicalized to lowercase before
+comparison/serialization/identity; BinaryOptionMarketContext.condition_id is a repo-owned
+context input that must ALREADY be canonical lowercase and rejects alternate case. Because the
+frozen prompt is hash-bound by the current independent PASS certificate (which says STOP if the
+hashes change after PASS), that certificate is intentionally superseded and returns to
+PENDING_INDEPENDENT_REVIEW until a new independent 12-lens review passes against these corrected
+exact bytes. Preventable: YES. What should have caught it: a semantic-contradiction sweep across
+positive rules, the public input dataclass rules, the negative matrix, examples and the evidence
+plan, checking that no artifact simultaneously implies an input is both normalized and rejected.
+Durable guidance change needed: YES — future readiness tooling must run that sweep. No product
+implementation of this case policy is authorized by this normative correction.
 
 ===============================================================================
 SUCCESSOR BOUNDARY
