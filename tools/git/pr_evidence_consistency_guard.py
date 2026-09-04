@@ -277,24 +277,15 @@ def check_required_commands(
     final_comment: str,
     required_commands: list[str],
 ) -> list[str]:
+    # Post-WP91: the PR body is the canonical current-review evidence surface. A
+    # required command must appear in the PR body. The optional final comment is
+    # non-canonical clarification and need not duplicate commands, so its content is
+    # never required here (only contradiction checks apply to a supplied comment).
     errors = []
     for cmd in required_commands:
-        in_body = cmd in pr_body
-        in_comment = cmd in final_comment
-        if not in_body and not in_comment:
+        if cmd not in pr_body:
             errors.append(
-                f"[D] Required command missing from both PR body and final comment: "
-                f"{cmd!r}"
-            )
-        elif not in_body:
-            errors.append(
-                f"[D] Required command missing from PR body (present in final comment): "
-                f"{cmd!r}"
-            )
-        elif not in_comment:
-            errors.append(
-                f"[D] Required command missing from final comment (present in PR body): "
-                f"{cmd!r}"
+                f"[D] Required command missing from the canonical PR body: {cmd!r}"
             )
     return errors
 
@@ -303,20 +294,10 @@ def check_helper_symmetry(
     pr_body: str,
     final_comment: str,
 ) -> list[str]:
-    """Detect known helpers present in one surface but not the other."""
-    errors = []
-    for helper in KNOWN_HELPER_NAMES:
-        in_body = helper in pr_body
-        in_comment = helper in final_comment
-        if in_body and not in_comment:
-            errors.append(
-                f"[D] Helper '{helper}' appears in PR body but not in final comment."
-            )
-        elif in_comment and not in_body:
-            errors.append(
-                f"[D] Helper '{helper}' appears in final comment but not in PR body."
-            )
-    return errors
+    """Post-WP91: the optional final comment is non-canonical clarification and need
+    not duplicate the PR body's helpers, so helper parity between the two surfaces is
+    no longer required. Retained as a stable checked category; enforces nothing."""
+    return []
 
 
 def check_head_sha(
@@ -328,22 +309,11 @@ def check_head_sha(
 
     if expected_head:
         sha = expected_head.lower()
-        in_body = sha in pr_body.lower()
-        in_comment = sha in final_comment.lower()
-        if not in_body and not in_comment:
+        # The expected head must appear in the canonical PR body. The optional final
+        # comment need not repeat it; a supplied comment is only contradiction-checked.
+        if sha not in pr_body.lower():
             errors.append(
-                f"[E] Expected head SHA {sha!r} missing from both PR body and "
-                f"final comment."
-            )
-        elif not in_body:
-            errors.append(
-                f"[E] Expected head SHA {sha!r} missing from PR body "
-                f"(present in final comment)."
-            )
-        elif not in_comment:
-            errors.append(
-                f"[E] Expected head SHA {sha!r} missing from final comment "
-                f"(present in PR body)."
+                f"[E] Expected head SHA {sha!r} missing from the canonical PR body."
             )
 
     # Check for labeled SHA mismatch between the two surfaces
@@ -399,20 +369,16 @@ def check_network_wording(
         return []
     errors = []
     body_has_standard = STANDARD_NETWORK_WORDING in pr_body
-    comment_has_standard = STANDARD_NETWORK_WORDING in final_comment
 
     if not body_has_standard:
         errors.append(
-            "[G] Standard network wording missing from PR body.\n"
-            f"    Expected: {STANDARD_NETWORK_WORDING!r}"
-        )
-    if not comment_has_standard:
-        errors.append(
-            "[G] Standard network wording missing from final comment.\n"
+            "[G] Standard network wording missing from the canonical PR body.\n"
             f"    Expected: {STANDARD_NETWORK_WORDING!r}"
         )
 
-    # Detect "no network was used" when standard wording is required
+    # Detect "no network was used" when standard wording is required. This remains a
+    # per-surface contradiction check: a supplied comment need not repeat the standard
+    # wording, but must not assert conflicting "no network was used" wording.
     for label, text in [("PR body", pr_body), ("final comment", final_comment)]:
         if _NO_NETWORK_PATTERN.search(text) and not STANDARD_NETWORK_WORDING in text:
             errors.append(
@@ -436,15 +402,13 @@ def check_ready_status(
     body_no = bool(_READY_NO_PATTERN.search(pr_body))
     comment_yes = bool(_READY_YES_PATTERN.search(final_comment))
     comment_no = bool(_READY_NO_PATTERN.search(final_comment))
-    body_any = bool(_READY_ANY_PATTERN.search(pr_body))
-    comment_any = bool(_READY_ANY_PATTERN.search(final_comment))
 
+    # The canonical PR body must carry 'Ready for review: YES'. The optional final
+    # comment need not repeat it, but if it makes a Ready claim it must not contradict.
     if not body_yes:
-        errors.append("[H] 'Ready for review: YES' missing from PR body.")
-    if not comment_yes:
-        errors.append("[H] 'Ready for review: YES' missing from final comment.")
+        errors.append("[H] 'Ready for review: YES' missing from the canonical PR body.")
 
-    # Mismatch: one says YES, other says NO
+    # Contradiction: body says YES, a supplied comment says NO.
     if body_yes and comment_no:
         errors.append(
             "[H] PR body says 'Ready for review: YES' but final comment says NO."
@@ -452,16 +416,6 @@ def check_ready_status(
     if comment_yes and body_no:
         errors.append(
             "[H] Final comment says 'Ready for review: YES' but PR body says NO."
-        )
-
-    # Ready appears in one but not the other
-    if body_any and not comment_any:
-        errors.append(
-            "[H] 'Ready for review' appears in PR body but not in final comment."
-        )
-    if comment_any and not body_any:
-        errors.append(
-            "[H] 'Ready for review' appears in final comment but not in PR body."
         )
 
     return errors
@@ -659,7 +613,7 @@ def check_guard_result(
 
 def run_guard(
     pr_body_path: pathlib.Path,
-    final_comment_path: pathlib.Path,
+    final_comment_path: pathlib.Path | None,
     expected_head: str | None,
     required_commands: list[str],
     require_standard_network_wording: bool,
@@ -679,16 +633,35 @@ def run_guard(
     warnings: list[str] = []
     checked: list[str] = []
 
+    # Post-WP91 canonical policy: the PR body is the required current-review evidence
+    # surface; the final comment is OPTIONAL, non-canonical clarification. When no
+    # comment is supplied the PR body is the sole surface (no dummy/mirror is required);
+    # symmetry and duplicated-fact contradiction checks then compare the body to itself
+    # and therefore never fire on a phantom second surface.
+    has_comment = final_comment_path is not None
+
     # A — Missing files
     checked.append("A:missing_files")
-    missing = check_missing_files(pr_body_path, final_comment_path)
+    if has_comment:
+        assert final_comment_path is not None
+        missing = check_missing_files(pr_body_path, final_comment_path)
+    else:
+        missing = (
+            [f"[A] PR body file not found: {pr_body_path}"]
+            if not pr_body_path.exists()
+            else []
+        )
     errors.extend(missing)
     if missing:
         # Cannot proceed without files
         return False, errors, warnings, checked
 
     pr_body = pr_body_path.read_text(encoding="utf-8", errors="replace")
-    final_comment = final_comment_path.read_text(encoding="utf-8", errors="replace")
+    final_comment = (
+        final_comment_path.read_text(encoding="utf-8", errors="replace")
+        if has_comment and final_comment_path is not None
+        else pr_body
+    )
 
     # B — Empty evidence
     checked.append("B:empty_evidence")
@@ -749,10 +722,19 @@ def run_guard(
     if forbid_placeholder_evidence:
         errors.extend(check_placeholder_evidence(pr_body, final_comment))
 
-    # M — Current final marker (optional, final comment only)
+    # M — Current final marker (optional, final comment only). The marker requirement
+    # applies only when a final comment is actually supplied; requesting it without a
+    # comment fails safely rather than inventing a mirror surface.
     checked.append("M:current_final_marker")
     if require_current_final_marker:
-        errors.extend(check_current_final_marker(final_comment))
+        if has_comment:
+            errors.extend(check_current_final_marker(final_comment))
+        else:
+            errors.append(
+                "[M] --require-current-final-marker was requested but no final "
+                "comment was supplied. Supply --final-comment or drop the flag; the "
+                "PR body is the canonical review surface and needs no mirror comment."
+            )
 
     # N — Stale count tokens (optional)
     checked.append("N:stale_count_tokens")
@@ -792,9 +774,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument(
         "--final-comment",
-        required=True,
+        required=False,
+        default=None,
         metavar="PATH",
-        help="Path to local final comment draft file.",
+        help=(
+            "Optional path to a local final comment draft file. After WP91 the PR "
+            "body is the canonical current-review evidence surface and the final "
+            "comment is optional, non-canonical clarification; omit this flag for "
+            "body-only validation (no dummy/mirror comment is required)."
+        ),
     )
     p.add_argument(
         "--expected-head",
@@ -908,7 +896,9 @@ def main(argv: list[str] | None = None) -> int:
         return int(exc.code) if exc.code is not None else 2
 
     pr_body_path = pathlib.Path(args.pr_body)
-    final_comment_path = pathlib.Path(args.final_comment)
+    final_comment_path = (
+        pathlib.Path(args.final_comment) if args.final_comment is not None else None
+    )
 
     # Exit 2 for missing files, non-file paths, or unreadable input.
     usage_errors: list[str] = []
@@ -917,12 +907,13 @@ def main(argv: list[str] | None = None) -> int:
     elif not pr_body_path.is_file():
         usage_errors.append(f"PR body path is not a regular file: {pr_body_path}")
 
-    if not final_comment_path.exists():
-        usage_errors.append(f"Final comment file not found: {final_comment_path}")
-    elif not final_comment_path.is_file():
-        usage_errors.append(
-            f"Final comment path is not a regular file: {final_comment_path}"
-        )
+    if final_comment_path is not None:
+        if not final_comment_path.exists():
+            usage_errors.append(f"Final comment file not found: {final_comment_path}")
+        elif not final_comment_path.is_file():
+            usage_errors.append(
+                f"Final comment path is not a regular file: {final_comment_path}"
+            )
 
     if usage_errors:
         for msg in usage_errors:
@@ -935,11 +926,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: Cannot read PR body file: {exc}", file=sys.stderr)
         return 2
 
-    try:
-        final_comment_path.read_text(encoding="utf-8", errors="replace")
-    except OSError as exc:
-        print(f"ERROR: Cannot read final comment file: {exc}", file=sys.stderr)
-        return 2
+    if final_comment_path is not None:
+        try:
+            final_comment_path.read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
+            print(f"ERROR: Cannot read final comment file: {exc}", file=sys.stderr)
+            return 2
 
     passed, errors, warnings, checked = run_guard(
         pr_body_path=pr_body_path,

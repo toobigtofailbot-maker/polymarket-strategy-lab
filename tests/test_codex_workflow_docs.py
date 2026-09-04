@@ -1636,3 +1636,51 @@ def test_repo_truth_index_references_wp94_smoke_receipt() -> None:
     text = _read(ROOT / "docs" / "repo_truth_index.md")
     assert "candidate_review_workflow_local_smoke_receipt.md" in text
     assert "docs/status_entries/WP94.md" in text
+
+
+# ── WP168G: pre-implementation readiness gate and PR-body-canonical policy ────
+
+
+def test_wp_execution_state_machine_requires_readiness_gate_without_new_authority_state() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_STATE_MACHINE.md")
+    # Canonical authorization chain is preserved exactly (no new authority state).
+    assert "LOCAL_DRAFT -> DRAFTABILITY_PASS -> AUTHORIZED -> IMPLEMENTED_LOCAL" in text
+    lower = text.lower()
+    assert "wp_readiness_gate" in lower
+    assert "readiness is not authorization" in lower
+    assert "non-authority" in lower
+    # WP168G bootstrap is explicitly documented.
+    assert "wp168g bootstrap" in lower
+    # Later applicable WPs require readiness before the human AUTHORIZED transition.
+    assert "before the user grants `authorized`" in lower or "before the human `authorized`" in lower
+
+
+def test_pr_template_makes_final_comment_optional_after_wp91() -> None:
+    text = _read(ROOT / ".github" / "pull_request_template.md")
+    lower = text.lower()
+    assert "wp91" in lower
+    assert "optional" in lower
+    assert "canonical current-review evidence surface" in lower
+    assert "non-canonical" in lower
+
+
+def test_validation_matrix_requires_wp_readiness_gate_for_implementation_packages() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md")
+    lower = text.lower()
+    assert "wp_readiness_gate" in lower
+    assert "implementation_ready" in lower
+    assert "not authorization" in lower
+    assert "before" in lower and "authorized" in lower
+
+
+def test_validation_matrix_requires_full_changed_set_guard_discovery_before_scope_freeze() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md")
+    # Normalize whitespace so line wrapping in the doc does not break phrase matching.
+    lower = " ".join(text.lower().split())
+    # Bounded pre-freeze discovery of complete-changed-set guards is required...
+    assert "complete changed-file set" in lower
+    assert "before scope freeze" in lower
+    assert "certified scope contains every required compatibility edit" in lower
+    # ...but the claim is bounded and does not overclaim proof of all future dependencies.
+    assert "does not claim to mathematically prove every possible future test dependency" in lower
+    assert "full repository suite at the exact final head remains the backstop" in lower

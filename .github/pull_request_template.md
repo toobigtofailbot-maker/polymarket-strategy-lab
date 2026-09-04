@@ -7,6 +7,8 @@
 - [ ] Scope matches WP
 - [ ] Full WP final report posted as PR comment (optional after WP91 — absence is not a merge blocker; PR body is the current review evidence surface)
 - [ ] PR body is not the only final report (after WP91: PR body alone is sufficient; final comment is optional)
+- [ ] After WP91 the PR body is the canonical current-review evidence surface; any final comment is optional and non-canonical clarification only (it must not contradict the PR body)
+- [ ] For applicable implementation WPs after WP168G: `python tools/wp/wp_readiness_gate.py` exits 0 `IMPLEMENTATION_READY` before authorization (readiness is not authorization) and the final `--check-diff` run is green
 - [ ] Base verification included
 - [ ] Required previous merge commit verified
 - [ ] Required previous files verified

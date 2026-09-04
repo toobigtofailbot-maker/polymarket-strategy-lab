@@ -999,6 +999,15 @@ def _is_protected_builtin(path: str) -> bool:
     return any(pattern.search(path) for pattern in CREDENTIAL_LIKE_PATTERNS)
 
 
+# Exact governance path. The pull-request template is the canonical post-WP91
+# current-review evidence surface. It is not under ``.github/workflows/`` so it has no
+# authority mapping from the prefix cascade; authorizing it therefore needs an explicit
+# narrow exact-path rule requiring BOTH workflow_governance and canonical_evidence_policy.
+# No other ``.github/`` path is affected and ``.github/workflows/`` semantics are unchanged.
+PR_TEMPLATE_GOVERNANCE_PATH = ".github/pull_request_template.md"
+PR_TEMPLATE_GOVERNANCE_AUTHORITY = ("workflow_governance", "canonical_evidence_policy")
+
+
 def _wp_artifact_paths(wp_id: str) -> frozenset[str]:
     prefix = f"docs/wp_specs/{wp_id}/"
     return frozenset(
@@ -1012,6 +1021,8 @@ def _wp_artifact_paths(wp_id: str) -> frozenset[str]:
 
 def _authority_requirements(path: str, wp_id: str) -> tuple[str, ...] | None:
     requirements: list[str] = []
+    if path == PR_TEMPLATE_GOVERNANCE_PATH:
+        return PR_TEMPLATE_GOVERNANCE_AUTHORITY
     if path.startswith("docs/"):
         requirements.append("docs")
     elif path.startswith("tests/"):

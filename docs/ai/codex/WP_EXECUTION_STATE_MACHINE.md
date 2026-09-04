@@ -52,6 +52,36 @@ rehashed for altered bytes, and is unavailable to every non-WP159 package.
 There is no automated `PRE_READY_SEMANTIC_PASS` state in this version. That is
 separately gated WP160 scope.
 
+### Pre-implementation package-readiness gate (WP168G)
+
+After WP168G, applicable implementation WPs run one deterministic, local/offline,
+read-only command between `DRAFTABILITY_PASS` and the human `AUTHORIZED` transition:
+
+```
+python tools/wp/wp_readiness_gate.py \
+  --wp docs/wp_specs/<WP>/wp_prompt.txt \
+  --spec docs/wp_specs/<WP>/wp_spec.json \
+  --certificate docs/wp_specs/<WP>/draftability_certificate.json \
+  --repo-root .
+```
+
+The gate composes the existing `tools/wp/wp_spec_guard.py` package/certificate
+validator with prompt-structure validation, a structured `NORMATIVE_RULE_MATRIX_V1`
+semantic-contradiction sweep, evidence-plan coherence, exact-scope authority, and a
+successor-boundary check. Its `IMPLEMENTATION_READY` result is a **non-authority package
+gate only**: readiness is not authorization. Passing the gate does not create the
+`AUTHORIZED` state and never proves the user authorized implementation — the user remains
+the sole source of `AUTHORIZED`. The gate adds no new authority state; the canonical
+authorization state chain remains exactly
+`LOCAL_DRAFT -> DRAFTABILITY_PASS -> AUTHORIZED -> IMPLEMENTED_LOCAL`.
+
+**WP168G bootstrap:** the readiness gate does not exist on WP168G's merged base, so
+WP168G itself could not require the new gate as a pre-implementation prerequisite. WP168G
+was activated through the existing independent 12-lens draftability + `wp_spec_guard`
+process and self-hosts the new gate in a final `--check-diff` run as post-implementation
+evidence. All later applicable implementation WPs must pass the pre-implementation
+readiness gate before the user grants `AUTHORIZED`.
+
 ---
 
 ## Phase 0 — Receive WP

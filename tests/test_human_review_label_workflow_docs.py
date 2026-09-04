@@ -14,6 +14,7 @@ Verifies:
 
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -608,6 +609,48 @@ def test_no_dependency_files_modified():
     )
 
 
+def _spec_authorized_tool_paths(changed):
+    """Governance-tool paths authorized by the current WP machine spec(s).
+
+    Any WP whose status entry is in ``changed`` contributes the ``tools/`` paths declared
+    in its machine-spec ``required_changed_files``. Bounded and deterministic; replaces
+    the earlier WP159-only tool-scope exception so future governance tooling needs no
+    bespoke per-WP allowance.
+    """
+    authorized = set()
+    for path in changed:
+        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+)\.md", path)
+        if match is None:
+            continue
+        spec_path = os.path.join(
+            REPO_ROOT, "docs", "wp_specs", match.group(1), "wp_spec.json"
+        )
+        if not os.path.isfile(spec_path):
+            continue
+        try:
+            with open(spec_path, encoding="utf-8") as handle:
+                spec = json.load(handle)
+        except (OSError, ValueError):
+            continue
+        for changed_file in spec.get("scope", {}).get("required_changed_files", []):
+            if isinstance(changed_file, str) and changed_file.startswith("tools/"):
+                authorized.add(changed_file)
+    return authorized
+
+
+def test_historical_tool_scope_guard_uses_current_wp_spec_authority():
+    """The tool-scope guard derives authorized governance-tool paths from the active WP
+    machine spec rather than a WP159-only exception."""
+    authorized = _spec_authorized_tool_paths({"docs/status_entries/WP168G.md"})
+    assert "tools/wp/wp_readiness_gate.py" in authorized
+    assert "tools/wp/wp_spec_guard.py" in authorized
+    # WP159 remains covered through the same spec-derived mechanism, not a hardcode.
+    wp159_authorized = _spec_authorized_tool_paths({"docs/status_entries/WP159.md"})
+    assert "tools/wp/wp_spec_guard.py" in wp159_authorized
+    # No WP status entry changed -> no governance-tool paths are authorized.
+    assert _spec_authorized_tool_paths({"docs/project_status.md"}) == set()
+
+
 def test_no_tools_files_modified():
     """WP75 must not modify tools/ files."""
     result = subprocess.run(
@@ -637,11 +680,10 @@ def test_no_tools_files_modified():
             if f.startswith("tools/") and f not in allowed_tools_changes
         ]
         return
-    if "docs/status_entries/WP159.md" in changed:
-        allowed_tools_changes.update({
-            "tools/wp/wp_spec_guard.py",
-            "tools/git/diff_scope_summary.py",
-        })
+    # Authorize governance-tool changes from the current WP machine spec rather than a
+    # bespoke WP159-only exception. WP159 (and any later governance WP, including
+    # WP168G) is covered because its spec's required_changed_files declare its tools.
+    allowed_tools_changes.update(_spec_authorized_tool_paths(changed))
     tools_changes = [
         f for f in changed
         if f.startswith("tools/") and f not in allowed_tools_changes

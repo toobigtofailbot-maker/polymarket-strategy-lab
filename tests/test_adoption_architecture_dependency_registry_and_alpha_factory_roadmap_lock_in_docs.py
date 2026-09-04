@@ -788,6 +788,64 @@ _WP163_AUTHORIZED_FILES = {
 }
 
 
+def _active_wp_spec_authorized_files(changed):
+    """Exact authorized changed-file set for the active WP, derived from its machine spec.
+
+    Returns a frozenset of the active WP's ``scope.required_changed_files`` when exactly one
+    changed ``docs/status_entries/WP<id>.md`` maps to a valid machine spec; returns ``None``
+    when zero, ambiguously many, or a malformed/inconsistent spec is found, so the caller
+    falls back to historical behavior and fails closed. Spec-derived authority is exact-set
+    (no wildcard/prefix weakening) and supersedes any stale hard-coded catch-all so a newly
+    added WP is authorized by its own certified exact scope rather than rejected for being
+    new. Bounded and deterministic; local/offline; grants authority only from a real spec.
+    """
+    active = None
+    count = 0
+    for path in changed:
+        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+)\.md", path)
+        if match is None:
+            continue
+        spec_path = ROOT / "docs" / "wp_specs" / match.group(1) / "wp_spec.json"
+        if not spec_path.is_file():
+            continue
+        try:
+            spec = json.loads(spec_path.read_text(encoding="utf-8"))
+            required = spec["scope"]["required_changed_files"]
+            allowed = spec["scope"]["allowed_changed_files"]
+        except (OSError, ValueError, KeyError, TypeError):
+            return None
+        if (
+            not isinstance(required, list)
+            or not required
+            or sorted(required) != sorted(allowed)
+        ):
+            return None
+        count += 1
+        active = frozenset(required)
+    if count != 1:
+        return None
+    return active
+
+
+def test_adoption_scope_guard_derives_active_wp_scope_from_machine_spec() -> None:
+    # The full-changed-set guard derives the active WP's exact authorized set from its
+    # machine spec rather than a hard-coded per-WP registration; exact-set equality is kept
+    # and missing/ambiguous authority fails closed.
+    authorized = _active_wp_spec_authorized_files({"docs/status_entries/WP168G.md"})
+    assert authorized is not None
+    spec = json.loads(
+        (ROOT / "docs/wp_specs/WP168G/wp_spec.json").read_text(encoding="utf-8")
+    )
+    assert authorized == frozenset(spec["scope"]["required_changed_files"])
+    assert len(authorized) == 23
+    # No WP status entry -> no spec-derived authority (fail closed to historical behavior).
+    assert _active_wp_spec_authorized_files({"docs/project_status.md"}) is None
+    # Ambiguous active WP (two spec-backed status entries) fails closed.
+    assert _active_wp_spec_authorized_files(
+        {"docs/status_entries/WP168G.md", "docs/status_entries/WP159.md"}
+    ) is None
+
+
 def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None:
     diff = subprocess.run(
         ["git", "diff", "--name-only", "origin/main"],
@@ -916,6 +974,17 @@ def test_exact_eight_file_scope_and_no_protected_implementation_change() -> None
             "tests/test_project_status_docs.py",
         }
     elif changed:
+        _authorized = _active_wp_spec_authorized_files(changed)
+        if _authorized is not None:
+            # Spec-derived active-WP authority: exact-set equality against the current WP's
+            # machine spec is the strongest possible constraint and supersedes the coarser
+            # hard-coded catch-all and protected-prefix heuristics below. A newly-added WP
+            # (e.g. WP168G) is authorized by its own certified exact scope, not rejected for
+            # being new; extra or missing files still fail exact-set equality.
+            assert set(changed) == _authorized, (
+                "changed-file set does not equal the active WP machine-spec scope"
+            )
+            return
         assert changed == {
             "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
             "docs/deferred_items_log.md",

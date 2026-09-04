@@ -1,0 +1,729 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP168G",
+    "title": "One-Shot WP Readiness and Execution Workflow Hardening",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "WORKFLOW_GOVERNANCE_READINESS_HARDENING",
+    "package_size_class": "XL",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 168,
+      "head_sha": "d323a4ba29e7b460517aec2145e5aeb195fcfb62",
+      "merge_sha": "f6416a34ef366ac41b4c874ac149cd1dcba671bc"
+    },
+    "suggested_branch": "claude/wp168g-one-shot-readiness-hardening",
+    "objective": "Add one deterministic local/offline package-readiness gate that composes the existing WP-spec/certificate guard with prompt-structure validation, structured semantic contradiction detection, pre-implementation evidence-plan target coherence, post-implementation exact-node/assertion adequacy, exact-scope authority, and successor-boundary checks; narrowly extend wp_spec_guard so the exact .github/pull_request_template.md governance path requires both workflow_governance and canonical_evidence_policy; reconcile PR evidence tooling with the already-canonical PR-body-required/final-comment-optional post-WP91 policy; and replace three WP159-specific historical tool-scope exceptions with current-WP machine-spec authority. No product runtime, dependency, network, credential, strategy, paper, execution, live, or WP169 implementation. Additionally generalize three historical full-changed-set scope-registration guards so the active WP's authorized changed-file set is derived deterministically from its machine spec (exact-set equality preserved, fail-closed on missing/malformed/ambiguous authority), and record a bounded pre-freeze full-changed-set guard discovery requirement. Package re-scoped L->XL at 23 files under explicit user authorization for size only; no implementation authority is granted.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Explicit user authorization to re-scope WP168G from L to XL. Beyond the three tool-scope guards already generalized, three additional historical full-changed-set registration guards (tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py, tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py, tests/test_local_research_workflow_value_measurement_harness_contract_docs.py) assert the complete branch changed-file set against a hard-coded per-WP authorized set and fail on any unregistered WP diff. Generalizing them to derive the active WP's authorized set from its machine spec is required to keep the full suite green and needs those three files in scope, giving an exact 23-file governed scope that exceeds the L 20-file maximum. XL authorizes the package size only; it does not grant implementation authority, which remains the separate independent PASS certificate plus explicit user AUTHORIZED transition."
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/wp_specs/WP168G/wp_prompt.txt",
+      "docs/wp_specs/WP168G/wp_spec.json",
+      "docs/wp_specs/WP168G/draftability_certificate.json",
+      "tools/wp/wp_readiness_gate.py",
+      "tests/tools/wp/test_wp_readiness_gate.py",
+      "tools/wp/wp_spec_guard.py",
+      "tools/git/pr_evidence_consistency_guard.py",
+      "tests/tools/git/test_pr_evidence_consistency_guard.py",
+      "docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md",
+      "docs/ai/codex/VALIDATION_MATRIX.md",
+      "docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md",
+      ".github/pull_request_template.md",
+      "tests/test_codex_workflow_docs.py",
+      "docs/status_entries/WP168G.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/wp_specs/WP168G/wp_prompt.txt",
+      "docs/wp_specs/WP168G/wp_spec.json",
+      "docs/wp_specs/WP168G/draftability_certificate.json",
+      "tools/wp/wp_readiness_gate.py",
+      "tests/tools/wp/test_wp_readiness_gate.py",
+      "tools/wp/wp_spec_guard.py",
+      "tools/git/pr_evidence_consistency_guard.py",
+      "tests/tools/git/test_pr_evidence_consistency_guard.py",
+      "docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md",
+      "docs/ai/codex/VALIDATION_MATRIX.md",
+      "docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md",
+      ".github/pull_request_template.md",
+      "tests/test_codex_workflow_docs.py",
+      "docs/status_entries/WP168G.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "src/",
+      "agent_runtime/",
+      "agent_memory/",
+      "local_data/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "credentials/",
+      "secrets/"
+    ],
+    "max_changed_files": 23,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_codex_workflow_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py"
+    ],
+    "rollback_surface": "Revert WP168G. It changes only local/offline workflow governance, the existing WP-spec guard's narrow authority mapping for the exact PR-template path, the new readiness gate, the existing PR evidence guard, focused tests, bounded historical scope-guard compatibility, and status/repo-truth documentation. It adds no product runtime, dependency, data migration, generated artifact, credential, network, strategy, paper, execution, or live state.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": true
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": true,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP168G adds one local/offline readiness CLI/import surface, makes one narrow existing wp_spec_guard path-authority correction for the exact PR-template governance path, and changes the existing local PR evidence guard so final-comment input is optional while preserving two-surface compatibility.",
+    "items": [
+      {
+        "surface": "tools/wp/wp_readiness_gate.py CLI",
+        "before": "ABSENT",
+        "after": "--wp PATH --spec PATH --certificate PATH --repo-root PATH; optional --format text|json and --check-diff --base REF --head REF; exit 0 IMPLEMENTATION_READY, 1 NOT_IMPLEMENTATION_READY, 2 USAGE_OR_FILE_ERROR",
+        "change_authorized": true,
+        "compatibility_requirement": "New stdlib-only local/offline/read-only CLI; imports/reuses wp_spec_guard rather than duplicating package validation.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_VALIDATION"
+      },
+      {
+        "surface": "tools/wp/wp_readiness_gate.py import API",
+        "before": "ABSENT",
+        "after": "Import-safe deterministic readiness validation returning an immutable sanitized result.",
+        "change_authorized": true,
+        "compatibility_requirement": "No environment inspection, network, writes, raw-content echo, test execution, or product-runtime imports.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_VALIDATION"
+      },
+      {
+        "surface": "tools/wp/wp_spec_guard.py path-authority policy",
+        "before": "Exact .github/pull_request_template.md has no authority mapping and fails AUTHORITY_CONTRADICTION",
+        "after": "Exact .github/pull_request_template.md requires workflow_governance=true and canonical_evidence_policy=true; other non-workflow .github paths remain unauthorized",
+        "change_authorized": true,
+        "compatibility_requirement": "Narrow exact-path addition only; .github/workflows authority, schemas, package-size limits, error vocabulary, certificate semantics and WP159 waiver remain unchanged.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_VALIDATION"
+      },
+      {
+        "surface": "historical full-changed-set scope-registration guards (adoption / append-only-manifest / local-research-value-measurement)",
+        "before": "Per-WP if/elif changed-set cascade with a hard-coded catch-all that fails for any WP not explicitly registered",
+        "after": "Active WP's exact authorized changed-file set is derived from its machine spec; exact-set equality preserved; fail-closed on missing/malformed/ambiguous spec authority; no wildcard/prefix weakening; no silent catch-all acceptance",
+        "change_authorized": true,
+        "compatibility_requirement": "Historical WP-specific regression behavior remains testable; a guard grants authority only from a real machine spec, never merely because a spec file exists; readiness is not authorization.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_VALIDATION"
+      },
+      {
+        "surface": "tools/git/pr_evidence_consistency_guard.py CLI",
+        "before": "--pr-body and --final-comment both required",
+        "after": "--pr-body required; --final-comment optional; PR body canonical; optional comment contradiction-checked only when supplied",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing two-surface invocations remain accepted; body-only use becomes first-class and needs no dummy mirror.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_VALIDATION"
+      },
+      {
+        "surface": "Python product/runtime public API",
+        "before": "Merged WP168 repository state",
+        "after": "UNCHANGED",
+        "change_authorized": false,
+        "compatibility_requirement": "No src path, runtime behavior, dependency, network, credential, strategy, paper, execution, or live change.",
+        "authority": "NONE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The readiness gate has bounded caller inputs, a structured normative-rule grammar, a closed sanitized result surface, and WP168G changes final-comment input cardinality on the existing evidence guard.",
+    "items": [
+      {
+        "path": "readiness.input.wp_file",
+        "source": "CALLER",
+        "type": "local_path",
+        "required_rule": "required readable human WP prompt file",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "read bounded exact bytes; validate structure without raw-content echo",
+        "failure_category": "FILE_READ_ERROR",
+        "safe_output": "validated WP id and trusted counts only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "readiness.input.spec_file",
+        "source": "CALLER",
+        "type": "local_json_path",
+        "required_rule": "required readable machine spec file",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "delegate exact schema and semantic validation to wp_spec_guard",
+        "failure_category": "JSON_PARSE_INVALID",
+        "safe_output": "validated WP id and trusted counts only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "readiness.input.certificate_file",
+        "source": "CALLER",
+        "type": "local_json_path",
+        "required_rule": "required independent certificate file",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "delegate schema/hash/draftability validation to wp_spec_guard and require PASS",
+        "failure_category": "DRAFTABILITY_INCOMPLETE",
+        "safe_output": "PASS binding state only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "readiness.rule.domain",
+        "source": "CALLER",
+        "type": "lower_token",
+        "required_rule": "required explicit semantic input or policy domain",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "bounded lowercase token; empty or malformed domain fails closed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "trusted rule count only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "readiness.rule.action",
+        "source": "CALLER",
+        "type": "enum",
+        "required_rule": "one closed NORMATIVE_RULE_MATRIX_V1 action token",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "closed action vocabulary",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "trusted rule count only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "readiness.result.status",
+        "source": "DERIVED",
+        "type": "enum",
+        "required_rule": "IMPLEMENTATION_READY, NOT_IMPLEMENTATION_READY, or USAGE_ERROR",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "derived only after bounded readiness checks",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "closed enum token",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "readiness.result.error_codes",
+        "source": "DERIVED",
+        "type": "ordered_string_array",
+        "required_rule": "closed readiness error vocabulary; empty only on IMPLEMENTATION_READY",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "deduplicated canonical order; no caller-derived strings",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "closed codes only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "pr_evidence.input.pr_body",
+        "source": "CALLER",
+        "type": "local_text_path",
+        "required_rule": "required canonical current-review PR-body evidence file",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "existing evidence checks apply to required PR body",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "guard categories only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "pr_evidence.input.final_comment",
+        "source": "CALLER",
+        "type": "optional_local_text_path",
+        "required_rule": "optional after WP91; absence means PR-body-only validation",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "if supplied validate duplicated-fact non-contradiction; never require dummy mirror",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "guard categories only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "wp_spec_guard.path.pr_template",
+        "source": "CONSTANT",
+        "type": "repository_path",
+        "required_rule": "exact .github/pull_request_template.md governance path only",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "requires workflow_governance and canonical_evidence_policy; no broad .github wildcard",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "canonical field path only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "WP168G defines no new persistent or canonical product identity; exact prompt/spec raw-byte hashes remain governed by the existing independent certificate mechanism.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "WP168G preserves the canonical authorization chain. The new readiness result is explicitly not an authority state. Because the new gate does not exist on the WP168G base, WP168G itself uses the existing independent draftability + explicit-user-authorization bootstrap; after WP168G, applicable implementation WPs require readiness PASS before the user grants AUTHORIZED.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "A separate independent certificate binds exact prompt/spec raw-byte hashes, all twelve lenses PASS, unresolved decisions are empty, and implementability simulation PASS.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "For WP168G bootstrap, the user explicitly authorizes the exact independently certified package under the existing governance because wp_readiness_gate does not yet exist on base. For later applicable WPs after WP168G merge, package-readiness PASS is required before this human AUTHORIZED transition. Readiness never grants authority by itself.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "The executor implements only the exact certified scope after explicit user authorization, without normative prompt/spec changes; WP168G must self-host the new readiness gate in final --check-diff validation before Ready for review.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed schema-1.0.0 failure precedence for the existing WP-spec guard.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "WP168G adds no canonical-JSON identity derivation requiring worked derivation examples; behavior examples are executable evidence requirements.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R027 bind predecessor truth, the readiness gate, WP168 semantic-contradiction reviewer traps, planned-new-node semantics including new nodes in existing in-scope files, post-implementation exact-node/assertion adequacy, the narrow wp_spec_guard PR-template authority correction, exact-scope authority, PR-body-only evidence semantics, historical tool-scope migration, status reconciliation, canonical guards, and the full suite, plus generalization of three historical full-changed-set scope-registration guards to machine-spec authority (R028-R030) and a bounded pre-freeze full-changed-set guard discovery requirement (R031).",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "git",
+        "test": "WP168 predecessor merge binding",
+        "command": "git merge-base --is-ancestor d323a4ba29e7b460517aec2145e5aeb195fcfb62 origin/main && git merge-base --is-ancestor f6416a34ef366ac41b4c874ac149cd1dcba671bc origin/main && git rev-parse origin/main",
+        "expected_result": "both ancestry checks exit 0 and origin/main resolves to f6416a34ef366ac41b4c874ac149cd1dcba671bc at package start"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_valid_independently_certified_package_is_implementation_ready",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "a complete exact-scope package with independent PASS certificate, valid normative matrix, concrete expected results, existing nodes where applicable, and planned-new nodes whose exact test files are certified in scope returns IMPLEMENTATION_READY; readiness grants no user authority"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_wp168_same_domain_normalize_reject_contradiction_fails",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "source_row.market alternate-case NORMALIZE_LOWERCASE plus same-domain REJECT fails with READINESS_SEMANTIC_CONTRADICTION"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_wp168_two_domain_case_policy_is_not_a_contradiction",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "source_row.market normalization and context.condition_id alternate-case rejection pass because their explicit domains differ"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_rule_matrix_missing_domain_or_duplicate_rule_id_fails_closed",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "missing domain, malformed action, or duplicate rule identity fails closed with no prompt-content echo"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_preimplementation_missing_node_is_planned_only_when_target_file_is_in_scope",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "in default pre-implementation mode a missing named pytest node is allowed as PLANNED_NEW_NODE when and only when its exact target test file is in required_changed_files, regardless of whether that file already exists on base; an out-of-scope target fails READINESS_EVIDENCE_NODE_MISSING"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_postimplementation_assertionless_evidence_node_is_rejected",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "in --check-diff post-implementation mode every planned pytest node must exist and a named node with no reachable assert or pytest.raises primitive fails READINESS_EVIDENCE_ASSERTION_INADEQUATE"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_postimplementation_same_module_asserting_helper_is_adequate",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "in --check-diff post-implementation mode bounded same-module helper recursion recognizes a concrete reachable assertion without executing the test"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_exact_scope_policy_and_optional_diff_check",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "exact required/allowed/max scope is enforced and optional diff verification rejects any extra or missing path"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_readiness_result_field_coverage_and_no_echo",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "every readiness result field is classified and invalid results contain only closed codes and trusted counts without hostile-input echo"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_pr_body_only_mode_requires_no_final_comment",
+        "command": "python -m pytest -q tests/tools/git/test_pr_evidence_consistency_guard.py",
+        "expected_result": "body-only invocation passes without --final-comment when all required canonical PR-body evidence is present"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_optional_final_comment_may_be_short_and_noncanonical",
+        "command": "python -m pytest -q tests/tools/git/test_pr_evidence_consistency_guard.py",
+        "expected_result": "an optional final comment need not duplicate required commands or helpers from the canonical PR body"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_optional_final_comment_contradicting_body_fails",
+        "command": "python -m pytest -q tests/tools/git/test_pr_evidence_consistency_guard.py",
+        "expected_result": "duplicated head, test-count, file-count, Ready, and network claims in an optional comment must not contradict the PR body"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_require_current_final_marker_requires_actual_comment",
+        "command": "python -m pytest -q tests/tools/git/test_pr_evidence_consistency_guard.py",
+        "expected_result": "--require-current-final-marker without an actual supplied comment fails safely rather than inventing a mirror surface"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_wp_execution_state_machine_requires_readiness_gate_without_new_authority_state",
+        "command": "python -m pytest -q tests/test_codex_workflow_docs.py",
+        "expected_result": "canonical state chain remains LOCAL_DRAFT -> DRAFTABILITY_PASS -> AUTHORIZED -> IMPLEMENTED_LOCAL; readiness is a non-authority package gate, WP168G bootstrap is explicitly documented, and later applicable WPs require readiness before the human AUTHORIZED transition"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_pr_template_makes_final_comment_optional_after_wp91",
+        "command": "python -m pytest -q tests/test_codex_workflow_docs.py",
+        "expected_result": "PR template makes PR body canonical and final comment optional/noncanonical after WP91"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_validation_matrix_requires_wp_readiness_gate_for_implementation_packages",
+        "command": "python -m pytest -q tests/test_codex_workflow_docs.py",
+        "expected_result": "validation matrix requires the one-command pre-implementation readiness gate for applicable implementation packages"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_historical_tool_scope_guard_uses_current_wp_spec_authority",
+        "command": "python -m pytest -q tests/test_human_review_label_workflow_docs.py",
+        "expected_result": "historical human-review scope guard derives current authorized governance-tool paths from the active machine spec rather than a WP159-only exception"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_wallet_tool_scope_guard_uses_current_wp_spec_authority",
+        "command": "python -m pytest -q tests/test_wallet_intelligence_architecture_contract_docs.py",
+        "expected_result": "wallet historical scope guard derives current authorized governance-tool paths from the active machine spec"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_hermes_tool_scope_guard_uses_current_wp_spec_authority",
+        "command": "python -m pytest -q tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+        "expected_result": "Hermes historical scope guard derives current authorized governance-tool paths from the active machine spec"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "pytest",
+        "test": "test_wp168g_status_reconciles_wp168_merge_and_preserves_wp169_successor",
+        "command": "python -m pytest -q tests/test_project_status_docs.py",
+        "expected_result": "project status records WP168 merged at f6416a34ef366ac41b4c874ac149cd1dcba671bc, WP168G as governance target, and WP169 as the separately gated realtime/public-activity capability successor"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "wp-spec-guard",
+        "test": "wp_spec_guard",
+        "command": "python tools/wp/wp_spec_guard.py --wp docs/wp_specs/WP168G/wp_prompt.txt --spec docs/wp_specs/WP168G/wp_spec.json --certificate docs/wp_specs/WP168G/draftability_certificate.json",
+        "expected_result": "after independent certification exits 0 with all canonical package phases PASS"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "readiness-guard",
+        "test": "wp_readiness_gate",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP168G/wp_prompt.txt --spec docs/wp_specs/WP168G/wp_spec.json --certificate docs/wp_specs/WP168G/draftability_certificate.json --repo-root .",
+        "expected_result": "after implementation and independent certification, default mode exits 0 IMPLEMENTATION_READY for the WP168G package while explicitly not claiming user authorization"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "readiness-guard",
+        "test": "exact diff readiness",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP168G/wp_prompt.txt --spec docs/wp_specs/WP168G/wp_spec.json --certificate docs/wp_specs/WP168G/draftability_certificate.json --repo-root . --check-diff --base origin/main --head HEAD",
+        "expected_result": "at final implementation head actual changed paths equal the exact 23-file machine-spec set, all planned pytest evidence nodes exist exactly, and bounded assertion-adequacy passes"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "pytest",
+        "test": "full repository suite",
+        "command": "python -m pytest -q",
+        "expected_result": "the full repository suite has no WP168G-introduced failure and final evidence reports the exact outcome"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "pytest",
+        "test": "test_preimplementation_planned_new_node_in_existing_in_scope_file_is_allowed",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "a named evidence node absent from an already-existing base test file is accepted as PLANNED_NEW_NODE when that exact test file is in required_changed_files; the same missing node is rejected when its target file is outside scope"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "pytest",
+        "test": "test_wp_spec_guard_authorizes_only_exact_pr_template_governance_path",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "the existing wp_spec_guard accepts exact .github/pull_request_template.md only when workflow_governance and canonical_evidence_policy are both true; arbitrary other non-workflow .github paths remain AUTHORITY_CONTRADICTION and .github/workflows semantics are unchanged"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "pytest",
+        "test": "test_adoption_scope_guard_derives_active_wp_scope_from_machine_spec",
+        "command": "python -m pytest -q tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+        "expected_result": "the adoption full-changed-set guard derives the active WP's exact authorized changed-file set from its machine spec, still enforces exact-set equality, fails closed on missing/malformed/ambiguous spec authority, and no longer fails solely because the WP id (WP168G) is new"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "pytest",
+        "test": "test_append_only_scope_guard_derives_active_wp_scope_from_machine_spec",
+        "command": "python -m pytest -q tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+        "expected_result": "the append-only manifest full-changed-set guard derives the active WP's exact authorized changed-file set from its machine spec, preserves exact-set equality and dependency/workflow/generated-artifact prohibitions, and fails closed on missing/malformed/ambiguous spec authority"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "test_local_research_scope_guard_derives_active_wp_scope_from_machine_spec",
+        "command": "python -m pytest -q tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+        "expected_result": "the local-research value-measurement full-changed-set guard derives the active WP's exact authorized changed-file set from its machine spec, preserves exact-set equality and implementation/deferred-log prohibitions, and fails closed on missing/malformed/ambiguous spec authority"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "pytest",
+        "test": "test_validation_matrix_requires_full_changed_set_guard_discovery_before_scope_freeze",
+        "command": "python -m pytest -q tests/test_codex_workflow_docs.py",
+        "expected_result": "the validation matrix requires, before scope freeze for a file-changing WP, bounded discovery of repository guards that evaluate the complete changed-file set and proof that the certified scope contains every required compatibility edit; the claim is bounded to mechanically discoverable current patterns plus full-suite validation and does not overclaim proof of all future test dependencies"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP169",
+    "next_title": "Public Realtime WebSocket and Public Activity/Wallet Data Plane",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP169",
+    "forbidden_in_this_wp": [
+      "public WebSocket collector",
+      "public Data API activity/wallet collector",
+      "NautilusTrader live data client",
+      "NautilusTrader live execution client",
+      "Polymarket authenticated client",
+      "credentials/signing",
+      "strategy/alpha",
+      "fill/queue/slippage/latency/capacity modelling",
+      "paper trading",
+      "order simulation",
+      "execution",
+      "live trading",
+      "scheduler/daemon/bot loop",
+      "Hermes runtime"
+    ]
+  }
+}

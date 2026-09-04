@@ -1,0 +1,28 @@
+{
+  "schema_id": "polymarket-wp-draftability-certificate",
+  "schema_version": "1.0.0",
+  "wp_id": "WP168G",
+  "reviewed_repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+  "reviewed_base_merge_sha": "f6416a34ef366ac41b4c874ac149cd1dcba671bc",
+  "wp_text_sha256": "aaf4f74f261ed83b7ab3269f6ff6db704eebb082504f85814a8d56040b613ec4",
+  "wp_spec_sha256": "a27f4a9d4362bbf81d7ba80bf581ecb23218899433c1f74d17e9648f0163ef62",
+  "reviewer_role": "INDEPENDENT_DRAFTABILITY_REVIEWER",
+  "independence_attestation": "SEPARATE_REVIEW_CONTEXT_DECLARED",
+  "result": "PASS",
+  "covered_lenses": [
+    {"lens": "objective_and_class", "result": "PASS"},
+    {"lens": "public_api", "result": "PASS"},
+    {"lens": "mutability", "result": "PASS"},
+    {"lens": "identity_and_serialization", "result": "PASS"},
+    {"lens": "state_transitions", "result": "PASS"},
+    {"lens": "batch_set_behavior", "result": "PASS"},
+    {"lens": "error_precedence", "result": "PASS"},
+    {"lens": "invalid_input_no_echo", "result": "PASS"},
+    {"lens": "example_truth", "result": "PASS"},
+    {"lens": "scope_compatibility", "result": "PASS"},
+    {"lens": "evidence_publication", "result": "PASS"},
+    {"lens": "successor_boundary", "result": "PASS"}
+  ],
+  "unresolved_decisions": [],
+  "implementability_simulation": "PASS"
+}

@@ -2772,10 +2772,10 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp153_through_wp166_are_merged_and_wp167_is_current_review_target():
-    # Functional WP167 is the current non-draft review target following the exact
-    # merged WP166 scalable lineage-delta baseline. WP167 is the first runtime-
-    # dependency analytical/external-history/materialization foundation.
+def test_wp153_through_wp168_merged_and_wp168g_is_current_governance_target():
+    # WP168 (Nautilus offline kernel) is now merged. WP168G, a workflow-governance
+    # readiness-hardening interstitial, is the current review target and precedes the
+    # separately gated WP169 realtime/public-activity capability successor.
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2783,65 +2783,61 @@ def test_wp153_through_wp166_are_merged_and_wp167_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP168" in current_phase_line
-    assert "WP167" in current_phase_line
+    assert "WP168G" in current_phase_line
     assert "WP130" in current_phase_line
-    assert "WP153" in merged_line
-    assert "WP154" in merged_line
-    assert "WP155" in merged_line
-    assert "WP156" in merged_line
-    assert "WP157" in merged_line
-    assert "WP158" in merged_line
-    assert "WP159" in merged_line
-    assert "WP160" in merged_line
-    assert "WP161" in merged_line
-    assert "WP162" in merged_line
-    assert "WP163" in merged_line
-    assert "WP164" in merged_line
-    assert "WP165" in merged_line
-    assert "WP166" in merged_line
-    assert "WP167" in merged_line
+    for wp in (
+        "WP153", "WP154", "WP155", "WP156", "WP157", "WP158", "WP159", "WP160",
+        "WP161", "WP162", "WP163", "WP164", "WP165", "WP166", "WP167", "WP168",
+    ):
+        assert wp in merged_line, wp
     for phrase in (
         "current review target",
-        "Primary package class: OFFLINE_REPLAY_RUNTIME_FOUNDATION",
+        "following merged WP168",
+        "Primary package class: WORKFLOW_GOVERNANCE_READINESS_HARDENING",
         "Package size class: XL",
         "XL explicit authorization: YES",
-        "Risk level: 3",
-        "Implementation posture: LOCAL_OFFLINE_NAUTILUS_EVENT_REPLAY_NO_EXECUTION_AUTHORITY",
+        "Risk level: 2",
+        "Implementation posture: LOCAL_OFFLINE_WORKFLOW_GOVERNANCE_READINESS_NO_EXECUTION_AUTHORITY",
         "Ready for review: YES_INDEPENDENTLY_CERTIFIED",
         "Merge authorized: NO",
         "Independent live PR review required: YES",
-        "Exact changed-file scope: 35",
-        "Python support floor: >=3.12,<3.15",
-        "New direct runtime dependency: nautilus_trader==1.231.0",
-        "Dependencies installed or activated: 4",
+        "Exact changed-file scope: 23",
+        "New direct runtime dependency: NONE",
         "Default network posture: OFF",
-        "External data downloader: NONE",
         "Product/runtime network calls: 0",
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
         "Canonical PIT authority unchanged: YES",
-        "Nautilus catalog and replay are derived research runtime state only: YES",
-        "External pmxt v2 classified THIRD_PARTY_NATIVE_FRAME_ARCHIVE: YES",
-        "No downloader: YES",
-        "NautilusTrader offline-only adopted: YES",
-        "No live Nautilus data or execution client: YES",
-        "No Polymarket extra: YES",
-        "No Redis: YES",
-        "No WebSocket runtime: YES",
-        "No Data API: YES",
-        "No Hermes/strategy/paper/execution/live: YES",
-        "WP165 merged: YES",
         "WP166 merged: YES",
         "WP167 merged: YES",
-        "WP167 PR: 167",
-        "WP167 final head: 557127fc04b75e75bb5594ab47df10a25f94d72d",
-        "WP167 merge commit: b79049e9330cc3a94721f0b0653b48f66e31551b",
-        "Nautilus offline kernel implemented by: WP168",
+        "WP168 merged: YES",
+        "WP168 PR: 168",
+        "WP168 final head: d323a4ba29e7b460517aec2145e5aeb195fcfb62",
+        "WP168 merge commit: f6416a34ef366ac41b4c874ac149cd1dcba671bc",
         "Next phase: WP169_PUBLIC_REALTIME_WEBSOCKET_DATA_PLANE_SEPARATELY_GATED",
     ):
         assert phrase in current_phase_line, phrase
-    assert current_phase_line.count("current review target") == 1
+
+
+def test_wp168g_status_reconciles_wp168_merge_and_preserves_wp169_successor():
+    # R021: project status records WP168 merged at its exact merge SHA, WP168G as the
+    # governance-hardening target, and WP169 as the separately gated realtime/public-
+    # activity capability successor.
+    text = _read()
+    current_phase_line = next(
+        line for line in text.splitlines() if line.startswith("- Current phase:")
+    )
+    merged_line = next(
+        line for line in text.splitlines() if line.startswith("- Merged WPs:")
+    )
+    assert "WP168" in merged_line
+    assert "WP168 merge commit: f6416a34ef366ac41b4c874ac149cd1dcba671bc" in current_phase_line
+    assert "WP168 final head: d323a4ba29e7b460517aec2145e5aeb195fcfb62" in current_phase_line
+    assert "WP168G" in current_phase_line
+    assert "WORKFLOW_GOVERNANCE_READINESS_HARDENING" in current_phase_line
+    assert "WP169_PUBLIC_REALTIME_WEBSOCKET_DATA_PLANE_SEPARATELY_GATED" in current_phase_line
+    # WP169 remains reserved and not renumbered by WP168G.
+    assert "WP168G" not in merged_line
 
 
 def test_wp167_analytical_research_foundation_status_is_registered():
