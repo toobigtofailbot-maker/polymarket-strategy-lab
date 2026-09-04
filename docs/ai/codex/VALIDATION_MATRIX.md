@@ -32,6 +32,20 @@ planned pytest evidence node exists with a bounded reachable assertion. The gate
 exist on WP168G's base, so WP168G itself used the existing draftability bootstrap and
 self-hosts the gate as final `--check-diff` evidence.
 
+### Full-changed-set scope-guard discovery (WP168G)
+
+Before scope freeze / implementation authorization for a file-changing WP, the
+package-readiness process MUST perform a bounded discovery of repository guards whose logic
+evaluates the COMPLETE changed-file set (for example `git diff --name-only origin/main` plus
+untracked files compared by exact-set equality to a hard-coded authorized set) and MUST prove
+that the certified scope contains every required compatibility edit for those guards. This
+requirement is bounded: it covers mechanically discoverable current repository patterns plus
+mandatory full-suite validation at the exact final head. It does NOT claim to mathematically
+prove every possible future test dependency; the full repository suite at the exact final head
+remains the backstop. Guards that evaluate the complete changed-file set should derive the
+active WP's authorized set from its machine spec so a newly-added WP is authorized by its own
+certified exact scope rather than rejected merely for being new.
+
 ### Risk Level 0 — Docs / Workflow Only (Lowest Risk)
 
 | Package class | Focused tests | Adjacent tests | Full pytest | Diff scope | Artifact guard | Security | GitHub evidence re-fetch | Status fragment |

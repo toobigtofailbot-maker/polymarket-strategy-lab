@@ -1671,3 +1671,16 @@ def test_validation_matrix_requires_wp_readiness_gate_for_implementation_package
     assert "implementation_ready" in lower
     assert "not authorization" in lower
     assert "before" in lower and "authorized" in lower
+
+
+def test_validation_matrix_requires_full_changed_set_guard_discovery_before_scope_freeze() -> None:
+    text = _read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md")
+    # Normalize whitespace so line wrapping in the doc does not break phrase matching.
+    lower = " ".join(text.lower().split())
+    # Bounded pre-freeze discovery of complete-changed-set guards is required...
+    assert "complete changed-file set" in lower
+    assert "before scope freeze" in lower
+    assert "certified scope contains every required compatibility edit" in lower
+    # ...but the claim is bounded and does not overclaim proof of all future dependencies.
+    assert "does not claim to mathematically prove every possible future test dependency" in lower
+    assert "full repository suite at the exact final head remains the backstop" in lower

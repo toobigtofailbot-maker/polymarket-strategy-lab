@@ -69,7 +69,7 @@ def test_valid_independently_certified_package_is_implementation_ready(tmp_path)
     assert result.error_codes == ()
     assert result.package_guard_passed is True
     assert result.certificate_hash_bound is True
-    assert result.normative_rule_count == 14
+    assert result.normative_rule_count == 16
     # Readiness is not authorization: the closed result carries no AUTHORIZED grant.
     assert "AUTHORIZED" not in json.dumps(result.to_public_dict())
 

@@ -3,7 +3,7 @@ WP168G — ONE-SHOT WP READINESS & EXECUTION WORKFLOW HARDENING
 
 STATUS
 ------
-DRAFTED / NOT YET AUTHORIZED.
+DRAFTED V3 (XL RE-SCOPE) / NOT YET AUTHORIZED.
 
 Repository: toobigtofailbot-maker/polymarket-strategy-lab
 Base branch: main
@@ -12,7 +12,7 @@ Required predecessor final head: d323a4ba29e7b460517aec2145e5aeb195fcfb62
 Required predecessor merge/main SHA: f6416a34ef366ac41b4c874ac149cd1dcba671bc
 Suggested branch: claude/wp168g-one-shot-readiness-hardening
 Package class: WORKFLOW_GOVERNANCE_READINESS_HARDENING
-Package size: L
+Package size: XL (explicitly authorized for SIZE ONLY; not implementation authority)
 Risk level: 2
 Capital at risk: USD 0
 Dependencies: NONE
@@ -21,7 +21,18 @@ Credentials: NONE
 Trading/execution/paper/live authority: NONE
 
 WP168G is a governance interstitial after merged WP168. It does NOT replace or renumber
-the already-reserved capability successor WP169.
+the already-reserved capability successors WP169 or WP170.
+
+V3 RE-SCOPE NOTE (L -> XL, 20 -> 23 files):
+An independent implementation attempt of the V2 20-file L package proved that three
+additional historical full-changed-set scope-registration guards fail on any non-empty
+WP168G diff because they assert the complete branch changed-file set against a hard-coded
+per-WP authorized set and lack a WP168G registration. Generalizing them to derive the
+active WP's authorized set from its machine spec is required to keep the full suite green
+and needs those three files in scope. That takes the exact scope to 23 files, exceeding the
+L 20-file maximum, so WP168G is re-scoped to XL. XL authorizes the package SIZE only. It is
+not implementation authority: implementation still requires the separate independent PASS
+certificate and the explicit user AUTHORIZED transition. Readiness is never authorization.
 
 ===============================================================================
 1. WHY THIS WP EXISTS
@@ -274,6 +285,8 @@ NR009|pr_evidence.pr_body|current_review_surface|post_wp91|REQUIRE|canonical_rev
 NR010|pr_evidence.final_comment|presence|post_wp91|OPTIONAL|noncanonical_clarification_only|pr_evidence.input.final_comment|R012
 NR011|pr_evidence.final_comment|duplicated_fact|comment_present|REQUIRE|must_not_contradict_pr_body|pr_evidence.input.final_comment|R013
 NR012|readiness.successor|wp169_capability|wp168g_scope|FORBID|separately_gated_no_implementation|NONE|R021
+NR015|readiness.scope_guard|full_changed_set|active_wp_registration|REQUIRE|machine_spec_derived_active_wp_authorized_set|NONE|R028
+NR016|readiness.governance|guard_discovery|preimplementation_scope_freeze|REQUIRE|bounded_full_changed_set_guard_discovery_plus_full_suite|NONE|R031
 END_NORMATIVE_RULE_MATRIX_V1
 
 ===============================================================================
@@ -374,6 +387,68 @@ Required behavior:
 This correction is part of the WP168G governance objective, not a product/runtime change.
 
 ===============================================================================
+8B. FULL-CHANGED-SET SCOPE-REGISTRATION GUARDS -> MACHINE-SPEC AUTHORITY (XL)
+===============================================================================
+
+Section 8 hardens three historical TOOL-scope guards. This section additionally
+generalizes three historical FULL-CHANGED-SET registration guards:
+
+- tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py
+- tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py
+- tests/test_local_research_workflow_value_measurement_harness_contract_docs.py
+
+Each currently asserts the COMPLETE branch changed-file set against a hard-coded per-WP
+`if "docs/status_entries/WP<n>.md" in changed: assert changed == _WP<n>_AUTHORIZED_FILES`
+cascade with a hard-coded catch-all that fails for any WP not explicitly registered. Every
+prior file-changing WP had to hand-register its exact scope in each of these guards, so a
+new WP id (WP168G) fails them solely for being new.
+
+Generalize each to derive the active WP's exact authorized changed-file set from its machine
+spec:
+- the active WP identity comes from repository evidence / the active status entry in a
+  deterministic, local, read-only way;
+- the exact authorized files come from that WP's machine spec `scope.required_changed_files`;
+- exact-set equality remains enforced (no wildcard/prefix-only weakening);
+- no network, no credentials, no GitHub API, no shelling out to untrusted commands;
+- malformed / missing / ambiguous machine-spec authority fails closed;
+- a guard grants authority only from a real machine spec, never merely because a spec file
+  exists;
+- a package may authorize only its own certified exact scope;
+- no fallback may silently accept arbitrary changed files;
+- historical WP-specific regression behavior remains testable.
+
+Prefer bounded local test-helper logic inside each of the three guard files. Do NOT create a
+new shared source/tool module and do NOT add a 24th path. If a shared helper or any 24th path
+is genuinely required, STOP and report.
+
+The already-tolerant guards must NOT be broadened: the point-in-time guard already returns
+early once WP155 is merged, and the wallet/human-review/hermes tool-scope guards are handled
+by Section 8. Only the three guards above are in scope here.
+
+===============================================================================
+8C. PRE-FREEZE FULL-CHANGED-SET GUARD DISCOVERY REQUIREMENT
+===============================================================================
+
+The V2 draftability miss was that the implementability simulation did not discover every
+full-changed-set guard before freezing scope. WP168G adds this normative requirement:
+
+Before scope freeze / implementation authorization for a file-changing WP, the
+package-readiness process MUST identify repository guards whose logic evaluates the COMPLETE
+changed-file set (for example, `git diff --name-only origin/main` plus untracked files
+compared by exact-set equality to a hard-coded authorized set) and MUST prove that the
+certified scope contains every required compatibility edit.
+
+This requirement is documented in the canonical validation/state-machine docs and is bounded:
+it covers mechanically discoverable current repository patterns plus mandatory full-suite
+validation at the exact head. It does NOT claim to mathematically prove every possible future
+test dependency; the full repository suite at the exact final head remains the backstop.
+
+For WP168G itself, evidence must prove: all complete-changed-set scope guards were discovered;
+the three guards added by this package are the complete remaining set; their logic is
+generalized to spec-derived authority; and no unregistered catch-all branch can make an
+otherwise-certified WP168G diff fail solely because the WP id is new.
+
+===============================================================================
 9. PR BODY REQUIRED / FINAL COMMENT OPTIONAL
 ===============================================================================
 
@@ -465,7 +540,7 @@ Invalid output must contain no raw path, prompt/spec/certificate text, test snip
 exception text, environment values, or git-output echo.
 
 ===============================================================================
-12. EXACT 20-FILE SCOPE — FROZEN V2 DRAFT
+12. EXACT 23-FILE SCOPE — FROZEN V3 DRAFT (XL)
 ===============================================================================
 
 1. docs/wp_specs/WP168G/wp_prompt.txt
@@ -488,15 +563,33 @@ exception text, environment values, or git-output echo.
 18. tests/test_human_review_label_workflow_docs.py
 19. tests/test_wallet_intelligence_architecture_contract_docs.py
 20. tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py
+21. tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py
+22. tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py
+23. tests/test_local_research_workflow_value_measurement_harness_contract_docs.py
 
-No 21st file.
+No 24th file.
 
-V2 scope correction from independent review:
-- `tools/wp/wp_spec_guard.py` is now inside scope because the existing guard cannot authorize
-  `.github/pull_request_template.md` at all.
-- `docs/deferred_items_log.md` is removed from scope. WP168G introduces no deferred material
-  issue and therefore has no truthful deferred-log change to make.
-- Package remains L with exact max_changed_files=20.
+V3 scope correction (supersedes the V2 20-file frozen scope):
+- The corrected V3 scope is EXACTLY the certified V2 20-file scope PLUS files 21-23. Files
+  1-20 are unchanged from the certified V2 scope: in particular `tools/wp/wp_spec_guard.py`
+  is RETAINED at position 6 (WP168G still implements the narrow `.github/pull_request_template.md`
+  authority correction), and `docs/deferred_items_log.md` is NOT added.
+- Files 21-23 are the three historical full-changed-set scope-registration guards proven to
+  fail on a non-empty WP168G diff (see Section 8B). They must be generalized to spec-derived
+  active-WP authority. A repository-wide full-changed-set guard scan proved these three are
+  the complete remaining blocker set (the point-in-time guard already defers to successors
+  once WP155 is merged; the wallet full-set assertion is WP159-gated; the three Section-8
+  tool-scope guards are handled separately).
+- `docs/deferred_items_log.md` remains OUT of scope and UNCHANGED. Its omission is intentional
+  and truthful: WP168G introduces no material deferred item, so there is no honest deferred-log
+  change to make. The three added guard files (21-23) are compatibility/hardening work required
+  to complete WP168G NOW so the full suite stays green — they are not deferred work and do not
+  represent any deferred item. If a genuine reason to change the deferred log is discovered,
+  STOP rather than adding a 24th path.
+- Package is re-scoped L -> XL with exact max_changed_files=23. XL authorizes SIZE only;
+  it is not implementation authority.
+- No new shared helper module, `.gitattributes`, workflow, dependency, or source-runtime path
+  is added. If a 24th path is genuinely required, STOP.
 
 The `wp_spec_guard.py` edit is NARROW:
 - authorize exactly `.github/pull_request_template.md` as a governance/evidence-policy path;
@@ -513,10 +606,20 @@ The new readiness-gate focused test suite MUST directly regression-test this exa
 - another arbitrary `.github/<other>` path still fails `AUTHORITY_CONTRADICTION`;
 - `.github/workflows/...` remains governed only by the existing workflow-files rule.
 
-If implementation genuinely requires a 21st path, STOP. Report:
+If implementation genuinely requires a 24th path, STOP. Report:
 - exact required path;
 - why unavoidable;
-- whether the package should become XL or split.
+- whether the package should split.
+
+The three added guard test suites MUST directly regression-test the generalization (Section 8B):
+- an active-WP diff whose status entry maps to a real machine spec authorizes exactly that
+  spec's required_changed_files with exact-set equality;
+- a missing or malformed machine spec fails closed;
+- an ambiguous active-WP determination fails closed;
+- an extra changed file not in the active spec fails;
+- a missing required file fails;
+- a stale hard-coded WP registration must not take precedence over the current-WP spec-derived
+  authority.
 
 ===============================================================================
 13. NEGATIVE TEST MATRIX
@@ -536,14 +639,18 @@ If implementation genuinely requires a 21st path, STOP. Report:
 12. Duplicate/conflicting input -> NR005: duplicate RULE_ID and same-key conflicting action/effect reject.
 13. Edge spelling variants -> NR003/NR004: action/domain grammar exact and closed.
 14. Case/domain variants -> NR005 regression: WP168 two-domain case policy passes; same-domain conflict rejects.
-15. Safe allowed case -> NR001-NR014 collectively: complete independently certified exact-scope package passes, including a planned new node inside an already-existing in-scope test file.
+15. Safe allowed case -> NR001-NR016 collectively: complete independently certified exact-scope package passes, including a planned new node inside an already-existing in-scope test file.
+16. Missing/malformed spec authority -> NR015: a full-changed-set guard with a missing or malformed active-WP machine spec fails closed, never accepting arbitrary changed files.
+17. Ambiguous active WP -> NR015: an ambiguous active-WP determination in a full-changed-set guard fails closed.
+18. Stale hard-coded fallback -> NR015: a leftover hard-coded per-WP registration must not take precedence over the current-WP spec-derived authorized set; extra/missing files still fail exact-set equality.
+19. Undiscovered full-changed-set guard -> NR016: scope freeze without proving discovery of every complete-changed-set guard is a governance defect; the certified scope must contain every required compatibility edit and the full suite at exact head is the backstop.
 
 ===============================================================================
 14. HARD STOPS
 ===============================================================================
 
 STOP if:
-- a 21st changed path is genuinely required;
+- a 24th changed path is genuinely required;
 - origin/main no longer contains predecessor merge f6416a34ef366ac41b4c874ac149cd1dcba671bc and drift is conflicting;
 - a new dependency or lock-file change is required;
 - `.github/workflows/` change is required;
@@ -659,11 +766,19 @@ Report:
 19. CURRENT DRAFTABILITY POSTURE
 ===============================================================================
 
-DRAFTED V2 / NOT YET AUTHORIZED.
+DRAFTED V3 (XL RE-SCOPE) / NOT YET AUTHORIZED.
 
-V2 resolves both independent-review findings:
-- scope/tool-contract: narrow PR-template authority is now explicitly in-scope via wp_spec_guard;
+V2 resolved the first two independent-review findings:
+- scope/tool-contract: narrow PR-template authority is in-scope via wp_spec_guard;
 - normative evidence planning: planned-new-node allowance is keyed on node absence plus certified test-file scope, including existing files.
+
+V3 resolves the third finding surfaced by the independent implementation hard stop:
+- full-suite scope-guard completeness: three additional historical full-changed-set
+  registration guards are generalized to spec-derived active-WP authority (Section 8B), a
+  bounded pre-freeze full-changed-set guard discovery requirement is added (Section 8C), and
+  the package is re-scoped L -> XL at exactly 23 files. A repository-wide scan proved those
+  three guards are the complete remaining blocker set. XL authorizes size only, not
+  implementation.
 
 WP168G BOOTSTRAP NOTE:
 The new `wp_readiness_gate.py` does not exist on the merged base, so WP168G itself cannot require
@@ -677,7 +792,26 @@ Required next gate for WP168G itself:
 - separate independent 12-lens draftability review;
 - exact prompt/spec hash binding;
 - PASS certificate;
-- existing wp_spec_guard exit 0;
+- canonical wp_spec_guard exit 0 under the BASE-GUARD BOOTSTRAP below;
 - explicit user implementation authorization.
+
+BASE-GUARD BOOTSTRAP (explicit; do not hide and do not overclaim):
+- The merged BASE `tools/wp/wp_spec_guard.py` intentionally does not yet authorize
+  `.github/pull_request_template.md`, so run against the BASE guard the WP168G package is
+  EXPECTED to FAIL with exactly the known `AUTHORITY_CONTRADICTION` on that one path (the
+  index of `.github/pull_request_template.md` in the required/allowed changed-file arrays).
+  All other validation — files, schema, identity, scope semantics, certificate hash binding,
+  and (given a genuine independent PASS certificate) certificate draftability — must be clean.
+  Any base-guard error other than that single known PR-template contradiction is a defect.
+- Do NOT claim the BASE/existing `wp_spec_guard` exits 0 on the WP168G package: it cannot
+  truthfully pass until the narrow in-branch guard correction is applied.
+- After the narrow in-branch `tools/wp/wp_spec_guard.py` correction (file 6), the canonical
+  guard MUST exit 0 on the WP168G package. All final implementation and readiness evidence
+  (`wp_spec_guard`, `wp_readiness_gate` default and `--check-diff`) uses the corrected
+  in-branch guard at the exact final head.
+- This bootstrap is a self-hosting artifact of adding the guard capability in the same WP; it
+  does not weaken certificate independence (the PASS certificate is issued by a separate
+  isolated reviewer context that authored none of these bytes) and it does not weaken the human
+  AUTHORIZED transition. Readiness remains never authorization.
 
 END WP168G DRAFT

@@ -6,7 +6,7 @@
     "title": "One-Shot WP Readiness and Execution Workflow Hardening",
     "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
     "package_class": "WORKFLOW_GOVERNANCE_READINESS_HARDENING",
-    "package_size_class": "L",
+    "package_size_class": "XL",
     "risk_level": 2,
     "base_branch": "main",
     "required_predecessor": {
@@ -15,10 +15,10 @@
       "merge_sha": "f6416a34ef366ac41b4c874ac149cd1dcba671bc"
     },
     "suggested_branch": "claude/wp168g-one-shot-readiness-hardening",
-    "objective": "Add one deterministic local/offline package-readiness gate that composes the existing WP-spec/certificate guard with prompt-structure validation, structured semantic contradiction detection, pre-implementation evidence-plan target coherence, post-implementation exact-node/assertion adequacy, exact-scope authority, and successor-boundary checks; narrowly extend wp_spec_guard so the exact .github/pull_request_template.md governance path requires both workflow_governance and canonical_evidence_policy; reconcile PR evidence tooling with the already-canonical PR-body-required/final-comment-optional post-WP91 policy; and replace three WP159-specific historical tool-scope exceptions with current-WP machine-spec authority. No product runtime, dependency, network, credential, strategy, paper, execution, live, or WP169 implementation.",
+    "objective": "Add one deterministic local/offline package-readiness gate that composes the existing WP-spec/certificate guard with prompt-structure validation, structured semantic contradiction detection, pre-implementation evidence-plan target coherence, post-implementation exact-node/assertion adequacy, exact-scope authority, and successor-boundary checks; narrowly extend wp_spec_guard so the exact .github/pull_request_template.md governance path requires both workflow_governance and canonical_evidence_policy; reconcile PR evidence tooling with the already-canonical PR-body-required/final-comment-optional post-WP91 policy; and replace three WP159-specific historical tool-scope exceptions with current-WP machine-spec authority. No product runtime, dependency, network, credential, strategy, paper, execution, live, or WP169 implementation. Additionally generalize three historical full-changed-set scope-registration guards so the active WP's authorized changed-file set is derived deterministically from its machine spec (exact-set equality preserved, fail-closed on missing/malformed/ambiguous authority), and record a bounded pre-freeze full-changed-set guard discovery requirement. Package re-scoped L->XL at 23 files under explicit user authorization for size only; no implementation authority is granted.",
     "capital_at_risk_usd": 0,
-    "xl_explicit_authorization": false,
-    "xl_authorization_basis": null
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Explicit user authorization to re-scope WP168G from L to XL. Beyond the three tool-scope guards already generalized, three additional historical full-changed-set registration guards (tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py, tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py, tests/test_local_research_workflow_value_measurement_harness_contract_docs.py) assert the complete branch changed-file set against a hard-coded per-WP authorized set and fail on any unregistered WP diff. Generalizing them to derive the active WP's authorized set from its machine spec is required to keep the full suite green and needs those three files in scope, giving an exact 23-file governed scope that exceeds the L 20-file maximum. XL authorizes the package size only; it does not grant implementation authority, which remains the separate independent PASS certificate plus explicit user AUTHORIZED transition."
   },
   "scope": {
     "required_changed_files": [
@@ -41,7 +41,10 @@
       "tests/test_project_status_docs.py",
       "tests/test_human_review_label_workflow_docs.py",
       "tests/test_wallet_intelligence_architecture_contract_docs.py",
-      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py"
     ],
     "allowed_changed_files": [
       "docs/wp_specs/WP168G/wp_prompt.txt",
@@ -63,7 +66,10 @@
       "tests/test_project_status_docs.py",
       "tests/test_human_review_label_workflow_docs.py",
       "tests/test_wallet_intelligence_architecture_contract_docs.py",
-      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py"
     ],
     "forbidden_prefixes": [
       ".github/workflows/",
@@ -76,14 +82,17 @@
       "credentials/",
       "secrets/"
     ],
-    "max_changed_files": 20,
+    "max_changed_files": 23,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       "tests/test_codex_workflow_docs.py",
       "tests/test_project_status_docs.py",
       "tests/test_human_review_label_workflow_docs.py",
       "tests/test_wallet_intelligence_architecture_contract_docs.py",
-      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py"
     ],
     "rollback_surface": "Revert WP168G. It changes only local/offline workflow governance, the existing WP-spec guard's narrow authority mapping for the exact PR-template path, the new readiness gate, the existing PR evidence guard, focused tests, bounded historical scope-guard compatibility, and status/repo-truth documentation. It adds no product runtime, dependency, data migration, generated artifact, credential, network, strategy, paper, execution, or live state.",
     "mode_boundaries": [
@@ -193,6 +202,14 @@
         "after": "Exact .github/pull_request_template.md requires workflow_governance=true and canonical_evidence_policy=true; other non-workflow .github paths remain unauthorized",
         "change_authorized": true,
         "compatibility_requirement": "Narrow exact-path addition only; .github/workflows authority, schemas, package-size limits, error vocabulary, certificate semantics and WP159 waiver remain unchanged.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_VALIDATION"
+      },
+      {
+        "surface": "historical full-changed-set scope-registration guards (adoption / append-only-manifest / local-research-value-measurement)",
+        "before": "Per-WP if/elif changed-set cascade with a hard-coded catch-all that fails for any WP not explicitly registered",
+        "after": "Active WP's exact authorized changed-file set is derived from its machine spec; exact-set equality preserved; fail-closed on missing/malformed/ambiguous spec authority; no wildcard/prefix weakening; no silent catch-all acceptance",
+        "change_authorized": true,
+        "compatibility_requirement": "Historical WP-specific regression behavior remains testable; a guard grants authority only from a real machine spec, never merely because a spec file exists; readiness is not authorization.",
         "authority": "LOCAL_OFFLINE_READ_ONLY_VALIDATION"
       },
       {
@@ -466,7 +483,7 @@
   },
   "evidence_plan": {
     "applicable": true,
-    "reason": "R001-R027 bind predecessor truth, the readiness gate, WP168 semantic-contradiction reviewer traps, planned-new-node semantics including new nodes in existing in-scope files, post-implementation exact-node/assertion adequacy, the narrow wp_spec_guard PR-template authority correction, exact-scope authority, PR-body-only evidence semantics, historical tool-scope migration, status reconciliation, canonical guards, and the full suite.",
+    "reason": "R001-R027 bind predecessor truth, the readiness gate, WP168 semantic-contradiction reviewer traps, planned-new-node semantics including new nodes in existing in-scope files, post-implementation exact-node/assertion adequacy, the narrow wp_spec_guard PR-template authority correction, exact-scope authority, PR-body-only evidence semantics, historical tool-scope migration, status reconciliation, canonical guards, and the full suite, plus generalization of three historical full-changed-set scope-registration guards to machine-spec authority (R028-R030) and a bounded pre-freeze full-changed-set guard discovery requirement (R031).",
     "items": [
       {
         "requirement_id": "R001",
@@ -634,7 +651,7 @@
         "source": "readiness-guard",
         "test": "exact diff readiness",
         "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP168G/wp_prompt.txt --spec docs/wp_specs/WP168G/wp_spec.json --certificate docs/wp_specs/WP168G/draftability_certificate.json --repo-root . --check-diff --base origin/main --head HEAD",
-        "expected_result": "at final implementation head actual changed paths equal the exact 20-file machine-spec set, all planned pytest evidence nodes exist exactly, and bounded assertion-adequacy passes"
+        "expected_result": "at final implementation head actual changed paths equal the exact 23-file machine-spec set, all planned pytest evidence nodes exist exactly, and bounded assertion-adequacy passes"
       },
       {
         "requirement_id": "R025",
@@ -656,6 +673,34 @@
         "test": "test_wp_spec_guard_authorizes_only_exact_pr_template_governance_path",
         "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
         "expected_result": "the existing wp_spec_guard accepts exact .github/pull_request_template.md only when workflow_governance and canonical_evidence_policy are both true; arbitrary other non-workflow .github paths remain AUTHORITY_CONTRADICTION and .github/workflows semantics are unchanged"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "pytest",
+        "test": "test_adoption_scope_guard_derives_active_wp_scope_from_machine_spec",
+        "command": "python -m pytest -q tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+        "expected_result": "the adoption full-changed-set guard derives the active WP's exact authorized changed-file set from its machine spec, still enforces exact-set equality, fails closed on missing/malformed/ambiguous spec authority, and no longer fails solely because the WP id (WP168G) is new"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "pytest",
+        "test": "test_append_only_scope_guard_derives_active_wp_scope_from_machine_spec",
+        "command": "python -m pytest -q tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+        "expected_result": "the append-only manifest full-changed-set guard derives the active WP's exact authorized changed-file set from its machine spec, preserves exact-set equality and dependency/workflow/generated-artifact prohibitions, and fails closed on missing/malformed/ambiguous spec authority"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "test_local_research_scope_guard_derives_active_wp_scope_from_machine_spec",
+        "command": "python -m pytest -q tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+        "expected_result": "the local-research value-measurement full-changed-set guard derives the active WP's exact authorized changed-file set from its machine spec, preserves exact-set equality and implementation/deferred-log prohibitions, and fails closed on missing/malformed/ambiguous spec authority"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "pytest",
+        "test": "test_validation_matrix_requires_full_changed_set_guard_discovery_before_scope_freeze",
+        "command": "python -m pytest -q tests/test_codex_workflow_docs.py",
+        "expected_result": "the validation matrix requires, before scope freeze for a file-changing WP, bounded discovery of repository guards that evaluate the complete changed-file set and proof that the certified scope contains every required compatibility edit; the claim is bounded to mechanically discoverable current patterns plus full-suite validation and does not overclaim proof of all future test dependencies"
       }
     ]
   },
