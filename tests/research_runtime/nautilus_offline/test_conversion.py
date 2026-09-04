@@ -303,6 +303,18 @@ def test_decimal_to_price_quantity_is_exact_no_float(tmp_path):
     assert isinstance(add.order.price, Price) and isinstance(add.order.size, Quantity)
     assert isinstance(add.order.price.raw, int) and isinstance(add.order.size.raw, int)
 
+    # Representative 9-decimal fixed-point values are exact/lossless (the frozen "within
+    # FIXED_PRECISION 9" requirement). `>= 9` proves it on high-precision (16) wheels too.
+    for text in ("0.123456789", "0.000000001", "0.999999999"):
+        p = Price.from_str(text)
+        q = Quantity.from_str(text)
+        assert str(p) == text and str(q) == text                       # round-trip unchanged
+        assert p == Price.from_str(text) and q == Quantity.from_str(text)
+        assert isinstance(p.raw, int) and isinstance(q.raw, int)       # no binary float
+        # integer scaling at the actual build precision, exact for 9 fractional digits.
+        assert p.raw == int(Decimal(text) * (10 ** FIXED_PRECISION))
+        assert Decimal(str(p)) == Decimal(text)
+
 
 def test_tick_size_change_committed_as_regime_metadata(tmp_path):
     from nautilus_trader.model.data import OrderBookDeltas, OrderBookDelta, TradeTick
@@ -380,28 +392,11 @@ def test_receive_time_primary_ordering_when_event_time_disagrees(tmp_path):
     assert receipt.replay_processed_event_count == 3
 
 
-def test_equal_ts_init_events_have_deterministic_tie_order(tmp_path):
-    # R015: two distinct events with identical ts_init are ordered deterministically by the
-    # frozen total key; here equal ts_init/ts_event with different kinds tie-break by
-    # event_kind_rank (price_change=1 before last_trade_price=2), independent of input order.
-    from nautilus_trader.model.data import OrderBookDelta, TradeTick
-    rows = [
-        trade(1000, 1000, "0.4000", "1.000000", "BUY", "0x" + "c" * 64),        # rank 2
-        price_change(1000, 1000, "0.4000", "1.000000", "BUY"),                   # rank 1
-    ]
-    forward = valid_stream(tmp_path / "f", rows=rows)
-    backward = valid_stream(tmp_path / "b", rows=list(reversed(rows)))
-    kinds = [type(o).__name__ for o in forward.converted_events
-             if isinstance(o, (OrderBookDelta, TradeTick))]
-    assert kinds == ["OrderBookDelta", "TradeTick"]  # price_change (1) before trade (2)
-    # Deterministic regardless of physical input order.
-    assert forward.ordered_event_digests == backward.ordered_event_digests
-
-
-def test_event_kind_rank_orders_equal_ts_init_mixed_types(tmp_path):
-    # R046: equal ts_init AND equal ts_event across all four event kinds are ordered by the
-    # frozen event_kind_rank book < price_change < last_trade_price < tick_size_change,
-    # independent of physical input order.
+def _assert_four_kind_equal_ts_tie_order(tmp_path):
+    """R015/R046 shared proof: all four event kinds at equal ts_init AND equal ts_event are
+    ordered by the frozen total key, which here reduces to event_kind_rank
+    book(0) < price_change(1) < last_trade_price(2) < tick_size_change(3), independent of
+    physical input order."""
     from nautilus_trader.model.data import OrderBookDeltas, OrderBookDelta, TradeTick
     bk = book(1000, 1000, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]])
     pc = price_change(1000, 1000, "0.4000", "1.000000", "BUY")
@@ -415,24 +410,45 @@ def test_event_kind_rank_orders_equal_ts_init_mixed_types(tmp_path):
 
     expected = [base_digest(bk), base_digest(pc), base_digest(tr), base_digest(tk)]
 
-    # Feed the four events in reversed rank order; canonical order must still be by rank.
-    stream = valid_stream(tmp_path / "mixed", rows=[tk, tr, pc, bk])
-    assert stream.is_valid
-    got = [d.rsplit(":", 1)[0] for d in stream.ordered_event_digests]
+    # Feed the four events scrambled/reversed relative to rank order.
+    scrambled = valid_stream(tmp_path / "mixed", rows=[tk, tr, pc, bk])
+    reversed_in = valid_stream(tmp_path / "mixed2", rows=[bk, pc, tr, tk])
+    assert scrambled.is_valid and reversed_in.is_valid
+    got = [d.rsplit(":", 1)[0] for d in scrambled.ordered_event_digests]
     assert got == expected  # book(0) < price_change(1) < last_trade_price(2) < tick_size_change(3)
-
+    # Physical input order does not change the canonical ordering.
+    assert scrambled.ordered_event_digests == reversed_in.ordered_event_digests
     # The three market-data objects also appear in book < price_change < trade order.
-    md_kinds = [type(o).__name__ for o in stream.converted_events
+    md_kinds = [type(o).__name__ for o in scrambled.converted_events
                 if isinstance(o, (OrderBookDeltas, OrderBookDelta, TradeTick))]
     assert md_kinds == ["OrderBookDeltas", "OrderBookDelta", "TradeTick"]
 
 
+def test_equal_ts_init_events_have_deterministic_tie_order(tmp_path):
+    # R015: distinct events with identical ts_init/ts_event are ordered deterministically by the
+    # frozen total key (event_kind_rank book<price_change<last_trade_price<tick_size_change).
+    _assert_four_kind_equal_ts_tie_order(tmp_path)
+
+
+def test_event_kind_rank_orders_equal_ts_init_mixed_types(tmp_path):
+    # R046: equal ts_init AND equal ts_event across all four event kinds are ordered by the
+    # frozen event_kind_rank, independent of physical input order.
+    _assert_four_kind_equal_ts_tie_order(tmp_path)
+
+
 def test_input_enumeration_order_invariance(tmp_path):
+    # R041: physical input enumeration order does not affect the canonical event digests OR the
+    # replay identity.
     rows = default_rows()
     forward = valid_stream(tmp_path / "a", rows=list(rows))
-    reversed_rows = list(reversed(rows))
-    backward = valid_stream(tmp_path / "b", rows=reversed_rows)
+    backward = valid_stream(tmp_path / "b", rows=list(reversed(rows)))
     assert forward.ordered_event_digests == backward.ordered_event_digests
+    # Replay identity is likewise enumeration-order invariant.
+    r_fwd = run_offline_replay(forward, tmp_path / "cf")
+    r_bwd = run_offline_replay(backward, tmp_path / "cb")
+    assert r_fwd.is_valid and r_bwd.is_valid
+    assert r_fwd.replay_digest == r_bwd.replay_digest
+    assert r_fwd == r_bwd  # full receipt identical (physical path excluded from identity)
 
 
 def test_two_byte_identical_duplicates_retain_multiplicity_two(tmp_path):
@@ -455,17 +471,41 @@ def test_three_byte_identical_duplicates_retain_multiplicity_three(tmp_path):
 
 
 def test_equal_timestamp_same_kind_orders_by_canonical_row_bytes(tmp_path):
-    rows = [
+    # R047: same ts_init + same ts_event + same kind + different content are ordered by
+    # (canonical_row_digest, canonical_row_bytes). Independently recompute the tie key from the
+    # frozen normalization helpers and prove the stream matches that exact order.
+    from nautilus_trader.model.data import TradeTick
+    from src.research_runtime.nautilus_offline.conversion import (
+        _validate_and_normalize_row, _canonical_json_bytes)
+
+    raw = [
         trade(1000, 1000, "0.5000", "1.000000", "BUY", "0x" + "2" * 64),
         trade(1000, 1000, "0.4000", "1.000000", "BUY", "0x" + "1" * 64),
     ]
-    stream = valid_stream(tmp_path, rows=rows)
-    from nautilus_trader.model.data import TradeTick
-    prices = [str(o.price) for o in stream.converted_events if isinstance(o, TradeTick)]
-    # Deterministic content order (by digest then bytes); stable across runs.
-    again = valid_stream(tmp_path / "again", rows=list(reversed(rows)))
+    # 1-3. independently normalize each row, obtain canonical bytes + digest.
+    computed = []
+    for r in raw:
+        canonical = _validate_and_normalize_row(r, MARKET, TOKEN)["_canonical"]
+        row_bytes = _canonical_json_bytes(canonical)
+        digest = hashlib.sha256(row_bytes).hexdigest()
+        computed.append((digest, row_bytes, canonical["price"]))
+    # 4. ts_init/ts_event/kind are all tied -> the total key reduces to (digest, bytes).
+    expected = sorted(computed, key=lambda c: (c[0], c[1]))
+    expected_digests = [c[0] for c in expected]
+    expected_prices = [c[2] for c in expected]
+
+    stream = valid_stream(tmp_path, rows=raw)
+    # 5. stream ordered digest bases appear in the exact independently-computed order.
+    got_digests = [d.rsplit(":", 1)[0] for d in stream.ordered_event_digests]
+    assert got_digests == expected_digests
+    # 6. converted TradeTick prices correspond to the same expected row order (numeric equality,
+    #    display precision differs from the canonical decimal scale).
+    got_prices = [Decimal(str(o.price)) for o in stream.converted_events if isinstance(o, TradeTick)]
+    assert got_prices == [Decimal(p) for p in expected_prices]
+    # 7. reversing physical input yields the identical canonical order.
+    again = valid_stream(tmp_path / "again", rows=list(reversed(raw)))
+    assert [d.rsplit(":", 1)[0] for d in again.ordered_event_digests] == expected_digests
     assert stream.ordered_event_digests == again.ordered_event_digests
-    assert len(prices) == 2
 
 
 # --------------------------- provenance / semantics --------------------------
@@ -561,18 +601,96 @@ def test_source_hash_revalidation_failure_fails_closed(tmp_path):
     assert _scan_public_result_for_echo(stream, ("Traceback", "\\", str(tmp_path))) == ()
 
 
+# schema-valid non-null sample for every event-specific field (used to populate an unowned
+# field, which must fail closed, and to build valid base rows).
+_FIELD_SAMPLES = {
+    "bids": json.dumps([["0.4000", "1.000000"]]),
+    "asks": json.dumps([["0.6000", "1.000000"]]),
+    "price": Decimal("0.4000"),
+    "size": Decimal("1.000000"),
+    "side": "BUY",
+    "best_bid": Decimal("0.4000"),
+    "best_ask": Decimal("0.6000"),
+    "fee_rate_bps": 0,
+    "transaction_hash": "0x" + "a" * 64,
+    "old_tick_size": Decimal("0.0100"),
+    "new_tick_size": Decimal("0.0010"),
+}
+_OWNED_BY_EVENT = {
+    "book": ("bids", "asks"),
+    "price_change": ("price", "size", "side", "best_bid", "best_ask"),
+    "last_trade_price": ("price", "size", "side", "fee_rate_bps", "transaction_hash"),
+    "tick_size_change": ("old_tick_size", "new_tick_size"),
+}
+_ALL_EVENT_SPECIFIC = tuple(_FIELD_SAMPLES)
+
+
+def _base_row(event_type):
+    return row(event_type, 1, 2, **{f: _FIELD_SAMPLES[f] for f in _OWNED_BY_EVENT[event_type]})
+
+
+def _assert_event_semantic_matrix(tmp_path):
+    """R058: for every event type, each owned field is required non-null, each unowned
+    event-specific field must be null, invalid sides fail, and the canonical form carries the
+    COMPLETE event-specific key set with every unowned field serialized as explicit None."""
+    from src.research_runtime.nautilus_offline.conversion import _validate_and_normalize_row
+
+    for event_type, owned in _OWNED_BY_EVENT.items():
+        # (A) every owned field individually null -> exact CONVERSION_ERROR + no echo.
+        for field_name in owned:
+            bad = _base_row(event_type)
+            bad[field_name] = None
+            res = valid_stream(tmp_path / f"own_{event_type}_{field_name}", rows=[bad])
+            assert res.is_valid is False, (event_type, field_name)
+            assert res.error_codes == (CONVERSION_ERROR,), (event_type, field_name)
+            assert _scan_public_result_for_echo(res, ("Traceback", "\\")) == ()
+        # (B) every unowned event-specific field populated -> exact CONVERSION_ERROR + no echo.
+        for field_name in _ALL_EVENT_SPECIFIC:
+            if field_name in owned:
+                continue
+            bad = _base_row(event_type)
+            bad[field_name] = _FIELD_SAMPLES[field_name]
+            res = valid_stream(tmp_path / f"unown_{event_type}_{field_name}", rows=[bad])
+            assert res.is_valid is False, (event_type, field_name)
+            assert res.error_codes == (CONVERSION_ERROR,), (event_type, field_name)
+            assert _scan_public_result_for_echo(res, ("Traceback", "\\")) == ()
+        # (C) side-owning event types: invalid side token -> exact CONVERSION_ERROR.
+        if "side" in owned:
+            bad = _base_row(event_type)
+            bad["side"] = "HODL"
+            res = valid_stream(tmp_path / f"side_{event_type}", rows=[bad])
+            assert res.is_valid is False and res.error_codes == (CONVERSION_ERROR,)
+        # (E) valid base row: canonical form has the complete key set; unowned fields are None.
+        norm = _validate_and_normalize_row(_base_row(event_type), MARKET, TOKEN)
+        canonical = norm["_canonical"]
+        for field_name in _ALL_EVENT_SPECIFIC:
+            assert field_name in canonical, (event_type, field_name)
+            if field_name in owned:
+                assert canonical[field_name] is not None, (event_type, field_name)
+            else:
+                assert canonical[field_name] is None, (event_type, field_name)  # explicit null
+        # canonical JSON therefore serializes the unowned keys as literal null.
+        from src.research_runtime.nautilus_offline.conversion import _canonical_json_bytes
+        text = _canonical_json_bytes(canonical).decode("utf-8")
+        for field_name in _ALL_EVENT_SPECIFIC:
+            if field_name not in owned:
+                assert f'"{field_name}":null' in text, (event_type, field_name)
+        # (Defect A trap #5) an omitted-field object is NOT byte-equivalent to the correct
+        # explicit-null canonical object: absence and explicit null must never be conflated.
+        unowned_present = [f for f in _ALL_EVENT_SPECIFIC if f not in owned]
+        if unowned_present:
+            omitted = {k: v for k, v in canonical.items() if k != unowned_present[0]}
+            assert _canonical_json_bytes(omitted) != _canonical_json_bytes(canonical)
+
+    # (F) tick sizes <= 0 remain rejected.
+    for bad_val in ("0.0000", "-0.0010"):
+        bad = _base_row("tick_size_change")
+        bad["new_tick_size"] = Decimal(bad_val)
+        assert valid_stream(tmp_path / f"tick{bad_val}", rows=[bad]).is_valid is False
+
+
 def test_event_semantic_matrix_owned_and_null_fields(tmp_path):
-    # price_change with a null owned field (side) -> fail closed.
-    bad_owned = row("price_change", 1, 2, price=Decimal("0.4000"), size=Decimal("1.000000"),
-                    side=None, best_bid=Decimal("0.4000"), best_ask=Decimal("0.6000"))
-    assert valid_stream(tmp_path / "a", rows=[bad_owned]).is_valid is False
-    # book with an unowned field populated (price) -> fail closed.
-    bad_unowned = row("book", 1, 2, bids=json.dumps([["0.4000", "1.000000"]]),
-                      asks=json.dumps([["0.6000", "1.000000"]]), price=Decimal("0.4000"))
-    assert valid_stream(tmp_path / "b", rows=[bad_unowned]).is_valid is False
-    # invalid side token -> fail closed.
-    bad_side = price_change(1, 2, "0.4000", "1.000000", "HODL")
-    assert valid_stream(tmp_path / "c", rows=[bad_side]).is_valid is False
+    _assert_event_semantic_matrix(tmp_path)
 
 
 def test_unsupported_pmxt_event_and_malformed_book_rejected(tmp_path):
@@ -630,9 +748,10 @@ def test_book_json_shape_and_canonical_ordering(tmp_path):
 
 # --------------------------- field coverage (R061) ---------------------------
 
-def test_every_public_dataclass_field_is_classified():
-    # R061: every public dataclass field carries an explicit output-handling classification
-    # (SCANNED / EXEMPT / OPAQUE_EXCLUDED). A future unclassified field fails the coverage gate.
+def _assert_public_dataclass_field_classification_complete():
+    # Shared R026/R061 proof: every public dataclass field carries an explicit output-handling
+    # classification (SCANNED / EXEMPT / OPAQUE_EXCLUDED) AND an explicit identity role
+    # (COMMITTED / EXCLUDED / NONE). A future unclassified field fails the coverage gate.
     S, E, X = "SCANNED", "EXEMPT", "OPAQUE_EXCLUDED"
     classification = {
         NautilusRuntimeCompatibilityResult: {
@@ -728,9 +847,93 @@ def test_every_public_dataclass_field_is_classified():
     assert _coverage_ok(_Synthetic, {"is_valid": E}) is False
 
 
+def test_every_public_dataclass_field_is_classified():
+    # R061: exact field classification coverage + identity role + synthetic-field failure.
+    _assert_public_dataclass_field_classification_complete()
+
+
 def test_converted_stream_source_external_dataset_id(tmp_path):
     stream = valid_stream(tmp_path)
     assert stream.source_external_dataset_id == "ext:pmxt:test0001"
+
+
+def _rows_with_market(market_bytes):
+    r = [book(1000, 1005, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
+         price_change(1000, 1006, "0.4100", "1.000000", "BUY"),
+         trade(1000, 1007, "0.4100", "1.000000", "BUY", "0x" + "d" * 64)]
+    for rec in r:
+        rec["market"] = market_bytes
+    return r
+
+
+def test_wp167_source_market_case_normalizes_to_lowercase(tmp_path):
+    # R063 / Defect B: the WP167 source-row market accepts WP167-valid ASCII hex in either case
+    # and canonicalizes the 64-hex body to lowercase; lowercase/uppercase/mixed representations
+    # of the same semantic row produce identical canonical market, event digests, canonical
+    # ordering, and replay identity. The context condition_id stays strict lowercase.
+    from src.research_runtime.nautilus_offline import build_binary_option
+    from src.research_runtime.nautilus_offline.conversion import (
+        _normalize_market, _ConversionError)
+
+    lower_market = "0x" + "a" * 64
+    # unit: accept upper/mixed/lower, always canonicalize to lowercase (bytes and str).
+    assert _normalize_market(("0x" + "A" * 64).encode("ascii")) == lower_market
+    assert _normalize_market("0x" + "aA" * 32) == lower_market
+    assert _normalize_market(("0x" + "a" * 64).encode("ascii")) == lower_market
+    # unit: invalid variants fail closed.
+    for bad in ("0x" + "g" * 64, "0x" + "G" * 64, "1x" + "a" * 64,
+                "0x" + "a" * 63, "0x" + "a" * 65, "0x" + "ａ" * 64):
+        with pytest.raises(_ConversionError):
+            _normalize_market(bad)
+    with pytest.raises(_ConversionError):            # non-ASCII bytes fail the strict decode
+        _normalize_market(b"0x" + b"\xff" * 64)
+
+    # integration: three case variants of the SAME semantic rows are semantically identical.
+    lower = valid_stream(tmp_path / "lo", rows=_rows_with_market(("0x" + "a" * 64).encode("ascii")))
+    upper = valid_stream(tmp_path / "up", rows=_rows_with_market(("0x" + "A" * 64).encode("ascii")))
+    mixed = valid_stream(tmp_path / "mx", rows=_rows_with_market(("0x" + "aA" * 32).encode("ascii")))
+    for s in (lower, upper, mixed):
+        assert s.is_valid
+        assert s.instrument_id == f"{lower_market}-{TOKEN}.POLYMARKET"   # canonical lowercase
+    assert lower.ordered_event_digests == upper.ordered_event_digests == mixed.ordered_event_digests
+
+    # replay identity is identical across the case variants (engine dispatch).
+    rl = run_offline_replay(lower, tmp_path / "cl")
+    ru = run_offline_replay(upper, tmp_path / "cu")
+    rm = run_offline_replay(mixed, tmp_path / "cm")
+    assert rl.is_valid and ru.is_valid and rm.is_valid
+    assert rl.replay_digest == ru.replay_digest == rm.replay_digest
+
+    # context condition_id remains a strict lowercase boundary (alternate case rejected).
+    assert build_binary_option(_context(condition_id="0x" + "A" * 64)).is_valid is False
+    assert build_binary_option(_context(condition_id="0x" + "aA" * 32)).is_valid is False
+
+
+def test_distinct_trades_same_tx_time_have_distinct_trade_ids(tmp_path):
+    # R047/Defect C (conversion level): two last_trade_price rows sharing transaction_hash,
+    # ts_event, ts_init and side but differing in price/size are distinct canonical rows (each
+    # duplicate ordinal 0); their canonical digests AND engine-facing TradeIds must be distinct.
+    from nautilus_trader.model.data import TradeTick
+    tx = "0x" + "e" * 64
+    rows = [book(500, 500, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
+            trade(1000, 1000, "0.4100", "1.000000", "BUY", tx),
+            trade(1000, 1000, "0.4200", "2.000000", "BUY", tx)]
+    stream = valid_stream(tmp_path / "src", rows=rows)
+    assert stream.is_valid
+    # distinct canonical digests (different content).
+    trade_digests = [d for d in stream.ordered_event_digests]
+    assert len(set(trade_digests)) == len(trade_digests)
+    ticks = [o for o in stream.converted_events if isinstance(o, TradeTick)]
+    assert len(ticks) == 2
+    assert str(ticks[0].trade_id) != str(ticks[1].trade_id)   # collision-safe TradeId
+    # byte-identical duplicate trades still get unique engine-facing ids.
+    dup_rows = [book(500, 500, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
+                trade(1000, 1000, "0.4100", "1.000000", "BUY", tx),
+                trade(1000, 1000, "0.4100", "1.000000", "BUY", tx)]
+    dup_stream = valid_stream(tmp_path / "dup", rows=dup_rows)
+    dup_ticks = [o for o in dup_stream.converted_events if isinstance(o, TradeTick)]
+    assert len(dup_ticks) == 2
+    assert str(dup_ticks[0].trade_id) != str(dup_ticks[1].trade_id)   # unique despite identical bytes
 
 
 def test_negative_matrix_categories_map_to_tests():
@@ -757,7 +960,8 @@ def test_negative_matrix_categories_map_to_tests():
         12: ("TEST", ["test_two_byte_identical_duplicates_retain_multiplicity_two",
                       "test_source_files_map_one_to_one_to_descriptor_objects"]),
         13: ("NOT_APPLICABLE", "Inputs are typed pmxt-v2 columns/tokens, not free-text subject to typos."),
-        14: ("TEST", ["test_missing_or_malformed_market_identity_is_rejected"]),
+        14: ("TEST", ["test_wp167_source_market_case_normalizes_to_lowercase",
+                      "test_missing_or_malformed_market_identity_is_rejected"]),
         15: ("TEST", ["test_book_snapshot_conversion", "test_offline_replay_processes_all_events"]),
     }
     assert set(matrix) == set(range(1, 16))
@@ -778,6 +982,44 @@ def test_negative_matrix_categories_map_to_tests():
                 assert node in defined, f"category {number} names missing test {node}"
         else:
             assert kind == "NOT_APPLICABLE" and isinstance(payload, str) and payload
+
+    # Second mapping: every WP168 failure domain named by the frozen R027 expected_result maps
+    # to a concrete focused test node that exists and is collected.
+    wp168_failure_domains = {
+        "unsupported_python": ["test_unsupported_python_runtime_fails_closed"],
+        "dependency_version": ["test_wrong_nautilus_version_fails_closed"],
+        "required_import": ["test_required_import_failure_fails_closed"],
+        "instrument_market_id": ["test_missing_or_malformed_market_identity_is_rejected"],
+        "precision": ["test_decimal_to_price_quantity_is_exact_no_float",
+                      "test_all_prices_are_exact_multiples_of_finest_increment"],
+        "ordering": ["test_equal_ts_init_events_have_deterministic_tie_order",
+                     "test_equal_timestamp_same_kind_orders_by_canonical_row_bytes",
+                     "test_receive_time_primary_ordering_when_event_time_disagrees"],
+        "decimal": ["test_decimal_to_price_quantity_is_exact_no_float",
+                    "test_book_json_shape_and_canonical_ordering"],
+        "event": ["test_unsupported_pmxt_event_and_malformed_book_rejected",
+                  "test_event_semantic_matrix_owned_and_null_fields"],
+        "book": ["test_book_snapshot_conversion",
+                 "test_unsupported_pmxt_event_and_malformed_book_rejected",
+                 "test_book_json_shape_and_canonical_ordering"],
+        "catalog_write": ["test_catalog_corruption_or_query_mismatch_rejected"],
+        "catalog_query": ["test_catalog_corruption_or_query_mismatch_rejected"],
+        "replay_count": ["test_replay_count_or_digest_mismatch_rejected"],
+        "replay_digest_parity": ["test_replay_count_or_digest_mismatch_rejected",
+                                 "test_identity_constants_and_digest_recomputation"],
+        "no_echo": ["test_compatibility_result_supported_and_no_echo",
+                    "test_unsupported_pmxt_event_and_malformed_book_rejected",
+                    "test_catalog_corruption_or_query_mismatch_rejected",
+                    "test_replay_count_or_digest_mismatch_rejected",
+                    "test_receipt_field_coverage_and_invalid_result_no_echo"],
+    }
+    # category 5 (timestamp) is bounded to invalid-representation/receive-time ordering only.
+    assert "test_invalid_timestamp_value_fails_closed" in defined
+    # category 6 (execution authority) is a hard constant-False proof.
+    assert "test_execution_authority_is_constant_false" in defined
+    for domain, nodes in wp168_failure_domains.items():
+        for node in nodes:
+            assert node in defined, f"failure domain {domain} names missing test {node}"
 
 
 def test_bounded_iter_batches_source_processing(tmp_path, monkeypatch):

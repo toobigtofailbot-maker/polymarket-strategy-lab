@@ -97,6 +97,44 @@ def test_engine_same_kind_trade_tie_order(tmp_path):
     assert receipt.replay_processed_event_count == 3
 
 
+def test_same_tx_time_distinct_trades_engine_order_and_identity(tmp_path):
+    # Defect C engine proof: two last_trade_price rows sharing transaction_hash, ts_event,
+    # ts_init and side but differing in content are distinct canonical rows (each ordinal 0);
+    # collision-safe engine-facing TradeIds let the engine-observed order equal the exact
+    # canonical order, and physical input reversal yields identical order and replay identity.
+    from nautilus_trader.model.data import TradeTick
+    tx = "0x" + "e" * 64
+    rows = [book(500, 500, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
+            trade(1000, 1000, "0.4100", "1.000000", "BUY", tx),
+            trade(1000, 1000, "0.4200", "2.000000", "BUY", tx)]
+    stream = valid_stream(tmp_path / "fwd", rows=rows)
+    assert stream.is_valid
+    ticks = [o for o in stream.converted_events if isinstance(o, TradeTick)]
+    assert len(ticks) == 2
+    assert str(ticks[0].trade_id) != str(ticks[1].trade_id)          # distinct engine ids
+    assert len(set(stream.ordered_event_digests)) == len(stream.ordered_event_digests)
+
+    receipt = run_offline_replay(stream, tmp_path / "cf")
+    assert receipt.is_valid                                          # engine order == canonical
+    assert receipt.replay_processed_event_count == 3
+
+    # Physical input reversal -> identical canonical order, engine order and replay identity.
+    rev = valid_stream(tmp_path / "rev", rows=list(reversed(rows)))
+    assert rev.ordered_event_digests == stream.ordered_event_digests
+    receipt_rev = run_offline_replay(rev, tmp_path / "cr")
+    assert receipt_rev.is_valid
+    assert receipt_rev.replay_digest == receipt.replay_digest
+
+    # Byte-identical duplicate trades still replay with unique engine-facing ids.
+    dup_rows = [book(500, 500, [["0.4000", "1.000000"]], [["0.6000", "1.000000"]]),
+                trade(1000, 1000, "0.4100", "1.000000", "BUY", tx),
+                trade(1000, 1000, "0.4100", "1.000000", "BUY", tx)]
+    dup = valid_stream(tmp_path / "dup", rows=dup_rows)
+    dup_ticks = [o for o in dup.converted_events if isinstance(o, TradeTick)]
+    assert str(dup_ticks[0].trade_id) != str(dup_ticks[1].trade_id)
+    assert run_offline_replay(dup, tmp_path / "cd").is_valid
+
+
 def test_receipt_identity_is_path_independent_and_mutation_sensitive(tmp_path, monkeypatch):
     import dataclasses as _dc
     stream = valid_stream(tmp_path / "src")

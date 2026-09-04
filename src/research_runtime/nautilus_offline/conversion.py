@@ -252,9 +252,21 @@ def _iter_source_rows(source_file: PmxtV2SourceFile):
             yield {name: columns[name][index] for name in names}
 
 
+_HEX_LOWER = "0123456789abcdef"
+_HEX_ANY = "0123456789abcdefABCDEF"
+
+
 def _normalize_market(value: object) -> str:
+    # WP167 pmxt-v2 SOURCE-ROW market: accepts WP167-valid ASCII hex in either case
+    # ("0x" + 64 hex, a-f OR A-F) and canonicalizes the 64-hex body to lowercase before
+    # comparison/serialization/identity. Wrong prefix/length, non-hex, and non-ASCII/Unicode
+    # lookalikes fail closed. (Distinct from BinaryOptionMarketContext.condition_id, which must
+    # already be canonical lowercase and rejects alternate case at its own public boundary.)
     if isinstance(value, bytes):
-        text = value.decode("ascii")
+        try:
+            text = value.decode("ascii")
+        except UnicodeDecodeError:
+            raise _ConversionError()
     elif isinstance(value, str):
         text = value
     else:
@@ -262,9 +274,9 @@ def _normalize_market(value: object) -> str:
     if len(text) != 66 or not text.startswith("0x"):
         raise _ConversionError()
     body = text[2:]
-    if any(ch not in "0123456789abcdef" for ch in body):
+    if any(ch not in _HEX_ANY for ch in body):
         raise _ConversionError()
-    return text
+    return "0x" + body.lower()
 
 
 def _normalize_asset_id(value: object) -> str:
@@ -489,10 +501,17 @@ def convert_pmxt_v2_events(
                         size=Quantity.from_str(_decimal_text(size, size_precision)),
                         aggressor_side=aggressor,
                         trade_id=TradeId(
-                            # Identity-excluded Nautilus id; duplicate ordinal keeps it unique
-                            # for exact byte-identical duplicate rows (which share a hash).
+                            # Engine-facing, identity-EXCLUDED Nautilus TradeId derived from
+                            # canonical, physical-order-independent per-event material: the
+                            # canonical-sort sequence position, the canonical_row_digest, and the
+                            # duplicate ordinal. This guarantees distinct ids for distinct
+                            # canonical rows (even same transaction_hash/ts/side but different
+                            # price/size, which each have ordinal 0) and unique ids for
+                            # byte-identical duplicates (same digest, distinct sequence+ordinal),
+                            # so the engine-observed order can distinguish any reordering. Never
+                            # derived from physical row/file/path/query order or the hash alone.
                             hashlib.sha256(
-                                f"{norm['transaction_hash']}:{ordinal}".encode("utf-8")
+                                f"{sequence}:{norm['_digest']}:{ordinal}".encode("utf-8")
                             ).hexdigest()[:36]
                         ),
                         ts_event=ts_event,
@@ -612,14 +631,37 @@ def _validate_and_normalize_row(
         norm["old_tick_size"] = _decimal_text(old_tick, PMXT_V2_DECIMAL_SPECS["old_tick_size"][1])
         norm["new_tick_size"] = _decimal_text(new_tick, PMXT_V2_DECIMAL_SPECS["new_tick_size"][1])
 
-    # Build the canonical (semantic-bytes) view: decimals as fixed-point text, null for
-    # unowned, book levels normalized. Internal keys prefixed with "_" are excluded.
-    canonical = {k: v for k, v in norm.items() if not k.startswith("_") and k not in ("bids", "asks")}
+    # Build the canonical (semantic-bytes) view: fixed common keys plus the COMPLETE
+    # event-specific key set. Owned fields carry their canonical fixed-point/text value; every
+    # unowned event-specific field is serialized as explicit ``null`` (Python None) so the
+    # canonical JSON preserves explicit nulls per the frozen serialization contract. Internal
+    # "_"-prefixed keys never enter canonical bytes.
+    owned_canonical: dict[str, object] = {}
     if event_type == "book":
-        canonical["bids"] = norm["_canon_bids"]
-        canonical["asks"] = norm["_canon_asks"]
-    if event_type in ("price_change", "last_trade_price"):
-        canonical["price"] = _decimal_text(norm["price"], PMXT_V2_DECIMAL_SPECS["price"][1])
-        canonical["size"] = _decimal_text(norm["size"], PMXT_V2_DECIMAL_SPECS["size"][1])
+        owned_canonical["bids"] = norm["_canon_bids"]
+        owned_canonical["asks"] = norm["_canon_asks"]
+    elif event_type in ("price_change", "last_trade_price"):
+        owned_canonical["price"] = _decimal_text(norm["price"], PMXT_V2_DECIMAL_SPECS["price"][1])
+        owned_canonical["size"] = _decimal_text(norm["size"], PMXT_V2_DECIMAL_SPECS["size"][1])
+        owned_canonical["side"] = norm["side"]
+        if event_type == "price_change":
+            owned_canonical["best_bid"] = norm["best_bid"]
+            owned_canonical["best_ask"] = norm["best_ask"]
+        else:
+            owned_canonical["fee_rate_bps"] = norm["fee_rate_bps"]
+            owned_canonical["transaction_hash"] = norm["transaction_hash"]
+    else:  # tick_size_change
+        owned_canonical["old_tick_size"] = norm["old_tick_size"]
+        owned_canonical["new_tick_size"] = norm["new_tick_size"]
+
+    canonical: dict[str, object] = {
+        "event_type": event_type,
+        "market": market,
+        "asset_id": asset_id,
+        "ts_event": ts_event,
+        "ts_init": ts_init,
+    }
+    for field_name in _EVENT_SPECIFIC_FIELDS:
+        canonical[field_name] = owned_canonical.get(field_name)  # unowned -> explicit None/null
     norm["_canonical"] = canonical
     return norm
