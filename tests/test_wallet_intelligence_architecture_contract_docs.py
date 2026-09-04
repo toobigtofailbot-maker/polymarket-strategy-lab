@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -475,6 +476,41 @@ def test_only_allowed_wallet_src_files_changed() -> None:
     )
 
 
+def _spec_authorized_tool_paths(changed) -> set[str]:
+    """Governance-tool paths authorized by the current WP machine spec(s).
+
+    Any WP whose status entry is in ``changed`` contributes the ``tools/`` paths declared
+    in its machine-spec ``required_changed_files``. Bounded and deterministic; replaces
+    the earlier WP159-only tool-scope exception so future governance tooling needs no
+    bespoke per-WP allowance.
+    """
+    authorized: set[str] = set()
+    for path in changed:
+        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+)\.md", path)
+        if match is None:
+            continue
+        spec_path = ROOT / "docs" / "wp_specs" / match.group(1) / "wp_spec.json"
+        if not spec_path.is_file():
+            continue
+        try:
+            spec = json.loads(spec_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        for changed_file in spec.get("scope", {}).get("required_changed_files", []):
+            if isinstance(changed_file, str) and changed_file.startswith("tools/"):
+                authorized.add(changed_file)
+    return authorized
+
+
+def test_wallet_tool_scope_guard_uses_current_wp_spec_authority() -> None:
+    authorized = _spec_authorized_tool_paths({"docs/status_entries/WP168G.md"})
+    assert "tools/wp/wp_readiness_gate.py" in authorized
+    assert "tools/wp/wp_spec_guard.py" in authorized
+    wp159_authorized = _spec_authorized_tool_paths({"docs/status_entries/WP159.md"})
+    assert "tools/wp/wp_spec_guard.py" in wp159_authorized
+    assert _spec_authorized_tool_paths({"docs/project_status.md"}) == set()
+
+
 def test_no_tools_files_changed() -> None:
     changed = _changed_files()
     allowed_tools_changes = {
@@ -488,10 +524,10 @@ def test_no_tools_files_changed() -> None:
         )["scope"]["required_changed_files"])
         assert len(expected) == 23
         assert set(changed) == expected
-        allowed_tools_changes.update({
-            "tools/wp/wp_spec_guard.py",
-            "tools/git/diff_scope_summary.py",
-        })
+    # Authorize governance-tool changes from the current WP machine spec rather than a
+    # bespoke WP159-only exception (WP159 and later governance WPs, including WP168G,
+    # are covered because their specs declare their own tools).
+    allowed_tools_changes.update(_spec_authorized_tool_paths(changed))
     tools_changes = {path for path in changed if path.startswith("tools/")}
     assert tools_changes <= allowed_tools_changes, (
         f"Unexpected tools/ changes: {tools_changes - allowed_tools_changes}"

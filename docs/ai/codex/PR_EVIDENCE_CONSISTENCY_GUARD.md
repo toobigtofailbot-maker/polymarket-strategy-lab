@@ -21,6 +21,23 @@ not manually during review.
 
 **WP91 policy change:** After WP91, mandatory final GitHub evidence comments are retired. The guard is no longer required as a merge gate with a final comment input. After WP91, the PR body alone is the current review evidence surface; the status fragment is the stable non-self-referential record; final comments are optional reviewer clarification only and non-canonical. Absence of a final comment is not a merge blocker after WP91. If a final comment is voluntarily posted, it must not contradict the PR body and must explicitly state it is optional and non-canonical.
 
+## CLI contract (post-WP91, WP168G)
+
+- `--pr-body PATH` is **REQUIRED**. The PR body is the canonical current-review evidence
+  surface: required commands, the expected head SHA, the standard network wording (when
+  required), and `Ready for review: YES` (when required) must all appear in the PR body.
+- `--final-comment PATH` is **OPTIONAL**. A final comment is non-canonical reviewer
+  clarification only. When omitted, the guard runs in body-only mode and requires no
+  dummy/mirror comment. When supplied, the comment need not duplicate the PR body's
+  commands, helpers, head, Ready, or network facts; it is only checked so that any
+  duplicated head / test-count / file-count / Ready / network fact does not contradict the
+  PR body.
+- `--require-current-final-marker` applies only when a final comment is actually supplied.
+  Requesting it without a comment fails safely rather than inventing a mirror surface.
+- Backward compatibility: existing two-surface invocations (both `--pr-body` and
+  `--final-comment`) remain accepted, and duplicated-fact contradiction checks remain
+  fail-closed.
+
 ## Non-Goals
 
 - Does not fetch or parse live GitHub PR data. The guard is local/offline only.

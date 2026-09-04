@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import pathlib
 import re
 import subprocess
@@ -19,6 +20,41 @@ REPO_TRUTH_INDEX = REPO_ROOT / "docs" / "repo_truth_index.md"
 
 def _read(path: pathlib.Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def _spec_authorized_tool_paths(changed) -> set:
+    """Governance-tool paths authorized by the current WP machine spec(s).
+
+    Any WP whose status entry is in ``changed`` contributes the ``tools/`` paths declared
+    in its machine-spec ``required_changed_files``. Bounded and deterministic; replaces
+    the earlier WP159-only tool-scope exception so future governance tooling needs no
+    bespoke per-WP allowance.
+    """
+    authorized: set = set()
+    for path in changed:
+        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+)\.md", path)
+        if match is None:
+            continue
+        spec_path = REPO_ROOT / "docs" / "wp_specs" / match.group(1) / "wp_spec.json"
+        if not spec_path.is_file():
+            continue
+        try:
+            spec = json.loads(spec_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        for changed_file in spec.get("scope", {}).get("required_changed_files", []):
+            if isinstance(changed_file, str) and changed_file.startswith("tools/"):
+                authorized.add(changed_file)
+    return authorized
+
+
+def test_hermes_tool_scope_guard_uses_current_wp_spec_authority() -> None:
+    authorized = _spec_authorized_tool_paths({"docs/status_entries/WP168G.md"})
+    assert "tools/wp/wp_readiness_gate.py" in authorized
+    assert "tools/wp/wp_spec_guard.py" in authorized
+    wp159_authorized = _spec_authorized_tool_paths({"docs/status_entries/WP159.md"})
+    assert "tools/wp/wp_spec_guard.py" in wp159_authorized
+    assert _spec_authorized_tool_paths({"docs/project_status.md"}) == set()
 
 
 def _flat(path: pathlib.Path) -> str:
@@ -718,11 +754,10 @@ def test_no_src_implementation_for_wp98() -> None:
     allowed_later_tools = {
         "tools/hermes_candidate_review_manual_export_cli.py",
     }
-    if "docs/status_entries/WP159.md" in changed_files:
-        allowed_later_tools.update({
-            "tools/wp/wp_spec_guard.py",
-            "tools/git/diff_scope_summary.py",
-        })
+    # Authorize governance-tool changes from the current WP machine spec rather than a
+    # bespoke WP159-only exception. WP159 and later governance WPs (including WP168G)
+    # are covered because their specs declare their own tools/ paths.
+    allowed_later_tools.update(_spec_authorized_tool_paths(changed_files))
     later_authorized_src = {
         "src/data_layer/hermes_advisory_output_validator.py",
         "src/data_layer/hermes_context_packet_exporter.py",

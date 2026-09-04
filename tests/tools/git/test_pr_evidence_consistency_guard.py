@@ -234,7 +234,9 @@ def test_fail_required_command_missing_from_pr_body(tmp_path: pathlib.Path) -> N
     assert any("[D]" in e and "PR body" in e for e in errors)
 
 
-def test_fail_required_command_missing_from_final_comment(tmp_path: pathlib.Path) -> None:
+def test_optional_comment_omitting_required_command_is_allowed(tmp_path: pathlib.Path) -> None:
+    # Post-WP91: the PR body is canonical; a supplied comment need not duplicate the
+    # required command.
     body = f"# PR Body\n{_REQUIRED_CMD}\n"
     comment = "# Comment\nsome content without the command\n"
     passed, errors, _, _ = _run(
@@ -243,11 +245,12 @@ def test_fail_required_command_missing_from_final_comment(tmp_path: pathlib.Path
         require_network=False,
         require_ready=False,
     )
-    assert not passed
-    assert any("[D]" in e and "final comment" in e for e in errors)
+    assert passed, f"Expected PASS but got errors: {errors}"
 
 
-def test_fail_status_snapshot_in_comment_not_body(tmp_path: pathlib.Path) -> None:
+def test_helper_in_comment_not_body_is_allowed(tmp_path: pathlib.Path) -> None:
+    # The non-canonical comment may reference a helper the canonical body does not
+    # list; helper parity between the two surfaces is no longer required.
     body = "# PR Body\nNo helper references here.\n"
     comment = "# Comment\npython tools/git/status_snapshot.py --format text\n"
     passed, errors, _, _ = _run(
@@ -255,8 +258,7 @@ def test_fail_status_snapshot_in_comment_not_body(tmp_path: pathlib.Path) -> Non
         require_network=False,
         require_ready=False,
     )
-    assert not passed
-    assert any("status_snapshot.py" in e and "PR body" in e for e in errors)
+    assert passed, f"Expected PASS but got errors: {errors}"
 
 
 # ── Fail cases: ellipsis ─────────────────────────────────────────────────────
@@ -302,17 +304,18 @@ def test_fail_expected_sha_missing_from_pr_body(tmp_path: pathlib.Path) -> None:
     assert any("[E]" in e and "PR body" in e for e in errors)
 
 
-def test_fail_expected_sha_missing_from_comment(tmp_path: pathlib.Path) -> None:
+def test_expected_head_need_not_appear_in_comment(tmp_path: pathlib.Path) -> None:
+    # The expected head must appear in the canonical PR body; a supplied comment that
+    # does not repeat it (and carries no conflicting labeled head SHA) is allowed.
     body = f"# PR Body\nHead commit: {_HEAD_SHA}\n"
-    comment = "# Comment\nHead commit: some_other_ref\n"
+    comment = "# Comment\nClarifying note with no head SHA.\n"
     passed, errors, _, _ = _run(
         tmp_path, body, comment,
         expected_head=_HEAD_SHA,
         require_network=False,
         require_ready=False,
     )
-    assert not passed
-    assert any("[E]" in e and "final comment" in e for e in errors)
+    assert passed, f"Expected PASS but got errors: {errors}"
 
 
 def test_fail_sha_mismatch_between_surfaces(tmp_path: pathlib.Path) -> None:
@@ -409,7 +412,9 @@ def test_fail_ready_mismatch_yes_vs_no(tmp_path: pathlib.Path) -> None:
     assert any("[H]" in e for e in errors)
 
 
-def test_fail_ready_missing_from_comment(tmp_path: pathlib.Path) -> None:
+def test_ready_need_not_appear_in_comment(tmp_path: pathlib.Path) -> None:
+    # 'Ready for review: YES' must be in the canonical PR body; a supplied comment
+    # that omits any Ready claim (and so cannot contradict) is allowed.
     body = "# PR Body\nReady for review: YES\n"
     comment = "# Comment\nNo ready status here.\n"
     passed, errors, _, _ = _run(
@@ -417,8 +422,7 @@ def test_fail_ready_missing_from_comment(tmp_path: pathlib.Path) -> None:
         require_network=False,
         require_ready=True,
     )
-    assert not passed
-    assert any("[H]" in e and "final comment" in e for e in errors)
+    assert passed, f"Expected PASS but got errors: {errors}"
 
 
 # ── Fail cases: security honesty ─────────────────────────────────────────────
@@ -1074,3 +1078,89 @@ def test_require_guard_result_json_output_includes_category_p(
 
     data = json.loads(buf.getvalue())
     assert "P:guard_result" in data["checked_categories"]
+
+
+# ── Post-WP91: PR body required / final comment optional (WP168G) ─────────────
+
+
+def _run_body_only(
+    tmp_path: pathlib.Path,
+    body: str,
+    *,
+    expected_head: str | None = None,
+    required_commands: list[str] | None = None,
+    require_network: bool = True,
+    require_ready: bool = True,
+    require_current_final_marker: bool = False,
+) -> tuple[bool, list[str], list[str], list[str]]:
+    body_file = tmp_path / "pr_body.md"
+    body_file.write_text(body, encoding="utf-8")
+    return guard.run_guard(
+        pr_body_path=body_file,
+        final_comment_path=None,
+        expected_head=expected_head,
+        required_commands=required_commands or [],
+        require_standard_network_wording=require_network,
+        require_ready_yes=require_ready,
+        require_current_final_marker=require_current_final_marker,
+    )
+
+
+def test_pr_body_only_mode_requires_no_final_comment(tmp_path: pathlib.Path) -> None:
+    body = _make_good_body()
+    passed, errors, _, _ = _run_body_only(
+        tmp_path, body,
+        expected_head=_HEAD_SHA,
+        required_commands=[_REQUIRED_CMD],
+        require_network=True,
+        require_ready=True,
+    )
+    assert passed, f"Body-only validation should pass, got errors: {errors}"
+
+
+def test_optional_final_comment_may_be_short_and_noncanonical(tmp_path: pathlib.Path) -> None:
+    body = _make_good_body()
+    comment = "# Final comment\nSee the PR body for the full canonical evidence.\n"
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        expected_head=_HEAD_SHA,
+        required_commands=[_REQUIRED_CMD],
+        require_network=True,
+        require_ready=True,
+    )
+    assert passed, f"A short non-canonical comment should pass, got errors: {errors}"
+
+
+def test_optional_final_comment_contradicting_body_fails(tmp_path: pathlib.Path) -> None:
+    body = _make_good_body(sha=_HEAD_SHA, counts=_GOOD_COUNTS)
+    # The comment duplicates head/count/Ready facts but contradicts the PR body.
+    comment = (
+        f"# Final comment\nHead commit: {_OTHER_SHA}\n"
+        f"```\n{_REQUIRED_CMD}\n\u2192 66 passed, 0 failed, 0 errors\n```\n"
+        "Ready for review: NO\n"
+    )
+    passed, errors, _, _ = _run(
+        tmp_path, body, comment,
+        expected_head=_HEAD_SHA,
+        required_commands=[_REQUIRED_CMD],
+        require_network=True,
+        require_ready=True,
+    )
+    assert not passed
+    assert any("[E]" in e for e in errors)  # head SHA contradiction
+    assert any("[F]" in e for e in errors)  # test-count contradiction
+    assert any("[H]" in e for e in errors)  # Ready contradiction
+
+
+def test_require_current_final_marker_requires_actual_comment(tmp_path: pathlib.Path) -> None:
+    body = _make_good_body()
+    passed, errors, _, _ = _run_body_only(
+        tmp_path, body,
+        expected_head=_HEAD_SHA,
+        required_commands=[_REQUIRED_CMD],
+        require_network=True,
+        require_ready=True,
+        require_current_final_marker=True,
+    )
+    assert not passed
+    assert any("[M]" in e for e in errors)
