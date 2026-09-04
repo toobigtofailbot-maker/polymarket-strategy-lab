@@ -1,11 +1,12 @@
-name: WP167 Analytical Research CI
+name: WP167 Analytical Research + WP168 Nautilus Offline Kernel CI
 
 # Hosted compatibility evidence only. No secrets, no product API, no external
 # archive download, no trading. This workflow proves the exact WP167 dependency
-# pins install and the analytical research package behaves identically across the
+# pins plus the WP168 nautilus_trader pin install and behave identically across the
 # supported Windows/Linux targets, and it is the authoritative environment for the
-# DuckDB-dependent tests that cannot run on developer machines where the DuckDB
-# native module is blocked by Windows Smart App Control.
+# DuckDB-dependent tests and the compiled NautilusTrader offline path that cannot
+# run on developer machines where the native module is blocked (Windows Smart App
+# Control) or where an over-long local path trips the Windows MAX_PATH limit.
 
 on:
   pull_request:
@@ -23,6 +24,8 @@ defaults:
 env:
   # Exact WP167 direct runtime dependency pins.
   WP167_DEPS: "pyarrow==25.0.1 duckdb==1.5.5 polars==1.44.1"
+  # Exact WP168 direct runtime dependency pin (base install: no polymarket extra, no redis).
+  WP168_DEP: "nautilus_trader==1.231.0"
   # Strict DuckDB mode: DuckDB-dependent tests must execute; any import failure or
   # skip in a required hosted job fails the job rather than producing green CI.
   WP167_STRICT_DUCKDB: "1"
@@ -62,13 +65,30 @@ jobs:
       - name: Install exact dependency pins and test tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install $WP167_DEPS "pytest>=8.0"
+          python -m pip install $WP167_DEPS $WP168_DEP "pytest>=8.0"
 
       - name: pip check
         run: python -m pip check
 
       - name: Assert exact direct dependency versions and Python floor
         run: python -m pytest -q tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py
+
+      - name: Assert exact NautilusTrader pin and import offline modules
+        run: |
+          python -c "import importlib.metadata as m; assert m.version('nautilus_trader') == '1.231.0', m.version('nautilus_trader')"
+          python -c "import nautilus_trader.model.instruments, nautilus_trader.model.data, nautilus_trader.persistence.catalog.parquet, nautilus_trader.backtest.engine; print('nautilus offline modules import OK')"
+
+      - name: Focused WP168 offline-kernel tests (no Nautilus-required skip permitted)
+        run: |
+          set -o pipefail
+          python -m pytest -rs -q \
+            tests/research_runtime/nautilus_offline \
+            tests/test_nautilus_offline_kernel_contract_docs.py \
+            | tee "$RUNNER_TEMP/wp168_focused.txt"
+          if grep -Eq "[0-9]+ skipped" "$RUNNER_TEMP/wp168_focused.txt"; then
+            echo "::error::A WP168 offline-kernel test was skipped under strict hosted CI"
+            exit 1
+          fi
 
       - name: Focused WP167 tests (DuckDB strict, no skips permitted)
         run: |
@@ -105,7 +125,7 @@ jobs:
       - name: Install exact dependency pins and audit tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install $WP167_DEPS "pytest>=8.0" pip-audit
+          python -m pip install $WP167_DEPS $WP168_DEP "pytest>=8.0" pip-audit
 
       - name: pip check
         run: python -m pip check

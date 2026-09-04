@@ -1,0 +1,850 @@
+WP168 — NAUTILUSTRADER OFFLINE KERNEL, PARQUETDATACATALOG & DETERMINISTIC REPLAY FOUNDATION
+
+===============================================================================
+PACKAGE IDENTITY
+===============================================================================
+WP ID: WP168
+Title: NautilusTrader Offline Kernel, ParquetDataCatalog & Deterministic Replay Foundation
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Base branch: main
+Suggested branch: claude/wp168-nautilus-offline-kernel-5911b6
+Package class: OFFLINE_REPLAY_RUNTIME_FOUNDATION
+Package size class: XL
+Evidence mode expected: BLOCKED_NOT_READY until the independent PASS certificate exists;
+  after implementation and live PR evidence the target is PRIVATE_REPO_MANUAL_VERIFIED.
+Runtime impact: LOCAL/OFFLINE research replay runtime only.
+Product impact: LOCAL_RESEARCH_RUNTIME_FOUNDATION_ONLY; no strategy, execution, paper,
+  or live authority.
+Network impact: NO product/runtime network; Git/GitHub/PyPI workflow network only.
+Credential impact: NONE.
+Dependency impact: add exactly nautilus_trader==1.231.0 to the existing WP167 pins
+  (pyarrow==25.0.1, duckdb==1.5.5, polars==1.44.1); no other new direct dependency.
+Trading impact: NONE.
+
+RECOMMENDED CLAUDE/CODEX MODE
+Model/reasoning: highest available architecture-sensitive reasoning tier.
+Reason: WP168 crosses a large external native runtime-dependency boundary, introduces
+  the first genuine event-driven offline replay kernel, and must preserve canonical
+  WP167/PIT truth while translating Polymarket binary-market history into NautilusTrader
+  objects without confusing simulated replay with executable-edge evidence.
+Escalate to higher reasoning or STOP if: nautilus_trader==1.231.0 cannot install/import
+  on a required hosted platform; the exact API differs from the pre-freeze discovery;
+  deterministic receive-time replay ordering cannot be proven on 1.231.0; canonical
+  WP167/PIT identity would have to change; or any protected successor boundary
+  (credentials, live clients, WebSocket, Data API, strategy, fill, paper, live) is reached.
+
+PREDECESSOR (MERGED)
+- PR #167 MERGED.
+- final reviewed head: 557127fc04b75e75bb5594ab47df10a25f94d72d
+- merge commit:        b79049e9330cc3a94721f0b0653b48f66e31551b
+
+===============================================================================
+AUTHORITY / NON-AUTHORITY
+===============================================================================
+Implementation authority:
+- CONDITIONALLY PRE-AUTHORIZED but INACTIVE while the certificate is pending.
+- Activates only after a separate independent PASS certificate against the exact frozen
+  prompt/spec hashes is committed unchanged and canonical wp_spec_guard exits 0.
+- Once active it authorizes exactly the certified 35-file WP168 scope through
+  implementation, validation, CI, evidence publication, and same-PR correction.
+- It never authorizes merge.
+Report/export authority: local/offline replay receipts, manifests, and test evidence
+  only; no advisory or trading-recommendation output.
+Paper authority: NO.
+Execution authority: NO.
+Live authority: NO.
+Credential authority: NO.
+Runtime/scheduler authority: bounded invoked offline replay only; NO daemon, persistent
+  service, scheduler, or bot loop.
+Canonical evidence authority: canonical WP167/PIT truth remains repo-controlled and
+  read-only; Nautilus catalog/replay is derived research runtime state only.
+Network authority: product/runtime network NO; Git/GitHub/PyPI workflow network only.
+Dependency-change authority: YES only for nautilus_trader==1.231.0 in addition to the
+  exact existing WP167 pins; no Polymarket extra, no Redis, no other new direct dependency.
+Workflow-file authority: YES, only the already-scoped .github/workflows/ci.yml.
+Merge authority: NO.
+
+Explicitly forbidden subsystems: authenticated Polymarket client; Nautilus live data
+client; Nautilus live execution client; credentials/signing; WebSocket; Data API; order
+submission/cancel; strategy/alpha; P&L/performance claims; fill/queue/slippage/latency/
+capacity modelling; paper/live; scheduler/daemon; Hermes runtime; WP169/WP170 scope.
+
+===============================================================================
+HARD MERGE / START GATE
+===============================================================================
+Canonical start-gate commands:
+  git fetch origin --prune
+  git checkout main
+  git pull --ff-only origin main
+  git rev-parse HEAD
+  git log -1 --oneline
+  git status --short --branch
+
+A. INITIAL PRE-FREEZE START GATE (already executed for this V3 package):
+- PR167 merged: YES
+- final head: 557127fc04b75e75bb5594ab47df10a25f94d72d
+- merge SHA: b79049e9330cc3a94721f0b0653b48f66e31551b
+- main contained final head: YES
+- main / origin/main exact at gate: b79049e9330cc3a94721f0b0653b48f66e31551b
+- no conflicting newer replay/kernel PR: YES
+- no pre-existing WP168 PR before publication: YES
+- generated artifact guard: PASS
+- working tree clean: YES
+
+B. IMPLEMENTATION-ACTIVATION RECHECK (run on the SAME existing WP168 branch/PR after the
+independent certificate is installed; DO NOT create another branch or PR):
+- re-fetch origin; confirm origin/main unchanged or, if advanced, that no conflicting
+  replay/kernel change landed and rebase policy is satisfied;
+- confirm the committed independent PASS certificate hashes the exact frozen prompt/spec
+  bytes and wp_spec_guard exits 0;
+- confirm the branch is still claude/wp168-nautilus-offline-kernel-5911b6 and the PR is
+  still #168;
+- confirm working tree clean and generated-artifact guard PASS before implementing.
+
+===============================================================================
+CONTEXT BUDGET
+===============================================================================
+Read first:
+- AGENTS.md; AI_CODING_AGENT_START_HERE.md; CLAUDE_START_HERE.md; CODEX_START_HERE.md
+- docs/project_status.md; docs/repo_truth_index.md; docs/deferred_items_log.md
+- docs/ai/codex/README.md
+Read for this WP:
+- the exact 35 scoped implementation files;
+- the WP167 analytical contract and public exports used by WP168;
+- the dependency/adoption registry;
+- applicable architecture/security/evidence governance docs;
+- the exact Nautilus 1.231.0 API surface already verified during pre-freeze discovery.
+Read only if blocked:
+- predecessor implementation internals needed to resolve a specific public-API ambiguity;
+- upstream Nautilus source/stubs for an exact 1.231.0 API blocker;
+- an additional governance file ONLY if an existing scoped test identifies it as a
+  required current-truth consequence (then apply the 36th-file STOP below).
+Do not read/touch:
+- any src/ path outside src/research_runtime/nautilus_offline/ except read-only
+  predecessor imports; tools/ as changed scope; execution_gateway, risk_engine,
+  strategy_modules, paper_trading; credentials/.env/private keys; local_data/;
+  WP169/WP170 implementation; authenticated Polymarket code; any dependency/lock file
+  other than the scoped pyproject.toml; any workflow other than the scoped ci.yml.
+Search terms: WP168; NautilusTrader; current review target; APPROVED_SRC_SCOPES;
+  dependencies exactly; WP167; analytical_research; ParquetDataCatalog; BinaryOption;
+  pr_evidence_consistency_guard; Model D.
+
+===============================================================================
+XL RISK-CLASS BUNDLE / FORBIDDEN-BUNDLE / WORKTREE BASIS
+===============================================================================
+Risk-Class Bundle Justification:
+- The 35-file XL bundle is one coherent risk class: a single local/offline Nautilus
+  event-replay foundation (runtime compatibility, instrument mapping, pmxt-v2 -> Nautilus
+  conversion, ParquetDataCatalog build/query, bounded offline replay) plus its focused
+  tests and one contract doc.
+- Every file supports that one foundation. The governance/status/registry files are
+  CONSEQUENCES of adding a new top-level src boundary and one new dependency, not a
+  second capability.
+- Explicit exclusions: no strategy/alpha, no fill/queue/slippage/latency/capacity, no
+  paper/live/execution, no credentials/WebSocket/Data API, no scheduler/daemon, no Hermes,
+  no WP169/WP170.
+- Rollback surface: revert the WP168 branch; additive only; no predecessor mutation, no
+  canonical SQLite/manifest/identity change, no data migration, no committed generated
+  catalog/dataset.
+- Declared vs actual budget = 35 / 35.
+- Mode-boundary table: dependencies crossed; source_runtime crossed; workflow_files
+  crossed; docs crossed; tests crossed; credentials NOT crossed; network NOT crossed;
+  scheduler NOT crossed; hermes_runtime NOT crossed; strategy NOT crossed; paper NOT
+  crossed; execution NOT crossed; live NOT crossed.
+
+Forbidden Bundle Check (each PASS / NO CROSSING):
+- research scoring + trade recommendation: NO CROSSING.
+- writer + buy/sell/sizing: NO CROSSING.
+- paper + live: NO CROSSING.
+- credentials + order placement: NO CROSSING.
+- scheduler + execution: NO CROSSING.
+- Hermes + execution: NO CROSSING.
+- dependency/runtime integration + unrelated feature logic: NO CROSSING (only the offline
+  replay foundation and its mandatory governance consequences are bundled).
+
+Worktree/branch execution:
+- one WP = one branch = one PR.
+- current actual branch: claude/wp168-nautilus-offline-kernel-5911b6.
+- current PR: #168.
+- a branch-only basis (no dedicated git worktree) is acceptable; initial clean state was
+  confirmed; main was not dirty.
+- the SAME branch and the SAME PR #168 must be reused for implementation.
+
+===============================================================================
+AUTHORIZATION BASIS / CURRENT REPO TRUTH / SECURITY / BASE VERIFICATION
+===============================================================================
+Authorization Basis:
+- active user approval; conditional implementation pre-authorization (inactive until the
+  three activation conditions hold); repo-truth basis is the merged WP167 predecessor;
+  exact forbidden scope as listed under AUTHORITY.
+Current Expected Repo Truth:
+- WP167 is merged at final head 557127f and merge SHA b79049e;
+- the WP167 analytical research layer exists and is the canonical predecessor;
+- no Nautilus runtime is implemented before WP168;
+- paper/live/execution remain absent and forbidden.
+Required Discovery Before Editing:
+- the A-D discovery and disposable prototype are already complete (recorded below);
+- implementation must reverify exact installed dependency metadata and the exact API if
+  the installed package unexpectedly differs from 1.231.0; otherwise no broad new research.
+Security Tooling Impact:
+- a new native runtime dependency is added; isolated pip-audit is required; the license/
+  adoption registry is updated (install-not-vendor LGPL-3.0); no vendoring; no credentials;
+  no network. Local security tools are reported honestly UNAVAILABLE when unavailable and
+  are never claimed to have passed unless they actually ran.
+Base Verification:
+- base branch main; origin/main SHA b79049e...; predecessor final head 557127f / merge
+  b79049e; generated-artifact guard PASS; startup complete; current branch
+  claude/wp168-nautilus-offline-kernel-5911b6; current PR #168.
+
+===============================================================================
+PRE-FREEZE DISCOVERY RESULTS (BOUND INTO THIS PROMPT)
+===============================================================================
+Predecessor gate PASS 11/11. Dependency/platform PASS: nautilus_trader==1.231.0 is the
+latest STABLE line; requires_python ">=3.12,<3.15" == repo; wheels for cp312/313/314 on
+win_amd64 and manylinux_2_35_x86_64 cover Windows 2022 + Ubuntu 24.04 on py3.12/3.14 with
+no source build; pyarrow>=25.0.0 is satisfied by 25.0.1; clean isolated install and pip
+check pass alone and co-installed with the WP167 pins; base install pulls no Redis and no
+Polymarket extra (py_clob_client_v2 gated behind the extra and not installed). Windows
+MAX_PATH pyo3 import from an over-long path is an environment artifact, not a Nautilus
+defect; hosted CI (short paths) is the authoritative Windows proof; OS security is never
+disabled. API discovery PASS against 1.231.0: BinaryOption(instrument_id, raw_symbol,
+outcome, description, asset_class, currency, price_precision, price_increment,
+size_precision, size_increment, activation_ns, expiration_ns, max_quantity, min_quantity,
+maker_fee, taker_fee, ts_event, ts_init); Venue("POLYMARKET"); currency USDC;
+AssetClass.ALTERNATIVE; Price/Quantity integer-backed with FIXED_PRECISION == 9 (no float);
+OrderBookDelta(s)/OrderBookDepth10/TradeTick/QuoteTick/BookOrder present; ParquetDataCatalog
+{write_data,query,instruments,list_data_types,query_last_timestamp}; BacktestEngine
+{add_venue,add_instrument,add_data,add_actor,run,get_result,reset,dispose}. Disposable
+prototype PASS on all 14 authorized items (built outside the repo; not committed).
+
+===============================================================================
+OBJECTIVE
+===============================================================================
+Create the repository's first deterministic offline event-replay foundation by adopting
+NautilusTrader as the event-driven kernel and ParquetDataCatalog persistence layer in a
+new top-level src/research_runtime/nautilus_offline boundary. Verified WP167 pmxt v2
+history is deterministically mapped to Nautilus prediction-market instruments and
+market-data events, registered in a local ParquetDataCatalog, queried, and replayed
+through the offline engine into a repo-controlled, path-independent, mutation-sensitive
+NautilusReplayReceipt. This WP is INFRASTRUCTURE. It does NOT prove alpha, realistic
+fills, executable edge, paper readiness, or live readiness. A BacktestEngine run in WP168
+is an EVENT-REPLAY proof only.
+
+===============================================================================
+PACKAGE LOCATION & ADOPTION POSTURE (FROZEN)
+===============================================================================
+New top-level runtime boundary: src/research_runtime/nautilus_offline/ (NOT under
+src/data_layer/). Adopt upstream Nautilus machinery (BinaryOption, InstrumentId/Venue/
+Symbol/Price/Quantity, order-book/trade data objects, ParquetDataCatalog, deterministic
+event ordering, BacktestEngine offline replay). Do NOT wrap Nautilus in a large home-grown
+duplicate engine. Keep project-owned: canonical PIT identity, source provenance, dataset
+snapshot identity, external-source trust class, resolution truth, analytical logical
+identity, and all hard risk/authorization boundaries. Install upstream
+nautilus_trader==1.231.0 normally; no copied, vendored, or modified Nautilus source;
+preserve/document upstream LGPL-3.0 notices; promote NautilusTrader in the dependency/
+adoption registry to "APPROVED FOR WP168 OFFLINE RESEARCH RUNTIME ONLY".
+
+===============================================================================
+REQUIRED CAPABILITIES
+===============================================================================
+1. RUNTIME COMPATIBILITY (runtime_compatibility.py): prove supported Python range; exact
+   pin 1.231.0; exact direct dependency metadata; importability of the required offline
+   modules; and that no live/auth/Polymarket-extra/Redis dependency is required for the
+   offline path. Success status token NAUTILUS_OFFLINE_RUNTIME_SUPPORTED. Fail closed.
+2. BINARYOPTION MAPPING (instruments.py): deterministic mapper from the frozen
+   BinaryOptionMarketContext (see PUBLIC API) to a Nautilus BinaryOption (venue POLYMARKET;
+   raw symbol "{condition_id}-{outcome_token_id}"; currency USDC; AssetClass.ALTERNATIVE;
+   exact price/size precision & increment; the frozen absent-value policy for activation/
+   expiration/fee; no fabricated outcome/description). Deterministic, path-independent.
+3. WP167 -> NAUTILUS CONVERSION (conversion.py): consume the frozen PmxtV2ReplaySource
+   (ExternalDatasetDescriptor + PmxtV2SourceFile tuple), validate provenance and revalidate
+   hashes (see EXTERNAL REPLAY-SOURCE PROVENANCE), validate per-event semantics (see PMXT-V2
+   EVENT-SEMANTIC MATRIX), then: book -> OrderBookDeltas snapshot (CLEAR + ADD);
+   price_change -> OrderBookDelta (UPDATE, or DELETE on zero size); last_trade_price ->
+   TradeTick; tick_size_change -> repo-controlled regime metadata. Preserve the frozen
+   canonical ordering and timestamps; exact Decimal semantics; no float; no caller path in
+   identity; no raw echo on failure.
+4. PARQUETDATACATALOG ADOPTION (catalog.py): deterministic local catalog build/registrar;
+   instrument registered before data where required; caller-provided local path excluded
+   from logical identity; catalog is derived, never canonical; deterministic logical replay
+   manifest is repo-controlled; catalog bytes are physical evidence only; no downloader.
+5. OFFLINE REPLAY KERNEL (replay.py): bounded offline replay over Nautilus's engine; one
+   BinaryOption instrument; deterministic ordered load; deterministic processing; a repeat
+   run producing an identical repo-controlled receipt; no strategy/order/execution/fill.
+6. REPLAY RECEIPT (NautilusReplayReceipt): frozen/immutable dataclass of trusted,
+   non-sensitive fields (see Public API below).
+7. PARITY / ROUND-TRIP PROOFS: source counts equal converted/replayed counts; catalog
+   query reproduces converted data; ordering matches the declared deterministic order;
+   repeat digest equal; mutation of committed input changes the digest.
+
+===============================================================================
+DETERMINISM / IDENTITY, RECEIVE-TIME REPLAY ORDERING & CANONICAL SERIALIZATION (FROZEN)
+===============================================================================
+FROZEN EVENT_KIND_RANK (deterministic tie-break only; NOT a venue-causality claim;
+changing it changes the conversion-policy identity/version):
+  book = 0 ; price_change = 1 ; last_trade_price = 2 ; tick_size_change = 3.
+This mapping is fixed here and in the spec; it must never derive from alphabetical,
+enum-declaration, or any runtime-dependent ordering.
+
+CANONICAL SEMANTIC SOURCE ORDERING (frozen — total, receive-time-primary,
+physical-order-independent). WP168 is a point-in-time/knowability research foundation, so
+the deterministic replay ARRIVAL order is defined by receive/init time first:
+A. For every validated pmxt v2 source row, derive canonical semantic row bytes from the
+   validated row content using the deterministic normalization contract below.
+B. Derive a stable canonical_row_digest (SHA-256) from those canonical bytes.
+C. Construct the canonical source multiset INDEPENDENTLY of filesystem enumeration order,
+   Parquet file enumeration order, Parquet physical row position, DuckDB/Polars/query
+   return order, Python stable-sort input order, and temporary/output paths.
+D. Group rows whose canonical semantic bytes are exactly identical.
+E. Sort the distinct canonical row groups by the frozen total key
+   (ts_init, ts_event, event_kind_rank, canonical_row_digest, canonical_row_bytes), where
+   ts_init = timestamp_received mapped to exact integer nanoseconds and ts_event =
+   the venue/source timestamp mapped to exact integer nanoseconds; canonical_row_bytes is
+   the final collision-safe semantic tie-break (not the digest alone).
+F. For an exactly byte-identical duplicate group with multiplicity N, deterministically
+   expand it with duplicate ordinal 0,1,...,N-1 derived from multiplicity in the canonical
+   multiset (NOT from physical/source order). Identical rows are NEVER silently
+   deduplicated; multiplicity is preserved deterministically.
+G. source_row_index is the final zero-based position in this canonical expanded source
+   sequence; a monotonic sequence equal to source_row_index is assigned from it.
+
+ENGINE-FACING ORDER: the input handed to Nautilus must already be in this canonical order.
+Nautilus add_data(sort=True) orders by ts_init; because the canonical order is ts_init
+primary, ts_init is consistent between the canonical order and the engine. Implementation
+tests MUST prove that, for equal ts_init, the engine's stable ordering preserves the
+precomputed canonical tie order (ts_event, event_kind_rank, canonical_row_digest,
+canonical_row_bytes). If 1.231.0 cannot prove this via add_data(sort=True), use the
+supported add_data(sort=False) path ONLY if an implementation test proves it preserves the
+canonical input order. This must never be left implementation-defined.
+
+CANONICAL SEMANTIC ROW SERIALIZATION (frozen normalization contract):
+- no binary float anywhere;
+- timestamps normalize to exact UTC integer nanoseconds;
+- market here means the WP167 pmxt-v2 SOURCE-ROW market field: it accepts the full
+  WP167-valid ASCII hex case domain ("0x" + 64 hex, digits 0-9 with a-f OR A-F), and its
+  64-hex body normalizes to its validated canonical ASCII "0x" + 64 lowercase-hex form before
+  canonical serialization/identity; wrong prefix, wrong length, non-hex, and non-ASCII/Unicode
+  lookalikes are rejected. This is distinct from BinaryOptionMarketContext.condition_id, which
+  is a repo-owned context input that must ALREADY be canonical "0x" + 64 lowercase-hex and
+  rejects alternate case at that public boundary (no silent normalization there);
+- asset_id normalizes to validated canonical ASCII decimal digits (no alternate Unicode
+  digit forms);
+- event_type uses the exact frozen pmxt v2 token (book / price_change / last_trade_price /
+  tick_size_change);
+- decimal values normalize as exact fixed-point decimal TEXT at the column's documented
+  scale (chosen fixed representation; no float, no scientific notation);
+- nullable values preserve explicit null;
+- side and other enums use their exact validated tokens;
+- book bids/asks use the frozen canonical order defined in the PMXT-V2 EVENT-SEMANTIC
+  MATRIX (bids sorted strictly by DESCENDING numeric price; asks strictly by ASCENDING
+  numeric price; a duplicate price level on one side fails closed), serialized as
+  normalized fixed-point decimal text pairs [["price","size"], ...];
+- object/dict keys are sorted; array order is preserved only where source semantics make
+  order meaningful (book levels by the frozen descending/ascending price rule);
+- serialization is UTF-8, ensure_ascii=false, compact separators (",",":"), allow_nan=false;
+- hash algorithm SHA-256; canonical bytes are produced by bounded per-row processing.
+Reuse a repo-proven canonical outer-JSON mechanic only after normalizing Decimal/datetime/
+bytes to text/int first; never feed raw Decimal/datetime/bytes to a canonicalizer that
+cannot encode them.
+
+FROZEN IDENTITY CONSTANTS (literal; implementation may not invent them):
+- CONVERSION_POLICY_VERSION = "wp168-nautilus-pmxt-v2-conversion/1.0.0"
+- REPLAY_RECEIPT_SCHEMA_ID  = "polymarket-nautilus-offline-replay-receipt"
+- REPLAY_RECEIPT_SCHEMA_VERSION = "1.0.0"
+- REPLAY_IDENTITY_PREFIX    = "nautilusreplay:sha256:"
+- REPLAY_DIGEST_ALGORITHM   = SHA-256 over the canonical-JSON preimage below.
+
+REPLAY IDENTITY: the repo-controlled NautilusReplayReceipt.replay_digest is
+REPLAY_IDENTITY_PREFIX followed by the SHA-256 hex of the canonical-JSON preimage whose
+keys are exactly (sorted): conversion_policy_version (= CONVERSION_POLICY_VERSION);
+source_dataset_kind (= "WP167_EXTERNAL_DATASET_DESCRIPTOR"); source_external_dataset_id
+(= ExternalDatasetDescriptor.external_dataset_id); nautilus_version; instrument_semantic_id
+(the deterministic InstrumentId string "{condition_id}-{outcome_token_id}.POLYMARKET");
+ordered_event_semantic_digests (the ordered tuple of per-event canonical_row_digest values,
+each paired with its duplicate ordinal); tick_size_regime_sequence (the ordered tuple of
+{old_tick, new_tick, transition_ns}); replay_settings (the deterministic offline-replay
+settings). EXCLUDED from the preimage: absolute paths, temp/output dirs, caller catalog_dir,
+physical Parquet bytes/row positions, wall-clock time, environment identifiers, CI run ids,
+hostnames, and raw exception text. The digest is SENSITIVE to duplicate multiplicity and to
+external_dataset_id/source-hash mutation, but INSENSITIVE to arbitrary physical ordering.
+Raw source/query/physical row index is never part of logical replay identity. Independent-
+recomputation and mutation-sensitivity tests are required. If the exact Nautilus or WP167
+data model makes this ordering or serialization impossible, STOP rather than introducing a
+physical-order dependency.
+
+===============================================================================
+PROJECT-OWNED PUBLIC API & MUTABILITY (FROZEN)
+===============================================================================
+The full net-new public API is FROZEN here and in docs/nautilus_offline_kernel_contract.md.
+Names and signatures below are EXACT and final: no placeholder ellipsis, no open-ended
+argument lists, and no reviewer-refinement or implementation-choice escape is permitted in
+any public signature. wp_spec.json api_matrix stays applicable:false because the
+machine api_matrix encodes DELTAS to a pre-existing predecessor public API, whereas WP168's
+surface is entirely net-new and is frozen here and in the contract doc (the canonical
+location for net-new API); its reason field states this explicitly. Any helper not listed
+here is private/internal. All public inputs and results are @dataclass(frozen=True); no
+public mutable dict/list is exposed — collections are tuples or tuples of 2-tuples.
+
+FROZEN PUBLIC INPUT DATACLASSES (all @dataclass(frozen=True); raw file paths are INPUT-ONLY
+and never enter identity or result output):
+- PmxtV2ReplaySource: descriptor: ExternalDatasetDescriptor (WP167 public type, unmodified);
+  source_files: tuple[PmxtV2SourceFile, ...] (WP167 public type). This is the ONLY replay
+  source shape; there is no generic validated_rows input.
+- BinaryOptionMarketContext: condition_id: str (repo-owned context input that must ALREADY be
+  canonical "0x"+64 lowercase-hex; alternate case at this public context boundary is invalid and
+  rejected, as are wrong prefix, wrong length, non-hex, and non-ASCII/Unicode lookalikes; no
+  silent normalization here — this is separate from the WP167 source-row market, which accepts
+  WP167-valid upper/lower ASCII hex and is canonicalized to lowercase);
+  outcome_token_id: str (validated ASCII decimal digits); outcome_label: str (REQUIRED
+  source truth; never fabricated from the token id); description: str | None (source truth
+  only; None -> "" empty, never fabricated); activation_ns: int | None; expiration_ns:
+  int | None; price_increment: str (exact fixed-point decimal text; the finest valid
+  historical increment); size_increment: str (exact fixed-point decimal text); maker_fee:
+  str | None; taker_fee: str | None; ts_event_ns: int; ts_init_ns: int. Absent-value policy
+  (frozen): activation_ns None -> 0 (upstream "no activation constraint"); expiration_ns
+  None -> FAIL CLOSED NAUTILUS_INSTRUMENT_MAPPING_INVALID (never guessed); maker_fee/taker_fee
+  None -> Decimal("0") placeholder AND a FEE_METADATA_UNKNOWN warning (non-authoritative; no
+  fee/economic claim); min_quantity = one size_increment; max_quantity = None. No network,
+  no Gamma/API lookup, no guessed metadata.
+
+FROZEN PUBLIC FUNCTIONS (module :: signature -> return; success; failure):
+- runtime_compatibility :: evaluate_offline_runtime() -> NautilusRuntimeCompatibilityResult.
+  Success: status NAUTILUS_OFFLINE_RUNTIME_SUPPORTED, error_codes (). Failure: closed code
+  from {NAUTILUS_RUNTIME_UNSUPPORTED, NAUTILUS_DEPENDENCY_VERSION_INVALID,
+  NAUTILUS_IMPORT_UNAVAILABLE}. No network, no path echo, no execution authority.
+- instruments :: build_binary_option(context: BinaryOptionMarketContext) ->
+  BinaryOptionMappingResult. Deterministic, path-independent. Failure: closed
+  NAUTILUS_INSTRUMENT_MAPPING_INVALID.
+- conversion :: convert_pmxt_v2_events(source: PmxtV2ReplaySource, context:
+  BinaryOptionMarketContext) -> ConvertedEventStream. Validates descriptor provenance and
+  revalidates every source-file hash (see EXTERNAL REPLAY-SOURCE PROVENANCE), parses/validates
+  pmxt-v2 event semantics, and produces the canonical ordered event stream + regime schedule
+  + per-type counts. Failure: closed NAUTILUS_EVENT_CONVERSION_INVALID (also covers descriptor/
+  source-mapping/hash failures). No float; no raw path/source-row/exception echo.
+- catalog :: build_catalog(stream: ConvertedEventStream, catalog_dir: pathlib.Path) ->
+  CatalogBuildResult. Registers the instrument before market data; catalog_dir is
+  caller-provided and EXCLUDED from identity. Failure: closed NAUTILUS_CATALOG_WRITE_INVALID.
+- catalog :: query_catalog(build_result: CatalogBuildResult) -> CatalogQueryResult. Complete
+  frozen signature (no ellipsis); reads back the just-built catalog and reports round-trip
+  counts/match. Failure: closed NAUTILUS_CATALOG_QUERY_INVALID.
+- replay :: run_offline_replay(stream: ConvertedEventStream, catalog_dir: pathlib.Path) ->
+  NautilusReplayReceipt. Bounded; no strategy/order/execution/fill. Failure surfaces as a
+  receipt with error_codes from {NAUTILUS_REPLAY_INVALID, NAUTILUS_REPLAY_PARITY_INVALID}.
+
+FROZEN PUBLIC RESULT DATACLASSES (all @dataclass(frozen=True); every field classified
+scanned/exempt/forbidden with identity role; on any invalid result all *_id / Nautilus-object
+/ digest fields are None, all counts 0, and error_codes is non-empty — recursive no-echo):
+- NautilusRuntimeCompatibilityResult: is_valid: bool (exempt); status: str (scanned; NONE);
+  error_codes: tuple[str, ...] (scanned; NONE); nautilus_version: str | None (scanned; NONE);
+  python_version: str (scanned; NONE); advisory_only: bool (exempt True); no_execution_authority:
+  bool (exempt True).
+- BinaryOptionMappingResult: is_valid: bool (exempt); status: str (scanned; NONE); error_codes:
+  tuple[str, ...] (scanned; NONE); instrument_id: str | None (scanned; COMMITTED); price_increment:
+  str | None (scanned; COMMITTED); size_increment: str | None (scanned; COMMITTED); warnings:
+  tuple[str, ...] (scanned; NONE); binary_option: object | None (EXCLUDED; a Nautilus BinaryOption
+  on success, None on invalid; its opaque internals are never treated as project identity).
+- ConvertedEventStream: is_valid: bool (exempt); status: str (scanned; NONE); error_codes:
+  tuple[str, ...] (scanned; NONE); instrument_id: str | None (scanned; COMMITTED);
+  source_dataset_kind: str | None (scanned; COMMITTED constant "WP167_EXTERNAL_DATASET_DESCRIPTOR");
+  source_external_dataset_id: str | None (scanned; COMMITTED); conversion_policy_version: str |
+  None (scanned; COMMITTED); ordered_event_digests: tuple[str, ...] (scanned; COMMITTED, each the
+  per-event canonical_row_digest with its duplicate ordinal); input_event_counts_by_type:
+  tuple[tuple[str, int], ...] (scanned; COMMITTED); tick_size_regime_sequence: tuple[tuple[str,
+  str, int], ...] (scanned; COMMITTED as {old_tick, new_tick, transition_ns}); first_event_time_ns:
+  int | None (scanned; COMMITTED); last_event_time_ns: int | None (scanned; COMMITTED); warnings:
+  tuple[str, ...] (scanned; NONE); converted_events: tuple[object, ...] (EXCLUDED; Nautilus data
+  objects for the engine/catalog, empty on invalid).
+- CatalogBuildResult: is_valid: bool (exempt); status: str (scanned; NONE); error_codes:
+  tuple[str, ...] (scanned; NONE); instrument_registered: bool (scanned; NONE); written_delta_count:
+  int (scanned; NONE); written_trade_count: int (scanned; NONE); catalog_dir: str | None (EXCLUDED
+  physical evidence; never in identity); stream_ref_digest: str | None (scanned; COMMITTED, equals
+  the source ConvertedEventStream identity digest).
+- CatalogQueryResult: is_valid: bool (exempt); status: str (scanned; NONE); error_codes:
+  tuple[str, ...] (scanned; NONE); queried_delta_count: int (scanned; NONE); queried_trade_count:
+  int (scanned; NONE); round_trip_matches: bool (scanned; NONE).
+- NautilusReplayReceipt: is_valid: bool (exempt); status: str (scanned; NONE); error_codes:
+  tuple[str, ...] (scanned; NONE); schema_id: str (scanned; COMMITTED constant
+  REPLAY_RECEIPT_SCHEMA_ID); schema_version: str (scanned; COMMITTED constant
+  REPLAY_RECEIPT_SCHEMA_VERSION); source_dataset_kind: str (scanned; COMMITTED constant
+  "WP167_EXTERNAL_DATASET_DESCRIPTOR"); source_external_dataset_id: str | None (scanned; COMMITTED;
+  equals ExternalDatasetDescriptor.external_dataset_id); conversion_policy_version: str | None
+  (scanned; COMMITTED constant CONVERSION_POLICY_VERSION); nautilus_version: str | None (scanned;
+  COMMITTED); instrument_id: str | None (scanned; COMMITTED); input_event_counts_by_type:
+  tuple[tuple[str, int], ...] (scanned; COMMITTED); first_event_time_ns: int | None (scanned;
+  COMMITTED); last_event_time_ns: int | None (scanned; COMMITTED); tick_size_regime_sequence:
+  tuple[tuple[str, str, int], ...] (scanned; COMMITTED); replay_processed_event_count: int
+  (scanned; COMMITTED); replay_digest: str | None (scanned; COMMITTED, REPLAY_IDENTITY_PREFIX +
+  SHA-256 hex); warnings: tuple[str, ...] (scanned; NONE); execution_authority: bool (exempt
+  constant False; forbidden to be True).
+
+Field-coverage rule: for every public dataclass, set(dataclasses.fields(T)) must be exactly
+covered by the classification table above; a future unclassified field fails a mechanical
+test. Public API is fully frozen and not implementation-defined.
+
+===============================================================================
+EXTERNAL REPLAY-SOURCE PROVENANCE (FROZEN — BOUND TO WP167)
+===============================================================================
+WP168 replays WP167 EXTERNAL research evidence. The source is the WP167 public
+ExternalDatasetDescriptor (with tuple[ExternalSourceObject, ...]) and the matching
+tuple[PmxtV2SourceFile, ...]; WP168 does not invent a generic row input and does not mutate
+or redefine ExternalDatasetDescriptor. convert_pmxt_v2_events validates, before any
+conversion, using WP167 public constants/boundaries:
+- descriptor.provider_id == PMXT_V2_PROVIDER_ID ("pmxt");
+- descriptor.dataset_name == PMXT_V2_DATASET_NAME ("pmxt_polymarket_orderbook_archive");
+- descriptor.dataset_version == PMXT_V2_DATASET_VERSION ("v2");
+- descriptor.source_class == PMXT_V2_SOURCE_CLASS ("THIRD_PARTY_NATIVE_FRAME_ARCHIVE");
+- descriptor.event_types are within PMXT_V2_EVENT_TYPES and the importer/source/receive
+  timestamp semantics are compatible with the WP167 pmxt-v2 contract;
+- every source_files[i] maps to exactly ONE descriptor.source_objects[j] by identical
+  object_name AND identical partition_identity; object_name values are unique; no descriptor
+  object is unmatched; no extra source file exists (strict 1:1 bijection);
+- each local source file's exact content hash is revalidated against the matched
+  ExternalSourceObject.source_sha256 via the WP167 public boundary
+  revalidate_pmxt_v2_source_hash(path, expected_sha256); any mismatch fails closed;
+- PmxtV2SourceFile.path is INPUT-ONLY: it is used to open/hash the file and NEVER enters
+  logical identity, the receipt, or any public output.
+On any provenance/mapping/hash failure return a closed NAUTILUS_EVENT_CONVERSION_INVALID with
+no raw path/source-row/exception echo. The receipt commits exactly
+descriptor.external_dataset_id as source_external_dataset_id; a physical Parquet SHA is never
+the top-level dataset identity, and no caller-invented dataset string is accepted. WP168 is
+the bounded pmxt-v2 EXTERNAL-history replay proof only; it does NOT also generalize to
+canonical/analytical sources — STOP rather than silently broadening the source API.
+
+===============================================================================
+PMXT-V2 EVENT-SEMANTIC VALIDATION MATRIX (FROZEN)
+===============================================================================
+Owned fields must be present and non-null; unowned event-specific fields must be null;
+otherwise fail closed NAUTILUS_EVENT_CONVERSION_INVALID (strict). Sides are within
+PMXT_V2_VALID_SIDES ("BUY","SELL"). Owned fields per event_type:
+- book: bids, asks (the always-populated market/asset_id/timestamps aside).
+- price_change: price, size, side, best_bid, best_ask.
+- last_trade_price: price, size, side, fee_rate_bps, transaction_hash.
+- tick_size_change: old_tick_size, new_tick_size.
+Decimal columns normalize at their documented exact (precision, scale) as fixed-point text;
+no float; positive/zero-size rules are explicit (a book/price_change level size of 0 encodes
+a DELETE; a negative size fails closed). The source-row market accepts WP167-valid ASCII hex in
+either case ("0x" + 64 hex, a-f OR A-F) and its canonicalized value is lowercase before
+comparison to the (already-lowercase) context condition_id and before serialization; wrong
+prefix, wrong length, non-hex, and non-ASCII/Unicode lookalikes are rejected. asset_id
+normalizes to canonical ASCII decimal digits.
+BOOK JSON SHAPE (frozen): bids and asks are each a strict JSON array of 2-item pairs
+[["price","size"], ...]; each pair is exactly two strings; price/size normalize at the exact
+documented scales (no float). Canonical order: bids sorted strictly by DESCENDING numeric
+price; asks strictly by ASCENDING numeric price. A duplicate price level on one side FAILS
+CLOSED (no implicit merge) unless the source contract explicitly guarantees a merge rule
+(it does not). Malformed JSON, a non-2-item pair, a non-exact decimal, or a duplicate
+price-level each fail closed. Tests cover malformed JSON, malformed pair, duplicate level,
+non-exact decimal, owned-null, and unowned-non-null cases.
+
+===============================================================================
+PRODUCT ERROR PRECEDENCE & NO-ECHO (FROZEN)
+===============================================================================
+Closed product failure classes in fixed precedence (distinct from the WP-spec guard's own
+schema diagnostics):
+1 NAUTILUS_RUNTIME_UNSUPPORTED
+2 NAUTILUS_DEPENDENCY_VERSION_INVALID
+3 NAUTILUS_IMPORT_UNAVAILABLE
+4 NAUTILUS_INSTRUMENT_MAPPING_INVALID
+5 NAUTILUS_EVENT_CONVERSION_INVALID
+6 NAUTILUS_CATALOG_WRITE_INVALID
+7 NAUTILUS_CATALOG_QUERY_INVALID
+8 NAUTILUS_REPLAY_INVALID
+9 NAUTILUS_REPLAY_PARITY_INVALID
+A public invalid result returns a deduplicated tuple of applicable codes ordered by this
+fixed precedence (a single-fault result carries exactly one code). Unexpected third-party
+exceptions map to the operation's closed code and never expose raw exception text, caller
+path, source payload, credentials, or arbitrary free-form metadata. A result-object field-
+coverage gate is required, and invalid public results are recursively no-echo scanned.
+
+===============================================================================
+TICK-SIZE POLICY (FROZEN — SEGMENTATION NOT AUTHORIZED)
+===============================================================================
+- The frozen WP168 model is ONE stable Polymarket economic instrument identity at the
+  finest valid historical price increment, with the exact chronological tick-size regime
+  schedule retained separately in repo-controlled replay metadata/receipt.
+- All validated historical prices must be exact integer multiples of that finest increment;
+  conversion fails closed (NAUTILUS_EVENT_CONVERSION_INVALID) otherwise.
+- Tick-size transitions do NOT create new economic instrument identities.
+- WP168 makes NO order-validity, fill, queue, execution, or tradability claim.
+- If exact Nautilus 1.231.0 behavior or a valid dataset proves this frozen model cannot be
+  represented without semantic loss, STOP and return for recertification.
+- Deterministic tick-regime segmentation is a documented FUTURE fallback option only; it is
+  NOT authorized for implementation under this certificate. Do not silently switch models
+  after PASS certification.
+
+===============================================================================
+NEGATIVE TEST MATRIX (REQUIRED — 15 CATEGORIES ACCOUNTED FOR)
+===============================================================================
+Negative test matrix required: YES.
+1 Missing required field: TEST (missing instrument identity / missing market or asset id).
+2 Null where required: TEST (null market/asset id rejected; documented null event-time rule).
+3 Wrong type: TEST (decimal/type drift; string where integer expected).
+4 Empty string/list/dict: TEST (empty/malformed book payload rejected).
+5 Stale/future timestamp: TEST (event timestamp order violation where disallowed).
+6 Forbidden field name: TEST (result field-coverage forbidden classification; execution
+  authority cannot be true).
+7 Forbidden wording: NOT_APPLICABLE — WP168 processes typed numeric/market data and emits
+  no free-text advisory surface; the no-echo scan (category covered by 15/no-echo) still
+  guarantees no raw payload leaks.
+8 Credential-like token: NOT_APPLICABLE — no credential inputs or outputs exist; no-echo
+  scanning guarantees none can leak.
+9 Trade-like/strategy wording: NOT_APPLICABLE — no advisory/strategy output surface exists.
+10 Boundary-crossing term: TEST (scoped architecture/import/no-network test forbids
+  execution/live/credential terms and imports in the package).
+11 Malformed input: TEST (malformed book payload, malformed market identifier, truncated row).
+12 Duplicate/conflicting input: TEST (byte-identical duplicate multiplicity determinism;
+   conflicting instrument identity rejected).
+13 Edge spelling variants: NOT_APPLICABLE — inputs are typed pmxt v2 columns/tokens, not
+   free-text wording subject to typo variants.
+14 Case-normalization variants: TEST — two distinct input domains:
+   BinaryOptionMarketContext.condition_id must ALREADY be canonical lowercase and alternate case
+   is rejected at that public context boundary; separately, a WP167-valid source-row market
+   containing uppercase A-F is ACCEPTED and canonicalized to lowercase (identical canonical
+   bytes/digests/replay identity as the lowercase form), while wrong-prefix, wrong-length,
+   non-hex, and non-ASCII/Unicode lookalikes (including Unicode-digit asset_id) are rejected.
+15 Safe allowed wording / positive case: TEST (a valid pmxt v2 stream converts, catalogs,
+   and replays successfully — the required positive case).
+Wording filters are never invented merely to make a category applicable.
+
+===============================================================================
+RESULT FIELD-COVERAGE, MODEL D EVIDENCE & ONE-SHOT PRODUCT READINESS GATE
+===============================================================================
+Result Object Field-Coverage Gate: YES. All public result/receipt dataclass fields are
+enumerated; every field is scanned/exempt/forbidden; a future unclassified field fails a
+mechanical test; invalid results are recursively no-echo scanned; manual serializer
+losslessness is tested if a manual serializer exists.
+
+Evidence Architecture (Model D): the PR body is the current review evidence surface. The
+status fragment docs/status_entries/WP168.md is a stable, non-self-referential historical
+record that MUST NOT contain a mutable live-head SHA, MUST use the label
+"Validated implementation commit:" for the tested commit, and MUST include the fixed
+non-self-referential wording ("Current live PR head: see GitHub PR metadata and PR body.
+This status fragment is stable and non-self-referential; it does not attempt to encode the
+SHA of the commit containing itself."). A final GitHub comment is optional and
+non-canonical after WP91. A PR-body/status contradiction matrix must PASS, and NOT_VERIFIED
++ Ready-for-review YES must never co-occur.
+
+One-Shot Product Readiness Gate (all must PASS before Ready for review YES): repo-truth
+phrase sweep; PR body/status contradiction matrix; stable non-self-referential status
+fragment; result-field coverage; serializer losslessness (or NOT_APPLICABLE); full
+public-output scan; invalid-output no-echo; validation tier complete; all guards; five
+hosted CI jobs green; independent certificate PASS; wp_spec_guard exit 0; evidence mode
+complete.
+
+Requirement-to-evidence traceability: the PR body carries every final R001-R0NN row with a
+SATISFIED/OPEN status. Security: exact dependency-audit posture is stated; local security
+tools are reported honestly UNAVAILABLE when unavailable and are never claimed to have run.
+
+===============================================================================
+COMPATIBILITY / IMPOSSIBILITY TABLE
+===============================================================================
+| Required behavior | Controlling repo mechanism | Files likely needed | Allowed in this WP? | Compatible? | Action |
+|---|---|---|---:|---:|---|
+| WP167 canonical PIT unchanged | PIT/WP167 contract | (read-only predecessor) | YES | YES | reference only |
+| WP167 analytical logical identity unchanged | analytical contract | (read-only predecessor) | YES | YES | reference only |
+| New research_runtime boundary | architecture guard + README | src/research_runtime/README.md; tests/test_architecture_boundaries.py | YES | YES | register scope |
+| Python 3.12-3.14 | pyproject + wheels | pyproject.toml; ci.yml | YES | YES | matrix proof |
+| Existing PyArrow/DuckDB/Polars pins | pyproject | pyproject.toml | YES | YES | unchanged |
+| nautilus_trader==1.231.0 | pyproject + clean-env preflight | pyproject.toml; test_dependency_runtime_compatibility.py | YES | YES | pin exact stable |
+| Transitive dependency compatibility | pip check + pip-audit | ci.yml | YES | YES | isolated audit |
+| BinaryOption mapping | Nautilus model API | instruments.py; test_instruments.py | YES | YES | adopt |
+| Canonical receive/event-time semantics | conversion policy | conversion.py; test_conversion.py | YES | YES | ts_init primary |
+| Canonical deterministic ordering | conversion policy | conversion.py; replay.py; tests | YES | YES | physical-order independent |
+| Finest-tick single-instrument policy | Nautilus Price precision | instruments.py; conversion.py; tests | YES | YES | exact multiples |
+| ParquetDataCatalog | Nautilus persistence | catalog.py; test_catalog.py | YES | YES | adopt |
+| Offline BacktestEngine replay | Nautilus engine | replay.py; test_replay.py | YES | YES | event replay only |
+| LGPL install-not-vendor | dependency/adoption registry | adoption registry doc + its test | YES | YES | promote, no vendor |
+| Architecture guard | approved-source ledger | tests/test_architecture_boundaries.py | YES | YES | add approved scope |
+| Dependency registry | adoption registry | registry doc + test | YES | YES | promote nautilus row |
+| Five-job hosted CI | GitHub Actions | ci.yml | YES | YES | extend matrix |
+| Model D evidence | status/PR discipline | docs/status_entries/WP168.md; project_status.md | YES | YES | stable fragment |
+| No authenticated client | protected boundary | (none) | NO | N/A | forbid |
+| No WebSocket/Data API | WP169 | (none) | NO | N/A | separately gated |
+| No strategy/fill/paper/live | protected boundary | (none) | NO | N/A | forbid |
+| WP169/WP170 scope | protected successors | (none) | NO | N/A | separately gated |
+No allowed row is TBD/NO at certificate time.
+
+===============================================================================
+EXACT CHANGED-FILE SCOPE (35 FILES — FROZEN) + FINAL SCOPE AUDIT
+===============================================================================
+V3 artifacts:
+  docs/wp_specs/WP168/wp_prompt.txt
+  docs/wp_specs/WP168/wp_spec.json
+  docs/wp_specs/WP168/draftability_certificate.json
+Dependency + CI:
+  pyproject.toml
+  .github/workflows/ci.yml
+New source (new top-level research-runtime boundary):
+  src/research_runtime/README.md
+  src/research_runtime/nautilus_offline/__init__.py
+  src/research_runtime/nautilus_offline/runtime_compatibility.py
+  src/research_runtime/nautilus_offline/instruments.py
+  src/research_runtime/nautilus_offline/conversion.py
+  src/research_runtime/nautilus_offline/catalog.py
+  src/research_runtime/nautilus_offline/replay.py
+New focused tests:
+  tests/research_runtime/nautilus_offline/test_runtime_compatibility.py
+  tests/research_runtime/nautilus_offline/test_instruments.py
+  tests/research_runtime/nautilus_offline/test_conversion.py
+  tests/research_runtime/nautilus_offline/test_catalog.py
+  tests/research_runtime/nautilus_offline/test_replay.py
+New contract doc + docs-test:
+  docs/nautilus_offline_kernel_contract.md
+  tests/test_nautilus_offline_kernel_contract_docs.py
+Status / governance reconciliation:
+  docs/status_entries/WP168.md
+  docs/project_status.md
+  docs/repo_truth_index.md
+  docs/deferred_items_log.md
+  docs/security_tooling_status.md
+  docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md
+Historical governance-guard edits (each preserves every prior WP's exact-scope assertions;
+required because a new top-level src package + a new dependency + advancing the current
+review target trip these guards):
+  tests/test_architecture_boundaries.py
+  tests/test_project_status_docs.py
+  tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py
+  tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py
+  tests/test_local_research_workflow_value_measurement_harness_contract_docs.py
+  tests/test_point_in_time_market_research_data_foundation_contract_docs.py
+  tests/test_wallet_intelligence_architecture_contract_docs.py
+  tests/test_human_review_label_workflow_docs.py
+  tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py
+  tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py
+
+exact_scope_required = true.
+
+FINAL 35-FILE SCOPE IMPOSSIBILITY AUDIT: PASS. A read-only re-audit confirmed that
+introducing the new top-level src/research_runtime/nautilus_offline boundary does NOT
+require any additional canonical architecture/runtime-boundary document. docs/
+architecture_skeleton.md, docs/runtime_boundaries.md, docs/interface_contracts.md, and
+docs/mode_separation.md are append-only per-WP narrative logs with no completeness guard
+that enforces a new-boundary entry; no test asserts their completeness against src
+top-level packages; and predecessor WP167 added its package without editing any of them.
+The new-boundary registration is fully carried by the new src/research_runtime/README.md
+plus the SRC_READMES and APPROVED_SRC_SCOPES additions in tests/test_architecture_
+boundaries.py, all inside the 35-file set.
+
+36TH-FILE STOP (frozen): STOP if a 36th changed path becomes necessary — because the
+independently reviewed 35-file scope would no longer describe the implementation and the
+current machine-spec schema cannot truthfully encode a larger package. No implementation
+may silently add a 36th path; no governance file may be omitted merely to remain at 35; no
+unrelated responsibilities may be collapsed merely to remain at 35; if a genuine 36th path
+is discovered after certification, implementation must STOP and return for a new scope/
+governance decision.
+
+===============================================================================
+VALIDATION (AT FINAL IMPLEMENTATION HEAD)
+===============================================================================
+1 exact V3 scope guard; 2 wp_spec_guard PASS; 3 pip check; 4 exact installed-version proof
+(nautilus_trader==1.231.0 + WP167 pins); 5 focused WP168 tests; 6 predecessor compatibility
+suite; 7 all affected architecture/status governance tests; 8 result-object field coverage;
+9 negative matrix; 10 artifact guard; 11 git diff --check; 12 full pytest; 13 isolated
+pip-audit; 14 five hosted CI jobs green; 15 PR evidence consistency guard; 16 live PR body
+re-fetch; 17 evidence mode complete; 18 no open review threads. Any local baseline-
+equivalent environmental failure must be proven on the exact base with the identical
+command/environment; a NEW Nautilus-specific limitation is classified explicitly and is not
+a pre-existing base failure; hosted CI is the authoritative platform proof.
+
+===============================================================================
+CI / PLATFORM VALIDATION
+===============================================================================
+Reuse and extend the existing five-job shape (not enlarge it): Ubuntu 24.04 / py3.12,
+Ubuntu 24.04 / py3.14, Windows 2022 / py3.12, Windows 2022 / py3.14, and one isolated
+dependency-audit job. Each compatibility job normalizes line endings; installs exact pins
+(WP167 pins + nautilus_trader==1.231.0); pip check; asserts exact Python/dependency
+versions; imports the required Nautilus modules; runs focused WP168 tests with no
+Nautilus-required skip; artifact guard; full test suite.
+
+===============================================================================
+STOP CONDITIONS (each: STOP if X — because Y)
+===============================================================================
+STOP if a 36th changed path is genuinely required — because the certified 35-file scope and
+  current machine schema cannot truthfully represent it.
+STOP if any required governance file was omitted merely to stay at 35 — because scope truth
+  takes precedence over file-budget convenience.
+STOP if nautilus_trader==1.231.0 cannot install/import on a required hosted platform —
+  because the exact stable dependency is a core compatibility requirement.
+STOP if another direct dependency becomes required — because only NautilusTrader in
+  addition to the WP167 pins is authorized.
+STOP if canonical WP167/PIT identity or serialization must change — because WP168 is a
+  derived consumer, not a canonical-data migration.
+STOP if the canonical semantic row serialization cannot be made deterministic and
+  physical-order-independent — because replay identity would be non-reproducible.
+STOP if receive/init-time ordering cannot be made the deterministic replay arrival order —
+  because the replay would violate point-in-time knowability semantics.
+STOP if equal-ts_init canonical tie ordering cannot be preserved by Nautilus 1.231.0 —
+  because replay order would remain implementation/platform dependent.
+STOP if the finest-tick single-instrument model fails for a valid dataset — because the
+  frozen tick policy would be invalid and segmentation is not authorized under this
+  certificate.
+STOP if invalid public results cannot be recursively no-echo scanned — because the result-
+  output safety contract would be incomplete.
+STOP if field coverage cannot be proven mechanically — because new public fields could
+  bypass output invariants.
+STOP if vendoring/modifying Nautilus becomes necessary — because the LGPL/security posture
+  changes materially.
+STOP if product/runtime network, Polymarket extra, Redis, credentials, WebSocket, Data API,
+  strategy, order/fill, paper, or live capability becomes necessary — because those are
+  protected successor boundaries.
+STOP if the full validation matrix cannot be rerun after final source changes — because
+  evidence would be stale.
+STOP if any required exact-head hosted CI job remains red — because cross-platform runtime
+  compatibility is unproven.
+STOP if the posted evidence surfaces cannot be re-fetched and checked truthfully — because
+  evidence mode cannot become review-ready.
+STOP if prompt/spec hashes change after the independent PASS certificate — because the
+  certificate would no longer bind the implementation package.
+
+===============================================================================
+V3 CORRECTION SELF-DIAGNOSIS
+===============================================================================
+Follow-up correction required: YES. Classification: drafting/governance completeness;
+semantic ordering/identity clarification; evidence-plan correction. Root cause: the
+pre-freeze agent validated the machine spec but did not run one consolidated human-prompt/
+template review against every mandatory governance document. Preventable: YES. What should
+have caught it: a single pre-publication WP readiness checklist spanning human prompt +
+machine spec + evidence policy. Immediate process change: do not publish another V3 package
+until the full self-audit is all YES. Durable guidance change needed: YES — after WP168,
+create a governance-hardening package that mechanically checks human-prompt/template
+requirements and fixes the post-WP91 final-comment guard mismatch. No such governance tool
+change is authorized inside WP168.
+
+V3 SOURCE-MARKET-CASE CORRECTION (this revision): the prior independent PASS missed an
+internal semantic contradiction/ambiguity — the canonical-serialization and event-semantic
+matrix said the source `market` normalizes to lowercase, while negative-matrix category 14 was
+worded so it could also mean uppercase source-row market is REJECTED, and it did not name which
+input domain it constrained. Adjudicated split (frozen intent): the WP167 pmxt-v2 SOURCE-ROW
+market accepts WP167-valid upper/lower ASCII hex and is canonicalized to lowercase before
+comparison/serialization/identity; BinaryOptionMarketContext.condition_id is a repo-owned
+context input that must ALREADY be canonical lowercase and rejects alternate case. Because the
+frozen prompt is hash-bound by the current independent PASS certificate (which says STOP if the
+hashes change after PASS), that certificate is intentionally superseded and returns to
+PENDING_INDEPENDENT_REVIEW until a new independent 12-lens review passes against these corrected
+exact bytes. Preventable: YES. What should have caught it: a semantic-contradiction sweep across
+positive rules, the public input dataclass rules, the negative matrix, examples and the evidence
+plan, checking that no artifact simultaneously implies an input is both normalized and rejected.
+Durable guidance change needed: YES — future readiness tooling must run that sweep. No product
+implementation of this case policy is authorized by this normative correction.
+
+===============================================================================
+SUCCESSOR BOUNDARY
+===============================================================================
+WP169 — Public Realtime WebSocket + Public Activity/Wallet Data Plane: bounded native
+forward CLOB frame capture; gap/reconnect epochs; raw public-frame evidence; public Data
+API activity/wallet collection; no credentials/trading. Separately gated.
+WP170 — Leakage-Safe Experiment Registry & Research-Dataset OS: experiment ids; dataset/
+feature/label identity; preregistration; PIT cutoffs; grouped/purged CV; all-trial
+accounting; multiple-testing; immutable OOS evidence. Separately gated.
+Executable-edge simulation, deterministic risk/reconciliation, paper and live remain later
+separately gated work.
+
+===============================================================================
+AUTHORIZATION STATE (AT FREEZE)
+===============================================================================
+WP168 IMPLEMENTATION AUTHORIZED: NO at freeze. Activates only after (1) an independent
+12-lens draftability certificate = PASS hashing these exact bytes, (2) that certificate is
+committed unchanged, and (3) wp_spec_guard exits 0 — then for the exact 35-file scope only.
+MERGE AUTHORIZED: NO. PAPER AUTHORIZED: NO. LIVE AUTHORIZED: NO. WP169/WP170 AUTHORIZED: NO.
+
+END WP168 NORMATIVE PROMPT

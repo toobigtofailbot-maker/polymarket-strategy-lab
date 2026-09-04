@@ -2783,8 +2783,8 @@ def test_wp153_through_wp166_are_merged_and_wp167_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
+    assert "WP168" in current_phase_line
     assert "WP167" in current_phase_line
-    assert "WP166" in current_phase_line
     assert "WP130" in current_phase_line
     assert "WP153" in merged_line
     assert "WP154" in merged_line
@@ -2800,47 +2800,45 @@ def test_wp153_through_wp166_are_merged_and_wp167_is_current_review_target():
     assert "WP164" in merged_line
     assert "WP165" in merged_line
     assert "WP166" in merged_line
+    assert "WP167" in merged_line
     for phrase in (
         "current review target",
-        "Primary package class: RUNTIME_DEPENDENCY_ANALYTICAL_RESEARCH_FOUNDATION",
+        "Primary package class: OFFLINE_REPLAY_RUNTIME_FOUNDATION",
         "Package size class: XL",
         "XL explicit authorization: YES",
         "Risk level: 3",
-        "Implementation posture: LOCAL_OFFLINE_DERIVED_ANALYTICAL_MATERIALIZATION_AND_EXTERNAL_HISTORY_NO_EXECUTION_AUTHORITY",
+        "Implementation posture: LOCAL_OFFLINE_NAUTILUS_EVENT_REPLAY_NO_EXECUTION_AUTHORITY",
         "Ready for review: YES_INDEPENDENTLY_CERTIFIED",
         "Merge authorized: NO",
         "Independent live PR review required: YES",
-        "Exact changed-file scope: 29",
+        "Exact changed-file scope: 35",
         "Python support floor: >=3.12,<3.15",
-        "New direct runtime dependencies: pyarrow==25.0.1, duckdb==1.5.5, polars==1.44.1",
-        "Dependencies installed or activated: 3",
+        "New direct runtime dependency: nautilus_trader==1.231.0",
+        "Dependencies installed or activated: 4",
         "Default network posture: OFF",
         "External data downloader: NONE",
         "Product/runtime network calls: 0",
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
         "Canonical PIT authority unchanged: YES",
-        "Derived Parquet is analytical materialization only: YES",
+        "Nautilus catalog and replay are derived research runtime state only: YES",
         "External pmxt v2 classified THIRD_PARTY_NATIVE_FRAME_ARCHIVE: YES",
         "No downloader: YES",
-        "No NautilusTrader: YES",
+        "NautilusTrader offline-only adopted: YES",
+        "No live Nautilus data or execution client: YES",
+        "No Polymarket extra: YES",
+        "No Redis: YES",
         "No WebSocket runtime: YES",
         "No Data API: YES",
         "No Hermes/strategy/paper/execution/live: YES",
-        "DuckDB local execution: OBSERVATIONAL_PASS_OR_BLOCKED_BY_WINDOWS_SMART_APP_CONTROL",
-        "DuckDB validated by hosted CI: GREEN",
-        "WP160 merged: YES",
-        "WP161 merged: YES",
-        "WP162 merged: YES",
-        "WP163 merged: YES",
-        "WP164 merged: YES",
         "WP165 merged: YES",
         "WP166 merged: YES",
-        "WP166 PR: 166",
-        "WP166 final head: f310d96c2f5c9ae6ec589239e945ab5746463911",
-        "WP166 merge commit: 35f4042a595ae58bf8b71a986eaefac0d3fe3dc8",
-        "Analytical research store and query layer implemented by: WP167",
-        "Next phase: WP168_NAUTILUSTRADER_OFFLINE_KERNEL_SEPARATELY_GATED",
+        "WP167 merged: YES",
+        "WP167 PR: 167",
+        "WP167 final head: 557127fc04b75e75bb5594ab47df10a25f94d72d",
+        "WP167 merge commit: b79049e9330cc3a94721f0b0653b48f66e31551b",
+        "Nautilus offline kernel implemented by: WP168",
+        "Next phase: WP169_PUBLIC_REALTIME_WEBSOCKET_DATA_PLANE_SEPARATELY_GATED",
     ):
         assert phrase in current_phase_line, phrase
     assert current_phase_line.count("current review target") == 1

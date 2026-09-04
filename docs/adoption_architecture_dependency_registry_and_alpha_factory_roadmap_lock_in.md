@@ -46,10 +46,14 @@ measured zero real workflow research-value metrics. Its 22 Wave 1 results are
 synthetic harness outputs, not real alpha, strategy, paper-readiness, or
 live-readiness evidence.
 
-The dependency baseline remains `pyproject.toml` with no runtime dependencies
-and a test-only `pytest>=8.0` optional dependency. There is no lock file. The
-existing stdlib public Polymarket adapter remains the active public-data path.
-The official Polymarket clients remain uninstalled as project dependencies.
+The dependency baseline is `pyproject.toml` with exactly four exact-pinned direct
+runtime dependencies — `pyarrow==25.0.1`, `duckdb==1.5.5`, `polars==1.44.1` (WP167
+analytical foundation) and `nautilus_trader==1.231.0` (WP168 offline replay kernel) —
+and a test-only `pytest>=8.0` optional dependency. There is no lock file. The existing
+stdlib public Polymarket adapter remains the active public-data path. The official
+Polymarket clients (including the `nautilus_trader` `polymarket` extra
+`py-clob-client-v2`) remain uninstalled as project dependencies, and Redis is not
+installed. NautilusTrader is installed from upstream, not vendored or modified.
 
 ## 3. Authority / Non-Authority Posture
 
@@ -265,6 +269,19 @@ contract, explicit fill and cost assumptions, and a map of current repo
 state/risk/accounting boundaries. The spike answers compatibility questions
 only, does not replace the deterministic core by default, and implements no
 live node, credentials, or Polymarket adapter.
+
+Phase F outcome (WP168): the isolated compatibility spike was executed and
+NautilusTrader is now `APPROVED FOR WP168 OFFLINE RESEARCH RUNTIME ONLY` —
+`nautilus_trader==1.231.0` installed from upstream (install-not-vendor, LGPL-3.0,
+notices preserved) and used solely for a bounded, local, offline, deterministic
+event-replay foundation over verified WP167 pmxt-v2 external history
+(`src/research_runtime/nautilus_offline/`). This adoption still implements no live
+data client, no live execution client, no authenticated Polymarket client, no
+`polymarket` extra (`py-clob-client-v2`), no Redis, no WebSocket, no Data API, no
+strategy/alpha, no order/fill/queue/slippage modelling, and no paper/live authority.
+It is an event-replay proof only and makes no executable-edge claim; canonical
+WP167/PIT truth is unchanged and the Nautilus catalog/replay output is derived
+research runtime state only.
 
 ### PHASE G — PAPER CORE
 

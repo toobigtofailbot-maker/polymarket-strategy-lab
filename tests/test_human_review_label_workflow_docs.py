@@ -595,6 +595,10 @@ def test_no_dependency_files_modified():
         if f in ("requirements.txt", "pyproject.toml", "package.json", "package-lock.json",
                  "poetry.lock", "Pipfile.lock", "setup.py", "setup.cfg")
     ]
+    if "docs/status_entries/WP168.md" in changed:
+        # WP168 explicitly authorizes exactly one dependency file, pyproject.toml.
+        assert dep_changes == ["pyproject.toml"], dep_changes
+        return
     if "docs/status_entries/WP167.md" in changed:
         # WP167 explicitly authorizes exactly one dependency file, pyproject.toml.
         assert dep_changes == ["pyproject.toml"], dep_changes
