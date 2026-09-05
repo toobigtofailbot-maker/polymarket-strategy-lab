@@ -579,3 +579,18 @@ Scheduler/background tasks added: 0
 External source code copied: 0
 WP155 implemented: NO
 ```
+
+## WP169 Dependency Registration — Public Market Truth Realtime Data Plane
+
+WP169 registers exactly one new direct runtime dependency for the public Market WebSocket
+data plane: `websockets==17.1` (BSD-3-Clause; install-not-vendor). No external source code is
+copied or vendored; the library is installed from its upstream distribution alongside the
+preserved exact pins `pyarrow==25.0.1`, `duckdb==1.5.5`, `polars==1.44.1`, and
+`nautilus_trader==1.231.0`, with the Python floor unchanged at `>=3.12,<3.15`.
+
+This registration grants no provider/model/Hermes runtime, scheduler/background task,
+paper-trading, live-trading, credential, authenticated-access, signing, order, OMS,
+execution, or strategy authority. WP169 acquisition is bounded public unauthenticated only,
+canonical PIT authority is unchanged, and no direct PIT-to-Nautilus ingestion adapter is
+claimed. WP170 (falsification-grade experiment registry and research-dataset OS) and
+WP171–WP178 remain separately gated successors.

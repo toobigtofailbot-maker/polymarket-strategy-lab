@@ -429,3 +429,27 @@ Use this checklist before marking any future WP as ready for review:
 - [ ] Does it pass the PR evidence consistency guard with all WP47 hardening
       flags?
 - [ ] Does it include a `CURRENT FINAL WP EVIDENCE` top-level PR comment?
+
+## L. Post-WP168G Successor Sequence (WP169 -> WP178)
+
+This section is PLANNING_GUIDANCE_ONLY and NOT_AUTHORIZATION; it does not approve
+any successor. WP169 (the public market-truth realtime data plane) updates this
+durable roadmap to preserve the exact separately gated sequence:
+
+- WP169 — Market Truth / Realtime Data Plane (current review target).
+- WP170 — Falsification-Grade Experiment Registry & Research Dataset OS.
+- WP171 — Interactive Operator Cockpit.
+- WP172 — Hermes Runtime + Alpha Factory (full UMA proposal, dispute, voting,
+  finality indexing, and semantic adjudication are deferred to this boundary or a
+  separately certified prerequisite).
+- WP173 — Executable Edge / Microstructure.
+- WP174 — Portfolio / Accounting / Reconciliation / Hard Risk.
+- WP175 — Serious Paper OMS + Operations.
+- WP176 — Auth / Signing / Execution Gateway.
+- WP177 — Restricted Live Canary.
+- WP178 — Mature Controlled Live.
+
+Old Streamlit-first planning is superseded at roadmap level. WP169 implements no
+WP170 work and grants no successor capability. Each successor remains separately
+gated and requires its own independent draftability certificate and explicit user
+authorization.

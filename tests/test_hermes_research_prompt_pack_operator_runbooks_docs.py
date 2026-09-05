@@ -700,6 +700,35 @@ def test_no_src_implementation_for_wp98() -> None:
         cwd=str(REPO_ROOT),
     )
     changed_files = result.stdout.strip().splitlines()
+    if "docs/status_entries/WP169.md" in changed_files:
+        # WP169 explicitly authorizes its public market-truth realtime data-plane
+        # source package, exactly one workflow file (.github/workflows/ci.yml), one
+        # dependency file (pyproject.toml), and exactly one tools/ CLI.
+        wp169_src = {
+            "src/data_layer/polymarket/README.md",
+            "src/data_layer/polymarket/__init__.py",
+            "src/data_layer/polymarket/market_truth.py",
+            "src/data_layer/polymarket/market_truth_store.py",
+            "src/data_layer/polymarket/market_truth_websocket.py",
+            "src/data_layer/polymarket/market_truth_data_api.py",
+            "src/data_layer/polymarket/market_truth_onchain.py",
+            "src/data_layer/polymarket/market_truth_runtime.py",
+        }
+        wp169_tools = {"tools/polymarket/run_public_market_truth.py"}
+        for f in changed_files:
+            if f.startswith("src/"):
+                assert f in wp169_src, f"Forbidden src/ file changed: {f}"
+            if f.startswith("tools/"):
+                assert f in wp169_tools, f"Forbidden tools/ file changed: {f}"
+            if f.startswith(".github/workflows/"):
+                assert f == ".github/workflows/ci.yml", f"Forbidden workflow file changed: {f}"
+        dep_files = {
+            f for f in changed_files
+            if f in ("requirements.txt", "pyproject.toml", "package.json",
+                     "package-lock.json", "poetry.lock", "Cargo.toml", "Cargo.lock")
+        }
+        assert dep_files == {"pyproject.toml"}, dep_files
+        return
     if "docs/status_entries/WP168.md" in changed_files:
         # WP168 explicitly authorizes its offline NautilusTrader research-runtime source
         # package, exactly one workflow file (.github/workflows/ci.yml), one dependency

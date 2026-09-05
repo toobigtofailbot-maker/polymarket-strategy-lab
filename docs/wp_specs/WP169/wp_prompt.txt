@@ -1,0 +1,986 @@
+WP169 — MARKET TRUTH / REALTIME DATA PLANE
+
+===============================================================================
+PACKAGE IDENTITY
+===============================================================================
+Package Identity:
+  WP ID: WP169
+  Title: Market Truth / Realtime Data Plane
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/wp169-native-market-truth
+  Package class: PUBLIC_MARKET_TRUTH_REALTIME_DATA_PLANE
+  Package size class: XL
+  Evidence mode expected: BLOCKED_NOT_READY until implementation evidence is complete;
+    target PRIVATE_REPO_MANUAL_VERIFIED at the final hosted-CI head.
+  Runtime impact: manually started, explicitly stoppable public-data acquisition runtime.
+  Product impact: public market-truth acquisition, normalization, local evidence archive,
+    and canonical PIT handoff only.
+  Network impact: public unauthenticated Polymarket HTTPS/WebSocket and Polygon JSON-RPC;
+    Git/GitHub/PyPI workflow network.
+  Credential impact: NONE; credential-bearing inputs and secret-like RPC URLs fail closed.
+  Dependency impact: add exactly websockets==17.1; install-not-vendor BSD-3-Clause.
+  Trading impact: NONE; zero order, signing, OMS, strategy, paper, or live authority.
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: highest available architecture-sensitive reasoning tier.
+  Reason: this package introduces the first durable public realtime truth boundary while
+    preserving raw source evidence, deterministic PIT semantics, and strict non-trading
+    authority.
+  Escalate to higher reasoning or STOP if: exact public protocol facts conflict with the
+    frozen contract; truthful implementation needs more than 35 changed paths; credentials,
+    authentication, signing, orders, paper/live state, Hermes, dashboard, server database,
+    service scheduler, vendored source, or protected execution/risk paths become necessary.
+
+Required predecessor:
+- PR #169 (WP168G) final head 2c67941b984a9a43da34a0038027961110d5f395.
+- PR #168G merge commit 877367235a6b3df79374f18d59641f8f1af7b7eb.
+- Frozen base is exactly 877367235a6b3df79374f18d59641f8f1af7b7eb.
+
+===============================================================================
+AUTHORITY / NON-AUTHORITY
+===============================================================================
+Implementation authority:
+- The user's Side 8 conditional authorization activates only after a genuinely separate
+  independent reviewer issues DRAFTABILITY_PASS over the exact prompt/spec bytes and
+  tools/wp/wp_readiness_gate.py returns IMPLEMENTATION_READY.
+- Once activated, authority is limited to this exact 35-file scope, final validation,
+  public unauthenticated smoke checks, commit, push, one PR, canonical PR-body evidence,
+  and ordinary same-scope correction. Merge authority is never granted.
+Report/export authority: sanitized receipts, counts, hashes, checkpoints, gap markers,
+  public market observations, and local evidence only.
+Paper authority: NO.
+Execution authority: NO.
+Live authority: NO. Public live market observation is not live trading.
+Credential authority: NO.
+Runtime/scheduler authority: manual foreground acquisition with caller-supplied bounded
+  duration or explicit stop event; reconnect/heartbeat/periodic acquisition exist only
+  inside that running process. No OS scheduler, daemon installation, service, or bot loop.
+Canonical evidence authority: raw acquisition archive is source evidence; only validated
+  normalized records promoted through the existing PIT builder/store become canonical PIT
+  records. Existing analytical materialization remains the durable downstream path;
+  direct Nautilus ingestion is not claimed.
+Network authority: YES only for unauthenticated public GET, public Market WebSocket, and
+  public Polygon read-only JSON-RPC methods eth_chainId, eth_blockNumber, eth_getLogs, and
+  eth_getBlockByNumber.
+Dependency-change authority: YES only for websockets==17.1 and the existing exact pins.
+Workflow-file authority: YES only for .github/workflows/ci.yml.
+
+Centralized boundary-group reference (docs/ai/codex/PROTECTED_PATHS.md): credentials/secrets,
+authenticated clients, wallet/account behavior, order placement/cancel, execution gateway,
+paper engine, dashboard/deployment, external code copying, and committed generated artifacts
+are NOT crossed. dependency/lock changes IS crossed only for the one exact audited pin.
+runtime/daemon and scheduler/bot loop are narrowly crossed only by the explicitly authorized
+manual foreground public-data process, its bounded periodic acquisition, heartbeat, and
+reconnect loop; no daemon, installed service, generic scheduler, trading bot, background
+worker, import-time task, or unbounded sleep/retry authority exists.
+
+Forbidden: credentials, API keys, private/account endpoints, wallet secrets, auth headers,
+signing, POST/PUT/PATCH/DELETE product calls, order create/cancel, OMS, execution gateway,
+risk-cap or safe-mode changes, strategy, expected-return claims, paper trading, simulated
+fills, Hermes runtime, dashboard implementation, hosted database, message bus, cloud
+service, background-service installation, live trading, or any WP170 implementation.
+
+===============================================================================
+HARD MERGE / START GATE
+===============================================================================
+Canonical commands:
+  git fetch origin --prune
+  git checkout main
+  git pull --ff-only origin main
+  git rev-parse HEAD
+  git log -1 --oneline
+  git status --short --branch
+
+Pre-freeze result: PASS. Local main and origin/main equal the frozen base; predecessor head
+is an ancestor; the tree is clean; generated-artifact guard passes; no WP169 branch or PR
+exists; project status does not claim WP169 complete. Recheck origin/main before branch
+creation. STOP on material drift affecting this package.
+
+===============================================================================
+CONTEXT BUDGET / DISCOVERY
+===============================================================================
+Read first: AGENTS.md, AI_CODING_AGENT_START_HERE.md, CODEX_START_HERE.md,
+  project_status, repo_truth_index, deferred_items_log, WP execution/drafting/specification,
+  protected-path, validation, evidence, negative-matrix, token-efficiency guidance.
+Read for this WP: the 35 scoped paths; existing Polymarket public adapter; PIT records/store;
+  WP167 analytical and WP168 replay public boundaries; current CI/security/adoption docs;
+  current official Polymarket Market WebSocket, Data API, CLOB market-info/book/fee,
+  Gamma market, contract-address/event source, and Polygon public RPC documentation.
+Read only if blocked: exact existing public builder internals or official upstream protocol
+  source needed to settle a frozen decoder detail.
+Do not read/touch: protected execution, OMS, reconciliation, risk, safe-mode, config, live,
+  strategy, paper, Hermes, dashboard, credentials, unrelated src/tools/tests/docs, external
+  repository code, or local generated data as committed content.
+Search terms: websocket, activity, positions, holders, OrderFilled, point-in-time, raw,
+  checkpoint, reorg, Retry-After, current review target, exact dependency pins.
+
+Discovery facts frozen on 2026-09-04:
+- Market WebSocket URL is wss://ws-subscriptions-clob.polymarket.com/ws/market; initial
+  subscription uses assets_ids/type=market; subscribe/unsubscribe operations are supported;
+  text PING/PONG heartbeat is required; custom_feature_enabled requests best-bid/ask and
+  lifecycle events.
+- Normalized event support is exact for book, price_change, last_trade_price,
+  tick_size_change, best_bid_ask, new_market, and market_resolved. Unknown messages are
+  preserved raw and classified unsupported, never silently dropped.
+- Public Data API scope is /trades, /activity, /positions, /holders. Gamma /markets and
+  /markets/{id}, CLOB /book, /fee-rate, and market-info surfaces provide metadata,
+  resolution/lifecycle text, tick/min-size/fee/delay/fee-curve configuration.
+- Polygon chain id is 137. CTF Exchange V2 address is
+  0xE111180000d2663C0091e4f400237545B87B996B and NegRisk CTF Exchange V2 is
+  0xe2222d279d744050d28e00520010520000310F59. The exact V2 OrderFilled topic is
+  0xd543adfd945773f1a62f74f0ee55a5e3b9b1a28262980ba90b1a89f2ea84d8ee.
+- OrderFilled V2 fields are orderHash, maker, taker, side, tokenId, makerAmountFilled,
+  takerAmountFilled, fee, builder, metadata. Source identity binds chain/address/block hash,
+  block number, transaction hash, and log index.
+- websockets==17.1 is current, supports Python 3.12-3.15, BSD-3-Clause, install-not-vendor.
+
+===============================================================================
+OBJECTIVE AND ARCHITECTURE
+===============================================================================
+Deliver one native public market-truth plane under src/data_layer/polymarket. It must:
+
+1. Preserve exact raw bytes plus receive time and source metadata before normalization.
+2. Normalize supported Market WebSocket events deterministically without floats.
+3. Maintain per-asset book readiness, mark disconnect/regression/hash conflicts as gaps,
+   and heal a gap only with a subsequent full book snapshot.
+4. Persist append-only raw envelopes, normalized observations, sessions, gaps, and
+   checkpoints transactionally in bounded local SQLite storage.
+5. Support resilient public GET acquisition with allowlisted endpoints, bounded pagination,
+   closed Retry-After handling, timeout, response-size, page, record, and retry limits.
+6. Capture point-in-time dynamic configuration and raw Gamma resolution/lifecycle material;
+   missing dynamic parameters remain explicit null/unknown, never fabricated defaults.
+7. Ingest and decode public V2 OrderFilled logs from both official exchange addresses,
+   retain confirmation state and block hashes, and invalidate affected checkpoints on
+   detected reorgs. Unknown/malformed logs remain raw/quarantined.
+8. Convert eligible accepted observations to the existing canonical PIT record builder;
+   book, trade, and market metadata integrate with existing analytical materialization only
+   through the existing PIT boundary. Acquisition SQLite itself has no canonical promotion
+   authority. WP168 Nautilus replay accepts only its frozen WP167 pmxt-v2 external dataset;
+   no direct PIT-to-Nautilus adapter is claimed or added by WP169. The preserved raw/event
+   semantics make a later separately reviewed adapter possible without fabricating history.
+9. Provide an explicit manual foreground CLI/runtime with graceful stop and bounded
+   backoff. No import-time network, thread, process, scheduler, or file side effect.
+
+Public output is closed and sanitized: stable status/error codes, counts, hashes, logical
+source identifiers, event timestamps, and public market values only. Exceptions, URLs,
+headers, environment values, local absolute paths, raw invalid inputs, or response bodies
+must not be echoed by result/error surfaces.
+
+===============================================================================
+PUBLIC API / MUTABILITY / IDENTITY
+===============================================================================
+Exact frozen public records (all dataclasses frozen; all collections tuples; structured
+payload/provenance are canonical JSON strings, never mutable mappings):
+- RawEnvelope(raw_id: str, occurrence_id: str, source_kind: str, source_id: str,
+  source_cursor: str, received_at: str, media_type: str, raw_bytes: bytes, byte_length: int,
+  raw_sha256: str).
+- NormalizedObservation(observation_id: str, occurrence_id: str, raw_id: str,
+  source_kind: str, event_kind: str, event_id: str|None, market_id: str|None, asset_id: str|None,
+  event_time: str|None, received_at: str, canonical_payload_json: str,
+  canonical_payload_sha256: str, status: str, error_codes: tuple[str,...],
+  book_ready: bool, provenance_json: str).
+- AcquisitionLimits(max_frame_bytes=1048576, max_response_bytes=4194304,
+  max_record_bytes=262144, max_records_per_page=10000, max_pages=10,
+  max_retries=3, request_timeout_seconds=20, retry_after_max_seconds=30,
+  max_backoff_seconds=30, max_queue_items=10000, max_store_rows=1000000,
+  max_store_bytes=4294967296, heartbeat_seconds=10, max_block_span=2000,
+  confirmation_depth=64, max_network_calls=1000, max_reconnect_attempts=100,
+  max_book_levels_per_side=5000,
+  data_calls_per_10_seconds=100, gamma_calls_per_10_seconds=100,
+  clob_calls_per_10_seconds=100, rpc_calls_per_second=10, data_poll_seconds=10,
+  gamma_poll_seconds=60, clob_poll_seconds=60, rpc_poll_seconds=12,
+  max_runtime_seconds=86400). Every field is int, minimum 1; caller values above defaults are
+  rejected rather than expanding the certified maxima.
+- AcquisitionReceipt(status: str, error_codes: tuple[str,...], raw_count: int,
+  normalized_count: int, quarantined_count: int, gap_count: int,
+  checkpoint_sequence: int, store_bytes: int, stop_reason: str).
+- BookApplyResult(status: str, error_codes: tuple[str,...], asset_id: str|None,
+  ready: bool, gap_open: bool, applied: bool).
+- BookStateTransition(asset_id: str, from_state: str, to_state: str, reason: str).
+- BookFramePlan(observations: tuple[NormalizedObservation,...],
+  transitions: tuple[BookStateTransition,...], state_json: str).
+- SubscriptionUpdate(operation: str, asset_ids: tuple[str,...]).
+- SubscriptionControlResult(status: str, error_codes: tuple[str,...], accepted: bool,
+  queued: int).
+- PublicPageResult(status: str, error_codes: tuple[str,...],
+  attempts: tuple[RawEnvelope,...], successful_attempt_index: int|None). This is a trusted
+  raw-evidence container: response bytes are reachable only through its RawEnvelope elements
+  and it is never serialized into receipts, exceptions, status, or CLI output.
+- PitPromotionResult(is_valid: bool, status: str, error_codes: tuple[str,...],
+  source_snapshot_result: PointInTimeBuildResult|None,
+  observation_result: PointInTimeBuildResult|None).
+- Checkpoint(sequence: int, history_sequence: int, checkpoint_key: str, value_json: str,
+  value_sha256: str, previous_sha256: str|None, state: str).
+- MarketTruthRuntimeConfig(output_db: pathlib.Path, asset_ids: tuple[str,...]=(),
+  discover_active: bool=False, duration_seconds: int=60, max_pages: int=1,
+  wallet: str|None=None, condition_id: str|None=None, rpc_provider: str="drpc",
+  from_block: int|None=None, to_block: int|None=None,
+  onchain_lookback_blocks: int=100).
+
+Exact frozen functions and methods:
+- canonical_json_bytes(value: object, *, max_bytes: int=262144) -> bytes.
+- make_raw_envelope(source_kind: str, source_id: str, source_cursor: str,
+  received_at: str, raw_bytes: bytes, *, occurrence_sequence: int,
+  limits: AcquisitionLimits|None=None) -> RawEnvelope.
+- normalize_websocket_message(raw: RawEnvelope, *,
+  book_readiness: Mapping[str,bool])
+  -> tuple[NormalizedObservation,...].
+- normalize_public_record(raw: RawEnvelope, *, endpoint: str, record_index: int)
+  -> NormalizedObservation.
+- build_point_in_time_observation(raw: RawEnvelope, observation: NormalizedObservation, *,
+  ingestion_batch_id: str, snapshot_id: str,
+  configuration: NormalizedObservation|None=None,
+  market_context: NormalizedObservation|None=None) -> PitPromotionResult.
+- MarketTruthStore(path: str|pathlib.Path, limits: AcquisitionLimits|None=None);
+  initialize() -> None; append(raw: RawEnvelope,
+  observations: Sequence[NormalizedObservation]=()) -> AcquisitionReceipt;
+  mark_session(session_id: str, state: str, received_at: str) -> None;
+  mark_gap(asset_id: str, state: str, reason: str, received_at: str) -> None;
+  write_checkpoint(checkpoint_key: str, value: Mapping[str,object], state: str)
+  -> Checkpoint; load_checkpoint(checkpoint_key: str) -> Checkpoint|None;
+  iter_normalized(*, after_sequence: int=0, limit: int=1000)
+  -> tuple[NormalizedObservation,...]; receipt(status: str="OK",
+  error_codes: Sequence[str]=(), stop_reason: str="NONE") -> AcquisitionReceipt;
+  close() -> None; context manager returns the initialized store and always closes it.
+- MarketBookState(asset_ids: Sequence[str]); mark_disconnect(received_at: str) -> None;
+  subscribe(asset_ids: Sequence[str]) -> None; unsubscribe(asset_ids: Sequence[str]) -> None;
+  plan(observations: Sequence[NormalizedObservation]) -> BookFramePlan;
+  commit(plan: BookFramePlan) -> tuple[BookApplyResult,...];
+  discard(plan: BookFramePlan, reason: str="STORAGE_FAILURE")
+  -> tuple[BookApplyResult,...];
+  is_ready(asset_id: str) -> bool; snapshot_json() -> str;
+  from_checkpoint(checkpoint: Checkpoint) -> MarketBookState.
+- async run_market_websocket(asset_ids: Sequence[str], store: MarketTruthStore,
+  stop_event: asyncio.Event, *, limits: AcquisitionLimits|None=None,
+  websocket_url: str="wss://ws-subscriptions-clob.polymarket.com/ws/market",
+  connection_factory: Callable[...,AsyncContextManager]|None=None,
+  subscription_controller: SubscriptionController|None=None)
+  -> AcquisitionReceipt.
+- SubscriptionController(limits: AcquisitionLimits|None=None); submit(update:
+  SubscriptionUpdate) -> SubscriptionControlResult; get() ->
+  Awaitable[SubscriptionUpdate]; overflowed() -> bool. It exclusively owns an asyncio.Queue
+  with maxsize=limits.max_queue_items; callers never receive the queue.
+- PublicMarketDataClient(limits: AcquisitionLimits|None=None,
+  transport: Callable|None=None, clock: Callable[[],str]|None=None); get_page(endpoint: str,
+  params: Mapping[str,str|int]) -> PublicPageResult.
+- collect_public_page(client: PublicMarketDataClient, store: MarketTruthStore,
+  endpoint: str, params: Mapping[str,str|int], *, max_pages: int=1,
+  stop_event: asyncio.Event|None=None) -> AcquisitionReceipt.
+- validate_public_rpc_url(provider: str) -> str. Only enum provider "drpc" maps to the
+  committed HTTPS URL; arbitrary URLs, userinfo, query strings,
+  fragments, environment interpolation, and caller tokens are impossible.
+- decode_order_filled_v2(raw: RawEnvelope, log: Mapping[str,object], *,
+  latest_block: int, block_timestamp: int, confirmation_depth: int=64)
+  -> NormalizedObservation.
+- collect_order_filled_logs(provider: str, store: MarketTruthStore, from_block: int,
+  to_block: int, *, latest_block: int, limits: AcquisitionLimits|None=None,
+  transport: Callable|None=None) -> AcquisitionReceipt.
+- async run_market_truth_runtime(config: MarketTruthRuntimeConfig,
+  stop_event: asyncio.Event, *, limits: AcquisitionLimits|None=None,
+  websocket_runner: Callable|None=None) -> AcquisitionReceipt.
+
+Injected transport protocols are exact test seams: HttpTransport(url: str,
+headers: Mapping[str,str], timeout_seconds: int) -> tuple[int,Mapping[str,str],bytes];
+RpcTransport(url: str, body: bytes, timeout_seconds: int) ->
+tuple[int,Mapping[str,str],bytes]; WebSocketLike has async send(str), recv()->str|bytes,
+close(); ConnectionFactory(url: str, max_size: int) returns an async context manager of
+WebSocketLike; WebSocketRunner has the exact run_market_websocket signature. Production
+paths supply no caller headers and use only fixed Accept/Content-Type/User-Agent values.
+
+asset_ids contains 1..500 unique canonical unsigned base-10 token ids, each 1..78 digits
+with no leading zeros except "0"; caller order is preserved for subscription and ties.
+MarketBookState.plan accepts observations for any subset of those assets and returns one
+BookFramePlan containing ordered observations and one transition per distinct affected asset
+in first-observation order. commit or discard returns one BookApplyResult per such asset.
+Unknown assets and
+duplicate asset_ids reject INPUT_INVALID. duration_seconds is 1..86400, max_pages is 1..10,
+onchain_lookback_blocks is 1..2000, wallet is canonical lowercase 0x+40 hex when supplied,
+and condition_id is canonical lowercase 0x+64 hex when supplied.
+MarketTruthRuntimeConfig has an exact XOR: either asset_ids contains 1..100 valid unique ids
+and discover_active is false, or asset_ids is empty and discover_active is true. Both or
+neither is INPUT_INVALID. The broader 500-asset bound exists only for the reusable WebSocket
+and book-state APIs, not one runtime invocation. from_block and to_block are either both null
+or both nonnegative integers with from_block<=to_block and span<=max_block_span; exactly one
+is INPUT_INVALID. When both are supplied they override onchain_lookback_blocks.
+
+Closed vocabularies: NormalizedObservation.status is ACCEPTED, QUARANTINED, or UNSUPPORTED;
+AcquisitionReceipt.status is OK, STOPPED, or FAILED; stop_reason is NONE, CALLER_STOP,
+DURATION_EXPIRED, NETWORK_CALL_LIMIT, RECONNECT_LIMIT, QUEUE_LIMIT, or STORE_LIMIT;
+BookApplyResult.status is APPLIED, NO_CHANGE, REJECTED, or GAPPED; book states are NOT_READY,
+READY, GAPPED; session states are IDLE, CONNECTING, STREAMING, RECONNECT_WAIT, STOPPED,
+FAILED; gap state is OPEN or HEALED; checkpoint state is ACTIVE, STOPPED,
+REORG_INVALIDATED, or SUPERSEDED; PitPromotionResult.status is ACCEPTED or REJECTED;
+SubscriptionControlResult.status is QUEUED or REJECTED; PublicPageResult.status is OK or FAILED.
+Gap/discard reasons are DISCONNECT, TIMESTAMP_REGRESSION, HASH_CONFLICT, PARSE_FAULT,
+QUEUE_OVERFLOW, STORAGE_FAILURE, or REORG. Any other caller token is INPUT_INVALID.
+
+Canonical JSON uses UTF-8, sorted object keys, compact separators, explicit nulls,
+preserved array order, and only null/bool/int/string/array/object values; float, NaN,
+Infinity, non-string keys, excessive depth/nodes/bytes, and unknown objects fail closed.
+Decimal price/size values remain canonical nonnegative decimal strings.
+Maximum nesting depth is 12 (root depth 1), maximum total nodes is 10000, maximum object
+keys is 512, maximum array items is 10000, maximum string length is 262144 code points, and
+max_bytes must be 1..262144; a larger caller value is LIMIT_INVALID.
+
+Content identity and occurrence identity are intentionally separate. raw_sha256 is SHA-256
+over the exact raw bytes. raw_id is markettruth:raw:sha256:<digest> over canonical JSON with
+exact keys version="wp169-raw/1.0.0", source_kind, source_id, media_type, raw_sha256, and
+byte_length; it excludes receive time. occurrence_id is
+markettruth:occurrence:sha256:<digest> over the exact canonical JSON keys
+version="wp169-occurrence/1.0.0", raw_id, received_at, source_id, source_cursor, and
+occurrence_sequence. observation_id is markettruth:observation:sha256:<digest> over the exact
+canonical JSON keys version="wp169-normalizer/1.0.0", source_content_id, source_kind, event_kind,
+event_id, market_id, asset_id, event_time, canonical_payload_sha256, status, error_codes, book_ready,
+and provenance_json. Each preimage is the canonical JSON object with the named full keys,
+serialized by canonical_json_bytes; SHA-256 is lowercase hex and prefixes are literal.
+source_content_id is raw_id for WS/HTTP observations. For POLYGON order_filled it is the
+stable source_log_id defined below, so response batching and overlap do not alter event
+identity; the observation still carries its actual raw_id and occurrence_id to bind the
+containing response.
+All event/receive times exposed by normalized records are UTC RFC3339 with exactly six
+fractional digits and Z. WebSocket epoch-millisecond and Data API epoch-second values are
+converted with integer arithmetic; no local timezone or float conversion is allowed.
+
+Receive time is the primary knowability/order time but is excluded from content identity.
+Venue event time is retained separately. Equal receive times order by source rank then event
+rank then child_index from provenance, raw digest, canonical bytes, occurrence_id, and finally
+the append-assigned archive sequence. Frozen source ranks are WS=10, CLOB=20, GAMMA=30,
+DATA=40, POLYGON=50. Frozen event ranks are book=10, price_change=20,
+last_trade_price=30, tick_size_change=40, best_bid_ask=50, new_market=60,
+market_resolved=70, trade=80, activity=90, position=100, holders=110,
+dynamic_config=120, order_filled=130, unsupported=900. No path, database row id, process id,
+retry delay, or environment value belongs to content identity. Byte-identical duplicates
+retain multiplicity as distinct occurrence rows while sharing content identity.
+Stable source_id values are polymarket:market-ws, polymarket:data-api:<endpoint-token>,
+polymarket:gamma:<endpoint-token>, polymarket:clob:<endpoint-token>, and
+polygon:137:drpc:<rpc-method>. Endpoint tokens are exactly trades, activity, positions,
+holders, markets, market-by-id, book, fee-rate, and clob-market-info. source_cursor is
+ws:<session-id>:frame:<sequence>, http:<endpoint-token>:offset:<offset>:attempt:<attempt>, or
+rpc:<method>:blocks:<from>-<to>:attempt:<attempt>. Session ids are lowercase UUID4 values;
+sequences, offsets, attempts, and blocks are canonical base-10 nonnegative integers without
+padding.
+
+HTTP resume identity is endpoint plus canonical query plus next offset. Canonical query is
+the canonical_json_bytes object of all validated endpoint parameters after every value is
+normalized to its specified string form; key sorting is therefore byte-exact. The HTTP
+checkpoint_key is "http:"+endpoint-token+":query:sha256:"+the lowercase SHA-256 of those
+canonical query bytes after omitting offset only; next_offset lives in value_json. The WS
+checkpoint_key is "ws:market:assets:sha256:"+the lowercase SHA-256 of canonical_json_bytes
+over the ordered asset-id array. The chain checkpoint_key is exactly
+"chain:137:order-filled-v2". /trades allows limit
+1..10000 and offset 0..10000, /activity requires public user, limit 1..500, offset 0..5000,
+/positions requires public user, limit 1..500, offset 0..10000, and /holders requires market
+with limit 1..20 and no offset. Gamma/CLOB snapshot
+requests are single page. WebSocket resume always reconnects/resubscribes and waits for a
+book snapshot per asset; it never invents a sequence replay. On-chain resume is inclusive
+from min(last_verified_block+1,oldest_pending_block), or the caller start when no checkpoint
+exists, and deduplicates by the stable source-log identity below. PIT promotion is idempotent
+only for the same logical occurrence (same raw bytes,
+received_at, and caller snapshot/batch inputs) by the existing record_version_id. A
+byte-identical observation received at a later time is intentionally a new source snapshot
+and market-observation version because knowability changed; it is not silently deduplicated.
+
+collect_public_page accepts offset=0 or an omitted offset for paged Data endpoints; direct
+get_page remains available for any validated offset. With no ACTIVE same-query checkpoint a
+crawl starts at zero. After each durably committed full page, it writes ACTIVE next_offset as
+offset+limit; reaching max_pages with another valid offset leaves that checkpoint for the
+next invocation. The next invocation resumes exactly there, not zero. An empty/short page or
+the endpoint maximum offset writes SUPERSEDED with next_offset=0; the invocation ends and the
+following cadence begins a new head crawl at zero. A failed page does not advance or reset
+the prior checkpoint. Gamma/CLOB single-page requests never create offset checkpoints. This
+bounded offset traversal can observe duplicates or upstream movement and preserves them as
+occurrences; it does not claim snapshot isolation or gap-free historical backfill.
+
+PIT eligibility is exact. ACCEPTED new_market, market_resolved, or Gamma market observations
+are MARKET_METADATA only when event_id, market_id, question_text, market_status, and nonempty
+outcome_labels are present. For new_market, event_id is the positive canonical base-10
+event_message.id; top-level id is the Gamma market id and is not an event id. market_resolved
+has no event id and therefore requires exact market_context. For Gamma market, event_id is
+set only when events is an array containing exactly one object with a positive canonical
+base-10 id; zero or multiple parent events leave event_id null. Market status is RESOLVED
+when event_kind is market_resolved, or Gamma umaResolutionStatus is case-insensitively
+"resolved", or Gamma automaticallyResolved is true; otherwise CLOSED when closed is true;
+otherwise ACTIVE only when active and acceptingOrders are both true; otherwise INACTIVE.
+Book/trade/market_resolved market_context, when needed, must be an ACCEPTED metadata
+observation whose token list contains the candidate asset_id when one exists and whose
+market_id matches. It may supply only a missing event_id. If both records have event_id they
+must be equal; a context received after the candidate is not-as-of and rejects. ACCEPTED book
+is ORDER_BOOK only when configuration is an ACCEPTED dynamic_config for the same asset, its
+received_at is not later than the book received_at, and its payload contains nonnull exact
+decimal tick_size and minimum_order_size; those two values are joined into the PIT book
+payload with bids/asks. ACCEPTED last_trade_price, Data trade, or activity of type TRADE is
+PUBLIC_TRADE only when event/market/token identity (direct or from the exact context), price,
+size, canonical observed side, and nonempty public transaction reference exist. order_filled
+is acquisition evidence only in WP169: the event has no price, market, or event id, and WP169
+does not invent scaling, price/size derivation, or an attribution join.
+
+Every other kind/status, gapped book, configuration received after its book ("not-as-of")
+or mismatched config, and missing required field returns PitPromotionResult(false,
+"REJECTED", ("PIT_PROMOTION_FORBIDDEN",), None, None). There is no wall-clock freshness
+expiry: "stale" means only not-as-of for the single configuration supplied to this pure
+adapter. The adapter first calls the unchanged build_source_snapshot over raw.
+Source-snapshot rejection returns false, REJECTED, ("PIT_BUILD_INVALID",), that sanitized
+source result, and None. An eligible build_market_observation rejection returns false,
+REJECTED, ("PIT_BUILD_INVALID",), the valid source result, and that sanitized observation
+result. Success returns true, ACCEPTED, empty errors, the valid source result, and the valid
+observation result. Both nested results retain exact fields is_valid, status, error_codes,
+warning_codes, record, quarantine.
+
+The SourceSnapshot input mapping is literal: schema_id="point-in-time-market-research-record";
+schema_version="1.0.0"; record_family="SOURCE_SNAPSHOT"; caller snapshot_id and
+ingestion_batch_id; event_time=null; observed_time=ingestion_time=raw.received_at;
+lifecycle_state="RAW_CAPTURED"; classification="PRIMARY_ASSERTION"; empty lineage and null
+supersedes; source_id is source:polymarket:market-ws, source:polymarket:data-api,
+source:polymarket:gamma, source:polymarket:clob, or source:polymarket:polygon for source_kind
+WS, DATA, GAMMA, CLOB, or POLYGON respectively; source_type="POLYMARKET_PUBLIC_API";
+source_reference=raw.source_id; media_type=raw.media_type;
+raw_content_sha256=raw.raw_sha256; byte_length=raw.byte_length;
+retrieval_method="PUBLIC_NETWORK_CAPTURE"; retrieval_version="wp169:1.0.0";
+upstream_revision=null; prior_source_snapshot_id=null; access_classification="PUBLIC";
+normalizer_version="wp169-normalizer:1.0.0"; validator_version="pit-validator:1.0.0";
+parameter_set_id="params:wp169-public-truth:1.0.0"; human_review_required=false; and
+canonical_payload is exactly {raw_id,source_kind,source_id,source_cursor}. The adapter uses
+the returned SourceSnapshotRecord.envelope.source_snapshot_id in the observation input; it
+never fabricates or copies a raw id into that field.
+
+The MarketObservation input mapping is literal: it reuses the SourceSnapshot schema,
+snapshot_id, ingestion_batch_id, classification, empty lineage/null supersedes,
+normalizer_version, validator_version, parameter_set_id, and human_review_required fields;
+event_time=observation.event_time, observed_time=ingestion_time=observation.received_at, and
+lifecycle_state="NORMALIZED_ACCEPTED";
+record_family="MARKET_OBSERVATION"; platform_id="platform:polymarket";
+event_id="event:polymarket:"+normalized event id; market_id="market:polymarket:"+
+lowercase condition id; token_id="token:polymarket:"+asset id or null for MARKET_METADATA;
+source_id equals the source snapshot's mapped source_id; source_snapshot_id is the exact
+built id; source_assertion_id is observation_id after removing the literal leading
+"markettruth:observation:", yielding exactly "sha256:<64-lowercase-hex>". MARKET_METADATA
+payload is exactly question_text, market_status, outcome_labels; ORDER_BOOK payload is
+exactly bids, asks, tick_size, minimum_order_size; PUBLIC_TRADE payload is exactly price,
+size, side_observed, transaction_reference. BUY maps to BUY_OBSERVED, SELL to SELL_OBSERVED,
+and any other/missing side rejects rather than fabricating UNKNOWN_OBSERVED. Caller snapshot_id
+and ingestion_batch_id must pass the existing builder's identifier rules. No current-time
+lookup or generated identifier is used.
+
+RawEnvelope is a trusted evidence object and may expose exact bytes only to an explicit
+caller already holding the archive. AcquisitionReceipt, BookApplyResult, Checkpoint errors,
+CLI output, raised public exceptions, and all invalid results are sanitized and recursively
+no-echo scanned. This separates authorized raw-evidence access from diagnostic output.
+
+Append-only SQLite tables are raw_occurrences, normalized_occurrences, session_events,
+gap_events, checkpoint_history, and chain_finality_events. checkpoint_current is a derived
+cache rebuilt from checkpoint_history; a write appends history with monotonic sequence and
+previous hash, then transactionally replaces only the cache row. Reorg handling appends an
+INVALIDATED finality event and a replacement checkpoint; it never mutates or deletes raw,
+normalized, or prior checkpoint history.
+
+MarketTruthStore accepts a caller-owned filesystem path only: not :memory:, not a device,
+directory, hard-link target with link count greater than one, or symlink at the file or any
+existing parent. The parent must already exist; suffix is .sqlite3. A missing file is created
+exclusively. An existing file opens only when SQLite application_id=1347242297,
+user_version=1, integrity_check is ok, and every exact table/index exists; otherwise
+STORE_CONFLICT and no overwrite. The library never deletes, truncates, replaces, or migrates
+an existing file. The CLI further requires the resolved path to remain beneath the repo's
+ignored local_data/polymarket directory, creates only that fixed parent, and rejects escape.
+Paths never appear in receipts, exceptions, identities, or CLI JSON.
+
+Checkpoint value_sha256 is SHA-256 over canonical JSON with exact keys
+version="wp169-checkpoint/1.0.0", checkpoint_key, sequence, state, value_json, and
+previous_sha256. previous_sha256 is null for sequence 1 and otherwise equals the immediately
+prior checkpoint_history value_sha256 for the same checkpoint_key. value_json schemas are
+http={endpoint,next_offset,last_raw_id}, ws={asset_ids,last_occurrence_id,book_states}, and
+chain={chain_id,last_verified_block,last_verified_block_hash}; all keys are exact;
+last_verified_block/hash are both null only before any confirmed checkpoint and otherwise
+the canonical nonnegative integer/lowercase 0x+64-hex pair.
+
+Closed runtime error precedence is exactly: INPUT_INVALID, LIMIT_INVALID, RAW_TOO_LARGE,
+SERIALIZATION_INVALID, STORE_NOT_INITIALIZED, STORE_LIMIT_EXCEEDED, QUEUE_LIMIT_EXCEEDED, STORE_CONFLICT,
+ENDPOINT_FORBIDDEN, RPC_PROVIDER_FORBIDDEN, NETWORK_TIMEOUT, HTTP_STATUS_RETRYABLE,
+RETRY_AFTER_INVALID, RETRY_EXHAUSTED, RESPONSE_TOO_LARGE, RESPONSE_INVALID,
+EVENT_UNSUPPORTED, EVENT_INVALID, BOOK_GAP_ACTIVE, CONTINUITY_GAP, CHAIN_ID_MISMATCH,
+ADDRESS_FORBIDDEN, LOG_TOPIC_MISMATCH, LOG_DATA_INVALID, CONFIRMATIONS_INSUFFICIENT,
+REORG_DETECTED, PIT_PROMOTION_FORBIDDEN, PIT_BUILD_INVALID, STOP_REQUESTED,
+INTERNAL_CLOSED_FAILURE. Results deduplicate errors in this order. No error carries raw
+values. Exact terminal mapping: caller stop -> STOPPED, empty errors, CALLER_STOP; duration
+or max_network_calls reached -> STOPPED, empty errors, DURATION_EXPIRED or NETWORK_CALL_LIMIT;
+reconnect attempts exhausted -> FAILED, RETRY_EXHAUSTED, RECONNECT_LIMIT; queue bound ->
+FAILED, QUEUE_LIMIT_EXCEEDED, QUEUE_LIMIT; store row/byte bound -> FAILED,
+STORE_LIMIT_EXCEEDED, STORE_LIMIT; invalid config -> FAILED, INPUT_INVALID or LIMIT_INVALID,
+NONE; nonretryable transport/response or retry exhaustion -> FAILED with the first applicable
+ordered error and NONE; unexpected closed failure -> FAILED, INTERNAL_CLOSED_FAILURE, NONE.
+Receipt checkpoint_sequence is the global SQLite checkpoint_history row sequence (zero when
+none); Checkpoint.sequence is per checkpoint_key and Checkpoint.history_sequence is global.
+
+Result-field coverage tests must assert that every field of every public dataclass is exactly
+classified as trusted scalar/tuple, raw-evidence-only, scanned, or forbidden. Adding an
+unclassified field fails. Valid diagnostic results and every invalid result are recursively
+scanned; raw_bytes is exempt only on RawEnvelope at the trusted evidence boundary.
+
+Frozen transport policy:
+- DATA is https://data-api.polymarket.com with GET-only paths /trades, /activity,
+  /positions, /holders. Accepted keys are trades={limit,offset,takerOnly,filterType,
+  filterAmount,market,eventId,user,side,start,end}; activity={limit,offset,user,market,
+  eventId,type,excludeDepositsWithdrawals,start,end,sortBy,sortDirection,side};
+  positions={user,market,eventId,sizeThreshold,redeemable,mergeable,includeArchived,limit,
+  offset,sortBy,sortDirection,title}; holders={limit,market,minBalance}. user is required for
+  activity/positions and market for holders. market and eventId are mutually exclusive.
+  market/eventId/type are comma-separated lists of 1..50 unique values: market items are
+  canonical lowercase 0x+64 hex; eventId items are positive base-10 integers; type items are
+  TRADE,SPLIT,MERGE,REDEEM,REWARD,CONVERSION,DEPOSIT,WITHDRAWAL,YIELD,MAKER_REBATE,
+  TAKER_REBATE,REFERRAL_REWARD. Boolean values are lowercase true/false. side is BUY/SELL.
+  start/end are nonnegative epoch seconds and start<=end. filterType is CASH/TOKENS and is
+  present iff filterAmount is a nonnegative canonical decimal string. Activity sortBy is
+  TIMESTAMP/TOKENS/CASH; position sortBy is CURRENT/INITIAL/TOKENS/CASHPNL/PERCENTPNL/TITLE/
+  RESOLVING/PRICE/AVGPRICE; sortDirection is ASC/DESC. sizeThreshold is nonnegative decimal;
+  title is 1..100 Unicode code points; minBalance is integer 0..999999.
+Although current provider schemas accept limit=0, WP169 intentionally enforces the stricter
+client policy limit>=1 so every successful page can make progress; tests distinguish this
+client restriction from provider capability. If activity type includes DEPOSIT or WITHDRAWAL,
+excludeDepositsWithdrawals must be present and exactly false; otherwise INPUT_INVALID.
+- GAMMA is https://gamma-api.polymarket.com with GET-only /markets and /markets/{id};
+  accepted keys are markets={limit,offset,active,closed} and market-by-id={id}; id is a
+  canonical positive base-10 integer without padding.
+- CLOB is https://clob.polymarket.com with GET-only /book, /fee-rate, and
+  /clob-markets/{condition_id}; token_id or canonical lowercase 0x+64-hex condition id is
+  required as documented for the selected path. Accepted keys are book={token_id},
+  fee-rate={token_id}, and clob-market-info={condition_id}. Unknown, duplicate, empty, or
+  endpoint-inapplicable keys fail ENDPOINT_FORBIDDEN before network use. Query values are
+  ASCII, percent-encoded by the library, and never accepted as pre-encoded URL fragments.
+- MARKET_WS is the exact fixed WSS URL. Any other websocket_url is INPUT_INVALID before the
+  injected or production connection factory is invoked; tests inject transport, not authority.
+- POLYGON provider enum drpc maps only to https://polygon.drpc.org. Only JSON-RPC 2.0 POST
+  to this exact public no-query URL is
+  allowed, with methods eth_chainId, eth_blockNumber, eth_getLogs, and
+  eth_getBlockByNumber. RPC POST is transport framing for read-only chain queries, not a
+  Polymarket product mutation. No arbitrary method, header, or URL is accepted.
+
+Normalized allowlists retain explicit nulls for absent optional fields:
+- book: market, asset_id, timestamp, hash, bids/asks tuples of exact price/size strings;
+- price_change: market, timestamp and each asset_id, price, size, side, hash, best_bid,
+  best_ask; one frame may yield multiple ordered observations by input array order;
+- last_trade_price: market, asset_id, timestamp, price, size, side, fee_rate_bps,
+  transaction_hash; tick_size_change: old_tick_size/new_tick_size; best_bid_ask: best_bid,
+  best_ask, spread; new_market/market_resolved: official ids, question/description/slug,
+  assets/outcomes, lifecycle/winner fields, tags, condition id, timestamp;
+- Data trade/activity/position/holder: only documented public wallet, condition/token,
+  side/type, exact numeric strings, timestamp, outcome, title/slug/icon, and public
+  transaction hash fields. Unknown response keys remain in raw evidence, not normalization.
+- Gamma market: id, conditionId, question, description, slug, resolutionSource,
+  endDate, active, closed, archived, acceptingOrders, clobTokenIds, outcomes,
+  orderPriceMinTickSize, orderMinSize, umaResolutionStatus, automaticallyResolved,
+  secondsDelay, feesEnabled, and derived event_id from only an exact singleton events[].id.
+  The retained normalized events value is only that derived id or null; nested event content
+  and every other upstream field remain solely in raw evidence.
+- dynamic_config: CLOB book min_order_size/tick_size/neg_risk/last_trade_price, fee-rate
+  base_fee, and market-info mos/mts/mbf/tbf/rfqe/itode/ibce/fd/oas/rewards/tokens.
+- order_filled: chain_id, exchange_address, order_hash, maker, taker, side, token_id,
+  maker_amount_filled, taker_amount_filled, fee, builder, metadata, block_number,
+  block_hash, block_timestamp, transaction_hash, log_index, confirmation_count, finality_state.
+  It also contains source_log_id="markettruth:polygon-log:sha256:<digest>", where digest is
+  SHA-256 over canonical JSON with exact keys version="wp169-order-filled-v2/1.0.0",
+  chain_id, exchange_address, block_number, block_hash, transaction_hash, log_index, and
+  event_topic. It excludes raw_id, response position, RPC range, and receive time.
+
+provenance_json has one exact source-specific schema. WS uses
+{normalizer_version,frame_event_type,child_index,event_hash}; HTTP uses
+{normalizer_version,endpoint,child_index}; POLYGON uses
+{normalizer_version,chain_id,exchange_address,child_index}. Keys sort canonically;
+child_index is zero-based; event_hash is string or explicit null; other values follow the
+closed domains above. received_at, occurrence_id, source_cursor, session id, page offset,
+attempt number, response position outside child_index, and database sequence are forbidden
+from provenance and observation content identity.
+
+HTTP responses retry only 429, 502, 503, and 504, at most max_retries after the first
+attempt. Retry-After must be an ASCII integer seconds value 0..retry_after_max_seconds;
+otherwise RETRY_AFTER_INVALID is recorded and deterministic exponential seconds 1,2,4...
+capped at max_backoff_seconds apply. Other 4xx and invalid payloads do not retry. Every
+response is byte-bounded before JSON parse. A page returning more than its endpoint maximum
+or any record exceeding max_record_bytes fails the page closed without partial promotion.
+get_page returns PublicPageResult.attempts containing one RawEnvelope per actual response,
+including intermediate retryable error bodies, in attempt order; successful_attempt_index is
+the zero-based final-success index or null. collect_public_page archives every attempt raw
+before parsing and normalizing only attempts[successful_attempt_index].raw_bytes internally.
+It never copies response JSON onto a diagnostic result. A transport failure before bytes exist creates no
+fake raw envelope and returns the closed transport error. Every acquired raw response is
+stored once before per-record normalization. Store row/content
+byte or queue exhaustion is terminal and visible; nothing is silently dropped.
+Self-imposed request caps are intentionally below verified provider limits: DATA, GAMMA, and
+CLOB use their AcquisitionLimits calls-per-10-second caps; POLYGON uses its per-second cap.
+A monotonic in-process token bucket delays within the current foreground run and never
+exceeds max_network_calls. Gamma/CLOB metadata/config are collected immediately then every
+60 seconds, selected Data pages immediately then every 10 seconds, and Polygon latest-block,
+log, and finality checks immediately then every 12 seconds. No cadence is installed outside
+the process. duration_seconds must be 1..max_runtime_seconds. On network-call,
+reconnect-attempt, queue, store, or duration exhaustion the runtime checkpoints and returns a
+receipt with the exact status/error/stop_reason mapping above; it does not silently continue.
+
+Runtime orchestration is exact. Discovery requests Gamma /markets with limit=100, offsets
+0,100,... up to config.max_pages, active=true, and closed=false. In upstream page/record order
+it chooses the first record with active=true, closed=false, acceptingOrders=true, a canonical
+conditionId, and clobTokenIds decoding either from the documented JSON-array string or an
+already-decoded array to 1..100 valid unique token ids. Its token order is preserved, its
+conditionId becomes runtime market context, and no later candidate is considered. Exhausting
+the bounded discovery pages without one candidate returns FAILED/RESPONSE_INVALID/NONE.
+Discovery raw attempts and the selected record are archived through collect_public_page.
+
+For every selected asset, each CLOB cadence fetches /book and /fee-rate and the Market
+WebSocket remains subscribed. When a runtime condition is known (explicit or discovered),
+each CLOB cadence also fetches /clob-markets/{condition_id} and each Data cadence fetches
+/trades with market=<condition>. It also fetches /holders with market=<condition>. When a
+wallet is supplied, each Data cadence fetches /trades, /activity, and /positions with that
+user; if a condition is also known, the same market filter is included in all three and the
+single /trades call is shared rather than duplicated. Each paged Data surface uses limit at
+its endpoint maximum, its checkpointed offset semantics below, and at most config.max_pages.
+Gamma is otherwise
+used only for active discovery. With explicit assets and no condition/wallet, no Data or
+Gamma call is fabricated; the runtime uses only WebSocket, per-asset CLOB, and on-chain.
+
+Every runtime invocation performs eth_chainId and requires exact 0x89, then eth_blockNumber
+for the confirmation reference. If explicit from_block/to_block are present, their inclusive
+range is collected. Otherwise the inclusive range is max(0,latest-onchain_lookback_blocks+1)
+through latest. Collection uses only the frozen V2 addresses/topic and exact range bound.
+At each later RPC cadence the latest block/finality checkpoint is refreshed and the next
+inclusive unverified range is collected; no already verified range is fabricated or skipped.
+The foreground runtime starts the WebSocket and periodic HTTPS/RPC loops in one asyncio
+TaskGroup, shares the stop event and network-call budget, converts synchronous transports via
+asyncio.to_thread, records first terminal outcome, signals sibling stop, waits for all tasks,
+writes STOPPED checkpoints, closes the store, and returns one deterministically aggregated
+receipt. Terminal error selection uses the single closed global error precedence above;
+stop_reason is then selected from the exact terminal mapping for that winning error. Caller
+stop, duration, and network-call limit apply only when no higher-precedence error exists.
+Counts are sums over committed unique archive rows and the largest global checkpoint history
+sequence is reported.
+MarketTruthStore.append first revalidates byte length/hash/raw_id/occurrence_id/source domains
+and commits the raw occurrence alone. It then revalidates every child's raw_id, occurrence_id,
+received_at, payload hash/size, canonical JSON, provenance schema, status/error consistency,
+and recomputed observation_id before one all-or-nothing child transaction. One invalid child
+commits no children and returns STORE_CONFLICT, while the already committed exact raw evidence
+remains. Re-appending an identical occurrence id/raw row is idempotent; different content at
+an existing occurrence id is STORE_CONFLICT. Within one HTTP/RPC response, records normalize
+in upstream array order and all successful/quarantined normalized children commit together.
+A page-level bound or JSON-shape failure commits only the raw envelope plus one valid
+quarantined observation; it never partially promotes records. Within a WebSocket
+price_change frame, output order is the exact price_changes array order and all child
+observations commit atomically after raw. Within eth_getLogs, accepted logs sort by numeric blockNumber, transactionIndex,
+logIndex, then lowercase address; exact source-log duplicates share observation identity and
+are not re-promoted, but each response occurrence remains archived. HTTP resume checkpoints
+advance only after the whole page transaction commits; WebSocket readiness changes only after
+the whole frame transaction commits; chain checkpoints advance only after the whole block
+range commits.
+
+WebSocket initial payload is exactly {"assets_ids":[...],"type":"market",
+"custom_feature_enabled":true}; dynamic messages use operation subscribe/unsubscribe and
+assets_ids. SubscriptionUpdate.operation is exactly subscribe or unsubscribe; its asset set
+obeys the same bounds. While STREAMING the runner races recv, heartbeat, stop_event, and the
+controller's owned bounded queue and overflow flag. submit uses put_nowait; QueueFull sets a
+sticky overflow flag and returns REJECTED/QUEUE_LIMIT_EXCEEDED, so the runner always observes
+producer overflow on its next wait cycle. A subscribe sends the exact update then adds new assets
+as NOT_READY; unsubscribe sends then removes only existing assets. Invalid/duplicate/no-op
+updates are rejected INPUT_INVALID without a wire send; queue overflow makes all assets
+GAPPED and terminates with the exact queue outcome below. The runner sends text PING each
+heartbeat_seconds and accepts text PONG. Backoff
+is deterministic 1,2,4,8,16,30 seconds and resets after an accepted full book snapshot.
+Session transitions are IDLE->CONNECTING; CONNECTING->STREAMING or RECONNECT_WAIT or FAILED;
+STREAMING->RECONNECT_WAIT on disconnect/continuity/queue fault, ->STOPPED on caller stop,
+or ->FAILED on storage/config exhaustion; RECONNECT_WAIT->CONNECTING or STOPPED.
+MarketBookState.plan is pure and computes all per-asset transitions against one immutable
+state snapshot. The runtime archives raw first and then every planned observation in the
+separate all-or-nothing child transaction, then calls commit exactly once after both succeed. If child storage
+fails it calls discard, which changes every affected in-memory asset to GAPPED with
+STORAGE_FAILURE and returns one GAPPED BookApplyResult per asset; no READY state is advanced
+by a partial frame. The raw occurrence remains authoritative evidence even when gap-event
+persistence is unavailable.
+Per-asset book transitions are NOT_READY->READY on accepted book; READY->GAPPED on disconnect,
+timestamp regression, same-timestamp hash conflict, invalid delta, parse fault for that asset, or queue overflow;
+GAPPED->READY only on a subsequently archived and accepted full book. Deltas during NOT_READY
+or GAPPED are archived with BOOK_GAP_ACTIVE and applied=false.
+
+Reconstruction is deterministic and decimal-only. Each asset state is market_id,
+last_timestamp_ms, last_hash, and price->size maps for bids/asks. A full book replaces both
+maps after validating exact canonical decimals, price in [0,1], size >0, unique numeric price
+per side, and best bid < best ask when both exist. A price_change BUY updates bids and SELL
+updates asks: size >0 upserts the numeric price; size 0 deletes an existing level; deleting a
+missing level, negative/noncanonical values, crossed book, provided best_bid/best_ask not
+equal to the reconstructed extrema, timestamp regression, or the same timestamp with a
+different nonnull hash is EVENT_INVALID plus CONTINUITY_GAP and makes that asset GAPPED.
+Decimals allow at most 18 fractional digits and canonicalize without exponent, redundant
+leading/trailing zeros, or negative zero; state sizes are capped at 10^30. Bids serialize
+descending, asks ascending, each as [price,size]. state_json is exact
+{"assets":{"<asset_id>":{"state":...,"market_id":...,"last_timestamp_ms":...,
+"last_hash":...,"last_observation_id":...,"bids":[...],"asks":[...]}}}, with asset keys
+in numeric order. last_observation_id is null before the first applied observation and is the
+full markettruth:observation:sha256 id afterward.
+
+snapshot_json returns that state. The ws checkpoint embeds the same book_states object.
+MarketTruthStore.load_checkpoint verifies the complete same-key history chain before return;
+from_checkpoint recomputes the returned checkpoint value hash, validates every state invariant, and
+restores levels; the next actual connection calls mark_disconnect so restored assets are
+GAPPED until new full snapshots. Tests apply a snapshot plus valid updates/deletes and compare
+the resulting level sets to a separately received equivalent full snapshot, including restart
+round-trip; equality covers all level bytes while timestamp/hash remain source evidence.
+Official noncanonical-but-exact decimal spellings such as "0.50" are accepted, preserved in
+raw evidence, and normalized to numeric canonical "0.5" before identity/state use. Each side
+is capped at max_book_levels_per_side after every snapshot/delta; exceeding it gaps the asset
+with QUEUE_LIMIT_EXCEEDED. An observation whose observation_id equals the asset's immediately
+prior observation is an exact duplicate: it archives as another occurrence and returns
+NO_CHANGE before delete/upsert validation. A later redundant upsert of the same size is
+NO_CHANGE but advances valid timestamp/hash; a non-consecutive delete of an absent level is
+invalid and gaps. last_observation_id is included in the checkpointed asset state.
+
+On-chain block ranges are inclusive, nonnegative, ordered, and at most max_block_span. A log
+is PENDING until latest_block-log_block+1 >= confirmation_depth, then a later collection
+appends CONFIRMED. chain_finality_events is append-only and keyed for state transitions by
+(source_log_id,block_hash,finality_state); normalized_occurrences still retains every raw
+response occurrence. The same source_log_id with identical decoded payload/finality has the
+same observation_id across overlapping or differently batched RPC responses and is not
+re-promoted; PENDING->CONFIRMED intentionally creates a new observation version bound to the
+same source_log_id.
+
+The chain checkpoint's last_verified_block is the greatest collected block whose depth is at
+least confirmation_depth, never merely the end of a range containing PENDING logs. Its hash
+is obtained even when that block contains no returned log. Each cadence first re-fetches
+eth_getBlockByNumber for the checkpoint block and every distinct block holding a retained
+PENDING log, then compares stored hashes. It next collects inclusively from the minimum of
+last_verified_block+1 and the oldest pending block through the requested/latest block,
+partitioned into max_block_span calls. Thus the entire unconfirmed tail is revisited until it
+becomes confirmed. A mismatch at block N appends REORG_INVALIDATED, opens a chain gap, writes
+a REORG_INVALIDATED checkpoint for the greatest prior hash-verified confirmed block, using
+null last_verified_block/hash when none exists, and recollects N through latest; prior rows
+remain. The recollection response is new raw evidence and any replacement log receives its
+hash-bound source_log_id. Checkpoint history states are ACTIVE, STOPPED, REORG_INVALIDATED,
+and SUPERSEDED. checkpoint_current is never an authority source without its history hash chain.
+collect_order_filled_logs calls eth_getBlockByNumber once per distinct returned block, checks
+the returned block number/hash against every log, parses its hex timestamp as nonnegative epoch
+seconds, passes it as block_timestamp, and uses the resulting six-fraction UTC value as
+NormalizedObservation.event_time. Missing/mismatched block data is RESPONSE_INVALID and none
+of that range's normalized children or checkpoint advance.
+
+Worked example truth:
+- A raw Market WS book object for asset "7" with integer timestamp "1720000000000",
+  bids [{"price":"0.40","size":"12"}], asks [{"price":"0.60","size":"8"}], and
+  received_at "2024-07-03T09:46:40.000000Z" archives one RawEnvelope, normalizes one book
+  observation with event_time "2024-07-03T09:46:40.000000Z", retains decimal strings, and
+  moves asset 7 from NOT_READY to READY only after the append transaction commits.
+- If a disconnect follows, a price_change for asset 7 is still archived but yields status
+  QUARANTINED, error BOOK_GAP_ACTIVE, applied false. A later archived valid full book heals
+  the open gap; no missing delta is fabricated.
+- A Data API /activity record of type SPLIT is archived and normalized as activity but has
+  no supported PIT observation kind, so build_point_in_time_observation returns a sanitized
+  PIT_PROMOTION_FORBIDDEN result. A TRADE with condition/token identity can build PUBLIC_TRADE.
+- A V2 OrderFilled log from either exact official exchange address with the exact topic and
+  seven 32-byte ABI data words normalizes only when chain id 137, canonical block/tx/log
+  identity, and confirmation state are known. A wrong topic yields LOG_TOPIC_MISMATCH while
+  exact raw log response bytes remain in the trusted archive.
+
+===============================================================================
+NORMATIVE RULE MATRIX / STATE TRANSITIONS
+===============================================================================
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|runtime|network|public_unauthenticated_only|REQUIRE|allowlisted_public_transport|market_truth.network_authority|R005
+NR002|archive|raw_frame|before_normalization|REQUIRE|raw_first_append_only|market_truth.raw_envelope|R003
+NR003|normalizer|decimal_value|all_supported_events|PRESERVE_EXACT|decimal_string_no_float|market_truth.normalized_observation|R002
+NR004|websocket|book_state|after_gap|REJECT|delta_until_snapshot|market_truth.gap_state|R004
+NR005|websocket|snapshot|after_gap|ACCEPT|gap_healed|market_truth.gap_state|R004
+NR006|http|endpoint|outside_allowlist|FORBID|closed_endpoint_error|market_truth.network_authority|R005
+NR007|rpc|url|credential_like|FORBID|closed_rpc_url_error|market_truth.rpc_identity|R008
+NR008|onchain|log_identity|every_accepted_log|REQUIRE|chain_address_block_tx_log_bound|market_truth.rpc_identity|R008
+NR009|pit|promotion|unsupported_or_gapped|REJECT|acquisition_only|market_truth.pit_promotion|R009
+NR010|pit|promotion|accepted_supported|ACCEPT|existing_builder_only|market_truth.pit_promotion|R009
+NR011|runtime|lifecycle|operator_stop|REQUIRE|graceful_checkpoint_close|market_truth.runtime_lifecycle|R010
+NR012|successor|wp170|all_features|FORBID|separately_gated|NONE|R014
+END_NORMATIVE_RULE_MATRIX_V1
+
+Canonical package state chain:
+- LOCAL_DRAFT -> DRAFTABILITY_PASS only through the separate exact-hash PASS certificate.
+- DRAFTABILITY_PASS -> AUTHORIZED only after readiness says IMPLEMENTATION_READY and the
+  user's Side 8 conditional authorization activates.
+- AUTHORIZED -> IMPLEMENTED_LOCAL only by changing exactly the certified 35 paths.
+
+Runtime state is IDLE -> CONNECTING -> STREAMING -> RECONNECT_WAIT -> STREAMING, with STOPPED
+reachable on caller stop/expiry and FAILED only for closed terminal configuration/storage
+errors. A disconnect creates a gap before reconnect. Every asset remains NOT_READY after a
+gap until a full book snapshot is durably appended and applied.
+
+===============================================================================
+COMPATIBILITY / IMPOSSIBILITY CHECK
+===============================================================================
+| Required behavior | Controlling mechanism | Files | Allowed | Compatible | Action |
+|---|---|---|---:|---:|---|
+| raw + normalized durable evidence | new bounded SQLite archive | market_truth_store.py | YES | YES | add |
+| canonical PIT integration | existing PIT builder | market_truth.py | YES | YES | adapter only |
+| analytical compatibility | existing PIT materialization | focused tests | YES | YES | prove no mutation |
+| direct Nautilus ingestion | WP168 pmxt-v2-only input | none | NO | N/A | explicitly deferred |
+| realtime Market WS | websockets 17.1 | websocket/runtime modules | YES | YES | exact pin |
+| public Data/Gamma/CLOB GET | urllib allowlist | data_api module | YES | YES | GET only |
+| public OrderFilled logs | Polygon read-only RPC | onchain module | YES | YES | four frozen RPC methods |
+| dynamic config history | raw + normalized observations | data_api/store | YES | YES | explicit nulls |
+| manual long-running runtime | foreground stop event | runtime/CLI | YES | YES | no service install |
+| server DB/message bus | external infrastructure | none | NO | N/A | forbidden |
+| auth/orders/OMS/paper/live | protected successors | none | NO | N/A | forbidden |
+| experiment OS | WP170 | none | NO | N/A | separately gated |
+
+No allowed row is unresolved or incompatible.
+
+===============================================================================
+EXACT CHANGED-FILE SCOPE (35 FILES — FROZEN)
+===============================================================================
+docs/wp_specs/WP169/wp_prompt.txt
+docs/wp_specs/WP169/wp_spec.json
+docs/wp_specs/WP169/draftability_certificate.json
+pyproject.toml
+.github/workflows/ci.yml
+src/data_layer/polymarket/README.md
+src/data_layer/polymarket/__init__.py
+src/data_layer/polymarket/market_truth.py
+src/data_layer/polymarket/market_truth_store.py
+src/data_layer/polymarket/market_truth_websocket.py
+src/data_layer/polymarket/market_truth_data_api.py
+src/data_layer/polymarket/market_truth_onchain.py
+src/data_layer/polymarket/market_truth_runtime.py
+tools/polymarket/run_public_market_truth.py
+tests/research_runtime/nautilus_offline/test_runtime_compatibility.py
+docs/public_market_truth_realtime_data_plane_contract.md
+tests/test_public_market_truth_realtime_data_plane_contract_docs.py
+tests/data_layer/polymarket/test_market_truth_models_store.py
+tests/data_layer/polymarket/test_market_truth_websocket.py
+tests/data_layer/polymarket/test_market_truth_data_api.py
+tests/data_layer/polymarket/test_market_truth_onchain.py
+tests/data_layer/polymarket/test_market_truth_runtime.py
+tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py
+docs/status_entries/WP169.md
+docs/project_status.md
+docs/repo_truth_index.md
+docs/deferred_items_log.md
+docs/security_tooling_status.md
+docs/long_term_bot_completion_roadmap.md
+docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md
+tests/test_project_status_docs.py
+tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py
+tests/test_human_review_label_workflow_docs.py
+tests/test_wallet_intelligence_architecture_contract_docs.py
+tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py
+
+Every required path is allowed; exact-set equality is mandatory. This XL package is one
+coherent capability and uses the schema maximum 35 paths. The implementation modules,
+tests, contract, dependency/CI registration, adoption/security evidence, roadmap/status, and
+three immutable package files are inseparable consequences of the same public truth plane.
+Rollback is one branch revert; local acquisition databases are generated ignored artifacts
+and have no migration authority over canonical PIT stores.
+
+Pre-freeze full-diff guard discovery found five mechanical compatibility edits that are all
+included above: test_records_and_synthetic_corpus registers new Polymarket source paths;
+test_human_review_label_workflow_docs registers the new dependency path;
+test_wallet_intelligence_architecture_contract_docs registers source/dependency scope; and
+test_hermes_research_prompt_pack_operator_runbooks_docs registers source/workflow/dependency
+scope; test_runtime_compatibility updates the Nautilus package's exact direct-pin assertion
+for websockets 17.1. Existing spec-derived active-WP guards need no edit. Removing any of these five or
+adding any other path makes the exact set false.
+
+===============================================================================
+NEGATIVE TEST MATRIX
+===============================================================================
+The focused tests must cover: non-object JSON, unknown event, float/nonfinite values,
+oversize frame/response/record/page count, malformed timestamp/decimal/book level, delta
+before snapshot, disconnect and timestamp regression gap, raw preservation on normalize
+failure, duplicate multiplicity, SQLite record/byte limit, checkpoint monotonicity, endpoint
+outside allowlist, non-GET attempt structurally impossible, timeout/429 Retry-After bound,
+credential-like URL/query/userinfo rejection, wrong chain/address/topic/data length, reorg
+hash mismatch, insufficient confirmations, unsupported PIT kind, gapped PIT promotion,
+invalid-output no-echo, missing/ambiguous/mismatched PIT event context, invalid source
+snapshot binding, runtime asset/discovery XOR, discovery exhaustion, partial block range,
+surface-selection duplication, import-time no network/side effect,
+and runtime graceful stop.
+
+Not applicable with reasons: authenticated-response tests (auth forbidden); order/OMS/risk
+tests (no such API); strategy/performance tests (no strategy output); paper/live tests (no
+execution state); server migration tests (local bounded SQLite only); dashboard tests (WP171).
+
+===============================================================================
+EVIDENCE PLAN / VALIDATION
+===============================================================================
+R001 package guard and readiness validate exact bytes, scope, rules, state chain, and PASS.
+R002 model/store tests prove immutable lossless raw/normalized identities and bounds.
+R003 raw-first persistence tests prove normalization failure still archives exact bytes.
+R004 WebSocket tests prove event matrix, book readiness, disconnect/gap/resnapshot, and
+dynamic subscription/heartbeat behavior.
+R005 Data API tests prove allowlists, pagination, Retry-After, dynamic config, resolution
+material, bounds, and closed no-echo failures.
+R006 transport/import tests prove public unauthenticated GET/WS only and no import effects.
+R007 dependency tests prove exact five pins and websockets 17.1 import/version.
+R008 onchain tests prove URL rejection, exact topic/address decoding, confirmation/reorg,
+and raw preservation for malformed/unmatched logs.
+R009 PIT integration tests prove only accepted supported observations use the existing
+builder and predecessor PIT/analytical contracts remain unchanged; direct Nautilus ingestion
+is explicitly not claimed.
+R010 runtime tests prove manual start, bounded reconnect/backoff, stop, checkpoint, and no
+scheduler/service behavior.
+R011 contract/status/adoption/roadmap tests prove repo-truth and dependency posture.
+R012 local security requires restored project-local gitleaks, semgrep, and pip-audit; hosted
+dependency-audit installs the exact closure. Material findings are a HARD STOP.
+R013 final exact-diff readiness, artifact guard, diff check, targeted suites, full pytest,
+and five hosted jobs bind evidence to the exact final head.
+R014 successor scan proves WP170 and all forbidden capabilities remain absent.
+R015 bounded unauthenticated smoke proves one short WS session, one public GET/config sample,
+and one bounded Polygon log query; smoke output is ignored, sanitized, and not canonical.
+R016 independently certified wp_spec_guard PASS; R017 final --check-diff readiness PASS;
+R018 exact machine-spec diff-scope helper PASS; R019 generated-artifact guard PASS; R020
+git diff --check PASS; R021 restored local gitleaks/Semgrep/pip-audit scans PASS; R022
+forbidden capability/source-authority scan reviewed; R023 exact local PR-body draft consistency
+guard PASS; R024 five hosted exact-head checks success; R025 public verifier UNAVAILABLE exit
+3 plus approved authenticated manual-live private-repo body/comment/thread verification PASS;
+R026 hosted exact application-closure dependency audit PASS;
+R027 provenance/checkpoint identity recomputation PASS; R028 multi-asset plan/commit/discard
+PASS; R029 asset/query/cadence/network bounds PASS; R030 output-path/schema/no-clobber PASS.
+R031 snapshot/delta reconstruction, invalid-delta gap, checkpoint/restart, and equivalent
+full-snapshot level comparison PASS; R032 runtime discovery/input/range/surface/task
+orchestration PASS; R033 raw-bound SourceSnapshot and exact PIT context/mapping PASS.
+
+Hosted CI retains four compatibility jobs (Ubuntu/Windows, Python 3.12/3.14) plus one
+dependency-audit job. It installs existing exact pins plus websockets==17.1, runs pip check,
+focused WP169 tests with no required skip, artifact guard, and full pytest.
+
+===============================================================================
+HARD STOP CONDITIONS
+===============================================================================
+HARD STOP if a 36th changed path becomes genuinely necessary — because the current schema
+cannot encode a truthful larger package.
+HARD STOP if credentials, private/authenticated Polymarket access, signing, orders, OMS,
+paper/live trading, strategy, Hermes runtime, dashboard implementation, generic scheduler/service,
+server database, message bus, cloud infrastructure, vendored external source, or protected
+execution/risk/config/live paths are required — because those cross the Side 8 envelope.
+HARD STOP if current main materially drifts, no genuinely isolated reviewer is available,
+an independent PASS cannot be obtained without crossing the boundary, a material security
+finding remains, or required RPC access needs a secret-bearing URL — because the activation
+conditions are not satisfied.
+Do not stop for ordinary same-scope implementation, test, documentation, evidence, smoke,
+or CI defects; correct and rerun them.
+
+===============================================================================
+SUCCESSOR BOUNDARY / ROADMAP
+===============================================================================
+WP170 — Falsification-Grade Experiment Registry & Research Dataset OS is next and separately
+gated. WP169 must update
+the durable roadmap to preserve this exact sequence: WP169 Market Truth / Realtime Data
+Plane; WP170 Falsification-Grade Experiment Registry & Research Dataset OS; WP171
+Interactive Operator Cockpit; WP172
+Hermes Runtime + Alpha Factory; WP173 Executable Edge / Microstructure; WP174 Portfolio /
+Accounting / Reconciliation / Hard Risk; WP175 Serious Paper OMS + Operations; WP176 Auth /
+Signing / Execution Gateway; WP177 Restricted Live Canary; WP178 Mature Controlled Live.
+Old Streamlit-first planning is superseded at roadmap level. WP169 implements no WP170 work.
+Full UMA proposal, dispute, voting, finality indexing, and semantic adjudication are expressly
+deferred to the WP172 Hermes Runtime + Alpha Factory boundary (or a separately certified
+prerequisite package for WP172); basic raw market lifecycle evidence in WP169 is not that
+adjudication capability.
+
+===============================================================================
+REPORT-BACK CONTRACT
+===============================================================================
+Return only READY FOR INDEPENDENT MERGE REVIEW: YES or package-defined HARD STOP. A ready
+report gives PR URL/number, branch, base and exact head, 35-file exact-scope proof, independent
+certificate hashes/result, readiness pre/post results, changed-file summary, targeted/full/
+security/smoke results, exact hosted checks, dependency/license decision, public endpoints
+and contract facts verified, raw/normalized/PIT/reorg/config semantics, roadmap confirmation,
+evidence mode, zero-capital/order/credential facts, open deferred limits, and merge authority
+NO. The canonical PR body is re-fetched after update. A final PR comment is optional and
+non-canonical. Do not merge.

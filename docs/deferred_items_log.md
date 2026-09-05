@@ -2452,3 +2452,15 @@ paper/live, order, risk, reconciliation, accounting, or execution authority.
 WP6 found `.venv-security/` visible as an untracked generated local artifact on stale local `main`. Investigation showed no tracked or staged generated artifact files under `.venv-security/`, `tools/.bin/`, `tools/security/.cache/`, or `security-scan-output/`.
 
 This incident is RESOLVED in WP6 by deleting only allowlisted untracked local artifacts, documenting the investigation in `docs/local_generated_artifacts.md`, adding cleanup and preflight guard scripts under `tools/git/`, and requiring `.venv-security/` ignore protection before `tools/security/setup_project_security_tools.py` creates or reuses the project-local security environment.
+
+## WP169 Public Market Truth / Realtime Data Plane Deferred Items
+
+WP169 resolves `WP168-D001` as `RESOLVED_BOUNDED_WP169_PUBLIC_MARKET_TRUTH_REALTIME_DATA_PLANE`: a bounded public unauthenticated Market WebSocket + Data/Gamma/CLOB GET + Polygon read-only RPC acquisition plane with raw-first evidence, gap/reconnect semantics, retention bounds, and closed no-echo output. Canonical PIT truth stays the sole integrity authority. Every WP169 item below is `OPEN`, separately gated, and outside WP169 implementation authority.
+
+| ID | Item | Status | Priority | Resolution path | Evidence |
+|---|---|---|---|---|---|
+| WP168-D001 | Public realtime WebSocket + public activity/wallet data plane (WP169) | RESOLVED_BOUNDED_WP169_PUBLIC_MARKET_TRUTH_REALTIME_DATA_PLANE | P2 | Resolved (bounded) by WP169: raw-first archive, book gap/reconnect, bounded public GET/RPC, PIT promotion | WP169 delivers the bounded public data plane while orders, OMS, paper, live, and strategy remain open successors |
+| WP169-D001 | Direct PIT-to-Nautilus ingestion adapter | OPEN | P2 | Separately reviewed adapter WP; WP169 preserves raw/event semantics but claims no direct adapter | WP168 replay accepts only its frozen WP167 pmxt-v2 dataset |
+| WP169-D002 | Falsification-grade experiment registry & research-dataset OS (WP170) | OPEN | P2 | Separate WP170 with experiment/feature/label identity and preregistration | WP169 provides a public truth substrate but no experiment or feature/label registry |
+| WP169-D003 | Full UMA proposal/dispute/voting/finality/semantic adjudication | OPEN | P2 | Deferred to the WP172 Hermes boundary or a separately certified prerequisite | WP169 captures only basic raw market lifecycle evidence, not adjudication |
+| WP169-D004 | Authenticated/private Polymarket access, signing, orders, OMS, execution | OPEN | P1 | Separate credentialed WPs (WP176+) with signing/execution/risk authority | WP169 uses no credentials, no authenticated client, and no order/execution path |
