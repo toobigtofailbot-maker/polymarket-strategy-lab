@@ -8,6 +8,7 @@ dependencies = [
   "duckdb==1.5.5",
   "polars==1.44.1",
   "nautilus_trader==1.231.0",
+  "websockets==17.1",
 ]
 
 [project.optional-dependencies]

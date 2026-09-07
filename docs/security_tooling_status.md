@@ -246,3 +246,9 @@ Before runtime dependency integration, copied external code, venue API integrati
 2. Rerun `tools/security/setup_project_security_tools.py` to restore semgrep and pip-audit.
 3. Rerun `tools/security/run_available_security_checks.py`.
 4. Update this status document and `docs/deferred_items_log.md` with results.
+
+## WP169 Public Market Truth Realtime Data Plane Security Posture
+
+WP169 adds exactly one direct runtime dependency, `websockets==17.1` (BSD-3-Clause; install-not-vendor), for the public Market WebSocket data plane. The authoritative dependency audit runs in the hosted `dependency-audit` job in `.github/workflows/ci.yml`, which installs only the exact pins (`pyarrow==25.0.1`, `duckdb==1.5.5`, `polars==1.44.1`, `nautilus_trader==1.231.0`, `websockets==17.1`) plus pytest and pip-audit, so `pip-audit` sees WP169's actual application dependency closure rather than the polluted local environment. Project-local gitleaks and Semgrep must be AVAILABLE and scan the final source with no material finding; any material finding is a HARD STOP. Local pip-audit availability is recorded but is not misrepresented as the application dependency-closure audit; the exact final hosted result is recorded in the PR body.
+
+WP169 introduces credential-like input handling that fails closed: secret-bearing RPC URLs are impossible (only the enum provider `drpc` maps to the committed public no-query URL), no authenticated header or credential is read, and all diagnostic surfaces are recursively no-echo scanned so URLs, headers, paths, response bodies, and raw invalid inputs never leak.

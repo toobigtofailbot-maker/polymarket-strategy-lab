@@ -40,6 +40,8 @@ EXPECTED_DIRECT_DEPENDENCIES = {
     "duckdb": "1.5.5",
     "polars": "1.44.1",
     "nautilus_trader": "1.231.0",
+    # WP169 adds the exact websockets pin for the public Market WebSocket data plane.
+    "websockets": "17.1",
 }
 
 

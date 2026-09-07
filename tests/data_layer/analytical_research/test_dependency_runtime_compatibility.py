@@ -29,6 +29,8 @@ EXPECTED_DIRECT_DEPENDENCIES = {
     "polars": "1.44.1",
     # WP168 adds the offline NautilusTrader kernel dependency (base install only).
     "nautilus_trader": "1.231.0",
+    # WP169 adds the exact websockets pin for the public Market WebSocket data plane.
+    "websockets": "17.1",
 }
 
 
@@ -36,7 +38,7 @@ def test_supported_python_floor():
     assert (3, 12) <= sys.version_info[:2] < (3, 15)
 
 
-def test_pyproject_declares_exactly_the_three_pins_and_range():
+def test_pyproject_declares_exact_supported_pins_and_range():
     data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     project = data["project"]
     assert project["requires-python"] == ">=3.12,<3.15"

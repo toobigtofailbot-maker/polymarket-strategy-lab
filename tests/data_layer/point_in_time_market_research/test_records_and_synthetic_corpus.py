@@ -1541,9 +1541,23 @@ def test_legacy_polymarket_snapshot_modules_are_unchanged_by_wp156_diff() -> Non
         "src/data_layer/polymarket/public_client.py",
         "src/data_layer/polymarket/polling_policy.py",
     }
+    # WP169 adds the public market-truth realtime data-plane source modules under this
+    # directory (and updates the package README/__init__); every other legacy Polymarket
+    # snapshot module remains untouched.
+    wp169_authorized = {
+        "src/data_layer/polymarket/README.md",
+        "src/data_layer/polymarket/__init__.py",
+        "src/data_layer/polymarket/market_truth.py",
+        "src/data_layer/polymarket/market_truth_store.py",
+        "src/data_layer/polymarket/market_truth_websocket.py",
+        "src/data_layer/polymarket/market_truth_data_api.py",
+        "src/data_layer/polymarket/market_truth_onchain.py",
+        "src/data_layer/polymarket/market_truth_runtime.py",
+    }
+    authorized = wp166_authorized | wp169_authorized
     assert not any(
         path.replace("\\", "/").startswith("src/data_layer/polymarket/")
-        and path.replace("\\", "/") not in wp166_authorized
+        and path.replace("\\", "/") not in authorized
         for path in diff
     )
 
