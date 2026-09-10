@@ -2772,10 +2772,9 @@ def test_wp150_status_fragment_is_stable_and_contains_locked_decisions():
 # ── WP153: bounded synthetic dry run and receipt review ──────────────────────
 
 
-def test_wp153_through_wp168g_merged_and_wp169_is_current_review_target():
-    # WP168G (one-shot workflow-governance readiness hardening) is now merged via PR #169.
-    # WP169, the public market-truth realtime data plane, is the current review target and
-    # precedes the separately gated WP170 experiment-registry successor.
+def test_wp153_through_wp169_merged_and_wp170_is_current_review_target():
+    # WP169 is merged via PR #170. WP170 is the current experiment-registry review target
+    # and precedes the separately gated WP171 operator-cockpit successor.
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2783,29 +2782,29 @@ def test_wp153_through_wp168g_merged_and_wp169_is_current_review_target():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP169" in current_phase_line
+    assert "WP170" in current_phase_line
     assert "WP130" in current_phase_line
     for wp in (
         "WP153", "WP154", "WP155", "WP156", "WP157", "WP158", "WP159", "WP160",
         "WP161", "WP162", "WP163", "WP164", "WP165", "WP166", "WP167", "WP168",
-        "WP168G",
+        "WP168G", "WP169",
     ):
         assert wp in merged_line, wp
     for phrase in (
         "current review target",
-        "following merged WP168G",
-        "Primary package class: PUBLIC_MARKET_TRUTH_REALTIME_DATA_PLANE",
+        "following merged WP169",
+        "Primary package class: FALSIFICATION_GRADE_EXPERIMENT_REGISTRY_AND_RESEARCH_DATASET_OS",
         "Package size class: XL",
         "XL explicit authorization: YES",
-        "Risk level: 3",
-        "Implementation posture: LOCAL_OFFLINE_PLUS_BOUNDED_PUBLIC_UNAUTHENTICATED_ACQUISITION_NO_EXECUTION_AUTHORITY",
+        "Risk level: 2",
+        "Implementation posture: LOCAL_OFFLINE_DETERMINISTIC_APPEND_ONLY_RESEARCH_CONTROL_NO_EXECUTION_AUTHORITY",
         "Ready for review: YES_INDEPENDENTLY_CERTIFIED",
         "Merge authorized: NO",
         "Independent live PR review required: YES",
-        "Exact changed-file scope: 35",
-        "New direct runtime dependency: websockets==17.1",
+        "Exact changed-file scope: 26",
+        "New direct runtime dependency: NONE",
         "Default network posture: OFF",
-        "Product/runtime network calls: bounded public unauthenticated only",
+        "Product/runtime network calls: 0",
         "Paper-trading execution: NOT AUTHORIZED",
         "Live-trading execution: FORBIDDEN",
         "Canonical PIT authority unchanged: YES",
@@ -2814,17 +2813,18 @@ def test_wp153_through_wp168g_merged_and_wp169_is_current_review_target():
         "WP167 merged: YES",
         "WP168 merged: YES",
         "WP168G merged: YES",
-        "WP168G PR: 169",
-        "WP168G merge commit: 877367235a6b3df79374f18d59641f8f1af7b7eb",
-        "Next phase: WP170_FALSIFICATION_GRADE_EXPERIMENT_REGISTRY_AND_RESEARCH_DATASET_OS_SEPARATELY_GATED",
+        "WP169 merged: YES",
+        "WP169 PR: 170",
+        "WP169 final head: c4a09aeb33e4c271feb709622660e5e58a00b642",
+        "WP169 merge commit: 17df81001171988e9ca49f92dc8fd170ecaa7103",
+        "Next phase: WP171_INTERACTIVE_OPERATOR_COCKPIT_SEPARATELY_GATED",
     ):
         assert phrase in current_phase_line, phrase
 
 
-def test_wp169_status_reconciles_wp168g_merge_and_preserves_wp170_successor():
-    # R021: project status records WP168G merged at its exact merge SHA (PR #169), WP169 as
-    # the current public market-truth review target, and WP170 as the separately gated
-    # experiment-registry successor.
+def test_wp170_status_reconciles_wp169_merge_and_preserves_wp171_successor():
+    # Project status records WP169 merged at its exact head/merge SHA (PR #170), WP170 as
+    # the current experiment-registry review target, and WP171 as separately gated.
     text = _read()
     current_phase_line = next(
         line for line in text.splitlines() if line.startswith("- Current phase:")
@@ -2832,17 +2832,12 @@ def test_wp169_status_reconciles_wp168g_merge_and_preserves_wp170_successor():
     merged_line = next(
         line for line in text.splitlines() if line.startswith("- Merged WPs:")
     )
-    assert "WP168G" in merged_line
-    assert "WP168G merge commit: 877367235a6b3df79374f18d59641f8f1af7b7eb" in current_phase_line
-    assert "WP168G final head: 2c67941b984a9a43da34a0038027961110d5f395" in current_phase_line
-    assert "WP169" in current_phase_line
-    assert "PUBLIC_MARKET_TRUTH_REALTIME_DATA_PLANE" in current_phase_line
-    assert (
-        "WP170_FALSIFICATION_GRADE_EXPERIMENT_REGISTRY_AND_RESEARCH_DATASET_OS_SEPARATELY_GATED"
-        in current_phase_line
-    )
-    # WP169 remains the review target and is not yet in the merged set.
-    assert "WP169" not in merged_line
+    assert "WP169" in merged_line
+    assert "WP169 merge commit: 17df81001171988e9ca49f92dc8fd170ecaa7103" in current_phase_line
+    assert "WP169 final head: c4a09aeb33e4c271feb709622660e5e58a00b642" in current_phase_line
+    assert "WP170" in current_phase_line
+    assert "FALSIFICATION_GRADE_EXPERIMENT_REGISTRY_AND_RESEARCH_DATASET_OS" in current_phase_line
+    assert "WP171_INTERACTIVE_OPERATOR_COCKPIT_SEPARATELY_GATED" in current_phase_line
 
 
 def test_wp167_analytical_research_foundation_status_is_registered():

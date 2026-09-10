@@ -111,7 +111,7 @@ _PROMPT_SIGNALS = (
     ("authority", (r"authority\s*/\s*non-?authority", r"non-?authority")),
     ("changed_file_set", (r"scope", r"changed-?file")),
     ("hard_stops", (r"hard\s*stop",)),
-    ("negative_test_matrix", (r"negative\s+test", r"not_applicable")),
+    ("negative_test_matrix", (r"negative(?:\s+|-)test", r"not_applicable")),
     ("evidence_plan", (r"evidence\s+plan", r"requirement\s+mapping")),
     ("successor_boundary", (r"successor\s+boundary",)),
     ("report_back", (r"report-?back", r"report\s+back")),

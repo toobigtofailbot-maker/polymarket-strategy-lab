@@ -1,10 +1,11 @@
-name: WP167 Analytical Research + WP168 Nautilus Offline Kernel CI
+name: Analytical Research + Offline Kernel + Market Truth + Experiment OS CI
 
 # Hosted compatibility evidence only. No secrets, no product API, no external
 # archive download, no trading. This workflow proves the exact WP167 dependency
 # pins plus the WP168 nautilus_trader pin install and behave identically across the
 # supported Windows/Linux targets, and it is the authoritative environment for the
-# DuckDB-dependent tests and the compiled NautilusTrader offline path that cannot
+# DuckDB-dependent tests, compiled NautilusTrader offline path, and WP170 local
+# experiment-control registry on the exact supported host matrix. The native modules cannot
 # run on developer machines where the native module is blocked (Windows Smart App
 # Control) or where an over-long local path trips the Windows MAX_PATH limit.
 
@@ -113,6 +114,24 @@ jobs:
           python -m pytest -rs -q             tests/data_layer/polymarket/test_market_truth_models_store.py             tests/data_layer/polymarket/test_market_truth_websocket.py             tests/data_layer/polymarket/test_market_truth_data_api.py             tests/data_layer/polymarket/test_market_truth_onchain.py             tests/data_layer/polymarket/test_market_truth_runtime.py             tests/test_public_market_truth_realtime_data_plane_contract_docs.py             | tee "$RUNNER_TEMP/wp169_focused.txt"
           if grep -Eq "[0-9]+ skipped" "$RUNNER_TEMP/wp169_focused.txt"; then
             echo "::error::A WP169 market-truth test was skipped under strict hosted CI"
+            exit 1
+          fi
+
+      - name: Focused WP170 experiment OS and registry tests (no skips permitted)
+        run: |
+          set -o pipefail
+          python -m pytest -rs -q \
+            tests/data_layer/analytical_research/test_experiment_os_identity.py \
+            tests/data_layer/analytical_research/test_experiment_os_samples_splits.py \
+            tests/data_layer/analytical_research/test_experiment_os_preregistration.py \
+            tests/data_layer/analytical_research/test_experiment_os_lifecycle_evidence.py \
+            tests/data_layer/analytical_research/test_experiment_registry.py \
+            tests/data_layer/analytical_research/test_experiment_os_boundaries.py \
+            tests/test_falsification_grade_experiment_registry_and_research_dataset_os_contract_docs.py \
+            tests/tools/wp/test_wp_readiness_gate.py \
+            | tee "$RUNNER_TEMP/wp170_focused.txt"
+          if grep -Eq "[0-9]+ skipped" "$RUNNER_TEMP/wp170_focused.txt"; then
+            echo "::error::A WP170 experiment OS test was skipped under strict hosted CI"
             exit 1
           fi
 

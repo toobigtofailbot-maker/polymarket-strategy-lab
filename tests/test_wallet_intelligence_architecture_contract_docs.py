@@ -409,11 +409,17 @@ def test_only_allowed_wallet_src_files_changed() -> None:
     if "docs/status_entries/WP167.md" in changed:
         # WP167 authorizes exactly its analytical research source package.
         assert set(src_changes) == {
-        "src/data_layer/analytical_research/__init__.py",
-        "src/data_layer/analytical_research/external_dataset.py",
-        "src/data_layer/analytical_research/pmxt_v2.py",
-        "src/data_layer/analytical_research/research_dataset.py",
-    }
+            "src/data_layer/analytical_research/__init__.py",
+            "src/data_layer/analytical_research/external_dataset.py",
+            "src/data_layer/analytical_research/pmxt_v2.py",
+            "src/data_layer/analytical_research/research_dataset.py",
+        }
+        return
+    certified_src_changes = _spec_authorized_paths(changed, "src/")
+    if certified_src_changes:
+        # Later certified WPs contribute only the exact source paths declared by their
+        # active machine spec, avoiding another hard-coded historical source allowlist.
+        assert set(src_changes) == certified_src_changes
         return
     allowed_src_changes = {
         "src/data_layer/wallet_trade_event_fixtures.py",
@@ -489,13 +495,11 @@ def test_only_allowed_wallet_src_files_changed() -> None:
     )
 
 
-def _spec_authorized_tool_paths(changed) -> set[str]:
-    """Governance-tool paths authorized by the current WP machine spec(s).
+def _spec_authorized_paths(changed, prefix: str) -> set[str]:
+    """Paths under ``prefix`` authorized by the current WP machine spec(s).
 
-    Any WP whose status entry is in ``changed`` contributes the ``tools/`` paths declared
-    in its machine-spec ``required_changed_files``. Bounded and deterministic; replaces
-    the earlier WP159-only tool-scope exception so future governance tooling needs no
-    bespoke per-WP allowance.
+    Any WP whose status entry is in ``changed`` contributes the matching paths declared
+    in its machine-spec ``required_changed_files``. Bounded and deterministic.
     """
     authorized: set[str] = set()
     for path in changed:
@@ -510,9 +514,14 @@ def _spec_authorized_tool_paths(changed) -> set[str]:
         except (OSError, ValueError):
             continue
         for changed_file in spec.get("scope", {}).get("required_changed_files", []):
-            if isinstance(changed_file, str) and changed_file.startswith("tools/"):
+            if isinstance(changed_file, str) and changed_file.startswith(prefix):
                 authorized.add(changed_file)
     return authorized
+
+
+def _spec_authorized_tool_paths(changed) -> set[str]:
+    """Governance-tool paths authorized by the current WP machine spec(s)."""
+    return _spec_authorized_paths(changed, "tools/")
 
 
 def test_wallet_tool_scope_guard_uses_current_wp_spec_authority() -> None:

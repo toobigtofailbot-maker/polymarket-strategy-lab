@@ -428,16 +428,19 @@ Use this checklist before marking any future WP as ready for review:
       `docs/repo_truth_index.md`, and `docs/deferred_items_log.md`?
 - [ ] Does it pass the PR evidence consistency guard with all WP47 hardening
       flags?
-- [ ] Does it include a `CURRENT FINAL WP EVIDENCE` top-level PR comment?
+- [ ] If an optional post-WP91 final PR comment is posted, is it explicitly
+      non-canonical and consistent with the canonical PR body?
 
-## L. Post-WP168G Successor Sequence (WP169 -> WP178)
+## L. Post-WP169 Successor Sequence (WP170 -> WP178)
 
 This section is PLANNING_GUIDANCE_ONLY and NOT_AUTHORIZATION; it does not approve
-any successor. WP169 (the public market-truth realtime data plane) updates this
-durable roadmap to preserve the exact separately gated sequence:
+any successor. WP169 is merged via PR #170 at merge commit
+`17df81001171988e9ca49f92dc8fd170ecaa7103`. WP170 updates this durable roadmap
+to preserve the exact separately gated sequence:
 
-- WP169 — Market Truth / Realtime Data Plane (current review target).
-- WP170 — Falsification-Grade Experiment Registry & Research Dataset OS.
+- WP169 — Market Truth / Realtime Data Plane (merged).
+- WP170 — Falsification-Grade Experiment Registry & Research Dataset OS
+  (current review target).
 - WP171 — Interactive Operator Cockpit.
 - WP172 — Hermes Runtime + Alpha Factory (full UMA proposal, dispute, voting,
   finality indexing, and semantic adjudication are deferred to this boundary or a
@@ -449,7 +452,7 @@ durable roadmap to preserve the exact separately gated sequence:
 - WP177 — Restricted Live Canary.
 - WP178 — Mature Controlled Live.
 
-Old Streamlit-first planning is superseded at roadmap level. WP169 implements no
-WP170 work and grants no successor capability. Each successor remains separately
+Old Streamlit-first planning is superseded at roadmap level. WP170 implements no
+WP171 work and grants no successor capability. Each successor remains separately
 gated and requires its own independent draftability certificate and explicit user
 authorization.

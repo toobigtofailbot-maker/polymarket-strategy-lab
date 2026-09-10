@@ -2412,7 +2412,7 @@ separately gated, and outside WP167 implementation authority.
 | WP167-D002 | NautilusTrader offline kernel / ParquetDataCatalog (WP168) | OPEN | P2 | Separate WP168 adding NautilusTrader, instrument mapping, catalog, and offline replay parity | WP167 installs no NautilusTrader and builds no catalog or replay engine |
 | WP167-D003 | Public WebSocket raw/realtime capture (WP169) | OPEN | P2 | Separate realtime-capture WP with rate-limit, retention, and security policy | WP167 has no WebSocket runtime and no realtime collector |
 | WP167-D004 | Public Data API activity/wallet plane (WP169 or narrow successor) | OPEN | P2 | Separate ingestion WP with source and leakage policy | WP167 reads no Data API, wallet, or account activity |
-| WP167-D005 | Experiment registry / feature-label identity (WP170) | OPEN | P2 | Separate experiment-registry WP with feature/label lineage and leakage policy | WP167 provides a materialization and query substrate but no experiment or feature/label registry |
+| WP167-D005 | Experiment registry / feature-label identity (WP170) | RESOLVED_BOUNDED_WP170_FALSIFICATION_GRADE_EXPERIMENT_OS | P2 | Resolved (bounded) by WP170 with feature/label/sample/split lineage, preregistration, sealed OOS evidence, and append-only registry | WP170 adds research-control metadata only; strategy, cost-adjusted, paper, execution, and live authority remain absent |
 | WP167-D006 | Automated external downloader / refresh | OPEN | P3 | Separate network-gated WP with download provenance, retention, and security policy | WP167 accepts only explicitly supplied local Parquet paths and performs no download or network access |
 | WP167-D007 | Analytical partition/compaction at scale | OPEN | P3 | Separate durability/partitioning WP if analytical scale proves it necessary | WP167 writes one derived partition per table and performs no rollover, compaction, or pruning |
 
@@ -2424,7 +2424,7 @@ WP168 resolves `WP167-D002` as `RESOLVED_BOUNDED_WP168_NAUTILUS_OFFLINE_REPLAY_F
 |---|---|---|---|---|---|
 | WP167-D002 | NautilusTrader offline kernel / ParquetDataCatalog (WP168) | RESOLVED_BOUNDED_WP168_NAUTILUS_OFFLINE_REPLAY_FOUNDATION | P2 | Resolved (bounded) by WP168: offline instrument mapping, catalog build/query, and deterministic replay parity | WP168 delivers the bounded offline replay foundation while realistic fills, executable edge, paper, and live remain open successors |
 | WP168-D001 | Public realtime WebSocket + public activity/wallet data plane (WP169) | OPEN | P2 | Separate WP169 with rate-limit, gap/reconnect, retention, and security policy | WP168 has no WebSocket runtime, no Data API, and no realtime collector |
-| WP168-D002 | Leakage-safe experiment registry & research-dataset OS (WP170) | OPEN | P2 | Separate WP170 with experiment/feature/label identity, preregistration, and purged CV | WP168 provides an offline replay substrate but no experiment or feature/label registry |
+| WP168-D002 | Leakage-safe experiment registry & research-dataset OS (WP170) | RESOLVED_BOUNDED_WP170_FALSIFICATION_GRADE_EXPERIMENT_OS | P2 | Resolved (bounded) by WP170 with immutable experiment identities, half-open split/purge/embargo/group rules, preregistration, and OOS lifecycle control | WP170 does not add replay strategy, fill realism, paper, execution, or live authority |
 | WP168-D003 | Executable-edge fill/queue/slippage/latency modelling | OPEN | P2 | Separate execution-realism WP with fill-model and queue-position evidence | WP168 is an event-replay proof only and makes no fill, queue, slippage, latency, or executable-edge claim |
 | WP168-D004 | Live Polymarket adapter / authenticated execution | OPEN | P1 | Separate credentialed WP with signing, execution, and risk/reconciliation authority | WP168 uses no live data client, no live execution client, no authenticated Polymarket client, and no credentials |
 | WP168-D005 | Deterministic tick-regime segmentation | OPEN | P3 | Separate WP only if a valid dataset defeats the finest-tick single-instrument model | WP168 uses one stable instrument at the finest valid increment and does not implement segmentation |
@@ -2461,6 +2461,29 @@ WP169 resolves `WP168-D001` as `RESOLVED_BOUNDED_WP169_PUBLIC_MARKET_TRUTH_REALT
 |---|---|---|---|---|---|
 | WP168-D001 | Public realtime WebSocket + public activity/wallet data plane (WP169) | RESOLVED_BOUNDED_WP169_PUBLIC_MARKET_TRUTH_REALTIME_DATA_PLANE | P2 | Resolved (bounded) by WP169: raw-first archive, book gap/reconnect, bounded public GET/RPC, PIT promotion | WP169 delivers the bounded public data plane while orders, OMS, paper, live, and strategy remain open successors |
 | WP169-D001 | Direct PIT-to-Nautilus ingestion adapter | OPEN | P2 | Separately reviewed adapter WP; WP169 preserves raw/event semantics but claims no direct adapter | WP168 replay accepts only its frozen WP167 pmxt-v2 dataset |
-| WP169-D002 | Falsification-grade experiment registry & research-dataset OS (WP170) | OPEN | P2 | Separate WP170 with experiment/feature/label identity and preregistration | WP169 provides a public truth substrate but no experiment or feature/label registry |
+| WP169-D002 | Falsification-grade experiment registry & research-dataset OS (WP170) | RESOLVED_BOUNDED_WP170_FALSIFICATION_GRADE_EXPERIMENT_OS | P2 | Resolved (bounded) by WP170 with dataset binding, experiment/feature/label identity, preregistration, evidence lifecycle, and append-only registry | WP170 consumes existing identities as research metadata; WP169 acquisition and PIT authority are unchanged |
 | WP169-D003 | Full UMA proposal/dispute/voting/finality/semantic adjudication | OPEN | P2 | Deferred to the WP172 Hermes boundary or a separately certified prerequisite | WP169 captures only basic raw market lifecycle evidence, not adjudication |
 | WP169-D004 | Authenticated/private Polymarket access, signing, orders, OMS, execution | OPEN | P1 | Separate credentialed WPs (WP176+) with signing/execution/risk authority | WP169 uses no credentials, no authenticated client, and no order/execution path |
+
+## WP170 Falsification-Grade Experiment Registry & Research Dataset OS Deferred Items
+
+WP170 resolves `WP167-D005`, `WP168-D002`, and `WP169-D002` as
+`RESOLVED_BOUNDED_WP170_FALSIFICATION_GRADE_EXPERIMENT_OS`: one local/offline
+research-control substrate with immutable content identities, leakage-aware temporal
+partitions, preregistration, sealed OOS evidence, retained outcomes, and an explicit-path
+bounded append-only SQLite registry. Existing canonical PIT and analytical identities are
+revalidated and referenced, never replaced. Every open item below is separately gated and
+outside WP170 authority.
+
+| ID | Item | Status | Priority | Resolution path | Non-implication |
+|---|---|---|---|---|---|
+| WP167-D005 | Experiment registry / feature-label identity (WP170) | RESOLVED_BOUNDED_WP170_FALSIFICATION_GRADE_EXPERIMENT_OS | P2 | Resolved by the canonical WP170 contract and implementation | No strategy or execution authority follows from research identities |
+| WP168-D002 | Leakage-safe experiment registry & research-dataset OS (WP170) | RESOLVED_BOUNDED_WP170_FALSIFICATION_GRADE_EXPERIMENT_OS | P2 | Resolved by exact split, purge, embargo, group, preregistration, and OOS lifecycle rules | Offline replay is not a fill, edge, or profitability proof |
+| WP169-D002 | Falsification-grade experiment registry & research-dataset OS (WP170) | RESOLVED_BOUNDED_WP170_FALSIFICATION_GRADE_EXPERIMENT_OS | P2 | Resolved by existing-dataset binding, evidence retention, and complete-history registry verification | WP169 acquisition and canonical PIT promotion remain unchanged |
+| WP170-D001 | Interactive Operator Cockpit (WP171) | OPEN | P2 | Separate WP171 with independently certified read-only operator-surface scope | WP170 provides no dashboard, visualization, monitoring service, or feature-validator UI |
+| WP170-D002 | Hermes research runtime and autonomous alpha factory (WP172) | OPEN | P2 | Separate WP172 with provider/model, prompt, semantic-adjudication, and human-control gates | WP170 makes no model/provider call and performs no autonomous research loop |
+| WP170-D003 | Executable-edge and cost realism (WP173) | OPEN | P1 | Separate WP173 with fill, queue, spread, slippage, latency, capacity, adverse-selection, and cost-model evidence | `OOS_CRITERIA_MET_UNCOSTED` is explicitly not executable edge or expected profit |
+| WP170-D004 | Portfolio accounting, reconciliation, and deterministic risk controls (WP174) | OPEN | P1 | Separate protected-boundary WP with explicit risk authority | WP170 never sizes positions, allocates capital, reconciles accounts, or sets risk caps |
+| WP170-D005 | Paper-trading execution and evidence (WP175) | OPEN | P1 | Separate paper OMS WP after prior gates | WP170 preregistration/evidence is not paper eligibility or simulated execution |
+| WP170-D006 | Authenticated execution gateway and private account access (WP176) | OPEN | P1 | Separate credentialed signing/order/OMS package | WP170 creates or reads no credentials and submits no order |
+| WP170-D007 | Restricted and mature live trading (WP177-WP178) | OPEN | P1 | Separate explicit live authorization after all predecessor gates | WP170 grants no restricted-live eligibility or live-trading authority |
