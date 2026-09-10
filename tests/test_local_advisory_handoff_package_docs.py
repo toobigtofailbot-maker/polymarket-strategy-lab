@@ -1,5 +1,6 @@
 """Docs tests for WP38 local advisory handoff package."""
 
+import json
 import pathlib
 import re
 import subprocess
@@ -207,6 +208,7 @@ def test_no_forbidden_implementation_paths_exist():
 
 
 def test_dependency_files_do_not_add_forbidden_dependencies():
+    wp171_spec = REPO_ROOT / "docs/wp_specs/WP171/wp_spec.json"
     dependency_files = [
         "pyproject.toml",
         "requirements.txt",
@@ -248,4 +250,9 @@ def test_dependency_files_do_not_add_forbidden_dependencies():
             continue
         text = path.read_text(encoding="utf-8").lower()
         for name in forbidden:
+            if name == "fastapi" and rel == "pyproject.toml" and wp171_spec.is_file():
+                spec = json.loads(wp171_spec.read_text(encoding="utf-8"))
+                assert "pyproject.toml" in spec["scope"]["required_changed_files"]
+                assert spec["authority"]["dependencies"] is True
+                continue
             assert name not in text, f"Forbidden dependency marker {name!r} in {rel}"

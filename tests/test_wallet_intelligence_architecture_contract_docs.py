@@ -558,6 +558,12 @@ def test_no_tools_files_changed() -> None:
 
 def test_no_dependency_or_lock_files_changed() -> None:
     changed = _changed_files()
+    if "docs/status_entries/WP171.md" in changed:
+        expected = set(json.loads(
+            (ROOT / "docs/wp_specs/WP171/wp_spec.json").read_text(encoding="utf-8")
+        )["scope"]["required_changed_files"])
+        assert set(changed) == expected
+        return
     if (
         "docs/status_entries/WP169.md" in changed
         or "docs/status_entries/WP168.md" in changed

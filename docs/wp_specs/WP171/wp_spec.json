@@ -1,0 +1,582 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP171",
+    "title": "Interactive Operator Cockpit MVP",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "INTERACTIVE_OPERATOR_COCKPIT_MVP",
+    "package_size_class": "XL",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 171,
+      "head_sha": "8e5d83f695d2f2ef38c9f30e3a8e95eb271718da",
+      "merge_sha": "434af62f0891959d145b631a77b472b3e80915d3"
+    },
+    "suggested_branch": "codex/wp171-interactive-operator-cockpit",
+    "objective": "Implement one local read-only FastAPI and React operator cockpit over validated WP169 market-truth and WP170 experiment evidence with bounded deterministic views and no authoritative writes, external product network, credentials, trading, or Hermes authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Karl explicitly authorizes WP171 as XL for scope budget only under V3 Section 7, up to the repository schema maximum of 35 exact paths. The frozen 26-path vertical slice covers backend, frontend, exact dependencies and lockfile, CI, focused tests, package evidence, repo truth, and narrow historical compatibility corrections without broadening product authority."
+  },
+  "scope": {
+    "required_changed_files": [
+      ".github/workflows/ci.yml",
+      "docs/deferred_items_log.md",
+      "docs/interactive_operator_cockpit_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP171.md",
+      "docs/wp_specs/WP171/draftability_certificate.json",
+      "docs/wp_specs/WP171/wp_prompt.txt",
+      "docs/wp_specs/WP171/wp_spec.json",
+      "pyproject.toml",
+      "src/operator_cockpit.py",
+      "src/operator_cockpit_frontend/index.html",
+      "src/operator_cockpit_frontend/package-lock.json",
+      "src/operator_cockpit_frontend/package.json",
+      "src/operator_cockpit_frontend/src/main.tsx",
+      "tests/data_layer/analytical_research/test_experiment_os_boundaries.py",
+      "tests/test_advisory_consumer_operator_workflow_docs.py",
+      "tests/test_advisory_prompt_runbook_package_docs.py",
+      "tests/test_advisory_runtime_boundary_consumption_design_docs.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_local_advisory_handoff_package_docs.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py"
+    ],
+    "allowed_changed_files": [
+      ".github/workflows/ci.yml",
+      "docs/deferred_items_log.md",
+      "docs/interactive_operator_cockpit_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP171.md",
+      "docs/wp_specs/WP171/draftability_certificate.json",
+      "docs/wp_specs/WP171/wp_prompt.txt",
+      "docs/wp_specs/WP171/wp_spec.json",
+      "pyproject.toml",
+      "src/operator_cockpit.py",
+      "src/operator_cockpit_frontend/index.html",
+      "src/operator_cockpit_frontend/package-lock.json",
+      "src/operator_cockpit_frontend/package.json",
+      "src/operator_cockpit_frontend/src/main.tsx",
+      "tests/data_layer/analytical_research/test_experiment_os_boundaries.py",
+      "tests/test_advisory_consumer_operator_workflow_docs.py",
+      "tests/test_advisory_prompt_runbook_package_docs.py",
+      "tests/test_advisory_runtime_boundary_consumption_design_docs.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_local_advisory_handoff_package_docs.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py"
+    ],
+    "forbidden_prefixes": [
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/strategy_modules/",
+      "src/paper_trading/",
+      "src/data_layer/polymarket/",
+      "src/data_layer/analytical_research/",
+      "src/research_runtime/",
+      "tools/hermes/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "config/",
+      "local_data/"
+    ],
+    "max_changed_files": 26,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      ".github/workflows/ci.yml",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/data_layer/analytical_research/test_experiment_os_boundaries.py",
+      "tests/test_advisory_consumer_operator_workflow_docs.py",
+      "tests/test_advisory_prompt_runbook_package_docs.py",
+      "tests/test_advisory_runtime_boundary_consumption_design_docs.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_human_review_label_workflow_docs.py",
+      "tests/test_local_advisory_handoff_package_docs.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py"
+    ],
+    "rollback_surface": "Revert the WP171 branch. The local read-only cockpit, frontend, optional dependency group, lockfile, focused CI, tests, evidence artifacts, contract, and repo-truth updates disappear without changing WP169 or WP170 source, data, or any protected trading boundary.",
+    "mode_boundaries": [
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "local_database",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": true
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": true,
+    "dependencies": true,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP171 introduces one immutable local configuration, one read-only service/application factory, and exactly six GET domain routes with frozen success and error shapes.",
+    "items": [
+      {
+        "surface": "CockpitConfig(market_truth_path,experiment_registry_path)",
+        "before": "ABSENT",
+        "after": "immutable caller-supplied paths; either path may be None to represent not configured",
+        "change_authorized": true,
+        "compatibility_requirement": "path values are never returned and import performs no I/O",
+        "authority": "SOURCE_RUNTIME"
+      },
+      {
+        "surface": "create_app(config)",
+        "before": "ABSENT",
+        "after": "FastAPI app with exactly six GET domain routes plus framework documentation routes",
+        "change_authorized": true,
+        "compatibility_requirement": "no domain POST PUT PATCH DELETE route background worker scheduler credential or external client",
+        "authority": "SOURCE_RUNTIME"
+      },
+      {
+        "surface": "GET /api/health",
+        "before": "ABSENT",
+        "after": "{status:OK|DEGRADED,read_only:true,wp169:{configured,readable},wp170:{configured,readable}}",
+        "change_authorized": true,
+        "compatibility_requirement": "no local paths or raw source failures",
+        "authority": "SOURCE_RUNTIME"
+      },
+      {
+        "surface": "GET /api/overview",
+        "before": "ABSENT",
+        "after": "{read_only:true,market_truth:{normalized_count,accepted_count,quarantined_count,open_gap_count,latest_received_at},experiments:{experiment_count,lifecycle_count,evidence_count},recent_activity:{market_truth_count,audit_count}}",
+        "change_authorized": true,
+        "compatibility_requirement": "all values derive from validated local stores; nullable timestamp only",
+        "authority": "SOURCE_RUNTIME"
+      },
+      {
+        "surface": "GET /api/market-truth/recent?limit",
+        "before": "ABSENT",
+        "after": "{items:[{observation_id,source_kind,event_kind,event_id,market_id,asset_id,event_time,received_at,status,error_codes,book_ready}],count,limit} newest-first",
+        "change_authorized": true,
+        "compatibility_requirement": "default 50; 1 through 100; safe fields only; no raw bytes payload provenance cursor or archive sequence",
+        "authority": "SOURCE_RUNTIME"
+      },
+      {
+        "surface": "GET /api/experiments?limit",
+        "before": "ABSENT",
+        "after": "{items:[{experiment_id,experiment_family_id,trial_number,hypothesis_id,dataset_binding_id,split_assignment_id,baseline_id,preregistered_at,lifecycle_state,result_status,oos_exposure_ordinal}],count,limit} newest-first",
+        "change_authorized": true,
+        "compatibility_requirement": "WP170 result_status is preserved exactly and never translated into profitability or trading language",
+        "authority": "SOURCE_RUNTIME"
+      },
+      {
+        "surface": "GET /api/experiments/{experiment_id}",
+        "before": "ABSENT",
+        "after": "{item:{experiment summary fields plus research_dataset_manifest_id,feature_definition_ids,feature_set_id,label_definition_id,primary_metric_id,secondary_metric_ids,cost_model_reference,lifecycle_receipt_ids,evidence_receipt_ids}}",
+        "change_authorized": true,
+        "compatibility_requirement": "identifier must match experiment:sha256 plus 64 lowercase hex; valid absent identifier returns NOT_FOUND",
+        "authority": "SOURCE_RUNTIME"
+      },
+      {
+        "surface": "GET /api/audit/recent?limit",
+        "before": "ABSENT",
+        "after": "{items:[{source,record_id,experiment_id,kind,sequence,status,occurred_at}],count,limit} newest-first",
+        "change_authorized": true,
+        "compatibility_requirement": "combines safe WP170 lifecycle/evidence and available WP169 gap events with deterministic ordering",
+        "authority": "SOURCE_RUNTIME"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Frozen fields cover explicit local inputs, read-only source validation, bounded list behavior, deterministic ordering, safe evidence projection, and closed errors.",
+    "items": [
+      {
+        "path": "cockpit.config.market_truth_path",
+        "source": "CALLER",
+        "type": "nullable_local_sqlite_path",
+        "required_rule": "explicit existing WP169 SQLite path or not configured",
+        "mutable": false,
+        "identity_role": "EXCLUDED",
+        "exclusion_reason": "host path is operational input and cannot enter a response",
+        "validation_rule": "regular non-symlink lowercase .sqlite3 file when configured",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "configured/readable booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cockpit.config.experiment_registry_path",
+        "source": "CALLER",
+        "type": "nullable_local_sqlite_path",
+        "required_rule": "explicit existing WP170 SQLite path or not configured",
+        "mutable": false,
+        "identity_role": "EXCLUDED",
+        "exclusion_reason": "host path is operational input and cannot enter a response",
+        "validation_rule": "regular non-symlink lowercase .sqlite3 file when configured",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "configured/readable booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cockpit.list.limit",
+        "source": "CALLER",
+        "type": "bounded_integer",
+        "required_rule": "default 50 and accepted range 1 through 100",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "ASCII integer only; missing defaults to 50; invalid returns INVALID_INPUT",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "effective integer",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cockpit.source_access",
+        "source": "CONSTANT",
+        "type": "read_only_sqlite_policy",
+        "required_rule": "all database connections use SQLite URI mode ro and fixed reads",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "schema metadata and exact required columns verified before fixed queries; no arbitrary SQL input",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "read_only true and readable booleans",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cockpit.market_truth.items",
+        "source": "DERIVED",
+        "type": "bounded_safe_observation_projection",
+        "required_rule": "newest-first normalized observations and available gap health",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "exact fixed query over validated WP169 normalized_occurrences and gap_events",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "logical identifiers timestamps closed status error codes and book_ready only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cockpit.experiments.items",
+        "source": "DERIVED",
+        "type": "bounded_safe_registry_projection",
+        "required_rule": "newest-first preregistrations with latest lifecycle and evidence state",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "validated WP170 snapshot records and exact result_status without reinterpretation",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "validated WP170 logical identifiers timestamps states status and ordinal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cockpit.audit.items",
+        "source": "DERIVED",
+        "type": "bounded_safe_audit_projection",
+        "required_rule": "newest-first lifecycle evidence and available gap records",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "deterministic timestamp source kind record-id ordering then hard limit",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "safe logical IDs timestamps kind sequence and closed status",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cockpit.error",
+        "source": "DERIVED",
+        "type": "closed_http_error",
+        "required_rule": "exact shape is error containing code only",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "precedence request validation then source validation then not found then unexpected internal failure",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "INVALID_INPUT NOT_FOUND SOURCE_UNAVAILABLE or INTERNAL_ERROR",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "WP171 preserves and displays validated WP169 and WP170 identities without deriving or replacing canonical identities.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Only the canonical governance transition chain applies; cockpit views and refresh never create authorization.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "One genuinely separate independent reviewer certificate binds exact prompt and spec hashes, passes all twelve lenses, leaves no unresolved decision, and passes implementability simulation.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "wp_spec_guard passes, wp_readiness_gate returns IMPLEMENTATION_READY, and the user's exact V3 conditional authorization activates; readiness alone is not authority.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "The executor changes exactly the certified 26 paths and preserves prompt and spec bytes, certificate binding, read-only semantics, and every forbidden boundary.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed schema-1.0.0 WP-spec guard precedence; cockpit API precedence is separately frozen in semantic_fields and the API matrix.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new identity derivation or machine-example DSL is introduced; the exact API and negative matrix are executable focused-test evidence.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R010 map the complete V3 MVP, compatibility, repository evidence, final exact-head validation, hosted CI, and canonical private-repository publication.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_wp171_predecessor_scope_and_successor_contract",
+        "command": "python -m pytest -q tests/test_operator_cockpit.py",
+        "expected_result": "asserts exact predecessor, certified scope, protected boundaries, and WP172 Hermes Runtime plus Alpha Factory separately gated"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_read_only_store_adapters_leave_database_bytes_unchanged",
+        "command": "python -m pytest -q tests/test_operator_cockpit.py",
+        "expected_result": "asserts schema-validated SQLite URI read-only access, fixed reads, exact unchanged source bytes, and no mutation or external network authority"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_exact_routes_limits_errors_and_no_mutation_routes",
+        "command": "python -m pytest -q tests/test_operator_cockpit.py",
+        "expected_result": "asserts six GET routes, default 50, range 1 through 100, closed error shape and mapping, precedence, and no domain mutation route"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_market_truth_recent_and_gap_health",
+        "command": "python -m pytest -q tests/test_operator_cockpit.py",
+        "expected_result": "asserts bounded newest-first safe observations, open-gap count, available gap audit, and freshness without predecessor modification"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_experiment_list_detail_preserves_wp170_semantics",
+        "command": "python -m pytest -q tests/test_operator_cockpit.py",
+        "expected_result": "asserts bounded list and exact detail lineage with WP170 OOS and result wording preserved and never called profitable or tradeable"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_overview_and_audit_are_store_derived_bounded_and_read_only",
+        "command": "python -m pytest -q tests/test_operator_cockpit.py",
+        "expected_result": "asserts real aggregate summary and bounded deterministic combined audit evidence with read_only true"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "frontend",
+        "test": "four-view UX typecheck and production build",
+        "command": "npm --prefix src/operator_cockpit_frontend run typecheck && npm --prefix src/operator_cockpit_frontend run build",
+        "expected_result": "exactly four primary views include loading empty success source-error detail and manual-refresh behavior; no CDN runtime asset"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_dependency_pins_security_and_historical_guards",
+        "command": "python -m pytest -q tests/test_operator_cockpit.py tests/data_layer/analytical_research/test_experiment_os_boundaries.py tests/test_advisory_consumer_operator_workflow_docs.py tests/test_advisory_prompt_runbook_package_docs.py tests/test_advisory_runtime_boundary_consumption_design_docs.py tests/test_architecture_boundaries.py tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py tests/test_human_review_label_workflow_docs.py tests/test_local_advisory_handoff_package_docs.py tests/test_official_client_dependency_boundary.py tests/test_wallet_intelligence_architecture_contract_docs.py",
+        "expected_result": "asserts exact minimal optional Python pins, frontend pins and lockfile, preserved base runtime pins, and narrow historical guard compatibility; audits have no unresolved high or critical result"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_contract_status_and_repo_truth_are_consistent",
+        "command": "python -m pytest -q tests/test_operator_cockpit.py",
+        "expected_result": "asserts WP170 merged, WP171 current target, canonical contract and index, resolved deferred item, and exact separately gated WP172 title"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "validation",
+        "test": "final exact-head validation and private-repository publication",
+        "command": "python tools/wp/wp_spec_guard.py --wp docs/wp_specs/WP171/wp_prompt.txt --spec docs/wp_specs/WP171/wp_spec.json --certificate docs/wp_specs/WP171/draftability_certificate.json && python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP171/wp_prompt.txt --spec docs/wp_specs/WP171/wp_spec.json --certificate docs/wp_specs/WP171/draftability_certificate.json --repo-root . --check-diff --base 434af62f0891959d145b631a77b472b3e80915d3 --head HEAD",
+        "expected_result": "guards pass, exact scope matches, one full suite passes, exact-head hosted CI is green, and canonical PR body is posted then re-fetched under PRIVATE_REPO_MANUAL_VERIFIED"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP172",
+    "next_title": "Hermes Runtime + Alpha Factory",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP172",
+    "forbidden_in_this_wp": [
+      "Hermes runtime provider model calls prompt runner autonomous hypothesis generation or alpha factory",
+      "Kanban worktree orchestration coding-agent dispatch strategy generation promotion or approval",
+      "credentials authentication secrets private account data signing orders cancellation OMS portfolio risk execution paper or live trading",
+      "external product-runtime network acquisition RPC WebSocket download hosted database cloud deployment or message bus",
+      "authoritative WP169 or WP170 write ingestion normalization recovery append lifecycle evidence mutation or deletion",
+      "scheduler daemon installed service worker auto-start generic retry loop alert dispatch email chat or webhook",
+      "profitability tradeability executable edge fill queue spread slippage latency capacity adverse-selection or governance authority"
+    ]
+  }
+}

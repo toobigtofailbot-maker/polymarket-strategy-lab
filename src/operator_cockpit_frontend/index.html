@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Operator Cockpit</title>
+    <style>
+      :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #e9eef5; background: #071019; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-width: 320px; background: radial-gradient(circle at 85% 0, #153a43 0, #071019 42%); }
+      button { font: inherit; }
+      .shell { min-height: 100vh; display: grid; grid-template-columns: 240px 1fr; }
+      aside { padding: 28px 20px; border-right: 1px solid #20313d; background: rgba(5, 14, 22, .9); }
+      .brand { margin-bottom: 30px; letter-spacing: .08em; text-transform: uppercase; font-weight: 800; color: #84f4c4; }
+      nav { display: grid; gap: 8px; }
+      nav button { text-align: left; padding: 11px 13px; color: #9cb0bf; background: transparent; border: 1px solid transparent; border-radius: 9px; cursor: pointer; }
+      nav button.active { color: #f5f8fb; background: #132631; border-color: #2c4957; }
+      .posture { margin-top: 34px; padding: 12px; border-radius: 9px; background: #0d221d; color: #84f4c4; font-size: 12px; line-height: 1.5; }
+      main { padding: 32px clamp(20px, 4vw, 56px); max-width: 1480px; width: 100%; }
+      header { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 26px; }
+      h1 { margin: 0; font-size: clamp(26px, 4vw, 42px); }
+      .eyebrow { color: #6eddb0; text-transform: uppercase; letter-spacing: .13em; font-size: 12px; font-weight: 700; }
+      .refresh { padding: 10px 16px; color: #071019; background: #84f4c4; border: 0; border-radius: 8px; font-weight: 750; cursor: pointer; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+      .card, .panel { border: 1px solid #243845; background: rgba(12, 26, 36, .86); border-radius: 13px; padding: 18px; box-shadow: 0 18px 50px rgba(0,0,0,.18); }
+      .card span { color: #8fa4b3; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+      .card strong { display: block; margin-top: 8px; font-size: 28px; }
+      .panel { margin-top: 16px; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #20323e; vertical-align: top; }
+      th { color: #7f98a8; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+      tr:last-child td { border-bottom: 0; }
+      .token { max-width: 250px; overflow-wrap: anywhere; color: #b8c7d2; }
+      .pill { display: inline-flex; padding: 4px 8px; border-radius: 99px; background: #173b33; color: #88e6bd; font-size: 11px; }
+      .pill.warn { background: #3b2b18; color: #f6c67b; }
+      .state { min-height: 220px; display: grid; place-items: center; color: #91a7b5; text-align: center; }
+      .error { border-color: #67363b; color: #ffb3b3; }
+      .detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+      .detail div { padding: 12px; background: #0a1720; border-radius: 8px; overflow-wrap: anywhere; }
+      .link { color: #8debc0; background: transparent; border: 0; padding: 0; text-align: left; cursor: pointer; }
+      @media (max-width: 760px) { .shell { grid-template-columns: 1fr; } aside { border-right: 0; border-bottom: 1px solid #20313d; } nav { grid-template-columns: repeat(2,1fr); } .posture { display: none; } }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

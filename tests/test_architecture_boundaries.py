@@ -134,6 +134,10 @@ APPROVED_SRC_SCOPES = (
     # the new research-runtime boundary README.
     "src/research_runtime/nautilus_offline",
     "src/research_runtime/README.md",
+    # WP171 approves one local, read-only cockpit and its browser source. It reads
+    # caller-selected WP169/WP170 SQLite evidence and has no trading authority.
+    "src/operator_cockpit.py",
+    "src/operator_cockpit_frontend",
 )
 
 

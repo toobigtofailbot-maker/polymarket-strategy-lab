@@ -1,0 +1,854 @@
+WP171 — INTERACTIVE OPERATOR COCKPIT MVP
+LEAN ONE-SHOT AUTONOMOUS CODEX EXECUTION PACKAGE — V3
+GATE-COMPATIBLE / LOW-FRICTION REVISION
+
+===============================================================================
+1. PACKAGE IDENTITY
+===============================================================================
+
+Package Identity:
+  WP ID: WP171
+  Title: Interactive Operator Cockpit MVP
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/wp171-interactive-operator-cockpit
+  Package class: INTERACTIVE_OPERATOR_COCKPIT_MVP
+  Package size class: XL
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: LOCAL_OPERATOR_READ_ONLY_COCKPIT
+  Product impact: READ_ONLY_FASTAPI_REACT_OPERATOR_COCKPIT
+  Network impact: LOCAL_LOOPBACK_ONLY_NO_EXTERNAL_PRODUCT_NETWORK
+  Credential impact: NONE
+  Dependency impact: MINIMAL_FASTAPI_UVICORN_REACT_VITE_TYPESCRIPT_STACK
+  Trading impact: NONE
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: normal strong coding/reasoning mode; do not use repeated multi-reviewer loops
+  Reason: this is a bounded integration/UI WP, not a new trading or scientific-validity core
+  Escalate to higher reasoning or STOP if: a true hard-stop condition in Section 17 occurs
+
+Required predecessor:
+  WP170 / PR #171
+  Final predecessor head:
+    8e5d83f695d2f2ef38c9f30e3a8e95eb271718da
+  Predecessor merge commit / drafting-time main:
+    434af62f0891959d145b631a77b472b3e80915d3
+
+Successor boundary:
+  WP172 — Hermes Runtime + Alpha Factory
+  WP172 remains separately gated and is not implemented here.
+
+Conditional implementation authorization:
+  When Karl sends this exact package to Codex and instructs execution, implementation is
+  authorized only after one independent DRAFTABILITY_PASS over the exact prompt/spec bytes,
+  wp_spec_guard PASS, and wp_readiness_gate IMPLEMENTATION_READY.
+  No additional user authorization is needed between technical readiness and implementation.
+
+Merge authority:
+  NO.
+
+===============================================================================
+2. OBJECTIVE
+===============================================================================
+
+Implement one useful local read-only operator cockpit MVP over the already-merged WP169
+market-truth data plane and WP170 experiment registry.
+
+The operator must be able to launch a local FastAPI + React/TypeScript/Vite cockpit and inspect:
+
+- overall data/research health;
+- recent WP169 market-truth observations and gap health;
+- WP170 experiment list and experiment detail;
+- recent audit/evidence activity.
+
+The cockpit is a VIEW LAYER ONLY.
+
+It does not need to expose every field that exists in WP169/WP170.
+It does not need detailed cursor/sequence history.
+It does not need a complete checkpoint browser.
+It does not need complex filters.
+It does not need live streaming.
+It does not need charts beyond simple CSS/SVG summaries where useful.
+
+The goal is a working, clean, useful cockpit quickly.
+
+===============================================================================
+3. AUTHORITY / NON-AUTHORITY POSTURE
+===============================================================================
+
+Implementation authority:
+  YES after the existing DRAFTABILITY_PASS + readiness gate.
+  Same-scope implementation/test/docs/CI fixes are authorized autonomously.
+
+Report/export authority:
+  Read-only JSON API responses and browser views over validated local evidence only.
+
+Paper authority:
+  NO.
+
+Execution authority:
+  NO.
+
+Live authority:
+  NO.
+
+Credential authority:
+  NO.
+
+Runtime/scheduler authority:
+  Local manual FastAPI/Uvicorn server and Vite development/build workflow only.
+  No daemon, service installer, scheduler, cron, worker, or autonomous background process.
+
+Canonical evidence authority:
+  NONE over WP169/WP170 source truth. The cockpit derives views only.
+
+Network authority:
+  Local loopback browser-to-FastAPI communication only.
+  No Polymarket/external product-runtime network calls.
+
+Dependency-change authority:
+  YES, narrowly for the minimal cockpit stack and its committed frontend lockfile.
+
+Explicitly authorized implementation surfaces:
+- new cockpit backend/read-model source;
+- new React/Vite frontend;
+- pyproject dependency changes;
+- frontend package manifest/lockfile;
+- one narrow CI integration;
+- focused tests;
+- status/docs/spec artifacts;
+- direct historical compatibility tests/docs that otherwise incorrectly forbid the newly
+  authorized FastAPI/frontend dependencies.
+
+Explicitly forbidden:
+- credentials/secrets;
+- authenticated/private Polymarket access;
+- signing;
+- orders/cancel;
+- OMS;
+- execution gateway;
+- hard risk;
+- portfolio;
+- paper trading;
+- live trading;
+- strategy generation/promotion;
+- Hermes runtime/model/provider calls;
+- autonomous coding-agent dispatch;
+- write APIs into WP169/WP170 stores;
+- mutation of experiment lifecycle;
+- mutation of market-truth state;
+- cloud deployment;
+- hosted database;
+- Redis/Kafka/message bus;
+- user/account authentication.
+
+The cockpit is never authoritative.
+
+===============================================================================
+4. HARD MERGE GATE / CLEAN START
+===============================================================================
+
+Before work:
+
+  git fetch origin --prune
+  git checkout main
+  git pull --ff-only origin main
+  git rev-parse HEAD
+  git log -1 --oneline
+  git status --short --branch
+
+Required checks:
+1. PR #171 is merged.
+2. main contains predecessor final head
+   8e5d83f695d2f2ef38c9f30e3a8e95eb271718da.
+3. main contains merge commit
+   434af62f0891959d145b631a77b472b3e80915d3
+   or is a newer descendant containing it.
+4. No conflicting open WP171 branch/PR exists.
+5. Generated-artifact guard passes.
+6. No unrelated local work exists.
+
+CLEANUP AUTHORIZATION FOR THE FAILED V2 DRAFT:
+If the only local changes are the failed, uncommitted WP171 drafting artifacts:
+- docs/wp_specs/WP171/wp_prompt.txt
+- docs/wp_specs/WP171/wp_spec.json
+- docs/wp_specs/WP171/draftability_certificate.json if present
+
+then Karl explicitly authorizes removing/overwriting those failed WP171-only draft artifacts
+and returning main to a clean state before creating the V3 branch.
+
+Do not delete any other local or untracked user work.
+
+===============================================================================
+5. CONTEXT BUDGET
+===============================================================================
+
+Read first:
+- AGENTS.md / current Codex start-here file;
+- docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md;
+- docs/ai/codex/WP_DRAFTING_STANDARD.md;
+- docs/ai/codex/WP_SPEC_STANDARD.md;
+- docs/ai/codex/PROTECTED_PATHS.md;
+- docs/project_status.md;
+- pyproject.toml;
+- .github/workflows/ci.yml.
+
+Read for this WP:
+- WP169 store schema/read helpers needed to produce recent observations + gap summary;
+- WP170 experiment registry schema/read helpers needed to list/detail experiments;
+- directly affected tests/docs that govern new FastAPI/frontend dependencies;
+- current roadmap/status/deferred files to reconcile WP170 -> WP171 -> WP172.
+
+Read only if blocked:
+- exact WP169/WP170 contract/spec sections controlling a field being displayed;
+- readiness/diff-scope helpers if current scope compatibility requires it.
+
+Do not broadly read/touch:
+- strategy;
+- execution;
+- risk;
+- paper/live;
+- old Hermes/advisory history;
+- unrelated historical WPs.
+
+Search terms:
+- market_truth sqlite normalized_occurrences gap_events
+- experiment_registry experiment_records
+- fastapi forbidden dependency
+- package.json frontend
+- WP171
+- WP172 Hermes Runtime Alpha Factory
+
+===============================================================================
+6. COMPATIBILITY / IMPOSSIBILITY CHECK
+===============================================================================
+
+Before freezing the spec, make this internal table and resolve it from repo truth:
+
+| Required behavior | Controlling mechanism | Allowed? | Action |
+| --- | --- | ---: | --- |
+| Read WP169 data | existing public read API OR validated sqlite read-only adapter | YES | choose simpler stable path |
+| Read WP170 data | existing public read API OR validated sqlite read-only adapter | YES | choose simpler stable path |
+| Add FastAPI/Uvicorn | dependency authority in this WP | YES | pin exact compatible versions |
+| Add React/Vite/TS | dependency authority in this WP | YES | pin exact compatible versions |
+| Historical tests forbid FastAPI | package-specific old boundary | YES to narrow compatibility fix | scope assertion to old package; do not weaken globally |
+| External product network | forbidden | NO | never add |
+| Store writes | forbidden | NO | use read-only open mode |
+| Detailed cursor/gap history | not required by WP171 MVP | N/A | do not modify WP169 to obtain it |
+
+IMPORTANT ARCHITECTURAL RESOLUTION:
+
+WP171 MAY use a cockpit-owned VALIDATED READ-ONLY SQLite adapter against the documented
+WP169/WP170 local SQLite schemas when the predecessor public API does not expose the exact
+read view needed.
+
+Requirements for direct SQLite reads:
+- caller explicitly supplies the path;
+- open using SQLite read-only URI mode;
+- verify expected schema/application metadata/table/column names before querying;
+- SELECT-only fixed SQL owned by the cockpit;
+- no arbitrary SQL endpoint;
+- no INSERT/UPDATE/DELETE/DDL/PRAGMA mutation;
+- never require a predecessor WP modification solely to add a dashboard read method.
+
+This permission removes the previous unnecessary predecessor-API blocker.
+
+===============================================================================
+7. SCOPE MODEL
+===============================================================================
+
+Do NOT impose the old 20-path L limit.
+
+WP171 is explicitly authorized as XL for SCOPE BUDGET ONLY so that dependency manifests,
+frontend files, and direct historical compatibility tests can fit without artificial splitting.
+
+XL authorization basis:
+Karl explicitly authorizes WP171 to use up to the current repository schema maximum of
+35 changed paths because the React/FastAPI vertical slice can legitimately require Python
+source/tests, frontend source/config/lockfile, CI, specs/docs, and package-specific historical
+dependency-compatibility corrections. This authorization does not broaden product authority.
+
+Target:
+20–28 paths if practical.
+
+Hard maximum:
+35 paths, matching the current schema maximum.
+
+Do not add filler files.
+Do not split a coherent necessary compatibility correction into another WP merely to preserve
+an arbitrary L-size label.
+
+Exact scope is discovered first and frozen second.
+
+If one missed path is discovered after certification and it remains:
+- inside this capability;
+- inside authorized path families;
+- <=35 total;
+- no authority expansion;
+
+batch the correction into wp_spec.json, obtain one fresh independent certificate, rerun
+readiness, and continue internally.
+
+===============================================================================
+8. MINIMAL PRODUCT CONTRACT
+===============================================================================
+
+BACKEND ROUTES — EXACT MVP ROUTE SET
+
+Domain routes:
+- GET /api/health
+- GET /api/overview
+- GET /api/market-truth/recent
+- GET /api/experiments
+- GET /api/experiments/{experiment_id}
+- GET /api/audit/recent
+
+Do not add domain mutation routes.
+
+LIST LIMIT SEMANTICS
+
+For these list endpoints:
+- optional query parameter: limit
+- default: 50
+- minimum: 1
+- maximum: 100
+- integer only
+- invalid/out-of-range -> HTTP 400 with INVALID_INPUT
+- no offset pagination in WP171
+- no status filter in WP171
+- no source filter in WP171
+- no free-text search in WP171
+
+This intentionally removes the previous unresolved pagination/status-filter design work.
+
+ERROR RESPONSE — EXACT SAFE SHAPE
+
+All cockpit-owned API errors use:
+
+  {"error":{"code":"<TOKEN>"}}
+
+Closed error tokens:
+- INVALID_INPUT
+- NOT_FOUND
+- SOURCE_UNAVAILABLE
+- INTERNAL_ERROR
+
+HTTP mapping:
+- INVALID_INPUT -> 400
+- NOT_FOUND -> 404
+- SOURCE_UNAVAILABLE -> 503
+- INTERNAL_ERROR -> 500
+
+Evaluation/precedence:
+1. validate request syntax/limit/experiment-id shape;
+2. open and validate required source store;
+3. if a valid source is available but the requested experiment does not exist -> NOT_FOUND;
+4. unexpected internal failure -> INTERNAL_ERROR.
+
+Never return:
+- exception strings;
+- SQL;
+- raw invalid caller values;
+- local absolute paths;
+- environment values;
+- usernames;
+- traceback text.
+
+SUCCESS LIST SHAPE
+
+List endpoints return:
+  {"items":[...],"count":<returned_count>,"limit":<effective_limit>}
+
+count is the number returned, never an unbounded total-count query requirement.
+
+DETAIL SHAPE
+
+Experiment detail returns:
+  {"item":{...}}
+
+HEALTH SHAPE
+
+Health returns a compact object containing:
+- status: OK or DEGRADED
+- read_only: true
+- wp169: configured/readable booleans
+- wp170: configured/readable booleans
+
+No local path values.
+
+OVERVIEW SHAPE
+
+Overview may use one compact stable JSON object with:
+- market_truth summary;
+- experiments summary;
+- recent_activity summary;
+- read_only: true.
+
+The exact nested field names are frozen in wp_spec.json after inspecting actual available
+WP169/WP170 fields. Do not require fields that predecessor stores do not contain.
+
+===============================================================================
+9. DATA REQUIREMENTS — DELIBERATELY MINIMAL
+===============================================================================
+
+MARKET TRUTH MVP
+
+Required:
+- recent normalized WP169 observations, newest-first, bounded by limit;
+- source/event kind and safe timestamp/market/asset identifiers where stored;
+- count of currently open gaps and/or recent gap events when available in the documented
+  WP169 schema;
+- freshness based on latest available stored receive/event timestamp.
+
+NOT REQUIRED:
+- raw frame bodies;
+- cursor internals;
+- frame sequence browser;
+- complete checkpoint history;
+- dynamic subscribe state;
+- detailed recovery timeline;
+- predecessor API changes.
+
+EXPERIMENT MVP
+
+Required:
+- recent/listable WP170 experiment/preregistration records;
+- detail by exact experiment ID;
+- lifecycle/result evidence that exists in WP170;
+- dataset/split/hypothesis/family/baseline identifiers where stored;
+- first-look/reused OOS wording preserved.
+
+Do not calculate new experiment validity.
+Do not calculate profitability.
+
+AUDIT MVP
+
+Required:
+- bounded recent WP170 lifecycle/evidence records;
+- bounded recent WP169 gap/health evidence;
+- timestamps + safe IDs/status only.
+
+If one predecessor schema lacks a specific optional field:
+omit it or represent it as null according to the frozen response model.
+Do not modify the predecessor to manufacture the field.
+
+===============================================================================
+10. FRONTEND
+===============================================================================
+
+React + TypeScript + Vite.
+
+Exactly four primary views:
+1. Overview
+2. Market Truth
+3. Experiments
+4. Audit / Health
+
+Keep navigation simple without adding a router dependency unless implementation genuinely
+needs it. A tab/hash/state navigation model is acceptable.
+
+Frontend must support:
+- loading state;
+- empty state;
+- success state;
+- backend/source error state;
+- experiment detail drill-down;
+- manual refresh.
+
+No frontend WebSocket/SSE in WP171.
+No CDN runtime dependencies.
+No charting/component/state-management framework required.
+Use CSS and small SVG/CSS indicators if useful.
+
+No fake trading buttons.
+No Hermes page.
+No portfolio/orders/execution page.
+
+===============================================================================
+11. DEPENDENCIES
+===============================================================================
+
+Narrow dependency research is authorized for current compatible versions of:
+- FastAPI;
+- Uvicorn;
+- React;
+- ReactDOM;
+- Vite;
+- TypeScript;
+- required React/Vite type/build packages;
+- current supported Node LTS for CI.
+
+Freeze exact pins after the narrow check.
+
+Commit frontend lockfile.
+
+Do not add optional libraries unless materially required.
+
+Historical tests/docs that contain old package-specific "FastAPI forbidden" assertions may be
+updated ONLY as narrowly as needed so they continue protecting the old package boundaries
+without forbidding this explicitly authorized WP171 cockpit dependency globally.
+
+This is an authorized compatibility correction, not a workflow-governance change.
+
+===============================================================================
+12. NEGATIVE TEST MATRIX
+===============================================================================
+
+N01 invalid/nonexistent WP169 path -> SOURCE_UNAVAILABLE, no path echo.
+N02 invalid/nonexistent WP170 path -> SOURCE_UNAVAILABLE, no path echo.
+N03 corrupt/foreign SQLite schema -> SOURCE_UNAVAILABLE, no writes.
+N04 limit missing -> default 50.
+N05 limit=1 and limit=100 accepted.
+N06 limit=0, 101, noninteger -> INVALID_INPUT 400.
+N07 malformed experiment ID -> INVALID_INPUT 400.
+N08 valid experiment ID absent from valid registry -> NOT_FOUND 404.
+N09 backend exception -> INTERNAL_ERROR 500 with no exception/path echo.
+N10 route inventory contains no domain POST/PUT/PATCH/DELETE mutation route.
+N11 opening/querying valid WP169/WP170 DB leaves authoritative DB bytes/content unchanged.
+N12 same underlying records -> deterministic newest-first/order semantics.
+N13 empty valid stores -> valid empty response/frontend empty state.
+N14 OOS criteria-met/uncosted evidence is never rendered as profitable/tradeable.
+N15 source scan shows no Polymarket external acquisition/auth/signing/order/paper/live/Hermes.
+N16 frontend handles backend unavailable/503 state.
+N17 frontend production build/typecheck passes with no runtime CDN asset.
+N18 fixed SQL is SELECT-only; no arbitrary query text accepted from HTTP.
+
+===============================================================================
+13. EVIDENCE PLAN / REQUIREMENT MAPPING
+===============================================================================
+
+wp_spec.json evidence_plan must contain R001-R010.
+
+Every pytest evidence node must name an existing/planned test function with a reachable assert
+or pytest.raises by final --check-diff.
+
+R001 — preflight/exact scope/predecessor/successor
+Expected proof:
+current base contains WP170 merge; exact certified scope matches final diff; WP172 separately
+gated.
+
+R002 — backend read-only trust boundary
+Expected proof:
+validated read-only WP169/WP170 access works and route/API code cannot mutate authoritative
+stores.
+
+R003 — fixed API/error/limit contract
+Expected proof:
+exact routes, limit 1..100/default50, closed safe errors, and no mutation routes.
+
+R004 — market truth MVP
+Expected proof:
+bounded recent observations + available gap/freshness summary from validated WP169 evidence,
+without requiring predecessor changes.
+
+R005 — experiment MVP
+Expected proof:
+bounded experiment list/detail and preserved WP170 OOS/result wording/lineage IDs.
+
+R006 — overview + audit MVP
+Expected proof:
+real store-derived summary and bounded audit evidence with read_only true.
+
+R007 — frontend UX/build
+Expected proof:
+four views + loading/empty/success/error/detail behavior, TypeScript check, production build,
+no CDN runtime dependency.
+
+R008 — dependency/security compatibility
+Expected proof:
+exact pins/lockfile; historical package-specific dependency guards remain semantically intact;
+Python/npm audits have no unresolved high/critical issue.
+
+R009 — repo truth/docs
+Expected proof:
+WP170 merged, WP171 current review target, exact WP172 successor title.
+
+R010 — final exact-head validation/publication
+Expected proof:
+wp_spec_guard + readiness + --check-diff; focused tests; full Python suite once; hosted exact
+head CI; canonical PR body re-fetched under PRIVATE_REPO_MANUAL_VERIFIED.
+
+===============================================================================
+14. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|backend|store_access|validated_source|REQUIRE|read_only_access|NONE|R002
+NR002|backend|store_write|cockpit_request|FORBID|authoritative_write_forbidden|NONE|R002
+NR003|backend|external_network|product_runtime|FORBID|external_network_forbidden|NONE|R002
+NR004|api|limit|missing|REQUIRE|default_limit_fifty|NONE|R003
+NR005|api|limit|outside_range|REJECT|invalid_limit_rejected|NONE|R003
+NR006|api|error_output|invalid_request|REQUIRE|sanitized_error_shape|NONE|R003
+NR007|market_truth|recent_view|valid_store|REQUIRE|bounded_recent_observations|NONE|R004
+NR008|experiments|detail_view|valid_registry|REQUIRE|experiment_detail_preserved|NONE|R005
+NR009|frontend|primary_views|cockpit_loaded|REQUIRE|four_views_available|NONE|R007
+NR010|authority|trading|wp171|FORBID|trading_authority_forbidden|NONE|R002
+NR011|workflow|evidence_mode|final_pr|REQUIRE|private_repo_manual_verified|NONE|R010
+NR012|workflow|successor|wp172|REQUIRE|hermes_alpha_factory_separately_gated|NONE|R009
+END_NORMATIVE_RULE_MATRIX_V1
+
+Do not duplicate/remove this matrix.
+
+===============================================================================
+15. DRAFTABILITY AND MACHINE SPEC
+===============================================================================
+
+Create:
+- docs/wp_specs/WP171/wp_prompt.txt
+- docs/wp_specs/WP171/wp_spec.json
+- docs/wp_specs/WP171/draftability_certificate.json
+
+Copy this exact V3 master prompt into wp_prompt.txt unchanged.
+
+Machine spec:
+- schema polymarket-work-package-spec@1.0.0;
+- package_size_class = XL;
+- xl_explicit_authorization = true;
+- xl_authorization_basis must explicitly cite the scope-budget authorization in Section 7;
+- exact required_changed_files == allowed_changed_files;
+- max_changed_files = exact path count <=35;
+- state transitions are the canonical WP governance chain only;
+- evidence R001-R010;
+- successor exactly:
+  WP172 — Hermes Runtime + Alpha Factory;
+- evidence mode/publication semantics:
+  PRIVATE_REPO_MANUAL_VERIFIED;
+  PR body is canonical evidence surface;
+  final comment optional/non-canonical unless current merged policy has changed;
+  final PR body must be posted then re-fetched via GitHub API;
+  hosted CI must be green on the exact final head;
+  merge authority NO.
+
+Freeze the exact nested success payload fields actually implementable from current WP169/WP170
+schema. Do not add optional predecessor fields just to make the cockpit look richer.
+
+Use ONE genuinely separate independent draftability reviewer.
+
+Reviewer instruction:
+- judge implementability against this deliberately minimal MVP;
+- do not require predecessor API changes for data explicitly declared not required;
+- direct validated read-only SQLite integration is authorized by Section 6;
+- no unresolved pagination/status-filter design exists because Section 8 intentionally excludes
+  those features;
+- package size is explicitly XL and may use up to 35 exact paths;
+- successor and evidence mode are frozen above.
+
+If reviewer returns findings:
+collect the complete set, correct valid same-envelope prompt/spec mismatches in one batch, then
+use ONE fresh reviewer.
+
+Do not create multiple review personas.
+
+After PASS:
+run wp_spec_guard and wp_readiness_gate.
+
+Do not weaken readiness tooling to make an invalid package pass.
+
+===============================================================================
+16. IMPLEMENTATION / REVIEW / VALIDATION
+===============================================================================
+
+During implementation:
+- targeted backend tests;
+- targeted frontend typecheck/build;
+- directly affected WP169/WP170 read tests only.
+
+After implementation stabilizes:
+run ONE combined final reviewer:
+WP171_FINAL_COCKPIT_REVIEWER.
+
+It reviews:
+- contract vs code;
+- read-only boundary;
+- deterministic API/errors;
+- source-schema validation;
+- frontend/backend integration;
+- dependency scope/security;
+- focused test strength;
+- docs/evidence/scope.
+
+Let the reviewer finish and return a complete finding set before editing.
+
+If material findings:
+fix all valid same-scope findings in one batch.
+Then run one fresh final review.
+
+Do not recursively start multiple reviewers.
+
+Final expensive validation ONCE after candidate is stable:
+1. prompt/spec/certificate hashes;
+2. wp_spec_guard;
+3. readiness;
+4. readiness --check-diff;
+5. exact scope;
+6. focused WP171 tests;
+7. directly affected predecessor read tests;
+8. frontend typecheck;
+9. frontend production build;
+10. generated-artifact guard;
+11. git diff --check;
+12. repo-standard Python security/dependency audit;
+13. npm audit / lockfile audit;
+14. full Python repository pytest once;
+15. commit/push;
+16. one non-draft PR;
+17. hosted CI exact head;
+18. fix concrete same-scope CI defects only;
+19. update and re-fetch canonical PR body;
+20. verify mergeable/open/head/scope/comments/review threads.
+
+Do not merge.
+
+===============================================================================
+17. CONCRETE STOP CONDITIONS
+===============================================================================
+
+HARD STOP only if:
+
+STOP if unrelated local user work cannot be preserved — because cleanup would risk data loss.
+
+STOP if current main no longer contains the WP170 predecessor or materially invalidates its
+stored schema — because the integration basis changed.
+
+STOP if truthful implementation requires more than 35 tracked changed paths after reasonable
+consolidation — because current schema cannot certify a larger exact scope.
+
+STOP if implementation genuinely requires authoritative WP169/WP170 writes — because WP171 is
+strictly read-only.
+
+STOP if credentials/auth/private account data/orders/risk/paper/live are required — because
+those authorities are explicitly forbidden.
+
+STOP if external product-runtime network is required — because WP171 is local-store-only.
+
+STOP if a required dependency has an unresolved high/critical security or license issue with
+no reasonable compatible alternative — because dependency risk cannot be accepted silently.
+
+STOP if current governance cannot certify this prompt/spec without changing protected workflow
+authority — because WP171 is not a governance-bypass WP.
+
+STOP if independent reviewer separation is unavailable — because certificate integrity cannot
+be claimed.
+
+STOP if hosted CI is structurally unavailable — because final exact-head validation cannot be
+established.
+
+NOT HARD STOPS:
+- >20 paths;
+- >25 paths;
+- historical compatibility tests caused by authorized FastAPI/frontend dependencies;
+- predecessor public API lacking optional cockpit fields;
+- missing detailed cursor/gap history;
+- ordinary implementation bugs;
+- TypeScript/CSS errors;
+- focused test failures;
+- same-scope CI failure;
+- one in-envelope scope recertification;
+- final reviewer same-scope defects.
+
+===============================================================================
+18. EVIDENCE PUBLICATION
+===============================================================================
+
+Evidence mode:
+PRIVATE_REPO_MANUAL_VERIFIED.
+
+Canonical GitHub evidence:
+the PR body.
+
+Final comment:
+optional and non-canonical unless current merged policy explicitly requires otherwise.
+
+Before Ready for review:
+- post/update PR body;
+- re-fetch the posted PR body through GitHub API;
+- verify exact final head;
+- verify exact changed scope;
+- verify all required hosted checks green;
+- verify no contradictory comments;
+- verify no unresolved review threads;
+- record PRIVATE_REPO_MANUAL_VERIFIED honestly.
+
+Do not treat a local PR-body draft as posted evidence.
+
+===============================================================================
+19. SUCCESSOR BOUNDARY
+===============================================================================
+
+Next WP:
+WP172 — Hermes Runtime + Alpha Factory.
+
+WP172 is separately gated.
+
+WP171 must not implement:
+- Hermes runtime/provider/model calls;
+- autonomous hypothesis generation;
+- Kanban/worktree orchestration;
+- coding-agent dispatch;
+- strategy promotion;
+- trading/risk/execution.
+
+No successor implementation is authorized.
+
+===============================================================================
+20. REPORT-BACK
+===============================================================================
+
+Do not send intermediate progress reports.
+
+Return only:
+
+READY FOR INDEPENDENT MERGE REVIEW: YES
+
+with:
+- PR number/link;
+- exact base/head;
+- exact changed-file count;
+- exact dependency pins;
+- focused backend tests;
+- directly affected predecessor tests;
+- frontend typecheck/build;
+- full Python suite result;
+- Python/npm audit result;
+- wp_spec_guard PASS;
+- readiness + --check-diff PASS;
+- final independent reviewer ZERO_MATERIAL_FINDINGS;
+- hosted exact-head CI green;
+- evidence mode PRIVATE_REPO_MANUAL_VERIFIED;
+- PR open/non-draft/mergeable;
+- comments/review threads status;
+- explicit no-write/no-external-network/no-trading/no-Hermes statement;
+- merge performed NO;
+- WP172 started NO.
+
+OR:
+
+HARD STOP
+
+only for Section 17.
+
+===============================================================================
+21. DEFINITION OF DONE
+===============================================================================
+
+WP171 is done when:
+
+- local FastAPI + React/Vite cockpit launches;
+- Overview works with real store-derived summary data;
+- Market Truth shows bounded recent WP169 observations and available gap/freshness health;
+- Experiments lists and opens WP170 experiment detail;
+- Audit/Health shows bounded safe recent evidence;
+- exact six GET domain routes work;
+- list limit semantics are exactly default 50 / valid 1..100;
+- error schema is exact and sanitized;
+- direct DB fallback, if used, is schema-validated and read-only;
+- no predecessor source modification was needed merely for dashboard reads;
+- frontend has loading/empty/success/error states and builds cleanly;
+- no external product network, writes, credentials, strategy, paper/live, execution, or Hermes;
+- dependency surface is minimal and audited;
+- final full validation and hosted CI are green;
+- one final independent reviewer is clean;
+- one non-draft PR is ready for Side review.
+
+END OF WP171 V3
