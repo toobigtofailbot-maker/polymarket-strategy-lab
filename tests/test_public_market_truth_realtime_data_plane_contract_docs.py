@@ -44,27 +44,29 @@ def test_wp169_contract_status_roadmap_and_dependency_posture() -> None:
     assert "websockets==17.1" in contract
     assert "BSD-3-Clause" in contract
     assert "install-not-vendor" in contract
-    assert "New direct runtime dependency: websockets==17.1" in status
+    assert "New direct runtime dependency: `websockets==17.1`" in entry
 
     # The existing exact pins remain preserved and unchanged.
     for pin in ("pyarrow==25.0.1", "duckdb==1.5.5", "polars==1.44.1", "nautilus_trader==1.231.0"):
         assert pin in contract, pin
 
-    # Current status marks WP169 as the current review target with WP168G merged.
+    # Current status reconciles WP169 as merged and WP170 as the review target.
     current_phase = next(
         line for line in status.splitlines() if line.startswith("- Current phase:")
     )
-    assert "WP169" in current_phase
-    assert "WP168G merged: YES" in current_phase
-    assert "PUBLIC_MARKET_TRUTH_REALTIME_DATA_PLANE" in current_phase
+    assert "WP170" in current_phase
+    assert "WP169 merged: YES" in current_phase
+    assert "WP169 PR: 170" in current_phase
+    assert "WP169 final head: c4a09aeb33e4c271feb709622660e5e58a00b642" in current_phase
+    assert "WP169 merge commit: 17df81001171988e9ca49f92dc8fd170ecaa7103" in current_phase
 
     # Roadmap and status entry agree on the WP169 -> WP170 sequence.
     assert "WP169" in roadmap and "WP170" in roadmap
     assert "WP169" in entry
 
 
-def test_wp170_and_trading_successors_remain_separately_gated() -> None:
-    """R014: WP170 experiment OS and WP171-WP178 successors remain separately gated."""
+def test_wp170_is_current_and_trading_successors_remain_separately_gated() -> None:
+    """R014: WP169's contract remains historical while WP170 is current."""
     contract = _read(CONTRACT)
     roadmap = _read(ROADMAP)
     assert "WP170" in contract

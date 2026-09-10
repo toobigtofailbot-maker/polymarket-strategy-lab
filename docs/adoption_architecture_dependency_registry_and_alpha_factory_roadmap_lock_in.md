@@ -594,3 +594,19 @@ execution, or strategy authority. WP169 acquisition is bounded public unauthenti
 canonical PIT authority is unchanged, and no direct PIT-to-Nautilus ingestion adapter is
 claimed. WP170 (falsification-grade experiment registry and research-dataset OS) and
 WP171–WP178 remain separately gated successors.
+
+## WP170 Dependency Registration — Experiment Registry & Research Dataset OS
+
+WP170 adds no direct or transitive runtime dependency and changes no dependency or lock
+file. It reuses the existing standard-library SQLite and hashing/JSON surfaces plus current
+repo-native PIT and analytical record types. The preserved exact installed dependency set
+remains `pyarrow==25.0.1`, `duckdb==1.5.5`, `polars==1.44.1`,
+`nautilus_trader==1.231.0`, and `websockets==17.1`; the Python floor remains
+`>=3.12,<3.15`.
+
+The local `.sqlite3` registry is an explicit caller-selected research metadata store, not a
+hosted database or service. This registration grants no provider/model/Hermes runtime,
+scheduler/background task, product network, dashboard, strategy, expected-return ranking,
+cost-adjusted result authority, paper/live trading, credential, authenticated access,
+signing, order, OMS, execution, reconciliation, or risk authority. WP171 (Interactive
+Operator Cockpit) and WP172–WP178 remain separately gated successors.

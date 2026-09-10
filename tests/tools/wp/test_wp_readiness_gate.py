@@ -61,6 +61,12 @@ def _evaluate(tmp_path, **kwargs):
     return gate.evaluate_readiness(wp, sp, cp, str(ROOT), **kwargs)
 
 
+def test_prompt_structure_accepts_negative_test_hyphenation() -> None:
+    prompt = REAL_PROMPT.replace("NEGATIVE TEST MATRIX", "NEGATIVE-TEST MATRIX")
+    assert prompt != REAL_PROMPT
+    assert "READINESS_PROMPT_STRUCTURE_INVALID" not in gate._prompt_structure_errors(prompt)
+
+
 # --------------------------------------------------------------------------- R002
 def test_valid_independently_certified_package_is_implementation_ready(tmp_path):
     result = _evaluate(tmp_path)

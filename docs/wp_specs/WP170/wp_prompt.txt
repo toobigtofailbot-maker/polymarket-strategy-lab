@@ -1,0 +1,1363 @@
+WP170 — FALSIFICATION-GRADE EXPERIMENT REGISTRY & RESEARCH DATASET OS
+ONE-SHOT AUTONOMOUS EXECUTION PACKAGE
+
+===============================================================================
+0. PACKAGE STATUS AND EXECUTION INTENT
+===============================================================================
+
+Package status at delivery:
+  DRAFTED / NOT YET AUTHORIZED BY DRAFTING ALONE.
+
+Authorization trigger:
+  When Karl sends this exact package to Claude Code or Codex with an instruction to
+  execute it, that transmission grants CONDITIONAL IMPLEMENTATION AUTHORITY for this
+  WP only. Conditional authority activates only after:
+    1. current repo truth is refreshed;
+    2. the exact machine-readable WP170 scope/specification is frozen;
+    3. a genuinely separate isolated reviewer produces a valid DRAFTABILITY_PASS
+       certificate over the exact prompt/spec bytes;
+    4. tools/wp/wp_spec_guard.py passes; and
+    5. tools/wp/wp_readiness_gate.py returns IMPLEMENTATION_READY.
+
+This package NEVER grants merge authority. It grants no paper, execution, credential,
+signing, order, risk, capital, or live-trading authority.
+
+Primary operating objective:
+  COMPLETE ONE COHERENT CAPABILITY IN ONE AUTONOMOUS CODING-AGENT RUN AND RETURN ONE
+  FINISHED, REVIEW-READY PR. Do not turn ordinary same-scope defects, test failures,
+  documentation corrections, evidence corrections, or reviewer findings into user
+  follow-up rounds. Diagnose, fix, revalidate, and re-review them internally.
+
+A user-visible interruption is permitted only for a TRUE HARD STOP defined in this
+package.
+
+===============================================================================
+1. PACKAGE IDENTITY
+===============================================================================
+
+Package Identity:
+  WP ID: WP170
+  Title: Falsification-Grade Experiment Registry & Research Dataset OS
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: claude/wp170-falsification-experiment-os
+  Package class: FALSIFICATION_GRADE_EXPERIMENT_REGISTRY_AND_RESEARCH_DATASET_OS
+  Package size class: XL
+  XL authorization basis: Karl explicitly requested a goal-oriented one-shot WP that
+    minimizes follow-up loops and may contain the full coherent same-risk capability.
+  Risk level: 2
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED at the final exact PR head
+  Runtime impact: local/offline/manual research-control capability only
+  Product impact: experiment identity, preregistration, leakage-safe split manifests,
+    append-only experiment metadata/evidence registry, and reproducible research receipts
+  Network impact: NONE in product/runtime; normal Git/GitHub workflow network only
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Capital at risk: USD 0
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: highest available architecture-sensitive reasoning tier.
+  Reason: this WP creates the deterministic research-validity control plane that future
+    alpha work must pass through; subtle identity, temporal leakage, OOS contamination,
+    mutable-registry, and multiple-testing errors would invalidate later research.
+  Use isolated reviewer/subagent contexts heavily for final red-team review.
+  Do not ask the user to relay ordinary same-scope corrections.
+
+Drafting-time verified predecessor:
+  PR #170 / WP169 final implementation head:
+    c4a09aeb33e4c271feb709622660e5e58a00b642
+  PR #170 merge commit / drafting-time main:
+    17df81001171988e9ca49f92dc8fd170ecaa7103
+
+At execution time, refresh origin/main. A newer main is acceptable only if the agent proves
+that it still contains the WP169 merge and that intervening changes do not materially alter
+this WP's assumptions. If intervening repo truth materially changes the experiment/data
+architecture, that is a TRUE HARD STOP.
+
+===============================================================================
+2. WHY THIS WP IS NEXT
+===============================================================================
+
+WP169 completed the bounded public market-truth/realtime acquisition plane. Current repo
+truth explicitly names WP170 as the next separately gated capability: a falsification-grade
+experiment registry and research-dataset OS.
+
+The project already has:
+- canonical point-in-time record identity, lineage, as-of query, and durable record stores;
+- immutable DatasetSnapshotReference / manifest machinery;
+- a PyArrow + DuckDB + Polars analytical plane with logical dataset identities;
+- a NautilusTrader offline replay foundation;
+- bounded public Polymarket market-truth acquisition;
+- research-priority, calibration, human-label, relationship, resolution, and wallet-research
+  components that are explicitly NOT alpha or trading authority.
+
+The major missing research-control capability is the layer that can answer, deterministically:
+
+  "What exactly did we hypothesize, what exact data was available at the time, what features
+  and target were frozen, which observations belonged to discovery/selection/OOS, what was
+  allowed to change before OOS release, how many related trials have already been attempted,
+  and what result was retained even when it was negative?"
+
+Without that layer, later alpha research can accidentally or silently overfit, leak future
+information, retune after seeing OOS, reset failed trials, or lose negative evidence.
+
+This WP builds that control plane. It DOES NOT attempt to discover alpha itself.
+
+===============================================================================
+3. LOCKED ARCHITECTURAL BASIS
+===============================================================================
+
+Preserve current repo truth.
+
+The finished-system research lineage remains ordered and non-skippable:
+
+  MARKET_OBSERVATION
+  -> RESEARCH_CANDIDATE
+  -> ALPHA_HYPOTHESIS
+  -> PREREGISTERED_EXPERIMENT
+  -> OUT_OF_SAMPLE_EVIDENCE
+  -> COST_ADJUSTED_RESULT
+  -> PAPER_ELIGIBLE_STRATEGY_PROPOSAL
+  -> PAPER_EVIDENCE
+  -> RESTRICTED_LIVE_ELIGIBILITY
+
+WP170 may implement the deterministic research-control substrate needed for:
+- ALPHA_HYPOTHESIS identity/validation;
+- PREREGISTERED_EXPERIMENT identity/locking;
+- leakage-safe research dataset and split identity;
+- sealed OOS lifecycle;
+- experiment-family/trial accounting;
+- reproducible run and OOS evidence receipts.
+
+WP170 MUST NOT claim or implement:
+- COST_ADJUSTED_RESULT authority;
+- executable edge;
+- paper eligibility;
+- paper trading;
+- live trading.
+
+Existing canonical market truth remains authoritative. WP170 must bind to existing
+DatasetSnapshotReference and/or verified AnalyticalDatasetManifest logical identity rather
+than inventing a competing market-data snapshot identity.
+
+Existing derived Parquet remains derived analytical materialization, not canonical truth.
+
+Repository-native deterministic contracts remain authoritative. Do NOT add MLflow, DVC,
+Weights & Biases, scikit-learn, scipy, statsmodels, a model registry, a tracking server, or
+another dependency in this WP.
+
+===============================================================================
+4. RESEARCH-METHODOLOGY PRINCIPLES TO ENFORCE
+===============================================================================
+
+The implementation must encode these principles rather than merely document them.
+
+A. Preregistration before result inspection
+- Hypothesis, target, metrics, exclusions, thresholds, split policy, baseline, parameters,
+  multiplicity policy, and failure criteria are frozen before OOS result evaluation.
+- A plan changed after OOS exposure is a NEW experiment identity, never a mutation of the
+  original preregistration.
+- Planned and exploratory analyses must be distinguishable.
+
+B. Time-series leakage control
+- Random IID train/test splitting is NOT an acceptable default for market-time-series data.
+- Split assignment must be deterministic and time-aware.
+- Future-horizon labels and overlapping information windows require purge logic around
+  partition boundaries.
+- An explicit embargo/buffer policy must exist where serial dependence or overlapping
+  horizons can contaminate adjacent samples.
+- Feature information availability must never exceed the sample's decision/as-of time.
+- Label availability must remain distinct from target/event time.
+
+C. Group/entity leakage control
+- Every split plan must explicitly declare its group-isolation policy.
+- The system must never silently assume that samples from the same market, event, relation
+  component, wallet/entity, or other declared leakage group are independent.
+- If the declared policy requires group exclusivity and the requested split cannot satisfy
+  it, fail closed rather than silently weaken the policy.
+
+D. Multiple-testing / researcher-degrees-of-freedom accounting
+- Related trials belong to a deterministic experiment family.
+- Every preregistered trial counts, including negative, invalidated-after-run, and
+  inconclusive trials where the attempt genuinely consumed evaluation information.
+- A failed experiment cannot disappear or be relabeled as if it never happened.
+- A family cannot silently reset its trial count merely because a new parameterization,
+  threshold, feature subset, or naming variant is tried.
+- The correction/accounting policy is preregistered. WP170 need not invent statistical
+  significance calculations that it cannot truthfully validate.
+
+E. OOS is a controlled evidence state, not a filename
+- OOS data is data not used for hypothesis formation, feature/threshold selection, tuning,
+  or acceptance-rule selection.
+- The repo-controlled workflow must seal the OOS partition before tuning is complete.
+- The first qualified OOS release/evaluation is recorded immutably.
+- Subsequent OOS reuse is explicitly labeled reused/diagnostic and cannot masquerade as
+  pristine first-look OOS evidence.
+- The software must state its limitation honestly: it can enforce and audit the repo-owned
+  workflow, but it cannot cryptographically prove a human never viewed the same information
+  outside the controlled workflow.
+
+F. Negative evidence is first-class evidence
+- Negative and inconclusive outcomes are retained append-only.
+- No deletion, overwrite, "best run only" view, or winner-only persistence is allowed as the
+  authoritative experiment record.
+- A positive OOS criterion result in WP170 is at most "OOS criteria met / uncOSTED".
+  It is NOT "alpha", "profitable", "tradeable", or "execution-ready".
+
+===============================================================================
+5. AUTHORITY / NON-AUTHORITY POSTURE
+===============================================================================
+
+Implementation authority:
+- Conditional, as defined in Section 0.
+- Once activated, implement this coherent local/offline research-control capability,
+  including same-scope fixes, tests, docs, exact-scope compatibility corrections, final
+  validation, commit, push, and one non-draft PR.
+- No merge.
+
+Report/export authority:
+- Deterministic sanitized research metadata, hashes, IDs, partition manifests, validation
+  receipts, lifecycle receipts, trial-accounting summaries, and OOS evidence receipts.
+- No trade recommendation or execution output.
+
+Paper authority: NO.
+Execution authority: NO.
+Live authority: NO.
+Credential authority: NO.
+Runtime/scheduler authority:
+- NO daemon, scheduler, service, bot loop, background worker, or network polling.
+- Ordinary bounded synchronous/local library calls and explicit local SQLite operations are
+  authorized.
+
+Canonical evidence authority:
+- Existing PIT/manifest/dataset identities stay authoritative for market data.
+- WP170 may create a NEW canonical experiment-control record family for experiment metadata,
+  preregistrations, split manifests, lifecycle receipts, and experiment evidence.
+- That experiment-control authority must not mutate or replace canonical market data.
+
+Network authority:
+- Product/runtime network: NONE.
+- Git/GitHub network for repo synchronization, branch, push, PR, and hosted CI: allowed.
+
+Dependency-change authority: NO.
+Workflow-file authority:
+- `.github/workflows/ci.yml` may be changed ONLY if required to make WP170 focused/exact-head
+  validation part of the existing CI matrix. No unrelated CI redesign.
+
+Local database boundary:
+- EXPLICITLY AUTHORIZED only for a bounded local SQLite experiment registry owned by WP170,
+  at an explicit caller-supplied local path.
+- No server DB, hosted DB, auto-discovery, global path, environment-derived default path,
+  network database, migration of existing PIT/market-truth stores, or production service.
+- Existing database files must be verified against exact expected schema/metadata before use;
+  unknown/corrupt/foreign schema fails closed.
+- Registry records are append-only. No UPDATE/DELETE-based history rewrite.
+
+Centralized boundary groups from docs/ai/codex/PROTECTED_PATHS.md:
+- credentials/secrets: NOT CROSSED
+- authenticated clients: NOT CROSSED
+- wallet/account behavior: NOT CROSSED
+- order placement/cancel: NOT CROSSED
+- execution gateway: NOT CROSSED
+- paper engine: NOT CROSSED
+- scheduler/bot loop: NOT CROSSED
+- runtime/daemon: NOT CROSSED
+- dashboard/deployment: NOT CROSSED
+- dependency/lock changes: NOT CROSSED
+- external code copying: NOT CROSSED
+- generated artifacts: NOT CROSSED
+- local database: narrowly crossed only by the explicit local experiment-registry authority
+  above; no existing canonical database is modified.
+
+===============================================================================
+6. OUTER SCOPE ENVELOPE — DISCOVER FIRST, FREEZE EXACT SCOPE SECOND
+===============================================================================
+
+This package intentionally does NOT guess the final changed-file list before repository
+discovery. That was a major source of expensive follow-up loops in prior WPs.
+
+The coding agent must first perform bounded blast-radius discovery, then freeze one exact
+machine-readable scope of at most 35 files in docs/wp_specs/WP170/wp_spec.json.
+
+The exact scope MUST be a subset of this outer envelope:
+
+A. New WP170 product source
+- Prefer ONE coherent architectural home discovered from repo truth:
+    either a new local/offline experiment-control package under src/research_runtime/
+    OR a coherent extension under src/data_layer/analytical_research/.
+- Do not duplicate the capability across both homes.
+- A minimal read-only adapter in the other existing research/data package is allowed only if
+  required to bind existing DatasetSnapshotReference / AnalyticalDatasetManifest identities.
+
+B. Direct exports / package init files
+- Only direct package export files required by the chosen architecture.
+
+C. WP170 focused and adjacent tests
+- tests under the corresponding package;
+- direct contract/docs tests;
+- only same-semantic historical compatibility tests when mechanically necessary.
+
+D. Canonical WP170 docs/evidence
+- one WP170 capability contract;
+- docs/status_entries/WP170.md;
+- docs/project_status.md reconciliation;
+- docs/repo_truth_index.md;
+- docs/deferred_items_log.md;
+- only the existing roadmap/adoption doc(s) whose current next-WP/status wording must be
+  advanced truthfully.
+
+E. WP170 immutable specification artifacts
+- docs/wp_specs/WP170/wp_prompt.txt
+- docs/wp_specs/WP170/wp_spec.json
+- docs/wp_specs/WP170/draftability_certificate.json
+
+F. Existing CI
+- `.github/workflows/ci.yml` only if required for focused WP170 hosted evidence.
+
+G. Narrow workflow compatibility
+- Existing tests or a local scope/readiness helper may be included only if discovery proves
+  that a mechanically hard-coded historical changed-set/WP assumption would otherwise reject
+  a valid WP170 exact scope.
+- Such a compatibility edit may generalize an existing historical assumption to consume the
+  active certified machine spec.
+- It may NOT change workflow authority, evidence policy, human gates, protected boundaries,
+  or the canonical authorization state machine.
+
+No other path family is authorized.
+
+Absolute limit:
+- The final exact machine-spec scope is <= 35 changed paths because the current schema
+  enforces that ceiling.
+- Consolidate related tests/docs sensibly to fit.
+- If truthful implementation requires >35 paths after consolidation, TRUE HARD STOP.
+
+Rollback surface:
+- Reverting WP170 must remove/disable only the new experiment-control capability and its
+  direct docs/tests/CI evidence.
+- WP169 market truth, canonical PIT, existing manifest stores, WP167 analytical datasets,
+  and WP168 Nautilus replay must continue to function unchanged.
+
+===============================================================================
+7. DISCOVERY AND COMPATIBILITY PHASE — NO PRODUCT IMPLEMENTATION YET
+===============================================================================
+
+Before implementation edits:
+
+1. Run the mandatory startup sequence from current repo truth.
+2. Refresh origin/main and verify the predecessor in Section 1.
+3. Confirm clean working tree and generated-artifact guard.
+4. Confirm no existing open WP170 PR/branch would conflict.
+5. Reconcile expected stale post-WP169 status as a required WP170 status update, not as a
+   blocker.
+6. Inspect:
+   - current PIT DatasetSnapshotReference and manifest/reference APIs;
+   - WP163 record store/reference materialization;
+   - WP167 analytical dataset manifest/materialization/query APIs;
+   - WP168 offline replay boundary only as a downstream consumer;
+   - WP169 market-truth/PIT handoff only as an upstream source;
+   - alpha-factory lineage/adoption roadmap;
+   - research-data foundation, calibration, human-label, relation, and wallet research
+     contracts needed to preserve non-signal semantics;
+   - current WP/spec/readiness/scope/evidence guards;
+   - CI and tests that evaluate complete changed-file sets or active-WP assumptions.
+7. Use repo-owned code-blast-radius/diff-scope helpers and targeted search. Do not broadly
+   ingest unrelated execution/risk/live code.
+8. Produce internally a Compatibility / Impossibility matrix.
+9. Produce internally a Requirement -> implementation surface -> adversarial proof matrix.
+10. Choose ONE architectural home and a minimal public API.
+11. Prove the intended exact scope fits <=35 paths.
+
+Compatibility decisions that are already locked:
+- Reuse existing dataset/snapshot identity; do not create a competing canonical market-data
+  identity.
+- No new dependency.
+- No MLflow adoption.
+- No strategy runner.
+- No live/public network acquisition.
+- No dashboard.
+- No Nautilus strategy/fill simulation.
+- Local SQLite experiment metadata registry is allowed as defined above.
+- Existing market/data stores are read-only inputs to WP170.
+
+If a design choice is not locked here but can be resolved from current repo precedent without
+changing the capability/risk boundary, resolve it autonomously and freeze it in the exact
+machine spec. Do not ask the user.
+
+===============================================================================
+8. EXACT PACKAGE FREEZE, INDEPENDENT CERTIFICATION, AND CONDITIONAL AUTHORIZATION
+===============================================================================
+
+After discovery and before product implementation:
+
+A. Canonical prompt
+- Copy THIS exact master package into:
+    docs/wp_specs/WP170/wp_prompt.txt
+- Do not shorten, paraphrase, or rewrite it.
+- Do not insert discovered file counts or dynamic PR metadata into this prompt.
+- Exact discovered paths belong in wp_spec.json and the PR evidence, not by mutating this
+  master prompt.
+
+B. Machine specification
+- Create docs/wp_specs/WP170/wp_spec.json under the current
+  polymarket-work-package-spec@1.0.0 contract.
+- Exact required_changed_files == exact allowed_changed_files.
+- max_changed_files equals the actual exact frozen path count.
+- Include exactly the three WP170 spec artifacts.
+- Use the canonical WP authorization transitions required by the readiness gate:
+    LOCAL_DRAFT -> DRAFTABILITY_PASS
+    DRAFTABILITY_PASS -> AUTHORIZED
+    AUTHORIZED -> IMPLEMENTED_LOCAL
+- Do NOT put the product experiment lifecycle in wp_spec.json.state_transitions. That field is
+  reserved by current governance for the WP authorization chain.
+- Freeze exact public API, identities, semantics, mutability, error precedence, examples,
+  evidence nodes, and successor boundary.
+- Every evidence ID referenced by the normative matrix below must exist in the spec.
+- New planned pytest nodes may live in in-scope test files and therefore do not need to exist
+  on base before the pre-implementation readiness run.
+
+C. Independent draftability reviewer
+- Launch a genuinely separate fresh reviewer/subagent context that did not author the spec.
+- Give it current base repo truth, this prompt, and the exact frozen spec.
+- It must review all 12 canonical lenses:
+    objective_and_class
+    public_api
+    mutability
+    identity_and_serialization
+    state_transitions
+    batch_set_behavior
+    error_precedence
+    invalid_input_no_echo
+    example_truth
+    scope_compatibility
+    evidence_publication
+    successor_boundary
+- It must perform an implementability simulation and return an empty unresolved-decision set.
+- The reviewer, not the implementation/orchestrator agent, owns the PASS certificate content.
+- The orchestrator may write the reviewer-produced certificate bytes verbatim but must not
+  manufacture, edit, or reinterpret a PASS certificate.
+
+D. Internal correction loop before PASS
+- If reviewer finds a same-capability/same-risk prompt/spec defect, fix the SPEC internally
+  without user involvement, then send the new exact bytes to a NEW isolated review context.
+- This master prompt remains unchanged.
+- Repeat until genuine PASS or a TRUE HARD STOP.
+
+E. Readiness
+Run:
+  python tools/wp/wp_spec_guard.py ...
+and:
+  python tools/wp/wp_readiness_gate.py     --wp docs/wp_specs/WP170/wp_prompt.txt     --spec docs/wp_specs/WP170/wp_spec.json     --certificate docs/wp_specs/WP170/draftability_certificate.json     --repo-root .
+
+Only a genuine PASS + IMPLEMENTATION_READY activates the conditional authorization implied by
+Karl's later act of sending this package for execution.
+
+No extra user message is required between technical readiness and implementation.
+
+F. Same-envelope recertification escape hatch
+If implementation later reveals one missed changed path or exact-spec correction that:
+- stays inside this outer scope envelope;
+- stays inside the same WP170 capability/risk/authority boundary;
+- keeps exact scope <=35;
+- does not alter this master prompt's semantics;
+
+then the agent may autonomously:
+1. revise wp_spec.json;
+2. obtain a NEW certificate from a fresh isolated reviewer over the new exact bytes;
+3. rerun wp_spec_guard and wp_readiness_gate;
+4. continue implementation.
+
+That is NOT a user-mediated follow-up. It is an internal same-WP recertification.
+
+Anything outside those conditions is a TRUE HARD STOP.
+
+===============================================================================
+9. REQUIRED WP170 CAPABILITY
+===============================================================================
+
+The exact public classes/functions are frozen by the certified machine spec after discovery.
+The following behaviors are mandatory.
+
+9.1 EXISTING DATASET IDENTITY BINDING
+
+Every experiment dataset binding must commit, as applicable, to:
+- existing DatasetSnapshotReference identity and schema/version;
+- existing AnalyticalDatasetManifest.logical_dataset_id and analytical schema/materializer
+  identity;
+- exact source reference identity;
+- code/repo version used to build derived research inputs;
+- deterministic dataset-binding hash.
+
+Rules:
+- no physical Parquet file hash may replace logical dataset identity;
+- physical integrity hashes may be additional evidence;
+- local absolute paths, mtimes, environment names, usernames, machine IDs, or temp locations
+  are excluded from logical identity;
+- invalid/tampered source references fail closed;
+- review-conflict/quarantined inputs may not silently gain ordinary research authority.
+
+9.2 IMMUTABLE FEATURE-DEFINITION IDENTITY
+
+A feature definition must be immutable and content-addressed.
+
+It must freeze enough information to determine what information the feature is allowed to use:
+- stable feature name/version;
+- semantic description;
+- exact source field/record-family dependencies;
+- deterministic parameters;
+- lookback/window rule;
+- source-time / availability-time rule;
+- missing-data policy;
+- transformation/version or code-identity reference;
+- no-future-information rule.
+
+Do not serialize arbitrary Python callables, executable code, pickles, lambdas, or dynamic
+plugins into the registry.
+
+Feature-definition changes create a new feature_definition_id.
+
+9.3 IMMUTABLE LABEL-DEFINITION IDENTITY
+
+A label definition must freeze:
+- stable label name/version;
+- prediction target;
+- horizon / target-time rule;
+- resolution/outcome source rule;
+- label availability-time rule;
+- censoring/missing/ambiguous outcome rule;
+- deterministic parameters;
+- version/code reference.
+
+Target time and label availability time are separate fields. A resolved outcome becoming
+known later must never be treated as information available at the earlier prediction time.
+
+Label-definition changes create a new label_definition_id.
+
+9.4 SAMPLE / RESEARCH-DATASET MANIFEST
+
+The experiment OS must create a deterministic sample-level manifest sufficient to audit
+information timing and partition assignment.
+
+Each sample must have a stable sample identity and bind at minimum:
+- dataset/snapshot identity;
+- source record/logical row identity or deterministic source-membership digest;
+- market identity;
+- event/related-group identity where available;
+- explicit leakage_group_id or explicit declared no-group-isolation policy;
+- decision/as-of timestamp;
+- maximum feature information availability timestamp;
+- target timestamp;
+- label availability timestamp;
+- feature definition set identity;
+- label definition identity;
+- deterministic sample content/lineage digest.
+
+Fail closed if:
+- feature availability is after decision/as-of time;
+- time fields are noncanonical or inconsistent;
+- duplicate sample identity has conflicting content;
+- a source identity is unknown/tampered;
+- required group policy is absent;
+- the manifest cannot be deterministically reproduced.
+
+Actual large feature matrices do not need to be copied into the registry. The registry may
+store exact identities/digests and deterministic membership metadata while existing
+analytical datasets remain the data substrate.
+
+9.5 DETERMINISTIC TEMPORAL SPLIT PLAN
+
+At minimum, support a deterministic three-role research split:
+- FORMATION / DISCOVERY
+- SELECTION / VALIDATION / TUNING
+- OUT_OF_SAMPLE
+
+The exact closed vocabulary may use one canonical label per role but must preserve these
+semantics.
+
+The split plan must freeze:
+- split-plan ID/version;
+- UTC boundaries;
+- deterministic ordering/tie-breaks;
+- label-horizon purge rule;
+- embargo/buffer rule;
+- group-isolation policy;
+- explicit inclusion/exclusion policy;
+- empty/insufficient-partition behavior;
+- deterministic split assignment hash.
+
+The implementation may additionally support expanding walk-forward folds inside the
+formation/selection area if it can do so cleanly within scope. It must NOT weaken the single
+untouched final OOS holdout.
+
+Default behavior for temporal market data must not be random IID splitting.
+
+Purging:
+- if a formation/selection sample's information/label interval overlaps a later
+  selection/OOS evaluation interval in a way that would leak future outcome information,
+  exclude it according to the locked purge rule.
+
+Embargo:
+- enforce the preregistered post-boundary buffer when configured/required.
+
+Group isolation:
+- every split plan explicitly declares whether groups are exclusive across partitions;
+- if exclusive, the same declared leakage group cannot appear in multiple roles;
+- an impossible grouping/boundary combination fails closed.
+
+No sample can belong to more than one final partition.
+
+9.6 ALPHA_HYPOTHESIS RECORD
+
+Implement a deterministic research record consistent with the locked lineage.
+
+Minimum semantics:
+- direct RESEARCH_CANDIDATE predecessor IDs, when available;
+- falsifiable claim;
+- proposed mechanism;
+- cohort/universe;
+- horizon;
+- target;
+- explicit failure/falsification condition;
+- human-review state/assertion;
+- code/repo provenance;
+- stable version/hash/id;
+- advisory/no-execution posture.
+
+A hypothesis record is NOT alpha, not approval, and not a trade signal.
+
+9.7 PREREGISTERED_EXPERIMENT RECORD
+
+The preregistration must bind immutably to:
+- hypothesis ID/version;
+- exact dataset binding;
+- exact feature-definition IDs;
+- exact label-definition ID;
+- exact split-plan ID;
+- primary metric definition;
+- any secondary metric definitions;
+- baseline definition/identity;
+- inclusion/exclusion rules;
+- acceptance/falsification thresholds;
+- hyperparameters/parameters or bounded search space declared in advance;
+- deterministic random seed(s) when an algorithm genuinely needs randomness;
+- experiment-family/multiplicity identity and policy;
+- cost-model reference/version placeholder where the research plan needs one;
+- stop/failure rules;
+- code/repo version;
+- creation provenance;
+- explicit preregistration time;
+- advisory/no-execution posture.
+
+The cost-model field in WP170 is a declaration/reference only. It cannot create
+COST_ADJUSTED_RESULT evidence. WP173 owns executable-edge/microstructure cost realism.
+
+Once locked, the preregistration is immutable.
+
+9.8 APPEND-ONLY LOCAL EXPERIMENT REGISTRY
+
+Implement a bounded local SQLite registry, unless discovery proves an existing repo-native
+store can satisfy every requirement without corrupting domain separation.
+
+Required properties:
+- explicit caller-supplied file path;
+- no environment/default/global discovery;
+- initialize explicitly;
+- exact application/schema version and exact expected tables/indexes;
+- verify existing schema before use;
+- foreign/corrupt schema fails closed;
+- append-only authoritative history;
+- no UPDATE/DELETE history rewrite;
+- deterministic sequence/identity;
+- idempotent identical append;
+- conflicting same-ID append fails closed;
+- tamper-evident hash chain or equivalently strong deterministic history integrity;
+- bounded rows/bytes/object sizes;
+- deterministic load-and-verify;
+- safe close/context-manager behavior where consistent with repo style;
+- sanitized receipts only.
+
+At minimum persist immutable records for:
+- feature definitions;
+- label definitions;
+- dataset/sample manifests;
+- split plans/assignments;
+- hypotheses;
+- preregistrations;
+- experiment-family/trial registrations;
+- lifecycle/exposure receipts;
+- run/OOS evidence receipts.
+
+A normalized schema or compact canonical-record table is acceptable if it preserves all
+required type/state/identity constraints and is easier to audit. Choose one design and
+certify it before implementation.
+
+9.9 EXPERIMENT FAMILY / MULTIPLE-TESTING LEDGER
+
+Every preregistered experiment must belong to a deterministic experiment family or to an
+explicitly justified singleton family.
+
+The family record must freeze:
+- research program / family identity;
+- cohort/target/metric-family semantics;
+- correction/accounting policy;
+- trial ordering;
+- predecessor relation where applicable.
+
+Rules:
+- every trial that reaches the registered evaluation boundary is retained;
+- negative and inconclusive trials count;
+- parameter/threshold/feature variants do not silently reset the family;
+- identical duplicate registration is idempotent;
+- conflicting family/trial identity fails closed;
+- family summary returns all retained trial statuses, not only winners.
+
+WP170 may implement deterministic count/accounting and a small closed correction-policy
+vocabulary. It must not fabricate p-values, Sharpe ratios, or statistical significance that
+the caller did not supply through an exact later-authorized evaluator.
+
+9.10 SEALED OOS LIFECYCLE
+
+Implement an explicit deterministic product lifecycle distinct from the WP authorization
+state machine.
+
+The exact state vocabulary is frozen in the certified product contract, but semantics must
+include:
+
+1. preregistration locked;
+2. formation work may be recorded;
+3. selection/tuning work may be recorded;
+4. selection is irreversibly closed for this experiment identity;
+5. OOS remains sealed until that close;
+6. first OOS release/exposure produces an immutable exposure receipt;
+7. first OOS evaluation produces one immutable first-look OOS evidence record;
+8. any later OOS evaluation/reuse is explicitly classified as reused/diagnostic;
+9. experiment closes with negative, inconclusive, or OOS-criteria-met-uncosted status.
+
+Required invariants:
+- OOS cannot be released before selection is closed;
+- after OOS release, changing any preregistered field creates a new experiment identity;
+- an already exposed OOS partition can never return to pristine/unseen state;
+- lifecycle transition replay/reordering/tampering fails closed;
+- no automatic promotion to a successor stage.
+
+Important:
+  The repo can enforce this lifecycle for repo-owned APIs/evidence. It cannot prove that an
+  operator never viewed equivalent information outside the system. Public wording must not
+  overclaim beyond that boundary.
+
+9.11 RUN / EVIDENCE RECEIPTS
+
+Every run/evidence receipt must bind:
+- experiment/preregistration ID;
+- experiment-family/trial identity;
+- dataset/snapshot/logical dataset ID;
+- sample-manifest ID;
+- split-plan/assignment hash;
+- feature-definition set ID;
+- label-definition ID;
+- code/repo version;
+- deterministic parameters/seeds;
+- role evaluated;
+- metric-definition IDs;
+- baseline ID;
+- supplied metric-result canonical hash/value structure;
+- failure/uncertainty state where applicable;
+- OOS exposure ordinal / first-look status;
+- creation provenance;
+- advisory/no-execution posture.
+
+Result vocabulary must separate:
+- invalid/rejected evidence;
+- negative;
+- inconclusive;
+- criteria met on formation/selection;
+- OOS criteria met on first look but NOT cost-adjusted;
+- reused OOS diagnostic.
+
+Forbidden result words in authoritative safe output include any implication that WP170 alone
+proved profitability, executable edge, trade readiness, paper eligibility, or live readiness.
+
+9.12 BASELINE REQUIREMENT
+
+Every preregistered experiment must have an explicit baseline definition/identity and an
+acceptance/falsification rule relative to it, unless the exact experiment class has a
+certified reason that a baseline is not meaningful.
+
+If baseline comparison is required:
+- candidate and baseline must be evaluated on the same registered split/data membership;
+- a result cannot be classified as criterion-met solely because a standalone metric is
+  positive if the preregistered baseline criterion failed.
+
+WP170 may validate supplied deterministic metric evidence; it need not implement every
+future research metric.
+
+9.13 SAFE OUTPUT / NO-ECHO
+
+Invalid-input, exception, and validation surfaces must never echo:
+- raw arbitrary caller mappings;
+- raw feature values;
+- label values;
+- SQL text from caller;
+- local absolute paths;
+- environment values;
+- usernames;
+- exception strings/tracebacks;
+- secrets/tokens;
+- raw invalid payloads.
+
+Use closed status/error vocabularies and trusted counts/IDs only.
+
+Valid inspect/read APIs may return the canonical registered record itself where the record is
+already validated and safe by construction. Invalid output remains sanitized.
+
+===============================================================================
+10. NON-GOALS / FORBIDDEN IMPLEMENTATION
+===============================================================================
+
+Do NOT implement any of the following in WP170:
+
+- alpha-hypothesis generation engine;
+- strategy logic;
+- buy/sell/entry/exit/sizing recommendation;
+- Hermes runtime, provider, model call, prompt runner, or autonomous research agent;
+- interactive dashboard/operator cockpit;
+- execution cost engine;
+- fill probability;
+- queue-position model;
+- spread/slippage/latency/adverse-selection/capacity simulation;
+- PnL/ROI/Sharpe-based executable-edge claims;
+- Nautilus strategy execution or order/fill simulation;
+- paper order lifecycle;
+- paper portfolio;
+- portfolio accounting;
+- hard risk;
+- reconciliation;
+- credentials;
+- authenticated Polymarket APIs;
+- wallet/private keys;
+- signing;
+- orders/cancel;
+- OMS;
+- execution gateway;
+- restricted live or live;
+- scheduler/daemon/service/background worker;
+- runtime network;
+- new dependency;
+- MLflow tracking/model registry;
+- DVC;
+- external code copying/vendoring;
+- production/hosted database;
+- migration or rewrite of existing WP160/WP163/WP169 stores;
+- changing WP169 acquisition semantics merely to make WP170 easier;
+- redefining research-priority score, calibration usefulness labels, wallet research signals,
+  or relationship metadata as proven alpha.
+
+===============================================================================
+11. ADVERSARIAL ACCEPTANCE CONTRACT
+===============================================================================
+
+Do not call WP170 complete because happy-path tests pass.
+
+The final implementation must have direct tests or deterministic proof for all applicable
+cases below. Consolidate them into a small number of focused test modules rather than one
+file per bullet.
+
+IDENTITY / IMMUTABILITY
+- identical semantic input under different mapping insertion order -> identical ID;
+- included field mutation -> different ID;
+- excluded local/path/time-of-write metadata -> does not alter logical ID;
+- explicit null vs omitted where contract distinguishes them -> correct deterministic result;
+- conflicting same ID -> fail closed;
+- immutable frozen result objects / no caller mutable reference retained.
+
+DATASET / SAMPLE LINEAGE
+- valid existing DatasetSnapshotReference binds successfully;
+- tampered/unknown dataset reference rejects;
+- analytical logical dataset identity is preserved;
+- physical Parquet byte difference alone does not redefine logical experiment dataset;
+- duplicate source membership handled deterministically;
+- invalid/quarantined/review-conflict input cannot silently become ordinary data.
+
+TEMPORAL LEAKAGE
+- feature availability after decision time rejects;
+- future outcome field in a feature-source declaration rejects;
+- label availability is not confused with target time;
+- boundary sample whose label interval overlaps OOS is purged;
+- configured embargo is actually enforced;
+- timestamp equality edge cases are explicitly tested;
+- noncanonical timezone/timestamp forms reject or normalize exactly as certified.
+
+PARTITION LEAKAGE
+- no sample appears in multiple final roles;
+- split assignment is deterministic under input reordering;
+- declared group-exclusive policy prevents same group crossing roles;
+- impossible group/time split fails closed;
+- empty or too-small OOS fails according to the locked contract;
+- no random split default exists.
+
+PREREGISTRATION
+- locked preregistration round-trips with identical ID;
+- post-lock threshold mutation yields new experiment identity or rejects mutation;
+- post-lock feature set mutation yields new identity;
+- post-lock label mutation yields new identity;
+- post-lock split mutation yields new identity;
+- post-lock baseline mutation yields new identity;
+- result evidence cannot precede preregistration.
+
+OOS SEAL
+- OOS release before selection close rejects;
+- first OOS release writes one immutable exposure receipt;
+- second release does not become another pristine first look;
+- first-look OOS evidence is distinct from reused diagnostic evidence;
+- after OOS exposure the experiment cannot return to an unseen state;
+- lifecycle replay/out-of-order transition/tamper rejects;
+- a spec variant after OOS is a new trial/experiment, not an overwrite.
+
+MULTIPLE TESTING / NEGATIVE RETENTION
+- every registered evaluated trial increments/appears in family accounting;
+- negative trial remains visible;
+- inconclusive trial remains visible;
+- a renamed parameter variant cannot overwrite an old trial;
+- identical retry is idempotent rather than double-counted;
+- no winner-only authoritative query;
+- correction/accounting policy is immutable after preregistration.
+
+BASELINE
+- candidate and baseline evidence must reference identical registered partition membership
+  where baseline comparison is required;
+- candidate criterion met but baseline rule failed -> overall criterion does not pass;
+- baseline identity mutation after preregistration -> new experiment identity.
+
+REGISTRY TRUST BOUNDARY
+- wrong file suffix/path class where prohibited;
+- missing parent directory where prohibited;
+- symlink/hardlink behavior matches the chosen safe store pattern;
+- foreign SQLite schema rejects without mutation;
+- schema/index tamper rejects;
+- history-chain tamper rejects;
+- invalid state token rejects;
+- duplicate conflicting record rejects;
+- store row/byte/object bounds actually trigger;
+- exact idempotent reappend at bound succeeds if no new rows/bytes are added;
+- load-and-verify validates complete history, not only current cache.
+
+SAFE OUTPUT
+- invalid raw caller strings never appear in errors/receipts;
+- local absolute path never appears in error/result metadata;
+- exception text/tracebacks are not exposed through closed result surfaces;
+- forbidden authority/trading interpretation scan covers all public result serializers.
+
+REPRODUCIBILITY
+- semantically identical preregistration produces identical canonical bytes/hash/id;
+- sample input reorder produces same logical sample set/split assignment;
+- deterministic seed/parameter identity is bound;
+- code/repo version is bound;
+- final run receipt can be independently recomputed from its committed inputs.
+
+SUCCESSOR BOUNDARY
+- no COST_ADJUSTED_RESULT claim;
+- no paper/live/strategy/execution/Hermes/dashboard/network/dependency authority;
+- no current-WP test can pass by merely checking prose while the implementation violates the
+  invariant it claims.
+
+===============================================================================
+12. REQUIREMENT-TO-EVIDENCE PLAN
+===============================================================================
+
+The exact machine spec must contain concrete pytest nodes/commands for every R-item below.
+Multiple R-items may point to the same focused test module, but each material invariant must
+have a reachable assertion or raises assertion at final --check-diff.
+
+R001  predecessor/main/repo preflight and WP169 merge reconciliation
+R002  existing dataset/snapshot identity binding and tamper rejection
+R003  feature-definition identity and no-future-information contract
+R004  label-definition identity and target-vs-availability separation
+R005  sample-manifest deterministic identity/lineage
+R006  feature-availability temporal leakage rejection
+R007  deterministic temporal three-role partition assignment
+R008  purge rule for overlapping label/information windows
+R009  embargo enforcement
+R010  explicit group-isolation policy and cross-role group rejection
+R011  hypothesis identity/version/human-review/non-alpha posture
+R012  preregistration immutability and complete locked fields
+R013  baseline identity and same-partition comparison rule
+R014  experiment family / trial ledger and no silent trial reset
+R015  negative and inconclusive result retention
+R016  sealed OOS lifecycle and release-before-selection rejection
+R017  first-look versus reused OOS evidence distinction
+R018  post-OOS plan mutation cannot rewrite original experiment
+R019  reproducible run/evidence receipt identity
+R020  append-only SQLite schema exactness/idempotency/conflict behavior
+R021  complete registry/history tamper detection
+R022  bounded store/object limits
+R023  invalid-input no-echo / sanitized closed outputs
+R024  public API frozen signature/field-coverage/immutability assertions
+R025  no dependency/network/credential/scheduler/trading/Hermes authority
+R026  current research-priority/calibration/wallet semantics remain non-signal
+R027  canonical contract/docs/status/repo-truth/deferred consistency
+R028  exact machine-spec scope and readiness --check-diff
+R029  generated-artifact and whitespace/conflict-marker guards
+R030  focused + adjacent PIT/analytical regression suite
+R031  full repository suite at the final implementation head
+R032  hosted exact-head Linux/Windows Python compatibility and dependency audit
+R033  independent final contract/state/leakage red-team zero-material-findings
+R034  independent final research-methodology/test-strength red-team zero-material-findings
+R035  independent final repo-integrity/scope/evidence red-team zero-material-findings
+
+The final PR body must contain a compact Requirement -> Evidence -> Status traceability table
+covering R001-R035, or a compact grouped table that still preserves each requirement ID.
+
+===============================================================================
+13. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|dataset|existing_identity|binding|REQUIRE|bind_existing_dataset_identity|NONE|R002
+NR002|feature|availability|after_decision_time|REJECT|future_feature_leakage_rejected|NONE|R006
+NR003|label|availability|target_time_distinct|REQUIRE|label_availability_separate|NONE|R004
+NR004|sample|identity|input_reordered|REQUIRE|deterministic_sample_identity|NONE|R005
+NR005|split|method|default_temporal|REQUIRE|time_aware_split_required|NONE|R007
+NR006|split|purge|overlap_detected|REQUIRE|overlap_sample_purged|NONE|R008
+NR007|split|embargo|configured|REQUIRE|embargo_enforced|NONE|R009
+NR008|split|group_policy|undeclared|REJECT|implicit_group_policy_rejected|NONE|R010
+NR009|split|membership|duplicate_role|REJECT|cross_role_duplicate_rejected|NONE|R007
+NR010|hypothesis|meaning|registered|REQUIRE|hypothesis_not_alpha|NONE|R011
+NR011|preregistration|mutation|after_lock|REJECT|locked_spec_not_mutated|NONE|R012
+NR012|preregistration|baseline|required_class|REQUIRE|baseline_identity_locked|NONE|R013
+NR013|family|trial|evaluated|REQUIRE|trial_retained|NONE|R014
+NR014|family|negative_result|recorded|REQUIRE|negative_evidence_retained|NONE|R015
+NR015|family|inconclusive_result|recorded|REQUIRE|inconclusive_evidence_retained|NONE|R015
+NR016|oos|release|selection_open|REJECT|premature_oos_release_rejected|NONE|R016
+NR017|oos|first_look|first_release|REQUIRE|first_exposure_immutable|NONE|R017
+NR018|oos|reuse|after_first_look|REQUIRE|reuse_marked_diagnostic|NONE|R017
+NR019|oos|mutation|after_exposure|REJECT|original_experiment_not_rewritten|NONE|R018
+NR020|registry|history|append|REQUIRE|append_only_history|NONE|R020
+NR021|registry|history|tampered|REJECT|tamper_fails_closed|NONE|R021
+NR022|registry|duplicate|identical|ACCEPT|idempotent_reappend|NONE|R020
+NR023|registry|duplicate|conflicting|REJECT|identity_conflict_rejected|NONE|R020
+NR024|output|invalid_input|error_surface|FORBID|raw_input_echo_forbidden|NONE|R023
+NR025|authority|cost_adjusted|wp170|FORBID|cost_adjusted_claim_forbidden|NONE|R025
+NR026|authority|trading|wp170|FORBID|trading_authority_forbidden|NONE|R025
+NR027|authority|network|product_runtime|FORBID|runtime_network_forbidden|NONE|R025
+NR028|authority|dependencies|wp170|FORBID|dependency_change_forbidden|NONE|R025
+NR029|evidence|receipt|same_inputs|REQUIRE|reproducible_receipt_identity|NONE|R019
+NR030|evidence|oos_result|criteria_met|REQUIRE|uncosted_oos_only|NONE|R025
+NR031|workflow|scope|final_head|REQUIRE|exact_certified_scope|NONE|R028
+NR032|workflow|review|final_candidate|REQUIRE|independent_redteam_clean|NONE|R033
+END_NORMATIVE_RULE_MATRIX_V1
+
+===============================================================================
+14. PRODUCT ERROR / STATUS DESIGN REQUIREMENTS
+===============================================================================
+
+The exact closed vocabularies are frozen in the certified spec.
+
+Required categories, regardless of final token spelling:
+- unsupported schema/version;
+- missing/type/value invalid;
+- identity derivation mismatch;
+- dataset/reference invalid;
+- feature timing leakage;
+- label timing invalid;
+- split invalid;
+- purge/embargo violation;
+- group leakage violation;
+- preregistration state violation;
+- OOS sealed/exposure violation;
+- trial/family conflict;
+- registry schema conflict;
+- registry integrity/tamper conflict;
+- size/row/store limit;
+- safe internal closed failure.
+
+Failure precedence must be deterministic. A multi-fault invalid object returns errors in one
+canonical order. Invalid output must not echo caller values.
+
+Do not overload "STOPPED", "AUTHORIZED", "READY", or the WP governance status vocabulary for
+the product experiment lifecycle.
+
+===============================================================================
+15. INTERNAL ONE-SHOT IMPLEMENTATION / REVIEW LOOP
+===============================================================================
+
+After IMPLEMENTATION_READY activates conditional authority:
+
+PHASE A — Implement the exact certified scope.
+- Work only on the WP170 branch/worktree.
+- Follow existing repo patterns before inventing new helper styles.
+- Keep source import-safe and offline.
+- No hidden environment/global state.
+- Write regression tests alongside code.
+
+PHASE B — Focused contract exhaustion.
+Before any full-suite run:
+- reconcile every R001-R035 requirement against an implementation location and assertion;
+- run the full adversarial matrix in Section 11;
+- inspect exact public dataclass fields/signatures;
+- inspect every serializer and invalid-result path;
+- inspect every product lifecycle transition;
+- inspect SQLite DDL, write statements, and load verification;
+- inspect temporal boundary inclusivity/exclusivity;
+- inspect split determinism under reordering;
+- inspect OOS reuse semantics;
+- inspect family/trial counting after failures.
+
+PHASE C — Independent red-team pass 1.
+Fresh isolated reviewer role:
+  CONTRACT_STATE_IDENTITY_LEAKAGE_REVIEWER
+Focus:
+- public API and exact semantics;
+- mutability/identity;
+- temporal/group leakage;
+- state machine;
+- append-only/tamper;
+- safe output.
+
+PHASE D — Independent red-team pass 2.
+Fresh isolated reviewer role:
+  RESEARCH_METHODOLOGY_AND_TEST_STRENGTH_REVIEWER
+Focus:
+- whether preregistration can be gamed through ordinary API use;
+- whether OOS can be exposed before tuning closes;
+- whether negative trials can disappear;
+- whether family counts can reset;
+- whether tests merely mirror implementation instead of asserting independent contract truth;
+- false-positive OOS claims;
+- baseline and multiple-testing semantics;
+- limitations honestly stated.
+
+PHASE E — Independent red-team pass 3.
+Fresh isolated reviewer role:
+  REPO_INTEGRITY_SCOPE_EVIDENCE_REVIEWER
+Focus:
+- exact scope;
+- no forbidden authority;
+- no new dependency/network;
+- no stale status/roadmap/deferred claims;
+- evidence completeness;
+- test/CI target correctness;
+- generated artifacts;
+- final PR evidence consistency.
+
+For every material same-scope finding:
+1. fix it internally;
+2. rerun affected focused/adjacent tests;
+3. have a NEW isolated reviewer context re-review the corrected candidate;
+4. continue until ZERO_MATERIAL_FINDINGS.
+
+Do NOT ask Karl to relay these iterations.
+
+If a reviewer finding changes the machine-spec semantics or exact scope, use the internal
+recertification escape hatch in Section 8F.
+
+===============================================================================
+16. VALIDATION ORDER
+===============================================================================
+
+Use a fail-fast, usage-efficient sequence.
+
+1. Exact branch/base/worktree and scope preflight.
+2. wp_spec_guard.
+3. wp_readiness_gate pre-implementation PASS already recorded.
+4. Focused WP170 tests.
+5. Adjacent PIT/manifest/record-store tests materially touched or depended upon.
+6. Adjacent WP167 analytical dataset tests materially depended upon.
+7. Contract/docs tests.
+8. Negative-test matrix.
+9. Public API signature/field coverage tests.
+10. Product no-network/no-credential/no-trading boundary assertions.
+11. Diff/scope helper.
+12. Final readiness gate in --check-diff mode using actual base and final head.
+13. Generated-artifact guard.
+14. git diff --check.
+15. Security tooling:
+    - gitleaks if available;
+    - semgrep if available and repo-standard;
+    - pip-audit on the existing application closure if repo CI already does so.
+    Report unavailable tools honestly.
+16. Full repository pytest at final source head.
+17. Commit/push.
+18. Hosted exact-head CI:
+    - Linux + Windows;
+    - Python 3.12 + 3.14 under the repo's existing supported matrix;
+    - focused WP170 tests;
+    - full suite;
+    - generated-artifact guard;
+    - existing dependency audit.
+
+Do not start repeated full-suite runs in the inner debugging loop.
+If a tiny fix changes final source after the full suite, rerun the final required full suite
+once on the new final head. The PR must not rely on a full-suite result from an earlier head.
+
+===============================================================================
+17. FINAL PR READINESS GATE
+===============================================================================
+
+Before reporting Ready for review: YES:
+
+- exact final head is known;
+- PR is non-draft;
+- GitHub reports mergeable/clean;
+- exact changed paths equal the certified spec;
+- prompt/spec/certificate hashes all verify;
+- readiness --check-diff passes;
+- all focused/adjacent/full required validation passes;
+- hosted CI is green on the exact head;
+- no generated artifacts are tracked;
+- no dependency or lock file changed;
+- no product/runtime network was added;
+- no credentials/auth/private endpoints;
+- no strategy/paper/execution/live authority;
+- status fragment and project status are mutually consistent;
+- WP169 is reconciled as merged;
+- WP170 is current review target, not already merged;
+- successor WP171 is separately gated;
+- deferred items accurately record what WP170 resolved and what remains open;
+- PR body contains no stale blocked/draft/pending language;
+- PR evidence consistency guard passes on the exact body intended for posting;
+- live posted PR body is re-fetched/verified under the repo's private-repo evidence mode;
+- all three final reviewer roles are ZERO_MATERIAL_FINDINGS;
+- no unresolved decisions remain.
+
+The PR body should be compact, not a mini-WP:
+
+A. Scope
+B. Exact changed files
+C. Capability delivered
+D. Validation
+E. Independent review
+F. Boundary / non-authority
+G. Requirement-to-evidence traceability
+H. Evidence mode
+I. Ready-for-review decision
+
+Do not post a redundant giant final comment unless current repo rules explicitly require one.
+After current repo policy, the PR body is the canonical review evidence surface.
+
+===============================================================================
+18. TRUE HARD STOPS — THE ONLY USER INTERRUPTION CONDITIONS
+===============================================================================
+
+STOP and return to Karl only if at least one of these is true:
+
+1. Current main no longer contains the WP169 merge or intervening merged repo truth materially
+   invalidates this package architecture.
+2. Truthful coherent implementation cannot fit the current machine-spec maximum of 35 changed
+   paths even after reasonable consolidation.
+3. A new third-party dependency is genuinely required.
+4. A protected boundary outside this package is genuinely required:
+   credentials/auth, private/account data, orders, execution, risk, paper/live, scheduler,
+   daemon/service, dashboard/deployment, Hermes runtime, or product network.
+5. Existing canonical PIT/DatasetSnapshotReference/analytical identity would have to be
+   semantically changed rather than consumed through a read-only binding/adapter.
+6. WP169 market-truth acquisition semantics would need a material change outside a narrow
+   read-only compatibility bridge.
+7. A methodology choice material to scientific validity remains genuinely unresolved after
+   repo-truth analysis and isolated review, with two or more incompatible choices that cannot
+   be safely selected from established project constraints.
+8. A genuine independent review context cannot be created, so the required certificate or
+   final independent-review claim cannot be made truthfully.
+9. A security issue is discovered that cannot be fixed within this exact capability/risk
+   envelope.
+10. Hosted CI or required validation is structurally unavailable in a way that prevents
+    honest review readiness, rather than merely failing due to fixable code.
+
+These are NOT hard stops and must be fixed internally:
+- focused test failures;
+- ordinary implementation bugs;
+- stale status counts/text;
+- missing adversarial tests;
+- evidence wording/PR-body defects;
+- same-scope public API mismatch;
+- same-scope SQLite validation bug;
+- scope/readiness guard historical compatibility defect that fits Section 6G;
+- one platform's CI failure caused by same-scope portable code;
+- an isolated reviewer finding a same-scope defect;
+- need to recertify a revised <=35-file exact spec within this master envelope.
+
+===============================================================================
+19. SUCCESSOR BOUNDARY
+===============================================================================
+
+Next separately gated package:
+  WP171 — Interactive Operator Cockpit
+
+WP171 may later visualize/expose experiment registry state and research evidence. It must not
+become authority over experiment validity, strategy promotion, risk, execution, or live state.
+
+Later separately gated sequence:
+  WP172 — Hermes Runtime + Alpha Factory
+  WP173 — Executable Edge / Microstructure
+  WP174 — Portfolio / Accounting / Reconciliation / Hard Risk
+  WP175 — Serious Paper OMS + Operations
+  WP176 — Auth / Signing / Execution Gateway
+  WP177 — Restricted Live Canary
+  WP178 — Mature Controlled Live
+
+WP170 does not implement any successor.
+
+===============================================================================
+20. FINAL REPORT-BACK TO KARL
+===============================================================================
+
+Return to Karl only when:
+A. one finished non-draft PR is ready for Side review; OR
+B. a TRUE HARD STOP in Section 18 exists.
+
+For a finished PR, report only the concise audit-critical facts:
+
+1. PR number/link.
+2. Final exact head SHA and actual base SHA.
+3. Exact changed-file count.
+4. One-paragraph capability summary.
+5. Focused/adjacent/full-suite counts and hosted CI result.
+6. wp_spec_guard + readiness --check-diff result.
+7. Certificate hash binding PASS.
+8. Independent final review:
+   - contract/state/leakage: ZERO_MATERIAL_FINDINGS
+   - methodology/test strength: ZERO_MATERIAL_FINDINGS
+   - repo integrity/scope/evidence: ZERO_MATERIAL_FINDINGS
+9. Evidence mode and live PR re-fetch result.
+10. Explicit boundary statement:
+    no dependencies, runtime network, credentials, strategy, paper, execution, or live.
+11. Ready for independent Side PR review: YES.
+12. Merge performed: NO.
+
+Do not paste huge successful logs.
+Do not ask for another same-scope follow-up.
+Do not start WP171.
+Do not merge.
+
+===============================================================================
+21. DEFINITION OF DONE
+===============================================================================
+
+WP170 is done only when the repository can deterministically demonstrate all of the following:
+
+- a research hypothesis has a stable immutable identity;
+- an experiment can be preregistered against exact existing dataset identities;
+- feature and label semantics are content-addressed and availability-aware;
+- a sample manifest proves the information timing used by the experiment;
+- formation, selection, and OOS memberships are deterministic;
+- purge/embargo/group policy is explicit and enforced;
+- OOS cannot be opened through the repo-controlled workflow before selection closes;
+- first-look OOS exposure is immutable and later reuse is visibly non-pristine;
+- changing a plan after exposure cannot rewrite the original experiment;
+- experiment-family trial accounting retains failed/negative/inconclusive attempts;
+- baseline and acceptance rules are frozen;
+- the local registry is append-only, bounded, tamper-evident, and fail-closed;
+- identical inputs reproduce identities/receipts;
+- invalid input produces sanitized outputs;
+- no market-data canonical authority is replaced;
+- no cost-adjusted/executable-edge claim is made;
+- no successor/trading authority is introduced;
+- exact-head tests/CI/evidence are green;
+- three isolated final reviewers report zero material findings.
+
+The intended outcome is not "a framework skeleton."
+The intended outcome is a usable deterministic experiment-control substrate that future WP172
+alpha research can plug into without first reopening preregistration, leakage, OOS sealing,
+negative-result retention, or experiment-lineage fundamentals.
+
+END OF WP170 ONE-SHOT AUTONOMOUS EXECUTION PACKAGE
