@@ -254,6 +254,47 @@ def test_market_truth_recent_and_gap_health(tmp_path: Path) -> None:
     assert cockpit._recent_gaps(market, 1)[0]["occurred_at"] == "2030-01-01T00:00:00.000000Z"
 
 
+def test_overview_quarantined_count_excludes_unsupported(tmp_path: Path) -> None:
+    market = _market_store(tmp_path)
+    registry = _experiment_store(tmp_path)
+    unsupported_raw = mt.make_raw_envelope(
+        "WS",
+        "polymarket:market-ws",
+        "ws:00000000-0000-4000-8000-000000000000:frame:3",
+        "2024-07-03T09:47:03.000000Z",
+        b"[]",
+        occurrence_sequence=3,
+    )
+    unsupported = mt.normalize_websocket_message(unsupported_raw, book_readiness={})
+    assert len(unsupported) == 1 and unsupported[0].status == "UNSUPPORTED"
+    with MarketTruthStore(market) as store:
+        assert store.append(unsupported_raw, unsupported).status == "OK"
+
+    app = cockpit.create_app(cockpit.CockpitConfig(market, registry))
+    summary = _get(app, "/api/overview")[1]["market_truth"]
+    assert summary["normalized_count"] == 3
+    assert summary["accepted_count"] == 2
+    assert summary["quarantined_count"] == 0
+
+    quarantined_raw = mt.make_raw_envelope(
+        "WS",
+        "polymarket:market-ws",
+        "ws:00000000-0000-4000-8000-000000000000:frame:4",
+        "2024-07-03T09:47:04.000000Z",
+        b'"non-object-frame"',
+        occurrence_sequence=4,
+    )
+    quarantined = mt.normalize_websocket_message(quarantined_raw, book_readiness={})
+    assert len(quarantined) == 1 and quarantined[0].status == "QUARANTINED"
+    with MarketTruthStore(market) as store:
+        assert store.append(quarantined_raw, quarantined).status == "OK"
+
+    summary = _get(app, "/api/overview")[1]["market_truth"]
+    assert summary["normalized_count"] == 4
+    assert summary["accepted_count"] == 2
+    assert summary["quarantined_count"] == 1
+
+
 def test_experiment_list_detail_preserves_wp170_semantics(tmp_path: Path) -> None:
     app = cockpit.create_app(cockpit.CockpitConfig(
         _market_store(tmp_path), _experiment_store(tmp_path)

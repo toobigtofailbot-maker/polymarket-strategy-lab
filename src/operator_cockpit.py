@@ -51,7 +51,7 @@ market_id,asset_id,event_time,received_at,status,error_codes_json,book_ready
 FROM normalized_occurrences ORDER BY archive_sequence DESC LIMIT ?"""
 _MARKET_SUMMARY_SQL = """SELECT COUNT(*),
 COALESCE(SUM(CASE WHEN status='ACCEPTED' THEN 1 ELSE 0 END),0),
-COALESCE(SUM(CASE WHEN status!='ACCEPTED' THEN 1 ELSE 0 END),0),
+COALESCE(SUM(CASE WHEN status='QUARANTINED' THEN 1 ELSE 0 END),0),
 MAX(received_at) FROM normalized_occurrences"""
 _GAP_COUNTS_SQL = """SELECT
 COALESCE(SUM(CASE WHEN state='OPEN' THEN 1 ELSE 0 END),0),
