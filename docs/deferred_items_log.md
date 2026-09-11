@@ -2480,10 +2480,23 @@ outside WP170 authority.
 | WP167-D005 | Experiment registry / feature-label identity (WP170) | RESOLVED_BOUNDED_WP170_FALSIFICATION_GRADE_EXPERIMENT_OS | P2 | Resolved by the canonical WP170 contract and implementation | No strategy or execution authority follows from research identities |
 | WP168-D002 | Leakage-safe experiment registry & research-dataset OS (WP170) | RESOLVED_BOUNDED_WP170_FALSIFICATION_GRADE_EXPERIMENT_OS | P2 | Resolved by exact split, purge, embargo, group, preregistration, and OOS lifecycle rules | Offline replay is not a fill, edge, or profitability proof |
 | WP169-D002 | Falsification-grade experiment registry & research-dataset OS (WP170) | RESOLVED_BOUNDED_WP170_FALSIFICATION_GRADE_EXPERIMENT_OS | P2 | Resolved by existing-dataset binding, evidence retention, and complete-history registry verification | WP169 acquisition and canonical PIT promotion remain unchanged |
-| WP170-D001 | Interactive Operator Cockpit (WP171) | OPEN | P2 | Separate WP171 with independently certified read-only operator-surface scope | WP170 provides no dashboard, visualization, monitoring service, or feature-validator UI |
+| WP170-D001 | Interactive Operator Cockpit (WP171) | RESOLVED_BOUNDED_WP171_COCKPIT | P2 | Resolved by WP171 with a local read-only FastAPI and four-view React cockpit over validated WP169/WP170 evidence | The cockpit has no authoritative writes, external product network, credentials, strategy, promotion, paper, portfolio, risk, execution, live, or Hermes authority |
 | WP170-D002 | Hermes research runtime and autonomous alpha factory (WP172) | OPEN | P2 | Separate WP172 with provider/model, prompt, semantic-adjudication, and human-control gates | WP170 makes no model/provider call and performs no autonomous research loop |
 | WP170-D003 | Executable-edge and cost realism (WP173) | OPEN | P1 | Separate WP173 with fill, queue, spread, slippage, latency, capacity, adverse-selection, and cost-model evidence | `OOS_CRITERIA_MET_UNCOSTED` is explicitly not executable edge or expected profit |
 | WP170-D004 | Portfolio accounting, reconciliation, and deterministic risk controls (WP174) | OPEN | P1 | Separate protected-boundary WP with explicit risk authority | WP170 never sizes positions, allocates capital, reconciles accounts, or sets risk caps |
 | WP170-D005 | Paper-trading execution and evidence (WP175) | OPEN | P1 | Separate paper OMS WP after prior gates | WP170 preregistration/evidence is not paper eligibility or simulated execution |
 | WP170-D006 | Authenticated execution gateway and private account access (WP176) | OPEN | P1 | Separate credentialed signing/order/OMS package | WP170 creates or reads no credentials and submits no order |
 | WP170-D007 | Restricted and mature live trading (WP177-WP178) | OPEN | P1 | Separate explicit live authorization after all predecessor gates | WP170 grants no restricted-live eligibility or live-trading authority |
+
+## WP171 Interactive Operator Cockpit MVP Deferred Items
+
+WP171 resolves `WP170-D001` as `RESOLVED_BOUNDED_WP171_COCKPIT`: a local
+loopback-only, read-only operator view over validated WP169/WP170 SQLite evidence.
+All remaining items are separately gated and outside WP171 authority.
+
+| ID | Item | Status | Priority | Resolution path | Non-implication |
+|---|---|---|---|---|---|
+| WP170-D001 | Interactive Operator Cockpit (WP171) | RESOLVED_BOUNDED_WP171_COCKPIT | P2 | Exact six-route FastAPI backend and four-view React/Vite frontend | A view is not evidence mutation, promotion, execution, or trading authority |
+| WP171-D001 | Hermes Runtime + Alpha Factory (WP172) | OPEN | P2 | Separately certified WP172 with provider/model, prompt, semantic-adjudication, orchestration, and human-control gates | WP171 makes no provider/model call, starts no agent loop, and implements no alpha factory |
+| WP171-D002 | Executable-edge and cost realism (WP173) | OPEN | P1 | Separately certified cost/fill/queue/slippage evidence package | Displaying `OOS_CRITERIA_MET_UNCOSTED` never claims expected profit or tradeability |
+| WP171-D003 | Portfolio, risk, paper, authenticated execution, and live trading (WP174-WP178) | OPEN | P1 | Separate protected-boundary packages with explicit authority | WP171 has no credentials, orders, portfolio, risk, paper, execution, or live path |

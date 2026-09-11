@@ -700,6 +700,12 @@ def test_no_src_implementation_for_wp98() -> None:
         cwd=str(REPO_ROOT),
     )
     changed_files = result.stdout.strip().splitlines()
+    if "docs/status_entries/WP171.md" in changed_files:
+        expected = set(json.loads(
+            (REPO_ROOT / "docs/wp_specs/WP171/wp_spec.json").read_text(encoding="utf-8")
+        )["scope"]["required_changed_files"])
+        assert set(changed_files) == expected
+        return
     if "docs/status_entries/WP169.md" in changed_files:
         # WP169 explicitly authorizes its public market-truth realtime data-plane
         # source package, exactly one workflow file (.github/workflows/ci.yml), one

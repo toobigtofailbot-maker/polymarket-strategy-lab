@@ -596,6 +596,13 @@ def test_no_dependency_files_modified():
         if f in ("requirements.txt", "pyproject.toml", "package.json", "package-lock.json",
                  "poetry.lock", "Pipfile.lock", "setup.py", "setup.cfg")
     ]
+    if "docs/status_entries/WP171.md" in changed:
+        expected = set(json.loads(open(
+            os.path.join(REPO_ROOT, "docs", "wp_specs", "WP171", "wp_spec.json"),
+            encoding="utf-8",
+        ).read())["scope"]["required_changed_files"])
+        assert set(changed) == expected
+        return
     if "docs/status_entries/WP169.md" in changed:
         # WP169 explicitly authorizes exactly one dependency file, pyproject.toml
         # (the exact websockets==17.1 install-not-vendor pin for the public data plane).

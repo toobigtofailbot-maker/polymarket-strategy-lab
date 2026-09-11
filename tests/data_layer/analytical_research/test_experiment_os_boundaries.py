@@ -186,7 +186,11 @@ def test_source_has_no_dependency_network_credential_scheduler_or_trading_author
         )
         assert "http://" not in source and "https://" not in source
     changed = subprocess.run(
-        ["git", "diff", "--name-only", "17df81001171988e9ca49f92dc8fd170ecaa7103", "--"],
+        [
+            "git", "diff", "--name-only",
+            "17df81001171988e9ca49f92dc8fd170ecaa7103",
+            "8e5d83f695d2f2ef38c9f30e3a8e95eb271718da", "--",
+        ],
         cwd=ROOT, text=True, capture_output=True, check=True,
     ).stdout.splitlines()
     assert not any(Path(item).name in {"pyproject.toml", "uv.lock", "requirements.txt"} for item in changed)

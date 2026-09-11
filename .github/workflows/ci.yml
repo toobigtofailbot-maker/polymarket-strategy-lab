@@ -29,6 +29,8 @@ env:
   WP168_DEP: "nautilus_trader==1.231.0"
   # Exact WP169 direct runtime dependency pin (public Market WebSocket data plane).
   WP169_DEP: "websockets==17.1"
+  # WP171 optional local cockpit pins (loopback/read-only, no product network).
+  WP171_DEPS: "fastapi==0.141.1 uvicorn==0.52.4"
   # Strict DuckDB mode: DuckDB-dependent tests must execute; any import failure or
   # skip in a required hosted job fails the job rather than producing green CI.
   WP167_STRICT_DUCKDB: "1"
@@ -68,7 +70,7 @@ jobs:
       - name: Install exact dependency pins and test tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install $WP167_DEPS $WP168_DEP $WP169_DEP "pytest>=8.0"
+          python -m pip install $WP167_DEPS $WP168_DEP $WP169_DEP $WP171_DEPS "pytest>=8.0"
 
       - name: pip check
         run: python -m pip check
@@ -135,6 +137,9 @@ jobs:
             exit 1
           fi
 
+      - name: Focused WP171 read-only operator cockpit tests
+        run: python -m pytest -q tests/test_operator_cockpit.py
+
       - name: Generated artifact guard
         run: python tools/git/preflight_generated_artifact_guard.py
 
@@ -156,10 +161,40 @@ jobs:
       - name: Install exact dependency pins and audit tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install $WP167_DEPS $WP168_DEP $WP169_DEP "pytest>=8.0" pip-audit
+          python -m pip install $WP167_DEPS $WP168_DEP $WP169_DEP $WP171_DEPS "pytest>=8.0" pip-audit
 
       - name: pip check
         run: python -m pip check
 
       - name: pip-audit resolved environment
         run: python -m pip_audit
+
+  cockpit-frontend:
+    name: cockpit-frontend (node 24.18.0)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24.18.0 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.18.0"
+          cache: npm
+          cache-dependency-path: src/operator_cockpit_frontend/package-lock.json
+
+      - name: Install locked frontend dependencies
+        working-directory: src/operator_cockpit_frontend
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: src/operator_cockpit_frontend
+        run: npm run typecheck
+
+      - name: Production build
+        working-directory: src/operator_cockpit_frontend
+        run: npm run build
+
+      - name: High-severity dependency audit
+        working-directory: src/operator_cockpit_frontend
+        run: npm audit --audit-level=high

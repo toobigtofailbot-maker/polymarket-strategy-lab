@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 from pathlib import Path
@@ -171,6 +172,12 @@ def test_project_status_records_candidate_only_not_installed_status() -> None:
 
 def test_no_generated_artifacts_local_outputs_or_external_source_are_tracked() -> None:
     tracked = _git_ls_files()
+    wp171_spec = ROOT / "docs/wp_specs/WP171/wp_spec.json"
+    wp171_lock = "src/operator_cockpit_frontend/package-lock.json"
+    if wp171_spec.is_file():
+        spec = json.loads(wp171_spec.read_text(encoding="utf-8"))
+        assert wp171_lock in spec["scope"]["required_changed_files"]
+        assert spec["authority"]["dependencies"] is True
     forbidden_prefixes = (
         ".venv-security/",
         "tools/.bin/",
@@ -191,4 +198,8 @@ def test_no_generated_artifacts_local_outputs_or_external_source_are_tracked() -
     }
 
     assert not any(path.startswith(forbidden_prefixes) for path in tracked)
-    assert not any(Path(path).name in forbidden_names for path in tracked if path != "pyproject.toml")
+    assert not any(
+        Path(path).name in forbidden_names
+        for path in tracked
+        if path != "pyproject.toml" and not (wp171_spec.is_file() and path == wp171_lock)
+    )
