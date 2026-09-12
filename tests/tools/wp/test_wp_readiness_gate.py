@@ -36,6 +36,7 @@ def _sha(path: pathlib.Path) -> str:
 
 def _build(tmp_path: pathlib.Path, *, prompt: str | None = None, spec: dict | None = None):
     """Materialize a package whose PASS certificate is bound to the written bytes."""
+    tmp_path.mkdir(parents=True, exist_ok=True)
     wp = tmp_path / "wp_prompt.txt"
     wp.write_text(REAL_PROMPT if prompt is None else prompt, encoding="utf-8")
     sp = tmp_path / "wp_spec.json"
@@ -59,6 +60,22 @@ def _matrix(rows: list[str]) -> str:
 def _evaluate(tmp_path, **kwargs):
     wp, sp, cp = _build(tmp_path, **{k: kwargs.pop(k) for k in ("prompt", "spec") if k in kwargs})
     return gate.evaluate_readiness(wp, sp, cp, str(ROOT), **kwargs)
+
+
+def _prompt_for_track(track: str) -> str:
+    return REAL_PROMPT + f"\nGovernance track expected: {track}\n"
+
+
+def _evaluate_uncertified(tmp_path, track: str, *, mutate_spec=None, **kwargs):
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    spec = copy.deepcopy(REAL_SPEC)
+    if mutate_spec is not None:
+        mutate_spec(spec)
+    wp = tmp_path / "wp_prompt.txt"
+    wp.write_text(_prompt_for_track(track), encoding="utf-8")
+    sp = tmp_path / "wp_spec.json"
+    sp.write_text(json.dumps(spec), encoding="utf-8")
+    return gate.evaluate_readiness(str(wp), str(sp), None, str(ROOT), **kwargs)
 
 
 def test_prompt_structure_accepts_negative_test_hyphenation() -> None:
@@ -190,9 +207,185 @@ def test_readiness_result_field_coverage_and_no_echo(tmp_path):
         "error_codes", "checked_sections", "scope_file_count",
         "evidence_item_count", "normative_rule_count", "package_guard_passed",
         "certificate_hash_bound",
+        "governance_track", "minimum_governance_track", "readiness_basis",
+        "certificate_required",
     }
     assert set(public.keys()) == expected_keys
+    assert public["schema_version"] == "1.1.0"
     assert marker not in json.dumps(public)
+
+
+# --------------------------------------------------------------------------- WP171G R001 / N04-N06 / N11
+def test_track_derivation_and_stricter_selection(tmp_path):
+    fast = _evaluate_uncertified(tmp_path / "fast", "FAST")
+    assert fast.is_ready is True
+    assert fast.minimum_governance_track == "FAST"
+
+    stricter = _evaluate_uncertified(tmp_path / "stricter", "RUNTIME")
+    assert stricter.is_ready is True
+    assert stricter.minimum_governance_track == "FAST"
+
+    def runtime(spec):
+        spec["identity"]["risk_level"] = 3
+
+    weak = _evaluate_uncertified(tmp_path / "weak", "FAST", mutate_spec=runtime)
+    assert weak.is_ready is False
+    assert "READINESS_GOVERNANCE_TRACK_INVALID" in weak.error_codes
+
+
+def test_new_package_requires_exactly_one_governance_track_line(tmp_path):
+    spec = copy.deepcopy(REAL_SPEC)
+    sp = tmp_path / "wp_spec.json"
+    sp.write_text(json.dumps(spec), encoding="utf-8")
+    prompts = (
+        REAL_PROMPT,
+        _prompt_for_track("FAST") + "Governance track expected: RUNTIME\n",
+        REAL_PROMPT + "\nGovernance track expected: fast\n",
+    )
+    for index, prompt in enumerate(prompts):
+        wp = tmp_path / f"wp_{index}.txt"
+        wp.write_text(prompt, encoding="utf-8")
+        result = gate.evaluate_readiness(str(wp), str(sp), None, str(ROOT))
+        assert result.is_ready is False
+        assert result.error_codes == ("READINESS_GOVERNANCE_TRACK_INVALID",)
+
+
+# --------------------------------------------------------------------------- WP171G N01
+def test_fast_without_certificate_is_ready(tmp_path):
+    result = _evaluate_uncertified(tmp_path, "FAST")
+    assert result.is_ready is True
+    assert result.governance_track == "FAST"
+    assert result.readiness_basis == "DETERMINISTIC"
+    assert result.certificate_required is False
+    assert result.certificate_hash_bound is False
+
+
+# --------------------------------------------------------------------------- WP171G N02
+def test_runtime_without_certificate_is_ready(tmp_path):
+    def runtime(spec):
+        spec["authority"]["network"] = True
+
+    result = _evaluate_uncertified(tmp_path, "RUNTIME", mutate_spec=runtime)
+    assert result.is_ready is True
+    assert result.minimum_governance_track == "RUNTIME"
+    assert result.readiness_basis == "DETERMINISTIC"
+
+
+# --------------------------------------------------------------------------- WP171G N03
+def test_protected_without_certificate_fails_closed(tmp_path):
+    def protected(spec):
+        spec["authority"]["credentials"] = True
+
+    result = _evaluate_uncertified(tmp_path, "PROTECTED", mutate_spec=protected)
+    assert result.is_ready is False
+    assert result.error_codes == ("READINESS_CERTIFICATE_NOT_PASS",)
+    assert result.certificate_required is True
+
+
+# --------------------------------------------------------------------------- WP171G N04-N06 / N11
+def test_weaker_governance_tracks_are_rejected(tmp_path):
+    mutations = (
+        ("FAST", lambda s: s["authority"].__setitem__("credentials", True)),
+        ("RUNTIME", lambda s: s["authority"].__setitem__("execution", True)),
+        ("FAST", lambda s: s["authority"].__setitem__("live", True)),
+        ("RUNTIME", lambda s: s["authority"].__setitem__("live", True)),
+        ("FAST", lambda s: s["authority"].__setitem__("paper", True)),
+        ("FAST", lambda s: s["authority"].__setitem__("scheduler", True)),
+        ("FAST", lambda s: s["authority"].__setitem__("hermes_runtime", True)),
+        ("FAST", lambda s: s["authority"].__setitem__("network", True)),
+        ("FAST", lambda s: s["identity"].__setitem__("risk_level", 3)),
+        ("RUNTIME", lambda s: s["identity"].__setitem__("risk_level", 4)),
+    )
+    for index, (track, mutate) in enumerate(mutations):
+        case = tmp_path / str(index)
+        case.mkdir()
+        result = _evaluate_uncertified(case, track, mutate_spec=mutate)
+        assert result.is_ready is False
+        assert "READINESS_GOVERNANCE_TRACK_INVALID" in result.error_codes
+
+
+# --------------------------------------------------------------------------- WP171G N07
+def test_historical_certified_package_remains_ready(tmp_path):
+    result = _evaluate(tmp_path)
+    assert result.is_ready is True
+    assert result.governance_track == "PROTECTED"
+    assert result.minimum_governance_track == "FAST"
+    assert result.readiness_basis == "INDEPENDENT_CERTIFICATE"
+
+
+# --------------------------------------------------------------------------- WP171G N09
+def test_certificate_hash_change_invalidates_protected(tmp_path):
+    wp, sp, cp = _build(tmp_path)
+    pathlib.Path(wp).write_text(REAL_PROMPT + "\nsemantic change\n", encoding="utf-8")
+    result = gate.evaluate_readiness(wp, sp, cp, str(ROOT))
+    assert result.is_ready is False
+    assert "READINESS_CERTIFICATE_NOT_PASS" in result.error_codes
+
+
+# --------------------------------------------------------------------------- WP171G N10
+def test_check_diff_rejects_scope_mismatch(tmp_path):
+    result = _evaluate_uncertified(
+        tmp_path, "FAST", check_diff=True, base="HEAD", head="HEAD"
+    )
+    assert result.is_ready is False
+    assert "READINESS_DIFF_SCOPE_MISMATCH" in result.error_codes
+
+
+# --------------------------------------------------------------------------- WP171G R002
+def test_certificate_policy_and_historical_compatibility(tmp_path):
+    cases = (
+        ("fast", test_fast_without_certificate_is_ready),
+        ("runtime", test_runtime_without_certificate_is_ready),
+        ("protected", test_protected_without_certificate_fails_closed),
+        ("historical", test_historical_certified_package_remains_ready),
+        ("hash", test_certificate_hash_change_invalidates_protected),
+    )
+    for name, test in cases:
+        case = tmp_path / name
+        case.mkdir()
+        test(case)
+    assert {name for name, _test in cases} == {
+        "fast", "runtime", "protected", "historical", "hash"
+    }
+
+
+# --------------------------------------------------------------------------- WP171G R003
+def test_readiness_result_tracks_draftability_basis(tmp_path):
+    deterministic = _evaluate_uncertified(tmp_path / "deterministic", "FAST")
+    certified = _evaluate(tmp_path / "certified")
+    assert deterministic.to_public_dict()["readiness_basis"] == "DETERMINISTIC"
+    assert certified.to_public_dict()["readiness_basis"] == "INDEPENDENT_CERTIFICATE"
+    assert deterministic.governance_track == "FAST"
+    assert certified.governance_track == "PROTECTED"
+
+
+# --------------------------------------------------------------------------- WP171G R004 / N08
+def test_fast_same_envelope_correction_without_certificate(tmp_path):
+    before = _evaluate_uncertified(tmp_path / "before", "FAST")
+
+    def correction(spec):
+        spec["identity"]["objective"] += " Same-authority wording correction."
+
+    after = _evaluate_uncertified(
+        tmp_path / "after", "FAST", mutate_spec=correction
+    )
+    assert before.is_ready is True
+    assert after.is_ready is True
+    assert after.certificate_hash_bound is False
+
+
+# --------------------------------------------------------------------------- WP171G N12
+def test_track_choice_cannot_bypass_failed_required_evidence(tmp_path):
+    def inadequate(spec):
+        item = next(
+            item for item in spec["evidence_plan"]["items"]
+            if item["source"] == "pytest"
+        )
+        item["expected_result"] = "passes"
+
+    result = _evaluate_uncertified(tmp_path, "FAST", mutate_spec=inadequate)
+    assert result.is_ready is False
+    assert "READINESS_EVIDENCE_ASSERTION_INADEQUATE" in result.error_codes
 
 
 # --------------------------------------------------------------------------- R026

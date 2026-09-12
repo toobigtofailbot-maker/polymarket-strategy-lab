@@ -4,22 +4,26 @@
 
 Package classes are grouped by risk level. Each class defines its minimum validation surface. Higher risk classes require stronger gates.
 
-## Pre-Implementation Package Readiness Gate (WP168G)
+## Pre-Implementation Package Readiness Gate (WP168G; routed by WP171G)
 
 This gate is separate from the optional, non-canonical final comment; mandatory final
 GitHub evidence comments were retired after WP91.
 
-After WP168G, every applicable implementation WP must pass the one-command
-pre-implementation package-readiness gate **before** the user grants the `AUTHORIZED`
-transition:
+After WP171G, every implementation WP must pass the one-command pre-implementation
+package-readiness gate **before** the user grants the `AUTHORIZED` transition. The
+prompt declares a track and the gate independently derives the minimum from risk and
+authority:
 
 ```
 python tools/wp/wp_readiness_gate.py \
   --wp docs/wp_specs/<WP>/wp_prompt.txt \
   --spec docs/wp_specs/<WP>/wp_spec.json \
-  --certificate docs/wp_specs/<WP>/draftability_certificate.json \
   --repo-root .
 ```
+
+Add `--certificate docs/wp_specs/<WP>/draftability_certificate.json` for PROTECTED
+or when checking an existing historical certified package. FAST/RUNTIME do not require
+an independent pre-implementation certificate.
 
 The gate must exit `0` with `IMPLEMENTATION_READY` before authorization. It is a
 deterministic, local/offline, read-only check that reuses `tools/wp/wp_spec_guard.py`
@@ -38,24 +42,39 @@ Before scope freeze / implementation authorization for a file-changing WP, the
 package-readiness process MUST perform a bounded discovery of repository guards whose logic
 evaluates the COMPLETE changed-file set (for example `git diff --name-only origin/main` plus
 untracked files compared by exact-set equality to a hard-coded authorized set) and MUST prove
-that the certified scope contains every required compatibility edit for those guards. This
+that the governed scope contains every required compatibility edit for those guards. This
 requirement is bounded: it covers mechanically discoverable current repository patterns plus
 mandatory full-suite validation at the exact final head. It does NOT claim to mathematically
 prove every possible future test dependency; the full repository suite at the exact final head
 remains the backstop. Guards that evaluate the complete changed-file set should derive the
 active WP's authorized set from its machine spec so a newly-added WP is authorized by its own
-certified exact scope rather than rejected merely for being new.
+governed exact scope rather than rejected merely for being new.
+
+## Governance-Track Validation
+
+| Track | While editing | Stable candidate | Independent review |
+|---|---|---|---|
+| FAST | Focused tests, affected adjacent tests, cheap static/import/type checks | Readiness `--check-diff`, actual-surface security, exact-head hosted CI, one authoritative broad/full suite locally or by equivalent exact-head hosted CI | Final Side PR review mandatory; no internal final LLM reviewer unless the WP requests one |
+| RUNTIME | Focused and directly affected integration tests, runtime/network boundary tests, relevant security/dependency checks | Readiness `--check-diff`, one authoritative full suite locally or by equivalent exact-head hosted CI, exact-head hosted CI | One combined independent implementation reviewer plus final Side PR review |
+| PROTECTED | Protected-boundary tests and full applicable security/credential checks | Readiness `--check-diff`, full suite, exact-head hosted CI | Independent pre-implementation certificate, required final independent review, and final Side PR review |
+
+PROTECTED is the minimum for Risk 4 or credential/execution/live authority. RUNTIME is
+the minimum for non-PROTECTED Risk 3 or network/scheduler/Hermes-runtime/paper authority.
+FAST is the remaining Risk 0–2 case. A stricter voluntary track is allowed; a weaker
+track is rejected. No track may convert a failed required check into Ready YES.
+Repeated broad validation is avoided while a candidate is changing; this does not waive
+the one authoritative stable-candidate result.
 
 ### Risk Level 0 — Docs / Workflow Only (Lowest Risk)
 
-| Package class | Focused tests | Adjacent tests | Full pytest | Diff scope | Artifact guard | Security | GitHub evidence re-fetch | Status fragment |
+| Package class | Focused tests | Adjacent tests | Broad/full suite | Diff scope | Artifact guard | Security | GitHub evidence re-fetch | Status fragment |
 |---|---|---|---|---|---|---|---|---|
-| docs-only policy WP | Doc content tests | Repo truth index | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
-| schema-only WP | Schema doc tests | Repo truth index | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
-| workflow-docs-tests-only WP | Workflow/template tests | Project status / arch boundary | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
-| workflow/governance WP | Workflow docs/template tests, focused docs tests, exact PR evidence reporting check | Project status wording check, network usage wording check | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
-| docs-tests-workflow-governance-hardening | All workflow/governance WP checks | Bundle risk class, follow-up classification | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
-| workflow-governance-docs-tests-state-machine | All workflow/governance WP checks, state machine doc present | Evidence mode declared | Required | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+| docs-only policy WP | Doc content tests | Repo truth index | Per track | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+| schema-only WP | Schema doc tests | Repo truth index | Per track | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+| workflow-docs-tests-only WP | Workflow/template tests | Project status / arch boundary | Per track | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+| workflow/governance WP | Workflow docs/template tests, focused docs tests, exact PR evidence reporting check | Project status wording check, network usage wording check | Per track | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+| docs-tests-workflow-governance-hardening | All workflow/governance WP checks | Bundle risk class, follow-up classification | Per track | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
+| workflow-governance-docs-tests-state-machine | All workflow/governance WP checks, state machine doc present | Evidence mode declared | Per track | Required | Required | Report unavailable | Required if posting claimed | Required (WP86+) |
 
 All Risk Level 0 WPs must also confirm:
 - Package size class stated.
@@ -68,14 +87,14 @@ All Risk Level 0 WPs must also confirm:
 
 ### Risk Level 1 — Local/Offline Source (Low Risk)
 
-| Package class | Focused tests | Adjacent tests | Full pytest | Diff scope | Artifact guard | Security | GitHub evidence re-fetch | Status fragment |
+| Package class | Focused tests | Adjacent tests | Broad/full suite | Diff scope | Artifact guard | Security | GitHub evidence re-fetch | Status fragment |
 |---|---|---|---|---|---|---|---|---|
-| validator WP | Focused validator tests, negative-test matrix | Adjacent schema tests, architecture boundary | Required | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
-| report/output WP | Focused report tests, advisory output safety | Adjacent schema and boundary tests | Required | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
-| local/offline source WP | Focused unit tests, negative-test matrix | Architecture boundary | Required | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
-| local report/export WP | Offline tests with local fixtures | No credential/network tests | Required | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
-| github-aware-readonly-workflow-helper WP | Focused helper tests with fake responses | Docs workflow tests | Required | Required | Required | gitleaks if available | Required — posted verifier after PR posted | Required (WP86+) |
-| local-offline-stdlib-governance-helper-hardening | WP-spec guard focused tests; scope-helper compatibility and exact-mode tests; negative-test matrix | Workflow-doc tests; project-status and repo-truth checks | Required | Exact scope required | Required | Honest availability; gitleaks if available | Required — authenticated live re-fetch | Required (WP86+) |
+| validator WP | Focused validator tests, negative-test matrix | Adjacent schema tests, architecture boundary | Per track | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
+| report/output WP | Focused report tests, advisory output safety | Adjacent schema and boundary tests | Per track | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
+| local/offline source WP | Focused unit tests, negative-test matrix | Architecture boundary | Per track | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
+| local report/export WP | Offline tests with local fixtures | No credential/network tests | Per track | Required | Required | gitleaks if available | Required if posting claimed | Required (WP86+) |
+| github-aware-readonly-workflow-helper WP | Focused helper tests with fake responses | Docs workflow tests | Per track | Required | Required | gitleaks if available | Required — posted verifier after PR posted | Required (WP86+) |
+| local-offline-stdlib-governance-helper-hardening | WP-spec guard focused tests; scope-helper compatibility and exact-mode tests; negative-test matrix | Workflow-doc tests; project-status and repo-truth checks | Per track | Exact scope required | Required | Honest availability; gitleaks if available | Required — authenticated live re-fetch | Required (WP86+) |
 
 All Risk Level 1 WPs must also confirm:
 - Output under ignored `local_data/` only (for report/export WPs).
@@ -86,11 +105,11 @@ All Risk Level 1 WPs must also confirm:
 
 ### Risk Level 2 — Data Ingestion / External Data (Medium Risk)
 
-| Package class | Focused tests | Adjacent tests | Full pytest | Diff scope | Artifact guard | Security | GitHub evidence re-fetch | Status fragment |
+| Package class | Focused tests | Adjacent tests | Broad/full suite | Diff scope | Artifact guard | Security | GitHub evidence re-fetch | Status fragment |
 |---|---|---|---|---|---|---|---|---|
-| read-only public-data WP | Offline tests; explicit-network smoke only if scoped | Boundary/scope tests | Required | Required | Required | gitleaks + pip-audit if available | Required | Required (WP86+) |
-| official-client sandbox WP | Isolated sandbox tests, no `src/` import | No runtime/auth tests | Required | Required | Required | gitleaks + pip-audit | Required | Required (WP86+) |
-| security/tooling WP | Tool availability checks, generated-artifact controls | Honest unavailable reporting | Required | Required | Required | All available tools | Required | Required (WP86+) |
+| read-only public-data WP | Offline tests; explicit-network smoke only if scoped | Boundary/scope tests | Per track | Required | Required | gitleaks + pip-audit if available | Required | Required (WP86+) |
+| official-client sandbox WP | Isolated sandbox tests, no `src/` import | No runtime/auth tests | Per track | Required | Required | gitleaks + pip-audit | Required | Required (WP86+) |
+| security/tooling WP | Tool availability checks, generated-artifact controls | Honest unavailable reporting | Per track | Required | Required | All available tools | Required | Required (WP86+) |
 
 ### Risk Level 3 — Paper / Scheduler / Bot Loop (High Risk — Blocked Until Authorized)
 
@@ -120,7 +139,9 @@ All Risk Level 1 WPs must also confirm:
 - Changed-file scope check.
 - Forbidden-path preservation.
 - Generated-artifact guard after final commit.
-- Full pytest after final commit unless the active WP explicitly defines a narrower gate and explains why.
+- One authoritative broad/full suite on the stable candidate as required by the
+  governance-track table. FAST/RUNTIME may use equivalent exact-head hosted CI;
+  PROTECTED retains local full-suite plus exact-head hosted CI requirements.
 - `docs/project_status.md` current-WP wording check.
 - Dependency and lock-file preservation unless explicitly scoped.
 - Exact PR evidence reporting discipline: exact full validation commands in PR body (no ellipses, no abbreviated commands, no placeholder text), accurate network usage wording, consistent counts in PR body (and between PR body and optional final comment if posted), and stale counts corrected before Ready for review: YES. After WP91, final comment is optional; PR body is the required evidence surface. See `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`.

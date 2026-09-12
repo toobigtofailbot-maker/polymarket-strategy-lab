@@ -3856,6 +3856,24 @@ def test_wp159_status_is_stable_model_d_and_not_ready():
     ) is None
 
 
+def test_wp171g_status_and_package_evidence_are_registered():
+    project = (REPO_ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    status = (STATUS_ENTRIES / "WP171G.md").read_text(encoding="utf-8")
+    package = REPO_ROOT / "docs" / "wp_specs" / "WP171G"
+    assert "WP171G canonical transition: Lean Agent Execution Governance" in project
+    assert "a650c08ab233e47beca7565a5bb8df11a4f41d02" in project
+    assert "d6a15e4007fe3ced5a7d059ec3fcdec496d2dc7d" in project
+    assert "WP172 — Alpha + Executable Edge MVP" in project
+    assert "PR: see GitHub PR metadata and PR body." in status
+    assert "stable and non-self-referential" in status
+    assert "Current live PR head: see GitHub PR metadata and PR body" in status
+    assert re.search(
+        r"Current live PR head:\s*`?[0-9a-f]{40}`?", status, re.IGNORECASE
+    ) is None
+    for name in ("wp_prompt.txt", "wp_spec.json", "draftability_certificate.json"):
+        assert (package / name).is_file()
+
+
 def test_wp159_repo_truth_and_deferred_items_are_registered():
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(
         encoding="utf-8"

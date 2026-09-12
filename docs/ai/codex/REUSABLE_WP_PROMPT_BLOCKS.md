@@ -19,6 +19,7 @@ Reusable blocks do not:
 Every WP must still specify:
 
 - WP ID and title
+- Governance track expected: FAST / RUNTIME / PROTECTED
 - Branch name
 - Required previous merge commit
 - Package class
@@ -58,7 +59,9 @@ See `docs/security_and_secrets.md` and `docs/ai/codex/TOKEN_EFFICIENCY_OPERATING
 After all changes are committed:
 
 1. Run `python -m pytest tests/<wp-specific-test>.py` — report counts.
-2. Run `python -m pytest` (full suite) — report counts.
+2. Run the track-required stable-candidate broad/full suite — report the exact
+   local command/counts or the equivalent exact-head hosted-CI run. PROTECTED
+   retains the local full-suite requirement.
 3. Run `git diff --check` — confirm no whitespace errors.
 4. Run `python tools/git/preflight_generated_artifact_guard.py` — confirm clean.
 
@@ -71,6 +74,7 @@ See `docs/ai/codex/VALIDATION_MATRIX.md` for package-class validation requiremen
 Final PR comment must include (concise but evidence-complete):
 
 - WP ID / package class
+- Selected and mechanically derived minimum governance track
 - Branch / base / required previous merge commit
 - Changed files
 - Validation summary (commands, exit codes, counts)
@@ -80,6 +84,28 @@ Final PR comment must include (concise but evidence-complete):
 - Ready for review: YES/NO
 
 See `docs/ai/codex/CONCISE_REPORTING_RULES.md` and `docs/ai/codex/WP_EXECUTION_REPORT.md`.
+
+## Governance Track Block
+
+Every new WP prompt declares one expected track. The readiness gate derives the
+minimum from the machine spec; the label cannot choose a weaker track.
+
+- FAST: Risk 0–2 with no network/scheduler/Hermes-runtime/paper/credential/
+  execution/live authority; deterministic readiness, no independent certificate.
+- RUNTIME: Risk 3 or authorized network/scheduler/Hermes-runtime/paper, with no
+  credential/execution/live authority; deterministic readiness, no independent
+  certificate, one combined final implementation reviewer.
+- PROTECTED: Risk 4 or credential/execution/live authority; independent immutable
+  draftability certificate and strongest review/validation remain mandatory.
+
+All tracks retain exact-diff validation, failed-check blocking, hosted CI, and
+independent Side PR review. A package may voluntarily select a stricter track.
+
+## FAST/RUNTIME Contract Compilation Block
+
+Before freezing a spec that references an existing builder, parser, validator,
+or API, mechanically smoke-test every frozen literal/config against the real
+interface and record PASS/FAIL. This check precedes implementation authorization.
 
 ## Standard Safety Boundary Block
 

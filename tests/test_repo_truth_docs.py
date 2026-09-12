@@ -36,3 +36,17 @@ def test_required_repo_truth_files_exist():
     missing = [path for path in REQUIRED_FILES if not (ROOT / path).is_file()]
     assert missing == []
 
+
+def test_wp171g_repo_truth_transition_is_registered():
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    assert "WP171 merged: PR #172" in index
+    assert "a650c08ab233e47beca7565a5bb8df11a4f41d02" in index
+    assert "d6a15e4007fe3ced5a7d059ec3fcdec496d2dc7d" in index
+    assert "FAST, RUNTIME, and PROTECTED" in index
+    assert "Historical valid certified packages remain accepted" in index
+    assert "WP172 — Alpha + Executable Edge MVP" in index
+    assert "not started by WP171G" in index
+    assert "WP171G Lean Agent Execution Governance Deferred Items" in deferred
+    assert "parked local WP172 worktree remains separate and" in deferred
+    assert "untouched" in deferred
