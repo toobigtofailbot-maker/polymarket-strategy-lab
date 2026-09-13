@@ -104,6 +104,51 @@ def test_rehashed_logical_state_divergence_still_blocks_reconciliation(tmp_path)
         assert rehashed.reconciliation_blocked
 
 
+@pytest.mark.parametrize("mutation", ["initial_cash", "limits_hash"])
+def test_rehashed_cross_record_divergence_blocks_reconciliation(
+    tmp_path, mutation
+) -> None:
+    path = tmp_path / f"cross-record-{mutation}.sqlite3"
+    store, engine = make_engine(path)
+    engine.process_market_event(paper_book(100))
+    engine.submit(_intent(engine))
+    store.close()
+
+    connection = sqlite3.connect(path)
+    rows = connection.execute(
+        "SELECT sequence,event_id,event_type,event_time_ns,payload_json "
+        "FROM paper_journal ORDER BY sequence"
+    ).fetchall()
+    payload = json.loads(rows[-1][4])
+    if mutation == "initial_cash":
+        payload["state_after"]["account"]["initial_cash"] = "101"
+    else:
+        payload["state_after"]["risk_decisions"][-1]["limits_hash"] = "0" * 64
+    rows[-1] = (*rows[-1][:4], canonical_json_bytes(payload).decode("utf-8"))
+    previous = None
+    for sequence, event_id, event_type, event_time_ns, payload_json in rows:
+        digest = PaperStore._event_hash(
+            sequence, event_id, event_type, event_time_ns, payload_json, previous
+        )
+        connection.execute(
+            "UPDATE paper_journal SET payload_json=?,previous_event_hash=?,event_hash=? "
+            "WHERE sequence=?",
+            (payload_json, previous, digest, sequence),
+        )
+        previous = digest
+    connection.execute(
+        "UPDATE paper_checkpoint SET state_json=?,last_event_hash=? WHERE singleton=1",
+        (canonical_json_bytes(payload["state_after"]).decode("utf-8"), previous),
+    )
+    connection.commit()
+    connection.close()
+
+    with PaperStore(path) as rehashed:
+        with pytest.raises(PaperTradingError, match="RECONCILIATION_BLOCKED"):
+            PaperEngine.open(rehashed)
+        assert rehashed.reconciliation_blocked
+
+
 def test_transaction_failure_cannot_leave_fill_without_journal_or_accounting(
     tmp_path, monkeypatch
 ) -> None:

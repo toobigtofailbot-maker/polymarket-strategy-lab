@@ -70,6 +70,20 @@ def test_order_lifecycle_idempotency_partial_fill_cancel_and_expiry(tmp_path) ->
     store.close()
 
 
+def test_clock_advance_executes_due_aggressive_arrival_from_known_book(tmp_path) -> None:
+    store, engine = make_engine(tmp_path / "clock-arrival.sqlite3")
+    engine.process_market_event(paper_book(100))
+    opened = engine.submit(_intent(engine.state.binding, decision=101, quantity="2"))
+    assert opened.status == "OPEN" and engine.state.fills == ()
+
+    engine.advance_time(111)
+
+    final = next(order for order in engine.state.orders if order.order_id == opened.order_id)
+    assert final.status == "FILLED" and final.filled_quantity == "2"
+    assert engine.state.fills[0].market_truth_lineage == "fixture:book:100"
+    store.close()
+
+
 def test_one_order_replay_matches_wp172_fill_and_fee_semantics(tmp_path) -> None:
     model, _exp, _ev, trace, window, assessment, binding = edge_stack()
     store, engine = make_engine(tmp_path / "aggressive.sqlite3")

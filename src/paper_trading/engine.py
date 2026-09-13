@@ -47,7 +47,7 @@ from .models import (
     validate_risk_limits,
     validate_strategy_binding,
 )
-from .risk import evaluate_risk
+from .risk import evaluate_risk, limits_hash
 from .store import JournalEvent, JournalMutation, PaperStore, mutation
 
 
@@ -173,6 +173,9 @@ def state_from_mapping(value: Mapping[str, object]) -> PaperState:
 
 def _validate_state_relationships(state: PaperState) -> None:
     validate_account(state.account)
+    if Decimal(state.account.initial_cash) != Decimal(state.limits.initial_cash):
+        raise PaperTradingError("RECONCILIATION_BLOCKED")
+    expected_limits_hash = limits_hash(state.limits)
     orders = {item.order_id: item for item in state.orders}
     if len(orders) != len(state.orders):
         raise PaperTradingError("RECONCILIATION_BLOCKED")
@@ -181,6 +184,8 @@ def _validate_state_relationships(state: PaperState) -> None:
         raise PaperTradingError("RECONCILIATION_BLOCKED")
     for decision in state.risk_decisions:
         validate_risk_decision(decision)
+        if decision.limits_hash != expected_limits_hash:
+            raise PaperTradingError("RECONCILIATION_BLOCKED")
     for order in state.orders:
         validate_order(order)
         if order.risk_decision_id is not None:
@@ -686,7 +691,7 @@ class PaperEngine:
                 state,
             )
         ]
-        marks = dict(state.marks)
+        marks = valid_marks(state)
         mark_times = dict(state.mark_times)
         decision = evaluate_risk(
             intent=intent,
