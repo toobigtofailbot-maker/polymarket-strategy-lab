@@ -279,6 +279,51 @@ def _event(
     return mutation(event_type, event_time_ns, data, state_to_mapping(state))
 
 
+def _pending_order(state: PaperState, intent: PaperIntent) -> PaperOrder:
+    quantity = Decimal(intent.quantity)
+    fee_bps = Decimal(state.binding.fee_rate_bps)
+    reserve_cash = (
+        quantity * (Decimal(1) + fee_bps / Decimal(10_000))
+        if intent.side == "BUY"
+        else Decimal(0)
+    )
+    return PaperOrder(
+        _order_id(intent.intent_id), intent.intent_id, intent.market_id,
+        intent.asset_id, intent.side, intent.order_style, intent.quantity,
+        intent.reference_price, "0", "0", "0", "PENDING_RISK",
+        intent.decision_time_ns,
+        intent.decision_time_ns + state.binding.latency_ns,
+        (intent.decision_time_ns + state.binding.latency_ns + intent.ttl_ns)
+        if intent.ttl_ns is not None else None,
+        decimal_text(reserve_cash), intent.quantity if intent.side == "SELL" else "0",
+        None, None,
+    )
+
+
+def _risk_decision(
+    state: PaperState, intent: PaperIntent, order: PaperOrder
+) -> PaperRiskDecision:
+    marks = valid_marks(state)
+    current_book = next(
+        (book for book in state.books if book.asset_id == intent.asset_id), None
+    )
+    if current_book is None or current_book.market_id != intent.market_id:
+        marks.pop(intent.asset_id, None)
+    return evaluate_risk(
+        intent=intent,
+        limits=state.limits,
+        account=state.account,
+        orders=tuple(item for item in state.orders if item.order_id != order.order_id),
+        marks=marks,
+        control_state=state.control_state,
+        reconciliation_blocked=False,
+        resolution_pending=set(state.resolution_pending),
+        last_market_receive_ns=dict(state.mark_times).get(intent.asset_id),
+        decided_time_ns=intent.decision_time_ns,
+        conservative_buy_reserve=order.reserved_cash if intent.side == "BUY" else None,
+    )
+
+
 def _record_fill(state: PaperState, fill: PaperFill) -> PaperState:
     order = next(
         (item for item in state.orders if item.order_id == fill.order_id), None
@@ -329,6 +374,9 @@ def _replay_market_event(state: PaperState, event: PaperMarketEvent) -> PaperSta
     gaps = set(state.gapped_assets)
     pending = set(state.resolution_pending)
     if event.kind == "BOOK":
+        prior = books.get(event.asset_id)
+        if prior is not None and prior.market_id != event.market_id:
+            raise PaperTradingError("RECONCILIATION_BLOCKED")
         snapshot = BookSnapshot(
             event.market_id,
             event.asset_id,
@@ -419,7 +467,16 @@ def _replay_mutation(state: PaperState, event: JournalEvent) -> PaperState:
         )
     if event.event_type in {"ORDER_QUEUE_INITIALIZED", "ORDER_QUEUE_UPDATED"}:
         order = next(item for item in state.orders if item.order_id == data["order_id"])
-        return _replace_order(state, replace(order, queue_ahead=data["queue_ahead"]))
+        return _replace_order(
+            state,
+            replace(
+                order,
+                queue_ahead=data["queue_ahead"],
+                passive_fill_eligible=data.get(
+                    "passive_fill_eligible", order.passive_fill_eligible
+                ),
+            ),
+        )
     if event.event_type == "PAPER_FILL":
         return _record_fill(state, dataclass_from_mapping(PaperFill, data))
     if event.event_type == "FILL_MARKOUT":
@@ -443,8 +500,36 @@ def _replay_mutation(state: PaperState, event: JournalEvent) -> PaperState:
 def _replay_journal(events: tuple[JournalEvent, ...]) -> PaperState:
     if not events or events[0].event_type != "SESSION_INITIALIZED":
         raise PaperTradingError("RECONCILIATION_BLOCKED")
+    for event in events:
+        if event.event_id != content_id(
+            "paperevent:sha256:",
+            {
+                "event_type": event.event_type,
+                "event_time_ns": event.event_time_ns,
+                "data": event.data,
+            },
+        ):
+            raise PaperTradingError("RECONCILIATION_BLOCKED")
     state = state_from_mapping(events[0].state_after)
+    pending_intents: dict[str, PaperIntent] = {}
     for event in events[1:]:
+        if event.event_type == "ORDER_PENDING_RISK":
+            intent = dataclass_from_mapping(PaperIntent, event.data["intent"])
+            validate_paper_intent(intent, state.binding)
+            recorded_order = dataclass_from_mapping(PaperOrder, event.data["order"])
+            if recorded_order != _pending_order(state, intent):
+                raise PaperTradingError("RECONCILIATION_BLOCKED")
+            pending_intents[intent.intent_id] = intent
+        if event.event_type == "RISK_DECIDED":
+            recorded_decision = dataclass_from_mapping(PaperRiskDecision, event.data)
+            intent = pending_intents.get(recorded_decision.intent_id)
+            if intent is None:
+                raise PaperTradingError("RECONCILIATION_BLOCKED")
+            order = next(
+                item for item in state.orders if item.intent_id == intent.intent_id
+            )
+            if recorded_decision != _risk_decision(state, intent, order):
+                raise PaperTradingError("RECONCILIATION_BLOCKED")
         expected = _replay_mutation(state, event)
         recorded = state_from_mapping(event.state_after)
         if expected != recorded:
@@ -648,37 +733,7 @@ class PaperEngine:
         for existing in self.state.orders:
             if existing.intent_id == intent.intent_id:
                 return existing
-        quantity = Decimal(intent.quantity)
-        fee_bps = Decimal(self.state.binding.fee_rate_bps)
-        reserve_cash = (
-            quantity * (Decimal(1) + fee_bps / Decimal(10_000))
-            if intent.side == "BUY"
-            else Decimal(0)
-        )
-        reserve_quantity = quantity if intent.side == "SELL" else Decimal(0)
-        order = PaperOrder(
-            _order_id(intent.intent_id),
-            intent.intent_id,
-            intent.market_id,
-            intent.asset_id,
-            intent.side,
-            intent.order_style,
-            intent.quantity,
-            intent.reference_price,
-            "0",
-            "0",
-            "0",
-            "PENDING_RISK",
-            intent.decision_time_ns,
-            intent.decision_time_ns + self.state.binding.latency_ns,
-            (intent.decision_time_ns + self.state.binding.latency_ns + intent.ttl_ns)
-            if intent.ttl_ns is not None
-            else None,
-            decimal_text(reserve_cash),
-            decimal_text(reserve_quantity),
-            None,
-            None,
-        )
+        order = _pending_order(self.state, intent)
         state = _replace_order(self.state, order)
         events = [
             _event(
@@ -691,25 +746,7 @@ class PaperEngine:
                 state,
             )
         ]
-        marks = valid_marks(state)
-        mark_times = dict(state.mark_times)
-        decision = evaluate_risk(
-            intent=intent,
-            limits=state.limits,
-            account=state.account,
-            orders=tuple(
-                item for item in state.orders if item.order_id != order.order_id
-            ),
-            marks=marks,
-            control_state=state.control_state,
-            reconciliation_blocked=self.store.reconciliation_blocked,
-            resolution_pending=set(state.resolution_pending),
-            last_market_receive_ns=mark_times.get(intent.asset_id),
-            decided_time_ns=intent.decision_time_ns,
-            conservative_buy_reserve=(
-                order.reserved_cash if intent.side == "BUY" else None
-            ),
-        )
+        decision = _risk_decision(state, intent, order)
         state = replace(state, risk_decisions=state.risk_decisions + (decision,))
         events.append(
             _event("RISK_DECIDED", intent.decision_time_ns, asdict(decision), state)
@@ -933,6 +970,16 @@ class PaperEngine:
             and market_event.receive_time_ns < self.state.last_market_receive_ns
         ):
             raise PaperTradingError("MARKET_EVENT_ORDER_INVALID")
+        existing_book = next(
+            (book for book in self.state.books if book.asset_id == market_event.asset_id),
+            None,
+        )
+        if (
+            market_event.kind == "BOOK"
+            and existing_book is not None
+            and existing_book.market_id != market_event.market_id
+        ):
+            raise PaperTradingError("MARKET_EVENT_INVALID")
         state = replace(self.state, last_market_receive_ns=market_event.receive_time_ns)
         marks = dict(state.marks)
         mark_times = dict(state.mark_times)
@@ -1077,7 +1124,11 @@ class PaperEngine:
             return
 
         for order in tuple(state.orders):
-            if order.status not in _ACTIVE or order.asset_id != market_event.asset_id:
+            if (
+                order.status not in _ACTIVE
+                or order.asset_id != market_event.asset_id
+                or order.market_id != market_event.market_id
+            ):
                 continue
             order = next(item for item in state.orders if item.order_id == order.order_id)
             if (
@@ -1102,6 +1153,7 @@ class PaperEngine:
                 arrival_book = prior_books.get(order.asset_id)
             if (
                 arrival_book is None
+                or arrival_book.market_id != order.market_id
                 or arrival_book.receive_time_ns > order.arrival_time_ns
                 or order.arrival_time_ns - arrival_book.receive_time_ns
                 > state.binding.max_data_age_ns
@@ -1205,7 +1257,11 @@ class PaperEngine:
                         if Decimal(price) == Decimal(order.reference_price)
                     )
                     queue = visible * Decimal(state.binding.queue_ahead_multiplier)
-                    current = replace(current, queue_ahead=decimal_text(queue))
+                    current = replace(
+                        current,
+                        queue_ahead=decimal_text(queue),
+                        passive_fill_eligible=visible > 0,
+                    )
                     state = _replace_order(state, current)
                     events.append(
                         _event(
@@ -1214,6 +1270,7 @@ class PaperEngine:
                             {
                                 "order_id": current.order_id,
                                 "queue_ahead": current.queue_ahead,
+                                "passive_fill_eligible": current.passive_fill_eligible,
                             },
                             state,
                         )
@@ -1221,7 +1278,11 @@ class PaperEngine:
                 current = next(
                     item for item in state.orders if item.order_id == order.order_id
                 )
-                if current.queue_ahead is not None and market_event.kind == "TRADE":
+                if (
+                    current.queue_ahead is not None
+                    and current.passive_fill_eligible
+                    and market_event.kind == "TRADE"
+                ):
                     trade_price = Decimal(market_event.price or "0")
                     eligible = (
                         order.side == "BUY"

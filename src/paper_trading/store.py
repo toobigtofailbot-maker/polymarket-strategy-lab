@@ -213,6 +213,15 @@ class PaperStore:
                     "state_after",
                 }:
                     return False
+                if event_id != content_id(
+                    "paperevent:sha256:",
+                    {
+                        "event_type": event_type,
+                        "event_time_ns": event_time_ns,
+                        "data": payload["data"],
+                    },
+                ):
+                    return False
                 last_state_json = canonical_json_bytes(payload["state_after"]).decode(
                     "utf-8"
                 )

@@ -123,6 +123,45 @@ def test_one_order_replay_matches_wp172_fill_and_fee_semantics(tmp_path) -> None
     )
     store.close()
 
+
+def test_passive_without_same_price_arrival_liquidity_never_fills(tmp_path) -> None:
+    store, engine = make_engine(tmp_path / "passive-empty.sqlite3", mode="PASSIVE_MAKER")
+    engine.process_market_event(paper_book(100, bid="0.48"))
+    opened = engine.submit(_intent(engine.state.binding))
+    engine.process_market_event(
+        PaperMarketEvent(
+            "TRADE", "market:a", "asset:a", 114, 115, "trade:eligible",
+            side="SELL", price="0.49", size="100",
+        )
+    )
+    current = next(order for order in engine.state.orders if order.order_id == opened.order_id)
+    assert current.passive_fill_eligible is False
+    assert current.filled_quantity == "0" and engine.state.fills == ()
+    engine.advance_time(161)
+    assert engine.state.orders[0].status == "EXPIRED"
+    store.close()
+
+
+def test_market_asset_identity_mismatch_never_opens_or_fills(tmp_path) -> None:
+    store, engine = make_engine(tmp_path / "market-identity.sqlite3")
+    engine.process_market_event(paper_book(100))
+    mismatched = build_paper_intent(
+        engine.state.binding,
+        market_id="market:b", asset_id="asset:a", side="BUY", quantity="1",
+        order_style="AGGRESSIVE_TAKER", reference_price="0.5", decision_time_ns=101,
+    )
+    assert engine.submit(mismatched).status == "REJECTED"
+    assert "MARKET_DATA_UNAVAILABLE" in engine.state.risk_decisions[-1].reason_codes
+    with pytest.raises(PaperTradingError, match="MARKET_EVENT_INVALID"):
+        engine.process_market_event(
+            PaperMarketEvent(
+                "BOOK", "market:b", "asset:a", 109, 110, "wrong-market",
+                (("0.49", "5"),), (("0.51", "5"),),
+            )
+        )
+    assert engine.state.fills == ()
+    store.close()
+
     model, _exp, _ev, trace, window, assessment, binding = edge_stack("PASSIVE_MAKER")
     store, engine = make_engine(tmp_path / "passive.sqlite3", mode="PASSIVE_MAKER")
     engine.process_market_event(paper_book(100))

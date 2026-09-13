@@ -183,7 +183,9 @@ def run_wp172_replay(
 class Wp169ReadOnlyTail:
     """Bounded `mode=ro` reader for accepted canonical local WP169 observations."""
 
-    def __init__(self, path: str | Path) -> None:
+    def __init__(
+        self, path: str | Path, *, processed_lineages: Sequence[str] = ()
+    ) -> None:
         if not isinstance(path, (str, Path)):
             raise PaperTradingError("SOURCE_UNAVAILABLE")
         candidate = Path(path)
@@ -204,6 +206,10 @@ class Wp169ReadOnlyTail:
         self._markets: dict[str, str] = {}
         self._observation_sequence = 0
         self._gap_sequence = 0
+        if any(not isinstance(item, str) or not item for item in processed_lineages):
+            raise PaperTradingError("INPUT_INVALID")
+        self._processed_lineages = frozenset(processed_lineages)
+        self.bootstrap_complete = False
         self._verify()
 
     def _connect(self) -> sqlite3.Connection:
@@ -402,40 +408,54 @@ class Wp169ReadOnlyTail:
             observations = connection.execute(
                 "SELECT * FROM normalized_occurrences WHERE archive_sequence>? AND status='ACCEPTED' "
                 "ORDER BY archive_sequence ASC LIMIT ?",
-                (self._observation_sequence, limit),
+                (self._observation_sequence, limit + 1),
             ).fetchall()
             gaps = connection.execute(
                 "SELECT sequence,asset_id,state,reason,received_at FROM gap_events "
                 "WHERE sequence>? ORDER BY sequence ASC LIMIT ?",
-                (self._gap_sequence, limit),
+                (self._gap_sequence, limit + 1),
             ).fetchall()
         except sqlite3.Error:
             raise PaperTradingError("SOURCE_UNAVAILABLE") from None
         finally:
             connection.close()
+        combined = [
+            (_time_ns(row["received_at"]), 0, row["archive_sequence"], row)
+            for row in observations
+        ] + [
+            (_time_ns(row["received_at"]), 1, row["sequence"], row)
+            for row in gaps
+        ]
+        combined.sort(key=lambda item: item[:3])
         events: list[PaperMarketEvent] = []
-        for row in observations:
-            converted = self._convert(row)
-            if converted is not None:
-                events.append(converted)
-            self._observation_sequence = row["archive_sequence"]
-        for row in gaps:
-            market = self._markets.get(row["asset_id"], "market:unknown")
-            at = _time_ns(row["received_at"])
-            events.append(
-                PaperMarketEvent(
+        for at, kind, sequence, row in combined[:limit]:
+            if kind == 0:
+                converted = self._convert(row)
+                self._observation_sequence = sequence
+            else:
+                lineage = f"wp169-gap:{sequence}"
+                converted = PaperMarketEvent(
                     "GAP_OPEN" if row["state"] == "OPEN" else "GAP_HEALED",
-                    market,
-                    row["asset_id"],
-                    at,
-                    at,
-                    f"wp169-gap:{row['sequence']}",
+                    self._markets.get(row["asset_id"], "market:unknown"),
+                    row["asset_id"], at, at, lineage,
                 )
-            )
-            self._gap_sequence = row["sequence"]
-        events.sort(
-            key=lambda item: (item.receive_time_ns, item.event_time_ns, item.lineage)
-        )
+                self._gap_sequence = sequence
+            if converted is not None and converted.lineage not in self._processed_lineages:
+                events.append(converted)
+        connection = self._connect()
+        try:
+            remaining_observations = connection.execute(
+                "SELECT 1 FROM normalized_occurrences WHERE archive_sequence>? "
+                "AND status='ACCEPTED' LIMIT 1", (self._observation_sequence,)
+            ).fetchone()
+            remaining_gaps = connection.execute(
+                "SELECT 1 FROM gap_events WHERE sequence>? LIMIT 1", (self._gap_sequence,)
+            ).fetchone()
+        except sqlite3.Error:
+            raise PaperTradingError("SOURCE_UNAVAILABLE") from None
+        finally:
+            connection.close()
+        self.bootstrap_complete = remaining_observations is None and remaining_gaps is None
         return tuple(events)
 
 
@@ -456,7 +476,8 @@ class LiveStoreRuntime:
         events = self.tail.read_new(limit=limit)
         for event in events:
             self.engine.process_market_event(event)
-        self.engine.advance_time(time.time_ns())
+        if self.tail.bootstrap_complete:
+            self.engine.advance_time(time.time_ns())
         return len(events)
 
     def run_foreground(self, *, max_polls: int | None = None) -> None:

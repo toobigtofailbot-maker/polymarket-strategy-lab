@@ -94,8 +94,16 @@ def evaluate_risk(
         if intent.asset_id in positions
         else Decimal(0)
     )
-    projected_quantity = (
-        held + quantity if intent.side == "BUY" else max(Decimal(0), held - quantity)
+    pending_buy_quantity = sum(
+        (
+            Decimal(order.quantity) - Decimal(order.filled_quantity)
+            for order in open_orders
+            if order.side == "BUY" and order.asset_id == intent.asset_id
+        ),
+        Decimal(0),
+    )
+    projected_quantity = held + pending_buy_quantity + (
+        quantity if intent.side == "BUY" else Decimal(0)
     )
     if limits.max_position_quantity is not None and projected_quantity > Decimal(
         limits.max_position_quantity
@@ -104,7 +112,12 @@ def evaluate_risk(
 
     def exposure(order: PaperOrder) -> Decimal:
         remaining = Decimal(order.quantity) - Decimal(order.filled_quantity)
-        return remaining * Decimal(order.reference_price)
+        unit_value = (
+            Decimal(1)
+            if order.order_style == "AGGRESSIVE_TAKER"
+            else Decimal(order.reference_price)
+        )
+        return remaining * unit_value
 
     market_open = sum(
         exposure(order) for order in open_orders if order.market_id == intent.market_id

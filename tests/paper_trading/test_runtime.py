@@ -75,6 +75,70 @@ def test_replay_is_deterministic_and_wp169_tail_is_read_only(tmp_path) -> None:
     ).name or "mode=ro" in __import__("inspect").getsource(Wp169ReadOnlyTail)
 
 
+def test_wp169_tail_resumes_without_duplicate_events_after_paper_restart(tmp_path) -> None:
+    market = tmp_path / "market.sqlite3"
+    with MarketTruthStore(market) as source:
+        raw = _book_raw()
+        source.append(raw, mt.normalize_websocket_message(raw, book_readiness={}))
+
+    model, _exp, _ev, _trace, _window, assessment, binding = edge_stack()
+    paper = tmp_path / "paper.sqlite3"
+    with PaperStore(paper, create=True) as store:
+        engine = PaperEngine.create(
+            store, binding, generous_limits(), assessment=assessment,
+            cost_model=model, session_label="restart", created_time_ns=1,
+        )
+        first = Wp169ReadOnlyTail(market).read_new()
+        assert len(first) == 1
+        engine.process_market_event(first[0])
+
+    with MarketTruthStore(market) as source:
+        update = mt.make_raw_envelope(
+            "WS", "polymarket:market-ws",
+            "ws:00000000-0000-4000-8000-000000000000:frame:2",
+            "2024-07-03T09:46:42.000000Z",
+            json.dumps(
+                {
+                    "event_type": "price_change",
+                    "market": "0x" + "a" * 64,
+                    "timestamp": "1720000002000",
+                    "price_changes": [
+                        {"asset_id": "7", "price": "0.5", "size": "1", "side": "BUY"}
+                    ],
+                }
+            ).encode(),
+            occurrence_sequence=2,
+        )
+        source.append(update, mt.normalize_websocket_message(update, book_readiness={"7": True}))
+
+    with PaperStore(paper) as store:
+        engine = PaperEngine.open(store)
+        processed = tuple(
+            event.data["lineage"]
+            for event in store.events()
+            if event.event_type == "MARKET_EVENT"
+        )
+        tail = Wp169ReadOnlyTail(market, processed_lineages=processed)
+        new_events = tail.read_new()
+        assert len(new_events) == 1 and new_events[0].lineage not in processed
+        engine.process_market_event(new_events[0])
+        assert engine.state.last_market_receive_ns == new_events[0].receive_time_ns
+        assert tail.read_new() == ()
+
+
+def test_wp169_tail_chunking_preserves_observation_gap_global_order(tmp_path) -> None:
+    market = tmp_path / "ordered.sqlite3"
+    with MarketTruthStore(market) as source:
+        raw = _book_raw()
+        source.append(raw, mt.normalize_websocket_message(raw, book_readiness={}))
+        source.mark_gap("7", "OPEN", "DISCONNECT", "2024-07-03T09:46:41.000000Z")
+    tail = Wp169ReadOnlyTail(market)
+    first = tail.read_new(limit=1)
+    second = tail.read_new(limit=1)
+    assert [first[0].kind, second[0].kind] == ["BOOK", "GAP_OPEN"]
+    assert first[0].receive_time_ns <= second[0].receive_time_ns
+
+
 def test_bound_wp172_window_and_decision_trace_drive_full_paper_engine(tmp_path) -> None:
     model, _exp, _ev, trace, window, assessment, binding = edge_stack()
     with PaperStore(tmp_path / "wp172.sqlite3", create=True) as store:

@@ -190,7 +190,15 @@ def main(argv: list[str] | None = None) -> int:
                         raise PaperTradingError("INPUT_INVALID")
                     LiveStoreRuntime(
                         engine,
-                        Wp169ReadOnlyTail(args.market_truth_store),
+                        Wp169ReadOnlyTail(
+                            args.market_truth_store,
+                            processed_lineages=tuple(
+                                event.data["lineage"]
+                                for event in store.events()
+                                if event.event_type == "MARKET_EVENT"
+                                and isinstance(event.data.get("lineage"), str)
+                            ),
+                        ),
                         args.poll_interval,
                     ).run_foreground(max_polls=args.max_polls)
                     output = engine.summary()

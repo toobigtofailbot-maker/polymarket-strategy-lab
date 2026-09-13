@@ -400,6 +400,7 @@ class PaperOrder:
     markout_lineage: str | None = None
     markout_observed_receive_time_ns: int | None = None
     markout_status: str = "PENDING"
+    passive_fill_eligible: bool | None = None
 
 
 @dataclass(frozen=True)
@@ -498,6 +499,10 @@ def validate_order(order: object) -> None:
         or (order.markout_status == "AVAILABLE") != (order.markout_mid is not None)
         or order.markout_status == "PENDING"
         and order.markout_observed_receive_time_ns is not None
+        or order.passive_fill_eligible is not None
+        and not isinstance(order.passive_fill_eligible, bool)
+        or order.order_style == "AGGRESSIVE_TAKER"
+        and order.passive_fill_eligible is not None
     ):
         raise PaperTradingError("ORDER_INVALID")
     decimal_value(order.fee_paid)

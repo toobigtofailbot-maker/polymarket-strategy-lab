@@ -23,9 +23,19 @@ from src.data_layer.analytical_research import (
     load_and_verify_experiment_registry,
 )
 from src.paper_trading.accounting import mark_account
-from src.paper_trading.engine import state_from_mapping, valid_marks
-from src.paper_trading.models import PAPER_APPLICATION_ID, PAPER_USER_VERSION
-from src.paper_trading.store import PaperStore
+from src.paper_trading.engine import (
+    _replay_journal,
+    state_from_mapping,
+    state_to_mapping,
+    valid_marks,
+)
+from src.paper_trading.models import (
+    PAPER_APPLICATION_ID,
+    PAPER_USER_VERSION,
+    PaperTradingError,
+    content_id,
+)
+from src.paper_trading.store import JournalEvent, PaperStore
 
 
 MARKET_APPLICATION_ID = 1_347_242_297
@@ -232,6 +242,7 @@ def _open_paper(path: Path | None) -> sqlite3.Connection:
         ).fetchall()
         previous = None
         last_state = None
+        journal_events = []
         for expected_sequence, row in enumerate(rows, 1):
             if (
                 row["sequence"] != expected_sequence
@@ -249,6 +260,22 @@ def _open_paper(path: Path | None) -> sqlite3.Connection:
             if expected_hash != row["event_hash"]:
                 raise CockpitError("SOURCE_UNAVAILABLE")
             payload = json.loads(row["payload_json"])
+            if row["event_id"] != content_id(
+                "paperevent:sha256:",
+                {
+                    "event_type": row["event_type"],
+                    "event_time_ns": row["event_time_ns"],
+                    "data": payload["data"],
+                },
+            ):
+                raise CockpitError("SOURCE_UNAVAILABLE")
+            journal_events.append(
+                JournalEvent(
+                    row["sequence"], row["event_id"], row["event_type"],
+                    row["event_time_ns"], payload["data"], payload["state_after"],
+                    row["previous_event_hash"], row["event_hash"],
+                )
+            )
             last_state = json.dumps(
                 payload["state_after"],
                 sort_keys=True,
@@ -271,12 +298,15 @@ def _open_paper(path: Path | None) -> sqlite3.Connection:
             != checkpoint["state_hash"]
         ):
             raise CockpitError("SOURCE_UNAVAILABLE")
+        replayed = _replay_journal(tuple(journal_events))
+        if state_to_mapping(replayed) != json.loads(checkpoint["state_json"]):
+            raise CockpitError("SOURCE_UNAVAILABLE")
         return connection
     except CockpitError:
         if connection is not None:
             connection.close()
         raise
-    except (OSError, sqlite3.Error, ValueError, KeyError, TypeError):
+    except (OSError, sqlite3.Error, ValueError, KeyError, TypeError, PaperTradingError):
         if connection is not None:
             connection.close()
         raise CockpitError("SOURCE_UNAVAILABLE") from None

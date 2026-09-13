@@ -26,6 +26,7 @@ from src.paper_trading import (
     build_paper_intent,
     build_strategy_binding,
 )
+from src.paper_trading.models import canonical_json_bytes
 from src.research_runtime.executable_edge import (
     MarketTruthEvent,
     MarketTruthWindow,
@@ -620,6 +621,43 @@ def test_paper_routes_are_get_only_bounded_sanitized_and_read_only(
         )
     )
     assert _get(unavailable, "/api/paper/summary") == (
+        503,
+        {"error": {"code": "SOURCE_UNAVAILABLE"}},
+    )
+
+
+def test_paper_cockpit_rejects_consistently_rehashed_logical_divergence(
+    tmp_path: Path,
+) -> None:
+    market = _market_store(tmp_path)
+    registry = _experiment_store(tmp_path)
+    paper = _paper_store(tmp_path)
+    connection = sqlite3.connect(paper)
+    row = connection.execute(
+        "SELECT sequence,event_id,event_type,event_time_ns,payload_json,"
+        "previous_event_hash FROM paper_journal ORDER BY sequence DESC LIMIT 1"
+    ).fetchone()
+    payload = json.loads(row[4])
+    payload["state_after"]["marks"] = [["asset:a", "0.7"]]
+    payload_json = canonical_json_bytes(payload).decode("utf-8")
+    digest = PaperStore._event_hash(
+        row[0], row[1], row[2], row[3], payload_json, row[5]
+    )
+    state_json = canonical_json_bytes(payload["state_after"]).decode("utf-8")
+    connection.execute(
+        "UPDATE paper_journal SET payload_json=?,event_hash=? WHERE sequence=?",
+        (payload_json, digest, row[0]),
+    )
+    connection.execute(
+        "UPDATE paper_checkpoint SET last_event_hash=?,state_json=?,state_hash=? "
+        "WHERE singleton=1",
+        (digest, state_json, hashlib.sha256(state_json.encode()).hexdigest()),
+    )
+    connection.commit()
+    connection.close()
+
+    app = cockpit.create_app(cockpit.CockpitConfig(market, registry, paper))
+    assert _get(app, "/api/paper/summary") == (
         503,
         {"error": {"code": "SOURCE_UNAVAILABLE"}},
     )

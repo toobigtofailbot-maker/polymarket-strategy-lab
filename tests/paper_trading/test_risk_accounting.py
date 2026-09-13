@@ -1,7 +1,7 @@
 from dataclasses import replace
 from decimal import Decimal
 
-from src.paper_trading import build_paper_intent, mark_account
+from src.paper_trading import PaperOrder, build_paper_intent, mark_account
 from src.paper_trading.accounting import PaperAccount, PaperPosition
 from src.paper_trading.risk import evaluate_risk
 
@@ -182,6 +182,36 @@ def test_reservations_prevent_oversubscription_and_risk_precedes_open(tmp_path) 
     types = [event.event_type for event in store.events()]
     assert types.index("RISK_DECIDED") < types.index("ORDER_OPENED")
     store.close()
+
+
+def test_open_aggressive_orders_count_conservatively_toward_aggregate_caps() -> None:
+    *_, binding = edge_stack()
+    first_intent = _intent(binding, quantity="4")
+    open_order = PaperOrder(
+        "paperorder:sha256:" + "a" * 64,
+        first_intent.intent_id,
+        "market:a", "asset:a", "BUY", "AGGRESSIVE_TAKER", "4", "0.1",
+        "0", "0", "0", "OPEN", 100, 110, None, "4.04", "0", None,
+        "paperrisk:sha256:" + "b" * 64,
+    )
+    account = PaperAccount("100", "100", "4.04", (), (), "0")
+    common = dict(
+        intent=_intent(binding, quantity="2", decision_time_ns=102),
+        limits=generous_limits(
+            max_per_market_gross_exposure="5", max_total_gross_exposure="5",
+            max_position_quantity="5",
+        ),
+        account=account,
+        orders=(open_order,),
+        marks={"asset:a": "0.5"},
+        control_state="RUNNING", reconciliation_blocked=False,
+        resolution_pending=set(), last_market_receive_ns=100, decided_time_ns=102,
+        conservative_buy_reserve="2.02",
+    )
+    reasons = evaluate_risk(**common).reason_codes
+    assert "MAX_PER_MARKET_GROSS_EXPOSURE" in reasons
+    assert "MAX_TOTAL_GROSS_EXPOSURE" in reasons
+    assert "MAX_POSITION_QUANTITY" in reasons
 
 
 def test_utc_day_loss_resets_by_day_without_erasing_session_loss() -> None:
