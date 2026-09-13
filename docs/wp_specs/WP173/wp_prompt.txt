@@ -1,0 +1,760 @@
+Package Identity:
+  WP ID: WP173
+  Title: Serious Paper Trading System + Paper Cockpit
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/wp173-serious-paper
+  Package class: SERIOUS_PAPER_RUNTIME_ACCOUNTING_RISK_RECONCILIATION_COCKPIT
+  Package size class: XL
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: MANUAL_FOREGROUND_PAPER_RUNTIME_WITH_PERSISTENT_SQLITE_STATE
+  Product impact: SERIOUS_PAPER_OMS_ACCOUNTING_RISK_RECONCILIATION_AND_COCKPIT
+  Network impact: LOCAL_LOOPBACK_ONLY_NO_NEW_EXTERNAL_PRODUCT_NETWORK
+  Credential impact: NONE
+  Dependency impact: NONE_EXPECTED
+  Trading impact: SIMULATED_PAPER_ONLY_NO_REAL_VENUE_EFFECTS
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: efficient normal strong coding/reasoning mode
+  Reason: one coherent runtime vertical slice with deterministic paper authority, accounting,
+    risk, reconciliation, persistence, and read-only cockpit integration
+  Escalate to higher reasoning or STOP if: a real predecessor-contract contradiction,
+    persistent-state ambiguity, or paper/live authority ambiguity cannot be resolved
+    deterministically
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: true
+hermes_runtime: false
+strategy: true
+paper: true
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Required predecessor:
+  WP172 / PR #174
+
+Required predecessor final head:
+  39363e5a081b6737104260725b1b0c8fcffe9196
+
+Required predecessor merge commit / drafting-time main:
+  418bae72f24b0694eccc657ed5dc3f90a3f38f2a
+
+Successor:
+  WP174 — Auth / Signing / Execution Gateway
+
+Merge authority:
+  NO
+
+XL authorization basis:
+  WP173 is intentionally one coherent vertical slice: paper order lifecycle + persistent account
+  + hard paper risk + reconciliation/recovery + foreground runtime + existing cockpit expansion.
+  Up to the current schema maximum of 35 changed paths is authorized for scope budget only.
+  This does not broaden paper authority into credentials, real execution, or live trading.
+
+===============================================================================
+1. OBJECTIVE
+===============================================================================
+
+Build the first persistent serious paper-trading system on top of merged WP172 executable-edge
+evidence.
+
+The complete paper path must be:
+
+  validated WP172 paper-eligible assessment
+  -> deterministic paper strategy/session binding
+  -> deterministic paper intent
+  -> hard pre-order paper-risk decision
+  -> simulated paper order lifecycle
+  -> conservative fill processing using WP172-equivalent execution semantics
+  -> cash / reservations / positions / fees / realized + unrealized PnL
+  -> append-only audit evidence
+  -> deterministic reconciliation and restart recovery
+  -> read-only operator cockpit projection
+
+WP173 must support a manually launched foreground paper session that can run for an extended
+period against a caller-selected, locally available WP169 market-truth store that may be growing
+while the existing WP169 public-data collector runs separately.
+
+WP173 itself MUST NOT create another external market-data client. It consumes validated local
+market truth read-only.
+
+WP173 also must support deterministic replay from existing WP168/WP172 market-truth evidence so
+the entire OMS/accounting/risk/recovery path is testable without wall-clock or external network.
+
+This WP creates a serious PAPER platform. It does not claim that an autonomous alpha strategy
+generator exists. Strategy-specific decision producers may submit validated paper intents through
+the frozen paper-intent boundary; the replay adapter must be sufficient to prove the full engine
+end-to-end from an approved WP172 decision trace.
+
+===============================================================================
+2. AUTHORITY / NON-AUTHORITY
+===============================================================================
+
+Implementation authority:
+  YES after deterministic RUNTIME readiness returns IMPLEMENTATION_READY.
+
+Paper authority:
+  YES, simulated orders/fills/accounting only.
+
+Execution authority:
+  NO real venue interaction of any kind.
+
+Live authority:
+  NO.
+
+Credential authority:
+  NO.
+
+Runtime/scheduler authority:
+  YES only for a manually launched foreground paper loop and deterministic local control/state.
+  NO OS scheduler, daemon/service installation, autostart, background deployment, or cloud runtime.
+
+Network authority:
+  Existing cockpit loopback only.
+  NO new external HTTP/WebSocket/RPC product network.
+  WP173 reads caller-selected local WP169 SQLite evidence instead of opening its own market network.
+
+Canonical evidence authority:
+  WP169 remains authoritative for market truth.
+  WP170 remains authoritative for experiment/OOS truth.
+  WP172 remains authoritative for executable-edge assessment/cost-model semantics.
+  WP173 owns only paper-session/order/fill/accounting/risk/reconciliation evidence.
+
+Dependency-change authority:
+  NO. Reuse stdlib SQLite/Decimal plus already-merged dependencies.
+
+Explicitly forbidden:
+- API keys, private keys, secrets, wallets, authenticated clients;
+- CLOB order placement/cancel endpoints;
+- signing;
+- real account balances/positions;
+- live/paper mode fallback;
+- Hermes/LLM/model authority;
+- dynamic strategy code loading;
+- arbitrary shell execution;
+- direct modification of WP169/WP170 canonical stores;
+- autonomous promotion from research into paper without an eligible WP172 assessment;
+- cockpit POST/PUT/PATCH/DELETE trading controls;
+- any real capital or real order side effect.
+
+===============================================================================
+3. HARD MERGE GATE
+===============================================================================
+
+Run:
+
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+
+Required:
+1. PR #174 merged.
+2. main contains WP172 final head 39363e5a081b6737104260725b1b0c8fcffe9196.
+3. main contains merge commit 418bae72f24b0694eccc657ed5dc3f90a3f38f2a or a newer descendant.
+4. no open/conflicting WP173 branch or PR exists.
+5. no unrelated local work would be overwritten.
+6. obsolete parked Hermes-WP172 work remains untouched.
+7. generated-artifact guard passes.
+
+STOP if clean/current main cannot be established.
+
+===============================================================================
+4. CONTEXT BUDGET + BOUNDED DISCOVERY
+===============================================================================
+
+Read first:
+- AGENTS.md
+- AI_CODING_AGENT_START_HERE.md
+- CODEX_START_HERE.md
+- docs/project_status.md
+- docs/ai/codex/WP_DRAFTING_STANDARD.md
+- docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md
+- docs/ai/codex/VALIDATION_MATRIX.md
+- docs/mode_separation.md
+- docs/interface_contracts.md
+- src/paper_trading/README.md
+- docs/executable_edge_contract.md
+- docs/interactive_operator_cockpit_contract.md
+
+Read for this WP:
+- src/research_runtime/executable_edge/
+- direct WP172 tests
+- exact WP169 market-truth store/read interfaces needed to tail accepted local evidence
+- src/operator_cockpit.py
+- src/operator_cockpit_frontend/src/main.tsx
+- tests/test_operator_cockpit.py
+- direct repo-truth/status/architecture tests
+
+Read only if blocked:
+- exact WP168 replay contracts needed by the replay adapter
+- historical paper-strategy design docs such as WP83, strictly as non-authoritative prior design
+- one predecessor implementation file controlling a required field or SQLite invariant
+
+Do not broadly read/touch:
+- credentials/auth/signing
+- real execution/OMS/live code
+- Hermes/provider work
+- unrelated historical WPs
+- dependencies/lock files
+- workflow YAML
+
+Bounded discovery ends once:
+A. WP172 eligibility and cost-model interfaces are mechanically proven;
+B. a read-only WP169 local-store tail interface is selected;
+C. the existing cockpit extension surface is proven;
+D. complete-changed-set guards are identified;
+E. exact source/test/doc scope is frozen.
+
+Then implement. Do not continue broad repository research.
+
+===============================================================================
+5. CONTRACT COMPILATION BEFORE SPEC FREEZE
+===============================================================================
+
+Mechanically exercise the REAL merged interfaces before freezing wp_spec.json:
+
+1. load/validate a real representative WP172 ExecutableEdgeAssessment with
+   `status == EXECUTABLE_EDGE_PASS` and `wp173_evaluation_eligible == true`;
+2. validate the exact frozen ExecutionCostModel used by that assessment;
+3. exercise the selected WP169 local read-only store adapter against existing fixtures and prove
+   it can distinguish accepted current book/trade/resolution evidence without writing the store;
+4. prove WP168/WP172 replay market-truth events can drive an incremental paper fill loop;
+5. prove the current CockpitConfig/create_app/front-end can be extended without weakening
+   loopback/read-only semantics;
+6. prove every frozen enum/status/application-id/schema literal through its real validator;
+7. discover repository guards that inspect the complete changed-file set.
+
+Correct deterministic interface/schema mismatches BEFORE spec freeze.
+
+===============================================================================
+6. SERIOUS PAPER DATA MODEL
+===============================================================================
+
+Implement immutable validated records with canonical serialization and exact Decimal-string
+economics.
+
+A. PaperStrategyBinding
+- content-addressed ID;
+- exact WP172 assessment ID;
+- exact WP172 cost-model ID;
+- experiment ID / first-look evidence ID;
+- human-readable strategy instance label bounded/sanitized;
+- created-at/event-time field;
+- valid only when the supplied WP172 assessment validates, is EXECUTABLE_EDGE_PASS, and is
+  wp173_evaluation_eligible;
+- cannot broaden the assessed execution mode/cost assumptions.
+
+B. PaperIntent
+- content-addressed/idempotent ID;
+- binding ID;
+- market_id + asset_id;
+- BUY or SELL;
+- intended quantity;
+- paper order style restricted to the cost model's assessed execution mode:
+    AGGRESSIVE_TAKER or PASSIVE_MAKER;
+- limit/reference price where required;
+- created/decision receive-time;
+- TTL for passive mode from frozen cost model;
+- no account, wallet, key, venue credential, or real-order field;
+- intent itself never bypasses risk.
+
+C. PaperOrder
+Closed lifecycle:
+  PENDING_RISK
+  REJECTED
+  OPEN
+  PARTIALLY_FILLED
+  FILLED
+  CANCELLED
+  EXPIRED
+
+Every transition is append-only evidence.
+A rejected/cancelled/expired order cannot reopen.
+Same intent ID + identical bytes is idempotent.
+Same identity + different bytes fails closed.
+
+D. PaperFill
+- paper order ID;
+- fill sequence;
+- market/asset;
+- side;
+- quantity;
+- price;
+- fee;
+- receive/event time;
+- market-truth lineage/source reference;
+- explicitly `SIMULATED_PAPER_FILL`;
+- never contains/claims a venue order/trade ID.
+
+E. PaperRiskLimits / PaperRiskDecision
+At minimum freeze:
+- initial paper cash;
+- max single-order notional;
+- max per-market gross exposure;
+- max total gross exposure;
+- max open orders;
+- max session drawdown;
+- max UTC-day loss;
+- minimum free-cash reserve;
+- max market-data age;
+- optional max position quantity if it naturally fits the model.
+
+Risk result is deterministic ALLOW or DENY with closed reason codes.
+Every new order must have a persisted ALLOW decision before OPEN.
+No AI/LLM/Hermes can modify or override limits.
+
+===============================================================================
+7. ACCOUNTING / RESERVATIONS / PNL
+===============================================================================
+
+Implement a deterministic spot-token paper ledger.
+
+Rules:
+- paper cash starts from explicit caller-supplied initial cash;
+- BUY may never make free cash negative;
+- SELL may never exceed free owned quantity;
+- no borrowing, shorting, leverage, margin, or synthetic negative inventory;
+- open BUY orders reserve cash/notional/fees conservatively;
+- open SELL orders reserve position quantity;
+- reservations count toward exposure/risk so multiple open orders cannot oversubscribe resources;
+- partial fill releases/adjusts reservations exactly;
+- cancel/expiry releases remaining reservations exactly;
+- fees use the frozen WP172 cost-model assumptions;
+- weighted-average remaining cost basis includes applicable buy fees;
+- realized PnL on reduction uses removed cost basis versus net sell proceeds;
+- unrealized PnL uses the latest valid non-crossed two-sided market mid;
+- equity = free cash + reserved cash + marked position value, with accounting identity tested;
+- if current mark is unavailable/stale/gapped, mark-dependent PnL is explicitly unavailable rather
+  than fabricated;
+- all economic arithmetic uses Decimal/canonical strings, never binary float identity.
+
+Resolution:
+- when validated WP169 resolution truth unambiguously maps the held asset to winner/loser, cancel
+  remaining open orders and settle paper inventory at deterministic 1/0 payoff;
+- if resolution mapping is missing/ambiguous, freeze that market as RESOLUTION_PENDING, place no
+  new paper orders there, and do not guess a payout.
+
+===============================================================================
+8. FILL MODEL — WP172 SEMANTIC EQUIVALENCE
+===============================================================================
+
+Do NOT use Nautilus default fills as paper truth.
+
+Paper fills must preserve WP172 semantics incrementally:
+
+Aggressive:
+- decision -> latency -> arrival;
+- use latest valid reconstructed book known by receive time at arrival;
+- sweep actual visible depth;
+- partial fill if insufficient depth;
+- exact fee/slippage semantics consistent with the frozen cost model.
+
+Passive:
+- initialize queue-ahead from visible same-price size * frozen queue multiplier;
+- price touch/book update alone never fills;
+- only eligible opposite-aggressor trade flow after arrival consumes queue;
+- fill only after queue ahead is consumed;
+- expire at frozen TTL;
+- adverse selection/markout reporting stays aligned with the WP172 cost model.
+
+Required equivalence regression:
+For a one-order replay with identical market events + cost model, final paper filled quantity,
+average fill price, fee and relevant cost components must match the corresponding WP172
+execution semantics exactly.
+
+A narrow refactor/extraction of WP172 fill helpers is authorized only if it preserves WP172
+public behavior byte/semantic-for-semantic and is covered by regression tests.
+Do not redesign WP172.
+
+===============================================================================
+9. PERSISTENCE / RESTART / RECONCILIATION
+===============================================================================
+
+Use a dedicated caller-selected local SQLite paper store.
+
+Required:
+- repo-owned application_id + user_version checked on every open;
+- explicit path validation; no symlink tricks;
+- append-only canonical event journal is the authoritative paper history;
+- each journal event has monotonic sequence, stable event ID/type/time, canonical payload,
+  previous-event hash and event hash;
+- derived/materialized paper tables/snapshots may exist for efficient cockpit reads but are not
+  allowed to contradict the journal;
+- each logical mutation uses one SQLite transaction;
+- duplicate identical mutations are idempotent;
+- conflicting duplicate identities fail closed;
+- no silent overwrite of historical events.
+
+On startup/restart:
+1. validate schema;
+2. verify complete journal hash chain;
+3. replay/recompute authoritative account/order/risk state;
+4. compare against materialized snapshot/checkpoint;
+5. if mismatch/corruption exists, enter RECONCILIATION_BLOCKED;
+6. while blocked, no new order may open.
+
+Crash/retry safety:
+- a crash must not create duplicate orders/fills;
+- no fill may exist without its paper order;
+- no accounting mutation may occur without its journal evidence;
+- restart after a committed fill must reconstruct exactly the same cash/position/PnL state.
+
+===============================================================================
+10. PAPER RUNTIME / CONTROL MODEL
+===============================================================================
+
+Provide a manually launched foreground runtime only.
+
+Required modes:
+
+REPLAY
+- caller supplies validated WP168/WP172 market-truth evidence plus paper intents / approved
+  decision trace;
+- deterministic finite execution;
+- same input -> same journal/state IDs.
+
+LIVE_STORE
+- caller supplies a validated local WP169 SQLite market-truth path that may grow while the existing
+  WP169 collector runs separately;
+- WP173 opens it read-only and tails only new accepted canonical observations;
+- no external market network client is created by WP173;
+- polling cadence is bounded/configurable and does not change economic event ordering;
+- stale/gap/reconciliation state blocks new paper order opening/fills as appropriate.
+
+Paper controls:
+  RUNNING
+  PAUSED
+  KILLED
+  RECONCILIATION_BLOCKED
+
+Rules:
+- PAUSED prevents new orders but preserves state and existing evidence;
+- KILLED is terminal for that paper session and cancels/expires remaining simulated open orders
+  according to the frozen control rule;
+- RECONCILIATION_BLOCKED cannot be manually overridden by an AI or strategy;
+- resume is allowed only from PAUSED;
+- no control path can change live-trading authorization because live does not exist here.
+
+A thin local CLI/manual API for init/run/submit-intent/cancel/pause/resume/kill/status is allowed.
+It must accept explicit local paths and validated structured input only.
+No arbitrary command/plugin/dynamic-import surface.
+
+===============================================================================
+11. COCKPIT EXPANSION
+===============================================================================
+
+Extend the existing WP171 React/FastAPI cockpit as a READ-ONLY paper operations view.
+
+CockpitConfig may accept an optional caller-selected paper-store path.
+Existing WP169/WP170 routes and semantics must remain backward compatible.
+
+Add a compact paper surface, preferably:
+- GET /api/paper/summary
+- GET /api/paper/orders
+- GET /api/paper/fills
+- GET /api/paper/positions
+- GET /api/paper/risk
+- GET /api/paper/audit
+
+List endpoints reuse the existing strict limit behavior where applicable.
+No new query/filter complexity unless mechanically necessary.
+
+Frontend must show at minimum:
+- paper session/control/reconciliation state;
+- paper cash/equity/PnL;
+- open orders and recent fills;
+- positions/exposure;
+- current risk-limit utilization/blocks;
+- data freshness / reconciliation health.
+
+Cockpit remains:
+- loopback-only;
+- sanitized;
+- GET-only for WP173;
+- unable to submit/cancel paper or real orders;
+- unable to modify risk limits;
+- unable to start live execution.
+
+Do not turn WP173 into a dashboard redesign. Extend the existing single-app architecture minimally.
+
+===============================================================================
+12. SCIENTIFIC / SAFETY INVARIANTS
+===============================================================================
+
+- An intent cannot enter paper without a valid WP172 paper-eligible binding.
+- Paper PASS/performance can never rewrite WP170/WP172 evidence.
+- Paper performance is forward simulation evidence, not proof of future profitability.
+- No look-ahead in replay.
+- Live-store processing uses receive-time ordering.
+- Stale/gapped/invalid market truth fails closed.
+- Risk executes before order opening.
+- Account state never goes negative under allowed spot-token semantics.
+- Reconciliation failure blocks order opening.
+- No paper config can select live mode.
+- No fallback to real venue calls exists.
+- No secrets/credentials are read, accepted, logged, or stored.
+- Negative PnL and failed strategies are preserved, not filtered out.
+- Cockpit views are projections, never canonical state.
+
+===============================================================================
+13. NEGATIVE / RECOVERY TEST MATRIX
+===============================================================================
+
+N01 ineligible/tampered WP172 assessment -> binding rejected.
+N02 mismatched cost model -> binding rejected.
+N03 paper intent cannot bypass persisted risk decision.
+N04 insufficient free cash -> BUY denied.
+N05 insufficient free position -> SELL denied.
+N06 single-order / market / total exposure limit breach -> denied.
+N07 open-order reservations prevent oversubscription.
+N08 session/daily loss limit breach -> new orders denied.
+N09 PAUSED -> no new order opens.
+N10 KILLED -> terminal; cannot resume.
+N11 reconciliation/hash-chain corruption -> RECONCILIATION_BLOCKED.
+N12 duplicate identical intent/order/fill retry -> idempotent.
+N13 duplicate identity with different bytes -> reject.
+N14 aggressive insufficient depth -> partial fill, no fabricated full fill.
+N15 passive price touch without queue-consuming trades -> no fill.
+N16 paper replay equivalence matches WP172 fill/cost semantics.
+N17 stale/gapped/crossed/one-sided required market state -> no false fill/order.
+N18 restart after partial fill -> exact same cash/reservations/position/PnL.
+N19 transaction failure cannot leave fill without accounting/journal evidence.
+N20 ambiguous resolution -> RESOLUTION_PENDING, no guessed payout.
+N21 no credential/signing/real-order client/import/path exists.
+N22 no paper-to-live fallback/config exists.
+N23 cockpit paper routes are GET-only and read-only.
+N24 malformed/wrong-schema/symlink paper store -> SOURCE_UNAVAILABLE / closed error.
+N25 same replay inputs -> identical final journal/state identities.
+
+===============================================================================
+14. SCOPE / RUNTIME EXECUTION RULE
+===============================================================================
+
+Governance track is RUNTIME.
+
+Create:
+- docs/wp_specs/WP173/wp_prompt.txt
+- docs/wp_specs/WP173/wp_spec.json
+
+Do NOT create draftability_certificate.json.
+
+Use deterministic readiness only before implementation.
+
+Expected implementation families:
+- src/paper_trading/ README + compact models/store/risk/accounting/engine/runtime/CLI modules;
+- focused paper tests;
+- narrow WP172 fill-helper refactor only if equivalence/reuse materially requires it;
+- src/operator_cockpit.py;
+- src/operator_cockpit_frontend/src/main.tsx and only directly necessary existing frontend files;
+- tests/test_operator_cockpit.py and direct paper-cockpit tests;
+- docs/serious_paper_trading_contract.md;
+- docs/project_status.md;
+- docs/repo_truth_index.md;
+- docs/deferred_items_log.md;
+- docs/long_term_bot_completion_roadmap.md if needed to replace the superseded old numbering;
+- docs/status_entries/WP173.md;
+- direct architecture/default-live/repo-truth tests.
+
+Target 22-30 files.
+Hard maximum 35 files.
+
+After bounded discovery, freeze exact paths in wp_spec.json.
+One consolidated same-capability scope correction is allowed under RUNTIME governance; rerun
+deterministic readiness, no independent pre-implementation recertification.
+
+No dependency/lock/workflow changes.
+If a genuinely new dependency is required, STOP.
+
+===============================================================================
+15. REQUIREMENT-TO-EVIDENCE
+===============================================================================
+
+R001 — predecessor/track/authority:
+  deterministic RUNTIME readiness; no credentials/execution/live.
+
+R002 — WP172 eligibility binding:
+  invalid/ineligible/mismatched evidence rejected.
+
+R003 — paper OMS lifecycle:
+  deterministic order transitions, idempotency, partial fill/cancel/expiry.
+
+R004 — WP172-equivalent fills:
+  aggressive/passive/latency/queue/fee equivalence tests.
+
+R005 — accounting/reservations/PnL:
+  cash/position/cost-basis/equity identities and no oversubscription.
+
+R006 — hard paper risk:
+  all configured limits fail closed before order opening.
+
+R007 — persistence/recovery/reconciliation:
+  journal chain, transaction atomicity, restart equality, corruption block.
+
+R008 — runtime modes:
+  deterministic replay + local WP169 read-only live-store tail; no new external network.
+
+R009 — cockpit:
+  read-only paper API/UI projection without control authority.
+
+R010 — safety/mode separation:
+  no credentials/signing/real order/live fallback/Hermes authority.
+
+R011 — repo truth/roadmap:
+  WP172 merged; WP173 current; WP174 execution gateway next.
+
+R012 — final exact-head evidence:
+  focused/integration tests, one combined final reviewer, one authoritative full suite,
+  exact-head hosted CI, security, PR-body re-fetch.
+
+All R001-R012 must be SATISFIED before READY YES.
+
+===============================================================================
+16. COMPACT NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|authority|real_execution|wp173|FORBID|real_venue_side_effect_forbidden|NONE|R010
+NR002|paper|binding|new_session|REQUIRE|wp172_eligible_assessment_required|NONE|R002
+NR003|risk|paper_order|before_open|REQUIRE|persisted_allow_decision_required|NONE|R006
+NR004|accounting|free_cash_or_position|insufficient|REJECT|negative_balance_forbidden|NONE|R005
+NR005|fills|nautilus_default_fill|paper_truth|FORBID|default_fill_not_authoritative|NONE|R004
+NR006|fills|passive_price_touch|queue_not_consumed|FORBID|touch_only_fill_forbidden|NONE|R004
+NR007|market_truth|stale_gapped_invalid|required_state|REJECT|paper_fill_or_open_forbidden|NONE|R008
+NR008|reconciliation|state_mismatch|startup_or_runtime|REJECT|new_orders_blocked|NONE|R007
+NR009|control|killed|resume|FORBID|killed_terminal|NONE|R007
+NR010|cockpit|mutation_route|wp173|FORBID|get_only_projection_required|NONE|R009
+NR011|runtime|external_product_network|wp173|FORBID|local_store_tail_only|NONE|R008
+NR012|workflow|successor|wp174|REQUIRE|auth_execution_gateway_separately_gated|NONE|R011
+END_NORMATIVE_RULE_MATRIX_V1
+
+===============================================================================
+17. VALIDATION — LEAN RUNTIME PROCESS
+===============================================================================
+
+While source is changing:
+- focused paper tests;
+- directly affected WP169/WP172/cockpit tests;
+- frontend typecheck/build when frontend changes;
+- cheap Ruff/compile/import checks;
+- relevant security/boundary checks;
+- DO NOT repeatedly run the full repository suite.
+
+Stable candidate only:
+1. deterministic readiness `--check-diff`;
+2. exact scope / artifact guard / `git diff --check`;
+3. focused + directly affected integration suite;
+4. paper/live/credential architecture boundary tests;
+5. security checks relevant to actual surface;
+6. frontend typecheck/build/audit;
+7. ONE combined independent final implementation reviewer covering:
+   correctness, paper/live separation, accounting, risk, reconciliation/restart,
+   fill semantics, cockpit non-authority, and evidence consistency;
+8. fix findings in one consolidated batch if needed;
+9. ONE authoritative full repository suite, locally OR equivalent exact-head hosted CI;
+10. one non-draft PR;
+11. exact-head hosted CI;
+12. post/update final PR body and re-fetch;
+13. independent Side review.
+
+Do not create multiple reviewer personas.
+Do not rerun the full suite after each small fix; rerun focused affected tests until stable, then one
+final broad validation.
+
+===============================================================================
+18. HARD STOPS
+===============================================================================
+
+STOP if the WP172 PASS/eligibility/cost-model binding cannot be validated mechanically.
+
+STOP if WP169 local canonical evidence cannot support a truthful read-only live-store paper feed
+without redesigning WP169 or inventing unvalidated market state.
+
+STOP if paper-fill behavior cannot be made semantically equivalent to WP172 cost/fill assumptions
+for the same one-order replay.
+
+STOP if implementation would require a new external market-data client, credentials, signing,
+real order APIs, private account state, or live mode.
+
+STOP if deterministic restart/reconciliation cannot fail closed on corrupted/divergent state.
+
+STOP if a new dependency/lock-file change is genuinely required.
+
+STOP if truthful coherent scope exceeds 35 changed files after reasonable consolidation.
+
+STOP if final exact-head evidence cannot be established.
+
+Ordinary bugs, focused test failures, negative paper PnL, rejected orders, and one same-capability
+scope correction are NOT hard stops.
+
+===============================================================================
+19. STATUS / ROADMAP / FINAL REPORT
+===============================================================================
+
+Update stable repo truth so it records:
+- WP172 merged: YES;
+- WP172 PR: #174;
+- WP172 final head: 39363e5a081b6737104260725b1b0c8fcffe9196;
+- WP172 merge commit: 418bae72f24b0694eccc657ed5dc3f90a3f38f2a;
+- WP173 Serious Paper Trading System + Paper Cockpit is current review target;
+- obsolete Hermes WP172 remains superseded/off critical path;
+- next major capability: WP174 Auth / Signing / Execution Gateway;
+- then WP175 Restricted Live Canary;
+- then WP176 Mature Controlled Live;
+- Hermes/alpha automation may proceed later in parallel during paper soak and is not a paper gate.
+
+Return only:
+
+READY FOR INDEPENDENT MERGE REVIEW: YES
+
+with:
+- PR number/link;
+- exact base/head;
+- exact changed-file count;
+- RUNTIME/RUNTIME deterministic readiness;
+- no certificate created;
+- focused/integration test result;
+- accounting/risk/reconciliation/restart evidence;
+- WP172 fill-equivalence evidence;
+- cockpit backend/frontend evidence;
+- security/boundary evidence;
+- one combined final reviewer result;
+- authoritative full-suite + exact-head hosted CI;
+- R001-R012 all SATISFIED;
+- PR body/evidence re-fetch;
+- open/non-draft/mergeable;
+- comments/reviews/threads;
+- product external network added: NO;
+- credentials: NO;
+- real execution/live: NO;
+- simulated paper authority only: YES;
+- merge performed: NO;
+- WP174 started: NO.
+
+OR a genuine Section 18 HARD STOP.
+
+If not ready, include the mandatory self-diagnosis block from WP_DRAFTING_STANDARD.md.
+
+Deterministic structure aliases (non-authoritative; no semantic or scope change):
+- Negative-test matrix: Section 13 Negative / Recovery Test Matrix.
+- Evidence plan: Section 15 Requirement-to-Evidence.
+- Successor boundary: Package Identity and Section 19.
+- Report back: Section 19 Final Report.
+
+END OF WP173

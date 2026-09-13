@@ -2528,3 +2528,23 @@ below remains separately gated and outside WP172 authority.
 | WP171-D002 | Executable-edge and cost realism | RESOLVED_BOUNDED_WP172_EXECUTABLE_EDGE_RESEARCH | P1 | Exact taker depth, maker queue flow, explicit fees, latency, markout, fill ratio, and frozen capacity grid | No actual-profit or execution claim follows |
 | WP172-D001 | Serious Paper Trading System (WP173) | OPEN | P1 | Separately authorized successor with persistent paper-account and accounting semantics | WP172 creates no paper account, OMS, order, portfolio, or capital state |
 | WP172-D002 | Portfolio, deterministic risk caps, reconciliation, authenticated execution, and live trading | OPEN_PROTECTED_SUCCESSORS | P1 | Later separately authorized protected packages | No credential, signing, real order, risk, execution, or live authority follows |
+
+## WP173 Serious Paper Trading System Deferred Items
+
+WP173 resolves the paper portion of the WP172 successor boundary as
+`RESOLVED_BOUNDED_WP173_SERIOUS_PAPER`: persistent simulated orders, exact spot
+accounting, deterministic hard paper risk, hashed-journal recovery/reconciliation,
+finite replay, read-only WP169 live-store tailing, manual foreground controls,
+and a GET-only cockpit projection. It does not resolve any credentialed or live
+boundary. The obsolete Hermes-labelled WP172 remains superseded/off the critical
+path; later Hermes/alpha automation may proceed separately during paper soak and
+is not a paper gate.
+
+| ID | Item | Status | Priority | Resolution path | Non-implication |
+|---|---|---|---|---|---|
+| WP172-D001 | Serious Paper Trading System (WP173) | RESOLVED_BOUNDED_WP173_SERIOUS_PAPER | P1 | WP173 deterministic simulated-paper runtime, accounting, risk, recovery, and cockpit | Paper results do not authorize or prove real execution or future profit |
+| WP172-D002 | Portfolio, deterministic risk caps, reconciliation, authenticated execution, and live trading | PARTIALLY_RESOLVED_PAPER_ONLY | P1 | WP173 resolves simulated portfolio/accounting/risk/reconciliation only; credentialed and live successors remain open | No private account, credential, signing, venue-order, or live authority follows |
+| WP173-D001 | Auth / Signing / Execution Gateway (WP174) | OPEN_PROTECTED_SUCCESSOR | P1 | Separate PROTECTED WP with explicit credential/execution authority and security gates | WP173 has no authenticated client or real order path |
+| WP173-D002 | Restricted Live Canary (WP175) | OPEN_PROTECTED_SUCCESSOR | P1 | Separate explicit live-authorization WP after WP174 | Paper readiness is not live readiness |
+| WP173-D003 | Mature Controlled Live (WP176) | OPEN_PROTECTED_SUCCESSOR | P1 | Separate mature-live WP after restricted-canary evidence | A canary does not imply mature live authority |
+| WP173-D004 | Hermes/alpha automation during paper soak | OPEN_PARALLEL_NOT_PAPER_GATE | P2 | Separately authorized advisory/strategy package may proceed in parallel later | No Hermes/model provider or autonomous promotion authority is added |

@@ -1,9 +1,11 @@
-"""WP171 local, read-only operator cockpit over WP169 and WP170 evidence."""
+"""WP171/WP173 local read-only cockpit over market, research, and paper evidence."""
 
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from decimal import Decimal
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -20,6 +22,10 @@ from src.data_layer.analytical_research import (
     RunEvidenceReceipt,
     load_and_verify_experiment_registry,
 )
+from src.paper_trading.accounting import mark_account
+from src.paper_trading.engine import state_from_mapping, valid_marks
+from src.paper_trading.models import PAPER_APPLICATION_ID, PAPER_USER_VERSION
+from src.paper_trading.store import PaperStore
 
 
 MARKET_APPLICATION_ID = 1_347_242_297
@@ -37,11 +43,23 @@ _ASCII_INTEGER_RE = re.compile(r"^[0-9]+$")
 
 _MARKET_COLUMNS = {
     "normalized_occurrences": (
-        "archive_sequence", "observation_id", "occurrence_id", "raw_id",
-        "source_kind", "event_kind", "event_id", "market_id", "asset_id",
-        "event_time", "received_at", "canonical_payload_json",
-        "canonical_payload_sha256", "status", "error_codes_json",
-        "book_ready", "provenance_json",
+        "archive_sequence",
+        "observation_id",
+        "occurrence_id",
+        "raw_id",
+        "source_kind",
+        "event_kind",
+        "event_id",
+        "market_id",
+        "asset_id",
+        "event_time",
+        "received_at",
+        "canonical_payload_json",
+        "canonical_payload_sha256",
+        "status",
+        "error_codes_json",
+        "book_ready",
+        "provenance_json",
     ),
     "gap_events": ("sequence", "asset_id", "state", "reason", "received_at"),
 }
@@ -60,14 +78,38 @@ FROM gap_events"""
 _RECENT_GAPS_SQL = """SELECT sequence,asset_id,state,reason,received_at
 FROM gap_events ORDER BY received_at DESC, sequence DESC LIMIT ?"""
 
+_PAPER_COLUMNS = {
+    "paper_journal": (
+        "sequence",
+        "event_id",
+        "event_type",
+        "event_time_ns",
+        "payload_json",
+        "previous_event_hash",
+        "event_hash",
+    ),
+    "paper_checkpoint": (
+        "singleton",
+        "last_sequence",
+        "last_event_hash",
+        "state_json",
+        "state_hash",
+    ),
+}
+
 
 @dataclass(frozen=True)
 class CockpitConfig:
     market_truth_path: Path | None
     experiment_registry_path: Path | None
+    paper_store_path: Path | None = None
 
     def __post_init__(self) -> None:
-        for value in (self.market_truth_path, self.experiment_registry_path):
+        for value in (
+            self.market_truth_path,
+            self.experiment_registry_path,
+            self.paper_store_path,
+        ):
             if value is not None and not isinstance(value, Path):
                 raise TypeError("cockpit paths must be pathlib.Path or None")
 
@@ -79,7 +121,9 @@ class CockpitError(Exception):
 
 
 def _error_response(code: str) -> JSONResponse:
-    return JSONResponse(status_code=ERROR_STATUS[code], content={"error": {"code": code}})
+    return JSONResponse(
+        status_code=ERROR_STATUS[code], content={"error": {"code": code}}
+    )
 
 
 def _parse_limit(value: str | None) -> int:
@@ -129,13 +173,20 @@ def _open_market(path: Path | None) -> sqlite3.Connection:
     try:
         connection = sqlite3.connect(validated.as_uri() + "?mode=ro", uri=True)
         connection.row_factory = sqlite3.Row
-        if connection.execute("PRAGMA application_id").fetchone()[0] != MARKET_APPLICATION_ID:
+        if (
+            connection.execute("PRAGMA application_id").fetchone()[0]
+            != MARKET_APPLICATION_ID
+        ):
             raise CockpitError("SOURCE_UNAVAILABLE")
-        if connection.execute("PRAGMA user_version").fetchone()[0] != MARKET_USER_VERSION:
+        if (
+            connection.execute("PRAGMA user_version").fetchone()[0]
+            != MARKET_USER_VERSION
+        ):
             raise CockpitError("SOURCE_UNAVAILABLE")
         for table, expected in _MARKET_COLUMNS.items():
             actual = tuple(
-                row[1] for row in connection.execute(f"PRAGMA table_info({table})").fetchall()
+                row[1]
+                for row in connection.execute(f"PRAGMA table_info({table})").fetchall()
             )
             if actual != expected:
                 raise CockpitError("SOURCE_UNAVAILABLE")
@@ -148,6 +199,262 @@ def _open_market(path: Path | None) -> sqlite3.Connection:
         if connection is not None:
             connection.close()
         raise CockpitError("SOURCE_UNAVAILABLE") from None
+
+
+def _open_paper(path: Path | None) -> sqlite3.Connection:
+    validated = _validated_path(path)
+    connection: sqlite3.Connection | None = None
+    try:
+        connection = sqlite3.connect(validated.as_uri() + "?mode=ro", uri=True)
+        connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA query_only=ON")
+        if (
+            connection.execute("PRAGMA application_id").fetchone()[0]
+            != PAPER_APPLICATION_ID
+        ):
+            raise CockpitError("SOURCE_UNAVAILABLE")
+        if (
+            connection.execute("PRAGMA user_version").fetchone()[0]
+            != PAPER_USER_VERSION
+        ):
+            raise CockpitError("SOURCE_UNAVAILABLE")
+        if connection.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
+            raise CockpitError("SOURCE_UNAVAILABLE")
+        for table, expected in _PAPER_COLUMNS.items():
+            actual = tuple(
+                row[1] for row in connection.execute(f"PRAGMA table_info({table})")
+            )
+            if actual != expected:
+                raise CockpitError("SOURCE_UNAVAILABLE")
+        rows = connection.execute(
+            "SELECT sequence,event_id,event_type,event_time_ns,payload_json,"
+            "previous_event_hash,event_hash FROM paper_journal ORDER BY sequence"
+        ).fetchall()
+        previous = None
+        last_state = None
+        for expected_sequence, row in enumerate(rows, 1):
+            if (
+                row["sequence"] != expected_sequence
+                or row["previous_event_hash"] != previous
+            ):
+                raise CockpitError("SOURCE_UNAVAILABLE")
+            expected_hash = PaperStore._event_hash(
+                row["sequence"],
+                row["event_id"],
+                row["event_type"],
+                row["event_time_ns"],
+                row["payload_json"],
+                row["previous_event_hash"],
+            )
+            if expected_hash != row["event_hash"]:
+                raise CockpitError("SOURCE_UNAVAILABLE")
+            payload = json.loads(row["payload_json"])
+            last_state = json.dumps(
+                payload["state_after"],
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+                allow_nan=False,
+            )
+            previous = row["event_hash"]
+        checkpoint = connection.execute(
+            "SELECT last_sequence,last_event_hash,state_json,state_hash "
+            "FROM paper_checkpoint WHERE singleton=1"
+        ).fetchone()
+        if not rows or checkpoint is None:
+            raise CockpitError("SOURCE_UNAVAILABLE")
+        if (
+            checkpoint["last_sequence"] != len(rows)
+            or checkpoint["last_event_hash"] != previous
+            or checkpoint["state_json"] != last_state
+            or hashlib.sha256(checkpoint["state_json"].encode("utf-8")).hexdigest()
+            != checkpoint["state_hash"]
+        ):
+            raise CockpitError("SOURCE_UNAVAILABLE")
+        return connection
+    except CockpitError:
+        if connection is not None:
+            connection.close()
+        raise
+    except (OSError, sqlite3.Error, ValueError, KeyError, TypeError):
+        if connection is not None:
+            connection.close()
+        raise CockpitError("SOURCE_UNAVAILABLE") from None
+
+
+def _paper_state(path: Path | None):
+    connection = _open_paper(path)
+    try:
+        row = connection.execute(
+            "SELECT state_json FROM paper_checkpoint WHERE singleton=1"
+        ).fetchone()
+        return state_from_mapping(json.loads(row[0]))
+    except Exception:
+        raise CockpitError("SOURCE_UNAVAILABLE") from None
+    finally:
+        connection.close()
+
+
+def _paper_summary(path: Path | None) -> dict[str, Any]:
+    state = _paper_state(path)
+    marked = mark_account(state.account, valid_marks(state))
+    return {
+        "session_id": state.session_id,
+        "control_state": state.control_state,
+        "reconciliation_state": "OK",
+        "cash": state.account.cash,
+        "free_cash": str(
+            Decimal(state.account.cash) - Decimal(state.account.reserved_cash)
+        ),
+        "reserved_cash": state.account.reserved_cash,
+        "equity": marked["equity"],
+        "realized_pnl": state.account.realized_pnl,
+        "unrealized_pnl": marked["unrealized_pnl"],
+        "open_order_count": sum(
+            order.status in {"OPEN", "PARTIALLY_FILLED"} for order in state.orders
+        ),
+        "fill_count": len(state.fills),
+        "markout_count": len(state.markouts),
+        "last_market_receive_ns": state.last_market_receive_ns,
+        "simulated_paper_only": True,
+    }
+
+
+def _paper_orders(path: Path | None, limit: int) -> list[dict[str, Any]]:
+    state = _paper_state(path)
+    orders = sorted(
+        state.orders,
+        key=lambda item: (item.created_time_ns, item.order_id),
+        reverse=True,
+    )[:limit]
+    return [
+        {
+            "order_id": item.order_id,
+            "intent_id": item.intent_id,
+            "market_id": item.market_id,
+            "asset_id": item.asset_id,
+            "side": item.side,
+            "order_style": item.order_style,
+            "quantity": item.quantity,
+            "filled_quantity": item.filled_quantity,
+            "average_fill_price": (
+                str(Decimal(item.fill_notional) / Decimal(item.filled_quantity))
+                if Decimal(item.filled_quantity)
+                else None
+            ),
+            "fee_paid": item.fee_paid,
+            "status": item.status,
+            "created_time_ns": item.created_time_ns,
+        }
+        for item in orders
+    ]
+
+
+def _paper_fills(path: Path | None, limit: int) -> list[dict[str, Any]]:
+    state = _paper_state(path)
+    markouts = {item.fill_id: item for item in state.markouts}
+    fills = sorted(
+        state.fills, key=lambda item: (item.receive_time_ns, item.fill_id), reverse=True
+    )[:limit]
+    return [
+        {
+            "fill_id": item.fill_id,
+            "order_id": item.order_id,
+            "market_id": item.market_id,
+            "asset_id": item.asset_id,
+            "side": item.side,
+            "quantity": item.quantity,
+            "price": item.price,
+            "fee": item.fee,
+            "spread_cost": item.spread_cost,
+            "depth_slippage_cost": item.depth_slippage_cost,
+            "latency_cost": item.latency_cost,
+            "adverse_selection_cost": (
+                markouts[item.fill_id].adverse_selection_cost
+                if item.fill_id in markouts
+                else None
+            ),
+            "markout_status": (
+                markouts[item.fill_id].status if item.fill_id in markouts else "PENDING"
+            ),
+            "receive_time_ns": item.receive_time_ns,
+            "fill_kind": item.fill_kind,
+        }
+        for item in fills
+    ]
+
+
+def _paper_positions(path: Path | None, limit: int) -> list[dict[str, Any]]:
+    state = _paper_state(path)
+    marks = valid_marks(state)
+    return [
+        {
+            "market_id": item.market_id,
+            "asset_id": item.asset_id,
+            "quantity": item.quantity,
+            "cost_basis": item.cost_basis,
+            "realized_pnl": item.realized_pnl,
+            "mark": marks.get(item.asset_id),
+            "marked_value": (
+                str(Decimal(item.quantity) * Decimal(marks[item.asset_id]))
+                if item.asset_id in marks
+                else None
+            ),
+        }
+        for item in state.account.positions[:limit]
+    ]
+
+
+def _paper_risk(path: Path | None) -> dict[str, Any]:
+    state = _paper_state(path)
+    active = [
+        item for item in state.orders if item.status in {"OPEN", "PARTIALLY_FILLED"}
+    ]
+    denied = [item for item in state.risk_decisions if item.result == "DENY"]
+    return {
+        "limits": asdict(state.limits),
+        "utilization": {
+            "open_orders": len(active),
+            "max_open_orders": state.limits.max_open_orders,
+            "reserved_cash": state.account.reserved_cash,
+            "reserved_positions": [
+                list(item) for item in state.account.reserved_positions
+            ],
+            "daily_realized_pnl": [
+                list(item) for item in state.account.daily_realized_pnl
+            ],
+        },
+        "latest_decision": asdict(state.risk_decisions[-1])
+        if state.risk_decisions
+        else None,
+        "deny_count": len(denied),
+        "resolution_pending": list(state.resolution_pending),
+    }
+
+
+def _paper_audit(path: Path | None, limit: int) -> list[dict[str, Any]]:
+    connection = _open_paper(path)
+    try:
+        rows = connection.execute(
+            "SELECT sequence,event_id,event_type,event_time_ns FROM paper_journal "
+            "ORDER BY sequence DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+        return [
+            {
+                "source": "WP173",
+                "record_id": row["event_id"],
+                "kind": row["event_type"],
+                "sequence": row["sequence"],
+                "status": "RECORDED",
+                "occurred_time_ns": row["event_time_ns"],
+            }
+            for row in rows
+        ]
+    except sqlite3.Error:
+        raise CockpitError("SOURCE_UNAVAILABLE") from None
+    finally:
+        connection.close()
 
 
 def _market_summary(path: Path | None) -> dict[str, Any]:
@@ -185,19 +492,21 @@ def _recent_market(path: Path | None, limit: int) -> list[dict[str, Any]]:
                 isinstance(code, str) for code in error_codes
             ):
                 raise CockpitError("SOURCE_UNAVAILABLE")
-            items.append({
-                "observation_id": row["observation_id"],
-                "source_kind": row["source_kind"],
-                "event_kind": row["event_kind"],
-                "event_id": row["event_id"],
-                "market_id": row["market_id"],
-                "asset_id": row["asset_id"],
-                "event_time": row["event_time"],
-                "received_at": row["received_at"],
-                "status": row["status"],
-                "error_codes": error_codes,
-                "book_ready": bool(row["book_ready"]),
-            })
+            items.append(
+                {
+                    "observation_id": row["observation_id"],
+                    "source_kind": row["source_kind"],
+                    "event_kind": row["event_kind"],
+                    "event_id": row["event_id"],
+                    "market_id": row["market_id"],
+                    "asset_id": row["asset_id"],
+                    "event_time": row["event_time"],
+                    "received_at": row["received_at"],
+                    "status": row["status"],
+                    "error_codes": error_codes,
+                    "book_ready": bool(row["book_ready"]),
+                }
+            )
         return items
     except CockpitError:
         raise
@@ -256,23 +565,29 @@ def _experiment_views(entries: tuple[Any, ...]) -> list[dict[str, Any]]:
     for sequence, record in sorted(experiments, key=lambda item: item[0], reverse=True):
         lifecycle = latest_lifecycle.get(record.experiment_id)
         evidence = latest_evidence.get(record.experiment_id)
-        views.append({
-            "experiment_id": record.experiment_id,
-            "experiment_family_id": record.experiment_family_id,
-            "trial_number": record.trial_number,
-            "hypothesis_id": record.hypothesis_id,
-            "dataset_binding_id": record.dataset_binding_id,
-            "split_assignment_id": record.split_assignment_id,
-            "baseline_id": record.baseline_id,
-            "preregistered_at": record.preregistered_at,
-            "lifecycle_state": lifecycle.to_state if lifecycle else None,
-            "result_status": (
-                evidence.result_status
+        views.append(
+            {
+                "experiment_id": record.experiment_id,
+                "experiment_family_id": record.experiment_family_id,
+                "trial_number": record.trial_number,
+                "hypothesis_id": record.hypothesis_id,
+                "dataset_binding_id": record.dataset_binding_id,
+                "split_assignment_id": record.split_assignment_id,
+                "baseline_id": record.baseline_id,
+                "preregistered_at": record.preregistered_at,
+                "lifecycle_state": lifecycle.to_state if lifecycle else None,
+                "result_status": (
+                    evidence.result_status
+                    if evidence
+                    else lifecycle.terminal_result_status
+                    if lifecycle
+                    else None
+                ),
+                "oos_exposure_ordinal": evidence.oos_exposure_ordinal
                 if evidence
-                else lifecycle.terminal_result_status if lifecycle else None
-            ),
-            "oos_exposure_ordinal": evidence.oos_exposure_ordinal if evidence else None,
-        })
+                else None,
+            }
+        )
     return views
 
 
@@ -322,17 +637,15 @@ def _experiment_detail(entries: tuple[Any, ...], experiment_id: str) -> dict[str
         "result_status": (
             latest_evidence.result_status
             if latest_evidence
-            else latest_lifecycle.terminal_result_status if latest_lifecycle else None
+            else latest_lifecycle.terminal_result_status
+            if latest_lifecycle
+            else None
         ),
         "oos_exposure_ordinal": (
             latest_evidence.oos_exposure_ordinal if latest_evidence else None
         ),
-        "lifecycle_receipt_ids": [
-            item.lifecycle_receipt_id for item in lifecycle
-        ],
-        "evidence_receipt_ids": [
-            item.run_evidence_receipt_id for item in evidence
-        ],
+        "lifecycle_receipt_ids": [item.lifecycle_receipt_id for item in lifecycle],
+        "evidence_receipt_ids": [item.run_evidence_receipt_id for item in evidence],
     }
 
 
@@ -355,25 +668,29 @@ def _registry_audit(entries: tuple[Any, ...]) -> list[dict[str, Any]]:
     for entry in entries:
         record = entry.record
         if isinstance(record, LifecycleReceipt):
-            items.append({
-                "source": "WP170",
-                "record_id": record.lifecycle_receipt_id,
-                "experiment_id": record.experiment_id,
-                "kind": record.action,
-                "sequence": record.sequence_number,
-                "status": record.to_state,
-                "occurred_at": record.occurred_at,
-            })
+            items.append(
+                {
+                    "source": "WP170",
+                    "record_id": record.lifecycle_receipt_id,
+                    "experiment_id": record.experiment_id,
+                    "kind": record.action,
+                    "sequence": record.sequence_number,
+                    "status": record.to_state,
+                    "occurred_at": record.occurred_at,
+                }
+            )
         elif isinstance(record, RunEvidenceReceipt):
-            items.append({
-                "source": "WP170",
-                "record_id": record.run_evidence_receipt_id,
-                "experiment_id": record.experiment_id,
-                "kind": "RUN_EVIDENCE",
-                "sequence": entry.sequence_number,
-                "status": record.result_status,
-                "occurred_at": record.created_at,
-            })
+            items.append(
+                {
+                    "source": "WP170",
+                    "record_id": record.run_evidence_receipt_id,
+                    "experiment_id": record.experiment_id,
+                    "kind": "RUN_EVIDENCE",
+                    "sequence": entry.sequence_number,
+                    "status": record.result_status,
+                    "occurred_at": record.created_at,
+                }
+            )
     return items
 
 
@@ -413,19 +730,27 @@ def create_app(config: CockpitConfig) -> FastAPI:
     )
 
     @app.exception_handler(CockpitError)
-    async def cockpit_error_handler(_request: Request, exc: CockpitError) -> JSONResponse:
+    async def cockpit_error_handler(
+        _request: Request, exc: CockpitError
+    ) -> JSONResponse:
         return _error_response(exc.code)
 
     @app.exception_handler(Exception)
-    async def internal_error_handler(_request: Request, _exc: Exception) -> JSONResponse:
+    async def internal_error_handler(
+        _request: Request, _exc: Exception
+    ) -> JSONResponse:
         return _error_response("INTERNAL_ERROR")
 
     @app.get("/api/health")
     async def health() -> dict[str, Any]:
         wp169_readable = _readable(_market_summary, config.market_truth_path)
         wp170_readable = _readable(_registry_entries, config.experiment_registry_path)
+        paper_readable = _readable(_paper_summary, config.paper_store_path)
+        paper_ok = config.paper_store_path is None or paper_readable
         return {
-            "status": "OK" if wp169_readable and wp170_readable else "DEGRADED",
+            "status": "OK"
+            if wp169_readable and wp170_readable and paper_ok
+            else "DEGRADED",
             "read_only": True,
             "wp169": {
                 "configured": config.market_truth_path is not None,
@@ -434,6 +759,10 @@ def create_app(config: CockpitConfig) -> FastAPI:
             "wp170": {
                 "configured": config.experiment_registry_path is not None,
                 "readable": wp170_readable,
+            },
+            "paper": {
+                "configured": config.paper_store_path is not None,
+                "readable": paper_readable,
             },
         }
 
@@ -446,8 +775,15 @@ def create_app(config: CockpitConfig) -> FastAPI:
             "read_only": True,
             "market_truth": market,
             "experiments": experiments,
+            "paper": (
+                _paper_summary(config.paper_store_path)
+                if config.paper_store_path is not None
+                else None
+            ),
             "recent_activity": {
-                "market_truth_count": len(_recent_market(config.market_truth_path, DEFAULT_LIMIT)),
+                "market_truth_count": len(
+                    _recent_market(config.market_truth_path, DEFAULT_LIMIT)
+                ),
                 "audit_count": len(_audit(config, DEFAULT_LIMIT)),
             },
         }
@@ -461,7 +797,9 @@ def create_app(config: CockpitConfig) -> FastAPI:
     @app.get("/api/experiments")
     async def experiments(request: Request) -> dict[str, Any]:
         limit = _request_limit(request)
-        items = _experiment_views(_registry_entries(config.experiment_registry_path))[:limit]
+        items = _experiment_views(_registry_entries(config.experiment_registry_path))[
+            :limit
+        ]
         return {"items": items, "count": len(items), "limit": limit}
 
     @app.get("/api/experiments/{experiment_id}")
@@ -479,13 +817,48 @@ def create_app(config: CockpitConfig) -> FastAPI:
         items = _audit(config, limit)
         return {"items": items, "count": len(items), "limit": limit}
 
+    @app.get("/api/paper/summary")
+    async def paper_summary() -> dict[str, Any]:
+        return _paper_summary(config.paper_store_path)
+
+    @app.get("/api/paper/orders")
+    async def paper_orders(request: Request) -> dict[str, Any]:
+        limit = _request_limit(request)
+        items = _paper_orders(config.paper_store_path, limit)
+        return {"items": items, "count": len(items), "limit": limit}
+
+    @app.get("/api/paper/fills")
+    async def paper_fills(request: Request) -> dict[str, Any]:
+        limit = _request_limit(request)
+        items = _paper_fills(config.paper_store_path, limit)
+        return {"items": items, "count": len(items), "limit": limit}
+
+    @app.get("/api/paper/positions")
+    async def paper_positions(request: Request) -> dict[str, Any]:
+        limit = _request_limit(request)
+        items = _paper_positions(config.paper_store_path, limit)
+        return {"items": items, "count": len(items), "limit": limit}
+
+    @app.get("/api/paper/risk")
+    async def paper_risk() -> dict[str, Any]:
+        return _paper_risk(config.paper_store_path)
+
+    @app.get("/api/paper/audit")
+    async def paper_audit(request: Request) -> dict[str, Any]:
+        limit = _request_limit(request)
+        items = _paper_audit(config.paper_store_path, limit)
+        return {"items": items, "count": len(items), "limit": limit}
+
     return app
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run the local WP171 read-only cockpit")
+    parser = argparse.ArgumentParser(
+        description="Run the local WP171 read-only cockpit"
+    )
     parser.add_argument("--market-truth-store", required=True, type=Path)
     parser.add_argument("--experiment-registry", required=True, type=Path)
+    parser.add_argument("--paper-store", type=Path)
     parser.add_argument("--port", default=8000, type=int)
     args = parser.parse_args(argv)
     if args.port < 1 or args.port > 65_535:
@@ -493,7 +866,13 @@ def main(argv: list[str] | None = None) -> int:
     import uvicorn
 
     uvicorn.run(
-        create_app(CockpitConfig(args.market_truth_store, args.experiment_registry)),
+        create_app(
+            CockpitConfig(
+                args.market_truth_store,
+                args.experiment_registry,
+                args.paper_store,
+            )
+        ),
         host="127.0.0.1",
         port=args.port,
     )

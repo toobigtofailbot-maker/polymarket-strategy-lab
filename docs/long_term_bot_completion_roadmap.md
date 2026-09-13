@@ -431,28 +431,30 @@ Use this checklist before marking any future WP as ready for review:
 - [ ] If an optional post-WP91 final PR comment is posted, is it explicitly
       non-canonical and consistent with the canonical PR body?
 
-## L. Post-WP169 Successor Sequence (WP170 -> WP178)
+## L. Post-WP169 Successor Sequence (WP170 -> WP176)
 
 This section is PLANNING_GUIDANCE_ONLY and NOT_AUTHORIZATION; it does not approve
 any successor. WP169 is merged via PR #170 at merge commit
-`17df81001171988e9ca49f92dc8fd170ecaa7103`. WP170 updates this durable roadmap
-to preserve the exact separately gated sequence:
+`17df81001171988e9ca49f92dc8fd170ecaa7103`. WP173 updates this durable roadmap
+to the current merged/review sequence:
 
 - WP169 — Market Truth / Realtime Data Plane (merged).
-- WP170 — Falsification-Grade Experiment Registry & Research Dataset OS
-  (current review target).
-- WP171 — Interactive Operator Cockpit.
-- WP172 — Hermes Runtime + Alpha Factory (full UMA proposal, dispute, voting,
-  finality indexing, and semantic adjudication are deferred to this boundary or a
-  separately certified prerequisite).
-- WP173 — Executable Edge / Microstructure.
-- WP174 — Portfolio / Accounting / Reconciliation / Hard Risk.
-- WP175 — Serious Paper OMS + Operations.
-- WP176 — Auth / Signing / Execution Gateway.
-- WP177 — Restricted Live Canary.
-- WP178 — Mature Controlled Live.
+- WP170 — Falsification-Grade Experiment Registry & Research Dataset OS (merged).
+- WP171 — Interactive Operator Cockpit (merged).
+- WP171G — Lean Agent Execution Governance transition (merged).
+- WP172 — Alpha + Executable Edge MVP (merged via PR #174; final head
+  `39363e5a081b6737104260725b1b0c8fcffe9196`; merge commit
+  `418bae72f24b0694eccc657ed5dc3f90a3f38f2a`).
+- WP173 — Serious Paper Trading System + Paper Cockpit (current review target).
+- WP174 — Auth / Signing / Execution Gateway.
+- WP175 — Restricted Live Canary.
+- WP176 — Mature Controlled Live.
 
-Old Streamlit-first planning is superseded at roadmap level. WP170 implements no
-WP171 work and grants no successor capability. Each successor remains separately
-gated and requires its own independent draftability certificate and explicit user
-authorization.
+Hermes/alpha automation may proceed later as a separately authorized parallel
+track during paper soak. It is not a gate for WP173 paper operation or for this
+successor numbering.
+
+Old Streamlit-first and pre-WP171G numbering is superseded at roadmap level.
+Each unmerged successor remains separately gated and requires its governance-track
+readiness, independent Side review, and explicit user authorization. WP173 grants
+no authority to start WP174.
