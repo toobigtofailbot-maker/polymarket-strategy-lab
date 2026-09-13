@@ -33,11 +33,17 @@ The authorization state chain is:
 LOCAL_DRAFT -> DRAFTABILITY_PASS -> AUTHORIZED -> IMPLEMENTED_LOCAL
 ```
 
-`DRAFTABILITY_PASS` requires a separate certificate covering the exact
-prompt/spec raw-byte hashes, all twelve lenses, an empty unresolved-decision
-set, and PASS implementability simulation. The execution agent cannot create
-or alter its own PASS certificate. Any prompt/spec semantic edit or exact hash
-mismatch stops execution and requires recertification.
+`DRAFTABILITY_PASS` is track-specific. For `FAST` and `RUNTIME`, it means the
+deterministic prompt/spec/readiness checks pass with no open decisions; it is not
+an independent LLM review and must never be described as an independent
+certificate. For `PROTECTED`, a separate certificate covers the exact prompt/spec
+raw-byte hashes, all twelve lenses, an empty unresolved-decision set, and PASS
+implementability simulation. The execution agent cannot create or alter its own
+PASS certificate. Any protected prompt/spec semantic edit or exact hash mismatch
+stops execution and requires independent recertification.
+
+The state names and human authorization boundary do not change. Readiness never
+grants `AUTHORIZED`.
 
 WP159 has one exact, one-time bootstrap waiver for its own low-risk draft-PR
 implementation. It is accepted only when the schema guard proves the locked
@@ -52,7 +58,30 @@ rehashed for altered bytes, and is unavailable to every non-WP159 package.
 There is no automated `PRE_READY_SEMANTIC_PASS` state in this version. That is
 separately gated WP160 scope.
 
-### Pre-implementation package-readiness gate (WP168G)
+### Governance-track routing (WP171G)
+
+Every new WP prompt states exactly one `Governance track expected: FAST`,
+`Governance track expected: RUNTIME`, or `Governance track expected: PROTECTED`
+front-matter line and exactly one canonical `BEGIN_GOVERNANCE_AUTHORITY_V1`
+block. The block is the prompt's normative machine-readable authority
+declaration and contains `risk_level` plus all sixteen spec authority booleans;
+prompt prose cannot broaden authority beyond it. Readiness requires exact
+prompt/spec equality before independently deriving the minimum track from the
+equal machine-readable fields:
+
+- `PROTECTED` for Risk 4 or any credential, execution, or live authority.
+- `RUNTIME` when not PROTECTED and Risk 3 or any network, scheduler,
+  Hermes-runtime, or paper authority is present.
+- `FAST` for the remaining Risk 0–2 packages without those authorities.
+
+A prompt may select a stricter track and may never select a weaker one.
+Historical pre-WP171G packages with valid certificates remain accepted as
+legacy `PROTECTED`; this compatibility route does not waive their certificate.
+They do not require retrofitting the authority mirror. For every new governed
+package, a missing, duplicate, malformed, reordered, or mismatching mirror fails
+closed before `IMPLEMENTATION_READY`.
+
+### Pre-implementation package-readiness gate (WP168G; routed by WP171G)
 
 After WP168G, applicable implementation WPs run one deterministic, local/offline,
 read-only command between `DRAFTABILITY_PASS` and the human `AUTHORIZED` transition:
@@ -61,12 +90,17 @@ read-only command between `DRAFTABILITY_PASS` and the human `AUTHORIZED` transit
 python tools/wp/wp_readiness_gate.py \
   --wp docs/wp_specs/<WP>/wp_prompt.txt \
   --spec docs/wp_specs/<WP>/wp_spec.json \
-  --certificate docs/wp_specs/<WP>/draftability_certificate.json \
   --repo-root .
 ```
 
-The gate composes the existing `tools/wp/wp_spec_guard.py` package/certificate
-validator with prompt-structure validation, a structured `NORMATIVE_RULE_MATRIX_V1`
+Add `--certificate docs/wp_specs/<WP>/draftability_certificate.json` for
+`PROTECTED` (mandatory) or an existing historical certified package. The flag
+is optional for `FAST` and `RUNTIME`.
+
+The gate validates the strict spec and canonical prompt authority mirror, then
+composes the existing `tools/wp/wp_spec_guard.py` certificate/package validation
+only when a certificate is required or supplied, with prompt-structure validation,
+a structured `NORMATIVE_RULE_MATRIX_V1`
 semantic-contradiction sweep, evidence-plan coherence, exact-scope authority, and a
 successor-boundary check. Its `IMPLEMENTATION_READY` result is a **non-authority package
 gate only**: readiness is not authorization. Passing the gate does not create the
@@ -75,12 +109,21 @@ the sole source of `AUTHORIZED`. The gate adds no new authority state; the canon
 authorization state chain remains exactly
 `LOCAL_DRAFT -> DRAFTABILITY_PASS -> AUTHORIZED -> IMPLEMENTED_LOCAL`.
 
+For certificate-free FAST/RUNTIME packages, the public result reports
+`readiness_basis: DETERMINISTIC`, `package_guard_passed: null`, and does not list
+`package_guard` among checked sections. Certificate-bearing packages report the
+actual package-guard result and hash binding.
+
 **WP168G bootstrap:** the readiness gate does not exist on WP168G's merged base, so
 WP168G itself could not require the new gate as a pre-implementation prerequisite. WP168G
 was activated through the existing independent 12-lens draftability + `wp_spec_guard`
 process and self-hosts the new gate in a final `--check-diff` run as post-implementation
 evidence. All later applicable implementation WPs must pass the pre-implementation
 readiness gate before the user grants `AUTHORIZED`.
+
+**WP171G transition:** WP171G itself voluntarily uses `PROTECTED` and satisfies
+the legacy strict certificate workflow one final time. FAST/RUNTIME routing
+applies to successor packages only after WP171G merges.
 
 ---
 
@@ -160,6 +203,14 @@ Rules:
 **Stop condition:** Any change would touch forbidden scope or protected boundary.
 **Verifier:** Agent self-check; diff scope summary.
 
+Track-specific correction rule:
+- `FAST`/`RUNTIME`: after bounded discovery, same-capability file corrections
+  within declared authority and size budget may be applied in one batch, then
+  deterministic spec/readiness checks are rerun. No independent recertification
+  or user round trip is required.
+- `PROTECTED`: semantic package changes retain exact-hash invalidation and require
+  a fresh independent certificate before implementation continues.
+
 ---
 
 ## Phase 5 — Validation
@@ -186,6 +237,21 @@ Validation proves repo state.
 Evidence mode proves PR reporting state.
 They are not the same thing.
 ```
+
+Track minimums:
+- `FAST`: focused and affected-adjacent checks while editing; at stable candidate,
+  readiness `--check-diff`, actual-surface security, exact-head hosted CI, and one
+  authoritative broad/full suite locally or by equivalent exact-head hosted CI.
+- `RUNTIME`: focused plus boundary/integration checks while editing; at stable
+  candidate, one combined independent implementation review, one authoritative
+  full suite locally or by equivalent exact-head hosted CI, and exact-head CI.
+- `PROTECTED`: independent pre-implementation certificate, protected-boundary and
+  full security/credential checks, full suite, exact-head CI, and required final
+  independent review.
+
+All tracks require independent Side PR review. No track can convert a failed
+required test, security check, or CI check into Ready for review: YES. Repeated
+broad suites on an unstable candidate are avoided, not waived.
 
 A WP may have all validation passing while evidence mode is BLOCKED_NOT_READY (e.g., because the PR comment was not yet posted). A WP may have evidence mode PRIVATE_REPO_MANUAL_VERIFIED while all tests pass. These are independent assessments.
 

@@ -15,30 +15,38 @@ Every future work package must be drafted to execution-package discipline. This 
 
 The goal is not to add bureaucracy. The goal is to stop paying for avoidable follow-up loops by making every WP self-verifying before the reviewer sees it.
 
-## V3 Immutable Draftability Package
+## V4 Governance Tracks (WP171G)
 
-Before implementation authorization, every new governed WP must be represented
-by three separate immutable artifacts:
+Every new governed WP has a prompt and machine specification. Its prompt must
+declare `Governance track expected: FAST`, `RUNTIME`, or `PROTECTED`; the
+prompt must also contain one canonical `BEGIN_GOVERNANCE_AUTHORITY_V1` block
+whose risk level and all sixteen authority booleans exactly equal the
+specification. That block is the prompt's normative machine-readable authority
+declaration; prose may not broaden authority beyond it. The readiness gate
+validates equality, then independently derives the minimum permitted track from
+the equal risk and authority fields and rejects weaker selection.
 
-1. `docs/wp_specs/<WP>/wp_prompt.txt`
-2. `docs/wp_specs/<WP>/wp_spec.json`
-3. `docs/wp_specs/<WP>/draftability_certificate.json`
+- `FAST`: Risk 0–2 work without network, scheduler, Hermes-runtime, paper,
+  credential, execution, or live authority. Deterministic prompt/spec/readiness
+  checks establish `DRAFTABILITY_PASS`; no independent pre-implementation LLM
+  certificate is required.
+- `RUNTIME`: Risk 3 or explicitly authorized network, scheduler, Hermes-runtime,
+  or paper capability, with no credential, execution, or live authority.
+  Deterministic readiness establishes `DRAFTABILITY_PASS`; no independent
+  pre-implementation LLM certificate is required.
+- `PROTECTED`: Risk 4 or any credential, execution, or live authority, plus any
+  package voluntarily choosing the strictest track. The immutable three-artifact
+  package and independent certificate remain mandatory.
 
-The prompt and specification are hashed as exact raw bytes by a separate
-certificate. The certificate is not embedded in the specification. A semantic
-change to either hashed artifact invalidates the review and requires
-recertification.
+For PROTECTED, the prompt and specification are hashed as exact raw bytes by the
+separate certificate. A semantic change invalidates review and requires
+recertification. The execution agent must not create, modify, or claim its own
+independent PASS certificate. One consolidated reviewer covers the twelve
+canonical lenses. Historical valid certified packages remain valid.
 
-The execution agent must not create, modify, or claim its own independent PASS
-certificate. Reviewer independence is human-controlled and declared; the guard
-can check schema, hashes, lens coverage, decisions, and implementability but
-cannot technically prove separate human control.
-
-Draftability review should be consolidated: one reviewer evaluates objective
-and class, public API, mutability, identity/serialization, transitions,
-batch/set behavior, error precedence, no-echo behavior, example truth, scope
-compatibility, evidence publication, and successor boundary as one package.
-Fragmented approvals do not substitute for that complete review.
+FAST/RUNTIME same-capability file corrections inside declared authority and size
+budget may be applied in one batch, followed by deterministic spec/readiness
+rechecks. They do not require independent recertification or a user round trip.
 
 The machine-readable schema, exact certificate contract, diagnostic order, and
 local guard behavior are canonical in
@@ -65,12 +73,18 @@ Package Identity:
   Credential impact:
   Dependency impact:
   Trading impact:
+  Governance track expected: FAST / RUNTIME / PROTECTED
 
 Recommended Claude/Codex Mode:
   Model/reasoning:
   Reason:
   Escalate to higher reasoning or STOP if:
 ```
+
+Immediately after front matter, include the exact authority-mirror block defined
+in `docs/ai/codex/WP_SPEC_STANDARD.md`. Missing, duplicate, malformed, reordered,
+or mismatching mirrors are not draftable. Historical certified packages before
+WP171G do not require retrofitting.
 
 ## 2. Authority / Non-Authority Posture
 
@@ -307,3 +321,16 @@ paper trading candidate
 Raw metadata and free-form mappings must not be passed through into advisory, report, or validator outputs unless explicitly allowlisted and recursively scanned for forbidden terms.
 
 This rule belongs in output-safety policy and WP scope, not in product code.
+
+## 17. FAST/RUNTIME Contract Compilation And Prompt Budget
+
+Before freezing a FAST/RUNTIME spec that references an existing builder, parser,
+validator, or API, mechanically smoke-test the real interface with every frozen
+literal/config and record PASS/FAIL. Do not rely on an LLM reviewer to discover
+regex, schema, or signature incompatibilities.
+
+FAST/RUNTIME prompts should normally contain only identity and track, objective,
+authority/non-authority, concise compatibility, acceptance outcomes, relevant
+negative tests, hard stops, and final reporting. Reuse canonical prompt blocks.
+Typical targets are 3–6 KB for FAST and 5–10 KB for RUNTIME; PROTECTED has no
+artificial small limit.

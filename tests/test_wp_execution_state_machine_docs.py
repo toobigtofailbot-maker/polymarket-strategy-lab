@@ -152,6 +152,27 @@ def test_state_machine_separates_validation_from_evidence_mode():
     assert "Evidence mode proves" in content or "evidence mode proves" in content.lower()
 
 
+def test_state_machine_routes_draftability_by_governance_track():
+    content = _read_state_machine()
+    lower = " ".join(content.lower().split())
+    assert "LOCAL_DRAFT -> DRAFTABILITY_PASS -> AUTHORIZED -> IMPLEMENTED_LOCAL" in content
+    assert "governance-track routing" in lower
+    assert "risk 4" in lower and "risk 3" in lower and "risk 0–2" in lower
+    assert "historical pre-wp171g packages" in lower
+    assert "legacy `protected`" in lower
+    assert "begin_governance_authority_v1" in lower
+    assert "all sixteen" in lower
+    assert "prompt prose cannot broaden" in lower
+    assert "missing, duplicate, malformed, reordered, or mismatching" in lower
+    assert "package_guard_passed: null" in lower
+    assert "fast" in lower and "runtime" in lower and "protected" in lower
+    assert "not an independent llm review" in lower
+    assert "independent recertification" in lower
+    assert "same-capability" in lower
+    assert "all tracks require independent side pr review" in lower
+    assert "failed required test" in lower
+
+
 def test_state_machine_local_guard_necessary_not_sufficient():
     content = _read_state_machine()
     assert "necessary but not sufficient" in content.lower()

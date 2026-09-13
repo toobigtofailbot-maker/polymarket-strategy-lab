@@ -1,0 +1,356 @@
+WP171G — LEAN AGENT EXECUTION GOVERNANCE
+ONE-TIME TRANSITION PACKAGE TO FAST / RUNTIME / PROTECTED WORKFLOWS
+
+Package Identity:
+  WP ID: WP171G
+  Title: Lean Agent Execution Governance
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/wp171g-lean-agent-governance
+  Package class: WORKFLOW_GOVERNANCE_EXECUTION_ACCELERATION
+  Package size class: L
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: NO_PRODUCT_RUNTIME_CHANGE
+  Product impact: DEVELOPMENT_WORKFLOW_ACCELERATION_ONLY
+  Network impact: NO_PRODUCT_NETWORK_CHANGE
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: PROTECTED
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: true
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: normal strong coding/reasoning mode
+  Reason: one-time workflow/tooling change; keep implementation bounded and deterministic
+  Escalate to higher reasoning or STOP if: PROTECTED credentials, signing, execution, or
+    live-capital governance would be weakened
+
+Required predecessor:
+  PR #172 — WP171 Interactive Operator Cockpit MVP
+Required predecessor final head:
+  a650c08ab233e47beca7565a5bb8df11a4f41d02
+Required predecessor merge commit / base:
+  d6a15e4007fe3ced5a7d059ec3fcdec496d2dc7d
+Successor:
+  WP172 — Alpha + Executable Edge MVP
+Merge authority:
+  NO
+
+1. OBJECTIVE
+
+Replace universal heavy certification with three mechanically routed governance tracks while
+preserving strict controls where credentials, signing, execution, live authority, or Risk 4 are
+present. FAST covers offline/local research, analytics, UI, docs, tests, and ordinary tooling.
+RUNTIME covers explicitly authorized network/runtime/scheduler/Hermes/paper work without
+credential, execution, or live authority. PROTECTED retains the current immutable independent
+draftability-certificate workflow.
+
+Normal work becomes concise prompt/spec, deterministic readiness, implementation, targeted
+validation, one stable-candidate broad validation, hosted CI, and independent Side review.
+Protected work retains the strict immutable package, independent certificate, strongest
+validation, and Side review. This WP changes governance/tooling only and adds no bot runtime or
+trading capability.
+
+2. AUTHORITY / NON-AUTHORITY POSTURE
+
+Implementation authority: YES after this WP passes the legacy independent certificate,
+  wp_spec_guard, current readiness gate, and IMPLEMENTATION_READY.
+Report/export authority: governance/status/PR evidence only.
+Paper authority: NO.
+Execution authority: NO.
+Live authority: NO.
+Credential authority: NO.
+Runtime/scheduler authority: local deterministic WP governance tools only; no product authority.
+Canonical evidence authority: YES, narrowly for the readiness governance model.
+Network authority: NO product/runtime network. Remote Main Sync and PR publication are workflow
+  evidence operations only and do not set spec network authority.
+Dependency-change authority: NO.
+
+Explicitly authorized:
+- the exact 19-file machine-spec scope;
+- workflow-governance docs;
+- readiness tooling and its focused tests;
+- direct governance/status/repo-truth tests and documentation;
+- WP171G immutable package artifacts.
+
+Centralized protected boundary reference: every group in
+docs/ai/codex/PROTECTED_PATHS.md remains uncrossed: credentials/secrets, authenticated clients,
+wallet/account behavior, order placement/cancel, execution gateway, paper engine,
+scheduler/bot loop, runtime/daemon, dashboard/deployment, dependency/lock changes, external code
+copying, and generated artifacts.
+
+Explicitly forbidden:
+- unrelated or product source under src/;
+- execution gateway, risk engine, OMS, reconciliation, signing, orders, paper/live trading;
+- credentials/secrets and authenticated clients;
+- Polymarket product-network behavior;
+- Hermes product runtime or strategy implementation;
+- dependency and lock-file changes;
+- workflow YAML or CI weakening;
+- removal of final independent Side review;
+- any WP172 implementation.
+
+3. HARD MERGE GATE
+
+Run git fetch origin --prune, git checkout main, git pull --ff-only origin main,
+git rev-parse HEAD, git log -1 --oneline, and git status --short --branch. Verify PR #172 merged,
+record its required head and merge commit, prove main contains both, verify no newer conflicting
+governance PR, WP171G branch/PR, or completion claim exists, run the generated-artifact guard,
+and preserve any parked WP172 worktree without modifying, deleting, resetting, reusing, or
+inspecting its contents. STOP if clean current main cannot be established.
+
+4. WORKTREE-FIRST EXECUTION
+
+Use one dedicated WP171G worktree, one branch, and one PR. Never reuse the parked WP172
+worktree. Branch-only fallback is allowed only from clean main and must be documented.
+
+5. CONTEXT BUDGET
+
+Read first: AGENTS.md; AI_CODING_AGENT_START_HERE.md; CODEX_START_HERE.md; project status;
+repo truth; deferred log; the shared workflow README and state machine.
+Read for this WP: the six changed governance docs; readiness gate and focused test; direct
+governance/status/repo-truth tests and docs; the WP171G artifacts.
+Read only if blocked: wp_spec_guard certificate internals; historical WP168G artifacts;
+diff-scope helper behavior.
+Do not read/touch: unrelated src/; execution/risk/paper/live/strategy/Hermes product code;
+credentials; dependency/lock files; unrelated historical WPs; the parked WP172 contents.
+Search terms: draftability certificate mandatory; DRAFTABILITY_PASS; IMPLEMENTATION_READY;
+wp_readiness_gate; certificate; exact_scope_required; full pytest; package risk level;
+token efficiency.
+
+6. COMPATIBILITY / IMPOSSIBILITY CHECK
+
+Preserve existing PROTECTED strict workflow through the certificate and readiness gate. Make the
+certificate optional by track for FAST and RUNTIME. Reject PROTECTED without a certificate.
+Always preserve deterministic prompt/spec checks and final exact-diff validation. Preserve final
+Side review. Avoid repeated broad suites while editing. Keep dependencies unchanged.
+
+Deterministic interface smoke: PASS_WITH_LITERAL_ADAPTATION. The current readiness parser does
+not accept the attached matrix action literal ALLOW. The frozen matrix uses OPTIONAL for
+certificate optionality and ACCEPT for permitted deterministic rechecks, preserving the attached
+canonical effects without changing the parser vocabulary as a hidden prerequisite.
+
+STOP if backward compatibility for PROTECTED cannot be retained.
+
+7. GOVERNANCE TRACK ROUTING
+
+Every future WP prompt must state exactly one `Governance track expected: FAST`, `RUNTIME`, or
+`PROTECTED` line and exactly one bounded `BEGIN_GOVERNANCE_AUTHORITY_V1` block containing
+`risk_level` plus all sixteen canonical authority booleans. The block is the prompt's normative
+machine-readable authority declaration; prose cannot broaden authority beyond it. Readiness
+requires exact equality between this mirror and the spec, then independently derives the minimum
+allowed track from the equal risk/authority fields and rejects a weaker prompt track. A package
+may choose a stricter track.
+
+PROTECTED minimum if risk_level is 4 or credentials, execution, or live is true.
+RUNTIME minimum if not PROTECTED and risk_level is 3 or network, scheduler, hermes_runtime, or
+paper is true.
+FAST minimum otherwise when risk_level is at most 2 and credentials, execution, live, paper,
+scheduler, and hermes_runtime are false.
+
+8. PRE-IMPLEMENTATION READINESS BY TRACK
+
+FAST and RUNTIME require deterministic prompt/spec/schema/semantic/readiness checks, completed
+compatibility analysis, declared authority/scope, no unresolved decisions, and a clean current
+predecessor. RUNTIME also requires explicit runtime authority and the stronger class-specific
+negative/security plan. Neither requires an independent pre-implementation LLM certificate.
+Missing, duplicate, malformed, or prompt/spec-mismatching authority mirrors fail closed.
+
+PROTECTED retains the exact prompt/spec/certificate topology, certificate hash/semantic checks,
+and all current PROTECTED-strength behavior. Existing historical certified packages remain valid.
+
+9. DRAFTABILITY_PASS SEMANTICS
+
+For FAST/RUNTIME, DRAFTABILITY_PASS means deterministic prompt/spec/readiness checks completed
+with no open decisions; it does not claim independent LLM review. For PROTECTED it retains the
+independent certificate-bound meaning. Readiness output and docs must name the establishing
+track and must never call FAST/RUNTIME readiness an independent certificate. When no certificate
+is supplied, the public result must report the certificate/package guard as not run rather than
+passed, while retaining a distinct deterministic readiness basis.
+
+10. SCOPE CORRECTION / RECERTIFICATION
+
+FAST/RUNTIME use bounded discovery, then allow one batched same-capability scope correction
+inside authority and size budget followed by deterministic spec/readiness rechecks only.
+PROTECTED retains semantic-change invalidation and independent recertification.
+
+11. VALIDATION BY TRACK
+
+FAST editing uses focused/adjacent/cheap checks. Its stable candidate uses readiness --check-diff,
+actual-surface security checks, exact-head hosted CI, an authoritative broad/full suite locally or
+by equivalent exact-head CI, and mandatory Side review. No internal final LLM reviewer is required
+unless the WP asks for one.
+
+RUNTIME editing adds directly affected integration and runtime/network boundary checks. Its stable
+candidate uses one combined independent implementation reviewer, one authoritative full suite
+local or exact-head hosted, exact-head CI, and Side review.
+
+PROTECTED retains independent pre-implementation certification, boundary/security tests, full
+security/credential checks, full suite, exact-head CI, required final independent review, Side
+review, and explicit user authorization for live-capital transitions. No track converts a failed
+required check into Ready YES.
+
+12. PROMPT / CONTEXT EFFICIENCY
+
+FAST/RUNTIME prompts normally contain identity/track, objective, authority, concise compatibility,
+acceptance outcomes, relevant negative tests, hard stops, and final report requirements. Prefer
+canonical reusable blocks. Target roughly 3–6 KB for FAST, 5–10 KB for RUNTIME, and no artificial
+small limit for PROTECTED.
+
+13. DETERMINISTIC CONTRACT-COMPILATION RULE
+
+Before freezing a FAST/RUNTIME spec that references an existing builder/parser/validator/API,
+mechanically smoke-test the real interface with every frozen literal/config, record PASS/FAIL,
+and do not delegate simple regex/schema/signature compatibility discovery to an LLM reviewer.
+
+14. TOKEN / USAGE DISCIPLINE
+
+Avoid rereading unchanged policy docs after startup; use targeted reads and summarized success
+output; retain raw failure snippets only as needed; avoid multiple reviewers for FAST/RUNTIME;
+avoid repeated full suites before stable state; resume exact local state after quota interruption.
+Use premium reasoning only for concrete architecture/protected-boundary problems.
+
+15. NEGATIVE TEST MATRIX
+
+N01 FAST valid package without certificate passes deterministic readiness.
+N02 RUNTIME valid package without certificate passes deterministic readiness.
+N03 PROTECTED package without certificate fails closed.
+N04 credentials=true plus FAST is rejected.
+N05 execution=true plus RUNTIME is rejected.
+N06 live=true plus FAST or RUNTIME is rejected.
+N07 historical valid certificate package remains accepted.
+N08 FAST same-envelope spec correction rechecks without certificate.
+N09 PROTECTED semantic package change invalidates the certificate as today.
+N10 --check-diff still rejects out-of-scope final changes.
+N11 a weaker selected track than the derived minimum is rejected.
+N12 failed focused/security/CI evidence cannot become Ready YES by track choice.
+N13 prompt authority mirrors that are missing, duplicated, malformed, or unequal on credentials,
+network, execution, live, any other authority boolean, or risk_level fail closed.
+
+16. REQUIREMENT-TO-EVIDENCE PLAN
+
+R001 track derivation and prompt/spec mismatch rejection.
+R002 certificate behavior and historical compatibility.
+R003 DRAFTABILITY_PASS and output semantics.
+R004 same-envelope correction behavior.
+R005 track validation policy and failed-check preservation.
+R006 prompt/context efficiency.
+R007 deterministic contract compilation.
+R008 protected boundary preservation.
+R009 repo truth: WP171 merged; WP171G bridge; WP172 Alpha + Executable Edge next.
+R010 final exact-head validation/publication.
+
+17. NORMATIVE RULE MATRIX
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|governance|track|credentials_or_execution_or_live|REQUIRE|protected_track_required|NONE|R001
+NR002|governance|certificate|fast_track|OPTIONAL|certificate_optional|NONE|R002
+NR003|governance|certificate|runtime_track|OPTIONAL|certificate_optional|NONE|R002
+NR004|governance|certificate|protected_track|REQUIRE|independent_certificate_required|NONE|R002
+NR005|governance|scope_correction|fast_or_runtime|ACCEPT|deterministic_recheck_allowed|NONE|R004
+NR006|governance|scope_correction|protected|REQUIRE|independent_recertification_required|NONE|R004
+NR007|validation|failed_required_check|all_tracks|FORBID|ready_yes_forbidden|NONE|R005
+NR008|validation|final_side_review|all_tracks|REQUIRE|independent_side_review_required|NONE|R005
+NR009|efficiency|full_suite|unstable_candidate|FORBID|repeated_broad_validation_avoided|NONE|R006
+NR010|compatibility|existing_interface|fast_or_runtime_freeze|REQUIRE|deterministic_contract_smoke|NONE|R007
+NR011|authority|live_capital|fast_or_runtime|FORBID|protected_boundary_preserved|NONE|R008
+NR012|workflow|successor|wp172|REQUIRE|alpha_executable_edge_next|NONE|R009
+NR013|governance|prompt_authority_mirror|all_new_governed_wps|REQUIRE|exact_prompt_spec_authority_equality|NONE|R001
+END_NORMATIVE_RULE_MATRIX_V1
+
+18. EXACT IMPLEMENTATION SCOPE
+
+Exactly these 19 files may change:
+- docs/wp_specs/WP171G/wp_prompt.txt
+- docs/wp_specs/WP171G/wp_spec.json
+- docs/wp_specs/WP171G/draftability_certificate.json
+- docs/ai/codex/WP_DRAFTING_STANDARD.md
+- docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md
+- docs/ai/codex/WP_SPEC_STANDARD.md
+- docs/ai/codex/VALIDATION_MATRIX.md
+- docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md
+- docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md
+- tools/wp/wp_readiness_gate.py
+- tests/tools/wp/test_wp_readiness_gate.py
+- tests/test_codex_workflow_docs.py
+- tests/test_wp_execution_state_machine_docs.py
+- docs/project_status.md
+- docs/repo_truth_index.md
+- docs/deferred_items_log.md
+- docs/status_entries/WP171G.md
+- tests/test_project_status_docs.py
+- tests/test_repo_truth_docs.py
+
+tools/wp/wp_spec_guard.py, product source, dependencies, lock files, and workflow YAML remain
+unchanged.
+
+19. THIS TRANSITION WP USES THE OLD STRICT GATE ONCE
+
+WP171G itself uses immutable prompt/spec/certificate, one consolidated independent draftability
+review, current wp_spec_guard, current readiness gate, IMPLEMENTATION_READY, focused/adjacent
+tests, one current full pytest on the stable candidate, artifact/security checks, exact-head hosted
+CI, and Side review. Do not recursively apply FAST to WP171G itself.
+
+20. CONCRETE HARD STOPS
+
+STOP if PROTECTED credential/execution/live packages can pass without an independent certificate
+— because highest-risk governance would be weakened.
+STOP if track routing cannot be derived from machine-spec risk/authority — because prompt labels
+alone must not select weaker governance.
+STOP if the prompt authority mirror can be missing, duplicated, malformed, or unequal to the
+spec for a new governed WP — because prompt prose and machine routing must not diverge.
+STOP if historical valid certificate packages become invalid solely due to WP171G — because
+backward compatibility is required.
+STOP if readiness --check-diff loses out-of-scope rejection — because final diff authority remains
+mandatory.
+STOP if required test/security/CI failures can be bypassed by track choice — because efficiency
+cannot convert failures into readiness.
+STOP if implementation requires product runtime/dependency/credential/trading source changes —
+because WP171G is workflow governance only.
+STOP if the exact 19-file scope is exceeded — because the immutable package would be violated.
+
+21. EVIDENCE / REVIEW SELF-DIAGNOSIS
+
+Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED. If review is not merge-ready, report root cause,
+preventability, the missed gate, immediate process change, durable guidance need, and defect
+category A–I. If no review follow-up occurred, state it explicitly.
+
+22. REPORT-BACK REQUIREMENT
+
+Return only READY FOR INDEPENDENT MERGE REVIEW: YES with PR link, exact base/head/count, routing
+semantics, focused and affected tests, legacy-current full suite, security, current spec/readiness/
+check-diff PASS, exact-head hosted CI, evidence mode and re-fetch, live PR metadata/comments,
+boundary preservation, merge performed NO, and WP172 not started; or a genuine Section 20 hard
+stop. Do not merge. Do not start WP172.
+
+23. DEFINITION OF DONE
+
+FAST/RUNTIME/PROTECTED are canonical; minimum track is derived from risk/authority; FAST/RUNTIME
+do not need independent pre-implementation certificates; PROTECTED still does; correction,
+validation, Side review, contract smoke, efficiency, historical compatibility, and failure
+preservation rules are canonical and tested; no product runtime changed; repo truth points next to
+WP172 — Alpha + Executable Edge MVP.
+
+Successor boundary: WP172 remains separately gated, unimplemented, and wholly outside WP171G.
+
+END OF WP171G

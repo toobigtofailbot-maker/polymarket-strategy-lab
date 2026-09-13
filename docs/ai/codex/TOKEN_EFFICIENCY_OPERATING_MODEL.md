@@ -30,6 +30,27 @@ deferred helper items without authorizing product or runtime work.
 - Never skip or shorten validation for token savings.
 - Do not omit failed checks, unavailable tools, or boundary drift from reports.
 
+## Track-Aware Lean Execution (WP171G)
+
+- FAST and RUNTIME do not use independent pre-implementation LLM certification;
+  deterministic prompt/spec/readiness checks establish their DRAFTABILITY_PASS.
+- Lean prompts still include the canonical bounded governance-authority mirror;
+  token efficiency never permits omitting, abbreviating, or replacing its risk
+  level and sixteen exact authority booleans with prose.
+- Use one bounded discovery before scope freeze. For FAST/RUNTIME, batch
+  same-capability scope corrections inside the authority and size envelope, then
+  rerun deterministic readiness without a reviewer or user round trip.
+- Run focused and affected-adjacent checks while editing. Do not repeat broad/full
+  suites on an unstable candidate.
+- Run one authoritative broad/full validation on the stable candidate as defined
+  by the governance track; exact-head hosted CI may satisfy the equivalent
+  FAST/RUNTIME suite requirement.
+- Do not create multiple reviewer personas. RUNTIME uses one combined independent
+  implementation reviewer; PROTECTED retains its required independent reviews.
+- Final independent Side PR review remains mandatory for every track.
+- After quota interruption, resume the exact local phase and evidence state rather
+  than restarting completed reads, reviews, or validations.
+
 ## Context Hygiene Rules
 
 1. Complete the mandatory startup doc sequence first (`AGENTS.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`, `docs/codex_execution_guidelines.md`, `docs/ai/codex/README.md`).

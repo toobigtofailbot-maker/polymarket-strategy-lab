@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Deterministic, local/offline pre-implementation package-readiness gate.
 
-This tool composes the existing :mod:`wp_spec_guard` package/certificate validator
-with additional bounded checks so a certified work package cannot become
-*implementation-ready* merely because its prompt/spec hashes and certificate are
-syntactically valid. It never grants authorization: ``IMPLEMENTATION_READY`` means
-only that a certified package is technically ready to be authorized by the user.
+This tool composes the existing :mod:`wp_spec_guard` specification and certificate
+validation with additional bounded checks. It mechanically verifies the prompt's
+authority mirror against the specification, then derives a minimum governance track
+from the equal risk/authority fields. FAST and RUNTIME
+packages may establish deterministic readiness without a certificate; PROTECTED
+packages retain the independent exact-hash certificate requirement. It never grants
+authorization: ``IMPLEMENTATION_READY`` means only that the package is technically
+ready to be authorized by the user.
 
 Design constraints (see docs/wp_specs/WP168G/wp_prompt.txt sections 4, 7, 11):
   * stdlib-only, import-safe, deterministic, bounded;
@@ -52,6 +55,8 @@ READINESS_ERROR_ORDER = (
     "READINESS_PACKAGE_GUARD_INVALID",
     "READINESS_CERTIFICATE_NOT_PASS",
     "READINESS_PROMPT_STRUCTURE_INVALID",
+    "READINESS_AUTHORITY_MIRROR_INVALID",
+    "READINESS_GOVERNANCE_TRACK_INVALID",
     "READINESS_RULE_MATRIX_INVALID",
     "READINESS_SEMANTIC_CONTRADICTION",
     "READINESS_SCOPE_INVALID",
@@ -84,6 +89,9 @@ PLACEHOLDER_TOKENS = ("TBD", "TODO", "<HEAD_SHA>", "<FILL_ME>", "<DECIDE>")
 MATRIX_BEGIN = "BEGIN_NORMATIVE_RULE_MATRIX_V1"
 MATRIX_END = "END_NORMATIVE_RULE_MATRIX_V1"
 MATRIX_HEADER = "RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID"
+AUTHORITY_MIRROR_BEGIN = "BEGIN_GOVERNANCE_AUTHORITY_V1"
+AUTHORITY_MIRROR_END = "END_GOVERNANCE_AUTHORITY_V1"
+AUTHORITY_MIRROR_KEYS = ("risk_level", *wp_spec_guard.AUTHORITY_KEYS)
 
 _RULE_ID_RE = re.compile(r"^NR\d{3}$")
 _DOTTED_TOKEN_RE = re.compile(r"^[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$")
@@ -91,6 +99,15 @@ _EFFECT_TOKEN_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 _EVIDENCE_ID_RE = re.compile(r"^R\d{3}$")
 _IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _PY_TARGET_RE = re.compile(r"(?<![\w./-])((?:[\w./-]+/)?[\w.-]+\.py)")
+_TRACK_LINE_RE = re.compile(
+    r"^[ \t]*Governance track expected: (FAST|RUNTIME|PROTECTED)[ \t]*\r?$",
+    re.MULTILINE,
+)
+_WP_NUMBER_RE = re.compile(r"^WP([1-9][0-9]*)(?:[A-Z])?$")
+
+GOVERNANCE_TRACKS = ("FAST", "RUNTIME", "PROTECTED")
+_TRACK_RANK = {track: index for index, track in enumerate(GOVERNANCE_TRACKS)}
+_LEGACY_CERTIFIED_MAX_WP = 171
 
 # Canonical authorization chain (section 2 / state_transitions).
 CANONICAL_STATE_CHAIN = (
@@ -139,13 +156,17 @@ class ReadinessResult:
     scope_file_count: int
     evidence_item_count: int
     normative_rule_count: int
-    package_guard_passed: bool
+    package_guard_passed: bool | None
     certificate_hash_bound: bool
+    governance_track: str | None
+    minimum_governance_track: str | None
+    readiness_basis: str | None
+    certificate_required: bool
 
     def to_public_dict(self) -> dict[str, object]:
         return {
             "schema_id": "polymarket-wp-readiness-result",
-            "schema_version": "1.0.0",
+            "schema_version": "1.2.0",
             "is_ready": self.is_ready,
             "status": self.status,
             "wp_id": self.wp_id,
@@ -156,6 +177,10 @@ class ReadinessResult:
             "normative_rule_count": self.normative_rule_count,
             "package_guard_passed": self.package_guard_passed,
             "certificate_hash_bound": self.certificate_hash_bound,
+            "governance_track": self.governance_track,
+            "minimum_governance_track": self.minimum_governance_track,
+            "readiness_basis": self.readiness_basis,
+            "certificate_required": self.certificate_required,
         }
 
 
@@ -181,6 +206,116 @@ def _run_package_guard(
 ) -> tuple[dict[str, object], int]:
     """Reuse the existing wp_spec_guard package/certificate validator verbatim."""
     return wp_spec_guard._validate_package(_GuardArgs(wp_path, spec_path, cert_path))
+
+
+def _load_spec(spec_path: str) -> tuple[dict[str, object] | None, bool]:
+    """Load one bounded strict specification. The boolean marks a file/usage error."""
+    raw = wp_spec_guard._read_regular(pathlib.Path(spec_path), wp_spec_guard.MAX_SPEC_BYTES)
+    if raw is None:
+        return None, True
+    try:
+        document = wp_spec_guard._strict_json(raw)
+    except (TypeError, ValueError, UnicodeError, OSError, RecursionError):
+        return None, False
+    spec, errors = wp_spec_guard.validate_spec_document(document)
+    return (spec if not errors else None), False
+
+
+def _minimum_governance_track(spec: Mapping[str, object]) -> str:
+    identity = spec["identity"]  # type: ignore[index]
+    authority = spec["authority"]  # type: ignore[index]
+    risk_level = identity["risk_level"]
+    if risk_level == 4 or any(
+        authority[field] is True for field in ("credentials", "execution", "live")
+    ):
+        return "PROTECTED"
+    if risk_level == 3 or any(
+        authority[field] is True
+        for field in ("network", "scheduler", "hermes_runtime", "paper")
+    ):
+        return "RUNTIME"
+    return "FAST"
+
+
+def _is_historical_pre_wp171g(wp_id: object) -> bool:
+    if not isinstance(wp_id, str):
+        return False
+    match = _WP_NUMBER_RE.fullmatch(wp_id)
+    if not match:
+        return False
+    number = int(match.group(1))
+    return number < _LEGACY_CERTIFIED_MAX_WP or wp_id == "WP171"
+
+
+def _selected_governance_track(
+    prompt_text: str, *, wp_id: object, certificate_supplied: bool
+) -> str | None:
+    matches = _TRACK_LINE_RE.findall(prompt_text)
+    if len(matches) == 1:
+        return matches[0]
+    # Historical packages predate the mandatory track line. A supplied certificate
+    # keeps those packages valid under the strictest track; no waiver is introduced.
+    if not matches and certificate_supplied and _is_historical_pre_wp171g(wp_id):
+        return "PROTECTED"
+    return None
+
+
+def _track_errors(selected: str | None, minimum: str) -> list[str]:
+    if selected is None or _TRACK_RANK[selected] < _TRACK_RANK[minimum]:
+        return ["READINESS_GOVERNANCE_TRACK_INVALID"]
+    return []
+
+
+def _authority_mirror_errors(
+    prompt_text: str,
+    spec: Mapping[str, object],
+    *,
+    certificate_supplied: bool,
+) -> list[str]:
+    """Require one canonical prompt authority mirror equal to the strict spec.
+
+    Historical packages before WP171G may omit the block only when their existing
+    independent certificate is supplied. If a historical prompt contains a block,
+    the block is validated normally rather than ignored.
+    """
+    lines = prompt_text.splitlines()
+    begins = [index for index, line in enumerate(lines) if line == AUTHORITY_MIRROR_BEGIN]
+    ends = [index for index, line in enumerate(lines) if line == AUTHORITY_MIRROR_END]
+    wp_id = spec["identity"]["wp_id"]  # type: ignore[index]
+
+    if not begins and not ends:
+        if certificate_supplied and _is_historical_pre_wp171g(wp_id):
+            return []
+        return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+    if len(begins) != 1 or len(ends) != 1 or begins[0] >= ends[0]:
+        return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+
+    body = lines[begins[0] + 1 : ends[0]]
+    if len(body) != len(AUTHORITY_MIRROR_KEYS):
+        return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+
+    parsed: dict[str, object] = {}
+    for expected_key, line in zip(AUTHORITY_MIRROR_KEYS, body, strict=True):
+        match = re.fullmatch(r"([a-z][a-z0-9_]*): (.+)", line)
+        if match is None or match.group(1) != expected_key:
+            return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+        raw_value = match.group(2)
+        if expected_key == "risk_level":
+            if re.fullmatch(r"[0-4]", raw_value) is None:
+                return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+            parsed[expected_key] = int(raw_value)
+        else:
+            if raw_value not in {"true", "false"}:
+                return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+            parsed[expected_key] = raw_value == "true"
+
+    identity = spec["identity"]  # type: ignore[index]
+    authority = spec["authority"]  # type: ignore[index]
+    expected = {"risk_level": identity["risk_level"]}
+    expected.update({key: authority[key] for key in wp_spec_guard.AUTHORITY_KEYS})
+    if parsed != expected:
+        return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+    return []
 
 
 # ---------------------------------------------------------------------------
@@ -338,7 +473,9 @@ def _rule_matrix_errors(
 # ---------------------------------------------------------------------------
 
 
-def _scope_errors(spec: Mapping[str, object]) -> list[str]:
+def _scope_errors(
+    spec: Mapping[str, object], governance_track: str = "PROTECTED"
+) -> list[str]:
     codes: list[str] = []
     scope = spec["scope"]  # type: ignore[index]
     identity = spec["identity"]  # type: ignore[index]
@@ -353,8 +490,11 @@ def _scope_errors(spec: Mapping[str, object]) -> list[str]:
     artifacts = {
         f"docs/wp_specs/{identity['wp_id']}/wp_prompt.txt",
         f"docs/wp_specs/{identity['wp_id']}/wp_spec.json",
-        f"docs/wp_specs/{identity['wp_id']}/draftability_certificate.json",
     }
+    if governance_track == "PROTECTED":
+        artifacts.add(
+            f"docs/wp_specs/{identity['wp_id']}/draftability_certificate.json"
+        )
     if not artifacts.issubset(set(required)):
         codes.append("READINESS_SCOPE_INVALID")
     forbidden = list(scope["forbidden_prefixes"])
@@ -575,7 +715,7 @@ def _diff_scope_errors(
 def evaluate_readiness(
     wp_path: str,
     spec_path: str,
-    cert_path: str,
+    cert_path: str | None,
     repo_root: str,
     *,
     check_diff: bool = False,
@@ -583,50 +723,97 @@ def evaluate_readiness(
     head: str | None = None,
 ) -> ReadinessResult:
     """Evaluate package readiness without side effects or raises."""
-    checked: list[str] = ["package_guard"]
-    try:
-        guard_result, guard_exit = _run_package_guard(wp_path, spec_path, cert_path)
-    except Exception:  # pragma: no cover - defensive; never echo exception text
+    checked: list[str] = ["spec_validation"]
+    prompt_raw = wp_spec_guard._read_regular(
+        pathlib.Path(wp_path), wp_spec_guard.MAX_WP_BYTES
+    )
+    spec, spec_file_error = _load_spec(spec_path)
+    if prompt_raw is None or spec_file_error:
         return ReadinessResult(
             False, STATUS_USAGE, None, ("READINESS_PACKAGE_GUARD_INVALID",),
-            tuple(checked), 0, 0, 0, False, False,
+            tuple(checked), 0, 0, 0, None, False, None, None, None, False,
         )
-
-    if guard_exit == 2:
+    if spec is None:
         return ReadinessResult(
-            False, STATUS_USAGE, guard_result.get("wp_id"),  # type: ignore[arg-type]
-            ("READINESS_PACKAGE_GUARD_INVALID",), tuple(checked), 0, 0, 0, False, False,
+            False, STATUS_NOT_READY, None, ("READINESS_PACKAGE_GUARD_INVALID",),
+            tuple(checked), 0, 0, 0, None, False, None, None, None, False,
         )
-
-    wp_id = guard_result.get("wp_id")  # type: ignore[assignment]
-    guard_codes = {e["code"] for e in guard_result.get("errors", [])}  # type: ignore[index]
-    package_passed = guard_result.get("status") == "PASS"
-    certificate_hash_bound = "CERTIFICATE_HASH_MISMATCH" not in guard_codes and package_passed
-
-    if not package_passed:
-        codes: list[str] = []
-        if guard_codes & {
-            "CERTIFICATE_HASH_MISMATCH",
-            "DRAFTABILITY_INCOMPLETE",
-        }:
-            codes.append("READINESS_CERTIFICATE_NOT_PASS")
-        if guard_codes - {"CERTIFICATE_HASH_MISMATCH", "DRAFTABILITY_INCOMPLETE"}:
-            codes.append("READINESS_PACKAGE_GUARD_INVALID")
-        if not codes:
-            codes.append("READINESS_PACKAGE_GUARD_INVALID")
+    try:
+        prompt_text = prompt_raw.decode("utf-8")
+    except UnicodeError:
         return ReadinessResult(
-            False, STATUS_NOT_READY, wp_id, _order_codes(codes), tuple(checked),
-            0, 0, 0, False, certificate_hash_bound,
+            False, STATUS_NOT_READY, None, ("READINESS_PROMPT_STRUCTURE_INVALID",),
+            tuple(checked), 0, 0, 0, None, False, None, None, None, False,
         )
 
-    # Package guard passed -> the validated spec is trustworthy for downstream checks.
-    spec_doc, _errs = wp_spec_guard.read_and_validate_spec_scope(spec_path)
-    spec, _spec_errs = wp_spec_guard.validate_spec_document(
-        json.loads(pathlib.Path(spec_path).read_bytes())
+    wp_id = spec["identity"]["wp_id"]  # type: ignore[index]
+    minimum_track = _minimum_governance_track(spec)
+    selected_track = _selected_governance_track(
+        prompt_text, wp_id=wp_id, certificate_supplied=bool(cert_path)
     )
-    assert spec is not None  # guaranteed by the passing package guard
+    checked.append("authority_mirror")
+    mirror_codes = _authority_mirror_errors(
+        prompt_text, spec, certificate_supplied=bool(cert_path)
+    )
+    checked.append("governance_track")
+    track_codes = [*mirror_codes, *_track_errors(selected_track, minimum_track)]
+    certificate_required = selected_track == "PROTECTED"
+    if track_codes:
+        return ReadinessResult(
+            False, STATUS_NOT_READY, wp_id, _order_codes(track_codes), tuple(checked),
+            0, 0, 0, None, False, selected_track, minimum_track, None,
+            certificate_required,
+        )
 
-    prompt_text = pathlib.Path(wp_path).read_text(encoding="utf-8", errors="replace")
+    assert selected_track is not None
+    package_passed: bool | None = None
+    certificate_hash_bound = False
+    readiness_basis = "DETERMINISTIC"
+
+    if certificate_required and not cert_path:
+        return ReadinessResult(
+            False, STATUS_NOT_READY, wp_id, ("READINESS_CERTIFICATE_NOT_PASS",),
+            tuple(checked), 0, 0, 0, None, False, selected_track, minimum_track,
+            None, True,
+        )
+
+    if cert_path:
+        checked.append("package_guard")
+        try:
+            guard_result, guard_exit = _run_package_guard(wp_path, spec_path, cert_path)
+        except Exception:  # pragma: no cover - defensive; never echo exception text
+            return ReadinessResult(
+                False, STATUS_USAGE, wp_id, ("READINESS_PACKAGE_GUARD_INVALID",),
+                tuple(checked), 0, 0, 0, False, False, selected_track,
+                minimum_track, None, certificate_required,
+            )
+        if guard_exit == 2:
+            return ReadinessResult(
+                False, STATUS_USAGE, wp_id, ("READINESS_PACKAGE_GUARD_INVALID",),
+                tuple(checked), 0, 0, 0, False, False, selected_track,
+                minimum_track, None, certificate_required,
+            )
+
+        guard_codes = {e["code"] for e in guard_result.get("errors", [])}  # type: ignore[index]
+        package_passed = guard_result.get("status") == "PASS"
+        certificate_hash_bound = (
+            "CERTIFICATE_HASH_MISMATCH" not in guard_codes and package_passed
+        )
+        if not package_passed:
+            failure_codes: list[str] = []
+            if guard_codes & {"CERTIFICATE_HASH_MISMATCH", "DRAFTABILITY_INCOMPLETE"}:
+                failure_codes.append("READINESS_CERTIFICATE_NOT_PASS")
+            if guard_codes - {"CERTIFICATE_HASH_MISMATCH", "DRAFTABILITY_INCOMPLETE"}:
+                failure_codes.append("READINESS_PACKAGE_GUARD_INVALID")
+            if not failure_codes:
+                failure_codes.append("READINESS_PACKAGE_GUARD_INVALID")
+            return ReadinessResult(
+                False, STATUS_NOT_READY, wp_id, _order_codes(failure_codes),
+                tuple(checked), 0, 0, 0, False, certificate_hash_bound,
+                selected_track, minimum_track, None, certificate_required,
+            )
+        readiness_basis = "INDEPENDENT_CERTIFICATE"
+
     root = pathlib.Path(repo_root)
 
     codes = []
@@ -638,7 +825,7 @@ def evaluate_readiness(
     checked.append("state_and_authority")
     codes.extend(_state_errors(spec))
     checked.append("scope")
-    codes.extend(_scope_errors(spec))
+    codes.extend(_scope_errors(spec, selected_track))
     checked.append("successor_boundary")
     codes.extend(_successor_errors(spec))
     checked.append("evidence_plan")
@@ -664,8 +851,12 @@ def evaluate_readiness(
         scope_file_count,
         evidence_item_count,
         rule_count,
-        True,
+        package_passed,
         certificate_hash_bound,
+        selected_track,
+        minimum_track,
+        readiness_basis,
+        certificate_required,
     )
 
 
@@ -702,7 +893,7 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace | None:
         args = parser.parse_args(argv)
     except (_UsageError, SystemExit):
         return None
-    if not args.wp or not args.spec or not args.certificate:
+    if not args.wp or not args.spec:
         return None
     if args.check_diff and (not args.base or not args.head):
         return None
@@ -733,7 +924,8 @@ def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     if args is None:
         usage = ReadinessResult(
-            False, STATUS_USAGE, None, (), ("usage",), 0, 0, 0, False, False,
+            False, STATUS_USAGE, None, (), ("usage",), 0, 0, 0, None, False,
+            None, None, None, False,
         )
         fmt = "json" if (argv and "json" in argv) else "text"
         sys.stdout.write(_render(usage, fmt))

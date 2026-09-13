@@ -2500,3 +2500,16 @@ All remaining items are separately gated and outside WP171 authority.
 | WP171-D001 | Hermes Runtime + Alpha Factory (WP172) | OPEN | P2 | Separately certified WP172 with provider/model, prompt, semantic-adjudication, orchestration, and human-control gates | WP171 makes no provider/model call, starts no agent loop, and implements no alpha factory |
 | WP171-D002 | Executable-edge and cost realism (WP173) | OPEN | P1 | Separately certified cost/fill/queue/slippage evidence package | Displaying `OOS_CRITERIA_MET_UNCOSTED` never claims expected profit or tradeability |
 | WP171-D003 | Portfolio, risk, paper, authenticated execution, and live trading (WP174-WP178) | OPEN | P1 | Separate protected-boundary packages with explicit authority | WP171 has no credentials, orders, portfolio, risk, paper, execution, or live path |
+
+## WP171G Lean Agent Execution Governance Deferred Items
+
+WP171G creates no new product/runtime deferral. It reclassifies the existing successor
+boundary without implementing it. The parked local WP172 worktree remains separate and
+untouched. Side review's prompt/spec authority-divergence finding is resolved in WP171G
+through the required exact governance-authority mirror and is not deferred.
+
+| ID | Item | Status | Priority | Resolution path | Boundary note |
+|---|---|---|---|---|---|
+| WP171-D001 | Alpha + Executable Edge MVP (WP172) | OPEN_REFRAMED_WP171G | P1 | Separately gated WP172 under the mechanically derived governance track after WP171G merges | WP171G adds no Hermes runtime, strategy, cost/fill model, paper, execution, or live capability |
+| WP171-D002 | Executable-edge and cost realism | CONSOLIDATED_INTO_WP172_DIRECTION | P1 | WP172 package drafting must define its exact authorized alpha/executable-edge envelope | No successor implementation is authorized by WP171G |
+| WP171-D003 | Portfolio, risk, paper, authenticated execution, and live trading | OPEN_PROTECTED_SUCCESSORS | P1 | Later separately authorized PROTECTED packages | FAST/RUNTIME can never authorize credentials, execution, or live capital |

@@ -11,22 +11,66 @@
 This standard makes the human-readable WP execution package mechanically
 checkable. It does not authorize implementation, review readiness, merge,
 runtime behavior, network access, credentials, strategy, paper trading,
-execution, or live trading. The human-readable prompt remains normative; the
-specification is its exact machine-readable companion.
+execution, or live trading. The human-readable prompt remains normative; its
+bounded governance-authority block is the prompt's normative machine-readable
+authority declaration, and the specification is its exact machine-readable
+companion. Prompt prose may explain or narrow that declaration but cannot
+broaden authority beyond it.
 
-## Immutable package topology
+## Governance-track package topology (WP171G)
 
-Every governed WP package has three separate artifacts:
+Every governed WP has:
 
 1. `docs/wp_specs/<WP>/wp_prompt.txt`
 2. `docs/wp_specs/<WP>/wp_spec.json`
-3. `docs/wp_specs/<WP>/draftability_certificate.json`
 
-The certificate is never embedded in the specification. A normal certificate
-hashes the exact raw bytes of the prompt and specification. There is no
-certificate hash in either hashed artifact, so the topology is not
-self-referential. Any semantic prompt/spec change invalidates the certificate
-and requires a new independent review.
+`PROTECTED` also requires
+`docs/wp_specs/<WP>/draftability_certificate.json`. FAST and RUNTIME do not
+require an independent pre-implementation certificate. The readiness gate
+derives the minimum track from `identity.risk_level` and `authority`; a prompt
+may select a stricter track and may never select a weaker one.
+
+### Prompt governance-authority mirror
+
+Every new governed prompt contains exactly one bounded block in this exact
+field order and with lowercase JSON boolean literals:
+
+```
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 0
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: false
+docs: false
+tests: false
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+```
+
+`risk_level` is an integer from 0 through 4. The remaining fields are exactly
+the sixteen `authority` booleans defined below. The readiness gate requires
+exact equality between the prompt mirror and `identity.risk_level` plus the
+complete `authority` object before it derives the unchanged minimum track.
+Missing, duplicate, malformed, reordered, unknown, or mismatching blocks fail
+closed. Historical certified packages before WP171G remain compatible without
+retrofitting the block; if they contain a block, it must validate normally.
+
+When a certificate is required or supplied, it is never embedded in the
+specification. It hashes the exact raw bytes of the prompt and specification.
+There is no certificate hash in either hashed artifact, so the topology is not
+self-referential. Any protected semantic prompt/spec change invalidates the
+certificate and requires a new independent review. Historical valid certified
+packages remain accepted as legacy PROTECTED packages.
 
 An execution agent must not create, alter, or claim its own independent PASS
 certificate. Human-controlled reviewer separation is an operator assertion;
@@ -243,7 +287,7 @@ The neutral messages and result contract are implemented by
 `tools/wp/wp_spec_guard.py`. Outputs never contain raw values, file contents,
 exception strings, tracebacks, environment values, or timestamps.
 
-## Certificate contract
+## PROTECTED certificate contract
 
 A normal certificate has exactly thirteen fields:
 
@@ -267,7 +311,9 @@ The twelve lenses, each exactly once with PASS, are:
 Unresolved decisions is exactly empty. Repository, WP ID, and reviewed base
 match the spec. Both lowercase SHA-256 values match exact raw bytes.
 
-The normal certificate path remains generic and is not restricted to WP159.
+The normal certificate path remains generic and is not restricted to WP159. It
+is mandatory for PROTECTED and optional for FAST/RUNTIME; if supplied, it must
+pass this unchanged contract.
 The WP159 waiver is a separate one-time path. In addition to its exact schema
 and authorization booleans, it requires the locked WP159 identity, repository,
 primary package class, base, predecessor PR/head/merge, safe authority posture,
@@ -276,10 +322,18 @@ and code-bound final prompt/spec hashes. Any mismatch is the closed
 
 ## Guard phase gate
 
-The canonical started-section prefix is:
+For a certificate-bearing package, the canonical started-section prefix is:
 
 `files`, `spec_json`, `spec_schema`, `spec_semantics`, `certificate_json`,
 `certificate_schema`, `certificate_hashes`, `certificate_draftability`.
+
+FAST/RUNTIME readiness without a certificate validates the bounded strict prompt
+and specification before continuing with track, structure, semantic, evidence,
+scope, and successor checks. Its public result uses a deterministic readiness
+basis, reports `package_guard_passed: null`, and does not list `package_guard` as
+a checked section because the certificate/package guard did not run.
+Certificate-bearing packages retain the phase order below and report the actual
+package-guard result.
 
 File failures are usage failures (exit 2) and stop before parsing. JSON failures
 exit 1 and stop the affected later phases. Spec schema defects stop semantics;

@@ -1,0 +1,385 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP171G",
+    "title": "Lean Agent Execution Governance",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "WORKFLOW_GOVERNANCE_EXECUTION_ACCELERATION",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 172,
+      "head_sha": "a650c08ab233e47beca7565a5bb8df11a4f41d02",
+      "merge_sha": "d6a15e4007fe3ced5a7d059ec3fcdec496d2dc7d"
+    },
+    "suggested_branch": "codex/wp171g-lean-agent-governance",
+    "objective": "Replace universal independent pre-implementation certification with mechanically derived FAST, RUNTIME, and PROTECTED governance tracks. Require one canonical prompt authority mirror equal to the spec before routing so prompt authority cannot be understated in machine data. FAST and RUNTIME use deterministic prompt/spec/readiness gates without an independent certificate; PROTECTED retains exact immutable certificate behavior. Preserve exact-diff enforcement, required validation failure semantics, final Side review, historical certified-package compatibility, and every product/runtime/trading boundary. WP171G itself voluntarily selects PROTECTED and passes the legacy strict workflow one final time.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/wp_specs/WP171G/wp_prompt.txt",
+      "docs/wp_specs/WP171G/wp_spec.json",
+      "docs/wp_specs/WP171G/draftability_certificate.json",
+      "docs/ai/codex/WP_DRAFTING_STANDARD.md",
+      "docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md",
+      "docs/ai/codex/WP_SPEC_STANDARD.md",
+      "docs/ai/codex/VALIDATION_MATRIX.md",
+      "docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md",
+      "docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md",
+      "tools/wp/wp_readiness_gate.py",
+      "tests/tools/wp/test_wp_readiness_gate.py",
+      "tests/test_codex_workflow_docs.py",
+      "tests/test_wp_execution_state_machine_docs.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/WP171G.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/wp_specs/WP171G/wp_prompt.txt",
+      "docs/wp_specs/WP171G/wp_spec.json",
+      "docs/wp_specs/WP171G/draftability_certificate.json",
+      "docs/ai/codex/WP_DRAFTING_STANDARD.md",
+      "docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md",
+      "docs/ai/codex/WP_SPEC_STANDARD.md",
+      "docs/ai/codex/VALIDATION_MATRIX.md",
+      "docs/ai/codex/TOKEN_EFFICIENCY_OPERATING_MODEL.md",
+      "docs/ai/codex/REUSABLE_WP_PROMPT_BLOCKS.md",
+      "tools/wp/wp_readiness_gate.py",
+      "tests/tools/wp/test_wp_readiness_gate.py",
+      "tests/test_codex_workflow_docs.py",
+      "tests/test_wp_execution_state_machine_docs.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/WP171G.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "src/",
+      "agent_runtime/",
+      "agent_memory/",
+      "local_data/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "credentials/",
+      "secrets/"
+    ],
+    "max_changed_files": 19,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_codex_workflow_docs.py",
+      "tests/test_wp_execution_state_machine_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert WP171G. Only workflow-governance documentation, the local/offline readiness helper, its direct tests, package evidence, and repo-truth/status records change. No product source, workflow YAML, dependency, lock file, credential, network runtime, Hermes runtime, strategy, paper, execution, or live state is created or migrated.",
+    "mode_boundaries": [
+      {"boundary": "workflow_governance", "crossed": true},
+      {"boundary": "local_offline_tooling", "crossed": true},
+      {"boundary": "docs", "crossed": true},
+      {"boundary": "tests", "crossed": true},
+      {"boundary": "source_runtime", "crossed": false},
+      {"boundary": "workflow_files", "crossed": false},
+      {"boundary": "dependencies", "crossed": false},
+      {"boundary": "network", "crossed": false},
+      {"boundary": "credentials", "crossed": false},
+      {"boundary": "scheduler", "crossed": false},
+      {"boundary": "hermes_runtime", "crossed": false},
+      {"boundary": "strategy", "crossed": false},
+      {"boundary": "paper", "crossed": false},
+      {"boundary": "execution", "crossed": false},
+      {"boundary": "live", "crossed": false}
+    ]
+  },
+  "authority": {
+    "workflow_governance": true,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP171G changes the local readiness CLI/import contract and no product API.",
+    "items": [
+      {
+        "surface": "tools/wp/wp_readiness_gate.py CLI",
+        "before": "--certificate PATH is mandatory for every package",
+        "after": "--certificate PATH is optional for FAST and RUNTIME and mandatory for PROTECTED; --wp, --spec, --repo-root, --format, and --check-diff behavior remains compatible",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing certified invocations remain valid; missing certificate fails closed whenever the selected or derived governance track is PROTECTED.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_VALIDATION"
+      },
+      {
+        "surface": "tools/wp/wp_readiness_gate.py result",
+        "before": "Reports package/certificate readiness without a governance-track identity.",
+        "after": "Also reports selected track, derived minimum track, readiness basis, and whether a certificate is required; FAST/RUNTIME deterministic readiness never claims independent review.",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing fields and exit codes remain; results stay immutable, sanitized, deterministic, and non-authoritative.",
+        "authority": "LOCAL_OFFLINE_READ_ONLY_VALIDATION"
+      },
+      {
+        "surface": "Python product/runtime public API",
+        "before": "Merged WP171 repository state",
+        "after": "UNCHANGED",
+        "change_authorized": false,
+        "compatibility_requirement": "No src path, runtime behavior, dependency, product network, credential, strategy, paper, execution, or live change.",
+        "authority": "NONE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Track routing, certificate cardinality, and sanitized readiness output are bounded deterministic governance fields.",
+    "items": [
+      {
+        "path": "readiness.input.prompt_track",
+        "source": "CALLER",
+        "type": "enum",
+        "required_rule": "exactly one FAST, RUNTIME, or PROTECTED front-matter declaration",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "parse one exact Governance track expected line and reject missing, duplicate, unknown, or weaker-than-derived values",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "closed governance-track token only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "readiness.input.spec_authority",
+        "source": "CALLER",
+        "type": "validated_mapping",
+        "required_rule": "existing schema-1.0.0 risk_level and authority booleans",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "validate through wp_spec_guard before deriving the minimum track",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "derived minimum track only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "readiness.input.certificate_file",
+        "source": "CALLER",
+        "type": "optional_local_json_path",
+        "required_rule": "optional for FAST/RUNTIME; required for PROTECTED",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "when supplied require the unchanged wp_spec_guard certificate/hash PASS; when required and absent fail closed",
+        "failure_category": "DRAFTABILITY_INCOMPLETE",
+        "safe_output": "certificate required/bound booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "readiness.result.governance_track",
+        "source": "DERIVED",
+        "type": "enum",
+        "required_rule": "selected FAST, RUNTIME, or PROTECTED track after mismatch checks",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "closed prompt selection that is never weaker than the spec-derived minimum",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "closed governance-track token only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "readiness.result.readiness_basis",
+        "source": "DERIVED",
+        "type": "enum",
+        "required_rule": "DETERMINISTIC or INDEPENDENT_CERTIFICATE",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "PROTECTED readiness uses independent certificate; uncertified FAST/RUNTIME uses deterministic checks",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "closed readiness-basis token only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "readiness.result.status",
+        "source": "DERIVED",
+        "type": "enum",
+        "required_rule": "IMPLEMENTATION_READY, NOT_IMPLEMENTATION_READY, or USAGE_ERROR",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "derived only after all required deterministic and track-specific certificate checks",
+        "failure_category": "FIELD_VALUE_INVALID",
+        "safe_output": "closed status token only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "WP171G adds no persistent product identity; legacy exact prompt/spec hashes remain in its independent certificate.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "The canonical authorization chain remains unchanged while the meaning of DRAFTABILITY_PASS is track-specific.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "FAST/RUNTIME complete deterministic prompt/spec/readiness checks with no open decisions; PROTECTED completes the independent exact-hash twelve-lens certificate. WP171G itself uses the legacy PROTECTED meaning.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "The user explicitly authorizes implementation after track-specific readiness; readiness remains non-authority and never grants AUTHORIZED.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "The executor implements only the governed scope and reruns deterministic readiness after permitted corrections; PROTECTED semantic edits require independent recertification.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "The existing schema-1.0.0 package-guard failure precedence remains unchanged.",
+    "items": [
+      {"condition_id": "file_unreadable", "category": "FILE_READ_ERROR", "priority": 10},
+      {"condition_id": "json_invalid", "category": "JSON_PARSE_INVALID", "priority": 20},
+      {"condition_id": "schema_unsupported", "category": "SCHEMA_UNSUPPORTED", "priority": 30},
+      {"condition_id": "unknown_field", "category": "UNKNOWN_FIELD", "priority": 40},
+      {"condition_id": "field_missing", "category": "FIELD_MISSING", "priority": 50},
+      {"condition_id": "field_type_invalid", "category": "FIELD_TYPE_INVALID", "priority": 60},
+      {"condition_id": "field_value_invalid", "category": "FIELD_VALUE_INVALID", "priority": 70},
+      {"condition_id": "certificate_hash_mismatch", "category": "CERTIFICATE_HASH_MISMATCH", "priority": 80},
+      {"condition_id": "draftability_incomplete", "category": "DRAFTABILITY_INCOMPLETE", "priority": 90},
+      {"condition_id": "scope_policy_invalid", "category": "SCOPE_POLICY_INVALID", "priority": 100},
+      {"condition_id": "authority_contradiction", "category": "AUTHORITY_CONTRADICTION", "priority": 110},
+      {"condition_id": "semantic_contradiction", "category": "SEMANTIC_CONTRADICTION", "priority": 120},
+      {"condition_id": "identity_derivation_invalid", "category": "IDENTITY_DERIVATION_INVALID", "priority": 130},
+      {"condition_id": "failure_precedence_invalid", "category": "FAILURE_PRECEDENCE_INVALID", "priority": 140},
+      {"condition_id": "example_truth_invalid", "category": "EXAMPLE_TRUTH_INVALID", "priority": 150}
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No canonical-JSON product identity is added; routing examples are executable focused tests.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R010 map one-to-one to the prompt requirement plan: routing, certificate compatibility, DRAFTABILITY_PASS semantics, correction, validation policy, efficiency, contract compilation, protected boundaries, repo truth, and final publication.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_track_derivation_authority_mirror_and_stricter_selection",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "the canonical prompt authority mirror equals spec risk and all sixteen authority booleans before unchanged track derivation, weaker selection is rejected, and stricter selection remains accepted"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_certificate_policy_and_historical_compatibility",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "FAST and RUNTIME can pass without certificates, PROTECTED cannot, valid historical certificates remain accepted, and protected hash changes invalidate readiness"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_readiness_result_tracks_draftability_basis",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "sanitized output names the selected and minimum track, distinguishes deterministic FAST/RUNTIME readiness from independent PROTECTED certification, and reports an unrun package guard as null rather than passed"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_fast_same_envelope_correction_without_certificate",
+        "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
+        "expected_result": "a same-envelope FAST prompt/spec correction reruns deterministic readiness without certificate while a protected semantic change still requires recertification"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_wp171g_governance_docs_define_tracks_and_validation",
+        "command": "python -m pytest -q tests/test_codex_workflow_docs.py",
+        "expected_result": "track-specific validation policy retains failure blocking and mandatory final Side review for every track"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_wp171g_governance_docs_define_tracks_and_validation",
+        "command": "python -m pytest -q tests/test_codex_workflow_docs.py",
+        "expected_result": "canonical guidance limits repeated broad suites and reviewer personas while retaining one stable-candidate authoritative validation"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_wp171g_governance_docs_define_tracks_and_validation",
+        "command": "python -m pytest -q tests/test_codex_workflow_docs.py",
+        "expected_result": "FAST and RUNTIME require deterministic smoke of every existing interface literal before package freeze"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_wp171g_governance_docs_define_tracks_and_validation",
+        "command": "python -m pytest -q tests/test_codex_workflow_docs.py",
+        "expected_result": "PROTECTED credentials, execution, live, and Risk 4 boundaries remain certificate-gated and cannot be weakened by prompt selection"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_wp171g_status_and_package_evidence_are_registered",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
+        "expected_result": "repo truth records WP171 merged, WP171G as the one-time governance bridge, and WP172 Alpha plus Executable Edge as next and unstarted"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "validation",
+        "test": "final exact-head validation and publication",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP171G/wp_prompt.txt --spec docs/wp_specs/WP171G/wp_spec.json --certificate docs/wp_specs/WP171G/draftability_certificate.json --repo-root . --check-diff --base origin/main --head HEAD",
+        "expected_result": "legacy spec/readiness/check-diff, focused and affected tests, one full suite, security, exact-head hosted CI, PR re-fetch, and evidence consistency all pass before Ready YES"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP172",
+    "next_title": "Alpha + Executable Edge MVP",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP172",
+    "forbidden_in_this_wp": [
+      "Hermes runtime or provider/model integration",
+      "autonomous alpha factory",
+      "strategy implementation",
+      "cost fill queue slippage or executable-edge implementation",
+      "paper trading",
+      "credentials or authenticated client",
+      "signing orders OMS reconciliation or risk engine",
+      "execution or live trading",
+      "scheduler daemon or bot loop",
+      "dependency or lock-file changes"
+    ]
+  }
+}

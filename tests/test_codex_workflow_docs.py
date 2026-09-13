@@ -1680,7 +1680,52 @@ def test_validation_matrix_requires_full_changed_set_guard_discovery_before_scop
     # Bounded pre-freeze discovery of complete-changed-set guards is required...
     assert "complete changed-file set" in lower
     assert "before scope freeze" in lower
-    assert "certified scope contains every required compatibility edit" in lower
+    assert "governed scope contains every required compatibility edit" in lower
     # ...but the claim is bounded and does not overclaim proof of all future dependencies.
     assert "does not claim to mathematically prove every possible future test dependency" in lower
     assert "full repository suite at the exact final head remains the backstop" in lower
+
+
+# ── WP171G: lean FAST / RUNTIME / PROTECTED governance ───────────────────────
+
+
+def test_wp171g_governance_docs_define_tracks_and_validation() -> None:
+    paths = [
+        ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md",
+        ROOT / "docs" / "ai" / "codex" / "WP_EXECUTION_STATE_MACHINE.md",
+        ROOT / "docs" / "ai" / "codex" / "WP_SPEC_STANDARD.md",
+        ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md",
+        ROOT / "docs" / "ai" / "codex" / "TOKEN_EFFICIENCY_OPERATING_MODEL.md",
+        ROOT / "docs" / "ai" / "codex" / "REUSABLE_WP_PROMPT_BLOCKS.md",
+    ]
+    combined = "\n".join(_read(path) for path in paths)
+    lower = combined.lower()
+    for track in ("FAST", "RUNTIME", "PROTECTED"):
+        assert track in combined
+    assert "Governance track expected" in combined
+    assert "BEGIN_GOVERNANCE_AUTHORITY_V1" in combined
+    assert "END_GOVERNANCE_AUTHORITY_V1" in combined
+    normalized = " ".join(lower.split())
+    assert "normative machine-readable authority declaration" in normalized
+    assert "prose cannot broaden" in lower or "prose may not broaden" in lower
+    for field in (
+        "risk_level", "workflow_governance", "local_offline_tooling",
+        "canonical_evidence_policy", "docs", "tests", "source_runtime",
+        "workflow_files", "dependencies", "network", "credentials",
+        "scheduler", "hermes_runtime", "strategy", "paper", "execution", "live",
+    ):
+        assert field in combined
+    assert "package_guard_passed: null" in combined
+    assert "risk 4" in lower
+    assert "credential" in lower and "execution" in lower and "live" in lower
+    assert "risk 3" in lower
+    assert "network" in lower and "scheduler" in lower and "paper" in lower
+    assert "no independent pre-implementation" in lower
+    assert "historical valid certified" in lower
+    assert "same-capability" in lower and "deterministic" in lower
+    assert "one authoritative" in lower and "stable candidate" in lower
+    assert "side pr review" in lower
+    assert "failed required" in lower or "failed-check" in lower
+    assert "contract compilation" in lower
+    assert "smoke-test" in lower
+    assert "3–6 kb" in lower and "5–10 kb" in lower
