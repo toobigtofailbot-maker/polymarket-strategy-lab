@@ -41,6 +41,7 @@
       "src/paper_trading/risk.py",
       "src/paper_trading/runtime.py",
       "src/paper_trading/store.py",
+      "tests/paper_trading/__init__.py",
       "tests/paper_trading/conftest.py",
       "tests/paper_trading/test_cli.py",
       "tests/paper_trading/test_engine.py",
@@ -72,6 +73,7 @@
       "src/paper_trading/risk.py",
       "src/paper_trading/runtime.py",
       "src/paper_trading/store.py",
+      "tests/paper_trading/__init__.py",
       "tests/paper_trading/conftest.py",
       "tests/paper_trading/test_cli.py",
       "tests/paper_trading/test_engine.py",
@@ -95,7 +97,7 @@
       "src/risk_engine/",
       "tools/hermes/"
     ],
-    "max_changed_files": 29,
+    "max_changed_files": 30,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       "docs/deferred_items_log.md",
