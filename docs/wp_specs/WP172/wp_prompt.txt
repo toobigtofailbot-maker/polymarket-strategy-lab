@@ -1,0 +1,165 @@
+Package Identity:
+  WP ID: WP172
+  Title: Alpha + Executable Edge MVP
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/wp172-alpha-executable-edge
+  Package class: LOCAL_OFFLINE_EXECUTABLE_EDGE_RESEARCH
+  Package size class: XL
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: LOCAL_OFFLINE_RESEARCH_ONLY
+  Product impact: COST_AWARE_EXECUTABLE_EDGE_EVIDENCE
+  Network impact: NONE
+  Credential impact: NONE
+  Dependency impact: NONE_EXPECTED
+  Trading impact: RESEARCH_SIMULATION_ONLY_NO_ORDERS
+  Governance track expected: FAST
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: efficient normal coding/reasoning mode
+  Reason: bounded local/offline research implementation; deterministic gates replace pre-implementation LLM review
+  Escalate to higher reasoning or STOP if: a real predecessor-contract contradiction or look-ahead/execution-model ambiguity cannot be resolved deterministically
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: true
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Required predecessor: WP171G / PR #173
+Required predecessor final head: 140f5d23b771c7596eb0aa716eebbb7a376e0f7d
+Required predecessor merge commit / drafting-time main: 82546d8390540f68cd427149e29bc67069513754
+Successor: WP173 — Serious Paper Trading System
+Merge authority: NO
+
+## 1. Objective
+
+Turn the merged research stack into the first cost-aware executable-edge decision layer. Consume WP170 preregistered first-look OOS evidence, WP168 historical replay evidence, a deterministic research decision trace, and an explicit versioned execution-cost model. Produce immutable deterministic research evidence answering whether the candidate satisfies its frozen executable-edge threshold after fees, spread, depth/slippage, latency, fill probability, queue effects, adverse selection, and capacity constraints.
+
+A PASS means only eligibility for WP173 evaluation under frozen assumptions. It never means profitable, trade-ready, execution-ready, live-ready, or approved for capital. This package is research only and creates no persistent paper account.
+
+## 2. Authority / Non-Authority
+
+Implementation authority: YES after deterministic FAST readiness returns IMPLEMENTATION_READY.
+Report/export authority: YES only for deterministic local research records written to explicit caller paths.
+Paper authority: NO.
+Execution authority: NO.
+Live authority: NO.
+Credential authority: NO.
+Runtime/scheduler authority: finite local/offline evaluation only; no daemon, scheduler, worker, service, or bot loop.
+Canonical evidence authority: WP170 stays authoritative for experiment/OOS identity and WP168 stays authoritative for market-truth/replay inputs.
+Network authority: NONE.
+Dependency-change authority: NONE.
+
+Forbidden: Hermes, credentials, authenticated/private APIs, signing, order submission/cancel, OMS, persistent paper accounts, portfolio/risk allocation, schedulers, live execution, and automatic WP173 promotion. The protected boundary groups in docs/ai/codex/PROTECTED_PATHS.md remain uncrossed except the expressly authorized local/offline research source group.
+
+## 3. Hard Merge Gate
+
+Start only from clean current main at 82546d8390540f68cd427149e29bc67069513754 containing WP171G final head 140f5d23b771c7596eb0aa716eebbb7a376e0f7d. PR #173 must be merged; no conflicting open WP172 PR or branch may exist; generated-artifact guard must pass. The obsolete parked Hermes WP172 worktree remains untouched and is never reused, modified, inspected, or deleted.
+
+## 4. Context Budget And Contract Compilation
+
+Read mandatory startup files, WP170/WP171G specs, WP170 experiment APIs, WP168 offline replay boundary, direct affected tests, repo truth, and complete-changed-set guards. Before spec freeze mechanically construct a WP170 PreregisteredExperiment with cost_model_reference, construct first-look RunEvidenceReceipt/lifecycle state, exercise the WP168 pmxt-v2 conversion interface with fixtures, verify frozen predecessor literals through their validators/builders, and discover full-changed-set guards. End discovery when predecessor APIs, guards, contract compilation, and exact scope are known.
+
+## 5. Required Capability
+
+Implement src/research_runtime/executable_edge as a local/offline research boundary.
+
+ResearchDecisionTrace binds experiment_id and authoritative first-look OOS evidence, carries deterministic ordered market/asset decision events with decision timestamp, research side/action, intended quantity, and pre-decision value/reference inputs, contains no account/order identifiers, and has a content-addressed identity.
+
+ExecutionCostModel is content-addressed and versioned. It explicitly records aggressive/taker or passive/maker mode, fee schedule/reference, latency, TTL, size/capacity grid, passive queue-ahead assumption, adverse-selection markout horizon, continuity/staleness bound, fill/capacity thresholds, and frozen net-edge threshold. Unknown fee values never default to favorable zero; maker rebate defaults to explicit zero absent validated local evidence.
+
+The deterministic evaluator is event-time/PIT only. Aggressive evaluation sweeps visible book depth at simulated arrival and preserves partial/unfilled quantities. Passive evaluation requires subsequent eligible trade flow to consume visible queue ahead; touch alone cannot fill. Latency shifts arrival. Stale/gapped/unavailable truth closes inconclusive. Fees, spread, slippage, latency/markout, fill, and capacity use exact decimal/integer arithmetic. Default Nautilus fills cannot prove executable edge.
+
+ExecutableEdgeAssessment references exact WP170 experiment and first-look evidence, decision trace, cost model, and WP168 market-data lineage. It reports gross research result, component costs, fill ratio, net result, capacity result, assumptions, and deterministic identity. Closed statuses are EXECUTABLE_EDGE_PASS, EXECUTABLE_EDGE_FAIL, EXECUTABLE_EDGE_INCONCLUSIVE, and DIAGNOSTIC_ONLY. wp173_evaluation_eligible is true only for authoritative first-look evidence, exact cost-model binding, no reused evidence, complete/continuous data, passing fill/capacity thresholds, and passing frozen net-edge threshold. Null/mismatched cost references are DIAGNOSTIC_ONLY.
+
+Persistence uses deterministic serialization/validation and explicit caller-supplied local output. Existing different bytes are never overwritten; identical bytes are idempotent. Generated assessments are not committed. Do not add a strategy generator, optimizer, search, portfolio engine, or paper engine.
+
+## 6. Economic And Scientific Invariants
+
+No look-ahead. Decision inputs use only information available at decision time. Fill simulation uses only events at or after arrival and never future events to decide placement. First-look OOS stays distinct from reuse. Post-hoc cost assumptions cannot promote old uncosted experiments. Fees are explicit and versioned; unknown is inconclusive. Partial fills remain partial. Insufficient depth never becomes full fill. Passive touch alone is not fill. Capacity uses the frozen size grid. Negative and inconclusive results are preserved. Estimated edge is never actual profit, order, recommendation, allocation, or authorization.
+
+## 7. Negative Test Matrix
+
+N01 missing/tampered WP170 experiment/evidence rejects or is inconclusive.
+N02 reused OOS never becomes WP173 eligible.
+N03 null/mismatched cost_model_reference is DIAGNOSTIC_ONLY.
+N04 unknown fees are inconclusive, never favorable zero.
+N05 stale/gapped market data is inconclusive.
+N06 latency beyond valid window is no fill/inconclusive.
+N07 insufficient taker depth remains partial/unfilled.
+N08 passive touch without queue consumption is no fill.
+N09 future pre-decision insertion cannot affect trace/result.
+N10 identical canonical inputs produce identical assessment identity/result.
+N11 tampered serialized evidence is rejected.
+N12 differing existing bytes are not overwritten.
+N13 no network/credentials/Hermes/order/paper/live path exists.
+N14 positive gross edge overwhelmed by costs fails.
+N15 fill/capacity threshold failure closes exactly as frozen.
+N16 default Nautilus fill behavior cannot produce PASS.
+
+## 8. FAST Execution And Validation
+
+Create only wp_prompt.txt and wp_spec.json; do not create draftability_certificate.json. Run python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP172/wp_prompt.txt --spec docs/wp_specs/WP172/wp_spec.json --repo-root . before implementation. XL authorizes scope budget only; bounded discovery froze 17 files, and one consolidated same-capability correction added the mechanically discovered architecture full-source-set guard for an exact final scope of 18 files within the hard maximum of 35. Dependencies and lock files stay unchanged.
+
+While editing run focused WP172, directly affected WP168/WP170, and cheap import/static checks without repeated full suites. On the stable candidate run readiness --check-diff, exact scope/generated-artifact/diff checks, focused and adjacent tests, security availability, one authoritative exact-head hosted broad/full suite, one non-draft PR, exact-head hosted CI, PR-body update and evidence re-fetch, then independent Side review. No internal final LLM reviewer is required absent a concrete unresolved defect.
+
+## 9. Evidence Plan And Requirement-To-Evidence
+
+R001 predecessor and FAST authority: readiness/track evidence.
+R002 WP170 first-look OOS and exact cost-model binding: focused integration tests.
+R003 decision trace and no-look-ahead: temporal tests.
+R004 taker depth/slippage/fee/latency: evaluator tests.
+R005 passive queue/fill/adverse-selection: evaluator tests.
+R006 capacity and threshold classification: evaluator tests.
+R007 diagnostic-only protections: WP170 boundary tests.
+R008 deterministic persistence/tamper/no-overwrite: serializer tests.
+R009 no network/credentials/paper/execution/live and repo truth: boundary/docs tests.
+R010 final exact-head validation/publication: readiness --check-diff, hosted CI, and PR evidence.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|research|first_look_oos|promotion_gate|REQUIRE|authoritative_first_look_required|NONE|R002
+NR002|research|cost_model_reference|promotion_gate|REQUIRE|exact_cost_model_binding_required|NONE|R002
+NR003|temporal|lookahead|decision_generation|FORBID|future_information_forbidden|NONE|R003
+NR004|economics|unknown_fee|assessment|REJECT|favorable_zero_default_forbidden|NONE|R004
+NR005|fills|insufficient_depth|aggressive_execution|REQUIRE|partial_fill_preserved|NONE|R004
+NR006|fills|price_touch|passive_execution|FORBID|touch_only_fill_forbidden|NONE|R005
+NR007|replay|default_nautilus_fill|edge_pass|FORBID|default_fill_not_edge_proof|NONE|R005
+NR008|economics|capacity|promotion_gate|REQUIRE|frozen_capacity_threshold_required|NONE|R006
+NR009|research|reused_oos|promotion_gate|FORBID|reused_oos_promotion_forbidden|NONE|R007
+NR010|persistence|different_existing_bytes|write|FORBID|overwrite_forbidden|NONE|R008
+NR011|authority|paper_execution_live|wp172|FORBID|capital_execution_forbidden|NONE|R009
+NR012|workflow|successor|wp173|REQUIRE|serious_paper_separately_gated|NONE|R009
+END_NORMATIVE_RULE_MATRIX_V1
+
+## 10. Hard Stops
+
+STOP if WP170 first-look OOS identity cannot bind deterministically — because promotion would lose scientific lineage.
+STOP if WP168 market truth cannot provide PIT book/trade continuity without changing predecessor semantics — because this WP may adapt but not redesign it.
+STOP if realistic semantics require external network data — because WP172 is FAST/offline.
+STOP if a dependency or lock file must change — because dependency authority is false.
+STOP if truthful scope exceeds 35 files — because package budget is exhausted.
+STOP if implementation needs credentials, paper state, real order APIs, capital, or live execution — because those are protected successors.
+STOP if final validation cannot bind to final head — because evidence would be stale.
+Ordinary bugs, test failures, same-envelope scope correction, and negative economics are not hard stops.
+
+## 11. Successor Boundary And Report Back
+
+Update repo truth: WP171G merged via PR #173 at final head 140f5d23b771c7596eb0aa716eebbb7a376e0f7d and merge commit 82546d8390540f68cd427149e29bc67069513754; WP172 Alpha + Executable Edge MVP is current review target; obsolete Hermes WP172 work is parked/superseded and outside the critical path; WP173 Serious Paper Trading System is next and separately gated.
+
+Return only READY FOR INDEPENDENT MERGE REVIEW: YES with PR link, exact base/head/scope, readiness, tests, hosted CI, security, R001-R010 satisfied, evidence re-fetch, mergeability/comments/review threads, and explicit no product/runtime network, no credentials, no paper execution, no real execution/live, merge performed NO, WP173 started NO; otherwise return a genuine package hard stop and the mandatory self-diagnosis block.

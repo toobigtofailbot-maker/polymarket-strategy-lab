@@ -2513,3 +2513,18 @@ through the required exact governance-authority mirror and is not deferred.
 | WP171-D001 | Alpha + Executable Edge MVP (WP172) | OPEN_REFRAMED_WP171G | P1 | Separately gated WP172 under the mechanically derived governance track after WP171G merges | WP171G adds no Hermes runtime, strategy, cost/fill model, paper, execution, or live capability |
 | WP171-D002 | Executable-edge and cost realism | CONSOLIDATED_INTO_WP172_DIRECTION | P1 | WP172 package drafting must define its exact authorized alpha/executable-edge envelope | No successor implementation is authorized by WP171G |
 | WP171-D003 | Portfolio, risk, paper, authenticated execution, and live trading | OPEN_PROTECTED_SUCCESSORS | P1 | Later separately authorized PROTECTED packages | FAST/RUNTIME can never authorize credentials, execution, or live capital |
+
+## WP172 Alpha + Executable Edge MVP Deferred Items
+
+WP172 resolves the reframed executable-edge direction as
+`RESOLVED_BOUNDED_WP172_EXECUTABLE_EDGE_RESEARCH`: a local/offline assessment boundary
+over exact WP170 first-look evidence and WP168 replay lineage. The older Hermes-labelled
+WP172 direction is superseded for the critical path and remains untouched. Every item
+below remains separately gated and outside WP172 authority.
+
+| ID | Item | Status | Priority | Resolution path | Non-implication |
+|---|---|---|---|---|---|
+| WP171-D001 | Alpha + Executable Edge MVP (WP172) | RESOLVED_BOUNDED_WP172_EXECUTABLE_EDGE_RESEARCH | P1 | Deterministic decision trace, cost model, conservative fill/cost/capacity assessment, and explicit-path evidence | Research PASS is only eligibility for separately gated WP173 evaluation |
+| WP171-D002 | Executable-edge and cost realism | RESOLVED_BOUNDED_WP172_EXECUTABLE_EDGE_RESEARCH | P1 | Exact taker depth, maker queue flow, explicit fees, latency, markout, fill ratio, and frozen capacity grid | No actual-profit or execution claim follows |
+| WP172-D001 | Serious Paper Trading System (WP173) | OPEN | P1 | Separately authorized successor with persistent paper-account and accounting semantics | WP172 creates no paper account, OMS, order, portfolio, or capital state |
+| WP172-D002 | Portfolio, deterministic risk caps, reconciliation, authenticated execution, and live trading | OPEN_PROTECTED_SUCCESSORS | P1 | Later separately authorized protected packages | No credential, signing, real order, risk, execution, or live authority follows |
