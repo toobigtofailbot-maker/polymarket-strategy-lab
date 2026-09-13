@@ -3864,6 +3864,8 @@ def test_wp171g_status_and_package_evidence_are_registered():
     assert "a650c08ab233e47beca7565a5bb8df11a4f41d02" in project
     assert "d6a15e4007fe3ced5a7d059ec3fcdec496d2dc7d" in project
     assert "WP172 — Alpha + Executable Edge MVP" in project
+    assert "Prompt authority mirror: REQUIRED_EXACT_RISK_PLUS_16_BOOLEAN_SPEC_EQUALITY" in project
+    assert "Certificate-free package-guard result: NULL_NOT_RUN" in project
     assert "PR: see GitHub PR metadata and PR body." in status
     assert "stable and non-self-referential" in status
     assert "Current live PR head: see GitHub PR metadata and PR body" in status
@@ -3872,6 +3874,8 @@ def test_wp171g_status_and_package_evidence_are_registered():
     ) is None
     for name in ("wp_prompt.txt", "wp_spec.json", "draftability_certificate.json"):
         assert (package / name).is_file()
+    assert "categories F/G" in status
+    assert "prompt/spec authority-mirror equality" in status
 
 
 def test_wp159_repo_truth_and_deferred_items_are_registered():

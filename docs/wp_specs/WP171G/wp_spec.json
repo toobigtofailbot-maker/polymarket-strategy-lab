@@ -15,7 +15,7 @@
       "merge_sha": "d6a15e4007fe3ced5a7d059ec3fcdec496d2dc7d"
     },
     "suggested_branch": "codex/wp171g-lean-agent-governance",
-    "objective": "Replace universal independent pre-implementation certification with mechanically derived FAST, RUNTIME, and PROTECTED governance tracks. FAST and RUNTIME use deterministic prompt/spec/readiness gates without an independent certificate; PROTECTED retains exact immutable certificate behavior. Preserve exact-diff enforcement, required validation failure semantics, final Side review, historical certified-package compatibility, and every product/runtime/trading boundary. WP171G itself voluntarily selects PROTECTED and passes the legacy strict workflow one final time.",
+    "objective": "Replace universal independent pre-implementation certification with mechanically derived FAST, RUNTIME, and PROTECTED governance tracks. Require one canonical prompt authority mirror equal to the spec before routing so prompt authority cannot be understated in machine data. FAST and RUNTIME use deterministic prompt/spec/readiness gates without an independent certificate; PROTECTED retains exact immutable certificate behavior. Preserve exact-diff enforcement, required validation failure semantics, final Side review, historical certified-package compatibility, and every product/runtime/trading boundary. WP171G itself voluntarily selects PROTECTED and passes the legacy strict workflow one final time.",
     "capital_at_risk_usd": 0,
     "xl_explicit_authorization": false,
     "xl_authorization_basis": null
@@ -295,9 +295,9 @@
       {
         "requirement_id": "R001",
         "source": "pytest",
-        "test": "test_track_derivation_and_stricter_selection",
+        "test": "test_track_derivation_authority_mirror_and_stricter_selection",
         "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
-        "expected_result": "risk and authority derive the minimum track, weaker prompt selection is rejected, and stricter voluntary selection remains accepted"
+        "expected_result": "the canonical prompt authority mirror equals spec risk and all sixteen authority booleans before unchanged track derivation, weaker selection is rejected, and stricter selection remains accepted"
       },
       {
         "requirement_id": "R002",
@@ -311,7 +311,7 @@
         "source": "pytest",
         "test": "test_readiness_result_tracks_draftability_basis",
         "command": "python -m pytest -q tests/tools/wp/test_wp_readiness_gate.py",
-        "expected_result": "sanitized output names the selected and minimum track and distinguishes deterministic FAST/RUNTIME readiness from independent PROTECTED certification"
+        "expected_result": "sanitized output names the selected and minimum track, distinguishes deterministic FAST/RUNTIME readiness from independent PROTECTED certification, and reports an unrun package guard as null rather than passed"
       },
       {
         "requirement_id": "R004",

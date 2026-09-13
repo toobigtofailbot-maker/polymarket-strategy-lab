@@ -19,8 +19,12 @@ The goal is not to add bureaucracy. The goal is to stop paying for avoidable fol
 
 Every new governed WP has a prompt and machine specification. Its prompt must
 declare `Governance track expected: FAST`, `RUNTIME`, or `PROTECTED`; the
-readiness gate independently derives the minimum permitted track from the
-specification's risk and authority fields and rejects weaker selection.
+prompt must also contain one canonical `BEGIN_GOVERNANCE_AUTHORITY_V1` block
+whose risk level and all sixteen authority booleans exactly equal the
+specification. That block is the prompt's normative machine-readable authority
+declaration; prose may not broaden authority beyond it. The readiness gate
+validates equality, then independently derives the minimum permitted track from
+the equal risk and authority fields and rejects weaker selection.
 
 - `FAST`: Risk 0–2 work without network, scheduler, Hermes-runtime, paper,
   credential, execution, or live authority. Deterministic prompt/spec/readiness
@@ -76,6 +80,11 @@ Recommended Claude/Codex Mode:
   Reason:
   Escalate to higher reasoning or STOP if:
 ```
+
+Immediately after front matter, include the exact authority-mirror block defined
+in `docs/ai/codex/WP_SPEC_STANDARD.md`. Missing, duplicate, malformed, reordered,
+or mismatching mirrors are not draftable. Historical certified packages before
+WP171G do not require retrofitting.
 
 ## 2. Authority / Non-Authority Posture
 

@@ -2,8 +2,9 @@
 """Deterministic, local/offline pre-implementation package-readiness gate.
 
 This tool composes the existing :mod:`wp_spec_guard` specification and certificate
-validation with additional bounded checks. It mechanically derives a minimum
-governance track from the specification's risk/authority fields. FAST and RUNTIME
+validation with additional bounded checks. It mechanically verifies the prompt's
+authority mirror against the specification, then derives a minimum governance track
+from the equal risk/authority fields. FAST and RUNTIME
 packages may establish deterministic readiness without a certificate; PROTECTED
 packages retain the independent exact-hash certificate requirement. It never grants
 authorization: ``IMPLEMENTATION_READY`` means only that the package is technically
@@ -54,6 +55,7 @@ READINESS_ERROR_ORDER = (
     "READINESS_PACKAGE_GUARD_INVALID",
     "READINESS_CERTIFICATE_NOT_PASS",
     "READINESS_PROMPT_STRUCTURE_INVALID",
+    "READINESS_AUTHORITY_MIRROR_INVALID",
     "READINESS_GOVERNANCE_TRACK_INVALID",
     "READINESS_RULE_MATRIX_INVALID",
     "READINESS_SEMANTIC_CONTRADICTION",
@@ -87,6 +89,9 @@ PLACEHOLDER_TOKENS = ("TBD", "TODO", "<HEAD_SHA>", "<FILL_ME>", "<DECIDE>")
 MATRIX_BEGIN = "BEGIN_NORMATIVE_RULE_MATRIX_V1"
 MATRIX_END = "END_NORMATIVE_RULE_MATRIX_V1"
 MATRIX_HEADER = "RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID"
+AUTHORITY_MIRROR_BEGIN = "BEGIN_GOVERNANCE_AUTHORITY_V1"
+AUTHORITY_MIRROR_END = "END_GOVERNANCE_AUTHORITY_V1"
+AUTHORITY_MIRROR_KEYS = ("risk_level", *wp_spec_guard.AUTHORITY_KEYS)
 
 _RULE_ID_RE = re.compile(r"^NR\d{3}$")
 _DOTTED_TOKEN_RE = re.compile(r"^[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$")
@@ -151,7 +156,7 @@ class ReadinessResult:
     scope_file_count: int
     evidence_item_count: int
     normative_rule_count: int
-    package_guard_passed: bool
+    package_guard_passed: bool | None
     certificate_hash_bound: bool
     governance_track: str | None
     minimum_governance_track: str | None
@@ -161,7 +166,7 @@ class ReadinessResult:
     def to_public_dict(self) -> dict[str, object]:
         return {
             "schema_id": "polymarket-wp-readiness-result",
-            "schema_version": "1.1.0",
+            "schema_version": "1.2.0",
             "is_ready": self.is_ready,
             "status": self.status,
             "wp_id": self.wp_id,
@@ -232,11 +237,14 @@ def _minimum_governance_track(spec: Mapping[str, object]) -> str:
     return "FAST"
 
 
-def _is_legacy_certified_wp(wp_id: object) -> bool:
+def _is_historical_pre_wp171g(wp_id: object) -> bool:
     if not isinstance(wp_id, str):
         return False
     match = _WP_NUMBER_RE.fullmatch(wp_id)
-    return bool(match and int(match.group(1)) <= _LEGACY_CERTIFIED_MAX_WP)
+    if not match:
+        return False
+    number = int(match.group(1))
+    return number < _LEGACY_CERTIFIED_MAX_WP or wp_id == "WP171"
 
 
 def _selected_governance_track(
@@ -247,7 +255,7 @@ def _selected_governance_track(
         return matches[0]
     # Historical packages predate the mandatory track line. A supplied certificate
     # keeps those packages valid under the strictest track; no waiver is introduced.
-    if not matches and certificate_supplied and _is_legacy_certified_wp(wp_id):
+    if not matches and certificate_supplied and _is_historical_pre_wp171g(wp_id):
         return "PROTECTED"
     return None
 
@@ -255,6 +263,58 @@ def _selected_governance_track(
 def _track_errors(selected: str | None, minimum: str) -> list[str]:
     if selected is None or _TRACK_RANK[selected] < _TRACK_RANK[minimum]:
         return ["READINESS_GOVERNANCE_TRACK_INVALID"]
+    return []
+
+
+def _authority_mirror_errors(
+    prompt_text: str,
+    spec: Mapping[str, object],
+    *,
+    certificate_supplied: bool,
+) -> list[str]:
+    """Require one canonical prompt authority mirror equal to the strict spec.
+
+    Historical packages before WP171G may omit the block only when their existing
+    independent certificate is supplied. If a historical prompt contains a block,
+    the block is validated normally rather than ignored.
+    """
+    lines = prompt_text.splitlines()
+    begins = [index for index, line in enumerate(lines) if line == AUTHORITY_MIRROR_BEGIN]
+    ends = [index for index, line in enumerate(lines) if line == AUTHORITY_MIRROR_END]
+    wp_id = spec["identity"]["wp_id"]  # type: ignore[index]
+
+    if not begins and not ends:
+        if certificate_supplied and _is_historical_pre_wp171g(wp_id):
+            return []
+        return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+    if len(begins) != 1 or len(ends) != 1 or begins[0] >= ends[0]:
+        return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+
+    body = lines[begins[0] + 1 : ends[0]]
+    if len(body) != len(AUTHORITY_MIRROR_KEYS):
+        return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+
+    parsed: dict[str, object] = {}
+    for expected_key, line in zip(AUTHORITY_MIRROR_KEYS, body, strict=True):
+        match = re.fullmatch(r"([a-z][a-z0-9_]*): (.+)", line)
+        if match is None or match.group(1) != expected_key:
+            return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+        raw_value = match.group(2)
+        if expected_key == "risk_level":
+            if re.fullmatch(r"[0-4]", raw_value) is None:
+                return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+            parsed[expected_key] = int(raw_value)
+        else:
+            if raw_value not in {"true", "false"}:
+                return ["READINESS_AUTHORITY_MIRROR_INVALID"]
+            parsed[expected_key] = raw_value == "true"
+
+    identity = spec["identity"]  # type: ignore[index]
+    authority = spec["authority"]  # type: ignore[index]
+    expected = {"risk_level": identity["risk_level"]}
+    expected.update({key: authority[key] for key in wp_spec_guard.AUTHORITY_KEYS})
+    if parsed != expected:
+        return ["READINESS_AUTHORITY_MIRROR_INVALID"]
     return []
 
 
@@ -663,7 +723,7 @@ def evaluate_readiness(
     head: str | None = None,
 ) -> ReadinessResult:
     """Evaluate package readiness without side effects or raises."""
-    checked: list[str] = ["package_guard"]
+    checked: list[str] = ["spec_validation"]
     prompt_raw = wp_spec_guard._read_regular(
         pathlib.Path(wp_path), wp_spec_guard.MAX_WP_BYTES
     )
@@ -671,19 +731,19 @@ def evaluate_readiness(
     if prompt_raw is None or spec_file_error:
         return ReadinessResult(
             False, STATUS_USAGE, None, ("READINESS_PACKAGE_GUARD_INVALID",),
-            tuple(checked), 0, 0, 0, False, False, None, None, None, False,
+            tuple(checked), 0, 0, 0, None, False, None, None, None, False,
         )
     if spec is None:
         return ReadinessResult(
             False, STATUS_NOT_READY, None, ("READINESS_PACKAGE_GUARD_INVALID",),
-            tuple(checked), 0, 0, 0, False, False, None, None, None, False,
+            tuple(checked), 0, 0, 0, None, False, None, None, None, False,
         )
     try:
         prompt_text = prompt_raw.decode("utf-8")
     except UnicodeError:
         return ReadinessResult(
             False, STATUS_NOT_READY, None, ("READINESS_PROMPT_STRUCTURE_INVALID",),
-            tuple(checked), 0, 0, 0, False, False, None, None, None, False,
+            tuple(checked), 0, 0, 0, None, False, None, None, None, False,
         )
 
     wp_id = spec["identity"]["wp_id"]  # type: ignore[index]
@@ -691,29 +751,34 @@ def evaluate_readiness(
     selected_track = _selected_governance_track(
         prompt_text, wp_id=wp_id, certificate_supplied=bool(cert_path)
     )
+    checked.append("authority_mirror")
+    mirror_codes = _authority_mirror_errors(
+        prompt_text, spec, certificate_supplied=bool(cert_path)
+    )
     checked.append("governance_track")
-    track_codes = _track_errors(selected_track, minimum_track)
+    track_codes = [*mirror_codes, *_track_errors(selected_track, minimum_track)]
     certificate_required = selected_track == "PROTECTED"
     if track_codes:
         return ReadinessResult(
             False, STATUS_NOT_READY, wp_id, _order_codes(track_codes), tuple(checked),
-            0, 0, 0, True, False, selected_track, minimum_track, None,
+            0, 0, 0, None, False, selected_track, minimum_track, None,
             certificate_required,
         )
 
     assert selected_track is not None
-    package_passed = True
+    package_passed: bool | None = None
     certificate_hash_bound = False
     readiness_basis = "DETERMINISTIC"
 
     if certificate_required and not cert_path:
         return ReadinessResult(
             False, STATUS_NOT_READY, wp_id, ("READINESS_CERTIFICATE_NOT_PASS",),
-            tuple(checked), 0, 0, 0, True, False, selected_track, minimum_track,
+            tuple(checked), 0, 0, 0, None, False, selected_track, minimum_track,
             None, True,
         )
 
     if cert_path:
+        checked.append("package_guard")
         try:
             guard_result, guard_exit = _run_package_guard(wp_path, spec_path, cert_path)
         except Exception:  # pragma: no cover - defensive; never echo exception text
@@ -859,7 +924,7 @@ def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     if args is None:
         usage = ReadinessResult(
-            False, STATUS_USAGE, None, (), ("usage",), 0, 0, 0, False, False,
+            False, STATUS_USAGE, None, (), ("usage",), 0, 0, 0, None, False,
             None, None, None, False,
         )
         fmt = "json" if (argv and "json" in argv) else "text"

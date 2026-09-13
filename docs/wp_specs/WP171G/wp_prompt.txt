@@ -18,6 +18,26 @@ Package Identity:
   Trading impact: NONE
   Governance track expected: PROTECTED
 
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: true
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
 Recommended Claude/Codex Mode:
   Model/reasoning: normal strong coding/reasoning mode
   Reason: one-time workflow/tooling change; keep implementation bounded and deterministic
@@ -61,7 +81,8 @@ Live authority: NO.
 Credential authority: NO.
 Runtime/scheduler authority: local deterministic WP governance tools only; no product authority.
 Canonical evidence authority: YES, narrowly for the readiness governance model.
-Network authority: Git/GitHub workflow only.
+Network authority: NO product/runtime network. Remote Main Sync and PR publication are workflow
+  evidence operations only and do not set spec network authority.
 Dependency-change authority: NO.
 
 Explicitly authorized:
@@ -133,8 +154,12 @@ STOP if backward compatibility for PROTECTED cannot be retained.
 7. GOVERNANCE TRACK ROUTING
 
 Every future WP prompt must state exactly one `Governance track expected: FAST`, `RUNTIME`, or
-`PROTECTED` line. Readiness independently derives the minimum allowed track from existing spec
-risk/authority fields and rejects a weaker prompt track. A package may choose a stricter track.
+`PROTECTED` line and exactly one bounded `BEGIN_GOVERNANCE_AUTHORITY_V1` block containing
+`risk_level` plus all sixteen canonical authority booleans. The block is the prompt's normative
+machine-readable authority declaration; prose cannot broaden authority beyond it. Readiness
+requires exact equality between this mirror and the spec, then independently derives the minimum
+allowed track from the equal risk/authority fields and rejects a weaker prompt track. A package
+may choose a stricter track.
 
 PROTECTED minimum if risk_level is 4 or credentials, execution, or live is true.
 RUNTIME minimum if not PROTECTED and risk_level is 3 or network, scheduler, hermes_runtime, or
@@ -148,6 +173,7 @@ FAST and RUNTIME require deterministic prompt/spec/schema/semantic/readiness che
 compatibility analysis, declared authority/scope, no unresolved decisions, and a clean current
 predecessor. RUNTIME also requires explicit runtime authority and the stronger class-specific
 negative/security plan. Neither requires an independent pre-implementation LLM certificate.
+Missing, duplicate, malformed, or prompt/spec-mismatching authority mirrors fail closed.
 
 PROTECTED retains the exact prompt/spec/certificate topology, certificate hash/semantic checks,
 and all current PROTECTED-strength behavior. Existing historical certified packages remain valid.
@@ -157,7 +183,9 @@ and all current PROTECTED-strength behavior. Existing historical certified packa
 For FAST/RUNTIME, DRAFTABILITY_PASS means deterministic prompt/spec/readiness checks completed
 with no open decisions; it does not claim independent LLM review. For PROTECTED it retains the
 independent certificate-bound meaning. Readiness output and docs must name the establishing
-track and must never call FAST/RUNTIME readiness an independent certificate.
+track and must never call FAST/RUNTIME readiness an independent certificate. When no certificate
+is supplied, the public result must report the certificate/package guard as not run rather than
+passed, while retaining a distinct deterministic readiness basis.
 
 10. SCOPE CORRECTION / RECERTIFICATION
 
@@ -215,6 +243,8 @@ N09 PROTECTED semantic package change invalidates the certificate as today.
 N10 --check-diff still rejects out-of-scope final changes.
 N11 a weaker selected track than the derived minimum is rejected.
 N12 failed focused/security/CI evidence cannot become Ready YES by track choice.
+N13 prompt authority mirrors that are missing, duplicated, malformed, or unequal on credentials,
+network, execution, live, any other authority boolean, or risk_level fail closed.
 
 16. REQUIREMENT-TO-EVIDENCE PLAN
 
@@ -245,6 +275,7 @@ NR009|efficiency|full_suite|unstable_candidate|FORBID|repeated_broad_validation_
 NR010|compatibility|existing_interface|fast_or_runtime_freeze|REQUIRE|deterministic_contract_smoke|NONE|R007
 NR011|authority|live_capital|fast_or_runtime|FORBID|protected_boundary_preserved|NONE|R008
 NR012|workflow|successor|wp172|REQUIRE|alpha_executable_edge_next|NONE|R009
+NR013|governance|prompt_authority_mirror|all_new_governed_wps|REQUIRE|exact_prompt_spec_authority_equality|NONE|R001
 END_NORMATIVE_RULE_MATRIX_V1
 
 18. EXACT IMPLEMENTATION SCOPE
@@ -286,6 +317,8 @@ STOP if PROTECTED credential/execution/live packages can pass without an indepen
 — because highest-risk governance would be weakened.
 STOP if track routing cannot be derived from machine-spec risk/authority — because prompt labels
 alone must not select weaker governance.
+STOP if the prompt authority mirror can be missing, duplicated, malformed, or unequal to the
+spec for a new governed WP — because prompt prose and machine routing must not diverge.
 STOP if historical valid certificate packages become invalid solely due to WP171G — because
 backward compatibility is required.
 STOP if readiness --check-diff loses out-of-scope rejection — because final diff authority remains

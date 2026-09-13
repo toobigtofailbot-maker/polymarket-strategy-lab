@@ -34,6 +34,9 @@ deferred helper items without authorizing product or runtime work.
 
 - FAST and RUNTIME do not use independent pre-implementation LLM certification;
   deterministic prompt/spec/readiness checks establish their DRAFTABILITY_PASS.
+- Lean prompts still include the canonical bounded governance-authority mirror;
+  token efficiency never permits omitting, abbreviating, or replacing its risk
+  level and sixteen exact authority booleans with prose.
 - Use one bounded discovery before scope freeze. For FAST/RUNTIME, batch
   same-capability scope corrections inside the authority and size envelope, then
   rerun deterministic readiness without a reviewer or user round trip.

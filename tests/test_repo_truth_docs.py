@@ -45,8 +45,12 @@ def test_wp171g_repo_truth_transition_is_registered():
     assert "d6a15e4007fe3ced5a7d059ec3fcdec496d2dc7d" in index
     assert "FAST, RUNTIME, and PROTECTED" in index
     assert "Historical valid certified packages remain accepted" in index
+    assert "normative machine-readable authority mirror" in index
+    assert "all sixteen authority booleans" in index
+    assert "certificate/package guard as not run" in index
     assert "WP172 — Alpha + Executable Edge MVP" in index
     assert "not started by WP171G" in index
     assert "WP171G Lean Agent Execution Governance Deferred Items" in deferred
     assert "parked local WP172 worktree remains separate and" in deferred
     assert "untouched" in deferred
+    assert "authority-divergence finding is resolved" in deferred

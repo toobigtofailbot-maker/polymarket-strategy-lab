@@ -160,6 +160,11 @@ def test_state_machine_routes_draftability_by_governance_track():
     assert "risk 4" in lower and "risk 3" in lower and "risk 0–2" in lower
     assert "historical pre-wp171g packages" in lower
     assert "legacy `protected`" in lower
+    assert "begin_governance_authority_v1" in lower
+    assert "all sixteen" in lower
+    assert "prompt prose cannot broaden" in lower
+    assert "missing, duplicate, malformed, reordered, or mismatching" in lower
+    assert "package_guard_passed: null" in lower
     assert "fast" in lower and "runtime" in lower and "protected" in lower
     assert "not an independent llm review" in lower
     assert "independent recertification" in lower

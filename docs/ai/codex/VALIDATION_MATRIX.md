@@ -11,8 +11,9 @@ GitHub evidence comments were retired after WP91.
 
 After WP171G, every implementation WP must pass the one-command pre-implementation
 package-readiness gate **before** the user grants the `AUTHORIZED` transition. The
-prompt declares a track and the gate independently derives the minimum from risk and
-authority:
+prompt declares a track and one canonical machine-readable authority mirror. The gate
+first requires the mirror's risk level and all sixteen authority booleans to equal the
+spec, then independently derives the minimum from those equal values:
 
 ```
 python tools/wp/wp_readiness_gate.py \
@@ -27,7 +28,8 @@ an independent pre-implementation certificate.
 
 The gate must exit `0` with `IMPLEMENTATION_READY` before authorization. It is a
 deterministic, local/offline, read-only check that reuses `tools/wp/wp_spec_guard.py`
-and adds prompt-structure validation, a structured semantic-contradiction sweep,
+for certificate/package validation only when a certificate is supplied, and adds
+authority-mirror equality, prompt-structure validation, a structured semantic-contradiction sweep,
 evidence-plan coherence, exact-scope authority, and a successor-boundary check.
 `IMPLEMENTATION_READY` is technical package readiness only; it is **not authorization**
 and never grants `AUTHORIZED`. At the final implementation head the gate is re-run in
@@ -35,6 +37,13 @@ and never grants `AUTHORIZED`. At the final implementation head the gate is re-r
 planned pytest evidence node exists with a bounded reachable assertion. The gate did not
 exist on WP168G's base, so WP168G itself used the existing draftability bootstrap and
 self-hosts the gate as final `--check-diff` evidence.
+
+New governed prompts must contain exactly one bounded
+`BEGIN_GOVERNANCE_AUTHORITY_V1` block in the canonical order. Missing, duplicate,
+malformed, reordered, or prompt/spec-mismatching blocks fail closed. Prompt prose
+cannot broaden authority beyond the mirror. Historical certified packages before
+WP171G remain compatible without retrofitting it. Certificate-free FAST/RUNTIME
+results report `package_guard_passed: null` and a deterministic readiness basis.
 
 ### Full-changed-set scope-guard discovery (WP168G)
 

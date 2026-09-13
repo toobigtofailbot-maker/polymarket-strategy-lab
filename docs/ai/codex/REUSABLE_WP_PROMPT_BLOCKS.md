@@ -20,6 +20,8 @@ Every WP must still specify:
 
 - WP ID and title
 - Governance track expected: FAST / RUNTIME / PROTECTED
+- One canonical `BEGIN_GOVERNANCE_AUTHORITY_V1` block mirroring spec risk and
+  all sixteen authority booleans
 - Branch name
 - Required previous merge commit
 - Package class
@@ -87,8 +89,13 @@ See `docs/ai/codex/CONCISE_REPORTING_RULES.md` and `docs/ai/codex/WP_EXECUTION_R
 
 ## Governance Track Block
 
-Every new WP prompt declares one expected track. The readiness gate derives the
-minimum from the machine spec; the label cannot choose a weaker track.
+Every new WP prompt declares one expected track and one bounded canonical
+authority mirror. The mirror is the prompt's normative machine-readable
+authority declaration; prose cannot broaden it. Readiness requires its exact
+equality with spec `identity.risk_level` and all sixteen `authority` booleans,
+then derives the unchanged minimum from those equal values. Missing, duplicate,
+malformed, reordered, or mismatching mirrors fail closed. Historical certified
+packages before WP171G need no retrofit.
 
 - FAST: Risk 0–2 with no network/scheduler/Hermes-runtime/paper/credential/
   execution/live authority; deterministic readiness, no independent certificate.

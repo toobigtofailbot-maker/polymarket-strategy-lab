@@ -62,8 +62,12 @@ separately gated WP160 scope.
 
 Every new WP prompt states exactly one `Governance track expected: FAST`,
 `Governance track expected: RUNTIME`, or `Governance track expected: PROTECTED`
-front-matter line. The readiness gate independently derives the minimum track
-from existing machine-spec fields:
+front-matter line and exactly one canonical `BEGIN_GOVERNANCE_AUTHORITY_V1`
+block. The block is the prompt's normative machine-readable authority
+declaration and contains `risk_level` plus all sixteen spec authority booleans;
+prompt prose cannot broaden authority beyond it. Readiness requires exact
+prompt/spec equality before independently deriving the minimum track from the
+equal machine-readable fields:
 
 - `PROTECTED` for Risk 4 or any credential, execution, or live authority.
 - `RUNTIME` when not PROTECTED and Risk 3 or any network, scheduler,
@@ -73,6 +77,9 @@ from existing machine-spec fields:
 A prompt may select a stricter track and may never select a weaker one.
 Historical pre-WP171G packages with valid certificates remain accepted as
 legacy `PROTECTED`; this compatibility route does not waive their certificate.
+They do not require retrofitting the authority mirror. For every new governed
+package, a missing, duplicate, malformed, reordered, or mismatching mirror fails
+closed before `IMPLEMENTATION_READY`.
 
 ### Pre-implementation package-readiness gate (WP168G; routed by WP171G)
 
@@ -90,8 +97,9 @@ Add `--certificate docs/wp_specs/<WP>/draftability_certificate.json` for
 `PROTECTED` (mandatory) or an existing historical certified package. The flag
 is optional for `FAST` and `RUNTIME`.
 
-The gate composes the existing `tools/wp/wp_spec_guard.py` specification and,
-when required or supplied, certificate validation with prompt-structure validation,
+The gate validates the strict spec and canonical prompt authority mirror, then
+composes the existing `tools/wp/wp_spec_guard.py` certificate/package validation
+only when a certificate is required or supplied, with prompt-structure validation,
 a structured `NORMATIVE_RULE_MATRIX_V1`
 semantic-contradiction sweep, evidence-plan coherence, exact-scope authority, and a
 successor-boundary check. Its `IMPLEMENTATION_READY` result is a **non-authority package
@@ -100,6 +108,11 @@ gate only**: readiness is not authorization. Passing the gate does not create th
 the sole source of `AUTHORIZED`. The gate adds no new authority state; the canonical
 authorization state chain remains exactly
 `LOCAL_DRAFT -> DRAFTABILITY_PASS -> AUTHORIZED -> IMPLEMENTED_LOCAL`.
+
+For certificate-free FAST/RUNTIME packages, the public result reports
+`readiness_basis: DETERMINISTIC`, `package_guard_passed: null`, and does not list
+`package_guard` among checked sections. Certificate-bearing packages report the
+actual package-guard result and hash binding.
 
 **WP168G bootstrap:** the readiness gate does not exist on WP168G's merged base, so
 WP168G itself could not require the new gate as a pre-implementation prerequisite. WP168G

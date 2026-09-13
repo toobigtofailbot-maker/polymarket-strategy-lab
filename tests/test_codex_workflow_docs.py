@@ -1703,6 +1703,19 @@ def test_wp171g_governance_docs_define_tracks_and_validation() -> None:
     for track in ("FAST", "RUNTIME", "PROTECTED"):
         assert track in combined
     assert "Governance track expected" in combined
+    assert "BEGIN_GOVERNANCE_AUTHORITY_V1" in combined
+    assert "END_GOVERNANCE_AUTHORITY_V1" in combined
+    normalized = " ".join(lower.split())
+    assert "normative machine-readable authority declaration" in normalized
+    assert "prose cannot broaden" in lower or "prose may not broaden" in lower
+    for field in (
+        "risk_level", "workflow_governance", "local_offline_tooling",
+        "canonical_evidence_policy", "docs", "tests", "source_runtime",
+        "workflow_files", "dependencies", "network", "credentials",
+        "scheduler", "hermes_runtime", "strategy", "paper", "execution", "live",
+    ):
+        assert field in combined
+    assert "package_guard_passed: null" in combined
     assert "risk 4" in lower
     assert "credential" in lower and "execution" in lower and "live" in lower
     assert "risk 3" in lower

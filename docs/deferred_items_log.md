@@ -2505,7 +2505,8 @@ All remaining items are separately gated and outside WP171 authority.
 
 WP171G creates no new product/runtime deferral. It reclassifies the existing successor
 boundary without implementing it. The parked local WP172 worktree remains separate and
-untouched.
+untouched. Side review's prompt/spec authority-divergence finding is resolved in WP171G
+through the required exact governance-authority mirror and is not deferred.
 
 | ID | Item | Status | Priority | Resolution path | Boundary note |
 |---|---|---|---|---|---|
