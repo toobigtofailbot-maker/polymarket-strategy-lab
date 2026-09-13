@@ -5,7 +5,7 @@ from src.paper_trading import PaperOrder, build_paper_intent, mark_account
 from src.paper_trading.accounting import PaperAccount, PaperPosition
 from src.paper_trading.risk import evaluate_risk
 
-from conftest import edge_stack, generous_limits, make_engine, paper_book
+from tests.paper_trading.conftest import edge_stack, generous_limits, make_engine, paper_book
 
 
 def _intent(binding, **overrides):

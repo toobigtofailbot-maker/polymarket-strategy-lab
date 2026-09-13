@@ -12,7 +12,7 @@ from src.paper_trading import (
 )
 from src.paper_trading.models import content_id
 
-from conftest import edge_stack, generous_limits
+from tests.paper_trading.conftest import edge_stack, generous_limits
 
 
 def test_binding_requires_exact_eligible_wp172_assessment(tmp_path) -> None:

@@ -11,7 +11,7 @@ from src.paper_trading import (
 )
 from src.paper_trading.models import canonical_json_bytes, content_id
 
-from conftest import make_engine, paper_book
+from tests.paper_trading.conftest import make_engine, paper_book
 
 
 def _intent(engine, *, decision=101, quantity="2"):

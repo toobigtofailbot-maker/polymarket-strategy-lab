@@ -3,7 +3,7 @@ from pathlib import Path
 
 from src.paper_trading.cli import _parser, main
 
-from conftest import make_engine
+from tests.paper_trading.conftest import make_engine
 
 
 def test_wp173_paper_runtime_has_no_live_credential_or_external_network_surface(

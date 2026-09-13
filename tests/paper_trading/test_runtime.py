@@ -18,7 +18,7 @@ from src.paper_trading import (
 )
 from tests.data_layer.polymarket.test_market_truth_models_store import _book_raw
 
-from conftest import edge_stack, generous_limits, paper_book
+from tests.paper_trading.conftest import edge_stack, generous_limits, paper_book
 
 
 def _intent(binding):

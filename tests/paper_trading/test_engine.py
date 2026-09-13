@@ -11,7 +11,7 @@ from src.paper_trading import (
 )
 from src.research_runtime.executable_edge.evaluator import _aggressive, _passive
 
-from conftest import edge_stack, generous_limits, make_engine, paper_book
+from tests.paper_trading.conftest import edge_stack, generous_limits, make_engine, paper_book
 
 
 def _intent(binding, *, decision=100, quantity="4", side="BUY", reference=None):
