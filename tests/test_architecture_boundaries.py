@@ -76,6 +76,8 @@ def test_required_src_readmes_exist():
 # WP167 approves the local/offline/read-only-against-canonical derived analytical research
 # namespace at src/data_layer/analytical_research/ (PyArrow/DuckDB/Polars materialization,
 # external pmxt v2 provenance descriptor, and analytical query helpers with no execution authority).
+# WP172 approves the local/offline executable-edge research namespace. It adapts existing
+# WP168/WP170 evidence and has no network, credentials, paper, order, execution, or live authority.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -133,6 +135,7 @@ APPROVED_SRC_SCOPES = (
     # no Polymarket extra, no Redis, no network, no strategy/order/fill/paper/live), plus
     # the new research-runtime boundary README.
     "src/research_runtime/nautilus_offline",
+    "src/research_runtime/executable_edge",
     "src/research_runtime/README.md",
     # WP171 approves one local, read-only cockpit and its browser source. It reads
     # caller-selected WP169/WP170 SQLite evidence and has no trading authority.

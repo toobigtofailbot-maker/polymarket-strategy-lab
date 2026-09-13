@@ -1,0 +1,219 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP172",
+    "title": "Alpha + Executable Edge MVP",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "LOCAL_OFFLINE_EXECUTABLE_EDGE_RESEARCH",
+    "package_size_class": "XL",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 173,
+      "head_sha": "140f5d23b771c7596eb0aa716eebbb7a376e0f7d",
+      "merge_sha": "82546d8390540f68cd427149e29bc67069513754"
+    },
+    "suggested_branch": "codex/wp172-alpha-executable-edge",
+    "objective": "Implement a deterministic local/offline executable-edge research boundary that binds authoritative WP170 first-look OOS evidence to exact WP168 replay lineage and an explicit content-addressed cost model, conservatively evaluates taker or maker fills, fees, spread, depth, latency, markout, fill ratio and capacity, persists immutable evidence, and grants no paper, execution, credential, network, or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "The user explicitly authorized the attached WP172 XL FAST package for scope budget only with a hard maximum of 35 files."
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/executable_edge_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP172.md",
+      "docs/wp_specs/WP172/wp_prompt.txt",
+      "docs/wp_specs/WP172/wp_spec.json",
+      "src/research_runtime/executable_edge/__init__.py",
+      "src/research_runtime/executable_edge/evaluator.py",
+      "src/research_runtime/executable_edge/market_truth.py",
+      "src/research_runtime/executable_edge/models.py",
+      "src/research_runtime/executable_edge/persistence.py",
+      "tests/research_runtime/executable_edge/test_evaluator.py",
+      "tests/research_runtime/executable_edge/test_market_truth.py",
+      "tests/research_runtime/executable_edge/test_models.py",
+      "tests/research_runtime/executable_edge/test_persistence.py",
+      "tests/research_runtime/executable_edge/test_wp170_integration.py",
+      "tests/test_architecture_boundaries.py"
+    ],
+    "allowed_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/executable_edge_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP172.md",
+      "docs/wp_specs/WP172/wp_prompt.txt",
+      "docs/wp_specs/WP172/wp_spec.json",
+      "src/research_runtime/executable_edge/__init__.py",
+      "src/research_runtime/executable_edge/evaluator.py",
+      "src/research_runtime/executable_edge/market_truth.py",
+      "src/research_runtime/executable_edge/models.py",
+      "src/research_runtime/executable_edge/persistence.py",
+      "tests/research_runtime/executable_edge/test_evaluator.py",
+      "tests/research_runtime/executable_edge/test_market_truth.py",
+      "tests/research_runtime/executable_edge/test_models.py",
+      "tests/research_runtime/executable_edge/test_persistence.py",
+      "tests/research_runtime/executable_edge/test_wp170_integration.py",
+      "tests/test_architecture_boundaries.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/execution/",
+      "src/oms/",
+      "src/risk/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 18,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_architecture_boundaries.py"
+    ],
+    "rollback_surface": "Revert WP172. Only the local/offline executable-edge research boundary, focused tests, its contract and package/status/repo-truth documentation are removed. WP168 and WP170 canonical evidence is read and referenced but never rewritten; no dependency, workflow, network, credential, paper, execution, risk, or live state is created.",
+    "mode_boundaries": [
+      {"boundary": "workflow_governance", "crossed": false},
+      {"boundary": "local_offline_tooling", "crossed": true},
+      {"boundary": "canonical_evidence_policy", "crossed": true},
+      {"boundary": "docs", "crossed": true},
+      {"boundary": "tests", "crossed": true},
+      {"boundary": "source_runtime", "crossed": true},
+      {"boundary": "workflow_files", "crossed": false},
+      {"boundary": "dependencies", "crossed": false},
+      {"boundary": "network", "crossed": false},
+      {"boundary": "credentials", "crossed": false},
+      {"boundary": "scheduler", "crossed": false},
+      {"boundary": "hermes_runtime", "crossed": false},
+      {"boundary": "strategy", "crossed": true},
+      {"boundary": "paper", "crossed": false},
+      {"boundary": "execution", "crossed": false},
+      {"boundary": "live", "crossed": false}
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": true,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP172 adds one bounded immutable research API and leaves predecessor APIs unchanged.",
+    "items": [
+      {"surface": "ResearchDecisionTrace builders and validator", "before": "No executable-edge decision-trace boundary", "after": "Content-addressed ordered PIT research decisions bound to exact WP170 first-look evidence", "change_authorized": true, "compatibility_requirement": "No account/order identifiers and no mutation of WP170 records", "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"},
+      {"surface": "ExecutionCostModel builder and validator", "before": "No versioned executable-edge cost model", "after": "Content-addressed explicit fee latency TTL queue markout size-grid threshold model", "change_authorized": true, "compatibility_requirement": "Unknown fees remain unknown and maker rebate defaults only to explicit zero", "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"},
+      {"surface": "WP168 market-truth adapter and executable-edge evaluator", "before": "Replay events make no fill or edge claim", "after": "Conservative exact-arithmetic assessment over validated converted replay events", "change_authorized": true, "compatibility_requirement": "WP168 identity and event ordering remain authoritative and default fills never establish PASS", "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"},
+      {"surface": "Executable-edge serializer validator writer", "before": "No WP172 evidence persistence", "after": "Canonical validated JSON bytes at explicit local path with identical-byte idempotency and no overwrite", "change_authorized": true, "compatibility_requirement": "No committed generated artifacts and no implicit path", "authority": "LOCAL_OFFLINE_RESEARCH_EVIDENCE"}
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The new immutable research boundary has explicit scientific lineage, temporal, cost, fill, capacity, classification, identity, and safety semantics.",
+    "items": [
+      {"path": "decision_trace.trace_id", "source": "DERIVED", "type": "content_addressed_id", "required_rule": "SHA-256 of the canonical trace preimage", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "recompute and exact compare", "failure_category": "IDENTITY_DERIVATION_INVALID", "safe_output": "namespaced digest", "derivation_rule_id": null},
+      {"path": "cost_model.cost_model_id", "source": "DERIVED", "type": "content_addressed_id", "required_rule": "SHA-256 of explicit model assumptions", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "recompute and exact compare", "failure_category": "IDENTITY_DERIVATION_INVALID", "safe_output": "namespaced digest", "derivation_rule_id": null},
+      {"path": "assessment.status", "source": "DERIVED", "type": "closed_enum", "required_rule": "PASS FAIL INCONCLUSIVE or DIAGNOSTIC_ONLY", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "deterministic precedence from lineage continuity fee fill capacity and net thresholds", "failure_category": "SEMANTIC_CONTRADICTION", "safe_output": "closed status", "derivation_rule_id": null},
+      {"path": "assessment.wp173_evaluation_eligible", "source": "DERIVED", "type": "boolean", "required_rule": "true only for exact first-look cost-bound complete threshold PASS", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "true iff status is EXECUTABLE_EDGE_PASS and every promotion gate holds", "failure_category": "AUTHORITY_CONTRADICTION", "safe_output": "boolean", "derivation_rule_id": null},
+      {"path": "market_truth.events", "source": "DERIVED", "type": "ordered_tuple", "required_rule": "WP168 receive-time-primary converted order", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "valid stream and strictly deterministic stable ordering", "failure_category": "SEMANTIC_CONTRADICTION", "safe_output": "bounded normalized events", "derivation_rule_id": null},
+      {"path": "evaluation.fee", "source": "DERIVED", "type": "decimal_string", "required_rule": "unknown stays inconclusive; no binary float", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "exact Decimal computation from explicit schedule", "failure_category": "FIELD_VALUE_INVALID", "safe_output": "canonical decimal string or null", "derivation_rule_id": null},
+      {"path": "evaluation.fill_ratio", "source": "DERIVED", "type": "decimal_string", "required_rule": "partial fills preserved", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "filled quantity divided by intended quantity using Decimal", "failure_category": "SEMANTIC_CONTRADICTION", "safe_output": "canonical decimal string", "derivation_rule_id": null},
+      {"path": "persistence.existing_bytes", "source": "CALLER", "type": "local_file", "required_rule": "different bytes forbid overwrite", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "byte-exact compare before exclusive create", "failure_category": "SEMANTIC_CONTRADICTION", "safe_output": "closed write status only", "derivation_rule_id": null}
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Product identities are implemented and independently recomputed by focused tests; this package spec contains no worked product-record input oracle.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "The canonical authorization chain remains unchanged and FAST deterministic readiness supplies the track-specific draftability basis.",
+    "items": [
+      {"from_state": "LOCAL_DRAFT", "to_state": "DRAFTABILITY_PASS", "condition": "prompt/spec authority equality, contract compilation, scope, semantics, evidence plan, and deterministic FAST readiness all pass without a certificate", "failure_category": "DRAFTABILITY_INCOMPLETE"},
+      {"from_state": "DRAFTABILITY_PASS", "to_state": "AUTHORIZED", "condition": "the user explicitly authorizes this exact WP172 FAST implementation", "failure_category": "AUTHORITY_CONTRADICTION"},
+      {"from_state": "AUTHORIZED", "to_state": "IMPLEMENTED_LOCAL", "condition": "implementation remains inside exact scope and passes final readiness check-diff", "failure_category": "SEMANTIC_CONTRADICTION"}
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {"condition_id": "file_unreadable", "category": "FILE_READ_ERROR", "priority": 10},
+      {"condition_id": "json_invalid", "category": "JSON_PARSE_INVALID", "priority": 20},
+      {"condition_id": "schema_unsupported", "category": "SCHEMA_UNSUPPORTED", "priority": 30},
+      {"condition_id": "unknown_field", "category": "UNKNOWN_FIELD", "priority": 40},
+      {"condition_id": "field_missing", "category": "FIELD_MISSING", "priority": 50},
+      {"condition_id": "field_type_invalid", "category": "FIELD_TYPE_INVALID", "priority": 60},
+      {"condition_id": "field_value_invalid", "category": "FIELD_VALUE_INVALID", "priority": 70},
+      {"condition_id": "certificate_hash_mismatch", "category": "CERTIFICATE_HASH_MISMATCH", "priority": 80},
+      {"condition_id": "draftability_incomplete", "category": "DRAFTABILITY_INCOMPLETE", "priority": 90},
+      {"condition_id": "scope_policy_invalid", "category": "SCOPE_POLICY_INVALID", "priority": 100},
+      {"condition_id": "authority_contradiction", "category": "AUTHORITY_CONTRADICTION", "priority": 110},
+      {"condition_id": "semantic_contradiction", "category": "SEMANTIC_CONTRADICTION", "priority": 120},
+      {"condition_id": "identity_derivation_invalid", "category": "IDENTITY_DERIVATION_INVALID", "priority": 130},
+      {"condition_id": "failure_precedence_invalid", "category": "FAILURE_PRECEDENCE_INVALID", "priority": 140},
+      {"condition_id": "example_truth_invalid", "category": "EXAMPLE_TRUTH_INVALID", "priority": 150}
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused executable tests are the product oracle and no package-spec identity derivation requires an embedded worked example.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R010 map every WP172 requirement to bounded focused, adjacent, guard, exact-head CI, and publication evidence.",
+    "items": [
+      {"requirement_id": "R001", "source": "validation", "test": "deterministic FAST readiness and predecessor gate", "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP172/wp_prompt.txt --spec docs/wp_specs/WP172/wp_spec.json --repo-root .", "expected_result": "IMPLEMENTATION_READY on FAST with deterministic basis and no certificate"},
+      {"requirement_id": "R002", "source": "pytest", "test": "test_first_look_cost_binding_controls_eligibility", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_wp170_integration.py", "expected_result": "authoritative first-look WP170 evidence and exact cost-model reference are required"},
+      {"requirement_id": "R003", "source": "pytest", "test": "test_trace_is_ordered_content_addressed_and_future_independent", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_models.py", "expected_result": "trace identity is deterministic and future market events cannot alter decisions"},
+      {"requirement_id": "R004", "source": "pytest", "test": "test_aggressive_depth_fee_latency_and_partial_fill", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_evaluator.py", "expected_result": "arrival book sweep and exact component costs preserve partial fill"},
+      {"requirement_id": "R005", "source": "pytest", "test": "test_passive_queue_requires_subsequent_trade_flow_and_marks_out", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_evaluator.py", "expected_result": "touch alone does not fill and eligible trade flow consumes queue before conservative fill"},
+      {"requirement_id": "R006", "source": "pytest", "test": "test_capacity_and_net_threshold_classification", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_evaluator.py", "expected_result": "frozen fill capacity and net thresholds deterministically classify PASS or FAIL"},
+      {"requirement_id": "R007", "source": "pytest", "test": "test_reused_null_mismatch_and_unknown_fee_never_promote", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_wp170_integration.py", "expected_result": "diagnostic and inconclusive precedence prevents promotion"},
+      {"requirement_id": "R008", "source": "pytest", "test": "test_persistence_is_deterministic_tamper_evident_and_no_overwrite", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_persistence.py", "expected_result": "canonical bytes validate and differing existing bytes remain untouched"},
+      {"requirement_id": "R009", "source": "pytest", "test": "test_wp172_boundary_and_repo_truth", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_market_truth.py tests/test_architecture_boundaries.py tests/test_no_live_mode_by_default.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py", "expected_result": "WP168 lineage adapter and repo truth preserve no network credential paper execution or live authority"},
+      {"requirement_id": "R010", "source": "validation", "test": "final exact-head validation and publication", "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP172/wp_prompt.txt --spec docs/wp_specs/WP172/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD", "expected_result": "exact scope, focused and adjacent tests, security, exact-head hosted CI, PR evidence guard and live re-fetch all pass before Ready YES"}
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP173",
+    "next_title": "Serious Paper Trading System",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP173",
+    "forbidden_in_this_wp": [
+      "Hermes runtime provider or model integration",
+      "strategy generation optimization or parameter search",
+      "persistent paper account or paper OMS",
+      "credentials authenticated APIs or signing",
+      "order submission cancellation or reconciliation",
+      "portfolio capital allocation or risk caps",
+      "execution or live trading",
+      "scheduler daemon service worker or bot loop",
+      "dependency or lock-file changes",
+      "automatic promotion into WP173"
+    ]
+  }
+}
