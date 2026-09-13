@@ -6,12 +6,19 @@ from src.research_runtime.executable_edge import (
     MarketTruthWindow,
     ResearchDecisionEvent,
     assess_executable_edge,
+    build_market_truth_window,
     build_execution_cost_model,
     build_research_decision_trace,
     identify_market_truth_window,
 )
 from tests.data_layer.analytical_research.test_experiment_os_lifecycle_evidence import evidence_input, lifecycle
 from tests.data_layer.analytical_research.test_experiment_os_preregistration import experiment_stack
+from tests.research_runtime.nautilus_offline.test_conversion import (
+    _context,
+    _write_files,
+    book,
+    price_change,
+)
 
 
 def _model(**overrides):
@@ -51,10 +58,15 @@ def _book(receive, bid="0.48", ask="0.52", bid_size="20", ask_size="5"):
     return MarketTruthEvent("BOOK", receive - 1, receive, ((bid, bid_size),), ((ask, ask_size),))
 
 
-def _assessment(model, window, quantity="8", reference="0.5", value="0.7"):
+def _assessment(
+    model, window, quantity="8", reference="0.5", value="0.7", decision_time_ns=100,
+):
     experiment, evidence = _evidence(model)
     trace = build_research_decision_trace(experiment, evidence, (
-        ResearchDecisionEvent("market:a", "asset:a", 100, "BUY", "ENTER", quantity, reference, value),
+        ResearchDecisionEvent(
+            "market:a", "asset:a", decision_time_ns, "BUY", "ENTER",
+            quantity, reference, value,
+        ),
     ))
     return assess_executable_edge(experiment, evidence, trace, model, window)
 
@@ -129,3 +141,80 @@ def test_future_event_cannot_change_a_completed_decision_assessment() -> None:
         second.adverse_selection_cost, second.filled_quantity, second.net_result,
         second.capacity_quantity,
     )
+
+
+def test_incremental_update_changes_executable_edge_from_stale_snapshot(tmp_path) -> None:
+    snapshot = book(
+        1000, 1005,
+        [["0.4000", "20.000000"]],
+        [["0.6000", "20.000000"]],
+    )
+    update = price_change(1001, 1006, "0.5100", "5.000000", "SELL")
+    stale_window = build_market_truth_window(
+        _write_files(tmp_path / "stale", [[snapshot]]), _context()
+    )
+    updated_window = build_market_truth_window(
+        _write_files(tmp_path / "updated", [[snapshot, update]]), _context()
+    )
+    model = _model(
+        fee_rate_bps="0", latency_ns=1_000_000, markout_horizon_ns=0,
+        size_grid=("8",), minimum_fill_ratio="1", minimum_capacity_quantity="8",
+        net_edge_threshold="0.01", max_data_age_ns=10_000_000,
+    )
+
+    stale = _assessment(
+        model, stale_window, reference="0.5", value="0.57",
+        decision_time_ns=1_005_000_000,
+    )
+    updated = _assessment(
+        model, updated_window, reference="0.5", value="0.57",
+        decision_time_ns=1_005_000_000,
+    )
+
+    assert updated_window.lineage_id != stale_window.lineage_id
+    assert stale.status == "EXECUTABLE_EDGE_FAIL"
+    assert updated.status == "EXECUTABLE_EDGE_PASS"
+    assert updated.spread_cost != stale.spread_cost
+    assert updated.depth_slippage_cost != stale.depth_slippage_cost
+
+
+def test_crossed_arrival_and_one_sided_markout_are_inconclusive(tmp_path) -> None:
+    snapshot = book(
+        1000, 1005,
+        [["0.4000", "20.000000"]],
+        [["0.6000", "20.000000"]],
+    )
+    crossed = build_market_truth_window(
+        _write_files(
+            tmp_path / "crossed",
+            [[snapshot, price_change(1001, 1006, "0.6100", "20.000000", "BUY")]],
+        ),
+        _context(),
+    )
+    crossed_model = _model(
+        fee_rate_bps="0", latency_ns=1_000_000, markout_horizon_ns=0,
+        size_grid=("8",), max_data_age_ns=10_000_000,
+    )
+    crossed_result = _assessment(
+        crossed_model, crossed, decision_time_ns=1_005_000_000,
+    )
+
+    one_sided = build_market_truth_window(
+        _write_files(
+            tmp_path / "one-sided",
+            [[snapshot, price_change(1002, 1008, "0.6000", "0.000000", "SELL")]],
+        ),
+        _context(),
+    )
+    markout_model = _model(
+        fee_rate_bps="0", latency_ns=1_000_000, markout_horizon_ns=2_000_000,
+        size_grid=("8",), max_data_age_ns=10_000_000,
+    )
+    one_sided_result = _assessment(
+        markout_model, one_sided, decision_time_ns=1_005_000_000,
+    )
+
+    assert crossed_result.status == "EXECUTABLE_EDGE_INCONCLUSIVE"
+    assert "MARKET_DATA_WINDOW_UNAVAILABLE" in crossed_result.diagnostic_codes
+    assert one_sided_result.status == "EXECUTABLE_EDGE_INCONCLUSIVE"
+    assert "MARKET_DATA_WINDOW_UNAVAILABLE" in one_sided_result.diagnostic_codes

@@ -33,7 +33,11 @@ def _book_at(events: tuple[MarketTruthEvent, ...], receive_ns: int) -> MarketTru
 def _mid(book: MarketTruthEvent) -> Decimal | None:
     if not book.bids or not book.asks:
         return None
-    return (Decimal(book.bids[0][0]) + Decimal(book.asks[0][0])) / 2
+    best_bid = Decimal(book.bids[0][0])
+    best_ask = Decimal(book.asks[0][0])
+    if best_bid >= best_ask:
+        return None
+    return (best_bid + best_ask) / 2
 
 
 def _signed(side: str, later: Decimal, earlier: Decimal) -> Decimal:

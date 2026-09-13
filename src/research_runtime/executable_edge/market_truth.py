@@ -62,13 +62,13 @@ def identify_market_truth_window(window: MarketTruthWindow) -> str:
 def validate_market_truth_window(window: object) -> None:
     if type(window) is not MarketTruthWindow or not window.events:
         raise ExecutableEdgeError("MARKET_TRUTH_INVALID")
-    keys = [(event.receive_time_ns, 0 if event.kind == "BOOK" else 1, event.event_time_ns) for event in window.events]
+    keys = [(event.receive_time_ns, event.event_time_ns, 0 if event.kind == "BOOK" else 1) for event in window.events]
     invalid_event = False
     for event in window.events:
         if event.event_time_ns < 0 or event.receive_time_ns < 0:
             invalid_event = True
         if event.kind == "BOOK":
-            if event.side is not None or event.price is not None or event.size is not None or not event.bids or not event.asks:
+            if event.side is not None or event.price is not None or event.size is not None:
                 invalid_event = True
             try:
                 bids = [(Decimal(price), Decimal(size)) for price, size in event.bids]
@@ -112,21 +112,46 @@ def _fixed(value: object) -> str:
     return decimal_text(Decimal(str(value)))
 
 
-def _book_event(obj: object) -> MarketTruthEvent:
-    bids: list[tuple[str, str]] = []
-    asks: list[tuple[str, str]] = []
-    for delta in obj.deltas:
-        order = getattr(delta, "order", None)
-        if order is None or str(getattr(delta, "action", "")) not in {"ADD", "1"}:
-            continue
-        level = (_fixed(order.price), _fixed(order.size))
-        if str(order.side) in {"BUY", "1"}:
-            bids.append(level)
-        elif str(order.side) in {"SELL", "2"}:
-            asks.append(level)
-    bids.sort(key=lambda pair: Decimal(pair[0]), reverse=True)
-    asks.sort(key=lambda pair: Decimal(pair[0]))
-    return MarketTruthEvent("BOOK", int(obj.ts_event), int(obj.ts_init), tuple(bids), tuple(asks))
+def _enum_name(value: object) -> str:
+    name = getattr(value, "name", None)
+    return name if isinstance(name, str) else str(value)
+
+
+def _apply_book_delta(
+    delta: object, bids: dict[str, str], asks: dict[str, str]
+) -> None:
+    action = _enum_name(getattr(delta, "action", ""))
+    if action in {"CLEAR", "4"}:
+        bids.clear()
+        asks.clear()
+        return
+    order = getattr(delta, "order", None)
+    if order is None:
+        raise ExecutableEdgeError("MARKET_TRUTH_INVALID")
+    side = _enum_name(getattr(order, "side", ""))
+    levels = bids if side in {"BUY", "1"} else asks if side in {"SELL", "2"} else None
+    if levels is None:
+        raise ExecutableEdgeError("MARKET_TRUTH_INVALID")
+    price = _fixed(order.price)
+    if action in {"DELETE", "3"}:
+        levels.pop(price, None)
+    elif action in {"ADD", "1", "UPDATE", "2"}:
+        size = _fixed(order.size)
+        if Decimal(size) <= 0:
+            raise ExecutableEdgeError("MARKET_TRUTH_INVALID")
+        levels[price] = size
+    else:
+        raise ExecutableEdgeError("MARKET_TRUTH_INVALID")
+
+
+def _book_state_event(
+    obj: object, bids: dict[str, str], asks: dict[str, str]
+) -> MarketTruthEvent:
+    bid_levels = tuple(sorted(bids.items(), key=lambda pair: Decimal(pair[0]), reverse=True))
+    ask_levels = tuple(sorted(asks.items(), key=lambda pair: Decimal(pair[0])))
+    return MarketTruthEvent(
+        "BOOK", int(obj.ts_event), int(obj.ts_init), bid_levels, ask_levels
+    )
 
 
 def build_market_truth_window(
@@ -136,10 +161,17 @@ def build_market_truth_window(
     if not stream.is_valid or stream.instrument_id is None or stream.source_external_dataset_id is None:
         raise ExecutableEdgeError("MARKET_TRUTH_INVALID")
     events: list[MarketTruthEvent] = []
+    bids: dict[str, str] = {}
+    asks: dict[str, str] = {}
     for obj in stream.converted_events:
         name = type(obj).__name__
         if name == "OrderBookDeltas":
-            events.append(_book_event(obj))
+            for delta in obj.deltas:
+                _apply_book_delta(delta, bids, asks)
+            events.append(_book_state_event(obj, bids, asks))
+        elif name == "OrderBookDelta":
+            _apply_book_delta(obj, bids, asks)
+            events.append(_book_state_event(obj, bids, asks))
         elif name == "TradeTick":
             side = str(obj.aggressor_side)
             if side in {"BUYER", "1"}:
@@ -154,7 +186,9 @@ def build_market_truth_window(
             ))
     if not events:
         raise ExecutableEdgeError("MARKET_TRUTH_INVALID")
-    events.sort(key=lambda event: (event.receive_time_ns, 0 if event.kind == "BOOK" else 1, event.event_time_ns))
+    events.sort(key=lambda event: (
+        event.receive_time_ns, event.event_time_ns, 0 if event.kind == "BOOK" else 1,
+    ))
     provisional = MarketTruthWindow(
         "",
         stream.source_external_dataset_id,
