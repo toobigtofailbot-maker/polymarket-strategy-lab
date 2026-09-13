@@ -262,7 +262,7 @@ def _validate_state_relationships(state: PaperState) -> None:
         raise PaperTradingError("RECONCILIATION_BLOCKED")
 
 
-def _replace_order(state: PaperState, order: PaperOrder) -> PaperState:
+def _with_order(state: PaperState, order: PaperOrder) -> PaperState:
     values = {item.order_id: item for item in state.orders}
     values[order.order_id] = order
     return replace(
@@ -358,7 +358,7 @@ def _record_fill(state: PaperState, fill: PaperFill) -> PaperState:
     )
     account = apply_fill(state.account, order, updated, fill)
     return replace(
-        _replace_order(state, updated),
+        _with_order(state, updated),
         account=account,
         fills=state.fills + (fill,),
     )
@@ -419,7 +419,7 @@ def _replay_mutation(state: PaperState, event: JournalEvent) -> PaperState:
             state, dataclass_from_mapping(PaperMarketEvent, data)
         )
     if event.event_type == "ORDER_PENDING_RISK":
-        return _replace_order(
+        return _with_order(
             state, dataclass_from_mapping(PaperOrder, data["order"])
         )
     if event.event_type == "RISK_DECIDED":
@@ -434,13 +434,13 @@ def _replay_mutation(state: PaperState, event: JournalEvent) -> PaperState:
             reserved_cash="0" if event.event_type == "ORDER_REJECTED" else order.reserved_cash,
             reserved_quantity="0" if event.event_type == "ORDER_REJECTED" else order.reserved_quantity,
         )
-        result = _replace_order(state, updated)
+        result = _with_order(state, updated)
         return result if event.event_type == "ORDER_REJECTED" else replace(
             result, account=reserve(state.account, updated)
         )
     if event.event_type in {"ORDER_CANCELLED", "ORDER_EXPIRED"}:
         order = next(item for item in state.orders if item.order_id == data["order_id"])
-        result = _replace_order(
+        result = _with_order(
             state,
             replace(
                 order,
@@ -452,10 +452,10 @@ def _replay_mutation(state: PaperState, event: JournalEvent) -> PaperState:
         return replace(result, account=release(state.account, order))
     if event.event_type == "ORDER_ARRIVAL_REFERENCE":
         order = next(item for item in state.orders if item.order_id == data["order_id"])
-        return _replace_order(state, replace(order, arrival_mid=data["arrival_mid"]))
+        return _with_order(state, replace(order, arrival_mid=data["arrival_mid"]))
     if event.event_type == "ORDER_MARKOUT_REFERENCE":
         order = next(item for item in state.orders if item.order_id == data["order_id"])
-        return _replace_order(
+        return _with_order(
             state,
             replace(
                 order,
@@ -467,7 +467,7 @@ def _replay_mutation(state: PaperState, event: JournalEvent) -> PaperState:
         )
     if event.event_type in {"ORDER_QUEUE_INITIALIZED", "ORDER_QUEUE_UPDATED"}:
         order = next(item for item in state.orders if item.order_id == data["order_id"])
-        return _replace_order(
+        return _with_order(
             state,
             replace(
                 order,
@@ -702,7 +702,7 @@ class PaperEngine:
                 cancelled = replace(
                     order, status="CANCELLED", reserved_cash="0", reserved_quantity="0"
                 )
-                state = replace(_replace_order(state, cancelled), account=account)
+                state = replace(_with_order(state, cancelled), account=account)
                 events.append(
                     _event(
                         "ORDER_CANCELLED",
@@ -734,7 +734,7 @@ class PaperEngine:
             if existing.intent_id == intent.intent_id:
                 return existing
         order = _pending_order(self.state, intent)
-        state = _replace_order(self.state, order)
+        state = _with_order(self.state, order)
         events = [
             _event(
                 "ORDER_PENDING_RISK",
@@ -759,7 +759,7 @@ class PaperEngine:
                 reserved_cash="0",
                 reserved_quantity="0",
             )
-            state = _replace_order(state, order)
+            state = _with_order(state, order)
             events.append(
                 _event(
                     "ORDER_REJECTED",
@@ -774,7 +774,7 @@ class PaperEngine:
         else:
             order = replace(order, status="OPEN", risk_decision_id=decision.decision_id)
             account = reserve(state.account, order)
-            state = replace(_replace_order(state, order), account=account)
+            state = replace(_with_order(state, order), account=account)
             events.append(
                 _event(
                     "ORDER_OPENED",
@@ -810,7 +810,7 @@ class PaperEngine:
         order = replace(
             order, status="CANCELLED", reserved_cash="0", reserved_quantity="0"
         )
-        state = replace(_replace_order(self.state, order), account=account)
+        state = replace(_with_order(self.state, order), account=account)
         self._commit(
             (
                 _event(
@@ -834,7 +834,7 @@ class PaperEngine:
         expired = replace(
             order, status="EXPIRED", reserved_cash="0", reserved_quantity="0"
         )
-        state = replace(_replace_order(state, expired), account=account)
+        state = replace(_with_order(state, expired), account=account)
         return state, _event(
             "ORDER_EXPIRED", time_ns, {"order_id": order.order_id}, state
         )
@@ -1051,7 +1051,7 @@ class PaperEngine:
                 markout_observed_receive_time_ns=market_event.receive_time_ns,
                 markout_status="AVAILABLE" if available else "MARKET_DATA_UNAVAILABLE",
             )
-            state = _replace_order(state, updated)
+            state = _with_order(state, updated)
             events.append(
                 _event(
                     "ORDER_MARKOUT_REFERENCE",
@@ -1079,7 +1079,7 @@ class PaperEngine:
                         reserved_cash="0",
                         reserved_quantity="0",
                     )
-                    state = replace(_replace_order(state, order), account=account)
+                    state = replace(_with_order(state, order), account=account)
                     events.append(
                         _event(
                             "ORDER_CANCELLED",
@@ -1165,7 +1165,7 @@ class PaperEngine:
                     reserved_cash="0",
                     reserved_quantity="0",
                 )
-                state = replace(_replace_order(state, closed), account=account)
+                state = replace(_with_order(state, closed), account=account)
                 events.append(
                     _event(
                         "ORDER_CANCELLED",
@@ -1180,7 +1180,7 @@ class PaperEngine:
                 continue
             if order.arrival_mid is None:
                 order = replace(order, arrival_mid=decimal_text(_mid(arrival_book)))
-                state = _replace_order(state, order)
+                state = _with_order(state, order)
                 events.append(
                     _event(
                         "ORDER_ARRIVAL_REFERENCE",
@@ -1231,7 +1231,7 @@ class PaperEngine:
                         reserved_cash="0",
                         reserved_quantity="0",
                     )
-                    state = replace(_replace_order(state, current), account=account)
+                    state = replace(_with_order(state, current), account=account)
                     events.append(
                         _event(
                             "ORDER_CANCELLED",
@@ -1262,7 +1262,7 @@ class PaperEngine:
                         queue_ahead=decimal_text(queue),
                         passive_fill_eligible=visible > 0,
                     )
-                    state = _replace_order(state, current)
+                    state = _with_order(state, current)
                     events.append(
                         _event(
                             "ORDER_QUEUE_INITIALIZED",
@@ -1301,7 +1301,7 @@ class PaperEngine:
                         current = replace(
                             current, queue_ahead=decimal_text(queue - consumed)
                         )
-                        state = _replace_order(state, current)
+                        state = _with_order(state, current)
                         events.append(
                             _event(
                                 "ORDER_QUEUE_UPDATED",
@@ -1354,7 +1354,7 @@ class PaperEngine:
                         reserved_quantity="0",
                     )
                     state = replace(
-                        _replace_order(state, cancelled), account=account
+                        _with_order(state, cancelled), account=account
                     )
                     events.append(
                         _event(
@@ -1370,7 +1370,7 @@ class PaperEngine:
                     continue
                 if order.arrival_mid is None:
                     order = replace(order, arrival_mid=decimal_text(_mid(book)))
-                    state = _replace_order(state, order)
+                    state = _with_order(state, order)
                     events.append(
                         _event(
                             "ORDER_ARRIVAL_REFERENCE",
@@ -1399,7 +1399,7 @@ class PaperEngine:
                             "AVAILABLE" if available else "MARKET_DATA_UNAVAILABLE"
                         ),
                     )
-                    state = _replace_order(state, order)
+                    state = _with_order(state, order)
                     events.append(
                         _event(
                             "ORDER_MARKOUT_REFERENCE",
@@ -1451,7 +1451,7 @@ class PaperEngine:
                         reserved_quantity="0",
                     )
                     state = replace(
-                        _replace_order(state, current), account=account
+                        _with_order(state, current), account=account
                     )
                     events.append(
                         _event(

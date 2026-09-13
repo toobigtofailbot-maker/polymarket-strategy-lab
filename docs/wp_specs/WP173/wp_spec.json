@@ -50,6 +50,7 @@
       "tests/paper_trading/test_runtime.py",
       "tests/paper_trading/test_store_recovery.py",
       "tests/test_architecture_boundaries.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
       "tests/test_operator_cockpit.py",
       "tests/test_repo_truth_docs.py"
     ],
@@ -82,6 +83,7 @@
       "tests/paper_trading/test_runtime.py",
       "tests/paper_trading/test_store_recovery.py",
       "tests/test_architecture_boundaries.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
       "tests/test_operator_cockpit.py",
       "tests/test_repo_truth_docs.py"
     ],
@@ -97,13 +99,14 @@
       "src/risk_engine/",
       "tools/hermes/"
     ],
-    "max_changed_files": 30,
+    "max_changed_files": 31,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       "docs/deferred_items_log.md",
       "docs/long_term_bot_completion_roadmap.md",
       "docs/project_status.md",
       "docs/repo_truth_index.md",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
       "src/operator_cockpit.py",
       "src/operator_cockpit_frontend/src/main.tsx",
       "src/paper_trading/README.md",

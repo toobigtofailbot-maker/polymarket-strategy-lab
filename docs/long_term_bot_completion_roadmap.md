@@ -455,6 +455,8 @@ track during paper soak. It is not a gate for WP173 paper operation or for this
 successor numbering.
 
 Old Streamlit-first and pre-WP171G numbering is superseded at roadmap level.
+The former WP177 restricted-live and WP178 mature-live labels are historical aliases,
+superseded by WP175 and WP176 respectively; they carry no current authorization.
 Each unmerged successor remains separately gated and requires its governance-track
 readiness, independent Side review, and explicit user authorization. WP173 grants
 no authority to start WP174.
