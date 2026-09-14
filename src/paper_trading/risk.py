@@ -140,11 +140,11 @@ def evaluate_risk(
         ),
         Decimal(0),
     )
-    if position_market + market_open + candidate_buy > Decimal(
+    if intent.side == "BUY" and position_market + market_open + candidate_buy > Decimal(
         limits.max_per_market_gross_exposure
     ):
         reasons.append("MAX_PER_MARKET_GROSS_EXPOSURE")
-    if position_total + total_open + candidate_buy > Decimal(
+    if intent.side == "BUY" and position_total + total_open + candidate_buy > Decimal(
         limits.max_total_gross_exposure
     ):
         reasons.append("MAX_TOTAL_GROSS_EXPOSURE")

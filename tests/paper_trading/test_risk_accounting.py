@@ -60,7 +60,9 @@ def _open_order(intent, *, side="BUY", quantity="1", reference_price="0.5"):
     )
 
 
-def _at_cap_risk_inputs(binding, *, intent, orders=(), reserved="0"):
+def _at_cap_risk_inputs(
+    binding, *, intent, orders=(), reserved="0", held_quantity="10"
+):
     return dict(
         intent=intent,
         limits=generous_limits(
@@ -71,7 +73,15 @@ def _at_cap_risk_inputs(binding, *, intent, orders=(), reserved="0"):
             "100",
             "96",
             "0",
-            (PaperPosition("market:a", "asset:a", "10", "4", "0"),),
+            (
+                PaperPosition(
+                    "market:a",
+                    "asset:a",
+                    held_quantity,
+                    str(Decimal(held_quantity) * Decimal("0.4")),
+                    "0",
+                ),
+            ),
             (("asset:a", reserved),) if reserved != "0" else (),
             "0",
         ),
@@ -278,9 +288,10 @@ def test_open_aggressive_orders_count_conservatively_toward_aggregate_caps() -> 
 
 
 @pytest.mark.parametrize(
-    ("limit_overrides", "reason"),
+    ("held_quantity", "limit_overrides", "reason"),
     (
         (
+            "10",
             {
                 "max_per_market_gross_exposure": "5",
                 "max_total_gross_exposure": "100",
@@ -288,6 +299,23 @@ def test_open_aggressive_orders_count_conservatively_toward_aggregate_caps() -> 
             "MAX_PER_MARKET_GROSS_EXPOSURE",
         ),
         (
+            "12",
+            {
+                "max_per_market_gross_exposure": "5",
+                "max_total_gross_exposure": "100",
+            },
+            "MAX_PER_MARKET_GROSS_EXPOSURE",
+        ),
+        (
+            "10",
+            {
+                "max_per_market_gross_exposure": "100",
+                "max_total_gross_exposure": "5",
+            },
+            "MAX_TOTAL_GROSS_EXPOSURE",
+        ),
+        (
+            "12",
             {
                 "max_per_market_gross_exposure": "100",
                 "max_total_gross_exposure": "5",
@@ -296,8 +324,8 @@ def test_open_aggressive_orders_count_conservatively_toward_aggregate_caps() -> 
         ),
     ),
 )
-def test_owned_sell_at_gross_cap_is_not_exposure_increasing(
-    limit_overrides, reason
+def test_owned_sell_at_or_above_gross_cap_is_not_exposure_increasing(
+    held_quantity, limit_overrides, reason
 ) -> None:
     *_, binding = edge_stack("PASSIVE_MAKER")
     intent = _intent(
@@ -306,7 +334,9 @@ def test_owned_sell_at_gross_cap_is_not_exposure_increasing(
         quantity="1",
         reference_price="0.5",
     )
-    inputs = _at_cap_risk_inputs(binding, intent=intent)
+    inputs = _at_cap_risk_inputs(
+        binding, intent=intent, held_quantity=held_quantity
+    )
     inputs["limits"] = generous_limits(**limit_overrides)
 
     decision = evaluate_risk(**inputs)
@@ -410,14 +440,14 @@ def test_reduce_only_sell_risk_decision_replays_identically_after_restart(
                 size=size,
             )
         )
-    engine.process_market_event(paper_book(130, bid="0.49", ask="0.51"))
+    engine.process_market_event(paper_book(130, bid="0.59", ask="0.61"))
     assert engine.state.account.positions[0].quantity == "10"
     sell = engine.submit(
         _intent(
             engine.state.binding,
             side="SELL",
             quantity="2",
-            reference_price="0.51",
+            reference_price="0.61",
             decision_time_ns=131,
         )
     )

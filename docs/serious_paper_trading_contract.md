@@ -50,8 +50,9 @@ Hermes path can override a decision or mutate limits.
 Gross-exposure admission counts current marked positions until fills change
 them, remaining open BUY exposure, and candidate BUY exposure. A SELL that
 passes the owned free-position check is reduce-only: it reserves quantity but
-does not add new gross exposure. An unfilled SELL is never subtracted from held
-gross and therefore cannot manufacture capacity for another BUY.
+does not add new gross exposure and is not denied merely because existing
+marked gross is already at or above a cap. An unfilled SELL is never subtracted
+from held gross and therefore cannot manufacture capacity for another BUY.
 
 The spot-token ledger uses `Decimal` only. BUY reserves quantity at the maximum
 unit payoff plus the frozen taker fee, and can never make free cash negative.
