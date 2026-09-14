@@ -1,0 +1,430 @@
+WP174 — PROTECTED AUTHENTICATION, SIGNING & EXECUTION GATEWAY
+
+Package Identity:
+  WP ID: WP174
+  Title: Protected Authentication, Signing & Execution Gateway
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/wp174-auth-signing-execution-gateway
+  Package class: PROTECTED_AUTH_SIGNING_EXECUTION_GATEWAY
+  Package size class: L
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: PROTECTED_GATEWAY_WITH_DISABLED_READ_ONLY_AND_SHADOW_STATES
+  Product impact: AUTHENTICATED_READ_SIGNING_FIXTURE_AND_GATE_B_LOCKED_MUTATION_CAPABILITY
+  Network impact: AUTHENTICATED_POLYMARKET_READ_AND_USER_STREAM_CAPABILITY_WITH_MUTATION_LOCKED
+  Credential impact: SERVER_SIDE_REFERENCE_BOUNDARY_WITH_REAL_SECRET_USE_GATE_B_PROHIBITED
+  Dependency impact: ADD_POLYMARKET_CLIENT_0_10_0_AND_REPLACE_WEBSOCKETS_17_1_WITH_15_0_1
+  Trading impact: LIMIT_ORDER_CAPABILITY_ONLY_NO_AUTHORIZED_REAL_MUTATION_OR_LIVE_CAPITAL
+  Governance track expected: PROTECTED
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 4
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: true
+dependencies: true
+network: true
+credentials: true
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: true
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Required predecessor:
+  WP173 / PR #175
+Required predecessor final head:
+  79e2953dee8754dc8d09781edd647202dee834aa
+Required predecessor merge commit / base:
+  e0202750c1e6f2a3a885aa6efa04bbd8d0b2291a
+Successor:
+  WP175 — Restricted Live Canary
+Merge authority:
+  NO
+
+===============================================================================
+1. OBJECTIVE AND AUTHORITY / NON-AUTHORITY POSTURE
+===============================================================================
+
+This immutable package is a PROTECTED pre-implementation freeze. It is not implementation
+authority. Source implementation may begin only after an independent reviewer creates the exact
+hash-bound certificate at docs/wp_specs/WP174/draftability_certificate.json, the canonical
+readiness command reports IMPLEMENTATION_READY, and Karl separately authorizes Gate A.
+
+Gate A authorizes only fake/nonfunctional credentials, deterministic signing fixtures, mocks,
+local simulators, build/sign tests incapable of venue mutation, and separately safe authenticated
+reads. Gate A never authorizes real execution secrets or a production-capable mutation.
+
+Gate B is separately required for loading or using any real execution private key, CLOB API
+secret/passphrase, production signing identity, or any order create/cancel mutation. Credential
+presence, an environment variable, configuration, UI action, or agent instruction cannot grant
+Gate B.
+
+Gate C belongs only to WP175. WP174 contains no RESTRICTED_LIVE state, strategy/capital authority,
+market allowlist, live exposure/loss envelope, or live deployment permission.
+
+Current package state: LOCAL_DRAFT awaiting independent protected certification. Do not claim
+DRAFTABILITY_PASS or IMPLEMENTATION_READY before the certificate and readiness pass.
+
+===============================================================================
+2. FROZEN BUILD-VS-ADOPT DECISION
+===============================================================================
+
+SELECTED PRIMARY SUBSTRATE
+
+Adopt the official Polymarket Python SDK package polymarket-client==0.10.0 for wallet/signature
+identity, L1 credential derivation, L2 authenticated operations, CLOB V2 EIP-712 order building and
+signing, one-order create, cancel/query primitives, authenticated user stream, and rate-limit error
+metadata exposed by this release.
+
+Immutable release provenance:
+- PyPI distribution: polymarket-client 0.10.0, released artifact
+  polymarket_client-0.10.0-py3-none-any.whl.
+- Artifact SHA-256 observed during P2 smoke:
+  f378e07351d4bfdf390ca84c6ba47898f9a715f2f4446afe0446bbeafa495ee5.
+- Official repository release/tag commit:
+  579bb2e56be9cc5d152546985870ee6ad795ec52.
+- License: MIT. Requires Python >=3.11.
+- The version pin and released artifact are authoritative; mutable upstream main is not.
+
+REPO-OWNED GAP LAYER
+
+Implement a narrow src/execution_gateway/gateway.py wrapper around the selected SDK. It owns the
+A0 DISABLED, A1 READ_ONLY, and A2 SHADOW authority gates; WP173 intent/authorization binding;
+canonical Decimal normalization; LIMIT-only instruction allowlisting; secret reference loading and
+redaction; transport classification; heartbeat request/ack safety; user-stream gap state; dynamic
+access/venue-state enforcement; and sanitized cockpit projection. It may contain a Gate-B-only
+mutation transport entry point, but that entry point must be unreachable in all WP174 ordinary
+configuration and tests.
+
+Implement src/execution_gateway/store.py as the dedicated SQLite journal and recovery boundary for
+authority state, request/order identity, mutation attempts/outcomes, reconciliation state,
+heartbeat/user-stream/access state, disable state, and a tamper-evident audit chain. Startup,
+restart, ambiguity, or divergence must fail closed.
+
+The SDK has no public heartbeat method and does not provide the complete repo persistence,
+idempotency, ambiguity, and authority model. The narrow gap layer may call only the documented
+heartbeat endpoint using the same server-side L2 credential boundary; it must not recreate the SDK
+signing stack or become a general direct CLOB client.
+
+REJECTED ALTERNATIVES
+
+- py-clob-client-v2==1.1.0 is rejected as primary. It is compatible with the repo pin set, but
+  current evidence includes signer/deposit-wallet binding issues, float-precision risks, a global
+  transport, response-body/URL error logging, hidden response headers, and a POST retry option with
+  unsafe ambiguity implications. Released v1.1.0 provenance, not mutable main, was evaluated.
+- nautilus_trader==1.231.0[polymarket] is rejected as primary. The repo already pins the base
+  package and tag commit 27a8e54e7ac3c57d6cbf8891f0283dfbaee97317 was evaluated, but the extra
+  installs py-clob-client-v2 and introduces a second execution/reconciliation state model broader
+  than this gateway. It also inherits the lower SDK risks and documented venue edge cases.
+- A custom full direct HTTP/signing client is rejected because it would duplicate audited wallet,
+  authentication, and EIP-712 functionality and materially enlarge the protected surface.
+- Unsupported dependency suppression such as --no-deps is forbidden as a production design.
+
+Known selected-SDK gaps frozen for implementation: no public heartbeat API; no repo-owned durable
+idempotency/recovery model; transport metadata/hook coverage must be verified and safely wrapped;
+current market BUY rounding issue makes market-order creation unsafe; partial settlement and
+transport-injection issues remain upstream concerns. Any gap that cannot be closed inside the exact
+scope is a hard stop.
+
+===============================================================================
+3. WEBSOCKETS DEPENDENCY RESOLUTION
+===============================================================================
+
+The current repo pin websockets==17.1 conflicts with polymarket-client==0.10.0, which requires
+websockets>=13,<16. WP174 explicitly replaces the repo pin with websockets==15.0.1; this is not a
+silent weakening of WP169.
+
+Release provenance observed during P2:
+- PyPI distribution: websockets 15.0.1, released universal artifact
+  websockets-15.0.1-py3-none-any.whl.
+- Artifact SHA-256:
+  f7a866fbc1e97b5c617ee4116daaa09b722101d4a3c170c787450ba409f9736f.
+
+Compatibility evidence already established before freeze:
+- a clean dependency environment with polymarket-client==0.10.0 and websockets==15.0.1 passed
+  pip check;
+- selected SDK imports/compiles on the local Python runtime;
+- the WP169 focused suite passed under websockets==15.0.1: 97 passed.
+
+Implementation evidence must additionally run the full affected WP169 tests, SDK/gateway focused
+tests, pip check, and exact-head hosted CI. .github/workflows/ci.yml is in scope only to replace the
+frozen 17.1 assertion with exact 15.0.1 and add the selected dependency assertion if mechanically
+needed. No isolated interpreter/service is adopted because the explicit compatible pin is smaller,
+tested, and operationally coherent. Any newly discovered WP169 or hosted-CI incompatibility is a
+hard stop rather than authority to suppress dependencies.
+
+===============================================================================
+4. CAPABILITY, AUTHORITY, AND SECRET CONTRACT
+===============================================================================
+
+Capabilities are distinct from authority:
+- C1 authenticated reads;
+- C2 normalize/build an exact would-submit order;
+- C3 fixture signing, and real signing only after Gate B;
+- C4 mutation transport present but locked behind Gate B;
+- C5 authoritative account reconciliation.
+
+WP174 runtime authority states are closed:
+- A0 DISABLED: no authenticated mutation and no real-secret signing exercise.
+- A1 READ_ONLY: separately authorized authenticated reads only; no create/cancel/signing mutation.
+- A2 SHADOW: consume authorized intents, normalize/build, run all deterministic gates, persist
+  would-submit artifacts, and optionally use fake fixture signing; no venue mutation.
+- A3 RESTRICTED_LIVE does not exist in WP174 and cannot be parsed, configured, restored, or
+  reached. WP175 must add it under Gate C.
+
+Secret references are accepted only through one explicit server-side loader boundary. Protected
+material includes signer private keys, API secret/passphrase, and future builder/relayer secrets.
+No values may enter Git, fixtures, URLs, logs, exceptions, SQLite, audit output, API responses,
+browser state, screenshots, generated evidence, or Hermes context. Loading fails closed. Public
+address/funder/signature-type metadata may be emitted only after validation and sanitization.
+
+No config, environment variable, cockpit route, credential presence, persisted state, SDK default,
+or agent/Hermes input may elevate authority. The store persists DISABLED/kill state across restart.
+
+===============================================================================
+5. FROZEN LIMIT-ORDER SURFACE
+===============================================================================
+
+Initial mutation-capable construction is LIMIT only:
+- one deterministic LIMIT order per logical execution intent;
+- GTC and GTD only when current venue constraints confirm support;
+- post-only only when the current venue contract confirms it for the exact instruction;
+- exact Decimal price and quantity normalization using current authoritative tick/min-size data;
+- explicit worst acceptable price and deterministic upstream WP173 authorization identity;
+- exact signer, funder/maker, wallet/signature type, chain/domain, market/condition, token,
+  NegRisk/exchange, nonce/timestamp, and signed-order-hash binding.
+
+Explicitly unsupported in WP174:
+- MARKET, FAK, FOK, fill-or-kill, immediate-or-cancel, stop, trigger, trailing, or conditional orders;
+- batch order creation;
+- reduce-only flags or inferred close-only exposure reduction;
+- broad wallet transfers, approvals, portfolio allocation, strategy sizing, or capital deployment;
+- mutation created from cockpit, browser, Hermes, or any unbound request;
+- blind retry of create or cancel after a possibly transmitted request.
+
+Cancel capability is limited to one order and bounded cancel-many/cancel-market/cancel-all control
+paths justified by reconciliation or kill handling. These paths remain Gate-B prohibited. Query
+coverage is order by venue ID, open orders, recent relevant fills/trades, required balances/
+positions, and current access/account/venue mode. Cancellation may remain available while new
+exposure is disabled only after Gate B and only when venue state permits.
+
+===============================================================================
+6. IDENTITY, MUTATION, RECONCILIATION, AND RECOVERY
+===============================================================================
+
+Canonical order identity is SHA-256 over canonical JSON containing the execution-intent ID,
+WP173 deterministic authorization/risk identity, strategy/session, chain/domain/protocol version,
+signer/funder/wallet/signature type, condition/market/token, side, LIMIT type, TIF, canonical Decimal
+price/quantity, tick size, minimum size, NegRisk/exchange, post-only flag, nonce and signing-time
+fields. Transport results and venue order IDs are excluded from this pre-mutation identity.
+
+Mutation-attempt identity is SHA-256 over canonical JSON containing the order identity, closed
+operation token, monotonic attempt sequence, prior reconciliation state, and exact non-secret
+request digest. One logical intent cannot map to a second economically equivalent order.
+
+Closed outcome states include DEFINITIVE_ACCEPTED, DEFINITIVE_REJECTED, AMBIGUOUS, and
+RECONCILIATION_REQUIRED. Timeouts/disconnects/crashes/425/429/5xx/malformed responses/adapter
+omissions/local post-transmit failures are ambiguous unless authoritative evidence proves otherwise.
+Ambiguous create or cancel freezes further mutation for the logical identity and reconciles orders,
+trades, balances/positions, and signed/order identity before any conclusion. Unknown stays blocked.
+
+Authoritative reconciliation is mandatory at startup, restart with possible resting orders,
+user-stream reconnect or gap, ambiguity, unexpected venue/local disagreement, and explicit operator
+request. The authenticated stream accelerates awareness but is not canonical account truth.
+Unexpected/foreign/unreconciled venue state blocks new exposure-capable mutation.
+
+Heartbeat is an order-safety protocol. One process owns heartbeat credentials and order-lifetime
+expectations. The gateway persists heartbeat identity/ack/failure, enters unsafe disconnected state
+on missed or malformed acknowledgement, and requires reconciliation before recovery. Rate handling
+uses response headers and Retry-After where exposed, bounded backoff, and separate read-vs-mutation
+policies; mutation retries never duplicate economic exposure.
+
+Geoblock, close-only, cancel-only, matching-engine/restart, post-only, and eligibility state are
+queried dynamically and fail closed when unknown or blocked. Geographic restrictions are never
+bypassed. WP174 does not infer safe reduction from a nonexistent reduce-only field.
+
+===============================================================================
+7. WP173, COCKPIT, HERMES, AND WP175 BOUNDARIES
+===============================================================================
+
+WP174 accepts only requests bound to WP173-established deterministic intent, accounting, risk,
+and reconciliation evidence. It must never rewrite or bypass that evidence. WP173 invariants
+constrain the gateway but are not claimed as final live-risk authority. WP175 owns the first live
+capital/risk envelope and separately introduces any A3 state.
+
+The cockpit change is backend-only: bounded GET-only routes in src/operator_cockpit.py project
+sanitized authority, configuration-presence booleans, public identity metadata, reconciliation,
+stream, heartbeat, rate/backoff, access/venue mode, open-order summary, and recent audit records.
+No frontend redesign, browser credentials, mutation form, enable control, POST/PUT/PATCH/DELETE
+gateway route, or capital control is authorized.
+
+Hermes remains advisory only and is out of scope. It may never receive secrets, sign, mutate,
+change deterministic gates, elevate authority, or authorize capital.
+
+===============================================================================
+8. EXACT FROZEN SCOPE — 20 PATHS, CLASS L
+===============================================================================
+
+Required and allowed changed paths are exactly:
+1. .github/workflows/ci.yml
+2. docs/deferred_items_log.md
+3. docs/project_status.md
+4. docs/repo_truth_index.md
+5. docs/security_tooling_status.md
+6. docs/status_entries/WP174.md
+7. docs/wp_specs/WP174/draftability_certificate.json
+8. docs/wp_specs/WP174/wp_prompt.txt
+9. docs/wp_specs/WP174/wp_spec.json
+10. pyproject.toml
+11. src/execution_gateway/__init__.py
+12. src/execution_gateway/gateway.py
+13. src/execution_gateway/store.py
+14. src/operator_cockpit.py
+15. tests/execution_gateway/test_gateway.py
+16. tests/execution_gateway/test_store_recovery.py
+17. tests/test_architecture_boundaries.py
+18. tests/test_operator_cockpit.py
+19. tests/test_project_status_docs.py
+20. tests/test_repo_truth_docs.py
+
+The certificate path is planned protected evidence and must be created only by the independent
+certifier before Gate A. The pre-freeze executor creates and commits only prompt/spec bytes.
+
+No lock file exists in the repo. pyproject.toml carries exact dependency pins. CI is directly
+affected because it asserts the websockets pin. Existing execution_gateway/README.md remains
+unchanged. Gateway models, constraints, secret boundary, transport, user-stream, heartbeat, and
+runtime gate remain cohesive in gateway.py; durable journal/recovery stays isolated in store.py.
+Backend-only cockpit visibility avoids a frontend path. Exact current repo-truth assertions require
+both direct documentation tests. This is a truthful 20-path L implementation boundary.
+
+Any need for a twenty-first path is a protected scope hard stop requiring return to Side with the
+exact proposed XL list and explicit authorization. No same-envelope PROTECTED scope correction is
+self-authorized after certificate hashing.
+
+===============================================================================
+9. NEGATIVE AND ADVERSARIAL TEST MATRIX
+===============================================================================
+
+N01 A0/A1/A2 cannot reach SDK mutation transport.
+N02 A3/RESTRICTED_LIVE is rejected everywhere.
+N03 credential presence cannot elevate authority.
+N04 real-looking secret material is rejected from fixture/log/store/cockpit serialization.
+N05 missing, malformed, or ambiguous secret reference fails closed.
+N06 wrong signer/funder/wallet/signature/domain/chain/NegRisk identity fails before mutation.
+N07 unbound or tampered WP173 intent/risk identity fails before order construction.
+N08 MARKET/FAK/FOK/IOC/stop/trigger/trailing/batch/reduce-only instruction is rejected.
+N09 stale tick/min-size/precision or invalid price protection rejects the order.
+N10 geoblocked/unknown eligibility rejects new exposure.
+N11 close-only/cancel-only/engine-restart state rejects unsupported new exposure.
+N12 duplicate identical intent is idempotent; conflicting bytes reject.
+N13 create accepted but response lost becomes AMBIGUOUS and is not resent.
+N14 cancel accepted but response lost becomes AMBIGUOUS and is not blindly resent.
+N15 partial fill racing cancel reconciles to authoritative evidence or remains blocked.
+N16 restart with a resting order reconciles before new mutation.
+N17 reconnect with missed stream events triggers authoritative reconciliation.
+N18 unexpected/foreign venue order blocks new mutation.
+N19 malformed/omitted SDK response remains blocked.
+N20 425/429/5xx/timeout retry logic cannot create duplicate mutation.
+N21 Retry-After/backoff parsing is bounded and deterministic.
+N22 heartbeat miss/malformed ack enters unsafe state and requires reconciliation.
+N23 store transaction failure cannot produce an unjournaled mutation decision.
+N24 hash-chain/checkpoint corruption enters RECONCILIATION_REQUIRED/DISABLED.
+N25 disable/kill and ambiguity survive restart without becoming permission.
+N26 cockpit routes are GET-only, bounded, sanitized, and cannot expose secret values.
+N27 WP173 evidence is consumed read-only and cannot be bypassed or promoted to live authority.
+N28 WP175 remains required; no strategy/capital/allowlist/live-loss authority exists.
+N29 pyproject and CI assert polymarket-client==0.10.0 plus websockets==15.0.1.
+N30 the affected WP169 suite passes with websockets==15.0.1.
+
+===============================================================================
+10. REQUIREMENT-TO-EVIDENCE PLAN
+===============================================================================
+
+R001 protected readiness: independent exact-hash certificate and canonical PROTECTED readiness.
+R002 authority/secret isolation: gateway negative tests for closed A0/A1/A2, absent A3, redaction,
+  reference-only loading, and credential-presence non-authority.
+R003 limit identity/constraints: canonical order identity, exact Decimal normalization, supported
+  GTC/GTD/post-only constraints, wrong identity and unsupported order rejection.
+R004 mutation/idempotency: create/cancel/query adapter boundaries, deterministic attempt identity,
+  no blind retry, and Gate-B transport unreachable in ordinary configuration.
+R005 ambiguity/reconciliation: accepted-response-lost, partial-fill/cancel race, stream gap,
+  foreign state, and authoritative convergence-or-block tests.
+R006 persistence/restart: transactional append-only audit chain, corruption detection, disable,
+  ambiguity, heartbeat, and reconciliation state survive restart.
+R007 heartbeat/rate/access: ack/failure/restart, Retry-After/backoff, geoblock, close-only,
+  cancel-only, and engine-state fail-closed tests.
+R008 cockpit: bounded GET-only sanitized backend projection and no mutation route.
+R009 architecture/WP boundaries: approved protected source scope, WP173 read-only binding, no
+  Hermes/strategy/live/capital authority, and WP175 separately gated.
+R010 dependency compatibility: exact pins, pip check, SDK import/compile, affected WP169 suite,
+  security checks, and hosted CI.
+R011 repo truth/evidence: status, security tooling, deferred items, and exact successor wording.
+R012 exact-head publication: readiness --check-diff, exact scope, focused/affected/full tests,
+  security, one independent implementation reviewer, hosted CI, and PR evidence re-fetch.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|authority|runtime_state|wp174|REQUIRE|a0_a1_a2_only|authority.state|R002
+NR002|authority|restricted_live|wp174|FORBID|wp175_required|authority.state|R009
+NR003|secrets|credential_value|all_outputs|FORBID|reference_only_boundary|secret.reference|R002
+NR004|identity|execution_order|before_build|REQUIRE|wp173_and_signer_binding|order.identity|R003
+NR005|orders|instruction|wp174|REQUIRE|limit_gtc_gtd_only|order.identity|R003
+NR006|mutation|transport|without_gate_b|FORBID|mutation_unreachable|authority.state|R004
+NR007|mutation|ambiguous_outcome|possibly_transmitted|FORBID|blind_retry_forbidden|mutation.outcome|R005
+NR008|reconciliation|startup_gap_or_divergence|required|REQUIRE|authoritative_query_or_block|reconciliation.state|R005
+NR009|heartbeat|miss_or_bad_ack|active_orders_possible|REQUIRE|unsafe_and_reconcile|heartbeat.state|R007
+NR010|access|blocked_or_unknown|new_exposure|FORBID|fail_closed|access.state|R007
+NR011|cockpit|gateway_projection|wp174|REQUIRE|get_only_sanitized|authority.state|R008
+NR012|dependency|websockets|sdk_selected|REQUIRE|exact_15_0_1_compatibility|NONE|R010
+NR013|predecessor|wp173_invariants|gateway_request|REQUIRE|consume_without_bypass|intent.authorization_id|R009
+NR014|audit|protected_transition|all|REQUIRE|tamper_evident_no_secrets|store.audit_head|R006
+END_NORMATIVE_RULE_MATRIX_V1
+
+===============================================================================
+11. IMPLEMENTATION AND VALIDATION AFTER GATE A
+===============================================================================
+
+Before source work, run:
+python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP174/wp_prompt.txt --spec
+docs/wp_specs/WP174/wp_spec.json --certificate
+docs/wp_specs/WP174/draftability_certificate.json --repo-root .
+
+The command must report IMPLEMENTATION_READY with governance track PROTECTED and independent
+certificate basis. Missing/invalid certificate, hash mismatch, predecessor divergence, dirty base,
+or authority-mirror mismatch blocks implementation.
+
+During authorized implementation use focused tests only. At a stable candidate run readiness with
+--check-diff --base origin/main --head HEAD, exact-scope/artifact guards, git diff --check, Ruff,
+compile/import checks, focused gateway/store/cockpit/boundary/status tests, affected WP169 tests,
+pip check, relevant gitleaks/Semgrep/pip-audit checks, one combined independent correctness/security
+review, one authoritative full repository suite, exact-head hosted CI, and authenticated PR-body
+re-fetch. Never exercise real credentials or mutations without Gate B.
+
+Hard stop if a safe implementation needs an unlisted path, another dependency, a custom signing
+stack, real credential/manual action, a real venue mutation, live authority, architecture redesign,
+or cannot make ambiguity/reconciliation/heartbeat/access behavior fail closed. Ordinary same-scope
+bugs are fixed within Gate A and do not broaden authority.
+
+===============================================================================
+12. SUCCESSOR BOUNDARY AND REPORT-BACK
+===============================================================================
+
+WP175 remains separately gated and unstarted. It alone may propose restricted-live capital/risk,
+market allowlists, live exposure/loss limits, canary sizing, and deployment under Gate C. WP174
+does not authorize its drafting, implementation, or execution.
+
+Implementation completion evidence must report exact head and path count; predecessor SHA;
+selected dependency artifacts and gaps; certificate/readiness; secret and authority proof;
+LIMIT/create/cancel/query identity and idempotency proof; ambiguity/reconciliation/restart proof;
+heartbeat/rate/access proof; WP173/WP175 separation; focused, affected, security, full-suite and
+exact-head CI results; PR evidence re-fetch; Gate B real-secret/mutation exercised NO unless later
+explicitly authorized; merge NO; WP175 started NO.
+
+END OF WP174
