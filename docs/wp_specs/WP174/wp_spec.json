@@ -415,8 +415,8 @@
         "requirement_id": "R010",
         "source": "validation",
         "test": "exact dependency compatibility and affected WP169 regression",
-        "command": "python -m pip check && python -c \"from importlib.metadata import version; assert version('polymarket-client') == '0.10.0'; assert version('websockets') == '15.0.1'; import polymarket_client\" && python -m pytest -q tests/data_layer/polymarket/test_market_truth_models_store.py tests/data_layer/polymarket/test_market_truth_websocket.py tests/data_layer/polymarket/test_market_truth_data_api.py tests/data_layer/polymarket/test_market_truth_onchain.py tests/data_layer/polymarket/test_market_truth_runtime.py tests/test_public_market_truth_realtime_data_plane_contract_docs.py",
-        "expected_result": "exact polymarket-client 0.10.0 and websockets 15.0.1 are installed, the selected SDK imports, pip check passes, and the six-file affected WP169 focused suite passes with no required skip"
+        "command": "python -m pip check && python -c \"from importlib.metadata import version; assert version('polymarket-client') == '0.10.0'; assert version('websockets') == '15.0.1'; import polymarket; from polymarket import SecureClient, AsyncSecureClient\" && python -m pytest -rs -q tests/data_layer/polymarket/test_market_truth_models_store.py tests/data_layer/polymarket/test_market_truth_websocket.py tests/data_layer/polymarket/test_market_truth_data_api.py tests/data_layer/polymarket/test_market_truth_onchain.py tests/data_layer/polymarket/test_market_truth_runtime.py tests/test_public_market_truth_realtime_data_plane_contract_docs.py",
+        "expected_result": "exact polymarket-client 0.10.0 and websockets 15.0.1 are installed, polymarket plus SecureClient and AsyncSecureClient import, pip check passes, and the six-file affected WP169 focused suite passes with no required skip"
       },
       {
         "requirement_id": "R011",

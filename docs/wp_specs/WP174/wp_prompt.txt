@@ -468,8 +468,9 @@ R008 cockpit: bounded GET-only sanitized backend projection and no mutation rout
 R009 architecture/WP boundaries: approved protected source scope, WP173 read-only binding, no
   Hermes/strategy/live/capital authority, and WP175 separately gated.
 R010 dependency compatibility: assert exact polymarket-client==0.10.0 and
-  websockets==15.0.1 installed versions, import polymarket_client, pass pip check, and pass without
-  a required skip the actual affected WP169 focused suite:
+  websockets==15.0.1 installed versions, import polymarket and its public SecureClient and
+  AsyncSecureClient exports, pass pip check, and pass without a required skip the actual affected
+  WP169 focused suite:
   tests/data_layer/polymarket/test_market_truth_models_store.py,
   tests/data_layer/polymarket/test_market_truth_websocket.py,
   tests/data_layer/polymarket/test_market_truth_data_api.py,
