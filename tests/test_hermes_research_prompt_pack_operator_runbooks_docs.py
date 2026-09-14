@@ -455,7 +455,6 @@ def test_forbidden_output_matrix_is_present() -> None:
 
 def test_forbidden_matrix_preserves_wp97_forbidden_categories() -> None:
     # These exact categories from WP97 must be in the WP98 forbidden matrix
-    text = _read(PROMPT_PACK_DOC)
     wp97_categories = (
         "buy/sell/hold/enter/exit",
         "position sizing",
@@ -700,6 +699,12 @@ def test_no_src_implementation_for_wp98() -> None:
         cwd=str(REPO_ROOT),
     )
     changed_files = result.stdout.strip().splitlines()
+    if "docs/status_entries/WP173.md" in changed_files:
+        expected = set(json.loads(
+            (REPO_ROOT / "docs/wp_specs/WP173/wp_spec.json").read_text(encoding="utf-8")
+        )["scope"]["required_changed_files"])
+        assert set(changed_files) == expected
+        return
     if "docs/status_entries/WP171.md" in changed_files:
         expected = set(json.loads(
             (REPO_ROOT / "docs/wp_specs/WP171/wp_spec.json").read_text(encoding="utf-8")

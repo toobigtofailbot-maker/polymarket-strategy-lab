@@ -78,6 +78,8 @@ def test_required_src_readmes_exist():
 # external pmxt v2 provenance descriptor, and analytical query helpers with no execution authority).
 # WP172 approves the local/offline executable-edge research namespace. It adapts existing
 # WP168/WP170 evidence and has no network, credentials, paper, order, execution, or live authority.
+# WP173 approves deterministic simulated-paper runtime/accounting/risk/reconciliation only.
+# It reads WP169 locally, extends the loopback read-only cockpit, and has no real/live authority.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -137,6 +139,7 @@ APPROVED_SRC_SCOPES = (
     "src/research_runtime/nautilus_offline",
     "src/research_runtime/executable_edge",
     "src/research_runtime/README.md",
+    "src/paper_trading",
     # WP171 approves one local, read-only cockpit and its browser source. It reads
     # caller-selected WP169/WP170 SQLite evidence and has no trading authority.
     "src/operator_cockpit.py",
@@ -253,6 +256,30 @@ def test_security_tools_are_mandatory_before_runtime_dependency_integration():
     assert "mandatory before runtime dependency integration" in text
     assert "vendoring" in text
     assert "live/API execution" in text
+
+
+def test_wp173_paper_runtime_is_separate_from_live_and_external_clients():
+    paper = ROOT / "src" / "paper_trading"
+    assert paper.is_dir()
+    imports = "\n".join(
+        path.read_text(encoding="utf-8").lower() for path in paper.glob("*.py")
+    )
+    for forbidden in (
+        "import requests",
+        "import httpx",
+        "import websockets",
+        "py_clob_client",
+        "src.execution_gateway",
+        "src.oms",
+        "src.risk_engine",
+    ):
+        assert forbidden not in imports
+    contract = (ROOT / "docs" / "serious_paper_trading_contract.md").read_text(
+        encoding="utf-8"
+    )
+    assert "SIMULATED_PAPER_ONLY" in contract
+    assert "WP174 Auth / Signing / Execution Gateway" in contract
+    assert "does not authorize" in contract
 
 
 # ── WP88: Evidence Architecture Repair ───────────────────────────────────────

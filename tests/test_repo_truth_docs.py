@@ -54,3 +54,31 @@ def test_wp171g_repo_truth_transition_is_registered():
     assert "parked local WP172 worktree remains separate and" in deferred
     assert "untouched" in deferred
     assert "authority-divergence finding is resolved" in deferred
+
+
+def test_wp173_repo_truth_and_successor_are_consistent():
+    status = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    roadmap = (ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(
+        encoding="utf-8"
+    )
+    fragment = (ROOT / "docs" / "status_entries" / "WP173.md").read_text(
+        encoding="utf-8"
+    )
+    combined = "\n".join((status, index, deferred, roadmap, fragment))
+    assert "WP172 merged: YES" in status
+    assert "WP172 PR: 174" in status
+    assert "39363e5a081b6737104260725b1b0c8fcffe9196" in combined
+    assert "418bae72f24b0694eccc657ed5dc3f90a3f38f2a" in combined
+    assert "WP173 current review target" in status
+    assert "Exact changed-file scope: 31" in status
+    assert "an exact 31-file scope" in index
+    assert "an exact 29-file scope" not in index
+    assert "RESOLVED_BOUNDED_WP173_SERIOUS_PAPER" in deferred
+    assert "obsolete Hermes-labelled WP172 remains superseded" in index
+    assert "WP174 — Auth / Signing / Execution Gateway" in combined
+    assert "WP175 — Restricted Live Canary" in roadmap
+    assert "WP176 — Mature Controlled Live" in roadmap
+    assert "WP174" in fragment and "unstarted" in fragment
+    assert "SIMULATED_PAPER_ONLY" in combined

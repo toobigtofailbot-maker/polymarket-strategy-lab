@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 const API = "http://127.0.0.1:8000/api";
-const VIEWS = ["Overview", "Market Truth", "Experiments", "Audit / Health"] as const;
+const VIEWS = ["Overview", "Market Truth", "Experiments", "Paper Operations", "Audit / Health"] as const;
 type View = (typeof VIEWS)[number];
 type LoadState<T> =
   | { kind: "loading" }
@@ -15,6 +15,7 @@ type Health = {
   read_only: true;
   wp169: { configured: boolean; readable: boolean };
   wp170: { configured: boolean; readable: boolean };
+  paper: { configured: boolean; readable: boolean };
 };
 type Overview = {
   read_only: true;
@@ -75,6 +76,64 @@ type AuditItem = {
   sequence: number;
   status: string;
   occurred_at: string;
+};
+type PaperSummary = {
+  session_id: string;
+  control_state: string;
+  reconciliation_state: string;
+  cash: string;
+  free_cash: string;
+  reserved_cash: string;
+  equity: string | null;
+  realized_pnl: string;
+  unrealized_pnl: string | null;
+  open_order_count: number;
+  fill_count: number;
+  markout_count: number;
+  last_market_receive_ns: number | null;
+  simulated_paper_only: true;
+};
+type PaperOrder = {
+  order_id: string;
+  market_id: string;
+  asset_id: string;
+  side: string;
+  order_style: string;
+  quantity: string;
+  filled_quantity: string;
+  average_fill_price: string | null;
+  fee_paid: string;
+  status: string;
+};
+type PaperFill = {
+  fill_id: string;
+  order_id: string;
+  side: string;
+  quantity: string;
+  price: string;
+  fee: string;
+  spread_cost: string;
+  depth_slippage_cost: string;
+  latency_cost: string;
+  adverse_selection_cost: string | null;
+  markout_status: string;
+  fill_kind: "SIMULATED_PAPER_FILL";
+};
+type PaperPosition = {
+  market_id: string;
+  asset_id: string;
+  quantity: string;
+  cost_basis: string;
+  realized_pnl: string;
+  mark: string | null;
+  marked_value: string | null;
+};
+type PaperRisk = {
+  limits: { max_open_orders: number };
+  utilization: { open_orders: number; max_open_orders: number; reserved_cash: string };
+  deny_count: number;
+  resolution_pending: string[];
+  latest_decision: { result: string; reason_codes: string[] } | null;
 };
 
 async function getJson<T>(path: string): Promise<T> {
@@ -213,6 +272,7 @@ function AuditView({ epoch }: { epoch: number }) {
       <Metric label="Overall health" value={data.status} />
       <Metric label="WP169 readable" value={data.wp169.readable ? "Yes" : "No"} />
       <Metric label="WP170 readable" value={data.wp170.readable ? "Yes" : "No"} />
+      <Metric label="Paper store readable" value={data.paper.readable ? "Yes" : "No"} />
     </div>}</StatePanel>
     <StatePanel state={audit} empty={(data) => data.count === 0}>{(data) => <div className="panel">
       <table><thead><tr><th>Time</th><th>Source</th><th>Kind</th><th>Status</th><th>Evidence ID</th></tr></thead>
@@ -221,6 +281,37 @@ function AuditView({ epoch }: { epoch: number }) {
         </tr>)}</tbody>
       </table>
     </div>}</StatePanel>
+  </>;
+}
+
+function PaperView({ epoch }: { epoch: number }) {
+  const [summary, setSummary] = useState<LoadState<PaperSummary>>({ kind: "loading" });
+  const [orders, setOrders] = useState<LoadState<ListResponse<PaperOrder>>>({ kind: "loading" });
+  const [fills, setFills] = useState<LoadState<ListResponse<PaperFill>>>({ kind: "loading" });
+  const [positions, setPositions] = useState<LoadState<ListResponse<PaperPosition>>>({ kind: "loading" });
+  const [risk, setRisk] = useState<LoadState<PaperRisk>>({ kind: "loading" });
+  useEffect(() => {
+    setSummary({ kind: "loading" }); setOrders({ kind: "loading" });
+    setFills({ kind: "loading" }); setPositions({ kind: "loading" }); setRisk({ kind: "loading" });
+    getJson<PaperSummary>("/paper/summary").then((data) => setSummary({ kind: "ready", data })).catch((error: Error) => setSummary({ kind: "error", code: error.message }));
+    getJson<ListResponse<PaperOrder>>("/paper/orders").then((data) => setOrders({ kind: "ready", data })).catch((error: Error) => setOrders({ kind: "error", code: error.message }));
+    getJson<ListResponse<PaperFill>>("/paper/fills").then((data) => setFills({ kind: "ready", data })).catch((error: Error) => setFills({ kind: "error", code: error.message }));
+    getJson<ListResponse<PaperPosition>>("/paper/positions").then((data) => setPositions({ kind: "ready", data })).catch((error: Error) => setPositions({ kind: "error", code: error.message }));
+    getJson<PaperRisk>("/paper/risk").then((data) => setRisk({ kind: "ready", data })).catch((error: Error) => setRisk({ kind: "error", code: error.message }));
+  }, [epoch]);
+  return <>
+    <StatePanel state={summary}>{(data) => <><div className="grid">
+      <Metric label="Paper control" value={data.control_state} />
+      <Metric label="Reconciliation" value={data.reconciliation_state} />
+      <Metric label="Free cash" value={data.free_cash} />
+      <Metric label="Equity" value={data.equity ?? "Unavailable"} />
+      <Metric label="Realized PnL" value={data.realized_pnl} />
+      <Metric label="Unrealized PnL" value={data.unrealized_pnl ?? "Unavailable"} />
+    </div><div className="panel"><span className="eyebrow">Market-data freshness</span><p>{data.last_market_receive_ns ?? "No valid paper mark"}</p><span className="pill">Simulated paper only</span></div></>}</StatePanel>
+    <StatePanel state={risk}>{(data) => <div className="panel"><span className="eyebrow">Hard paper risk</span><p>Open orders {data.utilization.open_orders} / {data.utilization.max_open_orders} · Reserved cash {data.utilization.reserved_cash} · Denials {data.deny_count}</p><p>Latest decision: {data.latest_decision?.result ?? "None"} · Blocks: {data.latest_decision?.reason_codes.join(", ") || "None"}</p><p>Resolution pending: {data.resolution_pending.join(", ") || "None"}</p></div>}</StatePanel>
+    <StatePanel state={orders} empty={(data) => data.count === 0}>{(data) => <div className="panel"><span className="eyebrow">Paper orders</span><table><thead><tr><th>Order</th><th>Side / Style</th><th>Quantity</th><th>Filled / Average</th><th>Status</th></tr></thead><tbody>{data.items.map((item) => <tr key={item.order_id}><td className="token">{item.order_id}</td><td>{item.side}<br />{item.order_style}</td><td>{item.quantity}</td><td>{item.filled_quantity}<br />{item.average_fill_price ?? "—"}</td><td><span className="pill">{item.status}</span></td></tr>)}</tbody></table></div>}</StatePanel>
+    <StatePanel state={positions} empty={(data) => data.count === 0}>{(data) => <div className="panel"><span className="eyebrow">Paper positions</span><table><thead><tr><th>Asset</th><th>Quantity</th><th>Cost basis</th><th>Mark / Value</th><th>Realized PnL</th></tr></thead><tbody>{data.items.map((item) => <tr key={item.asset_id}><td className="token">{item.asset_id}</td><td>{item.quantity}</td><td>{item.cost_basis}</td><td>{item.mark ?? "Unavailable"}<br />{item.marked_value ?? "Unavailable"}</td><td>{item.realized_pnl}</td></tr>)}</tbody></table></div>}</StatePanel>
+    <StatePanel state={fills} empty={(data) => data.count === 0}>{(data) => <div className="panel"><span className="eyebrow">Recent simulated fills</span><table><thead><tr><th>Fill</th><th>Side</th><th>Quantity</th><th>Price / Fee</th><th>Costs / Markout</th></tr></thead><tbody>{data.items.map((item) => <tr key={item.fill_id}><td className="token">{item.fill_id}</td><td>{item.side}</td><td>{item.quantity}</td><td>{item.price}<br />{item.fee}</td><td>{item.spread_cost} / {item.depth_slippage_cost} / {item.latency_cost}<br />{item.adverse_selection_cost ?? item.markout_status}</td></tr>)}</tbody></table></div>}</StatePanel>
   </>;
 }
 
@@ -233,12 +324,13 @@ function App() {
   const [epoch, setEpoch] = useState(0);
   const content = view === "Overview" ? <OverviewView epoch={epoch} /> :
     view === "Market Truth" ? <MarketView epoch={epoch} /> :
-    view === "Experiments" ? <ExperimentsView epoch={epoch} /> : <AuditView epoch={epoch} />;
+    view === "Experiments" ? <ExperimentsView epoch={epoch} /> :
+    view === "Paper Operations" ? <PaperView epoch={epoch} /> : <AuditView epoch={epoch} />;
   return <div className="shell">
     <aside><div className="brand">Evidence Cockpit</div><nav>
       {VIEWS.map((name) => <button key={name} className={name === view ? "active" : ""} onClick={() => setView(name)}>{name}</button>)}
-    </nav><div className="posture">LOCAL · READ ONLY<br />No trading authority<br />No external runtime network</div></aside>
-    <main><header><div><div className="eyebrow">WP171 · validated local evidence</div><h1>{view}</h1></div><button className="refresh" onClick={() => setEpoch((value) => value + 1)}>Refresh</button></header>{content}</main>
+    </nav><div className="posture">LOCAL · READ ONLY COCKPIT<br />Simulated paper only<br />No real execution or live authority</div></aside>
+    <main><header><div><div className="eyebrow">WP171/WP173 · validated local evidence</div><h1>{view}</h1></div><button className="refresh" onClick={() => setEpoch((value) => value + 1)}>Refresh</button></header>{content}</main>
   </div>;
 }
 

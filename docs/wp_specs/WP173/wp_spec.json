@@ -1,0 +1,466 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP173",
+    "title": "Serious Paper Trading System + Paper Cockpit",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "SERIOUS_PAPER_RUNTIME_ACCOUNTING_RISK_RECONCILIATION_COCKPIT",
+    "package_size_class": "XL",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 174,
+      "head_sha": "39363e5a081b6737104260725b1b0c8fcffe9196",
+      "merge_sha": "418bae72f24b0694eccc657ed5dc3f90a3f38f2a"
+    },
+    "suggested_branch": "codex/wp173-serious-paper",
+    "objective": "Implement a deterministic persistent simulated-paper trading system bound to eligible WP172 executable-edge evidence, with spot-token accounting, hard pre-order paper risk, append-only SQLite reconciliation and restart recovery, deterministic replay, read-only WP169 live-store tailing, and a GET-only extension of the existing local operator cockpit, without credentials, real execution, or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "The user explicitly authorized the attached WP173 XL RUNTIME package as one coherent paper OMS, accounting, risk, reconciliation, runtime, and read-only cockpit vertical slice with a hard maximum of 35 changed files."
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/serious_paper_trading_contract.md",
+      "docs/status_entries/WP173.md",
+      "docs/wp_specs/WP173/wp_prompt.txt",
+      "docs/wp_specs/WP173/wp_spec.json",
+      "src/operator_cockpit.py",
+      "src/operator_cockpit_frontend/src/main.tsx",
+      "src/paper_trading/README.md",
+      "src/paper_trading/__init__.py",
+      "src/paper_trading/accounting.py",
+      "src/paper_trading/cli.py",
+      "src/paper_trading/engine.py",
+      "src/paper_trading/models.py",
+      "src/paper_trading/risk.py",
+      "src/paper_trading/runtime.py",
+      "src/paper_trading/store.py",
+      "tests/paper_trading/__init__.py",
+      "tests/paper_trading/conftest.py",
+      "tests/paper_trading/test_cli.py",
+      "tests/paper_trading/test_engine.py",
+      "tests/paper_trading/test_models.py",
+      "tests/paper_trading/test_risk_accounting.py",
+      "tests/paper_trading/test_runtime.py",
+      "tests/paper_trading/test_store_recovery.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/serious_paper_trading_contract.md",
+      "docs/status_entries/WP173.md",
+      "docs/wp_specs/WP173/wp_prompt.txt",
+      "docs/wp_specs/WP173/wp_spec.json",
+      "src/operator_cockpit.py",
+      "src/operator_cockpit_frontend/src/main.tsx",
+      "src/paper_trading/README.md",
+      "src/paper_trading/__init__.py",
+      "src/paper_trading/accounting.py",
+      "src/paper_trading/cli.py",
+      "src/paper_trading/engine.py",
+      "src/paper_trading/models.py",
+      "src/paper_trading/risk.py",
+      "src/paper_trading/runtime.py",
+      "src/paper_trading/store.py",
+      "tests/paper_trading/__init__.py",
+      "tests/paper_trading/conftest.py",
+      "tests/paper_trading/test_cli.py",
+      "tests/paper_trading/test_engine.py",
+      "tests/paper_trading/test_models.py",
+      "tests/paper_trading/test_risk_accounting.py",
+      "tests/paper_trading/test_runtime.py",
+      "tests/paper_trading/test_store_recovery.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "src/execution/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/risk/",
+      "src/risk_engine/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 31,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "src/operator_cockpit.py",
+      "src/operator_cockpit_frontend/src/main.tsx",
+      "src/paper_trading/README.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert WP173. The dedicated paper SQLite store, simulated OMS, accounting, risk, foreground replay/live-store adapters, focused tests, cockpit paper projection, and package/status documentation are removed. WP169, WP170, and WP172 canonical evidence remains unmodified; no credentials, real orders, live mode, workflow, dependency, or external product-network capability exists.",
+    "mode_boundaries": [
+      {"boundary": "workflow_governance", "crossed": false},
+      {"boundary": "local_offline_tooling", "crossed": true},
+      {"boundary": "canonical_evidence_policy", "crossed": true},
+      {"boundary": "docs", "crossed": true},
+      {"boundary": "tests", "crossed": true},
+      {"boundary": "source_runtime", "crossed": true},
+      {"boundary": "workflow_files", "crossed": false},
+      {"boundary": "dependencies", "crossed": false},
+      {"boundary": "network", "crossed": true},
+      {"boundary": "credentials", "crossed": false},
+      {"boundary": "scheduler", "crossed": true},
+      {"boundary": "hermes_runtime", "crossed": false},
+      {"boundary": "strategy", "crossed": true},
+      {"boundary": "paper", "crossed": true},
+      {"boundary": "execution", "crossed": false},
+      {"boundary": "live", "crossed": false}
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": true,
+    "hermes_runtime": false,
+    "strategy": true,
+    "paper": true,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP173 adds one bounded simulated-paper runtime API and six GET-only cockpit projections while preserving predecessor APIs.",
+    "items": [
+      {
+        "surface": "Paper binding intent order fill and risk models",
+        "before": "Only WP172 research eligibility and conceptual paper scaffolding existed",
+        "after": "Immutable canonical simulated-paper records require exact WP172 PASS and cost-model bindings",
+        "change_authorized": true,
+        "compatibility_requirement": "Records contain no credential venue-order or live-mode fields",
+        "authority": "SIMULATED_PAPER_ONLY"
+      },
+      {
+        "surface": "PaperEngine and PaperStore",
+        "before": "No persistent paper account OMS risk or reconciliation state existed",
+        "after": "Transactional append-only journal and checkpoint drive deterministic paper lifecycle accounting risk and restart",
+        "change_authorized": true,
+        "compatibility_requirement": "Corruption or divergence enters RECONCILIATION_BLOCKED and cannot open new orders",
+        "authority": "SIMULATED_PAPER_ONLY"
+      },
+      {
+        "surface": "Replay and live-store paper runtime",
+        "before": "WP168 replay and WP169 SQLite market truth were not connected to paper state",
+        "after": "Finite deterministic replay and read-only local WP169 receive-time tail drive simulated fills",
+        "change_authorized": true,
+        "compatibility_requirement": "No external market client and no write to WP169 evidence",
+        "authority": "MANUAL_FOREGROUND_PAPER_RUNTIME"
+      },
+      {
+        "surface": "Operator cockpit paper endpoints and view",
+        "before": "Cockpit projected WP169 and WP170 only",
+        "after": "Six bounded GET-only paper projections expose sanitized non-authoritative operational state",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing routes remain backward compatible and no cockpit mutation control exists",
+        "authority": "READ_ONLY_LOOPBACK_PROJECTION"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The persistent paper boundary has explicit eligibility, identity, lifecycle, accounting, risk, market-time, reconciliation, and safety semantics.",
+    "items": [
+      {
+        "path": "binding.assessment_id",
+        "source": "CALLER",
+        "type": "content_addressed_id",
+        "required_rule": "valid WP172 EXECUTABLE_EDGE_PASS assessment with wp173 eligibility",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "validate complete assessment and exact cost-model ID before binding",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "namespaced digest",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "intent.intent_id",
+        "source": "DERIVED",
+        "type": "content_addressed_id",
+        "required_rule": "SHA-256 over canonical intent economics and binding",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "recompute and exact compare; conflicting same identity rejects",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "namespaced digest",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "order.status",
+        "source": "DERIVED",
+        "type": "closed_enum",
+        "required_rule": "PENDING_RISK REJECTED OPEN PARTIALLY_FILLED FILLED CANCELLED or EXPIRED",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "append-only closed transition graph with terminal states unable to reopen",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed status",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "risk.decision",
+        "source": "DERIVED",
+        "type": "closed_enum",
+        "required_rule": "persisted ALLOW is required before OPEN otherwise deterministic DENY reason",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "evaluate all frozen cash position exposure order count drawdown loss reserve and freshness limits",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "closed decision and reason codes",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "account.equity",
+        "source": "DERIVED",
+        "type": "decimal_string_or_null",
+        "required_rule": "free cash plus reserved cash plus valid marked position value using Decimal",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "mark-dependent values are unavailable for stale gapped crossed or one-sided market state",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "canonical decimal string or null",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "journal.event_hash",
+        "source": "DERIVED",
+        "type": "sha256",
+        "required_rule": "hash commits sequence event ID type time canonical payload and previous hash",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "verify complete chain and replay state against checkpoint on every open",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "lowercase digest",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "runtime.market_event_order",
+        "source": "DERIVED",
+        "type": "ordered_sequence",
+        "required_rule": "receive-time-primary stable ordering with no look-ahead",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "accepted canonical WP169 observations or validated WP168/WP172 replay events only",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "validated normalized events",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cockpit.paper_projection",
+        "source": "DERIVED",
+        "type": "sanitized_mapping",
+        "required_rule": "read-only bounded projection of the dedicated paper store",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "GET-only routes with strict limit and closed errors",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "sanitized local projection",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Product identities are implemented and independently recomputed by focused tests; this package spec contains no worked product-record input oracle.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "The canonical authorization chain remains unchanged and deterministic RUNTIME readiness supplies the certificate-free draftability basis.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "prompt and spec authority equality contract compilation exact scope semantics evidence plan and deterministic RUNTIME readiness all pass without a certificate",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "the user explicitly authorizes this exact WP173 RUNTIME simulated-paper implementation",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation remains inside exact scope and passes final readiness check-diff",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {"condition_id": "file_unreadable", "category": "FILE_READ_ERROR", "priority": 10},
+      {"condition_id": "json_invalid", "category": "JSON_PARSE_INVALID", "priority": 20},
+      {"condition_id": "schema_unsupported", "category": "SCHEMA_UNSUPPORTED", "priority": 30},
+      {"condition_id": "unknown_field", "category": "UNKNOWN_FIELD", "priority": 40},
+      {"condition_id": "field_missing", "category": "FIELD_MISSING", "priority": 50},
+      {"condition_id": "field_type_invalid", "category": "FIELD_TYPE_INVALID", "priority": 60},
+      {"condition_id": "field_value_invalid", "category": "FIELD_VALUE_INVALID", "priority": 70},
+      {"condition_id": "certificate_hash_mismatch", "category": "CERTIFICATE_HASH_MISMATCH", "priority": 80},
+      {"condition_id": "draftability_incomplete", "category": "DRAFTABILITY_INCOMPLETE", "priority": 90},
+      {"condition_id": "scope_policy_invalid", "category": "SCOPE_POLICY_INVALID", "priority": 100},
+      {"condition_id": "authority_contradiction", "category": "AUTHORITY_CONTRADICTION", "priority": 110},
+      {"condition_id": "semantic_contradiction", "category": "SEMANTIC_CONTRADICTION", "priority": 120},
+      {"condition_id": "identity_derivation_invalid", "category": "IDENTITY_DERIVATION_INVALID", "priority": 130},
+      {"condition_id": "failure_precedence_invalid", "category": "FAILURE_PRECEDENCE_INVALID", "priority": 140},
+      {"condition_id": "example_truth_invalid", "category": "EXAMPLE_TRUTH_INVALID", "priority": 150}
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused executable tests are the paper-runtime oracle and no package-spec identity derivation requires an embedded worked example.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R012 map every WP173 requirement to bounded focused integration boundary guard exact-head CI and publication evidence.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "deterministic RUNTIME readiness and predecessor gate",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP173/wp_prompt.txt --spec docs/wp_specs/WP173/wp_spec.json --repo-root .",
+        "expected_result": "IMPLEMENTATION_READY on RUNTIME with deterministic basis and no certificate"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_binding_requires_exact_eligible_wp172_assessment",
+        "command": "python -m pytest -q tests/paper_trading/test_models.py",
+        "expected_result": "tampered ineligible or cost-mismatched WP172 evidence is rejected before a paper binding exists"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_order_lifecycle_idempotency_partial_fill_cancel_and_expiry",
+        "command": "python -m pytest -q tests/paper_trading/test_engine.py",
+        "expected_result": "closed paper order transitions preserve idempotency and terminal states never reopen"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_one_order_replay_matches_wp172_fill_and_fee_semantics",
+        "command": "python -m pytest -q tests/paper_trading/test_engine.py",
+        "expected_result": "aggressive and passive one-order replay quantities average prices fees and queue semantics match WP172"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_spot_accounting_reservations_cost_basis_and_equity_identity",
+        "command": "python -m pytest -q tests/paper_trading/test_risk_accounting.py",
+        "expected_result": "cash inventory reservations weighted cost basis realized PnL and marked equity use exact Decimal identities"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_every_paper_risk_limit_denies_before_open",
+        "command": "python -m pytest -q tests/paper_trading/test_risk_accounting.py",
+        "expected_result": "all frozen risk limits fail closed and every OPEN order has persisted ALLOW evidence"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_restart_replays_exact_state_and_corruption_blocks_reconciliation",
+        "command": "python -m pytest -q tests/paper_trading/test_store_recovery.py",
+        "expected_result": "journal chain transaction atomicity restart equality and checkpoint divergence fail closed"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_replay_is_deterministic_and_wp169_tail_is_read_only",
+        "command": "python -m pytest -q tests/paper_trading/test_runtime.py",
+        "expected_result": "same replay is byte-identical and local WP169 accepted observations are tailed read-only in receive order"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_paper_routes_are_get_only_bounded_sanitized_and_read_only",
+        "command": "python -m pytest -q tests/test_operator_cockpit.py",
+        "expected_result": "paper summary orders fills positions risk and audit are GET-only projections with strict limits"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_wp173_paper_runtime_has_no_live_credential_or_external_network_surface",
+        "command": "python -m pytest -q tests/test_architecture_boundaries.py tests/paper_trading/test_cli.py",
+        "expected_result": "source and CLI expose no credential signing real order live fallback Hermes or external client surface"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_wp173_repo_truth_and_successor_are_consistent",
+        "command": "python -m pytest -q tests/test_repo_truth_docs.py",
+        "expected_result": "repo truth records WP172 merged WP173 current and WP174 execution gateway separately gated next"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "validation",
+        "test": "final exact-head validation review CI and evidence publication",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP173/wp_prompt.txt --spec docs/wp_specs/WP173/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD",
+        "expected_result": "exact scope focused integration security frontend reviewer full-suite CI and PR-body re-fetch all pass before Ready YES"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP174",
+    "next_title": "Auth / Signing / Execution Gateway",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP174",
+    "forbidden_in_this_wp": [
+      "API keys private keys secrets wallets or credential handling",
+      "authenticated market or account clients",
+      "signing order placement or venue cancellation",
+      "real balances positions orders fills or reconciliation",
+      "paper-to-live fallback or any live mode",
+      "Hermes LLM provider model or autonomous promotion authority",
+      "OS scheduler daemon service autostart background deployment or cloud runtime",
+      "direct writes to WP169 WP170 or WP172 canonical evidence",
+      "dependency lock-file or workflow changes",
+      "automatic promotion into WP174"
+    ]
+  }
+}
