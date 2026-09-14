@@ -110,7 +110,9 @@ def evaluate_risk(
     ):
         reasons.append("MAX_POSITION_QUANTITY")
 
-    def exposure(order: PaperOrder) -> Decimal:
+    def buy_exposure(order: PaperOrder) -> Decimal:
+        if order.side != "BUY":
+            return Decimal(0)
         remaining = Decimal(order.quantity) - Decimal(order.filled_quantity)
         unit_value = (
             Decimal(1)
@@ -120,9 +122,12 @@ def evaluate_risk(
         return remaining * unit_value
 
     market_open = sum(
-        exposure(order) for order in open_orders if order.market_id == intent.market_id
+        buy_exposure(order)
+        for order in open_orders
+        if order.market_id == intent.market_id
     )
-    total_open = sum((exposure(order) for order in open_orders), Decimal(0))
+    total_open = sum((buy_exposure(order) for order in open_orders), Decimal(0))
+    candidate_buy = intended_notional if intent.side == "BUY" else Decimal(0)
     position_market = sum(
         Decimal(position.quantity) * Decimal(marks.get(position.asset_id, "0"))
         for position in account.positions
@@ -135,11 +140,11 @@ def evaluate_risk(
         ),
         Decimal(0),
     )
-    if position_market + market_open + intended_notional > Decimal(
+    if position_market + market_open + candidate_buy > Decimal(
         limits.max_per_market_gross_exposure
     ):
         reasons.append("MAX_PER_MARKET_GROSS_EXPOSURE")
-    if position_total + total_open + intended_notional > Decimal(
+    if position_total + total_open + candidate_buy > Decimal(
         limits.max_total_gross_exposure
     ):
         reasons.append("MAX_TOTAL_GROSS_EXPOSURE")
