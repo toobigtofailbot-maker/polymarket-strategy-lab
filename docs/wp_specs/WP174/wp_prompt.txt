@@ -7,7 +7,7 @@ Package Identity:
   Base branch: main
   Suggested branch: codex/wp174-auth-signing-execution-gateway
   Package class: PROTECTED_AUTH_SIGNING_EXECUTION_GATEWAY
-  Package size class: L
+  Package size class: XL (scope-size authorization only)
   Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
   Runtime impact: PROTECTED_GATEWAY_WITH_DISABLED_READ_ONLY_AND_SHADOW_STATES
   Product impact: AUTHENTICATED_READ_SIGNING_FIXTURE_AND_GATE_B_LOCKED_MUTATION_CAPABILITY
@@ -22,7 +22,7 @@ Recommended Claude/Codex Mode:
   Reason: one compact but security-critical authenticated gateway combining dependency,
     credential, signing, mutation-lock, reconciliation, recovery, and audit invariants
   Escalate to higher reasoning or STOP if: safe behavior cannot be proved inside the exact
-    certified 20-path boundary or any Gate A / Gate B / Gate C distinction becomes ambiguous
+    certified 23-path boundary or any Gate A / Gate B / Gate C distinction becomes ambiguous
 
 BEGIN_GOVERNANCE_AUTHORITY_V1
 risk_level: 4
@@ -117,7 +117,7 @@ COMPATIBILITY / IMPOSSIBILITY CHECK
 
 | Required behavior | Controlling mechanism | Files likely needed | Allowed | Compatible | Action |
 |---|---|---|---:|---:|---|
-| Official SDK plus websocket pin | Exact pyproject/CI pins and pip metadata | pyproject.toml; .github/workflows/ci.yml | YES | YES | Pin polymarket-client 0.10.0 and websockets 15.0.1; run R010 |
+| Official SDK plus websocket pin | Exact pyproject/CI pins, pip metadata, and historical dependency guards | pyproject.toml; .github/workflows/ci.yml; three compatibility tests | YES | YES | Pin polymarket-client 0.10.0 and websockets 15.0.1; run R010 |
 | WP169 websocket behavior | Existing market-truth runtime and six focused tests | Six R010 WP169 test paths; no WP169 source edit | YES | YES | Require the focused suite to pass without a required skip |
 | WP173 invariant consumption | Validated content-addressed paper intent/risk evidence | narrow WP173 public interfaces; gateway tests | YES, read-only | YES | Validate exact identity before build; never rewrite/bypass WP173 |
 | Gate-B-locked mutation | Closed A0/A1/A2 authority and unreachable transport | gateway.py; test_gateway.py | YES | YES | Mutation code may exist but no ordinary Gate A path can call it |
@@ -125,7 +125,7 @@ COMPATIBILITY / IMPOSSIBILITY CHECK
 | Backend-only cockpit | Existing loopback GET projection pattern | operator_cockpit.py; test_operator_cockpit.py | YES | YES | Add sanitized bounded GET projections only; no frontend change |
 | WP175/live exclusion | No A3 state; successor separately gated | gateway/boundary/repo-truth tests | YES | YES | Reject A3 and keep all capital/risk/live authority in WP175 |
 
-All rows are compatible inside the frozen L package. Any row becoming incompatible or requiring
+All rows are compatible inside the frozen XL package. Any row becoming incompatible or requiring
 an unallowed path is a protected hard stop, not authority to redesign or expand the package.
 
 ===============================================================================
@@ -373,7 +373,7 @@ Hermes remains advisory only and is out of scope. It may never receive secrets, 
 change deterministic gates, elevate authority, or authorize capital.
 
 ===============================================================================
-8. EXACT FROZEN SCOPE — 20 PATHS, CLASS L
+8. EXACT FROZEN SCOPE — 23 PATHS, CLASS XL
 ===============================================================================
 
 Required and allowed changed paths are exactly:
@@ -397,6 +397,9 @@ Required and allowed changed paths are exactly:
 18. tests/test_operator_cockpit.py
 19. tests/test_project_status_docs.py
 20. tests/test_repo_truth_docs.py
+21. tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py
+22. tests/research_runtime/nautilus_offline/test_runtime_compatibility.py
+23. tests/test_wallet_intelligence_architecture_contract_docs.py
 
 The certificate path is planned protected evidence and must be created only by the independent
 certifier before Gate A. The pre-freeze executor creates and commits only prompt/spec bytes.
@@ -406,11 +409,14 @@ affected because it asserts the websockets pin. Existing execution_gateway/READM
 unchanged. Gateway models, constraints, secret boundary, transport, user-stream, heartbeat, and
 runtime gate remain cohesive in gateway.py; durable journal/recovery stays isolated in store.py.
 Backend-only cockpit visibility avoids a frontend path. Exact current repo-truth assertions require
-both direct documentation tests. This is a truthful 20-path L implementation boundary.
+both direct documentation tests. Full-suite compatibility discovery additionally requires the
+three historical dependency-contract tests listed at paths 21-23. This is a truthful 23-path XL
+implementation boundary; XL authorization changes scope size only and adds no capability or
+authority.
 
-Any need for a twenty-first path is a protected scope hard stop requiring return to Side with the
-exact proposed XL list and explicit authorization. No same-envelope PROTECTED scope correction is
-self-authorized after certificate hashing.
+Any need for a twenty-fourth path is a protected scope hard stop requiring return to Side with the
+complete remaining path set and explicit authorization. No further same-envelope PROTECTED scope
+correction is self-authorized after certificate hashing.
 
 ===============================================================================
 9. NEGATIVE AND ADVERSARIAL TEST MATRIX
@@ -527,8 +533,8 @@ Concrete protected STOP conditions:
   certified predecessor binding and compatibility analysis would be stale.
 - STOP if the independent certificate is missing, invalid, executor-authored, or hash-mismatched —
   because PROTECTED draftability would not be independently established.
-- STOP if any changed path falls outside the exact 20-path scope — because L scope authority would
-  be exceeded and an explicitly authorized XL package would be required.
+- STOP if any changed path falls outside the exact 23-path scope — because the explicitly
+  authorized XL scope-size boundary would be exceeded.
 - STOP if another dependency or lock/dependency file is required — because only the two exact
   pyproject pins and current no-lockfile model are authorized.
 - STOP if polymarket-client 0.10.0 and websockets 15.0.1 cannot coexist with WP169 without a skip
