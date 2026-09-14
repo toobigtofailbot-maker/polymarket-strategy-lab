@@ -137,6 +137,16 @@ authority. Source implementation may begin only after an independent reviewer cr
 hash-bound certificate at docs/wp_specs/WP174/draftability_certificate.json, the canonical
 readiness command reports IMPLEMENTATION_READY, and Karl separately authorizes Gate A.
 
+The canonical ordering is:
+1. a genuinely separate independent reviewer binds the exact prompt/spec hashes, passes all twelve
+   protected lenses with no unresolved decisions, passes implementability simulation, and issues
+   the certificate; certificate PASS establishes DRAFTABILITY_PASS;
+2. with that certificate installed, the canonical readiness gate may report IMPLEMENTATION_READY;
+3. IMPLEMENTATION_READY is a non-authority package-gate result and grants no implementation,
+   credential, mutation, or capital authority;
+4. Karl's explicit Gate A authorization moves the exact package to AUTHORIZED;
+5. only AUTHORIZED permits source implementation to begin.
+
 Gate A authorizes only fake/nonfunctional credentials, deterministic signing fixtures, mocks,
 local simulators, build/sign tests incapable of venue mutation, and separately safe authenticated
 reads. Gate A never authorizes real execution secrets or a production-capable mutation.
@@ -150,7 +160,8 @@ Gate C belongs only to WP175. WP174 contains no RESTRICTED_LIVE state, strategy/
 market allowlist, live exposure/loss envelope, or live deployment permission.
 
 Current package state: LOCAL_DRAFT awaiting independent protected certification. Do not claim
-DRAFTABILITY_PASS or IMPLEMENTATION_READY before the certificate and readiness pass.
+DRAFTABILITY_PASS before certificate PASS. Do not claim IMPLEMENTATION_READY before the
+certificate-installed canonical readiness gate passes.
 
 Implementation authority: NO until independent certificate, canonical readiness, and explicit
   Gate A authorization; then only the exact fake/fixture/shadow/read-safe implementation.
@@ -499,7 +510,9 @@ docs/wp_specs/WP174/draftability_certificate.json --repo-root .
 
 The command must report IMPLEMENTATION_READY with governance track PROTECTED and independent
 certificate basis. Missing/invalid certificate, hash mismatch, predecessor divergence, dirty base,
-or authority-mirror mismatch blocks implementation.
+or authority-mirror mismatch blocks implementation. IMPLEMENTATION_READY is not an authority state
+and grants no implementation permission; Karl must then explicitly authorize Gate A, producing
+AUTHORIZED, before source implementation begins.
 
 During authorized implementation use focused tests only. At a stable candidate run readiness with
 --check-diff --base origin/main --head HEAD, exact-scope/artifact guards, git diff --check, Ruff,

@@ -296,18 +296,18 @@
   },
   "state_transitions": {
     "applicable": true,
-    "reason": "The canonical protected authorization chain remains unchanged and separates independent draftability from user authorization and local implementation.",
+    "reason": "The canonical protected authorization chain keeps independent DRAFTABILITY_PASS distinct from the later non-authority IMPLEMENTATION_READY package-gate result, explicit user authorization, and local implementation.",
     "items": [
       {
         "from_state": "LOCAL_DRAFT",
         "to_state": "DRAFTABILITY_PASS",
-        "condition": "an independent reviewer validates the exact prompt and spec through all protected lenses, creates the exact-hash certificate, and canonical PROTECTED readiness passes",
+        "condition": "a genuinely separate independent reviewer binds the exact prompt and spec hashes, records PASS for all twelve protected lenses, confirms unresolved decisions are empty, passes implementability simulation, and creates the independent certificate",
         "failure_category": "DRAFTABILITY_INCOMPLETE"
       },
       {
         "from_state": "DRAFTABILITY_PASS",
         "to_state": "AUTHORIZED",
-        "condition": "Karl explicitly authorizes Gate A implementation of these exact certified bytes; certificate/readiness alone never grants authority",
+        "condition": "the exact certified package first passes canonical wp_readiness_gate.py and reports IMPLEMENTATION_READY, then Karl explicitly authorizes Gate A for those exact bytes; IMPLEMENTATION_READY alone never grants authority and is not an authority state",
         "failure_category": "AUTHORITY_CONTRADICTION"
       },
       {
