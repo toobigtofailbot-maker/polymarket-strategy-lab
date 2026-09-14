@@ -97,13 +97,25 @@ state with the materialized checkpoint. Mismatch or corruption is
 back journal and checkpoint together, so no fill exists without its order,
 accounting state, and audit evidence.
 
+Each engine retains the exact checkpoint head used for reconstruction. Every
+mutation compares that expected head with the persistent head inside the same
+`BEGIN IMMEDIATE` transaction that would append the mutation. A mismatch rolls
+back and fails closed as `STALE_PAPER_STATE`; the stale engine enters local
+`RECONCILIATION_BLOCKED` and cannot overwrite the newer journal/checkpoint.
+Successful commits advance the engine's expected head. Operationally, one
+long-lived engine is the active writer: an external CLI writer is allowed, but
+causes the long-lived engine to fail closed on its next poll and requires a
+clean operator restart.
+
 ## Runtime and controls
 
 `REPLAY` is finite and deterministic. `LIVE_STORE` opens one caller-selected
 WP169 store with SQLite URI `mode=ro`, validates its application/schema
 identity, and tails only accepted canonical observations and explicit gap
 events in receive-time order. The bounded foreground poll loop creates no
-external client and installs no scheduler or background service.
+external client and installs no scheduler or background service. Every poll
+checks the paper-store head before reading WP169, including polls with no new
+market event, so an external paper mutation cannot be clobbered.
 
 Control states are `RUNNING`, `PAUSED`, `KILLED`, and
 `RECONCILIATION_BLOCKED`. PAUSED denies new orders. Resume is valid only from

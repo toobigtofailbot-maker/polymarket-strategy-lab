@@ -7,6 +7,7 @@ import pytest
 from src.data_layer.polymarket import market_truth as mt
 from src.data_layer.polymarket.market_truth_store import MarketTruthStore
 from src.paper_trading import (
+    LiveStoreRuntime,
     PaperEngine,
     PaperMarketEvent,
     PaperStore,
@@ -124,6 +125,43 @@ def test_wp169_tail_resumes_without_duplicate_events_after_paper_restart(tmp_pat
         engine.process_market_event(new_events[0])
         assert engine.state.last_market_receive_ns == new_events[0].receive_time_ns
         assert tail.read_new() == ()
+
+
+def test_live_store_detects_external_paper_head_change_without_market_event(
+    tmp_path,
+) -> None:
+    market = tmp_path / "empty-market.sqlite3"
+    with MarketTruthStore(market):
+        pass
+    model, _exp, _ev, _trace, _window, assessment, binding = edge_stack()
+    paper = tmp_path / "concurrent-paper.sqlite3"
+    store_a = PaperStore(paper, create=True)
+    engine_a = PaperEngine.create(
+        store_a,
+        binding,
+        generous_limits(),
+        assessment=assessment,
+        cost_model=model,
+        session_label="live-concurrency",
+        created_time_ns=1,
+    )
+    runtime = LiveStoreRuntime(engine_a, Wp169ReadOnlyTail(market))
+    store_b = PaperStore(paper)
+    engine_b = PaperEngine.open(store_b)
+    engine_b.pause(101)
+    committed = tuple(store_b.events())
+
+    with pytest.raises(PaperTradingError, match="STALE_PAPER_STATE"):
+        runtime.poll_once()
+    assert engine_a.state.control_state == "RECONCILIATION_BLOCKED"
+    assert tuple(store_b.events()) == committed
+
+    store_a.close()
+    store_b.close()
+    with PaperStore(paper) as reopened:
+        recovered = PaperEngine.open(reopened)
+        assert recovered.state == engine_b.state
+        assert recovered.state.control_state == "PAUSED"
 
 
 def test_wp169_tail_chunking_preserves_observation_gap_global_order(tmp_path) -> None:

@@ -15,16 +15,102 @@ from tests.paper_trading.conftest import make_engine, paper_book
 
 
 def _intent(engine, *, decision=101, quantity="2"):
+    order_style = engine.state.binding.execution_mode
     return build_paper_intent(
         engine.state.binding,
         market_id="market:a",
         asset_id="asset:a",
         side="BUY",
         quantity=quantity,
-        order_style="AGGRESSIVE_TAKER",
-        reference_price="0.5",
+        order_style=order_style,
+        reference_price="0.49" if order_style == "PASSIVE_MAKER" else "0.5",
         decision_time_ns=decision,
     )
+
+
+def _persistent_snapshot(store):
+    checkpoint = store.connection.execute(
+        "SELECT last_sequence,last_event_hash,state_json,state_hash "
+        "FROM paper_checkpoint WHERE singleton=1"
+    ).fetchone()
+    journal = store.connection.execute(
+        "SELECT sequence,event_id,event_type,event_time_ns,payload_json,"
+        "previous_event_hash,event_hash FROM paper_journal ORDER BY sequence"
+    ).fetchall()
+    return checkpoint, tuple(journal)
+
+
+@pytest.mark.parametrize(
+    ("external_action", "stale_action", "mode"),
+    (
+        ("submit", "control", "AGGRESSIVE_TAKER"),
+        ("pause", "order", "AGGRESSIVE_TAKER"),
+        ("cancel", "market", "PASSIVE_MAKER"),
+        ("kill", "market", "AGGRESSIVE_TAKER"),
+    ),
+)
+def test_stale_engine_cannot_overwrite_external_committed_state(
+    tmp_path, external_action, stale_action, mode
+) -> None:
+    path = tmp_path / f"stale-{external_action}.sqlite3"
+    store_a, engine_a = make_engine(path, mode=mode)
+    engine_a.process_market_event(paper_book(100))
+    if external_action == "cancel":
+        existing = engine_a.submit(_intent(engine_a))
+        assert existing.status == "OPEN"
+
+    store_b = PaperStore(path)
+    engine_b = PaperEngine.open(store_b)
+    assert engine_a.expected_head == engine_b.expected_head
+
+    if external_action == "submit":
+        engine_b.submit(_intent(engine_b))
+    elif external_action == "pause":
+        engine_b.pause(101)
+    elif external_action == "cancel":
+        engine_b.cancel(engine_b.state.orders[0].order_id, 102)
+    else:
+        engine_b.kill(101)
+
+    committed = _persistent_snapshot(store_b)
+    with pytest.raises(PaperTradingError, match="STALE_PAPER_STATE"):
+        if stale_action == "control":
+            engine_a.pause(102)
+        elif stale_action == "order":
+            engine_a.submit(_intent(engine_a, decision=102))
+        else:
+            engine_a.process_market_event(paper_book(110))
+
+    assert engine_a.state.control_state == "RECONCILIATION_BLOCKED"
+    assert _persistent_snapshot(store_b) == committed
+    expected_state = engine_b.state
+    store_a.close()
+    store_b.close()
+    with PaperStore(path) as reopened:
+        recovered = PaperEngine.open(reopened)
+        assert recovered.state == expected_state
+        assert recovered.state.control_state != "RECONCILIATION_BLOCKED"
+
+
+def test_stale_writer_detection_is_symmetric(tmp_path) -> None:
+    path = tmp_path / "stale-symmetric.sqlite3"
+    store_a, engine_a = make_engine(path)
+    store_b = PaperStore(path)
+    engine_b = PaperEngine.open(store_b)
+
+    engine_a.pause(101)
+    committed = _persistent_snapshot(store_a)
+    with pytest.raises(PaperTradingError, match="STALE_PAPER_STATE"):
+        engine_b.kill(102)
+    assert _persistent_snapshot(store_a) == committed
+
+    expected_state = engine_a.state
+    store_a.close()
+    store_b.close()
+    with PaperStore(path) as reopened:
+        recovered = PaperEngine.open(reopened)
+        assert recovered.state == expected_state
+        assert recovered.state.control_state == "PAUSED"
 
 
 def _rewrite_valid_chain(path, mutate) -> None:

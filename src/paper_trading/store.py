@@ -62,6 +62,13 @@ class JournalEvent:
     event_hash: str
 
 
+@dataclass(frozen=True)
+class StoreHead:
+    last_sequence: int
+    last_event_hash: str
+    state_hash: str
+
+
 def _normalize_ddl(value: object) -> str | None:
     return " ".join(value.split()) if isinstance(value, str) else None
 
@@ -294,6 +301,51 @@ class PaperStore:
             raise PaperTradingError("RECONCILIATION_BLOCKED") from None
         return value
 
+    def _current_head_locked(self) -> StoreHead | None:
+        row = self.connection.execute(
+            "SELECT last_sequence,last_event_hash,state_hash "
+            "FROM paper_checkpoint WHERE singleton=1"
+        ).fetchone()
+        if row is None:
+            return None
+        sequence, event_hash, state_hash = row
+        if (
+            not isinstance(sequence, int)
+            or sequence < 1
+            or not isinstance(event_hash, str)
+            or len(event_hash) != 64
+            or not isinstance(state_hash, str)
+            or len(state_hash) != 64
+        ):
+            raise PaperTradingError("RECONCILIATION_BLOCKED")
+        return StoreHead(sequence, event_hash, state_hash)
+
+    def current_head(self) -> StoreHead | None:
+        if self.reconciliation_blocked:
+            raise PaperTradingError("RECONCILIATION_BLOCKED")
+        try:
+            return self._current_head_locked()
+        except sqlite3.Error:
+            raise PaperTradingError("RECONCILIATION_BLOCKED") from None
+
+    def recovery_snapshot(
+        self,
+    ) -> tuple[dict[str, object] | None, tuple[JournalEvent, ...], StoreHead | None]:
+        """Read checkpoint, journal, and head from one SQLite snapshot."""
+        try:
+            self.connection.execute("BEGIN")
+            state = self.load_state_allow_blocked()
+            events = self.events()
+            head = self._current_head_locked()
+            self.connection.execute("COMMIT")
+            return state, events, head
+        except PaperTradingError:
+            self.connection.execute("ROLLBACK")
+            raise
+        except sqlite3.Error:
+            self.connection.execute("ROLLBACK")
+            raise PaperTradingError("RECONCILIATION_BLOCKED") from None
+
     def _write_checkpoint(self, sequence: int, digest: str, state_json: str) -> None:
         state_hash = hashlib.sha256(state_json.encode("utf-8")).hexdigest()
         self.connection.execute(
@@ -305,8 +357,12 @@ class PaperStore:
         )
 
     def commit(
-        self, mutations: Sequence[JournalMutation], final_state: Mapping[str, object]
-    ) -> str:
+        self,
+        mutations: Sequence[JournalMutation],
+        final_state: Mapping[str, object],
+        *,
+        expected_head: StoreHead | None,
+    ) -> StoreHead:
         if self.reconciliation_blocked:
             raise PaperTradingError("RECONCILIATION_BLOCKED")
         if not mutations:
@@ -314,6 +370,9 @@ class PaperStore:
         canonical_final = canonical_json_bytes(final_state).decode("utf-8")
         self.connection.execute("BEGIN IMMEDIATE")
         try:
+            current_head = self._current_head_locked()
+            if current_head != expected_head:
+                raise PaperTradingError("STALE_PAPER_STATE")
             existing = []
             for mutation in mutations:
                 row = self.connection.execute(
@@ -344,8 +403,10 @@ class PaperStore:
                 ).fetchone()
                 if checkpoint is None or checkpoint[0] != canonical_final:
                     raise PaperTradingError("IDENTITY_CONFLICT")
+                if current_head is None:
+                    raise PaperTradingError("RECONCILIATION_BLOCKED")
                 self.connection.execute("COMMIT")
-                return "IDEMPOTENT"
+                return current_head
             row = self.connection.execute(
                 "SELECT sequence,event_hash FROM paper_journal ORDER BY sequence DESC LIMIT 1"
             ).fetchone()
@@ -381,8 +442,13 @@ class PaperStore:
                 )
                 previous = digest
             self._write_checkpoint(sequence, previous, canonical_final)
+            new_head = StoreHead(
+                sequence,
+                previous,
+                hashlib.sha256(canonical_final.encode("utf-8")).hexdigest(),
+            )
             self.connection.execute("COMMIT")
-            return "COMMITTED"
+            return new_head
         except PaperTradingError:
             self.connection.execute("ROLLBACK")
             raise

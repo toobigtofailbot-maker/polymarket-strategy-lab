@@ -48,7 +48,7 @@ from .models import (
     validate_strategy_binding,
 )
 from .risk import evaluate_risk, limits_hash
-from .store import JournalEvent, JournalMutation, PaperStore, mutation
+from .store import JournalEvent, JournalMutation, PaperStore, StoreHead, mutation
 
 
 _ACTIVE = {"OPEN", "PARTIALLY_FILLED"}
@@ -566,9 +566,12 @@ def valid_marks(state: PaperState) -> dict[str, str]:
 
 
 class PaperEngine:
-    def __init__(self, store: PaperStore, state: PaperState) -> None:
+    def __init__(
+        self, store: PaperStore, state: PaperState, expected_head: StoreHead
+    ) -> None:
         self.store = store
         self.state = state
+        self.expected_head = expected_head
 
     @classmethod
     def create(
@@ -630,16 +633,18 @@ class PaperEngine:
             },
             state,
         )
-        store.commit((event,), state_to_mapping(state))
-        return cls(store, state)
+        head = store.commit((event,), state_to_mapping(state), expected_head=None)
+        return cls(store, state, head)
 
     @classmethod
     def open(cls, store: PaperStore) -> "PaperEngine":
-        raw = store.load_state_allow_blocked()
+        raw, events, head = store.recovery_snapshot()
         if raw is None:
             raise PaperTradingError("SESSION_NOT_INITIALIZED")
+        if head is None:
+            raise PaperTradingError("RECONCILIATION_BLOCKED")
         try:
-            state = _replay_journal(store.events())
+            state = _replay_journal(events)
         except (IndexError, KeyError, StopIteration, TypeError, PaperTradingError):
             store.reconciliation_blocked = True
             try:
@@ -648,17 +653,34 @@ class PaperEngine:
                 )
             except PaperTradingError:
                 raise PaperTradingError("RECONCILIATION_BLOCKED") from None
-            return cls(store, state)
+            return cls(store, state, head)
         if store.reconciliation_blocked:
             state = replace(state, control_state="RECONCILIATION_BLOCKED")
         else:
             if state_to_mapping(state) != raw:
                 store.reconciliation_blocked = True
                 state = replace(state, control_state="RECONCILIATION_BLOCKED")
-        return cls(store, state)
+        return cls(store, state, head)
+
+    def check_store_head(self) -> None:
+        if self.store.current_head() != self.expected_head:
+            self.state = replace(
+                self.state, control_state="RECONCILIATION_BLOCKED"
+            )
+            raise PaperTradingError("STALE_PAPER_STATE")
 
     def _commit(self, events: Sequence[JournalMutation], state: PaperState) -> None:
-        self.store.commit(events, state_to_mapping(state))
+        try:
+            head = self.store.commit(
+                events, state_to_mapping(state), expected_head=self.expected_head
+            )
+        except PaperTradingError as exc:
+            if str(exc) == "STALE_PAPER_STATE":
+                self.state = replace(
+                    self.state, control_state="RECONCILIATION_BLOCKED"
+                )
+            raise
+        self.expected_head = head
         self.state = state
 
     def _control(self, target: str, event_time_ns: int) -> None:

@@ -473,6 +473,7 @@ class LiveStoreRuntime:
             raise PaperTradingError("INPUT_INVALID")
 
     def poll_once(self, *, limit: int = 1000) -> int:
+        self.engine.check_store_head()
         events = self.tail.read_new(limit=limit)
         for event in events:
             self.engine.process_market_event(event)

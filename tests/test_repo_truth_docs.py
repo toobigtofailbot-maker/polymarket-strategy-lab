@@ -72,6 +72,9 @@ def test_wp173_repo_truth_and_successor_are_consistent():
     assert "39363e5a081b6737104260725b1b0c8fcffe9196" in combined
     assert "418bae72f24b0694eccc657ed5dc3f90a3f38f2a" in combined
     assert "WP173 current review target" in status
+    assert "Exact changed-file scope: 31" in status
+    assert "an exact 31-file scope" in index
+    assert "an exact 29-file scope" not in index
     assert "RESOLVED_BOUNDED_WP173_SERIOUS_PAPER" in deferred
     assert "obsolete Hermes-labelled WP172 remains superseded" in index
     assert "WP174 — Auth / Signing / Execution Gateway" in combined
