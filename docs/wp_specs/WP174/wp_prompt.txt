@@ -17,6 +17,13 @@ Package Identity:
   Trading impact: LIMIT_ORDER_CAPABILITY_ONLY_NO_AUTHORIZED_REAL_MUTATION_OR_LIVE_CAPITAL
   Governance track expected: PROTECTED
 
+Recommended Claude/Codex Mode:
+  Model/reasoning: strong coding/reasoning mode with protected-boundary review
+  Reason: one compact but security-critical authenticated gateway combining dependency,
+    credential, signing, mutation-lock, reconciliation, recovery, and audit invariants
+  Escalate to higher reasoning or STOP if: safe behavior cannot be proved inside the exact
+    certified 20-path boundary or any Gate A / Gate B / Gate C distinction becomes ambiguous
+
 BEGIN_GOVERNANCE_AUTHORITY_V1
 risk_level: 4
 workflow_governance: false
@@ -49,6 +56,79 @@ Merge authority:
   NO
 
 ===============================================================================
+HARD MERGE GATE
+===============================================================================
+
+Before Gate A implementation, run exactly:
+  git fetch origin --prune
+  git checkout main
+  git pull --ff-only origin main
+  git rev-parse HEAD
+  git log -1 --oneline
+  git status --short --branch
+
+Verify PR #175 is merged; its final head is
+79e2953dee8754dc8d09781edd647202dee834aa; its merge/base commit is
+e0202750c1e6f2a3a885aa6efa04bbd8d0b2291a; main contains that final head; no newer
+conflicting change has merged; no competing WP174 branch or PR exists; repo status does not
+already claim WP174 complete; generated artifacts are absent; and the working tree is clean.
+Implementation must stop if predecessor or base truth has materially changed.
+
+===============================================================================
+CONTEXT BUDGET
+===============================================================================
+
+Read first:
+- AGENTS.md, AI_CODING_AGENT_START_HERE.md, CODEX_START_HERE.md;
+- docs/project_status.md, docs/repo_truth_index.md;
+- docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md, WP_DRAFTING_STANDARD.md,
+  PROTECTED_PATHS.md, PR_EVIDENCE_REPORTING_DISCIPLINE.md;
+- these exact WP174 prompt/spec/certificate bytes after independent certification.
+
+Read for WP174:
+- pyproject.toml and .github/workflows/ci.yml;
+- src/execution_gateway/README.md, src/operator_cockpit.py, and the exact in-scope tests;
+- docs/serious_paper_trading_contract.md plus the narrow public WP173 model/store interfaces
+  needed to validate read-only authorization binding;
+- current dependency metadata and installed public APIs for polymarket-client==0.10.0 and
+  websockets==15.0.1.
+
+Read only if blocked:
+- directly implicated WP169 websocket/runtime modules and their six R010 test files;
+- selected SDK installed source for a specific undocumented transport or heartbeat gap;
+- docs/deferred_items_log.md and docs/security_tooling_status.md for a specific dependency,
+  security-tool, or upstream limitation decision.
+
+Do not read/touch:
+- credentials/, secrets/, private keys, wallets, local_data/, browser storage, or real accounts;
+- src/ outside the exact gateway and cockpit paths, tools/ outside read-only governing validators,
+  dependency files other than pyproject.toml, or workflow files other than the exact CI path;
+- src/operator_cockpit_frontend/, tools/hermes/, agent_memory/, strategy, live-risk, allocator,
+  deployment, scheduler, OMS, or unrelated reconciliation/runtime surfaces.
+
+Fallback search terms if a path moved:
+  WP173 intent authorization risk identity; market truth websocket; websockets pin; operator
+  cockpit GET routes; execution_gateway boundary; heartbeat; Retry-After; geoblock; cancel-only;
+  draftability certificate; protected paths; architecture allowlist.
+
+===============================================================================
+COMPATIBILITY / IMPOSSIBILITY CHECK
+===============================================================================
+
+| Required behavior | Controlling mechanism | Files likely needed | Allowed | Compatible | Action |
+|---|---|---|---:|---:|---|
+| Official SDK plus websocket pin | Exact pyproject/CI pins and pip metadata | pyproject.toml; .github/workflows/ci.yml | YES | YES | Pin polymarket-client 0.10.0 and websockets 15.0.1; run R010 |
+| WP169 websocket behavior | Existing market-truth runtime and six focused tests | Six R010 WP169 test paths; no WP169 source edit | YES | YES | Require the focused suite to pass without a required skip |
+| WP173 invariant consumption | Validated content-addressed paper intent/risk evidence | narrow WP173 public interfaces; gateway tests | YES, read-only | YES | Validate exact identity before build; never rewrite/bypass WP173 |
+| Gate-B-locked mutation | Closed A0/A1/A2 authority and unreachable transport | gateway.py; test_gateway.py | YES | YES | Mutation code may exist but no ordinary Gate A path can call it |
+| SQLite recovery/audit | Dedicated transaction and hash-chain boundary | store.py; test_store_recovery.py | YES | YES | Reconcile or remain disabled on ambiguity/corruption/restart |
+| Backend-only cockpit | Existing loopback GET projection pattern | operator_cockpit.py; test_operator_cockpit.py | YES | YES | Add sanitized bounded GET projections only; no frontend change |
+| WP175/live exclusion | No A3 state; successor separately gated | gateway/boundary/repo-truth tests | YES | YES | Reject A3 and keep all capital/risk/live authority in WP175 |
+
+All rows are compatible inside the frozen L package. Any row becoming incompatible or requiring
+an unallowed path is a protected hard stop, not authority to redesign or expand the package.
+
+===============================================================================
 1. OBJECTIVE AND AUTHORITY / NON-AUTHORITY POSTURE
 ===============================================================================
 
@@ -71,6 +151,19 @@ market allowlist, live exposure/loss envelope, or live deployment permission.
 
 Current package state: LOCAL_DRAFT awaiting independent protected certification. Do not claim
 DRAFTABILITY_PASS or IMPLEMENTATION_READY before the certificate and readiness pass.
+
+Implementation authority: NO until independent certificate, canonical readiness, and explicit
+  Gate A authorization; then only the exact fake/fixture/shadow/read-safe implementation.
+Report/export authority: sanitized package, validation, status, and PR evidence only.
+Paper authority: NO; WP173 evidence is read-only input.
+Execution authority: technical Gate-B-locked capability only; no real mutation authority.
+Live authority: NO; WP175 Gate C only.
+Credential authority: reference boundary may be implemented under Gate A; real secret use is NO
+  without Gate B.
+Runtime/scheduler authority: manual foreground A0/A1/A2 gateway only; scheduler authority NO.
+Canonical evidence authority: exact WP174 status/package/audit evidence only; no WP173 rewrite.
+Network authority: Gate A safe mocks/fixtures and separately authorized reads only; mutations NO.
+Dependency-change authority: exact polymarket-client 0.10.0 and websockets 15.0.1 pins only.
 
 ===============================================================================
 2. FROZEN BUILD-VS-ADOPT DECISION
@@ -363,8 +456,16 @@ R007 heartbeat/rate/access: ack/failure/restart, Retry-After/backoff, geoblock, 
 R008 cockpit: bounded GET-only sanitized backend projection and no mutation route.
 R009 architecture/WP boundaries: approved protected source scope, WP173 read-only binding, no
   Hermes/strategy/live/capital authority, and WP175 separately gated.
-R010 dependency compatibility: exact pins, pip check, SDK import/compile, affected WP169 suite,
-  security checks, and hosted CI.
+R010 dependency compatibility: assert exact polymarket-client==0.10.0 and
+  websockets==15.0.1 installed versions, import polymarket_client, pass pip check, and pass without
+  a required skip the actual affected WP169 focused suite:
+  tests/data_layer/polymarket/test_market_truth_models_store.py,
+  tests/data_layer/polymarket/test_market_truth_websocket.py,
+  tests/data_layer/polymarket/test_market_truth_data_api.py,
+  tests/data_layer/polymarket/test_market_truth_onchain.py,
+  tests/data_layer/polymarket/test_market_truth_runtime.py, and
+  tests/test_public_market_truth_realtime_data_plane_contract_docs.py.
+  Broader security, full-suite, exact-head hosted-CI, and publication proof belongs to R012.
 R011 repo truth/evidence: status, security tooling, deferred items, and exact successor wording.
 R012 exact-head publication: readiness --check-diff, exact scope, focused/affected/full tests,
   security, one independent implementation reviewer, hosted CI, and PR evidence re-fetch.
@@ -407,10 +508,38 @@ pip check, relevant gitleaks/Semgrep/pip-audit checks, one combined independent 
 review, one authoritative full repository suite, exact-head hosted CI, and authenticated PR-body
 re-fetch. Never exercise real credentials or mutations without Gate B.
 
-Hard stop if a safe implementation needs an unlisted path, another dependency, a custom signing
-stack, real credential/manual action, a real venue mutation, live authority, architecture redesign,
-or cannot make ambiguity/reconciliation/heartbeat/access behavior fail closed. Ordinary same-scope
-bugs are fixed within Gate A and do not broaden authority.
+Concrete protected STOP conditions:
+- STOP if PR #175, final head, merge/base, or current-main truth differs materially — because the
+  certified predecessor binding and compatibility analysis would be stale.
+- STOP if the independent certificate is missing, invalid, executor-authored, or hash-mismatched —
+  because PROTECTED draftability would not be independently established.
+- STOP if any changed path falls outside the exact 20-path scope — because L scope authority would
+  be exceeded and an explicitly authorized XL package would be required.
+- STOP if another dependency or lock/dependency file is required — because only the two exact
+  pyproject pins and current no-lockfile model are authorized.
+- STOP if polymarket-client 0.10.0 and websockets 15.0.1 cannot coexist with WP169 without a skip
+  or source redesign — because the frozen integration architecture would be incompatible.
+- STOP if a required SDK gap needs a custom signing stack or broad direct CLOB client — because the
+  selected narrow adopt-plus-gap architecture would no longer be truthful.
+- STOP if secret values cannot be excluded from logs, exceptions, storage, cockpit, evidence, and
+  Hermes context — because Gate A secret isolation would fail.
+- STOP if implementation or validation needs a real secret, real signing identity, or venue create/
+  cancel mutation — because that crosses Gate B without its separate bounded authorization.
+- STOP if any A3, strategy, capital, allowlist, exposure/loss, deployment, or live path is needed —
+  because those capabilities belong exclusively to WP175 Gate C.
+- STOP if WP173 authorization/risk/reconciliation evidence must be modified or bypassed — because
+  WP174 has read-only consumption authority and cannot promote paper invariants to live authority.
+- STOP if ambiguity, restart, stream gap, heartbeat failure, access uncertainty, or SQLite
+  corruption can restore mutation permission without authoritative reconciliation — because the
+  protected gateway would fail open.
+- STOP if cockpit visibility requires a mutation route, browser credential, or frontend redesign —
+  because only a sanitized backend GET projection is authorized.
+- STOP if final validation cannot be rerun after the last source change — because exact-head
+  correctness and security evidence would be stale.
+- STOP if final PR evidence cannot be posted and authenticatedly re-fetched — because the required
+  private-repo evidence mode could not be established.
+
+Ordinary same-scope bugs are fixed within Gate A and do not broaden authority.
 
 ===============================================================================
 12. SUCCESSOR BOUNDARY AND REPORT-BACK
