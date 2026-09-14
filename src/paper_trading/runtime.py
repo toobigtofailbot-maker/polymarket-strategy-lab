@@ -7,14 +7,23 @@ from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
+import re
 import sqlite3
 import time
 from collections.abc import Sequence
 from decimal import Decimal
 
 from src.data_layer.polymarket.market_truth import (
+    MarketTruthError,
+    NORMALIZER_VERSION as WP169_NORMALIZER_VERSION,
     canonical_json_bytes as wp169_canonical_bytes,
     compute_observation_id,
+    compute_occurrence_id,
+    compute_raw_id,
+    epoch_ms_to_rfc3339,
+    is_rfc3339_micros,
+    is_valid_token_id,
+    validate_asset_ids,
 )
 from src.data_layer.polymarket.market_truth_store import (
     APPLICATION_ID as MARKET_APPLICATION_ID,
@@ -57,6 +66,25 @@ _NORMALIZED_COLUMNS = (
     "provenance_json",
 )
 _GAP_COLUMNS = ("sequence", "asset_id", "state", "reason", "received_at")
+_RAW_COLUMNS = (
+    "archive_sequence",
+    "occurrence_id",
+    "raw_id",
+    "source_kind",
+    "source_id",
+    "source_cursor",
+    "received_at",
+    "media_type",
+    "byte_length",
+    "raw_sha256",
+    "raw_bytes",
+)
+_WP169_WS_SOURCE_ID = "polymarket:market-ws"
+_WP169_MAX_RAW_BYTES = 4_194_304
+_WP169_WS_CURSOR = re.compile(
+    r"^ws:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-"
+    r"[0-9a-f]{12}:frame:(0|[1-9][0-9]*)$"
+)
 
 
 def _time_ns(value: str) -> int:
@@ -235,6 +263,7 @@ class Wp169ReadOnlyTail:
             ):
                 raise PaperTradingError("SOURCE_UNAVAILABLE")
             for table, expected in {
+                "raw_occurrences": _RAW_COLUMNS,
                 "normalized_occurrences": _NORMALIZED_COLUMNS,
                 "gap_events": _GAP_COLUMNS,
             }.items():
@@ -286,6 +315,150 @@ class Wp169ReadOnlyTail:
         ):
             raise PaperTradingError("MARKET_TRUTH_INVALID")
         return payload
+
+    def _validated_resolution_winner(
+        self, row: sqlite3.Row, payload: dict[str, object]
+    ) -> str | None:
+        """Recover a winner only from the exact hash-bound WP169 WS child."""
+        connection = self._connect()
+        try:
+            raw = connection.execute(
+                "SELECT * FROM raw_occurrences WHERE occurrence_id=? AND raw_id=?",
+                (row["occurrence_id"], row["raw_id"]),
+            ).fetchone()
+        except sqlite3.Error:
+            return None
+        finally:
+            connection.close()
+        if raw is None:
+            return None
+        try:
+            raw_bytes = raw["raw_bytes"]
+            cursor_match = _WP169_WS_CURSOR.fullmatch(raw["source_cursor"])
+            if (
+                row["source_kind"] != "WS"
+                or raw["source_kind"] != "WS"
+                or raw["source_id"] != _WP169_WS_SOURCE_ID
+                or cursor_match is None
+                or raw["received_at"] != row["received_at"]
+                or not is_rfc3339_micros(raw["received_at"])
+                or raw["media_type"] != "application/json"
+                or not isinstance(raw_bytes, bytes)
+                or raw["byte_length"] != len(raw_bytes)
+                or not 0 <= raw["byte_length"] <= _WP169_MAX_RAW_BYTES
+                or hashlib.sha256(raw_bytes).hexdigest() != raw["raw_sha256"]
+                or compute_raw_id(
+                    source_kind=raw["source_kind"],
+                    source_id=raw["source_id"],
+                    media_type=raw["media_type"],
+                    raw_sha256=raw["raw_sha256"],
+                    byte_length=raw["byte_length"],
+                )
+                != raw["raw_id"]
+                or compute_occurrence_id(
+                    raw_id=raw["raw_id"],
+                    received_at=raw["received_at"],
+                    source_id=raw["source_id"],
+                    source_cursor=raw["source_cursor"],
+                    occurrence_sequence=int(cursor_match.group(1)),
+                )
+                != raw["occurrence_id"]
+            ):
+                return None
+            document = json.loads(raw_bytes.decode("utf-8"))
+            provenance = json.loads(row["provenance_json"])
+            if (
+                not isinstance(provenance, dict)
+                or set(provenance)
+                != {
+                    "normalizer_version",
+                    "frame_event_type",
+                    "child_index",
+                    "event_hash",
+                }
+                or provenance["normalizer_version"] != WP169_NORMALIZER_VERSION
+                or provenance["frame_event_type"] != "market_resolved"
+                or not isinstance(provenance["child_index"], int)
+                or isinstance(provenance["child_index"], bool)
+                or provenance["child_index"] < 0
+            ):
+                return None
+            messages = document if isinstance(document, list) else [document]
+            child_index = provenance["child_index"]
+            if child_index >= len(messages) or not isinstance(
+                messages[child_index], dict
+            ):
+                return None
+            message = messages[child_index]
+            raw_hash = message.get("hash")
+            normalized_hash = raw_hash if isinstance(raw_hash, str) else None
+            raw_market = message.get("market")
+            raw_asset = message.get("asset_id")
+            raw_condition = message.get("condition_id")
+            raw_winner = message.get("winner")
+            raw_timestamp = message.get("timestamp")
+            if isinstance(raw_timestamp, str) and raw_timestamp.isdigit():
+                timestamp_ms = int(raw_timestamp)
+            elif (
+                isinstance(raw_timestamp, int)
+                and not isinstance(raw_timestamp, bool)
+                and raw_timestamp >= 0
+            ):
+                timestamp_ms = raw_timestamp
+            else:
+                return None
+            event_time = epoch_ms_to_rfc3339(timestamp_ms)
+            if (
+                message.get("event_type") != "market_resolved"
+                or row["event_kind"] != "market_resolved"
+                or row["event_id"] is not None
+                or not isinstance(raw_market, str)
+                or raw_market != row["market_id"]
+                or payload.get("market") != raw_market
+                or row["event_time"] != event_time
+                or payload.get("timestamp") != event_time
+                or payload.get("asset_id")
+                != (raw_asset if isinstance(raw_asset, str) else None)
+                or payload.get("condition_id")
+                != (raw_condition if isinstance(raw_condition, str) else None)
+                or payload.get("winner")
+                != (raw_winner if isinstance(raw_winner, str) else None)
+                or provenance["event_hash"] != normalized_hash
+            ):
+                return None
+            winner = message.get("winning_asset_id")
+            if winner is not None:
+                if not is_valid_token_id(winner):
+                    return None
+                if isinstance(raw_winner, str) and raw_winner != winner:
+                    return None
+            else:
+                winner = raw_winner
+                if (
+                    not is_valid_token_id(winner)
+                    or raw_asset != winner
+                    or row["asset_id"] != winner
+                ):
+                    return None
+            assets = message.get("assets_ids")
+            if assets is not None:
+                try:
+                    validated_assets = validate_asset_ids(assets)
+                except MarketTruthError:
+                    return None
+                if winner not in validated_assets:
+                    return None
+            return winner
+        except (
+            KeyError,
+            TypeError,
+            ValueError,
+            OverflowError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            MarketTruthError,
+        ):
+            return None
 
     def _convert(self, row: sqlite3.Row) -> PaperMarketEvent | None:
         payload = self._validated_payload(row)
@@ -379,10 +552,7 @@ class Wp169ReadOnlyTail:
                     size=size,
                 )
         if row["event_kind"] == "market_resolved":
-            winner = payload.get("winner")
-            winner_asset = (
-                winner if isinstance(winner, str) and winner == asset_id else None
-            )
+            winner_asset = self._validated_resolution_winner(row, payload)
             return PaperMarketEvent(
                 "RESOLUTION",
                 market_id,

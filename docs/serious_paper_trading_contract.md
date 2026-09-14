@@ -117,6 +117,15 @@ external client and installs no scheduler or background service. Every poll
 checks the paper-store head before reading WP169, including polls with no new
 market event, so an external paper mutation cannot be clobbered.
 
+For accepted WP169 `market_resolved` observations, the adapter retrieves the
+exact linked raw WebSocket occurrence, revalidates its raw/occurrence hashes,
+source domain, normalized identity, timestamp, provenance, and child index,
+then accepts the current official `winning_asset_id` only when it is a valid
+token and belongs to `assets_ids` when that array is present. Missing,
+malformed, contradictory, or unverifiable raw resolution evidence emits an
+ambiguous resolution and remains `RESOLUTION_PENDING`; outcome labels and
+array positions never imply a winner.
+
 Control states are `RUNNING`, `PAUSED`, `KILLED`, and
 `RECONCILIATION_BLOCKED`. PAUSED denies new orders. Resume is valid only from
 PAUSED. KILLED cancels remaining simulated orders, is terminal, and cannot be

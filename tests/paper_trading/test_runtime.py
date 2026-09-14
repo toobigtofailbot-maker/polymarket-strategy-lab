@@ -1,6 +1,7 @@
 import hashlib
 import json
 from dataclasses import replace
+import sqlite3
 
 import pytest
 
@@ -19,7 +20,12 @@ from src.paper_trading import (
 )
 from tests.data_layer.polymarket.test_market_truth_models_store import _book_raw
 
-from tests.paper_trading.conftest import edge_stack, generous_limits, paper_book
+from tests.paper_trading.conftest import (
+    edge_stack,
+    generous_limits,
+    make_engine,
+    paper_book,
+)
 
 
 def _intent(binding):
@@ -33,6 +39,101 @@ def _intent(binding):
         reference_price="0.5",
         decision_time_ns=101,
     )
+
+
+_RESOLUTION_MARKET = "0x" + "a" * 64
+_RESOLUTION_A = "7"
+_RESOLUTION_B = "8"
+
+
+def _market_event(kind, asset, receive, *, size=None):
+    if kind == "BOOK":
+        return PaperMarketEvent(
+            "BOOK",
+            _RESOLUTION_MARKET,
+            asset,
+            receive - 1,
+            receive,
+            f"resolution-fixture:{asset}:{receive}",
+            (("0.49", "20"),),
+            (("0.51", "20"),),
+        )
+    return PaperMarketEvent(
+        "TRADE",
+        _RESOLUTION_MARKET,
+        asset,
+        receive - 1,
+        receive,
+        f"resolution-fixture:{asset}:{receive}",
+        side="SELL",
+        price="0.49",
+        size=size,
+    )
+
+
+def _passive_intent(engine, asset, decision, *, quantity="2"):
+    return build_paper_intent(
+        engine.state.binding,
+        market_id=_RESOLUTION_MARKET,
+        asset_id=asset,
+        side="BUY",
+        quantity=quantity,
+        order_style="PASSIVE_MAKER",
+        reference_price="0.49",
+        decision_time_ns=decision,
+    )
+
+
+def _stored_resolution(tmp_path, name, overrides=None, *, tamper_raw=False):
+    message = {
+        "event_type": "market_resolved",
+        "market": _RESOLUTION_MARKET,
+        "condition_id": _RESOLUTION_MARKET,
+        "timestamp": "1720000005000",
+        "assets_ids": [_RESOLUTION_A, _RESOLUTION_B],
+        "winning_asset_id": _RESOLUTION_A,
+        "winning_outcome": "Yes",
+        "hash": "official-resolution-hash",
+    }
+    if overrides:
+        message.update(overrides)
+    if overrides and overrides.get("winning_asset_id") == "__MISSING__":
+        message.pop("winning_asset_id")
+    frame = [
+        {
+            "event_type": "tick_size_change",
+            "market": _RESOLUTION_MARKET,
+            "asset_id": _RESOLUTION_B,
+            "timestamp": "1720000004000",
+            "old_tick_size": "0.01",
+            "new_tick_size": "0.001",
+        },
+        message,
+    ]
+    raw = mt.make_raw_envelope(
+        "WS",
+        "polymarket:market-ws",
+        "ws:00000000-0000-4000-8000-000000000000:frame:5",
+        "2024-07-03T09:46:45.000000Z",
+        json.dumps(frame).encode(),
+        occurrence_sequence=5,
+    )
+    path = tmp_path / name
+    with MarketTruthStore(path) as source:
+        observations = mt.normalize_websocket_message(raw, book_readiness={})
+        assert len(observations) == 2
+        assert observations[1].event_kind == "market_resolved"
+        assert source.append(raw, observations).status == "OK"
+    if tamper_raw:
+        connection = sqlite3.connect(path)
+        connection.execute(
+            "UPDATE raw_occurrences SET raw_bytes=? WHERE occurrence_id=?",
+            (b"{}", raw.occurrence_id),
+        )
+        connection.commit()
+        connection.close()
+    events = Wp169ReadOnlyTail(path).read_new()
+    return next(event for event in events if event.kind == "RESOLUTION")
 
 
 def test_replay_is_deterministic_and_wp169_tail_is_read_only(tmp_path) -> None:
@@ -74,6 +175,117 @@ def test_replay_is_deterministic_and_wp169_tail_is_read_only(tmp_path) -> None:
     assert "mode=ro" in (
         tmp_path.parents[1] / "nonexistent"
     ).name or "mode=ro" in __import__("inspect").getsource(Wp169ReadOnlyTail)
+
+
+def test_official_wp169_resolution_settles_positions_and_survives_restart(
+    tmp_path,
+) -> None:
+    model, _exp, _evidence, _trace, _window, assessment, binding = edge_stack(
+        "PASSIVE_MAKER"
+    )
+    paper = tmp_path / "resolution-paper.sqlite3"
+    store = PaperStore(paper, create=True)
+    engine = PaperEngine.create(
+        store,
+        binding,
+        generous_limits(),
+        assessment=assessment,
+        cost_model=model,
+        session_label="official-resolution",
+        created_time_ns=1,
+    )
+    engine.process_market_event(_market_event("BOOK", _RESOLUTION_A, 100))
+    engine.process_market_event(_market_event("BOOK", _RESOLUTION_B, 101))
+    engine.submit(_passive_intent(engine, _RESOLUTION_A, 102))
+    engine.submit(_passive_intent(engine, _RESOLUTION_B, 103))
+    engine.process_market_event(_market_event("BOOK", _RESOLUTION_A, 112))
+    engine.process_market_event(_market_event("BOOK", _RESOLUTION_B, 113))
+    engine.process_market_event(
+        _market_event("TRADE", _RESOLUTION_A, 114, size="22")
+    )
+    engine.process_market_event(
+        _market_event("TRADE", _RESOLUTION_B, 115, size="22")
+    )
+    open_order = engine.submit(_passive_intent(engine, _RESOLUTION_A, 116))
+    assert open_order.status == "OPEN"
+    assert {position.asset_id for position in engine.state.account.positions} == {
+        _RESOLUTION_A,
+        _RESOLUTION_B,
+    }
+
+    resolution = _stored_resolution(tmp_path, "official-resolution.sqlite3")
+    assert resolution.asset_id is None
+    assert resolution.winner_asset_id == _RESOLUTION_A
+    engine.process_market_event(resolution)
+
+    settled_order = next(
+        order for order in engine.state.orders if order.order_id == open_order.order_id
+    )
+    assert settled_order.status == "CANCELLED"
+    assert engine.state.account.positions == ()
+    assert engine.state.account.cash == "100.0204"
+    assert engine.state.account.realized_pnl == "0.0204"
+    assert engine.state.resolution_pending == ()
+    settlements = {
+        event.data["asset_id"]: event.data["payoff"]
+        for event in store.events()
+        if event.event_type == "POSITION_SETTLED"
+    }
+    assert settlements == {_RESOLUTION_A: "1", _RESOLUTION_B: "0"}
+    expected_state = engine.state
+    expected_journal = tuple(store.events())
+    store.close()
+
+    with PaperStore(paper) as reopened:
+        recovered = PaperEngine.open(reopened)
+        assert recovered.state == expected_state
+        assert tuple(reopened.events()) == expected_journal
+
+
+@pytest.mark.parametrize(
+    ("name", "overrides", "tamper_raw"),
+    (
+        ("missing", {"winning_asset_id": "__MISSING__"}, False),
+        ("malformed", {"winning_asset_id": 7}, False),
+        (
+            "contradictory",
+            {"assets_ids": [_RESOLUTION_B], "winning_asset_id": _RESOLUTION_A},
+            False,
+        ),
+        ("unvalidated-raw", {}, True),
+    ),
+)
+def test_unverifiable_wp169_resolution_remains_pending(
+    tmp_path, name, overrides, tamper_raw
+) -> None:
+    event = _stored_resolution(
+        tmp_path,
+        f"resolution-{name}.sqlite3",
+        overrides,
+        tamper_raw=tamper_raw,
+    )
+    assert event.kind == "RESOLUTION"
+    assert event.winner_asset_id is None
+
+    store, engine = make_engine(tmp_path / f"paper-{name}.sqlite3")
+    engine.process_market_event(event)
+    assert _RESOLUTION_MARKET in engine.state.resolution_pending
+    assert engine.state.account.positions == ()
+    store.close()
+
+
+def test_validated_unambiguous_legacy_resolution_remains_supported(tmp_path) -> None:
+    event = _stored_resolution(
+        tmp_path,
+        "resolution-legacy.sqlite3",
+        {
+            "winning_asset_id": "__MISSING__",
+            "asset_id": _RESOLUTION_A,
+            "winner": _RESOLUTION_A,
+        },
+    )
+    assert event.asset_id == _RESOLUTION_A
+    assert event.winner_asset_id == _RESOLUTION_A
 
 
 def test_wp169_tail_resumes_without_duplicate_events_after_paper_restart(tmp_path) -> None:
