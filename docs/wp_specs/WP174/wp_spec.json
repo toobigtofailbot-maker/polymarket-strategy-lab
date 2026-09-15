@@ -18,7 +18,7 @@
     "objective": "Implement after independent certification and explicit Gate A authorization the smallest production-quality protected Polymarket authentication, signing, LIMIT-order construction, Gate-B-locked mutation, authoritative reconciliation, heartbeat, recovery, audit, and read-only cockpit gateway while preserving WP173 invariants and excluding all real-secret, real-mutation, and live-capital authority.",
     "capital_at_risk_usd": 0,
     "xl_explicit_authorization": true,
-    "xl_authorization_basis": "Karl explicitly authorized an exact same-capability expansion from 20 to 23 paths after full-suite compatibility discovery proved that the dependency transition also requires three historical compatibility-test corrections; this is scope-size authority only and grants no new product, architecture, credential, signing, Gate B, Gate C, live, or WP175 authority."
+    "xl_authorization_basis": "Karl explicitly authorized an exact same-capability expansion from 20 to 23 paths after full-suite compatibility discovery proved that the dependency transition also requires three historical compatibility-test corrections, then authorized the mechanically required fourth historical dependency-guard correction to 24 paths; this is scope-size authority only and grants no new product, architecture, credential, signing, Gate B, Gate C, live, or WP175 authority."
   },
   "scope": {
     "required_changed_files": [
@@ -44,7 +44,8 @@
       "tests/test_repo_truth_docs.py",
       "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py",
       "tests/research_runtime/nautilus_offline/test_runtime_compatibility.py",
-      "tests/test_wallet_intelligence_architecture_contract_docs.py"
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py"
     ],
     "allowed_changed_files": [
       ".github/workflows/ci.yml",
@@ -69,7 +70,8 @@
       "tests/test_repo_truth_docs.py",
       "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py",
       "tests/research_runtime/nautilus_offline/test_runtime_compatibility.py",
-      "tests/test_wallet_intelligence_architecture_contract_docs.py"
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py"
     ],
     "forbidden_prefixes": [
       "agent_memory/",
@@ -81,7 +83,7 @@
       "src/operator_cockpit_frontend/",
       "tools/hermes/"
     ],
-    "max_changed_files": 23,
+    "max_changed_files": 24,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       ".github/workflows/ci.yml",
@@ -97,7 +99,8 @@
       "tests/test_repo_truth_docs.py",
       "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py",
       "tests/research_runtime/nautilus_offline/test_runtime_compatibility.py",
-      "tests/test_wallet_intelligence_architecture_contract_docs.py"
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_human_review_label_workflow_docs.py"
     ],
     "rollback_surface": "Revert WP174. The protected gateway source, SQLite audit/recovery state, backend-only cockpit projection, exact SDK/websockets pins, CI assertion, focused tests, and status/governance evidence are removed. WP173 paper evidence remains unchanged. No real credential, real venue mutation, live capital, Hermes authority, frontend redesign, strategy, scheduler, or deployment state is created or migrated.",
     "mode_boundaries": [

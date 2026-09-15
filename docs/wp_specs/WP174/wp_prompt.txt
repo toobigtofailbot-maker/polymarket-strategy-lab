@@ -22,7 +22,7 @@ Recommended Claude/Codex Mode:
   Reason: one compact but security-critical authenticated gateway combining dependency,
     credential, signing, mutation-lock, reconciliation, recovery, and audit invariants
   Escalate to higher reasoning or STOP if: safe behavior cannot be proved inside the exact
-    certified 23-path boundary or any Gate A / Gate B / Gate C distinction becomes ambiguous
+    certified 24-path boundary or any Gate A / Gate B / Gate C distinction becomes ambiguous
 
 BEGIN_GOVERNANCE_AUTHORITY_V1
 risk_level: 4
@@ -373,7 +373,7 @@ Hermes remains advisory only and is out of scope. It may never receive secrets, 
 change deterministic gates, elevate authority, or authorize capital.
 
 ===============================================================================
-8. EXACT FROZEN SCOPE — 23 PATHS, CLASS XL
+8. EXACT FROZEN SCOPE — 24 PATHS, CLASS XL
 ===============================================================================
 
 Required and allowed changed paths are exactly:
@@ -400,6 +400,7 @@ Required and allowed changed paths are exactly:
 21. tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py
 22. tests/research_runtime/nautilus_offline/test_runtime_compatibility.py
 23. tests/test_wallet_intelligence_architecture_contract_docs.py
+24. tests/test_human_review_label_workflow_docs.py
 
 The certificate path is planned protected evidence and must be created only by the independent
 certifier before Gate A. The pre-freeze executor creates and commits only prompt/spec bytes.
@@ -410,11 +411,11 @@ unchanged. Gateway models, constraints, secret boundary, transport, user-stream,
 runtime gate remain cohesive in gateway.py; durable journal/recovery stays isolated in store.py.
 Backend-only cockpit visibility avoids a frontend path. Exact current repo-truth assertions require
 both direct documentation tests. Full-suite compatibility discovery additionally requires the
-three historical dependency-contract tests listed at paths 21-23. This is a truthful 23-path XL
+four historical dependency-contract tests listed at paths 21-24. This is a truthful 24-path XL
 implementation boundary; XL authorization changes scope size only and adds no capability or
 authority.
 
-Any need for a twenty-fourth path is a protected scope hard stop requiring return to Side with the
+Any need for a twenty-fifth path is a protected scope hard stop requiring return to Side with the
 complete remaining path set and explicit authorization. No further same-envelope PROTECTED scope
 correction is self-authorized after certificate hashing.
 
@@ -533,7 +534,7 @@ Concrete protected STOP conditions:
   certified predecessor binding and compatibility analysis would be stale.
 - STOP if the independent certificate is missing, invalid, executor-authored, or hash-mismatched —
   because PROTECTED draftability would not be independently established.
-- STOP if any changed path falls outside the exact 23-path scope — because the explicitly
+- STOP if any changed path falls outside the exact 24-path scope — because the explicitly
   authorized XL scope-size boundary would be exceeded.
 - STOP if another dependency or lock/dependency file is required — because only the two exact
   pyproject pins and current no-lockfile model are authorized.

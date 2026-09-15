@@ -596,6 +596,12 @@ def test_no_dependency_files_modified():
         if f in ("requirements.txt", "pyproject.toml", "package.json", "package-lock.json",
                  "poetry.lock", "Pipfile.lock", "setup.py", "setup.cfg")
     ]
+    # Prefer the active WP machine-spec scope as the authority.  This preserves
+    # the historical guard for undeclared dependency/lock changes while allowing
+    # a certified package to declare its exact dependency transition truthfully.
+    for expected in _spec_authorized_changed_scopes(changed):
+        if set(changed) == expected:
+            return
     if "docs/status_entries/WP171.md" in changed:
         expected = set(json.loads(open(
             os.path.join(REPO_ROOT, "docs", "wp_specs", "WP171", "wp_spec.json"),
@@ -619,6 +625,29 @@ def test_no_dependency_files_modified():
     assert not dep_changes, (
         f"WP75 must not modify dependency files. Found: {dep_changes}"
     )
+
+
+def _spec_authorized_changed_scopes(changed):
+    """Return exact changed-file scopes declared by active WP machine specs."""
+    scopes = []
+    for path in changed:
+        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+)\.md", path)
+        if match is None:
+            continue
+        spec_path = os.path.join(
+            REPO_ROOT, "docs", "wp_specs", match.group(1), "wp_spec.json"
+        )
+        if not os.path.isfile(spec_path):
+            continue
+        try:
+            with open(spec_path, encoding="utf-8") as handle:
+                spec = json.load(handle)
+        except (OSError, ValueError):
+            continue
+        required = spec.get("scope", {}).get("required_changed_files", [])
+        if isinstance(required, list) and all(isinstance(item, str) for item in required):
+            scopes.append(set(required))
+    return tuple(scopes)
 
 
 def _spec_authorized_tool_paths(changed):
@@ -661,6 +690,16 @@ def test_historical_tool_scope_guard_uses_current_wp_spec_authority():
     assert "tools/wp/wp_spec_guard.py" in wp159_authorized
     # No WP status entry changed -> no governance-tool paths are authorized.
     assert _spec_authorized_tool_paths({"docs/project_status.md"}) == set()
+
+
+def test_dependency_scope_guard_uses_current_wp_spec_authority():
+    """The dependency guard accepts only the exact active machine-spec scope."""
+    scopes = _spec_authorized_changed_scopes({"docs/status_entries/WP174.md"})
+    assert any(
+        "pyproject.toml" in scope
+        and "tests/test_human_review_label_workflow_docs.py" in scope
+        for scope in scopes
+    )
 
 
 def test_no_tools_files_modified():
