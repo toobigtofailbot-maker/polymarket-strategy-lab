@@ -17,6 +17,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 import getpass
+import hashlib
+import os
+from pathlib import Path
 import re
 import sys
 from typing import Callable, Mapping, Protocol
@@ -25,6 +28,7 @@ from polymarket import SecureClient
 
 from .gateway import (
     GatewayError,
+    ProtectedExecutionGateway,
     _ADDRESS_RE,
     _canonical_decimal,
     _decimal,
@@ -200,6 +204,50 @@ class GateBIdentityPolicy:
             raise GatewayError("SIGNING_IDENTITY_INVALID")
 
 
+class WalletSessionLock:
+    """Atomic, local, public-wallet-derived ownership lock for one operator session."""
+
+    def __init__(self, directory: Path, public_wallet: str):
+        wallet = _public_address(public_wallet, "SIGNING_IDENTITY_INVALID")
+        digest = hashlib.sha256(wallet.encode("ascii")).hexdigest()[:24]
+        self.path = directory / f"gate-b-wallet-{digest}.lock"
+        self._wallet = wallet
+        self._active = False
+
+    @property
+    def active(self) -> bool:
+        return self._active
+
+    def acquire(self) -> "WalletSessionLock":
+        try:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            descriptor = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+            with os.fdopen(descriptor, "w", encoding="ascii") as stream:
+                stream.write(self._wallet + "\n")
+        except FileExistsError:
+            raise GatewayError("GATE_B_OWNERSHIP_LOCKED") from None
+        except OSError:
+            raise GatewayError("GATE_B_OWNERSHIP_FAILED") from None
+        self._active = True
+        return self
+
+    def close(self) -> None:
+        if not self._active:
+            return
+        try:
+            self.path.unlink()
+        except OSError:
+            raise GatewayError("GATE_B_OWNERSHIP_FAILED") from None
+        finally:
+            self._active = False
+
+    def __enter__(self) -> "WalletSessionLock":
+        return self.acquire()
+
+    def __exit__(self, *_args: object) -> None:
+        self.close()
+
+
 # ---------------------------------------------------------------------------
 # Gate-C permit — deliberately unconstructable in WP174B
 # ---------------------------------------------------------------------------
@@ -230,9 +278,11 @@ class CancelAttempt:
         if self.operation not in _CANCEL_OPERATIONS:
             raise GatewayError("MUTATION_IDENTITY_CONFLICT")
         _label(self.target)
-        if not isinstance(self.attempt_sequence, int) or isinstance(
-            self.attempt_sequence, bool
-        ) or self.attempt_sequence < 0:
+        if (
+            not isinstance(self.attempt_sequence, int)
+            or isinstance(self.attempt_sequence, bool)
+            or self.attempt_sequence < 0
+        ):
             raise GatewayError("MUTATION_IDENTITY_CONFLICT")
         _label(self.prior_reconciliation_state)
 
@@ -252,9 +302,11 @@ class CancelAttempt:
 class ProductionSdkMutationAdapter:
     """Real cancellation transport; every create/post path is Gate-C locked."""
 
-    def __init__(self, client: object):
+    def __init__(
+        self, client: object, *, transmitted_attempt_ids: set[str] | None = None
+    ):
         self._client = client
-        self._transmitted: set[str] = set()
+        self._transmitted: set[str] = set(transmitted_attempt_ids or ())
 
     # -- create surface: structurally unreachable ---------------------------
 
@@ -264,7 +316,9 @@ class ProductionSdkMutationAdapter:
     def place_limit_order(self, *_args: object, **_kwargs: object) -> object:
         raise GatewayError("GATE_C_REQUIRED")
 
-    def post_order(self, *_args: object, permit: object = None, **_kwargs: object) -> object:
+    def post_order(
+        self, *_args: object, permit: object = None, **_kwargs: object
+    ) -> object:
         # Even a supplied permit cannot help: no caller can construct one.
         if not isinstance(permit, GateCLivePermit):
             raise GatewayError("GATE_C_REQUIRED")
@@ -301,13 +355,16 @@ class ProductionSdkMutationAdapter:
 
 def _summarize_cancel_response(response: object) -> Mapping[str, object]:
     """Extract only safe closed counts from a cancel response."""
-    canceled = getattr(response, "canceled", None)
-    not_canceled = getattr(response, "not_canceled", None)
-    try:
-        canceled_count = len(canceled) if canceled is not None else 0
-        not_canceled_count = len(not_canceled) if not_canceled is not None else 0
-    except TypeError:
-        raise GatewayError("CANCEL_PROBE_FAILED") from None
+    if not hasattr(response, "canceled") or not hasattr(response, "not_canceled"):
+        raise GatewayError("CANCEL_PROBE_AMBIGUOUS")
+    canceled = getattr(response, "canceled")
+    not_canceled = getattr(response, "not_canceled")
+    if not isinstance(canceled, (list, tuple)) or not isinstance(
+        not_canceled, (list, tuple)
+    ):
+        raise GatewayError("CANCEL_PROBE_AMBIGUOUS")
+    canceled_count = len(canceled)
+    not_canceled_count = len(not_canceled)
     return {"canceled_count": canceled_count, "not_canceled_count": not_canceled_count}
 
 
@@ -335,10 +392,13 @@ class GateBVerificationReceipt:
     signing_probe_id: str | None
     cancel_probe_attempt_id: str | None
     cancel_probe_result: str | None
+    gate_b_reconciliation_state: str
     open_orders_before: int
     open_orders_after: int
     positions_before: int
+    positions_after: int
     collateral_balance_before: str
+    collateral_balance_after: str
     verified_time_ns: int
     valid_until_ns: int
     redaction_pass: bool
@@ -361,10 +421,13 @@ class GateBVerificationReceipt:
             "signing_probe_id": self.signing_probe_id,
             "cancel_probe_attempt_id": self.cancel_probe_attempt_id,
             "cancel_probe_result": self.cancel_probe_result,
+            "gate_b_reconciliation_state": self.gate_b_reconciliation_state,
             "open_orders_before": self.open_orders_before,
             "open_orders_after": self.open_orders_after,
             "positions_before": self.positions_before,
+            "positions_after": self.positions_after,
             "collateral_balance_before": self.collateral_balance_before,
+            "collateral_balance_after": self.collateral_balance_after,
             "verified_time_ns": self.verified_time_ns,
             "valid_until_ns": self.valid_until_ns,
             "redaction_pass": self.redaction_pass,
@@ -466,6 +529,9 @@ class GateBSession:
         "_mutation",
         "_attempt_seq",
         "_audit_sink",
+        "_gateway",
+        "_wallet_lock",
+        "_unresolved_attempts",
         "_signing_probe_id",
     )
 
@@ -475,13 +541,40 @@ class GateBSession:
         policy: GateBIdentityPolicy,
         *,
         audit_sink: Callable[[Mapping[str, object]], None] | None = None,
+        gateway: ProtectedExecutionGateway | None = None,
+        wallet_lock: WalletSessionLock | None = None,
     ):
         self._client = client
         self._policy = policy
         self._state = "B2_AUTHENTICATED"
-        self._mutation = ProductionSdkMutationAdapter(client)
-        self._attempt_seq = 0
+        self._gateway = gateway
+        self._wallet_lock = wallet_lock
         self._audit_sink = audit_sink
+        started: dict[str, int] = {}
+        terminal: set[str] = set()
+        unresolved: set[str] = set()
+        if gateway is not None:
+            for journal_event in gateway.gate_b_events():
+                data = dict(journal_event.data)
+                if journal_event.event_type == "GATE_B_CANCEL_ATTEMPT_STARTED":
+                    identity = str(data["cancel_attempt_id"])
+                    started[identity] = int(data["attempt_sequence"])
+                    unresolved.add(identity)
+                elif journal_event.event_type == "GATE_B_CANCEL_ATTEMPT_RESULT":
+                    identity = str(data["cancel_attempt_id"])
+                    if data["cancel_result"] in (
+                        "DEFINITIVE_ACCEPTED",
+                        "DEFINITIVE_REJECTED",
+                    ):
+                        terminal.add(identity)
+                        unresolved.discard(identity)
+                    else:
+                        unresolved.add(identity)
+        self._attempt_seq = max(started.values(), default=0)
+        self._unresolved_attempts = unresolved
+        self._mutation = ProductionSdkMutationAdapter(
+            client, transmitted_attempt_ids=set(started) - terminal
+        )
         self._signing_probe_id: str | None = None
         # Journal the sanitized capability transition. The sink is intended to be
         # the existing tamper-evident gateway store's append; it never receives a
@@ -489,7 +582,7 @@ class GateBSession:
         self._emit("GATE_B_AUTHENTICATED", {})
 
     def _emit(self, event_type: str, extra: Mapping[str, object]) -> None:
-        if self._audit_sink is None:
+        if self._audit_sink is None and self._gateway is None:
             return
         event: dict[str, object] = {
             "event_type": event_type,
@@ -500,7 +593,12 @@ class GateBSession:
             "signature_type": _DEPOSIT_SIGNATURE_TYPE,
         }
         event.update(extra)
-        self._audit_sink(dict(event))
+        journal_data = dict(event)
+        journal_data.pop("event_type")
+        if self._gateway is not None:
+            self._gateway.record_gate_b_event(event_type, journal_data)
+        if self._audit_sink is not None:
+            self._audit_sink(dict(event))
 
     @classmethod
     def authenticate(
@@ -510,6 +608,8 @@ class GateBSession:
         *,
         client_factory: ClientFactory = create_deposit_wallet_client,
         audit_sink: Callable[[Mapping[str, object]], None] | None = None,
+        gateway: ProtectedExecutionGateway | None = None,
+        wallet_lock: WalletSessionLock | None = None,
     ) -> "GateBSession":
         policy.validate()
         lease = provider.acquire()
@@ -531,7 +631,13 @@ class GateBSession:
             # identity-verification failure before the error propagates.
             _safe_close(client)
             raise
-        return cls(client, policy, audit_sink=audit_sink)
+        return cls(
+            client,
+            policy,
+            audit_sink=audit_sink,
+            gateway=gateway,
+            wallet_lock=wallet_lock,
+        )
 
     @staticmethod
     def _verify_identity(client: object, policy: GateBIdentityPolicy) -> None:
@@ -581,9 +687,11 @@ class GateBSession:
         """Bounded sanitized public account snapshot; no raw credential data."""
         try:
             balance = self._client.get_balance_allowance(asset_type="COLLATERAL")
-            open_orders = _count_page(self._client.list_open_orders())
+            open_orders = _count_page(self._client.list_open_orders(), limit=100)
+            account_trades = _count_page(self._client.list_account_trades(), limit=100)
             positions = _count_page(
-                self._client.list_positions(user=self.public_wallet, page_size=100)
+                self._client.list_positions(user=self.public_wallet, page_size=100),
+                limit=100,
             )
         except GatewayError:
             raise
@@ -593,6 +701,7 @@ class GateBSession:
         return {
             "collateral_balance": collateral,
             "open_orders": open_orders,
+            "account_trades": account_trades,
             "positions": positions,
         }
 
@@ -601,7 +710,11 @@ class GateBSession:
     def signing_probe(
         self, *, token_id: str, price: str, size: str, side: str = "BUY"
     ) -> str:
-        if self._state not in ("B2_AUTHENTICATED", "B3_SIGNING_VERIFIED", "B4_CANCEL_TRANSPORT_VERIFIED"):
+        if self._state not in (
+            "B2_AUTHENTICATED",
+            "B3_SIGNING_VERIFIED",
+            "B4_CANCEL_TRANSPORT_VERIFIED",
+        ):
             raise GatewayError("SIGNING_PROBE_FAILED")
         _label(token_id)
         price_dec = _decimal(price, positive=True)
@@ -654,10 +767,19 @@ class GateBSession:
         if self._state != "B3_SIGNING_VERIFIED" or self._signing_probe_id is None:
             raise GatewayError("CANCEL_PROBE_FAILED")
         # A PASS receipt must bind an exact Git HEAD, never UNKNOWN_HEAD.
-        if not isinstance(repository_head, str) or _HEAD_RE.fullmatch(repository_head) is None:
+        if (
+            not isinstance(repository_head, str)
+            or _HEAD_RE.fullmatch(repository_head) is None
+        ):
             raise GatewayError("CANCEL_PROBE_FAILED")
         if confirmation != _CANCEL_CONFIRMATION_PHRASE:
             raise GatewayError("CANCEL_PROBE_FAILED")
+        if self._gateway is not None and (
+            self._wallet_lock is None or not self._wallet_lock.active
+        ):
+            raise GatewayError("GATE_B_OWNERSHIP_REQUIRED")
+        if self._unresolved_attempts:
+            raise GatewayError("RECONCILIATION_REQUIRED")
         snapshot = self.account_snapshot()
         balance_before = snapshot["collateral_balance"]
         open_before = int(snapshot["open_orders"])
@@ -668,13 +790,56 @@ class GateBSession:
             or positions_before != 0
         ):
             raise GatewayError("GATE_B_ACCOUNT_NOT_EMPTY")
+        self._emit(
+            "GATE_B_RECONCILED",
+            {
+                "gate_b_reconciliation_state": "HEALTHY",
+                "collateral_balance": str(balance_before),
+                "open_orders": open_before,
+                "account_trades": int(snapshot["account_trades"]),
+                "positions": positions_before,
+            },
+        )
         attempt = CancelAttempt(
             operation="CANCEL_ALL",
             target="ALL",
             attempt_sequence=self._next_attempt_sequence(),
             prior_reconciliation_state="HEALTHY",
         )
-        result, summary = self._mutation.cancel(attempt)
+        self._emit(
+            "GATE_B_CANCEL_ATTEMPT_STARTED",
+            {
+                "cancel_attempt_id": attempt.identity,
+                "operation": attempt.operation,
+                "target": attempt.target,
+                "attempt_sequence": attempt.attempt_sequence,
+                "prior_reconciliation_state": attempt.prior_reconciliation_state,
+            },
+        )
+        self._unresolved_attempts.add(attempt.identity)
+        try:
+            result, summary = self._mutation.cancel(attempt)
+        except GatewayError:
+            self._emit(
+                "GATE_B_CANCEL_ATTEMPT_RESULT",
+                {
+                    "cancel_attempt_id": attempt.identity,
+                    "cancel_result": "AMBIGUOUS",
+                    "canceled_count": 0,
+                    "not_canceled_count": 0,
+                },
+            )
+            raise GatewayError("CANCEL_PROBE_AMBIGUOUS") from None
+        self._emit(
+            "GATE_B_CANCEL_ATTEMPT_RESULT",
+            {
+                "cancel_attempt_id": attempt.identity,
+                "cancel_result": result,
+                "canceled_count": int(summary["canceled_count"]),
+                "not_canceled_count": int(summary["not_canceled_count"]),
+            },
+        )
+        self._unresolved_attempts.discard(attempt.identity)
         # The account was empty, so success requires that nothing was canceled and
         # nothing was left uncanceled; any canceled or not-canceled order is an
         # incident, not a pass.
@@ -685,7 +850,23 @@ class GateBSession:
             raise GatewayError("CANCEL_PROBE_FAILED")
         after = self.account_snapshot()
         open_after = int(after["open_orders"])
-        if open_after != 0:
+        positions_after = int(after["positions"])
+        balance_after = str(after["collateral_balance"])
+        if (
+            open_after != 0
+            or positions_after != 0
+            or _as_decimal(balance_after) != Decimal(0)
+        ):
+            self._unresolved_attempts.add(attempt.identity)
+            self._emit(
+                "GATE_B_CANCEL_ATTEMPT_RESULT",
+                {
+                    "cancel_attempt_id": attempt.identity,
+                    "cancel_result": "AMBIGUOUS",
+                    "canceled_count": int(summary["canceled_count"]),
+                    "not_canceled_count": int(summary["not_canceled_count"]),
+                },
+            )
             raise GatewayError("CANCEL_PROBE_AMBIGUOUS")
         self._state = "B4_CANCEL_TRANSPORT_VERIFIED"
         receipt = GateBVerificationReceipt(
@@ -704,10 +885,13 @@ class GateBSession:
             signing_probe_id=self._signing_probe_id,
             cancel_probe_attempt_id=attempt.identity,
             cancel_probe_result=result,
+            gate_b_reconciliation_state="HEALTHY",
             open_orders_before=open_before,
             open_orders_after=open_after,
             positions_before=positions_before,
+            positions_after=positions_after,
             collateral_balance_before=balance_before,
+            collateral_balance_after=balance_after,
             verified_time_ns=now_ns,
             valid_until_ns=valid_ns,
             redaction_pass=True,
@@ -715,9 +899,11 @@ class GateBSession:
         self._emit(
             "GATE_B_CANCEL_TRANSPORT_VERIFIED",
             {
-                "cancel_probe_attempt_id": attempt.identity,
-                "cancel_probe_result": result,
+                "cancel_attempt_id": attempt.identity,
+                "cancel_result": result,
                 "receipt_id": receipt.receipt_id,
+                "verified_time_ns": now_ns,
+                "gate_b_reconciliation_state": "HEALTHY",
             },
         )
         return receipt
@@ -736,12 +922,12 @@ class GateBSession:
         self.close()
 
 
-def _count_page(page: object) -> int:
+def _count_page(page: object, *, limit: int) -> int:
     items = page.iter_items() if hasattr(page, "iter_items") else page
     count = 0
     for _item in items:
         count += 1
-        if count > 10_000:
+        if count > limit:
             raise GatewayError("AUTHENTICATED_READ_FAILED")
     return count
 

@@ -11,6 +11,7 @@ Usage:
     --wallet 0xPUBLIC_DEPOSIT_WALLET \\
     --probe-token PUBLIC_TOKEN_ID \\
     --probe-price 0.10 --probe-size 5 \\
+    --gateway-store local_data/gate_b/gateway.sqlite3 \\
     --receipt local_data/gate_b/verification_receipt.json
 """
 
@@ -27,11 +28,12 @@ from .gate_b import (
     GateBIdentityPolicy,
     GateBSession,
     InteractiveGateBSecretProvider,
+    WalletSessionLock,
     _CANCEL_CONFIRMATION_PHRASE,
     _HEAD_RE,
     _stdin_is_tty,
 )
-from .gateway import GatewayError
+from .gateway import GatewayError, ProtectedExecutionGateway
 
 
 def _repository_head() -> str:
@@ -79,6 +81,7 @@ def _build_parser() -> argparse.ArgumentParser:
     verify.add_argument("--probe-price", default="0.10")
     verify.add_argument("--probe-size", default="5")
     verify.add_argument("--receipt", required=True)
+    verify.add_argument("--gateway-store", default="local_data/gate_b/gateway.sqlite3")
     verify.add_argument(
         "--valid-minutes", type=int, default=60, help="Receipt validity window."
     )
@@ -91,8 +94,21 @@ def run_verify(args: argparse.Namespace) -> int:
         expected_wallet=args.wallet.lower(),
     )
     provider = InteractiveGateBSecretProvider()
-    session = GateBSession.authenticate(provider, policy)
+    store_path = Path(args.gateway_store)
+    store_path.parent.mkdir(parents=True, exist_ok=True)
+    opened_ns = time.time_ns()
+    gateway = (
+        ProtectedExecutionGateway.open(store_path, opened_time_ns=opened_ns)
+        if store_path.exists()
+        else ProtectedExecutionGateway.create(store_path, created_time_ns=opened_ns)
+    )
+    lock = None
+    session = None
     try:
+        lock = WalletSessionLock(store_path.parent, policy.expected_wallet).acquire()
+        session = GateBSession.authenticate(
+            provider, policy, gateway=gateway, wallet_lock=lock
+        )
         now_ns = time.time_ns()
         valid_ns = now_ns + max(1, int(args.valid_minutes)) * 60 * 1_000_000_000
         signing_probe_id = session.signing_probe(
@@ -118,7 +134,11 @@ def run_verify(args: argparse.Namespace) -> int:
             json.dumps(document, indent=2, sort_keys=True), encoding="utf-8"
         )
     finally:
-        session.close()
+        if session is not None:
+            session.close()
+        if lock is not None and lock.active:
+            lock.close()
+        gateway.close()
     # Print only sanitized public fields.
     print("GATE_B_VERIFICATION: PASS")
     print("  capability_state: B4_CANCEL_TRANSPORT_VERIFIED")

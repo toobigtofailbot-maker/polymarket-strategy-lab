@@ -9,6 +9,8 @@ sanitized receipt, and secret redaction.
 
 from __future__ import annotations
 
+from pathlib import Path
+import time
 import pytest
 
 import src.execution_gateway.gate_b as gate_b_mod
@@ -20,9 +22,10 @@ from src.execution_gateway.gate_b import (
     GateCLivePermit,
     InteractiveGateBSecretProvider,
     ProductionSdkMutationAdapter,
+    WalletSessionLock,
     gate_b_capability_projection,
 )
-from src.execution_gateway.gateway import GatewayError
+from src.execution_gateway.gateway import GatewayError, ProtectedExecutionGateway
 
 SIGNER = "0x" + "a" * 40
 WALLET = "0x" + "b" * 40
@@ -83,6 +86,7 @@ class FakeClient:
         balance="0",
         open_orders=(),
         positions=(),
+        trades=(),
         cancel_response=None,
         cancel_raises=False,
     ):
@@ -94,19 +98,29 @@ class FakeClient:
         self._balance = balance
         self._open = list(open_orders)
         self._positions = list(positions)
+        self._trades = list(trades)
         self._cancel_response = cancel_response or _CancelResponse()
         self._cancel_raises = cancel_raises
         self.cancel_all_calls = 0
         self.place_calls = 0
+        self.read_calls = {"balance": 0, "open_orders": 0, "trades": 0, "positions": 0}
 
     def get_balance_allowance(self, *, asset_type):
         assert asset_type == "COLLATERAL"
+        self.read_calls["balance"] += 1
         return _Balance(self._balance)
 
     def list_open_orders(self, **_kw):
+        self.read_calls["open_orders"] += 1
         return _Page(self._open)
 
+    def list_account_trades(self, **_kw):
+        self.read_calls["trades"] += 1
+        return _Page(self._trades)
+
     def list_positions(self, **_kw):
+        assert _kw == {"user": WALLET, "page_size": 100}
+        self.read_calls["positions"] += 1
         return _Page(self._positions)
 
     def create_limit_order(self, *, token_id, price, size, side, post_only=False):
@@ -152,7 +166,27 @@ def _policy(**kw):
 
 
 def _session(client):
-    return GateBSession.authenticate(_provider(), _policy(), client_factory=_factory(client))
+    return GateBSession.authenticate(
+        _provider(), _policy(), client_factory=_factory(client)
+    )
+
+
+def _durable_session(tmp_path: Path, client: FakeClient):
+    store_path = tmp_path / "gateway.sqlite3"
+    gateway = (
+        ProtectedExecutionGateway.open(store_path, opened_time_ns=time.time_ns())
+        if store_path.exists()
+        else ProtectedExecutionGateway.create(store_path, created_time_ns=1)
+    )
+    lock = WalletSessionLock(tmp_path, WALLET).acquire()
+    session = GateBSession.authenticate(
+        _provider(),
+        _policy(),
+        client_factory=_factory(client),
+        gateway=gateway,
+        wallet_lock=lock,
+    )
+    return store_path, gateway, lock, session
 
 
 # --------------------------------------------------------------------------- secret boundary
@@ -263,7 +297,12 @@ def test_authenticated_session_reaches_b2():
 def test_bounded_account_snapshot():
     session = _session(FakeClient(balance="0", open_orders=(), positions=()))
     snap = session.account_snapshot()
-    assert snap == {"collateral_balance": "0", "open_orders": 0, "positions": 0}
+    assert snap == {
+        "collateral_balance": "0",
+        "open_orders": 0,
+        "account_trades": 0,
+        "positions": 0,
+    }
 
 
 # --------------------------------------------------------------------------- signing probe
@@ -296,7 +335,10 @@ def test_gate_c_permit_is_unconstructable():
         GateCLivePermit()
 
 
-@pytest.mark.parametrize("method", ["create_limit_order", "place_limit_order", "post_order", "place_market_order"])
+@pytest.mark.parametrize(
+    "method",
+    ["create_limit_order", "place_limit_order", "post_order", "place_market_order"],
+)
 def test_create_transport_is_gate_c_locked(method):
     adapter = ProductionSdkMutationAdapter(FakeClient())
     with pytest.raises(GatewayError, match="GATE_C_REQUIRED"):
@@ -334,7 +376,9 @@ def test_cancel_exception_is_ambiguous_and_redacted():
 # --------------------------------------------------------------------------- empty-wallet probe
 
 
-def _probe(session, confirmation="CONFIRM-EMPTY-WALLET-CANCEL", repository_head="deadbee"):
+def _probe(
+    session, confirmation="CONFIRM-EMPTY-WALLET-CANCEL", repository_head="deadbee"
+):
     # B3 (verified signing) is a precondition for any cancel transmission.
     if session.capability_state == "B2_AUTHENTICATED":
         session.signing_probe(token_id=TOKEN, price="0.10", size="5")
@@ -359,7 +403,14 @@ def test_empty_wallet_probe_pass_produces_sanitized_receipt():
     assert SECRET_SENTINEL not in blob
     assert _SignedOrder.signature not in blob
     lowered = blob.lower()
-    for banned in ("private_key", "apikey", "api_key", "passphrase", "\"secret\"", "signature_bytes"):
+    for banned in (
+        "private_key",
+        "apikey",
+        "api_key",
+        "passphrase",
+        '"secret"',
+        "signature_bytes",
+    ):
         assert banned not in lowered
 
 
@@ -422,7 +473,15 @@ def test_close_returns_capability_to_b0():
 
 def test_no_public_raw_client_or_credentials_attribute():
     session = _session(FakeClient())
-    for banned in ("client", "secure_client", "credentials", "private_key", "api_key", "secret", "passphrase"):
+    for banned in (
+        "client",
+        "secure_client",
+        "credentials",
+        "private_key",
+        "api_key",
+        "secret",
+        "passphrase",
+    ):
         assert not hasattr(session, banned)
 
 
@@ -467,7 +526,15 @@ def test_real_key_local_limit_signing_without_post():
 
 def test_raw_client_containment_and_forbidden_wallet_surfaces_unreachable():
     session = _session(FakeClient())
-    for banned in ("client", "secure_client", "credentials", "private_key", "api_key", "secret", "passphrase"):
+    for banned in (
+        "client",
+        "secure_client",
+        "credentials",
+        "private_key",
+        "api_key",
+        "secret",
+        "passphrase",
+    ):
         assert not hasattr(session, banned)
     with pytest.raises(GatewayError, match="GATE_C_REQUIRED"):
         GateCLivePermit()
@@ -475,7 +542,12 @@ def test_raw_client_containment_and_forbidden_wallet_surfaces_unreachable():
 
 def test_create_transport_is_gate_c_unreachable():
     adapter = ProductionSdkMutationAdapter(FakeClient())
-    for method in ("create_limit_order", "place_limit_order", "post_order", "place_market_order"):
+    for method in (
+        "create_limit_order",
+        "place_limit_order",
+        "post_order",
+        "place_market_order",
+    ):
         with pytest.raises(GatewayError, match="GATE_C_REQUIRED"):
             getattr(adapter, method)(token_id=TOKEN, price="0.1", size="5", side="BUY")
 
@@ -506,7 +578,10 @@ def test_empty_account_cancel_probe_and_sanitized_receipt():
 def test_restart_returns_capability_to_b0_and_audit_persists():
     events = []
     session = GateBSession.authenticate(
-        _provider(), _policy(), client_factory=_factory(FakeClient()), audit_sink=events.append
+        _provider(),
+        _policy(),
+        client_factory=_factory(FakeClient()),
+        audit_sink=events.append,
     )
     session.signing_probe(token_id=TOKEN, price="0.10", size="5")
     _probe(session)
@@ -537,7 +612,10 @@ def test_signing_verification_required_before_cancel_probe():
     assert session.capability_state == "B2_AUTHENTICATED"
     with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
         session.empty_wallet_cancel_probe(
-            "CONFIRM-EMPTY-WALLET-CANCEL", repository_head="deadbee", now_ns=1, valid_ns=2
+            "CONFIRM-EMPTY-WALLET-CANCEL",
+            repository_head="deadbee",
+            now_ns=1,
+            valid_ns=2,
         )
 
 
@@ -555,7 +633,9 @@ def test_receipt_is_content_addressed_over_signing_probe_id():
     # Changing the bound signing_probe_id changes the content address.
     import dataclasses
 
-    mutated = dataclasses.replace(receipt, signing_probe_id="signingprobe:sha256:" + "0" * 64)
+    mutated = dataclasses.replace(
+        receipt, signing_probe_id="signingprobe:sha256:" + "0" * 64
+    )
     assert mutated.receipt_id != receipt.receipt_id
 
 
@@ -570,7 +650,9 @@ def test_close_best_effort_closes_credential_client():
 def test_identity_failure_closes_client():
     client = _ClosableClient(signer="0x" + "c" * 40)
     with pytest.raises(GatewayError, match="SIGNER_MISMATCH"):
-        GateBSession.authenticate(_provider(), _policy(), client_factory=_factory(client))
+        GateBSession.authenticate(
+            _provider(), _policy(), client_factory=_factory(client)
+        )
     assert client.closed is True
 
 
@@ -611,6 +693,192 @@ def test_operator_confirmation_requires_tty(monkeypatch):
     monkeypatch.setattr(gate_b_operator, "_stdin_is_tty", lambda: False)
     with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
         gate_b_operator._confirm_empty_wallet_cancel()
+
+
+def test_real_gateway_store_persists_gate_b_evidence_across_restart(tmp_path: Path):
+    store_path, gateway, lock, session = _durable_session(tmp_path, FakeClient())
+    session.signing_probe(token_id=TOKEN, price="0.10", size="5")
+    receipt = _probe(session)
+    session.close()
+    lock.close()
+    gateway.close()
+
+    reopened = ProtectedExecutionGateway.open(store_path, opened_time_ns=time.time_ns())
+    assert reopened.state.authority_state == "A0_DISABLED"
+    kinds = [event.event_type for event in reopened.gate_b_events()]
+    assert kinds == [
+        "GATE_B_AUTHENTICATED",
+        "GATE_B_SIGNING_VERIFIED",
+        "GATE_B_RECONCILED",
+        "GATE_B_CANCEL_ATTEMPT_STARTED",
+        "GATE_B_CANCEL_ATTEMPT_RESULT",
+        "GATE_B_CANCEL_TRANSPORT_VERIFIED",
+    ]
+    assert receipt.receipt_id in repr(
+        [dict(event.data) for event in reopened.gate_b_events()]
+    )
+    reopened.close()
+
+
+@pytest.mark.parametrize("forbidden", ["secret", "signed_payload", "raw_response"])
+def test_persistent_gate_b_journal_redaction_rejects_forbidden_fields(
+    tmp_path: Path, forbidden: str
+):
+    path = tmp_path / "gateway.sqlite3"
+    with ProtectedExecutionGateway.create(path, created_time_ns=1) as gateway:
+        data = {
+            "capability_state": "B2_AUTHENTICATED",
+            "public_signer": SIGNER,
+            "public_wallet": WALLET,
+            "wallet_type": "DEPOSIT_WALLET",
+            "signature_type": "3",
+            forbidden: "forbidden-value",
+        }
+        with pytest.raises(GatewayError, match="INVALID_AUDIT_DATA"):
+            gateway.record_gate_b_event("GATE_B_AUTHENTICATED", data)
+        assert gateway.gate_b_events() == ()
+
+
+def test_cancel_attempt_is_committed_before_transport(tmp_path: Path):
+    holder = {}
+
+    class InspectingClient(FakeClient):
+        def cancel_all(self):
+            events = holder["gateway"].gate_b_events()
+            assert events[-1].event_type == "GATE_B_CANCEL_ATTEMPT_STARTED"
+            return super().cancel_all()
+
+    _store, gateway, lock, session = _durable_session(tmp_path, InspectingClient())
+    holder["gateway"] = gateway
+    _probe(session)
+    session.close()
+    lock.close()
+    gateway.close()
+
+
+def test_restart_never_resends_started_without_result(tmp_path: Path):
+    store_path, gateway, lock, session = _durable_session(tmp_path, FakeClient())
+    attempt = CancelAttempt("CANCEL_ALL", "ALL", 1, "HEALTHY")
+    session._emit(
+        "GATE_B_CANCEL_ATTEMPT_STARTED",
+        {
+            "cancel_attempt_id": attempt.identity,
+            "operation": attempt.operation,
+            "target": attempt.target,
+            "attempt_sequence": attempt.attempt_sequence,
+            "prior_reconciliation_state": attempt.prior_reconciliation_state,
+        },
+    )
+    session.close()
+    lock.close()
+    gateway.close()
+
+    client = FakeClient()
+    _store, reopened, second_lock, restarted = _durable_session(tmp_path, client)
+    restarted.signing_probe(token_id=TOKEN, price="0.10", size="5")
+    with pytest.raises(GatewayError, match="RECONCILIATION_REQUIRED"):
+        _probe(restarted)
+    assert client.cancel_all_calls == 0
+    restarted.close()
+    second_lock.close()
+    reopened.close()
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        object(),
+        type("MissingNotCanceled", (), {"canceled": []})(),
+        type("Bad", (), {"canceled": 1, "not_canceled": []})(),
+    ],
+)
+def test_malformed_cancel_response_is_ambiguous_not_accepted(tmp_path: Path, response):
+    client = FakeClient(cancel_response=response)
+    _store, gateway, lock, session = _durable_session(tmp_path, client)
+    with pytest.raises(GatewayError, match="CANCEL_PROBE_AMBIGUOUS"):
+        _probe(session)
+    results = [
+        dict(event.data)["cancel_result"]
+        for event in gateway.gate_b_events()
+        if event.event_type == "GATE_B_CANCEL_ATTEMPT_RESULT"
+    ]
+    assert results == ["AMBIGUOUS"]
+    session.close()
+    lock.close()
+    gateway.close()
+
+
+def test_ambiguous_attempt_survives_restart_and_blocks_retry(tmp_path: Path):
+    store_path, gateway, lock, session = _durable_session(
+        tmp_path, FakeClient(cancel_raises=True)
+    )
+    with pytest.raises(GatewayError, match="CANCEL_PROBE_AMBIGUOUS"):
+        _probe(session)
+    session.close()
+    lock.close()
+    gateway.close()
+
+    client = FakeClient()
+    _store, reopened, second_lock, restarted = _durable_session(tmp_path, client)
+    restarted.signing_probe(token_id=TOKEN, price="0.10", size="5")
+    with pytest.raises(GatewayError, match="RECONCILIATION_REQUIRED"):
+        _probe(restarted)
+    assert client.cancel_all_calls == 0
+    restarted.close()
+    second_lock.close()
+    reopened.close()
+
+
+def test_wallet_session_lock_is_exclusive_and_released(tmp_path: Path):
+    first = WalletSessionLock(tmp_path, WALLET).acquire()
+    with pytest.raises(GatewayError, match="GATE_B_OWNERSHIP_LOCKED"):
+        WalletSessionLock(tmp_path, WALLET).acquire()
+    assert SECRET_SENTINEL not in first.path.read_text(encoding="ascii")
+    first.close()
+    WalletSessionLock(tmp_path, WALLET).acquire().close()
+
+
+def test_all_authenticated_reads_are_exercised_and_bounded():
+    client = FakeClient(trades=("t1",))
+    snapshot = _session(client).account_snapshot()
+    assert snapshot["account_trades"] == 1
+    assert client.read_calls == {
+        "balance": 1,
+        "open_orders": 1,
+        "trades": 1,
+        "positions": 1,
+    }
+    with pytest.raises(GatewayError, match="AUTHENTICATED_READ_FAILED"):
+        _session(FakeClient(trades=range(101))).account_snapshot()
+
+
+def test_receipt_binds_all_before_and_after_account_fields():
+    receipt = _probe(_session(FakeClient()))
+    document = receipt.as_receipt_document()
+    for field in (
+        "open_orders_before",
+        "open_orders_after",
+        "positions_before",
+        "positions_after",
+        "collateral_balance_before",
+        "collateral_balance_after",
+        "gate_b_reconciliation_state",
+    ):
+        assert field in document
+    assert (
+        gate_b_mod._sha("gatebreceipt:sha256:", receipt.to_public_mapping())
+        == receipt.receipt_id
+    )
+
+
+def test_nonzero_after_state_prevents_pass():
+    class ChangedBalanceClient(FakeClient):
+        def get_balance_allowance(self, *, asset_type):
+            self.read_calls["balance"] += 1
+            return _Balance("0" if self.read_calls["balance"] == 1 else "1")
+
+    with pytest.raises(GatewayError, match="CANCEL_PROBE_AMBIGUOUS"):
+        _probe(_session(ChangedBalanceClient()))
 
 
 # --- WP174B installed-SDK deployment-contract regression (real 0.10.0 import path) ---
@@ -668,7 +936,9 @@ def test_installed_sdk_deployment_contract_imports_resolve():
     assert callable(fetch_deployed_sync)
 
 
-def test_deposit_wallet_deployment_lookup_uses_wallet_type_and_returns_client(monkeypatch):
+def test_deposit_wallet_deployment_lookup_uses_wallet_type_and_returns_client(
+    monkeypatch,
+):
     from polymarket._internal.actions.relayer.deployed import RelayerTransactionType
 
     holder, calls, _dep = _patch_sdk_path(monkeypatch, deployed=True)

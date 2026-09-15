@@ -37,6 +37,7 @@ from src.paper_trading.models import (
 )
 from src.paper_trading.store import JournalEvent, PaperStore
 from src.execution_gateway.store import GatewayStoreError, read_gateway_projection
+from src.execution_gateway.gateway import GatewayError, read_gate_b_evidence
 
 
 MARKET_APPLICATION_ID = 1_347_242_297
@@ -274,9 +275,14 @@ def _open_paper(path: Path | None) -> sqlite3.Connection:
                 raise CockpitError("SOURCE_UNAVAILABLE")
             journal_events.append(
                 JournalEvent(
-                    row["sequence"], row["event_id"], row["event_type"],
-                    row["event_time_ns"], payload["data"], payload["state_after"],
-                    row["previous_event_hash"], row["event_hash"],
+                    row["sequence"],
+                    row["event_id"],
+                    row["event_type"],
+                    row["event_time_ns"],
+                    payload["data"],
+                    payload["state_after"],
+                    row["previous_event_hash"],
+                    row["event_hash"],
                 )
             )
             last_state = json.dumps(
@@ -752,7 +758,9 @@ def _readable(reader: Any, path: Path | None) -> bool:
         return False
 
 
-def _gateway_projection(path: Path | None, limit: int = DEFAULT_LIMIT) -> dict[str, Any]:
+def _gateway_projection(
+    path: Path | None, limit: int = DEFAULT_LIMIT
+) -> dict[str, Any]:
     if path is None:
         raise CockpitError("SOURCE_UNAVAILABLE")
     try:
@@ -763,6 +771,10 @@ def _gateway_projection(path: Path | None, limit: int = DEFAULT_LIMIT) -> dict[s
 
 def _gateway_status(path: Path | None) -> dict[str, Any]:
     state = _gateway_projection(path, 1)["state"]
+    try:
+        gate_b_evidence = read_gate_b_evidence(path) if path is not None else {}
+    except (GatewayError, GatewayStoreError):
+        raise CockpitError("SOURCE_UNAVAILABLE") from None
     return {
         "read_only": True,
         "authority_state": state["authority_state"],
@@ -790,10 +802,23 @@ def _gateway_status(path: Path | None) -> dict[str, Any]:
             "gate_b_capability_available": True,
             "gate_b_state": "B0_LOCKED",
             "credential_session_active": False,
-            "wallet_type": "DEPOSIT_WALLET",
-            "signature_type": "3",
+            "public_signer": gate_b_evidence.get("public_signer"),
+            "public_wallet": gate_b_evidence.get("public_wallet"),
+            "wallet_type": gate_b_evidence.get("wallet_type", "DEPOSIT_WALLET"),
+            "signature_type": gate_b_evidence.get("signature_type", "3"),
+            "last_verification_receipt_id": gate_b_evidence.get(
+                "last_verification_receipt_id"
+            ),
+            "last_verification_time_ns": gate_b_evidence.get(
+                "last_verification_time_ns"
+            ),
+            "gate_b_reconciliation_state": gate_b_evidence.get(
+                "gate_b_reconciliation_state", "REQUIRED"
+            ),
             "create_transport_status": "GATE_C_REQUIRED",
-            "cancel_capability_status": "AVAILABLE",
+            "cancel_capability_status": gate_b_evidence.get(
+                "cancel_capability_status", "AVAILABLE"
+            ),
         },
     }
 

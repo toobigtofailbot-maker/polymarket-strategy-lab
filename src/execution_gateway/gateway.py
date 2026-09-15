@@ -12,6 +12,7 @@ from decimal import Decimal, InvalidOperation
 import hashlib
 import json
 import re
+import time
 from pathlib import Path
 import sqlite3
 from itertools import islice
@@ -47,7 +48,13 @@ ACCESS_STATES = (
     "UNKNOWN",
 )
 RECONCILIATION_STATES = ("HEALTHY", "REQUIRED", "BLOCKED", "DIVERGED")
-HEARTBEAT_STATES = ("DISABLED", "HEALTHY", "MISSED", "UNSAFE", "RECONCILIATION_REQUIRED")
+HEARTBEAT_STATES = (
+    "DISABLED",
+    "HEALTHY",
+    "MISSED",
+    "UNSAFE",
+    "RECONCILIATION_REQUIRED",
+)
 USER_STREAM_STATES = ("DISCONNECTED", "CONNECTED", "GAP_DETECTED")
 MUTATION_OUTCOMES = (
     "DEFINITIVE_ACCEPTED",
@@ -56,7 +63,21 @@ MUTATION_OUTCOMES = (
     "RECONCILIATION_REQUIRED",
 )
 TIME_IN_FORCE = ("GTC", "GTD")
-MUTATION_OPERATIONS = ("CREATE", "CANCEL_ONE", "CANCEL_MANY", "CANCEL_MARKET", "CANCEL_ALL")
+MUTATION_OPERATIONS = (
+    "CREATE",
+    "CANCEL_ONE",
+    "CANCEL_MANY",
+    "CANCEL_MARKET",
+    "CANCEL_ALL",
+)
+GATE_B_AUDIT_EVENTS = (
+    "GATE_B_AUTHENTICATED",
+    "GATE_B_SIGNING_VERIFIED",
+    "GATE_B_RECONCILED",
+    "GATE_B_CANCEL_ATTEMPT_STARTED",
+    "GATE_B_CANCEL_ATTEMPT_RESULT",
+    "GATE_B_CANCEL_TRANSPORT_VERIFIED",
+)
 MAX_ACCOUNT_SNAPSHOT_AGE_NS = 60_000_000_000
 _LABEL_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$")
 _ADDRESS_RE = re.compile(r"^0x[0-9a-f]{40}$")
@@ -140,7 +161,13 @@ class CredentialReference:
             or type(self.configured) is not bool
             or any(
                 term in tail
-                for term in ("private", "pass" + "phrase", "mne" + "monic", "api-key", "seed")
+                for term in (
+                    "private",
+                    "pass" + "phrase",
+                    "mne" + "monic",
+                    "api-key",
+                    "seed",
+                )
             )
         ):
             raise GatewayError("CREDENTIAL_REFERENCE_INVALID")
@@ -239,7 +266,9 @@ class FixtureVenueContextAdapter:
         identity.validate()
         self._value = (constraints, identity)
 
-    def query_venue_context(self, *_args: object) -> tuple[VenueConstraints, VenueIdentity]:
+    def query_venue_context(
+        self, *_args: object
+    ) -> tuple[VenueConstraints, VenueIdentity]:
         return self._value
 
 
@@ -307,7 +336,10 @@ class VenueTradeSnapshot:
     def validate(self) -> None:
         _label(self.trade_id)
         _label(self.venue_order_id)
-        if _ID_RE.fullmatch(self.order_identity) is None or _decimal(self.quantity) <= 0:
+        if (
+            _ID_RE.fullmatch(self.order_identity) is None
+            or _decimal(self.quantity) <= 0
+        ):
             raise GatewayError("ACCOUNT_SNAPSHOT_INVALID")
 
 
@@ -336,11 +368,15 @@ class AccountSnapshot:
             raise GatewayError("ACCOUNT_SNAPSHOT_INVALID")
         for item in self.open_orders:
             item.validate()
-        if len({item.venue_order_id for item in self.open_orders}) != len(self.open_orders):
+        if len({item.venue_order_id for item in self.open_orders}) != len(
+            self.open_orders
+        ):
             raise GatewayError("ACCOUNT_SNAPSHOT_INVALID")
         for item in self.recent_trades:
             item.validate()
-        if len({item.trade_id for item in self.recent_trades}) != len(self.recent_trades):
+        if len({item.trade_id for item in self.recent_trades}) != len(
+            self.recent_trades
+        ):
             raise GatewayError("ACCOUNT_SNAPSHOT_INVALID")
         for value in (self.balances_hash, self.positions_hash):
             if _ID_RE.fullmatch(value) is None:
@@ -374,7 +410,11 @@ class UserStreamEvent:
     venue_order_id: str
 
     def validate(self) -> None:
-        if not isinstance(self.sequence, int) or isinstance(self.sequence, bool) or self.sequence < 1:
+        if (
+            not isinstance(self.sequence, int)
+            or isinstance(self.sequence, bool)
+            or self.sequence < 1
+        ):
             raise GatewayError("USER_STREAM_EVENT_INVALID")
         if _ID_RE.fullmatch(self.event_id) is None:
             raise GatewayError("USER_STREAM_EVENT_INVALID")
@@ -412,7 +452,11 @@ class FixtureAuthenticatedReadAdapter:
     def query_order(self, venue_order_id: str) -> VenueOrderSnapshot | None:
         _label(venue_order_id)
         return next(
-            (item for item in self._order_history if item.venue_order_id == venue_order_id),
+            (
+                item
+                for item in self._order_history
+                if item.venue_order_id == venue_order_id
+            ),
             None,
         )
 
@@ -430,9 +474,15 @@ class FixtureAuthenticatedReadAdapter:
         return self._heartbeat_ack
 
     def read_user_events(self, after_sequence: int) -> tuple[UserStreamEvent, ...]:
-        if not isinstance(after_sequence, int) or isinstance(after_sequence, bool) or after_sequence < 0:
+        if (
+            not isinstance(after_sequence, int)
+            or isinstance(after_sequence, bool)
+            or after_sequence < 0
+        ):
             raise GatewayError("USER_STREAM_EVENT_INVALID")
-        return tuple(event for event in self._user_events if event.sequence > after_sequence)
+        return tuple(
+            event for event in self._user_events if event.sequence > after_sequence
+        )
 
 
 class OfficialSdkAuthenticatedReadAdapter:
@@ -486,7 +536,9 @@ class OfficialSdkAuthenticatedReadAdapter:
         closed_only = self._client.get_closed_only_mode()
         if type(closed_only) is not bool:
             raise GatewayError("AUTHENTICATED_READ_FAILED")
-        return ("CLOSE_ONLY", "CLOSE_ONLY") if closed_only else ("UNKNOWN", "RESTARTING")
+        return (
+            ("CLOSE_ONLY", "CLOSE_ONLY") if closed_only else ("UNKNOWN", "RESTARTING")
+        )
 
     def query_venue_context(
         self, intent: PaperIntent, signing_time_ns: int
@@ -504,10 +556,18 @@ class OfficialSdkAuthenticatedReadAdapter:
             verifying_contract = (
                 config.neg_risk_exchange if book.neg_risk else config.standard_exchange
             ).lower()
-            limit_parameters = signature(type(self._client).create_limit_order).parameters
-            place_parameters = signature(type(self._client).place_limit_order).parameters
-            post_only = "post_only" in limit_parameters and "post_only" in place_parameters
-            expiration = "expiration" in limit_parameters and "expiration" in place_parameters
+            limit_parameters = signature(
+                type(self._client).create_limit_order
+            ).parameters
+            place_parameters = signature(
+                type(self._client).place_limit_order
+            ).parameters
+            post_only = (
+                "post_only" in limit_parameters and "post_only" in place_parameters
+            )
+            expiration = (
+                "expiration" in limit_parameters and "expiration" in place_parameters
+            )
             access_state, _venue_mode = self._read_access_state()
             constraints = VenueConstraints(
                 str(book.condition_id),
@@ -575,7 +635,9 @@ class OfficialSdkAuthenticatedReadAdapter:
                     101,
                 )
             )
-            if any(len(items) > 100 for items in (orders_raw, trades_raw, positions_raw)):
+            if any(
+                len(items) > 100 for items in (orders_raw, trades_raw, positions_raw)
+            ):
                 raise GatewayError("AUTHENTICATED_READ_LIMIT_EXCEEDED")
             balances_raw = self._client.get_balance_allowance(asset_type="COLLATERAL")
             access_state, venue_mode = self._read_access_state()
@@ -607,7 +669,8 @@ class OfficialSdkAuthenticatedReadAdapter:
                 VenueOrderSnapshot(
                     item.id,
                     self._identities.get(
-                        item.id, _sha("foreignorder:sha256:", {"venue_order_id": item.id})
+                        item.id,
+                        _sha("foreignorder:sha256:", {"venue_order_id": item.id}),
                     ),
                     "PARTIALLY_FILLED" if item.size_matched > 0 else "OPEN",
                     _canonical_decimal(item.size_matched),
@@ -617,7 +680,9 @@ class OfficialSdkAuthenticatedReadAdapter:
             normalized_trades: list[VenueTradeSnapshot] = []
             for item in trades_raw:
                 maker_matches = tuple(
-                    maker for maker in item.maker_orders if maker.order_id in self._identities
+                    maker
+                    for maker in item.maker_orders
+                    if maker.order_id in self._identities
                 )
                 if maker_matches:
                     normalized_trades.extend(
@@ -653,9 +718,12 @@ class OfficialSdkAuthenticatedReadAdapter:
                 "venue_mode": venue_mode,
                 "open_orders": [asdict(item) for item in orders],
                 "recent_trades": [asdict(item) for item in trades],
-                "balances_hash": _sha("balances:sha256:", balances_raw.model_dump(mode="json")),
+                "balances_hash": _sha(
+                    "balances:sha256:", balances_raw.model_dump(mode="json")
+                ),
                 "positions_hash": _sha(
-                    "positions:sha256:", [item.model_dump(mode="json") for item in positions_raw]
+                    "positions:sha256:",
+                    [item.model_dump(mode="json") for item in positions_raw],
                 ),
                 "fixture_only": False,
             }
@@ -763,9 +831,22 @@ def read_wp173_authorization_evidence(
         final_state: Mapping[str, object] | None = None
         replay_events: list[PaperJournalEvent] = []
         for expected_sequence, row in enumerate(rows, 1):
-            sequence, event_id, event_type, event_time_ns, payload_json, prior, digest = row
-            if sequence != expected_sequence or prior != previous or digest != PaperStore._event_hash(
-                sequence, event_id, event_type, event_time_ns, payload_json, prior
+            (
+                sequence,
+                event_id,
+                event_type,
+                event_time_ns,
+                payload_json,
+                prior,
+                digest,
+            ) = row
+            if (
+                sequence != expected_sequence
+                or prior != previous
+                or digest
+                != PaperStore._event_hash(
+                    sequence, event_id, event_type, event_time_ns, payload_json, prior
+                )
             ):
                 raise GatewayError("WP173_BINDING_INVALID")
             payload = json.loads(payload_json)
@@ -798,7 +879,10 @@ def read_wp173_authorization_evidence(
             )
             if event_type == "ORDER_PENDING_RISK":
                 candidate = data.get("intent")
-                if isinstance(candidate, dict) and candidate.get("intent_id") == intent_id:
+                if (
+                    isinstance(candidate, dict)
+                    and candidate.get("intent_id") == intent_id
+                ):
                     intent_value = candidate
             if event_type == "RISK_DECIDED" and data.get("intent_id") == intent_id:
                 risk_value = data
@@ -813,7 +897,8 @@ def read_wp173_authorization_evidence(
             or checkpoint is None
             or checkpoint[0] != len(rows)
             or checkpoint[1] != previous
-            or hashlib.sha256(checkpoint[2].encode("utf-8")).hexdigest() != checkpoint[3]
+            or hashlib.sha256(checkpoint[2].encode("utf-8")).hexdigest()
+            != checkpoint[3]
             or final_state is None
             or canonical_json(final_state) != checkpoint[2]
             or intent_value is None
@@ -824,7 +909,9 @@ def read_wp173_authorization_evidence(
         if state_to_mapping(replayed) != final_state:
             raise GatewayError("WP173_BINDING_INVALID")
         binding_value = final_state.get("binding")
-        if not isinstance(binding_value, dict) or final_state.get("control_state") not in (
+        if not isinstance(binding_value, dict) or final_state.get(
+            "control_state"
+        ) not in (
             "RUNNING",
             "PAUSED",
         ):
@@ -1068,7 +1155,11 @@ def _validate_mutation_attempt(
     owner_by_venue_id: Mapping[str, str],
 ) -> None:
     order = next(
-        (candidate for candidate in prepared_orders if candidate.order_identity == item.order_identity),
+        (
+            candidate
+            for candidate in prepared_orders
+            if candidate.order_identity == item.order_identity
+        ),
         None,
     )
     if (
@@ -1087,7 +1178,11 @@ def _validate_mutation_attempt(
         raise GatewayError("STATE_INVALID")
     request: Mapping[str, object]
     if item.operation == "CREATE":
-        if item.request_target_ids or item.request_target_bindings or item.request_market_id is not None:
+        if (
+            item.request_target_ids
+            or item.request_target_bindings
+            or item.request_market_id is not None
+        ):
             raise GatewayError("STATE_INVALID")
         request = dict(order.would_submit)
     else:
@@ -1100,9 +1195,9 @@ def _validate_mutation_attempt(
                 if target in owner_by_venue_id
             )
         )
-        if item.request_target_bindings != expected_bindings or len(expected_bindings) != len(
-            item.request_target_ids
-        ):
+        if item.request_target_bindings != expected_bindings or len(
+            expected_bindings
+        ) != len(item.request_target_ids):
             raise GatewayError("STATE_INVALID")
         request = {"venue_order_ids": list(item.request_target_ids)}
         if item.operation == "CANCEL_MARKET":
@@ -1120,7 +1215,10 @@ def _validate_mutation_attempt(
             raise GatewayError("STATE_INVALID")
         if item.operation == "CANCEL_ONE" and len(item.request_target_ids) != 1:
             raise GatewayError("STATE_INVALID")
-        if item.venue_order_id is not None and item.venue_order_id not in item.request_target_ids:
+        if (
+            item.venue_order_id is not None
+            and item.venue_order_id not in item.request_target_ids
+        ):
             raise GatewayError("STATE_INVALID")
     expected_request_digest = _sha(
         "mutationrequest:sha256:",
@@ -1141,10 +1239,14 @@ def _validate_mutation_attempt(
         and item.venue_order_id is None
     ):
         raise GatewayError("STATE_INVALID")
-    if item.outcome == "DEFINITIVE_REJECTED" and item.transmitted and (
-        item.response_status is None
-        or not 400 <= item.response_status < 500
-        or item.response_status in (425, 429)
+    if (
+        item.outcome == "DEFINITIVE_REJECTED"
+        and item.transmitted
+        and (
+            item.response_status is None
+            or not 400 <= item.response_status < 500
+            or item.response_status in (425, 429)
+        )
     ):
         raise GatewayError("STATE_INVALID")
     expected = _sha(
@@ -1215,14 +1317,17 @@ class GatewayState:
                 last_user_stream_sequence=value["last_user_stream_sequence"],
                 access_state=value["access_state"],
                 rate_limit_until_ns=value["rate_limit_until_ns"],
-                prepared_orders=tuple(PreparedLimitOrder(**item) for item in value["prepared_orders"]),
+                prepared_orders=tuple(
+                    PreparedLimitOrder(**item) for item in value["prepared_orders"]
+                ),
                 mutation_attempts=tuple(
                     MutationAttempt(
                         **{
                             **item,
                             "request_target_ids": tuple(item["request_target_ids"]),
                             "request_target_bindings": tuple(
-                                tuple(binding) for binding in item["request_target_bindings"]
+                                tuple(binding)
+                                for binding in item["request_target_bindings"]
                             ),
                         }
                     )
@@ -1256,9 +1361,13 @@ class GatewayState:
         for address in (self.public_signer, self.public_funder):
             if address is not None and _ADDRESS_RE.fullmatch(address) is None:
                 raise GatewayError("STATE_INVALID")
-        if len({item.order_identity for item in self.prepared_orders}) != len(self.prepared_orders):
+        if len({item.order_identity for item in self.prepared_orders}) != len(
+            self.prepared_orders
+        ):
             raise GatewayError("STATE_INVALID")
-        if len({item.attempt_id for item in self.mutation_attempts}) != len(self.mutation_attempts):
+        if len({item.attempt_id for item in self.mutation_attempts}) != len(
+            self.mutation_attempts
+        ):
             raise GatewayError("STATE_INVALID")
         for value in (
             self.last_account_snapshot_id,
@@ -1292,11 +1401,117 @@ class GatewayState:
             raise GatewayError("STATE_INVALID")
 
 
+def _validate_gate_b_audit_data(event_type: str, data: Mapping[str, object]) -> bool:
+    """Validate sanitized Gate-B evidence that is authority-neutral on replay."""
+    common = {
+        "capability_state",
+        "public_signer",
+        "public_wallet",
+        "wallet_type",
+        "signature_type",
+    }
+    expected = {
+        "GATE_B_AUTHENTICATED": common,
+        "GATE_B_SIGNING_VERIFIED": common | {"signing_probe_id"},
+        "GATE_B_RECONCILED": common
+        | {
+            "gate_b_reconciliation_state",
+            "collateral_balance",
+            "open_orders",
+            "account_trades",
+            "positions",
+        },
+        "GATE_B_CANCEL_ATTEMPT_STARTED": common
+        | {
+            "cancel_attempt_id",
+            "operation",
+            "target",
+            "attempt_sequence",
+            "prior_reconciliation_state",
+        },
+        "GATE_B_CANCEL_ATTEMPT_RESULT": common
+        | {
+            "cancel_attempt_id",
+            "cancel_result",
+            "canceled_count",
+            "not_canceled_count",
+        },
+        "GATE_B_CANCEL_TRANSPORT_VERIFIED": common
+        | {
+            "cancel_attempt_id",
+            "cancel_result",
+            "receipt_id",
+            "verified_time_ns",
+            "gate_b_reconciliation_state",
+        },
+    }.get(event_type)
+    if expected is None or set(data) != expected:
+        return False
+    if (
+        data["capability_state"]
+        not in (
+            "B0_LOCKED",
+            "B1_SECRET_BOUND",
+            "B2_AUTHENTICATED",
+            "B3_SIGNING_VERIFIED",
+            "B4_CANCEL_TRANSPORT_VERIFIED",
+        )
+        or not isinstance(data["public_signer"], str)
+        or _ADDRESS_RE.fullmatch(data["public_signer"]) is None
+        or not isinstance(data["public_wallet"], str)
+        or _ADDRESS_RE.fullmatch(data["public_wallet"]) is None
+        or data["wallet_type"] != "DEPOSIT_WALLET"
+        or data["signature_type"] != "3"
+    ):
+        return False
+    for key in ("signing_probe_id", "cancel_attempt_id", "receipt_id"):
+        if key in data and (
+            not isinstance(data[key], str) or _ID_RE.fullmatch(data[key]) is None
+        ):
+            return False
+    if event_type == "GATE_B_RECONCILED":
+        return (
+            data["gate_b_reconciliation_state"] == "HEALTHY"
+            and isinstance(data["collateral_balance"], str)
+            and all(
+                type(data[key]) is int and data[key] >= 0
+                for key in ("open_orders", "account_trades", "positions")
+            )
+        )
+    if event_type == "GATE_B_CANCEL_ATTEMPT_STARTED":
+        return (
+            data["operation"] in MUTATION_OPERATIONS[1:]
+            and isinstance(data["target"], str)
+            and type(data["attempt_sequence"]) is int
+            and data["attempt_sequence"] >= 1
+            and data["prior_reconciliation_state"] in RECONCILIATION_STATES
+        )
+    if event_type == "GATE_B_CANCEL_ATTEMPT_RESULT":
+        return data["cancel_result"] in (
+            "DEFINITIVE_ACCEPTED",
+            "DEFINITIVE_REJECTED",
+            "AMBIGUOUS",
+        ) and all(
+            type(data[key]) is int and data[key] >= 0
+            for key in ("canceled_count", "not_canceled_count")
+        )
+    if event_type == "GATE_B_CANCEL_TRANSPORT_VERIFIED":
+        return (
+            data["cancel_result"] == "DEFINITIVE_ACCEPTED"
+            and data["gate_b_reconciliation_state"] == "HEALTHY"
+            and type(data["verified_time_ns"]) is int
+            and data["verified_time_ns"] >= 0
+        )
+    return True
+
+
 def _validate_event_semantics(
     event: GatewayJournalEvent, previous: GatewayState, current: GatewayState
 ) -> None:
     data = dict(event.data)
-    if event.event_type == "CREDENTIAL_REFERENCE_CONFIGURED":
+    if event.event_type in GATE_B_AUDIT_EVENTS:
+        valid = _validate_gate_b_audit_data(event.event_type, data)
+    elif event.event_type == "CREDENTIAL_REFERENCE_CONFIGURED":
         valid = data == {"configured": current.credential_configured}
     elif event.event_type == "RESTARTED":
         valid = data == {"reconciliation_required": True} and (
@@ -1319,8 +1534,13 @@ def _validate_event_semantics(
         valid = data == {"access_state": current.access_state}
     elif event.event_type in ("RECONCILIATION_COMPLETED", "RECONCILIATION_DIVERGED"):
         valid = set(data) == {
-            "snapshot_id", "open_order_count", "trade_count", "foreign_state",
-            "missing_state_explained", "unexpected_state_explained", "unsafe_mode",
+            "snapshot_id",
+            "open_order_count",
+            "trade_count",
+            "foreign_state",
+            "missing_state_explained",
+            "unexpected_state_explained",
+            "unsafe_mode",
             "matches",
         } and (
             data["snapshot_id"] == current.last_account_snapshot_id
@@ -1329,12 +1549,14 @@ def _validate_event_semantics(
             and all(
                 type(data[key]) is bool
                 for key in (
-                    "foreign_state", "missing_state_explained",
-                    "unexpected_state_explained", "unsafe_mode", "matches"
+                    "foreign_state",
+                    "missing_state_explained",
+                    "unexpected_state_explained",
+                    "unsafe_mode",
+                    "matches",
                 )
             )
-            and data["matches"]
-            == (event.event_type == "RECONCILIATION_COMPLETED")
+            and data["matches"] == (event.event_type == "RECONCILIATION_COMPLETED")
             and current.reconciliation_state
             == ("HEALTHY" if data["matches"] else "DIVERGED")
         )
@@ -1345,8 +1567,12 @@ def _validate_event_semantics(
             and data["event_count"] >= 0
         )
     elif event.event_type == "HEARTBEAT_ACK":
-        valid = set(data) == {"matches"} and type(data["matches"]) is bool and (
-            current.heartbeat_state == ("HEALTHY" if data["matches"] else "UNSAFE")
+        valid = (
+            set(data) == {"matches"}
+            and type(data["matches"]) is bool
+            and (
+                current.heartbeat_state == ("HEALTHY" if data["matches"] else "UNSAFE")
+            )
         )
     elif event.event_type == "HEARTBEAT_MISSED":
         valid = data == {"unsafe": True} and current.heartbeat_state == "MISSED"
@@ -1361,12 +1587,16 @@ def _validate_event_semantics(
             and current.rate_limit_until_ns == data["until_ns"]
         )
     elif event.event_type == "LIMIT_ORDER_PREPARED":
-        valid = len(current.prepared_orders) == len(previous.prepared_orders) + 1 and data == {
+        valid = len(current.prepared_orders) == len(
+            previous.prepared_orders
+        ) + 1 and data == {
             "order_identity": current.prepared_orders[-1].order_identity,
             "intent_id": current.prepared_orders[-1].intent_id,
         }
     elif event.event_type == "FIXTURE_MUTATION_RECORDED":
-        valid = len(current.mutation_attempts) == len(previous.mutation_attempts) + 1 and data == {
+        valid = len(current.mutation_attempts) == len(
+            previous.mutation_attempts
+        ) + 1 and data == {
             "attempt_id": current.mutation_attempts[-1].attempt_id,
             "operation": current.mutation_attempts[-1].operation,
             "outcome": current.mutation_attempts[-1].outcome,
@@ -1382,53 +1612,105 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
     if not events or events[0].event_type != "INITIALIZED":
         raise GatewayError("STATE_REPLAY_INVALID")
     allowed_events = {
-        "INITIALIZED", "CREDENTIAL_REFERENCE_CONFIGURED", "RESTARTED",
-        "AUTHORITY_CHANGED", "DISABLED", "ACCESS_STATE_OBSERVED",
-        "RECONCILIATION_COMPLETED", "RECONCILIATION_DIVERGED",
-        "USER_STREAM_STATE", "HEARTBEAT_ACK", "HEARTBEAT_MISSED",
-        "RATE_LIMITED", "LIMIT_ORDER_PREPARED", "FIXTURE_MUTATION_RECORDED",
+        "INITIALIZED",
+        "CREDENTIAL_REFERENCE_CONFIGURED",
+        "RESTARTED",
+        "AUTHORITY_CHANGED",
+        "DISABLED",
+        "ACCESS_STATE_OBSERVED",
+        "RECONCILIATION_COMPLETED",
+        "RECONCILIATION_DIVERGED",
+        "USER_STREAM_STATE",
+        "HEARTBEAT_ACK",
+        "HEARTBEAT_MISSED",
+        "RATE_LIMITED",
+        "LIMIT_ORDER_PREPARED",
+        "FIXTURE_MUTATION_RECORDED",
+        *GATE_B_AUDIT_EVENTS,
     }
     allowed_changes = {
         "CREDENTIAL_REFERENCE_CONFIGURED": {
-            "credential_configured", "public_signer", "public_funder", "last_event_time_ns"
+            "credential_configured",
+            "public_signer",
+            "public_funder",
+            "last_event_time_ns",
         },
         "RESTARTED": {
-            "authority_state", "disable_reason", "reconciliation_state",
-            "heartbeat_state", "user_stream_state", "last_event_time_ns"
+            "authority_state",
+            "disable_reason",
+            "reconciliation_state",
+            "heartbeat_state",
+            "user_stream_state",
+            "last_event_time_ns",
         },
-        "AUTHORITY_CHANGED": {"authority_state", "disable_reason", "last_event_time_ns"},
+        "AUTHORITY_CHANGED": {
+            "authority_state",
+            "disable_reason",
+            "last_event_time_ns",
+        },
         "DISABLED": {"authority_state", "disable_reason", "last_event_time_ns"},
         "ACCESS_STATE_OBSERVED": {
-            "authority_state", "disable_reason", "access_state", "last_event_time_ns"
+            "authority_state",
+            "disable_reason",
+            "access_state",
+            "last_event_time_ns",
         },
         "RECONCILIATION_COMPLETED": {
-            "authority_state", "disable_reason", "reconciliation_state",
-            "venue_open_order_ids", "access_state", "last_account_snapshot_id",
-            "balances_hash", "positions_hash", "last_event_time_ns"
+            "authority_state",
+            "disable_reason",
+            "reconciliation_state",
+            "venue_open_order_ids",
+            "access_state",
+            "last_account_snapshot_id",
+            "balances_hash",
+            "positions_hash",
+            "last_event_time_ns",
         },
         "RECONCILIATION_DIVERGED": {
-            "authority_state", "disable_reason", "reconciliation_state",
-            "venue_open_order_ids", "access_state", "last_account_snapshot_id",
-            "balances_hash", "positions_hash", "last_event_time_ns"
+            "authority_state",
+            "disable_reason",
+            "reconciliation_state",
+            "venue_open_order_ids",
+            "access_state",
+            "last_account_snapshot_id",
+            "balances_hash",
+            "positions_hash",
+            "last_event_time_ns",
         },
         "USER_STREAM_STATE": {
-            "user_stream_state", "last_user_stream_sequence", "authority_state",
-            "disable_reason", "reconciliation_state", "last_event_time_ns"
+            "user_stream_state",
+            "last_user_stream_sequence",
+            "authority_state",
+            "disable_reason",
+            "reconciliation_state",
+            "last_event_time_ns",
         },
         "HEARTBEAT_ACK": {
-            "heartbeat_state", "heartbeat_id", "authority_state", "disable_reason",
-            "reconciliation_state", "last_event_time_ns"
+            "heartbeat_state",
+            "heartbeat_id",
+            "authority_state",
+            "disable_reason",
+            "reconciliation_state",
+            "last_event_time_ns",
         },
         "HEARTBEAT_MISSED": {
-            "heartbeat_state", "authority_state", "disable_reason",
-            "reconciliation_state", "last_event_time_ns"
+            "heartbeat_state",
+            "authority_state",
+            "disable_reason",
+            "reconciliation_state",
+            "last_event_time_ns",
         },
         "RATE_LIMITED": {"rate_limit_until_ns", "last_event_time_ns"},
         "LIMIT_ORDER_PREPARED": {"prepared_orders", "last_event_time_ns"},
         "FIXTURE_MUTATION_RECORDED": {
-            "mutation_attempts", "venue_open_order_ids", "authority_state",
-            "disable_reason", "reconciliation_state", "last_event_time_ns"
+            "mutation_attempts",
+            "venue_open_order_ids",
+            "authority_state",
+            "disable_reason",
+            "reconciliation_state",
+            "last_event_time_ns",
         },
+        **{event_type: {"last_event_time_ns"} for event_type in GATE_B_AUDIT_EVENTS},
     }
     previous: GatewayState | None = None
     current: GatewayState | None = None
@@ -1455,9 +1737,13 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
             and event.event_type != "AUTHORITY_CHANGED"
         ):
             raise GatewayError("STATE_REPLAY_INVALID")
-        if previous is not None and event.event_type == "AUTHORITY_CHANGED" and (
-            current.authority_state == "A2_SHADOW"
-            and previous.reconciliation_state != "HEALTHY"
+        if (
+            previous is not None
+            and event.event_type == "AUTHORITY_CHANGED"
+            and (
+                current.authority_state == "A2_SHADOW"
+                and previous.reconciliation_state != "HEALTHY"
+            )
         ):
             raise GatewayError("STATE_REPLAY_INVALID")
         previous = current
@@ -1499,7 +1785,11 @@ class ProtectedExecutionGateway:
         store = GatewayStore(path, create=True)
         state = GatewayState(last_event_time_ns=created_time_ns)
         event = store.append(
-            "INITIALIZED", created_time_ns, {"mode": "GATE_A"}, state.to_mapping(), expected_head=None
+            "INITIALIZED",
+            created_time_ns,
+            {"mode": "GATE_A"},
+            state.to_mapping(),
+            expected_head=None,
         )
         return cls(store, state, event.event_hash)
 
@@ -1577,6 +1867,40 @@ class ProtectedExecutionGateway:
         self.state = new_state
         self._head = event.event_hash
 
+    def record_gate_b_event(
+        self,
+        event_type: str,
+        data: Mapping[str, object],
+        *,
+        event_time_ns: int | None = None,
+    ) -> None:
+        """Commit one sanitized, authority-neutral Gate-B evidence event."""
+        if event_type not in GATE_B_AUDIT_EVENTS or not _validate_gate_b_audit_data(
+            event_type, data
+        ):
+            raise GatewayError("INVALID_AUDIT_DATA")
+        observed = time.time_ns() if event_time_ns is None else event_time_ns
+        _time(observed)
+        observed = max(observed, self.state.last_event_time_ns + 1)
+        self._commit(
+            event_type,
+            observed,
+            data,
+            replace(self.state, last_event_time_ns=observed),
+        )
+
+    def gate_b_events(self) -> tuple[GatewayJournalEvent, ...]:
+        """Return verified Gate-B audit evidence from the current journal."""
+        mapping, head, events = self._store.load()
+        if mapping != self.state.to_mapping() or head != self._head:
+            raise GatewayError("STATE_REPLAY_INVALID")
+        replayed = _validate_replay(events)
+        if replayed.to_mapping() != dict(mapping):
+            raise GatewayError("STATE_REPLAY_INVALID")
+        return tuple(
+            event for event in events if event.event_type in GATE_B_AUDIT_EVENTS
+        )
+
     def configure_credentials(
         self,
         loader: GateASecretReferenceLoader,
@@ -1603,7 +1927,9 @@ class ProtectedExecutionGateway:
             new,
         )
 
-    def set_authority(self, authority_state: str, *, actor: str, event_time_ns: int) -> None:
+    def set_authority(
+        self, authority_state: str, *, actor: str, event_time_ns: int
+    ) -> None:
         if authority_state not in AUTHORITY_STATES:
             raise GatewayError("AUTHORITY_STATE_INVALID")
         _label(actor)
@@ -1621,7 +1947,9 @@ class ProtectedExecutionGateway:
         new = replace(
             self.state,
             authority_state=authority_state,
-            disable_reason="" if authority_state != "A0_DISABLED" else "OPERATOR_DISABLED",
+            disable_reason=""
+            if authority_state != "A0_DISABLED"
+            else "OPERATOR_DISABLED",
             last_event_time_ns=event_time_ns,
         )
         self._commit(
@@ -1652,10 +1980,14 @@ class ProtectedExecutionGateway:
             self.state,
             access_state=state,
             authority_state="A0_DISABLED" if unsafe else self.state.authority_state,
-            disable_reason="ACCESS_NOT_ELIGIBLE" if unsafe else self.state.disable_reason,
+            disable_reason="ACCESS_NOT_ELIGIBLE"
+            if unsafe
+            else self.state.disable_reason,
             last_event_time_ns=event_time_ns,
         )
-        self._commit("ACCESS_STATE_OBSERVED", event_time_ns, {"access_state": state}, new)
+        self._commit(
+            "ACCESS_STATE_OBSERVED", event_time_ns, {"access_state": state}, new
+        )
 
     def reconcile(
         self,
@@ -1664,7 +1996,10 @@ class ProtectedExecutionGateway:
         event_time_ns: int,
     ) -> None:
         _time(event_time_ns)
-        if type(adapter) not in (FixtureAuthenticatedReadAdapter, OfficialSdkAuthenticatedReadAdapter):
+        if type(adapter) not in (
+            FixtureAuthenticatedReadAdapter,
+            OfficialSdkAuthenticatedReadAdapter,
+        ):
             raise GatewayError("AUTHENTICATED_READ_ADAPTER_INVALID")
         if (
             not self.state.credential_configured
@@ -1714,7 +2049,9 @@ class ProtectedExecutionGateway:
         actual_ids = {item.venue_order_id for item in snapshot.open_orders}
         missing_ids = local_ids - actual_ids
         unexpected = [
-            item for item in snapshot.open_orders if item.venue_order_id not in local_ids
+            item
+            for item in snapshot.open_orders
+            if item.venue_order_id not in local_ids
         ]
         queried_missing = {
             venue_order_id: adapter.query_order(venue_order_id)
@@ -1743,7 +2080,8 @@ class ProtectedExecutionGateway:
                 attempt.operation.startswith("CANCEL")
                 and venue_order_id in attempt.request_target_ids
                 and attempt.order_identity == owner_by_venue_id.get(venue_order_id)
-                and attempt.outcome in ("DEFINITIVE_ACCEPTED", "AMBIGUOUS", "RECONCILIATION_REQUIRED")
+                and attempt.outcome
+                in ("DEFINITIVE_ACCEPTED", "AMBIGUOUS", "RECONCILIATION_REQUIRED")
                 for attempt in self.state.mutation_attempts
             )
             or queried_missing[venue_order_id] is not None
@@ -1774,7 +2112,9 @@ class ProtectedExecutionGateway:
         new = replace(
             self.state,
             authority_state=self.state.authority_state if matches else "A0_DISABLED",
-            disable_reason=self.state.disable_reason if matches else "VENUE_STATE_DIVERGED",
+            disable_reason=self.state.disable_reason
+            if matches
+            else "VENUE_STATE_DIVERGED",
             reconciliation_state="HEALTHY" if matches else "DIVERGED",
             venue_open_order_ids=actual if matches else self.state.venue_open_order_ids,
             access_state=snapshot.access_state,
@@ -1807,7 +2147,9 @@ class ProtectedExecutionGateway:
         _time(event_time_ns)
         events = adapter.read_user_events(self.state.last_user_stream_sequence)
         expected = self.state.last_user_stream_sequence + 1
-        gap = any(event.sequence != expected + index for index, event in enumerate(events))
+        gap = any(
+            event.sequence != expected + index for index, event in enumerate(events)
+        )
         for event in events:
             event.validate()
         last_sequence = (
@@ -1848,8 +2190,12 @@ class ProtectedExecutionGateway:
             heartbeat_state="HEALTHY" if matches else "UNSAFE",
             heartbeat_id=heartbeat_id if matches else self.state.heartbeat_id,
             authority_state=self.state.authority_state if matches else "A0_DISABLED",
-            disable_reason=self.state.disable_reason if matches else "HEARTBEAT_ACK_INVALID",
-            reconciliation_state=self.state.reconciliation_state if matches else "REQUIRED",
+            disable_reason=self.state.disable_reason
+            if matches
+            else "HEARTBEAT_ACK_INVALID",
+            reconciliation_state=self.state.reconciliation_state
+            if matches
+            else "REQUIRED",
             last_event_time_ns=event_time_ns,
         )
         self._commit("HEARTBEAT_ACK", event_time_ns, {"matches": matches}, new)
@@ -1872,9 +2218,14 @@ class ProtectedExecutionGateway:
         _time(now_ns)
         _time(event_time_ns)
         retry_after = next(
-            (value for key, value in headers.items() if key.lower() == "retry-after"), None
+            (value for key, value in headers.items() if key.lower() == "retry-after"),
+            None,
         )
-        if retry_after is None or not retry_after.isascii() or not retry_after.isdigit():
+        if (
+            retry_after is None
+            or not retry_after.isascii()
+            or not retry_after.isdigit()
+        ):
             raise GatewayError("RETRY_AFTER_INVALID")
         seconds = int(retry_after)
         if not 0 <= seconds <= 60:
@@ -1913,7 +2264,10 @@ class ProtectedExecutionGateway:
             raise GatewayError("RECONCILIATION_REQUIRED")
         if self.state.access_state != "ELIGIBLE":
             raise GatewayError("ACCESS_NOT_ELIGIBLE")
-        if self.state.rate_limit_until_ns is not None and signing_time_ns < self.state.rate_limit_until_ns:
+        if (
+            self.state.rate_limit_until_ns is not None
+            and signing_time_ns < self.state.rate_limit_until_ns
+        ):
             raise GatewayError("RATE_LIMITED")
         evidence = read_wp173_authorization_evidence(
             paper_store_path, intent_id=intent_id
@@ -1925,7 +2279,9 @@ class ProtectedExecutionGateway:
             OfficialSdkAuthenticatedReadAdapter,
         ):
             raise GatewayError("VENUE_CONSTRAINTS_INVALID")
-        constraints, identity = venue_context.query_venue_context(intent, signing_time_ns)
+        constraints, identity = venue_context.query_venue_context(
+            intent, signing_time_ns
+        )
         constraints.validate()
         identity.validate()
         if (
@@ -1951,13 +2307,19 @@ class ProtectedExecutionGateway:
         if time_in_force == "GTC" and expiration is not None:
             raise GatewayError("UNSUPPORTED_ORDER_INSTRUCTION")
         if time_in_force == "GTD" and (
-            not isinstance(expiration, int) or isinstance(expiration, bool) or expiration <= 0
+            not isinstance(expiration, int)
+            or isinstance(expiration, bool)
+            or expiration <= 0
         ):
             raise GatewayError("UNSUPPORTED_ORDER_INSTRUCTION")
         if not isinstance(nonce, int) or isinstance(nonce, bool) or nonce < 0:
             raise GatewayError("SIGNING_IDENTITY_INVALID")
         _time(signing_time_ns)
-        if not constraints.observed_time_ns <= signing_time_ns <= constraints.valid_until_ns:
+        if (
+            not constraints.observed_time_ns
+            <= signing_time_ns
+            <= constraints.valid_until_ns
+        ):
             raise GatewayError("VENUE_CONSTRAINTS_STALE")
         _label(session_identity)
         price = _decimal(intent.reference_price, positive=True)
@@ -2015,7 +2377,11 @@ class ProtectedExecutionGateway:
         order_identity = _sha("executionorder:sha256:", preimage)
         signed_order_hash = DeterministicFixtureSigner.sign_hash(preimage)
         existing = next(
-            (item for item in self.state.prepared_orders if item.intent_id == intent.intent_id),
+            (
+                item
+                for item in self.state.prepared_orders
+                if item.intent_id == intent.intent_id
+            ),
             None,
         )
         if existing is not None:
@@ -2098,13 +2464,21 @@ class ProtectedExecutionGateway:
             raise GatewayError("SHADOW_AUTHORITY_REQUIRED")
         if operation not in MUTATION_OPERATIONS:
             raise GatewayError("UNSUPPORTED_MUTATION")
-        if not isinstance(attempt_sequence, int) or isinstance(attempt_sequence, bool) or attempt_sequence < 1:
+        if (
+            not isinstance(attempt_sequence, int)
+            or isinstance(attempt_sequence, bool)
+            or attempt_sequence < 1
+        ):
             raise GatewayError("MUTATION_ATTEMPT_INVALID")
         if type(transmitted) is not bool or type(response_body_valid) is not bool:
             raise GatewayError("MUTATION_ATTEMPT_INVALID")
         _time(event_time_ns)
         order = next(
-            (item for item in self.state.prepared_orders if item.order_identity == order_identity),
+            (
+                item
+                for item in self.state.prepared_orders
+                if item.order_identity == order_identity
+            ),
             None,
         )
         if order is None:
@@ -2161,7 +2535,8 @@ class ProtectedExecutionGateway:
             if operation == "CANCEL_MARKET":
                 request_market_id = _label(request["market_id"])
                 prepared_markets = {
-                    item.order_identity: item.market_id for item in self.state.prepared_orders
+                    item.order_identity: item.market_id
+                    for item in self.state.prepared_orders
                 }
                 if request_market_id != order.market_id or any(
                     prepared_markets.get(owner) != request_market_id
@@ -2169,25 +2544,32 @@ class ProtectedExecutionGateway:
                 ):
                     raise GatewayError("MUTATION_REQUEST_INVALID")
                 expected_request["market_id"] = request_market_id
-            if operation == "CANCEL_ALL" and set(targets) != set(
-                self.state.venue_open_order_ids
-            ) and not any(item.request_target_ids == targets for item in prior):
+            if (
+                operation == "CANCEL_ALL"
+                and set(targets) != set(self.state.venue_open_order_ids)
+                and not any(item.request_target_ids == targets for item in prior)
+            ):
                 raise GatewayError("MUTATION_REQUEST_INVALID")
         if canonical_json(request) != canonical_json(expected_request):
             raise GatewayError("MUTATION_REQUEST_INVALID")
-        prior_target = prior if operation == "CREATE" else [
-            item
-            for item in self.state.mutation_attempts
-            if item.operation == operation
-            and item.request_target_bindings == target_bindings
-        ]
+        prior_target = (
+            prior
+            if operation == "CREATE"
+            else [
+                item
+                for item in self.state.mutation_attempts
+                if item.operation == operation
+                and item.request_target_bindings == target_bindings
+            ]
+        )
         existing_sequence = next(
             (item for item in prior if item.attempt_sequence == attempt_sequence), None
         )
         if attempt_sequence != len(prior) + 1 and existing_sequence is None:
             raise GatewayError("MUTATION_SEQUENCE_INVALID")
         if existing_sequence is None and any(
-            item.outcome in ("DEFINITIVE_ACCEPTED", "AMBIGUOUS", "RECONCILIATION_REQUIRED")
+            item.outcome
+            in ("DEFINITIVE_ACCEPTED", "AMBIGUOUS", "RECONCILIATION_REQUIRED")
             for item in prior_target
         ):
             raise GatewayError("MUTATION_ALREADY_TRANSMITTED")
@@ -2268,8 +2650,12 @@ class ProtectedExecutionGateway:
             mutation_attempts=self.state.mutation_attempts + (candidate,),
             venue_open_order_ids=open_ids,
             authority_state="A0_DISABLED" if ambiguous else self.state.authority_state,
-            disable_reason="AMBIGUOUS_MUTATION" if ambiguous else self.state.disable_reason,
-            reconciliation_state="REQUIRED" if ambiguous else self.state.reconciliation_state,
+            disable_reason="AMBIGUOUS_MUTATION"
+            if ambiguous
+            else self.state.disable_reason,
+            reconciliation_state="REQUIRED"
+            if ambiguous
+            else self.state.reconciliation_state,
             last_event_time_ns=event_time_ns,
         )
         self._commit(
@@ -2313,3 +2699,48 @@ class ProtectedExecutionGateway:
             "gate_b_authorized": False,
             "restricted_live_available": False,
         }
+
+
+def read_gate_b_evidence(path: Path) -> dict[str, object]:
+    """Verify a gateway journal and derive its latest sanitized Gate-B evidence."""
+    store = GatewayStore(path)
+    try:
+        mapping, _head, events = store.load()
+        if mapping is None or _validate_replay(events).to_mapping() != dict(mapping):
+            raise GatewayError("STATE_REPLAY_INVALID")
+    finally:
+        store.close()
+    result: dict[str, object] = {
+        "public_signer": None,
+        "public_wallet": None,
+        "wallet_type": "DEPOSIT_WALLET",
+        "signature_type": "3",
+        "last_verification_receipt_id": None,
+        "last_verification_time_ns": None,
+        "gate_b_reconciliation_state": "REQUIRED",
+        "cancel_capability_status": "AVAILABLE",
+    }
+    unresolved: set[str] = set()
+    for event in events:
+        data = dict(event.data)
+        if event.event_type in GATE_B_AUDIT_EVENTS:
+            result["public_signer"] = data["public_signer"]
+            result["public_wallet"] = data["public_wallet"]
+        if event.event_type == "GATE_B_RECONCILED":
+            result["gate_b_reconciliation_state"] = data["gate_b_reconciliation_state"]
+        elif event.event_type == "GATE_B_CANCEL_ATTEMPT_STARTED":
+            unresolved.add(str(data["cancel_attempt_id"]))
+        elif event.event_type == "GATE_B_CANCEL_ATTEMPT_RESULT":
+            if data["cancel_result"] in ("DEFINITIVE_ACCEPTED", "DEFINITIVE_REJECTED"):
+                unresolved.discard(str(data["cancel_attempt_id"]))
+            else:
+                unresolved.add(str(data["cancel_attempt_id"]))
+                result["gate_b_reconciliation_state"] = "BLOCKED"
+        elif event.event_type == "GATE_B_CANCEL_TRANSPORT_VERIFIED":
+            result["last_verification_receipt_id"] = data["receipt_id"]
+            result["last_verification_time_ns"] = data["verified_time_ns"]
+            result["gate_b_reconciliation_state"] = data["gate_b_reconciliation_state"]
+    if unresolved:
+        result["gate_b_reconciliation_state"] = "BLOCKED"
+        result["cancel_capability_status"] = "BLOCKED_UNRESOLVED_ATTEMPT"
+    return result
