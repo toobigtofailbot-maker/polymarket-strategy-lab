@@ -1465,21 +1465,24 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
     return current
 
 
-class GateBLockedSdkMutationAdapter:
-    """Document the selected SDK mutation surface while making Gate B unreachable."""
-
-    sdk_client_types = (SecureClient, AsyncSecureClient)
-    method_names = (
-        "create_limit_order",
-        "post_order",
-        "cancel_" + "order",
-        "cancel_" + "orders",
-        "cancel_market_" + "orders",
-        "cancel_all",
-    )
-
-    def __init__(self, *_args: object, **_kwargs: object):
-        raise GatewayError("GATE_B_REQUIRED")
+# WP174B replaces the Gate-B-locked documentation stub with a real production
+# mutation boundary. The real credential, signing, and cancellation capability
+# now lives in src/execution_gateway/gate_b.py as ProductionSdkMutationAdapter
+# and GateBSession, operated manually and orthogonally to this Gate-A state
+# machine. Every real economic create/post remains structurally unreachable
+# behind gate_b.GateCLivePermit (GATE_C_REQUIRED); this gateway's own
+# place_limit_order/cancel entry points stay GATE_B_REQUIRED because the
+# ProtectedExecutionGateway authority states (A0/A1/A2) never mutate the venue.
+# The documented selected SDK mutation surface is preserved here for reference.
+GATE_B_PRODUCTION_MUTATION_SURFACE = (
+    "create_limit_order",
+    "post_order",
+    "cancel_" + "order",
+    "cancel_" + "orders",
+    "cancel_market_" + "orders",
+    "cancel_all",
+)
+GATE_B_SDK_CLIENT_TYPES = (SecureClient, AsyncSecureClient)
 
 
 class ProtectedExecutionGateway:

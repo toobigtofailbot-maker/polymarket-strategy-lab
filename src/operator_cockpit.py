@@ -781,6 +781,20 @@ def _gateway_status(path: Path | None) -> dict[str, Any]:
         "open_order_count": state["open_order_count"],
         "gate_b_authorized": False,
         "restricted_live_available": False,
+        # WP174B: sanitized read-only Gate-B capability projection. The Gate-B
+        # credential session is ephemeral and never persisted, so the cockpit
+        # shows the locked (B0) form. No secret value, credential input, mutation
+        # control, Gate-C enable, or A3 state is exposed; every real create/post
+        # remains GATE_C_REQUIRED.
+        "gate_b": {
+            "gate_b_capability_available": True,
+            "gate_b_state": "B0_LOCKED",
+            "credential_session_active": False,
+            "wallet_type": "DEPOSIT_WALLET",
+            "signature_type": "3",
+            "create_transport_status": "GATE_C_REQUIRED",
+            "cancel_capability_status": "AVAILABLE",
+        },
     }
 
 

@@ -3909,6 +3909,36 @@ def test_wp174_status_security_and_successor_are_consistent():
     assert "Unresolved decisions: 0" in project
 
 
+def test_wp174b_status_repo_truth_and_successor_are_consistent():
+    project = (REPO_ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    deferred = (REPO_ROOT / "docs" / "deferred_items_log.md").read_text(
+        encoding="utf-8"
+    )
+    security = (REPO_ROOT / "docs" / "security_tooling_status.md").read_text(
+        encoding="utf-8"
+    )
+    fragment = (STATUS_ENTRIES / "WP174B.md").read_text(encoding="utf-8")
+    combined = "\n".join((project, deferred, security, fragment))
+    assert "WP174B current review target" in project
+    assert "Package size class: L" in project
+    assert "Exact changed-file scope: 19" in project
+    assert "6fff7fefd8f936824a7586f94d452ca073b225dd" in combined
+    assert "dbb4ee0e21e409c4639edc44cce17696a5b15156" in combined
+    assert "f24bc8089eccaf79e3ce72abf833d338350c67ed36156cc02264f2506f594486" in fragment
+    assert "b83586d023888e07509df5452747a2faa6573a3cf0116b43746a7c89fffee448" in fragment
+    assert "DRAFTABILITY_PASS" in fragment
+    assert "IMPLEMENTATION_READY" in combined
+    assert "polymarket-client==0.10.0" in combined
+    assert "Dependencies/lock/workflow files: UNCHANGED" in project
+    assert "RESOLVED_WP174B" in deferred
+    assert "GATE_C_REQUIRED" in combined
+    assert "A3_RESTRICTED_LIVE: ABSENT" in combined
+    assert "WP175 Restricted Live Canary: SEPARATELY_GATED_NOT_STARTED" in project
+    assert "Capital at risk: USD 0" in fragment
+    assert "EPHEMERAL_NO_ECHO_NEVER_PERSISTED" in combined
+    assert "Merge authorized: NO" in combined
+    assert "Unresolved decisions: 0" in project
+
 
 def test_wp159_repo_truth_and_deferred_items_are_registered():
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(

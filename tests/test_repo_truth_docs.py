@@ -98,3 +98,25 @@ def test_wp174_repo_truth_registers_gate_a_without_live_authority():
     assert "Capital at risk: USD 0" in fragment
     assert "WP175 Restricted Live Canary" in fragment
     assert "not started" in fragment
+
+
+def test_wp174b_repo_truth_registers_gate_b_without_live_authority():
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "WP174B.md").read_text(
+        encoding="utf-8"
+    )
+    assert "62z336." in index and "62z337." in index and "62z338." in index
+    assert "WP174B is the current PROTECTED-track review target" in index
+    assert "6fff7fefd8f936824a7586f94d452ca073b225dd" in index
+    assert "dbb4ee0e21e409c4639edc44cce17696a5b15156" in index
+    assert "the certified 19-path L implementation" in index
+    assert "closes WP174-D001 and does not start WP174-D002 / WP175" in index
+    assert "src/execution_gateway/gate_b.py" in index
+    assert "signature type 3" in index
+    assert "GATE_C_REQUIRED" in index
+    assert "A3 RESTRICTED LIVE is absent" in index
+    assert "empty-wallet `cancel_all`" in index
+    assert "A3_RESTRICTED_LIVE: ABSENT" in fragment
+    assert "Capital at risk: USD 0" in fragment
+    assert "Real economic CREATE/POST: FORBIDDEN_GATE_C" in fragment
+    assert "WP175" in fragment and "separately gated and not started" in fragment

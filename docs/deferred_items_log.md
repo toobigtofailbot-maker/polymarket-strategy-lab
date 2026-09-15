@@ -2561,7 +2561,14 @@ authorize capital, or start WP175.
 | ID | Item | Status | Priority | Resolution path | Non-implication |
 |---|---|---|---|---|---|
 | WP173-D001 | Auth / Signing / Execution Gateway (WP174) | RESOLVED_BOUNDED_WP174_GATE_A | P1 | WP174 Gate-A-only protected gateway with exact dependencies and fail-closed evidence | Gate A does not grant Gate B mutation or Gate C capital authority |
-| WP174-D001 | Real secret loading and real SDK signing/mutation | BLOCKED_GATE_B | P1 | A separately drafted, certified, readiness-passing, and explicitly authorized Gate B package | Installed SDK types and would-submit artifacts are not mutation authority |
+| WP174-D001 | Real secret loading and real SDK signing/mutation | RESOLVED_WP174B (was BLOCKED_GATE_B) | P1 | Closed by WP174B: ephemeral no-echo signer key, in-memory L2, Deposit Wallet identity, real local LIMIT signing without post, real cancellation transport, and one empty-wallet cancel proof; every real economic create stays GATE_C_REQUIRED | Gate B grants real credential/signing/cancel capability only; it grants no capital, no A3, and no Gate C |
 | WP174-D002 | Restricted Live Canary (WP175) | OPEN_PROTECTED_SUCCESSOR | P1 | Separate WP175 certification, readiness, and explicit Gate C authorization after Gate B | WP174 has no A3 state, capital sizing, allowlist, deployment, or live authority |
 | WP174-D003 | MARKET orders and broader venue instruction surface | DEFERRED | P2 | Future separately scoped package after LIMIT-only evidence | LIMIT construction does not authorize additional order types |
 | WP174-D004 | Hermes, strategy automation, scheduler, or hosted deployment | DEFERRED | P2 | Separate protected-boundary work packages | Gateway control evidence cannot promote research or operate autonomously |
+
+## WP174B Post-Gate-B Deferred Items
+
+| ID | Item | Status | Priority | Resolution path | Boundary note |
+|---|---|---|---|---|---|
+| WP174B-D001 | Restricted Live Canary (WP175): A3_RESTRICTED_LIVE, dedicated canary capital, one-market/one-strategy allowlist, live exposure/loss limits, manual live arm, and the first real economic LIMIT create | OPEN_PROTECTED_SUCCESSOR | P1 | Separate WP175 certification, readiness, and explicit Gate C authorization | WP174B enables Gate B credential/signing/cancel only; it adds no A3, no capital, and no Gate C |
+| WP174B-D002 | Mature long-running credential hardening: CLOB-only Session Keys, OS/cloud secrets manager, owner-key isolation from a long-running process, rotation/revocation | DEFERRED | P2 | WP176 Mature Controlled Live or a separately approved mature-live credential package | WP174B deliberately uses a manual foreground ephemeral owner-signer path with zero capital |

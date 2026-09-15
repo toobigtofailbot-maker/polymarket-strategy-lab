@@ -637,6 +637,34 @@ def test_paper_routes_are_get_only_bounded_sanitized_and_read_only(
     )
 
 
+def test_gate_b_cockpit_projection_is_get_only_bounded_and_sanitized(
+    tmp_path: Path,
+) -> None:
+    # WP174B R011: the Gate-B projection is read-only, bounded, sanitized, and
+    # Gate-C locked; no secret value, credential input, or mutation control.
+    market = _market_store(tmp_path)
+    registry = _experiment_store(tmp_path)
+    gateway = _gateway_store(tmp_path)
+    app = cockpit.create_app(
+        cockpit.CockpitConfig(market, registry, gateway_store_path=gateway)
+    )
+    status_code, status = _get(app, "/api/gateway/status")
+    assert status_code == 200
+    gate_b = status["gate_b"]
+    assert gate_b["gate_b_capability_available"] is True
+    assert gate_b["gate_b_state"] == "B0_LOCKED"
+    assert gate_b["credential_session_active"] is False
+    assert gate_b["create_transport_status"] == "GATE_C_REQUIRED"
+    assert gate_b["cancel_capability_status"] == "AVAILABLE"
+    serialized = json.dumps(status)
+    for banned in ("private_key", "api_key", "apiKey", "passphrase", "secret-ref:"):
+        assert banned not in serialized
+    post_code, _ = asyncio.run(
+        _asgi_call(app, "/api/gateway/status", method="POST")
+    )
+    assert post_code == 405
+
+
 def test_gateway_routes_are_get_only_bounded_sanitized_and_read_only(
     tmp_path: Path,
 ) -> None:
@@ -676,7 +704,22 @@ def test_gateway_routes_are_get_only_bounded_sanitized_and_read_only(
         "open_order_count": 0,
         "gate_b_authorized": False,
         "restricted_live_available": False,
+        "gate_b": {
+            "gate_b_capability_available": True,
+            "gate_b_state": "B0_LOCKED",
+            "credential_session_active": False,
+            "wallet_type": "DEPOSIT_WALLET",
+            "signature_type": "3",
+            "create_transport_status": "GATE_C_REQUIRED",
+            "cancel_capability_status": "AVAILABLE",
+        },
     }
+    # WP174B: the Gate-B projection is read-only, sanitized, and Gate-C locked.
+    assert status["gate_b"]["create_transport_status"] == "GATE_C_REQUIRED"
+    assert status["gate_b"]["credential_session_active"] is False
+    serialized = json.dumps(status)
+    for banned in ("private_key", "api_key", "apiKey", "passphrase", "secret-ref:"):
+        assert banned not in serialized
     audit_code, audit = _get(app, "/api/gateway/audit?limit=1")
     assert audit_code == 200 and audit["count"] == audit["limit"] == 1
     assert audit["items"][0]["event_type"] == "INITIALIZED"
