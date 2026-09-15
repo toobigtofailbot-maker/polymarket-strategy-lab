@@ -3924,8 +3924,8 @@ def test_wp174b_status_repo_truth_and_successor_are_consistent():
     assert "Exact changed-file scope: 22" in project
     assert "6fff7fefd8f936824a7586f94d452ca073b225dd" in combined
     assert "dbb4ee0e21e409c4639edc44cce17696a5b15156" in combined
-    assert "f24bc8089eccaf79e3ce72abf833d338350c67ed36156cc02264f2506f594486" in fragment
-    assert "b83586d023888e07509df5452747a2faa6573a3cf0116b43746a7c89fffee448" in fragment
+    assert "c849cfaf68576fe98d853aad11fb0798a7ab8b9461f35fc75c03e81f0e7b6e1f" in fragment
+    assert "c3fdd63f7b748fe491b29ca29a2dadd4408c820a4c7edef242b3f3cc7de0a12d" in fragment
     assert "DRAFTABILITY_PASS" in fragment
     assert "IMPLEMENTATION_READY" in combined
     assert "polymarket-client==0.10.0" in combined
