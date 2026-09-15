@@ -611,3 +611,81 @@ def test_operator_confirmation_requires_tty(monkeypatch):
     monkeypatch.setattr(gate_b_operator, "_stdin_is_tty", lambda: False)
     with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
         gate_b_operator._confirm_empty_wallet_cancel()
+
+
+# --- WP174B installed-SDK deployment-contract regression (real 0.10.0 import path) ---
+
+
+class _RealPathCtx:
+    wallet_type = "DEPOSIT_WALLET"
+    wallet = WALLET
+    relayer = object()
+
+
+class _RealPathClient:
+    def __init__(self):
+        self._ctx = _RealPathCtx()
+        self.closed = False
+        self.deployed_called = False
+
+    def close(self):
+        self.closed = True
+
+    def _deploy_default_deposit_wallet(self):  # must never be called
+        self.deployed_called = True
+
+
+def _patch_sdk_path(monkeypatch, *, deployed: bool):
+    """Mock the real 0.10.0 construction + deployment read; record the type arg."""
+    import polymarket._internal.actions.relayer.deployed as dep
+
+    holder = {}
+    calls = {}
+
+    def _fake_create(**_kw):
+        holder["client"] = _RealPathClient()
+        return holder["client"]
+
+    monkeypatch.setattr(gate_b_mod.SecureClient, "_create", staticmethod(_fake_create))
+
+    def _fake_fetch(_relayer, *, address, type=None):
+        calls["type"] = type
+        calls["address"] = address
+        return deployed
+
+    monkeypatch.setattr(dep, "fetch_deployed_sync", _fake_fetch)
+    return holder, calls, dep
+
+
+def test_installed_sdk_deployment_contract_imports_resolve():
+    # (1) The exact 0.10.0 module contract Side named must import cleanly.
+    from polymarket._internal.actions.relayer.deployed import (
+        RelayerTransactionType,
+        fetch_deployed_sync,
+    )
+
+    assert hasattr(RelayerTransactionType, "WALLET")
+    assert callable(fetch_deployed_sync)
+
+
+def test_deposit_wallet_deployment_lookup_uses_wallet_type_and_returns_client(monkeypatch):
+    from polymarket._internal.actions.relayer.deployed import RelayerTransactionType
+
+    holder, calls, _dep = _patch_sdk_path(monkeypatch, deployed=True)
+    out = gate_b_mod.create_deposit_wallet_client("0xnonfunctional", WALLET)
+    # (2) DEPOSIT_WALLET deployment lookup uses RelayerTransactionType.WALLET
+    assert calls["type"] == RelayerTransactionType.WALLET
+    # (3) deployed=True returns the constructed client
+    assert out is holder["client"]
+    # (5) no deployment method invoked
+    assert holder["client"].deployed_called is False
+
+
+def test_undeployed_wallet_fails_closed_and_client_closed(monkeypatch):
+    holder, _calls, _dep = _patch_sdk_path(monkeypatch, deployed=False)
+    # (4) deployed=False fails SDK_SIDE_EFFECT_UNAUTHORIZED
+    with pytest.raises(GatewayError, match="SDK_SIDE_EFFECT_UNAUTHORIZED"):
+        gate_b_mod.create_deposit_wallet_client("0xnonfunctional", WALLET)
+    # (5) no deployment method invoked; (6) credential client closed on failure
+    assert holder["client"].deployed_called is False
+    assert holder["client"].closed is True

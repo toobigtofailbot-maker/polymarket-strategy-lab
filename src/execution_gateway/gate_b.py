@@ -416,13 +416,20 @@ def create_deposit_wallet_client(
         ctx = client._ctx
         if ctx.wallet_type != _DEPOSIT_WALLET_TYPE:
             raise GatewayError("WALLET_TYPE_UNSUPPORTED")
-        from polymarket._internal.wallet import _relayer_transaction_type_for_wallet
-        from polymarket._internal.relayer import fetch_deployed_sync
+        # Exact polymarket-client==0.10.0 contract: fetch_deployed_sync and
+        # RelayerTransactionType both live in this module. Gate B already rejects
+        # every wallet type except DEPOSIT_WALLET, whose relayer transaction type
+        # is RelayerTransactionType.WALLET, so it is used directly rather than via
+        # the private secure-client helper.
+        from polymarket._internal.actions.relayer.deployed import (
+            RelayerTransactionType,
+            fetch_deployed_sync,
+        )
 
         deployed = fetch_deployed_sync(
             ctx.relayer,
             address=str(ctx.wallet),
-            type=_relayer_transaction_type_for_wallet(ctx.wallet_type),
+            type=RelayerTransactionType.WALLET,
         )
         if not deployed:
             # Never deploy. An undeployed wallet is a refused side effect.
