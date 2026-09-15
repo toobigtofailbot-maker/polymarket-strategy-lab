@@ -82,3 +82,19 @@ def test_wp173_repo_truth_and_successor_are_consistent():
     assert "WP176 — Mature Controlled Live" in roadmap
     assert "WP174" in fragment and "unstarted" in fragment
     assert "SIMULATED_PAPER_ONLY" in combined
+
+
+def test_wp174_repo_truth_registers_gate_a_without_live_authority():
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "WP174.md").read_text(
+        encoding="utf-8"
+    )
+    assert "62z333." in index and "62z334." in index and "62z335." in index
+    assert "A0 DISABLED, A1 READ ONLY, or A2 SHADOW" in index
+    assert "constructor-locked behind Gate B" in index
+    assert "real secret is loaded" in index
+    assert "two backend-only bounded GET projections" in index
+    assert "A3_RESTRICTED_LIVE: ABSENT" in fragment
+    assert "Capital at risk: USD 0" in fragment
+    assert "WP175 Restricted Live Canary" in fragment
+    assert "not started" in fragment

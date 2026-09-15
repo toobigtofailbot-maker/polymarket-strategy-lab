@@ -36,6 +36,7 @@ from src.paper_trading.models import (
     content_id,
 )
 from src.paper_trading.store import JournalEvent, PaperStore
+from src.execution_gateway.store import GatewayStoreError, read_gateway_projection
 
 
 MARKET_APPLICATION_ID = 1_347_242_297
@@ -113,12 +114,14 @@ class CockpitConfig:
     market_truth_path: Path | None
     experiment_registry_path: Path | None
     paper_store_path: Path | None = None
+    gateway_store_path: Path | None = None
 
     def __post_init__(self) -> None:
         for value in (
             self.market_truth_path,
             self.experiment_registry_path,
             self.paper_store_path,
+            self.gateway_store_path,
         ):
             if value is not None and not isinstance(value, Path):
                 raise TypeError("cockpit paths must be pathlib.Path or None")
@@ -749,6 +752,42 @@ def _readable(reader: Any, path: Path | None) -> bool:
         return False
 
 
+def _gateway_projection(path: Path | None, limit: int = DEFAULT_LIMIT) -> dict[str, Any]:
+    if path is None:
+        raise CockpitError("SOURCE_UNAVAILABLE")
+    try:
+        return read_gateway_projection(path, limit=limit)
+    except GatewayStoreError:
+        raise CockpitError("SOURCE_UNAVAILABLE") from None
+
+
+def _gateway_status(path: Path | None) -> dict[str, Any]:
+    state = _gateway_projection(path, 1)["state"]
+    return {
+        "read_only": True,
+        "authority_state": state["authority_state"],
+        "disabled": state["authority_state"] == "A0_DISABLED",
+        "disable_reason": state["disable_reason"],
+        "credential_configured": state["credential_configured"],
+        "public_signer": state["public_signer"],
+        "public_funder": state["public_funder"],
+        "reconciliation_state": state["reconciliation_state"],
+        "heartbeat_state": state["heartbeat_state"],
+        "user_stream_state": state["user_stream_state"],
+        "access_state": state["access_state"],
+        "rate_limit_until_ns": state["rate_limit_until_ns"],
+        "prepared_order_count": state["prepared_order_count"],
+        "mutation_attempt_count": state["mutation_attempt_count"],
+        "open_order_count": state["open_order_count"],
+        "gate_b_authorized": False,
+        "restricted_live_available": False,
+    }
+
+
+def _gateway_audit(path: Path | None, limit: int) -> list[dict[str, Any]]:
+    return _gateway_projection(path, limit)["audit"]
+
+
 def create_app(config: CockpitConfig) -> FastAPI:
     """Create the import-safe, manually launched read-only cockpit application."""
     app = FastAPI(title="WP171 Operator Cockpit", version="1.0.0")
@@ -776,10 +815,12 @@ def create_app(config: CockpitConfig) -> FastAPI:
         wp169_readable = _readable(_market_summary, config.market_truth_path)
         wp170_readable = _readable(_registry_entries, config.experiment_registry_path)
         paper_readable = _readable(_paper_summary, config.paper_store_path)
+        gateway_readable = _readable(_gateway_status, config.gateway_store_path)
         paper_ok = config.paper_store_path is None or paper_readable
+        gateway_ok = config.gateway_store_path is None or gateway_readable
         return {
             "status": "OK"
-            if wp169_readable and wp170_readable and paper_ok
+            if wp169_readable and wp170_readable and paper_ok and gateway_ok
             else "DEGRADED",
             "read_only": True,
             "wp169": {
@@ -793,6 +834,10 @@ def create_app(config: CockpitConfig) -> FastAPI:
             "paper": {
                 "configured": config.paper_store_path is not None,
                 "readable": paper_readable,
+            },
+            "gateway": {
+                "configured": config.gateway_store_path is not None,
+                "readable": gateway_readable,
             },
         }
 
@@ -808,6 +853,11 @@ def create_app(config: CockpitConfig) -> FastAPI:
             "paper": (
                 _paper_summary(config.paper_store_path)
                 if config.paper_store_path is not None
+                else None
+            ),
+            "gateway": (
+                _gateway_status(config.gateway_store_path)
+                if config.gateway_store_path is not None
                 else None
             ),
             "recent_activity": {
@@ -879,6 +929,16 @@ def create_app(config: CockpitConfig) -> FastAPI:
         items = _paper_audit(config.paper_store_path, limit)
         return {"items": items, "count": len(items), "limit": limit}
 
+    @app.get("/api/gateway/status")
+    async def gateway_status() -> dict[str, Any]:
+        return _gateway_status(config.gateway_store_path)
+
+    @app.get("/api/gateway/audit")
+    async def gateway_audit(request: Request) -> dict[str, Any]:
+        limit = _request_limit(request)
+        items = _gateway_audit(config.gateway_store_path, limit)
+        return {"items": items, "count": len(items), "limit": limit}
+
     return app
 
 
@@ -889,6 +949,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--market-truth-store", required=True, type=Path)
     parser.add_argument("--experiment-registry", required=True, type=Path)
     parser.add_argument("--paper-store", type=Path)
+    parser.add_argument("--gateway-store", type=Path)
     parser.add_argument("--port", default=8000, type=int)
     args = parser.parse_args(argv)
     if args.port < 1 or args.port > 65_535:
@@ -901,6 +962,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.market_truth_store,
                 args.experiment_registry,
                 args.paper_store,
+                args.gateway_store,
             )
         ),
         host="127.0.0.1",

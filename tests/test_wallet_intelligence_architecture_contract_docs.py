@@ -558,6 +558,27 @@ def test_no_tools_files_changed() -> None:
 
 def test_no_dependency_or_lock_files_changed() -> None:
     changed = _changed_files()
+    if "docs/wp_specs/WP174/wp_spec.json" in changed:
+        # WP174 explicitly authorizes pyproject.toml for its exact official SDK
+        # and compatible WebSocket pins; it adds no lockfile.
+        dep_changes = {
+            Path(path).name
+            for path in changed
+            if Path(path).name
+            in {
+                "requirements.txt",
+                "requirements-dev.txt",
+                "pyproject.toml",
+                "package.json",
+                "package-lock.json",
+                "poetry.lock",
+                "uv.lock",
+                "pdm.lock",
+                "Pipfile.lock",
+            }
+        }
+        assert dep_changes == {"pyproject.toml"}
+        return
     if "docs/status_entries/WP171.md" in changed:
         expected = set(json.loads(
             (ROOT / "docs/wp_specs/WP171/wp_spec.json").read_text(encoding="utf-8")

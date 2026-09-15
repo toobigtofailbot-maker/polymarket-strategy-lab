@@ -4,6 +4,26 @@
 
 This document records local security-tool availability and scan results through WP15. It is status evidence only; it does not authorize runtime dependency integration, copied external code, venue API integration, or live trading.
 
+## WP174 Status Summary
+
+WP174 adds the exact released dependency `polymarket-client==0.10.0` and replaces
+`websockets==17.1` with the SDK-compatible exact pin `websockets==15.0.1`. The
+official SDK is used behind a narrow repo-owned Gate-A-only adapter; no external
+source is copied or vendored. Project-local gitleaks 8.27.2, Semgrep 1.176.1, and
+pip-audit 2.10.1 all pass on the implementation worktree. `python -m pip check`
+and exact-version/public-import assertions pass. Real secret loading and real SDK
+mutation remain constructor-locked behind the separately required Gate B; live
+capital remains behind Gate C and WP175.
+
+| Tool | Availability | Result | WP174 boundary |
+|---|---|---|---|
+| gitleaks 8.27.2 | PROJECT_LOCAL_BIN | PASS | No secret finding; only fake/nonfunctional public fixture identity is used |
+| Semgrep 1.176.1 | PROJECT_LOCAL_VENV | PASS | Gate-A source and tests scanned; no finding |
+| pip-audit 2.10.1 | PROJECT_LOCAL_VENV | PASS | No known vulnerability in the resolved project environment |
+| pip check | INTERPRETER | PASS | Exact SDK/WebSocket pins coexist with the project dependency closure |
+| npm audit | NOT_APPLICABLE | SKIPPED_NOT_APPLICABLE | No root package.json dependency change |
+| cargo audit | NOT_APPLICABLE | SKIPPED_NOT_APPLICABLE | No Cargo.lock |
+
 ## WP168 Status Summary
 
 WP168 adds exactly one further direct runtime dependency, `nautilus_trader==1.231.0`
