@@ -385,7 +385,7 @@ the complete remaining path set and explicit authorization. No further same-enve
 correction is self-authorized after certificate hashing.
 
 ===============================================================================
-9. NEGATIVE AND ADVERSARIAL TEST MATRIX
+9. NEGATIVE TEST AND ADVERSARIAL MATRIX
 ===============================================================================
 
 N01 a private key via argv/file/pipe/environment on the operator path is rejected.
