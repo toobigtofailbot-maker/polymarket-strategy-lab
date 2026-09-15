@@ -3920,8 +3920,8 @@ def test_wp174b_status_repo_truth_and_successor_are_consistent():
     fragment = (STATUS_ENTRIES / "WP174B.md").read_text(encoding="utf-8")
     combined = "\n".join((project, deferred, security, fragment))
     assert "WP174B current review target" in project
-    assert "Package size class: L" in project
-    assert "Exact changed-file scope: 19" in project
+    assert "Package size class: XL_FOR_SCOPE_SIZE_ONLY" in project
+    assert "Exact changed-file scope: 22" in project
     assert "6fff7fefd8f936824a7586f94d452ca073b225dd" in combined
     assert "dbb4ee0e21e409c4639edc44cce17696a5b15156" in combined
     assert "f24bc8089eccaf79e3ce72abf833d338350c67ed36156cc02264f2506f594486" in fragment

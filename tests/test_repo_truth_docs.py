@@ -109,7 +109,7 @@ def test_wp174b_repo_truth_registers_gate_b_without_live_authority():
     assert "WP174B is the current PROTECTED-track review target" in index
     assert "6fff7fefd8f936824a7586f94d452ca073b225dd" in index
     assert "dbb4ee0e21e409c4639edc44cce17696a5b15156" in index
-    assert "the certified 19-path L implementation" in index
+    assert "the certified 22-path XL implementation" in index
     assert "closes WP174-D001 and does not start WP174-D002 / WP175" in index
     assert "src/execution_gateway/gate_b.py" in index
     assert "signature type 3" in index
