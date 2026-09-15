@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import pytest
 
+import src.execution_gateway.gate_b as gate_b_mod
 from src.execution_gateway.gate_b import (
     CancelAttempt,
     GateBIdentityPolicy,
@@ -170,13 +171,18 @@ def test_secret_lease_never_exposes_value():
         lease.reveal()
 
 
-def test_interactive_provider_rejects_non_tty(monkeypatch):
+def test_interactive_provider_requires_tty(monkeypatch):
+    # A non-TTY (piped/redirected) stdin fails closed before getpass is reached.
+    monkeypatch.setattr(gate_b_mod, "_stdin_is_tty", lambda: False)
+    with pytest.raises(GatewayError, match="SECRET_INPUT_UNAVAILABLE"):
+        InteractiveGateBSecretProvider().acquire()
+
+
+def test_interactive_provider_rejects_eof_on_tty(monkeypatch):
     import getpass as _gp
 
-    def _raise(_prompt):
-        raise EOFError
-
-    monkeypatch.setattr(_gp, "getpass", _raise)
+    monkeypatch.setattr(gate_b_mod, "_stdin_is_tty", lambda: True)
+    monkeypatch.setattr(_gp, "getpass", lambda _p: (_ for _ in ()).throw(EOFError()))
     with pytest.raises(GatewayError, match="SECRET_INPUT_UNAVAILABLE"):
         InteractiveGateBSecretProvider().acquire()
 
@@ -184,6 +190,7 @@ def test_interactive_provider_rejects_non_tty(monkeypatch):
 def test_interactive_provider_rejects_empty(monkeypatch):
     import getpass as _gp
 
+    monkeypatch.setattr(gate_b_mod, "_stdin_is_tty", lambda: True)
     monkeypatch.setattr(_gp, "getpass", lambda _p: "   ")
     with pytest.raises(GatewayError, match="SECRET_INPUT_INVALID"):
         InteractiveGateBSecretProvider().acquire()
@@ -327,9 +334,12 @@ def test_cancel_exception_is_ambiguous_and_redacted():
 # --------------------------------------------------------------------------- empty-wallet probe
 
 
-def _probe(session, confirmation="CONFIRM-EMPTY-WALLET-CANCEL"):
+def _probe(session, confirmation="CONFIRM-EMPTY-WALLET-CANCEL", repository_head="deadbee"):
+    # B3 (verified signing) is a precondition for any cancel transmission.
+    if session.capability_state == "B2_AUTHENTICATED":
+        session.signing_probe(token_id=TOKEN, price="0.10", size="5")
     return session.empty_wallet_cancel_probe(
-        confirmation, repository_head="deadbee", now_ns=1, valid_ns=2
+        confirmation, repository_head=repository_head, now_ns=1, valid_ns=2
     )
 
 
@@ -507,3 +517,97 @@ def test_restart_returns_capability_to_b0_and_audit_persists():
     assert all(SECRET_SENTINEL not in repr(e) for e in events)
     session.close()
     assert session.capability_state == "B0_LOCKED"
+
+
+# --- WP174B same-capability correction regressions (fixes 2-6) ---
+
+
+class _ClosableClient(FakeClient):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.closed = False
+
+    def close(self):
+        self.closed = True
+
+
+def test_signing_verification_required_before_cancel_probe():
+    # B2 -> B4 is forbidden: probing without a verified signing probe fails closed.
+    session = _session(FakeClient())
+    assert session.capability_state == "B2_AUTHENTICATED"
+    with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
+        session.empty_wallet_cancel_probe(
+            "CONFIRM-EMPTY-WALLET-CANCEL", repository_head="deadbee", now_ns=1, valid_ns=2
+        )
+
+
+def test_receipt_is_content_addressed_over_signing_probe_id():
+    session = _session(FakeClient())
+    probe_id = session.signing_probe(token_id=TOKEN, price="0.10", size="5")
+    receipt = session.empty_wallet_cancel_probe(
+        "CONFIRM-EMPTY-WALLET-CANCEL", repository_head="deadbee", now_ns=1, valid_ns=2
+    )
+    doc = receipt.as_receipt_document()
+    # The signing probe id is bound into the receipt content BEFORE the id is derived.
+    assert doc["signing_probe_id"] == probe_id
+    recomputed = gate_b_mod._sha("gatebreceipt:sha256:", receipt.to_public_mapping())
+    assert recomputed == doc["receipt_id"]
+    # Changing the bound signing_probe_id changes the content address.
+    import dataclasses
+
+    mutated = dataclasses.replace(receipt, signing_probe_id="signingprobe:sha256:" + "0" * 64)
+    assert mutated.receipt_id != receipt.receipt_id
+
+
+def test_close_best_effort_closes_credential_client():
+    client = _ClosableClient()
+    session = _session(client)
+    session.close()
+    assert client.closed is True
+    assert session.capability_state == "B0_LOCKED"
+
+
+def test_identity_failure_closes_client():
+    client = _ClosableClient(signer="0x" + "c" * 40)
+    with pytest.raises(GatewayError, match="SIGNER_MISMATCH"):
+        GateBSession.authenticate(_provider(), _policy(), client_factory=_factory(client))
+    assert client.closed is True
+
+
+def test_not_canceled_orders_is_incident():
+    # Empty account precheck passes, but cancel reports a not-canceled order.
+    client = FakeClient(cancel_response=_CancelResponse(not_canceled=["o7"]))
+    session = _session(client)
+    with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
+        _probe(session)
+
+
+def test_unknown_head_is_rejected():
+    session = _session(FakeClient())
+    session.signing_probe(token_id=TOKEN, price="0.10", size="5")
+    with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
+        session.empty_wallet_cancel_probe(
+            "CONFIRM-EMPTY-WALLET-CANCEL",
+            repository_head="UNKNOWN_HEAD",
+            now_ns=1,
+            valid_ns=2,
+        )
+
+
+def test_operator_repository_head_fails_closed(monkeypatch):
+    from src.execution_gateway import gate_b_operator
+
+    def _boom(*_a, **_k):
+        raise RuntimeError("git unavailable")
+
+    monkeypatch.setattr(gate_b_operator.subprocess, "run", _boom)
+    with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
+        gate_b_operator._repository_head()
+
+
+def test_operator_confirmation_requires_tty(monkeypatch):
+    from src.execution_gateway import gate_b_operator
+
+    monkeypatch.setattr(gate_b_operator, "_stdin_is_tty", lambda: False)
+    with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
+        gate_b_operator._confirm_empty_wallet_cancel()

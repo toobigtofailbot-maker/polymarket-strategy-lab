@@ -28,11 +28,17 @@ from .gate_b import (
     GateBSession,
     InteractiveGateBSecretProvider,
     _CANCEL_CONFIRMATION_PHRASE,
+    _HEAD_RE,
+    _stdin_is_tty,
 )
 from .gateway import GatewayError
 
 
 def _repository_head() -> str:
+    """Return the exact current Git HEAD sha, failing closed if unavailable.
+
+    A PASS receipt must bind a real HEAD; this never returns a placeholder.
+    """
     try:
         out = subprocess.run(
             ["git", "rev-parse", "HEAD"],
@@ -41,13 +47,18 @@ def _repository_head() -> str:
             check=True,
             timeout=30,
         )
-        return out.stdout.strip()
+        head = out.stdout.strip().lower()
     except Exception:
-        return "UNKNOWN_HEAD"
+        raise GatewayError("CANCEL_PROBE_FAILED") from None
+    if _HEAD_RE.fullmatch(head) is None:
+        raise GatewayError("CANCEL_PROBE_FAILED")
+    return head
 
 
 def _confirm_empty_wallet_cancel() -> str:
     """Separate no-echo confirmation, distinct from the private-key prompt."""
+    if not _stdin_is_tty():
+        raise GatewayError("CANCEL_PROBE_FAILED")
     try:
         phrase = getpass.getpass(
             f"Type '{_CANCEL_CONFIRMATION_PHRASE}' to authorize the empty-wallet "
@@ -97,8 +108,10 @@ def run_verify(args: argparse.Namespace) -> int:
             now_ns=now_ns,
             valid_ns=valid_ns,
         )
+        # The signing probe id is bound INTO the receipt before receipt_id is
+        # derived (content-addressed), so no post-hoc mutation is needed here.
+        assert receipt.signing_probe_id == signing_probe_id
         document = receipt.as_receipt_document()
-        document["signing_probe_id"] = signing_probe_id
         receipt_path = Path(args.receipt)
         receipt_path.parent.mkdir(parents=True, exist_ok=True)
         receipt_path.write_text(

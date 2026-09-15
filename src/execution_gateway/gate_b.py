@@ -17,6 +17,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 import getpass
+import re
+import sys
 from typing import Callable, Mapping, Protocol
 
 from polymarket import SecureClient
@@ -54,6 +56,32 @@ _CANCEL_OPERATIONS = ("CANCEL_ONE", "CANCEL_MANY", "CANCEL_MARKET", "CANCEL_ALL"
 
 # Closed mutation-outcome vocabulary for cancel classification.
 _CANCEL_OUTCOMES = ("DEFINITIVE_ACCEPTED", "DEFINITIVE_REJECTED", "AMBIGUOUS")
+
+# A verification receipt must bind an exact Git HEAD (short or full sha), never a
+# placeholder such as UNKNOWN_HEAD.
+_HEAD_RE = re.compile(r"^[0-9a-f]{7,64}$")
+
+
+def _stdin_is_tty() -> bool:
+    """True only when stdin is an interactive terminal (never a pipe/file)."""
+    stream = getattr(sys, "stdin", None)
+    isatty = getattr(stream, "isatty", None)
+    try:
+        return bool(isatty()) if callable(isatty) else False
+    except Exception:
+        return False
+
+
+def _safe_close(client: object) -> None:
+    """Best-effort close of a credential-bearing client; never raises/echoes."""
+    if client is None:
+        return
+    closer = getattr(client, "close", None)
+    if callable(closer):
+        try:
+            closer()
+        except Exception:
+            pass
 
 
 def _public_address(value: object, error: str) -> str:
@@ -132,6 +160,10 @@ class InteractiveGateBSecretProvider:
         self._prompt = str(prompt)
 
     def acquire(self) -> GateBSecretLease:
+        # A real signer key is accepted only from an interactive terminal; a
+        # piped or redirected (non-TTY) stdin fails closed and never consumes it.
+        if not _stdin_is_tty():
+            raise GatewayError("SECRET_INPUT_UNAVAILABLE")
         try:
             raw = getpass.getpass(self._prompt)
         except (EOFError, OSError):
@@ -392,13 +424,15 @@ def create_deposit_wallet_client(
             address=str(ctx.wallet),
             type=_relayer_transaction_type_for_wallet(ctx.wallet_type),
         )
+        if not deployed:
+            # Never deploy. An undeployed wallet is a refused side effect.
+            raise GatewayError("SDK_SIDE_EFFECT_UNAUTHORIZED")
     except GatewayError:
+        _safe_close(client)
         raise
     except Exception:
+        _safe_close(client)
         raise GatewayError("SDK_CONTRACT_INVALID") from None
-    if not deployed:
-        # Never deploy. An undeployed wallet is a refused side effect.
-        raise GatewayError("SDK_SIDE_EFFECT_UNAUTHORIZED")
     return client
 
 
@@ -418,7 +452,15 @@ class GateBSession:
     secret provider is available through ordinary fixture configuration.
     """
 
-    __slots__ = ("_client", "_policy", "_state", "_mutation", "_attempt_seq", "_audit_sink")
+    __slots__ = (
+        "_client",
+        "_policy",
+        "_state",
+        "_mutation",
+        "_attempt_seq",
+        "_audit_sink",
+        "_signing_probe_id",
+    )
 
     def __init__(
         self,
@@ -433,6 +475,7 @@ class GateBSession:
         self._mutation = ProductionSdkMutationAdapter(client)
         self._attempt_seq = 0
         self._audit_sink = audit_sink
+        self._signing_probe_id: str | None = None
         # Journal the sanitized capability transition. The sink is intended to be
         # the existing tamper-evident gateway store's append; it never receives a
         # secret value, credential, or signature.
@@ -474,7 +517,13 @@ class GateBSession:
             raise GatewayError("AUTHENTICATION_FAILED") from None
         finally:
             lease.close()
-        cls._verify_identity(client, policy)
+        try:
+            cls._verify_identity(client, policy)
+        except BaseException:
+            # A constructed credential-bearing client must be closed on any
+            # identity-verification failure before the error propagates.
+            _safe_close(client)
+            raise
         return cls(client, policy, audit_sink=audit_sink)
 
     @staticmethod
@@ -582,6 +631,7 @@ class GateBSession:
         )
         del signed
         self._state = "B3_SIGNING_VERIFIED"
+        self._signing_probe_id = identity
         self._emit("GATE_B_SIGNING_VERIFIED", {"signing_probe_id": identity})
         return identity
 
@@ -592,6 +642,13 @@ class GateBSession:
     ) -> GateBVerificationReceipt:
         _time(now_ns)
         _time(valid_ns)
+        # B2 -> B4 is forbidden: real local signing must be verified before any
+        # real cancel transmission.
+        if self._state != "B3_SIGNING_VERIFIED" or self._signing_probe_id is None:
+            raise GatewayError("CANCEL_PROBE_FAILED")
+        # A PASS receipt must bind an exact Git HEAD, never UNKNOWN_HEAD.
+        if not isinstance(repository_head, str) or _HEAD_RE.fullmatch(repository_head) is None:
+            raise GatewayError("CANCEL_PROBE_FAILED")
         if confirmation != _CANCEL_CONFIRMATION_PHRASE:
             raise GatewayError("CANCEL_PROBE_FAILED")
         snapshot = self.account_snapshot()
@@ -611,8 +668,13 @@ class GateBSession:
             prior_reconciliation_state="HEALTHY",
         )
         result, summary = self._mutation.cancel(attempt)
-        # The account was empty, so a canceled order is an incident, not a pass.
-        if int(summary.get("canceled_count", 0)) != 0:
+        # The account was empty, so success requires that nothing was canceled and
+        # nothing was left uncanceled; any canceled or not-canceled order is an
+        # incident, not a pass.
+        if (
+            int(summary.get("canceled_count", 0)) != 0
+            or int(summary.get("not_canceled_count", 0)) != 0
+        ):
             raise GatewayError("CANCEL_PROBE_FAILED")
         after = self.account_snapshot()
         open_after = int(after["open_orders"])
@@ -632,7 +694,7 @@ class GateBSession:
             credential_mode="EPHEMERAL_INTERACTIVE_L1_L2_IN_MEMORY",
             authenticated_reads_pass=True,
             account_empty_pass=True,
-            signing_probe_id=None,
+            signing_probe_id=self._signing_probe_id,
             cancel_probe_attempt_id=attempt.identity,
             cancel_probe_result=result,
             open_orders_before=open_before,
@@ -654,8 +716,10 @@ class GateBSession:
         return receipt
 
     def close(self) -> None:
+        _safe_close(self._client)
         self._client = None
         self._mutation = None
+        self._signing_probe_id = None
         self._state = "B0_LOCKED"
 
     def __enter__(self) -> "GateBSession":

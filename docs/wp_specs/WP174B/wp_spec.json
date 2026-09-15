@@ -6,7 +6,7 @@
     "title": "Gate-B Production Credential, Signing & Real-Mutation Enablement",
     "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
     "package_class": "PROTECTED_GATE_B_PRODUCTION_CREDENTIAL_SIGNING_MUTATION_ENABLEMENT",
-    "package_size_class": "L",
+    "package_size_class": "XL",
     "risk_level": 4,
     "base_branch": "main",
     "required_predecessor": {
@@ -17,8 +17,8 @@
     "suggested_branch": "claude/wp174b-gate-b-production-signing-mutation",
     "objective": "Implement after independent certification and the bounded WP174B authorization the smallest production-quality Gate-B credential, signing, and real-mutation-transport enablement that consumes an ephemeral real signer key through one no-echo operator boundary, authenticates the official SecureClient against an already-deployed Deposit Wallet without wallet deployment or approvals, derives and validates L2 credentials in memory, performs bounded authenticated reads, signs one real LIMIT order locally without posting it, implements a real cancellation transport with idempotency and ambiguity handling, keeps every real economic CREATE structurally Gate-C unreachable, proves one safe empty-account real cancel probe, persists only sanitized public identity and audit evidence, and preserves all WP174 Gate-A invariants while adding no A3, capital, strategy, or live authority.",
     "capital_at_risk_usd": 0,
-    "xl_explicit_authorization": false,
-    "xl_authorization_basis": null
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Karl's existing WP174B same-capability authorization for the smallest truthful mechanically required scope up to 35 paths applies; exact-head hosted CI proved three additional historical guard paths (tests/test_no_live_mode_by_default.py, tests/test_official_client_dependency_boundary.py, tests/test_official_client_sandbox_boundary.py) must recognize the authorized Gate-B cancellation boundary and preserve the global live/order prohibition elsewhere. This is scope-size authority only and grants no new product, capability, credential, Gate B, Gate C, live, capital, or WP175 authority."
   },
   "scope": {
     "required_changed_files": [
@@ -40,7 +40,10 @@
       "tests/test_architecture_boundaries.py",
       "tests/test_operator_cockpit.py",
       "tests/test_project_status_docs.py",
-      "tests/test_repo_truth_docs.py"
+      "tests/test_repo_truth_docs.py",
+      "tests/test_no_live_mode_by_default.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_official_client_sandbox_boundary.py"
     ],
     "allowed_changed_files": [
       "docs/deferred_items_log.md",
@@ -61,7 +64,10 @@
       "tests/test_architecture_boundaries.py",
       "tests/test_operator_cockpit.py",
       "tests/test_project_status_docs.py",
-      "tests/test_repo_truth_docs.py"
+      "tests/test_repo_truth_docs.py",
+      "tests/test_no_live_mode_by_default.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_official_client_sandbox_boundary.py"
     ],
     "forbidden_prefixes": [
       "agent_memory/",
@@ -73,7 +79,7 @@
       "src/operator_cockpit_frontend/",
       "tools/hermes/"
     ],
-    "max_changed_files": 19,
+    "max_changed_files": 22,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       "docs/deferred_items_log.md",
@@ -84,7 +90,10 @@
       "tests/test_architecture_boundaries.py",
       "tests/test_operator_cockpit.py",
       "tests/test_project_status_docs.py",
-      "tests/test_repo_truth_docs.py"
+      "tests/test_repo_truth_docs.py",
+      "tests/test_no_live_mode_by_default.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_official_client_sandbox_boundary.py"
     ],
     "rollback_surface": "Revert WP174B. The Gate-B session, ephemeral secret provider, identity policy, verification receipt, production SDK mutation adapter, Gate-C-unreachable create transport, operator CLI, replaced Gate-B mutation adapter, sanitized cockpit projection fields, focused adversarial tests, and status/governance evidence are removed. WP174 Gate-A source, SQLite audit/recovery state, and WP173 paper evidence remain unchanged. No real credential, real economic order, live capital, A3 state, Hermes authority, strategy, scheduler, or deployment state is created or migrated.",
     "mode_boundaries": [

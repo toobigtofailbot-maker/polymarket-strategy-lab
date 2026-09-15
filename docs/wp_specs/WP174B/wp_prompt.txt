@@ -7,7 +7,7 @@ Package Identity:
   Base branch: main
   Suggested branch: claude/wp174b-gate-b-production-signing-mutation
   Package class: PROTECTED_GATE_B_PRODUCTION_CREDENTIAL_SIGNING_MUTATION_ENABLEMENT
-  Package size class: L (exact 19-path mechanically required scope)
+  Package size class: XL (exact 22-path mechanically required scope)
   Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
   Runtime impact: MANUAL_FOREGROUND_REAL_CREDENTIAL_AND_SIGNING_WITH_ZERO_CAPITAL_MUTATION_PROBE
   Product impact: PRODUCTION_AUTH_SIGNING_AND_CANCEL_TRANSPORT_READY_FOR_LATER_WP175_GATE_C
@@ -24,7 +24,7 @@ Recommended Claude/Codex Mode:
     cancel-idempotency, empty-wallet-probe, and audit invariants
   Escalate to higher reasoning or STOP if: signer/funder/wallet identity is ambiguous, a real
     create cannot be made structurally Gate-C unreachable, or safe behavior cannot be proved
-    inside the exact certified 19-path boundary
+    inside the exact certified 22-path boundary
 
 BEGIN_GOVERNANCE_AUTHORITY_V1
 risk_level: 4
@@ -131,7 +131,7 @@ COMPATIBILITY / IMPOSSIBILITY CHECK
 | Backend-only cockpit | Existing loopback GET projection pattern | operator_cockpit.py; test_operator_cockpit.py | YES | YES | Add sanitized Gate-B fields only; no mutation control |
 | No dependency change | Exact installed pins are already correct | none | YES | YES | Prove pins; add no dependency or lock file |
 
-All rows are compatible inside the frozen L package. Any row becoming incompatible or requiring an
+All rows are compatible inside the frozen XL package. Any row becoming incompatible or requiring an
 unallowed path is a protected hard stop, not authority to redesign or expand the package.
 
 ===============================================================================
@@ -345,7 +345,7 @@ allocate capital, change risk caps, arm A3, clear a kill, or approve itself. WP1
 first restricted-live capital/risk envelope and the A3 state.
 
 ===============================================================================
-8. EXACT FROZEN SCOPE — 19 PATHS, CLASS L
+8. EXACT FROZEN SCOPE — 22 PATHS, CLASS XL
 ===============================================================================
 
 Required and allowed changed paths are exactly:
@@ -368,6 +368,9 @@ Required and allowed changed paths are exactly:
 17. tests/test_operator_cockpit.py
 18. tests/test_project_status_docs.py
 19. tests/test_repo_truth_docs.py
+20. tests/test_no_live_mode_by_default.py
+21. tests/test_official_client_dependency_boundary.py
+22. tests/test_official_client_sandbox_boundary.py
 
 The certificate path is planned protected evidence and must be created only by the independent
 certifier before implementation. The pre-freeze executor creates and commits only prompt/spec bytes.
@@ -377,12 +380,18 @@ correct), so pyproject.toml, .github/workflows/ci.yml, and the four WP174 depend
 guards are out of scope. src/execution_gateway/store.py and tests/execution_gateway/test_store_recovery.py
 are unchanged because the tamper-evident store already accepts arbitrary uppercase event types and
 semantic replay lives in gateway.py; Gate-B audit events flow through the existing store API. The two
-new source modules live under the already-approved src/execution_gateway directory scope. The
-wallet-intelligence and human-review branch-diff guards auto-resolve through their spec-authorized
-changed-scope mechanism keyed on docs/status_entries/WP174B.md with no dependency change, so they need
-no edit. Any need for a twentieth path is a protected scope hard stop requiring return to Side with
-the complete remaining path set and explicit authorization. No further same-envelope PROTECTED scope
-correction is self-authorized after certificate hashing.
+new source modules live under the already-approved src/execution_gateway directory scope. Paths 20-22
+are the three historical live/order and official-client boundary guards that exact-head hosted CI
+proved must recognize gate_b.py as the authorized Gate-B real cancellation boundary (narrow per-file
+exemption for the literal cancel_order term only), while the global prohibition on live order
+placement/enable and official-client credential/signing terms everywhere else is preserved and never
+obfuscated. This is XL scope-size authority only under Karl's existing WP174B ≤35-path authorization
+and adds no new capability, dependency, credential, Gate B, Gate C, live, capital, or WP175 authority.
+The wallet-intelligence and human-review branch-diff guards still auto-resolve through their
+spec-authorized changed-scope mechanism keyed on docs/status_entries/WP174B.md with no dependency
+change, so they need no edit. Any need for a twenty-third path is a protected scope hard stop
+requiring return to Side with the complete remaining path set and explicit authorization. No further
+same-envelope PROTECTED scope correction is self-authorized after certificate hashing.
 
 ===============================================================================
 9. NEGATIVE TEST AND ADVERSARIAL MATRIX
@@ -483,7 +492,7 @@ change, exact-head hosted CI, and authenticated PR-body re-fetch.
 Concrete protected STOP conditions:
 - STOP if PR #176, final head, merge/base, or current-main truth differs materially.
 - STOP if the independent certificate is missing, invalid, executor-authored, or hash-mismatched.
-- STOP if any changed path falls outside the exact 19-path scope.
+- STOP if any changed path falls outside the exact 22-path scope.
 - STOP if any dependency, lock, or workflow file becomes required.
 - STOP if the selected SDK cannot authenticate an existing Deposit Wallet without deployment,
   approval, or transfer, or if it requires Builder/Relayer authority merely to auth/sign/cancel.
