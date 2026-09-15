@@ -21,11 +21,18 @@ from src.execution_gateway.gate_b import (
     GateBSession,
     GateCLivePermit,
     InteractiveGateBSecretProvider,
-    ProductionSdkMutationAdapter,
     WalletSessionLock,
     gate_b_capability_projection,
 )
 from src.execution_gateway.gateway import GatewayError, ProtectedExecutionGateway
+from src.paper_trading import PaperEngine, build_paper_intent
+from src.paper_trading.store import PaperStore
+from tests.execution_gateway.test_gateway import (
+    _authorization,
+    _prepare,
+    _ready_gateway,
+    _venue_context,
+)
 
 SIGNER = "0x" + "a" * 40
 WALLET = "0x" + "b" * 40
@@ -102,6 +109,9 @@ class FakeClient:
         self._cancel_response = cancel_response or _CancelResponse()
         self._cancel_raises = cancel_raises
         self.cancel_all_calls = 0
+        self.cancel_one_calls = []
+        self.cancel_many_calls = []
+        self.cancel_market_calls = []
         self.place_calls = 0
         self.read_calls = {"balance": 0, "open_orders": 0, "trades": 0, "positions": 0}
 
@@ -141,6 +151,21 @@ class FakeClient:
         return self._cancel_response
 
     def cancel_order(self, *, order_id):
+        self.cancel_one_calls.append(order_id)
+        if self._cancel_raises:
+            raise RuntimeError(f"venue error leaking {SECRET_SENTINEL}")
+        return self._cancel_response
+
+    def cancel_orders(self, *, order_ids):
+        self.cancel_many_calls.append(tuple(order_ids))
+        if self._cancel_raises:
+            raise RuntimeError(f"venue error leaking {SECRET_SENTINEL}")
+        return self._cancel_response
+
+    def cancel_market_orders(self, *, market):
+        self.cancel_market_calls.append(market)
+        if self._cancel_raises:
+            raise RuntimeError(f"venue error leaking {SECRET_SENTINEL}")
         return self._cancel_response
 
 
@@ -187,6 +212,108 @@ def _durable_session(tmp_path: Path, client: FakeClient):
         wallet_lock=lock,
     )
     return store_path, gateway, lock, session
+
+
+def _empty_cancel_attempt(*, sequence: int = 1) -> CancelAttempt:
+    return CancelAttempt(
+        operation="CANCEL_ALL",
+        request_target_ids=(),
+        request_target_bindings=(),
+        request_market_id=None,
+        attempt_sequence=sequence,
+        prior_reconciliation_state="HEALTHY",
+    )
+
+
+def _durable_probe(
+    tmp_path: Path,
+    client: FakeClient,
+    confirmation: str = "CONFIRM-EMPTY-WALLET-CANCEL",
+    repository_head: str = "deadbee",
+):
+    _store, gateway, lock, session = _durable_session(tmp_path, client)
+    try:
+        receipt = _probe(
+            session, confirmation=confirmation, repository_head=repository_head
+        )
+        return receipt, session.capability_state
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
+
+
+def _known_order_session(tmp_path: Path, client: FakeClient, *, count: int = 2):
+    gateway = _ready_gateway(tmp_path)
+    first = _prepare(gateway, tmp_path)
+    gateway.record_fixture_mutation(
+        first.order_identity,
+        operation="CREATE",
+        attempt_sequence=1,
+        request=first.would_submit,
+        transmitted=True,
+        response_status=200,
+        response_body_valid=True,
+        venue_order_id="venue-order-a",
+        event_time_ns=30,
+    )
+    orders = [("venue-order-a", first.order_identity)]
+    if count == 2:
+        paper_path, _first_intent_id, _evidence = _authorization(tmp_path)
+        with PaperStore(paper_path) as paper_store:
+            paper = PaperEngine.open(paper_store)
+            second_intent = build_paper_intent(
+                paper.state.binding,
+                market_id="market:a",
+                asset_id="asset:a",
+                side="BUY",
+                quantity="1",
+                order_style="AGGRESSIVE_TAKER",
+                reference_price="0.4",
+                decision_time_ns=101,
+            )
+            paper.submit(second_intent)
+        second = gateway.prepare_limit_order(
+            paper_path,
+            second_intent.intent_id,
+            _venue_context(),
+            session_identity="paper-session-second",
+            worst_acceptable_price="0.6",
+            time_in_force="GTC",
+            post_only=False,
+            expiration=None,
+            nonce=2,
+            signing_time_ns=31,
+        )
+        gateway.record_fixture_mutation(
+            second.order_identity,
+            operation="CREATE",
+            attempt_sequence=1,
+            request=second.would_submit,
+            transmitted=True,
+            response_status=200,
+            response_body_valid=True,
+            venue_order_id="venue-order-b",
+            event_time_ns=32,
+        )
+        orders.append(("venue-order-b", second.order_identity))
+    lock = WalletSessionLock(tmp_path, WALLET).acquire()
+    session = GateBSession.authenticate(
+        _provider(),
+        _policy(),
+        client_factory=_factory(client),
+        gateway=gateway,
+        wallet_lock=lock,
+    )
+    session._record_reconciliation(
+        {
+            "collateral_balance": "0",
+            "open_orders": count,
+            "account_trades": 0,
+            "positions": 0,
+        }
+    )
+    return gateway, lock, session, tuple(orders)
 
 
 # --------------------------------------------------------------------------- secret boundary
@@ -340,7 +467,7 @@ def test_gate_c_permit_is_unconstructable():
     ["create_limit_order", "place_limit_order", "post_order", "place_market_order"],
 )
 def test_create_transport_is_gate_c_locked(method):
-    adapter = ProductionSdkMutationAdapter(FakeClient())
+    adapter = gate_b_mod._ProductionSdkMutationTransport(FakeClient())
     with pytest.raises(GatewayError, match="GATE_C_REQUIRED"):
         getattr(adapter, method)(token_id=TOKEN, price="0.10", size="5", side="BUY")
 
@@ -349,14 +476,14 @@ def test_create_transport_is_gate_c_locked(method):
 
 
 def test_cancel_attempt_identity_deterministic():
-    a = CancelAttempt("CANCEL_ALL", "ALL", 1, "HEALTHY")
-    b = CancelAttempt("CANCEL_ALL", "ALL", 1, "HEALTHY")
+    a = _empty_cancel_attempt()
+    b = _empty_cancel_attempt()
     assert a.identity == b.identity and a.identity.startswith("cancelattempt:sha256:")
 
 
 def test_cancel_single_transmit_then_idempotent_block():
-    adapter = ProductionSdkMutationAdapter(FakeClient())
-    attempt = CancelAttempt("CANCEL_ALL", "ALL", 1, "HEALTHY")
+    adapter = gate_b_mod._ProductionSdkMutationTransport(FakeClient())
+    attempt = _empty_cancel_attempt()
     result, summary = adapter.cancel(attempt)
     assert result == "DEFINITIVE_ACCEPTED"
     assert summary["canceled_count"] == 0
@@ -365,8 +492,8 @@ def test_cancel_single_transmit_then_idempotent_block():
 
 
 def test_cancel_exception_is_ambiguous_and_redacted():
-    adapter = ProductionSdkMutationAdapter(FakeClient(cancel_raises=True))
-    attempt = CancelAttempt("CANCEL_ALL", "ALL", 1, "HEALTHY")
+    adapter = gate_b_mod._ProductionSdkMutationTransport(FakeClient(cancel_raises=True))
+    attempt = _empty_cancel_attempt()
     with pytest.raises(GatewayError) as exc:
         adapter.cancel(attempt)
     assert exc.value.code == "CANCEL_PROBE_AMBIGUOUS"
@@ -387,11 +514,10 @@ def _probe(
     )
 
 
-def test_empty_wallet_probe_pass_produces_sanitized_receipt():
+def test_empty_wallet_probe_pass_produces_sanitized_receipt(tmp_path: Path):
     client = FakeClient(balance="0", open_orders=(), positions=())
-    session = _session(client)
-    receipt = _probe(session)
-    assert session.capability_state == "B4_CANCEL_TRANSPORT_VERIFIED"
+    receipt, state = _durable_probe(tmp_path, client)
+    assert state == "B4_CANCEL_TRANSPORT_VERIFIED"
     assert client.cancel_all_calls == 1
     doc = receipt.as_receipt_document()
     assert doc["cancel_probe_result"] == "DEFINITIVE_ACCEPTED"
@@ -414,36 +540,31 @@ def test_empty_wallet_probe_pass_produces_sanitized_receipt():
         assert banned not in lowered
 
 
-def test_empty_wallet_probe_aborts_on_nonzero_balance():
-    session = _session(FakeClient(balance="5"))
+def test_empty_wallet_probe_aborts_on_nonzero_balance(tmp_path: Path):
     with pytest.raises(GatewayError, match="GATE_B_ACCOUNT_NOT_EMPTY"):
-        _probe(session)
+        _durable_probe(tmp_path, FakeClient(balance="5"))
 
 
-def test_empty_wallet_probe_aborts_on_open_orders():
-    session = _session(FakeClient(open_orders=("o1",)))
+def test_empty_wallet_probe_aborts_on_open_orders(tmp_path: Path):
     with pytest.raises(GatewayError, match="GATE_B_ACCOUNT_NOT_EMPTY"):
-        _probe(session)
+        _durable_probe(tmp_path, FakeClient(open_orders=("o1",)))
 
 
-def test_empty_wallet_probe_aborts_on_positions():
-    session = _session(FakeClient(positions=("p1",)))
+def test_empty_wallet_probe_aborts_on_positions(tmp_path: Path):
     with pytest.raises(GatewayError, match="GATE_B_ACCOUNT_NOT_EMPTY"):
-        _probe(session)
+        _durable_probe(tmp_path, FakeClient(positions=("p1",)))
 
 
-def test_empty_wallet_probe_requires_confirmation():
-    session = _session(FakeClient())
+def test_empty_wallet_probe_requires_confirmation(tmp_path: Path):
     with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
-        _probe(session, confirmation="nope")
+        _durable_probe(tmp_path, FakeClient(), confirmation="nope")
 
 
-def test_unexpected_cancellation_is_incident():
+def test_unexpected_cancellation_is_incident(tmp_path: Path):
     # Empty account precheck passes, but cancel_all reports a canceled order.
     client = FakeClient(cancel_response=_CancelResponse(canceled=["o9"]))
-    session = _session(client)
     with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
-        _probe(session)
+        _durable_probe(tmp_path, client)
 
 
 # --------------------------------------------------------------------------- projection / restart
@@ -481,8 +602,12 @@ def test_no_public_raw_client_or_credentials_attribute():
         "api_key",
         "secret",
         "passphrase",
+        "mutation_adapter",
     ):
         assert not hasattr(session, banned)
+    import src.execution_gateway as execution_gateway
+
+    assert not hasattr(execution_gateway, "ProductionSdkMutationAdapter")
 
 
 # --- Frozen evidence-node umbrella tests (wp_spec.json evidence_plan R002-R010) ---
@@ -541,7 +666,7 @@ def test_raw_client_containment_and_forbidden_wallet_surfaces_unreachable():
 
 
 def test_create_transport_is_gate_c_unreachable():
-    adapter = ProductionSdkMutationAdapter(FakeClient())
+    adapter = gate_b_mod._ProductionSdkMutationTransport(FakeClient())
     for method in (
         "create_limit_order",
         "place_limit_order",
@@ -553,35 +678,41 @@ def test_create_transport_is_gate_c_unreachable():
 
 
 def test_cancel_transport_idempotency_ambiguity_and_reconcile():
-    adapter = ProductionSdkMutationAdapter(FakeClient())
-    attempt = CancelAttempt("CANCEL_ALL", "ALL", 1, "HEALTHY")
+    adapter = gate_b_mod._ProductionSdkMutationTransport(FakeClient())
+    attempt = _empty_cancel_attempt()
     result, _summary = adapter.cancel(attempt)
     assert result == "DEFINITIVE_ACCEPTED"
     with pytest.raises(GatewayError, match="MUTATION_ALREADY_TRANSMITTED"):
         adapter.cancel(attempt)
-    amb = ProductionSdkMutationAdapter(FakeClient(cancel_raises=True))
+    amb = gate_b_mod._ProductionSdkMutationTransport(FakeClient(cancel_raises=True))
     with pytest.raises(GatewayError, match="CANCEL_PROBE_AMBIGUOUS"):
-        amb.cancel(CancelAttempt("CANCEL_ALL", "ALL", 1, "HEALTHY"))
+        amb.cancel(_empty_cancel_attempt())
 
 
-def test_empty_account_cancel_probe_and_sanitized_receipt():
-    session = _session(FakeClient())
-    receipt = _probe(session)
+def test_empty_account_cancel_probe_and_sanitized_receipt(tmp_path: Path):
+    receipt, _state = _durable_probe(tmp_path, FakeClient())
     doc = receipt.as_receipt_document()
     assert doc["account_empty_pass"] is True
     assert doc["cancel_probe_result"] == "DEFINITIVE_ACCEPTED"
     assert SECRET_SENTINEL not in repr(doc)
+    nonempty = tmp_path / "nonempty"
+    nonempty.mkdir()
     with pytest.raises(GatewayError, match="GATE_B_ACCOUNT_NOT_EMPTY"):
-        _probe(_session(FakeClient(balance="5")))
+        _durable_probe(nonempty, FakeClient(balance="5"))
 
 
-def test_restart_returns_capability_to_b0_and_audit_persists():
+def test_restart_returns_capability_to_b0_and_audit_persists(tmp_path: Path):
     events = []
+    path = tmp_path / "gateway.sqlite3"
+    gateway = ProtectedExecutionGateway.create(path, created_time_ns=1)
+    lock = WalletSessionLock(tmp_path, WALLET).acquire()
     session = GateBSession.authenticate(
         _provider(),
         _policy(),
         client_factory=_factory(FakeClient()),
         audit_sink=events.append,
+        gateway=gateway,
+        wallet_lock=lock,
     )
     session.signing_probe(token_id=TOKEN, price="0.10", size="5")
     _probe(session)
@@ -591,6 +722,8 @@ def test_restart_returns_capability_to_b0_and_audit_persists():
     assert "GATE_B_CANCEL_TRANSPORT_VERIFIED" in kinds
     assert all(SECRET_SENTINEL not in repr(e) for e in events)
     session.close()
+    lock.close()
+    gateway.close()
     assert session.capability_state == "B0_LOCKED"
 
 
@@ -619,12 +752,20 @@ def test_signing_verification_required_before_cancel_probe():
         )
 
 
-def test_receipt_is_content_addressed_over_signing_probe_id():
-    session = _session(FakeClient())
-    probe_id = session.signing_probe(token_id=TOKEN, price="0.10", size="5")
-    receipt = session.empty_wallet_cancel_probe(
-        "CONFIRM-EMPTY-WALLET-CANCEL", repository_head="deadbee", now_ns=1, valid_ns=2
-    )
+def test_receipt_is_content_addressed_over_signing_probe_id(tmp_path: Path):
+    _store, gateway, lock, session = _durable_session(tmp_path, FakeClient())
+    try:
+        probe_id = session.signing_probe(token_id=TOKEN, price="0.10", size="5")
+        receipt = session.empty_wallet_cancel_probe(
+            "CONFIRM-EMPTY-WALLET-CANCEL",
+            repository_head="deadbee",
+            now_ns=1,
+            valid_ns=2,
+        )
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
     doc = receipt.as_receipt_document()
     # The signing probe id is bound into the receipt content BEFORE the id is derived.
     assert doc["signing_probe_id"] == probe_id
@@ -656,12 +797,11 @@ def test_identity_failure_closes_client():
     assert client.closed is True
 
 
-def test_not_canceled_orders_is_incident():
+def test_not_canceled_orders_is_incident(tmp_path: Path):
     # Empty account precheck passes, but cancel reports a not-canceled order.
     client = FakeClient(cancel_response=_CancelResponse(not_canceled=["o7"]))
-    session = _session(client)
     with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
-        _probe(session)
+        _durable_probe(tmp_path, client)
 
 
 def test_unknown_head_is_rejected():
@@ -714,6 +854,14 @@ def test_real_gateway_store_persists_gate_b_evidence_across_restart(tmp_path: Pa
         "GATE_B_CANCEL_ATTEMPT_RESULT",
         "GATE_B_CANCEL_TRANSPORT_VERIFIED",
     ]
+    started = next(
+        event
+        for event in reopened.gate_b_events()
+        if event.event_type == "GATE_B_CANCEL_ATTEMPT_STARTED"
+    )
+    assert started.data["request_target_ids"] == []
+    assert started.data["request_target_bindings"] == []
+    assert started.data["request_market_id"] is None
     assert receipt.receipt_id in repr(
         [dict(event.data) for event in reopened.gate_b_events()]
     )
@@ -739,6 +887,72 @@ def test_persistent_gate_b_journal_redaction_rejects_forbidden_fields(
         assert gateway.gate_b_events() == ()
 
 
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "identity",
+        "duplicate_target",
+        "binding_mismatch",
+        "market_missing",
+        "unexpected_market",
+        "over_bound",
+    ],
+)
+def test_gate_b_started_event_structural_negative_matrix(
+    tmp_path: Path, defect: str
+):
+    owner = "executionorder:sha256:" + "1" * 64
+    attempt = CancelAttempt(
+        operation="CANCEL_ONE",
+        request_target_ids=("venue-order-a",),
+        request_target_bindings=(("venue-order-a", owner),),
+        request_market_id=None,
+        attempt_sequence=1,
+        prior_reconciliation_state="HEALTHY",
+    )
+    data = {
+        "capability_state": "B2_AUTHENTICATED",
+        "public_signer": SIGNER,
+        "public_wallet": WALLET,
+        "wallet_type": "DEPOSIT_WALLET",
+        "signature_type": "3",
+        "cancel_attempt_id": attempt.identity,
+        "operation": attempt.operation,
+        "request_target_ids": list(attempt.request_target_ids),
+        "request_target_bindings": [list(attempt.request_target_bindings[0])],
+        "request_market_id": None,
+        "attempt_sequence": 1,
+        "prior_reconciliation_state": "HEALTHY",
+    }
+    if defect == "identity":
+        data["cancel_attempt_id"] = "cancelattempt:sha256:" + "0" * 64
+    elif defect == "duplicate_target":
+        data["operation"] = "CANCEL_MANY"
+        data["request_target_ids"] = ["venue-order-a", "venue-order-a"]
+        data["request_target_bindings"] = [
+            ["venue-order-a", owner],
+            ["venue-order-a", owner],
+        ]
+    elif defect == "binding_mismatch":
+        data["request_target_bindings"] = [["venue-order-b", owner]]
+    elif defect == "market_missing":
+        data["operation"] = "CANCEL_MARKET"
+    elif defect == "unexpected_market":
+        data["request_market_id"] = "market:a"
+    else:
+        data["operation"] = "CANCEL_MANY"
+        data["request_target_ids"] = [f"venue-{index:03d}" for index in range(101)]
+        data["request_target_bindings"] = [
+            [target, owner] for target in data["request_target_ids"]
+        ]
+    with ProtectedExecutionGateway.create(
+        tmp_path / "gateway.sqlite3", created_time_ns=1
+    ) as gateway:
+        with pytest.raises(GatewayError, match="INVALID_AUDIT_DATA"):
+            gateway.record_gate_b_event("GATE_B_CANCEL_ATTEMPT_STARTED", data)
+        assert gateway.gate_b_events() == ()
+
+
 def test_cancel_attempt_is_committed_before_transport(tmp_path: Path):
     holder = {}
 
@@ -758,13 +972,15 @@ def test_cancel_attempt_is_committed_before_transport(tmp_path: Path):
 
 def test_restart_never_resends_started_without_result(tmp_path: Path):
     store_path, gateway, lock, session = _durable_session(tmp_path, FakeClient())
-    attempt = CancelAttempt("CANCEL_ALL", "ALL", 1, "HEALTHY")
+    attempt = _empty_cancel_attempt()
     session._emit(
         "GATE_B_CANCEL_ATTEMPT_STARTED",
         {
             "cancel_attempt_id": attempt.identity,
             "operation": attempt.operation,
-            "target": attempt.target,
+            "request_target_ids": [],
+            "request_target_bindings": [],
+            "request_market_id": None,
             "attempt_sequence": attempt.attempt_sequence,
             "prior_reconciliation_state": attempt.prior_reconciliation_state,
         },
@@ -812,8 +1028,9 @@ def test_ambiguous_attempt_survives_restart_and_blocks_retry(tmp_path: Path):
     store_path, gateway, lock, session = _durable_session(
         tmp_path, FakeClient(cancel_raises=True)
     )
-    with pytest.raises(GatewayError, match="CANCEL_PROBE_AMBIGUOUS"):
+    with pytest.raises(GatewayError, match="CANCEL_PROBE_AMBIGUOUS") as exc:
         _probe(session)
+    assert SECRET_SENTINEL not in str(exc.value)
     session.close()
     lock.close()
     gateway.close()
@@ -838,6 +1055,218 @@ def test_wallet_session_lock_is_exclusive_and_released(tmp_path: Path):
     WalletSessionLock(tmp_path, WALLET).acquire().close()
 
 
+@pytest.mark.parametrize(
+    "operation",
+    ["CANCEL_ONE", "CANCEL_MANY", "CANCEL_MARKET", "CANCEL_ALL"],
+)
+def test_every_cancel_operation_persists_started_before_one_transport_call(
+    tmp_path: Path, operation: str
+):
+    holder = {}
+
+    class InspectingClient(FakeClient):
+        def _assert_started(self, expected):
+            event = holder["gateway"].gate_b_events()[-1]
+            assert event.event_type == "GATE_B_CANCEL_ATTEMPT_STARTED"
+            assert event.data["operation"] == expected
+
+        def cancel_order(self, *, order_id):
+            self._assert_started("CANCEL_ONE")
+            return super().cancel_order(order_id=order_id)
+
+        def cancel_orders(self, *, order_ids):
+            self._assert_started("CANCEL_MANY")
+            return super().cancel_orders(order_ids=order_ids)
+
+        def cancel_market_orders(self, *, market):
+            self._assert_started("CANCEL_MARKET")
+            return super().cancel_market_orders(market=market)
+
+        def cancel_all(self):
+            self._assert_started("CANCEL_ALL")
+            return super().cancel_all()
+
+    client = InspectingClient()
+    gateway, lock, session, bindings = _known_order_session(tmp_path, client)
+    holder["gateway"] = gateway
+    ids = tuple(target for target, _owner in bindings)
+    try:
+        if operation == "CANCEL_ONE":
+            result = session.cancel_one(
+                request_target_ids=ids[:1],
+                request_target_bindings=bindings[:1],
+            )
+        elif operation == "CANCEL_MANY":
+            result = session.cancel_many(
+                request_target_ids=tuple(reversed(ids)),
+                request_target_bindings=tuple(reversed(bindings)),
+            )
+        elif operation == "CANCEL_MARKET":
+            result = session.cancel_market(
+                request_market_id="market:a",
+                request_target_ids=tuple(reversed(ids)),
+                request_target_bindings=tuple(reversed(bindings)),
+            )
+        else:
+            result = session.cancel_all()
+        assert result["cancel_result"] == "DEFINITIVE_ACCEPTED"
+        calls = (
+            len(client.cancel_one_calls)
+            + len(client.cancel_many_calls)
+            + len(client.cancel_market_calls)
+            + client.cancel_all_calls
+        )
+        assert calls == 1
+        events = gateway.gate_b_events()
+        assert events[-2].event_type == "GATE_B_CANCEL_ATTEMPT_STARTED"
+        assert events[-1].event_type == "GATE_B_CANCEL_ATTEMPT_RESULT"
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
+
+
+def test_cancel_many_canonical_identity_and_structured_sdk_targets(tmp_path: Path):
+    identities = []
+    for name, reverse in (("first", False), ("second", True)):
+        root = tmp_path / name
+        root.mkdir()
+        client = FakeClient()
+        gateway, lock, session, bindings = _known_order_session(root, client)
+        ids = tuple(target for target, _owner in bindings)
+        if reverse:
+            ids = tuple(reversed(ids))
+            bindings = tuple(reversed(bindings))
+        try:
+            result = session.cancel_many(
+                request_target_ids=ids,
+                request_target_bindings=bindings,
+            )
+            identities.append(result["cancel_attempt_id"])
+            assert client.cancel_many_calls == [("venue-order-a", "venue-order-b")]
+        finally:
+            session.close()
+            lock.close()
+            gateway.close()
+    assert identities[0] == identities[1]
+
+
+def test_structured_cancel_cardinality_duplicates_and_comma_encoding_fail_closed(
+    tmp_path: Path,
+):
+    client = FakeClient()
+    gateway, lock, session, bindings = _known_order_session(tmp_path, client)
+    ids = tuple(target for target, _owner in bindings)
+    invalid_calls = (
+        lambda: session.cancel_one(request_target_ids=(), request_target_bindings=()),
+        lambda: session.cancel_one(
+            request_target_ids=ids, request_target_bindings=bindings
+        ),
+        lambda: session.cancel_many(request_target_ids=(), request_target_bindings=()),
+        lambda: session.cancel_many(
+            request_target_ids=(ids[0], ids[0]),
+            request_target_bindings=(bindings[0], bindings[0]),
+        ),
+        lambda: session.cancel_many(
+            request_target_ids=ids,
+            request_target_bindings=bindings[:1],
+        ),
+        lambda: session.cancel_many(
+            request_target_ids=tuple(f"venue-{index}" for index in range(101)),
+            request_target_bindings=tuple(
+                (f"venue-{index}", bindings[0][1]) for index in range(101)
+            ),
+        ),
+        lambda: session.cancel_many(
+            request_target_ids=("venue-order-a,venue-order-b",),
+            request_target_bindings=(("venue-order-a,venue-order-b", bindings[0][1]),),
+        ),
+    )
+    try:
+        for call in invalid_calls:
+            with pytest.raises(GatewayError, match="MUTATION_REQUEST_INVALID"):
+                call()
+        assert client.cancel_one_calls == []
+        assert client.cancel_many_calls == []
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
+
+
+def test_cancel_market_requires_complete_known_exact_market_scope(tmp_path: Path):
+    client = FakeClient()
+    gateway, lock, session, bindings = _known_order_session(tmp_path, client)
+    ids = tuple(target for target, _owner in bindings)
+    try:
+        for market_id, target_ids, target_bindings in (
+            ("market:a", ids[:1], bindings[:1]),
+            ("market:unknown", ids, bindings),
+            ("market:a", (), ()),
+        ):
+            with pytest.raises(GatewayError, match="MUTATION_REQUEST_INVALID"):
+                session.cancel_market(
+                    request_market_id=market_id,
+                    request_target_ids=target_ids,
+                    request_target_bindings=target_bindings,
+                )
+        assert client.cancel_market_calls == []
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
+
+
+def test_cancel_all_persists_complete_locally_known_scope(tmp_path: Path):
+    client = FakeClient()
+    gateway, lock, session, bindings = _known_order_session(tmp_path, client)
+    try:
+        session.cancel_all()
+        started = [
+            event
+            for event in gateway.gate_b_events()
+            if event.event_type == "GATE_B_CANCEL_ATTEMPT_STARTED"
+        ][-1]
+        assert tuple(started.data["request_target_ids"]) == (
+            "venue-order-a",
+            "venue-order-b",
+        )
+        assert (
+            tuple(tuple(item) for item in started.data["request_target_bindings"])
+            == bindings
+        )
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
+
+
+def test_started_persistence_failure_prevents_sdk_transmit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    client = FakeClient()
+    gateway, lock, session, bindings = _known_order_session(tmp_path, client)
+    original = gateway.record_gate_b_event
+
+    def fail_started(event_type, data, **kwargs):
+        if event_type == "GATE_B_CANCEL_ATTEMPT_STARTED":
+            raise GatewayError("STORE_WRITE_FAILED")
+        return original(event_type, data, **kwargs)
+
+    monkeypatch.setattr(gateway, "record_gate_b_event", fail_started)
+    try:
+        with pytest.raises(GatewayError, match="STORE_WRITE_FAILED"):
+            session.cancel_one(
+                request_target_ids=(bindings[0][0],),
+                request_target_bindings=(bindings[0],),
+            )
+        assert client.cancel_one_calls == []
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
+
+
 def test_all_authenticated_reads_are_exercised_and_bounded():
     client = FakeClient(trades=("t1",))
     snapshot = _session(client).account_snapshot()
@@ -852,8 +1281,8 @@ def test_all_authenticated_reads_are_exercised_and_bounded():
         _session(FakeClient(trades=range(101))).account_snapshot()
 
 
-def test_receipt_binds_all_before_and_after_account_fields():
-    receipt = _probe(_session(FakeClient()))
+def test_receipt_binds_all_before_and_after_account_fields(tmp_path: Path):
+    receipt, _state = _durable_probe(tmp_path, FakeClient())
     document = receipt.as_receipt_document()
     for field in (
         "open_orders_before",
@@ -871,14 +1300,14 @@ def test_receipt_binds_all_before_and_after_account_fields():
     )
 
 
-def test_nonzero_after_state_prevents_pass():
+def test_nonzero_after_state_prevents_pass(tmp_path: Path):
     class ChangedBalanceClient(FakeClient):
         def get_balance_allowance(self, *, asset_type):
             self.read_calls["balance"] += 1
             return _Balance("0" if self.read_calls["balance"] == 1 else "1")
 
     with pytest.raises(GatewayError, match="CANCEL_PROBE_AMBIGUOUS"):
-        _probe(_session(ChangedBalanceClient()))
+        _durable_probe(tmp_path, ChangedBalanceClient())
 
 
 # --- WP174B installed-SDK deployment-contract regression (real 0.10.0 import path) ---

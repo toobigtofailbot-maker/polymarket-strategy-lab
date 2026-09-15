@@ -44,7 +44,6 @@ from .gate_b import (
     GateBVerificationReceipt,
     GateCLivePermit,
     InteractiveGateBSecretProvider,
-    ProductionSdkMutationAdapter,
     create_deposit_wallet_client,
     gate_b_capability_projection,
 )
@@ -89,7 +88,6 @@ __all__ = [
     "GateBVerificationReceipt",
     "GateCLivePermit",
     "InteractiveGateBSecretProvider",
-    "ProductionSdkMutationAdapter",
     "create_deposit_wallet_client",
     "gate_b_capability_projection",
 ]

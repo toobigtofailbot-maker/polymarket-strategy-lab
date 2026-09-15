@@ -295,7 +295,16 @@ def test_wp174_gateway_boundary_preserves_wp173_and_excludes_wp175():
     assert "from polymarket import AsyncSecureClient, SecureClient" in source
     # WP174B replaced the Gate-B-locked stub with a real production mutation
     # boundary while keeping every real economic create/post Gate-C unreachable.
-    assert "class ProductionSdkMutationAdapter" in source
+    assert "class _ProductionSdkMutationTransport" in source
+    assert "class ProductionSdkMutationAdapter" not in source
+    assert "def mutation_adapter" not in source
+    for sdk_cancel in (
+        "self._client.cancel_order(",
+        "self._client.cancel_orders(",
+        "self._client.cancel_market_orders(",
+        "self._client.cancel_all(",
+    ):
+        assert source.count(sdk_cancel) == 1
     assert "class GateCLivePermit" in source
     assert 'raise GatewayError("GATE_C_REQUIRED")' in source
     # The Gate-A state machine's own mutation entry points still fail closed.

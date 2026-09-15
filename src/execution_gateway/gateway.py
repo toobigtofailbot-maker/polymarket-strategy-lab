@@ -1425,7 +1425,9 @@ def _validate_gate_b_audit_data(event_type: str, data: Mapping[str, object]) -> 
         | {
             "cancel_attempt_id",
             "operation",
-            "target",
+            "request_target_ids",
+            "request_target_bindings",
+            "request_market_id",
             "attempt_sequence",
             "prior_reconciliation_state",
         },
@@ -1479,13 +1481,64 @@ def _validate_gate_b_audit_data(event_type: str, data: Mapping[str, object]) -> 
             )
         )
     if event_type == "GATE_B_CANCEL_ATTEMPT_STARTED":
-        return (
-            data["operation"] in MUTATION_OPERATIONS[1:]
-            and isinstance(data["target"], str)
-            and type(data["attempt_sequence"]) is int
-            and data["attempt_sequence"] >= 1
-            and data["prior_reconciliation_state"] in RECONCILIATION_STATES
+        operation = data["operation"]
+        raw_targets = data["request_target_ids"]
+        raw_bindings = data["request_target_bindings"]
+        market_id = data["request_market_id"]
+        if (
+            operation not in MUTATION_OPERATIONS[1:]
+            or not isinstance(raw_targets, (list, tuple))
+            or not isinstance(raw_bindings, (list, tuple))
+            or type(data["attempt_sequence"]) is not int
+            or data["attempt_sequence"] < 1
+            or data["prior_reconciliation_state"] != "HEALTHY"
+        ):
+            return False
+        try:
+            targets = tuple(_label(value) for value in raw_targets)
+            bindings = tuple(
+                (_label(binding[0]), _label(binding[1]))
+                for binding in raw_bindings
+                if isinstance(binding, (list, tuple)) and len(binding) == 2
+            )
+        except GatewayError:
+            return False
+        if (
+            len(bindings) != len(raw_bindings)
+            or targets != tuple(sorted(targets))
+            or len(targets) > 100
+            or len(set(targets)) != len(targets)
+            or bindings != tuple(sorted(bindings))
+            or len(bindings) != len(targets)
+            or len(set(bindings)) != len(bindings)
+            or tuple(target for target, _owner in bindings) != targets
+            or operation == "CANCEL_ONE"
+            and len(targets) != 1
+            or operation in ("CANCEL_MANY", "CANCEL_MARKET")
+            and not targets
+        ):
+            return False
+        if operation == "CANCEL_MARKET":
+            if not isinstance(market_id, str):
+                return False
+            try:
+                _label(market_id)
+            except GatewayError:
+                return False
+        elif market_id is not None:
+            return False
+        expected_identity = _sha(
+            "cancelattempt:sha256:",
+            {
+                "operation": operation,
+                "request_target_ids": list(targets),
+                "request_target_bindings": [list(binding) for binding in bindings],
+                "request_market_id": market_id,
+                "attempt_sequence": data["attempt_sequence"],
+                "prior_reconciliation_state": data["prior_reconciliation_state"],
+            },
         )
+        return data["cancel_attempt_id"] == expected_identity
     if event_type == "GATE_B_CANCEL_ATTEMPT_RESULT":
         return data["cancel_result"] in (
             "DEFINITIVE_ACCEPTED",
@@ -1753,7 +1806,7 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
 
 # WP174B replaces the Gate-B-locked documentation stub with a real production
 # mutation boundary. The real credential, signing, and cancellation capability
-# now lives in src/execution_gateway/gate_b.py as ProductionSdkMutationAdapter
+# now lives in src/execution_gateway/gate_b.py as a private SDK transport
 # and GateBSession, operated manually and orthogonally to this Gate-A state
 # machine. Every real economic create/post remains structurally unreachable
 # behind gate_b.GateCLivePermit (GATE_C_REQUIRED); this gateway's own

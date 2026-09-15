@@ -22,7 +22,7 @@ import os
 from pathlib import Path
 import re
 import sys
-from typing import Callable, Mapping, Protocol
+from typing import Callable, Mapping, Protocol, Sequence
 
 from polymarket import SecureClient
 
@@ -57,6 +57,7 @@ _CANCEL_CONFIRMATION_PHRASE = "CONFIRM-EMPTY-WALLET-CANCEL"
 
 # Closed cancel operations Gate B may perform (all exposure-reducing).
 _CANCEL_OPERATIONS = ("CANCEL_ONE", "CANCEL_MANY", "CANCEL_MARKET", "CANCEL_ALL")
+_MAX_CANCEL_TARGETS = 100
 
 # Closed mutation-outcome vocabulary for cancel classification.
 _CANCEL_OUTCOMES = ("DEFINITIVE_ACCEPTED", "DEFINITIVE_REJECTED", "AMBIGUOUS")
@@ -261,7 +262,7 @@ class GateCLivePermit:
 
 
 # ---------------------------------------------------------------------------
-# Real production mutation adapter (cancel real; create Gate-C locked)
+# Private production SDK transport (cancel real; create Gate-C locked)
 # ---------------------------------------------------------------------------
 
 
@@ -270,37 +271,68 @@ class CancelAttempt:
     """Deterministic identity for exactly one cancel transmission."""
 
     operation: str
-    target: str
+    request_target_ids: tuple[str, ...]
+    request_target_bindings: tuple[tuple[str, str], ...]
+    request_market_id: str | None
     attempt_sequence: int
     prior_reconciliation_state: str
 
     def validate(self) -> None:
         if self.operation not in _CANCEL_OPERATIONS:
             raise GatewayError("MUTATION_IDENTITY_CONFLICT")
-        _label(self.target)
         if (
             not isinstance(self.attempt_sequence, int)
             or isinstance(self.attempt_sequence, bool)
-            or self.attempt_sequence < 0
+            or self.attempt_sequence < 1
+            or self.prior_reconciliation_state != "HEALTHY"
         ):
             raise GatewayError("MUTATION_IDENTITY_CONFLICT")
-        _label(self.prior_reconciliation_state)
+        targets = tuple(_label(value) for value in self.request_target_ids)
+        bindings = tuple(
+            (_label(target), _label(order_identity))
+            for target, order_identity in self.request_target_bindings
+        )
+        if (
+            targets != tuple(sorted(targets))
+            or len(targets) > _MAX_CANCEL_TARGETS
+            or len(set(targets)) != len(targets)
+            or bindings != tuple(sorted(bindings))
+            or len(bindings) != len(targets)
+            or len(set(bindings)) != len(bindings)
+            or tuple(target for target, _owner in bindings) != targets
+        ):
+            raise GatewayError("MUTATION_IDENTITY_CONFLICT")
+        if self.operation == "CANCEL_ONE" and len(targets) != 1:
+            raise GatewayError("MUTATION_IDENTITY_CONFLICT")
+        if self.operation in ("CANCEL_MANY", "CANCEL_MARKET") and not targets:
+            raise GatewayError("MUTATION_IDENTITY_CONFLICT")
+        if self.operation == "CANCEL_MARKET":
+            if self.request_market_id is None:
+                raise GatewayError("MUTATION_IDENTITY_CONFLICT")
+            _label(self.request_market_id)
+        elif self.request_market_id is not None:
+            raise GatewayError("MUTATION_IDENTITY_CONFLICT")
 
     @property
     def identity(self) -> str:
+        self.validate()
         return _sha(
             "cancelattempt:sha256:",
             {
                 "operation": self.operation,
-                "target": self.target,
+                "request_target_ids": list(self.request_target_ids),
+                "request_target_bindings": [
+                    list(binding) for binding in self.request_target_bindings
+                ],
+                "request_market_id": self.request_market_id,
                 "attempt_sequence": self.attempt_sequence,
                 "prior_reconciliation_state": self.prior_reconciliation_state,
             },
         )
 
 
-class ProductionSdkMutationAdapter:
-    """Real cancellation transport; every create/post path is Gate-C locked."""
+class _ProductionSdkMutationTransport:
+    """Internal SDK transport reachable only through durable ``GateBSession``."""
 
     def __init__(
         self, client: object, *, transmitted_attempt_ids: set[str] | None = None
@@ -340,12 +372,16 @@ class ProductionSdkMutationAdapter:
             if attempt.operation == "CANCEL_ALL":
                 response = self._client.cancel_all()
             elif attempt.operation == "CANCEL_ONE":
-                response = self._client.cancel_order(order_id=attempt.target)
+                response = self._client.cancel_order(
+                    order_id=attempt.request_target_ids[0]
+                )
             elif attempt.operation == "CANCEL_MARKET":
-                response = self._client.cancel_market_orders(market=attempt.target)
+                response = self._client.cancel_market_orders(
+                    market=attempt.request_market_id
+                )
             else:  # CANCEL_MANY
                 response = self._client.cancel_orders(
-                    order_ids=tuple(attempt.target.split(","))
+                    order_ids=attempt.request_target_ids
                 )
         except Exception:
             # Possibly transmitted: never blindly retried; reconcile upstream.
@@ -526,12 +562,13 @@ class GateBSession:
         "_client",
         "_policy",
         "_state",
-        "_mutation",
+        "_transport",
         "_attempt_seq",
         "_audit_sink",
         "_gateway",
         "_wallet_lock",
         "_unresolved_attempts",
+        "_gate_b_reconciliation_state",
         "_signing_probe_id",
     )
 
@@ -551,12 +588,14 @@ class GateBSession:
         self._wallet_lock = wallet_lock
         self._audit_sink = audit_sink
         started: dict[str, int] = {}
-        terminal: set[str] = set()
         unresolved: set[str] = set()
+        reconciliation_state = "REQUIRED"
         if gateway is not None:
             for journal_event in gateway.gate_b_events():
                 data = dict(journal_event.data)
-                if journal_event.event_type == "GATE_B_CANCEL_ATTEMPT_STARTED":
+                if journal_event.event_type == "GATE_B_RECONCILED":
+                    reconciliation_state = str(data["gate_b_reconciliation_state"])
+                elif journal_event.event_type == "GATE_B_CANCEL_ATTEMPT_STARTED":
                     identity = str(data["cancel_attempt_id"])
                     started[identity] = int(data["attempt_sequence"])
                     unresolved.add(identity)
@@ -566,14 +605,14 @@ class GateBSession:
                         "DEFINITIVE_ACCEPTED",
                         "DEFINITIVE_REJECTED",
                     ):
-                        terminal.add(identity)
                         unresolved.discard(identity)
                     else:
                         unresolved.add(identity)
         self._attempt_seq = max(started.values(), default=0)
         self._unresolved_attempts = unresolved
-        self._mutation = ProductionSdkMutationAdapter(
-            client, transmitted_attempt_ids=set(started) - terminal
+        self._gate_b_reconciliation_state = reconciliation_state
+        self._transport = _ProductionSdkMutationTransport(
+            client, transmitted_attempt_ids=set(started)
         )
         self._signing_probe_id: str | None = None
         # Journal the sanitized capability transition. The sink is intended to be
@@ -673,13 +712,262 @@ class GateBSession:
     def public_wallet(self) -> str:
         return str(self._client.wallet).lower()
 
-    @property
-    def mutation_adapter(self) -> ProductionSdkMutationAdapter:
-        return self._mutation
-
     def _next_attempt_sequence(self) -> int:
         self._attempt_seq += 1
         return self._attempt_seq
+
+    def _record_reconciliation(self, snapshot: Mapping[str, object]) -> None:
+        self._emit(
+            "GATE_B_RECONCILED",
+            {
+                "gate_b_reconciliation_state": "HEALTHY",
+                "collateral_balance": str(snapshot["collateral_balance"]),
+                "open_orders": int(snapshot["open_orders"]),
+                "account_trades": int(snapshot["account_trades"]),
+                "positions": int(snapshot["positions"]),
+            },
+        )
+        self._gate_b_reconciliation_state = "HEALTHY"
+
+    def _require_cancel_ready(self) -> ProtectedExecutionGateway:
+        if self._state not in (
+            "B2_AUTHENTICATED",
+            "B3_SIGNING_VERIFIED",
+            "B4_CANCEL_TRANSPORT_VERIFIED",
+        ):
+            raise GatewayError("AUTHENTICATION_FAILED")
+        if self._gateway is None:
+            raise GatewayError("GATE_B_STORE_REQUIRED")
+        if self._wallet_lock is None or not self._wallet_lock.active:
+            raise GatewayError("GATE_B_OWNERSHIP_REQUIRED")
+        if self._unresolved_attempts:
+            raise GatewayError("RECONCILIATION_REQUIRED")
+        if self._gate_b_reconciliation_state != "HEALTHY":
+            raise GatewayError("RECONCILIATION_REQUIRED")
+        return self._gateway
+
+    @staticmethod
+    def _canonical_explicit_scope(
+        request_target_ids: Sequence[str],
+        request_target_bindings: Sequence[tuple[str, str]],
+    ) -> tuple[tuple[str, ...], tuple[tuple[str, str], ...]]:
+        if isinstance(request_target_ids, (str, bytes)) or isinstance(
+            request_target_bindings, (str, bytes)
+        ):
+            raise GatewayError("MUTATION_REQUEST_INVALID")
+        try:
+            targets = tuple(_label(value) for value in request_target_ids)
+            bindings = tuple(
+                (_label(binding[0]), _label(binding[1]))
+                for binding in request_target_bindings
+                if isinstance(binding, (list, tuple)) and len(binding) == 2
+            )
+        except (GatewayError, TypeError, ValueError):
+            raise GatewayError("MUTATION_REQUEST_INVALID") from None
+        if len(bindings) != len(request_target_bindings):
+            raise GatewayError("MUTATION_REQUEST_INVALID")
+        if (
+            len(set(targets)) != len(targets)
+            or len(set(bindings)) != len(bindings)
+            or len({target for target, _owner in bindings}) != len(bindings)
+        ):
+            raise GatewayError("MUTATION_REQUEST_INVALID")
+        canonical_targets = tuple(sorted(targets))
+        canonical_bindings = tuple(sorted(bindings))
+        if tuple(target for target, _owner in canonical_bindings) != canonical_targets:
+            raise GatewayError("MUTATION_REQUEST_INVALID")
+        return canonical_targets, canonical_bindings
+
+    @staticmethod
+    def _local_order_bindings(
+        gateway: ProtectedExecutionGateway,
+    ) -> tuple[dict[str, str], dict[str, str]]:
+        owners = {
+            attempt.venue_order_id: attempt.order_identity
+            for attempt in gateway.state.mutation_attempts
+            if attempt.operation == "CREATE"
+            and attempt.outcome == "DEFINITIVE_ACCEPTED"
+            and attempt.venue_order_id is not None
+        }
+        markets = {
+            order.order_identity: order.market_id
+            for order in gateway.state.prepared_orders
+        }
+        return owners, markets
+
+    def _validated_cancel_scope(
+        self,
+        operation: str,
+        *,
+        request_target_ids: Sequence[str] = (),
+        request_target_bindings: Sequence[tuple[str, str]] = (),
+        request_market_id: str | None = None,
+    ) -> tuple[tuple[str, ...], tuple[tuple[str, str], ...], str | None]:
+        gateway = self._require_cancel_ready()
+        open_targets = tuple(sorted(gateway.state.venue_open_order_ids))
+        if len(open_targets) > _MAX_CANCEL_TARGETS:
+            raise GatewayError("MUTATION_REQUEST_INVALID")
+        owners, markets = self._local_order_bindings(gateway)
+        if operation == "CANCEL_ALL":
+            if (
+                request_target_ids
+                or request_target_bindings
+                or request_market_id is not None
+            ):
+                raise GatewayError("MUTATION_REQUEST_INVALID")
+            if any(target not in owners for target in open_targets):
+                raise GatewayError("MUTATION_REQUEST_INVALID")
+            bindings = tuple((target, owners[target]) for target in open_targets)
+            return open_targets, bindings, None
+
+        targets, bindings = self._canonical_explicit_scope(
+            request_target_ids, request_target_bindings
+        )
+        if (
+            not targets
+            or len(targets) > _MAX_CANCEL_TARGETS
+            or any(target not in open_targets for target in targets)
+            or any(owners.get(target) != owner for target, owner in bindings)
+        ):
+            raise GatewayError("MUTATION_REQUEST_INVALID")
+        if operation == "CANCEL_ONE":
+            if len(targets) != 1 or request_market_id is not None:
+                raise GatewayError("MUTATION_REQUEST_INVALID")
+            return targets, bindings, None
+        if operation == "CANCEL_MANY":
+            if request_market_id is not None:
+                raise GatewayError("MUTATION_REQUEST_INVALID")
+            return targets, bindings, None
+        if operation != "CANCEL_MARKET" or request_market_id is None:
+            raise GatewayError("MUTATION_REQUEST_INVALID")
+        market_id = _label(request_market_id)
+        local_market_targets = tuple(
+            sorted(
+                target
+                for target in open_targets
+                if markets.get(owners.get(target, "")) == market_id
+            )
+        )
+        if targets != local_market_targets or any(
+            markets.get(owner) != market_id for _target, owner in bindings
+        ):
+            raise GatewayError("MUTATION_REQUEST_INVALID")
+        return targets, bindings, market_id
+
+    def _execute_cancel(
+        self,
+        operation: str,
+        *,
+        request_target_ids: Sequence[str] = (),
+        request_target_bindings: Sequence[tuple[str, str]] = (),
+        request_market_id: str | None = None,
+    ) -> Mapping[str, object]:
+        targets, bindings, market_id = self._validated_cancel_scope(
+            operation,
+            request_target_ids=request_target_ids,
+            request_target_bindings=request_target_bindings,
+            request_market_id=request_market_id,
+        )
+        attempt = CancelAttempt(
+            operation=operation,
+            request_target_ids=targets,
+            request_target_bindings=bindings,
+            request_market_id=market_id,
+            attempt_sequence=self._next_attempt_sequence(),
+            prior_reconciliation_state="HEALTHY",
+        )
+        self._emit(
+            "GATE_B_CANCEL_ATTEMPT_STARTED",
+            {
+                "cancel_attempt_id": attempt.identity,
+                "operation": attempt.operation,
+                "request_target_ids": list(attempt.request_target_ids),
+                "request_target_bindings": [
+                    list(binding) for binding in attempt.request_target_bindings
+                ],
+                "request_market_id": attempt.request_market_id,
+                "attempt_sequence": attempt.attempt_sequence,
+                "prior_reconciliation_state": attempt.prior_reconciliation_state,
+            },
+        )
+        self._unresolved_attempts.add(attempt.identity)
+        try:
+            result, summary = self._transport.cancel(attempt)
+        except GatewayError:
+            try:
+                self._emit(
+                    "GATE_B_CANCEL_ATTEMPT_RESULT",
+                    {
+                        "cancel_attempt_id": attempt.identity,
+                        "cancel_result": "AMBIGUOUS",
+                        "canceled_count": 0,
+                        "not_canceled_count": 0,
+                    },
+                )
+            except GatewayError:
+                pass
+            raise GatewayError("CANCEL_PROBE_AMBIGUOUS") from None
+        try:
+            self._emit(
+                "GATE_B_CANCEL_ATTEMPT_RESULT",
+                {
+                    "cancel_attempt_id": attempt.identity,
+                    "cancel_result": result,
+                    "canceled_count": int(summary["canceled_count"]),
+                    "not_canceled_count": int(summary["not_canceled_count"]),
+                },
+            )
+        except GatewayError:
+            raise GatewayError("CANCEL_PROBE_AMBIGUOUS") from None
+        if result in ("DEFINITIVE_ACCEPTED", "DEFINITIVE_REJECTED"):
+            self._unresolved_attempts.discard(attempt.identity)
+        return {
+            "cancel_attempt_id": attempt.identity,
+            "cancel_result": result,
+            "canceled_count": int(summary["canceled_count"]),
+            "not_canceled_count": int(summary["not_canceled_count"]),
+        }
+
+    def cancel_one(
+        self,
+        *,
+        request_target_ids: Sequence[str],
+        request_target_bindings: Sequence[tuple[str, str]],
+    ) -> Mapping[str, object]:
+        return self._execute_cancel(
+            "CANCEL_ONE",
+            request_target_ids=request_target_ids,
+            request_target_bindings=request_target_bindings,
+        )
+
+    def cancel_many(
+        self,
+        *,
+        request_target_ids: Sequence[str],
+        request_target_bindings: Sequence[tuple[str, str]],
+    ) -> Mapping[str, object]:
+        return self._execute_cancel(
+            "CANCEL_MANY",
+            request_target_ids=request_target_ids,
+            request_target_bindings=request_target_bindings,
+        )
+
+    def cancel_market(
+        self,
+        *,
+        request_market_id: str,
+        request_target_ids: Sequence[str],
+        request_target_bindings: Sequence[tuple[str, str]],
+    ) -> Mapping[str, object]:
+        return self._execute_cancel(
+            "CANCEL_MARKET",
+            request_market_id=request_market_id,
+            request_target_ids=request_target_ids,
+            request_target_bindings=request_target_bindings,
+        )
+
+    def cancel_all(self) -> Mapping[str, object]:
+        return self._execute_cancel("CANCEL_ALL")
 
     # -- bounded authenticated reads ---------------------------------------
 
@@ -774,12 +1062,6 @@ class GateBSession:
             raise GatewayError("CANCEL_PROBE_FAILED")
         if confirmation != _CANCEL_CONFIRMATION_PHRASE:
             raise GatewayError("CANCEL_PROBE_FAILED")
-        if self._gateway is not None and (
-            self._wallet_lock is None or not self._wallet_lock.active
-        ):
-            raise GatewayError("GATE_B_OWNERSHIP_REQUIRED")
-        if self._unresolved_attempts:
-            raise GatewayError("RECONCILIATION_REQUIRED")
         snapshot = self.account_snapshot()
         balance_before = snapshot["collateral_balance"]
         open_before = int(snapshot["open_orders"])
@@ -790,63 +1072,16 @@ class GateBSession:
             or positions_before != 0
         ):
             raise GatewayError("GATE_B_ACCOUNT_NOT_EMPTY")
-        self._emit(
-            "GATE_B_RECONCILED",
-            {
-                "gate_b_reconciliation_state": "HEALTHY",
-                "collateral_balance": str(balance_before),
-                "open_orders": open_before,
-                "account_trades": int(snapshot["account_trades"]),
-                "positions": positions_before,
-            },
-        )
-        attempt = CancelAttempt(
-            operation="CANCEL_ALL",
-            target="ALL",
-            attempt_sequence=self._next_attempt_sequence(),
-            prior_reconciliation_state="HEALTHY",
-        )
-        self._emit(
-            "GATE_B_CANCEL_ATTEMPT_STARTED",
-            {
-                "cancel_attempt_id": attempt.identity,
-                "operation": attempt.operation,
-                "target": attempt.target,
-                "attempt_sequence": attempt.attempt_sequence,
-                "prior_reconciliation_state": attempt.prior_reconciliation_state,
-            },
-        )
-        self._unresolved_attempts.add(attempt.identity)
-        try:
-            result, summary = self._mutation.cancel(attempt)
-        except GatewayError:
-            self._emit(
-                "GATE_B_CANCEL_ATTEMPT_RESULT",
-                {
-                    "cancel_attempt_id": attempt.identity,
-                    "cancel_result": "AMBIGUOUS",
-                    "canceled_count": 0,
-                    "not_canceled_count": 0,
-                },
-            )
-            raise GatewayError("CANCEL_PROBE_AMBIGUOUS") from None
-        self._emit(
-            "GATE_B_CANCEL_ATTEMPT_RESULT",
-            {
-                "cancel_attempt_id": attempt.identity,
-                "cancel_result": result,
-                "canceled_count": int(summary["canceled_count"]),
-                "not_canceled_count": int(summary["not_canceled_count"]),
-            },
-        )
-        self._unresolved_attempts.discard(attempt.identity)
+        self._record_reconciliation(snapshot)
+        cancel_result = self.cancel_all()
+        attempt_id = str(cancel_result["cancel_attempt_id"])
+        result = str(cancel_result["cancel_result"])
+        canceled_count = int(cancel_result["canceled_count"])
+        not_canceled_count = int(cancel_result["not_canceled_count"])
         # The account was empty, so success requires that nothing was canceled and
         # nothing was left uncanceled; any canceled or not-canceled order is an
         # incident, not a pass.
-        if (
-            int(summary.get("canceled_count", 0)) != 0
-            or int(summary.get("not_canceled_count", 0)) != 0
-        ):
+        if canceled_count != 0 or not_canceled_count != 0:
             raise GatewayError("CANCEL_PROBE_FAILED")
         after = self.account_snapshot()
         open_after = int(after["open_orders"])
@@ -857,14 +1092,14 @@ class GateBSession:
             or positions_after != 0
             or _as_decimal(balance_after) != Decimal(0)
         ):
-            self._unresolved_attempts.add(attempt.identity)
+            self._unresolved_attempts.add(attempt_id)
             self._emit(
                 "GATE_B_CANCEL_ATTEMPT_RESULT",
                 {
-                    "cancel_attempt_id": attempt.identity,
+                    "cancel_attempt_id": attempt_id,
                     "cancel_result": "AMBIGUOUS",
-                    "canceled_count": int(summary["canceled_count"]),
-                    "not_canceled_count": int(summary["not_canceled_count"]),
+                    "canceled_count": canceled_count,
+                    "not_canceled_count": not_canceled_count,
                 },
             )
             raise GatewayError("CANCEL_PROBE_AMBIGUOUS")
@@ -883,7 +1118,7 @@ class GateBSession:
             authenticated_reads_pass=True,
             account_empty_pass=True,
             signing_probe_id=self._signing_probe_id,
-            cancel_probe_attempt_id=attempt.identity,
+            cancel_probe_attempt_id=attempt_id,
             cancel_probe_result=result,
             gate_b_reconciliation_state="HEALTHY",
             open_orders_before=open_before,
@@ -899,7 +1134,7 @@ class GateBSession:
         self._emit(
             "GATE_B_CANCEL_TRANSPORT_VERIFIED",
             {
-                "cancel_attempt_id": attempt.identity,
+                "cancel_attempt_id": attempt_id,
                 "cancel_result": result,
                 "receipt_id": receipt.receipt_id,
                 "verified_time_ns": now_ns,
@@ -911,7 +1146,7 @@ class GateBSession:
     def close(self) -> None:
         _safe_close(self._client)
         self._client = None
-        self._mutation = None
+        self._transport = None
         self._signing_probe_id = None
         self._state = "B0_LOCKED"
 
