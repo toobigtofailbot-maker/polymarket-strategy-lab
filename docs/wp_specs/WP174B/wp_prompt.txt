@@ -1,0 +1,521 @@
+WP174B — GATE-B PRODUCTION CREDENTIAL, SIGNING & REAL-MUTATION ENABLEMENT
+
+Package Identity:
+  WP ID: WP174B
+  Title: Gate-B Production Credential, Signing & Real-Mutation Enablement
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: claude/wp174b-gate-b-production-signing-mutation
+  Package class: PROTECTED_GATE_B_PRODUCTION_CREDENTIAL_SIGNING_MUTATION_ENABLEMENT
+  Package size class: L (exact 19-path mechanically required scope)
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: MANUAL_FOREGROUND_REAL_CREDENTIAL_AND_SIGNING_WITH_ZERO_CAPITAL_MUTATION_PROBE
+  Product impact: PRODUCTION_AUTH_SIGNING_AND_CANCEL_TRANSPORT_READY_FOR_LATER_WP175_GATE_C
+  Network impact: AUTHENTICATED_CLOB_BOOTSTRAP_READS_AND_BOUNDED_ZERO_CAPITAL_CANCEL_PROBE
+  Credential impact: REAL_EPHEMERAL_PRIVATE_KEY_AND_IN_MEMORY_L2_CREDENTIALS
+  Dependency impact: NONE; the exact installed polymarket-client 0.10.0 and websockets 15.0.1 pins are unchanged
+  Trading impact: REAL_ECONOMIC_CREATE_FORBIDDEN_AND_GATE_C_LOCKED_ZERO_CAPITAL_AT_RISK
+  Governance track expected: PROTECTED
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: strong protected-boundary coding/reasoning mode
+  Reason: one compact but security-critical real-credential, signing, and mutation-transport
+    boundary combining ephemeral-secret, Deposit Wallet identity, signing-probe, Gate-C-lock,
+    cancel-idempotency, empty-wallet-probe, and audit invariants
+  Escalate to higher reasoning or STOP if: signer/funder/wallet identity is ambiguous, a real
+    create cannot be made structurally Gate-C unreachable, or safe behavior cannot be proved
+    inside the exact certified 19-path boundary
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 4
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: true
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: true
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Required predecessor:
+  WP174 / PR #176
+Required predecessor final head:
+  6fff7fefd8f936824a7586f94d452ca073b225dd
+Required predecessor merge commit / base:
+  dbb4ee0e21e409c4639edc44cce17696a5b15156
+Successor:
+  WP175 — Restricted Live Canary
+Merge authority:
+  NO
+
+===============================================================================
+HARD MERGE GATE
+===============================================================================
+
+Before implementation, run exactly:
+  git fetch origin --prune
+  git checkout main
+  git pull --ff-only origin main
+  git rev-parse HEAD
+  git log -1 --oneline
+  git status --short --branch
+
+Verify PR #176 is merged; its final head is
+6fff7fefd8f936824a7586f94d452ca073b225dd; its merge/base commit is
+dbb4ee0e21e409c4639edc44cce17696a5b15156; main contains that final head; no newer conflicting
+change has merged; no competing WP174B branch or PR exists; no repo-truth file already claims Gate B
+complete; no credential/signing implementation outside the WP174 gateway supersedes this plan;
+generated artifacts are absent; and the working tree is clean. Implementation must stop if
+predecessor or base truth has materially changed.
+
+===============================================================================
+CONTEXT BUDGET
+===============================================================================
+
+Read first:
+- AGENTS.md, AI_CODING_AGENT_START_HERE.md, CLAUDE_START_HERE.md or CODEX_START_HERE.md;
+- docs/project_status.md, docs/repo_truth_index.md, docs/deferred_items_log.md;
+- docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md, WP_DRAFTING_STANDARD.md, WP_SPEC_STANDARD.md,
+  PROTECTED_PATHS.md, VALIDATION_MATRIX.md, PR_EVIDENCE_REPORTING_DISCIPLINE.md;
+- these exact WP174B prompt/spec/certificate bytes after independent certification.
+
+Read for WP174B:
+- docs/wp_specs/WP174/wp_prompt.txt and wp_spec.json and docs/status_entries/WP174.md;
+- src/execution_gateway/__init__.py, gateway.py, and store.py;
+- src/operator_cockpit.py and the exact in-scope tests;
+- the installed public API of polymarket-client==0.10.0 (SecureClient/AsyncSecureClient create,
+  wallet_type/signer/wallet, create_limit_order, place_limit_order, post_order, cancel_* methods,
+  bounded read methods, error types) verified mechanically from the installed release.
+
+Read only if blocked:
+- current official Polymarket docs for existing-account auth, Deposit Wallet, L1/L2, place/cancel,
+  and geoblock only to confirm the selected contract;
+- selected SDK installed source for a specific wallet-readiness, credential-derivation, or cancel
+  detail;
+- docs/security_tooling_status.md for a specific security-tool or upstream limitation decision.
+
+Do not read/touch:
+- any real .env, credential, wallet, or private-key file; browser wallet storage; unrelated
+  local_data; or a real account beyond the operator's own separate no-echo smoke;
+- src/ outside the exact gateway and cockpit paths; tools/; dependency or workflow files;
+- WP175 source because it does not exist and is separately gated;
+- strategy, paper engine authority, live risk, allocator, scheduler, Hermes runtime, or deployment.
+
+Fallback search terms if a path moved:
+  GATE_B_REQUIRED; GateBLockedSdkMutationAdapter; gate_b_authorized; AUTHORITY_STATES;
+  A3_RESTRICTED_LIVE; SecureClient; wallet_type; DEPOSIT_WALLET; create_limit_order; post_order;
+  cancel_all; OfficialSdkAuthenticatedReadAdapter; operator cockpit; protected paths; repo truth.
+
+===============================================================================
+COMPATIBILITY / IMPOSSIBILITY CHECK
+===============================================================================
+
+| Required behavior | Controlling mechanism | Files likely needed | Allowed | Compatible | Action |
+|---|---|---|---:|---:|---|
+| Ephemeral real secret input | getpass no-echo TTY boundary; no argv/file/pipe/env | gate_b.py; gate_b_operator.py; test_gate_b.py | YES | YES | Load key only in memory; clear on close; never persist |
+| Deposit Wallet identity | Official SDK signer/wallet/wallet_type; signature type 3 | gate_b.py; test_gate_b.py | YES | YES | Enforce DEPOSIT_WALLET; fail closed on mismatch; no deploy |
+| Authenticate existing wallet without side effects | SecureClient create with api_key=None and a pre-deploy read | gate_b.py; test_gate_b.py | YES | YES | Assert already-deployed; never call the deploy branch |
+| Real local LIMIT signing | create_limit_order returns SignedOrder without posting | gate_b.py; test_gate_b.py | YES | YES | Hash and discard; never place_limit_order/post_order |
+| Gate-C-unreachable create | Unconstructable live permit before dispatch | gate_b.py; gateway.py; test_gate_b.py | YES | YES | Every create/post path fails closed GATE_C_REQUIRED |
+| Real cancel transport | cancel_order/cancel_orders/cancel_market_orders/cancel_all | gate_b.py; gateway.py; test_gateway.py | YES | YES | One transmit per attempt; ambiguous never blind-retried |
+| Safe empty-wallet cancel probe | Zero balance/positions/open-orders precheck | gate_b_operator.py; test_gate_b.py | YES | YES | Abort unless empty; unexpected cancel is an incident |
+| Backend-only cockpit | Existing loopback GET projection pattern | operator_cockpit.py; test_operator_cockpit.py | YES | YES | Add sanitized Gate-B fields only; no mutation control |
+| No dependency change | Exact installed pins are already correct | none | YES | YES | Prove pins; add no dependency or lock file |
+
+All rows are compatible inside the frozen L package. Any row becoming incompatible or requiring an
+unallowed path is a protected hard stop, not authority to redesign or expand the package.
+
+===============================================================================
+1. OBJECTIVE AND AUTHORITY / NON-AUTHORITY POSTURE
+===============================================================================
+
+This immutable package is a PROTECTED pre-implementation freeze. It is not implementation authority.
+Source implementation may begin only after an independent reviewer creates the exact hash-bound
+certificate at docs/wp_specs/WP174B/draftability_certificate.json, the canonical readiness command
+reports IMPLEMENTATION_READY, and the bounded WP174B authorization Karl already sent applies to
+those exact bytes.
+
+The canonical ordering is:
+1. a genuinely separate independent reviewer binds the exact prompt/spec hashes, passes all twelve
+   protected lenses with no unresolved decisions, passes implementability simulation, and issues the
+   certificate; certificate PASS establishes DRAFTABILITY_PASS;
+2. with that certificate installed, the canonical readiness gate may report IMPLEMENTATION_READY;
+3. IMPLEMENTATION_READY is a non-authority package-gate result and grants no implementation,
+   credential, mutation, or capital authority;
+4. the WP174B authorization already sent moves the exact certified package to AUTHORIZED;
+5. only AUTHORIZED permits source implementation to begin.
+
+WP174B closes exactly WP174-D001 (real secret loading and real SDK signing/mutation, previously
+BLOCKED_GATE_B). It does not close WP174-D002 / WP175 (Restricted Live Canary), which remains the
+only package permitted to add A3_RESTRICTED_LIVE, capital, strategy, market allowlist, and live
+exposure/loss authority.
+
+Gate B authorizes: accepting a real signer private key through one ephemeral no-echo operator
+boundary; using it only in memory to instantiate the official SecureClient/AsyncSecureClient against
+an already-existing, already-deployed Deposit Wallet; deriving/validating L2 credentials in memory;
+bounded authenticated reads; creating and EIP-712-signing one real LIMIT order locally without
+posting; implementing the real SDK create transport while keeping economic submission dual-gated
+behind future Gate C; real exposure-reducing cancel operations; exactly one safe empty-account real
+cancel probe; and persisting only sanitized public identity, hashes, state, and audit evidence.
+
+Gate B does NOT authorize: any real economic CREATE/POST; any capital at risk; funding, deposit,
+withdrawal, bridge, or token transfer; wallet creation/deployment or trading approvals; session-key
+authorization/revocation; Builder/Relayer gasless operations; RFQ/Combo/Perps trading; strategy
+selection; paper authority changes; scheduler/daemon/service; Hermes runtime; live deployment;
+A3_RESTRICTED_LIVE; Gate C; WP175 or WP176 implementation; or merge.
+
+No credential presence, environment variable, configuration, cockpit route, persisted state, SDK
+default, capability state, or agent/Hermes input may elevate authority. The store persists any kill
+state across restart. Current package state: LOCAL_DRAFT awaiting independent protected
+certification.
+
+===============================================================================
+2. FROZEN BUILD-VS-ADOPT DECISION
+===============================================================================
+
+SELECTED PRIMARY SUBSTRATE
+
+Adopt the official Polymarket Python SDK already merged by WP174: polymarket-client==0.10.0 for
+wallet/signature identity, L1 signer authentication, in-memory L2 credential derivation/validation,
+CLOB V2 EIP-712 LIMIT-order building/signing, real create/cancel/query primitives, and error
+metadata. No dependency changes: the exact installed pins polymarket-client==0.10.0 and
+websockets==15.0.1 are unchanged. Mutable upstream main is not authority; the installed release is.
+
+Mechanically verified selected-release contract (installed 0.10.0):
+- SecureClient.create / AsyncSecureClient.create are keyword-only with
+  private_key, wallet=None (defaults to the signer's Deposit Wallet), environment=PRODUCTION,
+  credentials=None (derived in memory when omitted), api_key=None (Builder/Relayer only), nonce=0;
+- client exposes signer, wallet, wallet_type, and credentials;
+- polymarket._internal.wallet._SIGNATURE_TYPE_BY_WALLET maps DEPOSIT_WALLET to signature type 3;
+- create_limit_order(...) returns a SignedOrder and does NOT post;
+- place_limit_order(...) and post_order(signed_order)/post_orders(...) post and are Gate-C locked;
+- create_market_order/place_market_order are unsupported (Gate-C locked and out of surface);
+- cancel_order, cancel_orders, cancel_market_orders, and cancel_all exist for real cancellation;
+- bounded reads include get_balance_allowance, list_open_orders, get_order, list_account_trades,
+  list_positions, list_trades, get_order_book, and get_last_trade_price;
+- error types descend from PolymarketError: RequestRejectedError, RateLimitError, SigningError,
+  CancelledSigningError, UserInputError, TransportError, TimeoutError, ConnectionLostError,
+  UnexpectedResponseError, InsufficientAllowanceError, and TransactionFailedError.
+
+FROZEN WALLET-READINESS DECISION (critical):
+SecureClient.create() ends by calling _ensure_wallet_ready(), which for a DEPOSIT_WALLET reads
+deployment status and, if the wallet is already deployed, returns with no side effect, but if it is
+NOT deployed calls _deploy_default_deposit_wallet() (an on-chain gasless deployment). Wallet
+deployment is forbidden by this package. The Gate-B session MUST guarantee no deployment can occur:
+it uses a non-deploying construction path plus an explicit deployment-status read and asserts the
+selected Deposit Wallet is already deployed, failing closed (SDK_SIDE_EFFECT_UNAUTHORIZED) rather
+than ever invoking the deploy branch. The dedicated canary Deposit Wallet, having been funded then
+emptied, is already deployed, so the safe non-deploying path is operationally available.
+
+REPO-OWNED GATE-B GAP LAYER
+
+Implement a narrow src/execution_gateway/gate_b.py that owns: the ephemeral no-echo secret provider
+and opaque secret lease; the Deposit Wallet identity policy (expected public signer/wallet, wallet
+type, chain, environment); the in-memory authenticated session that holds the raw SDK client
+privately and closes it; the local LIMIT signing probe; the real cancellation transport with attempt
+identity, idempotency, ambiguity classification, and reconciliation handoff; the Gate-C-unreachable
+create transport; sanitized public capability/verification state; the content-addressed verification
+receipt; and raw-exception sanitization. Implement src/execution_gateway/gate_b_operator.py as the
+no-echo operator CLI. Replace GateBLockedSdkMutationAdapter in gateway.py with the real production
+mutation boundary and journal Gate-B transitions through the existing tamper-evident store.
+
+FORBIDDEN CONSTRUCTION (matching existing architecture guards): gate_b.py must not use os.environ,
+load_dotenv, import requests, import httpx, while True, or time.sleep; must not implement EIP-712 or
+HMAC manually; must not create a second CLOB client, copy upstream source, expose the raw client
+publicly, provision wallets, or add broad order types. Any gap that cannot be closed inside the
+exact scope is a hard stop.
+
+===============================================================================
+3. SECRET INPUT, PRODUCTION IDENTITY, AND DEPOSIT WALLET
+===============================================================================
+
+Real operator path: interactive no-echo input only (stdlib getpass or an equally narrow TTY
+mechanism). The command accepts the expected PUBLIC signer address, the expected PUBLIC Deposit
+Wallet address, and an optional public probe token; it never accepts a private key via argv, file,
+JSON, piped stdin, environment (default path), browser, or an agent prompt. A test-only fake secret
+provider may inject nonfunctional values in memory; no real secret provider is available through
+ordinary fixture configuration.
+
+Secret lease properties: shortest practical object lifetime; no repr/str/serialization exposing the
+value; no equality/hash copying it unnecessarily; references cleared on close; and it never claims
+guaranteed physical memory zeroization. Closed secret errors return safe codes only and never
+include raw SDK exception strings.
+
+Production identity contract (verified before authenticated mutation capability): chain_id 137;
+wallet_type DEPOSIT_WALLET; signature_type 3; signer equals the SDK-derived public EOA of the entered
+key; funder/account wallet equals the exact operator-supplied Deposit Wallet; environment PRODUCTION.
+Identity mismatch fails closed and destroys the session reference. No legacy wallet fallback and no
+"try another signature type" behavior.
+
+===============================================================================
+4. GATE-B CAPABILITY STATE — ORTHOGONAL TO A0/A1/A2
+===============================================================================
+
+Do NOT add A3. WP174 runtime authority remains exactly A0_DISABLED, A1_READ_ONLY, and A2_SHADOW.
+
+Add a separate closed Gate-B CAPABILITY state, orthogonal to runtime authority:
+- B0_LOCKED (default);
+- B1_SECRET_BOUND (requires a live in-memory secret lease);
+- B2_AUTHENTICATED (requires exact authenticated Deposit Wallet identity);
+- B3_SIGNING_VERIFIED (requires successful real-key local LIMIT signing);
+- B4_CANCEL_TRANSPORT_VERIFIED (requires the safe empty-account real cancel probe).
+
+Rules: process restart returns active secret capability to B0; a persistent sanitized verification
+receipt is evidence only and never reloads a secret or raises the state; no capability state creates
+A3; and no config/env/UI/Hermes/agent input elevates the state.
+
+===============================================================================
+5. SIGNING PROBE AND GATE-C-UNREACHABLE CREATE TRANSPORT
+===============================================================================
+
+Signing probe: at exact B2, using a selected active standard CLOB market/token with valid current
+constraints and no Gate C, call the official local create_limit_order for exactly one LIMIT order
+(BUY, GTC, post-only when supported, minimum valid size, publicly safe non-marketable price where
+possible). Persist/output only a safe signing-probe id/hash, public signer/wallet, wallet type,
+token/market id, normalized public price/size/order type, selected SDK version, and PASS/FAIL. Never
+persist/output the signature, signed-order JSON, private key, API credential, or authenticated
+headers. Discard the signed object immediately after hash/evidence derivation. It MUST NOT call
+place_limit_order, post_order, post_orders, place_market_order, or any create-and-post helper.
+
+Create transport dual gate: replace the blanket GateBLockedSdkMutationAdapter with a real production
+mutation boundary that knows how to call the exact official LIMIT posting method but cannot invoke it
+unless supplied a future Gate-C live permit that WP174B cannot construct. Ordinary config booleans,
+secret presence, B4, and A2_SHADOW are all insufficient. The expected failure under WP174B is
+GATE_C_REQUIRED before any network dispatch, on every direct and indirect create/post/place path.
+WP175 alone may implement/construct the restricted-live permit.
+
+===============================================================================
+6. REAL CANCEL, EMPTY-WALLET PROBE, AND VERIFICATION RECEIPT
+===============================================================================
+
+Cancellation is exposure-reducing and belongs to Gate B: cancel one known order, an explicit bounded
+set of known order ids, cancel-market only with known ids/scope, or cancel-all for the exact
+authenticated wallet. No cancel targets another wallet, accepts arbitrary raw request bodies,
+bypasses identity, silently retries ambiguous mutation, or echoes raw venue errors. Every real cancel
+attempt persists a safe attempt identity before transmit, performs at most one transmit for that
+attempt, classifies the response, reconciles if ambiguous, and journals a sanitized result.
+
+Required safe real mutation proof: one real cancel_all on a verified EMPTY dedicated Deposit Wallet.
+Immediately before mutation the operator probe verifies expected signer/wallet exact, wallet_type
+DEPOSIT_WALLET, collateral/pUSD available balance == 0, open orders == 0, positions == 0, no
+unresolved local gateway mutation, healthy account reconciliation, and no other process owning the
+wallet session. Any nonzero balance/position/open order returns GATE_B_ACCOUNT_NOT_EMPTY and the
+probe does not run. The CLI requires an explicit operator confirmation phrase separate from the
+key prompt. Expected result: the authenticated cancel endpoint is reached, zero orders are canceled,
+no economic effect occurs, and a sanitized B4 receipt is produced. An ambiguous response closes only
+through authoritative zero-open-order convergence; an unexpectedly canceled order is a protected
+incident and STOP, never a hidden PASS.
+
+Verification receipt: local generated evidence, never committed, short-lived (<= 60 minutes), and
+content-addressed over sanitized public fields only (schema/receipt id, repository head, sdk
+distribution/version, public signer/wallet, wallet/signature type, chain id, environment, credential
+mode, read/empty/probe PASS flags, signing-probe id, cancel-probe attempt id and result, open-order
+and position and balance snapshots before/after, verified/valid-until times, redaction pass). It
+never contains a private key, API credential, signature bytes, signed order, authorization header,
+or raw response, and never reactivates a secret session or grants live authority.
+
+===============================================================================
+7. RAW CLIENT CONTAINMENT, COCKPIT, HERMES, AND WP175 BOUNDARIES
+===============================================================================
+
+The raw SecureClient/AsyncSecureClient stays private inside the Gate-B boundary. No public property
+exposes client, secure_client, credentials, private_key, api_key, secret, or passphrase. Architecture
+tests must prove the wrapper's public callable surface cannot directly reach wallet deployment,
+relayer/Builder operations, approvals, transfers, session-key authorize/revoke, RFQ, Combo, Perps, or
+split/merge/redeem.
+
+The cockpit change is backend-only: bounded GET-only routes in src/operator_cockpit.py project a
+sanitized gate_b_capability_available flag, gate_b_state, credential_session_active boolean, public
+signer/wallet, wallet/signature type, last verification receipt id/time, create-transport status
+GATE_C_REQUIRED, cancel-capability status, and reconciliation state. No secret value, credential
+input field, mutation control, Gate-C enable, A3, browser storage, or new POST/PUT/PATCH/DELETE route
+is added.
+
+Hermes remains advisory only and out of scope: it may never receive secrets, sign, place/cancel,
+allocate capital, change risk caps, arm A3, clear a kill, or approve itself. WP175 alone owns the
+first restricted-live capital/risk envelope and the A3 state.
+
+===============================================================================
+8. EXACT FROZEN SCOPE — 19 PATHS, CLASS L
+===============================================================================
+
+Required and allowed changed paths are exactly:
+1. docs/deferred_items_log.md
+2. docs/project_status.md
+3. docs/repo_truth_index.md
+4. docs/security_tooling_status.md
+5. docs/status_entries/WP174B.md
+6. docs/wp_specs/WP174B/draftability_certificate.json
+7. docs/wp_specs/WP174B/wp_prompt.txt
+8. docs/wp_specs/WP174B/wp_spec.json
+9. src/execution_gateway/__init__.py
+10. src/execution_gateway/gate_b.py
+11. src/execution_gateway/gate_b_operator.py
+12. src/execution_gateway/gateway.py
+13. src/operator_cockpit.py
+14. tests/execution_gateway/test_gate_b.py
+15. tests/execution_gateway/test_gateway.py
+16. tests/test_architecture_boundaries.py
+17. tests/test_operator_cockpit.py
+18. tests/test_project_status_docs.py
+19. tests/test_repo_truth_docs.py
+
+The certificate path is planned protected evidence and must be created only by the independent
+certifier before implementation. The pre-freeze executor creates and commits only prompt/spec bytes.
+
+Scope rationale: no dependency, lock, or workflow file changes (the exact SDK pins are already
+correct), so pyproject.toml, .github/workflows/ci.yml, and the four WP174 dependency-compatibility
+guards are out of scope. src/execution_gateway/store.py and tests/execution_gateway/test_store_recovery.py
+are unchanged because the tamper-evident store already accepts arbitrary uppercase event types and
+semantic replay lives in gateway.py; Gate-B audit events flow through the existing store API. The two
+new source modules live under the already-approved src/execution_gateway directory scope. The
+wallet-intelligence and human-review branch-diff guards auto-resolve through their spec-authorized
+changed-scope mechanism keyed on docs/status_entries/WP174B.md with no dependency change, so they need
+no edit. Any need for a twentieth path is a protected scope hard stop requiring return to Side with
+the complete remaining path set and explicit authorization. No further same-envelope PROTECTED scope
+correction is self-authorized after certificate hashing.
+
+===============================================================================
+9. NEGATIVE AND ADVERSARIAL TEST MATRIX
+===============================================================================
+
+N01 a private key via argv/file/pipe/environment on the operator path is rejected.
+N02 a secret sentinel never appears in repr, exceptions, audit, cockpit, receipt, or logs.
+N03 wrong signer, wrong wallet, EOA, proxy, safe, wrong chain, or wrong signature type fails closed.
+N04 authentication of an undeployed Deposit Wallet never triggers deployment and fails closed.
+N05 credential presence or capability state cannot elevate runtime authority and A3 stays absent.
+N06 mocked L1/L2 authentication and bounded sanitized reads succeed with no raw credential header.
+N07 the local LIMIT signing probe never calls place_limit_order/post_order and discards the signature.
+N08 the raw client, credentials, Builder/Relayer, approve, transfer, wallet-deploy, session-key,
+    RFQ, Combo, Perps, and split/merge/redeem surfaces are unreachable through the wrapper.
+N09 place_limit_order/post_order/post_orders without a Gate-C permit fail closed GATE_C_REQUIRED
+    before dispatch; market orders are always unsupported.
+N10 config booleans, secret presence, B4, A2, cockpit, and Hermes cannot construct the create permit.
+N11 cancel of an unknown order is rejected unless an exact allowed cleanup rule applies.
+N12 cancel timeout/429/5xx/malformed responses are AMBIGUOUS and never blindly retried.
+N13 duplicate cancel is idempotent and one attempt transmits at most once.
+N14 the empty-wallet probe aborts on any nonzero balance/position/open order or missing confirmation.
+N15 the empty-wallet probe returns GATE_B_ACCOUNT_NOT_EMPTY when the account is not empty.
+N16 an unexpectedly canceled order in the zero-state probe is a protected incident and stop.
+N17 restart returns active credential capability to B0 and never restores a secret or A3.
+N18 a persistent verification receipt cannot move B0 upward or reactivate a secret session.
+N19 kill and prior ambiguous mutation survive restart without becoming permission.
+N20 the receipt and every output surface contain no secret-key field names, signature, or raw response.
+N21 cockpit routes are GET-only, bounded, sanitized, and expose no secret value or mutation control.
+N22 WP173 evidence stays read-only and no strategy/capital/allowlist/live authority exists.
+N23 A3, capital-at-risk, and a real economic create remain absent and Gate-C locked.
+N24 the exact installed polymarket-client==0.10.0 and websockets==15.0.1 pins are unchanged.
+
+===============================================================================
+10. REQUIREMENT-TO-EVIDENCE PLAN
+===============================================================================
+
+R001 protected readiness: independent exact-hash certificate and canonical PROTECTED readiness.
+R002 ephemeral secret input: no-echo boundary, no persistence, and recursive no-echo redaction.
+R003 production identity: DEPOSIT_WALLET signer/funder/signature-type-3 enforced; mismatch fails closed.
+R004 authenticated reads: mocked L1/L2 auth and bounded sanitized account/order/trade/position reads.
+R005 real signing: local create_limit_order signing probe without any post; signature discarded.
+R006 raw client containment: forbidden wallet/treasury/session/RFQ/Combo/Perps surfaces unreachable.
+R007 Gate-C-unreachable create: every create/post/place fails closed GATE_C_REQUIRED before dispatch.
+R008 cancel transport: attempt identity, idempotency, ambiguity classification, and reconcile-or-block.
+R009 empty-wallet probe: zero-state precheck, incident on unexpected cancel, and sanitized B4 receipt.
+R010 restart/audit: capability returns to B0, kill persists, and Gate-B transitions journal sanitized.
+R011 cockpit: bounded GET-only sanitized Gate-B projection and no mutation route.
+R012 dependency compatibility: assert exact 0.10.0/15.0.1 pins and imports with no dependency change.
+R013 security: recursive secret redaction plus gitleaks, Semgrep, and pip-audit with no real secret.
+R014 repo truth/evidence: status, security tooling, deferred items, and exact successor wording.
+R015 exact-head publication: readiness --check-diff, exact scope, focused/adversarial/full tests,
+  security, one independent implementation reviewer, hosted CI, operator smoke receipt, and PR re-fetch.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|secrets|secret_value|all_outputs|FORBID|no_echo_no_persistence|secret.lease|R002
+NR002|identity|deposit_wallet|before_capability|REQUIRE|signature_type_3_no_deploy|identity.wallet_type|R003
+NR003|capability|gate_b_state|wp174b|REQUIRE|b0_to_b4_only|capability.state|R010
+NR004|authority|restricted_live|wp174b|FORBID|wp175_required|capability.state|R010
+NR005|signing|limit_probe|at_b2|REQUIRE|local_sign_without_post|signing_probe.identity|R005
+NR006|mutation|create_transport|without_gate_c|FORBID|gate_c_required|create_permit.token|R007
+NR007|sdk|forbidden_surface|via_wrapper|FORBID|containment_unreachable|create_permit.token|R006
+NR008|mutation|cancel_attempt|possibly_transmitted|FORBID|blind_retry_forbidden|cancel_attempt.identity|R008
+NR009|mutation|empty_wallet_probe|not_empty|FORBID|account_not_empty_stop|cancel_probe.result|R009
+NR010|audit|gate_b_transition|all|REQUIRE|tamper_evident_no_secrets|receipt.identity|R010
+NR011|cockpit|gate_b_projection|wp174b|REQUIRE|get_only_sanitized|capability.state|R011
+NR012|dependency|selected_sdk|wp174b|REQUIRE|exact_pins_unchanged|NONE|R012
+END_NORMATIVE_RULE_MATRIX_V1
+
+===============================================================================
+11. OPERATOR SMOKE, IMPLEMENTATION AND VALIDATION
+===============================================================================
+
+Before source work, run:
+python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP174B/wp_prompt.txt --spec
+docs/wp_specs/WP174B/wp_spec.json --certificate
+docs/wp_specs/WP174B/draftability_certificate.json --repo-root .
+
+It must report IMPLEMENTATION_READY with governance track PROTECTED and independent-certificate
+basis. Missing/invalid certificate, hash mismatch, predecessor divergence, dirty base, or
+authority-mirror mismatch blocks implementation. IMPLEMENTATION_READY is not an authority state.
+
+During authorized implementation use focused tests only. At a stable candidate, but before final
+merge-ready evidence, the implementation is proved against fake/mocked SDK adapters. Then exactly one
+operator smoke is expected: the agent returns a short instruction with the exact command, the public
+arguments, confirmation that the wallet must be dedicated and empty, and the sanitized receipt path.
+Karl runs the no-echo command in a separate terminal; the agent never runs it or sees any secret and
+resumes only from the sanitized receipt. This is an operational input action, not a new authorization
+round; an ordinary same-scope defect the smoke exposes is fixed autonomously with the minimum repeated
+safe smoke.
+
+At a stable candidate run readiness with --check-diff --base origin/main --head HEAD, exact-scope and
+artifact guards, git diff --check, Ruff/compile/import checks, focused gate_b/gateway/cockpit/boundary/
+status tests, pip check with the exact unchanged pins, gitleaks/Semgrep/pip-audit, one combined
+independent correctness/security review, one authoritative full repository suite after the last source
+change, exact-head hosted CI, and authenticated PR-body re-fetch.
+
+Concrete protected STOP conditions:
+- STOP if PR #176, final head, merge/base, or current-main truth differs materially.
+- STOP if the independent certificate is missing, invalid, executor-authored, or hash-mismatched.
+- STOP if any changed path falls outside the exact 19-path scope.
+- STOP if any dependency, lock, or workflow file becomes required.
+- STOP if the selected SDK cannot authenticate an existing Deposit Wallet without deployment,
+  approval, or transfer, or if it requires Builder/Relayer authority merely to auth/sign/cancel.
+- STOP if Deposit Wallet signer/funder/signature identity cannot be proved unambiguously.
+- STOP if any real secret must be persisted or raw SDK exceptions cannot be sanitized without leakage.
+- STOP if a real create cannot be made structurally Gate-C unreachable.
+- STOP if proving Gate B genuinely requires an economic CREATE or any capital at risk.
+- STOP if a safe empty-wallet cancel probe cannot be run or the operator test wallet is non-empty.
+- STOP if Session Keys, Builder credentials, or any A3/live/capital/strategy/scheduler/Hermes/
+  deployment code becomes necessary.
+- STOP if final validation cannot be rerun after the last source change or if exact-head hosted CI or
+  authenticated PR evidence cannot be established honestly.
+
+Ordinary same-scope bugs are fixed within the frozen scope and do not broaden authority.
+
+===============================================================================
+12. SUCCESSOR BOUNDARY AND REPORT-BACK
+===============================================================================
+
+WP175 — Restricted Live Canary remains separately gated and unstarted. It alone may propose
+A3_RESTRICTED_LIVE, dedicated canary capital/risk, a one-strategy one-market allowlist, live
+exposure/loss limits, manual live arm, and the first real economic LIMIT create under Gate C.
+Mature long-running owner-key replacement, Session Keys, and secrets-manager hardening remain for
+WP176 or a separately approved mature-live credential package. WP174B does not authorize their
+drafting, implementation, or execution.
+
+Implementation completion evidence must report exact head and path count; predecessor SHA; selected
+SDK provenance and the frozen wallet-readiness decision; certificate/readiness; secret and identity
+proof; signing-probe and Gate-C-unreachable create proof; cancel idempotency/ambiguity/reconcile
+proof; empty-wallet cancel-probe receipt id/result; restart/B-state/audit proof; cockpit projection
+proof; dependency-unchanged proof; focused, adversarial, security, full-suite, and exact-head CI
+results; PR evidence re-fetch; Gate B implemented YES; real secret persisted NO; real economic create
+NO; capital at risk USD 0; Gate C NO; A3 NO; WP175 implementation NO; merge NO.
+
+END OF WP174B
