@@ -3878,6 +3878,38 @@ def test_wp171g_status_and_package_evidence_are_registered():
     assert "prompt/spec authority-mirror equality" in status
 
 
+def test_wp174_status_security_and_successor_are_consistent():
+    project = (REPO_ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    deferred = (REPO_ROOT / "docs" / "deferred_items_log.md").read_text(
+        encoding="utf-8"
+    )
+    security = (REPO_ROOT / "docs" / "security_tooling_status.md").read_text(
+        encoding="utf-8"
+    )
+    fragment = (STATUS_ENTRIES / "WP174.md").read_text(encoding="utf-8")
+    combined = "\n".join((project, index, deferred, security, fragment))
+    assert "WP173 merged: YES" in project
+    assert "WP173 PR: 175" in project
+    assert "79e2953dee8754dc8d09781edd647202dee834aa" in combined
+    assert "e0202750c1e6f2a3a885aa6efa04bbd8d0b2291a" in combined
+    assert "WP174 current review target" in project
+    assert "Package size class: XL_FOR_SCOPE_SIZE_ONLY" in project
+    assert "Exact changed-file scope: 24" in project
+    assert "DRAFTABILITY_PASS" in combined
+    assert "IMPLEMENTATION_READY" in combined
+    assert "polymarket-client==0.10.0" in combined
+    assert "websockets==15.0.1" in combined
+    assert "BLOCKED_GATE_B" in deferred
+    assert "A3_RESTRICTED_LIVE: ABSENT" in combined
+    assert "WP175 Restricted Live Canary: SEPARATELY_GATED_NOT_STARTED" in project
+    assert "Gate B was not exercised" in fragment
+    assert "Gate C was not exercised" in fragment
+    assert "Merge authorized: NO" in combined
+    assert "Unresolved decisions: 0" in project
+
+
+
 def test_wp159_repo_truth_and_deferred_items_are_registered():
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(
         encoding="utf-8"

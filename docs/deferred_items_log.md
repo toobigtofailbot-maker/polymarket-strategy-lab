@@ -2548,3 +2548,20 @@ is not a paper gate.
 | WP173-D002 | Restricted Live Canary (WP175) | OPEN_PROTECTED_SUCCESSOR | P1 | Separate explicit live-authorization WP after WP174 | Paper readiness is not live readiness |
 | WP173-D003 | Mature Controlled Live (WP176) | OPEN_PROTECTED_SUCCESSOR | P1 | Separate mature-live WP after restricted-canary evidence | A canary does not imply mature live authority |
 | WP173-D004 | Hermes/alpha automation during paper soak | OPEN_PARALLEL_NOT_PAPER_GATE | P2 | Separately authorized advisory/strategy package may proceed in parallel later | No Hermes/model provider or autonomous promotion authority is added |
+
+## WP174 Protected Authentication, Signing & Execution Gateway Deferred Items
+
+WP174 resolves the bounded Gate A portion of WP173-D001 as
+`RESOLVED_BOUNDED_WP174_GATE_A`: official-SDK type integration, deterministic LIMIT
+construction, reference-only credential state, fixture-only would-submit/mutation
+evidence, reconciliation/heartbeat/access controls, tamper-evident recovery, and a
+read-only cockpit projection. It does not load a real secret, invoke a venue mutation,
+authorize capital, or start WP175.
+
+| ID | Item | Status | Priority | Resolution path | Non-implication |
+|---|---|---|---|---|---|
+| WP173-D001 | Auth / Signing / Execution Gateway (WP174) | RESOLVED_BOUNDED_WP174_GATE_A | P1 | WP174 Gate-A-only protected gateway with exact dependencies and fail-closed evidence | Gate A does not grant Gate B mutation or Gate C capital authority |
+| WP174-D001 | Real secret loading and real SDK signing/mutation | BLOCKED_GATE_B | P1 | A separately drafted, certified, readiness-passing, and explicitly authorized Gate B package | Installed SDK types and would-submit artifacts are not mutation authority |
+| WP174-D002 | Restricted Live Canary (WP175) | OPEN_PROTECTED_SUCCESSOR | P1 | Separate WP175 certification, readiness, and explicit Gate C authorization after Gate B | WP174 has no A3 state, capital sizing, allowlist, deployment, or live authority |
+| WP174-D003 | MARKET orders and broader venue instruction surface | DEFERRED | P2 | Future separately scoped package after LIMIT-only evidence | LIMIT construction does not authorize additional order types |
+| WP174-D004 | Hermes, strategy automation, scheduler, or hosted deployment | DEFERRED | P2 | Separate protected-boundary work packages | Gateway control evidence cannot promote research or operate autonomously |

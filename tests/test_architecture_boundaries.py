@@ -80,6 +80,8 @@ def test_required_src_readmes_exist():
 # WP168/WP170 evidence and has no network, credentials, paper, order, execution, or live authority.
 # WP173 approves deterministic simulated-paper runtime/accounting/risk/reconciliation only.
 # It reads WP169 locally, extends the loopback read-only cockpit, and has no real/live authority.
+# WP174 approves the protected Gate-A-only auth/signing/execution gateway. It can
+# reach only A0/A1/A2 and cannot invoke SDK venue mutations without later Gate B.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -140,6 +142,7 @@ APPROVED_SRC_SCOPES = (
     "src/research_runtime/executable_edge",
     "src/research_runtime/README.md",
     "src/paper_trading",
+    "src/execution_gateway",
     # WP171 approves one local, read-only cockpit and its browser source. It reads
     # caller-selected WP169/WP170 SQLite evidence and has no trading authority.
     "src/operator_cockpit.py",
@@ -280,6 +283,33 @@ def test_wp173_paper_runtime_is_separate_from_live_and_external_clients():
     assert "SIMULATED_PAPER_ONLY" in contract
     assert "WP174 Auth / Signing / Execution Gateway" in contract
     assert "does not authorize" in contract
+
+
+def test_wp174_gateway_boundary_preserves_wp173_and_excludes_wp175():
+    gateway = ROOT / "src" / "execution_gateway"
+    assert gateway.is_dir()
+    source = "\n".join(
+        path.read_text(encoding="utf-8") for path in gateway.glob("*.py")
+    )
+    assert 'AUTHORITY_STATES = ("A0_DISABLED", "A1_READ_ONLY", "A2_SHADOW")' in source
+    assert "from polymarket import AsyncSecureClient, SecureClient" in source
+    assert "class GateBLockedSdkMutationAdapter" in source
+    assert 'raise GatewayError("GATE_B_REQUIRED")' in source
+    assert "A3_RESTRICTED_LIVE" not in source
+    for forbidden in (
+        "os.environ",
+        "load_dotenv",
+        "import requests",
+        "import httpx",
+        "while True",
+        "time.sleep",
+    ):
+        assert forbidden not in source
+    paper = "\n".join(
+        path.read_text(encoding="utf-8").lower()
+        for path in (ROOT / "src" / "paper_trading").glob("*.py")
+    )
+    assert "src.execution_gateway" not in paper
 
 
 # ── WP88: Evidence Architecture Repair ───────────────────────────────────────

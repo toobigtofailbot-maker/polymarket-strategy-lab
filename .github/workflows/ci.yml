@@ -27,8 +27,8 @@ env:
   WP167_DEPS: "pyarrow==25.0.1 duckdb==1.5.5 polars==1.44.1"
   # Exact WP168 direct runtime dependency pin (base install: no polymarket extra, no redis).
   WP168_DEP: "nautilus_trader==1.231.0"
-  # Exact WP169 direct runtime dependency pin (public Market WebSocket data plane).
-  WP169_DEP: "websockets==17.1"
+  # WP174's exact official SDK pin and compatible WP169 WebSocket pin.
+  WP174_DEPS: "polymarket-client==0.10.0 websockets==15.0.1"
   # WP171 optional local cockpit pins (loopback/read-only, no product network).
   WP171_DEPS: "fastapi==0.141.1 uvicorn==0.52.4"
   # Strict DuckDB mode: DuckDB-dependent tests must execute; any import failure or
@@ -70,7 +70,7 @@ jobs:
       - name: Install exact dependency pins and test tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install $WP167_DEPS $WP168_DEP $WP169_DEP $WP171_DEPS "pytest>=8.0"
+          python -m pip install $WP167_DEPS $WP168_DEP $WP174_DEPS $WP171_DEPS "pytest>=8.0"
 
       - name: pip check
         run: python -m pip check
@@ -82,6 +82,11 @@ jobs:
         run: |
           python -c "import importlib.metadata as m; assert m.version('nautilus_trader') == '1.231.0', m.version('nautilus_trader')"
           python -c "import nautilus_trader.model.instruments, nautilus_trader.model.data, nautilus_trader.persistence.catalog.parquet, nautilus_trader.backtest.engine; print('nautilus offline modules import OK')"
+
+      - name: Assert exact WP174 SDK pins and public imports
+        run: |
+          python -c "import importlib.metadata as m; assert m.version('polymarket-client') == '0.10.0'; assert m.version('websockets') == '15.0.1'"
+          python -c "import polymarket; from polymarket import SecureClient, AsyncSecureClient; print('polymarket SDK imports OK')"
 
       - name: Focused WP168 offline-kernel tests (no Nautilus-required skip permitted)
         run: |
@@ -112,7 +117,7 @@ jobs:
       - name: Focused WP169 public market-truth tests (no skips permitted)
         run: |
           set -o pipefail
-          python -c "import importlib.metadata as m; assert m.version('websockets') == '17.1', m.version('websockets')"
+          python -c "import importlib.metadata as m; assert m.version('websockets') == '15.0.1', m.version('websockets')"
           python -m pytest -rs -q             tests/data_layer/polymarket/test_market_truth_models_store.py             tests/data_layer/polymarket/test_market_truth_websocket.py             tests/data_layer/polymarket/test_market_truth_data_api.py             tests/data_layer/polymarket/test_market_truth_onchain.py             tests/data_layer/polymarket/test_market_truth_runtime.py             tests/test_public_market_truth_realtime_data_plane_contract_docs.py             | tee "$RUNNER_TEMP/wp169_focused.txt"
           if grep -Eq "[0-9]+ skipped" "$RUNNER_TEMP/wp169_focused.txt"; then
             echo "::error::A WP169 market-truth test was skipped under strict hosted CI"
@@ -161,7 +166,7 @@ jobs:
       - name: Install exact dependency pins and audit tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install $WP167_DEPS $WP168_DEP $WP169_DEP $WP171_DEPS "pytest>=8.0" pip-audit
+          python -m pip install $WP167_DEPS $WP168_DEP $WP174_DEPS $WP171_DEPS "pytest>=8.0" pip-audit
 
       - name: pip check
         run: python -m pip check

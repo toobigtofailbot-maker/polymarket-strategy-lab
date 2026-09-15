@@ -29,8 +29,9 @@ EXPECTED_DIRECT_DEPENDENCIES = {
     "polars": "1.44.1",
     # WP168 adds the offline NautilusTrader kernel dependency (base install only).
     "nautilus_trader": "1.231.0",
-    # WP169 adds the exact websockets pin for the public Market WebSocket data plane.
-    "websockets": "17.1",
+    # WP174 adopts the official SDK and its compatible public-data WebSocket pin.
+    "polymarket-client": "0.10.0",
+    "websockets": "15.0.1",
 }
 
 

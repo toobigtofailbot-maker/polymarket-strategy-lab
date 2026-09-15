@@ -17,6 +17,7 @@ import pytest
 import src.data_layer.analytical_research as ar
 from src.data_layer.polymarket import market_truth as mt
 from src.data_layer.polymarket.market_truth_store import MarketTruthStore
+from src.execution_gateway import ProtectedExecutionGateway
 import src.operator_cockpit as cockpit
 from src.paper_trading import (
     PaperEngine,
@@ -213,7 +214,7 @@ def _paper_store(tmp_path: Path) -> Path:
     return path
 
 
-async def _asgi_call(app, target: str) -> tuple[int, dict]:
+async def _asgi_call(app, target: str, *, method: str = "GET") -> tuple[int, dict]:
     parsed = urlsplit(target)
     sent = False
     messages: list[dict] = []
@@ -232,7 +233,7 @@ async def _asgi_call(app, target: str) -> tuple[int, dict]:
         "type": "http",
         "asgi": {"version": "3.0", "spec_version": "2.3"},
         "http_version": "1.1",
-        "method": "GET",
+        "method": method,
         "scheme": "http",
         "path": parsed.path,
         "raw_path": parsed.path.encode("ascii"),
@@ -262,6 +263,13 @@ async def _asgi_call(app, target: str) -> tuple[int, dict]:
 
 def _get(app, target: str) -> tuple[int, dict]:
     return asyncio.run(_asgi_call(app, target))
+
+
+def _gateway_store(tmp_path: Path) -> Path:
+    path = tmp_path / "gateway.sqlite3"
+    with ProtectedExecutionGateway.create(path, created_time_ns=1):
+        pass
+    return path
 
 
 def test_wp171_predecessor_scope_and_successor_contract() -> None:
@@ -372,6 +380,8 @@ def test_exact_routes_limits_errors_and_no_mutation_routes(
         "/api/paper/positions": {"GET"},
         "/api/paper/risk": {"GET"},
         "/api/paper/audit": {"GET"},
+        "/api/gateway/status": {"GET"},
+        "/api/gateway/audit": {"GET"},
     }
     assert _get(app, "/api/market-truth/recent")[1]["limit"] == 50
     for accepted in ("1", "100"):
@@ -531,6 +541,7 @@ def test_overview_and_audit_are_store_derived_bounded_and_read_only(
         "wp169": {"configured": True, "readable": True},
         "wp170": {"configured": True, "readable": True},
         "paper": {"configured": False, "readable": False},
+        "gateway": {"configured": False, "readable": False},
     }
     overview = _get(app, "/api/overview")[1]
     assert overview["read_only"] is True
@@ -621,6 +632,74 @@ def test_paper_routes_are_get_only_bounded_sanitized_and_read_only(
         )
     )
     assert _get(unavailable, "/api/paper/summary") == (
+        503,
+        {"error": {"code": "SOURCE_UNAVAILABLE"}},
+    )
+
+
+def test_gateway_routes_are_get_only_bounded_sanitized_and_read_only(
+    tmp_path: Path,
+) -> None:
+    market = _market_store(tmp_path)
+    registry = _experiment_store(tmp_path)
+    gateway = _gateway_store(tmp_path)
+    before = hashlib.sha256(gateway.read_bytes()).hexdigest()
+    app = cockpit.create_app(
+        cockpit.CockpitConfig(market, registry, gateway_store_path=gateway)
+    )
+    domain = {
+        route.path: set(route.methods or ())
+        for route in app.routes
+        if route.path.startswith("/api/gateway/")
+    }
+    assert domain == {
+        "/api/gateway/status": {"GET"},
+        "/api/gateway/audit": {"GET"},
+    }
+    status_code, status = _get(app, "/api/gateway/status")
+    assert status_code == 200
+    assert status == {
+        "read_only": True,
+        "authority_state": "A0_DISABLED",
+        "disabled": True,
+        "disable_reason": "INITIALIZED",
+        "credential_configured": False,
+        "public_signer": None,
+        "public_funder": None,
+        "reconciliation_state": "REQUIRED",
+        "heartbeat_state": "DISABLED",
+        "user_stream_state": "DISCONNECTED",
+        "access_state": "UNKNOWN",
+        "rate_limit_until_ns": None,
+        "prepared_order_count": 0,
+        "mutation_attempt_count": 0,
+        "open_order_count": 0,
+        "gate_b_authorized": False,
+        "restricted_live_available": False,
+    }
+    audit_code, audit = _get(app, "/api/gateway/audit?limit=1")
+    assert audit_code == 200 and audit["count"] == audit["limit"] == 1
+    assert audit["items"][0]["event_type"] == "INITIALIZED"
+    assert _get(app, "/api/gateway/audit?limit=0") == (
+        400,
+        {"error": {"code": "INVALID_INPUT"}},
+    )
+    post_code, _ = asyncio.run(
+        _asgi_call(app, "/api/gateway/status", method="POST")
+    )
+    assert post_code == 405
+    assert before == hashlib.sha256(gateway.read_bytes()).hexdigest()
+    rendered = json.dumps([status, audit]).lower()
+    for forbidden in (str(tmp_path).lower(), "credential_reference", "private_key", "secret"):
+        assert forbidden not in rendered
+    unavailable = cockpit.create_app(
+        cockpit.CockpitConfig(
+            market,
+            registry,
+            gateway_store_path=tmp_path / "missing.sqlite3",
+        )
+    )
+    assert _get(unavailable, "/api/gateway/status") == (
         503,
         {"error": {"code": "SOURCE_UNAVAILABLE"}},
     )
