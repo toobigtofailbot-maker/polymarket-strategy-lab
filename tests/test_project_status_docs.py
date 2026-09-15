@@ -3895,7 +3895,7 @@ def test_wp174_status_security_and_successor_are_consistent():
     assert "e0202750c1e6f2a3a885aa6efa04bbd8d0b2291a" in combined
     assert "WP174 current review target" in project
     assert "Package size class: XL_FOR_SCOPE_SIZE_ONLY" in project
-    assert "Exact changed-file scope: 23" in project
+    assert "Exact changed-file scope: 24" in project
     assert "DRAFTABILITY_PASS" in combined
     assert "IMPLEMENTATION_READY" in combined
     assert "polymarket-client==0.10.0" in combined
