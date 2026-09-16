@@ -18,7 +18,7 @@ Package Identity:
 Recommended Claude/Codex Mode:
   Model/reasoning: GPT-5.6 Luna Extra High for implementation after independent certification.
   Reason: Risk-4 protected live-capital boundary with durability, reconciliation, and hard-loss invariants.
-  Escalate to higher reasoning or STOP if: exact 0.10.0 post/reconciliation contracts cannot prevent duplicate create, scope exceeds 35 paths, or a dependency/workflow change is required.
+  Escalate to higher reasoning or STOP if: exact 0.10.0 post/reconciliation contracts cannot prevent duplicate create, any path outside the exact frozen 29 is required, or a dependency/workflow change is required.
 
 BEGIN_GOVERNANCE_AUTHORITY_V1
 risk_level: 4
@@ -51,11 +51,12 @@ authoritative account reads, cancel a resting order through the existing durable
 path, persist halt/kill evidence, start disabled after every restart, and expose GET-only sanitized
 operator evidence. It is not mature live.
 
-Current repository discovery found no committed non-test operator strategy binding suitable for live
-activation. Record `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`. Phase B may become code-complete,
-mock-validated, and CI-green, but no real smoke or full WP175 completion claim is permitted until a
-genuine WP172/WP173 evidence chain is supplied and separately validated. Implementation authority was
-granted in chat on 2026-09-16. Gate-C activation and merge remain separate human decisions.
+Current repository discovery found no committed non-test operator strategy qualification suitable for
+live activation. Record `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`. Phase B may become
+code-complete, mock-validated, and CI-green, but no real smoke or full WP175 completion claim is
+permitted until the exact manual qualification contract in section 7 is supplied and validated.
+Implementation authority was granted in chat on 2026-09-16. Gate-C activation and merge remain
+separate human decisions.
 
 2. AUTHORITY / NON-AUTHORITY POSTURE
 
@@ -77,9 +78,32 @@ builder/relayer, wallet deployment, funding, transfer, approval, bridge, treasur
 Hermes/model authority; browser mutation; workflow or dependency changes; paper/research mutation;
 merge.
 
+Centralized protected-boundary posture (`docs/ai/codex/PROTECTED_PATHS.md`): this WP explicitly
+crosses only `credentials/secrets` through the already-approved ephemeral Gate-B provider,
+`authenticated clients`, `wallet/account behavior`, `order placement/cancel`, and `execution gateway`.
+It does not cross `paper engine`, `scheduler/bot loop`, `runtime/daemon`, `dashboard/deployment`,
+`dependency/lock changes`, `external code copying`, or `generated artifacts`. The cockpit edit is a
+GET-only projection inside the existing loopback surface and grants no deployment authority.
+
 3. HARD MERGE GATE AND COMPILED FACTS
 
-Remote Main Sync Gate passed on 2026-09-16. Local main and origin/main equal
+The mandatory Remote Main Sync Gate commands are:
+
+```
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+gh pr list --state open --search "WP175 in:title"
+```
+
+The eight required checks are: predecessor PR #177 merged; predecessor final head and merge SHA
+recorded; main contains the predecessor final head; no newer conflicting merge; no local or remote
+WP175 branch before creation; no open WP175 PR before creation; no repo-truth claim that WP175 is
+complete; and no generated-artifact violation. Remote Main Sync Gate passed on 2026-09-16. Local main
+and origin/main equal
 52f46eff322aa40fd1c15b835acb4bebf784375a; the tree was clean; no open WP175 PR existed before branch
 creation. Dedicated branch/worktree: codex/wp175-restricted-live-canary at
 C:/GitHub/polymarket-strategy-lab-wp175.
@@ -97,10 +121,24 @@ Current official docs were reverified immediately before freeze: actual-host GET
 https://polymarket.com/api/geoblock; POST /order response and live/matched/delayed lifecycle; GET open
 orders, single order, and authenticated trades; current order-book tick/minimum/neg-risk fields;
 current dynamic market fee metadata; and rate limits. Runtime stores only blocked boolean/time and
-never IP/country/region. Any blocked, close-only, malformed, stale, or unavailable access result denies
-new exposure and never prevents cancel.
+never IP/country/region. Only a fresh well-formed official response with `blocked=false` permits new
+exposure. `blocked=true`, malformed, stale, or unavailable denies new exposure and never prevents
+cancel. No separate close-only field is assumed or synthesized.
 
-4. EXACT CHANGED-FILE SCOPE
+4. CONTEXT BUDGET
+
+Read first: AGENTS.md, AI_CODING_AGENT_START_HERE.md, CODEX_START_HERE.md, project_status,
+repo_truth_index, deferred_items_log, docs/ai/codex/README.md, WP_EXECUTION_STATE_MACHINE, and the
+drafting/spec/protected-path standards. Read for this WP: live authorization; WP172-WP174B contracts,
+status fragments and WP174/WP174B specs; execution_gateway gateway/store/Gate-B modules; paper binding
+models read-only; cockpit backend; and directly adjacent tests. Read only if mechanically constrained:
+historical live/official-client/status/generated-artifact/security guards. Do not read or touch old chat
+transcripts, unrelated Hermes WPs, frontend source, paper or research-runtime source, OMS/risk packages,
+dependency/lock/workflow files, secret files, or generated/local artifacts. Search terms: A3, Gate C,
+GATE_C_REQUIRED, AUTHORITY_STATES, post_order, create_limit_order, GateBSession, cancel_all, official
+client, live authorization, and WP175.
+
+5. EXACT CHANGED-FILE SCOPE
 
 Exactly the 29 paths in `scope.required_changed_files` and `scope.allowed_changed_files` of the
 companion specification must change. The 29-path closure is mechanically required by the new contract,
@@ -108,7 +146,11 @@ status/evidence surfaces, GatewayStore A3 validation, Gate-B private transport r
 and historical guards that currently reject A3 or real post calls. No dependency, lock, workflow,
 frontend, paper, research-runtime, Hermes, OMS, or separate risk-engine path may change.
 
-5. COMPATIBILITY / IMPOSSIBILITY CHECK
+The pre-freeze authorization ceiling was 35 paths. This package is frozen at exactly 29; any 30th
+changed path after freeze is a protected-scope hard stop requiring newly frozen bytes and a fresh
+independent certificate.
+
+6. COMPATIBILITY / IMPOSSIBILITY CHECK
 
 | Required behavior | Current controlling mechanism | Exact files | Allowed | Proven | Action |
 |---|---|---|---:|---:|---|
@@ -125,8 +167,8 @@ frontend, paper, research-runtime, Hermes, OMS, or separate risk-engine path may
 | Wallet lock | WalletSessionLock | gate_b.py | YES | YES | One owner/session |
 | Access | official dynamic geoblock endpoint | gate_c.py | YES | YES | Fail closed; no static country list |
 | Balance/allowance | Gate-B authenticated reads | gate_b.py; gate_c.py | YES | YES | Snapshot freshness and caps |
-| Strategy binding | WP172/WP173 validators | gate_c.py | YES | PARTIAL | Genuine external binding prerequisite unavailable |
-| Paper evidence | read-only immutable chain | gate_c.py | YES | YES | Reject fixture/synthetic/test provenance |
+| Strategy qualification | WP172/WP173 validators plus manual qualification | gate_c.py | YES | YES | Bare binding is insufficient; enforce section 7 |
+| Paper evidence | read-only immutable chain plus human qualification | gate_c.py | YES | YES | Bare binding or artifacts without qualification reject |
 | Live accounting | new bounded canary ledger | gate_c.py | YES | YES | Decimal caps and loss/drawdown guards |
 | Cockpit | existing loopback GET projection | operator_cockpit.py | YES | YES | Evidence only; no mutation |
 | Historical guards | explicit no-live/official-client assertions | listed tests | YES | YES | Narrow WP175 exceptions, global denial preserved |
@@ -135,7 +177,26 @@ No exact SDK impossibility was found. A possibly transmitted attempt is never re
 identity cannot be uniquely converged from accepted response/open orders/trades/account state, the
 attempt stays AMBIGUOUS, A3 halts, and only cancellation/reconciliation may proceed.
 
-6. FROZEN SAFETY CONTRACT
+7. FROZEN SAFETY AND STRATEGY QUALIFICATION CONTRACT
+
+`GateCStrategyQualification` is the only input that can satisfy live strategy eligibility. A bare
+`PaperStrategyBinding`, rank, score, fixture, or copied IDs always rejects. The qualification is a
+content-addressed manual operator assertion, created only by the foreground TTY command, and binds:
+the exact WP175 git head; a fully validated immutable `PaperStrategyBinding`; the complete validated
+WP172 `ExecutableEdgeAssessment` and `ExecutionCostModel` whose IDs match that binding, whose status is
+`EXECUTABLE_EDGE_PASS`, and whose `wp173_evaluation_eligible` is true; a read-only validated WP173
+paper-store terminal journal/checkpoint head using the same binding with HEALTHY reconciliation and no
+corruption or stale writer; the selected strategy label and exact evidence IDs; the operator's explicit
+`OPERATOR-PRODUCTION-EVIDENCE` confirmation nonce; and issue/expiry timestamps. The local artifact
+paths are never persisted or emitted. The existing binding's `simulated_paper_only=true` remains true
+and is evidence provenance, not live authority.
+
+This is intentionally a human-attested provenance boundary: deterministic validators prove artifact
+integrity and cross-ID consistency; the interactive operator attests that the selected artifacts are
+real operator evidence rather than fixtures. Tests can exercise the assertion type but cannot grant
+production authority, because every qualification is also exact-head, TTY-issued, short-lived,
+single-use, and must be named in the later human Gate-C activation authorization. There is currently no
+such operator qualification, so `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE` is the exact state.
 
 Hard maxima, which no config/env/CLI/browser/strategy/Hermes/venue response may increase:
 MAX_CANARY_WALLET_PUSD=50.00; MAX_GROSS_LIVE_EXPOSURE_PUSD=20.00;
@@ -146,8 +207,8 @@ MAX_CANARY_EQUITY_DRAWDOWN_PUSD=7.50; MAX_CUMULATIVE_CANARY_LOSS_PUSD=10.00;
 ARM_RECEIPT_VALIDITY_MINUTES=10; FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=1.
 
 Dedicated Deposit Wallet/signature type 3 only. Balance above 50 blocks new exposure but not cancel or
-otherwise valid reduce-only SELL. One arm binds exact git head, store head, public identity, genuine
-binding evidence, one condition/token, risk hash, fresh account/reconciliation/access evidence,
+otherwise valid reduce-only SELL. One arm binds exact git head, store head, public identity, the exact
+strategy qualification, one condition/token, risk hash, fresh account/reconciliation/access evidence,
 operator nonce, issue/expiry. It is single-use, process-local, expires within ten minutes, and cannot
 survive restart. Startup always A0_DISABLED. Every safety failure durably halts when possible, blocks
 new exposure, attempts bounded cancellation when safe, reconciles, and returns disabled/blocked.
@@ -158,10 +219,11 @@ no batch; one `post_order` per durable attempt. Unknown, timeout, transport erro
 inconsistent accepted identity, or delayed response is AMBIGUOUS. Exact deterministic rejection may be
 rejected. Accepted live orders take the same-command durable cancel path; fills are reconciled exactly.
 
-7. NEGATIVE-TEST MATRIX AND EVIDENCE PLAN
+8. NEGATIVE-TEST MATRIX AND EVIDENCE PLAN
 
 Tests must cover: missing/stale/reused/wrong-head arm; restart; config/env/secret/browser/Hermes
-cannot arm or widen; wrong wallet/signature/binding/market/token; synthetic binding; neg-risk/delayed/
+cannot arm or widen; wrong wallet/signature/binding/qualification/market/token; bare or mismatched
+strategy evidence; noninteractive qualification; neg-risk/delayed/
 closed market; stale metadata/access/account/mark; every numeric cap at and above boundary; insufficient
 balance/allowance; unsupported type/TIF; oversell; STARTED-before-post; persistence failure zero posts;
 one transmit; restart no resend; every ambiguous class; accepted identity mismatch; deterministic
@@ -175,25 +237,27 @@ tests while editing. After the last source change run exactly one authoritative 
 security runner, pip check/version checks, generated-artifact guard, readiness `--check-diff`, push,
 exact-head hosted CI, and current PR-body evidence. Real secrets and capital remain zero.
 
-8. HARD STOPS
+9. HARD STOPS
 
 STOP if exact 0.10.0 cannot keep sign, durable STARTED, and one post separated — duplicate capital risk.
 STOP if safe reconciliation requires blind retry — duplicate economic create risk.
-STOP if truthful scope exceeds 35 paths — package authority exceeded.
+STOP if any 30th changed path is required after exact freeze — certified package scope exceeded.
 STOP if dependency, lock, workflow, scheduler, service, treasury, or WP176 architecture is required.
 STOP if a historical guard must be weakened globally instead of narrowly recognizing WP175.
 STOP if any required source path is outside certified scope after freeze.
-STOP before activation while the genuine live-eligible binding prerequisite remains unavailable.
+STOP if final required validation cannot be rerun after the last source change — readiness unprovable.
+STOP before activation while the exact strategy qualification prerequisite remains unavailable.
 STOP before activation without exact-head human Gate-C authority, eligible host, wallet, market, and
 HEALTHY reconciliation. Ordinary in-scope code/test/docs/CI defects are fixed autonomously.
 
-9. NORMATIVE RULE MATRIX
+10. NORMATIVE RULE MATRIX
 
 BEGIN_NORMATIVE_RULE_MATRIX_V1
 RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
 NR001|authority|arm|invalid_or_absent|REJECT|remain_disabled|arm.receipt|R003
 NR002|authority|restart|always|REQUIRE|restart_disabled|authority.state|R003
 NR003|access|geoblock|not_fresh_pass|REJECT|block_new_exposure|access.geoblock|R004
+NR011|strategy|qualification|invalid_or_absent|REJECT|remain_disabled|strategy.qualification|R004
 NR004|risk|order|limit_exceeded|REJECT|block_new_exposure|risk.envelope|R005
 NR005|mutation|create|before_transmit|REQUIRE|persist_started|create.attempt|R006
 NR006|mutation|create|possibly_transmitted|PRESERVE_EXACT|never_retry|create.attempt|R006
@@ -203,17 +267,17 @@ NR009|security|output|contains_secret_or_ip|REJECT|emit_sanitized_only|receipt.i
 NR010|boundary|runtime|background_or_unbounded|FORBID|manual_foreground_only|authority.state|R011
 END_NORMATIVE_RULE_MATRIX_V1
 
-10. SUCCESSOR BOUNDARY
+11. SUCCESSOR BOUNDARY
 
 WP176 — Mature Controlled Live remains separately gated. It owns unattended/service operation,
 heartbeat/user-stream maturity, broader incident recovery, secret-manager/session-key decisions,
 multiple-market/strategy operation, capital scaling, and mature operator controls. WP175 may not
 pre-build those capabilities.
 
-11. REPORT-BACK
+12. REPORT-BACK
 
 At PRE-CERT GREEN report PR, exact head, exact 29-path list, prompt/spec hashes, compiled SDK facts,
-official-doc verification, genuine-binding prerequisite status, and all certificate-independent gates.
+official-doc verification, strategy-qualification prerequisite status, and all certificate-independent gates.
 Then obtain an independent exact-hash certificate. After Phase B report code-complete evidence with
 real economic CREATE count 0, capital at risk 0, Gate-C activation PENDING, and merge NO. Never claim
-full WP175 completion or smoke readiness while the genuine binding prerequisite is unavailable.
+full WP175 completion or smoke readiness while the strategy qualification prerequisite is unavailable.

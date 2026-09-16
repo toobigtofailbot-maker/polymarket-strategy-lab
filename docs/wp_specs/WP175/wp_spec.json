@@ -200,13 +200,26 @@
         "path": "arm.receipt",
         "source": "DERIVED",
         "type": "content_addressed_single_use",
-        "required_rule": "bind exact head public Gate-B identity store head genuine binding one market and token risk hash fresh account reconciliation and geoblock proof operator nonce issue and expiry",
+        "required_rule": "bind exact head public Gate-B identity store head exact strategy qualification one market and token risk hash fresh account reconciliation and geoblock proof operator nonce issue and expiry",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
         "validation_rule": "valid at most ten minutes consumed once process-local and rejected after restart reuse wrong head mismatch kill or unhealthy reconciliation",
         "failure_category": "AUTHORITY_CONTRADICTION",
         "safe_output": "arm receipt id and timestamps only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "strategy.qualification",
+        "source": "DERIVED",
+        "type": "content_addressed_manual_attestation",
+        "required_rule": "bind exact head validated PaperStrategyBinding matching complete validated WP172 assessment and cost model plus a healthy validated WP173 paper-store terminal head and an interactive operator production-evidence confirmation",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "a bare binding rank score copied identifiers fixture noninteractive input mismatched evidence corrupted paper store stale writer or reused expired other-head qualification rejects; artifact paths are excluded from output",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "qualification id exact evidence ids and issue expiry times only",
         "derivation_rule_id": null
       },
       {
@@ -230,7 +243,7 @@
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "blocked close-only unavailable stale or malformed denies create while cancel remains available; IP country and region are discarded",
+        "validation_rule": "only fresh well-formed blocked false permits create; blocked true unavailable stale or malformed denies create while cancel remains available; no close-only field is assumed and IP country and region are discarded",
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "pass boolean and time only",
         "derivation_rule_id": null
@@ -387,7 +400,7 @@
         "source": "pytest",
         "test": "test_access_identity_binding_and_market_fail_closed",
         "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py -k access_identity_binding_and_market_fail_closed",
-        "expected_result": "blocked unknown stale or malformed access wrong Deposit Wallet identity synthetic binding wrong token closed neg-risk delayed or stale metadata deny new exposure without denying cancellation"
+        "expected_result": "blocked unknown stale or malformed access wrong Deposit Wallet identity bare or mismatched strategy qualification wrong token closed neg-risk delayed or stale metadata deny new exposure without denying cancellation"
       },
       {
         "requirement_id": "R005",
