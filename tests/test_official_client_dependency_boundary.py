@@ -130,6 +130,12 @@ FORBIDDEN_TERMS_FILE_EXEMPTIONS: dict[str, set[str]] = {
     # WP152: the local research-value harness rejects mnemonic-like caller content;
     # this is a defensive safety pattern and performs no credential access.
     "src/data_layer/local_research_value_measurement/harness.py": {"mnemonic"},
+    # WP174B: gate_b.py is the authorized Gate-B real cancellation boundary; it
+    # uses the official client's literal cancel_order for exposure-reducing
+    # cancellation only. Every real economic create/post stays GATE_C_REQUIRED,
+    # no credential value or signature is stored, and no PRIVATE_KEY/CLOB_* or
+    # sign_order term is used. Reviewed and documented for WP174B.
+    "src/execution_gateway/gate_b.py": {"cancel_order"},
 }
 
 

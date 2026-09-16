@@ -1,0 +1,469 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP174B",
+    "title": "Gate-B Production Credential, Signing & Real-Mutation Enablement",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PROTECTED_GATE_B_PRODUCTION_CREDENTIAL_SIGNING_MUTATION_ENABLEMENT",
+    "package_size_class": "XL",
+    "risk_level": 4,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 176,
+      "head_sha": "6fff7fefd8f936824a7586f94d452ca073b225dd",
+      "merge_sha": "dbb4ee0e21e409c4639edc44cce17696a5b15156"
+    },
+    "suggested_branch": "claude/wp174b-gate-b-production-signing-mutation",
+    "objective": "Implement after independent certification and the bounded WP174B authorization the smallest production-quality Gate-B credential, signing, and real-mutation-transport enablement that consumes an ephemeral real signer key through one no-echo operator boundary, authenticates the official SecureClient against an already-deployed Deposit Wallet without wallet deployment or approvals, derives and validates L2 credentials in memory, performs bounded authenticated reads, signs one real LIMIT order locally without posting it, implements a real cancellation transport with idempotency and ambiguity handling, keeps every real economic CREATE structurally Gate-C unreachable, proves one safe empty-account real cancel probe, persists only sanitized public identity and audit evidence, and preserves all WP174 Gate-A invariants while adding no A3, capital, strategy, or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Karl's existing WP174B same-capability authorization for the smallest truthful mechanically required scope up to 35 paths applies; exact-head hosted CI proved three additional historical guard paths (tests/test_no_live_mode_by_default.py, tests/test_official_client_dependency_boundary.py, tests/test_official_client_sandbox_boundary.py) must recognize the authorized Gate-B cancellation boundary and preserve the global live/order prohibition elsewhere. This is scope-size authority only and grants no new product, capability, credential, Gate B, Gate C, live, capital, or WP175 authority."
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/security_tooling_status.md",
+      "docs/status_entries/WP174B.md",
+      "docs/wp_specs/WP174B/draftability_certificate.json",
+      "docs/wp_specs/WP174B/wp_prompt.txt",
+      "docs/wp_specs/WP174B/wp_spec.json",
+      "src/execution_gateway/__init__.py",
+      "src/execution_gateway/gate_b.py",
+      "src/execution_gateway/gate_b_operator.py",
+      "src/execution_gateway/gateway.py",
+      "src/operator_cockpit.py",
+      "tests/execution_gateway/test_gate_b.py",
+      "tests/execution_gateway/test_gateway.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_no_live_mode_by_default.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_official_client_sandbox_boundary.py"
+    ],
+    "allowed_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/security_tooling_status.md",
+      "docs/status_entries/WP174B.md",
+      "docs/wp_specs/WP174B/draftability_certificate.json",
+      "docs/wp_specs/WP174B/wp_prompt.txt",
+      "docs/wp_specs/WP174B/wp_spec.json",
+      "src/execution_gateway/__init__.py",
+      "src/execution_gateway/gate_b.py",
+      "src/execution_gateway/gate_b_operator.py",
+      "src/execution_gateway/gateway.py",
+      "src/operator_cockpit.py",
+      "tests/execution_gateway/test_gate_b.py",
+      "tests/execution_gateway/test_gateway.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_no_live_mode_by_default.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_official_client_sandbox_boundary.py"
+    ],
+    "forbidden_prefixes": [
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "src/oms/",
+      "src/risk/",
+      "src/risk_engine/",
+      "src/operator_cockpit_frontend/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 22,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/security_tooling_status.md",
+      "src/operator_cockpit.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_no_live_mode_by_default.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_official_client_sandbox_boundary.py"
+    ],
+    "rollback_surface": "Revert WP174B. The Gate-B session, ephemeral secret provider, identity policy, verification receipt, production SDK mutation adapter, Gate-C-unreachable create transport, operator CLI, replaced Gate-B mutation adapter, sanitized cockpit projection fields, focused adversarial tests, and status/governance evidence are removed. WP174 Gate-A source, SQLite audit/recovery state, and WP173 paper evidence remain unchanged. No real credential, real economic order, live capital, A3 state, Hermes authority, strategy, scheduler, or deployment state is created or migrated.",
+    "mode_boundaries": [
+      {"boundary": "workflow_governance", "crossed": false},
+      {"boundary": "local_offline_tooling", "crossed": false},
+      {"boundary": "canonical_evidence_policy", "crossed": true},
+      {"boundary": "docs", "crossed": true},
+      {"boundary": "tests", "crossed": true},
+      {"boundary": "source_runtime", "crossed": true},
+      {"boundary": "workflow_files", "crossed": false},
+      {"boundary": "dependencies", "crossed": false},
+      {"boundary": "network", "crossed": true},
+      {"boundary": "credentials", "crossed": true},
+      {"boundary": "scheduler", "crossed": false},
+      {"boundary": "hermes_runtime", "crossed": false},
+      {"boundary": "strategy", "crossed": false},
+      {"boundary": "paper", "crossed": false},
+      {"boundary": "execution", "crossed": true},
+      {"boundary": "live", "crossed": false}
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": true,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": true,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP174B replaces the Gate-B-locked mutation adapter with a real credential/signing/cancel boundary, adds a no-echo operator command, and extends the read-only cockpit projection while keeping every real economic create and all A3/live authority separately gated.",
+    "items": [
+      {
+        "surface": "Gate-B production credential, signing, and mutation boundary",
+        "before": "GateBLockedSdkMutationAdapter raises GATE_B_REQUIRED and no real secret, authentication, signing, or venue mutation is reachable",
+        "after": "An ephemeral secret provider, Deposit Wallet identity policy, in-memory authenticated session, real local LIMIT signing probe, and a real cancellation transport exist while every create/post path fails closed with GATE_C_REQUIRED before dispatch",
+        "change_authorized": true,
+        "compatibility_requirement": "WP174 A0 A1 A2 states and WP173 authorization binding are preserved and A3_RESTRICTED_LIVE is absent",
+        "authority": "GATE_B_REAL_CREDENTIAL_SIGNING_AND_EXPOSURE_REDUCING_CANCEL_ONLY"
+      },
+      {
+        "surface": "Gate-B operator verification command",
+        "before": "No operator command loads a real signer key or reaches the venue",
+        "after": "A no-echo interactive command validates public identity, prompts for the private key via getpass, verifies identity, performs bounded reads, signs the local LIMIT probe, confirms an empty account, and runs one safe empty-wallet cancel probe, emitting only a sanitized receipt",
+        "change_authorized": true,
+        "compatibility_requirement": "The command never accepts a key via argv, file, pipe, or environment and is never executed by the agent or CI",
+        "authority": "MANUAL_FOREGROUND_OPERATOR_ONLY"
+      },
+      {
+        "surface": "Operator cockpit Gate-B projection",
+        "before": "No Gate-B capability projection",
+        "after": "Bounded GET-only sanitized Gate-B capability state, credential-session-active boolean, public signer and wallet, wallet and signature type, last verification receipt id and time, create-transport GATE_C_REQUIRED status, cancel-capability status, and reconciliation state",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing routes stay compatible; no secret value, credential input, mutation control, Gate-C enable, or browser storage is added",
+        "authority": "READ_ONLY_LOOPBACK_PROJECTION"
+      },
+      {
+        "surface": "Real economic create, A3 restricted live, and live capital",
+        "before": "Prohibited and absent",
+        "after": "UNCHANGED and separately gated by WP175 Gate C",
+        "change_authorized": false,
+        "compatibility_requirement": "Ordinary configuration, secret presence, capability state, cockpit, or agent input cannot reach a real create, A3, or any capital at risk",
+        "authority": "NONE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Gate B has an ephemeral secret lease, exact Deposit Wallet identity, an orthogonal closed capability state, deterministic signing-probe and cancel-attempt identities, a sanitized content-addressed receipt, and a structurally unreachable create permit.",
+    "items": [
+      {
+        "path": "secret.lease",
+        "source": "CALLER",
+        "type": "opaque_in_memory_secret",
+        "required_rule": "real signer key enters only through one no-echo interactive boundary and never through argv file pipe or environment on the operator path",
+        "mutable": false,
+        "identity_role": "EXCLUDED",
+        "exclusion_reason": "secret key material never enters persisted audit canonical identity or any output boundary",
+        "validation_rule": "no repr str serialization equality or hash exposes the value; references are cleared on close; physical zeroization is never claimed",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "credential-session-active boolean only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "identity.wallet_type",
+        "source": "CALLER",
+        "type": "closed_enum",
+        "required_rule": "DEPOSIT_WALLET only with signature type 3 from the exact selected release",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "reject EOA POLY_PROXY GNOSIS_SAFE and any signer or funder mismatch and fail closed without wallet deployment or approval",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "closed wallet type and public address",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "capability.state",
+        "source": "DERIVED",
+        "type": "closed_enum",
+        "required_rule": "B0_LOCKED B1_SECRET_BOUND B2_AUTHENTICATED B3_SIGNING_VERIFIED or B4_CANCEL_TRANSPORT_VERIFIED only",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "restart returns active capability to B0; no config environment cockpit or agent input elevates the state; no capability state creates A3",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "closed capability token",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "signing_probe.identity",
+        "source": "DERIVED",
+        "type": "sha256",
+        "required_rule": "SHA-256 over canonical public probe economics signer wallet wallet type token market normalized price size and order type",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "the locally signed order is used only for identity and hash derivation and is discarded; signature bytes and signed payload are never persisted or output",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "lowercase digest",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "create_permit.token",
+        "source": "DERIVED",
+        "type": "unreachable_gate_c_permit",
+        "required_rule": "no real create or post is possible without a future Gate-C live permit that WP174B cannot construct",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "every direct or indirect create post or place path fails closed with GATE_C_REQUIRED before network dispatch; capability state secret presence config cockpit and agent input are insufficient",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "GATE_C_REQUIRED status only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cancel_attempt.identity",
+        "source": "DERIVED",
+        "type": "sha256",
+        "required_rule": "SHA-256 over canonical target order identity closed cancel operation token monotonic attempt sequence and prior reconciliation state",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "persist attempt identity before transmit; at most one transmit per attempt; possibly transmitted failure is AMBIGUOUS and never blindly retried",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "lowercase digest and closed outcome",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cancel_probe.result",
+        "source": "DERIVED",
+        "type": "closed_enum",
+        "required_rule": "the safe empty-wallet cancel probe runs only when balance positions and open orders are all zero and returns a bounded result or GATE_B_ACCOUNT_NOT_EMPTY",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "any nonzero balance position or open order or missing operator confirmation aborts; an unexpectedly canceled order is a protected incident and stop; ambiguity resolves only through authoritative zero-open-order convergence",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed result and non-secret counts",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "receipt.identity",
+        "source": "DERIVED",
+        "type": "sha256",
+        "required_rule": "content-addressed SHA-256 over the sanitized public receipt fields only",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "the receipt is local generated evidence that is never committed, is short-lived, carries no secret signature or raw response, and never reactivates a secret session or grants live authority",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "lowercase digest and public metadata",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "The prompt freezes the canonical public receipt and probe identity inputs and exclusions; focused deterministic fixtures and mocked SDK adapters, not embedded credential or signed-order samples, are the implementation oracle.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "The canonical protected authorization chain keeps independent DRAFTABILITY_PASS distinct from the later non-authority IMPLEMENTATION_READY package-gate result, the bounded WP174B authorization, and local implementation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "a genuinely separate independent reviewer binds the exact prompt and spec hashes, records PASS for all twelve protected lenses, confirms unresolved decisions are empty, passes implementability simulation, and creates the independent certificate",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "the exact certified package first passes canonical wp_readiness_gate.py and reports IMPLEMENTATION_READY, and the bounded WP174B authorization already sent by Karl applies to those exact bytes; IMPLEMENTATION_READY alone never grants authority and is not an authority state",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation changes only exact scope, uses fake or nonfunctional secrets and mocked adapters in tests, keeps every real create Gate-C unreachable, exercises no capital, and passes final readiness check-diff",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {"condition_id": "file_unreadable", "category": "FILE_READ_ERROR", "priority": 10},
+      {"condition_id": "json_invalid", "category": "JSON_PARSE_INVALID", "priority": 20},
+      {"condition_id": "schema_unsupported", "category": "SCHEMA_UNSUPPORTED", "priority": 30},
+      {"condition_id": "unknown_field", "category": "UNKNOWN_FIELD", "priority": 40},
+      {"condition_id": "field_missing", "category": "FIELD_MISSING", "priority": 50},
+      {"condition_id": "field_type_invalid", "category": "FIELD_TYPE_INVALID", "priority": 60},
+      {"condition_id": "field_value_invalid", "category": "FIELD_VALUE_INVALID", "priority": 70},
+      {"condition_id": "certificate_hash_mismatch", "category": "CERTIFICATE_HASH_MISMATCH", "priority": 80},
+      {"condition_id": "draftability_incomplete", "category": "DRAFTABILITY_INCOMPLETE", "priority": 90},
+      {"condition_id": "scope_policy_invalid", "category": "SCOPE_POLICY_INVALID", "priority": 100},
+      {"condition_id": "authority_contradiction", "category": "AUTHORITY_CONTRADICTION", "priority": 110},
+      {"condition_id": "semantic_contradiction", "category": "SEMANTIC_CONTRADICTION", "priority": 120},
+      {"condition_id": "identity_derivation_invalid", "category": "IDENTITY_DERIVATION_INVALID", "priority": 130},
+      {"condition_id": "failure_precedence_invalid", "category": "FAILURE_PRECEDENCE_INVALID", "priority": 140},
+      {"condition_id": "example_truth_invalid", "category": "EXAMPLE_TRUTH_INVALID", "priority": 150}
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No embedded real or realistic credential signed-order or receipt sample is permitted; focused deterministic fixtures and mocked SDK adapters supply executable examples after authorization.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R015 map protected readiness, ephemeral secret isolation, Deposit Wallet identity, authenticated reads, real local signing, raw client containment, Gate-C-unreachable create, cancel idempotency, the safe empty-wallet probe, restart and audit persistence, cockpit projection, SDK compatibility, secret security, repo-truth consistency, and final publication evidence.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "independent protected readiness and exact predecessor gate",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP174B/wp_prompt.txt --spec docs/wp_specs/WP174B/wp_spec.json --certificate docs/wp_specs/WP174B/draftability_certificate.json --repo-root .",
+        "expected_result": "IMPLEMENTATION_READY on PROTECTED with an exact-hash independent certificate binding WP174 predecessor 6fff7fe; readiness grants no Gate B or Gate C authority"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_ephemeral_secret_input_has_no_persistence_and_no_echo",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_b.py",
+        "expected_result": "a private key is rejected via argv file pipe and environment on the operator path and a secret sentinel never appears in repr exceptions audit cockpit receipt or logs"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_deposit_wallet_signer_funder_and_signature_identity_fail_closed",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_b.py",
+        "expected_result": "DEPOSIT_WALLET signature type 3 identity is enforced and wrong signer wrong wallet EOA proxy safe wrong chain and wrong signature type fail closed without wallet deployment or approval"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_authenticated_l1_l2_and_bounded_reads",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_b.py",
+        "expected_result": "mocked L1 signer authentication and in-memory L2 credential derivation succeed, bounded sanitized account balance open-order trade and position reads work, and no raw credential header is emitted"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_real_key_local_limit_signing_without_post",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_b.py",
+        "expected_result": "the local create_limit_order signing probe yields a deterministic sanitized signing identity, never calls place_limit_order or post_order, and discards the signed order after hashing"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_raw_client_containment_and_forbidden_wallet_surfaces_unreachable",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_b.py tests/test_architecture_boundaries.py",
+        "expected_result": "the raw client credentials builder relayer approve transfer wallet-deploy session-key rfq combo perps and split merge redeem surfaces are unreachable through the public wrapper"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_create_transport_is_gate_c_unreachable",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_b.py",
+        "expected_result": "every create post and place path fails closed with GATE_C_REQUIRED before dispatch and no config secret presence capability state cockpit or agent input constructs the permit"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_cancel_transport_idempotency_ambiguity_and_reconcile",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_b.py tests/execution_gateway/test_gateway.py",
+        "expected_result": "cancel one known bounded-set market and all persist attempt identity transmit at most once treat timeout 429 5xx and malformed responses as ambiguous and reconcile or remain blocked without blind retry"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_empty_account_cancel_probe_and_sanitized_receipt",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_b.py",
+        "expected_result": "the mocked probe aborts on any nonzero balance position or open order or missing confirmation, treats an unexpected cancellation as a protected incident, and produces a sanitized content-addressed B4 receipt with no secret"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_restart_returns_capability_to_b0_and_audit_persists",
+        "command": "python -m pytest -q tests/execution_gateway/test_gateway.py tests/execution_gateway/test_gate_b.py",
+        "expected_result": "restart returns active credential capability to B0_LOCKED, never restores a secret or A3, keeps kill and prior attempts, and journals only sanitized Gate-B transitions and hashes in the tamper-evident store"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_gate_b_cockpit_projection_is_get_only_bounded_and_sanitized",
+        "command": "python -m pytest -q tests/test_operator_cockpit.py",
+        "expected_result": "backend-only Gate-B projections expose closed capability state public identity and receipt id but no secret value mutation control Gate-C enable or browser storage"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "validation",
+        "test": "exact selected SDK compatibility without dependency change",
+        "command": "python -m pip check && python -c \"from importlib.metadata import version; assert version('polymarket-client') == '0.10.0'; assert version('websockets') == '15.0.1'; import polymarket; from polymarket import SecureClient, AsyncSecureClient\"",
+        "expected_result": "polymarket-client 0.10.0 and websockets 15.0.1 remain the exact installed pins, polymarket and its SecureClient and AsyncSecureClient import, pip check passes, and no dependency or lock file changes"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "validation",
+        "test": "secret redaction and security tooling",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_b.py -k redaction && gitleaks detect --no-banner --redact --source . && semgrep --error --quiet --config auto src/execution_gateway && python -m pip_audit",
+        "expected_result": "recursive secret-sentinel redaction across every output surface passes and gitleaks Semgrep and pip-audit report no new finding without ever using a real secret"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_wp174b_status_repo_truth_and_successor_are_consistent",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
+        "expected_result": "repo truth records WP174 Gate A merged WP174B Gate B implemented and WP175 restricted live canary separately gated and unstarted with WP174-D001 resolved and WP174-D002 open"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "validation",
+        "test": "final exact-head validation review CI operator smoke and evidence publication",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP174B/wp_prompt.txt --spec docs/wp_specs/WP174B/wp_spec.json --certificate docs/wp_specs/WP174B/draftability_certificate.json --repo-root . --check-diff --base origin/main --head HEAD",
+        "expected_result": "exact scope focused adversarial full security independent reviewer hosted CI operator empty-wallet cancel receipt and PR-body re-fetch all pass before Ready YES"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP175",
+    "next_title": "Restricted Live Canary",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP175",
+    "forbidden_in_this_wp": [
+      "any real order create post or place that can establish economic exposure",
+      "A3_RESTRICTED_LIVE or any other live runtime state",
+      "Gate C restricted-live permit construction or capital at risk",
+      "dedicated canary capital strategy binding or market allowlist",
+      "wallet creation deployment trading approvals transfers or split merge redeem",
+      "session keys builder or relayer gasless wallet operations",
+      "RFQ combo or perps trading surfaces",
+      "scheduler daemon service autostart or cloud deployment",
+      "Hermes runtime signing capital risk or approval authority",
+      "automatic promotion into WP175 or WP176",
+      "merge authority"
+    ]
+  }
+}

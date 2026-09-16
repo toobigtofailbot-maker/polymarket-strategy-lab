@@ -26,6 +26,16 @@ LIVE_ENABLED_CONFIG_PATTERNS = [
     "LIVE_TRADING_ENABLED=true",
 ]
 
+# WP174B: src/execution_gateway/gate_b.py is the explicitly authorized Gate-B
+# real cancellation boundary. It uses the literal cancel_order/cancel_orders
+# methods of the official client for exposure-reducing cancellation (never
+# obfuscated or dynamically constructed). Every real economic create/post stays
+# Gate-C locked (GATE_C_REQUIRED), and the global prohibition on live order
+# placement/enable in every other source file is preserved.
+LIVE_ORDER_PATTERN_FILE_EXEMPTIONS: dict[str, set[str]] = {
+    "src/execution_gateway/gate_b.py": {"cancel_order"},
+}
+
 
 def test_live_trading_authorization_is_disabled():
     auth_doc = ROOT / "docs" / "live_trading_authorization.md"
@@ -44,9 +54,13 @@ def test_no_obvious_live_order_placement_code_exists():
         for path in source_root.rglob("*"):
             if path.is_file() and path.suffix.lower() in {".py", ".ts", ".tsx", ".js", ".jsx", ".json", ".toml", ".yaml", ".yml"}:
                 text = path.read_text(encoding="utf-8", errors="ignore")
+                rel = path.relative_to(ROOT).as_posix()
+                exempted = LIVE_ORDER_PATTERN_FILE_EXEMPTIONS.get(rel, set())
                 for pattern in LIVE_ORDER_PATTERNS:
+                    if pattern in exempted:
+                        continue
                     if pattern in text:
-                        findings.append(f"{path.relative_to(ROOT)}: {pattern}")
+                        findings.append(f"{rel}: {pattern}")
     assert findings == []
 
 

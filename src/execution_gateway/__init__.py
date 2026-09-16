@@ -12,7 +12,6 @@ from .gateway import (
     FixtureAuthenticatedReadAdapter,
     FixtureVenueContextAdapter,
     GateASecretReferenceLoader,
-    GateBLockedSdkMutationAdapter,
     GatewayError,
     GatewayState,
     MutationAttempt,
@@ -36,6 +35,18 @@ from .store import (
     GatewayStoreError,
     read_gateway_projection,
 )
+from .gate_b import (
+    GATE_B_CAPABILITY_STATES,
+    CancelAttempt,
+    GateBIdentityPolicy,
+    GateBSecretLease,
+    GateBSession,
+    GateBVerificationReceipt,
+    GateCLivePermit,
+    InteractiveGateBSecretProvider,
+    create_deposit_wallet_client,
+    gate_b_capability_projection,
+)
 
 __all__ = [
     "ACCESS_STATES",
@@ -51,7 +62,6 @@ __all__ = [
     "FixtureAuthenticatedReadAdapter",
     "FixtureVenueContextAdapter",
     "GateASecretReferenceLoader",
-    "GateBLockedSdkMutationAdapter",
     "GatewayError",
     "GatewayJournalEvent",
     "GatewayState",
@@ -70,4 +80,14 @@ __all__ = [
     "build_fixture_account_snapshot",
     "read_wp173_authorization_evidence",
     "read_gateway_projection",
+    "GATE_B_CAPABILITY_STATES",
+    "CancelAttempt",
+    "GateBIdentityPolicy",
+    "GateBSecretLease",
+    "GateBSession",
+    "GateBVerificationReceipt",
+    "GateCLivePermit",
+    "InteractiveGateBSecretProvider",
+    "create_deposit_wallet_client",
+    "gate_b_capability_projection",
 ]

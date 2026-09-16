@@ -17,7 +17,7 @@ from src.execution_gateway import (
     FixtureAuthenticatedReadAdapter,
     FixtureVenueContextAdapter,
     GateASecretReferenceLoader,
-    GateBLockedSdkMutationAdapter,
+    GateCLivePermit,
     GatewayError,
     ProtectedExecutionGateway,
     OfficialSdkAuthenticatedReadAdapter,
@@ -273,8 +273,8 @@ def test_authority_secret_isolation_and_gate_b_transport_unreachable(
     for bad in ("A3_RESTRICTED_LIVE", "RESTRICTED_LIVE", "A4"):
         with pytest.raises(GatewayError, match="AUTHORITY_STATE_INVALID"):
             gateway.set_authority(bad, actor="fixture-operator", event_time_ns=3)
-    with pytest.raises(GatewayError, match="GATE_B_REQUIRED"):
-        GateBLockedSdkMutationAdapter()
+    with pytest.raises(GatewayError, match="GATE_C_REQUIRED"):
+        GateCLivePermit()
     with pytest.raises(GatewayError, match="GATE_B_REQUIRED"):
         gateway.place_limit_order()
     with pytest.raises(GatewayError, match="GATE_B_REQUIRED"):
