@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import time
+from types import SimpleNamespace
 import pytest
 
 import src.execution_gateway.gate_b as gate_b_mod
@@ -355,6 +356,52 @@ def test_interactive_provider_rejects_empty(monkeypatch):
     monkeypatch.setattr(_gp, "getpass", lambda _p: "   ")
     with pytest.raises(GatewayError, match="SECRET_INPUT_INVALID"):
         InteractiveGateBSecretProvider().acquire()
+
+
+def test_gate_c_market_metadata_comes_from_official_models_and_fails_closed():
+    client = FakeClient()
+    client.get_market = lambda *, id: SimpleNamespace(
+        id=id,
+        condition_id="condition-a",
+        state=SimpleNamespace(
+            active=True, closed=False, accepting_orders=True,
+            enable_order_book=True, neg_risk=False,
+        ),
+        trading=SimpleNamespace(seconds_delay=0, fees_enabled=False),
+        outcomes=SimpleNamespace(
+            yes=SimpleNamespace(token_id=TOKEN),
+            no=SimpleNamespace(token_id="other-token"),
+        ),
+    )
+    client.get_order_book = lambda *, token_id: SimpleNamespace(
+        asset_id=token_id, condition_id="condition-a", neg_risk=False,
+        tick_size="0.01", min_order_size="1",
+    )
+    session = _session(client)
+    metadata = session.gate_c_market_metadata(
+        gate_b_mod._GATE_C_ISSUER, market_id="market-a", token_id=TOKEN,
+        observed_time_ns=100,
+    )
+    assert metadata.market_id == "market-a"
+    assert metadata.condition_id == "condition-a"
+    assert metadata.token_id == TOKEN
+    client.get_market = lambda *, id: SimpleNamespace(
+        id=id, condition_id="condition-a",
+        state=SimpleNamespace(
+            active=True, closed=False, accepting_orders=True,
+            enable_order_book=True, neg_risk=False,
+        ),
+        trading=SimpleNamespace(seconds_delay=0, fees_enabled=True),
+        outcomes=SimpleNamespace(
+            yes=SimpleNamespace(token_id=TOKEN),
+            no=SimpleNamespace(token_id="other-token"),
+        ),
+    )
+    with pytest.raises(GatewayError, match="MARKET_METADATA_INVALID"):
+        session.gate_c_market_metadata(
+            gate_b_mod._GATE_C_ISSUER, market_id="market-a", token_id=TOKEN,
+            observed_time_ns=100,
+        )
 
 
 def test_lease_is_closed_after_authentication():

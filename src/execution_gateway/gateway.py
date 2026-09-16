@@ -495,6 +495,8 @@ class OfficialSdkAuthenticatedReadAdapter:
         *,
         observed_time_ns: int,
         order_identity_by_venue_id: Mapping[str, str],
+        gate_c_deposit_wallet: bool = False,
+        geoblock_eligible: bool = False,
     ):
         if type(client) is not SecureClient:
             raise GatewayError("AUTHENTICATED_READ_ADAPTER_INVALID")
@@ -507,7 +509,8 @@ class OfficialSdkAuthenticatedReadAdapter:
             if (
                 client.environment.name != "production"
                 or config.chain_id != 137
-                or client.wallet_type != "EOA"
+                or client.wallet_type
+                not in (("DEPOSIT_WALLET",) if gate_c_deposit_wallet else ("EOA",))
                 or context.signer_type != "OWNER"
                 or _ADDRESS_RE.fullmatch(signer) is None
                 or _ADDRESS_RE.fullmatch(funder) is None
@@ -525,6 +528,7 @@ class OfficialSdkAuthenticatedReadAdapter:
         if any(_ID_RE.fullmatch(value) is None for value in self._identities.values()):
             raise GatewayError("AUTHENTICATED_READ_ADAPTER_INVALID")
         self._snapshot: AccountSnapshot | None = None
+        self._geoblock_eligible = geoblock_eligible
 
     def _read_access_state(self) -> tuple[str, str]:
         """Map the SDK's only account-mode signal conservatively.
@@ -537,9 +541,11 @@ class OfficialSdkAuthenticatedReadAdapter:
         closed_only = self._client.get_closed_only_mode()
         if type(closed_only) is not bool:
             raise GatewayError("AUTHENTICATED_READ_FAILED")
-        return (
-            ("CLOSE_ONLY", "CLOSE_ONLY") if closed_only else ("UNKNOWN", "RESTARTING")
-        )
+        if closed_only:
+            return "CLOSE_ONLY", "CLOSE_ONLY"
+        if self._geoblock_eligible:
+            return "ELIGIBLE", "NORMAL"
+        return "UNKNOWN", "RESTARTING"
 
     def query_venue_context(
         self, intent: PaperIntent, signing_time_ns: int
@@ -1919,6 +1925,11 @@ class ProtectedExecutionGateway:
     def head(self) -> str:
         """Current tamper-evident journal head (public identity only)."""
         return self._head
+
+    @property
+    def store_path(self) -> Path:
+        """Validated canonical store path; contains no credential material."""
+        return self._store.path
 
     @classmethod
     def create(cls, path: Path, *, created_time_ns: int) -> ProtectedExecutionGateway:

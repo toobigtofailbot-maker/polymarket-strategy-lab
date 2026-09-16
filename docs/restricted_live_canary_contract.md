@@ -5,14 +5,18 @@ implementation is limited to one strategy, one binary market, one LIMIT order,
 one create attempt, and one active operator session. A3 is entered only after
 an exact-head, short-lived, single-use manual arm receipt. Process restart
 always returns the gateway to `A0_DISABLED` and requires authoritative
-reconciliation before a new arm.
+reconciliation before a new arm. The runtime derives the actual clean Git root
+and HEAD itself and requires the single canonical per-wallet ledger path;
+caller-supplied head or alternate-store strings cannot establish authority.
 
 The Gate-C boundary consumes an already authenticated WP174B `GateBSession`.
 The raw SDK client and ephemeral credentials remain private to Gate-B. The
 only new venue mutation is a separately built and signed LIMIT order followed
 by exactly one `post_order` call. A durable `GATE_C_CREATE_STARTED` event is
 committed before that call. Accepted or possibly transmitted attempts are
-never retried; ambiguous outcomes halt the canary and require reconciliation.
+never retried. Accepted and possibly transmitted outcomes automatically enter
+the fixed three-probe official-read reconciliation sequence in the same
+foreground workflow; unresolved identity/fill/position state remains blocked.
 Resting accepted orders use the existing durable Gate-B cancellation path.
 
 Hard maxima are fixed in code: wallet 50.00 pUSD, gross exposure 20.00 pUSD,
@@ -24,6 +28,14 @@ these values. Only fresh official `blocked=false` geoblock evidence permits
 new exposure; cancellation remains available when new exposure is blocked.
 The requested order's worst-case loss must fit inside every remaining loss
 budget before signing. Caller-supplied account snapshots are never accepted.
+
+The only operator entry point is
+`python -m src.execution_gateway.gate_c_operator canary ...`. It requires a
+foreground TTY, an exact human confirmation phrase, ephemeral no-echo Gate-B
+authentication, a pre-existing canonical ledger and prepared order, official
+market/geoblock/account reads, qualification, arm, one CREATE, classification,
+bounded reconciliation, cancellation of a uniquely identified resting order,
+and terminal sanitized evidence. It is never a scheduler or service.
 
 An accepted POST response proves venue acceptance only. It does not prove
 economic finality, a completed position lifecycle, or absence of residual

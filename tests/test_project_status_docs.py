@@ -3949,7 +3949,7 @@ def test_wp175_status_records_code_complete_pending_activation() -> None:
     combined = "\n".join((project, status, contract))
     assert "WP175 current review target" in project
     assert "PROTECTED_RESTRICTED_LIVE_CANARY" in combined
-    assert "Exact changed-file scope: 29" in combined
+    assert "Exact changed-file scope: 30" in combined
     assert "IMPLEMENTATION_READY" in combined
     assert "LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE" in combined
     assert "Gate-C activation: PENDING" in combined

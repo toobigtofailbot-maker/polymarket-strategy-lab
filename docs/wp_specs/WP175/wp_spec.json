@@ -18,7 +18,7 @@
     "objective": "Implement after independent certification and explicit Phase A/B authority the smallest manual foreground one-strategy one-market LIMIT-only restricted-live canary with a single-use exact-head arm receipt, fixed hard capital and loss caps, durable pre-transmit create identity, one post_order transmit per attempt, authoritative reconciliation, persistent halt and restart-to-disabled behavior, dynamic geoblock checks, and read-only operator evidence, while requiring a separate exact-head human Gate-C activation decision before any capital is used.",
     "capital_at_risk_usd": 50,
     "xl_explicit_authorization": true,
-    "xl_authorization_basis": "Karl authorized WP175 Phase A and Phase B implementation in chat on 2026-09-16 under the revised master package. This authorizes the smallest truthful mechanically required exact scope up to 35 paths and code-complete no-activation progress while the genuine strategy-binding prerequisite is unavailable. It does not authorize Gate-C live-capital activation or merge."
+    "xl_authorization_basis": "Karl authorized WP175 Phase A and Phase B implementation in chat on 2026-09-16 under the revised master package, then explicitly authorized Side10's bounded expansion from 29 to exactly 30 paths for the machine-spec-aware historical compatibility guard and final hardening. It does not authorize a 31st path, Gate-C live-capital activation, private-key use, real capital, a real economic CREATE, merge, or WP176."
   },
   "scope": {
     "required_changed_files": [
@@ -51,6 +51,7 @@
       "tests/test_project_status_docs.py",
       "tests/test_repo_truth_docs.py",
       "tests/test_generated_artifact_guard.py"
+      ,"tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
     ],
     "allowed_changed_files": [
       "docs/deferred_items_log.md",
@@ -82,6 +83,7 @@
       "tests/test_project_status_docs.py",
       "tests/test_repo_truth_docs.py",
       "tests/test_generated_artifact_guard.py"
+      ,"tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
     ],
     "forbidden_prefixes": [
       ".github/workflows/",
@@ -93,7 +95,7 @@
       "src/research_runtime/",
       "tools/hermes/"
     ],
-    "max_changed_files": 29,
+    "max_changed_files": 30,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       "docs/deferred_items_log.md",
@@ -115,6 +117,7 @@
       "tests/test_project_status_docs.py",
       "tests/test_repo_truth_docs.py",
       "tests/test_generated_artifact_guard.py"
+      ,"tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
     ],
     "rollback_surface": "Revert WP175. A3 restricted-live authority, Gate-C arm/create/reconciliation logic, manual operator command, canary receipt, cockpit projection, focused tests, and WP175 status evidence disappear. Merged WP174B Gate-B authentication, signing, cancellation, credential isolation, and Gate-C-required create lock remain intact. No live receipt, secret, venue response, or local canary store is committed or migrated.",
     "mode_boundaries": [
@@ -200,11 +203,11 @@
         "path": "arm.receipt",
         "source": "DERIVED",
         "type": "content_addressed_single_use",
-        "required_rule": "bind exact head public Gate-B identity store head exact strategy qualification one market and token risk hash fresh account reconciliation and geoblock proof operator nonce issue and expiry",
+        "required_rule": "bind actual runtime git head canonical per-wallet ledger path public Gate-B identity store head exact strategy qualification one market and token risk hash fresh account reconciliation and geoblock proof operator nonce issue and expiry",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "valid at most ten minutes consumed once process-local and rejected after restart reuse wrong head mismatch kill or unhealthy reconciliation",
+        "validation_rule": "actual git root and head are derived fail closed; valid at most ten minutes consumed once process-local and rejected after restart reuse wrong or unverifiable head alternate store mismatch kill or unhealthy reconciliation",
         "failure_category": "AUTHORITY_CONTRADICTION",
         "safe_output": "arm receipt id and timestamps only",
         "derivation_rule_id": null
@@ -256,7 +259,7 @@
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "no input may increase any cap and exact boundary tests fail closed",
+        "validation_rule": "no input may increase any cap; missing authoritative exposure allowance position loss drawdown cumulative-loss active-market or committed state fails closed unless zero is deterministically proven; exact boundary tests fail closed",
         "failure_category": "AUTHORITY_CONTRADICTION",
         "safe_output": "risk envelope hash and bounded totals",
         "derivation_rule_id": null
@@ -291,11 +294,11 @@
         "path": "reconciliation.state",
         "source": "DERIVED",
         "type": "closed_enum",
-        "required_rule": "account open orders trades positions balance allowance and local journal converge authoritatively before arm and after mutation",
+        "required_rule": "account open orders trades positions balance allowance and canonical per-wallet journal converge authoritatively before arm and through an automatic bounded foreground sequence after every accepted or possibly transmitted mutation",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "foreign order unexpected trade divergence corruption stale writer or unresolved attempt blocks A3 and new exposure",
+        "validation_rule": "no create retry occurs; foreign order unexpected trade divergence corruption stale writer fresh-store bypass or unresolved bounded convergence remains AMBIGUOUS or BLOCKED and blocks A3 and new exposure",
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "HEALTHY REQUIRED BLOCKED or DIVERGED",
         "derivation_rule_id": null
@@ -379,7 +382,7 @@
         "source": "validation",
         "test": "independent protected readiness",
         "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP175/wp_prompt.txt --spec docs/wp_specs/WP175/wp_spec.json --certificate docs/wp_specs/WP175/draftability_certificate.json --repo-root .",
-        "expected_result": "IMPLEMENTATION_READY on PROTECTED with exact hashes predecessor PR 177 scope 29 and authority mirror equality; readiness grants no Gate-C activation or merge"
+        "expected_result": "IMPLEMENTATION_READY on PROTECTED with exact hashes predecessor PR 177 scope 30 and authority mirror equality; readiness grants no Gate-C activation or merge"
       },
       {
         "requirement_id": "R002",
@@ -470,7 +473,7 @@
         "source": "validation",
         "test": "stable-candidate full security dependency and exact-scope validation",
         "command": "python -m pytest -q && python -m pip check && gitleaks detect --no-banner --redact --source . && semgrep --error --quiet --config auto src/execution_gateway && python -m pip_audit",
-        "expected_result": "one authoritative full suite and canonical security and dependency checks pass after the final source change with exact 29-path scope and no real secret order or capital"
+        "expected_result": "one authoritative full suite and canonical security and dependency checks pass after the final source change with exact 30-path scope and no real secret order or capital"
       },
       {
         "requirement_id": "R015",

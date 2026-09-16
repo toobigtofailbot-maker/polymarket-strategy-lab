@@ -31,6 +31,7 @@ from polymarket import SecureClient
 
 from .gateway import (
     GatewayError,
+    MAX_ACCOUNT_SNAPSHOT_AGE_NS,
     ProtectedExecutionGateway,
     _ADDRESS_RE,
     _canonical_decimal,
@@ -843,6 +844,104 @@ class GateBSession:
             raise GatewayError("AUTHENTICATION_FAILED")
         return self._transport.gate_c_transport(permit)
 
+    def gate_c_reconciliation_adapter(
+        self,
+        issuer: object,
+        *,
+        observed_time_ns: int,
+        order_identity_by_venue_id: Mapping[str, str],
+        geoblock_eligible: bool,
+    ) -> object:
+        """Construct a bounded official read adapter without exposing the client."""
+        if issuer is not _GATE_C_ISSUER or self._state not in (
+            "B2_AUTHENTICATED", "B3_SIGNING_VERIFIED", "B4_CANCEL_TRANSPORT_VERIFIED"
+        ):
+            raise GatewayError("GATE_C_REQUIRED")
+        from .gateway import OfficialSdkAuthenticatedReadAdapter
+
+        return OfficialSdkAuthenticatedReadAdapter(
+            self._client,
+            observed_time_ns=observed_time_ns,
+            order_identity_by_venue_id=order_identity_by_venue_id,
+            gate_c_deposit_wallet=True,
+            geoblock_eligible=geoblock_eligible,
+        )
+
+    def gate_c_market_metadata(
+        self,
+        issuer: object,
+        *,
+        market_id: str,
+        token_id: str,
+        observed_time_ns: int,
+    ) -> object:
+        """Read the selected market through the authenticated official client.
+
+        Every eligibility field is taken from the venue models.  Missing fields
+        fail closed instead of being replaced with permissive defaults.
+        """
+        if issuer is not _GATE_C_ISSUER or self._state not in (
+            "B2_AUTHENTICATED", "B3_SIGNING_VERIFIED", "B4_CANCEL_TRANSPORT_VERIFIED"
+        ):
+            raise GatewayError("GATE_C_REQUIRED")
+        _label(market_id)
+        _label(token_id)
+        _time(observed_time_ns)
+        try:
+            market = self._client.get_market(id=market_id)
+            book = self._client.get_order_book(token_id=token_id)
+            state = market.state
+            trading = market.trading
+            outcome_tokens = {
+                str(market.outcomes.yes.token_id),
+                str(market.outcomes.no.token_id),
+            }
+            condition_id = str(market.condition_id)
+            if (
+                market.id is None
+                or market.condition_id is None
+                or str(market.id) != market_id
+                or token_id not in outcome_tokens
+                or str(book.asset_id) != token_id
+                or str(book.condition_id) != condition_id
+                or any(value is None for value in (
+                    state.active, state.closed, state.accepting_orders,
+                    state.enable_order_book, state.neg_risk,
+                    trading.seconds_delay, trading.fees_enabled,
+                    book.tick_size, book.min_order_size,
+                    book.neg_risk,
+                ))
+                or bool(state.neg_risk) != bool(book.neg_risk)
+                or bool(trading.fees_enabled)
+            ):
+                raise GatewayError("MARKET_METADATA_INVALID")
+            from .gate_c import GateCMarketMetadata
+
+            metadata = GateCMarketMetadata(
+                market_id=str(market.id),
+                condition_id=condition_id,
+                token_id=token_id,
+                active=bool(state.active) and not bool(state.closed),
+                accepting_orders=bool(state.accepting_orders),
+                binary=len(outcome_tokens) == 2 and "None" not in outcome_tokens,
+                orderbook_enabled=bool(state.enable_order_book),
+                neg_risk=bool(book.neg_risk),
+                delayed=int(trading.seconds_delay) != 0,
+                tick_size=_canonical_decimal(_as_decimal(book.tick_size)),
+                minimum_order_size=_canonical_decimal(
+                    _as_decimal(book.min_order_size)
+                ),
+                fee_rate_bps="0",
+                observed_time_ns=observed_time_ns,
+                valid_until_ns=observed_time_ns + MAX_ACCOUNT_SNAPSHOT_AGE_NS,
+            )
+            metadata.validate(now_ns=observed_time_ns)
+            return metadata
+        except GatewayError:
+            raise
+        except Exception:
+            raise GatewayError("MARKET_METADATA_INVALID") from None
+
     def _next_attempt_sequence(self) -> int:
         self._attempt_seq += 1
         return self._attempt_seq
@@ -917,7 +1016,7 @@ class GateBSession:
             attempt.venue_order_id: attempt.order_identity
             for attempt in gateway.state.mutation_attempts
             if attempt.operation == "CREATE"
-            and attempt.outcome == "DEFINITIVE_ACCEPTED"
+            and attempt.outcome in ("DEFINITIVE_ACCEPTED", "AMBIGUOUS")
             and attempt.venue_order_id is not None
         }
         markets = {

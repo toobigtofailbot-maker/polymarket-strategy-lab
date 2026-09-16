@@ -4,12 +4,13 @@
 
 WP175 is the protected PR #178 implementation package on
 `codex/wp175-restricted-live-canary`, based on merged WP174B PR #177. The
-certified 29-path package is `IMPLEMENTATION_READY` and Phase A/B implementation
+Side10-authorized 30-path package is `IMPLEMENTATION_READY` and Phase A/B implementation
 is authorized for certified bytes; readiness does not authorize Gate-C
 activation or merge. A3 is available only inside the manual foreground Gate-C
-session after a single-use exact-head arm receipt. Startup and restart remain
+session after a single-use actual-clean-head arm receipt backed by the canonical
+per-wallet ledger. Startup and restart remain
 `A0_DISABLED`. The canary is one strategy, one binary market, LIMIT-only, one
-create attempt, and bounded by the fixed risk envelope in
+create attempt, automatic bounded authoritative reconciliation, and the fixed risk envelope in
 `docs/restricted_live_canary_contract.md`.
 
 The genuine WP172/WP173 strategy qualification prerequisite is currently

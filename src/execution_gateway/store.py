@@ -281,6 +281,7 @@ class GatewayStore:
 
     def __init__(self, path: Path, *, create: bool = False):
         validated = _validated_path(path, create=create)
+        self._path = validated
         try:
             self._connection = sqlite3.connect(validated)
             self._connection.row_factory = sqlite3.Row
@@ -307,6 +308,10 @@ class GatewayStore:
 
     def close(self) -> None:
         self._connection.close()
+
+    @property
+    def path(self) -> Path:
+        return self._path
 
     @staticmethod
     def _validate_schema(connection: sqlite3.Connection) -> None:

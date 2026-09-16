@@ -20,6 +20,7 @@ from polymarket.models.clob.order_response import AcceptedOrder, RejectedOrder
 from polymarket.models.clob.orders import SignedOrder
 
 import src.execution_gateway.gate_b as gate_b_mod
+import src.execution_gateway.gate_c as gate_c_mod
 from src.execution_gateway import (
     CanaryRiskEnvelope,
     GateCGeoblockProof,
@@ -35,9 +36,13 @@ from src.execution_gateway.gate_c import (
     MAX_PER_MARKET_EXPOSURE_PUSD,
     MAX_PER_ORDER_COMMITTED_PUSD,
     GateCSession,
+    canonical_gateway_store_path,
+    runtime_repository_identity,
     _id,
 )
+from src.execution_gateway.gate_c_operator import GateCOperator
 from src.execution_gateway.gateway import _GATE_C_EVENT_ISSUER
+from tests.execution_gateway.test_gateway import _prepare, _ready_gateway
 
 
 def test_fixed_risk_envelope_cannot_be_widened() -> None:
@@ -168,6 +173,9 @@ def test_every_live_risk_cap_and_reduce_only_boundary() -> None:
     with pytest.raises(GatewayError, match="RECEIPT_INVALID"):
         _receipt_for_evidence(capital_at_risk_pusd="10.01").validate(now_ns=100)
     session = object.__new__(GateCSession)
+    session._gateway = SimpleNamespace(
+        state=SimpleNamespace(gate_c_checkpoint={})
+    )
     snapshot = {
         "collateral_balance": "10", "gross_exposure_pusd": "1",
         "market_exposure_pusd": "1", "committed_exposure_pusd": "1",
@@ -403,3 +411,278 @@ def test_canary_receipt_and_every_output_are_sanitized() -> None:
         "gatecreceipt:sha256:",
         {key: value for key, value in asdict(receipt).items() if key != "receipt_id"},
     )
+
+
+def test_runtime_head_is_derived_and_dirty_or_unavailable_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    results = iter((
+        SimpleNamespace(stdout=str(tmp_path) + "\n"),
+        SimpleNamespace(stdout="a" * 40 + "\n"),
+        SimpleNamespace(stdout=""),
+    ))
+    monkeypatch.setattr(gate_c_mod.subprocess, "run", lambda *_a, **_k: next(results))
+    assert runtime_repository_identity(cwd=tmp_path) == (tmp_path.resolve(), "a" * 40)
+
+    dirty = iter((
+        SimpleNamespace(stdout=str(tmp_path) + "\n"),
+        SimpleNamespace(stdout="b" * 40 + "\n"),
+        SimpleNamespace(stdout=" M file.py\n"),
+    ))
+    monkeypatch.setattr(gate_c_mod.subprocess, "run", lambda *_a, **_k: next(dirty))
+    with pytest.raises(GatewayError, match="HEAD_BINDING_INVALID"):
+        runtime_repository_identity(cwd=tmp_path)
+    monkeypatch.setattr(
+        gate_c_mod.subprocess, "run",
+        lambda *_a, **_k: (_ for _ in ()).throw(OSError("git unavailable")),
+    )
+    with pytest.raises(GatewayError, match="HEAD_BINDING_INVALID"):
+        runtime_repository_identity(cwd=tmp_path)
+
+
+def test_canonical_wallet_ledger_is_deterministic_and_wallet_specific(tmp_path: Path) -> None:
+    first = canonical_gateway_store_path(tmp_path, "0x" + "1" * 40)
+    assert first == canonical_gateway_store_path(tmp_path, "0x" + "1" * 40)
+    assert first != canonical_gateway_store_path(tmp_path, "0x" + "2" * 40)
+    assert first.parent == (tmp_path / "local_data" / "gate_c").resolve()
+
+
+def test_risk_check_rejects_missing_state_and_preserves_durable_loss() -> None:
+    session = object.__new__(GateCSession)
+    session._market = GateCMarketMetadata(
+        "market-a", "condition-a", "token-a", observed_time_ns=1,
+        valid_until_ns=2,
+    )
+    checkpoint = {"realized_loss_pusd": "4", "drawdown_pusd": "0", "cumulative_loss_pusd": "0"}
+    session._gateway = SimpleNamespace(
+        state=SimpleNamespace(gate_c_checkpoint=checkpoint)
+    )
+    snapshot = {
+        "collateral_balance": "10", "allowance_by_exchange": {"exchange": "10"},
+        "gross_exposure_pusd": "0", "market_exposure_pusd": "0",
+        "committed_exposure_pusd": "0", "realized_loss_pusd": "0",
+        "drawdown_pusd": "0", "cumulative_loss_pusd": "0",
+        "active_markets": 0, "open_orders": 0,
+    }
+    missing = dict(snapshot)
+    missing.pop("cumulative_loss_pusd")
+    with pytest.raises(GatewayError, match="ACCOUNT_SNAPSHOT_INVALID"):
+        session._risk_check(
+            side="BUY", quantity=Decimal("1"), notional=Decimal("1"),
+            snapshot=missing, reduce_only=False,
+        )
+    with pytest.raises(GatewayError, match="RISK_LIMIT_EXCEEDED"):
+        session._risk_check(
+            side="BUY", quantity=Decimal("2"), notional=Decimal("2"),
+            snapshot=snapshot, reduce_only=False,
+        )
+
+
+def test_ambiguous_create_runs_three_read_probes_without_resend(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session, gateway, transport = _synthetic_session(object())
+    receipt = session.create_limit_order(
+        price="0.5", size="2", event_time_ns=100,
+        order_identity="preparedorder:sha256:" + "1" * 64,
+    )
+    probes: list[int] = []
+
+    def adapter(_issuer: object, *, observed_time_ns: int, **_kwargs: object) -> object:
+        probes.append(observed_time_ns)
+        return object()
+
+    session._gate_b.gate_c_reconciliation_adapter = adapter
+    monkeypatch.setattr(
+        GateCSession, "reconcile",
+        lambda *_a, **_k: (_ for _ in ()).throw(GatewayError("READ_AMBIGUOUS")),
+    )
+    proof = GateCGeoblockProof.from_response({"blocked": False}, observed_time_ns=102)
+    terminal = session.reconcile_bounded(geoblock=proof, event_time_ns=102)
+    assert receipt.outcome == "AMBIGUOUS"
+    assert probes == [103, 104, 105]
+    assert transport.transmit_count == 1
+    assert terminal["reconciliation_state"] == "BLOCKED"
+    assert terminal["halted"] is True
+    assert gateway.state.gate_c_checkpoint["reconciliation_probe_count"] == 3
+
+
+def test_real_gateway_store_persists_ambiguous_mutation_without_resend(
+    tmp_path: Path,
+) -> None:
+    gateway = _ready_gateway(tmp_path)
+    prepared = _prepare(gateway, tmp_path)
+    armed = {
+        "authority_state": "A3_RESTRICTED_LIVE", "disable_reason": "",
+        "armed": True, "halted": False,
+        "arm_receipt_id": "gatecarm:sha256:" + "2" * 64,
+        "qualification_id": "gatecqualification:sha256:" + "4" * 64,
+        "attempt_id": None, "create_outcome": None, "response_status": None,
+        "venue_order_id": None, "market_id": prepared.market_id,
+        "condition_id": prepared.condition_id, "token_id": prepared.token_id,
+        "strategy_label": "fixture", "create_attempt_count": 0,
+        "capital_at_risk_pusd": "0", "capital_committed_pusd": "0",
+        "realized_loss_pusd": "0", "drawdown_pusd": "0",
+        "cumulative_loss_pusd": "0", "reconciliation_state": "HEALTHY",
+        "residual_position_state": "NONE", "access_state": "ELIGIBLE",
+        "receipt_id": None, "last_event_time_ns": 30,
+    }
+    gateway.record_gate_c_event(
+        "GATE_C_ARMED", armed, issuer=_GATE_C_EVENT_ISSUER,
+        event_time_ns=30,
+    )
+
+    class Transport:
+        transmit_count = 0
+
+        @staticmethod
+        def build(**_kwargs: object) -> SignedOrder:
+            return SignedOrder(
+                builder="0x" + "0" * 40, expiration=0,
+                maker="0x" + "2" * 40, maker_amount=500_000,
+                metadata="0x", order_type="GTC", salt=7, side="BUY",
+                signature="0xsynthetic", signature_type=3,
+                signer="0x" + "1" * 40, taker_amount=1_000_000,
+                timestamp=99, token_id=prepared.token_id, post_only=False,
+            )
+
+        def transmit(self, _signed: object) -> object:
+            self.transmit_count += 1
+            return object()
+
+    transport = Transport()
+
+    class GateB:
+        @staticmethod
+        def gate_c_transport(_permit: object) -> Transport:
+            return transport
+
+        @staticmethod
+        def account_snapshot() -> dict[str, object]:
+            return {
+                "collateral_balance": "10", "open_orders": 0,
+                "account_trades": 0, "positions": 0,
+                "allowance_by_exchange": {"exchange": "10"},
+                "position_quantities": {}, "market_exposures_pusd": {},
+                "gross_exposure_pusd": "0", "committed_exposure_pusd": "0",
+                "realized_loss_pusd": "0", "drawdown_pusd": "0",
+                "cumulative_loss_pusd": "0", "active_markets": 0,
+            }
+
+    session = object.__new__(GateCSession)
+    session._gateway = gateway
+    session._gate_b = GateB()
+    session._qualification = SimpleNamespace(
+        qualification_id=armed["qualification_id"],
+        binding=SimpleNamespace(binding_id="paperbinding:sha256:" + "5" * 64),
+    )
+    session._arm_receipt = SimpleNamespace(
+        arm_receipt_id=armed["arm_receipt_id"], repository_head="abcdef1",
+        public_signer="0x" + "1" * 40, public_wallet="0x" + "2" * 40,
+        issued_at_ns=30, validate=lambda now_ns=None: None,
+    )
+    session._market = GateCMarketMetadata(
+        prepared.market_id, prepared.condition_id, prepared.token_id,
+        observed_time_ns=30, valid_until_ns=200,
+    )
+    session._risk = CanaryRiskEnvelope()
+    receipt = session.create_limit_order(
+        price="0.5", size="1", event_time_ns=31,
+        order_identity=prepared.order_identity,
+    )
+    assert receipt.outcome == "AMBIGUOUS"
+    assert transport.transmit_count == 1
+    assert len(gateway.state.mutation_attempts) == 1
+    assert gateway.state.mutation_attempts[0].outcome == "AMBIGUOUS"
+    gateway.close()
+
+
+def test_foreground_operator_orders_arm_create_reconcile_and_terminal_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Tty:
+        @staticmethod
+        def isatty() -> bool:
+            return True
+
+    monkeypatch.setattr("src.execution_gateway.gate_c_operator.sys.stdin", Tty())
+    calls: list[str] = []
+
+    class Receipt:
+        outcome = "AMBIGUOUS"
+
+        @staticmethod
+        def to_public_mapping() -> dict[str, object]:
+            return {"outcome": "AMBIGUOUS"}
+
+    class Session:
+        arm_receipt = SimpleNamespace(
+            to_public_mapping=lambda: {"arm_receipt_id": "arm"}
+        )
+
+        def create_limit_order(self, **_kwargs: object) -> Receipt:
+            calls.append("create")
+            return Receipt()
+
+        def reconcile_bounded(self, **_kwargs: object) -> None:
+            calls.append("reconcile")
+
+        def cockpit_projection(self) -> dict[str, object]:
+            calls.append("terminal")
+            return {"halted": True, "reconciliation_state": "BLOCKED"}
+
+    operator = GateCOperator(SimpleNamespace())  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        operator, "arm",
+        lambda *_a, **_k: calls.append("arm") or Session(),
+    )
+    evidence = operator.run_one_shot(
+        SimpleNamespace(), SimpleNamespace(),  # type: ignore[arg-type]
+        market=SimpleNamespace(), geoblock=SimpleNamespace(),
+        price="0.5", size="2", side="BUY", post_only=False,
+        expiration=None, reduce_only=False,
+        order_identity="preparedorder:sha256:" + "1" * 64, now_ns=100,
+    )
+    assert calls == ["arm", "create", "reconcile", "terminal"]
+    assert evidence["terminal"] == {
+        "halted": True, "reconciliation_state": "BLOCKED"
+    }
+
+
+def test_foreground_operator_reconciles_restart_before_arm() -> None:
+    attempt = SimpleNamespace(
+        operation="CREATE", venue_order_id="venue-a",
+        order_identity="preparedorder:sha256:" + "1" * 64,
+    )
+    state = SimpleNamespace(
+        mutation_attempts=(attempt,), reconciliation_state="REQUIRED"
+    )
+
+    class Gateway:
+        def __init__(self) -> None:
+            self.state = state
+            self.adapter = None
+
+        def reconcile(self, *, adapter: object, event_time_ns: int) -> None:
+            self.adapter = adapter
+            assert event_time_ns == 100
+            self.state.reconciliation_state = "HEALTHY"
+
+    class GateB:
+        def gate_c_reconciliation_adapter(self, issuer: object, **kwargs: object) -> object:
+            assert issuer is gate_b_mod._GATE_C_ISSUER
+            assert kwargs["order_identity_by_venue_id"] == {
+                "venue-a": "preparedorder:sha256:" + "1" * 64
+            }
+            return "official-adapter"
+
+    gateway = Gateway()
+    operator = GateCOperator(gateway)  # type: ignore[arg-type]
+    operator.reconcile_before_arm(
+        GateB(),  # type: ignore[arg-type]
+        geoblock=GateCGeoblockProof.from_response(
+            {"blocked": False}, observed_time_ns=100
+        ),
+        now_ns=100,
+    )
+    assert gateway.adapter == "official-adapter"
