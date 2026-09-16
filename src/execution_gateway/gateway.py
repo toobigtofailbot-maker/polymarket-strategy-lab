@@ -39,6 +39,7 @@ from .store import GatewayJournalEvent, GatewayStore, GatewayStoreError, canonic
 
 
 AUTHORITY_STATES = ("A0_DISABLED", "A1_READ_ONLY", "A2_SHADOW", "A3_RESTRICTED_LIVE")
+_GATE_C_EVENT_ISSUER = object()
 ACCESS_STATES = (
     "ELIGIBLE",
     "GEOBLOCKED",
@@ -2070,6 +2071,7 @@ class ProtectedExecutionGateway:
         event_type: str,
         checkpoint: Mapping[str, object],
         *,
+        issuer: object | None = None,
         event_time_ns: int,
         mutation_attempt: MutationAttempt | None = None,
         venue_open_order_ids: Sequence[str] | None = None,
@@ -2080,6 +2082,8 @@ class ProtectedExecutionGateway:
         this method provides the only journal write surface it can use.  It is
         intentionally not reachable from the generic ``set_authority`` API.
         """
+        if issuer is not _GATE_C_EVENT_ISSUER:
+            raise GatewayError("GATE_C_REQUIRED")
         if event_type not in {
             "GATE_C_ARMED",
             "GATE_C_CREATE_STARTED",

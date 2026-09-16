@@ -752,9 +752,10 @@ def test_gateway_routes_are_get_only_bounded_sanitized_and_read_only(
             "token_id": None,
             "create_attempt_count": 0,
             "capital_at_risk_pusd": "0",
-            "capital_committed_pusd": "0",
-            "reconciliation_state": "REQUIRED",
-        },
+                "capital_committed_pusd": "0",
+                "reconciliation_state": "REQUIRED",
+                "residual_position_state": "UNKNOWN",
+            },
         "gate_b": {
             "gate_b_capability_available": True,
             "gate_b_state": "B0_LOCKED",

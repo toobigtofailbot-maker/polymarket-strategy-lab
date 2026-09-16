@@ -10,12 +10,14 @@ from decimal import Decimal
 import inspect
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import polymarket
 from polymarket import SecureClient
 from polymarket.models.clob.account import BalanceAllowance
 from polymarket.models.clob.order_response import AcceptedOrder, RejectedOrder
+from polymarket.models.clob.orders import SignedOrder
 
 import src.execution_gateway.gate_b as gate_b_mod
 from src.execution_gateway import (
@@ -35,6 +37,7 @@ from src.execution_gateway.gate_c import (
     GateCSession,
     _id,
 )
+from src.execution_gateway.gateway import _GATE_C_EVENT_ISSUER
 
 
 def test_fixed_risk_envelope_cannot_be_widened() -> None:
@@ -94,7 +97,10 @@ def test_a3_cannot_be_rehydrated_from_restart(tmp_path: Path) -> None:
         "disable_reason": "OPERATOR_KILL", "reconciliation_state": "BLOCKED",
         "access_state": "UNKNOWN",
     }
-    gateway.record_gate_c_event("GATE_C_HALTED", checkpoint, event_time_ns=2)
+    gateway.record_gate_c_event(
+        "GATE_C_HALTED", checkpoint,
+        issuer=_GATE_C_EVENT_ISSUER, event_time_ns=2,
+    )
     gateway.close()
     with ProtectedExecutionGateway.open(path, opened_time_ns=3) as reopened:
         assert reopened.state.authority_state == "A0_DISABLED"
@@ -161,13 +167,177 @@ def test_every_live_risk_cap_and_reduce_only_boundary() -> None:
         replace(envelope, max_per_order_committed_pusd="10.01").validate()
     with pytest.raises(GatewayError, match="RECEIPT_INVALID"):
         _receipt_for_evidence(capital_at_risk_pusd="10.01").validate(now_ns=100)
+    session = object.__new__(GateCSession)
+    snapshot = {
+        "collateral_balance": "10", "gross_exposure_pusd": "1",
+        "market_exposure_pusd": "1", "committed_exposure_pusd": "1",
+        "realized_loss_pusd": "0", "drawdown_pusd": "0",
+        "cumulative_loss_pusd": "0", "active_markets": 1,
+        "open_orders": 0, "position_quantity": "1",
+    }
+    with pytest.raises(GatewayError, match="OVERSELL_FORBIDDEN"):
+        session._risk_check(
+            side="SELL", quantity=Decimal("1.01"), notional=Decimal("0.5"),
+            snapshot=snapshot, reduce_only=True,
+        )
+    session._risk_check(
+        side="SELL", quantity=Decimal("1"), notional=Decimal("0.5"),
+        snapshot=snapshot, reduce_only=True,
+    )
+    buy_snapshot = {
+        **snapshot,
+        "allowance_by_exchange": {"exchange": "10"},
+        "realized_loss_pusd": "0.01",
+        "active_markets": 0,
+        "market_exposure_pusd": "0",
+    }
+    session._market = GateCMarketMetadata(
+        "market-a", "condition-a", "token-a", observed_time_ns=1,
+        valid_until_ns=2,
+    )
+    with pytest.raises(GatewayError, match="RISK_LIMIT_EXCEEDED"):
+        session._risk_check(
+            side="BUY", quantity=Decimal("10"), notional=Decimal("5"),
+            snapshot=buy_snapshot, reduce_only=False,
+        )
+
+
+def _synthetic_session(response: object) -> tuple[GateCSession, object, object]:
+    order_identity = "preparedorder:sha256:" + "1" * 64
+    prepared = SimpleNamespace(
+        order_identity=order_identity, token_id="token-a", market_id="market-a",
+        condition_id="condition-a", side="BUY", post_only=False, expiration=None,
+        quantity="2", limit_price="0.5",
+        would_submit={"asset_id": "token-a"},
+    )
+    checkpoint = {
+        "armed": True, "halted": False,
+        "arm_receipt_id": "gatecarm:sha256:" + "2" * 64,
+        "token_id": "token-a", "create_attempt_count": 0,
+    }
+    state = SimpleNamespace(
+        authority_state="A3_RESTRICTED_LIVE", gate_c_checkpoint=checkpoint,
+        prepared_orders=(prepared,), last_event_time_ns=10,
+        venue_open_order_ids=(), reconciliation_state="HEALTHY",
+    )
+
+    class Gateway:
+        head = "gatewayjournal:sha256:" + "3" * 64
+
+        def __init__(self) -> None:
+            self.state = state
+            self.events: list[tuple[str, dict[str, object]]] = []
+
+        def record_gate_c_event(self, event_type: str, value: object, **kwargs: object) -> None:
+            mapping = dict(value)  # type: ignore[arg-type]
+            self.events.append((event_type, mapping))
+            self.state.gate_c_checkpoint = mapping
+            self.state.authority_state = mapping.get(
+                "authority_state", self.state.authority_state
+            )
+            self.state.reconciliation_state = mapping.get(
+                "reconciliation_state", self.state.reconciliation_state
+            )
+            self.state.last_event_time_ns = int(mapping["last_event_time_ns"])
+
+    class Transport:
+        def __init__(self) -> None:
+            self.transmit_count = 0
+
+        def build(self, **kwargs: object) -> object:
+            self.build_kwargs = kwargs
+            return SignedOrder(
+                builder="0x" + "0" * 40, expiration=0,
+                maker="0x" + "2" * 40, maker_amount=1_000_000,
+                metadata="0x", order_type="GTC", salt=7, side="BUY",
+                signature="0xsynthetic", signature_type=3,
+                signer="0x" + "1" * 40, taker_amount=2_000_000,
+                timestamp=99, token_id="token-a", post_only=False,
+            )
+
+        def transmit(self, signed: object) -> object:
+            self.transmit_count += 1
+            return response
+
+    transport = Transport()
+
+    class GateB:
+        def gate_c_transport(self, permit: object) -> object:
+            return transport
+
+        def account_snapshot(self) -> dict[str, object]:
+            return {
+                "collateral_balance": "10", "open_orders": 0,
+                "account_trades": 0, "positions": 0,
+                "allowance_by_exchange": {"exchange": "10"},
+                "position_quantities": {}, "market_exposures_pusd": {},
+                "gross_exposure_pusd": "0", "committed_exposure_pusd": "0",
+                "realized_loss_pusd": "0", "drawdown_pusd": "0",
+                "cumulative_loss_pusd": "0", "active_markets": 0,
+            }
+
+    session = object.__new__(GateCSession)
+    session._gateway = Gateway()
+    session._gate_b = GateB()
+    session._qualification = SimpleNamespace(
+        qualification_id="gatecqualification:sha256:" + "4" * 64,
+        binding=SimpleNamespace(binding_id="paperbinding:sha256:" + "5" * 64),
+    )
+    session._arm_receipt = SimpleNamespace(
+        arm_receipt_id=checkpoint["arm_receipt_id"], repository_head="abcdef1",
+        public_signer="0x" + "1" * 40, public_wallet="0x" + "2" * 40,
+        issued_at_ns=100, validate=lambda now_ns=None: None,
+    )
+    session._market = GateCMarketMetadata(
+        "market-a", "condition-a", "token-a", observed_time_ns=100,
+        valid_until_ns=200,
+    )
+    session._risk = CanaryRiskEnvelope()
+    return session, session._gateway, transport
 
 
 def test_create_started_before_exactly_one_post_and_never_retries() -> None:
-    source = inspect.getsource(GateCSession.create_limit_order)
-    assert "GATE_C_CREATE_STARTED" in source
-    assert source.count("transport.transmit") == 1
-    assert "record_gate_c_event" in source
+    response = AcceptedOrder(
+        order_id="venue-order-a", status="matched", making_amount=Decimal("1"),
+        taking_amount=Decimal("0.5"), trade_ids=(), transactions_hashes=(),
+    )
+    session, gateway, transport = _synthetic_session(response)
+    receipt = session.create_limit_order(
+        price="0.5", size="2", event_time_ns=100,
+        order_identity="preparedorder:sha256:" + "1" * 64,
+    )
+    assert [event for event, _value in gateway.events] == [
+        "GATE_C_CREATE_STARTED", "GATE_C_CREATE_OUTCOME"
+    ]
+    assert transport.transmit_count == 1
+    assert receipt.reconciliation_state == "REQUIRED"
+    assert receipt.residual_position_state == "UNKNOWN"
+    assert receipt.halted is True
+    started = gateway.events[0][1]
+    expected = {
+        "repository_head": "abcdef1",
+        "store_head": "gatewayjournal:sha256:" + "3" * 64,
+        "public_signer": "0x" + "1" * 40,
+        "public_wallet": "0x" + "2" * 40,
+        "qualification_id": "gatecqualification:sha256:" + "4" * 64,
+        "strategy_binding_id": "paperbinding:sha256:" + "5" * 64,
+        "order_identity": "preparedorder:sha256:" + "1" * 64,
+        "asset_id": "token-a", "price": "0.5", "size": "2", "side": "BUY",
+        "post_only": False, "expiration": None, "order_type": "LIMIT",
+        "time_in_force": "GTC", "market_id": "market-a",
+        "condition_id": "condition-a", "arm_receipt_id": "gatecarm:sha256:" + "2" * 64,
+        "risk_envelope_id": CanaryRiskEnvelope().envelope_id,
+        "reduce_only": False, "builder_code": None, "sequence": 1,
+        "signed_order": {
+            "builder": "0x" + "0" * 40, "expiration": 0,
+            "maker": "0x" + "2" * 40, "maker_amount": 1_000_000,
+            "metadata": "0x", "order_type": "GTC", "salt": 7,
+            "side": "BUY", "signature_type": 3,
+            "signer": "0x" + "1" * 40, "taker_amount": 2_000_000,
+            "timestamp": 99, "token_id": "token-a", "post_only": False,
+        },
+    }
+    assert started["mutation_identity"] == _id("gatecattempt:sha256:", expected)
 
 
 def test_exact_order_response_classification() -> None:
@@ -209,6 +379,7 @@ def _receipt_for_evidence(*, capital_at_risk_pusd: str = "0") -> GateCCanaryRece
         capital_at_risk_pusd=capital_at_risk_pusd,
         capital_committed_pusd="0",
         reconciliation_state="HEALTHY",
+        residual_position_state="NONE",
         halted=True,
         issued_at_ns=100,
         valid_until_ns=100 + 10 * 60_000_000_000,

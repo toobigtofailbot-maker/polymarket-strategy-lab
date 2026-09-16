@@ -9,7 +9,7 @@ strategy runner, or credential source is present here.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_EVEN
 import hashlib
 import json
 import time
@@ -18,6 +18,7 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 from polymarket.models.clob.order_response import AcceptedOrder, RejectedOrder
+from polymarket.models.clob.orders import SignedOrder
 
 from src.paper_trading.engine import _replay_journal
 from src.paper_trading.models import (
@@ -40,9 +41,11 @@ from .gate_b import (
 from .gateway import (
     MAX_ACCOUNT_SNAPSHOT_AGE_NS,
     MutationAttempt,
+    OfficialSdkAuthenticatedReadAdapter,
     ProtectedExecutionGateway,
     VenueConstraints,
     GatewayError,
+    _GATE_C_EVENT_ISSUER,
     _ADDRESS_RE,
     _canonical_decimal,
     _decimal,
@@ -70,6 +73,14 @@ _NS_PER_MINUTE = 60_000_000_000
 _HEAD_RE = __import__("re").compile(r"^[0-9a-f]{7,64}$")
 _ID_RE = __import__("re").compile(r"^[a-z][a-z0-9_-]*:sha256:[0-9a-f]{64}$")
 _GEOBLOCK_URL = "https://polymarket.com/api/geoblock"
+_SDK_ROUNDING_BY_TICK = {
+    Decimal("0.1"): (3, 1, 2),
+    Decimal("0.01"): (4, 2, 2),
+    Decimal("0.005"): (5, 3, 2),
+    Decimal("0.0025"): (6, 4, 2),
+    Decimal("0.001"): (5, 3, 2),
+    Decimal("0.0001"): (6, 4, 2),
+}
 
 
 def _json(value: object) -> str:
@@ -123,6 +134,41 @@ def _head(value: object) -> str:
     if not isinstance(value, str) or _HEAD_RE.fullmatch(value) is None:
         raise GatewayError("HEAD_BINDING_INVALID")
     return value
+
+
+def _expected_signed_amounts(
+    *, price: Decimal, size: Decimal, side: str, tick: Decimal
+) -> tuple[int, int]:
+    config = _SDK_ROUNDING_BY_TICK.get(tick)
+    if config is None:
+        raise GatewayError("ORDER_CONSTRAINT_INVALID")
+    amount_decimals, _price_decimals, size_decimals = config
+
+    def places(value: Decimal) -> int:
+        exponent = value.normalize().as_tuple().exponent
+        return 0 if isinstance(exponent, str) else max(0, -exponent)
+
+    def rounded(value: Decimal, decimals: int, mode: str) -> Decimal:
+        if places(value) <= decimals:
+            return value
+        return value.quantize(Decimal(10) ** -decimals, rounding=mode)
+
+    base_size = rounded(size, size_decimals, ROUND_FLOOR)
+    product = base_size * price
+    if places(product) > amount_decimals:
+        product = rounded(product, amount_decimals + 4, ROUND_CEILING)
+        product = rounded(product, amount_decimals, ROUND_FLOOR)
+
+    def units(value: Decimal) -> int:
+        return int(
+            (value * Decimal(1_000_000)).quantize(Decimal(1), rounding=ROUND_HALF_EVEN)
+        )
+
+    return (
+        (units(product), units(base_size))
+        if side == "BUY"
+        else (units(base_size), units(product))
+    )
 
 
 @dataclass(frozen=True)
@@ -210,6 +256,7 @@ class GateCMarketMetadata:
     market_id: str
     condition_id: str
     token_id: str
+    exchange: str = "exchange"
     active: bool = True
     accepting_orders: bool = True
     binary: bool = True
@@ -229,6 +276,7 @@ class GateCMarketMetadata:
             constraints.market_id,
             constraints.condition_id,
             constraints.token_id,
+            exchange=constraints.exchange,
             accepting_orders=constraints.access_state == "ELIGIBLE",
             neg_risk=constraints.neg_risk,
             tick_size=constraints.tick_size,
@@ -240,12 +288,16 @@ class GateCMarketMetadata:
     def validate(self, *, now_ns: int | None = None) -> None:
         for value in (self.market_id, self.condition_id, self.token_id):
             _nonempty_label(value, "MARKET_METADATA_INVALID")
+        if self.exchange != "exchange":
+            raise GatewayError("MARKET_NOT_ELIGIBLE")
         if any(type(value) is not bool for value in (
             self.active, self.accepting_orders, self.binary, self.orderbook_enabled,
             self.neg_risk, self.delayed,
         )) or self.neg_risk or self.delayed:
             raise GatewayError("MARKET_NOT_ELIGIBLE")
-        _decimal(self.tick_size, positive=True)
+        tick = _decimal(self.tick_size, positive=True)
+        if tick not in _SDK_ROUNDING_BY_TICK:
+            raise GatewayError("MARKET_METADATA_INVALID")
         _decimal(self.minimum_order_size, positive=True)
         fee_rate = _decimal(self.fee_rate_bps)
         if fee_rate < 0:
@@ -528,6 +580,7 @@ class GateCCanaryReceipt:
     capital_at_risk_pusd: str
     capital_committed_pusd: str
     reconciliation_state: str
+    residual_position_state: str
     halted: bool
     issued_at_ns: int
     valid_until_ns: int
@@ -548,6 +601,8 @@ class GateCCanaryReceipt:
             raise GatewayError("RECEIPT_INVALID")
         if self.reconciliation_state not in ("HEALTHY", "REQUIRED", "BLOCKED", "DIVERGED"):
             raise GatewayError("RECEIPT_INVALID")
+        if self.residual_position_state not in ("NONE", "PRESENT", "UNKNOWN"):
+            raise GatewayError("RECEIPT_INVALID")
         if type(self.halted) is not bool or self.create_attempt_count != 1:
             raise GatewayError("RECEIPT_INVALID")
         at_risk = _safe_decimal(self.capital_at_risk_pusd, "RECEIPT_INVALID")
@@ -559,6 +614,8 @@ class GateCCanaryReceipt:
         if self.outcome == "DEFINITIVE_REJECTED" and self.response_status != "rejected":
             raise GatewayError("RECEIPT_INVALID")
         if self.outcome == "AMBIGUOUS" and self.response_status not in ("delayed", "unknown"):
+            raise GatewayError("RECEIPT_INVALID")
+        if self.outcome == "AMBIGUOUS" and self.residual_position_state == "NONE":
             raise GatewayError("RECEIPT_INVALID")
         if self.venue_order_id is not None and self.outcome == "DEFINITIVE_REJECTED":
             raise GatewayError("RECEIPT_INVALID")
@@ -603,6 +660,7 @@ def _checkpoint(**values: object) -> dict[str, object]:
         "realized_loss_pusd": "0",
         "drawdown_pusd": "0",
         "reconciliation_state": "REQUIRED",
+        "residual_position_state": "UNKNOWN",
         "access_state": "UNKNOWN",
         "receipt_id": None,
         "last_event_time_ns": 0,
@@ -654,7 +712,7 @@ class GateCSession:
         _time(now)
         if gateway.state.authority_state == "A3_RESTRICTED_LIVE":
             raise GatewayError("ALREADY_ARMED")
-        if gateway.state.reconciliation_state in ("BLOCKED", "DIVERGED"):
+        if gateway.state.reconciliation_state != "HEALTHY":
             raise GatewayError("RECONCILIATION_REQUIRED")
         if getattr(gate_b_session, "_gateway", None) is not gateway:
             raise GatewayError("GATE_B_STORE_REQUIRED")
@@ -692,11 +750,9 @@ class GateCSession:
         if type(risk) is not CanaryRiskEnvelope:
             raise GatewayError("RISK_ENVELOPE_INVALID")
         risk.validate()
-        raw_snapshot = (
-            gate_b_session.account_snapshot()
-            if account_snapshot is None
-            else account_snapshot
-        )
+        if account_snapshot is not None:
+            raise GatewayError("ACCOUNT_SNAPSHOT_INVALID")
+        raw_snapshot = gate_b_session.account_snapshot()
         if not isinstance(raw_snapshot, Mapping):
             raise GatewayError("ACCOUNT_SNAPSHOT_INVALID")
         snapshot = dict(raw_snapshot)
@@ -705,12 +761,15 @@ class GateCSession:
         )
         if any(field not in snapshot for field in required_snapshot_fields):
             raise GatewayError("ACCOUNT_SNAPSHOT_INVALID")
+        snapshot["observed_time_ns"] = now
         if "observed_time_ns" in snapshot:
             observed = snapshot["observed_time_ns"]
             if not isinstance(observed, int) or isinstance(observed, bool):
                 raise GatewayError("ACCOUNT_SNAPSHOT_INVALID")
             if observed > now or now - observed > MAX_ACCOUNT_SNAPSHOT_AGE_NS:
                 raise GatewayError("ACCOUNT_SNAPSHOT_STALE")
+        else:
+            raise GatewayError("ACCOUNT_SNAPSHOT_STALE")
         for identity_key, expected in (("public_signer", signer), ("signer", signer), ("public_wallet", wallet), ("wallet", wallet)):
             if identity_key in snapshot and snapshot[identity_key] != expected:
                 raise GatewayError("SIGNING_IDENTITY_INVALID")
@@ -770,10 +829,23 @@ class GateCSession:
             token_id=active_market.token_id,
             strategy_label=qualification.binding.strategy_label,
             reconciliation_state="HEALTHY",
+            residual_position_state="NONE",
             access_state="ELIGIBLE",
+            realized_loss_pusd=_canonical_decimal(
+                _safe_decimal(snapshot.get("realized_loss_pusd", "0"))
+            ),
+            drawdown_pusd=_canonical_decimal(
+                _safe_decimal(snapshot.get("drawdown_pusd", "0"))
+            ),
+            cumulative_loss_pusd=_canonical_decimal(
+                _safe_decimal(snapshot.get("cumulative_loss_pusd", "0"))
+            ),
             last_event_time_ns=now,
         )
-        gateway.record_gate_c_event("GATE_C_ARMED", checkpoint, event_time_ns=now)
+        gateway.record_gate_c_event(
+            "GATE_C_ARMED", checkpoint,
+            issuer=_GATE_C_EVENT_ISSUER, event_time_ns=now,
+        )
         qualification.consume(now_ns=now)
         return cls(gateway, gate_b_session, qualification, arm, active_market, risk)
 
@@ -798,12 +870,15 @@ class GateCSession:
         self,
         *,
         side: str,
+        quantity: Decimal,
         notional: Decimal,
         snapshot: Mapping[str, object],
         reduce_only: bool,
     ) -> tuple[Decimal, Decimal]:
         if side not in ("BUY", "SELL"):
             raise GatewayError("ORDER_CONSTRAINT_INVALID")
+        if side == "SELL" and not reduce_only:
+            raise GatewayError("OVERSELL_FORBIDDEN")
         wallet = _safe_decimal(snapshot.get("collateral_balance", "0"))
         gross = _safe_decimal(snapshot.get("gross_exposure_pusd", "0"))
         market = _safe_decimal(snapshot.get("market_exposure_pusd", "0"))
@@ -814,17 +889,13 @@ class GateCSession:
         active_markets = _safe_int(snapshot.get("active_markets", 0))
         open_orders = _safe_int(snapshot.get("open_orders", 0))
         if not reduce_only:
-            allowance_value = next(
-                (
-                    snapshot[key]
-                    for key in ("allowance_pusd", "allowance", "available_allowance_pusd")
-                    if key in snapshot
-                ),
-                None,
-            )
+            allowance_by_exchange = snapshot.get("allowance_by_exchange")
+            if not isinstance(allowance_by_exchange, Mapping):
+                raise GatewayError("INSUFFICIENT_ALLOWANCE")
+            allowance_value = allowance_by_exchange.get(self._market.exchange)
             if wallet < notional:
                 raise GatewayError("INSUFFICIENT_BALANCE")
-            if allowance_value is not None and _safe_decimal(allowance_value) < notional:
+            if allowance_value is None or _safe_decimal(allowance_value) < notional:
                 raise GatewayError("INSUFFICIENT_ALLOWANCE")
         if not reduce_only:
             if (
@@ -836,14 +907,13 @@ class GateCSession:
                 or active_markets > MAX_ACTIVE_MARKETS
                 or active_markets >= MAX_ACTIVE_MARKETS and market == 0
                 or open_orders >= MAX_SIMULTANEOUS_OPEN_ORDERS
-                or daily > MAX_REALIZED_LOSS_PER_UTC_DAY_PUSD
-                or drawdown > MAX_CANARY_EQUITY_DRAWDOWN_PUSD
-                or cumulative > MAX_CUMULATIVE_CANARY_LOSS_PUSD
+                or daily + notional > MAX_REALIZED_LOSS_PER_UTC_DAY_PUSD
+                or drawdown + notional > MAX_CANARY_EQUITY_DRAWDOWN_PUSD
+                or cumulative + notional > MAX_CUMULATIVE_CANARY_LOSS_PUSD
             ):
                 raise GatewayError("RISK_LIMIT_EXCEEDED")
         if side == "SELL" and reduce_only:
             position = _safe_decimal(snapshot.get("position_quantity", "0"))
-            quantity = _safe_decimal(snapshot.get("quantity", "0"))
             if quantity > position:
                 raise GatewayError("OVERSELL_FORBIDDEN")
         return wallet, committed + (Decimal(0) if reduce_only else notional)
@@ -911,12 +981,28 @@ class GateCSession:
         ):
             raise GatewayError("ORDER_IDENTITY_CONFLICT")
         notional = price_dec * size_dec
+        if account_snapshot is not None:
+            raise GatewayError("ACCOUNT_SNAPSHOT_INVALID")
+        live_snapshot = dict(self._gate_b.account_snapshot())
+        quantities = live_snapshot.get("position_quantities", {})
+        exposures = live_snapshot.get("market_exposures_pusd", {})
+        if not isinstance(quantities, Mapping) or not isinstance(exposures, Mapping):
+            raise GatewayError("ACCOUNT_SNAPSHOT_INVALID")
+        live_snapshot["position_quantity"] = quantities.get(self._market.token_id, "0")
+        live_snapshot["market_exposure_pusd"] = exposures.get(self._market.condition_id, "0")
         wallet, committed = self._risk_check(
-            side=side, notional=notional,
-            snapshot=dict(account_snapshot or self._gate_b.account_snapshot()),
+            side=side, quantity=size_dec, notional=notional,
+            snapshot=live_snapshot,
             reduce_only=reduce_only,
         )
         request = {
+            "repository_head": self._arm_receipt.repository_head,
+            "store_head": self._gateway.head,
+            "public_signer": self._arm_receipt.public_signer,
+            "public_wallet": self._arm_receipt.public_wallet,
+            "qualification_id": self._qualification.qualification_id,
+            "strategy_binding_id": self._qualification.binding.binding_id,
+            "order_identity": prepared.order_identity,
             "asset_id": self._market.token_id,
             "price": _canonical_decimal(price_dec),
             "size": _canonical_decimal(size_dec),
@@ -929,10 +1015,12 @@ class GateCSession:
             "condition_id": self._market.condition_id,
             "arm_receipt_id": self._arm_receipt.arm_receipt_id,
             "risk_envelope_id": self._risk.envelope_id,
+            "reduce_only": reduce_only,
+            "builder_code": None,
             "sequence": 1,
         }
-        attempt_id = _id("gatecattempt:sha256:", request)
-        permit = GateCLivePermit._issue(_GATE_C_ISSUER, attempt_id)
+        intent_id = _id("gatecintent:sha256:", request)
+        permit = GateCLivePermit._issue(_GATE_C_ISSUER, intent_id)
         try:
             transport = self._gate_b.gate_c_transport(permit)
             signed = transport.build(
@@ -947,9 +1035,62 @@ class GateCSession:
             raise
         except Exception:
             raise GatewayError("SIGNING_FAILED") from None
+        if type(signed) is not SignedOrder:
+            raise GatewayError("SIGNING_FAILED")
+        try:
+            signed_economics = {
+                "builder": str(signed.builder),
+                "expiration": int(signed.expiration),
+                "maker": str(signed.maker).lower(),
+                "maker_amount": int(signed.maker_amount),
+                "metadata": str(signed.metadata),
+                "order_type": str(signed.order_type),
+                "salt": int(signed.salt),
+                "side": str(signed.side),
+                "signature_type": int(signed.signature_type),
+                "signer": str(signed.signer).lower(),
+                "taker_amount": int(signed.taker_amount),
+                "timestamp": int(signed.timestamp),
+                "token_id": str(signed.token_id),
+                "post_only": bool(signed.post_only),
+            }
+        except (AttributeError, TypeError, ValueError, OverflowError):
+            raise GatewayError("SIGNING_FAILED") from None
+        if (
+            signed_economics["token_id"] != self._market.token_id
+            or signed_economics["side"] != side
+            or signed_economics["post_only"] is not post_only
+            or signed_economics["signer"] != self._arm_receipt.public_signer
+            or signed_economics["maker"] != self._arm_receipt.public_wallet
+            or signed_economics["maker_amount"] <= 0
+            or signed_economics["taker_amount"] <= 0
+        ):
+            raise GatewayError("SIGNED_ORDER_IDENTITY_MISMATCH")
+        expected_maker, expected_taker = _expected_signed_amounts(
+            price=price_dec, size=size_dec, side=side, tick=tick,
+        )
+        if (
+            signed_economics["maker_amount"] != expected_maker
+            or signed_economics["taker_amount"] != expected_taker
+        ):
+            raise GatewayError("SIGNED_ORDER_IDENTITY_MISMATCH")
+        request["signed_order"] = signed_economics
+        attempt_id = _id("gatecattempt:sha256:", request)
         started = dict(checkpoint)
         started.update({
             "attempt_id": attempt_id,
+            "order_identity": prepared.order_identity,
+            "mutation_identity": attempt_id,
+            "mutation_request_digest": _sha("mutationrequest:sha256:", request),
+            "side": side,
+            "limit_price": _canonical_decimal(price_dec),
+            "quantity": _canonical_decimal(size_dec),
+            "post_only": post_only,
+            "expiration": expiration,
+            "reduce_only": reduce_only,
+            "time_in_force": request["time_in_force"],
+            "sequence": 1,
+            "store_head": request["store_head"],
             "create_attempt_count": 1,
             "capital_at_risk_pusd": _canonical_decimal(notional),
             "capital_committed_pusd": _canonical_decimal(committed),
@@ -957,8 +1098,11 @@ class GateCSession:
         })
         # This commit is the hard no-duplicate boundary: no transmit occurs
         # until the durable STARTED identity is accepted by GatewayStore.
-        self._gateway.record_gate_c_event("GATE_C_CREATE_STARTED", started, event_time_ns=now)
-        permit._consume(attempt_id)
+        self._gateway.record_gate_c_event(
+            "GATE_C_CREATE_STARTED", started,
+            issuer=_GATE_C_EVENT_ISSUER, event_time_ns=now,
+        )
+        permit._consume(intent_id)
         try:
             response = transport.transmit(signed)
         except GatewayError:
@@ -972,12 +1116,7 @@ class GateCSession:
                 self._gate_b.account_snapshot()
             except GatewayError:
                 post_create_read_ok = False
-        request_digest = _sha("mutationrequest:sha256:", {
-            "order_identity": prepared.order_identity,
-            "operation": "CREATE",
-            "request": dict(prepared.would_submit),
-            "target_bindings": [],
-        })
+        request_digest = _sha("mutationrequest:sha256:", request)
         mutation_id = _sha("mutationattempt:sha256:", {
             "order_identity": prepared.order_identity,
             "operation": "CREATE",
@@ -992,19 +1131,21 @@ class GateCSession:
             now, False,
         )
         final = dict(started)
+        accepted = outcome == "DEFINITIVE_ACCEPTED"
         final.update({
             "authority_state": "A0_DISABLED",
-            "disable_reason": "CANARY_ATTEMPT_COMPLETE",
+            "disable_reason": (
+                "CREATE_ACCEPTED_RECONCILIATION_REQUIRED"
+                if accepted
+                else "CANARY_ATTEMPT_COMPLETE"
+            ),
             "armed": False,
             "create_outcome": outcome,
             "response_status": status,
             "venue_order_id": venue_order_id,
-            "reconciliation_state": (
-                "BLOCKED"
-                if outcome == "DEFINITIVE_ACCEPTED" and not post_create_read_ok
-                else "HEALTHY" if outcome != "DEFINITIVE_ACCEPTED" else "REQUIRED"
-            ),
-            "halted": outcome == "DEFINITIVE_ACCEPTED" and not post_create_read_ok,
+            "reconciliation_state": "BLOCKED" if accepted and not post_create_read_ok else "REQUIRED" if accepted else "HEALTHY",
+            "residual_position_state": "UNKNOWN" if accepted else "NONE",
+            "halted": accepted,
             "last_event_time_ns": now,
         })
         open_ids = list(self._gateway.state.venue_open_order_ids)
@@ -1012,6 +1153,7 @@ class GateCSession:
             open_ids = sorted(set(open_ids) | {venue_order_id})
         self._gateway.record_gate_c_event(
             "GATE_C_CREATE_OUTCOME", final, event_time_ns=max(now, self._gateway.state.last_event_time_ns + 1),
+            issuer=_GATE_C_EVENT_ISSUER,
             mutation_attempt=mutation, venue_open_order_ids=open_ids,
         )
         if outcome == "DEFINITIVE_ACCEPTED" and status == "live" and venue_order_id:
@@ -1034,6 +1176,7 @@ class GateCSession:
                 })
                 self._gateway.record_gate_c_event(
                     "GATE_C_HALTED", halted,
+                    issuer=_GATE_C_EVENT_ISSUER,
                     event_time_ns=int(halted["last_event_time_ns"]),
                 )
                 return self._receipt(halted, int(halted["last_event_time_ns"]))
@@ -1048,6 +1191,7 @@ class GateCSession:
                 })
                 self._gateway.record_gate_c_event(
                     "GATE_C_HALTED", halted,
+                    issuer=_GATE_C_EVENT_ISSUER,
                     event_time_ns=int(halted["last_event_time_ns"]),
                 )
                 return self._receipt(halted, int(halted["last_event_time_ns"]))
@@ -1064,19 +1208,22 @@ class GateCSession:
                 })
                 self._gateway.record_gate_c_event(
                     "GATE_C_HALTED", halted,
+                    issuer=_GATE_C_EVENT_ISSUER,
                     event_time_ns=int(halted["last_event_time_ns"]),
                 )
                 return self._receipt(halted, int(halted["last_event_time_ns"]))
             settled = dict(final)
             settled.update({
-                "reconciliation_state": "HEALTHY",
-                "halted": False,
+                "disable_reason": "CANCEL_ACCEPTED_RECONCILIATION_REQUIRED",
+                "reconciliation_state": "REQUIRED",
+                "residual_position_state": "UNKNOWN",
+                "halted": True,
                 "last_event_time_ns": max(now, self._gateway.state.last_event_time_ns + 1),
             })
             self._gateway.record_gate_c_event(
-                "GATE_C_RECONCILED", settled,
+                "GATE_C_HALTED", settled,
+                issuer=_GATE_C_EVENT_ISSUER,
                 event_time_ns=int(settled["last_event_time_ns"]),
-                venue_open_order_ids=(),
             )
             return self._receipt(settled, int(settled["last_event_time_ns"]))
         return self._receipt(final, now)
@@ -1115,10 +1262,12 @@ class GateCSession:
             "capital_at_risk_pusd": _canonical_decimal(notional),
             "capital_committed_pusd": _canonical_decimal(committed),
             "reconciliation_state": "BLOCKED",
+            "residual_position_state": "UNKNOWN",
             "last_event_time_ns": now,
         })
         self._gateway.record_gate_c_event(
             "GATE_C_CREATE_OUTCOME", final,
+            issuer=_GATE_C_EVENT_ISSUER,
             event_time_ns=max(now, self._gateway.state.last_event_time_ns + 1),
         )
         return self._receipt(final, now)
@@ -1137,6 +1286,7 @@ class GateCSession:
             "capital_at_risk_pusd": checkpoint.get("capital_at_risk_pusd", "0"),
             "capital_committed_pusd": checkpoint.get("capital_committed_pusd", "0"),
             "reconciliation_state": checkpoint.get("reconciliation_state", "REQUIRED"),
+            "residual_position_state": checkpoint.get("residual_position_state", "UNKNOWN"),
             "halted": bool(checkpoint.get("halted")),
             "issued_at_ns": now,
             "valid_until_ns": now + ARM_RECEIPT_VALIDITY_MINUTES * _NS_PER_MINUTE,
@@ -1154,14 +1304,62 @@ class GateCSession:
         )
 
     def reconcile(self, *, adapter: object, event_time_ns: int) -> None:
+        if type(adapter) is not OfficialSdkAuthenticatedReadAdapter:
+            raise GatewayError("AUTHENTICATED_READ_ADAPTER_INVALID")
         self._gateway.reconcile(adapter=adapter, event_time_ns=event_time_ns)
         checkpoint = dict(self._gateway.state.gate_c_checkpoint or {})
+        outcome = checkpoint.get("create_outcome")
+        residual = checkpoint.get("residual_position_state", "UNKNOWN")
+        reconciliation = self._gateway.state.reconciliation_state
+        halted = reconciliation != "HEALTHY"
+        if outcome == "DEFINITIVE_ACCEPTED":
+            snapshot = adapter.query_account()
+            venue_order_id = checkpoint.get("venue_order_id")
+            order_identity = checkpoint.get("order_identity")
+            filled = sum(
+                (
+                    _decimal(trade.quantity)
+                    for trade in snapshot.recent_trades
+                    if trade.venue_order_id == venue_order_id
+                    and trade.order_identity == order_identity
+                ),
+                Decimal(0),
+            )
+            order = (
+                adapter.query_order(venue_order_id)
+                if isinstance(venue_order_id, str)
+                else None
+            )
+            if filled > 0 or order is not None and _decimal(order.filled_quantity) > 0:
+                residual = "PRESENT"
+                reconciliation = "BLOCKED"
+                halted = True
+            elif order is not None and order.status == "CANCELED":
+                residual = "NONE"
+            else:
+                residual = "UNKNOWN"
+                reconciliation = "BLOCKED"
+                halted = True
+        elif outcome == "DEFINITIVE_REJECTED":
+            residual = "NONE"
+        elif outcome == "AMBIGUOUS":
+            residual = "UNKNOWN"
+            reconciliation = "BLOCKED"
+            halted = True
         checkpoint.update({
-            "reconciliation_state": self._gateway.state.reconciliation_state,
+            "authority_state": "A0_DISABLED",
+            "armed": False,
+            "halted": halted,
+            "reconciliation_state": reconciliation,
+            "residual_position_state": residual,
             "access_state": self._gateway.state.access_state,
             "last_event_time_ns": event_time_ns,
         })
-        self._gateway.record_gate_c_event("GATE_C_RECONCILED", checkpoint, event_time_ns=max(event_time_ns, self._gateway.state.last_event_time_ns + 1))
+        self._gateway.record_gate_c_event(
+            "GATE_C_RECONCILED", checkpoint,
+            issuer=_GATE_C_EVENT_ISSUER,
+            event_time_ns=max(event_time_ns, self._gateway.state.last_event_time_ns + 1),
+        )
 
     def halt(self, *, reason: str = "OPERATOR_KILL", event_time_ns: int | None = None) -> None:
         now = time.time_ns() if event_time_ns is None else event_time_ns
@@ -1175,7 +1373,10 @@ class GateCSession:
             "reconciliation_state": "BLOCKED",
             "last_event_time_ns": now,
         })
-        self._gateway.record_gate_c_event("GATE_C_HALTED", checkpoint, event_time_ns=now)
+        self._gateway.record_gate_c_event(
+            "GATE_C_HALTED", checkpoint,
+            issuer=_GATE_C_EVENT_ISSUER, event_time_ns=now,
+        )
 
     kill = halt
 

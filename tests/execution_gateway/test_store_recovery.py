@@ -18,6 +18,7 @@ from src.execution_gateway import (
     build_fixture_account_snapshot,
     read_gateway_projection,
 )
+from src.execution_gateway.gateway import _GATE_C_EVENT_ISSUER
 
 
 def _empty_snapshot():
@@ -201,6 +202,7 @@ def test_gate_c_checkpoint_is_visible_only_as_sanitized_projection(tmp_path: Pat
                     "access_state": "UNKNOWN",
                     "private_key": "must-not-enter",
                 },
+                issuer=_GATE_C_EVENT_ISSUER,
                 event_time_ns=2,
             )
     projection = read_gateway_projection(path, limit=1)

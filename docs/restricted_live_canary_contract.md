@@ -22,6 +22,15 @@ one open order, one create attempt, a 30-minute session, daily realized loss
 environment, browser, strategy, Hermes input, or venue response can widen
 these values. Only fresh official `blocked=false` geoblock evidence permits
 new exposure; cancellation remains available when new exposure is blocked.
+The requested order's worst-case loss must fit inside every remaining loss
+budget before signing. Caller-supplied account snapshots are never accepted.
+
+An accepted POST response proves venue acceptance only. It does not prove
+economic finality, a completed position lifecycle, or absence of residual
+exposure. Accepted and ambiguous attempts remain halted and reconciliation-
+required until bounded official authenticated reads converge. Any observed
+fill is retained as residual-position evidence and remains blocked; a cancel
+response alone never clears the live order or position ledger.
 
 `GateCStrategyQualification` binds exact repository head, a fully validated
 WP172 assessment/cost model and WP173 paper-store terminal head, selected

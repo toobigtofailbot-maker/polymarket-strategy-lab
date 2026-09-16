@@ -194,6 +194,7 @@ def _safe_state_projection(state: Mapping[str, object]) -> dict[str, object]:
         "capital_at_risk_pusd": "0",
         "capital_committed_pusd": "0",
         "reconciliation_state": state["reconciliation_state"],
+        "residual_position_state": "UNKNOWN",
     }
     if isinstance(checkpoint, dict):
         for key in live:

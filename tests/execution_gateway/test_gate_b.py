@@ -426,9 +426,18 @@ def test_bounded_account_snapshot():
     snap = session.account_snapshot()
     assert snap == {
         "collateral_balance": "0",
+        "allowance_by_exchange": {},
         "open_orders": 0,
         "account_trades": 0,
         "positions": 0,
+        "position_quantities": {},
+        "market_exposures_pusd": {},
+        "gross_exposure_pusd": "0",
+        "committed_exposure_pusd": "0",
+        "realized_loss_pusd": "0",
+        "drawdown_pusd": "0",
+        "cumulative_loss_pusd": "0",
+        "active_markets": 0,
     }
 
 

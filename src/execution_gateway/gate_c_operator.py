@@ -26,13 +26,18 @@ class GateCOperator:
     def __init__(self, gateway: ProtectedExecutionGateway, *, operator_name: str = "operator"):
         self.gateway = gateway
         self.operator_name = operator_name
+        self._qualification_issued = False
 
     def issue_qualification(self, **kwargs: object) -> GateCStrategyQualification:
         if not bool(getattr(sys.stdin, "isatty", lambda: False)()):
             raise GatewayError("QUALIFICATION_REQUIRES_TTY")
-        return GateCStrategyQualification.issue(
+        if self._qualification_issued:
+            raise GatewayError("QUALIFICATION_ALREADY_USED")
+        qualification = GateCStrategyQualification.issue(
             **kwargs, operator_is_tty=True  # type: ignore[arg-type]
         )
+        self._qualification_issued = True
+        return qualification
 
     def arm(
         self,

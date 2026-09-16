@@ -38,6 +38,7 @@ from src.paper_trading.models import (
 )
 from src.paper_trading.store import PaperStore
 from src.paper_trading import PaperEngine, build_paper_intent
+from src.execution_gateway.gateway import _GATE_C_EVENT_ISSUER
 from tests.test_operator_cockpit import _paper_store
 
 
@@ -915,7 +916,14 @@ def test_gate_c_checkpoint_is_persisted_but_generic_a3_transition_is_closed(
         "reconciliation_state": "BLOCKED",
         "access_state": "UNKNOWN",
     }
-    gateway.record_gate_c_event("GATE_C_HALTED", checkpoint, event_time_ns=2)
+    with pytest.raises(GatewayError, match="GATE_C_REQUIRED"):
+        gateway.record_gate_c_event(
+            "GATE_C_HALTED", checkpoint, event_time_ns=2,
+        )
+    gateway.record_gate_c_event(
+        "GATE_C_HALTED", checkpoint,
+        issuer=_GATE_C_EVENT_ISSUER, event_time_ns=2,
+    )
     assert gateway.state.gate_c_checkpoint == checkpoint
     with pytest.raises(GatewayError, match="AUTHORITY_STATE_INVALID"):
         gateway.set_authority("A3_RESTRICTED_LIVE", actor="operator", event_time_ns=3)

@@ -388,9 +388,10 @@ class _ProductionSdkMutationTransport:
         client = self._client
 
         class _Handle:
-            __slots__ = ("_build", "_transmit", "_asset_keyword")
+            __slots__ = ("_build", "_transmit", "_asset_keyword", "_transmitted")
 
             def __init__(self) -> None:
+                self._transmitted = False
                 try:
                     parameters = inspect.signature(
                         getattr(type(client), "create_" + "limit_order")
@@ -419,6 +420,9 @@ class _ProductionSdkMutationTransport:
                     raise GatewayError("SIGNING_FAILED") from None
 
             def transmit(self, signed: object) -> object:
+                if not permit._used or self._transmitted:
+                    raise GatewayError("GATE_C_REQUIRED")
+                self._transmitted = True
                 try:
                     return self._transmit(signed)
                 except GatewayError:
@@ -1104,9 +1108,9 @@ class GateBSession:
         """Bounded sanitized public account snapshot; no raw credential data."""
         try:
             balance = self._client.get_balance_allowance(asset_type="COLLATERAL")
-            open_orders = _count_page(self._client.list_open_orders(), limit=100)
-            account_trades = _count_page(self._client.list_account_trades(), limit=100)
-            positions = _count_page(
+            open_items = _bounded_items(self._client.list_open_orders(), limit=100)
+            trade_items = _bounded_items(self._client.list_account_trades(), limit=100)
+            position_items = _bounded_items(
                 self._client.list_positions(user=self.public_wallet, page_size=100),
                 limit=100,
             )
@@ -1114,12 +1118,69 @@ class GateBSession:
             raise
         except Exception:
             raise GatewayError("AUTHENTICATED_READ_FAILED") from None
-        collateral = _canonical_decimal(_as_decimal(getattr(balance, "balance", "0")))
+        collateral = _canonical_decimal(
+            _as_decimal(getattr(balance, "balance", "0")) / Decimal(1_000_000)
+        )
+        allowances = getattr(balance, "allowances", {})
+        if allowances is None:
+            allowances = {}
+        if not isinstance(allowances, Mapping):
+            raise GatewayError("AUTHENTICATED_READ_FAILED")
+        config = self._client._ctx.environment_config
+        exchange_labels = {
+            str(getattr(config, "standard_exchange", "")).lower(): "exchange",
+            str(getattr(config, "neg_risk_exchange", "")).lower(): "neg-risk-exchange",
+            str(getattr(config, "exchange_v3", "")).lower(): "exchange-v3",
+        }
+        allowance_by_exchange: dict[str, str] = {}
+        for key, value in allowances.items():
+            label = exchange_labels.get(str(key).lower())
+            if label is not None:
+                allowance_by_exchange[label] = _canonical_decimal(
+                    _as_decimal(value) / Decimal(1_000_000)
+                )
+        position_quantities: dict[str, str] = {}
+        market_exposures: dict[str, str] = {}
+        gross = Decimal(0)
+        realized_loss = Decimal(0)
+        drawdown = Decimal(0)
+        active_markets: set[str] = set()
+        for item in position_items:
+            if not all(
+                hasattr(item, field)
+                for field in (
+                    "asset_id", "condition_id", "current_size", "current_value",
+                    "realized_pnl", "total_pnl",
+                )
+            ):
+                continue
+            asset_id = str(item.asset_id)
+            condition_id = str(item.condition_id)
+            size = _as_decimal(item.current_size)
+            value = abs(_as_decimal(item.current_value))
+            position_quantities[asset_id] = _canonical_decimal(size)
+            market_exposures[condition_id] = _canonical_decimal(
+                _as_decimal(market_exposures.get(condition_id, "0")) + value
+            )
+            gross += value
+            realized_loss += max(-_as_decimal(item.realized_pnl), Decimal(0))
+            drawdown += max(-_as_decimal(item.total_pnl), Decimal(0))
+            if size > 0:
+                active_markets.add(condition_id)
         return {
             "collateral_balance": collateral,
-            "open_orders": open_orders,
-            "account_trades": account_trades,
-            "positions": positions,
+            "allowance_by_exchange": allowance_by_exchange,
+            "open_orders": len(open_items),
+            "account_trades": len(trade_items),
+            "positions": len(position_items),
+            "position_quantities": position_quantities,
+            "market_exposures_pusd": market_exposures,
+            "gross_exposure_pusd": _canonical_decimal(gross),
+            "committed_exposure_pusd": "0",
+            "realized_loss_pusd": _canonical_decimal(realized_loss),
+            "drawdown_pusd": _canonical_decimal(drawdown),
+            "cumulative_loss_pusd": _canonical_decimal(max(realized_loss, drawdown)),
+            "active_markets": len(active_markets),
         }
 
     # -- real local LIMIT signing probe (no post) --------------------------
@@ -1287,13 +1348,17 @@ class GateBSession:
 
 
 def _count_page(page: object, *, limit: int) -> int:
+    return len(_bounded_items(page, limit=limit))
+
+
+def _bounded_items(page: object, *, limit: int) -> tuple[object, ...]:
     items = page.iter_items() if hasattr(page, "iter_items") else page
-    count = 0
-    for _item in items:
-        count += 1
-        if count > limit:
+    values: list[object] = []
+    for item in items:
+        values.append(item)
+        if len(values) > limit:
             raise GatewayError("AUTHENTICATED_READ_FAILED")
-    return count
+    return tuple(values)
 
 
 def _as_decimal(value: object) -> Decimal:
