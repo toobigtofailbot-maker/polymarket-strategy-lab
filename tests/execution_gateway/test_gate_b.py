@@ -75,9 +75,9 @@ class _SignedOrder:
 
 
 class _CancelResponse:
-    def __init__(self, canceled=(), not_canceled=()):
-        self.canceled = list(canceled)
-        self.not_canceled = list(not_canceled)
+    def __init__(self, canceled=(), not_canceled=None):
+        self.canceled = tuple(canceled)
+        self.not_canceled = dict(not_canceled or {})
 
 
 class FakeClient:
@@ -563,7 +563,7 @@ def test_empty_wallet_probe_requires_confirmation(tmp_path: Path):
 def test_unexpected_cancellation_is_incident(tmp_path: Path):
     # Empty account precheck passes, but cancel_all reports a canceled order.
     client = FakeClient(cancel_response=_CancelResponse(canceled=["o9"]))
-    with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
+    with pytest.raises(GatewayError, match="CANCEL_PROBE_AMBIGUOUS"):
         _durable_probe(tmp_path, client)
 
 
@@ -799,8 +799,8 @@ def test_identity_failure_closes_client():
 
 def test_not_canceled_orders_is_incident(tmp_path: Path):
     # Empty account precheck passes, but cancel reports a not-canceled order.
-    client = FakeClient(cancel_response=_CancelResponse(not_canceled=["o7"]))
-    with pytest.raises(GatewayError, match="CANCEL_PROBE_FAILED"):
+    client = FakeClient(cancel_response=_CancelResponse(not_canceled={"o7": "no"}))
+    with pytest.raises(GatewayError, match="CANCEL_PROBE_AMBIGUOUS"):
         _durable_probe(tmp_path, client)
 
 
@@ -898,9 +898,7 @@ def test_persistent_gate_b_journal_redaction_rejects_forbidden_fields(
         "over_bound",
     ],
 )
-def test_gate_b_started_event_structural_negative_matrix(
-    tmp_path: Path, defect: str
-):
+def test_gate_b_started_event_structural_negative_matrix(tmp_path: Path, defect: str):
     owner = "executionorder:sha256:" + "1" * 64
     attempt = CancelAttempt(
         operation="CANCEL_ONE",
@@ -1006,6 +1004,10 @@ def test_restart_never_resends_started_without_result(tmp_path: Path):
         object(),
         type("MissingNotCanceled", (), {"canceled": []})(),
         type("Bad", (), {"canceled": 1, "not_canceled": []})(),
+        type("StringCanceled", (), {"canceled": "o1", "not_canceled": {}})(),
+        type("BytesCanceled", (), {"canceled": b"o1", "not_canceled": {}})(),
+        type("ListNotCanceled", (), {"canceled": (), "not_canceled": ["o1"]})(),
+        type("BadReason", (), {"canceled": (), "not_canceled": {"o1": 1}})(),
     ],
 )
 def test_malformed_cancel_response_is_ambiguous_not_accepted(tmp_path: Path, response):
@@ -1025,8 +1027,15 @@ def test_malformed_cancel_response_is_ambiguous_not_accepted(tmp_path: Path, res
 
 
 def test_ambiguous_attempt_survives_restart_and_blocks_retry(tmp_path: Path):
+    from polymarket.models.clob.cancel import CancelOrdersResponse
+
     store_path, gateway, lock, session = _durable_session(
-        tmp_path, FakeClient(cancel_raises=True)
+        tmp_path,
+        FakeClient(
+            cancel_response=CancelOrdersResponse(
+                canceled=("unexpected-order",), not_canceled={}
+            )
+        ),
     )
     with pytest.raises(GatewayError, match="CANCEL_PROBE_AMBIGUOUS") as exc:
         _probe(session)
@@ -1072,19 +1081,23 @@ def test_every_cancel_operation_persists_started_before_one_transport_call(
 
         def cancel_order(self, *, order_id):
             self._assert_started("CANCEL_ONE")
-            return super().cancel_order(order_id=order_id)
+            self.cancel_one_calls.append(order_id)
+            return _CancelResponse(canceled=(order_id,))
 
         def cancel_orders(self, *, order_ids):
             self._assert_started("CANCEL_MANY")
-            return super().cancel_orders(order_ids=order_ids)
+            self.cancel_many_calls.append(tuple(order_ids))
+            return _CancelResponse(canceled=order_ids)
 
         def cancel_market_orders(self, *, market):
             self._assert_started("CANCEL_MARKET")
-            return super().cancel_market_orders(market=market)
+            self.cancel_market_calls.append(market)
+            return _CancelResponse(canceled=("venue-order-a", "venue-order-b"))
 
         def cancel_all(self):
             self._assert_started("CANCEL_ALL")
-            return super().cancel_all()
+            self.cancel_all_calls += 1
+            return _CancelResponse(canceled=("venue-order-a", "venue-order-b"))
 
     client = InspectingClient()
     gateway, lock, session, bindings = _known_order_session(tmp_path, client)
@@ -1131,7 +1144,9 @@ def test_cancel_many_canonical_identity_and_structured_sdk_targets(tmp_path: Pat
     for name, reverse in (("first", False), ("second", True)):
         root = tmp_path / name
         root.mkdir()
-        client = FakeClient()
+        client = FakeClient(
+            cancel_response=_CancelResponse(canceled=("venue-order-a", "venue-order-b"))
+        )
         gateway, lock, session, bindings = _known_order_session(root, client)
         ids = tuple(target for target, _owner in bindings)
         if reverse:
@@ -1218,7 +1233,9 @@ def test_cancel_market_requires_complete_known_exact_market_scope(tmp_path: Path
 
 
 def test_cancel_all_persists_complete_locally_known_scope(tmp_path: Path):
-    client = FakeClient()
+    client = FakeClient(
+        cancel_response=_CancelResponse(canceled=("venue-order-a", "venue-order-b"))
+    )
     gateway, lock, session, bindings = _known_order_session(tmp_path, client)
     try:
         session.cancel_all()
@@ -1311,6 +1328,109 @@ def test_nonzero_after_state_prevents_pass(tmp_path: Path):
 
 
 # --- WP174B installed-SDK deployment-contract regression (real 0.10.0 import path) ---
+
+
+def test_installed_sdk_cancel_response_contract_and_scope_classification():
+    from polymarket.models.clob.cancel import CancelOrdersResponse
+
+    empty = CancelOrdersResponse(canceled=(), not_canceled={})
+    assert gate_b_mod._summarize_cancel_response(empty, expected_target_ids=()) == (
+        "DEFINITIVE_ACCEPTED",
+        {"canceled_count": 0, "not_canceled_count": 0},
+    )
+
+    accepted = CancelOrdersResponse(
+        canceled=("venue-order-a", "venue-order-b"), not_canceled={}
+    )
+    assert (
+        gate_b_mod._summarize_cancel_response(
+            accepted, expected_target_ids=("venue-order-a", "venue-order-b")
+        )[0]
+        == "DEFINITIVE_ACCEPTED"
+    )
+
+    rejected = CancelOrdersResponse(
+        canceled=(),
+        not_canceled={
+            "venue-order-a": SECRET_SENTINEL,
+            "venue-order-b": "different private venue reason",
+        },
+    )
+    rejected_result = gate_b_mod._summarize_cancel_response(
+        rejected, expected_target_ids=("venue-order-a", "venue-order-b")
+    )
+    assert rejected_result == (
+        "DEFINITIVE_REJECTED",
+        {"canceled_count": 0, "not_canceled_count": 2},
+    )
+    assert SECRET_SENTINEL not in repr(rejected_result)
+
+    ambiguous_responses = (
+        CancelOrdersResponse(canceled=("venue-order-a",), not_canceled={}),
+        CancelOrdersResponse(
+            canceled=("venue-order-a",),
+            not_canceled={"venue-order-b": SECRET_SENTINEL},
+        ),
+        CancelOrdersResponse(canceled=("unexpected-order",), not_canceled={}),
+        CancelOrdersResponse(
+            canceled=(), not_canceled={"unexpected-order": SECRET_SENTINEL}
+        ),
+    )
+    for response in ambiguous_responses:
+        result = gate_b_mod._summarize_cancel_response(
+            response, expected_target_ids=("venue-order-a", "venue-order-b")
+        )
+        assert result[0] == "AMBIGUOUS"
+        assert SECRET_SENTINEL not in repr(result)
+
+
+def test_installed_sdk_rejection_reason_never_enters_durable_output(tmp_path: Path):
+    from polymarket.models.clob.cancel import CancelOrdersResponse
+
+    client = FakeClient(
+        cancel_response=CancelOrdersResponse(
+            canceled=(), not_canceled={"venue-order-a": SECRET_SENTINEL}
+        )
+    )
+    gateway, lock, session, bindings = _known_order_session(tmp_path, client, count=1)
+    try:
+        result = session.cancel_one(
+            request_target_ids=(bindings[0][0],),
+            request_target_bindings=(bindings[0],),
+        )
+        assert result["cancel_result"] == "DEFINITIVE_REJECTED"
+        assert result["not_canceled_count"] == 1
+        assert SECRET_SENTINEL not in repr(result)
+        assert SECRET_SENTINEL not in repr(
+            [dict(event.data) for event in gateway.gate_b_events()]
+        )
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
+
+    ambiguous_root = tmp_path / "ambiguous"
+    ambiguous_root.mkdir()
+    ambiguous_client = FakeClient(
+        cancel_response=CancelOrdersResponse(
+            canceled=("venue-order-a",),
+            not_canceled={"venue-order-b": SECRET_SENTINEL},
+        )
+    )
+    gateway, lock, session, _bindings = _known_order_session(
+        ambiguous_root, ambiguous_client
+    )
+    try:
+        with pytest.raises(GatewayError, match="CANCEL_PROBE_AMBIGUOUS") as exc:
+            session.cancel_all()
+        assert SECRET_SENTINEL not in str(exc.value)
+        assert SECRET_SENTINEL not in repr(
+            [dict(event.data) for event in gateway.gate_b_events()]
+        )
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
 
 
 class _RealPathCtx:

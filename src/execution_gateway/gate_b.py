@@ -14,6 +14,8 @@ privately and never exposed. There is no live authority and no capital here.
 
 from __future__ import annotations
 
+from collections.abc import Mapping as RuntimeMapping
+from collections.abc import Sequence as RuntimeSequence
 from dataclasses import dataclass
 from decimal import Decimal
 import getpass
@@ -386,22 +388,68 @@ class _ProductionSdkMutationTransport:
         except Exception:
             # Possibly transmitted: never blindly retried; reconcile upstream.
             raise GatewayError("CANCEL_PROBE_AMBIGUOUS") from None
-        return "DEFINITIVE_ACCEPTED", _summarize_cancel_response(response)
+        return _summarize_cancel_response(
+            response, expected_target_ids=attempt.request_target_ids
+        )
 
 
-def _summarize_cancel_response(response: object) -> Mapping[str, object]:
-    """Extract only safe closed counts from a cancel response."""
-    if not hasattr(response, "canceled") or not hasattr(response, "not_canceled"):
-        raise GatewayError("CANCEL_PROBE_AMBIGUOUS")
-    canceled = getattr(response, "canceled")
-    not_canceled = getattr(response, "not_canceled")
-    if not isinstance(canceled, (list, tuple)) or not isinstance(
-        not_canceled, (list, tuple)
+def _summarize_cancel_response(
+    response: object, *, expected_target_ids: Sequence[str]
+) -> tuple[str, Mapping[str, object]]:
+    """Classify the exact SDK response using only sanitized IDs and counts."""
+    try:
+        canceled = getattr(response, "canceled")
+        not_canceled = getattr(response, "not_canceled")
+    except Exception:
+        raise GatewayError("CANCEL_PROBE_AMBIGUOUS") from None
+    if (
+        isinstance(canceled, (str, bytes))
+        or not isinstance(canceled, RuntimeSequence)
+        or not isinstance(not_canceled, RuntimeMapping)
     ):
         raise GatewayError("CANCEL_PROBE_AMBIGUOUS")
-    canceled_count = len(canceled)
-    not_canceled_count = len(not_canceled)
-    return {"canceled_count": canceled_count, "not_canceled_count": not_canceled_count}
+    try:
+        canceled_ids = tuple(_label(order_id) for order_id in canceled)
+        not_canceled_items = tuple(not_canceled.items())
+        not_canceled_ids = tuple(_label(order_id) for order_id, _ in not_canceled_items)
+        if any(not isinstance(reason, str) for _, reason in not_canceled_items):
+            raise GatewayError("CANCEL_PROBE_AMBIGUOUS")
+    except Exception:
+        raise GatewayError("CANCEL_PROBE_AMBIGUOUS") from None
+
+    expected = set(expected_target_ids)
+    canceled_set = set(canceled_ids)
+    not_canceled_set = set(not_canceled_ids)
+    malformed_coverage = len(canceled_ids) != len(canceled_set) or bool(
+        canceled_set & not_canceled_set
+    )
+    if (
+        not malformed_coverage
+        and not expected
+        and not canceled_set
+        and not not_canceled_set
+    ):
+        result = "DEFINITIVE_ACCEPTED"
+    elif (
+        not malformed_coverage
+        and bool(expected)
+        and canceled_set == expected
+        and not not_canceled_set
+    ):
+        result = "DEFINITIVE_ACCEPTED"
+    elif (
+        not malformed_coverage
+        and bool(expected)
+        and not canceled_set
+        and not_canceled_set == expected
+    ):
+        result = "DEFINITIVE_REJECTED"
+    else:
+        result = "AMBIGUOUS"
+    return result, {
+        "canceled_count": len(canceled_ids),
+        "not_canceled_count": len(not_canceled_ids),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -919,6 +967,8 @@ class GateBSession:
             )
         except GatewayError:
             raise GatewayError("CANCEL_PROBE_AMBIGUOUS") from None
+        if result == "AMBIGUOUS":
+            raise GatewayError("CANCEL_PROBE_AMBIGUOUS")
         if result in ("DEFINITIVE_ACCEPTED", "DEFINITIVE_REJECTED"):
             self._unresolved_attempts.discard(attempt.identity)
         return {
