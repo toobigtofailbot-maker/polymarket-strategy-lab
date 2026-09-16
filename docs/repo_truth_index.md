@@ -1,5 +1,24 @@
 # Repo Truth Index
 
+## WP175 Restricted Live Canary (current review target)
+
+WP175 is the protected PR #178 implementation package on
+`codex/wp175-restricted-live-canary`, based on merged WP174B PR #177. The
+certified 29-path package is `IMPLEMENTATION_READY` and Phase A/B implementation
+is authorized for certified bytes; readiness does not authorize Gate-C
+activation or merge. A3 is available only inside the manual foreground Gate-C
+session after a single-use exact-head arm receipt. Startup and restart remain
+`A0_DISABLED`. The canary is one strategy, one binary market, LIMIT-only, one
+create attempt, and bounded by the fixed risk envelope in
+`docs/restricted_live_canary_contract.md`.
+
+The genuine WP172/WP173 strategy qualification prerequisite is currently
+`LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`. No real secret, real CREATE,
+venue mutation, or capital was used by implementation or tests; Gate-C
+activation is pending a separate exact-head human decision. Capital at risk is
+USD 0. WP176 remains the
+separately gated owner of mature/unattended live operation and scaling.
+
 Repo-truth files are authoritative project memory. They override chat memory, old handoffs, and ad hoc instructions unless explicitly updated by a later approved work package.
 
 ## Authority Hierarchy

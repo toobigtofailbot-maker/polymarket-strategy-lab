@@ -8,6 +8,9 @@ Research and workbench artifacts do not gain runtime authority because they are 
 
 ## Status Definitions
 
+- WP175-D001 (BLOCKED, P0): `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE` — no exact manually attested WP172/WP173 qualification is available. Code-complete mock validation does not authorize Gate-C activation or merge; revisit only after a separate exact-head human Gate-C decision.
+
+
 - OPEN: known item requiring triage or action.
 - BLOCKED: cannot proceed until an external dependency, decision, or approval is available.
 - DEFERRED: intentionally postponed and not blocking the current work package.

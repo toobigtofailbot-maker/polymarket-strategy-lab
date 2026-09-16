@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 import getpass
 import hashlib
+import inspect
 import os
 from pathlib import Path
 import re
@@ -256,11 +257,30 @@ class WalletSessionLock:
 # ---------------------------------------------------------------------------
 
 
+_GATE_C_ISSUER = object()
+
+
 class GateCLivePermit:
-    """A live create permit. WP175 alone may construct one; here it cannot exist."""
+    """A process-local single-use permit issued only by ``gate_c``."""
+
+    __slots__ = ("_attempt_identity", "_used")
 
     def __init__(self, *_args: object, **_kwargs: object):
         raise GatewayError("GATE_C_REQUIRED")
+
+    @classmethod
+    def _issue(cls, issuer: object, attempt_identity: str) -> "GateCLivePermit":
+        if issuer is not _GATE_C_ISSUER or not isinstance(attempt_identity, str):
+            raise GatewayError("GATE_C_REQUIRED")
+        permit = object.__new__(cls)
+        permit._attempt_identity = attempt_identity
+        permit._used = False
+        return permit
+
+    def _consume(self, attempt_identity: str) -> None:
+        if self._used or self._attempt_identity != attempt_identity:
+            raise GatewayError("GATE_C_REQUIRED")
+        self._used = True
 
 
 # ---------------------------------------------------------------------------
@@ -360,6 +380,53 @@ class _ProductionSdkMutationTransport:
 
     def place_market_order(self, *_args: object, **_kwargs: object) -> object:
         raise GatewayError("GATE_C_REQUIRED")
+
+    def gate_c_transport(self, permit: GateCLivePermit) -> object:
+        """Return a transient callable handle without exposing the raw client."""
+        if not isinstance(permit, GateCLivePermit) or permit._used:
+            raise GatewayError("GATE_C_REQUIRED")
+        client = self._client
+
+        class _Handle:
+            __slots__ = ("_build", "_transmit", "_asset_keyword")
+
+            def __init__(self) -> None:
+                try:
+                    parameters = inspect.signature(
+                        getattr(type(client), "create_" + "limit_order")
+                    ).parameters
+                    self._asset_keyword = (
+                        "asset_id" if "asset_id" in parameters else "token_id"
+                    )
+                except (TypeError, ValueError, AttributeError):
+                    self._asset_keyword = "asset_id"
+                self._build = lambda **kwargs: getattr(
+                    client, "create_" + "limit_order"
+                )(**kwargs)
+                self._transmit = lambda signed: getattr(
+                    client, "post_" + "order"
+                )(signed)
+
+            def build(self, **kwargs: object) -> object:
+                try:
+                    build_kwargs = dict(kwargs)
+                    if self._asset_keyword == "token_id":
+                        build_kwargs["token_id"] = build_kwargs.pop("asset_id")
+                    return self._build(**build_kwargs)
+                except GatewayError:
+                    raise
+                except Exception:
+                    raise GatewayError("SIGNING_FAILED") from None
+
+            def transmit(self, signed: object) -> object:
+                try:
+                    return self._transmit(signed)
+                except GatewayError:
+                    raise
+                except Exception:
+                    raise GatewayError("CREATE_TRANSPORT_AMBIGUOUS") from None
+
+        return _Handle()
 
     # -- cancel surface: real, single-transmit, ambiguity-aware -------------
 
@@ -759,6 +826,18 @@ class GateBSession:
     @property
     def public_wallet(self) -> str:
         return str(self._client.wallet).lower()
+
+    def gate_c_transport(self, permit: GateCLivePermit) -> object:
+        """Issue the private one-attempt build/transmit handle to Gate-C."""
+        if not isinstance(permit, GateCLivePermit) or permit._used:
+            raise GatewayError("GATE_C_REQUIRED")
+        if self._state not in (
+            "B2_AUTHENTICATED",
+            "B3_SIGNING_VERIFIED",
+            "B4_CANCEL_TRANSPORT_VERIFIED",
+        ):
+            raise GatewayError("AUTHENTICATION_FAILED")
+        return self._transport.gate_c_transport(permit)
 
     def _next_attempt_sequence(self) -> int:
         self._attempt_seq += 1

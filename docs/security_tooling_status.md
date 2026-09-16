@@ -4,6 +4,18 @@
 
 This document records local security-tool availability and scan results through WP15. It is status evidence only; it does not authorize runtime dependency integration, copied external code, venue API integration, or live trading.
 
+## WP175 Restricted Live Canary Security Posture
+
+WP175 changes no dependency, lock, workflow, or generated artifact. The Gate-C
+module consumes only the private WP174B Gate-B session handle; no secret,
+signature, raw SDK response, raw exception, IP, country, region, or local
+artifact path is persisted or emitted. `GATE_C_CREATE_STARTED` is durable
+before the single `post_order` transmit and ambiguous outcomes are never
+retried. Pytest uses fake clients and synthetic secrets only; real economic
+CREATE count and capital at risk remain zero. Gate-C activation is pending a
+separate exact-head human decision and the strategy qualification prerequisite
+is currently unavailable.
+
 ## WP174 Status Summary
 
 WP174 adds the exact released dependency `polymarket-client==0.10.0` and replaces

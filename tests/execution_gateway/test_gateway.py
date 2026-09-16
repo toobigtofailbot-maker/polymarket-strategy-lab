@@ -900,3 +900,23 @@ def test_heartbeat_rate_limit_and_access_modes_fail_closed(
     with pytest.raises(GatewayError, match="SHADOW_AUTHORITY_REQUIRED"):
         _prepare(gateway, tmp_path)
     gateway.close()
+
+
+def test_gate_c_checkpoint_is_persisted_but_generic_a3_transition_is_closed(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "gateway.sqlite3"
+    gateway = ProtectedExecutionGateway.create(path, created_time_ns=1)
+    checkpoint = {
+        "armed": False,
+        "halted": True,
+        "authority_state": "A0_DISABLED",
+        "disable_reason": "OPERATOR_KILL",
+        "reconciliation_state": "BLOCKED",
+        "access_state": "UNKNOWN",
+    }
+    gateway.record_gate_c_event("GATE_C_HALTED", checkpoint, event_time_ns=2)
+    assert gateway.state.gate_c_checkpoint == checkpoint
+    with pytest.raises(GatewayError, match="AUTHORITY_STATE_INVALID"):
+        gateway.set_authority("A3_RESTRICTED_LIVE", actor="operator", event_time_ns=3)
+    gateway.close()

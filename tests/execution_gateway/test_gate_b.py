@@ -677,6 +677,12 @@ def test_create_transport_is_gate_c_unreachable():
             getattr(adapter, method)(token_id=TOKEN, price="0.1", size="5", side="BUY")
 
 
+def test_gate_c_transport_handle_requires_the_opaque_permit():
+    adapter = gate_b_mod._ProductionSdkMutationTransport(FakeClient())
+    with pytest.raises(GatewayError, match="GATE_C_REQUIRED"):
+        adapter.gate_c_transport(object())
+
+
 def test_cancel_transport_idempotency_ambiguity_and_reconcile():
     adapter = gate_b_mod._ProductionSdkMutationTransport(FakeClient())
     attempt = _empty_cancel_attempt()

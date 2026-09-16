@@ -3940,6 +3940,33 @@ def test_wp174b_status_repo_truth_and_successor_are_consistent():
     assert "Unresolved decisions: 0" in project
 
 
+def test_wp175_status_records_code_complete_pending_activation() -> None:
+    project = (REPO_ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    status = (STATUS_ENTRIES / "WP175.md").read_text(encoding="utf-8")
+    contract = (REPO_ROOT / "docs" / "restricted_live_canary_contract.md").read_text(
+        encoding="utf-8"
+    )
+    combined = "\n".join((project, status, contract))
+    assert "WP175 current review target" in project
+    assert "PROTECTED_RESTRICTED_LIVE_CANARY" in combined
+    assert "Exact changed-file scope: 29" in combined
+    assert "IMPLEMENTATION_READY" in combined
+    assert "LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE" in combined
+    assert "Gate-C activation: PENDING" in combined
+    assert "Real economic CREATE count: 0" in combined
+    assert "Capital at risk: USD 0" in combined
+    assert "WP176" in combined
+
+
+def test_wp175_status_repo_truth_and_activation_prerequisite() -> None:
+    """Status evidence keeps implementation separate from activation."""
+    test_wp175_status_records_code_complete_pending_activation()
+    project = (REPO_ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    assert "LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE" in project
+    assert "activation is pending a separate exact-head human decision" in index
+
+
 def test_wp159_repo_truth_and_deferred_items_are_registered():
     index = (REPO_ROOT / "docs" / "repo_truth_index.md").read_text(
         encoding="utf-8"

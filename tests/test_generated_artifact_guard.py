@@ -102,3 +102,10 @@ def test_repo_truth_mentions_generated_artifact_guard():
     assert ".venv-security/" in checklist
     assert "tools/.bin/" in checklist
     assert "preflight_generated_artifact_guard.py" in guidelines
+
+
+def test_wp175_canary_uses_no_committed_receipts_or_generated_artifacts():
+    source = read(ROOT / "src" / "execution_gateway" / "gate_c.py")
+    assert "write_text" not in source
+    assert "generated" not in source.lower()
+    assert "receipt" in source

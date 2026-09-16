@@ -186,6 +186,27 @@ def test_hash_consistent_invalid_authority_state_is_never_projected_or_restored(
         ProtectedExecutionGateway.open(path, opened_time_ns=3)
 
 
+def test_gate_c_checkpoint_is_visible_only_as_sanitized_projection(tmp_path: Path) -> None:
+    path = tmp_path / "gateway.sqlite3"
+    with ProtectedExecutionGateway.create(path, created_time_ns=1) as gateway:
+        with pytest.raises(GatewayError, match="SENSITIVE_DATA_FORBIDDEN"):
+            gateway.record_gate_c_event(
+                "GATE_C_DISABLED",
+                {
+                    "armed": False,
+                    "halted": True,
+                    "authority_state": "A0_DISABLED",
+                    "disable_reason": "OPERATOR_KILL",
+                    "reconciliation_state": "BLOCKED",
+                    "access_state": "UNKNOWN",
+                    "private_key": "must-not-enter",
+                },
+                event_time_ns=2,
+            )
+    projection = read_gateway_projection(path, limit=1)
+    assert projection["state"]["restricted_live_available"] is False
+
+
 def test_hash_consistent_a2_with_ineligible_access_is_rejected(tmp_path: Path) -> None:
     path = tmp_path / "invalid-cross-state.sqlite3"
     gateway = ProtectedExecutionGateway.create(path, created_time_ns=1)

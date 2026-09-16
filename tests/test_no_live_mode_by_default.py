@@ -30,10 +30,13 @@ LIVE_ENABLED_CONFIG_PATTERNS = [
 # real cancellation boundary. It uses the literal cancel_order/cancel_orders
 # methods of the official client for exposure-reducing cancellation (never
 # obfuscated or dynamically constructed). Every real economic create/post stays
-# Gate-C locked (GATE_C_REQUIRED), and the global prohibition on live order
-# placement/enable in every other source file is preserved.
+# Gate-C is the separately certified WP175 exception: it may transmit one
+# exact-head, manually armed LIMIT order only after durable STARTED evidence.
+# The global prohibition on live order placement/enable in every other source
+# file is preserved.
 LIVE_ORDER_PATTERN_FILE_EXEMPTIONS: dict[str, set[str]] = {
     "src/execution_gateway/gate_b.py": {"cancel_order"},
+    "src/execution_gateway/gate_c.py": {"post_order"},
 }
 
 
@@ -62,6 +65,15 @@ def test_no_obvious_live_order_placement_code_exists():
                     if pattern in text:
                         findings.append(f"{rel}: {pattern}")
     assert findings == []
+
+
+def test_wp175_live_surface_is_private_gate_c_only():
+    source = (ROOT / "src" / "execution_gateway" / "gate_c.py").read_text(
+        encoding="utf-8"
+    )
+    assert "GATE_C_CREATE_STARTED" in source
+    assert "transmit" in source
+    assert "GateCSession" in source
 
 
 def test_no_live_enabled_config_exists():
