@@ -217,7 +217,7 @@
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "a bare binding rank score copied identifiers fixture noninteractive input mismatched evidence corrupted paper store stale writer or reused expired other-head qualification rejects; artifact paths are excluded from output",
+        "validation_rule": "valid_until is derived as issued_at plus ten minutes and cannot be caller-extended; a bare binding rank score copied identifiers fixture noninteractive input mismatched evidence corrupted paper store stale writer or reused expired other-head or second-in-session qualification rejects; consumption occurs exactly once when constructing its one arm and artifact paths are excluded from output",
         "failure_category": "AUTHORITY_CONTRADICTION",
         "safe_output": "qualification id exact evidence ids and issue expiry times only",
         "derivation_rule_id": null
@@ -252,7 +252,7 @@
         "path": "risk.envelope",
         "source": "CONSTANT",
         "type": "fixed_decimal_limits",
-        "required_rule": "wallet 50 gross 20 market 15 order 10 active markets 1 open orders 1 attempts 5 duration 30 minutes daily loss 5 drawdown 7.5 cumulative loss 10",
+        "required_rule": "wallet 50 gross 20 market 15 order 10 active markets 1 open orders 1 create attempt per session duration 30 minutes daily loss 5 drawdown 7.5 cumulative loss 10",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
@@ -393,14 +393,14 @@
         "source": "pytest",
         "test": "test_arm_is_single_use_head_bound_and_restart_disabled",
         "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py tests/execution_gateway/test_gateway.py tests/execution_gateway/test_store_recovery.py",
-        "expected_result": "A3 requires an exact valid arm receipt cannot be restored after restart and cannot be created by config env secret browser strategy or Hermes input"
+        "expected_result": "A3 requires an exact valid arm receipt cannot be restored after restart and cannot be created by config env secret browser strategy or Hermes input; qualification and arm wrong-head expiry reuse caller-extended validity and second use reject"
       },
       {
         "requirement_id": "R004",
         "source": "pytest",
         "test": "test_access_identity_binding_and_market_fail_closed",
         "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py -k access_identity_binding_and_market_fail_closed",
-        "expected_result": "blocked unknown stale or malformed access wrong Deposit Wallet identity bare or mismatched strategy qualification wrong token closed neg-risk delayed or stale metadata deny new exposure without denying cancellation"
+        "expected_result": "blocked unknown stale or malformed access wrong Deposit Wallet identity bare mismatched noninteractive wrong-head expired reused caller-extended or second-in-session strategy qualification wrong token closed neg-risk delayed or stale metadata deny new exposure without denying cancellation"
       },
       {
         "requirement_id": "R005",

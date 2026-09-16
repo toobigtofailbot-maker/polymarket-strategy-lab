@@ -130,10 +130,10 @@ cancel. No separate close-only field is assumed or synthesized.
 Read first: AGENTS.md, AI_CODING_AGENT_START_HERE.md, CODEX_START_HERE.md, project_status,
 repo_truth_index, deferred_items_log, docs/ai/codex/README.md, WP_EXECUTION_STATE_MACHINE, and the
 drafting/spec/protected-path standards. Read for this WP: live authorization; WP172-WP174B contracts,
-status fragments and WP174/WP174B specs; execution_gateway gateway/store/Gate-B modules; paper binding
-models read-only; cockpit backend; and directly adjacent tests. Read only if mechanically constrained:
+status fragments and WP174/WP174B specs; execution_gateway gateway/store/Gate-B modules; the specific
+`src/paper_trading/models.py` binding validators read-only; cockpit backend; and directly adjacent tests. Read only if mechanically constrained:
 historical live/official-client/status/generated-artifact/security guards. Do not read or touch old chat
-transcripts, unrelated Hermes WPs, frontend source, paper or research-runtime source, OMS/risk packages,
+transcripts, unrelated Hermes WPs, frontend source, any other paper or research-runtime source, OMS/risk packages,
 dependency/lock/workflow files, secret files, or generated/local artifacts. Search terms: A3, Gate C,
 GATE_C_REQUIRED, AUTHORITY_STATES, post_order, create_limit_order, GateBSession, cancel_all, official
 client, live authorization, and WP175.
@@ -188,7 +188,10 @@ WP172 `ExecutableEdgeAssessment` and `ExecutionCostModel` whose IDs match that b
 paper-store terminal journal/checkpoint head using the same binding with HEALTHY reconciliation and no
 corruption or stale writer; the selected strategy label and exact evidence IDs; the operator's explicit
 `OPERATOR-PRODUCTION-EVIDENCE` confirmation nonce; and issue/expiry timestamps. The local artifact
-paths are never persisted or emitted. The existing binding's `simulated_paper_only=true` remains true
+paths are never persisted or emitted. `QUALIFICATION_VALIDITY_MINUTES=10`; `valid_until` is derived as
+`issued_at + 10 minutes`, never caller-selected, and the qualification is consumed exactly once when it
+constructs its one bound ArmReceipt. Wrong-head, expired, already-consumed, or second qualification in
+the same process/session rejects. The existing binding's `simulated_paper_only=true` remains true
 and is evidence provenance, not live authority.
 
 This is intentionally a human-attested provenance boundary: deterministic validators prove artifact
@@ -201,7 +204,7 @@ such operator qualification, so `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`
 Hard maxima, which no config/env/CLI/browser/strategy/Hermes/venue response may increase:
 MAX_CANARY_WALLET_PUSD=50.00; MAX_GROSS_LIVE_EXPOSURE_PUSD=20.00;
 MAX_PER_MARKET_EXPOSURE_PUSD=15.00; MAX_PER_ORDER_COMMITTED_PUSD=10.00;
-MAX_ACTIVE_MARKETS=1; MAX_SIMULTANEOUS_OPEN_ORDERS=1; MAX_CREATE_ATTEMPTS_PER_SESSION=5;
+MAX_ACTIVE_MARKETS=1; MAX_SIMULTANEOUS_OPEN_ORDERS=1; MAX_CREATE_ATTEMPTS_PER_SESSION=1;
 MAX_LIVE_SESSION_DURATION_MINUTES=30; MAX_REALIZED_LOSS_PER_UTC_DAY_PUSD=5.00;
 MAX_CANARY_EQUITY_DRAWDOWN_PUSD=7.50; MAX_CUMULATIVE_CANARY_LOSS_PUSD=10.00;
 ARM_RECEIPT_VALIDITY_MINUTES=10; FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=1.
@@ -223,7 +226,8 @@ rejected. Accepted live orders take the same-command durable cancel path; fills 
 
 Tests must cover: missing/stale/reused/wrong-head arm; restart; config/env/secret/browser/Hermes
 cannot arm or widen; wrong wallet/signature/binding/qualification/market/token; bare or mismatched
-strategy evidence; noninteractive qualification; neg-risk/delayed/
+strategy evidence; noninteractive qualification; wrong-head, expired, reused, caller-extended, or
+second-in-session qualification; neg-risk/delayed/
 closed market; stale metadata/access/account/mark; every numeric cap at and above boundary; insufficient
 balance/allowance; unsupported type/TIF; oversell; STARTED-before-post; persistence failure zero posts;
 one transmit; restart no resend; every ambiguous class; accepted identity mismatch; deterministic
