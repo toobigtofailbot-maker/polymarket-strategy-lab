@@ -226,7 +226,9 @@ def _external_binding_record(**overrides):
         "code_version": "commit:test",
     }
     value.update(overrides)
-    result = ar.build_external_dataset_binding(
+    # The generic constructor is a private/internal WP170 helper (not package-root
+    # public); identity/tamper tests exercise it through experiment_os directly.
+    result = _os_contract._build_external_dataset_binding(
         value["source_kind"], value["source_external_dataset_id"], value["source_lineage_id"],
         value["source_membership_digest"], value["source_member_count"], value["instrument_id"],
         value["conversion_policy_version"], value["first_event_time_ns"], value["last_event_time_ns"],
@@ -279,12 +281,15 @@ def test_external_binding_identity_one_field_tamper() -> None:
     other = _external_binding_record(source_lineage_id="pmxtresearchlineage:sha256:" + "e" * 64)
     assert other.record.dataset_binding_id != binding.dataset_binding_id
     # Wrong source_kind (canonical-PIT masquerade) is rejected at construction.
-    assert ar.build_external_dataset_binding(
+    assert _os_contract._build_external_dataset_binding(
         ar.SOURCE_KIND_CANONICAL_PIT, "ext:pmxt:test0001",
         "pmxtresearchlineage:sha256:" + "a" * 64, "b" * 64, 3,
         "0x" + "c" * 64 + "-123.POLYMARKET", "wp168-x/1.0.0",
         1, 2, 1, 2, "commit:test",
     ).error_codes == ("FIELD_VALUE_INVALID",)
+    # The generic constructor is NOT exposed at the package root.
+    assert not hasattr(ar, "build_external_dataset_binding")
+    assert "build_external_dataset_binding" not in ar.__all__
 
 
 def test_canonical_dataset_binding_unchanged() -> None:

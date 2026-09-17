@@ -899,7 +899,7 @@ def _external_binding_preimage(
     }
 
 
-def build_external_dataset_binding(
+def _build_external_dataset_binding(
     source_kind: object,
     source_external_dataset_id: object,
     source_lineage_id: object,
@@ -915,9 +915,13 @@ def build_external_dataset_binding(
 ) -> ExperimentControlResult:
     """Construct/validate a provenance-separated :class:`ExternalDatasetBinding`.
 
-    Generic WP170 helper: the PMXT-specific public construction lives in the bridge
-    module, which supplies these already-validated lineage-derived fields. Never
-    creates a DatasetSnapshotReference and never claims canonical-PIT authority.
+    Private/internal WP170 helper. The ONLY public construction path is the PMXT
+    bridge (`build_pmxt_v2_dataset_binding` / `build_pmxt_v2_research_dataset_manifest`
+    in ``research_runtime.nautilus_offline.experiment_bridge``), which supplies these
+    fields from a validated ``PmxtV2ResearchLineage``. It is intentionally not exported
+    from the package root so arbitrary caller-supplied external metadata cannot
+    construct an ``ExternalDatasetBinding`` outside the validated bridge. Never creates
+    a DatasetSnapshotReference and never claims canonical-PIT authority.
     """
     try:
         kind = _enum(source_kind, (EXTERNAL_DATASET_BINDING_SOURCE_KIND,))

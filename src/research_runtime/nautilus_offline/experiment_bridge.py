@@ -19,9 +19,9 @@ from src.data_layer.analytical_research import (
     EXTERNAL_MEMBER_ID_PREFIX,
     ExperimentControlResult,
     ExternalDatasetBinding,
-    build_external_dataset_binding,
 )
 from src.data_layer.analytical_research.experiment_os import (
+    _build_external_dataset_binding,
     _Failure,
     _rejected,
     _research_dataset_manifest,
@@ -66,7 +66,7 @@ def build_pmxt_v2_dataset_binding(
     """
     try:
         valid = _require_valid_lineage(lineage)
-        return build_external_dataset_binding(
+        return _build_external_dataset_binding(
             valid.source_dataset_kind,
             valid.source_external_dataset_id,
             valid.lineage_id,

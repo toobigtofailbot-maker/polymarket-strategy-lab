@@ -314,6 +314,25 @@ def test_bridge_module_has_no_forbidden_authority() -> None:
 # Additional bridge coverage (lineage/binding mismatch, tamper, forged binding)
 # --------------------------------------------------------------------------- #
 
+def test_generic_external_binding_constructor_is_not_public(tmp_path) -> None:
+    """The generic ExternalDatasetBinding constructor is a private/internal WP170
+    helper; the package root does NOT expose it, so arbitrary caller metadata cannot
+    build a binding outside the validated PMXT lineage bridge. The lineage-backed
+    bridge remains the public construction path and still works."""
+    # Not exposed at the analytical_research package root.
+    assert not hasattr(ar, "build_external_dataset_binding")
+    assert "build_external_dataset_binding" not in ar.__all__
+    # The public record type is still exported.
+    assert hasattr(ar, "ExternalDatasetBinding")
+    # The private helper lives on experiment_os only.
+    assert hasattr(os_contract, "_build_external_dataset_binding")
+    assert not hasattr(os_contract, "build_external_dataset_binding")
+    # The lineage-backed public bridge still constructs a valid binding.
+    lin, binding = external_binding(tmp_path)
+    assert isinstance(binding, ar.ExternalDatasetBinding)
+    assert binding.source_lineage_id == lin.lineage_id
+
+
 def test_bridge_requires_valid_lineage_object(tmp_path) -> None:
     # A rejected lineage is not accepted by either bridge builder.
     bad = off.build_pmxt_v2_research_lineage(_write_files(tmp_path, [default_rows()]), _context(), [])

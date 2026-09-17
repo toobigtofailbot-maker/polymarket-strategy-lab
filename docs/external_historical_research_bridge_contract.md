@@ -44,9 +44,15 @@ is not claimed.
 - `build_pmxt_v2_research_dataset_manifest(lineage, dataset_binding,
   feature_definitions, label_definition, sample_inputs, group_policy)` ->
   `ExperimentControlResult` containing a standard `ResearchDatasetManifest` on PASS.
-- `ExternalDatasetBinding` and `build_external_dataset_binding(...)` in the WP170
-  experiment OS (generic construction/validation; PMXT-specific construction lives in
-  the bridge module, which never makes `experiment_os` import `research_runtime`).
+- `ExternalDatasetBinding` (public record type) in the WP170 experiment OS. Its
+  generic construction/validation helper is PRIVATE/internal
+  (`experiment_os._build_external_dataset_binding`) and is intentionally NOT exported
+  from the `src.data_layer.analytical_research` package root, so arbitrary
+  caller-supplied external metadata cannot construct a binding outside the validated
+  PMXT lineage bridge. The ONLY public construction path is
+  `build_pmxt_v2_dataset_binding` / `build_pmxt_v2_research_dataset_manifest`, which
+  build from a validated `PmxtV2ResearchLineage`. The bridge module never makes
+  `experiment_os` import `research_runtime`.
 
 ## Provenance and time semantics
 
