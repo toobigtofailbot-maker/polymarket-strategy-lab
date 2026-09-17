@@ -9,7 +9,14 @@ import pathlib
 import pytest
 
 from src.data_layer.polymarket import market_truth as mt
-from src.data_layer.polymarket.market_truth_store import MarketTruthStore
+from src.data_layer.polymarket.market_truth_store import (
+    APPLICATION_ID,
+    USER_VERSION,
+    MarketTruthStore,
+    read_accepted_asset_observations,
+    read_gap_events,
+    read_session_events,
+)
 
 CONDITION = "0x" + "a" * 64
 RECEIVED = "2024-07-03T09:46:40.000000Z"
@@ -567,3 +574,105 @@ def test_store_limit_receipt_stop_reason_is_store_limit(tmp_path) -> None:
         assert receipt.status == "FAILED"
         assert receipt.error_codes == ("STORE_LIMIT_EXCEEDED",)
         assert receipt.stop_reason == "STORE_LIMIT", receipt
+
+
+def test_wp175e_read_surface_is_bounded_ordered_verified_and_schema_neutral(tmp_path) -> None:
+    path = _tmpdb(tmp_path, "wp175e-read.sqlite3")
+    session = "00000000-0000-4000-8000-000000000000"
+    second_received = "2024-07-03T09:46:41.000000Z"
+    with MarketTruthStore(path) as store:
+        connection = store._require()
+        schema_before = tuple(
+            connection.execute(
+                "SELECT type,name,sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY type,name"
+            ).fetchall()
+        )
+        store.mark_session(session, "STREAMING", "2024-07-03T09:46:39.000000Z")
+        store.mark_gap("7", "OPEN", "DISCONNECT", "2024-07-03T09:46:38.000000Z")
+        store.mark_gap("7", "HEALED", "DISCONNECT", "2024-07-03T09:46:39.000000Z")
+
+        first = _book_raw(0)
+        assert store.append(first, mt.normalize_websocket_message(first, book_readiness={})).status == "OK"
+        second = mt.make_raw_envelope(
+            "WS",
+            "polymarket:market-ws",
+            f"ws:{session}:frame:1",
+            second_received,
+            json.dumps(
+                {
+                    "event_type": "book",
+                    "asset_id": "7",
+                    "market": CONDITION,
+                    "timestamp": "1720000001000",
+                    "bids": [{"price": "0.41", "size": "5"}],
+                    "asks": [{"price": "0.59", "size": "7"}],
+                }
+            ).encode(),
+            occurrence_sequence=1,
+        )
+        assert store.append(second, mt.normalize_websocket_message(second, book_readiness={})).status == "OK"
+
+        # SQLite may deliberately reverse unordered scans; explicit archive_sequence /
+        # sequence ordering keeps the public evidence output canonical.
+        connection.execute("PRAGMA reverse_unordered_selects=ON")
+        records = read_accepted_asset_observations(
+            store,
+            asset_id="7",
+            start_received_at=RECEIVED,
+            end_received_at=second_received,
+            limit=2,
+        )
+        assert tuple(record.archive_sequence for record in records) == (1, 2)
+        assert tuple(record.session_id for record in records) == (session, session)
+        assert tuple(record.observation.received_at for record in records) == (
+            RECEIVED,
+            second_received,
+        )
+        sessions = read_session_events(
+            store, upto_received_at=second_received, limit=10
+        )
+        gaps = read_gap_events(
+            store, asset_id="7", upto_received_at=second_received, limit=10
+        )
+        assert tuple(event.state for event in sessions) == ("STREAMING",)
+        assert tuple(event.state for event in gaps) == ("OPEN", "HEALED")
+        with pytest.raises(mt.MarketTruthError, match="INPUT_INVALID"):
+            read_accepted_asset_observations(
+                store,
+                asset_id="7",
+                start_received_at=RECEIVED,
+                end_received_at=second_received,
+                limit=1,
+            )
+
+        schema_after = tuple(
+            connection.execute(
+                "SELECT type,name,sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY type,name"
+            ).fetchall()
+        )
+        assert schema_after == schema_before
+        assert connection.execute("PRAGMA application_id").fetchone()[0] == APPLICATION_ID
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == USER_VERSION
+
+
+def test_wp175e_read_surface_rejects_malformed_persisted_evidence_without_echo(tmp_path) -> None:
+    path = _tmpdb(tmp_path, "wp175e-malformed.sqlite3")
+    with MarketTruthStore(path) as store:
+        raw = _book_raw()
+        assert store.append(raw, mt.normalize_websocket_message(raw, book_readiness={})).status == "OK"
+        store._require().execute(
+            "UPDATE normalized_occurrences SET canonical_payload_sha256=?",
+            ("0" * 64,),
+        )
+        with pytest.raises(mt.MarketTruthError) as excinfo:
+            read_accepted_asset_observations(
+                store,
+                asset_id="7",
+                start_received_at=RECEIVED,
+                end_received_at=RECEIVED,
+                limit=10,
+            )
+        assert excinfo.value.code == "STORE_CONFLICT"
+        assert str(excinfo.value) == "STORE_CONFLICT"
+        assert str(path) not in str(excinfo.value)
+        assert raw.raw_bytes.decode() not in str(excinfo.value)

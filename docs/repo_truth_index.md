@@ -1,5 +1,52 @@
 # Repo Truth Index
 
+## WP175E Native Continuity-Attested Market Truth Bridge (current review target)
+
+WP175E / Side10 S10-DATA-03 is the FAST, risk-2, exact 20-file continuation on
+`claude/wp175e-market-truth-adapter-66a6bd`, based on the merged WP175D / PR #179
+commit `195cc1a42b73d08185f96c613d9a95154f919102`. Deterministic readiness is
+`IMPLEMENTATION_READY` without an independent certificate; readiness and this
+committed target truth grant no merge or live authority.
+
+S10-EVID-01B completed `EVIDENCE_INCONCLUSIVE`. Genuine PMXT v2 remains valid
+external research evidence, but the tested candidate missed first-look OOS
+criteria and PMXT `known_gap_policy=AS_CAPTURED` remains continuity-incomplete.
+WP175E does not reclassify PMXT, retune the candidate, expose new OOS, or rerun
+the evidence gate.
+
+The additive WP169 read surface verifies accepted WS observations against their
+durable raw occurrence, recovers the durable session id, and returns bounded
+deterministically ordered immutable observation/session/gap evidence. WP169
+`APPLICATION_ID`, `USER_VERSION`, DDL, indexes, checkpoint chain, append
+semantics, and existing APIs remain unchanged; there is no migration.
+
+`NativeContinuityAttestation` derives capture identity and continuity from the
+durable WS session, initial ready full-book snapshot, exact observation order,
+uninterrupted STREAMING epoch, and balanced gap history. No caller capture id or
+continuity boolean exists. Every disconnect/regression/hash/parse/queue/storage/
+reorg gap and every reconnect/session transition prevents completeness. A later
+start after a durable HEALED event and at a later full snapshot may form a fresh
+epoch without rewriting history. `NativeMarketTruthWindow` is separately
+content-addressed under `nativemarkettruthwindow:sha256:` and uses only accepted
+WS book/trade evidence with integer receive-time nanoseconds and exact Decimal
+arithmetic; non-WS APIs, quarantined, and unsupported records have no native
+order-book authority.
+
+Existing PMXT `MarketTruthWindow` fields, identity preimage, builder, and gap
+rule are unchanged. WP172 admits the exact PMXT/native union without changing
+classification precedence or fee/fill/capacity/net-edge gates. WP173 replay
+admits the same union without changing `PaperStrategyBinding`, fill, accounting,
+risk, reconciliation, or paper/live separation.
+
+WP169-D001 is narrowed/resolved only for the delivered WP169-native -> WP172
+bridge extent; a generic PIT -> Nautilus adapter remains absent and unclaimed.
+WP175 remains merged dormant, Gate C is NOT AUTHORIZED,
+`LIVE_PATH_EVIDENCE_READY` is NOT CLAIMED, WP176 is NOT STARTED, credentials and
+real orders are 0, capital at risk is USD 0, and merge is NOT AUTHORIZED. After
+merge, the successor is a separately gated prospective evidence run that first
+preregisters a fresh candidate before forward OOS/native capture. Normative
+contract: `docs/native_continuity_attested_market_truth_bridge_contract.md`.
+
 ## WP175D External Historical Research Bridge (current review target)
 
 WP175D (Side10 capability S10-DATA-02) is the FAST, risk-2, local/offline external

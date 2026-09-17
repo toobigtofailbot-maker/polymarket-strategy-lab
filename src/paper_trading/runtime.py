@@ -31,8 +31,9 @@ from src.data_layer.polymarket.market_truth_store import (
 )
 from src.research_runtime.executable_edge import (
     MarketTruthWindow,
+    NativeMarketTruthWindow,
     ResearchDecisionTrace,
-    validate_market_truth_window,
+    validate_any_market_truth_window,
     validate_research_decision_trace,
 )
 
@@ -148,12 +149,17 @@ def run_replay(
 def run_wp172_replay(
     engine: PaperEngine,
     *,
-    market_truth: MarketTruthWindow,
+    market_truth: MarketTruthWindow | NativeMarketTruthWindow,
     decision_trace: ResearchDecisionTrace,
 ) -> None:
-    """Validate and replay the exact WP172 window/decision trace bound to the session."""
+    """Validate and replay the exact WP172 window/decision trace bound to the session.
+
+    Accepts either the PMXT ``MarketTruthWindow`` or the WP175E
+    ``NativeMarketTruthWindow``; binding, fill, accounting, and reconciliation rules
+    are unchanged for both.
+    """
     try:
-        validate_market_truth_window(market_truth)
+        validate_any_market_truth_window(market_truth)
         validate_research_decision_trace(decision_trace)
     except Exception:
         raise PaperTradingError("WP172_REPLAY_INVALID") from None

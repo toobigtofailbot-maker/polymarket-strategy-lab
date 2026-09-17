@@ -1,0 +1,232 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP175E",
+    "title": "Native Continuity-Attested Market Truth Bridge",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "LOCAL_OFFLINE_NATIVE_CONTINUITY_MARKET_TRUTH_BRIDGE",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 179,
+      "head_sha": "8b022745669922113166d5f6e42ad7f38fc9f480",
+      "merge_sha": "195cc1a42b73d08185f96c613d9a95154f919102"
+    },
+    "suggested_branch": "claude/wp175e-market-truth-adapter-66a6bd",
+    "objective": "Add a provenance-safe fail-closed bridge from durable WP169 accepted public WebSocket evidence into a parallel immutable WP172 NativeMarketTruthWindow whose continuity can be true only through a content-addressed NativeContinuityAttestation derived from bounded session, gap, full-snapshot, and observation evidence, while leaving the PMXT MarketTruthWindow identity/API and evaluator/paper eligibility semantics unchanged.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/executable_edge_contract.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/native_continuity_attested_market_truth_bridge_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP175E.md",
+      "docs/wp_specs/WP175E/wp_prompt.txt",
+      "docs/wp_specs/WP175E/wp_spec.json",
+      "src/data_layer/polymarket/market_truth_store.py",
+      "src/paper_trading/runtime.py",
+      "src/research_runtime/executable_edge/__init__.py",
+      "src/research_runtime/executable_edge/evaluator.py",
+      "src/research_runtime/executable_edge/market_truth.py",
+      "tests/data_layer/polymarket/test_market_truth_models_store.py",
+      "tests/paper_trading/test_runtime.py",
+      "tests/research_runtime/executable_edge/test_evaluator.py",
+      "tests/research_runtime/executable_edge/test_market_truth.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/executable_edge_contract.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/native_continuity_attested_market_truth_bridge_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP175E.md",
+      "docs/wp_specs/WP175E/wp_prompt.txt",
+      "docs/wp_specs/WP175E/wp_spec.json",
+      "src/data_layer/polymarket/market_truth_store.py",
+      "src/paper_trading/runtime.py",
+      "src/research_runtime/executable_edge/__init__.py",
+      "src/research_runtime/executable_edge/evaluator.py",
+      "src/research_runtime/executable_edge/market_truth.py",
+      "tests/data_layer/polymarket/test_market_truth_models_store.py",
+      "tests/paper_trading/test_runtime.py",
+      "tests/research_runtime/executable_edge/test_evaluator.py",
+      "tests/research_runtime/executable_edge/test_market_truth.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/risk/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 20,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/executable_edge_contract.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "src/data_layer/polymarket/market_truth_store.py",
+      "src/paper_trading/runtime.py",
+      "src/research_runtime/executable_edge/__init__.py",
+      "src/research_runtime/executable_edge/evaluator.py",
+      "src/research_runtime/executable_edge/market_truth.py",
+      "tests/data_layer/polymarket/test_market_truth_models_store.py",
+      "tests/paper_trading/test_runtime.py",
+      "tests/research_runtime/executable_edge/test_evaluator.py",
+      "tests/research_runtime/executable_edge/test_market_truth.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert WP175E. Only the additive bounded WP169 read surface, native continuity attestation/window/builder/validator, exact evaluator and paper type compatibility, focused tests, and scoped contract/status/repo-truth documents are removed. Existing WP169 schema and writes, PMXT MarketTruthWindow identity/API, evaluator precedence, and paper accounting/fill/reconciliation remain unchanged; no dependency, workflow, credential, account, order, Gate-C, WP176, or live state is created.",
+    "mode_boundaries": [
+      {"boundary": "workflow_governance", "crossed": false},
+      {"boundary": "local_offline_tooling", "crossed": true},
+      {"boundary": "canonical_evidence_policy", "crossed": true},
+      {"boundary": "docs", "crossed": true},
+      {"boundary": "tests", "crossed": true},
+      {"boundary": "source_runtime", "crossed": true},
+      {"boundary": "workflow_files", "crossed": false},
+      {"boundary": "dependencies", "crossed": false},
+      {"boundary": "network", "crossed": false},
+      {"boundary": "credentials", "crossed": false},
+      {"boundary": "scheduler", "crossed": false},
+      {"boundary": "hermes_runtime", "crossed": false},
+      {"boundary": "strategy", "crossed": false},
+      {"boundary": "paper", "crossed": false},
+      {"boundary": "execution", "crossed": false},
+      {"boundary": "live", "crossed": false}
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP175E adds bounded WP169 evidence reads and a parallel native WP172 truth type while preserving predecessor public identities and eligibility semantics.",
+    "items": [
+      {"surface": "MarketTruthStore bounded evidence reads", "before": "Generic normalized iteration plus write-side session/gap APIs", "after": "Additive exact-asset/time bounded immutable accepted-observation, session-event, and gap-event reads including prior gap state", "change_authorized": true, "compatibility_requirement": "No DDL, index, APPLICATION_ID, USER_VERSION, checkpoint, append, or existing public API semantic change", "authority": "LOCAL_OFFLINE_READ_ONLY_EVIDENCE"},
+      {"surface": "NativeContinuityAttestation and NativeMarketTruthWindow", "before": "Only PMXT MarketTruthWindow", "after": "Parallel content-addressed native proof and truth record derived from durable WP169 evidence", "change_authorized": true, "compatibility_requirement": "Existing MarketTruthWindow field set, identity, builder, and PMXT gap rule remain exact", "authority": "LOCAL_OFFLINE_ADVISORY_RESEARCH"},
+      {"surface": "assess_executable_edge", "before": "Accepts MarketTruthWindow", "after": "Accepts exact MarketTruthWindow or NativeMarketTruthWindow union", "change_authorized": true, "compatibility_requirement": "Status precedence and fee/fill/capacity/net-edge gates remain unchanged", "authority": "LOCAL_OFFLINE_ADVISORY_RESEARCH"},
+      {"surface": "run_wp172_replay", "before": "Accepts MarketTruthWindow", "after": "Accepts the same exact PMXT/native union", "change_authorized": true, "compatibility_requirement": "PaperStrategyBinding, fills, accounting, risk, reconciliation, and paper/live separation remain unchanged", "authority": "TYPE_COMPATIBILITY_ONLY"}
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Native attestation and window identities, evidence admissibility, continuity, timing, and safety fields have explicit fail-closed semantics.",
+    "items": [
+      {"path": "attestation.attestation_id", "source": "DERIVED", "type": "content_addressed_id", "required_rule": "SHA-256 binds capture, asset, interval, snapshot/first/last IDs, count, session, session/gap digests, and gap counts", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "recompute and exact compare; path excluded", "failure_category": "IDENTITY_DERIVATION_INVALID", "safe_output": "namespaced digest", "derivation_rule_id": null},
+      {"path": "attestation.continuity_complete", "source": "DERIVED", "type": "boolean", "required_rule": "true only from durable accepted-WS full-snapshot, uninterrupted session, and closed gap evidence", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "caller cannot assert true; recompute from stored evidence", "failure_category": "SEMANTIC_CONTRADICTION", "safe_output": "boolean", "derivation_rule_id": null},
+      {"path": "native_window.lineage_id", "source": "DERIVED", "type": "content_addressed_id", "required_rule": "nativemarkettruthwindow:sha256 over capture, instrument, ordered observation IDs, receive bounds, exact canonical events, and attestation ID", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "any observation/event/attestation change changes identity", "failure_category": "IDENTITY_DERIVATION_INVALID", "safe_output": "namespaced digest", "derivation_rule_id": null},
+      {"path": "native_window.events", "source": "DERIVED", "type": "immutable_event_tuple", "required_rule": "only canonical accepted WS BOOK/TRADE evidence starting from a full ready book snapshot in deterministic receive order", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "non-WS, quarantined, unsupported, fabricated, or pre-snapshot evidence rejects or is excluded", "failure_category": "SEMANTIC_CONTRADICTION", "safe_output": "canonical immutable events", "derivation_rule_id": null},
+      {"path": "store.schema", "source": "CONSTANT", "type": "sqlite_schema", "required_rule": "existing APPLICATION_ID, USER_VERSION, DDL, indexes, and checkpoint identity remain exact", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "before/after schema/version equality", "failure_category": "SEMANTIC_CONTRADICTION", "safe_output": "closed version integers", "derivation_rule_id": null}
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Product identity recomputation and one-field tamper behavior are executable focused-test oracles; no worked package-spec oracle is required.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "FAST deterministic readiness supplies draftability and the user's continuation instruction supplies implementation authority; neither grants merge authority.",
+    "items": [
+      {"from_state": "LOCAL_DRAFT", "to_state": "DRAFTABILITY_PASS", "condition": "prompt/spec authority equality, exact scope, semantics, evidence plan, and deterministic readiness pass without a certificate", "failure_category": "DRAFTABILITY_INCOMPLETE"},
+      {"from_state": "DRAFTABILITY_PASS", "to_state": "AUTHORIZED", "condition": "the user explicitly authorizes continuation of this exact WP175E branch/worktree/package", "failure_category": "AUTHORITY_CONTRADICTION"},
+      {"from_state": "AUTHORIZED", "to_state": "IMPLEMENTED_LOCAL", "condition": "implementation stays inside the exact 20-file scope and final readiness --check-diff passes", "failure_category": "SEMANTIC_CONTRADICTION"}
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {"condition_id": "file_unreadable", "category": "FILE_READ_ERROR", "priority": 10},
+      {"condition_id": "json_invalid", "category": "JSON_PARSE_INVALID", "priority": 20},
+      {"condition_id": "schema_unsupported", "category": "SCHEMA_UNSUPPORTED", "priority": 30},
+      {"condition_id": "unknown_field", "category": "UNKNOWN_FIELD", "priority": 40},
+      {"condition_id": "field_missing", "category": "FIELD_MISSING", "priority": 50},
+      {"condition_id": "field_type_invalid", "category": "FIELD_TYPE_INVALID", "priority": 60},
+      {"condition_id": "field_value_invalid", "category": "FIELD_VALUE_INVALID", "priority": 70},
+      {"condition_id": "certificate_hash_mismatch", "category": "CERTIFICATE_HASH_MISMATCH", "priority": 80},
+      {"condition_id": "draftability_incomplete", "category": "DRAFTABILITY_INCOMPLETE", "priority": 90},
+      {"condition_id": "scope_policy_invalid", "category": "SCOPE_POLICY_INVALID", "priority": 100},
+      {"condition_id": "authority_contradiction", "category": "AUTHORITY_CONTRADICTION", "priority": 110},
+      {"condition_id": "semantic_contradiction", "category": "SEMANTIC_CONTRADICTION", "priority": 120},
+      {"condition_id": "identity_derivation_invalid", "category": "IDENTITY_DERIVATION_INVALID", "priority": 130},
+      {"condition_id": "failure_precedence_invalid", "category": "FAILURE_PRECEDENCE_INVALID", "priority": 140},
+      {"condition_id": "example_truth_invalid", "category": "EXAMPLE_TRUTH_INVALID", "priority": 150}
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused executable tests are the product oracle and no package-spec identity derivation requires an embedded worked example.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R010 cover all twenty reviewer traps, predecessor compatibility, exact scope, validation, hosted CI, and posted evidence.",
+    "items": [
+      {"requirement_id": "R001", "source": "pytest", "test": "test_existing_pmxt_field_set_and_identity_preimage_remain_exact", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_market_truth.py", "expected_result": "T01 and T15: AS_CAPTURED remains incomplete and existing PMXT API/identity bytes remain exact"},
+      {"requirement_id": "R002", "source": "pytest", "test": "test_native_caller_cannot_supply_capture_or_continuity_authority", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_market_truth.py", "expected_result": "T02-T09: continuity is derived; missing snapshot, gaps, disconnects, reconnect wait, and session boundaries fail closed while a post-heal later epoch can pass"},
+      {"requirement_id": "R003", "source": "pytest", "test": "test_native_excludes_quarantined_unsupported_and_non_ws_records", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_market_truth.py", "expected_result": "T10-T11: quarantined, unsupported, and non-WS public API observations cannot become native market truth"},
+      {"requirement_id": "R004", "source": "pytest", "test": "test_native_identity_binds_observations_and_continuity_evidence", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_market_truth.py tests/data_layer/polymarket/test_market_truth_models_store.py", "expected_result": "T12-T14: observation/content and gap/session changes alter identities while physical retrieval order cannot alter canonical output"},
+      {"requirement_id": "R005", "source": "pytest", "test": "test_native_window_uses_exact_existing_evaluator_precedence", "command": "python -m pytest -q tests/research_runtime/executable_edge/test_evaluator.py", "expected_result": "T16: exact PASS/FAIL/INCONCLUSIVE/DIAGNOSTIC precedence and fee/fill/capacity/net-edge gates remain unchanged"},
+      {"requirement_id": "R006", "source": "pytest", "test": "test_native_wp172_window_has_exact_paper_replay_parity", "command": "python -m pytest -q tests/paper_trading/test_runtime.py", "expected_result": "T17: existing PMXT replay stays backward compatible and native type parity changes no binding/accounting/fill/reconciliation behavior"},
+      {"requirement_id": "R007", "source": "pytest", "test": "test_wp175e_read_surface_is_bounded_ordered_verified_and_schema_neutral", "command": "python -m pytest -q tests/data_layer/polymarket/test_market_truth_models_store.py", "expected_result": "T18-T20: SQLite schema/application/user versions remain unchanged; failures do not echo path/raw exception/secret; no credential/order/live authority exists"},
+      {"requirement_id": "R008", "source": "pytest", "test": "test_wp175e_status_and_exact_scope_are_registered", "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py", "expected_result": "repo truth records EVIDENCE_INCONCLUSIVE, native bridge extent, dormant WP175, Gate C unauthorized, WP176 not started, and no LIVE_PATH_EVIDENCE_READY claim"},
+      {"requirement_id": "R009", "source": "validation", "test": "exact_scope_and_local_validation", "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP175E/wp_prompt.txt --spec docs/wp_specs/WP175E/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD", "expected_result": "deterministic FAST readiness and exact 20-file diff pass with focused, adjacent, architecture, security/static, pip, diff, artifact, and one authoritative full pytest green"},
+      {"requirement_id": "R010", "source": "github", "test": "exact_head_hosted_and_posted_evidence", "command": "gh pr checks --watch", "expected_result": "one exact-head hosted validation passes and re-fetched canonical PR body passes evidence consistency before Ready YES"}
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP176",
+    "next_title": "Separately gated preregistered forward OOS/native-capture evidence run",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP176",
+    "forbidden_in_this_wp": [
+      "strategy search, candidate tuning, label/metric optimization, or OOS evidence rerun",
+      "credentials, authenticated account access, wallet/signing, private endpoints, or secret loading",
+      "paper order generation, real order create/cancel, OMS, execution, risk-cap, or reconciliation changes",
+      "Gate-C qualification, arm, canary, live activation, or LIVE_PATH_EVIDENCE_READY claim",
+      "scheduler, daemon, service worker, retry loop, or bot loop",
+      "dependency, lock-file, or GitHub Actions workflow changes",
+      "WP169 SQLite migration, schema/version/DDL/index/checkpoint rewrite",
+      "PMXT AS_CAPTURED reclassification or MarketTruthWindow identity/API change",
+      "automatic successor activation or starting WP176"
+    ]
+  }
+}

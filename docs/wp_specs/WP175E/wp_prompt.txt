@@ -1,0 +1,358 @@
+WP175E — NATIVE CONTINUITY-ATTESTED MARKET TRUTH BRIDGE
+S10-DATA-03
+ONE-SHOT IMPLEMENTATION PACKAGE
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+
+===============================================================================
+0. EXECUTION INTENT
+===============================================================================
+
+This is the next software package after genuine S10-EVID-01B returned
+EVIDENCE_INCONCLUSIVE. The user explicitly authorized continuation of the exact
+existing local Claude worktree and branch for WP175E. That grants conditional
+implementation authority for this package only; merge authority remains NO.
+
+Objective: add a provenance-safe, fail-closed adapter from the existing WP169
+native public realtime market-truth archive into WP172 as a parallel native
+continuity-attested market-truth source, without weakening or reinterpreting the
+existing PMXT path.
+
+This package does not search or tune a strategy, rerun S10-EVID-01, change WP170
+first-look/OOS semantics, place paper or real orders, activate Gate C, use
+credentials, start WP176, change dependencies, or change GitHub Actions.
+
+===============================================================================
+1. PACKAGE IDENTITY
+===============================================================================
+
+Package Identity:
+  WP ID: WP175E
+  Side10 capability ID: S10-DATA-03
+  Title: Native Continuity-Attested Market Truth Bridge
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Drafting-time and refreshed base SHA: 195cc1a42b73d08185f96c613d9a95154f919102
+  Required predecessor: WP175D / PR #179 merged
+  Required predecessor merge commit: 195cc1a42b73d08185f96c613d9a95154f919102
+  Suggested branch: claude/wp175e-market-truth-adapter-66a6bd
+  Package class: LOCAL_OFFLINE_NATIVE_CONTINUITY_MARKET_TRUTH_BRIDGE
+  Package size class: L
+  Exact changed-file scope: 20
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: LOCAL_OFFLINE_RESEARCH_AND_PAPER_TYPE_COMPATIBILITY_ONLY
+  Product impact: WP169_NATIVE_EVIDENCE_TO_WP172_MARKET_TRUTH
+  Network impact: NONE_REQUIRED; ONE_OPTIONAL_BOUNDED_PUBLIC_UNAUTHENTICATED_SMOKE
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: FAST
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: high
+  Reason: continuity proof, content-addressed identity, durable evidence, and
+    predecessor compatibility require careful fail-closed reasoning.
+  Escalate to higher reasoning or STOP if: continuity cannot be derived from
+    durable WP169 evidence; a SQLite migration is needed; PMXT identity/API or
+    WP173 semantics must break; a 21st changed path is required; or credentials,
+    account/order/live/Gate-C/WP176 authority becomes necessary.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Merge authority: NO.
+
+===============================================================================
+2. AUTHORITY / NON-AUTHORITY POSTURE
+===============================================================================
+
+Authorized: local/offline source changes for this bridge; additive read-only
+WP169 evidence queries; an additive WP172 native record, attestation, builder,
+and validator; evaluator and paper-runtime type compatibility only; focused
+tests; exact scoped docs/status/spec/repo truth; one optional bounded public
+unauthenticated WP169 smoke after local green; one PR and one exact-head hosted
+validation target.
+
+Not authorized: credentials/secrets, authenticated clients, wallet/account
+behavior, order placement/cancel, execution gateway, risk caps, OMS,
+reconciliation changes, Gate-C qualification/arm/live, strategy/OOS tuning,
+WP176, scheduler/bot loop, daemon/service, dependency/lock changes, copied
+external code, workflow changes, schema migration, existing WP169 archive schema
+rewrite, or weakening PMXT AS_CAPTURED.
+
+Centralized boundary groups in docs/ai/codex/PROTECTED_PATHS.md are not crossed,
+except the active package expressly permits the narrow paper-engine type
+compatibility edit in src/paper_trading/runtime.py. PaperStrategyBinding, fill,
+accounting, risk, reconciliation, paper/live separation, and execution authority
+remain unchanged.
+
+===============================================================================
+3. HARD MERGE / CONTINUATION GATE
+===============================================================================
+
+The executor must continue the existing worktree whose branch is exactly
+claude/wp175e-market-truth-adapter-66a6bd. Do not create a replacement branch or
+worktree, reset, clean, stash away, discard, or overwrite the five-file handoff.
+Before further product-source edits require: worktree and bytes present; HEAD,
+local main, and origin/main equal 195cc1a42b73d08185f96c613d9a95154f919102;
+no open PR; no generated-artifact violation; a binary diff backup outside the
+repo; exact-scope discovery; prompt/spec/status freeze; wp_spec_guard PASS; and
+deterministic FAST readiness IMPLEMENTATION_READY without a certificate.
+
+===============================================================================
+4. CONTEXT BUDGET AND MECHANICAL DISCOVERY
+===============================================================================
+
+Read first: AGENTS.md, AI_CODING_AGENT_START_HERE.md, CODEX_START_HERE.md,
+docs/project_status.md, docs/repo_truth_index.md, docs/deferred_items_log.md,
+docs/ai/codex/README.md, WP_EXECUTION_STATE_MACHINE.md, WP_DRAFTING_STANDARD.md,
+WP_SPEC_STANDARD.md, VALIDATION_MATRIX.md, and PROTECTED_PATHS.md.
+
+Read for this WP: status entries WP169/WP172/WP173/WP175D; relevant WP169 and
+WP172 prompt/spec sections; executable-edge contract; WP169 market truth model,
+store, websocket, runtime and package API; WP172 market truth/evaluator/models/API;
+paper runtime; four scoped product test files; scoped doc tests; architecture
+boundary and mechanically discovered whole-diff/path guards.
+
+Search: MarketTruthWindow, build_market_truth_window,
+validate_market_truth_window, source_external_dataset_id, continuity_complete,
+known_gap_policy, gap_events, session_events, iter_normalized,
+run_wp172_replay, __all__, source/path allowlists, and whole main..HEAD diffs.
+
+Discovery corrections frozen by this package: the real WP169 test path is
+tests/data_layer/polymarket/test_market_truth_models_store.py. The WP169 core
+market_truth.py, its package __init__.py, and tests/test_architecture_boundaries.py
+are inspected/run compatibility surfaces, not changed paths. All new source paths
+are already in APPROVED_SRC_SCOPES. Natural scope is exactly 20 files.
+
+===============================================================================
+5. EXACT FROZEN SCOPE
+===============================================================================
+
+required_changed_files == allowed_changed_files == exactly:
+
+1. docs/wp_specs/WP175E/wp_prompt.txt
+2. docs/wp_specs/WP175E/wp_spec.json
+3. docs/status_entries/WP175E.md
+4. docs/native_continuity_attested_market_truth_bridge_contract.md
+5. docs/executable_edge_contract.md
+6. docs/project_status.md
+7. docs/repo_truth_index.md
+8. docs/deferred_items_log.md
+9. docs/long_term_bot_completion_roadmap.md
+10. src/data_layer/polymarket/market_truth_store.py
+11. src/research_runtime/executable_edge/market_truth.py
+12. src/research_runtime/executable_edge/evaluator.py
+13. src/research_runtime/executable_edge/__init__.py
+14. src/paper_trading/runtime.py
+15. tests/data_layer/polymarket/test_market_truth_models_store.py
+16. tests/research_runtime/executable_edge/test_market_truth.py
+17. tests/research_runtime/executable_edge/test_evaluator.py
+18. tests/paper_trading/test_runtime.py
+19. tests/test_project_status_docs.py
+20. tests/test_repo_truth_docs.py
+
+max_changed_files = 20; exact_scope_required = true. Explicitly do not change
+src/data_layer/polymarket/market_truth.py,
+src/data_layer/polymarket/__init__.py, tests/test_architecture_boundaries.py,
+dependencies/locks, or .github/workflows. STOP
+BLOCKED_SCOPE_HANDOFF_MISMATCH if any 21st changed path is required.
+
+===============================================================================
+6. FROZEN ARCHITECTURE AND COMPATIBILITY
+===============================================================================
+
+Existing PMXT MarketTruthWindow fields, identity preimage, builder semantics,
+and continuity rule remain unchanged. build_market_truth_window continues to
+accept PmxtV2ReplaySource with unchanged meaning. AS_CAPTURED and KNOWN_GAPS are
+false; NONE is true. No PMXT descriptor is relabeled.
+
+Add immutable NativeMarketTruthWindow with lineage_id, source_capture_id,
+instrument_id, ordered_observation_ids, first_receive_time_ns,
+last_receive_time_ns, events, continuity_complete, continuity_attestation_id,
+advisory_only, and no_execution_authority. Its namespace is
+nativemarkettruthwindow:sha256:. It must not overload
+source_external_dataset_id.
+
+Add immutable NativeContinuityAttestation with attestation_id,
+source_capture_id, asset_id, start_received_at, end_received_at,
+initial_snapshot_observation_id, first_observation_id, last_observation_id,
+observation_count, session_id, relevant_session_event_digest,
+relevant_gap_event_digest, gap_open_count, gap_healed_count,
+continuity_complete, advisory_only, and no_execution_authority. Identity binds
+every semantic field except ID/safety booleans. No caller-provided boolean can
+establish continuity.
+
+WP169 store changes are additive read-only APIs only. APPLICATION_ID,
+USER_VERSION, DDL, indexes, checkpoint identity, append semantics, and normal
+open/verification authority remain unchanged. Queries are bounded,
+deterministically ordered, exact-asset/interval scoped, include relevant earlier
+gap state, cannot mutate rows/checkpoints, do not expose absolute paths, and fail
+closed on malformed persisted evidence. No migration.
+
+Continuity is true only when mechanically proven: exact one asset; first usable
+observation is an ACCEPTED WS full book snapshot with book_ready=true; interval
+is bounded, nonempty, and within one uninterrupted STREAMING epoch/session; no
+CONNECTING, RECONNECT_WAIT, FAILED, second STREAMING, session boundary, open or
+forbidden gap overlaps/begins in the interval; pre-interval gaps were healed
+before the chosen snapshot; receive ordering is admissible; unsupported or
+quarantined records are excluded. Forbidden gap reasons include DISCONNECT,
+TIMESTAMP_REGRESSION, HASH_CONFLICT, PARSE_FAULT, QUEUE_OVERFLOW,
+STORAGE_FAILURE, and REORG. A healed earlier gap followed by a later full
+snapshot may begin a new epoch without rewriting gap history.
+
+build_native_market_truth_window uses only accepted WS evidence, reconstructs
+BOOK/TRADE from canonical WP169 payloads, starts from a full book snapshot,
+preserves receive time as execution-knowledge time, uses Decimal/string exactness
+without binary float, orders deterministically, binds exact observation IDs and
+attestation into lineage, and never fabricates depth/trades or substitutes
+CLOB/Gamma/Data/Polygon public API records for WS order-book truth.
+
+assess_executable_edge accepts the exact MarketTruthWindow |
+NativeMarketTruthWindow union. Validation/identity are type-specific, but
+PASS/FAIL/INCONCLUSIVE/DIAGNOSTIC precedence and fee/fill/capacity/net-edge gates
+remain unchanged. Native continuity grants no automatic PASS advantage.
+
+run_wp172_replay accepts the same exact union. Only type compatibility changes;
+PaperStrategyBinding, assessment binding, fills, accounting, risk,
+reconciliation, and paper/live separation are unchanged. Existing PMXT replay
+remains backward compatible.
+
+===============================================================================
+7. REVIEWER-TRAP / NEGATIVE TEST MATRIX
+===============================================================================
+
+The four scoped test files must prove T01–T20: PMXT AS_CAPTURED stays incomplete;
+caller cannot assert native continuity; no initial full snapshot rejects/incomplete;
+open gap, disconnect, all forbidden gap reasons, RECONNECT_WAIT, and session
+boundary reject/incomplete; healed gap plus later full snapshot permits a fresh
+epoch; quarantined/unsupported and non-WS API records cannot become truth;
+observation identity/content changes lineage; gap/session evidence changes the
+attestation ID; physical SQLite retrieval order cannot change canonical output;
+PMXT identity/API remains exact; evaluator precedence remains exact; WP173 PMXT
+replay remains compatible; schema/application/user versions remain unchanged;
+public failures do not echo path/raw exception/secret; and no credential/order/
+live authority is introduced.
+
+Applicable negative categories: malformed persisted evidence; missing/empty
+snapshot/interval; wrong record type/status/source; duplicate/conflicting
+observations; forbidden gap/session state; identity tamper; bounded-count
+overflow; safe valid PMXT and native positive controls. Credential-like and
+trade-like arbitrary text must not echo. Timestamp staleness is replaced by the
+package-specific regression/session/gap temporal matrix.
+
+===============================================================================
+8. DOC / REPO-TRUTH DELTA
+===============================================================================
+
+Add the normative native bridge contract and update executable-edge contract,
+status, repo truth, deferred log, and roadmap honestly: S10-EVID-01B completed
+EVIDENCE_INCONCLUSIVE; genuine PMXT remains valid external research evidence;
+PMXT AS_CAPTURED is not reclassified; WP175E/S10-DATA-03 supplies native
+continuity attestation; WP169-D001 narrows/resolves only to the delivered
+WP169-native -> WP172 bridge; no generic PIT->Nautilus adapter is claimed if
+absent; WP175 remains dormant; Gate C NOT AUTHORIZED; WP176 NOT STARTED;
+LIVE_PATH_EVIDENCE_READY is not claimed; and the successor is a separately gated
+prospective evidence run, not automatic live.
+
+===============================================================================
+9. VALIDATION AND EVIDENCE PLAN
+===============================================================================
+
+While editing run focused WP169 store/native, WP172 market-truth/evaluator,
+WP173 paper parity, docs/status, architecture, and historical whole-diff guards.
+After the last source change run: wp_spec_guard; readiness --check-diff; exact
+20-path scope; all focused WP175E tests; full WP169 relevant suite; full WP172
+executable-edge suite; relevant WP173 paper suite; architecture/historical
+guards; generated-artifact guard; git diff --check; python -m pip check; current
+required security/static checks for FAST actual surface; and one authoritative
+python -m pytest -q. If final broad validation finds an in-scope defect, fix it,
+rerun affected focused tests, then perform one new final broad suite.
+
+After local green: commit stable candidate on the existing branch; push that
+same branch once; create one PR titled “WP175E — Native Continuity-Attested
+Market Truth Bridge”; obtain one exact-head hosted validation. At most one
+targeted rerun is allowed only for a demonstrated transient/unrelated failure
+after recording exact run ID, job ID, head SHA, endpoint behavior, and blast
+radius. Do not rerun successful jobs or use CI roulette.
+
+The PR body is the canonical current evidence surface and must include base/head,
+exact 20 paths, prompt/spec hashes, readiness, continuity contract, PMXT and DB
+compatibility, focused/full/security/hosted results, Actions attempts/jobs/reruns,
+credentials 0, real orders 0, capital USD 0, Gate C NOT AUTHORIZED, WP176 NOT
+STARTED, merge NOT AUTHORIZED, a traceability table, and an applicable negative
+matrix. Re-fetch the posted PR body and require the canonical consistency guard
+to PASS. Evidence mode is PRIVATE_REPO_MANUAL_VERIFIED unless the public
+verifier actually exits 0.
+
+===============================================================================
+10. HARD STOPS AND FINAL DISPOSITION
+===============================================================================
+
+STOP with the corresponding disposition if: handoff worktree/bytes missing;
+relevant main drift; a 21st path required; continuity proof impossible; PMXT or
+WP173 compatibility must break; store migration required; credential/account/
+order/live/Gate-C/WP176 authority required; required local validation cannot be
+green in scope; hosted CI cannot pass in scope; or posted evidence cannot be
+verified consistently.
+
+Final disposition exactly one: READY_FOR_SIDE10_REVIEW,
+HANDOFF_WORKTREE_MISSING, BLOCKED_STATE_DRIFT,
+BLOCKED_SCOPE_HANDOFF_MISMATCH, BLOCKED_CONTINUITY_PROOF,
+BLOCKED_COMPATIBILITY, BLOCKED_STORE_MIGRATION, BLOCKED_AUTHORITY,
+BLOCKED_VALIDATION, BLOCKED_HOSTED_CI, or BLOCKED_EVIDENCE.
+
+Report back with the exact worktree/branch/base/backup hash, contract hashes and
+readiness, implementation split between Claude and Codex, all local and hosted
+validation, CI cost, authority zeros, PR link, and exactly one final disposition.
+
+Successor boundary: after merge only, a separately gated prospective evidence
+run must preregister a fresh strategy candidate before viewing forward OOS/native
+capture and may then use bounded WP169 public capture plus this bridge. It is not
+automatic live, does not activate Gate C, and does not start WP176.
+
+===============================================================================
+APPENDIX A. COMPATIBILITY / IMPOSSIBILITY CHECK
+===============================================================================
+
+Required behavior | Controlling mechanism | Allowed | Compatible | Action
+WP169 durable proof | Existing SQLite session/gap/observation evidence | YES | YES | additive bounded reads
+PMXT unchanged | Frozen MarketTruthWindow identity/builder | YES | YES | parallel native type
+WP172 admission | Type-specific validation plus common event interface | YES | YES | exact union only
+WP173 parity | run_wp172_replay type annotation/runtime validation | YES | YES | no binding/accounting changes
+No migration | Existing WP169 schema/version | REQUIRED | YES | hard stop if false
+Exact scope | Active spec plus diff guards | REQUIRED | YES | hard stop on path 21
+
+===============================================================================
+APPENDIX B. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|pmxt|continuity_complete|known_gap_policy_as_captured|REQUIRE|false|NONE|R001
+NR002|native_attestation|continuity_complete|caller_assertion|REJECT|derived_only|attestation.continuity_complete|R002
+NR003|native_attestation|initial_snapshot|missing_or_not_ready|REJECT|incomplete_or_closed|NONE|R003
+NR004|native_attestation|gap_state|open_or_forbidden|REJECT|incomplete_or_closed|NONE|R004
+NR005|native_attestation|session_state|boundary_or_non_streaming|REJECT|incomplete_or_closed|NONE|R005
+NR006|native_window|events|nonaccepted_or_nonws|REJECT|excluded_from_truth|native_window.events|R006
+NR007|native_window|lineage_id|observation_or_attestation_change|REQUIRE|identity_changes|native_window.lineage_id|R007
+NR008|wp169_store|schema_version|wp175e|PRESERVE_EXACT|no_migration|store.schema|R008
+NR009|evaluator|precedence|native_type|PRESERVE_EXACT|no_eligibility_weakening|NONE|R009
+NR010|paper_runtime|semantics|native_type|PRESERVE_EXACT|type_compatibility_only|NONE|R010
+END_NORMATIVE_RULE_MATRIX_V1

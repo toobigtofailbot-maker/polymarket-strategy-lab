@@ -8,7 +8,13 @@ from decimal import Decimal
 from src.data_layer.analytical_research import PreregisteredExperiment, RunEvidenceReceipt
 from src.data_layer.analytical_research.experiment_os import record_to_mapping
 
-from .market_truth import MarketTruthEvent, MarketTruthWindow, validate_market_truth_window
+from .market_truth import (
+    MarketTruthEvent,
+    MarketTruthWindow,
+    NativeMarketTruthWindow,
+    validate_market_truth_window,
+    validate_native_market_truth_window,
+)
 from .models import (
     ASSESSMENT_SCHEMA_ID,
     SCHEMA_VERSION,
@@ -23,6 +29,21 @@ from .models import (
     validate_execution_cost_model,
     validate_research_decision_trace,
 )
+
+
+def validate_any_market_truth_window(market_truth: object) -> None:
+    """Validate either market-truth type against its own exact identity/semantics.
+
+    Both types expose the deterministic ``events``, ``continuity_complete`` and
+    ``lineage_id`` the evaluator consumes; each is validated by its own validator so
+    the existing PMXT path is byte/behaviour unchanged.
+    """
+    if type(market_truth) is MarketTruthWindow:
+        validate_market_truth_window(market_truth)
+    elif type(market_truth) is NativeMarketTruthWindow:
+        validate_native_market_truth_window(market_truth)
+    else:
+        raise ExecutableEdgeError("MARKET_TRUTH_INVALID")
 
 
 def _book_at(events: tuple[MarketTruthEvent, ...], receive_ns: int) -> MarketTruthEvent | None:
@@ -156,7 +177,7 @@ def assess_executable_edge(
     evidence: RunEvidenceReceipt,
     trace: ResearchDecisionTrace,
     cost_model: ExecutionCostModel,
-    market_truth: MarketTruthWindow,
+    market_truth: MarketTruthWindow | NativeMarketTruthWindow,
 ) -> ExecutableEdgeAssessment:
     try:
         record_to_mapping(experiment)
@@ -165,7 +186,7 @@ def assess_executable_edge(
         raise ExecutableEdgeError("WP170_EVIDENCE_INVALID") from exc
     validate_research_decision_trace(trace)
     validate_execution_cost_model(cost_model)
-    validate_market_truth_window(market_truth)
+    validate_any_market_truth_window(market_truth)
     if trace.experiment_id != experiment.experiment_id or trace.first_look_evidence_id != evidence.run_evidence_receipt_id:
         raise ExecutableEdgeError("WP170_EVIDENCE_INVALID")
 

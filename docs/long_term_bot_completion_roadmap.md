@@ -455,6 +455,17 @@ to the current merged/review sequence:
   WP170 experiment OS with preserved external provenance (never canonical PIT), and is
   followed by the separately gated S10-EVID-01 evidence-production gate. It does not
   rename, implement, or authorize canonical WP176.
+- S10-EVID-01B — genuine PMXT evidence run (completed `EVIDENCE_INCONCLUSIVE`):
+  the external bridge worked, but the tested candidate missed first-look OOS
+  criteria and PMXT `AS_CAPTURED` remained correctly continuity-incomplete.
+- WP175E — Native Continuity-Attested Market Truth Bridge (Side10 S10-DATA-03):
+  additive bounded WP169 accepted-WS/session/gap evidence reads plus a
+  store-derived native continuity attestation and parallel WP172 market-truth
+  window. It preserves the PMXT path and WP173 paper semantics, performs no
+  strategy search or evidence rerun, claims no generic PIT-to-Nautilus adapter,
+  and does not authorize Gate C or WP176. After merge, its successor is a
+  separately gated prospective evidence run that preregisters a fresh candidate
+  before forward OOS/native capture; it is not automatic live activation.
 - WP176 — Mature Controlled Live.
 
 Hermes/alpha automation may proceed later as a separately authorized parallel
