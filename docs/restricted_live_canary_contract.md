@@ -55,3 +55,19 @@ create or capital action is authorized by this package.
 
 WP176 remains separately gated and owns unattended/service operation, broader
 recovery, multiple markets/strategies, and capital scaling.
+
+Merge versus live activation. This package separates four states and never
+conflates them: code-complete; merged dormant capability; first live activation
+canary; and mature live. The inert, fully disabled Gate-C implementation is
+mergeable as dormant capability with `FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0`, so no
+real economic CREATE, real secret, capital, or strategy qualification is required
+before merging dormant code; dormant merge still needs a separate exact-head human
+merge authorization. The single real CREATE is
+`FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS=1`, reserved for the post-merge first
+live activation canary, and `MAX_CREATE_ATTEMPTS_PER_SESSION` stays 1. Merging
+dormant capability grants no live authority, keeps live trading disabled and
+startup A0_DISABLED, and does not weaken any live-runtime safeguard. The strategy
+qualification prerequisite remains a hard Gate-C/live-activation blocker only; it
+is not a dormant-merge blocker. Producing genuine qualification evidence depends on
+a separately gated external historical research bridge (S10-DATA-02) that WP175
+neither implements nor depends on.

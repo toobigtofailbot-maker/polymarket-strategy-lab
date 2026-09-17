@@ -69,7 +69,10 @@ MAX_CREATE_ATTEMPTS_PER_SESSION = 1
 MAX_REALIZED_LOSS_PER_UTC_DAY_PUSD = Decimal("5.00")
 MAX_CANARY_EQUITY_DRAWDOWN_PUSD = Decimal("7.50")
 MAX_CUMULATIVE_CANARY_LOSS_PUSD = Decimal("10.00")
-FINAL_MERGE_SMOKE_CREATE_ATTEMPTS = 1
+# Dormant code merge requires zero real economic CREATEs; the single real CREATE
+# belongs only to the separately authorized post-merge first live activation canary.
+FINAL_MERGE_SMOKE_CREATE_ATTEMPTS = 0
+FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS = 1
 MAX_RECONCILIATION_PROBES = 3
 _NS_PER_MINUTE = 60_000_000_000
 _HEAD_RE = __import__("re").compile(r"^[0-9a-f]{7,64}$")

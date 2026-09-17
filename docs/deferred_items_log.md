@@ -8,7 +8,8 @@ Research and workbench artifacts do not gain runtime authority because they are 
 
 ## Status Definitions
 
-- WP175-D001 (BLOCKED, P0): `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE` — no exact manually attested WP172/WP173 qualification is available. Code-complete mock validation does not authorize Gate-C activation or merge; revisit only after a separate exact-head human Gate-C decision.
+- WP175-D001 (BLOCKED, P0): `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE` — no exact manually attested WP172/WP173 qualification is available. This is a hard Gate-C/live-activation blocker only; it is NOT a dormant-merge blocker. The inert, disabled Gate-C code is mergeable as dormant capability with `FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0` (zero real economic CREATEs) pending a separate Karl exact-head merge authorization; revisit live activation only after a separate exact-head human Gate-C decision with genuine strategy evidence.
+- WP175-D002 (DEFERRED, P2) — external historical research bridge (Side10 ID S10-DATA-02): a future separately gated research/data package must let validated external historical market evidence (initially the already-supported pmxt v2 archive) enter WP170 experiment lineage with preserved external provenance — never backdating third-party archive rows into canonical ingestion-time PIT records, no OOS leakage, keeping the canonical WP170 binding path backwards compatible, and granting no live/execution authority. This is the durable root-cause fix for the missing WP170→WP172→WP173 live strategy evidence chain. WP175 neither implements nor depends on it; its absence blocks only future live activation, not dormant merge. Required before: a genuine live-activation strategy qualification. Resolution condition: a separately authorized external-historical-research-bridge package lands with independent review.
 
 
 - OPEN: known item requiring triage or action.

@@ -31,7 +31,10 @@ from src.execution_gateway import (
     ProtectedExecutionGateway,
 )
 from src.execution_gateway.gate_c import (
+    FINAL_MERGE_SMOKE_CREATE_ATTEMPTS,
+    FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS,
     MAX_CANARY_WALLET_PUSD,
+    MAX_CREATE_ATTEMPTS_PER_SESSION,
     MAX_GROSS_LIVE_EXPOSURE_PUSD,
     MAX_PER_MARKET_EXPOSURE_PUSD,
     MAX_PER_ORDER_COMMITTED_PUSD,
@@ -43,6 +46,20 @@ from src.execution_gateway.gate_c import (
 from src.execution_gateway.gate_c_operator import GateCOperator
 from src.execution_gateway.gateway import _GATE_C_EVENT_ISSUER
 from tests.execution_gateway.test_gateway import _prepare, _ready_gateway
+
+
+def test_dormant_merge_needs_zero_real_creates_but_one_post_merge_canary() -> None:
+    # Dormant code merge requires zero real economic CREATEs.
+    assert FINAL_MERGE_SMOKE_CREATE_ATTEMPTS == 0
+    assert gate_c_mod.FINAL_MERGE_SMOKE_CREATE_ATTEMPTS == 0
+    # The single real CREATE belongs only to the post-merge first live activation canary.
+    assert FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS == 1
+    # The runtime one-attempt-per-session live limit is unchanged.
+    assert MAX_CREATE_ATTEMPTS_PER_SESSION == 1
+    # Merge-ready evidence (zero creates) is never live-activation readiness: the
+    # exported constants keep the merge requirement and the live-canary requirement
+    # distinct, and neither disables the single-attempt live cap.
+    assert FINAL_MERGE_SMOKE_CREATE_ATTEMPTS != FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS
 
 
 def test_fixed_risk_envelope_cannot_be_widened() -> None:

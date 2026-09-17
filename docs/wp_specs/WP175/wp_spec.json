@@ -15,7 +15,7 @@
       "merge_sha": "52f46eff322aa40fd1c15b835acb4bebf784375a"
     },
     "suggested_branch": "codex/wp175-restricted-live-canary",
-    "objective": "Implement after independent certification and explicit Phase A/B authority the smallest manual foreground one-strategy one-market LIMIT-only restricted-live canary with a single-use exact-head arm receipt, fixed hard capital and loss caps, durable pre-transmit create identity, one post_order transmit per attempt, authoritative reconciliation, persistent halt and restart-to-disabled behavior, dynamic geoblock checks, and read-only operator evidence, while requiring a separate exact-head human Gate-C activation decision before any capital is used.",
+    "objective": "Implement after independent certification and explicit Phase A/B authority the smallest manual foreground one-strategy one-market LIMIT-only restricted-live canary with a single-use exact-head arm receipt, fixed hard capital and loss caps, durable pre-transmit create identity, one post_order transmit per attempt, authoritative reconciliation, persistent halt and restart-to-disabled behavior, dynamic geoblock checks, and read-only operator evidence, while requiring a separate exact-head human Gate-C activation decision before any capital is used. The inert, fully disabled Gate-C implementation is mergeable as dormant capability after exact-head validation and independent Side10 review with FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0, so no real economic CREATE, real secret, capital, or strategy qualification is a merge prerequisite; the single real CREATE (FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS=1) belongs only to the post-merge first live activation canary and MAX_CREATE_ATTEMPTS_PER_SESSION remains 1. Merging dormant capability does not imply, grant, or authorize live activation.",
     "capital_at_risk_usd": 50,
     "xl_explicit_authorization": true,
     "xl_authorization_basis": "Karl authorized WP175 Phase A and Phase B implementation in chat on 2026-09-16 under the revised master package, then explicitly authorized Side10's bounded expansion from 29 to exactly 30 paths for the machine-spec-aware historical compatibility guard and final hardening. It does not authorize a 31st path, Gate-C live-capital activation, private-key use, real capital, a real economic CREATE, merge, or WP176."
@@ -480,7 +480,7 @@
         "source": "validation",
         "test": "final readiness CI Side review and activation separation",
         "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP175/wp_prompt.txt --spec docs/wp_specs/WP175/wp_spec.json --certificate docs/wp_specs/WP175/draftability_certificate.json --repo-root . --check-diff --base origin/main --head HEAD",
-        "expected_result": "exact-head readiness hosted CI and independent pre-activation review pass while real CREATE count and capital remain zero Gate-C activation remains PENDING and merge remains NO"
+        "expected_result": "exact-head readiness hosted CI and independent review pass while real CREATE count and capital remain zero; the dormant capability is merge-eligible on this evidence with FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0 pending a separate Karl exact-head merge authorization, while Gate-C activation remains PENDING, the strategy qualification prerequisite remains a hard activation-only blocker, and merge is never granted by readiness itself"
       }
     ]
   },

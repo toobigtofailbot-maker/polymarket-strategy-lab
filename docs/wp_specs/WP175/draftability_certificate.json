@@ -4,24 +4,60 @@
   "wp_id": "WP175",
   "reviewed_repository": "toobigtofailbot-maker/polymarket-strategy-lab",
   "reviewed_base_merge_sha": "52f46eff322aa40fd1c15b835acb4bebf784375a",
-  "wp_text_sha256": "2c71f8b88464bcf2d0f92436e720b0c3fdbbdff63d5ed0ea45dd61465b0f93e6",
-  "wp_spec_sha256": "cc2037049595e635da095f8863879108d510e4f65d36555ed85ef3b9a6cf703a",
+  "wp_text_sha256": "289e731d30f8ef39a02f501aafc1aa7c1037577c4b9ea4822711d700aa0cba37",
+  "wp_spec_sha256": "28de56bec2f898dbac585cfa9086e5c5fbfcf8feadee3e478044a16c08fb75c8",
   "reviewer_role": "INDEPENDENT_DRAFTABILITY_REVIEWER",
   "independence_attestation": "SEPARATE_REVIEW_CONTEXT_DECLARED",
   "result": "PASS",
   "covered_lenses": [
-    {"lens": "objective_and_class", "result": "PASS"},
-    {"lens": "public_api", "result": "PASS"},
-    {"lens": "mutability", "result": "PASS"},
-    {"lens": "identity_and_serialization", "result": "PASS"},
-    {"lens": "state_transitions", "result": "PASS"},
-    {"lens": "batch_set_behavior", "result": "PASS"},
-    {"lens": "error_precedence", "result": "PASS"},
-    {"lens": "invalid_input_no_echo", "result": "PASS"},
-    {"lens": "example_truth", "result": "PASS"},
-    {"lens": "scope_compatibility", "result": "PASS"},
-    {"lens": "evidence_publication", "result": "PASS"},
-    {"lens": "successor_boundary", "result": "PASS"}
+    {
+      "lens": "objective_and_class",
+      "result": "PASS"
+    },
+    {
+      "lens": "public_api",
+      "result": "PASS"
+    },
+    {
+      "lens": "mutability",
+      "result": "PASS"
+    },
+    {
+      "lens": "identity_and_serialization",
+      "result": "PASS"
+    },
+    {
+      "lens": "state_transitions",
+      "result": "PASS"
+    },
+    {
+      "lens": "batch_set_behavior",
+      "result": "PASS"
+    },
+    {
+      "lens": "error_precedence",
+      "result": "PASS"
+    },
+    {
+      "lens": "invalid_input_no_echo",
+      "result": "PASS"
+    },
+    {
+      "lens": "example_truth",
+      "result": "PASS"
+    },
+    {
+      "lens": "scope_compatibility",
+      "result": "PASS"
+    },
+    {
+      "lens": "evidence_publication",
+      "result": "PASS"
+    },
+    {
+      "lens": "successor_boundary",
+      "result": "PASS"
+    }
   ],
   "unresolved_decisions": [],
   "implementability_simulation": "PASS"

@@ -9,6 +9,15 @@ been performed, and capital at risk is USD 0. `LIVE_ACTIVATION_PREREQUISITE_NOT_
 remains open because no exact manually attested WP172/WP173 strategy
 qualification is available. This document does not grant live authority.
 
+Merge does not grant live authority. The inert, fully disabled Gate-C
+implementation is mergeable as dormant capability with
+`FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0` — no real economic CREATE, secret, capital,
+or strategy qualification is a merge prerequisite — while LIVE TRADING STATUS
+stays DISABLED and startup stays A0_DISABLED. The single real CREATE
+(`FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS=1`) is reserved for the separately
+authorized post-merge first live activation canary; `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`
+remains a hard activation blocker only, not a dormant-merge blocker.
+
 No live trading code exists in WP1. No strategy is live-authorized. No wallet or API credentials are configured. No external repo code is authorized for live execution.
 
 Live mode requires a future WP, explicit human approval, active risk gateway, kill-switch tests, dashboard visibility, and an updated authorization table.

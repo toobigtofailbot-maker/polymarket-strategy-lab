@@ -53,10 +53,24 @@ operator evidence. It is not mature live.
 
 Current repository discovery found no committed non-test operator strategy qualification suitable for
 live activation. Record `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`. Phase B may become
-code-complete, mock-validated, and CI-green, but no real smoke or full WP175 completion claim is
-permitted until the exact manual qualification contract in section 7 is supplied and validated.
-Implementation authority was granted in chat on 2026-09-16. Gate-C activation and merge remain
-separate human decisions.
+code-complete, mock-validated, and CI-green.
+
+This package distinguishes four states and never conflates them. (A) IMPLEMENTATION / CODE-COMPLETE:
+software implemented, mock/adversarial validated, security-closed, exact-head CI-green. (B) MERGED
+DORMANT CAPABILITY: the inert, fully disabled Gate-C implementation may be merged into main after
+exact-head validation, independent Side10 review, and a separate Karl exact-head merge authorization,
+while live trading stays DISABLED, startup/restart stays A0_DISABLED, strategy qualification may remain
+unavailable, Gate-C activation stays NOT AUTHORIZED, and real secret, real economic CREATE count, and
+capital at risk all remain zero. (C) FIRST LIVE ACTIVATION / CANARY: strictly POST-MERGE, requiring a
+genuine exact strategy evidence chain, a fresh merged-main exact-head review, fresh public
+market/geoblock/account readiness, a separate Side10 review, a separate exact human Gate-C
+authorization, ephemeral private-key entry, and at most one LIMIT CREATE attempt. (D) MATURE LIVE:
+still forbidden and owned by separately gated WP176-family work. Merging state (B) does not imply,
+grant, or authorize state (C); a real smoke CREATE is NOT a merge prerequisite, so
+`FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0`. No claim of live-activation readiness, first-canary completion,
+or economic proof is permitted until the exact manual qualification contract in section 7 is supplied
+and validated post-merge. Implementation authority was granted in chat on 2026-09-16. Gate-C activation
+and merge remain separate human decisions, and merge authority grants no live authority.
 
 2. AUTHORITY / NON-AUTHORITY POSTURE
 
@@ -213,7 +227,10 @@ MAX_PER_MARKET_EXPOSURE_PUSD=15.00; MAX_PER_ORDER_COMMITTED_PUSD=10.00;
 MAX_ACTIVE_MARKETS=1; MAX_SIMULTANEOUS_OPEN_ORDERS=1; MAX_CREATE_ATTEMPTS_PER_SESSION=1;
 MAX_LIVE_SESSION_DURATION_MINUTES=30; MAX_REALIZED_LOSS_PER_UTC_DAY_PUSD=5.00;
 MAX_CANARY_EQUITY_DRAWDOWN_PUSD=7.50; MAX_CUMULATIVE_CANARY_LOSS_PUSD=10.00;
-ARM_RECEIPT_VALIDITY_MINUTES=10; FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=1.
+ARM_RECEIPT_VALIDITY_MINUTES=10; FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0;
+FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS=1. Dormant merge requires zero real economic CREATEs; the
+single real CREATE belongs only to the post-merge first live activation canary, and
+MAX_CREATE_ATTEMPTS_PER_SESSION remains 1 for that one separately authorized session.
 
 Dedicated Deposit Wallet/signature type 3 only. Balance above 50 blocks new exposure but not cancel or
 otherwise valid reduce-only SELL. One arm binds exact git head, store head, public identity, the exact
@@ -298,10 +315,22 @@ heartbeat/user-stream maturity, broader incident recovery, secret-manager/sessio
 multiple-market/strategy operation, capital scaling, and mature operator controls. WP175 may not
 pre-build those capabilities.
 
+The external historical research bridge (repo-truth deferred item S10-DATA-02) is also separately gated
+and is NOT part of WP175. That future package must let validated external historical market evidence
+(initially the already-supported pmxt v2 archive) enter WP170 experiment lineage with preserved
+external provenance, without backdating third-party archive rows into canonical ingestion-time PIT
+records, without OOS leakage, keeping the canonical WP170 path backwards compatible, and granting no
+live/execution authority. WP175 neither implements nor depends on it; its absence blocks only the
+future live-activation strategy evidence chain, not dormant merge.
+
 12. REPORT-BACK
 
 At PRE-CERT GREEN report PR, exact head, exact 30-path list, prompt/spec hashes, compiled SDK facts,
 official-doc verification, strategy-qualification prerequisite status, and all certificate-independent gates.
 Then obtain an independent exact-hash certificate. After Phase B report code-complete evidence with
-real economic CREATE count 0, capital at risk 0, Gate-C activation PENDING, and merge NO. Never claim
-full WP175 completion or smoke readiness while the strategy qualification prerequisite is unavailable.
+real economic CREATE count 0, capital at risk 0, Gate-C activation PENDING, and merge NO. The
+code-complete dormant capability (state B) is mergeable on that evidence alone with real economic CREATE
+count 0; merge readiness must never be reported as live-activation readiness. Never claim live-activation
+readiness, first-canary completion, smoke readiness, or economic proof while the strategy qualification
+prerequisite is unavailable; that prerequisite is a hard Gate-C/live-activation blocker only, not a
+dormant-merge blocker.

@@ -20,6 +20,19 @@ activation is pending a separate exact-head human decision. Capital at risk is
 USD 0. WP176 remains the
 separately gated owner of mature/unattended live operation and scaling.
 
+Dormant merge versus live activation are distinct. The inert, fully disabled
+Gate-C implementation is mergeable as dormant capability with
+`FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0` — no real economic CREATE, secret, capital,
+or strategy qualification is a merge prerequisite — pending a separate Karl
+exact-head merge authorization, while live trading stays disabled and startup
+stays `A0_DISABLED`. The single real CREATE
+(`FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS=1`) is reserved for the post-merge
+first live activation canary. `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE` is
+therefore an activation-only blocker, not a dormant-merge blocker; producing
+genuine qualification evidence depends on the separately gated external historical
+research bridge recorded as deferred item WP175-D002 (Side10 ID S10-DATA-02),
+which WP175 neither implements nor depends on.
+
 Repo-truth files are authoritative project memory. They override chat memory, old handoffs, and ad hoc instructions unless explicitly updated by a later approved work package.
 
 ## Authority Hierarchy
