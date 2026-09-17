@@ -1,0 +1,506 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP175",
+    "title": "Restricted Live Canary",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PROTECTED_RESTRICTED_LIVE_CANARY",
+    "package_size_class": "XL",
+    "risk_level": 4,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 177,
+      "head_sha": "d3516a89ab3c2205741962f83d946e6f1d2d062a",
+      "merge_sha": "52f46eff322aa40fd1c15b835acb4bebf784375a"
+    },
+    "suggested_branch": "codex/wp175-restricted-live-canary",
+    "objective": "Implement after independent certification and explicit Phase A/B authority the smallest manual foreground one-strategy one-market LIMIT-only restricted-live canary with a single-use exact-head arm receipt, fixed hard capital and loss caps, durable pre-transmit create identity, one post_order transmit per attempt, authoritative reconciliation, persistent halt and restart-to-disabled behavior, dynamic geoblock checks, and read-only operator evidence, while requiring a separate exact-head human Gate-C activation decision before any capital is used. The inert, fully disabled Gate-C implementation is mergeable as dormant capability after exact-head validation and independent Side10 review with FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0, so no real economic CREATE, real secret, capital, or strategy qualification is a merge prerequisite; the single real CREATE (FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS=1) belongs only to the post-merge first live activation canary and MAX_CREATE_ATTEMPTS_PER_SESSION remains 1. Merging dormant capability does not imply, grant, or authorize live activation.",
+    "capital_at_risk_usd": 50,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Karl authorized WP175 Phase A and Phase B implementation in chat on 2026-09-16 under the revised master package, then explicitly authorized Side10's bounded expansion from 29 to exactly 30 paths for the machine-spec-aware historical compatibility guard and final hardening. It does not authorize a 31st path, Gate-C live-capital activation, private-key use, real capital, a real economic CREATE, merge, or WP176."
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/live_trading_authorization.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/restricted_live_canary_contract.md",
+      "docs/security_tooling_status.md",
+      "docs/status_entries/WP175.md",
+      "docs/wp_specs/WP175/draftability_certificate.json",
+      "docs/wp_specs/WP175/wp_prompt.txt",
+      "docs/wp_specs/WP175/wp_spec.json",
+      "src/execution_gateway/__init__.py",
+      "src/execution_gateway/gate_b.py",
+      "src/execution_gateway/gate_c.py",
+      "src/execution_gateway/gate_c_operator.py",
+      "src/execution_gateway/gateway.py",
+      "src/execution_gateway/store.py",
+      "src/operator_cockpit.py",
+      "tests/execution_gateway/test_gate_b.py",
+      "tests/execution_gateway/test_gate_c.py",
+      "tests/execution_gateway/test_gateway.py",
+      "tests/execution_gateway/test_store_recovery.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_no_live_mode_by_default.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_official_client_sandbox_boundary.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_generated_artifact_guard.py"
+      ,"tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/live_trading_authorization.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/restricted_live_canary_contract.md",
+      "docs/security_tooling_status.md",
+      "docs/status_entries/WP175.md",
+      "docs/wp_specs/WP175/draftability_certificate.json",
+      "docs/wp_specs/WP175/wp_prompt.txt",
+      "docs/wp_specs/WP175/wp_spec.json",
+      "src/execution_gateway/__init__.py",
+      "src/execution_gateway/gate_b.py",
+      "src/execution_gateway/gate_c.py",
+      "src/execution_gateway/gate_c_operator.py",
+      "src/execution_gateway/gateway.py",
+      "src/execution_gateway/store.py",
+      "src/operator_cockpit.py",
+      "tests/execution_gateway/test_gate_b.py",
+      "tests/execution_gateway/test_gate_c.py",
+      "tests/execution_gateway/test_gateway.py",
+      "tests/execution_gateway/test_store_recovery.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_no_live_mode_by_default.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_official_client_sandbox_boundary.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_generated_artifact_guard.py"
+      ,"tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "src/operator_cockpit_frontend/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 30,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/security_tooling_status.md",
+      "src/execution_gateway/gate_b.py",
+      "src/execution_gateway/gateway.py",
+      "src/execution_gateway/store.py",
+      "src/operator_cockpit.py",
+      "tests/execution_gateway/test_gate_b.py",
+      "tests/execution_gateway/test_gateway.py",
+      "tests/execution_gateway/test_store_recovery.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_no_live_mode_by_default.py",
+      "tests/test_official_client_dependency_boundary.py",
+      "tests/test_official_client_sandbox_boundary.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_generated_artifact_guard.py"
+      ,"tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py"
+    ],
+    "rollback_surface": "Revert WP175. A3 restricted-live authority, Gate-C arm/create/reconciliation logic, manual operator command, canary receipt, cockpit projection, focused tests, and WP175 status evidence disappear. Merged WP174B Gate-B authentication, signing, cancellation, credential isolation, and Gate-C-required create lock remain intact. No live receipt, secret, venue response, or local canary store is committed or migrated.",
+    "mode_boundaries": [
+      {"boundary": "workflow_governance", "crossed": false},
+      {"boundary": "local_offline_tooling", "crossed": false},
+      {"boundary": "canonical_evidence_policy", "crossed": true},
+      {"boundary": "docs", "crossed": true},
+      {"boundary": "tests", "crossed": true},
+      {"boundary": "source_runtime", "crossed": true},
+      {"boundary": "workflow_files", "crossed": false},
+      {"boundary": "dependencies", "crossed": false},
+      {"boundary": "network", "crossed": true},
+      {"boundary": "credentials", "crossed": true},
+      {"boundary": "scheduler", "crossed": false},
+      {"boundary": "hermes_runtime", "crossed": false},
+      {"boundary": "strategy", "crossed": false},
+      {"boundary": "paper", "crossed": false},
+      {"boundary": "execution", "crossed": true},
+      {"boundary": "live", "crossed": true}
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": true,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": true,
+    "live": true
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP175 adds a private Gate-C create transport, manual arm/operator surface, durable restricted-live state and GET-only cockpit evidence while preserving Gate-B credential and cancel semantics.",
+    "items": [
+      {
+        "surface": "Restricted-live authority and arm receipt",
+        "before": "A3 is rejected and GateCLivePermit is unconstructable",
+        "after": "A3 exists only for one process-local single-use exact-head arm receipt and startup always returns A0_DISABLED",
+        "change_authorized": true,
+        "compatibility_requirement": "A0 A1 A2 remain compatible and config env secret browser strategy or Hermes input cannot arm",
+        "authority": "MANUAL_FOREGROUND_GATE_C_ONLY"
+      },
+      {
+        "surface": "Real LIMIT create",
+        "before": "Every create and post fails GATE_C_REQUIRED",
+        "after": "One signed LIMIT attempt may persist STARTED then call post_order exactly once and reconcile",
+        "change_authorized": true,
+        "compatibility_requirement": "No convenience place method batch market order allowance recovery retry or raw-client exposure",
+        "authority": "ONE_STRATEGY_ONE_MARKET_BOUNDED_CREATE"
+      },
+      {
+        "surface": "Cockpit live-canary projection",
+        "before": "Gate-B status only",
+        "after": "Sanitized GET-only arm disabled halt attempt receipt exposure loss and reconciliation evidence",
+        "change_authorized": true,
+        "compatibility_requirement": "No browser arm cancel create kill or limit mutation route",
+        "authority": "READ_ONLY_LOOPBACK_PROJECTION"
+      },
+      {
+        "surface": "Mature controlled live",
+        "before": "Absent",
+        "after": "Unchanged and reserved to WP176",
+        "change_authorized": false,
+        "compatibility_requirement": "No scheduler service auto-restart capital scaling or multiple strategy and market authority",
+        "authority": "NONE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The capability is governed by closed arm, state, risk, attempt, outcome, reconciliation, and receipt identities.",
+    "items": [
+      {
+        "path": "arm.receipt",
+        "source": "DERIVED",
+        "type": "content_addressed_single_use",
+        "required_rule": "bind actual runtime git head canonical per-wallet ledger path public Gate-B identity store head exact strategy qualification one market and token risk hash fresh account reconciliation and geoblock proof operator nonce issue and expiry",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "actual git root and head are derived fail closed; valid at most ten minutes consumed once process-local and rejected after restart reuse wrong or unverifiable head alternate store mismatch kill or unhealthy reconciliation",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "arm receipt id and timestamps only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "strategy.qualification",
+        "source": "DERIVED",
+        "type": "content_addressed_manual_attestation",
+        "required_rule": "bind exact head validated PaperStrategyBinding matching complete validated WP172 assessment and cost model plus a healthy validated WP173 paper-store terminal head and an interactive operator production-evidence confirmation",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "valid_until is derived as issued_at plus ten minutes and cannot be caller-extended; a bare binding rank score copied identifiers fixture noninteractive input mismatched evidence corrupted paper store stale writer or reused expired other-head or second-in-session qualification rejects; consumption occurs exactly once when constructing its one arm and artifact paths are excluded from output",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "qualification id exact evidence ids and issue expiry times only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.state",
+        "source": "DERIVED",
+        "type": "closed_enum",
+        "required_rule": "A0_DISABLED A1_READ_ONLY A2_SHADOW or A3_RESTRICTED_LIVE only",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "startup always A0 and only valid arm enters A3; safety failure disables or blocks",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "closed state token",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "access.geoblock",
+        "source": "DERIVED",
+        "type": "fresh_boolean_proof",
+        "required_rule": "actual execution host official geoblock response must be fresh blocked false before new exposure",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "only fresh well-formed blocked false permits create; blocked true unavailable stale or malformed denies create while cancel remains available; no close-only field is assumed and IP country and region are discarded",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "pass boolean and time only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "risk.envelope",
+        "source": "CONSTANT",
+        "type": "fixed_decimal_limits",
+        "required_rule": "wallet 50 gross 20 market 15 order 10 active markets 1 open orders 1 create attempt per session duration 30 minutes daily loss 5 drawdown 7.5 cumulative loss 10",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "no input may increase any cap; missing authoritative exposure allowance position loss drawdown cumulative-loss active-market or committed state fails closed unless zero is deterministically proven; exact boundary tests fail closed",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "risk envelope hash and bounded totals",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "create.attempt",
+        "source": "DERIVED",
+        "type": "sha256_durable_identity",
+        "required_rule": "canonical public signed-order fields strategy market token arm risk store head and monotonic sequence are persisted as STARTED before transmit",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "persistence failure makes zero calls and a started or ambiguous attempt is never resent after failure or restart",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "attempt digest and closed outcome only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "create.outcome",
+        "source": "DERIVED",
+        "type": "closed_enum",
+        "required_rule": "DEFINITIVE_ACCEPTED DEFINITIVE_REJECTED or AMBIGUOUS from exact AcceptedOrder and RejectedOrder models",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "timeout 429 5xx malformed delayed unknown or inconsistent response is ambiguous; raw response and exception are never emitted",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed outcome status order id and counts",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "reconciliation.state",
+        "source": "DERIVED",
+        "type": "closed_enum",
+        "required_rule": "account open orders trades positions balance allowance and canonical per-wallet journal converge authoritatively before arm and through an automatic bounded foreground sequence after every accepted or possibly transmitted mutation",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "no create retry occurs; foreign order unexpected trade divergence corruption stale writer fresh-store bypass or unresolved bounded convergence remains AMBIGUOUS or BLOCKED and blocks A3 and new exposure",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "HEALTHY REQUIRED BLOCKED or DIVERGED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "receipt.identity",
+        "source": "DERIVED",
+        "type": "sha256_sanitized_receipt",
+        "required_rule": "content address over exact head arm attempt public identities closed outcomes fills positions balance pnl access time kill state and reconciliation",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "no secret signature credential raw response raw exception IP or local path and receipt remains generated local evidence",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "receipt id and sanitized public evidence",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "The prompt freezes all canonical public identity inputs; deterministic model fixtures are the executable oracle and no secret or signed payload example is embedded.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Protected work requires independent exact-hash draftability before technical readiness and the already-granted Phase A/B authority before implementation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "a genuinely independent reviewer certifies the exact prompt and specification across all twelve lenses with zero unresolved decisions and passing implementability simulation",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "canonical readiness reports IMPLEMENTATION_READY for the exact certified bytes and Karl's 2026-09-16 Phase A/B authorization applies; this never authorizes Gate-C activation or merge",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays in exact scope uses mocks and synthetic secrets only performs zero real creates and zero capital and passes final readiness check-diff",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {"condition_id": "file_unreadable", "category": "FILE_READ_ERROR", "priority": 10},
+      {"condition_id": "json_invalid", "category": "JSON_PARSE_INVALID", "priority": 20},
+      {"condition_id": "schema_unsupported", "category": "SCHEMA_UNSUPPORTED", "priority": 30},
+      {"condition_id": "unknown_field", "category": "UNKNOWN_FIELD", "priority": 40},
+      {"condition_id": "field_missing", "category": "FIELD_MISSING", "priority": 50},
+      {"condition_id": "field_type_invalid", "category": "FIELD_TYPE_INVALID", "priority": 60},
+      {"condition_id": "field_value_invalid", "category": "FIELD_VALUE_INVALID", "priority": 70},
+      {"condition_id": "certificate_hash_mismatch", "category": "CERTIFICATE_HASH_MISMATCH", "priority": 80},
+      {"condition_id": "draftability_incomplete", "category": "DRAFTABILITY_INCOMPLETE", "priority": 90},
+      {"condition_id": "scope_policy_invalid", "category": "SCOPE_POLICY_INVALID", "priority": 100},
+      {"condition_id": "authority_contradiction", "category": "AUTHORITY_CONTRADICTION", "priority": 110},
+      {"condition_id": "semantic_contradiction", "category": "SEMANTIC_CONTRADICTION", "priority": 120},
+      {"condition_id": "identity_derivation_invalid", "category": "IDENTITY_DERIVATION_INVALID", "priority": 130},
+      {"condition_id": "failure_precedence_invalid", "category": "FAILURE_PRECEDENCE_INVALID", "priority": 140},
+      {"condition_id": "example_truth_invalid", "category": "EXAMPLE_TRUTH_INVALID", "priority": 150}
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No real or realistic credential signed-order arm receipt or canary receipt sample may be embedded; deterministic fake models supply examples after certification.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R015 cover protected readiness, exact SDK contracts, arm authority, access and identity, hard risk, durable create, response classification, reconciliation, cancellation, security, boundaries, cockpit evidence, repo truth, full validation, and later activation separation.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "independent protected readiness",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP175/wp_prompt.txt --spec docs/wp_specs/WP175/wp_spec.json --certificate docs/wp_specs/WP175/draftability_certificate.json --repo-root .",
+        "expected_result": "IMPLEMENTATION_READY on PROTECTED with exact hashes predecessor PR 177 scope 30 and authority mirror equality; readiness grants no Gate-C activation or merge"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_installed_sdk_contract_is_exact",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py -k installed_sdk_contract_is_exact",
+        "expected_result": "real installed 0.10.0 create_limit_order post_order AcceptedOrder RejectedOrder account-read and order-book symbols compile and forbidden convenience helpers are unreachable"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_arm_is_single_use_head_bound_and_restart_disabled",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py tests/execution_gateway/test_gateway.py tests/execution_gateway/test_store_recovery.py",
+        "expected_result": "A3 requires an exact valid arm receipt cannot be restored after restart and cannot be created by config env secret browser strategy or Hermes input; qualification and arm wrong-head expiry reuse caller-extended validity and second use reject"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_access_identity_binding_and_market_fail_closed",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py -k access_identity_binding_and_market_fail_closed",
+        "expected_result": "blocked unknown stale or malformed access wrong Deposit Wallet identity bare mismatched noninteractive wrong-head expired reused caller-extended or second-in-session strategy qualification wrong token closed neg-risk delayed or stale metadata deny new exposure without denying cancellation"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_every_live_risk_cap_and_reduce_only_boundary",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py -k live_risk_cap",
+        "expected_result": "wallet order market gross open-order attempt duration daily-loss drawdown cumulative-loss stale mark balance allowance and oversell boundaries fail closed while valid reduce-only sell remains possible"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_create_started_before_exactly_one_post_and_never_retries",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py -k create_started_before_exactly_one_post",
+        "expected_result": "STARTED commits before mocked post_order persistence failure makes zero calls exactly one transmit occurs and restart or ambiguity can never resend the attempt"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_exact_order_response_classification",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py -k order_response_classification",
+        "expected_result": "real AcceptedOrder and RejectedOrder model objects classify exactly; delayed inconsistent timeout 429 5xx malformed and unknown responses are ambiguous and deterministic rejections are not accepted"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_authoritative_reconciliation_and_restart_blocking",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py tests/execution_gateway/test_gateway.py",
+        "expected_result": "open-order trade position balance foreign-state corruption stale-writer kill and restart cases converge HEALTHY or remain blocked with no blind retry or re-arm"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_resting_order_uses_durable_gate_b_cancel",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py tests/execution_gateway/test_gate_b.py",
+        "expected_result": "accepted resting order cancels through the existing durable GateBSession path and partial-fill cancel races reconcile exact account state without a second create"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_canary_receipt_and_every_output_are_sanitized",
+        "command": "python -m pytest -q tests/execution_gateway/test_gate_c.py -k sanitized",
+        "expected_result": "secret sentinel raw SDK response exception signature credential IP and path are absent and exact-head content-addressed receipt identity recomputes"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_wp175_boundary_has_no_scheduler_hermes_paper_or_wallet_ops",
+        "command": "python -m pytest -q tests/test_architecture_boundaries.py tests/test_no_live_mode_by_default.py tests/test_official_client_dependency_boundary.py tests/test_official_client_sandbox_boundary.py tests/test_generated_artifact_guard.py",
+        "expected_result": "only the private Gate-C file may call post_order and no market batch convenience approval wallet treasury scheduler Hermes paper mutation dependency workflow or committed generated artifact is introduced"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_live_canary_cockpit_projection_is_get_only",
+        "command": "python -m pytest -q tests/test_operator_cockpit.py",
+        "expected_result": "bounded sanitized Gate-C evidence is GET-only and no browser route can arm create cancel kill clear halt or change limits"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_wp175_status_repo_truth_and_activation_prerequisite",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
+        "expected_result": "repo truth records WP174B merged WP175 protected implementation and LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE with Gate-C activation pending and WP176 separately gated"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "validation",
+        "test": "stable-candidate full security dependency and exact-scope validation",
+        "command": "python -m pytest -q && python -m pip check && gitleaks detect --no-banner --redact --source . && semgrep --error --quiet --config auto src/execution_gateway && python -m pip_audit",
+        "expected_result": "one authoritative full suite and canonical security and dependency checks pass after the final source change with exact 30-path scope and no real secret order or capital"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "validation",
+        "test": "final readiness CI Side review and activation separation",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP175/wp_prompt.txt --spec docs/wp_specs/WP175/wp_spec.json --certificate docs/wp_specs/WP175/draftability_certificate.json --repo-root . --check-diff --base origin/main --head HEAD",
+        "expected_result": "exact-head readiness hosted CI and independent review pass while real CREATE count and capital remain zero; the dormant capability is merge-eligible on this evidence with FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0 pending a separate Karl exact-head merge authorization, while Gate-C activation remains PENDING, the strategy qualification prerequisite remains a hard activation-only blocker, and merge is never granted by readiness itself"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP176",
+    "next_title": "Mature Controlled Live",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP176",
+    "forbidden_in_this_wp": [
+      "Gate-C activation without separate exact-head human authority",
+      "mature unattended controlled live or capital scaling",
+      "multiple active strategies or markets",
+      "scheduler daemon service background worker or auto-restart-to-live",
+      "MARKET FAK FOK IOC stop trailing or batch create",
+      "wallet deployment funding transfer bridge approval treasury or withdrawal",
+      "session keys builder relayer RFQ combo or perps",
+      "Hermes model browser or strategy execution risk credential signing capital or approval authority",
+      "paper or research evidence mutation",
+      "dependency lock or workflow changes",
+      "merge authority"
+    ]
+  }
+}

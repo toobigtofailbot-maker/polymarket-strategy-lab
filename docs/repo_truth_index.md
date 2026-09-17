@@ -1,5 +1,38 @@
 # Repo Truth Index
 
+## WP175 Restricted Live Canary (current review target)
+
+WP175 is the protected PR #178 implementation package on
+`codex/wp175-restricted-live-canary`, based on merged WP174B PR #177. The
+Side10-authorized 30-path package is `IMPLEMENTATION_READY` and Phase A/B implementation
+is authorized for certified bytes; readiness does not authorize Gate-C
+activation or merge. A3 is available only inside the manual foreground Gate-C
+session after a single-use actual-clean-head arm receipt backed by the canonical
+per-wallet ledger. Startup and restart remain
+`A0_DISABLED`. The canary is one strategy, one binary market, LIMIT-only, one
+create attempt, automatic bounded authoritative reconciliation, and the fixed risk envelope in
+`docs/restricted_live_canary_contract.md`.
+
+The genuine WP172/WP173 strategy qualification prerequisite is currently
+`LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`. No real secret, real CREATE,
+venue mutation, or capital was used by implementation or tests; Gate-C
+activation is pending a separate exact-head human decision. Capital at risk is
+USD 0. WP176 remains the
+separately gated owner of mature/unattended live operation and scaling.
+
+Dormant merge versus live activation are distinct. The inert, fully disabled
+Gate-C implementation is mergeable as dormant capability with
+`FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0` — no real economic CREATE, secret, capital,
+or strategy qualification is a merge prerequisite — pending a separate Karl
+exact-head merge authorization, while live trading stays disabled and startup
+stays `A0_DISABLED`. The single real CREATE
+(`FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS=1`) is reserved for the post-merge
+first live activation canary. `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE` is
+therefore an activation-only blocker, not a dormant-merge blocker; producing
+genuine qualification evidence depends on the separately gated external historical
+research bridge recorded as deferred item WP175-D002 (Side10 ID S10-DATA-02),
+which WP175 neither implements nor depends on.
+
 Repo-truth files are authoritative project memory. They override chat memory, old handoffs, and ad hoc instructions unless explicitly updated by a later approved work package.
 
 ## Authority Hierarchy

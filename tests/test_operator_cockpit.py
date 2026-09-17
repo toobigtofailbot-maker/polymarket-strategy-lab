@@ -739,6 +739,23 @@ def test_gateway_routes_are_get_only_bounded_sanitized_and_read_only(
         "open_order_count": 0,
         "gate_b_authorized": False,
         "restricted_live_available": False,
+        "restricted_live": {
+            "armed": False,
+            "halted": False,
+            "arm_receipt_id": None,
+            "qualification_id": None,
+            "attempt_id": None,
+            "create_outcome": None,
+            "response_status": None,
+            "venue_order_id": None,
+            "market_id": None,
+            "token_id": None,
+            "create_attempt_count": 0,
+            "capital_at_risk_pusd": "0",
+                "capital_committed_pusd": "0",
+                "reconciliation_state": "REQUIRED",
+                "residual_position_state": "UNKNOWN",
+            },
         "gate_b": {
             "gate_b_capability_available": True,
             "gate_b_state": "B0_LOCKED",
@@ -789,6 +806,11 @@ def test_gateway_routes_are_get_only_bounded_sanitized_and_read_only(
         503,
         {"error": {"code": "SOURCE_UNAVAILABLE"}},
     )
+
+
+def test_live_canary_cockpit_projection_is_get_only(tmp_path: Path) -> None:
+    """The bounded gateway route proves the Gate-C projection is GET-only."""
+    test_gateway_routes_are_get_only_bounded_sanitized_and_read_only(tmp_path)
 
 
 def test_paper_cockpit_rejects_consistently_rehashed_logical_divergence(

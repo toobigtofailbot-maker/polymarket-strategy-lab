@@ -22,8 +22,8 @@ def _read(path: pathlib.Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def _spec_authorized_tool_paths(changed) -> set:
-    """Governance-tool paths authorized by the current WP machine spec(s).
+def _spec_authorized_paths(changed, prefix: str) -> set:
+    """Paths under ``prefix`` authorized by current WP machine spec(s).
 
     Any WP whose status entry is in ``changed`` contributes the ``tools/`` paths declared
     in its machine-spec ``required_changed_files``. Bounded and deterministic; replaces
@@ -43,9 +43,17 @@ def _spec_authorized_tool_paths(changed) -> set:
         except (OSError, ValueError):
             continue
         for changed_file in spec.get("scope", {}).get("required_changed_files", []):
-            if isinstance(changed_file, str) and changed_file.startswith("tools/"):
+            if isinstance(changed_file, str) and changed_file.startswith(prefix):
                 authorized.add(changed_file)
     return authorized
+
+
+def _spec_authorized_tool_paths(changed) -> set:
+    return _spec_authorized_paths(changed, "tools/")
+
+
+def _spec_authorized_src_paths(changed) -> set:
+    return _spec_authorized_paths(changed, "src/")
 
 
 def test_hermes_tool_scope_guard_uses_current_wp_spec_authority() -> None:
@@ -55,6 +63,13 @@ def test_hermes_tool_scope_guard_uses_current_wp_spec_authority() -> None:
     wp159_authorized = _spec_authorized_tool_paths({"docs/status_entries/WP159.md"})
     assert "tools/wp/wp_spec_guard.py" in wp159_authorized
     assert _spec_authorized_tool_paths({"docs/project_status.md"}) == set()
+
+
+def test_hermes_src_scope_guard_uses_current_wp_spec_authority() -> None:
+    authorized = _spec_authorized_src_paths({"docs/status_entries/WP175.md"})
+    assert "src/execution_gateway/gate_c.py" in authorized
+    assert "src/execution_gateway/gateway.py" in authorized
+    assert "src/research_runtime/forbidden.py" not in authorized
 
 
 def _flat(path: pathlib.Path) -> str:
@@ -856,6 +871,7 @@ def test_no_src_implementation_for_wp98() -> None:
                 "src/data_layer/polymarket/public_client.py",
                 "src/data_layer/polymarket/polling_policy.py",
             }
+    later_authorized_src.update(_spec_authorized_src_paths(changed_files))
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (
             f"Forbidden src/ file changed: {f}"

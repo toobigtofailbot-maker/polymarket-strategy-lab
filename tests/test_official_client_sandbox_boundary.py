@@ -157,6 +157,13 @@ def test_no_src_forbidden_auth_or_order_terms() -> None:
             )
 
 
+def test_wp175_gate_c_does_not_change_the_sandbox_or_dependency_boundary() -> None:
+    source = _read(ROOT / "src" / "execution_gateway" / "gate_c.py")
+    assert "GATE_C_CREATE_STARTED" in source
+    assert "setup_sandbox" not in source
+    assert "requirements" not in source
+
+
 def test_setup_script_verifies_ignore_protection_before_sandbox_use() -> None:
     text = _read(SETUP)
     assert "require_ignored" in text

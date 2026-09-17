@@ -291,7 +291,7 @@ def test_wp174_gateway_boundary_preserves_wp173_and_excludes_wp175():
     source = "\n".join(
         path.read_text(encoding="utf-8") for path in gateway.glob("*.py")
     )
-    assert 'AUTHORITY_STATES = ("A0_DISABLED", "A1_READ_ONLY", "A2_SHADOW")' in source
+    assert 'AUTHORITY_STATES = ("A0_DISABLED", "A1_READ_ONLY", "A2_SHADOW", "A3_RESTRICTED_LIVE")' in source
     assert "from polymarket import AsyncSecureClient, SecureClient" in source
     # WP174B replaced the Gate-B-locked stub with a real production mutation
     # boundary while keeping every real economic create/post Gate-C unreachable.
@@ -309,8 +309,10 @@ def test_wp174_gateway_boundary_preserves_wp173_and_excludes_wp175():
     assert 'raise GatewayError("GATE_C_REQUIRED")' in source
     # The Gate-A state machine's own mutation entry points still fail closed.
     assert 'raise GatewayError("GATE_B_REQUIRED")' in source
-    # WP174B adds a Gate-B capability but never a restricted-live authority state.
-    assert "A3_RESTRICTED_LIVE" not in source
+    # WP175 adds A3 only in the separately gated Gate-C module; Gate-A's
+    # generic authority setter still cannot enter it.
+    assert "A3_RESTRICTED_LIVE" in source
+    assert 'authority_state == "A3_RESTRICTED_LIVE"' in source
     assert "class GateBSession" in source
     for forbidden in (
         "os.environ",
@@ -532,3 +534,17 @@ def test_wp115_does_not_add_new_src_files():
         f.startswith(scope + "/") or f == scope for scope in APPROVED_SRC_SCOPES
     )]
     assert new_src == [], f"WP115 must not add new src/ files outside approved scopes: {new_src}"
+
+
+def test_wp175_boundary_has_no_scheduler_hermes_paper_or_wallet_ops():
+    """The canary adds one private limit surface, not a new orchestration stack."""
+    source = (ROOT / "src" / "execution_gateway" / "gate_c.py").read_text(
+        encoding="utf-8"
+    )
+    assert "GateCSession" in source
+    assert "GATE_C_CREATE_STARTED" in source
+    assert "create_market" not in source
+    assert "PaperEngine" not in source
+    assert "Hermes" not in source
+    assert "schedule(" not in source
+    assert "wallet_ops" not in source

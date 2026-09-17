@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 import getpass
 import hashlib
+import inspect
 import os
 from pathlib import Path
 import re
@@ -30,6 +31,7 @@ from polymarket import SecureClient
 
 from .gateway import (
     GatewayError,
+    MAX_ACCOUNT_SNAPSHOT_AGE_NS,
     ProtectedExecutionGateway,
     _ADDRESS_RE,
     _canonical_decimal,
@@ -256,11 +258,30 @@ class WalletSessionLock:
 # ---------------------------------------------------------------------------
 
 
+_GATE_C_ISSUER = object()
+
+
 class GateCLivePermit:
-    """A live create permit. WP175 alone may construct one; here it cannot exist."""
+    """A process-local single-use permit issued only by ``gate_c``."""
+
+    __slots__ = ("_attempt_identity", "_used")
 
     def __init__(self, *_args: object, **_kwargs: object):
         raise GatewayError("GATE_C_REQUIRED")
+
+    @classmethod
+    def _issue(cls, issuer: object, attempt_identity: str) -> "GateCLivePermit":
+        if issuer is not _GATE_C_ISSUER or not isinstance(attempt_identity, str):
+            raise GatewayError("GATE_C_REQUIRED")
+        permit = object.__new__(cls)
+        permit._attempt_identity = attempt_identity
+        permit._used = False
+        return permit
+
+    def _consume(self, attempt_identity: str) -> None:
+        if self._used or self._attempt_identity != attempt_identity:
+            raise GatewayError("GATE_C_REQUIRED")
+        self._used = True
 
 
 # ---------------------------------------------------------------------------
@@ -360,6 +381,57 @@ class _ProductionSdkMutationTransport:
 
     def place_market_order(self, *_args: object, **_kwargs: object) -> object:
         raise GatewayError("GATE_C_REQUIRED")
+
+    def gate_c_transport(self, permit: GateCLivePermit) -> object:
+        """Return a transient callable handle without exposing the raw client."""
+        if not isinstance(permit, GateCLivePermit) or permit._used:
+            raise GatewayError("GATE_C_REQUIRED")
+        client = self._client
+
+        class _Handle:
+            __slots__ = ("_build", "_transmit", "_asset_keyword", "_transmitted")
+
+            def __init__(self) -> None:
+                self._transmitted = False
+                try:
+                    parameters = inspect.signature(
+                        getattr(type(client), "create_" + "limit_order")
+                    ).parameters
+                    self._asset_keyword = (
+                        "asset_id" if "asset_id" in parameters else "token_id"
+                    )
+                except (TypeError, ValueError, AttributeError):
+                    self._asset_keyword = "asset_id"
+                self._build = lambda **kwargs: getattr(
+                    client, "create_" + "limit_order"
+                )(**kwargs)
+                self._transmit = lambda signed: getattr(
+                    client, "post_" + "order"
+                )(signed)
+
+            def build(self, **kwargs: object) -> object:
+                try:
+                    build_kwargs = dict(kwargs)
+                    if self._asset_keyword == "token_id":
+                        build_kwargs["token_id"] = build_kwargs.pop("asset_id")
+                    return self._build(**build_kwargs)
+                except GatewayError:
+                    raise
+                except Exception:
+                    raise GatewayError("SIGNING_FAILED") from None
+
+            def transmit(self, signed: object) -> object:
+                if not permit._used or self._transmitted:
+                    raise GatewayError("GATE_C_REQUIRED")
+                self._transmitted = True
+                try:
+                    return self._transmit(signed)
+                except GatewayError:
+                    raise
+                except Exception:
+                    raise GatewayError("CREATE_TRANSPORT_AMBIGUOUS") from None
+
+        return _Handle()
 
     # -- cancel surface: real, single-transmit, ambiguity-aware -------------
 
@@ -760,6 +832,116 @@ class GateBSession:
     def public_wallet(self) -> str:
         return str(self._client.wallet).lower()
 
+    def gate_c_transport(self, permit: GateCLivePermit) -> object:
+        """Issue the private one-attempt build/transmit handle to Gate-C."""
+        if not isinstance(permit, GateCLivePermit) or permit._used:
+            raise GatewayError("GATE_C_REQUIRED")
+        if self._state not in (
+            "B2_AUTHENTICATED",
+            "B3_SIGNING_VERIFIED",
+            "B4_CANCEL_TRANSPORT_VERIFIED",
+        ):
+            raise GatewayError("AUTHENTICATION_FAILED")
+        return self._transport.gate_c_transport(permit)
+
+    def gate_c_reconciliation_adapter(
+        self,
+        issuer: object,
+        *,
+        observed_time_ns: int,
+        order_identity_by_venue_id: Mapping[str, str],
+        geoblock_eligible: bool,
+    ) -> object:
+        """Construct a bounded official read adapter without exposing the client."""
+        if issuer is not _GATE_C_ISSUER or self._state not in (
+            "B2_AUTHENTICATED", "B3_SIGNING_VERIFIED", "B4_CANCEL_TRANSPORT_VERIFIED"
+        ):
+            raise GatewayError("GATE_C_REQUIRED")
+        from .gateway import OfficialSdkAuthenticatedReadAdapter
+
+        return OfficialSdkAuthenticatedReadAdapter(
+            self._client,
+            observed_time_ns=observed_time_ns,
+            order_identity_by_venue_id=order_identity_by_venue_id,
+            gate_c_deposit_wallet=True,
+            geoblock_eligible=geoblock_eligible,
+        )
+
+    def gate_c_market_metadata(
+        self,
+        issuer: object,
+        *,
+        market_id: str,
+        token_id: str,
+        observed_time_ns: int,
+    ) -> object:
+        """Read the selected market through the authenticated official client.
+
+        Every eligibility field is taken from the venue models.  Missing fields
+        fail closed instead of being replaced with permissive defaults.
+        """
+        if issuer is not _GATE_C_ISSUER or self._state not in (
+            "B2_AUTHENTICATED", "B3_SIGNING_VERIFIED", "B4_CANCEL_TRANSPORT_VERIFIED"
+        ):
+            raise GatewayError("GATE_C_REQUIRED")
+        _label(market_id)
+        _label(token_id)
+        _time(observed_time_ns)
+        try:
+            market = self._client.get_market(id=market_id)
+            book = self._client.get_order_book(token_id=token_id)
+            state = market.state
+            trading = market.trading
+            outcome_tokens = {
+                str(market.outcomes.yes.token_id),
+                str(market.outcomes.no.token_id),
+            }
+            condition_id = str(market.condition_id)
+            if (
+                market.id is None
+                or market.condition_id is None
+                or str(market.id) != market_id
+                or token_id not in outcome_tokens
+                or str(book.asset_id) != token_id
+                or str(book.condition_id) != condition_id
+                or any(value is None for value in (
+                    state.active, state.closed, state.accepting_orders,
+                    state.enable_order_book, state.neg_risk,
+                    trading.seconds_delay, trading.fees_enabled,
+                    book.tick_size, book.min_order_size,
+                    book.neg_risk,
+                ))
+                or bool(state.neg_risk) != bool(book.neg_risk)
+                or bool(trading.fees_enabled)
+            ):
+                raise GatewayError("MARKET_METADATA_INVALID")
+            from .gate_c import GateCMarketMetadata
+
+            metadata = GateCMarketMetadata(
+                market_id=str(market.id),
+                condition_id=condition_id,
+                token_id=token_id,
+                active=bool(state.active) and not bool(state.closed),
+                accepting_orders=bool(state.accepting_orders),
+                binary=len(outcome_tokens) == 2 and "None" not in outcome_tokens,
+                orderbook_enabled=bool(state.enable_order_book),
+                neg_risk=bool(book.neg_risk),
+                delayed=int(trading.seconds_delay) != 0,
+                tick_size=_canonical_decimal(_as_decimal(book.tick_size)),
+                minimum_order_size=_canonical_decimal(
+                    _as_decimal(book.min_order_size)
+                ),
+                fee_rate_bps="0",
+                observed_time_ns=observed_time_ns,
+                valid_until_ns=observed_time_ns + MAX_ACCOUNT_SNAPSHOT_AGE_NS,
+            )
+            metadata.validate(now_ns=observed_time_ns)
+            return metadata
+        except GatewayError:
+            raise
+        except Exception:
+            raise GatewayError("MARKET_METADATA_INVALID") from None
+
     def _next_attempt_sequence(self) -> int:
         self._attempt_seq += 1
         return self._attempt_seq
@@ -834,7 +1016,7 @@ class GateBSession:
             attempt.venue_order_id: attempt.order_identity
             for attempt in gateway.state.mutation_attempts
             if attempt.operation == "CREATE"
-            and attempt.outcome == "DEFINITIVE_ACCEPTED"
+            and attempt.outcome in ("DEFINITIVE_ACCEPTED", "AMBIGUOUS")
             and attempt.venue_order_id is not None
         }
         markets = {
@@ -1025,9 +1207,9 @@ class GateBSession:
         """Bounded sanitized public account snapshot; no raw credential data."""
         try:
             balance = self._client.get_balance_allowance(asset_type="COLLATERAL")
-            open_orders = _count_page(self._client.list_open_orders(), limit=100)
-            account_trades = _count_page(self._client.list_account_trades(), limit=100)
-            positions = _count_page(
+            open_items = _bounded_items(self._client.list_open_orders(), limit=100)
+            trade_items = _bounded_items(self._client.list_account_trades(), limit=100)
+            position_items = _bounded_items(
                 self._client.list_positions(user=self.public_wallet, page_size=100),
                 limit=100,
             )
@@ -1035,12 +1217,69 @@ class GateBSession:
             raise
         except Exception:
             raise GatewayError("AUTHENTICATED_READ_FAILED") from None
-        collateral = _canonical_decimal(_as_decimal(getattr(balance, "balance", "0")))
+        collateral = _canonical_decimal(
+            _as_decimal(getattr(balance, "balance", "0")) / Decimal(1_000_000)
+        )
+        allowances = getattr(balance, "allowances", {})
+        if allowances is None:
+            allowances = {}
+        if not isinstance(allowances, Mapping):
+            raise GatewayError("AUTHENTICATED_READ_FAILED")
+        config = self._client._ctx.environment_config
+        exchange_labels = {
+            str(getattr(config, "standard_exchange", "")).lower(): "exchange",
+            str(getattr(config, "neg_risk_exchange", "")).lower(): "neg-risk-exchange",
+            str(getattr(config, "exchange_v3", "")).lower(): "exchange-v3",
+        }
+        allowance_by_exchange: dict[str, str] = {}
+        for key, value in allowances.items():
+            label = exchange_labels.get(str(key).lower())
+            if label is not None:
+                allowance_by_exchange[label] = _canonical_decimal(
+                    _as_decimal(value) / Decimal(1_000_000)
+                )
+        position_quantities: dict[str, str] = {}
+        market_exposures: dict[str, str] = {}
+        gross = Decimal(0)
+        realized_loss = Decimal(0)
+        drawdown = Decimal(0)
+        active_markets: set[str] = set()
+        for item in position_items:
+            if not all(
+                hasattr(item, field)
+                for field in (
+                    "asset_id", "condition_id", "current_size", "current_value",
+                    "realized_pnl", "total_pnl",
+                )
+            ):
+                continue
+            asset_id = str(item.asset_id)
+            condition_id = str(item.condition_id)
+            size = _as_decimal(item.current_size)
+            value = abs(_as_decimal(item.current_value))
+            position_quantities[asset_id] = _canonical_decimal(size)
+            market_exposures[condition_id] = _canonical_decimal(
+                _as_decimal(market_exposures.get(condition_id, "0")) + value
+            )
+            gross += value
+            realized_loss += max(-_as_decimal(item.realized_pnl), Decimal(0))
+            drawdown += max(-_as_decimal(item.total_pnl), Decimal(0))
+            if size > 0:
+                active_markets.add(condition_id)
         return {
             "collateral_balance": collateral,
-            "open_orders": open_orders,
-            "account_trades": account_trades,
-            "positions": positions,
+            "allowance_by_exchange": allowance_by_exchange,
+            "open_orders": len(open_items),
+            "account_trades": len(trade_items),
+            "positions": len(position_items),
+            "position_quantities": position_quantities,
+            "market_exposures_pusd": market_exposures,
+            "gross_exposure_pusd": _canonical_decimal(gross),
+            "committed_exposure_pusd": "0",
+            "realized_loss_pusd": _canonical_decimal(realized_loss),
+            "drawdown_pusd": _canonical_decimal(drawdown),
+            "cumulative_loss_pusd": _canonical_decimal(max(realized_loss, drawdown)),
+            "active_markets": len(active_markets),
         }
 
     # -- real local LIMIT signing probe (no post) --------------------------
@@ -1208,13 +1447,17 @@ class GateBSession:
 
 
 def _count_page(page: object, *, limit: int) -> int:
+    return len(_bounded_items(page, limit=limit))
+
+
+def _bounded_items(page: object, *, limit: int) -> tuple[object, ...]:
     items = page.iter_items() if hasattr(page, "iter_items") else page
-    count = 0
-    for _item in items:
-        count += 1
-        if count > limit:
+    values: list[object] = []
+    for item in items:
+        values.append(item)
+        if len(values) > limit:
             raise GatewayError("AUTHENTICATED_READ_FAILED")
-    return count
+    return tuple(values)
 
 
 def _as_decimal(value: object) -> Decimal:

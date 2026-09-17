@@ -1,4 +1,4 @@
-"""WP171/WP173 local read-only cockpit over market, research, and paper evidence."""
+"""WP171/WP173/WP175 local read-only cockpit over evidence."""
 
 from __future__ import annotations
 
@@ -792,12 +792,18 @@ def _gateway_status(path: Path | None) -> dict[str, Any]:
         "mutation_attempt_count": state["mutation_attempt_count"],
         "open_order_count": state["open_order_count"],
         "gate_b_authorized": False,
-        "restricted_live_available": False,
-        # WP174B: sanitized read-only Gate-B capability projection. The Gate-B
-        # credential session is ephemeral and never persisted, so the cockpit
-        # shows the locked (B0) form. No secret value, credential input, mutation
-        # control, Gate-C enable, or A3 state is exposed; every real create/post
-        # remains GATE_C_REQUIRED.
+        "restricted_live_available": state.get("restricted_live_available", False),
+        "restricted_live": state.get("restricted_live", {
+            "armed": False,
+            "halted": False,
+            "create_attempt_count": 0,
+            "capital_at_risk_pusd": "0",
+            "capital_committed_pusd": "0",
+            "reconciliation_state": state["reconciliation_state"],
+        }),
+        # WP174B/WP175: Gate-B remains locked in the persisted projection;
+        # Gate-C evidence is separately sanitized below. No credential input or
+        # mutation control is exposed by this GET-only cockpit.
         "gate_b": {
             "gate_b_capability_available": True,
             "gate_b_state": "B0_LOCKED",

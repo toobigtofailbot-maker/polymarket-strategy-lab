@@ -120,3 +120,16 @@ def test_wp174b_repo_truth_registers_gate_b_without_live_authority():
     assert "Capital at risk: USD 0" in fragment
     assert "Real economic CREATE/POST: FORBIDDEN_GATE_C" in fragment
     assert "WP175" in fragment and "separately gated and not started" in fragment
+
+
+def test_wp175_repo_truth_registers_pending_gate_c_activation() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    status = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "WP175.md").read_text(
+        encoding="utf-8"
+    )
+    for text in (index, status, fragment):
+        assert "WP175" in text
+        assert "LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE" in text
+        assert "capital" in text.lower()
+        assert "WP176" in text

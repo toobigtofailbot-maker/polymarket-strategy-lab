@@ -113,14 +113,17 @@ def _safe_state_projection(state: Mapping[str, object]) -> dict[str, object]:
         "last_account_snapshot_id",
         "balances_hash",
         "positions_hash",
+        "gate_c_checkpoint",
         "last_event_time_ns",
     }
-    if set(state) != expected:
+    if set(state) not in (expected, expected - {"gate_c_checkpoint"}):
         raise GatewayStoreError("STORE_STATE_INVALID")
+    state = dict(state)
+    state.setdefault("gate_c_checkpoint", None)
     disable_reason = state["disable_reason"]
     public_addresses = (state["public_signer"], state["public_funder"])
     if (
-        state["authority_state"] not in ("A0_DISABLED", "A1_READ_ONLY", "A2_SHADOW")
+        state["authority_state"] not in ("A0_DISABLED", "A1_READ_ONLY", "A2_SHADOW", "A3_RESTRICTED_LIVE")
         or state["reconciliation_state"]
         not in ("HEALTHY", "REQUIRED", "BLOCKED", "DIVERGED")
         or state["heartbeat_state"]
@@ -164,9 +167,39 @@ def _safe_state_projection(state: Mapping[str, object]) -> dict[str, object]:
             or state["heartbeat_state"]
             in ("MISSED", "UNSAFE", "RECONCILIATION_REQUIRED")
         )
+        or state["authority_state"] == "A3_RESTRICTED_LIVE"
+        and (
+            not isinstance(state["gate_c_checkpoint"], dict)
+            or state["gate_c_checkpoint"].get("armed") is not True
+            or state["gate_c_checkpoint"].get("halted") is True
+            or state["reconciliation_state"] != "HEALTHY"
+            or state["access_state"] != "ELIGIBLE"
+        )
     ):
         raise GatewayStoreError("STORE_STATE_INVALID")
     _assert_sanitized(state)
+    checkpoint = state.get("gate_c_checkpoint")
+    live = {
+        "armed": False,
+        "halted": False,
+        "arm_receipt_id": None,
+        "qualification_id": None,
+        "attempt_id": None,
+        "create_outcome": None,
+        "response_status": None,
+        "venue_order_id": None,
+        "market_id": None,
+        "token_id": None,
+        "create_attempt_count": 0,
+        "capital_at_risk_pusd": "0",
+        "capital_committed_pusd": "0",
+        "reconciliation_state": state["reconciliation_state"],
+        "residual_position_state": "UNKNOWN",
+    }
+    if isinstance(checkpoint, dict):
+        for key in live:
+            if key in checkpoint:
+                live[key] = checkpoint[key]
     return {
         "authority_state": state["authority_state"],
         "disable_reason": state["disable_reason"],
@@ -182,7 +215,8 @@ def _safe_state_projection(state: Mapping[str, object]) -> dict[str, object]:
         "mutation_attempt_count": len(state["mutation_attempts"]),
         "open_order_count": len(state["venue_open_order_ids"]),
         "gate_b_authorized": False,
-        "restricted_live_available": False,
+        "restricted_live_available": state["authority_state"] == "A3_RESTRICTED_LIVE",
+        "restricted_live": live,
     }
 
 
@@ -247,6 +281,7 @@ class GatewayStore:
 
     def __init__(self, path: Path, *, create: bool = False):
         validated = _validated_path(path, create=create)
+        self._path = validated
         try:
             self._connection = sqlite3.connect(validated)
             self._connection.row_factory = sqlite3.Row
@@ -273,6 +308,10 @@ class GatewayStore:
 
     def close(self) -> None:
         self._connection.close()
+
+    @property
+    def path(self) -> Path:
+        return self._path
 
     @staticmethod
     def _validate_schema(connection: sqlite3.Connection) -> None:

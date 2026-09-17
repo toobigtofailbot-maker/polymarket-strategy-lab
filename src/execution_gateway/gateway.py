@@ -1,8 +1,8 @@
-"""Deterministic Gate-A implementation of the WP174 protected gateway.
+"""Deterministic Gate-A/ Gate-C implementation of the protected gateway.
 
-No function in this module can authorize or perform a real venue mutation.
-The official SDK is the selected type substrate, while mutation methods remain
-an explicit Gate-B stop until a separately certified and authorized package.
+Gate-A remains read-only/shadow-only.  The only live state is the explicitly
+bounded A3 checkpoint written by :mod:`gate_c`; no caller can reach it through
+the generic authority setter.
 """
 
 from __future__ import annotations
@@ -38,7 +38,8 @@ from src.paper_trading.store import JournalEvent as PaperJournalEvent, PaperStor
 from .store import GatewayJournalEvent, GatewayStore, GatewayStoreError, canonical_json
 
 
-AUTHORITY_STATES = ("A0_DISABLED", "A1_READ_ONLY", "A2_SHADOW")
+AUTHORITY_STATES = ("A0_DISABLED", "A1_READ_ONLY", "A2_SHADOW", "A3_RESTRICTED_LIVE")
+_GATE_C_EVENT_ISSUER = object()
 ACCESS_STATES = (
     "ELIGIBLE",
     "GEOBLOCKED",
@@ -494,6 +495,8 @@ class OfficialSdkAuthenticatedReadAdapter:
         *,
         observed_time_ns: int,
         order_identity_by_venue_id: Mapping[str, str],
+        gate_c_deposit_wallet: bool = False,
+        geoblock_eligible: bool = False,
     ):
         if type(client) is not SecureClient:
             raise GatewayError("AUTHENTICATED_READ_ADAPTER_INVALID")
@@ -506,7 +509,8 @@ class OfficialSdkAuthenticatedReadAdapter:
             if (
                 client.environment.name != "production"
                 or config.chain_id != 137
-                or client.wallet_type != "EOA"
+                or client.wallet_type
+                not in (("DEPOSIT_WALLET",) if gate_c_deposit_wallet else ("EOA",))
                 or context.signer_type != "OWNER"
                 or _ADDRESS_RE.fullmatch(signer) is None
                 or _ADDRESS_RE.fullmatch(funder) is None
@@ -524,6 +528,7 @@ class OfficialSdkAuthenticatedReadAdapter:
         if any(_ID_RE.fullmatch(value) is None for value in self._identities.values()):
             raise GatewayError("AUTHENTICATED_READ_ADAPTER_INVALID")
         self._snapshot: AccountSnapshot | None = None
+        self._geoblock_eligible = geoblock_eligible
 
     def _read_access_state(self) -> tuple[str, str]:
         """Map the SDK's only account-mode signal conservatively.
@@ -536,9 +541,11 @@ class OfficialSdkAuthenticatedReadAdapter:
         closed_only = self._client.get_closed_only_mode()
         if type(closed_only) is not bool:
             raise GatewayError("AUTHENTICATED_READ_FAILED")
-        return (
-            ("CLOSE_ONLY", "CLOSE_ONLY") if closed_only else ("UNKNOWN", "RESTARTING")
-        )
+        if closed_only:
+            return "CLOSE_ONLY", "CLOSE_ONLY"
+        if self._geoblock_eligible:
+            return "ELIGIBLE", "NORMAL"
+        return "UNKNOWN", "RESTARTING"
 
     def query_venue_context(
         self, intent: PaperIntent, signing_time_ns: int
@@ -1172,7 +1179,7 @@ def _validate_mutation_attempt(
         or _ID_RE.fullmatch(item.request_digest) is None
         or type(item.transmitted) is not bool
         or type(item.fixture_only) is not bool
-        or not item.fixture_only
+        or item.fixture_only not in (True, False)
         or order is None
     ):
         raise GatewayError("STATE_INVALID")
@@ -1284,10 +1291,18 @@ class GatewayState:
     last_account_snapshot_id: str | None = None
     balances_hash: str | None = None
     positions_hash: str | None = None
+    # Gate-C owns this opaque-but-sanitized checkpoint.  It is deliberately a
+    # mapping rather than executable state so restart replay can never restore
+    # live authority; ``open`` always overwrites authority with A0.
+    gate_c_checkpoint: Mapping[str, object] | None = None
     last_event_time_ns: int = 0
 
     def to_mapping(self) -> dict[str, object]:
         value = asdict(self)
+        # Preserve readability of pre-WP175 A0/A1/A2 journals: the optional
+        # Gate-C checkpoint is materialized only once Gate-C writes evidence.
+        if self.gate_c_checkpoint is None:
+            value.pop("gate_c_checkpoint", None)
         value["prepared_orders"] = [asdict(item) for item in self.prepared_orders]
         attempts = []
         for item in self.mutation_attempts:
@@ -1337,6 +1352,7 @@ class GatewayState:
                 last_account_snapshot_id=value["last_account_snapshot_id"],
                 balances_hash=value["balances_hash"],
                 positions_hash=value["positions_hash"],
+                gate_c_checkpoint=value.get("gate_c_checkpoint"),
                 last_event_time_ns=value["last_event_time_ns"],
             )
         except (KeyError, TypeError, ValueError):
@@ -1376,6 +1392,16 @@ class GatewayState:
         ):
             if value is not None and _ID_RE.fullmatch(value) is None:
                 raise GatewayError("STATE_INVALID")
+        if self.gate_c_checkpoint is not None:
+            if not isinstance(self.gate_c_checkpoint, Mapping):
+                raise GatewayError("STATE_INVALID")
+            # The detailed closed schema is enforced by gate_c.  The gateway
+            # replay verifier still rejects executable/non-sanitized values.
+            for key, value in self.gate_c_checkpoint.items():
+                if not isinstance(key, str) or not isinstance(
+                    value, (str, int, bool, type(None), list, tuple, dict)
+                ):
+                    raise GatewayError("STATE_INVALID")
         for item in self.prepared_orders:
             _validate_prepared_order(item)
         owner_by_venue_id: dict[str, str] = {}
@@ -1399,6 +1425,20 @@ class GatewayState:
             or self.heartbeat_state in ("MISSED", "UNSAFE", "RECONCILIATION_REQUIRED")
         ):
             raise GatewayError("STATE_INVALID")
+        if self.authority_state == "A3_RESTRICTED_LIVE":
+            checkpoint = self.gate_c_checkpoint
+            if not isinstance(checkpoint, Mapping) or checkpoint.get("armed") is not True:
+                raise GatewayError("STATE_INVALID")
+            if checkpoint.get("halted") is True:
+                raise GatewayError("STATE_INVALID")
+            if (
+                checkpoint.get("authority_state") != "A3_RESTRICTED_LIVE"
+                or checkpoint.get("reconciliation_state") != "HEALTHY"
+                or checkpoint.get("access_state") != "ELIGIBLE"
+            ):
+                raise GatewayError("STATE_INVALID")
+            if self.reconciliation_state != "HEALTHY" or self.access_state != "ELIGIBLE":
+                raise GatewayError("STATE_INVALID")
 
 
 def _validate_gate_b_audit_data(event_type: str, data: Mapping[str, object]) -> bool:
@@ -1571,6 +1611,10 @@ def _validate_event_semantics(
             current.authority_state == "A0_DISABLED"
             and current.reconciliation_state == "REQUIRED"
             and current.user_stream_state == "DISCONNECTED"
+            and (
+                current.gate_c_checkpoint is None
+                or current.gate_c_checkpoint.get("armed") is not True
+            )
         )
     elif event.event_type == "AUTHORITY_CHANGED":
         valid = set(data) == {"actor", "authority_state"} and (
@@ -1655,6 +1699,24 @@ def _validate_event_semantics(
             "outcome": current.mutation_attempts[-1].outcome,
             "fixture_only": True,
         }
+    elif event.event_type in {
+        "GATE_C_ARMED",
+        "GATE_C_CREATE_STARTED",
+        "GATE_C_CREATE_OUTCOME",
+        "GATE_C_RECONCILED",
+        "GATE_C_HALTED",
+        "GATE_C_DISABLED",
+    }:
+        # Gate-C validates its own closed checkpoint schema before calling the
+        # gateway.  Replay only needs to ensure that the journal event and the
+        # materialized checkpoint agree byte-for-byte and that no other state
+        # changed behind the event.
+        valid = (
+            set(data) == {"checkpoint"}
+            and isinstance(data["checkpoint"], Mapping)
+            and dict(data["checkpoint"])
+            == dict(current.gate_c_checkpoint or {})
+        )
     else:
         valid = False
     if not valid:
@@ -1680,6 +1742,12 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
         "LIMIT_ORDER_PREPARED",
         "FIXTURE_MUTATION_RECORDED",
         *GATE_B_AUDIT_EVENTS,
+        "GATE_C_ARMED",
+        "GATE_C_CREATE_STARTED",
+        "GATE_C_CREATE_OUTCOME",
+        "GATE_C_RECONCILED",
+        "GATE_C_HALTED",
+        "GATE_C_DISABLED",
     }
     allowed_changes = {
         "CREDENTIAL_REFERENCE_CONFIGURED": {
@@ -1694,6 +1762,7 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
             "reconciliation_state",
             "heartbeat_state",
             "user_stream_state",
+            "gate_c_checkpoint",
             "last_event_time_ns",
         },
         "AUTHORITY_CHANGED": {
@@ -1763,6 +1832,26 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
             "reconciliation_state",
             "last_event_time_ns",
         },
+        **{
+            event_type: {
+                "authority_state",
+                "disable_reason",
+                "reconciliation_state",
+                "access_state",
+                "gate_c_checkpoint",
+                "mutation_attempts",
+                "venue_open_order_ids",
+                "last_event_time_ns",
+            }
+            for event_type in (
+                "GATE_C_ARMED",
+                "GATE_C_CREATE_STARTED",
+                "GATE_C_CREATE_OUTCOME",
+                "GATE_C_RECONCILED",
+                "GATE_C_HALTED",
+                "GATE_C_DISABLED",
+            )
+        },
         **{event_type: {"last_event_time_ns"} for event_type in GATE_B_AUDIT_EVENTS},
     }
     previous: GatewayState | None = None
@@ -1778,8 +1867,8 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
                 raise GatewayError("STATE_REPLAY_INVALID")
         elif {
             key
-            for key, value in current.to_mapping().items()
-            if previous.to_mapping()[key] != value
+            for key in set(previous.to_mapping()) | set(current.to_mapping())
+            if previous.to_mapping().get(key) != current.to_mapping().get(key)
         } - allowed_changes[event.event_type]:
             raise GatewayError("STATE_REPLAY_INVALID")
         else:
@@ -1787,7 +1876,7 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
         if previous is not None and (
             previous.authority_state == "A0_DISABLED"
             and current.authority_state != "A0_DISABLED"
-            and event.event_type != "AUTHORITY_CHANGED"
+            and event.event_type not in {"AUTHORITY_CHANGED", "GATE_C_ARMED"}
         ):
             raise GatewayError("STATE_REPLAY_INVALID")
         if (
@@ -1832,6 +1921,16 @@ class ProtectedExecutionGateway:
         self.state = state
         self._head = head
 
+    @property
+    def head(self) -> str:
+        """Current tamper-evident journal head (public identity only)."""
+        return self._head
+
+    @property
+    def store_path(self) -> Path:
+        """Validated canonical store path; contains no credential material."""
+        return self._store.path
+
     @classmethod
     def create(cls, path: Path, *, created_time_ns: int) -> ProtectedExecutionGateway:
         _time(created_time_ns)
@@ -1869,6 +1968,20 @@ class ProtectedExecutionGateway:
                     else "DISABLED"
                 ),
                 user_stream_state="DISCONNECTED",
+                gate_c_checkpoint=(
+                    {
+                        **dict(state.gate_c_checkpoint),
+                        "authority_state": "A0_DISABLED",
+                        "disable_reason": "RESTART_RECONCILIATION_REQUIRED",
+                        "armed": False,
+                        "halted": True,
+                        "reconciliation_state": "REQUIRED",
+                        "access_state": "UNKNOWN",
+                        "last_event_time_ns": opened_time_ns,
+                    }
+                    if isinstance(state.gate_c_checkpoint, Mapping)
+                    else None
+                ),
                 last_event_time_ns=opened_time_ns,
             )
             event = store.append(
@@ -1954,6 +2067,85 @@ class ProtectedExecutionGateway:
             event for event in events if event.event_type in GATE_B_AUDIT_EVENTS
         )
 
+    def gate_c_events(self) -> tuple[GatewayJournalEvent, ...]:
+        """Return verified Gate-C evidence without exposing store internals."""
+        mapping, head, events = self._store.load()
+        if mapping != self.state.to_mapping() or head != self._head:
+            raise GatewayError("STATE_REPLAY_INVALID")
+        replayed = _validate_replay(events)
+        if replayed.to_mapping() != dict(mapping):
+            raise GatewayError("STATE_REPLAY_INVALID")
+        return tuple(event for event in events if event.event_type.startswith("GATE_C_"))
+
+    def record_gate_c_event(
+        self,
+        event_type: str,
+        checkpoint: Mapping[str, object],
+        *,
+        issuer: object | None = None,
+        event_time_ns: int,
+        mutation_attempt: MutationAttempt | None = None,
+        venue_open_order_ids: Sequence[str] | None = None,
+    ) -> None:
+        """Commit one Gate-C checkpoint transition.
+
+        The Gate-C module validates the detailed closed checkpoint contract;
+        this method provides the only journal write surface it can use.  It is
+        intentionally not reachable from the generic ``set_authority`` API.
+        """
+        if issuer is not _GATE_C_EVENT_ISSUER:
+            raise GatewayError("GATE_C_REQUIRED")
+        if event_type not in {
+            "GATE_C_ARMED",
+            "GATE_C_CREATE_STARTED",
+            "GATE_C_CREATE_OUTCOME",
+            "GATE_C_RECONCILED",
+            "GATE_C_HALTED",
+            "GATE_C_DISABLED",
+        }:
+            raise GatewayError("INVALID_AUDIT_DATA")
+        if not isinstance(checkpoint, Mapping):
+            raise GatewayError("INVALID_AUDIT_DATA")
+        _time(event_time_ns)
+        event_time_ns = max(event_time_ns, self.state.last_event_time_ns + 1)
+        checkpoint_value = dict(checkpoint)
+        if "last_event_time_ns" in checkpoint_value:
+            checkpoint_value["last_event_time_ns"] = event_time_ns
+        authority = checkpoint_value.get("authority_state", "A0_DISABLED")
+        reconciliation = checkpoint_value.get(
+            "reconciliation_state", self.state.reconciliation_state
+        )
+        access = checkpoint_value.get("access_state", self.state.access_state)
+        if authority not in AUTHORITY_STATES or reconciliation not in RECONCILIATION_STATES:
+            raise GatewayError("STATE_INVALID")
+        if access not in ACCESS_STATES:
+            raise GatewayError("STATE_INVALID")
+        attempts = self.state.mutation_attempts
+        if mutation_attempt is not None:
+            if mutation_attempt.fixture_only:
+                raise GatewayError("MUTATION_ATTEMPT_INVALID")
+            attempts = attempts + (mutation_attempt,)
+        open_ids = self.state.venue_open_order_ids
+        if venue_open_order_ids is not None:
+            open_ids = tuple(_label(value) for value in venue_open_order_ids)
+        new = replace(
+            self.state,
+            authority_state=authority,
+            disable_reason=str(checkpoint_value.get("disable_reason", self.state.disable_reason)),
+            reconciliation_state=reconciliation,
+            access_state=access,
+            gate_c_checkpoint=checkpoint_value,
+            mutation_attempts=attempts,
+            venue_open_order_ids=open_ids,
+            last_event_time_ns=event_time_ns,
+        )
+        self._commit(
+            event_type,
+            event_time_ns,
+            {"checkpoint": checkpoint_value},
+            new,
+        )
+
     def configure_credentials(
         self,
         loader: GateASecretReferenceLoader,
@@ -1983,7 +2175,7 @@ class ProtectedExecutionGateway:
     def set_authority(
         self, authority_state: str, *, actor: str, event_time_ns: int
     ) -> None:
-        if authority_state not in AUTHORITY_STATES:
+        if authority_state not in AUTHORITY_STATES or authority_state == "A3_RESTRICTED_LIVE":
             raise GatewayError("AUTHORITY_STATE_INVALID")
         _label(actor)
         _time(event_time_ns)

@@ -152,6 +152,13 @@ def test_src_does_not_include_forbidden_official_client_auth_or_order_terms() ->
             )
 
 
+def test_wp175_gate_c_is_the_only_new_post_boundary_and_keeps_dependencies_unchanged():
+    source = _read(ROOT / "src" / "execution_gateway" / "gate_c.py")
+    assert "GATE_C_CREATE_STARTED" in source
+    assert "polymarket-client==0.10.0" not in source
+    assert "pyproject.toml" not in source
+
+
 def test_reuse_docs_mark_old_client_avoid_and_v2_candidate_only() -> None:
     source_registry = _read(ROOT / "docs" / "source_repo_registry.md")
     reuse_matrix = _read(ROOT / "docs" / "repo_reuse_decision_matrix.md")
