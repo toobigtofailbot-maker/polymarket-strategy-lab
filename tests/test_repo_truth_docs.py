@@ -133,3 +133,32 @@ def test_wp175_repo_truth_registers_pending_gate_c_activation() -> None:
         assert "LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE" in text
         assert "capital" in text.lower()
         assert "WP176" in text
+
+
+def test_wp175d_repo_truth_registers_research_bridge() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    status = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "WP175D.md").read_text(
+        encoding="utf-8"
+    )
+    contract = (
+        ROOT / "docs" / "external_historical_research_bridge_contract.md"
+    ).read_text(encoding="utf-8")
+    combined = "\n".join((index, status, fragment, contract))
+    for text in (index, status, fragment):
+        assert "WP175D" in text
+        assert "S10-DATA-02" in text
+    # WP175 merged dormant at the exact merge commit; WP175D is the current bridge.
+    assert "489c6f9548c39cb3bcb2196a81d5352a0d1dd653" in combined
+    assert "External Historical Research Bridge" in combined
+    assert "ExternalDatasetBinding" in combined
+    assert "DATASET_BINDING" in combined
+    assert "WP167_EXTERNAL_DATASET_DESCRIPTOR" in combined
+    assert "SOURCE_KIND_CANONICAL_PIT" in combined
+    assert "Canonical PIT authority unchanged: YES" in combined
+    # Live activation stays blocked; WP176 preserved and not started; merge not authorized.
+    assert "LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE" in combined
+    assert "WP176" in combined
+    assert "NOT STARTED" in fragment
+    assert "Merge authorized: NO" in fragment
+    assert "Capital at risk: USD 0" in fragment

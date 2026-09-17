@@ -3985,3 +3985,21 @@ def test_wp159_repo_truth_and_deferred_items_are_registered():
         assert path in index
     for index_value in range(1, 7):
         assert f"WP159-D{index_value:03d}" in deferred
+
+
+def test_wp175d_project_status_registers_research_bridge() -> None:
+    status = _read()
+    fragment = (STATUS_ENTRIES / "WP175D.md").read_text(encoding="utf-8")
+    for text in (status, fragment):
+        assert "WP175D" in text
+        assert "S10-DATA-02" in text
+        assert "LOCAL_OFFLINE_EXTERNAL_HISTORICAL_RESEARCH_BRIDGE" in text
+    assert "Governance track: FAST" in status
+    assert "Exact changed-file scope: 24" in status
+    assert "WP175 merged dormant: YES" in status
+    assert "489c6f9548c39cb3bcb2196a81d5352a0d1dd653" in status
+    assert "Canonical PIT authority unchanged: YES" in status
+    assert "Capital at risk: USD 0" in status
+    assert "Merge authorized: NO" in status
+    assert "WP176 Mature Controlled Live: NOT STARTED" in status
+    assert "LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE" in status

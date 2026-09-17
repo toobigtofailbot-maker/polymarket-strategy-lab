@@ -354,3 +354,28 @@ WP171 — Interactive Operator Cockpit is the next separately gated work package
 implemented here. WP172 Hermes, WP173 executable/cost modeling, WP174 portfolio and risk,
 WP175 paper trading, WP176 authenticated execution, WP177 restricted live, and WP178 mature
 live remain separately gated. WP170 does not start any successor.
+
+## WP175D external dataset binding path (additive; canonical path preserved)
+
+WP175D adds a second, additive dataset-binding path so validated external history can enter
+the experiment OS without canonical-PIT masquerading. The original canonical path is fully
+preserved: `build_dataset_binding` still requires a canonical `DatasetSnapshotReference`,
+`build_research_dataset_manifest` still proves membership against the exact ordinary
+record-version ids, and `SOURCE_KIND_CANONICAL_PIT` and every canonical `datasetbinding:sha256:`
+identity byte are unchanged. Canonical PIT authority unchanged: YES.
+
+The additive `ExternalDatasetBinding` (schema id `polymarket-external-dataset-binding`,
+`source_kind` = WP167 external descriptor kind, generic `datasetbinding:sha256:` identity)
+carries the real receive-time availability bounds from a validated PMXT v2
+`PmxtV2ResearchLineage` and never creates a `DatasetSnapshotReference`. It persists under the
+EXISTING `DATASET_BINDING` registry record kind with exact `schema_id` subtype dispatch, so
+`wp170-experiment-registry`, `application_id=1464877424`, `MAX_REGISTRY_RECORDS=4096`,
+`MAX_APPEND_BATCH=256`, and the `DATASET_BINDING` CHECK vocabulary are unchanged and old
+canonical registries remain readable with no migration. `build_preregistered_experiment`
+accepts either binding subtype with an unchanged public signature and unchanged
+`OOS_REUSED_DIAGNOSTIC`, first-look sealing, `splitplan:sha256:`, `runevidence:sha256:`,
+`PURGE_LABEL_AVAILABILITY_AT_OR_AFTER_NEXT_BOUNDARY`, and `DECISION_TIME_HALF_OPEN` semantics.
+External `ResearchSample` availability is bound to `timestamp_received` / `ts_init`, never the
+source event time. The normative WP175D capability contract is
+`docs/external_historical_research_bridge_contract.md`. Paper-trading execution is NOT
+AUTHORIZED; Live-trading execution is FORBIDDEN; Merge authorized: NO.

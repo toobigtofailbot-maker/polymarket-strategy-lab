@@ -1,6 +1,48 @@
 # Repo Truth Index
 
-## WP175 Restricted Live Canary (current review target)
+## WP175D External Historical Research Bridge (current review target)
+
+WP175D (Side10 capability S10-DATA-02) is the FAST, risk-2, local/offline external
+historical research bridge on `codex/wp175d-external-historical-research-bridge`,
+based on merged WP175 PR #178 at merge commit
+`489c6f9548c39cb3bcb2196a81d5352a0d1dd653` (WP175 merged dormant). It is an exact
+24-file package (`max_changed_files=24`, `exact_scope_required=true`), FAST readiness
+`IMPLEMENTATION_READY` with no independent certificate required under current
+governance.
+
+WP175D closes the root cause behind `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`:
+WP170 accepts only canonical-PIT lineage, and canonical PIT visibility is
+ingestion-time authoritative and must not be backdated. The bridge turns a validated
+PMXT v2 `PmxtV2ResearchLineage` (a bounded, content-addressed selection over existing
+WP168 ordered event digests) into a provenance-separated `ExternalDatasetBinding`
+(schema id `polymarket-external-dataset-binding`, source kind
+`WP167_EXTERNAL_DATASET_DESCRIPTOR`, never `SOURCE_KIND_CANONICAL_PIT` and never a
+`DatasetSnapshotReference`) and a standard WP170 `ResearchDatasetManifest` whose
+external samples cite only bound `externalmember:sha256:` ids. External sample
+availability is bound to `timestamp_received` / `ts_init`, never the source event
+time. `ConvertedEventStream` identity, canonical `DatasetBinding` behavior, and the
+`build_dataset_binding` signature are unchanged; one shared canonical row order/digest
+implementation drives conversion and the research lineage.
+
+`ExternalDatasetBinding` persists under the EXISTING `DATASET_BINDING` record kind by
+exact `schema_id` subtype dispatch; `REGISTRY_FORMAT_ID`, `REGISTRY_SCHEMA_VERSION`,
+`REGISTRY_APPLICATION_ID`, the SQLite schema, and the `DATASET_BINDING` CHECK
+vocabulary are unchanged, and old canonical registries remain readable with no
+migration. `build_preregistered_experiment` accepts either binding subtype with an
+unchanged public signature and unchanged OOS/lifecycle semantics. Canonical PIT
+authority unchanged: YES. Capital at risk: USD 0. Network/downloader/credentials/
+paper/strategy/execution/live: NONE.
+
+WP175-D002 / S10-DATA-02 closes only when WP175D is merged. The first post-WP175D
+action is the separately gated S10-EVID-01 genuine strategy evidence production gate
+(WP170 -> WP172 -> WP173), not automatic live activation. WP175 Gate-C activation
+remains NOT AUTHORIZED and `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE` remains
+true until genuine evidence exists. Canonical WP176 Mature Controlled Live is NOT
+renumbered, implemented, or authorized by WP175D and is NOT STARTED. Merge
+authorized: NO. The normative capability contract is
+`docs/external_historical_research_bridge_contract.md`.
+
+## WP175 Restricted Live Canary (merged dormant via PR #178)
 
 WP175 is the protected PR #178 implementation package on
 `codex/wp175-restricted-live-canary`, based on merged WP174B PR #177. The

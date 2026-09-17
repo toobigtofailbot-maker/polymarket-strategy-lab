@@ -6,9 +6,13 @@ a local ParquetDataCatalog, and replays them deterministically into a repo-contr
 NautilusReplayReceipt. No live/auth clients, no Polymarket extra, no Redis, no network, no
 strategy/order/fill/paper/live authority. See docs/nautilus_offline_kernel_contract.md.
 
-The frozen public API is exactly the six functions and eight dataclasses listed in ``__all__``.
-Every other symbol (helpers, error-code constants, identity constants) is internal; import it
-from its owning submodule where a test genuinely needs it. Helper functions are private.
+The frozen WP168 public API is the six functions and eight dataclasses listed in ``__all__``.
+WP175D adds an additive, non-breaking external historical research bridge: the
+``build_pmxt_v2_research_lineage`` builder with ``PmxtV2ResearchLineage`` /
+``PmxtV2ResearchLineageMember``, and the ``build_pmxt_v2_dataset_binding`` /
+``build_pmxt_v2_research_dataset_manifest`` bridge functions. Every other symbol
+(helpers, error-code constants, identity constants) is internal; import it from its owning
+submodule where a test genuinely needs it. Helper functions are private.
 """
 
 from __future__ import annotations
@@ -16,7 +20,18 @@ from __future__ import annotations
 # Public API only. Internal constants live on the submodules and are imported directly by
 # tests when needed; they are intentionally not part of the package-root public surface.
 from .catalog import CatalogBuildResult, CatalogQueryResult, build_catalog, query_catalog
-from .conversion import ConvertedEventStream, PmxtV2ReplaySource, convert_pmxt_v2_events
+from .conversion import (
+    ConvertedEventStream,
+    PmxtV2ReplaySource,
+    PmxtV2ResearchLineage,
+    PmxtV2ResearchLineageMember,
+    build_pmxt_v2_research_lineage,
+    convert_pmxt_v2_events,
+)
+from .experiment_bridge import (
+    build_pmxt_v2_dataset_binding,
+    build_pmxt_v2_research_dataset_manifest,
+)
 from .instruments import (
     BinaryOptionMappingResult,
     BinaryOptionMarketContext,
@@ -75,6 +90,9 @@ __all__ = [
     "evaluate_offline_runtime",
     "build_binary_option",
     "convert_pmxt_v2_events",
+    "build_pmxt_v2_research_lineage",
+    "build_pmxt_v2_dataset_binding",
+    "build_pmxt_v2_research_dataset_manifest",
     "build_catalog",
     "query_catalog",
     "run_offline_replay",
@@ -84,6 +102,8 @@ __all__ = [
     "BinaryOptionMappingResult",
     "PmxtV2ReplaySource",
     "ConvertedEventStream",
+    "PmxtV2ResearchLineage",
+    "PmxtV2ResearchLineageMember",
     "CatalogBuildResult",
     "CatalogQueryResult",
     "NautilusReplayReceipt",

@@ -22,6 +22,9 @@ from tests.data_layer.analytical_research.test_experiment_os_lifecycle_evidence 
     evidence_input,
     lifecycle,
 )
+from tests.research_runtime.nautilus_offline.test_experiment_bridge import (
+    external_manifest as _external_manifest,
+)
 
 
 def stack():
@@ -353,3 +356,102 @@ def test_registry_enforces_oos_evidence_before_terminal_close_and_seals_closed_h
     ))
     sealed = ar.append_experiment_records(path, (forged_later,))
     assert sealed.error_codes == ("OOS_SEALED_EXPOSURE_VIOLATION",)
+
+
+# =============================================================================
+# WP175D — external binding registry backward compatibility (R015, R016)
+# =============================================================================
+
+
+def test_registry_persists_both_binding_subtypes_under_dataset_binding(tmp_path) -> None:
+    """R015: schema/version/application-id are unchanged; both binding subtypes
+    persist and reload under DATASET_BINDING with exact schema_id dispatch; old
+    canonical-only registries remain readable with no migration."""
+    # No new record kind, no schema/version/application-id change.
+    assert ar.REGISTRY_FORMAT_ID == "wp170-experiment-registry"
+    assert ar.REGISTRY_SCHEMA_VERSION == 1
+    assert ar.REGISTRY_APPLICATION_ID == 1464877424
+    kinds = [item[0] for item in ar.RECORD_KIND_TYPES]
+    assert "DATASET_BINDING" in kinds
+    assert "EXTERNAL_DATASET_BINDING" not in kinds
+    assert len(ar.RECORD_KIND_TYPES) == 12
+
+    # Canonical-only registry remains readable (old bindings append/load identically).
+    canonical_path = tmp_path / "canonical.sqlite3"
+    assert ar.initialize_experiment_registry(canonical_path).is_valid
+    canonical_records = stack()
+    assert ar.append_experiment_records(canonical_path, canonical_records).is_valid
+    canonical_loaded = ar.load_and_verify_experiment_registry(canonical_path)
+    assert canonical_loaded.is_valid
+    canonical_binding_id = next(
+        e.record_id for e in canonical_loaded.snapshot.entries if e.record_kind == "DATASET_BINDING"
+    )
+
+    # Mixed canonical + external bindings coexist under DATASET_BINDING.
+    _lineage, ext_binding, ext_manifest_record = _external_manifest(tmp_path / "ext")
+    mixed_path = tmp_path / "mixed.sqlite3"
+    assert ar.initialize_experiment_registry(mixed_path).is_valid
+    external_records = (ext_binding, feature(), label(), ext_manifest_record)
+    appended = ar.append_experiment_records(mixed_path, external_records)
+    assert appended.is_valid, appended.error_codes
+    also_canonical = ar.append_experiment_records(mixed_path, stack())
+    assert also_canonical.is_valid, also_canonical.error_codes
+
+    loaded = ar.load_and_verify_experiment_registry(mixed_path)
+    assert loaded.is_valid, loaded.error_codes
+    binding_entries = {
+        e.record_id: e.record for e in loaded.snapshot.entries if e.record_kind == "DATASET_BINDING"
+    }
+    # Both subtypes are stored under the SAME record kind and decode to distinct types.
+    assert ext_binding.dataset_binding_id in binding_entries
+    assert canonical_binding_id in binding_entries
+    assert isinstance(binding_entries[ext_binding.dataset_binding_id], os_contract.ExternalDatasetBinding)
+    assert isinstance(binding_entries[canonical_binding_id], ar.DatasetBinding)
+
+    # Idempotent retry of the external binding + manifest.
+    retry = ar.append_experiment_records(mixed_path, (ext_binding, ext_manifest_record))
+    assert retry.status == "REGISTRY_APPEND_IDEMPOTENT"
+
+
+def test_registry_subtype_corruption_fails_closed(tmp_path) -> None:
+    """R016: subtype ambiguity/corruption fails closed with no migration/repair."""
+    _lineage, ext_binding, _manifest = _external_manifest(tmp_path)
+    mapping = os_contract.record_to_mapping(ext_binding)
+
+    # Exact schema_id dispatch: known subtypes decode; anything else fails closed.
+    import json
+
+    canonical_payload = json.dumps(mapping)
+    decoded = registry._decode("DATASET_BINDING", canonical_payload)
+    assert isinstance(decoded, os_contract.ExternalDatasetBinding)
+
+    unknown = dict(mapping, schema_id="polymarket-unknown-binding")
+    try:
+        registry._decode("DATASET_BINDING", json.dumps(unknown))
+        raised = None
+    except registry._StoreFailure as failure:
+        raised = failure.code
+    assert raised == "REGISTRY_INTEGRITY_TAMPER"
+
+    # A persisted DATASET_BINDING row whose schema_id is corrupted fails the whole
+    # load closed (no repair, no partial snapshot).
+    path = tmp_path / "corrupt.sqlite3"
+    assert ar.initialize_experiment_registry(path).is_valid
+    assert ar.append_experiment_records(path, (ext_binding, feature(), label())).is_valid
+    connection = sqlite3.connect(path)
+    try:
+        connection.execute("DROP TRIGGER experiment_records_no_update")
+        corrupt_payload = json.dumps(dict(mapping, schema_id="polymarket-unknown-binding"))
+        connection.execute(
+            "UPDATE experiment_records SET payload_json=? WHERE record_kind='DATASET_BINDING'",
+            (corrupt_payload,),
+        )
+        connection.execute(registry._CREATE_NO_UPDATE)
+        connection.commit()
+    finally:
+        connection.close()
+    result = ar.load_and_verify_experiment_registry(path)
+    assert not result.is_valid and result.snapshot is None
+    assert result.error_codes in {
+        ("REGISTRY_SCHEMA_CONFLICT",), ("REGISTRY_INTEGRITY_TAMPER",),
+    }

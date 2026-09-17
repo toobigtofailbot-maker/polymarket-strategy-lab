@@ -1,0 +1,1139 @@
+WP175D — EXTERNAL HISTORICAL RESEARCH BRIDGE
+ONE-SHOT IMPLEMENTATION PACKAGE
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+
+===============================================================================
+0. EXECUTION INTENT
+===============================================================================
+
+This is the next implementation WP after merged WP175.
+
+When Karl sends this exact package to Claude Code or Codex with an instruction to
+execute it, that transmission grants CONDITIONAL IMPLEMENTATION AUTHORITY for
+WP175D only. It does not grant merge authority.
+
+Objective:
+Close S10-DATA-02 / WP175-D002 by creating the smallest truthful bridge from the
+already-validated local PMXT v2 external-history lineage into the merged WP170
+experiment OS, without pretending third-party historical rows were canonical
+ingestion-time PIT records.
+
+The finished capability must make it possible for a later, separately authorized
+evidence run to produce a genuine WP170 -> WP172 -> WP173 chain from validated
+local external history. This WP does NOT itself choose a strategy, expose OOS,
+run WP172, run paper trading, activate Gate C, download data, or trade.
+
+Optimize for ONE autonomous implementation session. Ordinary in-scope code,
+test, docs, lint, readiness, security/evidence, or CI corrections belong to the
+executor. Interrupt Karl only for a TRUE HARD STOP defined below.
+
+===============================================================================
+1. PACKAGE IDENTITY
+===============================================================================
+
+Package Identity:
+  WP ID: WP175D
+  Side10 capability ID: S10-DATA-02
+  Title: External Historical Research Bridge
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Drafting-time main SHA: 489c6f9548c39cb3bcb2196a81d5352a0d1dd653
+  Required predecessor: WP175 / PR #178 merged dormant
+  Required predecessor final head: 5a87ce1b23e08678273f1257ae24cf43a1675a7e
+  Required predecessor merge commit: 489c6f9548c39cb3bcb2196a81d5352a0d1dd653
+  Suggested branch: codex/wp175d-external-historical-research-bridge
+  Package class: LOCAL_OFFLINE_EXTERNAL_HISTORICAL_RESEARCH_BRIDGE
+  Package size class: L
+  Exact changed-file scope: 24
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: LOCAL_OFFLINE_RESEARCH_ONLY
+  Product impact: PMXT_V2_EXTERNAL_HISTORY_TO_WP170_EXPERIMENT_LINEAGE
+  Network impact: NONE
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: FAST
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: high reasoning for contract freeze; efficient high/extra-high
+    coding mode for implementation.
+  Fresh session: YES.
+  Reason: the implementation is local/offline but changes research provenance,
+    temporal-leakage semantics, and durable WP170 registry compatibility.
+  Escalate or STOP if: preserving external provenance requires masquerading as
+    canonical PIT; the existing WP170 registry cannot remain backward compatible
+    without migration; a 25th path is mechanically required; or any network,
+    dependency, paper, execution, credential, or live authority is needed.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Merge authority: NO.
+
+Successor:
+  First successor is an EVIDENCE RUN, not another automatic software WP:
+  S10-EVID-01 genuine strategy evidence production using real local PMXT v2
+  history through WP170 -> WP172 -> WP173.
+  The first WP175 live canary remains separately human-authorized after genuine
+  evidence exists.
+  Canonical WP176 remains Mature Controlled Live; WP175D does not renumber,
+  implement, or authorize WP176.
+
+===============================================================================
+2. WHY THIS WP IS NEXT
+===============================================================================
+
+WP175 is merged dormant. Its first live activation is correctly blocked by
+LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE.
+
+The root cause has been mechanically isolated:
+
+- WP170 accepts only DatasetSnapshotReference / canonical-PIT research lineage.
+- Canonical PIT visibility is ingestion-time authoritative and must not be
+  backdated.
+- Historical third-party rows downloaded today therefore cannot truthfully be
+  inserted as information the canonical PIT system knew in the past.
+- WP167 already validates PMXT v2 as provenance-separated
+  THIRD_PARTY_NATIVE_FRAME_ARCHIVE evidence.
+- WP168 already revalidates those PMXT source hashes and deterministically maps:
+    source timestamp -> ts_event
+    timestamp_received -> ts_init
+  with exact physical-order-independent per-row event digests.
+- WP172 already consumes the same PMXT/WP168 lineage for executable-edge market
+  truth.
+- The missing capability is ONLY the honest provenance bridge from that already
+  verified external history into WP170's experiment/dataset identity system.
+
+Do not solve this by:
+- backdating canonical PIT;
+- fabricating DatasetSnapshotReference objects;
+- writing a historical downloader;
+- changing WP172;
+- weakening WP170 leakage/OOS gates;
+- generating strategy evidence inside this WP.
+
+===============================================================================
+3. HARD MERGE / LIVE-TRUTH GATE
+===============================================================================
+
+Before branch creation or implementation:
+
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+git branch --all
+gh pr list --state open
+
+Required:
+1. main contains WP175 final head 5a87ce1b23e08678273f1257ae24cf43a1675a7e.
+2. drafting-time main is 489c6f9548c39cb3bcb2196a81d5352a0d1dd653,
+   OR a newer main is proved non-conflicting.
+3. PR #178 is merged.
+4. no open WP175D PR exists.
+5. no pre-existing WP175D implementation branch exists unless it is clearly the
+   intended clean continuation.
+6. worktree is clean.
+7. generated-artifact guard passes.
+8. live trading remains DISABLED.
+9. no current repo truth says S10-DATA-02 is already implemented.
+
+If a newer main materially changes WP167 PMXT, WP168 conversion, WP170 binding /
+registry, or this exact scope, STOP and report STATE_DRIFT before coding.
+
+Record the refreshed base SHA in the new WP175D prompt/spec/status and PR body.
+Refreshed base SHA (verified at execution): 489c6f9548c39cb3bcb2196a81d5352a0d1dd653.
+
+===============================================================================
+4. CONTEXT BUDGET
+===============================================================================
+
+Read first:
+- AGENTS.md
+- AI_CODING_AGENT_START_HERE.md
+- CODEX_START_HERE.md
+- docs/ai/codex/PROTECTED_PATHS.md
+- docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md
+- docs/ai/codex/WP_DRAFTING_STANDARD.md
+- docs/ai/codex/WP_SPEC_STANDARD.md
+- docs/ai/codex/VALIDATION_MATRIX.md
+- docs/project_status.md
+- docs/repo_truth_index.md
+- docs/deferred_items_log.md
+- docs/long_term_bot_completion_roadmap.md
+
+Read for this WP:
+- docs/status_entries/WP167.md
+- docs/status_entries/WP168.md
+- docs/status_entries/WP170.md
+- docs/status_entries/WP172.md
+- docs/status_entries/WP175.md
+- docs/wp_specs/WP170/wp_prompt.txt and wp_spec.json, relevant sections only
+- docs/wp_specs/WP172/wp_prompt.txt and wp_spec.json, relevant sections only
+- docs/wp_specs/WP175/wp_prompt.txt and wp_spec.json, only the S10-DATA-02 /
+  qualification-successor sections
+- docs/analytical_research_layer_contract.md if present
+- docs/falsification_grade_experiment_registry_and_research_dataset_os_contract.md
+- src/data_layer/analytical_research/external_dataset.py
+- src/data_layer/analytical_research/pmxt_v2.py
+- src/data_layer/analytical_research/research_dataset.py, source-kind / manifest
+  identity sections only
+- src/data_layer/analytical_research/experiment_os.py
+- src/data_layer/analytical_research/experiment_registry.py
+- src/research_runtime/nautilus_offline/conversion.py
+- src/research_runtime/nautilus_offline/__init__.py
+- directly affected tests named in exact scope below
+
+Read only if a mechanical failure points there:
+- tests/test_architecture_boundaries.py
+- tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py
+- generated-artifact / readiness / evidence guards
+- adjacent WP168/WP170 tests not in the changed scope
+
+Do not read/touch:
+- execution_gateway implementation
+- paper_trading implementation
+- credentials, .env, wallet/key files
+- scheduler/daemon/service code
+- operator cockpit
+- Hermès runtime
+- dependency/lock/workflow files
+- local_data or generated artifacts as committed content
+- unrelated old chat transcripts
+- WP176 implementation planning
+
+Search terms if paths moved:
+ExternalDatasetDescriptor, PmxtV2ReplaySource, ConvertedEventStream,
+ordered_event_digests, timestamp_received, ts_init, DatasetBinding,
+DatasetSnapshotReference, build_dataset_binding, build_research_dataset_manifest,
+build_preregistered_experiment, RECORD_KIND_TYPES, DATASET_BINDING,
+SOURCE_KIND_CANONICAL_PIT, source_record_version_ids.
+
+Stop discovery when exact predecessor contracts, complete changed-set guards, and
+the 24-file feasibility are mechanically confirmed.
+
+===============================================================================
+5. PRE-FREEZE CONTRACT COMPILE — REQUIRED BEFORE SOURCE EDITS
+===============================================================================
+
+Before freezing WP175D prompt/spec, mechanically prove all of these on current
+main:
+
+A. WP167 / PMXT v2
+- validate_and_describe_pmxt_v2_archive exists and remains local/offline.
+- ExternalDatasetDescriptor remains provenance-separated external research
+  evidence and never canonical repo truth.
+- PMXT source object hashes and source/receive timestamp semantics are exact.
+- no downloader/network exists or is needed by this WP.
+
+B. WP168 conversion
+- PmxtV2ReplaySource is descriptor + exact source files.
+- convert_pmxt_v2_events revalidates every source hash.
+- canonical sort remains:
+    ts_init / timestamp_received,
+    ts_event / source timestamp,
+    event-kind rank,
+    canonical row digest,
+    canonical row bytes.
+- ordered_event_digests uses canonical row digest + duplicate ordinal.
+- ts_event comes from source timestamp.
+- ts_init comes from timestamp_received.
+- ConvertedEventStream public fields must remain unchanged by WP175D.
+
+C. WP170
+- build_dataset_binding(reference, analytical_manifest, code_version) public
+  signature and DatasetBinding fields are frozen canonical-PIT behavior.
+- build_research_dataset_manifest currently proves membership only against
+  DatasetSnapshotReference ordinary record IDs.
+- build_preregistered_experiment currently requires DatasetBinding.
+- ResearchSample source_record_version_ids and timing semantics are frozen.
+- registry schema version/application ID/table CHECK currently use record kind
+  DATASET_BINDING.
+- no genuine production registry migration is available or necessary.
+
+D. Historical guards
+- current test_hermes... branch-wide source guard resolves authorized src paths
+  from the active WP machine spec when docs/status_entries/WP175D.md is changed.
+- src/data_layer/analytical_research is already architecture-approved.
+- src/research_runtime/nautilus_offline is already architecture-approved.
+- no architecture-boundary edit is mechanically necessary.
+- no dependency/workflow change is necessary.
+
+If any statement is false, revise the package BEFORE source editing.
+If the correction needs a 25th path, STOP.
+
+For FAST:
+- create exact docs/wp_specs/WP175D/wp_prompt.txt and wp_spec.json;
+- no independent LLM draftability certificate is required;
+- run wp_spec_guard and wp_readiness_gate;
+- proceed only when deterministic FAST readiness says IMPLEMENTATION_READY.
+
+===============================================================================
+6. EXACT CAPABILITY BOUNDARY
+===============================================================================
+
+WP175D adds ONE capability:
+
+Validated PMXT v2 external-history events can become a content-addressed,
+provenance-separated WP170 dataset binding and ResearchDatasetManifest while
+retaining real source availability time and without acquiring canonical-PIT
+authority.
+
+The bridge is PMXT-v2-specific for this WP. Generic arbitrary external-provider
+support is NOT claimed.
+
+No strategy, label generator, metric calculator, OOS runner, optimizer, downloader,
+paper session, account state, order, or live behavior is added.
+
+===============================================================================
+7. FROZEN SOURCE CONTRACT
+===============================================================================
+
+7.1 PMXT V2 RESEARCH LINEAGE
+
+Extend src/research_runtime/nautilus_offline/conversion.py with a SECOND,
+non-breaking research-lineage surface.
+
+Do NOT change the field set or semantics of ConvertedEventStream.
+
+Add frozen:
+- PmxtV2ResearchLineageMember
+- PmxtV2ResearchLineage
+
+Add:
+build_pmxt_v2_research_lineage(source, context, member_event_digests)
+
+Exact input semantics:
+- source must be exact valid PmxtV2ReplaySource.
+- context must pass the existing binary-option mapping.
+- member_event_digests must be an exact built-in list/tuple, nonempty, unique,
+  bounded to <= 4096 requested members.
+- requested values must be exact existing WP168 ordered event-digest identities
+  (`<canonical-row-sha256>:<duplicate-ordinal>`).
+- caller order carries NO identity or result-order authority.
+- every requested digest must exist exactly once in the canonical source stream.
+- missing, duplicate, malformed, or over-limit input rejects closed.
+
+The lineage builder and convert_pmxt_v2_events MUST share one internal canonical
+row validation/order/duplicate-ordinal implementation. Do not implement two
+slightly different PMXT ordering algorithms.
+
+Each PmxtV2ResearchLineageMember contains only:
+- member_id
+- source_event_digest
+- event_type
+- event_time_ns
+- availability_time_ns
+
+Member identity:
+- content-addressed;
+- binds source_external_dataset_id, instrument_id, conversion_policy_version,
+  source_event_digest, event_type, event_time_ns, availability_time_ns;
+- prefix `externalmember:sha256:`;
+- contains no path or raw row.
+
+CRITICAL TIME RULE:
+- event_time_ns = PMXT source timestamp / existing ts_event.
+- availability_time_ns = PMXT timestamp_received / existing ts_init.
+- AVAILABILITY, leakage, and later sample admission use availability_time_ns,
+  NEVER event_time_ns.
+- event_time is diagnostic/source semantics only.
+
+Lineage identity:
+- prefix `pmxtresearchlineage:sha256:`;
+- binds source dataset kind, external_dataset_id, instrument_id,
+  conversion_policy_version, canonical selected-member order, member count,
+  membership digest, and first/last event + availability bounds.
+- physical file order and caller request order cannot change it.
+- byte-identical duplicate source rows stay distinct through the existing
+  digest:ordinal semantics and therefore have distinct member IDs.
+
+Public invalid output:
+- closed status/error vocabulary;
+- no raw path, row, exception, traceback, source payload, secret, or arbitrary
+  caller text echo.
+
+7.2 EXTERNAL DATASET BINDING
+
+Add frozen ExternalDatasetBinding to experiment_os.py and export it from
+src/data_layer/analytical_research/__init__.py.
+
+Do NOT alter:
+- DatasetBinding fields;
+- build_dataset_binding signature;
+- canonical DatasetSnapshotReference semantics;
+- SOURCE_KIND_CANONICAL_PIT;
+- existing canonical identity bytes.
+
+ExternalDatasetBinding exact semantic fields must include:
+- schema_id
+- schema_version
+- dataset_binding_id
+- source_kind
+- source_external_dataset_id
+- source_lineage_id
+- source_membership_digest
+- source_member_count
+- instrument_id
+- conversion_policy_version
+- first_event_time_ns
+- last_event_time_ns
+- first_availability_time_ns
+- last_availability_time_ns
+- code_version
+- advisory_only
+- no_execution_authority
+
+Exact:
+- schema_id = `polymarket-external-dataset-binding`
+- schema_version = existing WP170 EXPERIMENT_OS_SCHEMA_VERSION
+- source_kind = existing WP168 `WP167_EXTERNAL_DATASET_DESCRIPTOR`
+- dataset_binding_id remains generic `datasetbinding:sha256:` and its identity
+  preimage includes every semantic field above except the ID/safety booleans.
+- advisory_only = true
+- no_execution_authority = true
+- no local path is stored.
+- no DatasetSnapshotReference is created.
+- no AnalyticalDatasetManifest with SOURCE_KIND_CANONICAL_PIT is fabricated.
+
+Add the minimum private/internal WP170 helpers necessary to:
+- construct/validate ExternalDatasetBinding;
+- recognize it as a valid research dataset binding;
+- preserve exact identity reconstruction and no-echo behavior.
+
+PMXT-specific public construction belongs in the bridge module below; do not make
+experiment_os import research_runtime.
+
+7.3 PMXT -> WP170 BRIDGE
+
+Create:
+src/research_runtime/nautilus_offline/experiment_bridge.py
+
+Export only the narrow public bridge from
+src/research_runtime/nautilus_offline/__init__.py.
+
+Public functions:
+
+build_pmxt_v2_dataset_binding(lineage, code_version)
+  -> existing ExperimentControlResult containing ExternalDatasetBinding on PASS.
+
+build_pmxt_v2_research_dataset_manifest(
+    lineage,
+    dataset_binding,
+    feature_definitions,
+    label_definition,
+    sample_inputs,
+    group_policy,
+)
+  -> existing ExperimentControlResult containing standard ResearchDatasetManifest
+     on PASS.
+
+Rules:
+- require exact PmxtV2ResearchLineage PASS object, never arbitrary descriptor
+  metadata alone;
+- binding external dataset ID, lineage ID, membership digest/count, instrument,
+  conversion policy and time bounds must exactly equal lineage;
+- binding/lineage mismatch rejects;
+- sample source_record_version_ids on THIS external path must contain only
+  `externalmember:sha256:` IDs from this exact lineage;
+- retain the legacy ResearchSample field name for schema/backward compatibility,
+  but docs must state that under ExternalDatasetBinding it carries external
+  source-evidence member IDs and never claims canonical record-version authority;
+- canonical DatasetBinding path continues to require real canonical ordinary
+  record_version_ids exactly as before.
+
+Refactor the shared ResearchSample/ResearchDatasetManifest construction into ONE
+private implementation rather than duplicating identity/leakage logic.
+
+For the external path additionally enforce:
+- each cited external source member exists in the exact lineage;
+- feature_availability_time is >= the maximum actual availability_time_ns of all
+  cited members;
+- feature_availability_time <= decision_time;
+- all existing target/label/group/duplicate/source-membership rules remain;
+- timestamp comparison must be exact and integer/datetime based, never binary
+  float;
+- do not weaken label timing because historical market data is external.
+
+The bridge does NOT compute features, labels, strategy returns, metrics, or
+results. Caller supplies those later under WP170's existing preregistration rules.
+
+7.4 PREREGISTRATION COMPATIBILITY
+
+Modify build_preregistered_experiment internal admission so the dataset binding
+may be either:
+- canonical DatasetBinding; or
+- ExternalDatasetBinding.
+
+Its public signature stays unchanged.
+
+Everything else remains unchanged:
+- exact split binding;
+- feature/label identities;
+- preregistration before OOS;
+- lifecycle;
+- first-look OOS sealing;
+- evidence receipt semantics;
+- multiple-testing/family accounting;
+- no execution authority.
+
+7.5 REGISTRY BACKWARD COMPATIBILITY — NO MIGRATION
+
+WP175D MUST NOT change:
+- REGISTRY_FORMAT_ID
+- REGISTRY_SCHEMA_VERSION
+- REGISTRY_APPLICATION_ID
+- SQLite table/trigger/index schema
+- CHECK vocabulary containing record kind DATASET_BINDING
+- existing canonical registry bytes merely to add the bridge.
+
+Persist ExternalDatasetBinding under the EXISTING record kind:
+`DATASET_BINDING`.
+
+Serialization:
+- both DatasetBinding and ExternalDatasetBinding map to DATASET_BINDING.
+
+Decoding:
+- for DATASET_BINDING, decode canonical JSON first;
+- exact schema_id dispatches:
+    `polymarket-experiment-dataset-binding` -> DatasetBinding
+    `polymarket-external-dataset-binding`   -> ExternalDatasetBinding
+- any other schema_id rejects as registry integrity tamper / existing closed
+  registry error.
+- no ambiguous subtype inference.
+
+Tests must prove:
+- old canonical bindings still append/load identically;
+- old registry schema SQL is unchanged;
+- canonical-only fixture registries remain readable;
+- external bindings append/load/idempotently retry;
+- mixed canonical + external bindings coexist;
+- corrupt subtype/schema/identity fails closed;
+- no migration/repair/rewrite is performed.
+
+===============================================================================
+8. PERSISTENCE / STATE MODEL
+===============================================================================
+
+No new database or durable store.
+
+Durable authority remains:
+- immutable local PMXT files + WP167 ExternalDatasetDescriptor for source bytes;
+- WP170 experiment registry for validated experiment records.
+
+PmxtV2ResearchLineage is an in-memory, reproducible view derived from exact
+verified local source bytes plus an explicit bounded member selection.
+
+The registry persists:
+- ExternalDatasetBinding as existing DATASET_BINDING kind;
+- standard ResearchDatasetManifest / TemporalSplitManifest /
+  PreregisteredExperiment / receipts exactly as before.
+
+The registry does NOT persist:
+- raw PMXT rows;
+- PMXT file paths;
+- the full ephemeral lineage object;
+- secrets;
+- downloaded artifacts.
+
+Reproducibility comes from:
+external_dataset_id + exact source hashes + source_lineage_id +
+source_membership_digest + selected external member IDs in ResearchSample.
+
+===============================================================================
+9. FAILURE / FINALITY SEMANTICS
+===============================================================================
+
+This WP has no economic mutation/finality.
+
+Every public builder is deterministic and fail-closed.
+
+Failure precedence should preserve existing WP170 closed errors where possible.
+Do not proliferate new public errors unless mechanically necessary.
+
+At minimum reject:
+- invalid/unknown PMXT source or hash mismatch;
+- invalid context;
+- malformed/duplicate/unknown requested event digest;
+- >4096 requested members;
+- wrong external dataset/lineage/binding;
+- source membership not present in lineage;
+- forged/tampered ExternalDatasetBinding identity;
+- source availability after claimed feature availability;
+- feature availability after decision;
+- existing label timing violation;
+- mixed canonical/external subtype misuse;
+- registry subtype corruption.
+
+Invalid outputs never echo path, raw row, exception, traceback, secret-like input,
+or arbitrary untrusted payload.
+
+No partial registry append survives a failure; existing atomic/idempotent registry
+semantics are unchanged.
+
+===============================================================================
+10. EXACT 24-FILE SCOPE
+===============================================================================
+
+Freeze required_changed_files == allowed_changed_files to exactly:
+
+1.  docs/wp_specs/WP175D/wp_prompt.txt
+2.  docs/wp_specs/WP175D/wp_spec.json
+3.  docs/status_entries/WP175D.md
+4.  docs/external_historical_research_bridge_contract.md
+5.  docs/falsification_grade_experiment_registry_and_research_dataset_os_contract.md
+6.  docs/project_status.md
+7.  docs/repo_truth_index.md
+8.  docs/deferred_items_log.md
+9.  docs/long_term_bot_completion_roadmap.md
+10. src/data_layer/analytical_research/__init__.py
+11. src/data_layer/analytical_research/experiment_os.py
+12. src/data_layer/analytical_research/experiment_registry.py
+13. src/research_runtime/nautilus_offline/__init__.py
+14. src/research_runtime/nautilus_offline/conversion.py
+15. src/research_runtime/nautilus_offline/experiment_bridge.py
+16. tests/data_layer/analytical_research/test_experiment_os_identity.py
+17. tests/data_layer/analytical_research/test_experiment_os_samples_splits.py
+18. tests/data_layer/analytical_research/test_experiment_os_boundaries.py
+19. tests/data_layer/analytical_research/test_experiment_registry.py
+20. tests/research_runtime/nautilus_offline/test_conversion.py
+21. tests/research_runtime/nautilus_offline/test_experiment_bridge.py
+22. tests/test_falsification_grade_experiment_registry_and_research_dataset_os_contract_docs.py
+23. tests/test_project_status_docs.py
+24. tests/test_repo_truth_docs.py
+
+max_changed_files: 24
+exact_scope_required: true
+
+No 25th path.
+
+Files that MUST be RUN but are not expected to change:
+- tests/test_architecture_boundaries.py
+- tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py
+- tests/test_generated_artifact_guard.py if present
+- relevant WP168/WP170 focused regression suites selected mechanically
+
+Historical branch-wide source guard already derives src authorization from the
+active machine spec through docs/status_entries/WP175D.md. Do not add a bespoke
+WP175D allowlist unless current main mechanically disproves this pre-freeze fact.
+
+If any required behavior mechanically needs a 25th path, STOP:
+SCOPE_25TH_PATH_REQUIRED.
+
+===============================================================================
+11. DOC / REPO-TRUTH DELTA
+===============================================================================
+
+docs/external_historical_research_bridge_contract.md is the normative capability
+contract.
+
+Update the WP170 contract only to describe the new external binding path while
+preserving the original canonical path.
+
+Update status/repo truth so:
+- WP175 is MERGED DORMANT via PR #178 / merge
+  489c6f9548c39cb3bcb2196a81d5352a0d1dd653;
+- WP175D / S10-DATA-02 is the current separately gated research-data bridge;
+- WP176 remains Mature Controlled Live and is NOT renumbered or authorized;
+- WP175 Gate-C remains NOT AUTHORIZED;
+- LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE remains true until genuine
+  evidence is later produced;
+- WP175-D002 closes only when WP175D is merged;
+- the first post-WP175D action is an evidence-production gate, not automatic
+  live activation.
+
+Roadmap update:
+insert WP175D as a root-cause prerequisite/unblocker between merged dormant WP175
+and the evidence needed for its first live canary, WITHOUT renaming canonical
+WP176.
+
+No status document may claim:
+- external PMXT files are canonical PIT;
+- a genuine strategy exists;
+- WP170 OOS was run;
+- WP172 passed;
+- WP173 paper evidence exists;
+- Gate C is ready;
+- any live or economic capability changed.
+
+===============================================================================
+12. REVIEWER-TRAP MATRIX
+===============================================================================
+
+The implementation and tests must explicitly trap these mistakes. This WP adds
+validators (lineage builder, external-binding validator, bridge, registry subtype
+dispatch), so a negative-test matrix is required and is not not_applicable-exempt:
+
+T01. External PMXT rows are wrapped in DatasetSnapshotReference.
+     -> FORBIDDEN.
+
+T02. Third-party historical availability is set from source event timestamp.
+     -> FORBIDDEN. Availability is timestamp_received / ts_init.
+
+T03. Existing DatasetBinding fields or build_dataset_binding signature change.
+     -> FORBIDDEN.
+
+T04. ConvertedEventStream fields/identity change merely to support WP175D.
+     -> FORBIDDEN.
+
+T05. Registry schema/version/application ID or DATASET_BINDING CHECK changes.
+     -> FORBIDDEN.
+
+T06. A new registry record kind is introduced for the external binding.
+     -> FORBIDDEN. Use existing DATASET_BINDING + exact schema_id subtype dispatch.
+
+T07. Caller request order changes lineage identity.
+     -> FORBIDDEN.
+
+T08. Physical source file/row order changes lineage identity.
+     -> FORBIDDEN.
+
+T09. Byte-identical duplicate PMXT rows collapse into one source member.
+     -> FORBIDDEN; preserve digest:ordinal distinction.
+
+T10. Missing/malformed requested source digest is silently skipped.
+     -> FORBIDDEN; fail closed.
+
+T11. External sample cites a member outside the bound lineage.
+     -> FORBIDDEN.
+
+T12. External sample claims feature availability earlier than a cited member's
+     actual ts_init.
+     -> FORBIDDEN.
+
+T13. External bridge relaxes target/label timing, split, OOS, family, or evidence
+     lifecycle rules.
+     -> FORBIDDEN.
+
+T14. External binding can be created from arbitrary metadata without a validated
+     PmxtV2ResearchLineage on the public PMXT bridge path.
+     -> FORBIDDEN.
+
+T15. Local file paths enter IDs, registry payloads, public errors, or committed
+     evidence.
+     -> FORBIDDEN.
+
+T16. A downloader, HTTP client, API call, credential read, scheduler, strategy,
+     paper, execution, or live path appears.
+     -> FORBIDDEN.
+
+T17. Old canonical-only registry fixtures become unreadable or are migrated.
+     -> FORBIDDEN.
+
+T18. Source identities or OOS evidence are generated by tests and then described
+     as genuine operator evidence.
+     -> FORBIDDEN.
+
+===============================================================================
+13. REQUIREMENT -> TEST -> EVIDENCE MAP
+===============================================================================
+
+The WP machine spec (evidence plan / requirement mapping) must include at least
+these requirements and map each to an exact test/evidence command.
+
+R001  External history never gains canonical-PIT authority.
+  Test: external binding type/source-kind + canonical binding unchanged tests.
+
+R002  PMXT lineage uses exact existing source/hash/schema validation.
+  Test: test_conversion + bridge valid/tampered source cases.
+
+R003  One shared canonical row-order/digest implementation drives conversion and
+      research lineage.
+  Test: event-digest equality / physical-order invariance.
+
+R004  ts_init/timestamp_received is exact source availability.
+  Test: event vs receive timestamp mismatch cases.
+
+R005  Requested research members are nonempty, unique, <=4096, all present, and
+      returned in canonical source order.
+  Test: boundary/duplicate/missing/reordered request matrix.
+
+R006  Duplicate source rows remain distinct via digest:ordinal and member IDs.
+  Test: duplicate-row bridge case.
+
+R007  Lineage/member identities are deterministic, content-addressed,
+      path-independent, and no-echo.
+  Test: equivalent copied source files + tamper/no-echo.
+
+R008  Existing ConvertedEventStream public contract is byte/API compatible.
+  Test: existing conversion suite unchanged plus exact field test.
+
+R009  ExternalDatasetBinding identity is closed and binds every lineage semantic.
+  Test: one-field tamper matrix.
+
+R010  Existing canonical DatasetBinding API/fields/identity remain unchanged.
+  Test: old identity/boundary fixtures exact.
+
+R011  External ResearchDatasetManifest accepts only exact bound member IDs.
+  Test: valid / foreign / missing / mixed canonical-external membership.
+
+R012  External feature availability cannot precede maximum actual source
+      availability and cannot exceed decision time.
+  Test: exact boundary cases.
+
+R013  Existing label, group, split, purge, embargo and duplicate-membership
+      semantics remain unchanged.
+  Test: existing sample/split suites plus external cases.
+
+R014  build_preregistered_experiment accepts either valid binding type while its
+      signature and all OOS/lifecycle semantics remain unchanged.
+  Test: canonical + external preregistration parity and wrong-type rejection.
+
+R015  Existing registry schema remains byte/schema compatible; ExternalDatasetBinding
+      persists under DATASET_BINDING with exact schema_id dispatch.
+  Test: schema SQL/version/app ID unchanged; canonical old + external + mixed.
+
+R016  Registry corruption/subtype ambiguity fails closed with no migration/repair.
+  Test: schema_id/payload/ID tamper and idempotency/atomicity.
+
+R017  Invalid public surfaces never echo paths/raw rows/exceptions/secrets.
+  Test: recursive sentinel scan.
+
+R018  No network, credential, scheduler, dependency, paper, strategy, execution,
+      live, or downloader authority is introduced.
+  Test: AST/source boundary scans + diff scope + architecture guards.
+
+R019  Repo truth records WP175 merged, WP175D current, WP176 preserved, and
+      S10-DATA-02 closure semantics accurately.
+  Test: status/repo-truth docs tests.
+
+R020  Exact 24-file package and full repo remain green.
+  Evidence: readiness/scope guards + one final full suite + hosted exact-head CI.
+
+Do not report Ready for review unless every requirement is SATISFIED.
+
+===============================================================================
+14. IMPLEMENTATION EXECUTION MODEL
+===============================================================================
+
+Phase A — freeze:
+1. live-truth gate;
+2. contract compile;
+3. create dedicated worktree/branch;
+4. create exact WP175D prompt/spec;
+5. freeze exact 24 paths;
+6. run FAST spec/readiness;
+7. if IMPLEMENTATION_READY, continue without asking Karl.
+
+Phase B — implementation:
+- one primary executor owns all ordinary same-scope corrections;
+- focused tests while editing;
+- do not ask Side10 to debug normal failures;
+- no branch hopping or multiple implementation agents writing concurrently;
+- a read-only reviewer/subagent may red-team identity/leakage/registry compatibility.
+
+Phase C — stabilization:
+- after LAST source change, run the final validation sequence once;
+- if final suite finds a real in-scope defect, fix it and rerun affected focused
+  tests plus one new final broad suite after the new last source change;
+- do not repeatedly run broad suites while editing.
+
+Phase D — PR:
+- push exact head;
+- wait for exact-head hosted CI;
+- update PR body with current evidence only;
+- re-fetch posted PR body;
+- run PR evidence consistency guard;
+- leave merge unauthorized.
+
+Human-only action:
+- explicit final merge authorization after independent Side review.
+No other human action should be required unless a hard stop is reached.
+
+===============================================================================
+15. FOCUSED VALIDATION WHILE EDITING
+===============================================================================
+
+Use the smallest relevant commands while source is changing, including:
+
+python -m pytest -q tests/research_runtime/nautilus_offline/test_conversion.py
+python -m pytest -q tests/research_runtime/nautilus_offline/test_experiment_bridge.py
+
+python -m pytest -q \
+  tests/data_layer/analytical_research/test_experiment_os_identity.py \
+  tests/data_layer/analytical_research/test_experiment_os_samples_splits.py \
+  tests/data_layer/analytical_research/test_experiment_os_boundaries.py \
+  tests/data_layer/analytical_research/test_experiment_registry.py
+
+python -m pytest -q \
+  tests/test_falsification_grade_experiment_registry_and_research_dataset_os_contract_docs.py \
+  tests/test_project_status_docs.py \
+  tests/test_repo_truth_docs.py
+
+Also run, without changing them unless a mechanical scope contradiction proves
+otherwise:
+
+python -m pytest -q tests/test_architecture_boundaries.py
+python -m pytest -q tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py
+
+Run exact current WP168/WP170 regression selections required by the machine spec.
+
+===============================================================================
+16. FINAL VALIDATION AFTER LAST SOURCE CHANGE
+===============================================================================
+
+Required final sequence:
+
+1. WP spec guard.
+2. WP readiness gate with --check-diff against exact base.
+3. exact 24-path required/allowed scope check.
+4. all focused WP175D tests.
+5. relevant full WP167 PMXT + WP168 conversion regressions.
+6. relevant full WP170 experiment OS + registry regressions.
+7. architecture-boundary test.
+8. historical branch-wide scope/path guard.
+9. generated-artifact guard.
+10. git diff --check.
+11. python -m pip check.
+12. current FAST-package security/static checks required by VALIDATION_MATRIX.
+13. ONE authoritative:
+      python -m pytest -q
+
+No dependency or workflow changes are allowed.
+
+Commit the stable candidate only after local validation.
+
+Push and require exact-head hosted CI. A previous head's CI is not evidence.
+
+If hosted CI finds an ordinary in-scope defect, fix autonomously within 24 paths
+and repeat post-change validation.
+
+===============================================================================
+17. PR EVIDENCE
+===============================================================================
+
+PR title:
+WP175D — External Historical Research Bridge
+
+PR body must include:
+- exact base SHA;
+- exact head SHA;
+- package class / FAST / risk 2;
+- exact 24 paths;
+- prompt/spec hashes;
+- IMPLEMENTATION_READY evidence;
+- compatibility/impossibility table;
+- R001-R020 traceability table;
+- focused tests;
+- one authoritative full-suite result;
+- security/dependency evidence;
+- exact-head hosted CI;
+- no network/runtime downloader;
+- no credentials;
+- no paper;
+- no execution/live;
+- no capital;
+- registry schema unchanged;
+- canonical PIT authority unchanged;
+- external provenance preserved;
+- WP175 merged dormant;
+- WP175 live activation still blocked pending genuine evidence;
+- WP176 not started;
+- merge authorized: NO.
+
+Evidence mode must follow current repo state-machine truth.
+
+After posting:
+- fetch exact PR body back from GitHub;
+- run the canonical PR evidence consistency guard against exact HEAD;
+- require PASS;
+- use no stale prior-head counts/hashes.
+
+===============================================================================
+18. HARD STOPS
+===============================================================================
+
+STOP if a 25th path is required — exact scope is 24.
+
+STOP if external history must be converted into DatasetSnapshotReference or
+SOURCE_KIND_CANONICAL_PIT — that would falsify provenance/availability authority.
+
+STOP if registry backward compatibility requires schema migration, repair, or
+rewriting prior canonical records — split/research before proceeding.
+
+STOP if ConvertedEventStream public fields/identity must change — the bridge must
+be additive.
+
+STOP if existing DatasetBinding fields/signature must change — canonical WP170
+path must remain backward compatible.
+
+STOP if a downloader, network call, new dependency, lock/workflow edit, credential,
+paper, strategy, execution, live, scheduler, or daemon is needed.
+
+STOP if exact source availability cannot remain timestamp_received/ts_init.
+
+STOP if the bridge cannot validate a sample's cited member IDs against the exact
+bound lineage without trusting caller-provided availability timestamps.
+
+STOP if invalid-output no-echo cannot be tested.
+
+STOP if final validation cannot run after the last source change.
+
+STOP if main changes materially before branch creation or PR review.
+
+Do not convert a hard stop into silent scope growth.
+
+===============================================================================
+19. DEFINITION OF DONE
+===============================================================================
+
+WP175D is done only when:
+
+- PMXT v2 validated source rows can produce a bounded, deterministic,
+  content-addressed research lineage from explicitly selected existing event
+  digests;
+- source availability is bound to timestamp_received/ts_init;
+- external lineage can produce ExternalDatasetBinding without canonical-PIT
+  masquerading;
+- external samples can produce the STANDARD WP170 ResearchDatasetManifest only
+  when every cited external member is real, bound, and available by the claimed
+  feature time;
+- canonical WP170 DatasetBinding behavior is unchanged;
+- preregistration accepts canonical OR external binding without changing OOS
+  rules;
+- existing WP170 registry schema remains unchanged and can persist/reload both
+  binding subtypes under DATASET_BINDING;
+- old canonical registries remain valid;
+- no network/downloader/dependency/trading authority exists;
+- exact 24 paths only;
+- R001-R020 are all SATISFIED;
+- full local suite passes;
+- exact-head hosted CI passes;
+- posted PR evidence guard passes;
+- PR is review-ready;
+- merge remains separately human-authorized.
+
+The WP does NOT need to produce a passing strategy or a live canary.
+
+===============================================================================
+20. FINAL HANDOFF (REPORT-BACK)
+===============================================================================
+
+Return one concise final report-back:
+
+WP175D IMPLEMENTATION REPORT
+
+1. LIVE STATE
+- base
+- exact head
+- branch / PR
+- exact 24 paths
+- clean worktree
+
+2. CONTRACT
+- prompt SHA
+- spec SHA
+- FAST readiness result
+- no certificate required under current FAST governance
+
+3. PUBLIC SURFACE
+- exact added types/functions
+- exact unchanged predecessor APIs
+
+4. PROVENANCE / TIME
+- external source-kind
+- event-time semantics
+- availability-time semantics
+- canonical-PIT authority unchanged
+
+5. REGISTRY COMPATIBILITY
+- schema version/application ID unchanged
+- DATASET_BINDING subtype dispatch
+- old canonical registry compatibility evidence
+
+6. VALIDATION
+- focused results
+- final full suite
+- security/dependency
+- exact-head hosted CI
+- PR evidence guard
+
+7. AUTHORITY
+Network: NONE
+Credentials: NONE
+Paper: NO
+Execution: NO
+Live: NO
+Capital at risk: USD 0
+WP175 Gate-C activation: NOT AUTHORIZED
+WP176: NOT STARTED
+Merge: NOT AUTHORIZED
+
+8. SUCCESSOR
+S10-EVID-01 genuine strategy evidence production is next if WP175D merges.
+Do not automatically run it.
+
+9. FINAL DISPOSITION
+Choose exactly one:
+READY_FOR_SIDE10_REVIEW
+BLOCKED_STATE_DRIFT
+BLOCKED_SCOPE_25TH_PATH
+BLOCKED_PROVENANCE_MODEL
+BLOCKED_REGISTRY_COMPATIBILITY
+BLOCKED_VALIDATION
+BLOCKED_HOSTED_CI
+BLOCKED_EVIDENCE
+
+Then STOP.
+
+Do not merge.
+Do not download PMXT data as product behavior.
+Do not run WP170 OOS.
+Do not run WP172.
+Do not start WP173 paper.
+Do not activate Gate C.
+Do not start WP176.
+
+===============================================================================
+APPENDIX A. AUTHORITY / NON-AUTHORITY POSTURE (machine-governance addendum)
+===============================================================================
+
+Authority / non-authority: WP175D crosses only the docs, tests, source_runtime,
+local_offline_tooling, and canonical_evidence_policy boundary groups (see
+docs/ai/codex/PROTECTED_PATHS.md). It crosses NONE of credentials/secrets,
+authenticated clients, wallet/account behavior, order placement/cancel, execution
+gateway, paper engine, scheduler/bot loop, runtime/daemon, dashboard/deployment,
+dependency/lock changes, external code copying, generated artifacts, network,
+Hermes runtime, strategy, or live. Implementation authority is conditional and
+scope-limited to the exact 24 files; merge authority is NOT granted. This appendix
+does not broaden the bounded GOVERNANCE_AUTHORITY_V1 block above.
+
+Successor boundary: the first successor is the separately gated evidence run
+S10-EVID-01 (genuine strategy evidence production through WP170 -> WP172 ->
+WP173), then canonical WP176 Mature Controlled Live. WP175D neither starts,
+renumbers, implements, nor authorizes any successor.
+
+===============================================================================
+APPENDIX B. NORMATIVE RULE MATRIX (machine-governance addendum)
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|lineage|lineage_id|content_addressed|REQUIRE|deterministic_identity|lineage.lineage_id|R007
+NR002|member|member_id|content_addressed|REQUIRE|deterministic_identity|member.member_id|R007
+NR003|member|availability_time|receive_time|PRESERVE_EXACT|receive_time_availability|member.availability_time_ns|R004
+NR004|member|source_event_digest|selected|REQUIRE|bounded_present_unique|member.source_event_digest|R005
+NR005|external_binding|dataset_binding_id|content_addressed|REQUIRE|closed_identity|external_binding.dataset_binding_id|R009
+NR006|external_binding|source_kind|external_descriptor|REJECT|canonical_pit_masquerade|external_binding.source_kind|R001
+NR007|external_sample|feature_availability|before_source|REJECT|availability_leakage|external_sample.feature_availability_time|R012
+NR008|external_sample|source_ids|unbound_member|REJECT|foreign_membership|external_sample.source_record_version_ids|R011
+END_NORMATIVE_RULE_MATRIX_V1

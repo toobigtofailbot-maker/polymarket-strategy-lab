@@ -40,6 +40,9 @@ from src.research_runtime.nautilus_offline import (
     NautilusReplayReceipt,
     NautilusRuntimeCompatibilityResult,
     PmxtV2ReplaySource,
+    PmxtV2ResearchLineage,
+    PmxtV2ResearchLineageMember,
+    build_pmxt_v2_research_lineage,
     convert_pmxt_v2_events,
     run_offline_replay,
 )
@@ -1054,3 +1057,149 @@ def test_bounded_iter_batches_source_processing(tmp_path, monkeypatch):
     assert multi_batch.is_valid
     assert multi_batch.ordered_event_digests == baseline.ordered_event_digests
     assert multi_batch.input_event_counts_by_type == baseline.input_event_counts_by_type
+
+
+# =============================================================================
+# WP175D — PMXT v2 research-lineage surface (R002-R008)
+# =============================================================================
+
+
+def _lineage(tmp_path, rows=None, digests=None):
+    source = _write_files(tmp_path, [rows if rows is not None else default_rows()])
+    context = _context()
+    stream = convert_pmxt_v2_events(source, context)
+    assert stream.is_valid, stream.error_codes
+    requested = digests if digests is not None else list(stream.ordered_event_digests)
+    return source, context, stream, build_pmxt_v2_research_lineage(source, context, requested)
+
+
+def test_lineage_revalidates_source_and_rejects_tamper(tmp_path) -> None:
+    """R002: the lineage reuses exact WP167 source/hash/schema validation."""
+    _source, _context_obj, stream, lineage = _lineage(tmp_path)
+    assert lineage.is_valid
+    assert lineage.source_dataset_kind == SOURCE_DATASET_KIND
+    assert lineage.conversion_policy_version == CONVERSION_POLICY_VERSION
+    assert lineage.lineage_id.startswith("pmxtresearchlineage:sha256:")
+    # A tampered source hash fails closed exactly like conversion.
+    tampered = _write_files(tmp_path / "bad", [default_rows()], corrupt_hash=True)
+    rejected = build_pmxt_v2_research_lineage(
+        tampered, _context(), list(stream.ordered_event_digests)
+    )
+    assert not rejected.is_valid
+    assert rejected.error_codes == ("PMXT_V2_RESEARCH_LINEAGE_INVALID",)
+    assert rejected.lineage_id is None and rejected.members == ()
+    # Wrong provider descriptor also rejects.
+    wrong = _write_files(tmp_path / "wp", [default_rows()], wrong_provider=True)
+    assert not build_pmxt_v2_research_lineage(
+        wrong, _context(), list(stream.ordered_event_digests)
+    ).is_valid
+
+
+def test_lineage_digests_match_conversion_ordered_digests(tmp_path) -> None:
+    """R003: one shared canonical row-order/digest implementation."""
+    _source, _context_obj, stream, lineage = _lineage(tmp_path)
+    assert lineage.member_count == len(stream.ordered_event_digests)
+    # Members are in canonical source order and cite the exact WP168 ordered digests.
+    assert [member.source_event_digest for member in lineage.members] == list(
+        stream.ordered_event_digests
+    )
+    assert lineage.first_event_time_ns == stream.first_event_time_ns
+    assert lineage.last_event_time_ns == stream.last_event_time_ns
+
+
+def test_member_availability_is_receive_time_not_event_time(tmp_path) -> None:
+    """R004: availability_time_ns is timestamp_received/ts_init; event is source time."""
+    rows = [book(1000, 1005, [["0.4000", "50.000000"]], [["0.6000", "50.000000"]])]
+    _source, _context_obj, stream, lineage = _lineage(tmp_path, rows=rows)
+    assert lineage.member_count == 1
+    member = lineage.members[0]
+    assert member.event_time_ns == 1000 * 1_000_000  # source timestamp -> ts_event
+    assert member.availability_time_ns == 1005 * 1_000_000  # timestamp_received -> ts_init
+    assert member.availability_time_ns != member.event_time_ns
+    assert lineage.first_availability_time_ns == 1005 * 1_000_000
+    assert lineage.last_availability_time_ns == 1005 * 1_000_000
+
+
+def test_member_request_bounds_and_canonical_order(tmp_path) -> None:
+    """R005: nonempty, unique, <=4096, all present, canonical source order."""
+    source = _write_files(tmp_path, [default_rows()])
+    context = _context()
+    stream = convert_pmxt_v2_events(source, context)
+    digests = list(stream.ordered_event_digests)
+    # Empty request rejects.
+    assert not build_pmxt_v2_research_lineage(source, context, []).is_valid
+    # Duplicate request rejects.
+    assert not build_pmxt_v2_research_lineage(source, context, [digests[0], digests[0]]).is_valid
+    # Malformed / unknown digest rejects.
+    assert not build_pmxt_v2_research_lineage(source, context, ["not-a-digest"]).is_valid
+    assert not build_pmxt_v2_research_lineage(
+        source, context, [digests[0], "deadbeef:0"]
+    ).is_valid
+    # A built-in tuple is allowed; a bare string / non-str element is not.
+    assert build_pmxt_v2_research_lineage(source, context, (digests[0],)).is_valid
+    assert not build_pmxt_v2_research_lineage(source, context, digests[0]).is_valid
+    assert not build_pmxt_v2_research_lineage(source, context, [123]).is_valid
+    # Over-limit rejects.
+    assert not build_pmxt_v2_research_lineage(
+        source, context, [f"{'0' * 64}:{i}" for i in range(4097)]
+    ).is_valid
+    # Caller order carries no identity/result-order authority.
+    forward = build_pmxt_v2_research_lineage(source, context, digests)
+    backward = build_pmxt_v2_research_lineage(source, context, list(reversed(digests)))
+    assert forward.lineage_id == backward.lineage_id
+    assert forward.membership_digest == backward.membership_digest
+    assert [m.source_event_digest for m in backward.members] == digests
+    # A partial selection yields a distinct, still-canonical-ordered lineage.
+    subset = build_pmxt_v2_research_lineage(source, context, [digests[2], digests[0]])
+    assert subset.is_valid and subset.member_count == 2
+    assert [m.source_event_digest for m in subset.members] == [digests[0], digests[2]]
+    assert subset.lineage_id != forward.lineage_id
+
+
+def test_duplicate_rows_distinct_members(tmp_path) -> None:
+    """R006: byte-identical duplicate rows remain distinct via digest:ordinal."""
+    dup = trade(1000, 1005, "0.4100", "5.000000", "BUY", "0x" + "d" * 64)
+    rows = [dict(dup), dict(dup)]
+    _source, _context_obj, stream, lineage = _lineage(tmp_path, rows=rows)
+    assert lineage.member_count == 2
+    digests = [member.source_event_digest for member in lineage.members]
+    base = digests[0].rsplit(":", 1)[0]
+    assert digests == [f"{base}:0", f"{base}:1"]
+    member_ids = [member.member_id for member in lineage.members]
+    assert len(set(member_ids)) == 2  # distinct member ids for the two duplicates
+
+
+def test_lineage_identity_is_path_independent_and_no_echo(tmp_path) -> None:
+    """R007: deterministic, content-addressed, path-independent, no-echo."""
+    rows = default_rows()
+    source_a = _write_files(tmp_path / "a", [rows])
+    source_b = _write_files(tmp_path / "b" / "nested", [rows])
+    context = _context()
+    stream = convert_pmxt_v2_events(source_a, context)
+    digests = list(stream.ordered_event_digests)
+    lineage_a = build_pmxt_v2_research_lineage(source_a, context, digests)
+    lineage_b = build_pmxt_v2_research_lineage(source_b, context, digests)
+    assert lineage_a.is_valid and lineage_b.is_valid
+    assert lineage_a.lineage_id == lineage_b.lineage_id  # path-independent
+    assert [m.member_id for m in lineage_a.members] == [m.member_id for m in lineage_b.members]
+    # Rejected output never echoes the requested/path sentinel.
+    sentinel = "C:\\Users\\private\\wallet.parquet"
+    rejected = build_pmxt_v2_research_lineage(source_a, context, [sentinel])
+    assert not rejected.is_valid
+    assert not _scan_public_result_for_echo(rejected, (sentinel, str(tmp_path), ".parquet"))
+
+
+def test_converted_event_stream_fields_unchanged() -> None:
+    """R008: ConvertedEventStream public contract is byte/API compatible."""
+    assert [field.name for field in dataclasses.fields(ConvertedEventStream)] == [
+        "is_valid", "status", "error_codes", "instrument_id", "source_dataset_kind",
+        "source_external_dataset_id", "conversion_policy_version", "ordered_event_digests",
+        "input_event_counts_by_type", "tick_size_regime_sequence", "first_event_time_ns",
+        "last_event_time_ns", "warnings", "converted_events",
+    ]
+    # The new research-lineage dataclasses are additive and frozen.
+    assert [field.name for field in dataclasses.fields(PmxtV2ResearchLineageMember)] == [
+        "member_id", "source_event_digest", "event_type", "event_time_ns",
+        "availability_time_ns",
+    ]
+    assert dataclasses.is_dataclass(PmxtV2ResearchLineage)

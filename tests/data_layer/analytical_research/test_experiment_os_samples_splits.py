@@ -189,3 +189,66 @@ def test_source_record_membership_cannot_cross_temporal_roles() -> None:
         dataset = manifest(samples, policy=policy)
         result = split(dataset, group_policy=policy)
         assert result.error_codes == ("SPLIT_INVALID",)
+
+
+def test_external_member_samples_split_membership(tmp_path) -> None:
+    """R013: external-member samples flow through the UNCHANGED split/purge/embargo/
+    group/duplicate semantics. The external ResearchDatasetManifest is a standard
+    WP170 manifest; its samples cite external member ids instead of canonical record
+    ids, and everything downstream behaves identically."""
+    from tests.research_runtime.nautilus_offline.test_experiment_bridge import (
+        external_experiment_stack,
+    )
+
+    _lineage, _binding, manifest_record, split_record = external_experiment_stack(tmp_path)
+    # Standard manifest with external samples; each sample cites an external member id.
+    assert manifest_record.schema_id == "polymarket-research-dataset-manifest"
+    for sample in manifest_record.samples:
+        assert all(
+            sid.startswith("externalmember:sha256:")
+            for sid in sample.source_record_version_ids
+        )
+    # The same leakage-safe three-role split produced a valid, disjoint assignment.
+    roles = [
+        set(split_record.formation_sample_ids),
+        set(split_record.selection_sample_ids),
+        set(split_record.oos_sample_ids),
+    ]
+    assert all(len(role) == 1 for role in roles)
+    assert all(roles[i].isdisjoint(roles[j]) for i in range(3) for j in range(i + 1, 3))
+    # The split re-derives deterministically (validate against a rebuild).
+    rebuilt = ar.build_temporal_split_manifest(manifest_record, {
+        "split_plan_version": split_record.split_plan_version,
+        "formation_start": split_record.formation_start,
+        "selection_start": split_record.selection_start,
+        "oos_start": split_record.oos_start,
+        "end_time": split_record.end_time,
+        "purge_rule": split_record.purge_rule,
+        "embargo_seconds": split_record.embargo_seconds,
+        "group_policy": split_record.group_policy,
+        "inclusion_policy": split_record.inclusion_policy,
+        "min_samples_per_role": split_record.min_samples_per_role,
+    })
+    assert rebuilt.is_valid and rebuilt.record == split_record
+    # Duplicate external samples (same content) collapse to one sample identity,
+    # exactly as on the canonical path.
+    from tests.research_runtime.nautilus_offline.test_experiment_bridge import (
+        external_binding as _external_binding,
+        external_sample as _external_sample,
+    )
+    import src.research_runtime.nautilus_offline as off
+
+    lin, binding = _external_binding(tmp_path / "dup")
+    member_id = lin.members[0].member_id
+    one = _external_sample(
+        member_id, "2030-01-01T00:00:00Z", "2030-01-02T00:00:00Z",
+        "2030-01-03T00:00:00Z", feature_time="2020-01-01T00:00:00Z",
+    )
+    single = off.build_pmxt_v2_research_dataset_manifest(
+        lin, binding, [feature()], label(), [one], "DECLARED_NO_ISOLATION"
+    )
+    duplicated = off.build_pmxt_v2_research_dataset_manifest(
+        lin, binding, [feature()], label(), [one, dict(one)], "DECLARED_NO_ISOLATION"
+    )
+    assert single.is_valid and duplicated.is_valid
+    assert single.record.research_dataset_manifest_id == duplicated.record.research_dataset_manifest_id

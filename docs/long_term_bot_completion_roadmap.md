@@ -447,7 +447,14 @@ to the current merged/review sequence:
   `418bae72f24b0694eccc657ed5dc3f90a3f38f2a`).
 - WP173 — Serious Paper Trading System + Paper Cockpit (current review target).
 - WP174 — Auth / Signing / Execution Gateway.
-- WP175 — Restricted Live Canary.
+- WP175 — Restricted Live Canary (merged dormant via PR #178; first live activation
+  blocked by `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`).
+- WP175D — External Historical Research Bridge (Side10 S10-DATA-02): the root-cause
+  prerequisite/unblocker between merged dormant WP175 and the genuine strategy evidence
+  its first live canary needs. It lets validated PMXT v2 external history enter the
+  WP170 experiment OS with preserved external provenance (never canonical PIT), and is
+  followed by the separately gated S10-EVID-01 evidence-production gate. It does not
+  rename, implement, or authorize canonical WP176.
 - WP176 — Mature Controlled Live.
 
 Hermes/alpha automation may proceed later as a separately authorized parallel

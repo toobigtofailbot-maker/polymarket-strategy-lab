@@ -201,3 +201,109 @@ def test_label_definition_separates_target_and_availability() -> None:
     assert len({original.label_definition_id, target_changed.label_definition_id, availability_changed.label_definition_id}) == 3
     assert original.target_time_rule != original.availability_time_rule
     assert original.parameters_json == '{"positive":"YES"}'
+
+
+# =============================================================================
+# WP175D — ExternalDatasetBinding identity (R009) and canonical binding (R010)
+# =============================================================================
+
+from src.data_layer.analytical_research import experiment_os as _os_contract  # noqa: E402
+
+
+def _external_binding_record(**overrides):
+    value = {
+        "source_kind": ar.EXTERNAL_DATASET_BINDING_SOURCE_KIND,
+        "source_external_dataset_id": "ext:pmxt:test0001",
+        "source_lineage_id": "pmxtresearchlineage:sha256:" + "a" * 64,
+        "source_membership_digest": "b" * 64,
+        "source_member_count": 3,
+        "instrument_id": "0x" + "c" * 64 + "-123.POLYMARKET",
+        "conversion_policy_version": "wp168-nautilus-pmxt-v2-conversion/1.0.0",
+        "first_event_time_ns": 1_000_000_000,
+        "last_event_time_ns": 2_000_000_000,
+        "first_availability_time_ns": 1_005_000_000,
+        "last_availability_time_ns": 2_005_000_000,
+        "code_version": "commit:test",
+    }
+    value.update(overrides)
+    result = ar.build_external_dataset_binding(
+        value["source_kind"], value["source_external_dataset_id"], value["source_lineage_id"],
+        value["source_membership_digest"], value["source_member_count"], value["instrument_id"],
+        value["conversion_policy_version"], value["first_event_time_ns"], value["last_event_time_ns"],
+        value["first_availability_time_ns"], value["last_availability_time_ns"], value["code_version"],
+    )
+    return result
+
+
+def _validate_record(record):
+    try:
+        _os_contract._validate_public_record(record)
+        return None
+    except _os_contract._Failure as failure:
+        return failure.code
+
+
+def test_external_binding_identity_one_field_tamper() -> None:
+    """R009: identity binds every semantic field; one-field tamper fails closed."""
+    result = _external_binding_record()
+    assert result.is_valid, result.error_codes
+    binding = result.record
+    assert isinstance(binding, ar.ExternalDatasetBinding)
+    assert binding.dataset_binding_id.startswith("datasetbinding:sha256:")
+    assert binding.schema_id == ar.EXTERNAL_DATASET_BINDING_SCHEMA_ID
+    assert binding.advisory_only is True and binding.no_execution_authority is True
+    # It is not a canonical DatasetBinding and carries no snapshot reference.
+    assert not isinstance(binding, ar.DatasetBinding)
+    assert _validate_record(binding) is None
+
+    # Every semantic field participates in the content-addressed id: tampering any
+    # one (without recomputing the id) fails the closed identity recomputation.
+    tampers = {
+        "source_external_dataset_id": "ext:pmxt:OTHER",
+        "source_lineage_id": "pmxtresearchlineage:sha256:" + "9" * 64,
+        "source_membership_digest": "0" * 64,
+        "source_member_count": 4,
+        "instrument_id": "0x" + "d" * 64 + "-999.POLYMARKET",
+        "conversion_policy_version": "wp168-nautilus-pmxt-v2-conversion/9.9.9",
+        "first_event_time_ns": 999,
+        "last_event_time_ns": 3_000_000_000,
+        "first_availability_time_ns": 1,
+        "last_availability_time_ns": 3_000_000_000,
+        "code_version": "commit:other",
+    }
+    for field_name, new_value in tampers.items():
+        tampered = replace(binding, **{field_name: new_value})
+        assert _validate_record(tampered) == "IDENTITY_DERIVATION_MISMATCH", field_name
+
+    # A distinct lineage yields a distinct binding id (identity is closed).
+    other = _external_binding_record(source_lineage_id="pmxtresearchlineage:sha256:" + "e" * 64)
+    assert other.record.dataset_binding_id != binding.dataset_binding_id
+    # Wrong source_kind (canonical-PIT masquerade) is rejected at construction.
+    assert ar.build_external_dataset_binding(
+        ar.SOURCE_KIND_CANONICAL_PIT, "ext:pmxt:test0001",
+        "pmxtresearchlineage:sha256:" + "a" * 64, "b" * 64, 3,
+        "0x" + "c" * 64 + "-123.POLYMARKET", "wp168-x/1.0.0",
+        1, 2, 1, 2, "commit:test",
+    ).error_codes == ("FIELD_VALUE_INVALID",)
+
+
+def test_canonical_dataset_binding_unchanged() -> None:
+    """R010: canonical DatasetBinding fields, signature, and identity are unchanged."""
+    import inspect
+
+    assert [f.name for f in __import__("dataclasses").fields(ar.DatasetBinding)] == [
+        "schema_id", "schema_version", "dataset_binding_id", "dataset_snapshot_reference_id",
+        "dataset_snapshot_reference_json", "dataset_reference_schema_version",
+        "analytical_logical_dataset_id", "analytical_identity_json", "analytical_schema_version",
+        "materializer_version", "source_reference_id", "code_version", "advisory_only",
+        "no_execution_authority",
+    ]
+    signature = inspect.signature(ar.build_dataset_binding)
+    assert list(signature.parameters) == ["reference", "analytical_manifest", "code_version"]
+    first = binding()
+    second = binding()
+    assert first == second  # deterministic identity
+    assert first.schema_id == "polymarket-experiment-dataset-binding"
+    assert first.dataset_binding_id.startswith("datasetbinding:sha256:")
+    # The external binding subtype never collides with the canonical schema id.
+    assert first.schema_id != ar.EXTERNAL_DATASET_BINDING_SCHEMA_ID

@@ -11,11 +11,14 @@ import sqlite3
 from typing import Mapping
 
 from .experiment_os import (
+    EXTERNAL_DATASET_BINDING_SCHEMA_ID,
+    EXTERNAL_MEMBER_ID_PREFIX,
     AlphaHypothesis,
     BaselineDefinition,
     DatasetBinding,
     ExperimentControlResult,
     ExperimentFamily,
+    ExternalDatasetBinding,
     FamilySummary,
     FeatureDefinition,
     LabelDefinition,
@@ -84,6 +87,16 @@ RECORD_KIND_TYPES = (
 _TYPE_INFO = {record_type: (kind, id_field) for kind, record_type, id_field in RECORD_KIND_TYPES}
 _KIND_INFO = {kind: (record_type, id_field) for kind, record_type, id_field in RECORD_KIND_TYPES}
 _KIND_RANK = {kind: index for index, (kind, _type, _field) in enumerate(RECORD_KIND_TYPES)}
+
+# WP175D: the additive ExternalDatasetBinding subtype persists under the EXISTING
+# DATASET_BINDING record kind (no new record kind, no schema/version/application-id
+# or CHECK-vocabulary change). Serialization maps it to DATASET_BINDING; decoding
+# disambiguates the two binding subtypes by exact schema_id only.
+_TYPE_INFO[ExternalDatasetBinding] = ("DATASET_BINDING", "dataset_binding_id")
+_DATASET_BINDING_SUBTYPES = {
+    "polymarket-experiment-dataset-binding": DatasetBinding,
+    EXTERNAL_DATASET_BINDING_SCHEMA_ID: ExternalDatasetBinding,
+}
 
 _CREATE_META = """CREATE TABLE registry_meta (
     singleton INTEGER PRIMARY KEY NOT NULL CHECK (singleton = 1),
@@ -273,10 +286,26 @@ def _strict_pairs(pairs: list[tuple[str, object]]) -> dict[str, object]:
     return result
 
 
+def _dataset_binding_subtype(value: object) -> type:
+    """Exact schema_id subtype dispatch for the DATASET_BINDING record kind.
+
+    No ambiguous subtype inference: any unknown schema_id fails closed as registry
+    integrity tamper.
+    """
+    if not isinstance(value, Mapping):
+        raise _StoreFailure("REGISTRY_INTEGRITY_TAMPER")
+    subtype = _DATASET_BINDING_SUBTYPES.get(value.get("schema_id"))
+    if subtype is None:
+        raise _StoreFailure("REGISTRY_INTEGRITY_TAMPER")
+    return subtype
+
+
 def _decode(kind: str, payload: str) -> object:
     try:
         value = json.loads(payload, object_pairs_hook=_strict_pairs, parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
         record_type, _id_field = _KIND_INFO[kind]
+        if kind == "DATASET_BINDING":
+            record_type = _dataset_binding_subtype(value)
         return record_from_mapping(record_type, value)
     except (KeyError, TypeError, ValueError, UnicodeError, _Failure):
         raise _StoreFailure("REGISTRY_INTEGRITY_TAMPER") from None
@@ -406,6 +435,7 @@ def _role_source_membership(
 
 def _verify_cross_record_invariants(snapshot: ExperimentRegistrySnapshot) -> None:
     bindings: dict[str, DatasetBinding] = {}
+    external_bindings: dict[str, ExternalDatasetBinding] = {}
     features: dict[str, FeatureDefinition] = {}
     labels: dict[str, LabelDefinition] = {}
     manifests: dict[str, ResearchDatasetManifest] = {}
@@ -429,19 +459,39 @@ def _verify_cross_record_invariants(snapshot: ExperimentRegistrySnapshot) -> Non
             _validate_public_record(record)
             if isinstance(record, DatasetBinding):
                 bindings[record.dataset_binding_id] = record
+            elif isinstance(record, ExternalDatasetBinding):
+                external_bindings[record.dataset_binding_id] = record
             elif isinstance(record, FeatureDefinition):
                 features[record.feature_definition_id] = record
             elif isinstance(record, LabelDefinition):
                 labels[record.label_definition_id] = record
             elif isinstance(record, ResearchDatasetManifest):
-                binding = bindings.get(record.dataset_binding_id)
-                if binding is None or record.label_definition_id not in labels or any(item not in features for item in record.feature_definition_ids):
+                canonical_binding = bindings.get(record.dataset_binding_id)
+                external_binding = external_bindings.get(record.dataset_binding_id)
+                if (
+                    (canonical_binding is None and external_binding is None)
+                    or record.label_definition_id not in labels
+                    or any(item not in features for item in record.feature_definition_ids)
+                ):
                     raise _StoreFailure("TRIAL_FAMILY_CONFLICT")
-                from .experiment_os import _decode_dataset_reference_json
-                reference = _decode_dataset_reference_json(binding.dataset_snapshot_reference_json)
-                allowed_sources = set(reference.ordinary_record_version_ids)
-                if any(not set(sample.source_record_version_ids).issubset(allowed_sources) for sample in record.samples):
-                    raise _StoreFailure("TRIAL_FAMILY_CONFLICT")
+                if canonical_binding is not None:
+                    from .experiment_os import _decode_dataset_reference_json
+                    reference = _decode_dataset_reference_json(canonical_binding.dataset_snapshot_reference_json)
+                    allowed_sources = set(reference.ordinary_record_version_ids)
+                    if any(not set(sample.source_record_version_ids).issubset(allowed_sources) for sample in record.samples):
+                        raise _StoreFailure("TRIAL_FAMILY_CONFLICT")
+                else:
+                    # External binding: the registry does not persist the ephemeral
+                    # lineage, so structural provenance is enforced here — every cited
+                    # source id must be an external member id (never a canonical
+                    # record-version id). Exact membership against the bound lineage is
+                    # enforced at bridge-construction time where the lineage exists.
+                    if any(
+                        not source_id.startswith(EXTERNAL_MEMBER_ID_PREFIX)
+                        for sample in record.samples
+                        for source_id in sample.source_record_version_ids
+                    ):
+                        raise _StoreFailure("TRIAL_FAMILY_CONFLICT")
                 manifests[record.research_dataset_manifest_id] = record
             elif isinstance(record, TemporalSplitManifest):
                 manifest = manifests.get(record.dataset_manifest_id)
@@ -497,7 +547,7 @@ def _verify_cross_record_invariants(snapshot: ExperimentRegistrySnapshot) -> Non
                 baseline = baselines.get(record.baseline_id)
                 if (
                     family is None or hypothesis is None
-                    or record.dataset_binding_id not in bindings
+                    or (record.dataset_binding_id not in bindings and record.dataset_binding_id not in external_bindings)
                     or manifest is None or split is None or record.label_definition_id not in labels
                     or primary_metric is None or any(item not in metrics for item in record.secondary_metric_ids)
                     or baseline is None or any(item not in features for item in record.feature_definition_ids)
