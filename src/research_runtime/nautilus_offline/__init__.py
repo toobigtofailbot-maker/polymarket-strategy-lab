@@ -6,9 +6,13 @@ a local ParquetDataCatalog, and replays them deterministically into a repo-contr
 NautilusReplayReceipt. No live/auth clients, no Polymarket extra, no Redis, no network, no
 strategy/order/fill/paper/live authority. See docs/nautilus_offline_kernel_contract.md.
 
-The frozen public API is exactly the six functions and eight dataclasses listed in ``__all__``.
-Every other symbol (helpers, error-code constants, identity constants) is internal; import it
-from its owning submodule where a test genuinely needs it. Helper functions are private.
+The frozen WP168 public API is the six functions and eight dataclasses listed in ``__all__``.
+WP175D adds an additive, non-breaking external historical research bridge: the
+``build_pmxt_v2_research_lineage`` builder with ``PmxtV2ResearchLineage`` /
+``PmxtV2ResearchLineageMember``, and the ``build_pmxt_v2_dataset_binding`` /
+``build_pmxt_v2_research_dataset_manifest`` bridge functions. Every other symbol
+(helpers, error-code constants, identity constants) is internal; import it from its owning
+submodule where a test genuinely needs it. Helper functions are private.
 """
 
 from __future__ import annotations
@@ -16,7 +20,18 @@ from __future__ import annotations
 # Public API only. Internal constants live on the submodules and are imported directly by
 # tests when needed; they are intentionally not part of the package-root public surface.
 from .catalog import CatalogBuildResult, CatalogQueryResult, build_catalog, query_catalog
-from .conversion import ConvertedEventStream, PmxtV2ReplaySource, convert_pmxt_v2_events
+from .conversion import (
+    ConvertedEventStream,
+    PmxtV2ReplaySource,
+    PmxtV2ResearchLineage,
+    PmxtV2ResearchLineageMember,
+    build_pmxt_v2_research_lineage,
+    convert_pmxt_v2_events,
+)
+from .experiment_bridge import (
+    build_pmxt_v2_dataset_binding,
+    build_pmxt_v2_research_dataset_manifest,
+)
 from .instruments import (
     BinaryOptionMappingResult,
     BinaryOptionMarketContext,
@@ -88,3 +103,17 @@ __all__ = [
     "CatalogQueryResult",
     "NautilusReplayReceipt",
 ]
+
+# WP175D external historical research bridge public surface. These are additive,
+# non-breaking exports: they are importable module attributes (the narrow public
+# bridge) but intentionally NOT part of the frozen WP168 ``__all__`` tuple, which the
+# WP168 contract pins to exactly the six functions and eight dataclasses above. This
+# mirrors how the internal constants above are exported as attributes without joining
+# ``__all__``.
+WP175D_BRIDGE_PUBLIC_API = (
+    "build_pmxt_v2_research_lineage",
+    "build_pmxt_v2_dataset_binding",
+    "build_pmxt_v2_research_dataset_manifest",
+    "PmxtV2ResearchLineage",
+    "PmxtV2ResearchLineageMember",
+)

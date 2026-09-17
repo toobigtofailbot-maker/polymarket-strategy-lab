@@ -90,6 +90,46 @@ def test_package_prompt_spec_and_certificate_are_hash_bound() -> None:
     assert certificate["unresolved_decisions"] == []
 
 
+def test_wp175d_external_dataset_binding_path_documented() -> None:
+    """The WP170 contract documents the additive external binding path while the
+    original canonical path and its authority posture are preserved."""
+    contract = _read(CONTRACT)
+    bridge_contract = (
+        ROOT / "docs" / "external_historical_research_bridge_contract.md"
+    ).read_text(encoding="utf-8")
+    # Canonical path and non-authority tokens preserved.
+    assert "Canonical PIT authority unchanged: YES" in contract
+    assert "Paper-trading execution is NOT AUTHORIZED" in contract
+    assert "Live-trading execution is FORBIDDEN" in contract
+    assert "Merge authorized: NO" in contract
+    # External path described.
+    for token in (
+        "ExternalDatasetBinding",
+        "polymarket-external-dataset-binding",
+        "WP167 external descriptor kind",
+        "DATASET_BINDING",
+        "wp170-experiment-registry",
+        "application_id=1464877424",
+        "accepts either binding subtype",
+        "docs/external_historical_research_bridge_contract.md",
+    ):
+        assert token in contract, token
+    assert "TBD" not in contract
+    assert "..." not in contract
+    # The normative WP175D capability contract exists and never masquerades as PIT.
+    for token in (
+        "External Historical Research Bridge",
+        "S10-DATA-02",
+        "externalmember:sha256:",
+        "pmxtresearchlineage:sha256:",
+        "SOURCE_KIND_CANONICAL_PIT",
+        "timestamp_received",
+        "Canonical PIT authority unchanged: YES",
+        "Merge authorized: NO",
+    ):
+        assert token in bridge_contract, token
+
+
 def test_existing_research_priority_calibration_wallet_semantics_remain_non_signal() -> None:
     """R026: predecessor research semantics remain advisory and non-signal."""
     contract = _read(CONTRACT)

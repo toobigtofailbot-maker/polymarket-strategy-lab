@@ -52,6 +52,16 @@ CONVERSION_STATUS_OK = "NAUTILUS_EVENTS_CONVERTED"
 CONVERSION_STATUS_REJECTED = "NAUTILUS_EVENT_CONVERSION_REJECTED"
 CONVERSION_ERROR = "NAUTILUS_EVENT_CONVERSION_INVALID"
 
+# WP175D external historical research bridge — additive research-lineage surface.
+# This does NOT change ConvertedEventStream and shares one canonical row
+# validation/order/duplicate-ordinal implementation with convert_pmxt_v2_events.
+MAX_RESEARCH_LINEAGE_MEMBERS = 4096
+RESEARCH_LINEAGE_STATUS_OK = "PMXT_V2_RESEARCH_LINEAGE_BUILT"
+RESEARCH_LINEAGE_STATUS_REJECTED = "PMXT_V2_RESEARCH_LINEAGE_REJECTED"
+RESEARCH_LINEAGE_ERROR = "PMXT_V2_RESEARCH_LINEAGE_INVALID"
+RESEARCH_MEMBER_ID_PREFIX = "externalmember:sha256:"
+RESEARCH_LINEAGE_ID_PREFIX = "pmxtresearchlineage:sha256:"
+
 _MS_TO_NS = 1_000_000
 _OWNED_FIELDS = {
     "book": ("bids", "asks"),
@@ -145,6 +155,65 @@ class ConvertedEventStream:
     converted_events: tuple[object, ...]
 
 
+@dataclass(frozen=True)
+class PmxtV2ResearchLineageMember:
+    """One content-addressed external-history research member (WP175D).
+
+    ``source_event_digest`` is the exact existing WP168 ordered event-digest
+    identity (``<canonical-row-sha256>:<duplicate-ordinal>``). ``event_time_ns`` is
+    the PMXT source timestamp (existing ``ts_event``, diagnostic only);
+    ``availability_time_ns`` is the PMXT ``timestamp_received`` (existing
+    ``ts_init``) and is the ONLY time that governs availability/leakage.
+    """
+
+    member_id: str
+    source_event_digest: str
+    event_type: str
+    event_time_ns: int
+    availability_time_ns: int
+
+
+@dataclass(frozen=True)
+class PmxtV2ResearchLineage:
+    """Bounded, deterministic, content-addressed external-history lineage (WP175D).
+
+    An in-memory, reproducible provenance-separated view over explicitly selected
+    existing WP168 canonical event digests. Identity is invariant to caller request
+    order and physical source file/row order; it never claims canonical-PIT
+    authority.
+    """
+
+    is_valid: bool
+    status: str
+    error_codes: tuple[str, ...]
+    source_dataset_kind: str | None
+    source_external_dataset_id: str | None
+    instrument_id: str | None
+    conversion_policy_version: str | None
+    lineage_id: str | None
+    members: tuple[PmxtV2ResearchLineageMember, ...]
+    member_count: int | None
+    membership_digest: str | None
+    first_event_time_ns: int | None
+    last_event_time_ns: int | None
+    first_availability_time_ns: int | None
+    last_availability_time_ns: int | None
+
+
+@dataclass(frozen=True)
+class _OrderedCanonicalStream:
+    """Internal shared result of the one canonical row order/digest implementation."""
+
+    mapping: object
+    instrument: object
+    instrument_id: object
+    descriptor: ExternalDatasetDescriptor
+    price_increment: Decimal
+    price_precision: int
+    size_precision: int
+    rows: tuple[dict[str, object], ...]
+
+
 class _ConversionError(Exception):
     pass
 
@@ -165,6 +234,26 @@ def _rejected() -> ConvertedEventStream:
         last_event_time_ns=None,
         warnings=(),
         converted_events=(),
+    )
+
+
+def _rejected_lineage() -> PmxtV2ResearchLineage:
+    return PmxtV2ResearchLineage(
+        is_valid=False,
+        status=RESEARCH_LINEAGE_STATUS_REJECTED,
+        error_codes=(RESEARCH_LINEAGE_ERROR,),
+        source_dataset_kind=None,
+        source_external_dataset_id=None,
+        instrument_id=None,
+        conversion_policy_version=None,
+        lineage_id=None,
+        members=(),
+        member_count=None,
+        membership_digest=None,
+        first_event_time_ns=None,
+        last_event_time_ns=None,
+        first_availability_time_ns=None,
+        last_availability_time_ns=None,
     )
 
 
@@ -355,6 +444,109 @@ def _normalize_book_side(raw: object, ascending: bool) -> list[tuple[Decimal, De
     return levels
 
 
+def _validate_price_multiples(norm: dict[str, object], price_increment: Decimal) -> None:
+    """Shared finest-increment validation for a normalized row (fail-closed).
+
+    Every validated historical price field must be an exact multiple of the finest
+    increment. Applied once in the single canonical-ordering implementation so the
+    conversion and research-lineage surfaces reject exactly the same sources.
+    """
+    event_type = norm["event_type"]
+    if event_type == "book":
+        for price, _size in norm["bids"]:  # type: ignore[misc]
+            _require_price_multiple(price, price_increment)
+        for price, _size in norm["asks"]:  # type: ignore[misc]
+            _require_price_multiple(price, price_increment)
+    elif event_type == "price_change":
+        _require_price_multiple(norm["price"], price_increment)  # type: ignore[arg-type]
+        _require_price_multiple(norm["_best_bid_dec"], price_increment)  # type: ignore[arg-type]
+        _require_price_multiple(norm["_best_ask_dec"], price_increment)  # type: ignore[arg-type]
+    elif event_type == "last_trade_price":
+        _require_price_multiple(norm["price"], price_increment)  # type: ignore[arg-type]
+
+
+def _ordered_canonical_stream(
+    source: PmxtV2ReplaySource, context: BinaryOptionMarketContext
+) -> _OrderedCanonicalStream:
+    """The ONE canonical row validation/order/duplicate-ordinal implementation.
+
+    Validates the WP167 descriptor and revalidates every source hash, validates the
+    binary-option context mapping, normalizes and validates every source row, and
+    produces the canonical receive-time-primary, physical-order-independent ordered
+    row sequence with per-row ``_digest``, ``_ordinal`` and ``_ordered_digest``
+    (``<canonical-row-sha256>:<duplicate-ordinal>``). Both convert_pmxt_v2_events
+    and build_pmxt_v2_research_lineage consume this identical order/digest output.
+    """
+    if type(source) is not PmxtV2ReplaySource:
+        raise _ConversionError()
+    descriptor = source.descriptor
+    _validate_descriptor(descriptor)
+    mapped = _map_sources_one_to_one(descriptor, source.source_files)
+
+    mapping = build_binary_option(context)
+    if not mapping.is_valid or mapping.binary_option is None:
+        raise _ConversionError()
+    instrument = mapping.binary_option
+    instrument_id = instrument.id
+    price_increment = Decimal(context.price_increment)
+    price_precision = instrument.price_precision
+    size_precision = instrument.size_precision
+
+    market_expected = context.condition_id
+    asset_expected = context.outcome_token_id
+
+    # One compact normalized materialization only: each raw row is consumed from the
+    # bounded batch iterator and normalized immediately; no whole raw-file list is retained.
+    canonical_rows: list[dict[str, object]] = []
+    for source_file, _obj in mapped:
+        for raw_row in _iter_source_rows(source_file):
+            canonical_rows.append(
+                _validate_and_normalize_row(raw_row, market_expected, asset_expected)
+            )
+    if not canonical_rows:
+        raise _ConversionError()
+
+    # Canonical bytes + digest per row; total order key; duplicate expansion.
+    keyed: list[tuple[tuple[int, int, int, str, bytes], dict[str, object]]] = []
+    for norm in canonical_rows:
+        row_bytes = _canonical_json_bytes(norm["_canonical"])
+        digest = hashlib.sha256(row_bytes).hexdigest()
+        key = (
+            norm["ts_init"],
+            norm["ts_event"],
+            EVENT_KIND_RANK[norm["event_type"]],
+            digest,
+            row_bytes,
+        )
+        norm["_digest"] = digest
+        keyed.append((key, norm))
+    keyed.sort(key=lambda item: item[0])
+
+    duplicate_run: dict[bytes, int] = {}
+    ordered: list[dict[str, object]] = []
+    for key, norm in keyed:
+        row_bytes = key[4]
+        ordinal = duplicate_run.get(row_bytes, 0)
+        duplicate_run[row_bytes] = ordinal + 1
+        norm["_ordinal"] = ordinal
+        norm["_ordered_digest"] = f"{norm['_digest']}:{ordinal}"
+        # Shared finest-increment validation: identical fail-closed behavior for both
+        # the conversion and research-lineage surfaces.
+        _validate_price_multiples(norm, price_increment)
+        ordered.append(norm)
+
+    return _OrderedCanonicalStream(
+        mapping=mapping,
+        instrument=instrument,
+        instrument_id=instrument_id,
+        descriptor=descriptor,
+        price_increment=price_increment,
+        price_precision=price_precision,
+        size_precision=size_precision,
+        rows=tuple(ordered),
+    )
+
+
 def convert_pmxt_v2_events(
     source: PmxtV2ReplaySource, context: BinaryOptionMarketContext
 ) -> ConvertedEventStream:
@@ -370,51 +562,13 @@ def convert_pmxt_v2_events(
     from nautilus_trader.model.objects import Price, Quantity
 
     try:
-        if type(source) is not PmxtV2ReplaySource:
-            raise _ConversionError()
-        descriptor = source.descriptor
-        _validate_descriptor(descriptor)
-        mapped = _map_sources_one_to_one(descriptor, source.source_files)
-
-        mapping = build_binary_option(context)
-        if not mapping.is_valid or mapping.binary_option is None:
-            raise _ConversionError()
-        instrument = mapping.binary_option
-        instrument_id = instrument.id
-        price_increment = Decimal(context.price_increment)
-        price_precision = instrument.price_precision
-        size_precision = instrument.size_precision
-
-        market_expected = context.condition_id
-        asset_expected = context.outcome_token_id
-
-        # Read + validate every row into a canonical intermediate representation.
-        # One compact normalized materialization only: each raw row is consumed from the
-        # bounded batch iterator and normalized immediately; no whole raw-file list is retained.
-        canonical_rows: list[dict[str, object]] = []
-        for source_file, _obj in mapped:
-            for raw_row in _iter_source_rows(source_file):
-                canonical_rows.append(
-                    _validate_and_normalize_row(raw_row, market_expected, asset_expected)
-                )
-        if not canonical_rows:
-            raise _ConversionError()
-
-        # Canonical bytes + digest per row; total order key; duplicate expansion.
-        keyed: list[tuple[tuple[int, int, int, str, bytes], dict[str, object]]] = []
-        for norm in canonical_rows:
-            row_bytes = _canonical_json_bytes(norm["_canonical"])
-            digest = hashlib.sha256(row_bytes).hexdigest()
-            key = (
-                norm["ts_init"],
-                norm["ts_event"],
-                EVENT_KIND_RANK[norm["event_type"]],
-                digest,
-                row_bytes,
-            )
-            norm["_digest"] = digest
-            keyed.append((key, norm))
-        keyed.sort(key=lambda item: item[0])
+        prepared = _ordered_canonical_stream(source, context)
+        descriptor = prepared.descriptor
+        mapping = prepared.mapping
+        instrument = prepared.instrument
+        instrument_id = prepared.instrument_id
+        price_precision = prepared.price_precision
+        size_precision = prepared.size_precision
 
         ordered_digests: list[str] = []
         converted_events: list[object] = []
@@ -422,14 +576,10 @@ def convert_pmxt_v2_events(
         regime: list[tuple[str, str, int]] = []
         first_ns: int | None = None
         last_ns: int | None = None
-        duplicate_run: dict[bytes, int] = {}
-        sequence = 0
 
-        for key, norm in keyed:
-            row_bytes = key[4]
-            ordinal = duplicate_run.get(row_bytes, 0)
-            duplicate_run[row_bytes] = ordinal + 1
-            ordered_digests.append(f"{norm['_digest']}:{ordinal}")
+        for sequence, norm in enumerate(prepared.rows):
+            ordinal = norm["_ordinal"]
+            ordered_digests.append(norm["_ordered_digest"])  # type: ignore[arg-type]
 
             event_type = norm["event_type"]
             counts[event_type] += 1
@@ -442,9 +592,9 @@ def convert_pmxt_v2_events(
                 deltas = [OrderBookDelta.clear(instrument_id, sequence, ts_event, ts_init)]
                 for side_enum, side_levels in ((OrderSide.BUY, norm["bids"]), (OrderSide.SELL, norm["asks"])):
                     for price, size in side_levels:
-                        _require_price_multiple(price, price_increment)
                         # A book level with size == 0 encodes a DELETE; size > 0 is an ADD
-                        # (size < 0 already failed closed during normalization).
+                        # (size < 0 already failed closed during normalization; the finest-
+                        # increment multiple was validated once in _ordered_canonical_stream).
                         action = BookAction.DELETE if size == 0 else BookAction.ADD
                         deltas.append(
                             OrderBookDelta(
@@ -468,11 +618,6 @@ def convert_pmxt_v2_events(
             elif event_type == "price_change":
                 price = norm["price"]
                 size = norm["size"]
-                # Every validated historical price field must be an exact multiple of the
-                # finest increment: the traded price and the best_bid/best_ask quotes.
-                _require_price_multiple(price, price_increment)
-                _require_price_multiple(norm["_best_bid_dec"], price_increment)
-                _require_price_multiple(norm["_best_ask_dec"], price_increment)
                 side = OrderSide.BUY if norm["side"] == "BUY" else OrderSide.SELL
                 action = BookAction.DELETE if size == 0 else BookAction.UPDATE
                 converted_events.append(
@@ -490,7 +635,6 @@ def convert_pmxt_v2_events(
             elif event_type == "last_trade_price":
                 price = norm["price"]
                 size = norm["size"]
-                _require_price_multiple(price, price_increment)
                 aggressor = (
                     AggressorSide.BUYER if norm["side"] == "BUY" else AggressorSide.SELLER
                 )
@@ -520,7 +664,6 @@ def convert_pmxt_v2_events(
                 )
             else:  # tick_size_change
                 regime.append((norm["old_tick_size"], norm["new_tick_size"], ts_event))
-            sequence += 1
 
         return ConvertedEventStream(
             is_valid=True,
@@ -544,6 +687,153 @@ def convert_pmxt_v2_events(
         return _rejected()
     except Exception:
         return _rejected()
+
+
+def _research_member_id(
+    external_dataset_id: str,
+    instrument_id: str,
+    conversion_policy_version: str,
+    source_event_digest: str,
+    event_type: str,
+    event_time_ns: int,
+    availability_time_ns: int,
+) -> str:
+    """Content-addressed external research member id (no path, no raw row)."""
+    preimage = {
+        "pmxt_v2_research_member.identity_preimage": {
+            "source_external_dataset_id": external_dataset_id,
+            "instrument_id": instrument_id,
+            "conversion_policy_version": conversion_policy_version,
+            "source_event_digest": source_event_digest,
+            "event_type": event_type,
+            "event_time_ns": event_time_ns,
+            "availability_time_ns": availability_time_ns,
+        }
+    }
+    return RESEARCH_MEMBER_ID_PREFIX + hashlib.sha256(
+        _canonical_json_bytes(preimage)
+    ).hexdigest()
+
+
+def build_pmxt_v2_research_lineage(
+    source: PmxtV2ReplaySource,
+    context: BinaryOptionMarketContext,
+    member_event_digests: object,
+) -> PmxtV2ResearchLineage:
+    """Return the closed PMXT v2 research lineage. Never raises, never echoes.
+
+    ``member_event_digests`` must be an exact built-in list/tuple, nonempty, unique,
+    bounded to <= 4096, each an exact existing WP168 ordered event-digest identity
+    present exactly once in the canonical source stream. Caller order carries no
+    identity or result-order authority; members are returned in canonical source
+    order. Missing, duplicate, malformed, or over-limit input rejects closed.
+    """
+    try:
+        # Exact built-in list/tuple; no arbitrary iterables, strings, or mappings.
+        if type(member_event_digests) not in (list, tuple):
+            raise _ConversionError()
+        requested = tuple(member_event_digests)
+        if not requested or len(requested) > MAX_RESEARCH_LINEAGE_MEMBERS:
+            raise _ConversionError()
+        if any(type(item) is not str for item in requested):
+            raise _ConversionError()
+        if len(set(requested)) != len(requested):
+            raise _ConversionError()
+
+        prepared = _ordered_canonical_stream(source, context)
+        descriptor = prepared.descriptor
+        external_dataset_id = descriptor.external_dataset_id
+        instrument_id = str(prepared.instrument_id)
+        conversion_policy_version = CONVERSION_POLICY_VERSION
+
+        by_ordered_digest = {norm["_ordered_digest"]: norm for norm in prepared.rows}
+        # digest:ordinal is unique by construction; verify no collision.
+        if len(by_ordered_digest) != len(prepared.rows):
+            raise _ConversionError()
+
+        requested_set = set(requested)
+        # Every requested digest must exist exactly once in the canonical stream.
+        if any(digest not in by_ordered_digest for digest in requested_set):
+            raise _ConversionError()
+
+        # Canonical source order (never caller request order, never physical order).
+        selected = [
+            norm for norm in prepared.rows if norm["_ordered_digest"] in requested_set
+        ]
+        members: list[PmxtV2ResearchLineageMember] = []
+        for norm in selected:
+            source_event_digest = norm["_ordered_digest"]
+            event_time_ns = norm["ts_event"]
+            availability_time_ns = norm["ts_init"]
+            member_id = _research_member_id(
+                external_dataset_id,
+                instrument_id,
+                conversion_policy_version,
+                source_event_digest,  # type: ignore[arg-type]
+                norm["event_type"],  # type: ignore[arg-type]
+                event_time_ns,  # type: ignore[arg-type]
+                availability_time_ns,  # type: ignore[arg-type]
+            )
+            members.append(
+                PmxtV2ResearchLineageMember(
+                    member_id=member_id,
+                    source_event_digest=source_event_digest,  # type: ignore[arg-type]
+                    event_type=norm["event_type"],  # type: ignore[arg-type]
+                    event_time_ns=event_time_ns,  # type: ignore[arg-type]
+                    availability_time_ns=availability_time_ns,  # type: ignore[arg-type]
+                )
+            )
+
+        member_count = len(members)
+        ordered_selected_digests = [member.source_event_digest for member in members]
+        membership_digest = hashlib.sha256(
+            _canonical_json_bytes({"source_event_digests": ordered_selected_digests})
+        ).hexdigest()
+        first_event = min(member.event_time_ns for member in members)
+        last_event = max(member.event_time_ns for member in members)
+        first_availability = min(member.availability_time_ns for member in members)
+        last_availability = max(member.availability_time_ns for member in members)
+
+        lineage_preimage = {
+            "pmxt_v2_research_lineage.identity_preimage": {
+                "source_dataset_kind": SOURCE_DATASET_KIND,
+                "source_external_dataset_id": external_dataset_id,
+                "instrument_id": instrument_id,
+                "conversion_policy_version": conversion_policy_version,
+                "selected_source_event_digests": ordered_selected_digests,
+                "member_count": member_count,
+                "membership_digest": membership_digest,
+                "first_event_time_ns": first_event,
+                "last_event_time_ns": last_event,
+                "first_availability_time_ns": first_availability,
+                "last_availability_time_ns": last_availability,
+            }
+        }
+        lineage_id = RESEARCH_LINEAGE_ID_PREFIX + hashlib.sha256(
+            _canonical_json_bytes(lineage_preimage)
+        ).hexdigest()
+
+        return PmxtV2ResearchLineage(
+            is_valid=True,
+            status=RESEARCH_LINEAGE_STATUS_OK,
+            error_codes=(),
+            source_dataset_kind=SOURCE_DATASET_KIND,
+            source_external_dataset_id=external_dataset_id,
+            instrument_id=instrument_id,
+            conversion_policy_version=conversion_policy_version,
+            lineage_id=lineage_id,
+            members=tuple(members),
+            member_count=member_count,
+            membership_digest=membership_digest,
+            first_event_time_ns=first_event,
+            last_event_time_ns=last_event,
+            first_availability_time_ns=first_availability,
+            last_availability_time_ns=last_availability,
+        )
+    except _ConversionError:
+        return _rejected_lineage()
+    except Exception:
+        return _rejected_lineage()
 
 
 def _validate_and_normalize_row(

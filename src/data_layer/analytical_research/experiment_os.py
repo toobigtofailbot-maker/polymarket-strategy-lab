@@ -32,6 +32,12 @@ from .research_dataset import (
 )
 
 EXPERIMENT_OS_SCHEMA_VERSION = "1.0.0"
+# WP175D external historical research bridge. ExternalDatasetBinding is additive and
+# provenance-separated: it never becomes canonical PIT and never fabricates a
+# DatasetSnapshotReference or a SOURCE_KIND_CANONICAL_PIT AnalyticalDatasetManifest.
+EXTERNAL_DATASET_BINDING_SCHEMA_ID = "polymarket-external-dataset-binding"
+EXTERNAL_DATASET_BINDING_SOURCE_KIND = "WP167_EXTERNAL_DATASET_DESCRIPTOR"
+EXTERNAL_MEMBER_ID_PREFIX = "externalmember:sha256:"
 EXPERIMENT_OS_STATUSES = (
     "EXPERIMENT_RECORD_VALID",
     "EXPERIMENT_LIFECYCLE_VALID",
@@ -122,6 +128,37 @@ class DatasetBinding:
     analytical_schema_version: str | None
     materializer_version: str | None
     source_reference_id: str
+    code_version: str
+    advisory_only: bool
+    no_execution_authority: bool
+
+
+@dataclass(frozen=True)
+class ExternalDatasetBinding:
+    """WP175D provenance-separated external-history dataset binding.
+
+    Additive to the canonical :class:`DatasetBinding`. It carries the real source
+    availability-time bounds from validated PMXT v2 external history and NEVER
+    acquires canonical-PIT authority: ``source_kind`` is the WP167 external
+    descriptor kind, no ``DatasetSnapshotReference`` is created, and no local path is
+    stored. Persisted under the existing ``DATASET_BINDING`` registry record kind and
+    disambiguated from the canonical subtype only by exact ``schema_id``.
+    """
+
+    schema_id: str
+    schema_version: str
+    dataset_binding_id: str
+    source_kind: str
+    source_external_dataset_id: str
+    source_lineage_id: str
+    source_membership_digest: str
+    source_member_count: int
+    instrument_id: str
+    conversion_policy_version: str
+    first_event_time_ns: int
+    last_event_time_ns: int
+    first_availability_time_ns: int
+    last_availability_time_ns: int
     code_version: str
     advisory_only: bool
     no_execution_authority: bool
@@ -804,6 +841,122 @@ def build_dataset_binding(
         return _rejected("INTERNAL_VALIDATION_FAILED")
 
 
+def _time_ns(value: object) -> int:
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise _Failure("FIELD_TYPE_INVALID")
+    return value
+
+
+def _member_count(value: object) -> int:
+    if not isinstance(value, int) or isinstance(value, bool) or value < 1 or value > MAX_SAMPLES:
+        raise _Failure("FIELD_TYPE_INVALID" if not isinstance(value, int) or isinstance(value, bool) else "FIELD_VALUE_INVALID")
+    return value
+
+
+def _utc_to_ns(value: str) -> int:
+    """Exact integer nanoseconds since epoch for a validated UTC timestamp string.
+
+    Integer/datetime based, never binary float. ``value`` must already have passed
+    :func:`_utc`.
+    """
+    parsed = _dt(value)
+    epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+    delta = parsed - epoch
+    return (delta.days * 86_400 + delta.seconds) * 1_000_000_000 + delta.microseconds * 1_000
+
+
+def _external_binding_preimage(
+    source_kind: str,
+    source_external_dataset_id: str,
+    source_lineage_id: str,
+    source_membership_digest: str,
+    source_member_count: int,
+    instrument_id: str,
+    conversion_policy_version: str,
+    first_event_time_ns: int,
+    last_event_time_ns: int,
+    first_availability_time_ns: int,
+    last_availability_time_ns: int,
+    code_version: str,
+) -> dict[str, object]:
+    """Exact identity preimage: every ExternalDatasetBinding semantic field except
+    the id and the two safety booleans."""
+    return {
+        "schema_id": EXTERNAL_DATASET_BINDING_SCHEMA_ID,
+        "schema_version": EXPERIMENT_OS_SCHEMA_VERSION,
+        "source_kind": source_kind,
+        "source_external_dataset_id": source_external_dataset_id,
+        "source_lineage_id": source_lineage_id,
+        "source_membership_digest": source_membership_digest,
+        "source_member_count": source_member_count,
+        "instrument_id": instrument_id,
+        "conversion_policy_version": conversion_policy_version,
+        "first_event_time_ns": first_event_time_ns,
+        "last_event_time_ns": last_event_time_ns,
+        "first_availability_time_ns": first_availability_time_ns,
+        "last_availability_time_ns": last_availability_time_ns,
+        "code_version": code_version,
+    }
+
+
+def _build_external_dataset_binding(
+    source_kind: object,
+    source_external_dataset_id: object,
+    source_lineage_id: object,
+    source_membership_digest: object,
+    source_member_count: object,
+    instrument_id: object,
+    conversion_policy_version: object,
+    first_event_time_ns: object,
+    last_event_time_ns: object,
+    first_availability_time_ns: object,
+    last_availability_time_ns: object,
+    code_version: object,
+) -> ExperimentControlResult:
+    """Construct/validate a provenance-separated :class:`ExternalDatasetBinding`.
+
+    Private/internal WP170 helper. The ONLY public construction path is the PMXT
+    bridge (`build_pmxt_v2_dataset_binding` / `build_pmxt_v2_research_dataset_manifest`
+    in ``research_runtime.nautilus_offline.experiment_bridge``), which supplies these
+    fields from a validated ``PmxtV2ResearchLineage``. It is intentionally not exported
+    from the package root so arbitrary caller-supplied external metadata cannot
+    construct an ``ExternalDatasetBinding`` outside the validated bridge. Never creates
+    a DatasetSnapshotReference and never claims canonical-PIT authority.
+    """
+    try:
+        kind = _enum(source_kind, (EXTERNAL_DATASET_BINDING_SOURCE_KIND,))
+        external_id = _opaque(source_external_dataset_id)
+        lineage_id = _opaque(source_lineage_id)
+        membership_digest = _sha(source_membership_digest)
+        count = _member_count(source_member_count)
+        instrument = _opaque(instrument_id)
+        # conversion_policy_version contains '/', so it is free text, not an opaque id.
+        policy = _text(conversion_policy_version)
+        first_event = _time_ns(first_event_time_ns)
+        last_event = _time_ns(last_event_time_ns)
+        first_availability = _time_ns(first_availability_time_ns)
+        last_availability = _time_ns(last_availability_time_ns)
+        if first_event > last_event or first_availability > last_availability:
+            raise _Failure("FIELD_VALUE_INVALID")
+        code = _opaque(code_version)
+        preimage = _external_binding_preimage(
+            kind, external_id, lineage_id, membership_digest, count, instrument,
+            policy, first_event, last_event, first_availability, last_availability, code,
+        )
+        record = ExternalDatasetBinding(
+            EXTERNAL_DATASET_BINDING_SCHEMA_ID, EXPERIMENT_OS_SCHEMA_VERSION,
+            _digest("external_dataset_binding", "datasetbinding:sha256:", preimage),
+            kind, external_id, lineage_id, membership_digest, count, instrument, policy,
+            first_event, last_event, first_availability, last_availability, code,
+            True, True,
+        )
+        return _valid(record)
+    except _Failure as failure:
+        return _rejected(failure.code)
+    except Exception:
+        return _rejected("INTERNAL_VALIDATION_FAILED")
+
+
 _FEATURE_KEYS = frozenset({
     "feature_name", "feature_version", "description", "source_dependencies",
     "parameters", "lookback_rule", "availability_rule", "missing_data_policy",
@@ -963,19 +1116,26 @@ def _feature_set_id(features: tuple[FeatureDefinition, ...]) -> tuple[tuple[str,
     return ids, digest
 
 
-def build_research_dataset_manifest(
-    dataset_binding: object,
+def _research_dataset_manifest(
+    *,
+    dataset_binding_id: str,
+    validate_source_ids,
+    validate_availability,
     feature_definitions: object,
     label_definition: object,
     sample_inputs: object,
     group_policy: object,
 ) -> ExperimentControlResult:
+    """ONE shared ResearchSample/ResearchDatasetManifest construction.
+
+    Both the canonical DatasetBinding path and the WP175D external bridge path use
+    this identity/leakage/timing implementation. Binding-subtype-specific membership
+    validation is injected via ``validate_source_ids`` (source-id membership, run
+    before UTC parsing to preserve the canonical error precedence) and
+    ``validate_availability`` (external-only extra source-availability check, a no-op
+    for the canonical path).
+    """
     try:
-        _validate_public_record(dataset_binding)
-        if not isinstance(dataset_binding, DatasetBinding):
-            raise _Failure("DATASET_REFERENCE_INVALID")
-        reference = _decode_dataset_reference_json(dataset_binding.dataset_snapshot_reference_json)
-        ordinary_source_ids = frozenset(reference.ordinary_record_version_ids)
         if not isinstance(feature_definitions, (list, tuple)) or not feature_definitions:
             raise _Failure("FIELD_TYPE_INVALID")
         features = tuple(feature_definitions)
@@ -997,8 +1157,8 @@ def build_research_dataset_manifest(
         for raw in sample_inputs:
             value = _mapping(raw, _SAMPLE_KEYS)
             source_ids = _tuple_text(value["source_record_version_ids"])
-            if not source_ids or not set(source_ids).issubset(ordinary_source_ids):
-                raise _Failure("DATASET_REFERENCE_INVALID")
+            # Binding-subtype membership check first (preserves canonical error order).
+            validate_source_ids(source_ids)
             source_digest = _raw_hash({"source_record_version_ids": list(source_ids)})
             decision = _utc(value["decision_time"])
             feature_time = _utc(value["feature_availability_time"])
@@ -1008,6 +1168,8 @@ def build_research_dataset_manifest(
                 raise _Failure("FEATURE_TIMING_LEAKAGE")
             if not (_dt(decision) <= _dt(target) <= _dt(label_time)):
                 raise _Failure("LABEL_TIMING_INVALID")
+            # External-only: feature availability cannot precede real source availability.
+            validate_availability(source_ids, feature_time)
             group = _opaque(value["leakage_group_id"], nullable=True)
             if (policy == "EXCLUSIVE" and group is None) or (
                 policy == "DECLARED_NO_ISOLATION" and group is not None
@@ -1016,7 +1178,7 @@ def build_research_dataset_manifest(
             preimage = {
                 "schema_id": _schema("research-sample"),
                 "schema_version": EXPERIMENT_OS_SCHEMA_VERSION,
-                "dataset_binding_id": dataset_binding.dataset_binding_id,
+                "dataset_binding_id": dataset_binding_id,
                 "source_record_version_ids": list(source_ids),
                 "source_membership_digest": source_digest,
                 "market_id": _opaque(value["market_id"]),
@@ -1029,14 +1191,14 @@ def build_research_dataset_manifest(
                 "feature_set_id": feature_set_id,
                 "label_definition_id": label_definition.label_definition_id,
                 "lineage_digest": _raw_hash({
-                    "dataset_binding_id": dataset_binding.dataset_binding_id,
+                    "dataset_binding_id": dataset_binding_id,
                     "source_record_version_ids": list(source_ids),
                 }),
             }
             sample = ResearchSample(
                 preimage["schema_id"], EXPERIMENT_OS_SCHEMA_VERSION,
                 _digest("sample", "sample:sha256:", preimage),
-                dataset_binding.dataset_binding_id, source_ids, source_digest, preimage["market_id"],
+                dataset_binding_id, source_ids, source_digest, preimage["market_id"],
                 preimage["related_group_id"], group, decision, feature_time, target, label_time,
                 feature_set_id, label_definition.label_definition_id, preimage["lineage_digest"],
                 True, True,
@@ -1053,7 +1215,7 @@ def build_research_dataset_manifest(
         preimage = {
             "schema_id": _schema("research-dataset-manifest"),
             "schema_version": EXPERIMENT_OS_SCHEMA_VERSION,
-            "dataset_binding_id": dataset_binding.dataset_binding_id,
+            "dataset_binding_id": dataset_binding_id,
             "feature_definition_ids": list(feature_ids),
             "feature_set_id": feature_set_id,
             "label_definition_id": label_definition.label_definition_id,
@@ -1065,11 +1227,52 @@ def build_research_dataset_manifest(
         record = ResearchDatasetManifest(
             preimage["schema_id"], EXPERIMENT_OS_SCHEMA_VERSION,
             _digest("research_dataset_manifest", "researchdataset:sha256:", preimage),
-            dataset_binding.dataset_binding_id, feature_ids, feature_set_id,
+            dataset_binding_id, feature_ids, feature_set_id,
             label_definition.label_definition_id, policy, samples, len(samples),
             "SAMPLE_ID_ASC", True, True,
         )
         return _valid(record)
+    except _Failure as failure:
+        return _rejected(failure.code)
+    except Exception:
+        return _rejected("INTERNAL_VALIDATION_FAILED")
+
+
+def build_research_dataset_manifest(
+    dataset_binding: object,
+    feature_definitions: object,
+    label_definition: object,
+    sample_inputs: object,
+    group_policy: object,
+) -> ExperimentControlResult:
+    """Canonical DatasetBinding path (unchanged behavior).
+
+    Membership is proven against the exact DatasetSnapshotReference ordinary
+    record-version ids, exactly as before.
+    """
+    try:
+        _validate_public_record(dataset_binding)
+        if not isinstance(dataset_binding, DatasetBinding):
+            raise _Failure("DATASET_REFERENCE_INVALID")
+        reference = _decode_dataset_reference_json(dataset_binding.dataset_snapshot_reference_json)
+        ordinary_source_ids = frozenset(reference.ordinary_record_version_ids)
+
+        def _canonical_source_ids(source_ids: tuple[str, ...]) -> None:
+            if not source_ids or not set(source_ids).issubset(ordinary_source_ids):
+                raise _Failure("DATASET_REFERENCE_INVALID")
+
+        def _canonical_availability(source_ids: tuple[str, ...], feature_time: str) -> None:
+            return None
+
+        return _research_dataset_manifest(
+            dataset_binding_id=dataset_binding.dataset_binding_id,
+            validate_source_ids=_canonical_source_ids,
+            validate_availability=_canonical_availability,
+            feature_definitions=feature_definitions,
+            label_definition=label_definition,
+            sample_inputs=sample_inputs,
+            group_policy=group_policy,
+        )
     except _Failure as failure:
         return _rejected(failure.code)
     except Exception:
@@ -1360,8 +1563,14 @@ def build_preregistered_experiment(
     secondary_metrics: object, baseline: object, family: object, plan: object,
 ) -> ExperimentControlResult:
     try:
+        # The dataset binding may be either the canonical DatasetBinding or the
+        # additive WP175D ExternalDatasetBinding; the public signature is unchanged
+        # and all downstream OOS/lifecycle semantics remain identical.
+        _validate_public_record(dataset_binding)
+        if not isinstance(dataset_binding, (DatasetBinding, ExternalDatasetBinding)):
+            raise _Failure("FIELD_TYPE_INVALID")
         for record, expected in (
-            (hypothesis, AlphaHypothesis), (dataset_binding, DatasetBinding),
+            (hypothesis, AlphaHypothesis),
             (label_definition, LabelDefinition), (split_manifest, TemporalSplitManifest),
             (primary_metric, MetricDefinition), (baseline, BaselineDefinition),
             (family, ExperimentFamily),
@@ -1903,6 +2112,7 @@ def build_run_evidence_receipt(
 
 _RECORD_ID_FIELD = {
     DatasetBinding: ("dataset_binding", "datasetbinding:sha256:", "dataset_binding_id"),
+    ExternalDatasetBinding: ("external_dataset_binding", "datasetbinding:sha256:", "dataset_binding_id"),
     FeatureDefinition: ("feature_definition", "featuredef:sha256:", "feature_definition_id"),
     LabelDefinition: ("label_definition", "labeldef:sha256:", "label_definition_id"),
     ResearchSample: ("sample", "sample:sha256:", "sample_id"),
@@ -1932,6 +2142,7 @@ def _identity_preimage(record: object) -> tuple[str, str, str, dict[str, object]
 
 _EXPECTED_RECORD_SCHEMAS = {
     DatasetBinding: "polymarket-experiment-dataset-binding",
+    ExternalDatasetBinding: EXTERNAL_DATASET_BINDING_SCHEMA_ID,
     FeatureDefinition: "polymarket-feature-definition",
     LabelDefinition: "polymarket-label-definition",
     ResearchSample: "polymarket-research-sample",
@@ -1950,7 +2161,24 @@ _EXPECTED_RECORD_SCHEMAS = {
 def _validate_public_record_semantics(record: object) -> None:
     if record.schema_id != _EXPECTED_RECORD_SCHEMAS[type(record)]:
         raise _Failure("SCHEMA_UNSUPPORTED")
-    if isinstance(record, DatasetBinding):
+    if isinstance(record, ExternalDatasetBinding):
+        # Provenance-separated external binding: never canonical PIT. The generic
+        # datasetbinding:sha256: id derivation is verified by _validate_public_record.
+        _enum(record.source_kind, (EXTERNAL_DATASET_BINDING_SOURCE_KIND,))
+        _opaque(record.source_external_dataset_id)
+        _opaque(record.source_lineage_id)
+        _sha(record.source_membership_digest)
+        _member_count(record.source_member_count)
+        _opaque(record.instrument_id)
+        _text(record.conversion_policy_version)
+        first_event = _time_ns(record.first_event_time_ns)
+        last_event = _time_ns(record.last_event_time_ns)
+        first_availability = _time_ns(record.first_availability_time_ns)
+        last_availability = _time_ns(record.last_availability_time_ns)
+        if first_event > last_event or first_availability > last_availability:
+            raise _Failure("FIELD_VALUE_INVALID")
+        _opaque(record.code_version)
+    elif isinstance(record, DatasetBinding):
         for value in (
             record.dataset_snapshot_reference_id,
             record.dataset_reference_schema_version,

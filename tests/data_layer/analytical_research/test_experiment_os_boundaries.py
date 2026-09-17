@@ -203,3 +203,63 @@ def test_existing_research_priority_calibration_wallet_semantics_remain_non_sign
     assert "calibration usefulness" not in source
     assert not hasattr(ar, "Strategy")
     assert not hasattr(ar, "place_order")
+
+
+def test_preregistration_accepts_canonical_or_external_binding(tmp_path) -> None:
+    """R014: build_preregistered_experiment accepts either binding subtype with an
+    unchanged public signature and unchanged OOS/lifecycle semantics; a non-binding
+    object is still rejected."""
+    import inspect
+
+    from tests.data_layer.analytical_research.test_experiment_os_identity import label
+    from tests.data_layer.analytical_research.test_experiment_os_preregistration import (
+        baseline,
+        experiment,
+        family,
+        hypothesis,
+        metric,
+    )
+    from tests.research_runtime.nautilus_offline.test_experiment_bridge import (
+        external_experiment_stack,
+    )
+
+    # Public signature is unchanged.
+    assert list(inspect.signature(ar.build_preregistered_experiment).parameters) == [
+        "hypothesis", "dataset_binding", "feature_definitions", "label_definition",
+        "split_manifest", "primary_metric", "secondary_metrics", "baseline", "family",
+        "plan",
+    ]
+
+    # Canonical binding path still produces a valid preregistered experiment.
+    canonical_experiment, _canonical_split = experiment()
+    assert isinstance(canonical_experiment, ar.PreregisteredExperiment)
+
+    # External binding path: a full preregistered experiment over external lineage.
+    _lineage, binding, _manifest, split = external_experiment_stack(tmp_path)
+    assert isinstance(binding, ar.ExternalDatasetBinding)
+    plan = {
+        "trial_number": 1,
+        "inclusion_exclusion_rules": "Use exact registered membership only.",
+        "acceptance_thresholds": {"primary_metric_operator": "GTE", "primary_metric_threshold": "0.6"},
+        "search_space": {"window_seconds": [60]},
+        "parameters": {"window_seconds": 60},
+        "random_seeds": [7],
+        "cost_model_reference": None,
+        "stop_failure_rules": "Stop on invalid evidence.",
+        "code_version": "commit:test",
+        "creation_provenance": "human:test",
+        "preregistered_at": "2025-12-31T00:00:00Z",
+    }
+    result = ar.build_preregistered_experiment(
+        hypothesis(), binding, [feature()], label(), split,
+        metric(), [], baseline(), family(), plan,
+    )
+    assert result.is_valid, result.error_codes
+    assert result.record.dataset_binding_id == binding.dataset_binding_id
+
+    # A non-binding object is still rejected on type.
+    rejected = ar.build_preregistered_experiment(
+        hypothesis(), object(), [feature()], label(), split,
+        metric(), [], baseline(), family(), plan,
+    )
+    assert not rejected.is_valid
