@@ -1,9 +1,13 @@
 """WP172 local/offline executable-edge research boundary."""
 
-from .evaluator import assess_executable_edge
+from .evaluator import assess_executable_edge, validate_any_market_truth_window
 from .market_truth import (
-    MarketTruthEvent, MarketTruthWindow, build_market_truth_window,
-    identify_market_truth_window, validate_market_truth_window,
+    MarketTruthEvent, MarketTruthWindow, NativeContinuityAttestation,
+    NativeMarketTruthContext, NativeMarketTruthWindow, build_market_truth_window,
+    build_native_market_truth_window, identify_market_truth_window,
+    identify_native_continuity_attestation, identify_native_market_truth_window,
+    validate_market_truth_window, validate_native_continuity_attestation,
+    validate_native_market_truth_window,
 )
 from .models import (
     ASSESSMENT_STATUSES,
@@ -26,9 +30,15 @@ __all__ = [
     "ASSESSMENT_STATUSES", "EXECUTION_MODES", "ExecutableEdgeAssessment",
     "ExecutableEdgeError", "ExecutionCostModel", "ResearchDecisionEvent",
     "ResearchDecisionTrace", "MarketTruthEvent", "MarketTruthWindow",
+    "NativeContinuityAttestation", "NativeMarketTruthContext",
+    "NativeMarketTruthWindow",
     "authoritative_first_look", "build_execution_cost_model",
     "build_research_decision_trace", "build_market_truth_window",
-    "identify_market_truth_window", "validate_market_truth_window",
+    "build_native_market_truth_window",
+    "identify_market_truth_window", "identify_native_continuity_attestation",
+    "identify_native_market_truth_window", "validate_market_truth_window",
+    "validate_native_continuity_attestation", "validate_native_market_truth_window",
+    "validate_any_market_truth_window",
     "assess_executable_edge", "validate_assessment", "validate_execution_cost_model",
     "validate_research_decision_trace", "serialize_assessment",
     "deserialize_assessment", "write_assessment",

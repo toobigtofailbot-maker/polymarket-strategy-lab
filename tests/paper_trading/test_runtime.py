@@ -15,8 +15,14 @@ from src.paper_trading import (
     PaperTradingError,
     Wp169ReadOnlyTail,
     build_paper_intent,
+    build_strategy_binding,
     run_replay,
     run_wp172_replay,
+)
+from src.research_runtime.executable_edge import (
+    ResearchDecisionEvent,
+    assess_executable_edge,
+    build_research_decision_trace,
 )
 from tests.data_layer.polymarket.test_market_truth_models_store import _book_raw
 
@@ -26,6 +32,7 @@ from tests.paper_trading.conftest import (
     make_engine,
     paper_book,
 )
+from tests.research_runtime.executable_edge.test_market_truth import _build_native
 
 
 def _intent(binding):
@@ -412,6 +419,53 @@ def test_bound_wp172_window_and_decision_trace_drive_full_paper_engine(tmp_path)
                 market_truth=replace(window, lineage_id="markettruthwindow:sha256:" + "0" * 64),
                 decision_trace=trace,
             )
+
+
+def test_native_wp172_window_has_exact_paper_replay_parity(tmp_path) -> None:
+    model, experiment, evidence, _old_trace, _old_window, _old_assessment, _old_binding = edge_stack()
+    native, _, _ = _build_native(
+        tmp_path / "native-market.sqlite3",
+        instrument_id="asset:a.POLYMARKET",
+    )
+    trace = build_research_decision_trace(
+        experiment,
+        evidence,
+        (
+            ResearchDecisionEvent(
+                "market:a",
+                "asset:a",
+                native.first_receive_time_ns,
+                "BUY",
+                "ENTER",
+                "4",
+                "0.5",
+                "0.9",
+            ),
+        ),
+    )
+    assessment = assess_executable_edge(
+        experiment, evidence, trace, model, native
+    )
+    assert assessment.status == "EXECUTABLE_EDGE_PASS"
+    binding = build_strategy_binding(
+        assessment,
+        model,
+        strategy_label="wp175e-native-parity",
+        created_time_ns=1,
+    )
+    with PaperStore(tmp_path / "native-paper.sqlite3", create=True) as store:
+        engine = PaperEngine.create(
+            store,
+            binding,
+            generous_limits(max_market_data_age_ns=2_000_000_000),
+            assessment=assessment,
+            cost_model=model,
+            session_label="wp175e-native-replay",
+            created_time_ns=1,
+        )
+        run_wp172_replay(engine, market_truth=native, decision_trace=trace)
+        assert engine.state.orders[0].filled_quantity == assessment.filled_quantity
+        assert engine.state.orders[0].fee_paid == assessment.fee_cost
 
 
 def test_live_store_gap_and_invalid_or_unreconstructable_truth_fail_closed(

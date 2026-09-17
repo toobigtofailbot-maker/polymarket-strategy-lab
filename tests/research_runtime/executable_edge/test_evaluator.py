@@ -2,6 +2,7 @@ from dataclasses import replace
 
 from src.data_layer.analytical_research import experiment_os as os_contract
 from src.research_runtime.executable_edge import (
+    ExecutableEdgeError,
     MarketTruthEvent,
     MarketTruthWindow,
     ResearchDecisionEvent,
@@ -10,6 +11,7 @@ from src.research_runtime.executable_edge import (
     build_execution_cost_model,
     build_research_decision_trace,
     identify_market_truth_window,
+    validate_any_market_truth_window,
 )
 from tests.data_layer.analytical_research.test_experiment_os_lifecycle_evidence import evidence_input, lifecycle
 from tests.data_layer.analytical_research.test_experiment_os_preregistration import experiment_stack
@@ -19,6 +21,12 @@ from tests.research_runtime.nautilus_offline.test_conversion import (
     book,
     price_change,
 )
+from tests.research_runtime.executable_edge.test_market_truth import (
+    _ASSET as _NATIVE_ASSET,
+    _DELTA_AT as _NATIVE_DELTA_AT,
+    _build_native,
+)
+import pytest
 
 
 def _model(**overrides):
@@ -218,3 +226,46 @@ def test_crossed_arrival_and_one_sided_markout_are_inconclusive(tmp_path) -> Non
     assert "MARKET_DATA_WINDOW_UNAVAILABLE" in crossed_result.diagnostic_codes
     assert one_sided_result.status == "EXECUTABLE_EDGE_INCONCLUSIVE"
     assert "MARKET_DATA_WINDOW_UNAVAILABLE" in one_sided_result.diagnostic_codes
+
+
+def test_native_window_uses_exact_existing_evaluator_precedence(tmp_path) -> None:
+    complete, _, _ = _build_native(tmp_path / "native-complete.sqlite3")
+    model = _model(
+        fee_rate_bps="0",
+        latency_ns=10,
+        markout_horizon_ns=0,
+        size_grid=("5",),
+        minimum_fill_ratio="1",
+        minimum_capacity_quantity="5",
+        net_edge_threshold="0.01",
+        max_data_age_ns=2_000_000_000,
+    )
+    decision_time = complete.first_receive_time_ns - 10
+    passed = _assessment(
+        model,
+        complete,
+        quantity="5",
+        reference="0.5",
+        value="0.8",
+        decision_time_ns=decision_time,
+    )
+    assert passed.status == "EXECUTABLE_EDGE_PASS"
+
+    def open_gap(store):
+        store.mark_gap(_NATIVE_ASSET, "OPEN", "DISCONNECT", _NATIVE_DELTA_AT)
+
+    incomplete, _, _ = _build_native(
+        tmp_path / "native-incomplete.sqlite3", setup=open_gap
+    )
+    inconclusive = _assessment(
+        model,
+        incomplete,
+        quantity="5",
+        reference="0.5",
+        value="0.8",
+        decision_time_ns=decision_time,
+    )
+    assert inconclusive.status == "EXECUTABLE_EDGE_INCONCLUSIVE"
+    assert not inconclusive.wp173_evaluation_eligible
+    with pytest.raises(ExecutableEdgeError, match="MARKET_TRUTH_INVALID"):
+        validate_any_market_truth_window(object())

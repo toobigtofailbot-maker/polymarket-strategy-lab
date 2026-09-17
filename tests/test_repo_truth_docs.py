@@ -162,3 +162,38 @@ def test_wp175d_repo_truth_registers_research_bridge() -> None:
     assert "NOT STARTED" in fragment
     assert "Merge authorized: NO" in fragment
     assert "Capital at risk: USD 0" in fragment
+
+
+def test_wp175e_repo_truth_registers_native_continuity_without_live_authority() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    status = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(
+        encoding="utf-8"
+    )
+    roadmap = (ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(
+        encoding="utf-8"
+    )
+    fragment = (ROOT / "docs" / "status_entries" / "WP175E.md").read_text(
+        encoding="utf-8"
+    )
+    contract = (
+        ROOT / "docs" / "native_continuity_attested_market_truth_bridge_contract.md"
+    ).read_text(encoding="utf-8")
+    combined = "\n".join((index, status, deferred, roadmap, fragment, contract))
+    assert "WP175E Native Continuity-Attested Market Truth Bridge" in index
+    assert "S10-DATA-03" in combined
+    assert "EVIDENCE_INCONCLUSIVE" in combined
+    assert "genuine pmxt" in combined.lower()
+    assert "AS_CAPTURED" in combined
+    assert "NativeContinuityAttestation" in combined
+    assert "NativeMarketTruthWindow" in combined
+    assert "PARTIALLY_RESOLVED_WP175E_NATIVE_BRIDGE" in deferred
+    assert "generic PIT -> Nautilus adapter remains open" in deferred
+    assert "LIVE_PATH_EVIDENCE_READY" in combined
+    assert "NOT CLAIMED" in status
+    assert "Gate C" in combined and "NOT AUTHORIZED" in combined
+    assert "WP176" in combined and "NOT STARTED" in combined
+    assert "Credentials: 0" in fragment
+    assert "real orders: 0" in fragment
+    assert "capital at risk: USD 0" in fragment
+    assert "Merge authorized: NO" in combined

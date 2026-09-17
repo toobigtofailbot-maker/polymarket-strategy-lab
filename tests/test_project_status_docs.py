@@ -4003,3 +4003,41 @@ def test_wp175d_project_status_registers_research_bridge() -> None:
     assert "Merge authorized: NO" in status
     assert "WP176 Mature Controlled Live: NOT STARTED" in status
     assert "LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE" in status
+
+
+def test_wp175e_status_and_exact_scope_are_registered() -> None:
+    project = _read()
+    fragment = (STATUS_ENTRIES / "WP175E.md").read_text(encoding="utf-8")
+    contract = (
+        REPO_ROOT
+        / "docs"
+        / "native_continuity_attested_market_truth_bridge_contract.md"
+    ).read_text(encoding="utf-8")
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "WP175E" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    combined = "\n".join((project, fragment, contract))
+    assert "WP175E current review target" in project
+    assert "S10-DATA-03" in combined
+    assert "EVIDENCE_INCONCLUSIVE" in combined
+    assert "NativeContinuityAttestation" in combined
+    assert "NativeMarketTruthWindow" in combined
+    assert "PMXT AS_CAPTURED reclassified: NO" in project
+    assert "WP169 APPLICATION_ID/USER_VERSION/DDL/indexes: UNCHANGED" in project
+    assert "LIVE_PATH_EVIDENCE_READY: NOT CLAIMED" in project
+    assert "WP175 Gate C: NOT AUTHORIZED" in fragment
+    assert "WP176: NOT STARTED" in fragment
+    assert "Merge authorized: NO" in fragment
+    assert "stable and non-self-referential" in fragment
+    assert re.search(
+        r"Current live PR head:\s*`?[0-9a-f]{40}`?", fragment, re.IGNORECASE
+    ) is None
+    scope = spec["scope"]
+    assert scope["exact_scope_required"] is True
+    assert scope["max_changed_files"] == 20
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == 20
+    assert "tests/test_architecture_boundaries.py" not in scope["allowed_changed_files"]
+    assert "src/data_layer/polymarket/market_truth.py" not in scope["allowed_changed_files"]

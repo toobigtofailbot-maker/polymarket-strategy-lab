@@ -118,3 +118,27 @@ files are not repository artifacts.
 WP173 — Serious Paper Trading System is next and separately gated. WP172 creates no
 persistent account, portfolio accounting, OMS, risk controls, real execution, or live path
 and cannot automatically promote itself into WP173.
+
+## WP175E additive native market-truth path
+
+WP175E / S10-DATA-03 adds a parallel `NativeMarketTruthWindow`; it does not
+replace or reinterpret the PMXT path above. Its `source_capture_id` derives from
+the durable WP169 WS session, and its bound `NativeContinuityAttestation` derives
+from verified accepted-WS observation, session, gap, and initial full-book
+evidence. The complete contract is
+`docs/native_continuity_attested_market_truth_bridge_contract.md`.
+
+Only `NONE` makes the existing PMXT window continuity-complete. PMXT
+`AS_CAPTURED` remains incomplete. The native path has its own
+`nativemarkettruthwindow:sha256:` identity and never writes a native capture ID
+into `source_external_dataset_id`. It preserves receive time as the execution-
+knowledge clock, uses integer/Decimal exactness, and cannot use quarantined,
+unsupported, or non-WS public API records as order-book truth.
+
+The evaluator accepts exactly the existing PMXT type or the additive native type
+at a type-specific validation boundary. The classification precedence, fee,
+fill, capacity, net-edge, first-look, and WP173 eligibility rules above are
+unchanged. Native continuity merely makes it possible to satisfy the existing
+continuity gate; it grants no automatic PASS. WP173 `run_wp172_replay` accepts the
+same union with unchanged strategy binding, fill, accounting, risk,
+reconciliation, and paper/live separation semantics.

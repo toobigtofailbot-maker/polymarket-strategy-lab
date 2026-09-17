@@ -9,6 +9,7 @@ appear in receipts, exceptions, identities, or any diagnostic surface.
 
 from __future__ import annotations
 
+import dataclasses
 import functools
 import json
 import os
@@ -47,6 +48,42 @@ _ERROR_CODE_SET = frozenset(ERROR_PRECEDENCE)
 
 APPLICATION_ID = 1_347_242_297
 USER_VERSION = 1
+
+# WP175E additive read-only evidence-query bound. A native-continuity request whose
+# exact (asset, receive-time interval) selects more than this many durable rows is
+# rejected closed (INPUT_INVALID): the caller must narrow the interval. This is a
+# query bound only; it never changes the schema, append semantics, or stored bytes.
+MAX_EVIDENCE_READ_ROWS = 200_000
+
+
+@dataclasses.dataclass(frozen=True)
+class SessionEventRecord:
+    """Immutable durable WP169 session-transition evidence row (WP175E read surface)."""
+
+    sequence: int
+    session_id: str
+    state: str
+    received_at: str
+
+
+@dataclasses.dataclass(frozen=True)
+class GapEventRecord:
+    """Immutable durable WP169 gap-transition evidence row (WP175E read surface)."""
+
+    sequence: int
+    asset_id: str
+    state: str
+    reason: str
+    received_at: str
+
+
+@dataclasses.dataclass(frozen=True)
+class AcceptedObservationRecord:
+    """Verified accepted observation plus its durable append/session provenance."""
+
+    archive_sequence: int
+    session_id: str
+    observation: NormalizedObservation
 
 _TABLES = {
     "raw_occurrences": (
@@ -1020,6 +1057,243 @@ class MarketTruthStore:
             )
         return tuple(result)
 
+    # -- WP175E additive read-only native-continuity evidence surface ----
+    #
+    # These queries never write, migrate, or repair the database. They read the
+    # already-verified append-only tables through the normal initialized connection,
+    # preserve durable append order, enforce a bounded result count, fail closed on
+    # malformed persisted evidence with a closed code, and never expose a path.
+    def _validate_read_bounds(self, upto_received_at: str, limit: int) -> None:
+        if not is_rfc3339_micros(upto_received_at):
+            raise MarketTruthError("INPUT_INVALID")
+        if not isinstance(limit, int) or isinstance(limit, bool):
+            raise MarketTruthError("INPUT_INVALID")
+        if not 1 <= limit <= MAX_EVIDENCE_READ_ROWS:
+            raise MarketTruthError("INPUT_INVALID")
+
+    def _read_accepted_asset_observations(
+        self,
+        *,
+        asset_id: str,
+        start_received_at: str,
+        end_received_at: str,
+        limit: int = 4096,
+    ) -> tuple[AcceptedObservationRecord, ...]:
+        """Return verified ACCEPTED WS observations for one exact asset whose
+        receive time lies in the inclusive interval, in durable append order.
+
+        Canonical output order is the durable ``archive_sequence`` append order (the
+        genuine WP169 knowability order), applied by an explicit ORDER BY so it never
+        depends on physical row-retrieval order. A request selecting more than
+        ``limit`` rows is rejected closed; ``limit`` itself is bounded.
+        """
+        connection = self._require()
+        if not isinstance(asset_id, str) or not asset_id:
+            raise MarketTruthError("INPUT_INVALID")
+        self._validate_read_bounds(start_received_at, limit)
+        if not is_rfc3339_micros(end_received_at) or start_received_at > end_received_at:
+            raise MarketTruthError("INPUT_INVALID")
+        predicate = (
+            " FROM normalized_occurrences WHERE asset_id=? AND status='ACCEPTED'"
+            " AND source_kind='WS'"
+            " AND received_at>=? AND received_at<=?"
+        )
+        params = (asset_id, start_received_at, end_received_at)
+        count = connection.execute("SELECT COUNT(*)" + predicate, params).fetchone()[0]
+        if int(count) > limit:
+            raise MarketTruthError("INPUT_INVALID")
+        rows = connection.execute(
+            "SELECT n.archive_sequence, n.observation_id, n.occurrence_id, n.raw_id,"
+            " n.source_kind, n.event_kind, n.event_id, n.market_id, n.asset_id,"
+            " n.event_time, n.received_at, n.canonical_payload_json,"
+            " n.canonical_payload_sha256, n.status, n.error_codes_json, n.book_ready,"
+            " n.provenance_json, r.source_id, r.source_cursor, r.media_type,"
+            " r.raw_bytes, r.byte_length, r.raw_sha256"
+            " FROM normalized_occurrences AS n"
+            " JOIN raw_occurrences AS r ON r.occurrence_id=n.occurrence_id"
+            " WHERE n.asset_id=? AND n.status='ACCEPTED' AND n.source_kind='WS'"
+            " AND n.received_at>=? AND n.received_at<=?"
+            " ORDER BY n.archive_sequence ASC",
+            params,
+        ).fetchall()
+        if len(rows) != int(count):
+            raise MarketTruthError("STORE_CONFLICT")
+        result: list[AcceptedObservationRecord] = []
+        previous_sequence = 0
+        previous_received_at: str | None = None
+        for row in rows:
+            if (
+                not isinstance(row[0], int)
+                or isinstance(row[0], bool)
+                or row[0] <= previous_sequence
+                or row[13] != "ACCEPTED"
+                or row[8] != asset_id
+                or row[4] != "WS"
+                or not is_rfc3339_micros(row[10])
+                or (row[9] is not None and not is_rfc3339_micros(row[9]))
+                or (previous_received_at is not None and row[10] < previous_received_at)
+            ):
+                raise MarketTruthError("STORE_CONFLICT")
+            try:
+                decoded_errors = json.loads(row[14])
+            except (TypeError, ValueError):
+                raise MarketTruthError("STORE_CONFLICT")
+            if not isinstance(decoded_errors, list) or any(
+                not isinstance(code, str) for code in decoded_errors
+            ):
+                raise MarketTruthError("STORE_CONFLICT")
+            error_codes = tuple(decoded_errors)
+            if error_codes:
+                raise MarketTruthError("STORE_CONFLICT")
+            if not isinstance(row[15], int) or isinstance(row[15], bool) or row[15] not in (0, 1):
+                raise MarketTruthError("STORE_CONFLICT")
+            try:
+                raw = RawEnvelope(
+                    raw_id=row[3],
+                    occurrence_id=row[2],
+                    source_kind=row[4],
+                    source_id=row[17],
+                    source_cursor=row[18],
+                    received_at=row[10],
+                    media_type=row[19],
+                    raw_bytes=bytes(row[20]),
+                    byte_length=row[21],
+                    raw_sha256=row[22],
+                )
+                observation = NormalizedObservation(
+                    observation_id=row[1],
+                    occurrence_id=row[2],
+                    raw_id=row[3],
+                    source_kind=row[4],
+                    event_kind=row[5],
+                    event_id=row[6],
+                    market_id=row[7],
+                    asset_id=row[8],
+                    event_time=row[9],
+                    received_at=row[10],
+                    canonical_payload_json=row[11],
+                    canonical_payload_sha256=row[12],
+                    status=row[13],
+                    error_codes=error_codes,
+                    book_ready=bool(row[15]),
+                    provenance_json=row[16],
+                )
+            except (TypeError, ValueError, OverflowError):
+                raise MarketTruthError("STORE_CONFLICT") from None
+            try:
+                self._validate_raw(raw)
+                self._validate_child(raw, observation)
+            except MarketTruthError:
+                raise MarketTruthError("STORE_CONFLICT") from None
+            cursor_match = _WS_CURSOR_STRICT.fullmatch(raw.source_cursor)
+            if cursor_match is None:
+                raise MarketTruthError("STORE_CONFLICT")
+            result.append(
+                AcceptedObservationRecord(
+                    archive_sequence=row[0],
+                    session_id=cursor_match.group(1),
+                    observation=observation,
+                )
+            )
+            previous_sequence = row[0]
+            previous_received_at = row[10]
+        return tuple(result)
+
+    def _read_session_events(
+        self, *, upto_received_at: str, limit: int = 4096
+    ) -> tuple[SessionEventRecord, ...]:
+        """Return every durable session-transition event received at or before the
+        bound, in append (sequence) order, so a caller can reconstruct the exact
+        session epoch active at an interval start and any transition inside it."""
+        connection = self._require()
+        self._validate_read_bounds(upto_received_at, limit)
+        count = connection.execute(
+            "SELECT COUNT(*) FROM session_events WHERE received_at<=?",
+            (upto_received_at,),
+        ).fetchone()[0]
+        if int(count) > limit:
+            raise MarketTruthError("INPUT_INVALID")
+        rows = connection.execute(
+            "SELECT sequence, session_id, state, received_at FROM session_events"
+            " WHERE received_at<=? ORDER BY sequence ASC",
+            (upto_received_at,),
+        ).fetchall()
+        result: list[SessionEventRecord] = []
+        previous_sequence = 0
+        previous_received_at: str | None = None
+        for sequence, session_id, state, received_at in rows:
+            if (
+                not isinstance(sequence, int)
+                or isinstance(sequence, bool)
+                or sequence <= previous_sequence
+                or state not in SESSION_STATES
+                or not is_rfc3339_micros(received_at)
+                or (previous_received_at is not None and received_at < previous_received_at)
+            ):
+                raise MarketTruthError("STORE_CONFLICT")
+            if not isinstance(session_id, str) or not session_id:
+                raise MarketTruthError("STORE_CONFLICT")
+            result.append(
+                SessionEventRecord(
+                    sequence=int(sequence),
+                    session_id=session_id,
+                    state=state,
+                    received_at=received_at,
+                )
+            )
+            previous_sequence = sequence
+            previous_received_at = received_at
+        return tuple(result)
+
+    def _read_gap_events(
+        self, *, asset_id: str, upto_received_at: str, limit: int = 4096
+    ) -> tuple[GapEventRecord, ...]:
+        """Return every durable gap-transition event for one exact asset received at
+        or before the bound, in append (sequence) order, so a caller can determine
+        whether a gap was already OPEN at an interval start or opened inside it."""
+        connection = self._require()
+        if not isinstance(asset_id, str) or not asset_id:
+            raise MarketTruthError("INPUT_INVALID")
+        self._validate_read_bounds(upto_received_at, limit)
+        count = connection.execute(
+            "SELECT COUNT(*) FROM gap_events WHERE asset_id=? AND received_at<=?",
+            (asset_id, upto_received_at),
+        ).fetchone()[0]
+        if int(count) > limit:
+            raise MarketTruthError("INPUT_INVALID")
+        rows = connection.execute(
+            "SELECT sequence, asset_id, state, reason, received_at FROM gap_events"
+            " WHERE asset_id=? AND received_at<=? ORDER BY sequence ASC",
+            (asset_id, upto_received_at),
+        ).fetchall()
+        result: list[GapEventRecord] = []
+        previous_sequence = 0
+        previous_received_at: str | None = None
+        for sequence, row_asset_id, state, reason, received_at in rows:
+            if (
+                not isinstance(sequence, int)
+                or isinstance(sequence, bool)
+                or sequence <= previous_sequence
+                or state not in GAP_STATES
+                or reason not in GAP_REASONS
+                or not is_rfc3339_micros(received_at)
+                or row_asset_id != asset_id
+                or (previous_received_at is not None and received_at < previous_received_at)
+            ):
+                raise MarketTruthError("STORE_CONFLICT")
+            result.append(
+                GapEventRecord(
+                    sequence=int(sequence),
+                    asset_id=row_asset_id,
+                    state=state,
+                    reason=reason,
+                    received_at=received_at,
+                )
+            )
+            previous_sequence = sequence
+            previous_received_at = received_at
+        return tuple(result)
+
 
 def _locked(method):
     """Serialize a store method behind the instance re-entrant lock.
@@ -1044,6 +1318,9 @@ for _name in (
     "mark_gap",
     "_append_finality",
     "iter_normalized",
+    "_read_accepted_asset_observations",
+    "_read_session_events",
+    "_read_gap_events",
     "_has_observation",
     "_latest_pending_order_filled",
     "_latest_order_filled",
@@ -1051,3 +1328,51 @@ for _name in (
     "receipt",
 ):
     setattr(MarketTruthStore, _name, _locked(getattr(MarketTruthStore, _name)))
+
+
+def read_accepted_asset_observations(
+    store: MarketTruthStore,
+    *,
+    asset_id: str,
+    start_received_at: str,
+    end_received_at: str,
+    limit: int = 4096,
+) -> tuple[AcceptedObservationRecord, ...]:
+    """Read one bounded immutable accepted-WS evidence interval."""
+    if type(store) is not MarketTruthStore:
+        raise MarketTruthError("INPUT_INVALID")
+    return store._read_accepted_asset_observations(
+        asset_id=asset_id,
+        start_received_at=start_received_at,
+        end_received_at=end_received_at,
+        limit=limit,
+    )
+
+
+def read_session_events(
+    store: MarketTruthStore, *, upto_received_at: str, limit: int = 4096
+) -> tuple[SessionEventRecord, ...]:
+    """Read bounded durable session-transition evidence in canonical order."""
+    if type(store) is not MarketTruthStore:
+        raise MarketTruthError("INPUT_INVALID")
+    return store._read_session_events(
+        upto_received_at=upto_received_at,
+        limit=limit,
+    )
+
+
+def read_gap_events(
+    store: MarketTruthStore,
+    *,
+    asset_id: str,
+    upto_received_at: str,
+    limit: int = 4096,
+) -> tuple[GapEventRecord, ...]:
+    """Read bounded durable exact-asset gap evidence in canonical order."""
+    if type(store) is not MarketTruthStore:
+        raise MarketTruthError("INPUT_INVALID")
+    return store._read_gap_events(
+        asset_id=asset_id,
+        upto_received_at=upto_received_at,
+        limit=limit,
+    )
