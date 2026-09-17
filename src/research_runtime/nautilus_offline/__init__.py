@@ -90,9 +90,6 @@ __all__ = [
     "evaluate_offline_runtime",
     "build_binary_option",
     "convert_pmxt_v2_events",
-    "build_pmxt_v2_research_lineage",
-    "build_pmxt_v2_dataset_binding",
-    "build_pmxt_v2_research_dataset_manifest",
     "build_catalog",
     "query_catalog",
     "run_offline_replay",
@@ -102,9 +99,21 @@ __all__ = [
     "BinaryOptionMappingResult",
     "PmxtV2ReplaySource",
     "ConvertedEventStream",
-    "PmxtV2ResearchLineage",
-    "PmxtV2ResearchLineageMember",
     "CatalogBuildResult",
     "CatalogQueryResult",
     "NautilusReplayReceipt",
 ]
+
+# WP175D external historical research bridge public surface. These are additive,
+# non-breaking exports: they are importable module attributes (the narrow public
+# bridge) but intentionally NOT part of the frozen WP168 ``__all__`` tuple, which the
+# WP168 contract pins to exactly the six functions and eight dataclasses above. This
+# mirrors how the internal constants above are exported as attributes without joining
+# ``__all__``.
+WP175D_BRIDGE_PUBLIC_API = (
+    "build_pmxt_v2_research_lineage",
+    "build_pmxt_v2_dataset_binding",
+    "build_pmxt_v2_research_dataset_manifest",
+    "PmxtV2ResearchLineage",
+    "PmxtV2ResearchLineageMember",
+)
