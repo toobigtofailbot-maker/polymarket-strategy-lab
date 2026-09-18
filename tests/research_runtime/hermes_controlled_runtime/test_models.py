@@ -311,3 +311,39 @@ def test_request_is_immutable():
         req.max_sources = 5  # type: ignore[misc]
     # copies remain equal-identity
     assert copy.copy(req).request_id == req.request_id
+
+
+# --- WP175I: the controlled managed config carries no secret or private path -----
+
+
+def test_p014_managed_config_contains_no_secret_or_repo_path():
+    """P014: the deterministic managed config has no credential/token/key value and
+    no repository/private/absolute path -- validated with the models' own scanners."""
+    from src.research_runtime.hermes_controlled_runtime import (
+        DEFAULT_HERMES_INVOCATION_POLICY,
+    )
+
+    text = DEFAULT_HERMES_INVOCATION_POLICY.managed_config_bytes().decode("utf-8")
+    # No secret-looking content (reuses the request secret patterns).
+    for pattern in m._SECRET_PATTERNS:
+        assert pattern.search(text) is None, pattern.pattern
+    # No path traversal or absolute path leaked into config values.
+    for value in _iter_str_values(json.loads(text)):
+        assert not m._PATH_TRAVERSAL.search(value), value
+        assert not m._ABSOLUTE_PATH.search(value), value
+    # Whole-string guards for obviously private markers.
+    for marker in ("FIRECRAWL_API_KEY", "OPENAI_API_KEY", "local_data", "/.hermes", "token"):
+        assert marker not in text
+
+
+def _iter_str_values(obj):
+    if isinstance(obj, str):
+        yield obj
+    elif isinstance(obj, dict):
+        for key, value in obj.items():
+            if isinstance(key, str):
+                yield key
+            yield from _iter_str_values(value)
+    elif isinstance(obj, list):
+        for item in obj:
+            yield from _iter_str_values(item)

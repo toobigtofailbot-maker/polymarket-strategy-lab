@@ -2585,3 +2585,20 @@ authorize capital, or start WP175.
 | WP175H-D001 | S10-GATE-H1 Controlled Public Research Pilot: the first real provider-backed / public-web Hermes v0.21.3 research run (installed binary, provider/model choice, account privacy/retention posture, out-of-repo research-only credential, projected cost, exact request, explicit public-web network authorization) | OPEN_RUNTIME_SUCCESSOR | P1 | Separate human/Side S10-GATE-H1 authorization after merge | WP175H is CODE COMPLETE but RUNTIME ACTIVATED: NO; real provider/model call count 0; it does not activate Gate C or start S10-ALPHA-01 |
 | WP175H-D002 | S10-ALPHA-01 Multi-Lane Alpha Factory Core: market-universe snapshots, OpportunityCandidate, HypothesisFamily, evidence-lane classification, novelty/negative memory, and research campaigns | DEFERRED | P2 | Separate S10-ALPHA-01 package after a successful S10-GATE-H1 pilot | S10-ALPHA-01 gains no trading authority; WP175H creates no candidate/probability/trade object |
 | WP175H-D003 | `REAL_HERMES_BINARY_NOT_PRESENT`: no Hermes Agent v0.21.3 binary is installed on the build machine | OPEN_ACTIVATION_PREREQUISITE | P2 | Resolved as part of S10-GATE-H1 activation, outside repository code | An activation prerequisite, not a code blocker; tests use a fake executable and make zero paid/provider calls |
+
+## WP175I Controlled Research Profile Enforcement Deferred Items
+
+WP175I corrects the merged WP175H external runtime so pristine pinned Hermes v0.21.3
+runs under a controlled research profile: it removes `--safe-mode` from the real
+research invocation (safe mode suppresses the bundled Firecrawl backend on exact tagged
+v0.21.3) and replaces the lost isolation with a deterministic repo-owned non-secret
+managed-scope `config.yaml` injected through an ephemeral `HERMES_MANAGED_DIR`, plus a
+fail-closed research-home control-plane preflight. It performs zero real
+provider/OAuth/Firecrawl/web activity, changes no dependency/workflow, and does not
+execute or consume S10-GATE-H1.
+
+| ID | Item | Status | Priority | Resolution path | Boundary note |
+|---|---|---|---|---|---|
+| WP175I-D001 | S10-GATE-H1 Controlled Public Research Pilot (resumed): the first real provider-backed / public-web Hermes v0.21.3 research run under the controlled profile (installed binary, provider/model choice, account privacy/retention, out-of-repo research-only Firecrawl/OAuth credential, projected cost, exact request, explicit public-web authorization) | OPEN_RUNTIME_SUCCESSOR | P1 | Separate human/Side S10-GATE-H1 authorization after WP175I merge and Side10 review | The prior H1 attempt consumed 0 real research invocations so the authorization is unspent; WP175I is CODE COMPLETE but RUNTIME ACTIVATED: NO; it does not activate Gate C or start S10-ALPHA-01 |
+| WP175I-D002 | Bounded same-provider primary transport recovery: exact tagged v0.21.3 `agent/agent_runtime_helpers.py` `try_recover_primary_transport` may rebuild the primary client once after the single ordinary provider attempt exhausts on a transient transport error | DOCUMENTED_H1_EVIDENCE_LIMITATION | P2 | Recorded in the runtime contract and H1 evidence limitations; never suppressed by a Hermes fork | Same provider, same model, same web backend, no second controller invocation, no provider/model/web fallback; it is not a project-level automatic retry |
+| WP175I-D003 | S10-ALPHA-01 Multi-Lane Alpha Factory Core | DEFERRED | P2 | Separate S10-ALPHA-01 package after a genuine S10-GATE-H1 PASS plus Side10 review | S10-ALPHA-01 gains no trading authority; WP175I creates no candidate/probability/trade object |

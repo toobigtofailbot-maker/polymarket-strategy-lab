@@ -4055,7 +4055,10 @@ def test_wp175h_status_and_runtime_activation_split_are_registered() -> None:
         )
     )
     combined = "\n".join((project, fragment, contract))
-    assert "WP175H current review target" in project
+    # WP175I (current review target) reconciles merged WP175H; WP175H is no longer the
+    # current review target but its runtime facts remain registered.
+    assert "WP175H merged (S10-HERMES-01, PR #181)" in project
+    assert "WP175H current review target" not in project
     assert "S10-HERMES-01" in combined
     assert "CONTROLLED_EXTERNAL_HERMES_RESEARCH_RUNTIME_CORE" in combined
     assert "Governance track: RUNTIME" in project
@@ -4091,4 +4094,75 @@ def test_wp175h_status_and_runtime_activation_split_are_registered() -> None:
     assert (
         "src/research_runtime/hermes_controlled_runtime/controller.py"
         in scope["required_changed_files"]
+    )
+
+
+def test_wp175i_controlled_profile_status_registered() -> None:
+    project = _read()
+    fragment = (STATUS_ENTRIES / "WP175I.md").read_text(encoding="utf-8")
+    contract = (
+        REPO_ROOT / "docs" / "hermes_controlled_research_runtime_contract.md"
+    ).read_text(encoding="utf-8")
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "WP175I" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    combined = "\n".join((project, fragment, contract))
+    # WP175I is the current review target; WP175H is registered as merged.
+    assert "WP175I current review target" in project
+    assert "WP175H / PR #181 merged: YES" in project
+    assert "S10-HERMES-01A" in combined
+    assert "BOUNDED_CONTROLLED_RESEARCH_PROFILE_ENFORCEMENT_CORRECTION" in combined
+    assert "Governance track: RUNTIME" in project
+    assert "Exact changed-file scope: 15" in project
+    assert "Hermes Agent v0.21.3" in combined
+    assert "v2026.9.14" in combined and "345cd2b" in combined
+    # The safe-mode removal and controlled managed profile are stated.
+    assert "Research argv safe-mode: REMOVED" in project
+    assert "Controlled managed scope" in combined
+    assert "Firecrawl" in combined
+    assert "keyless" in contract.lower()
+    assert "web_search" in contract and "web_extract" in contract
+    # Activation split and prior-H1 truth.
+    assert "CODE COMPLETE: YES" in combined
+    assert "RUNTIME ACTIVATED: NO" in combined
+    assert "S10-GATE-H1" in combined
+    assert "FAIL / SOFTWARE_GAP" in combined
+    assert "Prior H1 real research invocations: 0" in project
+    assert "Firecrawl secret requested/used: 0" in project
+    assert "Real provider/model call count: 0" in project
+    assert "Capital at risk: USD 0" in project
+    assert "WP175 merged dormant: YES" in project
+    assert "Gate-C activation: NOT AUTHORIZED" in project
+    assert "WP176 Mature Controlled Live: NOT STARTED" in project
+    assert "S10-ALPHA-01" in combined and "NOT STARTED" in combined
+    assert "Merge authorized: NO" in project
+    scope = spec["scope"]
+    assert spec["identity"]["risk_level"] == 3
+    assert spec["identity"]["package_class"] == (
+        "BOUNDED_CONTROLLED_RESEARCH_PROFILE_ENFORCEMENT_CORRECTION"
+    )
+    assert spec["authority"]["hermes_runtime"] is True
+    assert spec["authority"]["network"] is True
+    assert spec["authority"]["credentials"] is False
+    assert spec["authority"]["execution"] is False
+    assert spec["authority"]["live"] is False
+    assert spec["authority"]["paper"] is False
+    assert scope["exact_scope_required"] is True
+    assert scope["max_changed_files"] == 15
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == 15
+    assert (
+        "src/research_runtime/hermes_controlled_runtime/policy.py"
+        in scope["required_changed_files"]
+    )
+    # The correction leaves models.py and response_capture.py out of scope.
+    assert (
+        "src/research_runtime/hermes_controlled_runtime/models.py"
+        not in scope["required_changed_files"]
+    )
+    assert (
+        "src/research_runtime/hermes_controlled_runtime/response_capture.py"
+        not in scope["required_changed_files"]
     )

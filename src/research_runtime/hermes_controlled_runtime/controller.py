@@ -182,6 +182,11 @@ def run_controlled_hermes_research(
     envelope = build_research_envelope(request)
     prompt_text = envelope.to_prompt_string()
     argv = build_hermes_argv(executable_path, request, prompt_text, policy, USAGE_FILE_NAME)
+    # WP175I: the deterministic non-secret controlled managed-scope config bytes are
+    # frozen by the policy and handed to the backend, which writes them into an
+    # ephemeral HERMES_MANAGED_DIR/config.yaml for the child. The controller neither
+    # writes the config to disk nor sets any environment variable.
+    managed_config_bytes = policy.managed_config_bytes()
 
     outcome = None
     transport_attempts = 0
@@ -196,6 +201,7 @@ def run_controlled_hermes_research(
             max_usage_bytes=_MAX_USAGE_BYTES,
             max_wall_seconds=request.max_wall_seconds,
             hermes_home=hermes_home,
+            managed_config_bytes=managed_config_bytes,
         )
         if not outcome.transport_retry_eligible:
             break
@@ -420,9 +426,29 @@ class _ReceiptBuilder:
         )
 
 
-def expected_hermes_contract() -> dict[str, str]:
-    """Return the pinned external contract summary for status/PR evidence."""
+def expected_hermes_contract(
+    policy: HermesInvocationPolicy = DEFAULT_HERMES_INVOCATION_POLICY,
+) -> dict[str, str]:
+    """Return the pinned external contract + controlled-profile summary for evidence."""
     return {
         "hermes_release": HERMES_EXPECTED_SEMVER,
         "hermes_expected_semver": HERMES_EXPECTED_SEMVER,
+        "research_argv_has_safe_mode": "NO",
+        "ignore_user_config": "YES",
+        "ignore_rules": "YES",
+        "toolsets": ",".join(policy.allowed_toolsets),
+        "managed_scope_mode": policy.managed_scope_mode,
+        "controlled_profile_version": policy.controlled_profile_version,
+        "managed_config_sha256": policy.managed_config_sha256,
+        "firecrawl_search_backend": policy.web_search_backend,
+        "firecrawl_extract_backend": policy.web_extract_backend,
+        "web_keyless_fallback": "OFF" if not policy.keyless_fallback else "ON",
+        "web_keyless_rescue": "OFF" if not policy.keyless_rescue else "ON",
+        "web_cache": "OFF" if not policy.web_cache_enabled else "ON",
+        "fallback_providers": "EMPTY" if not policy.managed_fallback_providers else "NONEMPTY",
+        "api_max_retries": str(policy.api_max_retries),
+        "same_provider_primary_transport_recovery": policy.same_provider_primary_transport_recovery,
+        "custom_user_project_plugin_loading": policy.custom_user_project_plugin_loading,
+        "bundled_backend_discovery": policy.bundled_backend_discovery,
+        "policy_id": policy.policy_id,
     }

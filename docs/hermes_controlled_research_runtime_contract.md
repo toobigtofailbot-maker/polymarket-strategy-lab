@@ -204,3 +204,78 @@ provider/model choice, the current account/privacy/retention posture, an
 out-of-repo research-only credential, projected cost, the exact request, and
 explicit public-web network authorization before any real remote run. It does not
 activate Gate C and does not start S10-ALPHA-01 or WP176. Merge authorized: NO.
+
+## 8. WP175I controlled research profile (S10-HERMES-01A)
+
+WP175I corrects the research invocation so pristine pinned Hermes v0.21.3 (tag
+v2026.9.14, commit 345cd2b, UNCHANGED) runs under one mechanically enforced controlled
+research profile. Verified by read-only inspection of the exact tagged source with zero
+runtime/provider call.
+
+Research argv change. The real one-shot argv is exactly `hermes --ignore-user-config
+--ignore-rules --provider P --model M --toolsets web --usage-file <bare relative name>
+-z <bounded prompt>`. `--safe-mode` is REMOVED: on exact tagged v0.21.3 it sets
+`HERMES_SAFE_MODE=1`, and `hermes_cli/plugins.py` then skips plugin discovery,
+suppressing the bundled `plugins/web/firecrawl` backend (`kind: backend`,
+`provides_web_providers: [firecrawl]`) that H1 requires. `--ignore-user-config` and
+`--ignore-rules` are retained.
+
+Controlled managed scope. For every external research invocation the backend creates a
+fresh ephemeral managed-scope directory (distinct from the empty cwd, the repository,
+`local_data`, and the research `HERMES_HOME`), writes exactly one non-secret
+`config.yaml` holding the deterministic managed bytes, and sets `HERMES_MANAGED_DIR`
+itself (never inherited, never caller-supplied). Both ephemeral directories are removed
+on success, timeout, and launch failure. The `-z` one-shot (`hermes_cli/oneshot.py`)
+calls `hermes_cli.config.load_config()`, whose `_merge_managed_overlay` deep-merges the
+managed config leaf-over-leaf on top of exact tagged defaults
+(`hermes_cli/managed_scope.py`), so the managed layer survives the one-shot path;
+`get_managed_dir()` honors `HERMES_MANAGED_DIR` only when the directory exists and
+parses `config.yaml` with `yaml.safe_load`, so canonical JSON is valid YAML.
+
+Managed config (exact tagged keys). `updates.check` false; `fallback_providers` empty;
+`agent.api_max_retries` 1; `web.backend` / `web.search_backend` / `web.extract_backend`
+firecrawl; `web.keyless_fallback` false; `web.keyless_rescue` false; `web.cache_enabled`
+false; `web.provider_tier.firecrawl` paid; `plugins.enabled` empty; `hooks` empty.
+`tools/web_tools.py` resolves `web.search_backend` / `web.extract_backend` strictly with
+no probe, so Firecrawl is pinned for both `web_search` and `web_extract`;
+`agent/web_search_registry.py` and `tools/web_tools_rescue.py` read
+`web.keyless_fallback` / `web.keyless_rescue`, so the keyless ring and the one-shot
+keyless rescue are both disabled; with the H1 Firecrawl key present the keyed direct
+path is used, and with it absent H1 fails rather than silently using a keyless route.
+The Hermes invocation policy schema is bumped to `hermes-invocation-policy/2.0.0` and the
+deterministic managed-config SHA-256 is committed into the policy identity, so a
+one-field broadening of any managed control changes the policy id.
+
+Compensating isolation without safe mode. Exact `--toolsets web`; `--ignore-rules`; a
+dedicated research `HERMES_HOME` whose `config.yaml` is absent and whose user plugins are
+absent or empty (fail-closed preflight, names only, no credential read; an `.env` /
+`auth.json` credential store alone is permitted); an ephemeral empty cwd distinct from
+the managed dir; `HERMES_ENABLE_PROJECT_PLUGINS` and `HERMES_MANAGED_DIR` never inherited
+from the parent; managed `plugins.enabled` empty and `hooks` empty; no MCP or custom
+toolset; no repo mount. Truthful wording: `CUSTOM_USER_PROJECT_PLUGIN_LOADING =
+FORBIDDEN`; `PINNED_BUNDLED_BACKEND_DISCOVERY = ALLOWED_FOR_WEB_PROVIDER_REGISTRATION`;
+`EXPOSED_AGENT_TOOLSET = WEB_ONLY`. Exact tagged `plugins_discovery.gate_manifest`
+auto-loads the bundled Firecrawl backend while gating non-bundled plugins on the
+`plugins.enabled` allow-list (an explicit empty list is nothing enabled, not the
+key-missing grandfather case) and project plugins on `HERMES_ENABLE_PROJECT_PLUGINS`.
+
+Retry posture. Exactly one research invocation per attempt; zero WP175H outer transport
+retries; one ordinary provider attempt via `agent.api_max_retries` 1 (exact tagged
+`agent/agent_init.py` clamps to one and `agent/conversation_loop.py` loops
+`while retry_count < max_retries`); the primary OpenAI client is created with SDK
+`max_retries=0` (`_create_openai_client`, proven by tagged
+`tests/agent/test_create_openai_client_disables_sdk_retries.py`); no provider/model
+fallback (`fallback_config.get_fallback_chain` returns none for the empty chain); no
+web-backend fallback/rescue. One bounded same-provider primary transport recovery
+(`agent/agent_runtime_helpers.py` `try_recover_primary_transport`) may rebuild the
+primary client once after the single ordinary attempt exhausts on a transient transport
+error -- same provider, same model, same web backend, no second controller invocation.
+This narrow recovery is documented as an H1 evidence limitation and is never suppressed
+by a Hermes fork.
+
+Authority. No real provider, OAuth, Firecrawl-secret, or public-web activity occurs
+during WP175I; capital at risk USD 0; orders 0; Gate C NOT AUTHORIZED; runtime activated
+NO. `models.py` and `response_capture.py`, and the WP175H receipt/provider/model/cost/
+schema/safety fail-closed semantics, are unchanged. The successor resumes S10-GATE-H1
+only after WP175I merge and Side10 review; the prior H1 attempt consumed zero real
+research invocations, so its authorization is unspent.

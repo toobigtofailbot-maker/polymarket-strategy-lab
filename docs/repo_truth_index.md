@@ -1,6 +1,35 @@
 # Repo Truth Index
 
-## WP175H Controlled Hermes Research Runtime Core (current review target)
+## WP175I Controlled Research Profile Enforcement (current review target)
+
+WP175I / Side10 capability handle S10-HERMES-01A is the RUNTIME-track, risk-3, exact
+15-file controlled research profile correction on
+`claude/wp175i-hermes-controlled-profile-enforcement`, based on the merged WP175H /
+PR #181 commit `3e5dd322800e656f942d46c768fc93aa7ac2e7ea`. Deterministic readiness is
+`IMPLEMENTATION_READY` without an independent certificate; readiness and this committed
+target truth grant no merge, runtime-activation, or live authority.
+
+WP175I corrects the merged WP175H external runtime so pristine pinned Hermes v0.21.3
+(tag v2026.9.14, commit 345cd2b, UNCHANGED) runs under one mechanically enforced
+controlled research profile. It removes `--safe-mode` from the real research invocation
+(exact tagged `--safe-mode` sets `HERMES_SAFE_MODE=1`, which makes `hermes_cli/plugins.py`
+skip plugin discovery and suppress the bundled `plugins/web/firecrawl` backend H1
+requires) while retaining `--ignore-user-config` and `--ignore-rules`, and replaces the
+lost isolation with a deterministic repo-owned non-secret managed-scope `config.yaml`
+injected through an ephemeral `HERMES_MANAGED_DIR`. The managed overlay pins Firecrawl
+for `web_search` and `web_extract`, forces keyless fallback/rescue and web cache off,
+empties `fallback_providers`, sets `agent.api_max_retries` to 1, sets `plugins.enabled`
+and `hooks` empty and `updates.check` false, and sets `web.provider_tier.firecrawl` to
+`paid`; the Hermes invocation policy schema is bumped to 2.0.0 and the managed-config
+SHA-256 is committed into the policy identity. A fail-closed research-home control-plane
+preflight rejects a present `config.yaml` or non-empty user plugins before spawn. The
+first S10-GATE-H1 attempt stopped at static preflight FAIL / SOFTWARE_GAP with 0 real
+research invocations, 0 OAuth, and 0 Firecrawl-secret use, so the H1 authorization was
+not consumed; S10-GATE-H1 resumes only after WP175I merge and Side10 review.
+`models.py` and `response_capture.py` are unchanged; no dependency, workflow, credential,
+capital, or order activity exists; Gate C is NOT AUTHORIZED and WP176 is NOT STARTED.
+
+## WP175H Controlled Hermes Research Runtime Core (merged, PR #181)
 
 WP175H / Side10 capability handle S10-HERMES-01 is the RUNTIME-track, risk-3, exact
 24-file controlled Hermes research runtime core on
