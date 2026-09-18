@@ -82,6 +82,12 @@ def test_required_src_readmes_exist():
 # It reads WP169 locally, extends the loopback read-only cockpit, and has no real/live authority.
 # WP174 approves the protected Gate-A-only auth/signing/execution gateway. It can
 # reach only A0/A1/A2 and cannot invoke SDK venue mutations without later Gate B.
+# WP175H approves the local/offline dormant-by-default controlled Hermes research
+# runtime core at src/research_runtime/hermes_controlled_runtime/. It owns a
+# deterministic request/policy/stream-json/runner/controller boundary around one
+# bounded external one-shot web-only research session and has no trading, paper,
+# execution, live, credential, scheduler, or merge authority; the real provider
+# call count is zero and remote activation is separately gated (S10-GATE-H1).
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -140,6 +146,7 @@ APPROVED_SRC_SCOPES = (
     # the new research-runtime boundary README.
     "src/research_runtime/nautilus_offline",
     "src/research_runtime/executable_edge",
+    "src/research_runtime/hermes_controlled_runtime",
     "src/research_runtime/README.md",
     "src/paper_trading",
     "src/execution_gateway",

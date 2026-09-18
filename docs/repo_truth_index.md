@@ -1,5 +1,42 @@
 # Repo Truth Index
 
+## WP175H Controlled Hermes Research Runtime Core (current review target)
+
+WP175H / Side10 capability handle S10-HERMES-01 is the RUNTIME-track, risk-3, exact
+24-file controlled Hermes research runtime core on
+`claude/wp175h-hermes-controlled-research-runtime`, based on the merged WP175E /
+PR #180 commit `22557ee3b0beeeb13a3c3b626ae8f30e11967364`. Deterministic readiness
+is `IMPLEMENTATION_READY` without an independent certificate; readiness and this
+committed target truth grant no merge, runtime-activation, or live authority.
+
+`src/research_runtime/hermes_controlled_runtime/` adds the first repo-owned,
+dormant-by-default control plane around one bounded, one-shot, web-only EXTERNAL
+Hermes research session pinned to Hermes Agent v0.21.3 (tag v2026.9.14, commit
+345cd2b). It provides an immutable content-addressed request, a frozen
+non-broadenable invocation policy allowing exactly the `web` toolset (web_search +
+web_extract), a compact research envelope, a backend protocol with a deterministic
+no-process fake and an isolated argv-only ephemeral-cwd external backend, a bounded
+stream-json audit parser, an authoritative untrusted-draft schema/safety validator,
+and a sanitized no-authority receipt requiring human review. Hermes prose is
+untrusted research content, never canonical economic truth; the repository
+validator is authoritative and fails closed with no raw payload, stderr,
+environment, secret, or path in canonical evidence.
+
+CODE COMPLETE: YES; RUNTIME ACTIVATED: NO. `REAL_HERMES_BINARY_NOT_PRESENT` is an
+activation prerequisite, not a code blocker; tests use a fake executable and make
+zero paid/provider calls. Project code never reads, stores, injects, logs,
+transforms, validates, or echoes a provider secret or trading credential. No
+dependency, lock, or workflow file changes; WP170/WP172/WP173/WP175 and the legacy
+WP99/WP133/WP145 advisory validators are unchanged. This package creates no
+opportunity candidate, probability thesis, fair value, side, entry/exit, position
+size, strategy promotion, Alpha Factory state, or trade recommendation. Gate C is
+NOT AUTHORIZED, WP176 Mature Controlled Live is NOT STARTED, credentials and real
+orders are 0, capital at risk is USD 0, and merge is NOT AUTHORIZED. The first real
+provider-backed / public-web run is separately gated as S10-GATE-H1 Controlled
+Public Research Pilot; if it succeeds, S10-ALPHA-01 Multi-Lane Alpha Factory Core
+follows. Both are NOT STARTED and gain no trading authority. Normative contract:
+`docs/hermes_controlled_research_runtime_contract.md`.
+
 ## WP175E Native Continuity-Attested Market Truth Bridge (current review target)
 
 WP175E / Side10 S10-DATA-03 is the FAST, risk-2, exact 20-file continuation on

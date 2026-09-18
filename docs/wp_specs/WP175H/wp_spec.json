@@ -1,0 +1,253 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP175H",
+    "title": "Controlled Hermes Research Runtime Core",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "CONTROLLED_EXTERNAL_HERMES_RESEARCH_RUNTIME_CORE",
+    "package_size_class": "XL",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 180,
+      "head_sha": "091c0079705eaa0ea934fc18526fb76fb88f7ab9",
+      "merge_sha": "22557ee3b0beeeb13a3c3b626ae8f30e11967364"
+    },
+    "suggested_branch": "claude/wp175h-hermes-controlled-research-runtime",
+    "objective": "Add a dormant-by-default, deterministic control plane around one bounded, one-shot, web-only EXTERNAL Hermes research session: a validated content-addressed request drives a frozen non-broadenable invocation policy and compact envelope, an argv-only ephemeral-cwd backend (fake in tests) produces a bounded stream-json transcript, and the repository authoritatively validates the untrusted research draft schema and safety before emitting a sanitized no-authority receipt requiring human review, while creating no opportunity candidate, probability thesis, strategy, paper/execution/live/credential/scheduler authority, or dependency/workflow change.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "The user transmitted and instructed execution of the WP175H one-shot runtime package, whose natural authorized envelope is 16-22 paths with a hard maximum of 24. The exact truthful scope is 24 files: 15 new (package spec/prompt/status/contract, six runtime modules, and four focused tests plus the new test-package __init__ required so pytest prepend-mode import does not collide the runtime test_models basename with the existing executable_edge test_models) and nine additive registrations (docs, the architecture-boundary and two doc-guard tests, and the two WP149-era Hermes-no-runtime guards that legitimately must allowlist the new runtime package). 24 exceeds the L budget of 20, so the package is XL for scope size only with a hard maximum of 24 files and no broadened authority."
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/hermes_controlled_research_runtime_contract.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP175H.md",
+      "docs/wp_specs/WP175H/wp_prompt.txt",
+      "docs/wp_specs/WP175H/wp_spec.json",
+      "src/research_runtime/hermes_controlled_runtime/__init__.py",
+      "src/research_runtime/hermes_controlled_runtime/controller.py",
+      "src/research_runtime/hermes_controlled_runtime/models.py",
+      "src/research_runtime/hermes_controlled_runtime/policy.py",
+      "src/research_runtime/hermes_controlled_runtime/runner.py",
+      "src/research_runtime/hermes_controlled_runtime/stream_json.py",
+      "tests/research_runtime/hermes_controlled_runtime/__init__.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_controller.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_models.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_runner.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_stream_json.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/hermes_controlled_research_runtime_contract.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP175H.md",
+      "docs/wp_specs/WP175H/wp_prompt.txt",
+      "docs/wp_specs/WP175H/wp_spec.json",
+      "src/research_runtime/hermes_controlled_runtime/__init__.py",
+      "src/research_runtime/hermes_controlled_runtime/controller.py",
+      "src/research_runtime/hermes_controlled_runtime/models.py",
+      "src/research_runtime/hermes_controlled_runtime/policy.py",
+      "src/research_runtime/hermes_controlled_runtime/runner.py",
+      "src/research_runtime/hermes_controlled_runtime/stream_json.py",
+      "tests/research_runtime/hermes_controlled_runtime/__init__.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_controller.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_models.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_runner.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_stream_json.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/data_layer/polymarket/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/risk/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 24,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert WP175H. Only the additive dormant controlled Hermes research runtime package (models, policy, stream-json parser, runner backends, controller), its four focused test files, the new canonical runtime contract, the WP175H status/spec/prompt, and the scoped docs/repo-truth/deferred/roadmap and doc-guard/architecture-boundary registrations are removed. No dependency, workflow, credential, account, order, paper, Gate-C, WP176, or live state exists to unwind, and no other module changes behavior.",
+    "mode_boundaries": [
+      {"boundary": "workflow_governance", "crossed": false},
+      {"boundary": "local_offline_tooling", "crossed": true},
+      {"boundary": "canonical_evidence_policy", "crossed": true},
+      {"boundary": "docs", "crossed": true},
+      {"boundary": "tests", "crossed": true},
+      {"boundary": "source_runtime", "crossed": true},
+      {"boundary": "workflow_files", "crossed": false},
+      {"boundary": "dependencies", "crossed": false},
+      {"boundary": "network", "crossed": true},
+      {"boundary": "credentials", "crossed": false},
+      {"boundary": "scheduler", "crossed": false},
+      {"boundary": "hermes_runtime", "crossed": true},
+      {"boundary": "strategy", "crossed": false},
+      {"boundary": "paper", "crossed": false},
+      {"boundary": "execution", "crossed": false},
+      {"boundary": "live", "crossed": false}
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP175H introduces the first repo-owned control plane for a real external Hermes research session as a dormant, provider-neutral runtime primitive with no downstream authority.",
+    "items": [
+      {"surface": "build_research_run_request", "before": "No repo-owned Hermes runtime request type", "after": "Immutable content-addressed HermesResearchRunRequest with fail-closed field/bound/secret/authority validation", "change_authorized": true, "compatibility_requirement": "No credential, environment, wallet, order, or execution field is accepted or echoed", "authority": "LOCAL_OFFLINE_ADVISORY_RESEARCH"},
+      {"surface": "HermesInvocationPolicy and build_hermes_argv", "before": "No runtime invocation policy", "after": "Frozen non-broadenable policy pinned to Hermes v0.21.3 with exactly the web toolset and an argv-only one-shot command shape", "change_authorized": true, "compatibility_requirement": "No caller may broaden toolsets or enable shell/repo-mount/mcp/plugin/cron/delegation/file/terminal/code-execution", "authority": "LOCAL_OFFLINE_RUNTIME_POLICY"},
+      {"surface": "HermesInvocationBackend, FakeHermesBackend, ExternalHermesCliBackend", "before": "No external process boundary", "after": "One protocol with a deterministic no-process fake and an isolated argv-only ephemeral-cwd external backend with byte caps, timeout, tree-kill, and teardown", "change_authorized": true, "compatibility_requirement": "Tests and CI use the fake/local backend and make zero paid/provider calls; no credential is read, injected, or logged", "authority": "NETWORK_CAPABLE_BOUNDARY_DORMANT"},
+      {"surface": "parse_stream_json and run_controlled_hermes_research", "before": "No runtime capture/validation/receipt path", "after": "Bounded stream-json audit parse plus authoritative untrusted-draft schema/safety validation emitting a sanitized no-authority HermesResearchRunReceipt", "change_authorized": true, "compatibility_requirement": "Hermes output is untrusted; the repo validator is authoritative; fail-closed with no raw payload/stderr/env/secret in canonical evidence", "authority": "LOCAL_OFFLINE_ADVISORY_RESEARCH"}
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Request/policy/draft/receipt identities and admissibility, tool isolation, budget, and no-authority fields have explicit fail-closed semantics.",
+    "items": [
+      {"path": "request.request_id", "source": "DERIVED", "type": "content_addressed_id", "required_rule": "hermesresearchrequest:sha256 over canonical public request fields; unknown fields, secrets, and authority-escalation content are rejected", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "recompute and exact compare; path excluded", "failure_category": "IDENTITY_DERIVATION_INVALID", "safe_output": "namespaced digest", "derivation_rule_id": null},
+      {"path": "request.max_estimated_cost_usd", "source": "CONSTANT", "type": "decimal_string", "required_rule": "canonical Decimal from string/int within the repository absolute maximum; binary floats are rejected as non-canonical", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "reject binary float and any value above the absolute maximum", "failure_category": "FIELD_VALUE_INVALID", "safe_output": "canonical decimal string", "derivation_rule_id": null},
+      {"path": "policy.allowed_toolsets", "source": "CONSTANT", "type": "frozen_tuple", "required_rule": "exactly the single web toolset; no caller may broaden it or enable forbidden tool families", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "policy construction fails closed on any broadening", "failure_category": "SCOPE_POLICY_INVALID", "safe_output": "closed toolset tuple", "derivation_rule_id": null},
+      {"path": "policy.cwd_policy", "source": "CONSTANT", "type": "enum", "required_rule": "EPHEMERAL_EMPTY_DIRECTORY; the external backend never supplies the repository, local_data, or home path as the Hermes working directory", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "ephemeral mkdtemp cwd only; repo/home/local_data rejected", "failure_category": "SCOPE_POLICY_INVALID", "safe_output": "closed enum", "derivation_rule_id": null},
+      {"path": "draft.authority_flags", "source": "DERIVED", "type": "boolean_set", "required_rule": "every advisory/no-execution/no-risk/no-credential/no-order/no-paper-live/no-promotion/no-merge flag must be present and exactly true or the untrusted draft is rejected", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "repo validator authoritative; missing or false flag fails closed; no retry", "failure_category": "SEMANTIC_CONTRADICTION", "safe_output": "boolean set", "derivation_rule_id": null},
+      {"path": "draft.source_references", "source": "DERIVED", "type": "bounded_reference_list", "required_rule": "non-empty bounded https citations with title and closed source_class; empty or fabricated non-url citations fail closed", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "sanitized to url digest plus source class in canonical evidence", "failure_category": "SEMANTIC_CONTRADICTION", "safe_output": "url digest and source class", "derivation_rule_id": null},
+      {"path": "receipt.receipt_id", "source": "DERIVED", "type": "content_addressed_id", "required_rule": "hermesresearchreceipt:sha256 over sanitized receipt content; a deterministic successful transcript yields an exact receipt id", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "recompute and exact compare; path excluded", "failure_category": "IDENTITY_DERIVATION_INVALID", "safe_output": "namespaced digest", "derivation_rule_id": null},
+      {"path": "receipt.activation_state", "source": "DERIVED", "type": "enum", "required_rule": "CODE_COMPLETE_NOT_REMOTE_ACTIVATED unless a separately gated real run is explicitly performed; runtime activation is never implied by code-complete", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "default is code-complete; run-complete is explicit only", "failure_category": "AUTHORITY_CONTRADICTION", "safe_output": "closed enum", "derivation_rule_id": null}
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Product identity recomputation and one-field tamper behavior are executable focused-test oracles; no worked package-spec oracle is required.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "RUNTIME deterministic readiness supplies draftability and the user's authorization supplies implementation authority; neither grants merge or runtime activation.",
+    "items": [
+      {"from_state": "LOCAL_DRAFT", "to_state": "DRAFTABILITY_PASS", "condition": "prompt/spec authority equality, exact scope, semantics, evidence plan, and deterministic RUNTIME readiness pass without a certificate", "failure_category": "DRAFTABILITY_INCOMPLETE"},
+      {"from_state": "DRAFTABILITY_PASS", "to_state": "AUTHORIZED", "condition": "the user explicitly authorizes implementation of this exact WP175H branch/worktree/package", "failure_category": "AUTHORITY_CONTRADICTION"},
+      {"from_state": "AUTHORIZED", "to_state": "IMPLEMENTED_LOCAL", "condition": "implementation stays inside the exact 24-file scope and final readiness --check-diff passes with zero real provider calls", "failure_category": "SEMANTIC_CONTRADICTION"}
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {"condition_id": "file_unreadable", "category": "FILE_READ_ERROR", "priority": 10},
+      {"condition_id": "json_invalid", "category": "JSON_PARSE_INVALID", "priority": 20},
+      {"condition_id": "schema_unsupported", "category": "SCHEMA_UNSUPPORTED", "priority": 30},
+      {"condition_id": "unknown_field", "category": "UNKNOWN_FIELD", "priority": 40},
+      {"condition_id": "field_missing", "category": "FIELD_MISSING", "priority": 50},
+      {"condition_id": "field_type_invalid", "category": "FIELD_TYPE_INVALID", "priority": 60},
+      {"condition_id": "field_value_invalid", "category": "FIELD_VALUE_INVALID", "priority": 70},
+      {"condition_id": "certificate_hash_mismatch", "category": "CERTIFICATE_HASH_MISMATCH", "priority": 80},
+      {"condition_id": "draftability_incomplete", "category": "DRAFTABILITY_INCOMPLETE", "priority": 90},
+      {"condition_id": "scope_policy_invalid", "category": "SCOPE_POLICY_INVALID", "priority": 100},
+      {"condition_id": "authority_contradiction", "category": "AUTHORITY_CONTRADICTION", "priority": 110},
+      {"condition_id": "semantic_contradiction", "category": "SEMANTIC_CONTRADICTION", "priority": 120},
+      {"condition_id": "identity_derivation_invalid", "category": "IDENTITY_DERIVATION_INVALID", "priority": 130},
+      {"condition_id": "failure_precedence_invalid", "category": "FAILURE_PRECEDENCE_INVALID", "priority": 140},
+      {"condition_id": "example_truth_invalid", "category": "EXAMPLE_TRUTH_INVALID", "priority": 150}
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused executable tests are the product oracle and no package-spec identity derivation requires an embedded worked example.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R024 cover the reviewer-trap matrix, pinned Hermes contract, tool/filesystem/credential isolation, bounded subprocess/timeout/teardown, transport-retry ceiling, stream-json parsing, deterministic output schema, no-authority validation, source provenance, budget, receipt identity, legacy compatibility, and the code-complete vs runtime-activated split.",
+    "items": [
+      {"requirement_id": "R001", "source": "pytest", "test": "test_r001_wrong_hermes_version_rejected", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "a transcript whose reported Hermes version is not v0.21.3 yields a VERSION_MISMATCH receipt and no validated draft"},
+      {"requirement_id": "R002", "source": "pytest", "test": "test_r002_metacharacter_argument_is_not_shell_interpreted", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "shell metacharacters in the executable path are rejected and metacharacter arguments reach the child literally with no shell side effect"},
+      {"requirement_id": "R003", "source": "pytest", "test": "test_r003_working_directory_is_ephemeral_never_repo_or_home", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "the child working directory is an ephemeral temp dir that is never the repository, home, or a local_data path and is deleted on teardown"},
+      {"requirement_id": "R004", "source": "pytest", "test": "test_r004_controller_argv_has_exactly_one_web_toolset", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the controller argv includes exactly one permitted web toolset and no broader toolset"},
+      {"requirement_id": "R005", "source": "pytest", "test": "test_r005_policy_cannot_be_broadened", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "enabling terminal/file/browser/delegation/memory/cron/mcp/plugin or a second retry fails policy construction closed"},
+      {"requirement_id": "R006", "source": "pytest", "test": "test_r006_unknown_request_field_rejected", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py", "expected_result": "an unknown request field is rejected with REQUEST_UNKNOWN_FIELD"},
+      {"requirement_id": "R007", "source": "pytest", "test": "test_r007_secret_looking_request_content_rejected_without_echo", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py", "expected_result": "secret-looking request content is rejected and never echoed in the sanitized error"},
+      {"requirement_id": "R008", "source": "pytest", "test": "test_r008_malformed_stream_json_fails_closed_without_raw_echo", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_stream_json.py", "expected_result": "malformed stream-json fails closed with a neutral diagnostic and no raw payload echo"},
+      {"requirement_id": "R009", "source": "pytest", "test": "test_r009_oversized_stdout_fails_boundedly", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_stream_json.py", "expected_result": "oversized stdout fails boundedly with STREAM_JSON_OUTPUT_TOO_LARGE"},
+      {"requirement_id": "R010", "source": "pytest", "test": "test_r010_timeout_yields_sanitized_receipt", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "a timed-out invocation produces a sanitized TIMEOUT receipt with the timeout budget status"},
+      {"requirement_id": "R011", "source": "pytest", "test": "test_r011_no_second_transport_retry", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "at most one transport retry occurs; a second retry never happens"},
+      {"requirement_id": "R012", "source": "pytest", "test": "test_r012_schema_failure_is_not_retried", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "a schema-validation failure is not retried and the backend is invoked exactly once"},
+      {"requirement_id": "R013", "source": "pytest", "test": "test_r013_unsafe_output_is_safety_failure_not_retried", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "unsafe trading-authority draft content is a safety failure that is not retried"},
+      {"requirement_id": "R014", "source": "pytest", "test": "test_r014_empty_citation_structure_fails", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py", "expected_result": "an empty or fabricated non-url citation structure fails the source-provenance check"},
+      {"requirement_id": "R015", "source": "pytest", "test": "test_r015_receipt_has_no_raw_stderr_env_or_payload", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "no raw stderr, environment dump, provider payload, or secret can enter the sanitized receipt"},
+      {"requirement_id": "R016", "source": "pytest", "test": "test_r016_fake_backend_makes_no_process_call", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "the fake backend performs zero process and zero network calls even when Popen is patched to fail"},
+      {"requirement_id": "R017", "source": "pytest", "test": "test_r017_deterministic_request_bytes_yield_exact_request_id", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py", "expected_result": "identical request bytes yield an identical request id and any field change alters it"},
+      {"requirement_id": "R018", "source": "pytest", "test": "test_r018_deterministic_fake_transcript_yields_exact_receipt_id", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "a deterministic successful fake transcript yields an exact receipt id"},
+      {"requirement_id": "R019", "source": "pytest", "test": "test_valid_response_preserves_content_order_and_input", "command": "python -m pytest -q tests/test_hermes_candidate_review_manual_research_response.py tests/test_hermes_advisory_output_validator.py", "expected_result": "legacy WP133 and WP99 focused advisory validator tests remain green and unchanged"},
+      {"requirement_id": "R020", "source": "pytest", "test": "test_r020_no_imports_from_execution_paper_or_private_account_surfaces", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the runtime package imports no execution_gateway, paper_trading, oms, risk, or private-account/network surface"},
+      {"requirement_id": "R023", "source": "pytest", "test": "test_r023_default_activation_is_code_complete_not_runtime_activated", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the default activation state is CODE_COMPLETE_NOT_REMOTE_ACTIVATED and runtime-complete is explicit only"},
+      {"requirement_id": "R024", "source": "pytest", "test": "test_r024_no_alpha_factory_probability_or_trade_object", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py", "expected_result": "no Alpha Factory candidate, probability, expected-return, side, or trade object is created or surfaced"},
+      {"requirement_id": "R021", "source": "validation", "test": "exact_scope_and_local_validation", "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP175H/wp_prompt.txt --spec docs/wp_specs/WP175H/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD", "expected_result": "deterministic RUNTIME readiness and an exact 24-file diff pass with no dependency, lock, or workflow change and the generated-artifact guard green"},
+      {"requirement_id": "R022", "source": "github", "test": "exact_head_hosted_and_posted_evidence", "command": "gh pr checks --watch", "expected_result": "one exact-head hosted validation passes with zero real provider calls and the re-fetched canonical PR body passes the evidence consistency guard before Ready YES"}
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP176",
+    "next_title": "S10-GATE-H1 Controlled Public Research Pilot then S10-ALPHA-01, ahead of WP176 Mature Controlled Live",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP176",
+    "forbidden_in_this_wp": [
+      "any real provider-backed or public-web Hermes research call",
+      "selecting, approving, or activating a remote provider, account, or model",
+      "creating, reading, storing, injecting, logging, or echoing a provider secret or trading credential",
+      "opportunity candidates, probability theses, fair value, expected return, side, entry/exit, or position sizing",
+      "strategy promotion, Alpha Factory state, WP170 experiments, or trade recommendations",
+      "paper order generation, execution, risk-cap change, Gate-C qualification, or live activation",
+      "scheduler, cron, daemon, gateway, or background autonomous loop",
+      "dependency, lock-file, or GitHub Actions workflow changes",
+      "vendoring or copying Hermes source or installing Hermes in the repository",
+      "automatic successor activation or starting S10-GATE-H1 or S10-ALPHA-01"
+    ]
+  }
+}

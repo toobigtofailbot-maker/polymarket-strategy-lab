@@ -2577,3 +2577,11 @@ authorize capital, or start WP175.
 |---|---|---|---|---|---|
 | WP174B-D001 | Restricted Live Canary (WP175): A3_RESTRICTED_LIVE, dedicated canary capital, one-market/one-strategy allowlist, live exposure/loss limits, manual live arm, and the first real economic LIMIT create | OPEN_PROTECTED_SUCCESSOR | P1 | Separate WP175 certification, readiness, and explicit Gate C authorization | WP174B enables Gate B credential/signing/cancel only; it adds no A3, no capital, and no Gate C |
 | WP174B-D002 | Mature long-running credential hardening: CLOB-only Session Keys, OS/cloud secrets manager, owner-key isolation from a long-running process, rotation/revocation | DEFERRED | P2 | WP176 Mature Controlled Live or a separately approved mature-live credential package | WP174B deliberately uses a manual foreground ephemeral owner-signer path with zero capital |
+
+## WP175H Controlled Hermes Research Runtime Core Deferred Items
+
+| ID | Item | Status | Priority | Resolution path | Boundary note |
+|---|---|---|---|---|---|
+| WP175H-D001 | S10-GATE-H1 Controlled Public Research Pilot: the first real provider-backed / public-web Hermes v0.21.3 research run (installed binary, provider/model choice, account privacy/retention posture, out-of-repo research-only credential, projected cost, exact request, explicit public-web network authorization) | OPEN_RUNTIME_SUCCESSOR | P1 | Separate human/Side S10-GATE-H1 authorization after merge | WP175H is CODE COMPLETE but RUNTIME ACTIVATED: NO; real provider/model call count 0; it does not activate Gate C or start S10-ALPHA-01 |
+| WP175H-D002 | S10-ALPHA-01 Multi-Lane Alpha Factory Core: market-universe snapshots, OpportunityCandidate, HypothesisFamily, evidence-lane classification, novelty/negative memory, and research campaigns | DEFERRED | P2 | Separate S10-ALPHA-01 package after a successful S10-GATE-H1 pilot | S10-ALPHA-01 gains no trading authority; WP175H creates no candidate/probability/trade object |
+| WP175H-D003 | `REAL_HERMES_BINARY_NOT_PRESENT`: no Hermes Agent v0.21.3 binary is installed on the build machine | OPEN_ACTIVATION_PREREQUISITE | P2 | Resolved as part of S10-GATE-H1 activation, outside repository code | An activation prerequisite, not a code blocker; tests use a fake executable and make zero paid/provider calls |
