@@ -5,16 +5,21 @@ The controller owns the full lifecycle against the pinned Hermes v0.21.3 contrac
   validated ``HermesResearchRunRequest``
   -> bounded no-network version preflight (``hermes --version`` == 0.21.3)
   -> frozen ``HermesInvocationPolicy`` + compact ``-z`` research envelope
-  -> exactly one backend invocation (with at most one transport retry)
+  -> exactly one backend invocation (ZERO automatic paid research retries)
+  -> authoritative process-exit-code gate (only exit 0 may proceed)
   -> bounded plain-stdout final response capture + bounded ``--usage-file`` parse
+  -> mandatory valid usage-file success evidence (completed/failed/tokens/labels)
   -> static exact-toolset enforcement (v0.21.3 emits no runtime tool telemetry)
   -> authoritative untrusted-draft schema + safety validation
-  -> per-run cost-cap enforcement
+  -> verified provider/model binding (usage == request)
+  -> POST-RUN cost-acceptance gate (unknown cost fails closed; over-threshold fails)
   -> sanitized ``HermesResearchRunReceipt`` + mandatory human review flag
 
-It never retries on content/schema/safety failure, never auto-tops-up budget,
-never falls back to another provider, and always fails closed with a sanitized
-receipt that echoes no raw payload, stderr, environment, secret, or path.
+It performs no automatic paid research retry (a paid provider call can spend before
+a timeout/transport failure and v0.21.3 emits accounting only after/best-effort), it
+never retries on exit-code/usage/content/schema/safety/cost failure, never auto-tops-
+up budget, never falls back to another provider, and always fails closed with a
+sanitized receipt that echoes no raw payload, stderr, environment, secret, or path.
 """
 
 from __future__ import annotations
@@ -28,6 +33,7 @@ from .models import (
     HermesResearchError,
     HermesResearchRunReceipt,
     HermesResearchRunRequest,
+    ITERATION_CAP_STATUS,
     SanitizedSourceReference,
     RECEIPT_SCHEMA_VERSION,
     ValidatedResearchDraft,
@@ -36,6 +42,7 @@ from .models import (
     validate_research_draft,
 )
 from .policy import (
+    APPROVAL_AUTHORITY,
     DEFAULT_HERMES_INVOCATION_POLICY,
     HERMES_EXPECTED_SEMVER,
     HermesInvocationPolicy,
@@ -48,9 +55,13 @@ from .policy import (
     parse_hermes_version,
 )
 from .response_capture import (
+    COST_ABOVE_THRESHOLD,
+    COST_ACCEPTED,
+    COST_EVIDENCE_UNAVAILABLE,
     RESPONSE_OK,
+    UsageReport,
     capture_final_response,
-    cost_within_cap,
+    cost_acceptance,
     parse_usage_report,
 )
 from .runner import HermesInvocationBackend
@@ -63,20 +74,30 @@ _STATUS_SUCCESS = "RESEARCH_DRAFT_VALIDATED"
 _STATUS_TRANSPORT = "TRANSPORT_FAILURE"
 _STATUS_TIMEOUT = "TIMEOUT"
 _STATUS_VERSION = "VERSION_MISMATCH"
+_STATUS_EXIT = "EXIT_CODE_NONZERO"
 _STATUS_RESPONSE = "RESPONSE_CAPTURE_FAILED"
+_STATUS_USAGE = "USAGE_EVIDENCE_INVALID"
 _STATUS_OUTPUT_SCHEMA = "OUTPUT_SCHEMA_INVALID"
 _STATUS_SAFETY = "SAFETY_VALIDATION_FAILED"
+_STATUS_PROVIDER_MODEL = "PROVIDER_MODEL_MISMATCH"
+_STATUS_COST_UNAVAILABLE = "COST_EVIDENCE_UNAVAILABLE"
 _STATUS_BUDGET = "BUDGET_EXCEEDED"
 
 _SAFETY_PASS = "PASS"
 _SAFETY_FAILED = "FAILED"
 _SAFETY_NOT_REACHED = "NOT_REACHED"
 
+_USAGE_VALID = "VALID"
+_USAGE_INVALID = "INVALID"
+_USAGE_NOT_REACHED = "NOT_REACHED"
+
 _BUDGET_WITHIN = "WITHIN_CAPS"
 _BUDGET_TIMEOUT = "TIMEOUT_CAP_REACHED"
 _BUDGET_TRANSPORT = "TRANSPORT_FAILED"
 _BUDGET_OUTPUT = "OUTPUT_CAP_REACHED"
 _BUDGET_COST = "COST_CAP_EXCEEDED"
+_BUDGET_COST_UNAVAILABLE = "COST_EVIDENCE_UNAVAILABLE"
+_BUDGET_USAGE_INVALID = "USAGE_EVIDENCE_INVALID"
 _BUDGET_NOT_REACHED = "NOT_REACHED"
 
 _MAX_STDERR_BYTES = 65_536
@@ -172,6 +193,7 @@ def run_controlled_hermes_research(
     builder.transport_attempt_count = transport_attempts
     builder.end_utc = _utc_iso(clock())
     builder.reported_semver = reported_semver
+    builder.exit_code = outcome.exit_code
     st = outcome.stdout_truncated
     se = outcome.stderr_truncated
 
@@ -182,14 +204,29 @@ def run_controlled_hermes_research(
         return builder.failure(_STATUS_TIMEOUT, "BACKEND_TIMEOUT", budget=_BUDGET_TIMEOUT,
                                stdout_truncated=st, stderr_truncated=se)
 
-    response = capture_final_response(outcome.stdout, max_bytes=request.max_output_bytes)
+    # Process exit code is authoritative (section 6): only exit_code == 0 may proceed
+    # toward success. Any other code fails closed even with syntactically valid stdout;
+    # usage accounting is still preserved if safely available. No retry.
     usage = parse_usage_report(outcome.usage_file_bytes, max_bytes=_MAX_USAGE_BYTES)
     builder.usage = usage
+    if outcome.exit_code != 0:
+        return builder.failure(_STATUS_EXIT, "EXIT_CODE_NONZERO", budget=_BUDGET_NOT_REACHED,
+                               stdout_truncated=st, stderr_truncated=se)
 
+    response = capture_final_response(outcome.stdout, max_bytes=request.max_output_bytes)
     if response.diagnostic != RESPONSE_OK or response.final_text is None:
         budget = _BUDGET_OUTPUT if "TOO_LARGE" in response.diagnostic else _BUDGET_WITHIN
         return builder.failure(_STATUS_RESPONSE, response.diagnostic, budget=budget,
                                stdout_truncated=st, stderr_truncated=se)
+
+    # A valid usage report is mandatory success evidence (section 7). A missing,
+    # malformed, incomplete, failed, or field-invalid usage report fails closed even
+    # when Hermes exited 0 and stdout is syntactically valid. No retry.
+    if not usage.ok:
+        builder.usage_evidence_status = _USAGE_INVALID
+        return builder.failure(_STATUS_USAGE, usage.diagnostic, budget=_BUDGET_USAGE_INVALID,
+                               stdout_truncated=st, stderr_truncated=se)
+    builder.usage_evidence_status = _USAGE_VALID
 
     # Authoritative untrusted-draft validation. No retry on any failure (R012).
     try:
@@ -206,12 +243,31 @@ def run_controlled_hermes_research(
         return builder.failure(_STATUS_OUTPUT_SCHEMA, exc.code, budget=_BUDGET_WITHIN,
                                output_schema_valid=False, stdout_truncated=st, stderr_truncated=se)
 
-    # Cost cap: reported estimated cost above the per-run cap fails closed.
-    if not cost_within_cap(usage, request.max_estimated_cost_usd):
+    # Provider/model binding (section 8): the VERIFIED actual usage provider/model
+    # must equal the frozen request labels. Mismatch fails closed with no retry.
+    if usage.provider != request.provider_label or usage.model != request.model_label:
+        return builder.failure(_STATUS_PROVIDER_MODEL, "PROVIDER_MODEL_MISMATCH",
+                               budget=_BUDGET_WITHIN, output_schema_valid=True,
+                               safety=_SAFETY_PASS, stdout_truncated=st, stderr_truncated=se)
+
+    # POST-RUN cost acceptance (section 9): a run cannot succeed without a known,
+    # acceptable cost. Missing/unknown cost is COST_EVIDENCE_UNAVAILABLE (never zero);
+    # a known cost above the accepted threshold is BUDGET_EXCEEDED.
+    acceptance = cost_acceptance(usage, request.max_accepted_estimated_cost_usd)
+    if acceptance == COST_EVIDENCE_UNAVAILABLE:
+        return builder.failure(_STATUS_COST_UNAVAILABLE, "COST_EVIDENCE_UNAVAILABLE",
+                               budget=_BUDGET_COST_UNAVAILABLE, output_schema_valid=True,
+                               safety=_SAFETY_PASS, stdout_truncated=st, stderr_truncated=se)
+    if acceptance == COST_ABOVE_THRESHOLD:
         return builder.failure(_STATUS_BUDGET, "COST_CAP_EXCEEDED", budget=_BUDGET_COST,
                                output_schema_valid=True, safety=_SAFETY_PASS,
                                stdout_truncated=st, stderr_truncated=se)
+    assert acceptance == COST_ACCEPTED
 
+    # Success binds the VERIFIED actual usage provider/model, not merely the caller's
+    # requested labels (which are equal here by the binding check above).
+    builder.verified_provider = usage.provider
+    builder.verified_model = usage.model
     receipt = builder.build(
         terminal_status=_STATUS_SUCCESS,
         output_schema_valid=True,
@@ -240,7 +296,11 @@ class _ReceiptBuilder:
     transport_attempt_count: int
     activation_state: str
     reported_semver: str | None = None
-    usage: object = None
+    usage: UsageReport | None = None
+    exit_code: int | None = None
+    verified_provider: str | None = None
+    verified_model: str | None = None
+    usage_evidence_status: str = _USAGE_NOT_REACHED
 
     def build(
         self,
@@ -264,9 +324,13 @@ class _ReceiptBuilder:
             hermes_version=hermes_version,
             provider_label=self.request.provider_label,
             model_label=self.request.model_label,
+            verified_provider=self.verified_provider,
+            verified_model=self.verified_model,
+            iteration_cap_status=ITERATION_CAP_STATUS,
             start_utc=self.start_utc,
             end_utc=self.end_utc,
             terminal_status=terminal_status,
+            exit_code=self.exit_code,
             transport_attempt_count=self.transport_attempt_count,
             timed_out=terminal_status == _STATUS_TIMEOUT,
             stdout_truncated=stdout_truncated,
@@ -274,14 +338,21 @@ class _ReceiptBuilder:
             configured_toolsets=self.policy.allowed_toolsets,
             tool_enforcement=self.policy.tool_enforcement,
             runtime_tool_telemetry=RUNTIME_TOOL_TELEMETRY,
+            approval_authority=APPROVAL_AUTHORITY,
             source_url_count=source_url_count,
             source_references=source_references,
             output_schema_valid=output_schema_valid,
             safety_validation_status=safety,
+            usage_evidence_status=self.usage_evidence_status,
+            usage_completed=getattr(usage, "completed", None),
+            usage_failed=getattr(usage, "failed", None),
             token_input_count=getattr(usage, "input_tokens", None),
             token_output_count=getattr(usage, "output_tokens", None),
             total_token_count=getattr(usage, "total_tokens", None),
+            api_call_count=getattr(usage, "api_calls", None),
             estimated_cost_usd=getattr(usage, "estimated_cost_usd", None),
+            cost_status=getattr(usage, "cost_status", None),
+            cost_source=getattr(usage, "cost_source", None),
             budget_status=budget,
             human_review_required=True,
             no_execution_authority=True,

@@ -34,10 +34,9 @@ def _base_request_fields() -> dict[str, object]:
         "max_sources": 10,
         "provider_label": "example-provider",
         "model_label": "example-model",
-        "max_turns": 20,
         "max_wall_seconds": 120,
         "max_output_bytes": 500_000,
-        "max_estimated_cost_usd": "2.50",
+        "max_accepted_estimated_cost_usd": "2.50",
         "human_review_required": True,
         "non_authority_notice": NON_AUTHORITY_NOTICE,
     }
@@ -72,8 +71,20 @@ def _valid_draft(request_id: str) -> dict[str, object]:
 def test_valid_request_builds_content_addressed_identity():
     req = build_research_run_request(_base_request_fields())
     assert req.request_id.startswith("hermesresearchrequest:sha256:")
-    assert req.max_estimated_cost_usd == Decimal("2.50")
+    assert req.max_accepted_estimated_cost_usd == Decimal("2.50")
     assert req.human_review_required is True
+
+
+def test_request_has_no_max_turns_authority():
+    """v0.21.3 one-shot has no iteration cap: max_turns is not a request field."""
+    req = build_research_run_request(_base_request_fields())
+    assert not hasattr(req, "max_turns")
+    # An explicit max_turns is an unknown field and is rejected, not silently kept.
+    fields = _base_request_fields()
+    fields["max_turns"] = 20
+    with pytest.raises(HermesResearchError) as exc:
+        build_research_run_request(fields)
+    assert exc.value.code == "REQUEST_UNKNOWN_FIELD"
 
 
 def test_r017_deterministic_request_bytes_yield_exact_request_id():
@@ -125,7 +136,7 @@ def test_authority_escalation_request_content_rejected():
 
 def test_binary_float_cost_is_noncanonical():
     fields = _base_request_fields()
-    fields["max_estimated_cost_usd"] = 2.5  # binary float rejected
+    fields["max_accepted_estimated_cost_usd"] = 2.5  # binary float rejected
     with pytest.raises(HermesResearchError) as exc:
         build_research_run_request(fields)
     assert exc.value.code == "REQUEST_NUMERIC_NONCANONICAL"
@@ -133,11 +144,10 @@ def test_binary_float_cost_is_noncanonical():
 
 def test_over_cap_values_are_bounded():
     for field, value in (
-        ("max_turns", 41),
         ("max_wall_seconds", 301),
         ("max_output_bytes", 1_000_001),
         ("max_sources", 31),
-        ("max_estimated_cost_usd", "5.01"),
+        ("max_accepted_estimated_cost_usd", "5.01"),
     ):
         fields = _base_request_fields()
         fields[field] = value
@@ -298,6 +308,6 @@ def test_public_fields_exclude_identity():
 def test_request_is_immutable():
     req = build_research_run_request(_base_request_fields())
     with pytest.raises(Exception):
-        req.max_turns = 5  # type: ignore[misc]
+        req.max_sources = 5  # type: ignore[misc]
     # copies remain equal-identity
     assert copy.copy(req).request_id == req.request_id

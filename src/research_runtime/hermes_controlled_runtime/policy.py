@@ -7,13 +7,18 @@ executable path with shell metacharacters, never builds a command string, never
 mounts the repository or a home/local_data path as the Hermes working directory,
 and enables exactly the single permitted ``web`` toolset.
 
-Pinned v0.21.3 contract (tag v2026.9.14, commit 345cd2b): the supported scripted
-one-shot path is ``hermes -z <prompt>`` with ``--provider``, ``--model``,
-``--toolsets``, ``--usage-file``, ``--ignore-user-config``, ``--ignore-rules``,
-``--safe-mode``, and ``--max-turns``; the version is read from ``hermes --version``.
-v0.21.3 does NOT support ``--format stream-json`` or ``--input-file`` and does not
-emit a machine-readable runtime tool-call event stream: the final research response
-is plain stdout and machine-readable usage/cost evidence comes from ``--usage-file``.
+Pinned v0.21.3 contract (tag v2026.9.14, commit 345cd2b), verified against exact
+tagged ``hermes_cli/_parser.py`` and ``hermes_cli/oneshot.py``: the supported
+scripted one-shot path is top-level ``hermes -z <prompt>`` with the top-level flags
+``--provider``, ``--model``, ``--toolsets``, ``--usage-file``,
+``--ignore-user-config``, ``--ignore-rules``, and ``--safe-mode``; the version is
+read from ``hermes --version``. ``--max-turns`` is NOT a top-level flag: it exists
+only on the ``chat`` subparser, and the tagged ``-z`` implementation constructs the
+agent with no ``max_iterations`` override, so an iteration cap is UNAVAILABLE on the
+pinned one-shot path and WP175H claims none. v0.21.3 does NOT support
+``--format stream-json`` or ``--input-file`` and emits no machine-readable runtime
+tool-call event stream: the final research response is plain stdout and
+machine-readable usage/cost evidence comes from the ``--usage-file`` JSON report.
 
 Project code here never reads, stores, injects, logs, transforms, validates, or
 echoes a provider secret or any trading credential. Provider/model labels are
@@ -27,6 +32,7 @@ import re
 
 from .models import (
     HermesResearchRunRequest,
+    ITERATION_CAP_STATUS,
     MAX_TRANSPORT_RETRIES_ABSOLUTE,
     canonical_json_bytes,
     content_address,
@@ -56,8 +62,17 @@ RUNTIME_TOOL_TELEMETRY = "UNAVAILABLE_ON_PINNED_V0_21_3"
 # v0.21.3 one-shot output: plain stdout final text plus a usage-file JSON report.
 OUTPUT_MODE = "PLAIN_STDOUT_PLUS_USAGE_FILE"
 
+# Exact tagged ``-z`` internally enables one-shot approval bypass; a project safety
+# argument therefore cannot rest on approval prompts. It rests on the exact web-only
+# toolset (web_search + web_extract), safe-mode, ignore-user-config, ignore-rules,
+# no repo mount, no mutating tool family, and a deterministic no-authority validator.
+APPROVAL_AUTHORITY = "APPROVAL_BYPASS_PRESENT_BUT_NO_MUTATING_TOOL_SURFACE"
+
+# Pinned one-shot iteration-cap posture (see models.ITERATION_CAP_STATUS).
+ITERATION_CAP = ITERATION_CAP_STATUS
+
 POLICY_IDENTITY_PREFIX = "hermesinvocationpolicy:sha256:"
-POLICY_SCHEMA_VERSION = "hermes-invocation-policy/1.1.0"
+POLICY_SCHEMA_VERSION = "hermes-invocation-policy/1.2.0"
 
 CWD_POLICY = "EPHEMERAL_EMPTY_DIRECTORY"
 
@@ -95,6 +110,8 @@ class HermesInvocationPolicy:
     allowed_toolsets: tuple[str, ...] = ALLOWED_TOOLSETS
     tool_enforcement: str = TOOL_ENFORCEMENT
     output_mode: str = OUTPUT_MODE
+    iteration_cap: str = ITERATION_CAP
+    approval_authority: str = APPROVAL_AUTHORITY
     ignore_user_config: bool = True
     ignore_rules: bool = True
     safe_mode: bool = True
@@ -123,6 +140,10 @@ class HermesInvocationPolicy:
         if self.tool_enforcement != TOOL_ENFORCEMENT:
             raise PolicyBroadeningError()
         if self.output_mode != OUTPUT_MODE:
+            raise PolicyBroadeningError()
+        if self.iteration_cap != ITERATION_CAP:
+            raise PolicyBroadeningError()
+        if self.approval_authority != APPROVAL_AUTHORITY:
             raise PolicyBroadeningError()
         forbidden_true = (
             self.shell,
@@ -168,6 +189,8 @@ class HermesInvocationPolicy:
             "allowed_toolsets": list(self.allowed_toolsets),
             "tool_enforcement": self.tool_enforcement,
             "output_mode": self.output_mode,
+            "iteration_cap": self.iteration_cap,
+            "approval_authority": self.approval_authority,
             "ignore_user_config": self.ignore_user_config,
             "ignore_rules": self.ignore_rules,
             "safe_mode": self.safe_mode,
@@ -232,6 +255,9 @@ def build_hermes_argv(
     if len(prompt_text.encode("utf-8")) > MAX_PROMPT_BYTES:
         raise PolicyBroadeningError("POLICY_PROMPT_TOO_LARGE")
 
+    # Exact pinned v0.21.3 top-level flags only. ``--max-turns`` is NOT a top-level
+    # flag on this release (it exists solely on the ``chat`` subparser), so it is
+    # never passed: no iteration cap is available or claimed on the ``-z`` path.
     argv: list[str] = [
         executable_path,
         "--safe-mode",
@@ -243,8 +269,6 @@ def build_hermes_argv(
         request.model_label,
         "--toolsets",
         ",".join(policy.allowed_toolsets),
-        "--max-turns",
-        str(request.max_turns),
         "--usage-file",
         usage_file_name,
         "-z",

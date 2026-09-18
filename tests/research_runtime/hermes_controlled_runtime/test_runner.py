@@ -49,10 +49,9 @@ def _request():
             "max_sources": 5,
             "provider_label": "example-provider",
             "model_label": "example-model",
-            "max_turns": 10,
             "max_wall_seconds": 60,
             "max_output_bytes": 200_000,
-            "max_estimated_cost_usd": "1",
+            "max_accepted_estimated_cost_usd": "1",
             "human_review_required": True,
             "non_authority_notice": NON_AUTHORITY_NOTICE,
         }
@@ -81,12 +80,22 @@ def test_argv_uses_pinned_v0213_shape_without_unsupported_flags():
     argv = build_hermes_argv("hermes", req, "PROMPT")
     assert isinstance(argv, tuple)
     # Corrected external contract: no unsupported v0.21.3 flags.
-    assert "--input-file" not in argv
-    assert "--format" not in argv
-    assert "stream-json" not in argv
-    # Supported one-shot shape.
+    assert "--input-file" not in argv  # T01
+    assert "--format" not in argv  # T02
+    assert "stream-json" not in argv  # T02
+    # --max-turns is chat-subparser only in v0.21.3; never on the top-level -z path.
+    assert "--max-turns" not in argv  # T03
+    # Supported one-shot shape (exact tagged top-level flags only). T04
     assert "-z" in argv and argv[-1] == "PROMPT"
     assert "--usage-file" in argv
+    assert "--safe-mode" in argv
+    assert "--ignore-user-config" in argv and "--ignore-rules" in argv
+    supported = {
+        "hermes", "--safe-mode", "--ignore-user-config", "--ignore-rules",
+        "--provider", "--model", "--toolsets", "--usage-file", "-z",
+    }
+    flags = {tok for tok in argv if tok.startswith("--") or tok == "-z"}
+    assert flags <= supported, flags - supported
     assert argv.count("--toolsets") == 1
     assert argv[argv.index("--toolsets") + 1] == "web"
     for forbidden in ("terminal", "file", "browser", "delegation", "memory", "cron", "mcp", "safe"):

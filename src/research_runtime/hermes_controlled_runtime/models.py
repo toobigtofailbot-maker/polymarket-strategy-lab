@@ -30,8 +30,8 @@ from typing import Mapping, Sequence
 # Schema / identity constants
 # ---------------------------------------------------------------------------
 
-REQUEST_SCHEMA_VERSION = "hermes-research-run-request/1.0.0"
-RECEIPT_SCHEMA_VERSION = "hermes-research-run-receipt/1.0.0"
+REQUEST_SCHEMA_VERSION = "hermes-research-run-request/1.1.0"
+RECEIPT_SCHEMA_VERSION = "hermes-research-run-receipt/1.1.0"
 DRAFT_SCHEMA_VERSION = "hermes-research-draft/1.0.0"
 
 REQUEST_IDENTITY_PREFIX = "hermesresearchrequest:sha256:"
@@ -45,12 +45,22 @@ NON_AUTHORITY_NOTICE = (
 # Absolute repository maxima (section 12). Request caps must be <= these.
 # ---------------------------------------------------------------------------
 
-MAX_TURNS_ABSOLUTE = 40
+# Pinned Hermes v0.21.3 exposes NO iteration cap on the top-level ``-z`` one-shot
+# path: ``--max-turns`` exists only on the ``chat`` subparser (exact tagged
+# ``hermes_cli/_parser.py``, commit 345cd2b) and the ``-z`` implementation
+# constructs the agent without a ``max_iterations`` override (exact tagged
+# ``hermes_cli/oneshot.py``). WP175H therefore carries no ``max_turns`` request
+# field or argv flag; the honest posture is recorded below and in the policy.
+ITERATION_CAP_STATUS = "UNAVAILABLE_ON_PINNED_V0_21_3_ONESHOT"
+
 MAX_WALL_SECONDS_ABSOLUTE = 300
 MAX_OUTPUT_BYTES_ABSOLUTE = 1_000_000
 MAX_SOURCES_ABSOLUTE = 30
-MAX_ESTIMATED_COST_USD_ABSOLUTE = Decimal("5")
-MAX_TRANSPORT_RETRIES_ABSOLUTE = 1
+MAX_ACCEPTED_ESTIMATED_COST_USD_ABSOLUTE = Decimal("5")
+# First real controlled runtime performs ZERO automatic paid research retries: a
+# provider call can spend before a timeout/transport failure and v0.21.3 emits
+# accounting only best-effort/after the run, so no attempt is ever repeated.
+MAX_TRANSPORT_RETRIES_ABSOLUTE = 0
 
 # Bounded text / collection limits.
 _MAX_SHORT_TEXT = 512
@@ -331,10 +341,9 @@ _REQUEST_FIELDS = frozenset(
         "max_sources",
         "provider_label",
         "model_label",
-        "max_turns",
         "max_wall_seconds",
         "max_output_bytes",
-        "max_estimated_cost_usd",
+        "max_accepted_estimated_cost_usd",
         "human_review_required",
         "non_authority_notice",
     }
@@ -356,10 +365,9 @@ class HermesResearchRunRequest:
     max_sources: int
     provider_label: str
     model_label: str
-    max_turns: int
     max_wall_seconds: int
     max_output_bytes: int
-    max_estimated_cost_usd: Decimal
+    max_accepted_estimated_cost_usd: Decimal
     human_review_required: bool
     non_authority_notice: str
 
@@ -376,10 +384,11 @@ class HermesResearchRunRequest:
             "max_sources": self.max_sources,
             "provider_label": self.provider_label,
             "model_label": self.model_label,
-            "max_turns": self.max_turns,
             "max_wall_seconds": self.max_wall_seconds,
             "max_output_bytes": self.max_output_bytes,
-            "max_estimated_cost_usd": format(self.max_estimated_cost_usd, "f"),
+            "max_accepted_estimated_cost_usd": format(
+                self.max_accepted_estimated_cost_usd, "f"
+            ),
             "human_review_required": self.human_review_required,
             "non_authority_notice": self.non_authority_notice,
         }
@@ -428,15 +437,15 @@ def build_research_run_request(fields: Mapping[str, object]) -> HermesResearchRu
     )
 
     max_sources = _require_int(fields["max_sources"], minimum=1, maximum=MAX_SOURCES_ABSOLUTE)
-    max_turns = _require_int(fields["max_turns"], minimum=1, maximum=MAX_TURNS_ABSOLUTE)
     max_wall_seconds = _require_int(
         fields["max_wall_seconds"], minimum=1, maximum=MAX_WALL_SECONDS_ABSOLUTE
     )
     max_output_bytes = _require_int(
         fields["max_output_bytes"], minimum=1, maximum=MAX_OUTPUT_BYTES_ABSOLUTE
     )
-    max_estimated_cost_usd = _canonical_decimal(
-        fields["max_estimated_cost_usd"], maximum=MAX_ESTIMATED_COST_USD_ABSOLUTE
+    max_accepted_estimated_cost_usd = _canonical_decimal(
+        fields["max_accepted_estimated_cost_usd"],
+        maximum=MAX_ACCEPTED_ESTIMATED_COST_USD_ABSOLUTE,
     )
 
     provider_label = _require_str(fields["provider_label"], max_len=_MAX_LABEL)
@@ -469,10 +478,9 @@ def build_research_run_request(fields: Mapping[str, object]) -> HermesResearchRu
         max_sources=max_sources,
         provider_label=provider_label,
         model_label=model_label,
-        max_turns=max_turns,
         max_wall_seconds=max_wall_seconds,
         max_output_bytes=max_output_bytes,
-        max_estimated_cost_usd=max_estimated_cost_usd,
+        max_accepted_estimated_cost_usd=max_accepted_estimated_cost_usd,
         human_review_required=True,
         non_authority_notice=non_authority_notice,
     )
@@ -510,9 +518,13 @@ class HermesResearchRunReceipt:
     hermes_version: str
     provider_label: str
     model_label: str
+    verified_provider: str | None
+    verified_model: str | None
+    iteration_cap_status: str
     start_utc: str
     end_utc: str
     terminal_status: str
+    exit_code: int | None
     transport_attempt_count: int
     timed_out: bool
     stdout_truncated: bool
@@ -520,14 +532,21 @@ class HermesResearchRunReceipt:
     configured_toolsets: tuple[str, ...]
     tool_enforcement: str
     runtime_tool_telemetry: str
+    approval_authority: str
     source_url_count: int
     source_references: tuple[SanitizedSourceReference, ...]
     output_schema_valid: bool
     safety_validation_status: str
+    usage_evidence_status: str
+    usage_completed: bool | None
+    usage_failed: bool | None
     token_input_count: int | None
     token_output_count: int | None
     total_token_count: int | None
+    api_call_count: int | None
     estimated_cost_usd: str | None
+    cost_status: str | None
+    cost_source: str | None
     budget_status: str
     human_review_required: bool
     no_execution_authority: bool
@@ -546,9 +565,13 @@ class HermesResearchRunReceipt:
             "hermes_version": self.hermes_version,
             "provider_label": self.provider_label,
             "model_label": self.model_label,
+            "verified_provider": self.verified_provider,
+            "verified_model": self.verified_model,
+            "iteration_cap_status": self.iteration_cap_status,
             "start_utc": self.start_utc,
             "end_utc": self.end_utc,
             "terminal_status": self.terminal_status,
+            "exit_code": self.exit_code,
             "transport_attempt_count": self.transport_attempt_count,
             "timed_out": self.timed_out,
             "stdout_truncated": self.stdout_truncated,
@@ -556,6 +579,7 @@ class HermesResearchRunReceipt:
             "configured_toolsets": list(self.configured_toolsets),
             "tool_enforcement": self.tool_enforcement,
             "runtime_tool_telemetry": self.runtime_tool_telemetry,
+            "approval_authority": self.approval_authority,
             "source_url_count": self.source_url_count,
             "source_references": [
                 {"url_digest": ref.url_digest, "source_class": ref.source_class}
@@ -563,10 +587,16 @@ class HermesResearchRunReceipt:
             ],
             "output_schema_valid": self.output_schema_valid,
             "safety_validation_status": self.safety_validation_status,
+            "usage_evidence_status": self.usage_evidence_status,
+            "usage_completed": self.usage_completed,
+            "usage_failed": self.usage_failed,
             "token_input_count": self.token_input_count,
             "token_output_count": self.token_output_count,
             "total_token_count": self.total_token_count,
+            "api_call_count": self.api_call_count,
             "estimated_cost_usd": self.estimated_cost_usd,
+            "cost_status": self.cost_status,
+            "cost_source": self.cost_source,
             "budget_status": self.budget_status,
             "human_review_required": self.human_review_required,
             "no_execution_authority": self.no_execution_authority,

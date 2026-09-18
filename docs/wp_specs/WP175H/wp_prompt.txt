@@ -108,11 +108,14 @@ commit 345cd2b; release date 2026-09-14. Do not integrate against main, an
 unpinned rolling tag, or latest.
 
 Frozen one-shot command shape (argv only, never a shell string), matching the
-exact tagged v0.21.3 CLI. v0.21.3 does NOT support --format stream-json or
+exact tagged v0.21.3 CLI (verified against hermes_cli/_parser.py and
+hermes_cli/oneshot.py @ 345cd2b). v0.21.3 does NOT support --format stream-json or
 --input-file; it carries the prompt as the -z argv element and writes machine-
-readable usage/cost to --usage-file:
+readable usage/cost to --usage-file. --max-turns is NOT a top-level flag (it exists
+only on the chat subparser) and the tagged -z path sets no max_iterations override,
+so there is no iteration cap on the pinned one-shot path and none is passed:
   hermes --safe-mode --ignore-user-config --ignore-rules
-    --provider <label> --model <label> --toolsets web --max-turns <n>
+    --provider <label> --model <label> --toolsets web
     --usage-file <bare-name> -z <deterministic-research-envelope>
 Version is read from a bounded no-network `hermes --version` preflight (== 0.21.3).
 
@@ -193,8 +196,9 @@ if exact truthful capability requires a 25th path.
 
 Request: immutable content-addressed HermesResearchRunRequest with research
 question/objective/category, public market context, allowed research scope,
-required source types, per-run caps (max_sources, max_turns, max_wall_seconds,
-max_output_bytes, max_estimated_cost_usd), non-secret provider/model labels,
+required source types, per-run caps (max_sources, max_wall_seconds,
+max_output_bytes, max_accepted_estimated_cost_usd; no max_turns because the pinned
+one-shot path exposes no iteration cap), non-secret provider/model labels,
 human_review_required, and non_authority_notice. Validation rejects unknown fields,
 binary floats where numeric canonicality matters, over-bound values, path
 traversal/absolute paths, embedded secrets, and any trading/risk/credential/
@@ -243,8 +247,12 @@ rejected; shell metacharacters cannot become shell execution; repository path is
 never the Hermes workdir; argv includes exactly one web toolset; broader tool
 enablement cannot be requested; unknown request field rejected; secret-looking
 content rejected without echo; malformed usage report fails closed without raw echo;
-oversized stdout fails boundedly; timeout produces a sanitized receipt; one
-transport retry only; schema failure not retried; unsafe/trading-authority output
+oversized stdout fails boundedly; timeout produces a sanitized receipt; ZERO
+automatic paid research retries (one invocation only); a nonzero process exit code
+fails closed even with valid stdout; a missing/malformed/incomplete usage report
+fails closed; a provider/model mismatch fails closed; missing/unknown cost is
+COST_EVIDENCE_UNAVAILABLE (post-run acceptance, never a pre-spend hard stop); schema
+failure not retried; unsafe/trading-authority output
 rejected; empty/fabricated citation structure fails; raw stderr/env/payload cannot
 enter the receipt; fake backend makes zero network/process calls; deterministic
 request bytes yield an exact request id; a deterministic successful transcript
@@ -337,7 +345,7 @@ RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
 NR001|request|identity|canonical_public_fields|REQUIRE|content_addressed|request.request_id|R017
 NR002|request|unknown_field|present|REJECT|fail_closed|NONE|R006
 NR003|request|secret_or_authority|embedded|REJECT|no_echo|NONE|R007
-NR004|request|cost|binary_float|REJECT|noncanonical|request.max_estimated_cost_usd|R024
+NR004|request|cost|binary_float|REJECT|noncanonical|request.max_accepted_estimated_cost_usd|R024
 NR005|policy|toolsets|broadening_attempt|FORBID|web_only|policy.allowed_toolsets|R005
 NR006|policy|cwd|external_backend|PRESERVE_EXACT|ephemeral_only|policy.cwd_policy|R003
 NR007|hermes_version|reported|not_v0213|REJECT|version_mismatch|NONE|R001
@@ -346,4 +354,10 @@ NR009|draft|authority_flags|missing_or_false|REJECT|fail_closed|draft.authority_
 NR010|draft|source_references|empty_or_fabricated|REJECT|provenance_required|draft.source_references|R014
 NR011|receipt|identity|deterministic_transcript|REQUIRE|content_addressed|receipt.receipt_id|R018
 NR012|receipt|activation_state|code_complete|PRESERVE_EXACT|not_runtime_activated|receipt.activation_state|R023
+NR013|policy|iteration_cap|oneshot_v0213|PRESERVE_EXACT|unavailable_no_max_turns|policy.iteration_cap|R004
+NR014|policy|transport_retries|first_runtime|FORBID|zero_paid_research_retries|policy.max_transport_retries|R011
+NR015|process|exit_code|nonzero|REJECT|fail_closed_no_retry|receipt.exit_code|R010
+NR016|usage_report|success_evidence|completed_false_or_failed_true|REJECT|usage_evidence_invalid|receipt.usage_evidence_status|R008
+NR017|usage_report|provider_model|mismatch_vs_request|REJECT|provider_model_mismatch|receipt.verified_provider|R001
+NR018|usage_report|cost|missing_or_unknown|REJECT|cost_evidence_unavailable_never_zero|receipt.cost_status|R024
 END_NORMATIVE_RULE_MATRIX_V1
