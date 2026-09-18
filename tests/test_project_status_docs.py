@@ -3921,7 +3921,7 @@ def test_wp174b_status_repo_truth_and_successor_are_consistent():
     combined = "\n".join((project, deferred, security, fragment))
     assert "WP174B current review target" in project
     assert "Package size class: XL_FOR_SCOPE_SIZE_ONLY" in project
-    assert "Exact changed-file scope: 22" in project
+    assert "Exact changed-file scope: 24" in project
     assert "6fff7fefd8f936824a7586f94d452ca073b225dd" in combined
     assert "dbb4ee0e21e409c4639edc44cce17696a5b15156" in combined
     assert "c849cfaf68576fe98d853aad11fb0798a7ab8b9461f35fc75c03e81f0e7b6e1f" in fragment
@@ -4041,3 +4041,54 @@ def test_wp175e_status_and_exact_scope_are_registered() -> None:
     assert len(scope["required_changed_files"]) == 20
     assert "tests/test_architecture_boundaries.py" not in scope["allowed_changed_files"]
     assert "src/data_layer/polymarket/market_truth.py" not in scope["allowed_changed_files"]
+
+
+def test_wp175h_status_and_runtime_activation_split_are_registered() -> None:
+    project = _read()
+    fragment = (STATUS_ENTRIES / "WP175H.md").read_text(encoding="utf-8")
+    contract = (
+        REPO_ROOT / "docs" / "hermes_controlled_research_runtime_contract.md"
+    ).read_text(encoding="utf-8")
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "WP175H" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    combined = "\n".join((project, fragment, contract))
+    assert "WP175H current review target" in project
+    assert "S10-HERMES-01" in combined
+    assert "CONTROLLED_EXTERNAL_HERMES_RESEARCH_RUNTIME_CORE" in combined
+    assert "Governance track: RUNTIME" in project
+    assert "Exact changed-file scope: 24" in project
+    assert "Hermes Agent v0.21.3" in combined
+    assert "v2026.9.14" in combined
+    assert "web_search" in contract and "web_extract" in contract
+    # Code-complete is stated separately from runtime activation (R023).
+    assert "CODE COMPLETE: YES" in combined
+    assert "RUNTIME ACTIVATED: NO" in combined
+    assert "S10-GATE-H1" in combined
+    assert "Real provider-backed research run: NO" in project
+    assert "Real provider/model call count: 0" in project
+    assert "Credentials created/used: 0" in project
+    assert "Capital at risk: USD 0" in project
+    assert "WP175 merged dormant: YES" in project
+    assert "Gate-C activation: NOT AUTHORIZED" in project
+    assert "WP176 Mature Controlled Live: NOT STARTED" in project
+    assert "S10-ALPHA-01" in combined and "NOT STARTED" in combined
+    assert "Merge authorized: NO" in project
+    scope = spec["scope"]
+    assert spec["identity"]["risk_level"] == 3
+    assert spec["authority"]["hermes_runtime"] is True
+    assert spec["authority"]["network"] is True
+    assert spec["authority"]["credentials"] is False
+    assert spec["authority"]["execution"] is False
+    assert spec["authority"]["live"] is False
+    assert spec["authority"]["paper"] is False
+    assert scope["exact_scope_required"] is True
+    assert scope["max_changed_files"] == 24
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == 24
+    assert (
+        "src/research_runtime/hermes_controlled_runtime/controller.py"
+        in scope["required_changed_files"]
+    )

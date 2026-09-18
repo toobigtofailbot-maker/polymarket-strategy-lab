@@ -386,6 +386,21 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
             "tests/test_hermes_candidate_review_assisted_research_controlled_experiment_harness_contract_prompt_configuration_boundary_and_dry_run_plan_docs.py",
             # WP145: local/offline test-oriented deterministic one-case harness
             "src/data_layer/hermes_candidate_review_assisted_research_local_dry_run_harness.py",
+            # WP175H: dormant-by-default controlled Hermes research runtime core
+            # (S10-HERMES-01). CODE COMPLETE but RUNTIME ACTIVATED: NO; zero real
+            # provider calls; the first real run is separately gated as S10-GATE-H1.
+            "docs/hermes_controlled_research_runtime_contract.md",
+            "src/research_runtime/hermes_controlled_runtime/__init__.py",
+            "src/research_runtime/hermes_controlled_runtime/models.py",
+            "src/research_runtime/hermes_controlled_runtime/policy.py",
+            "src/research_runtime/hermes_controlled_runtime/response_capture.py",
+            "src/research_runtime/hermes_controlled_runtime/runner.py",
+            "src/research_runtime/hermes_controlled_runtime/controller.py",
+            "tests/research_runtime/hermes_controlled_runtime/__init__.py",
+            "tests/research_runtime/hermes_controlled_runtime/test_models.py",
+            "tests/research_runtime/hermes_controlled_runtime/test_response_capture.py",
+            "tests/research_runtime/hermes_controlled_runtime/test_runner.py",
+            "tests/research_runtime/hermes_controlled_runtime/test_controller.py",
         }
     findings = []
     for path in tracked:

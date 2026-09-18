@@ -478,3 +478,14 @@ superseded by WP175 and WP176 respectively; they carry no current authorization.
 Each unmerged successor remains separately gated and requires its governance-track
 readiness, independent Side review, and explicit user authorization. WP173 grants
 no authority to start WP174.
+
+WP175H — Controlled Hermes Research Runtime Core (Side10 S10-HERMES-01) adds the
+first repo-owned, dormant-by-default deterministic control plane around one bounded,
+one-shot, web-only EXTERNAL Hermes research session pinned to Hermes Agent v0.21.3.
+It is CODE COMPLETE but RUNTIME ACTIVATED: NO, with zero real provider/model calls
+and no trading, paper, execution, live, credential, scheduler, or merge authority.
+The first real provider-backed / public-web run is separately gated as S10-GATE-H1
+Controlled Public Research Pilot; a successful pilot leads to S10-ALPHA-01
+Multi-Lane Alpha Factory Core. Both are separately gated and NOT STARTED and gain no
+trading authority; WP175 remains merged dormant, Gate C is NOT AUTHORIZED, and
+WP176 Mature Controlled Live is NOT STARTED.

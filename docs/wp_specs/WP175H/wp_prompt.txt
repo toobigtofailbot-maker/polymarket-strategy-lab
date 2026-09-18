@@ -1,0 +1,366 @@
+WP175H — CONTROLLED HERMES RESEARCH RUNTIME CORE
+S10-HERMES-01
+ONE-SHOT RUNTIME IMPLEMENTATION PACKAGE
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+
+===============================================================================
+0. EXECUTION INTENT
+===============================================================================
+
+Build the first production-shaped, repo-owned deterministic control plane around
+one bounded, one-shot, web-only EXTERNAL Hermes research session. Deterministic
+code continues to own validation, evidence integrity, budget, and no-authority
+controls; Hermes is an untrusted research brain, not an execution authority.
+
+This package is NOT the Alpha Factory. It provides a narrow reusable primitive:
+validated ResearchRunRequest -> deterministic bounded Hermes invocation plan ->
+one ephemeral one-shot session -> web-only tool posture -> bounded plain-stdout
+response and usage-file capture -> untrusted final research draft -> deterministic schema/safety
+validation -> sanitized ResearchRunReceipt -> mandatory human/deterministic review.
+
+It creates no opportunity candidate, probability thesis, strategy family, Alpha
+Factory state, WP170 experiment, or trade recommendation. Code-complete is not
+runtime-activated; the first real provider-backed run is separately gated as
+S10-GATE-H1.
+
+===============================================================================
+1. PACKAGE IDENTITY
+===============================================================================
+
+Package Identity:
+  WP ID: WP175H
+  Side10 capability handle: S10-HERMES-01
+  Title: Controlled Hermes Research Runtime Core
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Drafting-time base SHA: 22557ee3b0beeeb13a3c3b626ae8f30e11967364
+  Required predecessor: WP175E / PR #180 merged
+  Required predecessor merge commit: 22557ee3b0beeeb13a3c3b626ae8f30e11967364
+  Suggested branch: claude/wp175h-hermes-controlled-research-runtime
+  Package class: CONTROLLED_EXTERNAL_HERMES_RESEARCH_RUNTIME_CORE
+  Package size class: XL_FOR_SCOPE_SIZE_ONLY (24 > L budget 20; no broadened authority)
+  Exact changed-file scope: 24
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: DORMANT_BY_DEFAULT_BOUNDED_EXTERNAL_HERMES_ONESHOT_RESEARCH_CONTROLLER
+  Product impact: FIRST_REPO_OWNED_CONTROL_PLANE_FOR_REAL_HERMES_RESEARCH_SESSIONS
+  Network impact: NETWORK_CAPABILITY_PRESENT_BUT_REAL_REMOTE_RESEARCH_PILOT_SEPARATELY_GATED
+  Credential impact: NONE_IN_REPOSITORY_NONE_IN_TESTS_NONE_HANDLED_BY_PROJECT_CODE
+  Dependency impact: NONE
+  Trading impact: NONE_RESEARCH_ONLY_NO_PAPER_EXECUTION_NO_LIVE_AUTHORITY
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: strong coding/reasoning mode; escalate only for a real runtime
+    or security contradiction.
+  Escalate or STOP if: the installed Hermes CLI contract, provider-secret
+    separation, tool isolation, or output-validation semantics cannot be satisfied
+    without widening authority.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Merge authority: NO.
+
+===============================================================================
+2. AUTHORITY / NON-AUTHORITY POSTURE
+===============================================================================
+
+Authorized: a local/offline, network-capable-but-dormant controlled Hermes
+research runtime core under src/research_runtime/hermes_controlled_runtime/; a
+deterministic request/policy/response-capture/runner/controller boundary; a fake and an
+isolated external argv-only backend; focused tests; the new canonical runtime
+contract; and exact scoped docs/status/spec/repo-truth registrations.
+
+Not authorized (non-authority): credentials/secrets of any kind; selecting or
+activating a remote provider or model; a real provider-backed or public-web
+research call; opportunity candidates, probability theses, fair value, side,
+entry/exit, or position sizing; strategy promotion or Alpha Factory state; paper
+order generation, execution, risk-cap change, Gate-C qualification, or live
+activation; scheduler/cron/daemon/gateway/background autonomous loops;
+dependency/lock/workflow changes; vendoring or installing Hermes in the repository.
+Project code must never read, store, inject, log, transform, validate, or echo a
+provider secret or any trading credential.
+
+===============================================================================
+3. PINNED EXTERNAL CONTRACT
+===============================================================================
+
+External runtime: NousResearch/hermes-agent.
+Required runtime version: Hermes Agent v0.21.3; release tag v2026.9.14; release
+commit 345cd2b; release date 2026-09-14. Do not integrate against main, an
+unpinned rolling tag, or latest.
+
+Frozen one-shot command shape (argv only, never a shell string), matching the
+exact tagged v0.21.3 CLI (verified against hermes_cli/_parser.py and
+hermes_cli/oneshot.py @ 345cd2b). v0.21.3 does NOT support --format stream-json or
+--input-file; it carries the prompt as the -z argv element and writes machine-
+readable usage/cost to --usage-file. --max-turns is NOT a top-level flag (it exists
+only on the chat subparser) and the tagged -z path sets no max_iterations override,
+so there is no iteration cap on the pinned one-shot path and none is passed:
+  hermes --safe-mode --ignore-user-config --ignore-rules
+    --provider <label> --model <label> --toolsets web
+    --usage-file <bare-name> -z <deterministic-research-envelope>
+Version is read from a bounded `hermes --version` preflight run in an isolated
+throwaway HERMES_HOME whose config sets updates.check=false (raw --version otherwise
+does a passive GitHub update check per tagged _startup_fast.py). Require: launched,
+not timed out, exit 0, stdout not truncated, semver == 0.21.3.
+
+Initial allowed built-in toolset: EXACTLY web (web_search + web_extract). Forbidden
+tool families: terminal, file, browser, code_execution, delegation, memory,
+session_search, cronjob, messaging, Home Assistant, project, MCP servers, plugins,
+shell hooks, arbitrary skills, X authenticated tooling, and any trading/account/
+wallet integration. The composite safe toolset is not used. The repository
+validator is authoritative; Hermes output is untrusted bytes until local
+validation passes.
+
+REAL_HERMES_BINARY_NOT_PRESENT on this machine is recorded as an activation
+prerequisite, not a code blocker: tests use a fake executable and make zero
+paid/provider calls.
+
+===============================================================================
+4. CONTEXT BUDGET AND MECHANICAL DISCOVERY
+===============================================================================
+
+Read first: AGENTS.md, the shared startup docs, docs/project_status.md,
+docs/repo_truth_index.md, docs/deferred_items_log.md, and docs/ai/codex/
+WP_DRAFTING_STANDARD.md, WP_SPEC_STANDARD.md, PROTECTED_PATHS.md, and
+VALIDATION_MATRIX.md. Read the Hermes architecture/plan/contract docs, the WP99/
+WP133/WP145 advisory validators and harness at their authority boundaries, and the
+architecture-boundary and doc-guard tests. Search: WP145, Hermes runtime, provider
+runtime, src/research_runtime, APPROVED_SRC_SCOPES, exact scope, and project_status
+Hermes assertions. Read WP170/WP172/WP173/WP175 contracts only at their authority
+boundaries.
+
+Discovery corrections frozen by this package: src/research_runtime/
+hermes_controlled_runtime/ is a new APPROVED_SRC_SCOPES entry, so
+tests/test_architecture_boundaries.py is an in-scope compatibility edit. Natural
+scope is exactly 24 files.
+
+===============================================================================
+5. EXACT FROZEN SCOPE
+===============================================================================
+
+required_changed_files == allowed_changed_files == exactly (changed-file set):
+
+1. docs/wp_specs/WP175H/wp_prompt.txt
+2. docs/wp_specs/WP175H/wp_spec.json
+3. docs/status_entries/WP175H.md
+4. docs/hermes_controlled_research_runtime_contract.md
+5. docs/project_status.md
+6. docs/repo_truth_index.md
+7. docs/deferred_items_log.md
+8. docs/long_term_bot_completion_roadmap.md
+9. src/research_runtime/hermes_controlled_runtime/__init__.py
+10. src/research_runtime/hermes_controlled_runtime/models.py
+11. src/research_runtime/hermes_controlled_runtime/policy.py
+12. src/research_runtime/hermes_controlled_runtime/response_capture.py
+13. src/research_runtime/hermes_controlled_runtime/runner.py
+14. src/research_runtime/hermes_controlled_runtime/controller.py
+15. tests/research_runtime/hermes_controlled_runtime/__init__.py
+16. tests/research_runtime/hermes_controlled_runtime/test_models.py
+17. tests/research_runtime/hermes_controlled_runtime/test_response_capture.py
+18. tests/research_runtime/hermes_controlled_runtime/test_runner.py
+19. tests/research_runtime/hermes_controlled_runtime/test_controller.py
+20. tests/test_architecture_boundaries.py
+21. tests/test_hermes_advisory_foundation_architecture_docs.py
+22. tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py
+23. tests/test_project_status_docs.py
+24. tests/test_repo_truth_docs.py
+
+The new test-package __init__ (item 15) is required so pytest prepend-mode import
+gives the runtime test_models a unique dotted module name and does not collide with
+the existing executable_edge test_models basename. Items 21-22 are the two WP149-era
+Hermes-no-runtime guards that must allowlist the new runtime package because WP175H
+legitimately introduces the first Hermes runtime surface under src/.
+
+max_changed_files = 24; exact_scope_required = true. STOP SCOPE_EXPANSION_REQUIRED
+if exact truthful capability requires a 25th path.
+
+===============================================================================
+6. RUNTIME REQUEST / POLICY / OUTPUT / RECEIPT CONTRACT
+===============================================================================
+
+Request: immutable content-addressed HermesResearchRunRequest with research
+question/objective/category, public market context, allowed research scope,
+required source types, per-run caps (max_sources, max_wall_seconds,
+max_output_bytes, max_accepted_estimated_cost_usd; no max_turns because the pinned
+one-shot path exposes no iteration cap), non-secret provider/model labels,
+human_review_required, and non_authority_notice. Validation rejects unknown fields,
+binary floats where numeric canonicality matters, over-bound values, path
+traversal/absolute paths, embedded secrets, and any trading/risk/credential/
+scheduler/file/shell authority escalation, without echoing rejected content.
+
+Policy: immutable non-broadenable HermesInvocationPolicy pinned to v0.21.3 with
+exactly the web toolset, ignore-user-config, ignore-rules, safe-mode, one-shot,
+plain-stdout+usage-file output, shell false, ephemeral empty cwd, repo mount false, and no
+mcp/plugin/cron/delegation/browser/file/terminal/code-execution; max transport
+retries 1; max concurrency 1.
+
+Process boundary: a HermesInvocationBackend protocol with a deterministic no-
+process fake backend and an external CLI backend that runs argv only from a fresh
+empty temp cwd, never mounts the repo/local_data/home path, caps stdout/stderr,
+enforces a hard wall-clock timeout with best-effort tree kill, deletes the temp
+directory on teardown, and handles no provider credential.
+
+Output: Hermes returns one JSON research draft with summary, evidence for/against,
+uncertainties, known missing data, falsification checks, limitations, what would
+change the conclusion, bounded source references, suggested next steps, a
+confidence label, and every no-authority flag (advisory_only, human_review_required,
+no_execution_authority, no_risk_override, no_credential_request,
+no_order_or_cancel_or_sign_or_submit, no_paper_live_decision,
+no_strategy_promotion_approval, no_pr_approval_or_merge_readiness_claim). Invalid
+JSON/schema fails closed; there is no try-again-until-it-passes. No fair
+probability, expected return, side, entry/exit, position size, executable trade,
+strategy promotion, or Alpha candidate id is produced.
+
+Receipt: immutable sanitized HermesResearchRunReceipt binding request/policy ids,
+exact Hermes version, reported provider/model labels, UTC bounds, terminal status,
+transport attempts, timeout/truncation flags, tool-call counts, source url count
+and digests, output/safety validation status, token/cost if available, budget
+status, human_review_required true, all execution/live/credential/risk/paper
+authority flags false, and activation_state in
+{CODE_COMPLETE_NOT_REMOTE_ACTIVATED, CONTROLLED_RESEARCH_RUN_COMPLETE}. The canonical
+receipt never contains an API key/token, auth header, environment dump, raw stderr,
+raw provider payload, home/repo path, private data, trading credential, or order/
+account state.
+
+===============================================================================
+7. REVIEWER-TRAP / NEGATIVE-TEST MATRIX
+===============================================================================
+
+The four focused test files must prove at least R001-R024: wrong Hermes version
+rejected; shell metacharacters cannot become shell execution; repository path is
+never the Hermes workdir; argv includes exactly one web toolset; broader tool
+enablement cannot be requested; unknown request field rejected; secret-looking
+content rejected without echo; malformed usage report fails closed without raw echo;
+oversized stdout fails boundedly; timeout produces a sanitized receipt; ZERO
+automatic paid research retries (one invocation only); a nonzero process exit code
+fails closed even with valid stdout; a missing/malformed/incomplete usage report
+fails closed; a provider/model mismatch fails closed; missing/unknown cost is
+COST_EVIDENCE_UNAVAILABLE (post-run acceptance, never a pre-spend hard stop); schema
+failure not retried; unsafe/trading-authority output
+rejected; empty/fabricated citation structure fails; raw stderr/env/payload cannot
+enter the receipt; fake backend makes zero network/process calls; deterministic
+request bytes yield an exact request id; a deterministic successful transcript
+yields an exact receipt id; legacy WP145/WP99/WP133 tests remain green; no imports
+from execution/paper/private-account surfaces; no dependency/lock/workflow change;
+generated output is not committed; status/docs state CODE COMPLETE separately from
+RUNTIME ACTIVATED; and no Alpha Factory candidate/probability/trade object exists.
+Applicable negative categories: malformed input, bound overflow, identity tamper,
+secret/authority escalation, tool-isolation violation, and safe positive controls.
+not_applicable categories are named where a trap cannot apply.
+
+===============================================================================
+8. DOC / REPO-TRUTH DELTA
+===============================================================================
+
+Add the canonical controlled Hermes research runtime contract and register WP175H
+honestly: S10-HERMES-01 CODE COMPLETE YES; RUNTIME ACTIVATED NO; real provider/
+model call count 0; credentials 0; capital USD 0; WP175 merged dormant YES; Gate-C
+NOT AUTHORIZED; WP176 NOT STARTED; the successor S10-GATE-H1 Controlled Public
+Research Pilot and then S10-ALPHA-01 are separately gated and NOT STARTED; and
+Hermes prose is untrusted research content, never canonical economic truth.
+
+===============================================================================
+9. VALIDATION AND EVIDENCE PLAN
+===============================================================================
+
+While editing run the smallest focused test file then the focused package suite.
+Before final push run: WP175H focused tests; legacy WP145 + WP99/WP133
+regressions; architecture/protected-boundary tests; project-status/repo-truth doc
+tests; the generated-artifact guard; readiness --check-diff; git diff --check; pip
+check; one authoritative full local pytest; and the required RUNTIME security/
+static checks. No real Hermes/provider/web call is required for code-complete
+validation. The evidence plan maps each requirement (requirement mapping) R001-R024
+to a focused test or a validation/github check. The PR body is the canonical
+evidence surface and must carry base/head, exact 24 paths, prompt/spec hashes,
+readiness, the pinned Hermes contract, fake-backend posture, real provider call
+count 0, credential count 0, focused/full/security/hosted results, CODE COMPLETE,
+RUNTIME ACTIVATED NO, S10-GATE-H1 required before any real run, and merge NOT
+AUTHORIZED; re-fetch the posted body and require the consistency guard to PASS.
+
+===============================================================================
+10. HARD STOPS AND FINAL DISPOSITION
+===============================================================================
+
+STOP (hard stop) if: live main materially changed relevant Hermes/governance
+semantics; the v0.21.3 CLI contract contradicts the frozen command; exact truthful
+scope exceeds the authorized envelope; a dependency/lock change becomes required;
+project code would have to read/inject/store a provider credential; web-only tool
+isolation cannot be proved; plugins/MCP/shell hooks cannot be disabled; raw
+arbitrary provider/tool output must become canonical evidence; legacy WP99/WP133
+semantics must weaken; WP170/WP172/WP173/WP175 source must change; the package is
+really Alpha Factory scope; or any scheduler/execution/risk/paper/live authority
+would be created. Report the narrowest prerequisite; do not improvise.
+
+Final disposition exactly one: READY_FOR_SIDE10_REVIEW, BLOCKED_STATE_DRIFT,
+SCOPE_EXPANSION_REQUIRED, BLOCKED_CONTRACT_CONTRADICTION, BLOCKED_AUTHORITY,
+BLOCKED_VALIDATION, BLOCKED_HOSTED_CI, or BLOCKED_EVIDENCE. Never RUNTIME_ACTIVATED,
+LIVE_PATH_EVIDENCE_READY, or GATE_C_AUTHORIZED.
+
+Report-back: the exact worktree/branch/base, contract hashes and readiness, the
+implementation split, all local and hosted validation, CI cost, authority zeros,
+the PR link, and exactly one final disposition.
+
+Successor boundary: after merge only, a separately gated S10-GATE-H1 Controlled
+Public Research Pilot must resolve the installed Hermes artifact, provider/model
+choice, current account/privacy/retention posture, an out-of-repo research-only
+credential, projected cost, the exact request, and explicit public-web network
+authorization before any real remote run. It does not activate Gate C and does not
+start S10-ALPHA-01.
+
+===============================================================================
+APPENDIX A. COMPATIBILITY / IMPOSSIBILITY CHECK
+===============================================================================
+
+Required behavior | Controlling mechanism | Allowed | Compatible | Action
+Pinned Hermes contract | Frozen v0.21.3 argv/policy | YES | YES | argv-only backend
+Tool isolation | Exactly the web toolset | YES | YES | policy + controller gate
+Repo/filesystem isolation | Ephemeral mkdtemp cwd | YES | YES | never repo/home
+No credential handling | Project code never reads secrets | REQUIRED | YES | hard stop if false
+Untrusted output | Repo validator authoritative | REQUIRED | YES | fail closed
+Exact scope | Active spec plus diff guards | REQUIRED | YES | hard stop on path 22
+Legacy compatibility | WP99/WP133/WP145 unchanged | REQUIRED | YES | additive only
+
+===============================================================================
+APPENDIX B. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|request|identity|canonical_public_fields|REQUIRE|content_addressed|request.request_id|R017
+NR002|request|unknown_field|present|REJECT|fail_closed|NONE|R006
+NR003|request|secret_or_authority|embedded|REJECT|no_echo|NONE|R007
+NR004|request|cost|binary_float|REJECT|noncanonical|request.max_accepted_estimated_cost_usd|R024
+NR005|policy|toolsets|broadening_attempt|FORBID|web_only|policy.allowed_toolsets|R005
+NR006|policy|cwd|external_backend|PRESERVE_EXACT|ephemeral_only|policy.cwd_policy|R003
+NR007|hermes_version|reported|not_v0213|REJECT|version_mismatch|NONE|R001
+NR008|usage_report|final_result|malformed_or_missing|REJECT|fail_closed_neutral|NONE|R008
+NR009|draft|authority_flags|missing_or_false|REJECT|fail_closed|draft.authority_flags|R013
+NR010|draft|source_references|empty_or_fabricated|REJECT|provenance_required|draft.source_references|R014
+NR011|receipt|identity|deterministic_transcript|REQUIRE|content_addressed|receipt.receipt_id|R018
+NR012|receipt|activation_state|code_complete|PRESERVE_EXACT|not_runtime_activated|receipt.activation_state|R023
+NR013|policy|iteration_cap|oneshot_v0213|PRESERVE_EXACT|unavailable_no_max_turns|policy.iteration_cap|R004
+NR014|policy|transport_retries|first_runtime|FORBID|zero_paid_research_retries|policy.max_transport_retries|R011
+NR015|process|exit_code|nonzero|REJECT|fail_closed_no_retry|receipt.exit_code|R010
+NR016|usage_report|success_evidence|completed_false_or_failed_true|REJECT|usage_evidence_invalid|receipt.usage_evidence_status|R008
+NR017|usage_report|provider_model|mismatch_vs_request|REJECT|provider_model_mismatch|receipt.verified_provider|R001
+NR018|usage_report|cost|missing_or_unknown|REJECT|cost_evidence_unavailable_never_zero|receipt.cost_status|R024
+END_NORMATIVE_RULE_MATRIX_V1

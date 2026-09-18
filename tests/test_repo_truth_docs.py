@@ -197,3 +197,37 @@ def test_wp175e_repo_truth_registers_native_continuity_without_live_authority() 
     assert "real orders: 0" in fragment
     assert "capital at risk: USD 0" in fragment
     assert "Merge authorized: NO" in combined
+
+
+def test_wp175h_repo_truth_registers_controlled_runtime_without_live_authority() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    status = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    roadmap = (ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(
+        encoding="utf-8"
+    )
+    fragment = (ROOT / "docs" / "status_entries" / "WP175H.md").read_text(
+        encoding="utf-8"
+    )
+    contract = (
+        ROOT / "docs" / "hermes_controlled_research_runtime_contract.md"
+    ).read_text(encoding="utf-8")
+    combined = "\n".join((index, status, deferred, roadmap, fragment, contract))
+    assert "WP175H Controlled Hermes Research Runtime Core" in index
+    assert "S10-HERMES-01" in combined
+    assert "Hermes Agent v0.21.3" in combined
+    assert "CODE COMPLETE: YES" in combined
+    assert "RUNTIME ACTIVATED: NO" in combined
+    assert "S10-GATE-H1" in combined
+    assert "S10-ALPHA-01" in combined
+    # Hermes prose is untrusted research content, never canonical economic truth.
+    assert "untrusted research" in combined.lower()
+    assert "advisory_only" in contract
+    assert "web_search" in contract and "web_extract" in contract
+    assert "Gate C" in combined and "NOT AUTHORIZED" in combined
+    assert "WP176" in combined and "NOT STARTED" in combined
+    assert "Credentials: 0" in fragment
+    assert "real orders: 0" in fragment
+    assert "Real provider/model call count: 0" in fragment
+    assert "capital at risk: USD 0" in fragment
+    assert "Merge authorized: NO" in combined
