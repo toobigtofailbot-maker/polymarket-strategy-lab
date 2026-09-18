@@ -1,4 +1,4 @@
-"""External-process boundary for the controlled Hermes research runtime (WP175H).
+"""External-process boundary for the controlled Hermes research runtime (WP175H/WP175I).
 
 Two backends implement one protocol:
 
@@ -11,6 +11,18 @@ Two backends implement one protocol:
     caps; reads the bounded ``--usage-file`` report Hermes writes into that temp dir;
     enforces a hard wall-clock timeout that kills the child process tree where
     platform mechanics permit; and deletes the temporary directory on teardown.
+
+WP175I controlled research profile. For every external research invocation the backend
+creates a SECOND ephemeral directory -- the managed scope -- separate from the cwd, the
+repository, ``local_data``, and the research HERMES_HOME. It writes exactly one
+non-secret ``config.yaml`` (the caller-supplied deterministic managed-config bytes) into
+that directory and sets ``HERMES_MANAGED_DIR`` on the child to it. The child never
+inherits an ambient ``HERMES_MANAGED_DIR``, ``HERMES_SAFE_MODE``, or
+``HERMES_ENABLE_PROJECT_PLUGINS``. Both ephemeral directories are removed on every path
+(success, failure, timeout). For an H1-grade research home, a fail-closed preflight
+rejects unexpected control-plane material -- a present ``config.yaml`` or a non-empty
+user ``plugins/`` directory -- BEFORE spawn, inspecting directory/file NAMES only and
+never reading a credential value.
 
 Pinned v0.21.3 carries the prompt as the ``-z`` argv element, so no prompt file is
 written into the working directory. The backend records no secret-bearing
@@ -90,6 +102,7 @@ class HermesInvocationBackend(Protocol):
         max_usage_bytes: int,
         max_wall_seconds: int,
         hermes_home: str | None = None,
+        managed_config_bytes: bytes | None = None,
     ) -> HermesInvocationOutcome: ...
 
 
@@ -126,6 +139,10 @@ class FakeHermesBackend:
         self.recorded_argv: list[tuple[str, ...]] = []
         self.recorded_usage_file_names: list[str] = []
         self.recorded_hermes_home: list[str | None] = []
+        # Deterministic record of the controlled managed-config bytes the controller
+        # supplied -- the fake performs ZERO process/network calls and never writes
+        # the config to disk or sets an environment variable.
+        self.recorded_managed_config_bytes: list[bytes | None] = []
 
     @classmethod
     def from_transcript(
@@ -171,12 +188,14 @@ class FakeHermesBackend:
         max_usage_bytes: int,
         max_wall_seconds: int,
         hermes_home: str | None = None,
+        managed_config_bytes: bytes | None = None,
     ) -> HermesInvocationOutcome:
         index = min(self.call_count, len(self._outcomes) - 1)
         self.call_count += 1
         self.recorded_argv.append(tuple(argv))
         self.recorded_usage_file_names.append(usage_file_name)
         self.recorded_hermes_home.append(hermes_home)
+        self.recorded_managed_config_bytes.append(managed_config_bytes)
         outcome = self._outcomes[index]
         if len(outcome.stdout) > max_stdout_bytes:
             return dataclasses.replace(
@@ -204,8 +223,25 @@ _SECRET_ENV_FRAGMENTS = (
     "PRIVATE",
 )
 
-# Only these neutral variables are ever forwarded (plus an explicit HERMES_HOME).
+# Only these neutral variables are ever forwarded (plus an explicit HERMES_HOME and the
+# backend-created HERMES_MANAGED_DIR set in ``invoke``).
 _NEUTRAL_ENV_KEYS = ("PATH", "SystemRoot", "TEMP", "TMP", "TMPDIR", "LANG", "LC_ALL")
+
+# Control-plane variables that must NEVER be inherited from the parent process. The
+# minimal-env whitelist already excludes everything not in ``_NEUTRAL_ENV_KEYS``; these
+# are named so the boundary is explicit and testable. ``HERMES_MANAGED_DIR`` is set by
+# the backend itself (to its ephemeral managed dir), never inherited; ``HERMES_SAFE_MODE``
+# is never set (safe mode would suppress the bundled Firecrawl backend);
+# ``HERMES_ENABLE_PROJECT_PLUGINS`` is never forwarded (project plugins stay disabled).
+_NEVER_FORWARD_ENV = (
+    "HERMES_SAFE_MODE",
+    "HERMES_ENABLE_PROJECT_PLUGINS",
+    "HERMES_MANAGED_DIR",
+)
+
+# A dedicated H1 research home must NOT carry these control-plane files (names only).
+_RESEARCH_HOME_FORBIDDEN_CONFIG = "config.yaml"
+_RESEARCH_HOME_USER_PLUGINS_DIR = "plugins"
 
 
 class ExternalHermesCliBackend:
@@ -269,6 +305,7 @@ class ExternalHermesCliBackend:
         max_usage_bytes: int,
         max_wall_seconds: int,
         hermes_home: str | None = None,
+        managed_config_bytes: bytes | None = None,
     ) -> HermesInvocationOutcome:
         argv = list(argv)
         if not argv:
@@ -280,16 +317,38 @@ class ExternalHermesCliBackend:
         if hermes_home is not None and "HERMES_HOME" not in env:
             # An unsafe research-home locator fails closed rather than running.
             return _launch_failure()
-
-        temp_dir = tempfile.mkdtemp(prefix="hermes_oneshot_")
-        resolved = os.path.realpath(temp_dir)
-        home = os.path.realpath(os.path.expanduser("~"))
-        if resolved == home or any(marker in resolved for marker in _FORBIDDEN_PATH_MARKERS):
-            shutil.rmtree(temp_dir, ignore_errors=True)
+        # WP175I H1 control-plane preflight: a dedicated research home must not carry a
+        # ``config.yaml`` or a non-empty user ``plugins/`` directory, so the controlled
+        # managed scope is the only non-default runtime policy layer. Names only; no
+        # credential value is read.
+        if hermes_home is not None and not is_clean_research_home_control_plane(hermes_home):
             return _launch_failure()
 
+        temp_dir = tempfile.mkdtemp(prefix="hermes_oneshot_")
+        # A distinct ephemeral managed-scope directory (never the cwd, repo, local_data,
+        # research home, or a caller-supplied path). The child receives it through
+        # ``HERMES_MANAGED_DIR``; the parent never inherits or forwards that variable.
+        managed_dir: str | None = None
         start = time.monotonic()
         try:
+            resolved = os.path.realpath(temp_dir)
+            home = os.path.realpath(os.path.expanduser("~"))
+            if resolved == home or any(marker in resolved for marker in _FORBIDDEN_PATH_MARKERS):
+                return _launch_failure()
+
+            if managed_config_bytes is not None:
+                managed_dir = tempfile.mkdtemp(prefix="hermes_managed_")
+                if os.path.realpath(managed_dir) == resolved:  # pragma: no cover - defensive
+                    return _launch_failure()
+                try:
+                    with open(os.path.join(managed_dir, "config.yaml"), "wb") as handle:
+                        handle.write(managed_config_bytes)
+                except OSError:
+                    return _launch_failure(_elapsed_ms(start))
+                # The backend itself sets HERMES_MANAGED_DIR; it is never inherited or
+                # caller-supplied. ``get_managed_dir()`` honors it only when the dir exists.
+                env["HERMES_MANAGED_DIR"] = managed_dir
+
             popen_kwargs: dict[str, object] = {
                 "cwd": temp_dir,
                 "stdin": subprocess.DEVNULL,
@@ -338,7 +397,10 @@ class ExternalHermesCliBackend:
                 duration_ms=_elapsed_ms(start),
             )
         finally:
+            # Both ephemeral directories are removed on success, failure, and timeout.
             shutil.rmtree(temp_dir, ignore_errors=True)
+            if managed_dir is not None:
+                shutil.rmtree(managed_dir, ignore_errors=True)
 
 
 def _read_usage_file(path: str, max_bytes: int) -> tuple[bytes | None, bool]:
@@ -405,6 +467,40 @@ def is_safe_research_home(hermes_home: str) -> bool:
     return True
 
 
+def is_clean_research_home_control_plane(hermes_home: str) -> bool:
+    """Fail-closed H1 preflight for the dedicated research HERMES_HOME (WP175I §5.5).
+
+    Rejects a home that carries unexpected control-plane material so the ephemeral
+    managed scope stays the ONLY non-default runtime policy layer for H1:
+
+    * the home must be a safe research home (outside repo/local_data, absolute, no
+      traversal) -- reuses :func:`is_safe_research_home`;
+    * ``config.yaml`` must be ABSENT (exact tagged ``load_config`` reads
+      ``$HERMES_HOME/config.yaml`` regardless of ``--ignore-user-config``);
+    * a user ``plugins/`` directory must be absent or empty (opt-in user plugins).
+
+    An ``.env`` / ``auth.json`` / session / cache file is permitted -- Hermes loads its
+    own out-of-repo credential store from there. This inspects directory/file NAMES
+    only and never reads or echoes a credential value.
+    """
+    if not is_safe_research_home(hermes_home):
+        return False
+    root = os.path.realpath(hermes_home)
+    # A dedicated research home is expected to exist; a missing home cannot host a
+    # credential store, so it is not a usable H1 profile.
+    if not os.path.isdir(root):
+        return False
+    if os.path.exists(os.path.join(root, _RESEARCH_HOME_FORBIDDEN_CONFIG)):
+        return False
+    plugins_dir = os.path.join(root, _RESEARCH_HOME_USER_PLUGINS_DIR)
+    try:
+        if os.path.isdir(plugins_dir) and any(os.scandir(plugins_dir)):
+            return False
+    except OSError:
+        return False
+    return True
+
+
 # Config written into the throwaway version-probe HERMES_HOME. Exact tagged
 # ``hermes_cli/banner.check_for_updates(passive=True)`` reads
 # ``load_config().get("updates", {}).get("check", True) is False`` and returns before
@@ -428,11 +524,18 @@ def _minimal_env(hermes_home: str | None) -> dict[str, str]:
     """
     env: dict[str, str] = {}
     for key in _NEUTRAL_ENV_KEYS:
+        if key in _NEVER_FORWARD_ENV:  # pragma: no cover - defensive invariant
+            continue
         value = os.environ.get(key)
         if value is not None and not _looks_secret(key):
             env[key] = value
     if hermes_home is not None and is_safe_research_home(hermes_home):
         env["HERMES_HOME"] = hermes_home
+    # Defensive: a control-plane variable is never inherited even if it were somehow
+    # whitelisted. HERMES_MANAGED_DIR is set later by the backend to its own ephemeral
+    # managed scope; HERMES_SAFE_MODE / HERMES_ENABLE_PROJECT_PLUGINS are never set.
+    for name in _NEVER_FORWARD_ENV:
+        env.pop(name, None)
     return env
 
 

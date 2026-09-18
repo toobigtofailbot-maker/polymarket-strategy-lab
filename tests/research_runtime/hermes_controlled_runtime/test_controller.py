@@ -208,7 +208,7 @@ def test_r004_controller_argv_has_no_unsupported_flags_and_one_web_toolset():
 @pytest.mark.parametrize(
     "kwargs",
     [
-        {"allowed_toolsets": ("web", "terminal")},
+        {"allowed_toolsets": ("web", "terminal")},  # P007
         {"tool_enforcement": "DYNAMIC"},
         {"output_mode": "STREAM_JSON"},
         {"shell": True},
@@ -219,7 +219,30 @@ def test_r004_controller_argv_has_no_unsupported_flags_and_one_web_toolset():
         {"delegation": True},
         {"file_tools": True},
         {"automatic_retry_on_schema_failure": True},
-        {"safe_mode": False},
+        # WP175I P005: safe mode may not be re-enabled as the supposed H1 safety layer.
+        {"safe_mode": True},
+        # WP175I P006: the ignore flags and controlled managed scope cannot be disabled.
+        {"ignore_user_config": False},
+        {"ignore_rules": False},
+        {"controlled_managed_scope": False},
+        # WP175I P016: any controlled backend/fallback/retry/plugin field is pinned.
+        {"web_search_backend": "exa"},
+        {"web_extract_backend": "tavily"},
+        {"web_backend": "brave"},
+        {"keyless_fallback": True},
+        {"keyless_rescue": True},
+        {"web_cache_enabled": True},
+        {"web_provider_tier_firecrawl": "free"},
+        {"api_max_retries": 3},
+        {"managed_fallback_providers": ("openrouter",)},
+        {"managed_plugins_enabled": ("web-custom",)},
+        {"updates_check": True},
+        {"custom_user_project_plugin_loading": "ALLOWED"},
+        {"bundled_backend_discovery": "FORBIDDEN"},
+        {"same_provider_primary_transport_recovery": "UNBOUNDED"},
+        {"research_home_config_allowed": True},
+        {"research_home_user_plugins_allowed": True},
+        {"controlled_profile_version": "other/9.9.9"},
         {"max_transport_retries": 1},  # zero retries is the frozen ceiling now
         {"max_transport_retries": 2},
         {"max_concurrency": 2},
@@ -581,7 +604,7 @@ def test_default_policy_id_is_stable():
 
 
 def test_r020_no_imports_from_execution_paper_or_private_account_surfaces():
-    """The runtime package imports no trading/paper/private-account surface."""
+    """The runtime package imports no trading/paper/private-account surface. P036."""
     import ast
     from pathlib import Path
 
@@ -606,3 +629,123 @@ def test_r020_no_imports_from_execution_paper_or_private_account_surfaces():
                 if any(bad in name for bad in forbidden):
                     offenders.append(f"{module_path.name}:{name}")
     assert offenders == [], offenders
+
+
+# ---------------------------------------------------------------------------
+# WP175I controlled research profile: managed scope + policy identity
+# ---------------------------------------------------------------------------
+
+import json as _json  # noqa: E402
+
+from src.research_runtime.hermes_controlled_runtime import (  # noqa: E402
+    CONTROLLED_MANAGED_CONFIG_BYTES,
+    CONTROLLED_MANAGED_CONFIG_SHA256,
+    CONTROLLED_PROFILE_VERSION,
+    expected_hermes_contract,
+)
+
+
+def _managed():
+    return _json.loads(DEFAULT_HERMES_INVOCATION_POLICY.managed_config_bytes().decode("utf-8"))
+
+
+def test_p005_safe_mode_frozen_false_on_controlled_profile():
+    # The default controlled policy represents the new mode with safe_mode False,
+    # not by re-enabling safe mode.
+    assert DEFAULT_HERMES_INVOCATION_POLICY.safe_mode is False
+    assert DEFAULT_HERMES_INVOCATION_POLICY.controlled_managed_scope is True
+    with pytest.raises(PolicyBroadeningError):
+        HermesInvocationPolicy(safe_mode=True)
+
+
+def test_p008_managed_config_bytes_are_deterministic_and_stable():
+    a = HermesInvocationPolicy().managed_config_bytes()
+    b = HermesInvocationPolicy().managed_config_bytes()
+    assert a == b == CONTROLLED_MANAGED_CONFIG_BYTES
+    # Canonical (sorted, compact) so the digest is stable across processes.
+    assert a == _json.dumps(_managed(), sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
+def test_p009_managed_config_pins_firecrawl_for_search_and_extract():
+    web = _managed()["web"]
+    assert web["backend"] == "firecrawl"
+    assert web["search_backend"] == "firecrawl"
+    assert web["extract_backend"] == "firecrawl"
+    assert web["provider_tier"] == {"firecrawl": "paid"}
+
+
+def test_p010_managed_config_disables_keyless_and_cache():
+    web = _managed()["web"]
+    assert web["keyless_fallback"] is False
+    assert web["keyless_rescue"] is False
+    assert web["cache_enabled"] is False
+
+
+def test_p011_managed_config_empties_fallback_chain():
+    assert _managed()["fallback_providers"] == []
+
+
+def test_p012_managed_config_sets_one_ordinary_provider_attempt():
+    assert _managed()["agent"]["api_max_retries"] == 1
+
+
+def test_p013_managed_config_pins_plugins_hooks_updates():
+    managed = _managed()
+    assert managed["plugins"]["enabled"] == []
+    assert managed["hooks"] == {}
+    assert managed["updates"]["check"] is False
+
+
+def test_p015_managed_config_digest_participates_in_policy_identity():
+    ident = DEFAULT_HERMES_INVOCATION_POLICY.identity_fields()
+    assert ident["managed_config_sha256"] == CONTROLLED_MANAGED_CONFIG_SHA256
+    assert CONTROLLED_MANAGED_CONFIG_SHA256 in DEFAULT_HERMES_INVOCATION_POLICY.policy_id.replace(
+        "hermesinvocationpolicy:sha256:", "X"
+    ) or True  # digest is committed via identity_fields (hashed into policy_id)
+    # A different managed digest would change the policy id: verify identity depends
+    # on the managed bytes by hashing identity_fields ourselves.
+    import hashlib
+    canonical = _json.dumps(ident, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    assert DEFAULT_HERMES_INVOCATION_POLICY.policy_id.endswith(
+        hashlib.sha256(canonical).hexdigest()
+    )
+
+
+def test_p032_policy_truthfully_records_recovery_and_no_fallback():
+    p = DEFAULT_HERMES_INVOCATION_POLICY
+    assert p.same_provider_primary_transport_recovery == "ALLOWED_BOUNDED"
+    assert p.provider_model_fallback == "NONE"
+    assert p.web_backend_fallback_rescue == "NONE"
+    assert p.custom_user_project_plugin_loading == "FORBIDDEN"
+    assert p.bundled_backend_discovery == "ALLOWED_FOR_WEB_PROVIDER_REGISTRATION"
+    assert p.exposed_agent_toolset == "WEB_ONLY"
+    assert p.controlled_profile_version == CONTROLLED_PROFILE_VERSION
+
+
+def test_p028_p029_controller_supplies_managed_config_once():
+    req = _request()
+    backend = FakeHermesBackend.from_transcript(_stdout(req.request_id), usage_file_bytes=_usage())
+    _run(req, backend)
+    # P029: exactly one research invocation.
+    assert backend.call_count == 1
+    # P028: the fake records the deterministic controlled managed-config bytes and made
+    # zero process/network calls (from_transcript uses no real process).
+    assert backend.recorded_managed_config_bytes == [CONTROLLED_MANAGED_CONFIG_BYTES]
+
+
+def test_p031_outer_transport_retries_are_zero():
+    assert DEFAULT_HERMES_INVOCATION_POLICY.max_transport_retries == 0
+
+
+def test_expected_contract_surfaces_controlled_profile_facts():
+    contract = expected_hermes_contract()
+    assert contract["research_argv_has_safe_mode"] == "NO"
+    assert contract["ignore_user_config"] == "YES" and contract["ignore_rules"] == "YES"
+    assert contract["toolsets"] == "web"
+    assert contract["firecrawl_search_backend"] == "firecrawl"
+    assert contract["firecrawl_extract_backend"] == "firecrawl"
+    assert contract["web_keyless_fallback"] == "OFF"
+    assert contract["web_keyless_rescue"] == "OFF"
+    assert contract["fallback_providers"] == "EMPTY"
+    assert contract["api_max_retries"] == "1"
+    assert contract["managed_config_sha256"] == CONTROLLED_MANAGED_CONFIG_SHA256

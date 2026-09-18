@@ -18,16 +18,20 @@ from pathlib import Path
 import pytest
 
 from src.research_runtime.hermes_controlled_runtime import (
+    DEFAULT_HERMES_INVOCATION_POLICY,
     ExternalHermesCliBackend,
     FakeHermesBackend,
     HermesInvocationOutcome,
     build_hermes_argv,
     build_research_run_request,
     build_version_argv,
+    is_clean_research_home_control_plane,
     is_safe_research_home,
 )
 from src.research_runtime.hermes_controlled_runtime import runner as runner_mod
 from src.research_runtime.hermes_controlled_runtime import policy as policy_mod
+
+MANAGED_BYTES = DEFAULT_HERMES_INVOCATION_POLICY.managed_config_bytes()
 from src.research_runtime.hermes_controlled_runtime.models import (
     NON_AUTHORITY_NOTICE,
     REQUEST_SCHEMA_VERSION,
@@ -85,20 +89,31 @@ def test_argv_uses_pinned_v0213_shape_without_unsupported_flags():
     assert "stream-json" not in argv  # T02
     # --max-turns is chat-subparser only in v0.21.3; never on the top-level -z path.
     assert "--max-turns" not in argv  # T03
+    # WP175I P001: --safe-mode is REMOVED from the research invocation (it suppresses
+    # the bundled Firecrawl backend on exact v0.21.3).
+    assert "--safe-mode" not in argv  # P001
+    # WP175I P002/P003: exact ignore flags retained, exactly one --toolsets web.
+    assert "--ignore-user-config" in argv and "--ignore-rules" in argv  # P002
     # Supported one-shot shape (exact tagged top-level flags only). T04
     assert "-z" in argv and argv[-1] == "PROMPT"
     assert "--usage-file" in argv
-    assert "--safe-mode" in argv
-    assert "--ignore-user-config" in argv and "--ignore-rules" in argv
     supported = {
-        "hermes", "--safe-mode", "--ignore-user-config", "--ignore-rules",
+        "hermes", "--ignore-user-config", "--ignore-rules",
         "--provider", "--model", "--toolsets", "--usage-file", "-z",
     }
     flags = {tok for tok in argv if tok.startswith("--") or tok == "-z"}
     assert flags <= supported, flags - supported
-    assert argv.count("--toolsets") == 1
+    assert argv.count("--toolsets") == 1  # P003
     assert argv[argv.index("--toolsets") + 1] == "web"
     for forbidden in ("terminal", "file", "browser", "delegation", "memory", "cron", "mcp", "safe"):
+        assert forbidden not in argv
+
+
+def test_p004_unsupported_flags_stay_absent_from_argv():
+    """P004: --max-turns / --format / stream-json / --input-file never appear."""
+    req = _request()
+    argv = build_hermes_argv("hermes", req, "PROMPT")
+    for forbidden in ("--max-turns", "--format", "stream-json", "--input-file", "chat", "--oneshot"):
         assert forbidden not in argv
 
 
@@ -332,6 +347,205 @@ def test_c19_external_dedicated_home_accepted(tmp_path):  # C19
     external = tmp_path / "dedicated_research_home"
     external.mkdir()
     assert is_safe_research_home(str(external)) is True
+
+
+# ---------------------------------------------------------------------------
+# WP175I controlled managed scope + research-home control-plane preflight
+# ---------------------------------------------------------------------------
+
+# A fake-hermes program that reports its controlled-profile isolation: cwd, the
+# backend-created HERMES_MANAGED_DIR + the managed config.yaml it can read there,
+# whether control-plane env vars leaked, and a marker to look like a real run.
+_MANAGED_INSPECT_PROG = textwrap.dedent(
+    """
+    import os, json, pathlib
+    md = os.environ.get("HERMES_MANAGED_DIR")
+    cfg = ""
+    if md:
+        try:
+            cfg = pathlib.Path(md, "config.yaml").read_text(encoding="utf-8")
+        except Exception:
+            cfg = ""
+    print(json.dumps({
+        "cwd": os.getcwd(),
+        "managed_dir": md,
+        "managed_cfg": cfg,
+        "safe_mode": os.environ.get("HERMES_SAFE_MODE"),
+        "enable_project_plugins": os.environ.get("HERMES_ENABLE_PROJECT_PLUGINS"),
+        "has_secret": "OPENAI_API_KEY" in os.environ,
+    }))
+    """
+)
+
+
+def _capture_mkdtemp(monkeypatch):
+    """Record ephemeral dirs the backend creates, keyed by prefix."""
+    created: dict[str, list[str]] = {"hermes_oneshot_": [], "hermes_managed_": []}
+    real = runner_mod.tempfile.mkdtemp
+
+    def _spy(*args, **kwargs):
+        path = real(*args, **kwargs)
+        prefix = kwargs.get("prefix", "")
+        created.setdefault(prefix, []).append(path)
+        return path
+
+    monkeypatch.setattr(runner_mod.tempfile, "mkdtemp", _spy)
+    return created
+
+
+def test_p017_p018_separate_cwd_and_managed_dir_with_config(monkeypatch):
+    created = _capture_mkdtemp(monkeypatch)
+    outcome = ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", _MANAGED_INSPECT_PROG], usage_file_name="hermes_usage.json",
+        max_stdout_bytes=200_000, max_stderr_bytes=65_536, max_usage_bytes=65_536,
+        max_wall_seconds=30, managed_config_bytes=MANAGED_BYTES,
+    )
+    assert outcome.launch_failed is False and outcome.timed_out is False
+    data = [json.loads(l) for l in outcome.stdout.decode().splitlines() if l.strip()][-1]
+    # P017: cwd and managed dir are distinct ephemeral paths.
+    cwd = Path(data["cwd"]).resolve()
+    managed = Path(data["managed_dir"]).resolve()
+    assert cwd != managed
+    assert "hermes_oneshot_" in str(created["hermes_oneshot_"][0])
+    assert "hermes_managed_" in str(managed)
+    # P018: the child received the backend-created HERMES_MANAGED_DIR whose config.yaml
+    # is exactly the deterministic managed bytes.
+    assert data["managed_cfg"].encode("utf-8") == MANAGED_BYTES
+
+
+def test_p019_ambient_managed_dir_is_never_forwarded(monkeypatch):
+    monkeypatch.setenv("HERMES_MANAGED_DIR", "/attacker/controlled/scope")
+    outcome = ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", _MANAGED_INSPECT_PROG], usage_file_name="hermes_usage.json",
+        max_stdout_bytes=200_000, max_stderr_bytes=65_536, max_usage_bytes=65_536,
+        max_wall_seconds=30, managed_config_bytes=MANAGED_BYTES,
+    )
+    data = [json.loads(l) for l in outcome.stdout.decode().splitlines() if l.strip()][-1]
+    # The child sees the backend's ephemeral dir, never the ambient value.
+    assert data["managed_dir"] != "/attacker/controlled/scope"
+    assert "hermes_managed_" in str(data["managed_dir"])
+
+
+def test_p020_ambient_safe_mode_and_project_plugins_never_forwarded(monkeypatch):
+    monkeypatch.setenv("HERMES_SAFE_MODE", "1")
+    monkeypatch.setenv("HERMES_ENABLE_PROJECT_PLUGINS", "1")
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-should-not-leak")
+    outcome = ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", _MANAGED_INSPECT_PROG], usage_file_name="hermes_usage.json",
+        max_stdout_bytes=200_000, max_stderr_bytes=65_536, max_usage_bytes=65_536,
+        max_wall_seconds=30, managed_config_bytes=MANAGED_BYTES,
+    )
+    data = [json.loads(l) for l in outcome.stdout.decode().splitlines() if l.strip()][-1]
+    assert data["safe_mode"] is None
+    assert data["enable_project_plugins"] is None
+    assert data["has_secret"] is False
+    # _minimal_env also excludes them directly.
+    env = runner_mod._minimal_env(None)
+    for name in ("HERMES_SAFE_MODE", "HERMES_ENABLE_PROJECT_PLUGINS", "HERMES_MANAGED_DIR"):
+        assert name not in env
+
+
+def test_p021_managed_dir_removed_on_success(monkeypatch):
+    created = _capture_mkdtemp(monkeypatch)
+    ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", "print('hi')"], usage_file_name="hermes_usage.json",
+        max_stdout_bytes=1000, max_stderr_bytes=1000, max_usage_bytes=1000, max_wall_seconds=30,
+        managed_config_bytes=MANAGED_BYTES,
+    )
+    assert created["hermes_managed_"], "a managed dir must have been created"
+    for path in created["hermes_managed_"] + created["hermes_oneshot_"]:
+        assert not Path(path).exists()
+
+
+def test_p022_managed_dir_removed_on_timeout(monkeypatch):
+    created = _capture_mkdtemp(monkeypatch)
+    outcome = ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", "import time; time.sleep(30)"],
+        usage_file_name="hermes_usage.json", max_stdout_bytes=1000, max_stderr_bytes=1000,
+        max_usage_bytes=1000, max_wall_seconds=1, managed_config_bytes=MANAGED_BYTES,
+    )
+    assert outcome.timed_out is True
+    assert created["hermes_managed_"]
+    for path in created["hermes_managed_"] + created["hermes_oneshot_"]:
+        assert not Path(path).exists()
+
+
+def test_p023_managed_dir_removed_on_launch_failure(monkeypatch):
+    created = _capture_mkdtemp(monkeypatch)
+    outcome = ExternalHermesCliBackend().invoke(
+        argv=[str(REPO_ROOT / "definitely_not_an_executable_xyz")],
+        usage_file_name="hermes_usage.json", max_stdout_bytes=1000, max_stderr_bytes=1000,
+        max_usage_bytes=1000, max_wall_seconds=5, managed_config_bytes=MANAGED_BYTES,
+    )
+    assert outcome.launch_failed is True
+    for path in created["hermes_managed_"] + created["hermes_oneshot_"]:
+        assert not Path(path).exists()
+
+
+def test_p024_research_home_in_repo_or_local_data_fails_closed(tmp_path):
+    # Repo tree and local_data are rejected outright.
+    assert is_clean_research_home_control_plane(str(REPO_ROOT)) is False
+    assert is_clean_research_home_control_plane(
+        str(Path(os.path.expanduser("~")) / "local_data" / "h")
+    ) is False
+    # An unsafe home passed to invoke fails closed before spawn (no HERMES_HOME set).
+    outcome = ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", "print('x')"], usage_file_name="hermes_usage.json",
+        max_stdout_bytes=1000, max_stderr_bytes=1000, max_usage_bytes=1000, max_wall_seconds=5,
+        hermes_home=str(REPO_ROOT), managed_config_bytes=MANAGED_BYTES,
+    )
+    assert outcome.launch_failed is True
+
+
+def test_p025_research_home_config_yaml_fails_closed(tmp_path):
+    home = tmp_path / "research_home"
+    home.mkdir()
+    (home / "config.yaml").write_text("web:\n  keyless_fallback: true\n", encoding="utf-8")
+    assert is_clean_research_home_control_plane(str(home)) is False
+    outcome = ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", "print('x')"], usage_file_name="hermes_usage.json",
+        max_stdout_bytes=1000, max_stderr_bytes=1000, max_usage_bytes=1000, max_wall_seconds=5,
+        hermes_home=str(home), managed_config_bytes=MANAGED_BYTES,
+    )
+    assert outcome.launch_failed is True
+
+
+def test_p026_research_home_user_plugins_fail_closed(tmp_path):
+    home = tmp_path / "research_home"
+    (home / "plugins" / "evil").mkdir(parents=True)
+    (home / "plugins" / "evil" / "plugin.yaml").write_text("name: evil\n", encoding="utf-8")
+    assert is_clean_research_home_control_plane(str(home)) is False
+    outcome = ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", "print('x')"], usage_file_name="hermes_usage.json",
+        max_stdout_bytes=1000, max_stderr_bytes=1000, max_usage_bytes=1000, max_wall_seconds=5,
+        hermes_home=str(home), managed_config_bytes=MANAGED_BYTES,
+    )
+    assert outcome.launch_failed is True
+
+
+def test_p027_research_home_auth_and_env_alone_is_permitted(tmp_path, monkeypatch):
+    # A dedicated home with only a credential store (.env / auth.json) and an empty
+    # plugins dir is a valid H1 profile; its secret values are never read/echoed.
+    home = tmp_path / "research_home"
+    home.mkdir()
+    (home / ".env").write_text("FIRECRAWL_API_KEY=fc-should-not-be-read\n", encoding="utf-8")
+    (home / "auth.json").write_text('{"codex": "token-should-not-be-read"}\n', encoding="utf-8")
+    (home / "plugins").mkdir()  # present but empty is allowed
+    assert is_clean_research_home_control_plane(str(home)) is True
+    created = _capture_mkdtemp(monkeypatch)
+    outcome = ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", _MANAGED_INSPECT_PROG], usage_file_name="hermes_usage.json",
+        max_stdout_bytes=200_000, max_stderr_bytes=65_536, max_usage_bytes=65_536,
+        max_wall_seconds=30, hermes_home=str(home), managed_config_bytes=MANAGED_BYTES,
+    )
+    assert outcome.launch_failed is False
+    data = [json.loads(l) for l in outcome.stdout.decode().splitlines() if l.strip()][-1]
+    # No secret value from the home is present in sanitized evidence (stdout is the
+    # child's own report; the backend records no home contents).
+    assert "fc-should-not-be-read" not in json.dumps(data)
+    assert "token-should-not-be-read" not in json.dumps(data)
+    for path in created["hermes_managed_"]:
+        assert not Path(path).exists()
 
 
 def test_c20_windows_argv_bound_with_quote_heavy_content():  # C20

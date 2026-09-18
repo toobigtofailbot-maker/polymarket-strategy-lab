@@ -1,0 +1,238 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP175I",
+    "title": "Controlled Research Profile Enforcement",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "BOUNDED_CONTROLLED_RESEARCH_PROFILE_ENFORCEMENT_CORRECTION",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 181,
+      "head_sha": "aedaf52805938612f767a9991aac3939c96c5bf6",
+      "merge_sha": "3e5dd322800e656f942d46c768fc93aa7ac2e7ea"
+    },
+    "suggested_branch": "claude/wp175i-hermes-controlled-profile-enforcement",
+    "objective": "Correct the merged WP175H external Hermes runtime so pristine pinned Hermes v0.21.3 runs under one mechanically enforced controlled research profile: remove --safe-mode from the real research invocation (it sets HERMES_SAFE_MODE=1 and suppresses the bundled Firecrawl backend H1 requires) while retaining --ignore-user-config and --ignore-rules, and replace the lost isolation with a deterministic repo-owned non-secret managed-scope config.yaml injected through an ephemeral HERMES_MANAGED_DIR that pins Firecrawl for web_search and web_extract, forces keyless fallback/rescue and web cache off, empties the provider fallback chain, sets one ordinary provider attempt (agent.api_max_retries 1), forbids the custom/user/project plugin allow-list while pinned bundled backend discovery still registers Firecrawl, and adds a fail-closed research-home control-plane preflight; all with zero real provider, OAuth, Firecrawl-secret, web-research, capital, or order activity and no dependency, lock, or workflow change.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/hermes_controlled_research_runtime_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP175I.md",
+      "docs/wp_specs/WP175I/wp_prompt.txt",
+      "docs/wp_specs/WP175I/wp_spec.json",
+      "src/research_runtime/hermes_controlled_runtime/__init__.py",
+      "src/research_runtime/hermes_controlled_runtime/controller.py",
+      "src/research_runtime/hermes_controlled_runtime/policy.py",
+      "src/research_runtime/hermes_controlled_runtime/runner.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_controller.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_models.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_runner.py",
+      "tests/test_project_status_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/hermes_controlled_research_runtime_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP175I.md",
+      "docs/wp_specs/WP175I/wp_prompt.txt",
+      "docs/wp_specs/WP175I/wp_spec.json",
+      "src/research_runtime/hermes_controlled_runtime/__init__.py",
+      "src/research_runtime/hermes_controlled_runtime/controller.py",
+      "src/research_runtime/hermes_controlled_runtime/policy.py",
+      "src/research_runtime/hermes_controlled_runtime/runner.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_controller.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_models.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_runner.py",
+      "tests/test_project_status_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/data_layer/polymarket/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/risk/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 15,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py"
+    ],
+    "rollback_surface": "Revert WP175I. Only the controlled research profile correction is removed: the policy safe-mode removal and managed-scope config construction, the runner ephemeral managed-dir plus research-home control-plane preflight, the controller managed-config wiring, the package export additions, the three focused test additions, the WP175I status/spec/prompt, the runtime contract profile section, and the scoped docs/repo-truth/deferred and status-doc-guard registrations. Pinned Hermes v0.21.3 stays unchanged and no dependency, workflow, credential, account, order, paper, Gate-C, WP176, or live state exists to unwind; the pre-WP175I safe-mode research invocation returns and no other module changes behavior.",
+    "mode_boundaries": [
+      {"boundary": "workflow_governance", "crossed": false},
+      {"boundary": "local_offline_tooling", "crossed": true},
+      {"boundary": "canonical_evidence_policy", "crossed": true},
+      {"boundary": "docs", "crossed": true},
+      {"boundary": "tests", "crossed": true},
+      {"boundary": "source_runtime", "crossed": true},
+      {"boundary": "workflow_files", "crossed": false},
+      {"boundary": "dependencies", "crossed": false},
+      {"boundary": "network", "crossed": true},
+      {"boundary": "credentials", "crossed": false},
+      {"boundary": "scheduler", "crossed": false},
+      {"boundary": "hermes_runtime", "crossed": true},
+      {"boundary": "strategy", "crossed": false},
+      {"boundary": "paper", "crossed": false},
+      {"boundary": "execution", "crossed": false},
+      {"boundary": "live", "crossed": false}
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP175I changes the external Hermes runtime posture from safe-mode to a controlled managed-scope profile while preserving the dormant no-authority boundary; the public surfaces gain profile-enforcement behavior only.",
+    "items": [
+      {"surface": "HermesInvocationPolicy and build_hermes_argv", "before": "Research argv carried --safe-mode and the policy froze safe_mode true", "after": "Research argv omits --safe-mode (retains --ignore-user-config/--ignore-rules); the policy freezes safe_mode false, adds controlled managed-scope profile fields, and derives deterministic managed-config bytes whose SHA-256 is committed into the policy identity (schema bumped to 2.0.0)", "change_authorized": true, "compatibility_requirement": "No caller may re-enable safe mode as the H1 safety layer, broaden toolsets, or alter any pinned managed backend/fallback/retry/plugin value without failing construction or changing policy identity", "authority": "LOCAL_OFFLINE_RUNTIME_POLICY"},
+      {"surface": "ExternalHermesCliBackend.invoke and is_clean_research_home_control_plane", "before": "One ephemeral empty cwd, minimal env, optional safe research HERMES_HOME", "after": "Adds a distinct ephemeral managed-scope directory whose config.yaml is the deterministic managed bytes, sets HERMES_MANAGED_DIR itself (never inherited), never forwards HERMES_SAFE_MODE/HERMES_ENABLE_PROJECT_PLUGINS, removes both ephemeral directories on every path, and fails closed before spawn when the research home carries a config.yaml or non-empty user plugins", "change_authorized": true, "compatibility_requirement": "The managed dir and cwd are distinct ephemeral paths outside repo/local_data/home; no secret value is read or echoed; tests use a fake executable and make zero paid/provider/network calls", "authority": "NETWORK_CAPABLE_BOUNDARY_DORMANT"},
+      {"surface": "run_controlled_hermes_research and expected_hermes_contract", "before": "Backend invoked with argv/usage/home only", "after": "Controller builds the deterministic managed-config bytes from the policy and hands them to the single backend invocation; expected_hermes_contract surfaces the controlled-profile facts for evidence", "change_authorized": true, "compatibility_requirement": "Exactly one backend invocation; the controller writes no config to disk and sets no environment variable; receipt/provider/model/cost/schema/safety gates are unchanged", "authority": "LOCAL_OFFLINE_ADVISORY_RESEARCH"},
+      {"surface": "FakeHermesBackend", "before": "Recorded argv/usage-file/home", "after": "Also records the deterministic managed-config bytes it was handed while still performing zero process and zero network calls", "change_authorized": true, "compatibility_requirement": "The fake never writes the config to disk or sets an environment variable and records the controlled policy input deterministically", "authority": "LOCAL_OFFLINE_DETERMINISTIC_FAKE"}
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The controlled research profile pins safe-mode removal, managed-scope Firecrawl/keyless/fallback/retry values, the managed-config digest identity, the bounded transport recovery, the plugin boundary, and the research-home control-plane, each with explicit fail-closed semantics verified against exact tagged v0.21.3 commit 345cd2b.",
+    "items": [
+      {"path": "policy.safe_mode", "source": "CONSTANT", "type": "boolean", "required_rule": "frozen exactly false; the research invocation omits --safe-mode because exact tagged HERMES_SAFE_MODE=1 makes hermes_cli/plugins.py skip plugin discovery and suppress the bundled Firecrawl backend; re-enabling safe mode as the H1 safety layer fails policy construction", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "policy construction fails closed when safe_mode is true", "failure_category": "SCOPE_POLICY_INVALID", "safe_output": "boolean", "derivation_rule_id": null},
+      {"path": "policy.controlled_managed_scope", "source": "CONSTANT", "type": "boolean", "required_rule": "frozen exactly true; the controlled managed scope is the mandatory H1 isolation layer that replaces safe mode", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "policy construction fails closed when controlled_managed_scope is false", "failure_category": "SCOPE_POLICY_INVALID", "safe_output": "boolean", "derivation_rule_id": null},
+      {"path": "policy.web_search_backend", "source": "CONSTANT", "type": "enum", "required_rule": "exactly firecrawl for both web_search and web_extract; exact tagged tools/web_tools.py resolves web.search_backend/web.extract_backend strictly with no probe, so Firecrawl is pinned for both capabilities", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "policy construction fails closed on any other backend", "failure_category": "SCOPE_POLICY_INVALID", "safe_output": "closed enum", "derivation_rule_id": null},
+      {"path": "policy.web_extract_backend", "source": "CONSTANT", "type": "enum", "required_rule": "exactly firecrawl; per-capability managed override pins web_extract to the keyed Firecrawl backend", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "policy construction fails closed on any other backend", "failure_category": "SCOPE_POLICY_INVALID", "safe_output": "closed enum", "derivation_rule_id": null},
+      {"path": "policy.keyless_fallback", "source": "CONSTANT", "type": "boolean", "required_rule": "frozen exactly false; managed web.keyless_fallback disables the exact tagged keyless free-tier ring so H1 never silently uses a keyless route", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "policy construction fails closed when keyless_fallback is true", "failure_category": "SCOPE_POLICY_INVALID", "safe_output": "boolean", "derivation_rule_id": null},
+      {"path": "policy.keyless_rescue", "source": "CONSTANT", "type": "boolean", "required_rule": "frozen exactly false; managed web.keyless_rescue disables the exact tagged one-shot per-call keyless rescue path", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "policy construction fails closed when keyless_rescue is true", "failure_category": "SCOPE_POLICY_INVALID", "safe_output": "boolean", "derivation_rule_id": null},
+      {"path": "policy.managed_fallback_providers", "source": "CONSTANT", "type": "frozen_tuple", "required_rule": "exactly empty; managed fallback_providers is empty so exact tagged hermes_cli.fallback_config.get_fallback_chain returns no provider/model fallback", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "policy construction fails closed on any non-empty fallback chain", "failure_category": "SCOPE_POLICY_INVALID", "safe_output": "empty tuple", "derivation_rule_id": null},
+      {"path": "policy.api_max_retries", "source": "CONSTANT", "type": "int", "required_rule": "exactly 1; managed agent.api_max_retries yields exactly one ordinary provider attempt on exact tagged agent_init.py (max clamp to 1) and conversation_loop.py (while retry_count < max_retries); the primary OpenAI client already sets SDK max_retries 0", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "policy construction fails closed on any other attempt count", "failure_category": "SCOPE_POLICY_INVALID", "safe_output": "positive int", "derivation_rule_id": null},
+      {"path": "policy.managed_config_sha256", "source": "CONSTANT", "type": "content_addressed_id", "required_rule": "SHA-256 of the deterministic canonical managed-config bytes derived from the frozen controlled-profile constants; the digest is committed into the policy identity so a one-field broadening of any managed control changes the policy id", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "recompute and exact compare; participates in policy_id derivation", "failure_category": "IDENTITY_DERIVATION_INVALID", "safe_output": "hex digest", "derivation_rule_id": null},
+      {"path": "policy.same_provider_primary_transport_recovery", "source": "CONSTANT", "type": "enum", "required_rule": "ALLOWED_BOUNDED; exact tagged agent_runtime_helpers.try_recover_primary_transport may rebuild the primary client once after the single ordinary attempt exhausts on a transient transport error, with no provider/model/web-backend change and no second controller invocation; this narrow recovery is documented and never suppressed by a Hermes fork", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "policy construction fails closed on any other recovery posture", "failure_category": "AUTHORITY_CONTRADICTION", "safe_output": "closed enum", "derivation_rule_id": null},
+      {"path": "policy.custom_user_project_plugin_loading", "source": "CONSTANT", "type": "enum", "required_rule": "FORBIDDEN; managed plugins.enabled is an explicit empty allow-list so no custom/user/entry-point plugin loads and HERMES_ENABLE_PROJECT_PLUGINS is never forwarded, while pinned bundled backend discovery still registers Firecrawl (bundled_backend_discovery ALLOWED_FOR_WEB_PROVIDER_REGISTRATION, exposed agent toolset WEB_ONLY)", "mutable": false, "identity_role": "COMMITTED", "exclusion_reason": null, "validation_rule": "policy construction fails closed when custom/user/project plugin loading is represented as allowed", "failure_category": "SCOPE_POLICY_INVALID", "safe_output": "closed enum", "derivation_rule_id": null},
+      {"path": "runner.research_home_control_plane", "source": "DERIVED", "type": "boolean", "required_rule": "an H1 research HERMES_HOME with a present config.yaml or a non-empty user plugins directory fails closed before spawn; the preflight inspects names only and never reads or echoes a credential value; an .env/auth.json credential store alone is permitted", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "is_clean_research_home_control_plane returns false and invoke launch-fails before any process starts", "failure_category": "SEMANTIC_CONTRADICTION", "safe_output": "boolean", "derivation_rule_id": null},
+      {"path": "runner.managed_scope_env", "source": "DERIVED", "type": "env_mapping", "required_rule": "the child receives the backend-created HERMES_MANAGED_DIR pointing at the ephemeral managed scope; an ambient HERMES_MANAGED_DIR/HERMES_SAFE_MODE/HERMES_ENABLE_PROJECT_PLUGINS is never inherited; both ephemeral directories are removed on success, timeout, and launch failure", "mutable": false, "identity_role": "NONE", "exclusion_reason": null, "validation_rule": "minimal env excludes the never-forward variables and the backend sets HERMES_MANAGED_DIR itself", "failure_category": "SEMANTIC_CONTRADICTION", "safe_output": "sanitized env key set", "derivation_rule_id": null}
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "The managed-config digest and policy identity recomputation are executable focused-test oracles; no worked package-spec oracle is required.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "RUNTIME deterministic readiness supplies draftability and the user's authorization supplies implementation authority; neither grants merge or runtime activation.",
+    "items": [
+      {"from_state": "LOCAL_DRAFT", "to_state": "DRAFTABILITY_PASS", "condition": "prompt/spec authority equality, exact scope, semantics, evidence plan, and deterministic RUNTIME readiness pass without a certificate", "failure_category": "DRAFTABILITY_INCOMPLETE"},
+      {"from_state": "DRAFTABILITY_PASS", "to_state": "AUTHORIZED", "condition": "Karl authorizes implementation of this exact WP175I branch/worktree/package for its bounded software scope", "failure_category": "AUTHORITY_CONTRADICTION"},
+      {"from_state": "AUTHORIZED", "to_state": "IMPLEMENTED_LOCAL", "condition": "implementation stays inside the exact 15-file scope and final readiness --check-diff passes with zero real provider/OAuth/Firecrawl/web calls", "failure_category": "SEMANTIC_CONTRADICTION"}
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {"condition_id": "file_unreadable", "category": "FILE_READ_ERROR", "priority": 10},
+      {"condition_id": "json_invalid", "category": "JSON_PARSE_INVALID", "priority": 20},
+      {"condition_id": "schema_unsupported", "category": "SCHEMA_UNSUPPORTED", "priority": 30},
+      {"condition_id": "unknown_field", "category": "UNKNOWN_FIELD", "priority": 40},
+      {"condition_id": "field_missing", "category": "FIELD_MISSING", "priority": 50},
+      {"condition_id": "field_type_invalid", "category": "FIELD_TYPE_INVALID", "priority": 60},
+      {"condition_id": "field_value_invalid", "category": "FIELD_VALUE_INVALID", "priority": 70},
+      {"condition_id": "certificate_hash_mismatch", "category": "CERTIFICATE_HASH_MISMATCH", "priority": 80},
+      {"condition_id": "draftability_incomplete", "category": "DRAFTABILITY_INCOMPLETE", "priority": 90},
+      {"condition_id": "scope_policy_invalid", "category": "SCOPE_POLICY_INVALID", "priority": 100},
+      {"condition_id": "authority_contradiction", "category": "AUTHORITY_CONTRADICTION", "priority": 110},
+      {"condition_id": "semantic_contradiction", "category": "SEMANTIC_CONTRADICTION", "priority": 120},
+      {"condition_id": "identity_derivation_invalid", "category": "IDENTITY_DERIVATION_INVALID", "priority": 130},
+      {"condition_id": "failure_precedence_invalid", "category": "FAILURE_PRECEDENCE_INVALID", "priority": 140},
+      {"condition_id": "example_truth_invalid", "category": "EXAMPLE_TRUTH_INVALID", "priority": 150}
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused executable tests are the product oracle and no package-spec identity derivation requires an embedded worked example.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R025 cover the safe-mode removal, retained ignore flags, exact web toolset, managed-config determinism/content/digest-identity, ephemeral managed-scope isolation and cleanup, ambient-env non-forwarding, research-home control-plane preflight, single controller invocation, bounded-recovery truthfulness, no forbidden imports, docs truth, and the local/hosted validation.",
+    "items": [
+      {"requirement_id": "R001", "source": "pytest", "test": "test_p005_safe_mode_frozen_false_on_controlled_profile", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the default controlled policy freezes safe_mode false with controlled_managed_scope true and re-enabling safe mode fails policy construction"},
+      {"requirement_id": "R002", "source": "pytest", "test": "test_argv_uses_pinned_v0213_shape_without_unsupported_flags", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "the research argv omits --safe-mode, retains exactly --ignore-user-config and --ignore-rules and one --toolsets web, and carries no unsupported flag"},
+      {"requirement_id": "R003", "source": "pytest", "test": "test_p004_unsupported_flags_stay_absent_from_argv", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "the research argv never contains --max-turns, --format, stream-json, --input-file, chat, or --oneshot"},
+      {"requirement_id": "R004", "source": "pytest", "test": "test_r005_policy_cannot_be_broadened", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "re-enabling safe mode, disabling the ignore flags or controlled managed scope, or altering any pinned managed backend/keyless/fallback/retry/plugin/recovery value fails policy construction"},
+      {"requirement_id": "R005", "source": "pytest", "test": "test_p008_managed_config_bytes_are_deterministic_and_stable", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the managed-config bytes are deterministic canonical sorted JSON stable across constructions and equal to the module constant"},
+      {"requirement_id": "R006", "source": "pytest", "test": "test_p009_managed_config_pins_firecrawl_for_search_and_extract", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the managed config pins web backend, search_backend, and extract_backend to firecrawl with provider_tier firecrawl paid"},
+      {"requirement_id": "R007", "source": "pytest", "test": "test_p010_managed_config_disables_keyless_and_cache", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the managed config sets web keyless_fallback, keyless_rescue, and cache_enabled all false"},
+      {"requirement_id": "R008", "source": "pytest", "test": "test_p011_managed_config_empties_fallback_chain", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the managed config sets fallback_providers to the empty list"},
+      {"requirement_id": "R009", "source": "pytest", "test": "test_p012_managed_config_sets_one_ordinary_provider_attempt", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the managed config sets agent.api_max_retries to exactly 1"},
+      {"requirement_id": "R010", "source": "pytest", "test": "test_p013_managed_config_pins_plugins_hooks_updates", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the managed config sets plugins.enabled empty, hooks empty, and updates.check false"},
+      {"requirement_id": "R011", "source": "pytest", "test": "test_p014_managed_config_contains_no_secret_or_repo_path", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py", "expected_result": "the managed config carries no secret-looking content and no traversal, absolute, or private path when scanned with the request secret and path patterns"},
+      {"requirement_id": "R012", "source": "pytest", "test": "test_p015_managed_config_digest_participates_in_policy_identity", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the managed-config SHA-256 appears in the policy identity fields and the policy id is the hash of those fields"},
+      {"requirement_id": "R013", "source": "pytest", "test": "test_p017_p018_separate_cwd_and_managed_dir_with_config", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "the external backend creates a distinct ephemeral cwd and managed dir and the child reads the deterministic managed config from HERMES_MANAGED_DIR"},
+      {"requirement_id": "R014", "source": "pytest", "test": "test_p019_ambient_managed_dir_is_never_forwarded", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "an ambient HERMES_MANAGED_DIR is never forwarded and the child sees only the backend-created ephemeral managed dir"},
+      {"requirement_id": "R015", "source": "pytest", "test": "test_p020_ambient_safe_mode_and_project_plugins_never_forwarded", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "ambient HERMES_SAFE_MODE, HERMES_ENABLE_PROJECT_PLUGINS, and provider-secret env vars are never forwarded to the child"},
+      {"requirement_id": "R016", "source": "pytest", "test": "test_p021_managed_dir_removed_on_success", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "the ephemeral managed and cwd directories are removed after a successful invocation"},
+      {"requirement_id": "R017", "source": "pytest", "test": "test_p025_research_home_config_yaml_fails_closed", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "a research home carrying a config.yaml fails the control-plane preflight and the invocation launch-fails before any process starts"},
+      {"requirement_id": "R018", "source": "pytest", "test": "test_p026_research_home_user_plugins_fail_closed", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "a research home with a non-empty user plugins directory fails the control-plane preflight before spawn"},
+      {"requirement_id": "R019", "source": "pytest", "test": "test_p027_research_home_auth_and_env_alone_is_permitted", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py", "expected_result": "a research home with only an .env/auth.json credential store and an empty plugins directory is permitted and no secret value is read or echoed"},
+      {"requirement_id": "R020", "source": "pytest", "test": "test_p028_p029_controller_supplies_managed_config_once", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the controller invokes the backend exactly once and hands it the deterministic controlled managed-config bytes"},
+      {"requirement_id": "R021", "source": "pytest", "test": "test_p032_policy_truthfully_records_recovery_and_no_fallback", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the policy truthfully records same-provider primary transport recovery ALLOWED_BOUNDED, provider/model fallback NONE, web fallback/rescue NONE, custom plugin loading FORBIDDEN, and bundled backend discovery allowed for web provider registration"},
+      {"requirement_id": "R022", "source": "pytest", "test": "test_r020_no_imports_from_execution_paper_or_private_account_surfaces", "command": "python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py", "expected_result": "the runtime package imports no execution_gateway, paper_trading, oms, risk, or private-account/network surface"},
+      {"requirement_id": "R023", "source": "pytest", "test": "test_wp175i_controlled_profile_status_registered", "command": "python -m pytest -q tests/test_project_status_docs.py", "expected_result": "project status, the WP175I status entry, and the runtime contract truthfully record WP175H merged, the safe-mode removal, the controlled managed profile, the prior H1 failure with zero real calls, and the separately gated S10-GATE-H1 successor"},
+      {"requirement_id": "R024", "source": "validation", "test": "exact_scope_and_local_validation", "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP175I/wp_prompt.txt --spec docs/wp_specs/WP175I/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD", "expected_result": "deterministic RUNTIME readiness and an exact 15-file diff pass with no dependency, lock, or workflow change and the generated-artifact guard green"},
+      {"requirement_id": "R025", "source": "github", "test": "exact_head_hosted_and_posted_evidence", "command": "gh pr checks --watch", "expected_result": "one exact-head hosted validation passes with zero real provider/OAuth/Firecrawl/web calls and the re-fetched canonical PR body passes the evidence consistency guard before Ready YES"}
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP176",
+    "next_title": "S10-GATE-H1 Controlled Public Research Pilot (resumed) then S10-ALPHA-01, ahead of WP176 Mature Controlled Live",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP176",
+    "forbidden_in_this_wp": [
+      "any real provider-backed or public-web Hermes research call",
+      "executing S10-GATE-H1 or consuming its unspent research authorization",
+      "OAuth or account consent",
+      "creating, reading, or using the Firecrawl secret",
+      "selecting, approving, or activating a remote provider, account, or model",
+      "opportunity candidates, probability theses, fair value, expected return, side, entry/exit, or position sizing",
+      "strategy promotion, Alpha Factory state, WP170 experiments, or trade recommendations",
+      "paper order generation, execution, risk-cap change, Gate-C qualification, or live activation",
+      "scheduler, cron, daemon, gateway, or background autonomous loop",
+      "dependency, lock-file, or GitHub Actions workflow changes",
+      "vendoring, forking, patching, or installing Hermes in the repository",
+      "merging the WP175I PR or starting S10-ALPHA-01 or WP176"
+    ]
+  }
+}

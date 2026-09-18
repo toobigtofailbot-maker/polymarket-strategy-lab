@@ -1,0 +1,291 @@
+SIDE10 — WP175I / S10-HERMES-01A
+CONTROLLED RESEARCH PROFILE ENFORCEMENT
+IMPLEMENTATION-AUTHORIZED WORK PACKAGE
+
+===============================================================================
+1. PACKAGE IDENTITY
+===============================================================================
+
+  WP ID: WP175I
+  Title: Controlled Research Profile Enforcement
+  Side10 capability handle: S10-HERMES-01A
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Required predecessor: WP175H / PR #181 (merge_sha 3e5dd322800e656f942d46c768fc93aa7ac2e7ea)
+  Suggested branch: claude/wp175i-hermes-controlled-profile-enforcement
+  Package class: BOUNDED_CONTROLLED_RESEARCH_PROFILE_ENFORCEMENT_CORRECTION
+  Package size class: L (15 <= L budget 20; no broadened authority)
+  Exact changed-file scope: 15
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: LOCAL_SOFTWARE_ONLY_EXTERNAL_RUNTIME_POLICY_CORRECTION_NO_REMOTE_ACTIVATION
+  Product impact: CONTROLLED_RESEARCH_PROFILE_REPLACES_SAFE_MODE_ON_THE_RESEARCH_INVOCATION
+  Network impact: NETWORK_CAPABILITY_PRESENT_BUT_REAL_REMOTE_RESEARCH_PILOT_SEPARATELY_GATED
+  Credential impact: NONE_IN_REPOSITORY_NONE_IN_TESTS_NONE_HANDLED_BY_PROJECT_CODE
+  Dependency impact: NONE
+  Trading impact: NONE_RESEARCH_ONLY_NO_PAPER_EXECUTION_NO_LIVE_AUTHORITY
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: strong coding/reasoning mode; escalate only for a real runtime
+    or security contradiction.
+  Escalate or STOP if: the exact tagged Hermes v0.21.3 managed-scope, plugin,
+    web-backend, or retry semantics cannot support the controlled profile without
+    widening authority, forking Hermes, or changing a dependency.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Merge authority: NO.
+
+===============================================================================
+2. OBJECTIVE
+===============================================================================
+
+Make the merged WP175H external runtime capable of running pristine pinned Hermes
+v0.21.3 under one mechanically enforced CONTROLLED RESEARCH PROFILE while preserving
+the original authority boundary.
+
+The correction: keeps exact pinned Hermes v0.21.3 pristine; keeps the top-level -z
+one-shot; keeps --ignore-user-config and --ignore-rules; REMOVES --safe-mode from the
+real research invocation because on exact tagged v0.21.3 it sets HERMES_SAFE_MODE=1 and
+makes hermes_cli/plugins.py skip plugin discovery, suppressing the bundled
+plugins/web/firecrawl backend H1 requires; replaces the lost safe-mode protection with
+a deterministic, repo-owned, non-secret managed-scope config.yaml injected through an
+ephemeral HERMES_MANAGED_DIR; forces Firecrawl for both web_search and web_extract;
+forces keyless fallback and keyless rescue off; forces the fallback-provider chain
+empty; sets one ordinary provider attempt (agent.api_max_retries 1); explicitly allows
+only the pinned same-provider primary transport recovery; keeps the exact web-only
+toolset; prevents user/project/custom plugins, MCP, hooks/rules/memory, and repo
+context from expanding the H1 surface; retains the WP175H usage/cost/provider/model/
+output/safety fail-closed semantics; and makes no real provider or web calls during
+implementation or CI.
+
+Verified against exact tagged Hermes v0.21.3 (tag v2026.9.14, commit 345cd2b, via
+read-only source inspection with zero runtime/provider call): the -z one-shot
+(hermes_cli/oneshot.py) calls hermes_cli.config.load_config(), whose
+_merge_managed_overlay deep-merges the managed config leaf-over-leaf on top of
+defaults, so the managed layer survives the one-shot path; get_managed_dir() honors
+HERMES_MANAGED_DIR only when the directory exists; config.yaml is parsed with
+yaml.safe_load so canonical JSON is valid; tools/web_tools.py resolves
+web.search_backend / web.extract_backend strictly with no probe; the keyless ring and
+one-shot rescue read web.keyless_fallback / web.keyless_rescue; fallback_config reads
+fallback_providers; agent_init clamps api_max_retries to one ordinary attempt and the
+primary OpenAI client sets SDK max_retries 0; agent_runtime_helpers permits one bounded
+same-provider primary transport recovery; and plugins_discovery auto-loads the bundled
+Firecrawl backend while gating non-bundled plugins on the plugins.enabled allow-list
+and project plugins on HERMES_ENABLE_PROJECT_PLUGINS.
+
+===============================================================================
+3. AUTHORITY / NON-AUTHORITY POSTURE
+===============================================================================
+
+Authorized: a local/offline, network-capable-but-dormant controlled research profile
+correction inside the existing src/research_runtime/hermes_controlled_runtime/ package
+(policy managed-scope construction and safe-mode removal, runner ephemeral managed dir
+and research-home control-plane preflight, controller managed-config wiring, package
+export additions); focused test additions; the runtime contract profile section; and
+exact scoped docs/status/spec/repo-truth registrations.
+
+Not authorized (non-authority): executing S10-GATE-H1 or consuming its unspent
+research authorization; OAuth or account consent; creating, reading, or using the
+Firecrawl secret; a real provider-backed or public-web research call; credentials or
+secrets of any kind; selecting or activating a remote provider or model; opportunity
+candidates, probability theses, fair value, side, entry/exit, or position sizing;
+strategy promotion or Alpha Factory state; paper order generation, execution, risk-cap
+change, Gate-C qualification, or live activation; scheduler/cron/daemon/gateway/
+background autonomous loops; dependency/lock/workflow changes; vendoring, forking,
+patching, or installing Hermes in the repository. Project code must never read, store,
+inject, log, transform, validate, or echo a provider secret or any trading credential;
+the managed config carries no secret, token, key, path, or private value.
+
+===============================================================================
+4. CHANGED-FILE SCOPE
+===============================================================================
+
+Exact scope (required == allowed == 15, maximum 15):
+
+  docs/deferred_items_log.md
+  docs/hermes_controlled_research_runtime_contract.md
+  docs/project_status.md
+  docs/repo_truth_index.md
+  docs/status_entries/WP175I.md
+  docs/wp_specs/WP175I/wp_prompt.txt
+  docs/wp_specs/WP175I/wp_spec.json
+  src/research_runtime/hermes_controlled_runtime/__init__.py
+  src/research_runtime/hermes_controlled_runtime/controller.py
+  src/research_runtime/hermes_controlled_runtime/policy.py
+  src/research_runtime/hermes_controlled_runtime/runner.py
+  tests/research_runtime/hermes_controlled_runtime/test_controller.py
+  tests/research_runtime/hermes_controlled_runtime/test_models.py
+  tests/research_runtime/hermes_controlled_runtime/test_runner.py
+  tests/test_project_status_docs.py
+
+Forbidden: a 16th path; dependencies/locks/workflows; credentials/secrets; a real
+Firecrawl key; vendored, forked, patched, or installed Hermes; execution_gateway/
+paper_trading/oms/risk/polymarket product code; WP170/WP172/WP173/WP175 economic
+changes; Gate-C/live product code; browser/MCP/scheduler/cron/delegation
+implementation; local_data commits. models.py and response_capture.py are UNCHANGED
+(the correction lives in policy.py, runner.py, controller.py, and __init__.py).
+
+===============================================================================
+5. FROZEN CONTROLLED-PROFILE DESIGN
+===============================================================================
+
+Research argv becomes exactly: hermes --ignore-user-config --ignore-rules --provider P
+--model M --toolsets web --usage-file <bare relative name> -z <bounded prompt>.
+--safe-mode MUST NOT appear.
+
+For every external research invocation the backend creates a fresh ephemeral
+managed-scope directory (distinct from the empty cwd, the repository, local_data, and
+the research HERMES_HOME), writes exactly one non-secret config.yaml holding the
+deterministic managed bytes, and sets HERMES_MANAGED_DIR itself (never inherited, never
+caller-supplied). Both ephemeral directories are removed on success, timeout, and
+launch failure.
+
+The managed overlay mechanically freezes at least: updates.check false;
+fallback_providers empty; agent.api_max_retries 1; web.backend / web.search_backend /
+web.extract_backend firecrawl; web.keyless_fallback false; web.keyless_rescue false;
+web.cache_enabled false; web.provider_tier.firecrawl paid; plugins.enabled empty; hooks
+empty. The deterministic managed-config bytes (canonical JSON, valid YAML) or their
+SHA-256 are committed into the policy identity, and the Hermes invocation policy schema
+is bumped to 2.0.0 because the security posture materially changed.
+
+The dedicated research HERMES_HOME is validated fail-closed before spawn: config.yaml
+absent; user plugin directories absent or empty; no repo/local_data/traversal/symlink;
+an .env/auth.json credential store alone is permitted, inspected by name only, never
+read or echoed. Custom/user/project plugin loading is FORBIDDEN; pinned bundled backend
+discovery is ALLOWED for web provider registration; the exposed agent toolset is
+WEB_ONLY.
+
+Retry posture (canonical): exactly one research invocation per attempt; zero WP175H
+outer transport retries; one ordinary provider attempt via agent.api_max_retries 1; no
+provider/model fallback; no web-backend fallback/rescue; and one bounded same-provider
+primary transport recovery permitted by exact tagged v0.21.3, documented and never
+suppressed by a Hermes fork.
+
+===============================================================================
+6. HARD STOPS
+===============================================================================
+
+STOP and report instead of improvising if: exact Hermes v0.21.3 managed scope does not
+survive the one-shot config path; Firecrawl cannot function without safe mode under the
+stated controls; Firecrawl-only search/extract cannot be mechanically pinned; keyless
+fallback/rescue cannot be disabled; fallback_providers cannot be forced empty;
+api_max_retries 1 does not mean one ordinary attempt; custom/user/project plugin
+loading cannot be prevented; research-home config/plugin contamination cannot be
+detected before spawn; a real secret or a real provider/web call would be required; a
+Hermes fork/patch is required; a dependency/lock/workflow change becomes necessary;
+more than 16 changed files are required; or main moves in a way that materially changes
+this contract. Use the most specific stop code (EXTERNAL_CONTRACT_MISMATCH,
+SCOPE_CONTRACT_MISMATCH, SCOPE_EXPANSION_REQUIRED, REAL_SECRET_REQUIRED,
+REAL_NETWORK_REQUIRED, AUTHORITY_EXPANSION_REQUIRED, STATE_DRIFT).
+
+===============================================================================
+7. NEGATIVE-TEST MATRIX
+===============================================================================
+
+Negative-test matrix (deterministic fake/local only; no real provider/web/OAuth call):
+re-enabling safe mode, disabling the ignore flags or controlled managed scope, or
+altering any pinned managed backend/keyless/fallback/retry/plugin/recovery value fails
+policy construction (SCOPE_POLICY_INVALID / AUTHORITY_CONTRADICTION); an ambient
+HERMES_MANAGED_DIR / HERMES_SAFE_MODE / HERMES_ENABLE_PROJECT_PLUGINS is never
+forwarded; a research home carrying a config.yaml or a non-empty user plugins directory
+fails closed before spawn; the managed config contains no secret value and no private
+path; and content/schema/safety/cost/provider mismatch still never retries. Not
+applicable: any positive real-provider, real-Firecrawl, OAuth, capital, or order
+assertion — all remain zero and are covered only by dormant fake/local evidence.
+
+===============================================================================
+8. EVIDENCE PLAN
+===============================================================================
+
+Evidence plan / requirement mapping: R001-R025 in wp_spec.json map each controlled-
+profile requirement to a deterministic focused pytest node in test_controller.py,
+test_runner.py, test_models.py, or test_project_status_docs.py, plus the local
+readiness --check-diff validation and the one exact-head hosted validation. Every
+provider/web/OAuth/Firecrawl/capital/order count stays 0 across implementation and CI.
+
+===============================================================================
+9. DOC / STATUS TRUTH
+===============================================================================
+
+WP175I docs must state: WP175H merged at main 3e5dd322... at package start; the first
+S10-GATE-H1 attempt stopped at static preflight FAIL / SOFTWARE_GAP with real research
+invocation count 0, OAuth count 0, and Firecrawl secret requested/used 0, so the H1
+authorization was not consumed; the current defect was the safe-mode/profile-policy
+incompatibility; the exact correction is the controlled managed-scope profile plus
+compensating isolation with no safe-mode on the research invocation; the approved H1
+retry interpretation; pristine Hermes v0.21.3 remains pinned; no real runtime activation
+during WP175I; the successor resumes S10-GATE-H1 only after merge and Side10 review;
+S10-ALPHA-01 remains blocked on a genuine H1 PASS plus Side10 review; Gate C remains
+NOT AUTHORIZED; and WP176 remains NOT STARTED. Merged WP175H is no longer the current
+review target. Unrelated historical records are not rewritten.
+
+===============================================================================
+10. SUCCESSOR BOUNDARY
+===============================================================================
+
+Successor boundary: the WP175I successor is NOT S10-ALPHA-01. The successor is
+S10-GATE-H1 — Controlled Public Research Pilot, resumed under the already accepted
+provider/model/web/authority policy only after WP175I merge, a post-merge state
+refresh, and Side10 confirmation. The existing H1 provider-backed research
+authorization remains available because the failed first attempt consumed zero real
+research invocations. Only a genuine H1 PASS plus Side10 review may authorize
+S10-ALPHA-01 — Multi-Lane Alpha Factory Core. Gate C remains NOT AUTHORIZED and WP176
+remains NOT STARTED. This WP does not merge itself and does not auto-activate a
+successor.
+
+===============================================================================
+11. REPORT-BACK
+===============================================================================
+
+Report-back: return the exact worktree/branch/base, the prompt/spec identity and
+deterministic readiness, the exact 15-file changed set, the exact-tag Hermes contract
+recheck result, the controlled-profile facts (research argv has no safe mode; ignore
+flags retained; toolsets web; managed_scope_mode; managed_config_sha256; Firecrawl
+search/extract pinned; keyless fallback/rescue off; web cache off; fallback providers
+empty; api_max_retries 1; same-provider primary transport recovery ALLOWED_BOUNDED;
+custom/user/project plugin loading FORBIDDEN; bundled backend discovery allowed), the
+authority-zero statements (real provider calls 0; OAuth 0; Firecrawl secret 0; product
+web research 0; capital USD 0; orders 0; Gate C NOT AUTHORIZED; runtime activated NO;
+merge authorized NO), the local and exact-head hosted validation results, and the H1
+predecessor failure truth, with final disposition READY_FOR_SIDE10_REVIEW.
+
+===============================================================================
+12. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|policy|safe_mode|research_invocation|FORBID|no_safe_mode_on_research|policy.safe_mode|R002
+NR002|policy|controlled_managed_scope|first_runtime|REQUIRE|ephemeral_repo_owned_managed_dir|policy.controlled_managed_scope|R013
+NR003|policy|broadening|any_control|FORBID|fail_closed_or_change_identity|policy.web_search_backend|R004
+NR004|managed|web_search_extract|backend_selection|REQUIRE|firecrawl_pinned_both|policy.web_extract_backend|R006
+NR005|managed|web_keyless|fallback_and_rescue|FORBID|keyless_off|policy.keyless_fallback|R007
+NR006|managed|web_keyless_rescue|per_call|FORBID|keyless_rescue_off|policy.keyless_rescue|R007
+NR007|managed|fallback_providers|chain|FORBID|empty_chain|policy.managed_fallback_providers|R008
+NR008|managed|api_max_retries|provider_attempt|REQUIRE|one_ordinary_attempt|policy.api_max_retries|R009
+NR009|policy|managed_config_digest|identity|REQUIRE|committed_in_policy_id|policy.managed_config_sha256|R012
+NR010|policy|primary_transport_recovery|same_provider|PRESERVE_EXACT|allowed_bounded_once|policy.same_provider_primary_transport_recovery|R021
+NR011|policy|custom_plugins|user_project|FORBID|custom_loading_forbidden|policy.custom_user_project_plugin_loading|R004
+NR012|research_home|control_plane|config_or_user_plugins|REJECT|fail_closed_before_spawn|runner.research_home_control_plane|R017
+NR013|child_env|managed_dir|ambient|FORBID|never_inherited_backend_set|runner.managed_scope_env|R014
+NR014|managed|config_content|secret_or_path|REJECT|no_secret_no_path|policy.managed_config_sha256|R011
+END_NORMATIVE_RULE_MATRIX_V1
