@@ -16,7 +16,7 @@ Hermes research session pinned to Hermes Agent v0.21.3 (tag v2026.9.14, commit
 non-broadenable invocation policy allowing exactly the `web` toolset (web_search +
 web_extract), a compact research envelope, a backend protocol with a deterministic
 no-process fake and an isolated argv-only ephemeral-cwd external backend, a bounded
-stream-json audit parser, an authoritative untrusted-draft schema/safety validator,
+plain-stdout response and usage-file parser, an authoritative untrusted-draft schema/safety validator,
 and a sanitized no-authority receipt requiring human review. Hermes prose is
 untrusted research content, never canonical economic truth; the repository
 validator is authoritative and fails closed with no raw payload, stderr,

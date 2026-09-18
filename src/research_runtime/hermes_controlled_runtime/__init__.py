@@ -1,13 +1,14 @@
 """Controlled Hermes research runtime core (WP175H / S10-HERMES-01).
 
 A narrow, reusable, dormant-by-default primitive that wraps one bounded, one-shot,
-web-only EXTERNAL Hermes research session in a deterministic control plane:
+web-only EXTERNAL Hermes research session in a deterministic control plane, pinned
+to the Hermes Agent v0.21.3 tagged contract:
 
-    validated request -> frozen invocation policy + compact envelope
-    -> one ephemeral one-shot Hermes session (fake/local in tests)
-    -> bounded stream-json audit capture -> untrusted final research draft
-    -> authoritative repo-side schema/safety validation
-    -> sanitized research-run receipt -> mandatory human/deterministic review.
+    validated request -> bounded version preflight -> frozen invocation policy +
+    compact ``-z`` envelope -> one ephemeral one-shot Hermes session (fake/local in
+    tests) -> bounded plain-stdout response + ``--usage-file`` capture -> untrusted
+    final research draft -> authoritative repo-side schema/safety validation ->
+    sanitized research-run receipt -> mandatory human/deterministic review.
 
 This package has NO trading, paper, execution, live, credential, scheduler, or
 merge authority. It creates no opportunity candidate, probability thesis, strategy
@@ -21,7 +22,6 @@ from .controller import (
     ACTIVATION_CODE_COMPLETE,
     ACTIVATION_RUN_COMPLETE,
     HermesControlledRunResult,
-    QUERY_FILE_NAME,
     expected_hermes_contract,
     run_controlled_hermes_research,
 )
@@ -50,34 +50,43 @@ from .policy import (
     ALLOWED_TOOLSETS,
     ALLOWED_WEB_TOOLS,
     DEFAULT_HERMES_INVOCATION_POLICY,
-    HERMES_EXPECTED_VERSION,
+    HERMES_EXPECTED_SEMVER,
     HERMES_RELEASE,
     HERMES_RELEASE_COMMIT,
     HERMES_RELEASE_TAG,
+    MAX_PROMPT_BYTES,
+    RUNTIME_TOOL_TELEMETRY,
+    TOOL_ENFORCEMENT,
+    USAGE_FILE_NAME,
     HermesInvocationPolicy,
     HermesResearchEnvelope,
     PolicyBroadeningError,
     build_hermes_argv,
     build_research_envelope,
+    build_version_argv,
     is_supported_hermes_version,
+    parse_hermes_version,
+)
+from .response_capture import (
+    ResponseCapture,
+    UsageReport,
+    capture_final_response,
+    cost_within_cap,
+    parse_usage_report,
 )
 from .runner import (
     ExternalHermesCliBackend,
     FakeHermesBackend,
     HermesInvocationBackend,
     HermesInvocationOutcome,
-)
-from .stream_json import (
-    StreamJsonAuditResult,
-    parse_stream_json,
-    tool_calls_within_allowed,
+    HermesVersionProbe,
+    is_safe_research_home,
 )
 
 __all__ = (
     # controller
     "run_controlled_hermes_research",
     "HermesControlledRunResult",
-    "QUERY_FILE_NAME",
     "ACTIVATION_CODE_COMPLETE",
     "ACTIVATION_RUN_COMPLETE",
     "expected_hermes_contract",
@@ -107,21 +116,31 @@ __all__ = (
     "HermesResearchEnvelope",
     "PolicyBroadeningError",
     "build_hermes_argv",
+    "build_version_argv",
     "build_research_envelope",
     "is_supported_hermes_version",
+    "parse_hermes_version",
     "ALLOWED_TOOLSETS",
     "ALLOWED_WEB_TOOLS",
+    "TOOL_ENFORCEMENT",
+    "RUNTIME_TOOL_TELEMETRY",
+    "USAGE_FILE_NAME",
+    "MAX_PROMPT_BYTES",
     "HERMES_RELEASE",
     "HERMES_RELEASE_TAG",
     "HERMES_RELEASE_COMMIT",
-    "HERMES_EXPECTED_VERSION",
+    "HERMES_EXPECTED_SEMVER",
+    # response capture
+    "ResponseCapture",
+    "UsageReport",
+    "capture_final_response",
+    "parse_usage_report",
+    "cost_within_cap",
     # runner
     "HermesInvocationBackend",
     "HermesInvocationOutcome",
+    "HermesVersionProbe",
     "FakeHermesBackend",
     "ExternalHermesCliBackend",
-    # stream_json
-    "StreamJsonAuditResult",
-    "parse_stream_json",
-    "tool_calls_within_allowed",
+    "is_safe_research_home",
 )

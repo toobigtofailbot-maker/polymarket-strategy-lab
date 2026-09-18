@@ -14,8 +14,8 @@ controls; Hermes is an untrusted research brain, not an execution authority.
 
 This package is NOT the Alpha Factory. It provides a narrow reusable primitive:
 validated ResearchRunRequest -> deterministic bounded Hermes invocation plan ->
-one ephemeral one-shot session -> web-only tool posture -> bounded stream-json
-capture -> untrusted final research draft -> deterministic schema/safety
+one ephemeral one-shot session -> web-only tool posture -> bounded plain-stdout
+response and usage-file capture -> untrusted final research draft -> deterministic schema/safety
 validation -> sanitized ResearchRunReceipt -> mandatory human/deterministic review.
 
 It creates no opportunity candidate, probability thesis, strategy family, Alpha
@@ -84,7 +84,7 @@ Merge authority: NO.
 
 Authorized: a local/offline, network-capable-but-dormant controlled Hermes
 research runtime core under src/research_runtime/hermes_controlled_runtime/; a
-deterministic request/policy/stream-json/runner/controller boundary; a fake and an
+deterministic request/policy/response-capture/runner/controller boundary; a fake and an
 isolated external argv-only backend; focused tests; the new canonical runtime
 contract; and exact scoped docs/status/spec/repo-truth registrations.
 
@@ -107,10 +107,14 @@ Required runtime version: Hermes Agent v0.21.3; release tag v2026.9.14; release
 commit 345cd2b; release date 2026-09-14. Do not integrate against main, an
 unpinned rolling tag, or latest.
 
-Frozen one-shot command shape (argv only, never a shell string):
-  hermes chat --oneshot --provider <label> --model <label> --toolsets web
-    --ignore-user-config --ignore-rules --safe-mode --max-turns <n>
-    --format stream-json --input-file <bare-name>
+Frozen one-shot command shape (argv only, never a shell string), matching the
+exact tagged v0.21.3 CLI. v0.21.3 does NOT support --format stream-json or
+--input-file; it carries the prompt as the -z argv element and writes machine-
+readable usage/cost to --usage-file:
+  hermes --safe-mode --ignore-user-config --ignore-rules
+    --provider <label> --model <label> --toolsets web --max-turns <n>
+    --usage-file <bare-name> -z <deterministic-research-envelope>
+Version is read from a bounded no-network `hermes --version` preflight (== 0.21.3).
 
 Initial allowed built-in toolset: EXACTLY web (web_search + web_extract). Forbidden
 tool families: terminal, file, browser, code_execution, delegation, memory,
@@ -160,12 +164,12 @@ required_changed_files == allowed_changed_files == exactly (changed-file set):
 9. src/research_runtime/hermes_controlled_runtime/__init__.py
 10. src/research_runtime/hermes_controlled_runtime/models.py
 11. src/research_runtime/hermes_controlled_runtime/policy.py
-12. src/research_runtime/hermes_controlled_runtime/stream_json.py
+12. src/research_runtime/hermes_controlled_runtime/response_capture.py
 13. src/research_runtime/hermes_controlled_runtime/runner.py
 14. src/research_runtime/hermes_controlled_runtime/controller.py
 15. tests/research_runtime/hermes_controlled_runtime/__init__.py
 16. tests/research_runtime/hermes_controlled_runtime/test_models.py
-17. tests/research_runtime/hermes_controlled_runtime/test_stream_json.py
+17. tests/research_runtime/hermes_controlled_runtime/test_response_capture.py
 18. tests/research_runtime/hermes_controlled_runtime/test_runner.py
 19. tests/research_runtime/hermes_controlled_runtime/test_controller.py
 20. tests/test_architecture_boundaries.py
@@ -198,7 +202,7 @@ scheduler/file/shell authority escalation, without echoing rejected content.
 
 Policy: immutable non-broadenable HermesInvocationPolicy pinned to v0.21.3 with
 exactly the web toolset, ignore-user-config, ignore-rules, safe-mode, one-shot,
-stream-json, shell false, ephemeral empty cwd, repo mount false, and no
+plain-stdout+usage-file output, shell false, ephemeral empty cwd, repo mount false, and no
 mcp/plugin/cron/delegation/browser/file/terminal/code-execution; max transport
 retries 1; max concurrency 1.
 
@@ -238,7 +242,7 @@ The four focused test files must prove at least R001-R024: wrong Hermes version
 rejected; shell metacharacters cannot become shell execution; repository path is
 never the Hermes workdir; argv includes exactly one web toolset; broader tool
 enablement cannot be requested; unknown request field rejected; secret-looking
-content rejected without echo; malformed stream-json fails closed without raw echo;
+content rejected without echo; malformed usage report fails closed without raw echo;
 oversized stdout fails boundedly; timeout produces a sanitized receipt; one
 transport retry only; schema failure not retried; unsafe/trading-authority output
 rejected; empty/fabricated citation structure fails; raw stderr/env/payload cannot
@@ -337,7 +341,7 @@ NR004|request|cost|binary_float|REJECT|noncanonical|request.max_estimated_cost_u
 NR005|policy|toolsets|broadening_attempt|FORBID|web_only|policy.allowed_toolsets|R005
 NR006|policy|cwd|external_backend|PRESERVE_EXACT|ephemeral_only|policy.cwd_policy|R003
 NR007|hermes_version|reported|not_v0213|REJECT|version_mismatch|NONE|R001
-NR008|stream_json|final_result|malformed_or_ambiguous|REJECT|fail_closed_neutral|NONE|R008
+NR008|usage_report|final_result|malformed_or_missing|REJECT|fail_closed_neutral|NONE|R008
 NR009|draft|authority_flags|missing_or_false|REJECT|fail_closed|draft.authority_flags|R013
 NR010|draft|source_references|empty_or_fabricated|REJECT|provenance_required|draft.source_references|R014
 NR011|receipt|identity|deterministic_transcript|REQUIRE|content_addressed|receipt.receipt_id|R018

@@ -1,13 +1,15 @@
 """Deterministic controller for one bounded, one-shot Hermes research session.
 
-The controller owns the full lifecycle:
+The controller owns the full lifecycle against the pinned Hermes v0.21.3 contract:
 
   validated ``HermesResearchRunRequest``
-  -> frozen ``HermesInvocationPolicy`` + compact research envelope
+  -> bounded no-network version preflight (``hermes --version`` == 0.21.3)
+  -> frozen ``HermesInvocationPolicy`` + compact ``-z`` research envelope
   -> exactly one backend invocation (with at most one transport retry)
-  -> bounded stream-json audit parse
-  -> exact Hermes version + tool-isolation gate
+  -> bounded plain-stdout final response capture + bounded ``--usage-file`` parse
+  -> static exact-toolset enforcement (v0.21.3 emits no runtime tool telemetry)
   -> authoritative untrusted-draft schema + safety validation
+  -> per-run cost-cap enforcement
   -> sanitized ``HermesResearchRunReceipt`` + mandatory human review flag
 
 It never retries on content/schema/safety failure, never auto-tops-up budget,
@@ -19,6 +21,7 @@ from __future__ import annotations
 
 import dataclasses
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import Callable, Mapping
 
 from .models import (
@@ -30,22 +33,27 @@ from .models import (
     ValidatedResearchDraft,
     build_research_run_request,
     derive_receipt_id,
-    sha256_hex,
     validate_research_draft,
 )
 from .policy import (
     DEFAULT_HERMES_INVOCATION_POLICY,
-    HERMES_EXPECTED_VERSION,
-    HERMES_RELEASE,
+    HERMES_EXPECTED_SEMVER,
     HermesInvocationPolicy,
+    RUNTIME_TOOL_TELEMETRY,
+    USAGE_FILE_NAME,
     build_hermes_argv,
     build_research_envelope,
+    build_version_argv,
     is_supported_hermes_version,
+    parse_hermes_version,
+)
+from .response_capture import (
+    RESPONSE_OK,
+    capture_final_response,
+    cost_within_cap,
+    parse_usage_report,
 )
 from .runner import HermesInvocationBackend
-from .stream_json import STREAM_OK, parse_stream_json, tool_calls_within_allowed
-
-QUERY_FILE_NAME = "research_query.json"
 
 ACTIVATION_CODE_COMPLETE = "CODE_COMPLETE_NOT_REMOTE_ACTIVATED"
 ACTIVATION_RUN_COMPLETE = "CONTROLLED_RESEARCH_RUN_COMPLETE"
@@ -55,11 +63,10 @@ _STATUS_SUCCESS = "RESEARCH_DRAFT_VALIDATED"
 _STATUS_TRANSPORT = "TRANSPORT_FAILURE"
 _STATUS_TIMEOUT = "TIMEOUT"
 _STATUS_VERSION = "VERSION_MISMATCH"
-_STATUS_STREAM = "STREAM_PARSE_FAILED"
-_STATUS_HERMES_ERROR = "HERMES_ERROR"
-_STATUS_TOOL_ISOLATION = "TOOL_ISOLATION_VIOLATION"
+_STATUS_RESPONSE = "RESPONSE_CAPTURE_FAILED"
 _STATUS_OUTPUT_SCHEMA = "OUTPUT_SCHEMA_INVALID"
 _STATUS_SAFETY = "SAFETY_VALIDATION_FAILED"
+_STATUS_BUDGET = "BUDGET_EXCEEDED"
 
 _SAFETY_PASS = "PASS"
 _SAFETY_FAILED = "FAILED"
@@ -69,6 +76,13 @@ _BUDGET_WITHIN = "WITHIN_CAPS"
 _BUDGET_TIMEOUT = "TIMEOUT_CAP_REACHED"
 _BUDGET_TRANSPORT = "TRANSPORT_FAILED"
 _BUDGET_OUTPUT = "OUTPUT_CAP_REACHED"
+_BUDGET_COST = "COST_CAP_EXCEEDED"
+_BUDGET_NOT_REACHED = "NOT_REACHED"
+
+_MAX_STDERR_BYTES = 65_536
+_MAX_USAGE_BYTES = 65_536
+_VERSION_PROBE_MAX_BYTES = 4_096
+_VERSION_PROBE_MAX_SECONDS = 15
 
 
 @dataclasses.dataclass(frozen=True)
@@ -96,6 +110,7 @@ def run_controlled_hermes_research(
     policy: HermesInvocationPolicy = DEFAULT_HERMES_INVOCATION_POLICY,
     clock: Callable[[], datetime] | None = None,
     activation_state: str = ACTIVATION_CODE_COMPLETE,
+    hermes_home: str | None = None,
 ) -> HermesControlledRunResult:
     """Execute one controlled research run and return a sanitized result."""
     if isinstance(request, Mapping):
@@ -107,114 +122,105 @@ def run_controlled_hermes_research(
 
     clock = clock or (lambda: datetime.now(timezone.utc))
     start = clock()
+    builder = _ReceiptBuilder(
+        request=request,
+        policy=policy,
+        start_utc=_utc_iso(start),
+        end_utc=_utc_iso(start),
+        transport_attempt_count=0,
+        activation_state=activation_state,
+    )
+
+    # --- Version preflight (R001): no provider/network research call is made. ---
+    probe = backend.probe_version(
+        version_argv=build_version_argv(executable_path),
+        max_output_bytes=_VERSION_PROBE_MAX_BYTES,
+        max_wall_seconds=_VERSION_PROBE_MAX_SECONDS,
+    )
+    reported_semver = parse_hermes_version(probe.version_text)
+    if not probe.launched or probe.timed_out or not is_supported_hermes_version(
+        probe.version_text
+    ):
+        builder.end_utc = _utc_iso(clock())
+        return builder.failure(
+            _STATUS_VERSION, "BACKEND_VERSION_MISMATCH", budget=_BUDGET_NOT_REACHED,
+            reported_semver=reported_semver,
+        )
 
     envelope = build_research_envelope(request)
-    argv = build_hermes_argv(executable_path, request, QUERY_FILE_NAME, policy)
-    query_bytes = envelope.to_query_bytes()
+    prompt_text = envelope.to_prompt_string()
+    argv = build_hermes_argv(executable_path, request, prompt_text, policy, USAGE_FILE_NAME)
 
-    max_stderr_bytes = 65_536
     outcome = None
     transport_attempts = 0
-    # Exactly one invocation plus at most ``policy.max_transport_retries`` retries.
     max_invocations = 1 + policy.max_transport_retries
     while transport_attempts < max_invocations:
         transport_attempts += 1
         outcome = backend.invoke(
             argv=argv,
-            query_bytes=query_bytes,
-            query_file_name=QUERY_FILE_NAME,
+            usage_file_name=USAGE_FILE_NAME,
             max_stdout_bytes=request.max_output_bytes,
-            max_stderr_bytes=max_stderr_bytes,
+            max_stderr_bytes=_MAX_STDERR_BYTES,
+            max_usage_bytes=_MAX_USAGE_BYTES,
             max_wall_seconds=request.max_wall_seconds,
+            hermes_home=hermes_home,
         )
         if not outcome.transport_retry_eligible:
             break
 
     assert outcome is not None
-    end = clock()
+    builder.transport_attempt_count = transport_attempts
+    builder.end_utc = _utc_iso(clock())
+    builder.reported_semver = reported_semver
+    st = outcome.stdout_truncated
+    se = outcome.stderr_truncated
 
-    builder = _ReceiptBuilder(
-        request=request,
-        policy=policy,
-        start_utc=_utc_iso(start),
-        end_utc=_utc_iso(end),
-        transport_attempt_count=transport_attempts,
-        activation_state=activation_state,
-    )
-
-    # --- Transport-level terminal outcomes (fail closed, no parse) ---
     if outcome.launch_failed:
-        return builder.failure(
-            _STATUS_TRANSPORT, "TRANSPORT_FAILURE", budget=_BUDGET_TRANSPORT,
-            stdout_truncated=outcome.stdout_truncated, stderr_truncated=outcome.stderr_truncated,
-        )
+        return builder.failure(_STATUS_TRANSPORT, "TRANSPORT_FAILURE", budget=_BUDGET_TRANSPORT,
+                               stdout_truncated=st, stderr_truncated=se)
     if outcome.timed_out:
-        return builder.failure(
-            _STATUS_TIMEOUT, "BACKEND_TIMEOUT", budget=_BUDGET_TIMEOUT,
-            stdout_truncated=outcome.stdout_truncated, stderr_truncated=outcome.stderr_truncated,
-        )
+        return builder.failure(_STATUS_TIMEOUT, "BACKEND_TIMEOUT", budget=_BUDGET_TIMEOUT,
+                               stdout_truncated=st, stderr_truncated=se)
 
-    audit = parse_stream_json(outcome.stdout, max_bytes=request.max_output_bytes)
-    stdout_truncated = outcome.stdout_truncated
-    stderr_truncated = outcome.stderr_truncated
+    response = capture_final_response(outcome.stdout, max_bytes=request.max_output_bytes)
+    usage = parse_usage_report(outcome.usage_file_bytes, max_bytes=_MAX_USAGE_BYTES)
+    builder.usage = usage
 
-    if audit.diagnostic != STREAM_OK:
-        budget = _BUDGET_OUTPUT if "TOO_LARGE" in audit.diagnostic else _BUDGET_WITHIN
-        return builder.failure(
-            _STATUS_STREAM, audit.diagnostic, budget=budget, audit=audit,
-            stdout_truncated=stdout_truncated, stderr_truncated=stderr_truncated,
-        )
-
-    # Exact pinned Hermes version gate (R001).
-    if not is_supported_hermes_version(audit.reported_version):
-        return builder.failure(
-            _STATUS_VERSION, "BACKEND_VERSION_MISMATCH", budget=_BUDGET_WITHIN, audit=audit,
-            stdout_truncated=stdout_truncated, stderr_truncated=stderr_truncated,
-        )
-
-    # Tool isolation gate (R004/R005): only permitted ``web`` tools may appear.
-    if not tool_calls_within_allowed(audit):
-        return builder.failure(
-            _STATUS_TOOL_ISOLATION, "TOOL_ISOLATION_VIOLATION", budget=_BUDGET_WITHIN,
-            audit=audit, stdout_truncated=stdout_truncated, stderr_truncated=stderr_truncated,
-        )
-
-    if not audit.ok or audit.final_text is None:
-        return builder.failure(
-            _STATUS_HERMES_ERROR, "HERMES_ERROR", budget=_BUDGET_WITHIN, audit=audit,
-            stdout_truncated=stdout_truncated, stderr_truncated=stderr_truncated,
-        )
+    if response.diagnostic != RESPONSE_OK or response.final_text is None:
+        budget = _BUDGET_OUTPUT if "TOO_LARGE" in response.diagnostic else _BUDGET_WITHIN
+        return builder.failure(_STATUS_RESPONSE, response.diagnostic, budget=budget,
+                               stdout_truncated=st, stderr_truncated=se)
 
     # Authoritative untrusted-draft validation. No retry on any failure (R012).
     try:
         draft = validate_research_draft(
-            audit.final_text,
+            response.final_text,
             expected_request_id=request.request_id,
             max_sources=request.max_sources,
         )
     except HermesResearchError as exc:
         if exc.code == "DRAFT_UNSAFE_CONTENT":
-            return builder.failure(
-                _STATUS_SAFETY, exc.code, budget=_BUDGET_WITHIN, audit=audit,
-                safety=_SAFETY_FAILED, output_schema_valid=False,
-                stdout_truncated=stdout_truncated, stderr_truncated=stderr_truncated,
-            )
-        return builder.failure(
-            _STATUS_OUTPUT_SCHEMA, exc.code, budget=_BUDGET_WITHIN, audit=audit,
-            output_schema_valid=False,
-            stdout_truncated=stdout_truncated, stderr_truncated=stderr_truncated,
-        )
+            return builder.failure(_STATUS_SAFETY, exc.code, budget=_BUDGET_WITHIN,
+                                   safety=_SAFETY_FAILED, output_schema_valid=False,
+                                   stdout_truncated=st, stderr_truncated=se)
+        return builder.failure(_STATUS_OUTPUT_SCHEMA, exc.code, budget=_BUDGET_WITHIN,
+                               output_schema_valid=False, stdout_truncated=st, stderr_truncated=se)
+
+    # Cost cap: reported estimated cost above the per-run cap fails closed.
+    if not cost_within_cap(usage, request.max_estimated_cost_usd):
+        return builder.failure(_STATUS_BUDGET, "COST_CAP_EXCEEDED", budget=_BUDGET_COST,
+                               output_schema_valid=True, safety=_SAFETY_PASS,
+                               stdout_truncated=st, stderr_truncated=se)
 
     receipt = builder.build(
         terminal_status=_STATUS_SUCCESS,
-        audit=audit,
         output_schema_valid=True,
         safety=_SAFETY_PASS,
         budget=_BUDGET_WITHIN,
         source_references=draft.source_references,
         source_url_count=len(draft.source_urls),
-        stdout_truncated=stdout_truncated,
-        stderr_truncated=stderr_truncated,
+        stdout_truncated=st,
+        stderr_truncated=se,
     )
     return HermesControlledRunResult(
         receipt=receipt,
@@ -233,18 +239,13 @@ class _ReceiptBuilder:
     end_utc: str
     transport_attempt_count: int
     activation_state: str
-
-    def _provider(self, audit_provider: str | None) -> str:
-        return audit_provider or self.request.provider_label
-
-    def _model(self, audit_model: str | None) -> str:
-        return audit_model or self.request.model_label
+    reported_semver: str | None = None
+    usage: object = None
 
     def build(
         self,
         *,
         terminal_status: str,
-        audit,
         output_schema_valid: bool,
         safety: str,
         budget: str,
@@ -253,17 +254,16 @@ class _ReceiptBuilder:
         stdout_truncated: bool,
         stderr_truncated: bool,
     ) -> HermesResearchRunReceipt:
-        reported_version = getattr(audit, "reported_version", None)
-        hermes_version = reported_version if reported_version else HERMES_RELEASE
-        tool_counts = tuple(getattr(audit, "tool_call_counts", ()) or ())
+        usage = self.usage
+        hermes_version = self.reported_semver or HERMES_EXPECTED_SEMVER
         partial = HermesResearchRunReceipt(
             receipt_id="",
             schema_version=RECEIPT_SCHEMA_VERSION,
             request_id=self.request.request_id,
             policy_id=self.policy.policy_id,
             hermes_version=hermes_version,
-            provider_label=self._provider(getattr(audit, "reported_provider", None)),
-            model_label=self._model(getattr(audit, "reported_model", None)),
+            provider_label=self.request.provider_label,
+            model_label=self.request.model_label,
             start_utc=self.start_utc,
             end_utc=self.end_utc,
             terminal_status=terminal_status,
@@ -271,14 +271,17 @@ class _ReceiptBuilder:
             timed_out=terminal_status == _STATUS_TIMEOUT,
             stdout_truncated=stdout_truncated,
             stderr_truncated=stderr_truncated,
-            tool_call_counts=tool_counts,
+            configured_toolsets=self.policy.allowed_toolsets,
+            tool_enforcement=self.policy.tool_enforcement,
+            runtime_tool_telemetry=RUNTIME_TOOL_TELEMETRY,
             source_url_count=source_url_count,
             source_references=source_references,
             output_schema_valid=output_schema_valid,
             safety_validation_status=safety,
-            token_input_count=getattr(audit, "input_tokens", None),
-            token_output_count=getattr(audit, "output_tokens", None),
-            estimated_cost_usd=getattr(audit, "estimated_cost_usd", None),
+            token_input_count=getattr(usage, "input_tokens", None),
+            token_output_count=getattr(usage, "output_tokens", None),
+            total_token_count=getattr(usage, "total_tokens", None),
+            estimated_cost_usd=getattr(usage, "estimated_cost_usd", None),
             budget_status=budget,
             human_review_required=True,
             no_execution_authority=True,
@@ -297,28 +300,21 @@ class _ReceiptBuilder:
         error_code: str,
         *,
         budget: str,
-        audit=None,
         safety: str = _SAFETY_NOT_REACHED,
         output_schema_valid: bool = False,
         stdout_truncated: bool = False,
         stderr_truncated: bool = False,
+        reported_semver: str | None = None,
     ) -> HermesControlledRunResult:
-        source_refs: tuple[SanitizedSourceReference, ...] = ()
-        source_url_count = 0
-        if audit is not None:
-            source_url_count = len(getattr(audit, "source_urls", ()) or ())
-            source_refs = tuple(
-                SanitizedSourceReference(url_digest=sha256_hex(url.encode("utf-8")), source_class="other_public")
-                for url in (getattr(audit, "source_urls", ()) or ())
-            )
+        if reported_semver is not None:
+            self.reported_semver = reported_semver
         receipt = self.build(
             terminal_status=terminal_status,
-            audit=audit if audit is not None else _EMPTY_AUDIT,
             output_schema_valid=output_schema_valid,
             safety=safety,
             budget=budget,
-            source_references=source_refs,
-            source_url_count=source_url_count,
+            source_references=(),
+            source_url_count=0,
             stdout_truncated=stdout_truncated,
             stderr_truncated=stderr_truncated,
         )
@@ -331,23 +327,9 @@ class _ReceiptBuilder:
         )
 
 
-class _EmptyAudit:
-    reported_version = None
-    reported_provider = None
-    reported_model = None
-    tool_call_counts: tuple[tuple[str, int], ...] = ()
-    input_tokens = None
-    output_tokens = None
-    estimated_cost_usd = None
-    source_urls: tuple[str, ...] = ()
-
-
-_EMPTY_AUDIT = _EmptyAudit()
-
-
 def expected_hermes_contract() -> dict[str, str]:
     """Return the pinned external contract summary for status/PR evidence."""
     return {
-        "hermes_release": HERMES_RELEASE,
-        "hermes_expected_version": HERMES_EXPECTED_VERSION,
+        "hermes_release": HERMES_EXPECTED_SEMVER,
+        "hermes_expected_semver": HERMES_EXPECTED_SEMVER,
     }

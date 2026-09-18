@@ -337,7 +337,7 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
                 "src/research_runtime/hermes_controlled_runtime/__init__.py",
                 "src/research_runtime/hermes_controlled_runtime/models.py",
                 "src/research_runtime/hermes_controlled_runtime/policy.py",
-                "src/research_runtime/hermes_controlled_runtime/stream_json.py",
+                "src/research_runtime/hermes_controlled_runtime/response_capture.py",
                 "src/research_runtime/hermes_controlled_runtime/runner.py",
                 "src/research_runtime/hermes_controlled_runtime/controller.py",
             }

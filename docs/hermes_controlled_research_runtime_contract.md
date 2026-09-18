@@ -24,15 +24,19 @@ merge authority.
 - `REAL_HERMES_BINARY_NOT_PRESENT` on the build machine is an activation
   prerequisite, not a code blocker. Tests use a fake executable and make zero
   paid/provider calls.
-- Frozen one-shot command shape (argv only, never a shell string):
+- Frozen one-shot command shape (argv only, never a shell string), matching the
+  exact tagged v0.21.3 CLI. v0.21.3 does **not** support `--format stream-json` or
+  `--input-file`; it carries the prompt as the `-z` argv element and writes machine-
+  readable usage/cost to `--usage-file`:
 
   ```
-  hermes chat --oneshot --provider <label> --model <label> --toolsets web
-    --ignore-user-config --ignore-rules --safe-mode --max-turns <n>
-    --format stream-json --input-file <bare-name>
+  hermes --safe-mode --ignore-user-config --ignore-rules
+    --provider <label> --model <label> --toolsets web --max-turns <n>
+    --usage-file <bare-name> -z <deterministic-research-envelope>
   ```
 
-- A real external run is invalid unless the reported version matches exactly.
+- Version is read from a bounded no-network `hermes --version` preflight. A real
+  external run is invalid unless the reported semantic version is exactly `0.21.3`.
 
 ## 2. Tool isolation
 
@@ -63,11 +67,14 @@ that enables any forbidden control fails closed.
   canonicality matters, over-bound values, path traversal/absolute paths, embedded
   secrets, and authority-escalation content, without echoing rejected content.
 - **Policy** (`HermesInvocationPolicy`): frozen constants (`allowed_toolsets =
-  ("web",)`, ignore-user-config, ignore-rules, safe-mode, one-shot, stream-json,
-  shell false, ephemeral empty cwd, repo mount false, no mcp/plugins/cron/
+  ("web",)`, `tool_enforcement = STATIC_EXACT_TOOLSET_POLICY`, `output_mode =
+  PLAIN_STDOUT_PLUS_USAGE_FILE`, ignore-user-config, ignore-rules, safe-mode,
+  one-shot, shell false, ephemeral empty cwd, repo mount false, no mcp/plugins/cron/
   delegation/browser/file/terminal/code-execution, max transport retries 1, max
   concurrency 1).
-- **Output**: Hermes returns one JSON research draft. It is untrusted bytes; the
+- **Output**: v0.21.3 returns the final research draft as plain stdout text, and
+  machine-readable usage/cost in the `--usage-file` JSON report; it emits no runtime
+  tool-call event stream. Hermes output is untrusted bytes; the
   repository validator is authoritative. Every no-authority flag must be present and
   true: `advisory_only`, `human_review_required`, `no_execution_authority`,
   `no_risk_override`, `no_credential_request`,
@@ -79,9 +86,11 @@ that enables any forbidden control fails closed.
   try-again-until-it-passes.
 - **Receipt** (`HermesResearchRunReceipt`): immutable, content-addressed, and
   sanitized. It records the exact Hermes version, reported provider/model labels,
-  UTC bounds, terminal status, transport attempts, timeout/truncation flags,
-  tool-call counts, source url count and digests, output/safety validation status,
-  token/cost if available, budget status, `human_review_required = true`, all
+  UTC bounds, terminal status, transport attempts, timeout/truncation flags, the
+  configured toolset with `tool_enforcement` and `runtime_tool_telemetry =
+  UNAVAILABLE_ON_PINNED_V0_21_3` (no fabricated tool-call telemetry), source url
+  count and digests, output/safety validation status, token/cost from the usage
+  file if available, budget status, `human_review_required = true`, all
   execution/live/credential/risk/paper authority flags false, and
   `activation_state` in `CODE_COMPLETE_NOT_REMOTE_ACTIVATED` or
   `CONTROLLED_RESEARCH_RUN_COMPLETE`. It never contains an API key/token, auth

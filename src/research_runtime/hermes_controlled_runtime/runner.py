@@ -4,14 +4,20 @@ Two backends implement one protocol:
 
   * :class:`FakeHermesBackend` -- deterministic, makes no process and no network
     call; used by every unit/CI test.
-  * :class:`ExternalHermesCliBackend` -- runs a caller-supplied Hermes executable
-    with an argv list only (never a shell, never a command string), from a fresh
-    empty temporary working directory that never mounts the repository, a
-    ``local_data`` path, or a user home path; captures stdout/stderr under hard
-    byte caps; enforces a hard wall-clock timeout that kills the child process tree
-    where platform mechanics permit; and deletes the temporary directory on
-    teardown. It records no secret-bearing environment or raw stderr in evidence
-    and does not discover, read, validate, inject, or log provider credentials.
+  * :class:`ExternalHermesCliBackend` -- runs a caller-supplied Hermes v0.21.3
+    executable with an argv list only (never a shell, never a command string), from
+    a fresh empty temporary working directory that never mounts the repository, a
+    ``local_data`` path, or a user home path; captures stdout/stderr under hard byte
+    caps; reads the bounded ``--usage-file`` report Hermes writes into that temp dir;
+    enforces a hard wall-clock timeout that kills the child process tree where
+    platform mechanics permit; and deletes the temporary directory on teardown.
+
+Pinned v0.21.3 carries the prompt as the ``-z`` argv element, so no prompt file is
+written into the working directory. The backend records no secret-bearing
+environment or raw stderr in evidence and does not discover, read, validate,
+inject, or log provider credentials. Only an explicit NON-SECRET research
+Hermes-home locator may be forwarded so Hermes can find its own credential store,
+configured out-of-repo by S10-GATE-H1.
 """
 
 from __future__ import annotations
@@ -28,6 +34,15 @@ from typing import Protocol, Sequence
 
 
 @dataclasses.dataclass(frozen=True)
+class HermesVersionProbe:
+    """Sanitized result of a bounded no-network ``hermes --version`` preflight."""
+
+    launched: bool
+    timed_out: bool
+    version_text: str | None
+
+
+@dataclasses.dataclass(frozen=True)
 class HermesInvocationOutcome:
     """Sanitized outcome of one backend invocation. Carries no raw stderr text."""
 
@@ -35,6 +50,8 @@ class HermesInvocationOutcome:
     stdout_truncated: bool
     stderr_byte_len: int
     stderr_truncated: bool
+    usage_file_bytes: bytes | None
+    usage_file_truncated: bool
     exit_code: int | None
     timed_out: bool
     launch_failed: bool
@@ -49,15 +66,20 @@ class HermesInvocationOutcome:
 class HermesInvocationBackend(Protocol):
     """One bounded invocation. Implementations must never raise on process error."""
 
+    def probe_version(
+        self, *, version_argv: Sequence[str], max_output_bytes: int, max_wall_seconds: int
+    ) -> HermesVersionProbe: ...
+
     def invoke(
         self,
         *,
         argv: Sequence[str],
-        query_bytes: bytes,
-        query_file_name: str,
+        usage_file_name: str,
         max_stdout_bytes: int,
         max_stderr_bytes: int,
+        max_usage_bytes: int,
         max_wall_seconds: int,
+        hermes_home: str | None = None,
     ) -> HermesInvocationOutcome: ...
 
 
@@ -69,55 +91,79 @@ class HermesInvocationBackend(Protocol):
 class FakeHermesBackend:
     """Deterministic backend that performs zero process and zero network calls."""
 
-    def __init__(self, outcomes: Sequence[HermesInvocationOutcome]) -> None:
+    def __init__(
+        self,
+        outcomes: Sequence[HermesInvocationOutcome],
+        *,
+        version_text: str | None = "hermes-agent 0.21.3",
+        version_timed_out: bool = False,
+        version_launched: bool = True,
+    ) -> None:
         if not outcomes:
             raise ValueError("FakeHermesBackend requires at least one outcome")
         self._outcomes = tuple(outcomes)
+        self._version = HermesVersionProbe(
+            launched=version_launched,
+            timed_out=version_timed_out,
+            version_text=version_text,
+        )
         self.call_count = 0
+        self.version_probe_count = 0
         self.recorded_argv: list[tuple[str, ...]] = []
-        self.recorded_query_bytes: list[bytes] = []
-        self.recorded_query_file_names: list[str] = []
+        self.recorded_usage_file_names: list[str] = []
+        self.recorded_hermes_home: list[str | None] = []
 
     @classmethod
     def from_transcript(
         cls,
-        transcript: bytes,
+        response_stdout: bytes,
         *,
+        usage_file_bytes: bytes | None = None,
         exit_code: int = 0,
         stderr_byte_len: int = 0,
+        version_text: str | None = "hermes-agent 0.21.3",
     ) -> "FakeHermesBackend":
         return cls(
             [
                 HermesInvocationOutcome(
-                    stdout=transcript,
+                    stdout=response_stdout,
                     stdout_truncated=False,
                     stderr_byte_len=stderr_byte_len,
                     stderr_truncated=False,
+                    usage_file_bytes=usage_file_bytes,
+                    usage_file_truncated=False,
                     exit_code=exit_code,
                     timed_out=False,
                     launch_failed=False,
                     duration_ms=0,
                 )
-            ]
+            ],
+            version_text=version_text,
         )
+
+    def probe_version(
+        self, *, version_argv: Sequence[str], max_output_bytes: int, max_wall_seconds: int
+    ) -> HermesVersionProbe:
+        self.version_probe_count += 1
+        return self._version
 
     def invoke(
         self,
         *,
         argv: Sequence[str],
-        query_bytes: bytes,
-        query_file_name: str,
+        usage_file_name: str,
         max_stdout_bytes: int,
         max_stderr_bytes: int,
+        max_usage_bytes: int,
         max_wall_seconds: int,
+        hermes_home: str | None = None,
     ) -> HermesInvocationOutcome:
         index = min(self.call_count, len(self._outcomes) - 1)
         self.call_count += 1
         self.recorded_argv.append(tuple(argv))
-        self.recorded_query_bytes.append(bytes(query_bytes))
-        self.recorded_query_file_names.append(query_file_name)
+        self.recorded_usage_file_names.append(usage_file_name)
+        self.recorded_hermes_home.append(hermes_home)
         outcome = self._outcomes[index]
-        # Enforce the caller's stdout cap deterministically even for the fake.
         if len(outcome.stdout) > max_stdout_bytes:
             return dataclasses.replace(
                 outcome, stdout=outcome.stdout[:max_stdout_bytes], stdout_truncated=True
@@ -129,52 +175,92 @@ class FakeHermesBackend:
 # External CLI backend
 # ---------------------------------------------------------------------------
 
-# Working-directory prefixes that must never be supplied to Hermes as its cwd.
-_FORBIDDEN_CWD_MARKERS = ("local_data",)
+# Working-directory / home prefixes that must never be supplied to Hermes.
+_FORBIDDEN_PATH_MARKERS = ("local_data",)
+
+# Provider-secret-bearing environment variable name fragments that are never
+# forwarded to the child process.
+_SECRET_ENV_FRAGMENTS = (
+    "KEY",
+    "SECRET",
+    "TOKEN",
+    "PASSWORD",
+    "CREDENTIAL",
+    "AUTH",
+    "PRIVATE",
+)
+
+# Only these neutral variables are ever forwarded (plus an explicit HERMES_HOME).
+_NEUTRAL_ENV_KEYS = ("PATH", "SystemRoot", "TEMP", "TMP", "TMPDIR", "LANG", "LC_ALL")
 
 
 class ExternalHermesCliBackend:
-    """Runs an external Hermes CLI via argv only from an ephemeral empty cwd."""
+    """Runs an external Hermes v0.21.3 CLI via argv only from an ephemeral empty cwd."""
+
+    def probe_version(
+        self, *, version_argv: Sequence[str], max_output_bytes: int, max_wall_seconds: int
+    ) -> HermesVersionProbe:
+        version_argv = list(version_argv)
+        if not version_argv:
+            return HermesVersionProbe(launched=False, timed_out=False, version_text=None)
+        try:
+            proc = subprocess.run(  # noqa: S603
+                version_argv,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=_minimal_env(None),
+                timeout=max_wall_seconds,
+                check=False,
+            )
+        except subprocess.TimeoutExpired:
+            return HermesVersionProbe(launched=True, timed_out=True, version_text=None)
+        except (OSError, ValueError):
+            return HermesVersionProbe(launched=False, timed_out=False, version_text=None)
+        raw = (proc.stdout or b"")[:max_output_bytes]
+        try:
+            text = raw.decode("utf-8", errors="replace")
+        except Exception:  # pragma: no cover - defensive
+            text = None
+        return HermesVersionProbe(launched=True, timed_out=False, version_text=text)
 
     def invoke(
         self,
         *,
         argv: Sequence[str],
-        query_bytes: bytes,
-        query_file_name: str,
+        usage_file_name: str,
         max_stdout_bytes: int,
         max_stderr_bytes: int,
+        max_usage_bytes: int,
         max_wall_seconds: int,
+        hermes_home: str | None = None,
     ) -> HermesInvocationOutcome:
         argv = list(argv)
         if not argv:
             return _launch_failure()
-        if "/" in query_file_name or "\\" in query_file_name or ".." in query_file_name:
+        if "/" in usage_file_name or "\\" in usage_file_name or ".." in usage_file_name:
+            return _launch_failure()
+
+        env = _minimal_env(hermes_home)
+        if hermes_home is not None and "HERMES_HOME" not in env:
+            # An unsafe research-home locator fails closed rather than running.
             return _launch_failure()
 
         temp_dir = tempfile.mkdtemp(prefix="hermes_oneshot_")
-        # Structural isolation: an ephemeral mkdtemp cwd never mounts the repo, a
-        # local_data path, or a user home path.
         resolved = os.path.realpath(temp_dir)
         home = os.path.realpath(os.path.expanduser("~"))
-        if resolved == home or any(marker in resolved for marker in _FORBIDDEN_CWD_MARKERS):
+        if resolved == home or any(marker in resolved for marker in _FORBIDDEN_PATH_MARKERS):
             shutil.rmtree(temp_dir, ignore_errors=True)
             return _launch_failure()
 
         start = time.monotonic()
         try:
-            query_path = os.path.join(temp_dir, query_file_name)
-            with open(query_path, "wb") as handle:
-                handle.write(query_bytes)
-
             popen_kwargs: dict[str, object] = {
                 "cwd": temp_dir,
                 "stdin": subprocess.DEVNULL,
                 "stdout": subprocess.PIPE,
                 "stderr": subprocess.PIPE,
-                # A minimal, secret-free environment: no provider secrets are
-                # discovered, injected, or forwarded by this project code.
-                "env": _minimal_env(),
+                "env": env,
             }
             if os.name == "posix":
                 popen_kwargs["start_new_session"] = True
@@ -201,13 +287,16 @@ class ExternalHermesCliBackend:
 
             stdout = stdout or b""
             stderr = stderr or b""
-            stdout_truncated = len(stdout) > max_stdout_bytes
-            stderr_truncated = len(stderr) > max_stderr_bytes
+            usage_bytes, usage_truncated = _read_usage_file(
+                os.path.join(temp_dir, usage_file_name), max_usage_bytes
+            )
             return HermesInvocationOutcome(
                 stdout=stdout[:max_stdout_bytes],
-                stdout_truncated=stdout_truncated,
+                stdout_truncated=len(stdout) > max_stdout_bytes,
                 stderr_byte_len=min(len(stderr), max_stderr_bytes),
-                stderr_truncated=stderr_truncated,
+                stderr_truncated=len(stderr) > max_stderr_bytes,
+                usage_file_bytes=usage_bytes,
+                usage_file_truncated=usage_truncated,
                 exit_code=None if timed_out else process.returncode,
                 timed_out=timed_out,
                 launch_failed=False,
@@ -217,12 +306,25 @@ class ExternalHermesCliBackend:
             shutil.rmtree(temp_dir, ignore_errors=True)
 
 
+def _read_usage_file(path: str, max_bytes: int) -> tuple[bytes | None, bool]:
+    try:
+        with open(path, "rb") as handle:
+            data = handle.read(max_bytes + 1)
+    except (OSError, ValueError):
+        return None, False
+    if len(data) > max_bytes:
+        return data[:max_bytes], True
+    return data, False
+
+
 def _launch_failure(duration_ms: int | None = None) -> HermesInvocationOutcome:
     return HermesInvocationOutcome(
         stdout=b"",
         stdout_truncated=False,
         stderr_byte_len=0,
         stderr_truncated=False,
+        usage_file_bytes=None,
+        usage_file_truncated=False,
         exit_code=None,
         timed_out=False,
         launch_failed=True,
@@ -234,18 +336,48 @@ def _elapsed_ms(start: float) -> int:
     return int((time.monotonic() - start) * 1000)
 
 
-def _minimal_env() -> dict[str, str]:
-    """A minimal environment with no forwarded secrets.
+def is_safe_research_home(hermes_home: str) -> bool:
+    """A NON-SECRET research Hermes-home locator that is safe to forward.
 
-    Only PATH (to locate the executable) and a small set of neutral locale/temp
-    variables are kept. No provider secret or trading credential is forwarded.
+    Rejects a home inside the repository worktree, a ``local_data`` tree, a
+    traversal marker, or a relative path. Never inspects or reads any credential.
+    """
+    if not isinstance(hermes_home, str) or not hermes_home.strip():
+        return False
+    if ".." in hermes_home:
+        return False
+    if not os.path.isabs(hermes_home):
+        return False
+    resolved = os.path.realpath(hermes_home)
+    if any(marker in resolved for marker in _FORBIDDEN_PATH_MARKERS):
+        return False
+    repo_cwd = os.path.realpath(os.getcwd())
+    if resolved == repo_cwd or resolved.startswith(repo_cwd + os.sep):
+        return False
+    return True
+
+
+def _minimal_env(hermes_home: str | None) -> dict[str, str]:
+    """A minimal environment with no forwarded provider secrets.
+
+    Only neutral variables are kept, and an explicit safe non-secret HERMES_HOME may
+    be added so Hermes can locate its own out-of-repo credential store. No variable
+    whose name looks secret-bearing is ever forwarded, and no full environment dump
+    occurs.
     """
     env: dict[str, str] = {}
-    for key in ("PATH", "SystemRoot", "TEMP", "TMP", "TMPDIR", "LANG", "LC_ALL"):
+    for key in _NEUTRAL_ENV_KEYS:
         value = os.environ.get(key)
-        if value is not None:
+        if value is not None and not _looks_secret(key):
             env[key] = value
+    if hermes_home is not None and is_safe_research_home(hermes_home):
+        env["HERMES_HOME"] = hermes_home
     return env
+
+
+def _looks_secret(name: str) -> bool:
+    upper = name.upper()
+    return any(fragment in upper for fragment in _SECRET_ENV_FRAGMENTS)
 
 
 def _kill_tree(process: "subprocess.Popen[bytes]") -> None:

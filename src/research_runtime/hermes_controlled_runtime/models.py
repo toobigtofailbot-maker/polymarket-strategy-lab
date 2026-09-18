@@ -517,13 +517,16 @@ class HermesResearchRunReceipt:
     timed_out: bool
     stdout_truncated: bool
     stderr_truncated: bool
-    tool_call_counts: tuple[tuple[str, int], ...]
+    configured_toolsets: tuple[str, ...]
+    tool_enforcement: str
+    runtime_tool_telemetry: str
     source_url_count: int
     source_references: tuple[SanitizedSourceReference, ...]
     output_schema_valid: bool
     safety_validation_status: str
     token_input_count: int | None
     token_output_count: int | None
+    total_token_count: int | None
     estimated_cost_usd: str | None
     budget_status: str
     human_review_required: bool
@@ -550,7 +553,9 @@ class HermesResearchRunReceipt:
             "timed_out": self.timed_out,
             "stdout_truncated": self.stdout_truncated,
             "stderr_truncated": self.stderr_truncated,
-            "tool_call_counts": [list(item) for item in self.tool_call_counts],
+            "configured_toolsets": list(self.configured_toolsets),
+            "tool_enforcement": self.tool_enforcement,
+            "runtime_tool_telemetry": self.runtime_tool_telemetry,
             "source_url_count": self.source_url_count,
             "source_references": [
                 {"url_digest": ref.url_digest, "source_class": ref.source_class}
@@ -560,6 +565,7 @@ class HermesResearchRunReceipt:
             "safety_validation_status": self.safety_validation_status,
             "token_input_count": self.token_input_count,
             "token_output_count": self.token_output_count,
+            "total_token_count": self.total_token_count,
             "estimated_cost_usd": self.estimated_cost_usd,
             "budget_status": self.budget_status,
             "human_review_required": self.human_review_required,
