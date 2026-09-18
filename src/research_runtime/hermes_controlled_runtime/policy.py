@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import dataclasses
 import re
+import subprocess
 
 from .models import (
     HermesResearchRunRequest,
@@ -83,6 +84,13 @@ USAGE_FILE_NAME = "hermes_usage.json"
 # assembles argv into a single command line bounded near 32767 bytes; this leaves
 # generous headroom for the executable path and the other short flags.
 MAX_PROMPT_BYTES = 24_000
+
+# Conservative ceiling on the ASSEMBLED Windows command line. `CreateProcess`' hard
+# limit is 32767 characters; quote/backslash-heavy prompt content expands under
+# Windows argv quoting, so the raw prompt byte bound is not sufficient on its own.
+# The assembled length is checked with Python's Windows quoting semantics
+# (``subprocess.list2cmdline``) on every platform for a deterministic, testable guard.
+MAX_COMMAND_LINE_CHARS = 30_000
 
 # Forbidden characters/tokens in the supplied executable path (defence in depth even
 # though invocation is always argv-only, never through a shell).
@@ -274,6 +282,11 @@ def build_hermes_argv(
         "-z",
         prompt_text,
     ]
+    # Fail closed before spawn if the assembled Windows command line (after argv
+    # quoting) would approach the CreateProcess ceiling. Never shell-quote manually;
+    # ``list2cmdline`` mirrors the exact Windows quoting the runtime would apply.
+    if len(subprocess.list2cmdline(argv)) > MAX_COMMAND_LINE_CHARS:
+        raise PolicyBroadeningError("POLICY_COMMAND_LINE_TOO_LARGE")
     return tuple(argv)
 
 

@@ -53,7 +53,9 @@ _MAX_TOKEN = 1_000_000_000
 # (and any absent/out-of-vocabulary status) is treated as cost-unavailable.
 KNOWN_COST_STATUSES = frozenset({"actual", "estimated", "included"})
 COST_STATUS_UNKNOWN = "unknown"
+COST_STATUS_INCLUDED = "included"
 COST_STATUS_VOCABULARY = frozenset({"actual", "estimated", "included", "unknown"})
+COST_SOURCE_NONE = "none"
 COST_SOURCE_VOCABULARY = frozenset(
     {
         "provider_cost_api",
@@ -65,6 +67,15 @@ COST_SOURCE_VOCABULARY = frozenset(
         "none",
     }
 )
+# A priced ``actual``/``estimated`` cost must carry a real priced source, never the
+# ``none`` sentinel (exact tagged ``usage_pricing.py`` uses ``none`` only for the
+# ``included`` subscription case with a zero amount).
+PRICED_COST_SOURCES = COST_SOURCE_VOCABULARY - {COST_SOURCE_NONE}
+
+
+def _reject_nonfinite_json_constant(_token: str) -> object:
+    """Reject NaN / Infinity / -Infinity anywhere in the usage JSON (fail-closed)."""
+    raise ValueError("non-finite JSON constant is not accepted")
 
 # Sanitized usage fields admitted into evidence. Only the first three token fields
 # plus ``api_calls`` are mandatory success evidence; cache/reasoning tokens are
@@ -150,19 +161,25 @@ def _sane_bool(value: object) -> bool | None:
 
 
 def _sane_cost(value: object) -> str | None:
+    """Sanitize the exact v0.21.3 numeric ``estimated_cost_usd`` to a canonical string.
+
+    Real v0.21.3 writes ``estimated_cost_usd`` as a JSON number: exact tagged
+    ``agent/turn_usage.py`` folds ``float(cost_result.amount_usd)`` into
+    ``session_estimated_cost_usd`` (initialized ``0.0``), ``agent/turn_finalizer.py``
+    copies it, and ``hermes_cli/oneshot.py::_write_usage_file`` ``json.dumps`` it. The
+    usage document is parsed with ``parse_float=Decimal``, so a JSON number arrives as
+    a non-negative ``int`` or a finite ``Decimal``. Anything else -- ``bool``, a JSON
+    string, a binary ``float``, a non-finite or negative value -- is rejected. The
+    return is a canonical fixed-point decimal string with no exponent.
+    """
     if isinstance(value, bool):
         return None
-    if isinstance(value, int) and value >= 0:
-        return str(value)
-    if isinstance(value, str):
-        text = value.strip()
-        if not text:
-            return None
-        try:
-            dec = Decimal(text)
-        except InvalidOperation:
-            return None
-        return text if dec >= 0 else None
+    if isinstance(value, int):
+        return str(value) if value >= 0 else None
+    if isinstance(value, Decimal):
+        if value.is_finite() and value >= 0:
+            return format(value, "f")
+        return None
     return None
 
 
@@ -211,7 +228,13 @@ def parse_usage_report(
     if len(usage_bytes) > max_bytes:
         return _empty_usage(USAGE_TOO_LARGE)
     try:
-        document = json.loads(bytes(usage_bytes).decode("utf-8"))
+        # parse_float=Decimal keeps monetary/token numbers exact (no binary float in
+        # evidence); parse_constant rejects NaN/Infinity/-Infinity anywhere.
+        document = json.loads(
+            bytes(usage_bytes).decode("utf-8"),
+            parse_float=Decimal,
+            parse_constant=_reject_nonfinite_json_constant,
+        )
     except (ValueError, UnicodeError, RecursionError):
         return _empty_usage(USAGE_MALFORMED)
     if not isinstance(document, Mapping):
@@ -269,22 +292,48 @@ def _success_evidence_diagnostic(
 def cost_acceptance(usage: UsageReport, cap: Decimal) -> str:
     """POST-RUN cost-acceptance outcome (section 9); fail-closed on unknown cost.
 
-    Returns ``COST_EVIDENCE_UNAVAILABLE`` when the reported estimated cost is
-    missing/invalid or ``cost_status`` is missing/``unknown``/out-of-vocabulary
-    (never treating a missing cost as zero), ``COST_ABOVE_THRESHOLD`` when a known
-    cost exceeds the accepted per-run threshold, and ``COST_ACCEPTED`` only when a
-    known, finite, in-threshold cost is present.
+    Validates the exact tagged ``cost_status``/``cost_source`` pair
+    (``agent/usage_pricing.py`` @ 345cd2b) and never invents a price:
+
+      * out-of-vocabulary ``cost_status`` or ``cost_source`` -> unavailable;
+      * ``cost_status == "unknown"`` -> unavailable;
+      * a missing/invalid ``estimated_cost_usd`` -> unavailable (never treated as
+        zero);
+      * ``cost_status == "included"`` requires an amount of exactly ``0`` (the
+        ``"none"`` source is valid, mirroring the tagged subscription-included case);
+      * ``cost_status in {"actual", "estimated"}`` requires a known priced source
+        (never ``"none"``) and a known finite non-negative amount.
+
+    A known, in-threshold amount is ``COST_ACCEPTED``; a known amount above the
+    accepted per-run threshold is ``COST_ABOVE_THRESHOLD``.
     """
-    if usage.estimated_cost_usd is None:
+    status = usage.cost_status
+    source = usage.cost_source
+    if status not in COST_STATUS_VOCABULARY:
         return COST_EVIDENCE_UNAVAILABLE
-    if usage.cost_status not in KNOWN_COST_STATUSES:
+    if source not in COST_SOURCE_VOCABULARY:  # None or out-of-vocabulary
+        return COST_EVIDENCE_UNAVAILABLE
+    if status == COST_STATUS_UNKNOWN:
+        return COST_EVIDENCE_UNAVAILABLE
+    if usage.estimated_cost_usd is None:
         return COST_EVIDENCE_UNAVAILABLE
     try:
         amount = Decimal(usage.estimated_cost_usd)
     except InvalidOperation:
         return COST_EVIDENCE_UNAVAILABLE
-    if amount < 0:
+    if not amount.is_finite() or amount < 0:
         return COST_EVIDENCE_UNAVAILABLE
+
+    if status == COST_STATUS_INCLUDED:
+        # Subscription-included cost is exactly zero; any nonzero amount is a
+        # contradiction and fails closed. Source "none" is valid here.
+        if amount != 0:
+            return COST_EVIDENCE_UNAVAILABLE
+    else:  # actual / estimated
+        if source not in PRICED_COST_SOURCES:
+            # A priced status with the "none" sentinel (or no source) is invalid.
+            return COST_EVIDENCE_UNAVAILABLE
+
     if amount > cap:
         return COST_ABOVE_THRESHOLD
     return COST_ACCEPTED

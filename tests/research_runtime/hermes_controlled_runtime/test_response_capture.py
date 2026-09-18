@@ -22,13 +22,18 @@ from src.research_runtime.hermes_controlled_runtime import response_capture as r
 
 
 def _full_usage(**overrides) -> bytes:
-    """A complete v0.21.3 success-evidence usage object (exact tagged keys)."""
+    """A complete v0.21.3 success-evidence usage object mirroring exact tagged wire.
+
+    ``estimated_cost_usd`` is a JSON NUMBER (float), exactly as real v0.21.3 writes it
+    (agent/turn_usage.py float-folds the cost, hermes_cli/oneshot.py json.dumps it),
+    never a string.
+    """
     doc = {
         "input_tokens": 10,
         "output_tokens": 20,
         "total_tokens": 30,
         "api_calls": 1,
-        "estimated_cost_usd": "0.04",
+        "estimated_cost_usd": 0.04,
         "cost_status": "estimated",
         "cost_source": "official_docs_snapshot",
         "model": "example-model",
@@ -128,35 +133,82 @@ def test_usage_missing_identity_label_fails_closed():
         assert report.diagnostic == rc.USAGE_FIELD_INVALID
 
 
-def test_cost_acceptance_known_cost_within_threshold():
-    ok = parse_usage_report(_full_usage(estimated_cost_usd="1.50", cost_status="actual"))
+def test_c01_numeric_float_cost_parses_through_decimal_and_succeeds():  # C01
+    ok = parse_usage_report(_full_usage(estimated_cost_usd=0.04, cost_status="actual"))
+    assert ok.ok is True
+    # Parsed via Decimal to a canonical string (no binary float in evidence). The
+    # JSON number 0.04 round-trips to the exact decimal string "0.04".
+    assert ok.estimated_cost_usd == "0.04"
     assert cost_acceptance(ok, Decimal("2")) == COST_ACCEPTED
 
 
-def test_cost_acceptance_above_threshold():  # T17
-    over = parse_usage_report(_full_usage(estimated_cost_usd="9.99", cost_status="estimated"))
+def test_c02_c03_nan_and_infinity_rejected():  # C02 / C03
+    for token in ("NaN", "Infinity", "-Infinity"):
+        raw = ('{"estimated_cost_usd": ' + token + ', "completed": true, "failed": false}').encode()
+        report = parse_usage_report(raw)
+        assert report.ok is False
+        assert report.diagnostic == rc.USAGE_MALFORMED
+
+
+def test_c04_negative_cost_rejected():  # C04
+    neg = parse_usage_report(_full_usage(estimated_cost_usd=-0.01, cost_status="actual"))
+    assert neg.estimated_cost_usd is None
+    assert cost_acceptance(neg, Decimal("2")) == COST_EVIDENCE_UNAVAILABLE
+
+
+def test_cost_status_string_cost_is_not_accepted():
+    # Real v0.21.3 never writes a string cost; a JSON string is rejected as evidence.
+    strung = parse_usage_report(_full_usage(estimated_cost_usd="0.04", cost_status="actual"))
+    assert strung.estimated_cost_usd is None
+    assert cost_acceptance(strung, Decimal("2")) == COST_EVIDENCE_UNAVAILABLE
+
+
+def test_c05_priced_status_with_source_none_rejected():  # C05
+    for status in ("actual", "estimated"):
+        rep = parse_usage_report(
+            _full_usage(estimated_cost_usd=0.04, cost_status=status, cost_source="none")
+        )
+        assert cost_acceptance(rep, Decimal("2")) == COST_EVIDENCE_UNAVAILABLE
+
+
+def test_c06_unknown_cost_status_rejected():  # C06
+    unknown = parse_usage_report(_full_usage(estimated_cost_usd=0.01, cost_status="unknown"))
+    assert cost_acceptance(unknown, Decimal("2")) == COST_EVIDENCE_UNAVAILABLE
+
+
+def test_c07_out_of_vocab_cost_status_rejected():  # C07
+    bogus = parse_usage_report(_full_usage(estimated_cost_usd=0.01, cost_status="cheap"))
+    assert cost_acceptance(bogus, Decimal("2")) == COST_EVIDENCE_UNAVAILABLE
+
+
+def test_c08_out_of_vocab_cost_source_rejected():  # C08
+    bogus = parse_usage_report(
+        _full_usage(estimated_cost_usd=0.01, cost_status="actual", cost_source="my_api")
+    )
+    assert cost_acceptance(bogus, Decimal("2")) == COST_EVIDENCE_UNAVAILABLE
+
+
+def test_c09_included_zero_source_none_accepted():  # C09
+    included = parse_usage_report(
+        _full_usage(estimated_cost_usd=0.0, cost_status="included", cost_source="none")
+    )
+    assert cost_acceptance(included, Decimal("2")) == COST_ACCEPTED
+    # A nonzero "included" amount is a contradiction and fails closed.
+    contradiction = parse_usage_report(
+        _full_usage(estimated_cost_usd=0.5, cost_status="included", cost_source="none")
+    )
+    assert cost_acceptance(contradiction, Decimal("2")) == COST_EVIDENCE_UNAVAILABLE
+
+
+def test_cost_above_threshold():  # T17
+    over = parse_usage_report(_full_usage(estimated_cost_usd=9.99, cost_status="estimated"))
     assert cost_acceptance(over, Decimal("2")) == COST_ABOVE_THRESHOLD
 
 
-def test_cost_acceptance_unknown_or_missing_is_unavailable():  # T16
-    # Missing cost is never treated as zero.
+def test_missing_cost_status_or_amount_is_unavailable():  # T16
     missing = parse_usage_report(None)
     assert cost_acceptance(missing, Decimal("2")) == COST_EVIDENCE_UNAVAILABLE
-    # cost_status "unknown" (exact tagged vocabulary) is not a known cost.
-    unknown = parse_usage_report(_full_usage(estimated_cost_usd="0.01", cost_status="unknown"))
-    assert cost_acceptance(unknown, Decimal("2")) == COST_EVIDENCE_UNAVAILABLE
-    # An invalid cost string is unavailable, not accepted.
-    bad = parse_usage_report(_full_usage(estimated_cost_usd="abc", cost_status="actual"))
-    assert cost_acceptance(bad, Decimal("2")) == COST_EVIDENCE_UNAVAILABLE
-    # A missing cost_status is unavailable even with a numeric cost present.
     doc = json.loads(_full_usage().decode())
     del doc["cost_status"]
     no_status = parse_usage_report(json.dumps(doc).encode())
     assert cost_acceptance(no_status, Decimal("2")) == COST_EVIDENCE_UNAVAILABLE
-
-
-def test_included_zero_cost_is_accepted():
-    included = parse_usage_report(
-        _full_usage(estimated_cost_usd="0", cost_status="included", cost_source="none")
-    )
-    assert cost_acceptance(included, Decimal("2")) == COST_ACCEPTED

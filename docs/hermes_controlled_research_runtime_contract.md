@@ -49,8 +49,15 @@ merge authority.
   usage-file byte cap, a validated-output source-count cap, the exact one-shot
   argv, the exact web-only toolset, the provider/model pin, no accepted automatic
   fallback, and a post-run usage/cost acceptance gate.
-- Version is read from a bounded no-network `hermes --version` preflight. A real
-  external run is invalid unless the reported semantic version is exactly `0.21.3`.
+- Version is read from a bounded, **update-check-disabled** `hermes --version`
+  preflight. Raw `hermes --version` is not intrinsically offline: exact tagged
+  `hermes_cli/_startup_fast.py::print_fast_version_info(check_updates=True)` calls
+  `banner.check_for_updates(passive=True)`, which can reach GitHub. The probe runs in
+  a throwaway `HERMES_HOME` whose `config.yaml` sets `updates.check: false`, so the
+  tagged `check_for_updates` returns before any network access; the probe home is
+  deleted on teardown and forwards no provider secret. A real external run is invalid
+  unless the probe launched, did not time out, **exited 0**, did not truncate its
+  version stdout, and reported exactly `0.21.3`.
 - Exact tagged `-z` internally enables one-shot approval bypass, so approval
   prompts are **not** a safety boundary
   (`APPROVAL_BYPASS_PRESENT_BUT_NO_MUTATING_TOOL_SURFACE`). Safety rests on the
@@ -76,6 +83,16 @@ that enables any forbidden control fails closed.
 - Project code never reads, stores, injects, logs, transforms, validates, or echoes
   a provider secret or any trading credential. Provider/model labels are non-secret
   audit strings only; this package does not select or activate a provider.
+- The forwardable research `HERMES_HOME` is validated against a **stable repository
+  root derived from this module's install location, not `os.getcwd()`**: a home
+  inside the repository tree is rejected regardless of the caller's working
+  directory (case-normalized), along with a `local_data` tree, a relative path, or a
+  traversal marker.
+- The `-z` prompt is bounded by raw UTF-8 byte count and, additionally, the
+  **assembled Windows command line** (computed with `subprocess.list2cmdline`, which
+  mirrors exact Windows argv quoting) is bounded below the `CreateProcess` 32767-char
+  ceiling, so quote/backslash-heavy content that expands under quoting fails closed
+  before spawn. Nothing is ever shell-quoted manually and `shell=True` is never used.
 - The prompt envelope is compact and deterministic: one permanent system
   instruction plus the validated request. It never loads the repository, AGENTS.md,
   full project history, project memory, or the Alpha Factory database.
@@ -98,7 +115,10 @@ that enables any forbidden control fails closed.
   plain stdout text and machine-readable usage/cost in the `--usage-file` JSON
   report; it emits no runtime tool-call event stream. A successful run requires, in
   order: process **exit code exactly 0** (any other code fails closed even with
-  syntactically valid stdout, with no retry); a captured non-empty bounded final
+  syntactically valid stdout, with no retry); **neither authoritative surface
+  truncated** — a truncated stdout or usage-file prefix can be syntactically valid
+  but is not the real output, so it fails closed before parsing and can never yield a
+  successful receipt; a captured non-empty bounded final
   response; a **valid usage report** as mandatory success evidence (`completed`
   exactly true, `failed` exactly false, and valid non-negative `input_tokens`,
   `output_tokens`, `total_tokens`, `api_calls` integers plus present `model`,
@@ -118,17 +138,27 @@ that enables any forbidden control fails closed.
   produced. Invalid JSON/schema fails closed; there is no try-again-until-it-passes.
 - **Cost semantics (post-run)**: the `--usage-file` is POST-RUN accounting, so
   WP175H does not claim a pre-spend hard USD stop. `max_accepted_estimated_cost_usd`
-  is a post-run acceptance threshold. Cost acceptance reads the exact tagged
-  vocabulary (`agent/usage_pricing.py` @ `345cd2b`):
-  `cost_status ∈ {actual, estimated, included, unknown}` and `cost_source ∈
-  {provider_cost_api, provider_generation_api, provider_models_api,
-  official_docs_snapshot, user_override, custom_contract, none}`. A missing/invalid
-  `estimated_cost_usd` or a `cost_status` that is missing/`unknown`/out-of-vocabulary
-  is `COST_EVIDENCE_UNAVAILABLE` (a missing cost is **never** treated as zero); a
-  known cost above the threshold is `BUDGET_EXCEEDED`; only a known, finite,
-  in-threshold cost is accepted. Actual pre-spend protection at S10-GATE-H1 comes
-  from a single invocation, the hard wall-clock timeout, an explicit low-cost
-  provider/model, provider/account-side spend controls, and a human-authorized pilot.
+  is a post-run acceptance threshold. Real v0.21.3 writes `estimated_cost_usd` as a
+  JSON **number** (exact tagged `agent/turn_usage.py` folds
+  `float(cost_result.amount_usd)` into `session_estimated_cost_usd`,
+  `agent/turn_finalizer.py` copies it, `hermes_cli/oneshot.py::_write_usage_file`
+  `json.dumps` it), so the usage document is parsed with `parse_float=Decimal` (no
+  binary float in evidence), `NaN`/`Infinity` are rejected anywhere, and only a
+  non-negative int or finite `Decimal` cost is admitted — a JSON string cost is not
+  accepted. Cost acceptance validates the exact tagged pair
+  (`agent/usage_pricing.py` @ `345cd2b`): `cost_status ∈ {actual, estimated,
+  included, unknown}` and `cost_source ∈ {provider_cost_api,
+  provider_generation_api, provider_models_api, official_docs_snapshot,
+  user_override, custom_contract, none}`. An out-of-vocabulary `cost_status`/
+  `cost_source`, a missing/invalid `estimated_cost_usd`, or a `cost_status` of
+  `unknown` is `COST_EVIDENCE_UNAVAILABLE` (a missing cost is **never** treated as
+  zero). `included` requires an amount of exactly `0` (the `none` source is valid,
+  mirroring the tagged subscription-included case); `actual`/`estimated` require a
+  known priced source that is never `none`. A known cost above the threshold is
+  `BUDGET_EXCEEDED`; only a known, finite, in-threshold cost is accepted. Actual
+  pre-spend protection at S10-GATE-H1 comes from a single invocation, the hard
+  wall-clock timeout, an explicit low-cost provider/model, provider/account-side
+  spend controls, and a human-authorized pilot.
 - **Receipt** (`HermesResearchRunReceipt`): immutable, content-addressed, and
   sanitized. It records the exact Hermes version, requested provider/model labels,
   the VERIFIED actual usage provider/model on success, `iteration_cap_status`, UTC

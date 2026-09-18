@@ -205,7 +205,52 @@ def test_external_version_probe_reads_version_no_research_call():
         version_argv=[sys.executable, "-c", prog], max_output_bytes=4096, max_wall_seconds=15,
     )
     assert probe.launched is True and probe.timed_out is False
+    assert probe.exit_code == 0 and probe.stdout_truncated is False
     assert "0.21.3" in (probe.version_text or "")
+
+
+# A version-probe stand-in that reports its isolation: HERMES_HOME, that home's
+# config.yaml, the presence of a provider-secret env var, and its cwd.
+_PROBE_INSPECT_PROG = textwrap.dedent(
+    """
+    import os, json, pathlib
+    home = os.environ.get("HERMES_HOME")
+    cfg = ""
+    try:
+        cfg = pathlib.Path(home, "config.yaml").read_text(encoding="utf-8")
+    except Exception:
+        cfg = ""
+    print(json.dumps({
+        "home": home,
+        "cfg": cfg,
+        "has_secret": "OPENAI_API_KEY" in os.environ,
+        "cwd": os.getcwd(),
+        "marker": "hermes-agent 0.21.3",
+    }))
+    """
+)
+
+
+def test_version_probe_isolated_update_disabled_home_and_clean(monkeypatch):  # C14-C17
+    # A provider secret in the parent env must not reach the probe child.
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-should-not-leak")
+    probe = ExternalHermesCliBackend().probe_version(
+        version_argv=[sys.executable, "-c", _PROBE_INSPECT_PROG],
+        max_output_bytes=4096, max_wall_seconds=30,
+    )
+    assert probe.launched is True and probe.exit_code == 0
+    data = json.loads(probe.version_text)
+    home = data["home"]
+    # C14: a dedicated throwaway HERMES_HOME (never the real research home).
+    assert home and "hermes_verprobe_" in home
+    # C16: its config disables the passive update check.
+    assert "updates" in data["cfg"] and "check: false" in data["cfg"]
+    # C17: no provider secret was forwarded into the probe environment.
+    assert data["has_secret"] is False
+    # cwd is the probe home, never the repository root.
+    assert Path(data["cwd"]).resolve() != REPO_ROOT
+    # C15: the probe home is removed on teardown.
+    assert not Path(home).exists()
 
 
 def test_build_version_argv_is_argv_only():
@@ -273,3 +318,31 @@ def test_unsafe_hermes_home_is_rejected():
     assert is_safe_research_home(str(Path(os.path.expanduser("~")) / "local_data" / "h")) is False
     # Traversal marker.
     assert is_safe_research_home("/opt/../etc/home") is False
+
+
+def test_c18_repo_home_rejected_regardless_of_cwd(monkeypatch, tmp_path):  # C18
+    # The repository boundary is derived from the module location, not os.getcwd():
+    # chdir OUTSIDE the repo and a HERMES_HOME inside the repo is still rejected.
+    monkeypatch.chdir(tmp_path)
+    assert is_safe_research_home(str(REPO_ROOT)) is False
+    assert is_safe_research_home(str(REPO_ROOT / "sub" / "hermes_home")) is False
+
+
+def test_c19_external_dedicated_home_accepted(tmp_path):  # C19
+    external = tmp_path / "dedicated_research_home"
+    external.mkdir()
+    assert is_safe_research_home(str(external)) is True
+
+
+def test_c20_windows_argv_bound_with_quote_heavy_content():  # C20
+    req = _request()
+    # Quote-heavy content stays under the raw prompt byte bound but expands past the
+    # assembled Windows command-line ceiling after argv quoting (each " -> \").
+    quote_heavy = '"' * 16000
+    assert len(quote_heavy.encode("utf-8")) <= policy_mod.MAX_PROMPT_BYTES
+    import subprocess as _sp
+    # Sanity: the assembled command line really does exceed the ceiling.
+    assembled = _sp.list2cmdline(build_version_argv("hermes")[:1] + (quote_heavy,))
+    assert len(assembled) > policy_mod.MAX_COMMAND_LINE_CHARS
+    with pytest.raises(policy_mod.PolicyBroadeningError):
+        build_hermes_argv("hermes", req, quote_heavy)

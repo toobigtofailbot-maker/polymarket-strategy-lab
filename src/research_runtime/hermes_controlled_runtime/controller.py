@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import dataclasses
 from datetime import datetime, timezone
-from decimal import Decimal
 from typing import Callable, Mapping
 
 from .models import (
@@ -152,19 +151,31 @@ def run_controlled_hermes_research(
         activation_state=activation_state,
     )
 
-    # --- Version preflight (R001): no provider/network research call is made. ---
+    # --- Version preflight (R001): isolated, update-check-disabled probe; no
+    # provider/research call is made. The probe runs in a throwaway HERMES_HOME whose
+    # config disables the passive update check, so it makes no network access. The
+    # probe must launch, not time out, exit 0, not truncate its version stdout, and
+    # report exactly 0.21.3; otherwise no research invocation happens. ---
     probe = backend.probe_version(
         version_argv=build_version_argv(executable_path),
         max_output_bytes=_VERSION_PROBE_MAX_BYTES,
         max_wall_seconds=_VERSION_PROBE_MAX_SECONDS,
     )
     reported_semver = parse_hermes_version(probe.version_text)
-    if not probe.launched or probe.timed_out or not is_supported_hermes_version(
-        probe.version_text
-    ):
+    preflight_broken = (
+        not probe.launched
+        or probe.timed_out
+        or probe.exit_code != 0
+        or probe.stdout_truncated
+    )
+    if preflight_broken or not is_supported_hermes_version(probe.version_text):
+        # A clean-but-wrong reported version is a version mismatch; a launch/timeout/
+        # nonzero-exit/truncated-stdout probe is a preflight failure. Both are terminal
+        # VERSION_MISMATCH with no research invocation.
+        error_code = "VERSION_PREFLIGHT_FAILED" if preflight_broken else "BACKEND_VERSION_MISMATCH"
         builder.end_utc = _utc_iso(clock())
         return builder.failure(
-            _STATUS_VERSION, "BACKEND_VERSION_MISMATCH", budget=_BUDGET_NOT_REACHED,
+            _STATUS_VERSION, error_code, budget=_BUDGET_NOT_REACHED,
             reported_semver=reported_semver,
         )
 
@@ -211,6 +222,17 @@ def run_controlled_hermes_research(
     builder.usage = usage
     if outcome.exit_code != 0:
         return builder.failure(_STATUS_EXIT, "EXIT_CODE_NONZERO", budget=_BUDGET_NOT_REACHED,
+                               stdout_truncated=st, stderr_truncated=se)
+
+    # Truncation of either authoritative surface is fail-closed BEFORE parsing
+    # (section 5): a truncated prefix can be syntactically valid but is not the real
+    # output, so it must never yield a successful receipt.
+    if outcome.stdout_truncated:
+        return builder.failure(_STATUS_RESPONSE, "RESPONSE_TOO_LARGE", budget=_BUDGET_OUTPUT,
+                               stdout_truncated=st, stderr_truncated=se)
+    if outcome.usage_file_truncated:
+        builder.usage_evidence_status = _USAGE_INVALID
+        return builder.failure(_STATUS_USAGE, "USAGE_TOO_LARGE", budget=_BUDGET_USAGE_INVALID,
                                stdout_truncated=st, stderr_truncated=se)
 
     response = capture_final_response(outcome.stdout, max_bytes=request.max_output_bytes)

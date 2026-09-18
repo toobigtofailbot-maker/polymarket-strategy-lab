@@ -35,11 +35,21 @@ from typing import Protocol, Sequence
 
 @dataclasses.dataclass(frozen=True)
 class HermesVersionProbe:
-    """Sanitized result of a bounded no-network ``hermes --version`` preflight."""
+    """Sanitized result of a bounded, update-check-disabled ``hermes --version`` probe.
+
+    Raw ``hermes --version`` is NOT intrinsically offline: exact tagged
+    ``hermes_cli/_startup_fast.py::print_fast_version_info(check_updates=True)`` calls
+    ``banner.check_for_updates(passive=True)``, which can reach GitHub. The probe is
+    isolated in a throwaway ``HERMES_HOME`` whose ``config.yaml`` sets
+    ``updates.check: false``; the tagged ``check_for_updates`` returns before any
+    network access when that opt-out is set.
+    """
 
     launched: bool
     timed_out: bool
     version_text: str | None
+    exit_code: int | None = None
+    stdout_truncated: bool = False
 
 
 @dataclasses.dataclass(frozen=True)
@@ -98,6 +108,8 @@ class FakeHermesBackend:
         version_text: str | None = "hermes-agent 0.21.3",
         version_timed_out: bool = False,
         version_launched: bool = True,
+        version_exit_code: int | None = 0,
+        version_stdout_truncated: bool = False,
     ) -> None:
         if not outcomes:
             raise ValueError("FakeHermesBackend requires at least one outcome")
@@ -106,6 +118,8 @@ class FakeHermesBackend:
             launched=version_launched,
             timed_out=version_timed_out,
             version_text=version_text,
+            exit_code=version_exit_code,
+            stdout_truncated=version_stdout_truncated,
         )
         self.call_count = 0
         self.version_probe_count = 0
@@ -203,26 +217,47 @@ class ExternalHermesCliBackend:
         version_argv = list(version_argv)
         if not version_argv:
             return HermesVersionProbe(launched=False, timed_out=False, version_text=None)
+
+        # Isolated throwaway HERMES_HOME whose config disables the passive update
+        # check, so ``hermes --version`` performs no GitHub/network access. It never
+        # reuses the real credential-bearing research home and forwards no secrets.
+        probe_home = tempfile.mkdtemp(prefix="hermes_verprobe_")
         try:
-            proc = subprocess.run(  # noqa: S603
-                version_argv,
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=_minimal_env(None),
-                timeout=max_wall_seconds,
-                check=False,
+            _write_update_disabled_config(probe_home)
+            env = _minimal_env(None)
+            env["HERMES_HOME"] = probe_home
+            try:
+                proc = subprocess.run(  # noqa: S603
+                    version_argv,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=probe_home,
+                    env=env,
+                    timeout=max_wall_seconds,
+                    check=False,
+                )
+            except subprocess.TimeoutExpired:
+                return HermesVersionProbe(
+                    launched=True, timed_out=True, version_text=None, exit_code=None
+                )
+            except (OSError, ValueError):
+                return HermesVersionProbe(launched=False, timed_out=False, version_text=None)
+            raw_all = proc.stdout or b""
+            raw = raw_all[:max_output_bytes]
+            try:
+                text = raw.decode("utf-8", errors="replace")
+            except Exception:  # pragma: no cover - defensive
+                text = None
+            return HermesVersionProbe(
+                launched=True,
+                timed_out=False,
+                version_text=text,
+                exit_code=proc.returncode,
+                stdout_truncated=len(raw_all) > max_output_bytes,
             )
-        except subprocess.TimeoutExpired:
-            return HermesVersionProbe(launched=True, timed_out=True, version_text=None)
-        except (OSError, ValueError):
-            return HermesVersionProbe(launched=False, timed_out=False, version_text=None)
-        raw = (proc.stdout or b"")[:max_output_bytes]
-        try:
-            text = raw.decode("utf-8", errors="replace")
-        except Exception:  # pragma: no cover - defensive
-            text = None
-        return HermesVersionProbe(launched=True, timed_out=False, version_text=text)
+        finally:
+            shutil.rmtree(probe_home, ignore_errors=True)
 
     def invoke(
         self,
@@ -336,11 +371,22 @@ def _elapsed_ms(start: float) -> int:
     return int((time.monotonic() - start) * 1000)
 
 
+# Stable repository root derived from THIS module's install location, independent of
+# the caller's working directory: src/research_runtime/hermes_controlled_runtime/ ->
+# three parents up is the repository root.
+_REPO_ROOT = os.path.realpath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir, os.pardir)
+)
+
+
 def is_safe_research_home(hermes_home: str) -> bool:
     """A NON-SECRET research Hermes-home locator that is safe to forward.
 
-    Rejects a home inside the repository worktree, a ``local_data`` tree, a
-    traversal marker, or a relative path. Never inspects or reads any credential.
+    Rejects a home inside the repository tree, a ``local_data`` tree, a traversal
+    marker, or a relative path. The repository boundary is derived from this module's
+    install location (``_REPO_ROOT``), NOT from ``os.getcwd()``, so a home inside the
+    repository is rejected regardless of where the caller launched. Never inspects or
+    reads any credential.
     """
     if not isinstance(hermes_home, str) or not hermes_home.strip():
         return False
@@ -351,10 +397,25 @@ def is_safe_research_home(hermes_home: str) -> bool:
     resolved = os.path.realpath(hermes_home)
     if any(marker in resolved for marker in _FORBIDDEN_PATH_MARKERS):
         return False
-    repo_cwd = os.path.realpath(os.getcwd())
-    if resolved == repo_cwd or resolved.startswith(repo_cwd + os.sep):
+    # Case-normalized comparison so the boundary holds on case-insensitive filesystems.
+    resolved_nc = os.path.normcase(resolved)
+    repo_nc = os.path.normcase(_REPO_ROOT)
+    if resolved_nc == repo_nc or resolved_nc.startswith(repo_nc + os.sep):
         return False
     return True
+
+
+# Config written into the throwaway version-probe HERMES_HOME. Exact tagged
+# ``hermes_cli/banner.check_for_updates(passive=True)`` reads
+# ``load_config().get("updates", {}).get("check", True) is False`` and returns before
+# any network access when this opt-out is present.
+_UPDATE_DISABLED_CONFIG_YAML = "updates:\n  check: false\n"
+
+
+def _write_update_disabled_config(hermes_home: str) -> None:
+    """Write only the update-check opt-out into the probe home's ``config.yaml``."""
+    with open(os.path.join(hermes_home, "config.yaml"), "w", encoding="utf-8") as handle:
+        handle.write(_UPDATE_DISABLED_CONFIG_YAML)
 
 
 def _minimal_env(hermes_home: str | None) -> dict[str, str]:

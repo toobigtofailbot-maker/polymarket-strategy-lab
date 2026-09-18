@@ -89,7 +89,7 @@ def _usage(**overrides) -> bytes:
         "output_tokens": 80,
         "total_tokens": 130,
         "api_calls": 1,
-        "estimated_cost_usd": "0.04",
+        "estimated_cost_usd": 0.04,
         "cost_status": "estimated",
         "cost_source": "official_docs_snapshot",
         "model": "example-model",
@@ -316,7 +316,7 @@ def test_r013_unsafe_output_is_safety_failure_not_retried():
 def test_cost_above_cap_fails_closed():  # T17
     req = _request()  # accepted cost threshold is USD 2
     backend = FakeHermesBackend.from_transcript(
-        _stdout(req.request_id), usage_file_bytes=_usage(estimated_cost_usd="9.99")
+        _stdout(req.request_id), usage_file_bytes=_usage(estimated_cost_usd=9.99)
     )
     result = _run(req, backend)
     assert result.receipt.terminal_status == "BUDGET_EXCEEDED"
@@ -329,7 +329,7 @@ def test_cost_evidence_unavailable_fails_closed():  # T16
     # A completed run whose cost is unknown cannot succeed; cost is never zero.
     backend = FakeHermesBackend.from_transcript(
         _stdout(req.request_id),
-        usage_file_bytes=_usage(estimated_cost_usd="0.01", cost_status="unknown"),
+        usage_file_bytes=_usage(estimated_cost_usd=0.01, cost_status="unknown"),
     )
     result = _run(req, backend)
     assert result.error_code == "COST_EVIDENCE_UNAVAILABLE"
@@ -428,6 +428,66 @@ def test_model_mismatch_fails_closed():  # T19
     result = _run(req, backend)
     assert result.error_code == "PROVIDER_MODEL_MISMATCH"
     assert result.receipt.terminal_status == "PROVIDER_MODEL_MISMATCH"
+
+
+# --- truncation of authoritative surfaces is fail-closed (section 5) ---------
+
+
+def _truncated_outcome(stdout, usage=None, *, stdout_truncated=False, usage_truncated=False):
+    return HermesInvocationOutcome(
+        stdout=stdout, stdout_truncated=stdout_truncated, stderr_byte_len=0,
+        stderr_truncated=False, usage_file_bytes=usage, usage_file_truncated=usage_truncated,
+        exit_code=0, timed_out=False, launch_failed=False, duration_ms=10,
+    )
+
+
+def test_c10_stdout_truncated_can_never_succeed():  # C10
+    req = _request()
+    # A truncated prefix that still happens to be valid JSON must not be accepted.
+    backend = FakeHermesBackend(
+        [_truncated_outcome(_stdout(req.request_id), _usage(), stdout_truncated=True)]
+    )
+    result = _run(req, backend)
+    assert result.error_code == "RESPONSE_TOO_LARGE"
+    assert result.receipt.terminal_status == "RESPONSE_CAPTURE_FAILED"
+    assert result.validated_draft is None
+
+
+def test_c11_usage_file_truncated_can_never_succeed():  # C11
+    req = _request()
+    backend = FakeHermesBackend(
+        [_truncated_outcome(_stdout(req.request_id), _usage(), usage_truncated=True)]
+    )
+    result = _run(req, backend)
+    assert result.error_code == "USAGE_TOO_LARGE"
+    assert result.receipt.terminal_status == "USAGE_EVIDENCE_INVALID"
+    assert result.receipt.usage_evidence_status == "INVALID"
+    assert result.validated_draft is None
+
+
+# --- version preflight exit/truncation gates (section 6) ---------------------
+
+
+def test_c12_correct_semver_but_nonzero_exit_rejected():  # C12
+    req = _request()
+    backend = FakeHermesBackend(
+        [_success_outcome(_stdout(req.request_id), _usage())], version_exit_code=1
+    )
+    result = _run(req, backend)
+    assert result.error_code == "VERSION_PREFLIGHT_FAILED"
+    assert result.receipt.terminal_status == "VERSION_MISMATCH"
+    assert backend.call_count == 0  # no research invocation
+
+
+def test_c13_truncated_version_stdout_rejected():  # C13
+    req = _request()
+    backend = FakeHermesBackend(
+        [_success_outcome(_stdout(req.request_id), _usage())], version_stdout_truncated=True
+    )
+    result = _run(req, backend)
+    assert result.error_code == "VERSION_PREFLIGHT_FAILED"
+    assert result.receipt.terminal_status == "VERSION_MISMATCH"
+    assert backend.call_count == 0
 
 
 # --- exact tagged web toolset provenance (section 11) ------------------------

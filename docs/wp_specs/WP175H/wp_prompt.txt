@@ -117,7 +117,10 @@ so there is no iteration cap on the pinned one-shot path and none is passed:
   hermes --safe-mode --ignore-user-config --ignore-rules
     --provider <label> --model <label> --toolsets web
     --usage-file <bare-name> -z <deterministic-research-envelope>
-Version is read from a bounded no-network `hermes --version` preflight (== 0.21.3).
+Version is read from a bounded `hermes --version` preflight run in an isolated
+throwaway HERMES_HOME whose config sets updates.check=false (raw --version otherwise
+does a passive GitHub update check per tagged _startup_fast.py). Require: launched,
+not timed out, exit 0, stdout not truncated, semver == 0.21.3.
 
 Initial allowed built-in toolset: EXACTLY web (web_search + web_extract). Forbidden
 tool families: terminal, file, browser, code_execution, delegation, memory,
