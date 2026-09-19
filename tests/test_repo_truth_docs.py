@@ -231,3 +231,28 @@ def test_wp175h_repo_truth_registers_controlled_runtime_without_live_authority()
     assert "Real provider/model call count: 0" in fragment
     assert "capital at risk: USD 0" in fragment
     assert "Merge authorized: NO" in combined
+
+
+def test_wp175j_repo_truth_registers_bounded_parser_correction() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    status = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "WP175J.md").read_text(
+        encoding="utf-8"
+    )
+    combined = "\n".join((index, status, deferred, fragment))
+    assert "WP175J Hermes Version Banner Preflight Parser Correction" in index
+    assert "S10-HERMES-01B" in combined
+    assert "exact 12-file" in combined
+    assert "Hermes Agent v0.21.3 (2026.9.14)" in combined
+    assert "2026.9.14" in combined and "release date" in combined
+    assert "WP175I / PR #182 merged" in combined
+    assert "BLOCKED_BY_WP175J_VERSION_PREFLIGHT_PARSER_CORRECTION" in deferred
+    assert "real H1 research invocations 0" in index
+    assert "fresh-human-authorized S10-GATE-H1" in combined
+    assert "immediate successor is resumed" in index
+    assert "genuine H1 PASS plus Side11 review unlocks S10-ALPHA-01" in index
+    assert "Gate C" in combined and "NOT AUTHORIZED" in combined
+    assert "Alpha Factory" in combined and "NOT STARTED" in combined
+    assert "WP176" in combined and "NOT STARTED" in combined
+    assert "Merge authorized: NO" in combined

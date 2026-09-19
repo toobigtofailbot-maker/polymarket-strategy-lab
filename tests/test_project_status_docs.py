@@ -4109,8 +4109,9 @@ def test_wp175i_controlled_profile_status_registered() -> None:
         )
     )
     combined = "\n".join((project, fragment, contract))
-    # WP175I is the current review target; WP175H is registered as merged.
-    assert "WP175I current review target" in project
+    # WP175J is now current; WP175I and WP175H remain registered as merged truth.
+    assert "WP175J current review target" in project
+    assert "WP175I / PR #182 merged: YES" in project
     assert "WP175H / PR #181 merged: YES" in project
     assert "S10-HERMES-01A" in combined
     assert "BOUNDED_CONTROLLED_RESEARCH_PROFILE_ENFORCEMENT_CORRECTION" in combined
@@ -4166,3 +4167,41 @@ def test_wp175i_controlled_profile_status_registered() -> None:
         "src/research_runtime/hermes_controlled_runtime/response_capture.py"
         not in scope["required_changed_files"]
     )
+
+
+def test_wp175j_version_banner_parser_correction_registered() -> None:
+    project = _read()
+    fragment = (STATUS_ENTRIES / "WP175J.md").read_text(encoding="utf-8")
+    contract = (
+        REPO_ROOT / "docs" / "hermes_controlled_research_runtime_contract.md"
+    ).read_text(encoding="utf-8")
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "WP175J" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    combined = "\n".join((project, fragment, contract))
+    assert "WP175J current review target" in project
+    assert "WP175I / PR #182 merged: YES" in project
+    assert "S10-HERMES-01B" in combined
+    assert "BOUNDED_HERMES_VERSION_BANNER_PREFLIGHT_CORRECTION" in combined
+    assert "Governance track: RUNTIME" in project and "Risk level: 3" in project
+    assert "Exact changed-file scope: 12" in project
+    assert "Hermes Agent v0.21.3 (2026.9.14)" in combined
+    assert "generic first-semver" in combined
+    assert "H1 real research invocations: 0" in combined
+    assert "RUNTIME ACTIVATED: NO" in project
+    assert "Gate C: NOT AUTHORIZED" in combined
+    assert "Alpha Factory: NOT STARTED" in combined
+    assert "S10-GATE-H1" in combined and "fresh-human-authorized" in combined
+    assert "WP176 Mature Controlled Live: NOT STARTED" in combined
+    assert "Merge authorized: NO" in combined
+    scope = spec["scope"]
+    assert spec["identity"]["risk_level"] == 3
+    assert scope["exact_scope_required"] is True
+    assert scope["max_changed_files"] == 12
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == 12
+    assert "src/research_runtime/hermes_controlled_runtime/policy.py" in scope["required_changed_files"]
+    assert "src/research_runtime/hermes_controlled_runtime/controller.py" not in scope["required_changed_files"]
+    assert "src/research_runtime/hermes_controlled_runtime/runner.py" not in scope["required_changed_files"]

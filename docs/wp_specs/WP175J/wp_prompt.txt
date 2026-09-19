@@ -1,0 +1,1382 @@
+SIDE11 — WP175J / S10-HERMES-01B
+HERMES VERSION BANNER PREFLIGHT PARSER CORRECTION
+FINAL ONE-SHOT IMPLEMENTATION-AUTHORIZED WORK PACKAGE
+
+Package Identity:
+  WP ID: WP175J
+  Side11 capability handle: S10-HERMES-01B
+  Title: Hermes Version Banner Preflight Parser Correction
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen drafting base: 0bc994c6659c6175ed7cf45cb7149ead51774344
+  Required predecessor: PR #182 / WP175I
+  Required predecessor head: 10297c48ce39e8a1fb522889fdf73c7aefd71206
+  Required predecessor merge: 0bc994c6659c6175ed7cf45cb7149ead51774344
+  Suggested branch: codex/wp175j-hermes-version-banner-parser
+  Package class: BOUNDED_HERMES_VERSION_BANNER_PREFLIGHT_CORRECTION
+  Package size class: L
+  Exact changed-file budget: 12
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: BOUNDED_VERSION_PREFLIGHT_COMPATIBILITY_CORRECTION_ONLY
+  Product impact: NONE
+  Network impact: GitHub control-plane / hosted CI and read-only public-upstream verification only; NO provider, Firecrawl, Polymarket, or product-web runtime calls
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: GPT-5.6 Sol — LOW
+  Reason: root cause, parser contract, changed source surface, negative cases, and successor boundary are already mechanically resolved; implementation should be deterministic.
+  Escalate to MEDIUM or STOP if: live main drifts; current source/test contracts differ; readiness/spec semantics contradict this package; exact real Hermes banner differs from the frozen upstream contract; scope must exceed 12 files; controller/runner changes appear necessary; a dependency/workflow/credential/network-runtime change appears necessary.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+===============================================================================
+0. USER AUTHORIZATION / ONE-SHOT AUTHORITY
+===============================================================================
+
+Karl has explicitly authorized implementation of THIS exact bounded software package.
+
+No redundant GO is required for:
+- a dedicated worktree/branch;
+- the exact 12-file scope below;
+- deterministic local implementation;
+- local offline version-probe smoke against the already-installed non-virtualized pinned Hermes runtime;
+- focused tests;
+- one authoritative full local suite on the stable candidate;
+- deterministic readiness / exact-diff validation;
+- generated-artifact guard;
+- git diff --check;
+- pip check;
+- commit;
+- push;
+- one draft PR;
+- normal PR-triggered exact-head hosted CI;
+- one governed job-level rerun ONLY under the exact historical-flake rule in Section 16;
+- PR-body evidence reconciliation and re-fetch;
+- one combined independent implementation review;
+- final report back to Side11.
+
+This package does NOT authorize:
+- merge;
+- H1 research execution or H1 retry;
+- OAuth or account consent;
+- reading, printing, moving, rotating, hashing, validating, or using Firecrawl/OAuth secret values;
+- provider/model inference calls;
+- Firecrawl queries;
+- Polymarket API calls;
+- Alpha Factory;
+- HERMES-CTX;
+- Gate C;
+- capital;
+- signing;
+- paper/live orders;
+- economic execution;
+- scheduler/cron/daemon/background operation;
+- dependencies/locks/workflows;
+- Hermes fork/vendor/patch;
+- successor implementation.
+
+===============================================================================
+1. FROZEN CURRENT FACTS
+===============================================================================
+
+Live GitHub immediately before package drafting:
+
+main:
+  0bc994c6659c6175ed7cf45cb7149ead51774344
+
+latest merge:
+  PR #182 — WP175I — Controlled Research Profile Enforcement
+
+PR #182 final implementation head:
+  10297c48ce39e8a1fb522889fdf73c7aefd71206
+
+PR #182 merge commit:
+  0bc994c6659c6175ed7cf45cb7149ead51774344
+
+open PRs:
+  0
+
+post-merge main CI:
+  run 35403624678
+  workflow #88
+  attempt 1
+  SUCCESS
+  6/6 jobs successful
+
+Current safety state:
+- S10-GATE-H1 real research invocations consumed: 0
+- provider/API calls during failed H1 attempts: 0
+- Firecrawl research calls during failed H1 attempts: 0
+- Gate C: NOT AUTHORIZED
+- Alpha Factory: NOT STARTED
+- capital/orders: 0
+- WP175H/WP175I controlled runtime remains dormant
+
+Operational H1 history relevant to this WP:
+1. initial H1 evidence preparation failed before activation;
+2. OAuth / live Sol / Firecrawl readiness was subsequently established;
+3. a credential-hygiene hard stop occurred before research; key value was not exposed, key was rotated, H1 count stayed 0;
+4. first controller attempt stopped at VERSION_PREFLIGHT_FAILED before Hermes research;
+5. AppContainer/virtualized Windows launcher incompatibility was diagnosed and corrected by installing exact pinned Hermes in a non-virtualized external user path;
+6. the new real Hermes executable now exits 0 and prints the exact version banner;
+7. the merged parser still rejects it because it extracts the release date token instead of the package version;
+8. no real H1 research invocation has yet occurred.
+
+Do not rewrite this history into a successful H1 run.
+
+===============================================================================
+2. CONFIRMED ROOT CAUSE
+===============================================================================
+
+Merged source currently contains:
+
+  _SEMVER_TOKEN = re.compile(r"\b(\d+\.\d+\.\d+)\b")
+
+and:
+
+  def parse_hermes_version(reported):
+      ...
+      match = _SEMVER_TOKEN.search(reported)
+      return match.group(1) if match else None
+
+Exact pinned Hermes:
+  NousResearch/hermes-agent
+  version: 0.21.3
+  tag: v2026.9.14
+  commit: 345cd2b057a452236de401d3534b8502a7465e8d
+
+Exact tagged source defines:
+  __version__ = "0.21.3"
+  __release_date__ = "2026.9.14"
+
+Exact tagged banner path emits the branded form:
+
+  Hermes Agent v0.21.3 (2026.9.14)
+
+and may append an upstream/local git suffix.
+
+Why merged parser fails:
+- regex begins at the first digit and requires a word boundary before it;
+- in "v0.21.3", both "v" and "0" are regex word characters;
+- therefore there is NO word boundary before the package-version digit;
+- the package version is skipped;
+- the later release date "2026.9.14" is preceded by a non-word delimiter, so it is selected;
+- actual observed result:
+    reported_semver = 2026.9.14
+  even though:
+    version_text_contains_0_21_3 = true.
+
+This is a merged deterministic software defect.
+
+Existing tests missed it because they used synthetic:
+  hermes-agent 0.21.3
+
+rather than the exact real banner:
+  Hermes Agent v0.21.3 (2026.9.14)
+
+No controller, runner, provider, Firecrawl, OAuth, dependency, or upstream-Hermes defect is currently established.
+
+===============================================================================
+3. OBJECTIVE
+===============================================================================
+
+Correct ONLY the Hermes version-output parser so the existing fail-closed controller:
+
+- extracts the PACKAGE version from the exact branded Hermes v0.21.3 CLI banner;
+- never mistakes the release-date token for the package version;
+- preserves the existing legacy synthetic "hermes-agent 0.21.3" form used by deterministic tests;
+- still rejects a wrong package version;
+- still rejects release-date-only / unbranded arbitrary semantic-version text;
+- preserves bytes decoding behavior;
+- leaves version-probe launch/timeout/nonzero/truncation gates unchanged;
+- leaves every invocation, managed-profile, provider/model, Firecrawl, retry, usage, schema, safety, cost, authority, and request/receipt contract unchanged.
+
+This WP must not make H1 more permissive in any other way.
+
+===============================================================================
+4. REQUIRED PARSER CONTRACT
+===============================================================================
+
+Implement a branded Hermes-version parser.
+
+Preferred exact regex contract:
+
+  _HERMES_VERSION_TOKEN = re.compile(
+      r"\bhermes(?:\s+agent|-agent)\s+v?(\d+\.\d+\.\d+)\b",
+      re.IGNORECASE,
+  )
+
+Equivalent implementation is allowed ONLY if all acceptance/rejection examples below
+pass and it is no broader than the preferred contract.
+
+parse_hermes_version() must:
+
+ACCEPT / EXTRACT:
+1.
+  "Hermes Agent v0.21.3 (2026.9.14)"
+  -> "0.21.3"
+
+2.
+  "Hermes Agent v0.21.3 (2026.9.14) · upstream 345cd2b"
+  -> "0.21.3"
+
+3.
+  "hermes-agent 0.21.3"
+  -> "0.21.3"
+
+4.
+  b"Hermes Agent v0.21.3 (2026.9.14)"
+  -> "0.21.3"
+
+5.
+  "HERMES AGENT V0.21.3 (2026.9.14)"
+  -> "0.21.3"
+
+REJECT / DO NOT MISCLASSIFY:
+6.
+  "2026.9.14"
+  -> None
+
+7.
+  "Hermes Agent (2026.9.14)"
+  -> None
+
+8.
+  "unrelated-tool 0.21.3"
+  -> None
+
+9.
+  "Hermes Agent v0.20.0 (2026.9.14)"
+  -> parse "0.20.0"; is_supported_hermes_version(...) == false
+
+10.
+  "Hermes Agent v0.21.3foo (2026.9.14)"
+  -> must not accept malformed package token as 0.21.3
+
+NO generic "first semver-looking token" fallback is allowed.
+
+Do NOT:
+- special-case "2026.9.14";
+- strip all leading letters globally;
+- choose the smallest/largest version numerically;
+- parse the release date by token position;
+- accept arbitrary strings merely because they contain 0.21.3.
+
+The parser must bind version identity to a Hermes-branded version label.
+
+===============================================================================
+5. NON-CHANGES — FROZEN
+===============================================================================
+
+The following MUST remain byte/semantic-equivalent unless formatting directly required
+inside an allowed file:
+
+HERMES_RELEASE:
+  v0.21.3
+
+HERMES_RELEASE_TAG:
+  v2026.9.14
+
+HERMES_RELEASE_COMMIT:
+  345cd2b
+
+HERMES_EXPECTED_SEMVER:
+  0.21.3
+
+POLICY_SCHEMA_VERSION:
+  hermes-invocation-policy/2.0.0
+
+CONTROLLED_PROFILE_VERSION:
+  hermes-controlled-research-profile/1.0.0
+
+managed_config_sha256:
+  44e0fa95b0e83db89d0a63886be98fe93b5e15d679eeea39bd19e8cd665df5be
+
+Research argv:
+- no --safe-mode;
+- --ignore-user-config;
+- --ignore-rules;
+- provider/model explicit;
+- exactly --toolsets web;
+- usage file;
+- one-shot -z.
+
+Retry/fallback posture:
+- agent.api_max_retries = 1;
+- outer controller retries = 0;
+- provider/model fallback = NONE;
+- web backend fallback/rescue = NONE;
+- same-provider primary transport recovery = ALLOWED_BOUNDED.
+
+Schemas:
+- no request schema change;
+- no draft schema change;
+- no receipt schema change;
+- no policy identity change caused merely by this parser correction;
+- frozen H1 request/public hash remains unchanged.
+
+Do NOT modify:
+- runner.py;
+- controller.py;
+- models.py;
+- response_capture.py;
+- __init__.py;
+- dependencies;
+- lock files;
+- workflows;
+- installed Hermes source.
+
+If any of those become necessary:
+  STOP SCOPE_EXPANSION_REQUIRED.
+
+===============================================================================
+6. EXACT CHANGED-FILE SCOPE
+===============================================================================
+
+required_changed_files == allowed_changed_files == exactly these 12 paths:
+
+1. docs/deferred_items_log.md
+2. docs/hermes_controlled_research_runtime_contract.md
+3. docs/project_status.md
+4. docs/repo_truth_index.md
+5. docs/status_entries/WP175J.md
+6. docs/wp_specs/WP175J/wp_prompt.txt
+7. docs/wp_specs/WP175J/wp_spec.json
+8. src/research_runtime/hermes_controlled_runtime/policy.py
+9. tests/research_runtime/hermes_controlled_runtime/test_controller.py
+10. tests/research_runtime/hermes_controlled_runtime/test_runner.py
+11. tests/test_project_status_docs.py
+12. tests/test_repo_truth_docs.py
+
+Maximum changed files:
+  12
+
+Exact scope required:
+  YES
+
+No 13th path.
+
+Forbidden by exact scope, including but not limited to:
+- .github/workflows/**
+- dependency/lock/config packaging files
+- AGENTS.md / coding-agent governance docs
+- docs/long_term_bot_completion_roadmap.md
+- docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md
+- src/research_runtime/hermes_controlled_runtime/controller.py
+- src/research_runtime/hermes_controlled_runtime/runner.py
+- src/research_runtime/hermes_controlled_runtime/models.py
+- src/research_runtime/hermes_controlled_runtime/response_capture.py
+- src/research_runtime/hermes_controlled_runtime/__init__.py
+- src/data_layer/**
+- src/execution_gateway/**
+- src/paper_trading/**
+- src/oms/**
+- src/risk/**
+- credentials/**
+- secrets/**
+- local_data/** as tracked content
+- vendored/forked Hermes
+- Alpha Factory code
+
+The accepted long-term Side10 roadmap is NOT canonicalized in this narrow repair.
+That remains a natural tracked responsibility of the first appropriate Alpha package
+after genuine H1 PASS. Do not widen WP175J into roadmap administration.
+
+===============================================================================
+7. HARD MERGE / STATE GATE
+===============================================================================
+
+Before creating the worktree:
+
+  git fetch origin --prune
+  git checkout main
+  git pull --ff-only origin main
+  git rev-parse HEAD
+  git log -1 --oneline
+  git status --short --branch
+
+Require:
+- HEAD exactly 0bc994c6659c6175ed7cf45cb7149ead51774344;
+- PR #182 merged;
+- predecessor head 10297c48ce39e8a1fb522889fdf73c7aefd71206 is an ancestor of current main;
+- open PR count still 0 OR no newly opened PR touches this capability;
+- no local or remote WP175J branch already exists;
+- no WP175J PR exists;
+- no existing tracked WP175J package already claims implementation;
+- tracked main clean.
+
+If main changed:
+  STOP STATE_DRIFT.
+Do not self-approve a different base.
+
+Create:
+  one dedicated worktree
+  one branch:
+    codex/wp175j-hermes-version-banner-parser
+
+Branch-only fallback is allowed only if worktree creation is technically unavailable,
+and the PR body must state the fallback. Never work directly on main.
+
+===============================================================================
+8. CONTEXT BUDGET
+===============================================================================
+
+READ FIRST:
+- AGENTS.md
+- AI_CODING_AGENT_START_HERE.md
+- CODEX_START_HERE.md
+- docs/project_status.md
+- docs/repo_truth_index.md
+- docs/deferred_items_log.md
+- docs/ai/codex/WP_DRAFTING_STANDARD.md
+- docs/ai/codex/WP_SPEC_STANDARD.md
+- docs/ai/codex/VALIDATION_MATRIX.md
+- docs/ai/codex/PROTECTED_PATHS.md
+
+READ FOR THIS WP:
+- docs/hermes_controlled_research_runtime_contract.md
+- docs/status_entries/WP175I.md
+- docs/wp_specs/WP175I/wp_prompt.txt
+- docs/wp_specs/WP175I/wp_spec.json
+- src/research_runtime/hermes_controlled_runtime/policy.py
+- src/research_runtime/hermes_controlled_runtime/controller.py
+- src/research_runtime/hermes_controlled_runtime/runner.py
+- tests/research_runtime/hermes_controlled_runtime/test_controller.py
+- tests/research_runtime/hermes_controlled_runtime/test_runner.py
+- tests/test_project_status_docs.py
+- tests/test_repo_truth_docs.py
+- tests/test_architecture_boundaries.py
+- tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py
+
+READ EXACT PINNED EXTERNAL SOURCE LOCALLY / READ-ONLY:
+from the already-created non-virtualized Hermes v0.21.3 source checkout:
+- hermes_cli/__init__.py
+- hermes_cli/banner.py
+- hermes_cli/_startup_fast.py
+
+Confirm:
+- __version__ = 0.21.3
+- __release_date__ = 2026.9.14
+- format_banner_version_label() begins with "Hermes Agent v{VERSION} ({RELEASE_DATE})"
+- --version uses that banner path.
+
+READ ONLY IF BLOCKED:
+- tools/wp/wp_readiness_gate.py
+- tools/wp/wp_spec_guard.py
+- tools/git/preflight_generated_artifact_guard.py
+- tools/git/pr_evidence_consistency_guard.py
+- docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md
+- docs/ai/codex/PR_REVIEW_CHECKLIST.md
+
+DO NOT READ/TOUCH merely for context:
+- execution/live credential material;
+- wallet keys;
+- Firecrawl .env;
+- OAuth auth.json;
+- unrelated strategy/paper/live implementation;
+- Alpha successor implementation.
+
+===============================================================================
+9. GOVERNED PROMPT / SPEC BOOTSTRAP
+===============================================================================
+
+Write THIS execution package into:
+
+  docs/wp_specs/WP175J/wp_prompt.txt
+
+Create:
+
+  docs/wp_specs/WP175J/wp_spec.json
+
+using:
+  schema_id = polymarket-work-package-spec
+  schema_version = 1.0.0
+
+Frozen identity:
+  wp_id = WP175J
+  title = Hermes Version Banner Preflight Parser Correction
+  repository = toobigtofailbot-maker/polymarket-strategy-lab
+  package_class = BOUNDED_HERMES_VERSION_BANNER_PREFLIGHT_CORRECTION
+  package_size_class = L
+  risk_level = 3
+  base_branch = main
+  suggested_branch = codex/wp175j-hermes-version-banner-parser
+  predecessor PR/head/merge = 182 / 10297c48ce39e8a1fb522889fdf73c7aefd71206 / 0bc994c6659c6175ed7cf45cb7149ead51774344
+  capital_at_risk_usd = 0
+  XL authorization = false/null
+
+Spec authority MUST exactly mirror the authority block at the top of this prompt.
+
+Spec scope MUST contain exactly the 12 paths in Section 6, required == allowed,
+max_changed_files = 12, exact_scope_required = true.
+
+Historical compatibility edits:
+- docs/deferred_items_log.md
+- docs/project_status.md
+- docs/repo_truth_index.md
+- tests/test_project_status_docs.py
+- tests/test_repo_truth_docs.py
+
+Successor-boundary schema constraint:
+The machine schema requires next_wp to use WP grammar even though the immediate
+roadmap successor is an evidence gate. Follow existing WP175I precedent:
+  next_wp = WP176
+  next_title =
+    "S10-GATE-H1 Controlled Public Research Pilot (resumed) then S10-ALPHA-01,
+     ahead of WP176 Mature Controlled Live"
+
+This is a schema representation only.
+Human-readable truth MUST explicitly state:
+  immediate successor = resumed S10-GATE-H1;
+  H1 requires fresh human one-run authorization after WP175J merge/review;
+  only genuine H1 PASS + Side11 review unlocks S10-ALPHA-01;
+  WP176 remains later;
+  old WP180/WP181 Hermes/Alpha sequencing remains superseded.
+
+FAST/RUNTIME independent draftability certificate:
+  NOT REQUIRED.
+
+Before source implementation run:
+
+  python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP175J/wp_prompt.txt --spec docs/wp_specs/WP175J/wp_spec.json --repo-root .
+
+Require:
+  IMPLEMENTATION_READY
+
+If prompt/spec need same-capability syntactic corrections to satisfy current schema:
+  correct them within the two WP175J spec files and rerun.
+
+If satisfying readiness requires widening authority, scope, capability, or successor:
+  STOP PACKAGE_CONTRACT_MISMATCH.
+
+===============================================================================
+10. COMPATIBILITY / IMPOSSIBILITY TABLE
+===============================================================================
+
+Required behavior:
+parse exact real Hermes banner
+Mechanism:
+parse_hermes_version in policy.py
+Allowed:
+YES
+Compatible:
+YES
+Action:
+replace generic semver search with branded Hermes-version extraction.
+
+Required behavior:
+ignore release-date semver
+Mechanism:
+Hermes-branded prefix binding
+Allowed:
+YES
+Compatible:
+YES
+Action:
+no generic fallback.
+
+Required behavior:
+preserve wrong-version rejection
+Mechanism:
+is_supported_hermes_version exact compare
+Allowed:
+YES
+Compatible:
+YES
+Action:
+leave exact comparison unchanged.
+
+Required behavior:
+preserve broken-probe gates
+Mechanism:
+controller launch/timeout/exit/truncation logic
+Allowed to change:
+NO
+Compatible:
+YES
+Action:
+tests only; controller unchanged.
+
+Required behavior:
+real non-virtualized CLI version probe succeeds
+Mechanism:
+existing ExternalHermesCliBackend.probe_version + corrected parser
+Allowed:
+YES, local/version-only smoke
+Compatible:
+YES
+Action:
+post-implementation local smoke, zero provider/web calls.
+
+Required behavior:
+H1 resumes after merge
+Mechanism:
+separate evidence-gate authorization
+Allowed in WP175J:
+NO
+Compatible:
+YES
+Action:
+successor only.
+
+If any row becomes incompatible:
+  STOP.
+Do not redesign the runtime inside WP175J.
+
+===============================================================================
+11. IMPLEMENTATION
+===============================================================================
+
+SOURCE CHANGE — policy.py ONLY
+
+A. Replace/rename the generic semantic-version token parser with a branded Hermes
+package-version parser matching Section 4.
+
+B. Keep bytes decoding and non-string handling fail-closed.
+
+C. parse_hermes_version must return ONLY the package version captured from the
+Hermes-branded version label.
+
+D. is_supported_hermes_version remains an exact comparison to:
+  HERMES_EXPECTED_SEMVER = "0.21.3"
+
+E. Do not change invocation-policy identity fields or managed configuration merely
+because the version parser was corrected.
+
+NO source changes anywhere else.
+
+===============================================================================
+12. TEST CONTRACT
+===============================================================================
+
+tests/research_runtime/hermes_controlled_runtime/test_controller.py
+
+Required:
+- change GOOD_VERSION to the exact real banner shape:
+    "Hermes Agent v0.21.3 (2026.9.14)"
+  so existing successful controller tests exercise the real parser shape;
+- add explicit parser tests for Section 4 acceptance/rejection matrix;
+- prove a real-banner-shaped fake backend proceeds past version preflight and reaches
+  exactly one FAKE research backend invocation;
+- prove:
+    "Hermes Agent v0.20.0 (2026.9.14)"
+  returns BACKEND_VERSION_MISMATCH and backend.call_count == 0;
+- prove release-date-only does not satisfy parser;
+- preserve existing VERSION_PREFLIGHT_FAILED tests for nonzero/truncated probe;
+- preserve zero retry semantics.
+
+tests/research_runtime/hermes_controlled_runtime/test_runner.py
+
+Required:
+- replace the synthetic probe stdout used by the external version-probe test with:
+    "Hermes Agent v0.21.3 (2026.9.14)"
+- prove ExternalHermesCliBackend captures the exact banner successfully under the
+  isolated local version-probe path;
+- retain isolation/update-disabled/no-secret-forwarding assertions;
+- no real network/provider/web call.
+
+tests/test_project_status_docs.py
+
+Required:
+- stop asserting WP175I is the current review target;
+- preserve WP175I merged/runtime facts;
+- add WP175J registration assertions:
+  parser defect, exact banner shape, H1 count 0, no runtime activation, successor H1,
+  Gate C NOT AUTHORIZED, Alpha NOT STARTED, exact scope 12, RUNTIME/risk 3.
+
+tests/test_repo_truth_docs.py
+
+Required:
+- register WP175J as current bounded correction;
+- preserve prior WP175H/WP175I truth;
+- assert H1 remains blocked/unconsumed until correction merge + Side review;
+- assert immediate successor resumed S10-GATE-H1, not Alpha direct;
+- assert Gate C and mature-live remain blocked.
+
+Do not add a test that clones/installs Hermes in CI.
+
+===============================================================================
+13. LOCAL REAL-CLI REGRESSION SMOKE — REQUIRED
+===============================================================================
+
+Use the already-created exact NON-VIRTUALIZED external Hermes installation that
+the preceding diagnostic proved:
+
+- version 0.21.3
+- tag v2026.9.14
+- commit 345cd2b057a452236de401d3534b8502a7465e8d
+- source clean
+- Python 3.11.9
+- firecrawl-py 4.17.0
+
+Locate its exact path from the preceding diagnostic artifacts/state.
+Do not guess if ambiguous.
+
+Require that the executable is outside:
+- AppData\Local\Packages
+- Codex LocalCache virtualization
+- project repo/local_data
+
+Do NOT inspect or use the credential-bearing H1 research home.
+
+Run only local/version operations:
+
+1.
+  <exact nonvirtualized hermes.exe> --version
+
+Require:
+  exit 0
+  text contains exact branded package version.
+
+2.
+Invoke:
+  ExternalHermesCliBackend().probe_version(
+      version_argv=build_version_argv(<exact executable>),
+      ...
+  )
+
+Then apply corrected:
+  parse_hermes_version(probe.version_text)
+  is_supported_hermes_version(probe.version_text)
+
+Require:
+  probe.launched = true
+  probe.timed_out = false
+  probe.exit_code = 0
+  probe.stdout_truncated = false
+  parsed version = 0.21.3
+  supported = true
+
+This local version smoke:
+- is NOT H1;
+- does NOT call run_controlled_hermes_research();
+- does NOT use OAuth;
+- does NOT use Firecrawl;
+- does NOT use the H1 .env;
+- does NOT call provider/model;
+- consumes 0 real H1 invocations.
+
+If the ordinary exact CLI succeeds but corrected controller preflight still fails:
+  STOP REAL_CLI_REGRESSION_FAILED.
+Do not widen code automatically.
+
+If exact external runtime path is no longer unambiguous/available:
+  STOP EXTERNAL_RUNTIME_PATH_AMBIGUOUS.
+Do not reinstall Hermes under this WP.
+
+===============================================================================
+14. DOCUMENTATION / REPO TRUTH
+===============================================================================
+
+docs/hermes_controlled_research_runtime_contract.md
+
+Add a narrow normative version-preflight clarification:
+- exact tagged --version banner carries BOTH package version and release date;
+- version identity is the package version attached to the Hermes-branded label;
+- release-date tokens are never version authority;
+- parser is intentionally branded/fail-closed;
+- broken launch/timeout/nonzero/truncated gates remain unchanged;
+- no provider/web call occurs in version preflight.
+
+docs/status_entries/WP175J.md
+
+Record:
+- identity / package class / RUNTIME risk 3 / 12-file scope;
+- predecessor WP175I / PR #182 merged;
+- current exact defect and root cause;
+- AppContainer launcher issue was setup-only and corrected separately;
+- exact non-virtualized CLI succeeds;
+- merged parser selected 2026.9.14 rather than 0.21.3;
+- H1 real research count remains 0;
+- provider/API calls 0;
+- Firecrawl research calls 0;
+- runtime activated NO;
+- Gate C NOT AUTHORIZED;
+- Alpha Factory NOT STARTED;
+- merge authorized NO;
+- immediate successor resumed H1 after merge and Side11 review.
+
+docs/project_status.md
+
+Reconcile stable current-package wording:
+- WP175I / PR #182 merged;
+- WP175J is current review target;
+- H1 resumed operational preparation exposed version parser defect before remote activation;
+- H1 real research invocations remain 0;
+- WP175J correction does not itself activate runtime;
+- S10-GATE-H1 remains immediate successor after merge/review;
+- S10-ALPHA-01 remains blocked on genuine H1 PASS + Side11 review;
+- Gate C NOT AUTHORIZED;
+- WP176 NOT STARTED.
+
+docs/repo_truth_index.md
+
+Register:
+- WP175I merged;
+- WP175J bounded version-banner parser correction;
+- exact source/test/docs boundary;
+- current H1 blocker;
+- H1 unconsumed;
+- successor chain H1 -> genuine PASS review -> ALPHA-01.
+
+docs/deferred_items_log.md
+
+Update the existing H1/Alpha deferred truth rather than inventing new sequencing:
+- S10-GATE-H1 = BLOCKED_BY_WP175J_VERSION_PREFLIGHT_PARSER_CORRECTION;
+- real H1 research entitlement remains unconsumed;
+- after WP175J merge/post-merge review, H1 requires a fresh human one-run checkpoint;
+- S10-ALPHA-01 remains blocked on genuine H1 PASS + Side11 review.
+
+Do NOT canonicalize the full Side10 roadmap here.
+Do NOT edit old status fragments merely to rewrite historical merge metadata.
+
+===============================================================================
+15. REQUIREMENT → TEST → EVIDENCE
+===============================================================================
+
+R001 exact real banner parses package version
+  test: parser exact-banner test
+  evidence: 0.21.3
+
+R002 release date never wins
+  test: exact banner contains both 0.21.3 and 2026.9.14
+  evidence: parser returns 0.21.3
+
+R003 legacy deterministic hyphen form retained
+  test: hermes-agent 0.21.3
+  evidence: 0.21.3
+
+R004 case-insensitive branded label
+  test: HERMES AGENT V0.21.3
+  evidence: 0.21.3
+
+R005 wrong package version rejected even with release date
+  test: Hermes Agent v0.20.0 (2026.9.14)
+  evidence: parsed 0.20.0; supported false; zero fake research call
+
+R006 release-date-only/unbranded semver rejected
+  test: 2026.9.14 / unrelated-tool 0.21.3
+  evidence: None / unsupported
+
+R007 bytes behavior preserved
+  test: exact banner bytes
+  evidence: 0.21.3
+
+R008 real-banner controller preflight reaches fake research
+  test: GOOD_VERSION exact banner
+  evidence: version_probe_count 1; fake backend call_count 1
+
+R009 broken-probe gates unchanged
+  test: nonzero/truncated/timeout tests
+  evidence: VERSION_PREFLIGHT_FAILED; fake research call_count 0
+
+R010 actual non-virtualized exact CLI works through corrected parser
+  test: local real-cli smoke Section 13
+  evidence: exit 0; isolated probe pass; parsed 0.21.3; supported true; provider/web calls 0
+
+R011 no runtime-policy broadening
+  test: existing WP175I focused controller/runner tests
+  evidence: managed profile/retry/fallback/toolset facts unchanged
+
+R012 repo/status truth
+  test: test_project_status_docs.py + test_repo_truth_docs.py
+  evidence: WP175J/H1/authority assertions pass
+
+R013 external contract doc remains coherent
+  test: test_hermes_input_output_contracts_and_validator_requirements_docs.py
+  evidence: green
+
+R014 architecture/economic boundary unchanged
+  test: test_architecture_boundaries.py
+  evidence: green
+
+R015 exact scope/governed package
+  test: wp_readiness_gate pre/post implementation
+  evidence: IMPLEMENTATION_READY; exact 12-file diff
+
+R016 stable repository
+  test: one authoritative full suite
+  evidence: green or exact governed historical-flake classification only
+
+R017 hosted exact-head validation
+  test: PR CI
+  evidence: all effective exact-head required checks green
+
+R018 canonical PR evidence truthful
+  test: re-fetch posted PR body + evidence consistency guard
+  evidence: PASS before Ready for review YES
+
+===============================================================================
+16. IMPLEMENTATION / VALIDATION SEQUENCE
+===============================================================================
+
+A. Pre-implementation
+1. live/state gate
+2. dedicated worktree/branch
+3. write prompt/spec
+4. deterministic readiness -> IMPLEMENTATION_READY
+5. exact external source contract recheck from pinned local clone
+
+B. Implementation
+1. policy.py parser only
+2. focused tests
+3. docs/status/repo truth
+4. doc guards
+5. iterate ONLY inside exact 12-file scope
+
+C. Stable-candidate local validation
+
+Run:
+
+  python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_controller.py tests/research_runtime/hermes_controlled_runtime/test_runner.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py tests/test_architecture_boundaries.py
+
+Run the Section 13 real non-virtualized CLI version smoke.
+
+Then one authoritative full suite:
+
+  python -m pytest -q
+
+Then:
+
+  python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP175J/wp_prompt.txt --spec docs/wp_specs/WP175J/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD
+
+Require exact changed set = 12.
+
+Then:
+
+  python tools/git/preflight_generated_artifact_guard.py
+
+Then:
+
+  git diff --check
+
+Then:
+
+  python -m pip check
+
+No test may use:
+- real provider;
+- Firecrawl network;
+- OAuth token;
+- H1 secret;
+- Polymarket API;
+- live trading.
+
+D. Commit / push
+Prefer one implementation commit after stable local validation.
+No autogenerated unrelated cleanup.
+
+E. Draft PR
+Open exactly one draft PR to main.
+Do not mark ready until all evidence below is reconciled.
+
+===============================================================================
+17. HOSTED CI / HISTORICAL FAILURE RULE
+===============================================================================
+
+Allow normal PR-triggered exact-head CI.
+
+Do NOT manually dispatch extra workflows.
+
+If hosted CI fails:
+
+1. inspect exact failing test/job;
+2. determine whether failure touches WP175J changed capability.
+
+If any failure is:
+- parser/runtime/status/spec/readiness related;
+- in a changed file/test;
+- new/non-historical;
+then:
+  STOP HOSTED_VALIDATION_FAILED.
+No rerun as a substitute for fixing.
+
+Known historical exception:
+The repository has prior WP169 asynchronous websocket reconnect/healing timing
+instability, including historical main run:
+  35169441081
+with:
+  tests/data_layer/polymarket/test_market_truth_websocket.py::
+  test_normal_book_gaps_are_persisted_and_healed
+  assert healed >= 1
+  observed 0
+
+If and ONLY if:
+- WP175J changes no WP169 product/test/dependency/workflow path;
+- the exact failure is demonstrably the same historical WP169 asynchronous family;
+- live/history evidence confirms pre-existence;
+then classify:
+  PRE_EXISTING_UNRELATED_WP169_ASYNCHRONOUS_TIMING_INSTABILITY
+
+Exactly ONE job-level rerun of the failed job is authorized.
+
+Not authorized:
+- full-workflow rerun;
+- second rerun;
+- code change to hide the failure;
+- Autofix commit.
+
+If that single job rerun fails again:
+  STOP HOSTED_VALIDATION_NOT_CLEAN.
+
+Any generic Autofix feature has zero authority to create a WP175J commit.
+If an unexpected Autofix commit appears:
+  STOP UNAUTHORIZED_HEAD_MUTATION.
+
+===============================================================================
+18. INDEPENDENT RUNTIME REVIEW
+===============================================================================
+
+RUNTIME track requires one combined independent implementation review before
+Side11 final review.
+
+The independent reviewer must inspect exact final head and specifically verify:
+
+- actual regex/parser is Hermes-branded, not generic-semver-first;
+- exact real banner parses 0.21.3, not 2026.9.14;
+- release-date-only is rejected;
+- wrong package version is rejected;
+- no controller/runner/policy-identity/managed-config broadening;
+- no hidden fallback added;
+- no H1/provider/Firecrawl call occurred;
+- exact 12-file scope;
+- docs truth matches code/tests;
+- immediate successor is H1, not Alpha;
+- merge remains unauthorized.
+
+Reviewer must return:
+PASS / FAIL with blocking findings.
+The implementation agent may fix same-capability findings only within the exact
+12-file scope, then rerun affected validation and final readiness.
+Any scope/authority expansion requires STOP.
+
+===============================================================================
+19. PR BODY / EVIDENCE WORKFLOW
+===============================================================================
+
+PR title:
+
+  WP175J: correct Hermes version banner preflight parsing
+
+PR body must include:
+
+1. exact base SHA
+2. exact final head SHA
+3. exact 12 changed paths / count
+4. root cause:
+   generic \b-semver parser skipped v0.21.3 and selected release date 2026.9.14
+5. exact correction:
+   branded Hermes package-version parser
+6. exact upstream banner contract
+7. parser acceptance/rejection matrix summary
+8. local real-cli smoke result
+9. focused validation commands/results
+10. authoritative full-suite command/result
+11. readiness --check-diff command/result
+12. generated-artifact guard
+13. git diff --check
+14. pip check
+15. hosted CI exact run/check state
+16. any governed historical-flake classification/rerun evidence
+17. independent implementation review result
+18. requirement -> evidence traceability R001-R018
+19. authority-zero statements
+20. successor boundary
+21. Ready for review: YES/NO
+22. Merge authorized: NO
+
+Authority-zero statements must say:
+
+- real H1 research invocations during WP175J: 0
+- provider/model inference calls during WP175J: 0
+- Firecrawl research calls during WP175J: 0
+- OAuth operations during WP175J: 0
+- credential values read/printed/moved/rotated during WP175J: 0
+- capital at risk: USD 0
+- orders created/cancelled/signed/submitted: 0
+- Gate C: NOT AUTHORIZED
+- Alpha Factory started: NO
+- runtime activated by WP175J: NO
+- merge authorized: NO
+
+After posting/updating the final PR body:
+- re-fetch the canonical posted PR body via GitHub;
+- run the current repository PR evidence consistency guard against the re-fetched
+  posted body;
+- use exact final head;
+- forbid placeholder evidence;
+- forbid misleading inline test counts according to current guard policy;
+- require the posted-evidence note / guard result required by current repo standard.
+
+Record the EXACT guard command used in the PR body.
+Do not claim POSTED_GITHUB_API_VERIFIED from a local draft.
+
+No optional final comment is required unless current repo policy says otherwise.
+
+===============================================================================
+20. DOC / PR REVIEWER TRAPS
+===============================================================================
+
+Do not:
+
+- "fix" by allowing any semver token;
+- special-case the release date;
+- change expected version to 2026.9.14;
+- change HERMES_RELEASE/HERMES_EXPECTED_SEMVER;
+- bump policy schema/profile/digest;
+- alter controller failure precedence;
+- treat release date as version authority;
+- re-enable safe mode;
+- alter Firecrawl backend settings;
+- alter retry/fallback semantics;
+- alter H1 frozen request/hash;
+- call H1 to validate the parser;
+- read credentials to prove a local version command;
+- add dynamic upstream install to CI;
+- add a 13th file;
+- canonicalize the whole Alpha roadmap here;
+- mark H1 PASS;
+- start ALPHA-01;
+- imply Gate C authority.
+
+Historical status fragments are historical artifacts.
+Do not rewrite WP175I's stable package-local "merge authorized NO" field merely
+because PR #182 is now merged. Current live/project truth belongs in project_status,
+repo_truth and WP175J status.
+
+===============================================================================
+21. HARD STOPS
+===============================================================================
+
+STOP STATE_DRIFT
+if current main differs from frozen base before branch creation.
+
+STOP EXISTING_WP175J_COLLISION
+if a WP175J branch/package/PR already exists.
+
+STOP EXTERNAL_CONTRACT_MISMATCH
+if exact pinned Hermes source does not emit the branded version+release-date contract.
+
+STOP PACKAGE_CONTRACT_MISMATCH
+if current governance schema cannot represent this package without changing authority
+or capability.
+
+STOP SCOPE_EXPANSION_REQUIRED
+if a 13th path, controller.py, runner.py, dependency, lock, workflow, or successor code
+becomes necessary.
+
+STOP AUTHORITY_EXPANSION_REQUIRED
+if implementation needs credentials, provider calls, Firecrawl, product network,
+scheduler, paper, execution, or live authority.
+
+STOP REAL_CLI_REGRESSION_FAILED
+if corrected code cannot parse/accept the already-valid non-virtualized exact Hermes
+executable through the actual isolated probe.
+
+STOP EXTERNAL_RUNTIME_PATH_AMBIGUOUS
+if the known non-virtualized runtime cannot be identified without guessing/reinstalling.
+
+STOP TEST_CONTRACT_FAILURE
+if required negative cases cannot be proven fail-closed.
+
+STOP HOSTED_VALIDATION_FAILED
+for any relevant/new exact-head CI failure.
+
+STOP HOSTED_VALIDATION_NOT_CLEAN
+if the one permitted historical-flake job rerun does not go green.
+
+STOP UNAUTHORIZED_HEAD_MUTATION
+if an Autofix/bot/unrelated actor changes the PR head.
+
+STOP EVIDENCE_MISMATCH
+if posted PR body, status fragment, exact head, checks, changed set, or guard results
+do not agree.
+
+Under any hard stop:
+- do not merge;
+- do not run H1;
+- do not widen scope;
+- return exact evidence to Side11.
+
+===============================================================================
+22. SUCCESSOR BOUNDARY
+===============================================================================
+
+WP175J success means only:
+
+- source parser correction is code-complete;
+- exact real CLI banner compatibility is locally demonstrated;
+- deterministic tests and repo guards pass;
+- exact-head CI passes;
+- independent implementation review passes;
+- PR evidence is reconciled;
+- PR is READY_FOR_SIDE11_REVIEW.
+
+It does NOT mean:
+- merged;
+- runtime remotely activated;
+- H1 executed;
+- H1 PASS;
+- Alpha Factory authorized.
+
+After Side11 reviews and Karl separately authorizes merge:
+
+  WP175J merge
+  -> post-merge state/CI refresh
+  -> local exact real version-probe confirmation on merged main
+  -> fresh human S10-GATE-H1 one-real-run authorization
+  -> S10-GATE-H1
+  -> genuine H1 PASS + Side11 quality review
+  -> only then S10-ALPHA-01
+  -> S10-HERMES-CTX-01
+  -> S10-ALPHA-02
+  -> accepted roadmap continues.
+
+No automatic successor activation.
+
+===============================================================================
+23. FINAL REPORT-BACK
+===============================================================================
+
+Return:
+
+# WP175J — Hermes Version Banner Preflight Parser Correction
+
+## State
+base_sha:
+branch:
+worktree:
+pr_number:
+final_head_sha:
+commit_count:
+changed_files:
+open_pr_state:
+
+## Root Cause Recheck
+current_regex_before:
+exact_upstream_banner:
+why_package_version_was_skipped:
+why_release_date_was_selected:
+root_cause_confirmed:
+
+## Implementation
+parser_strategy:
+source_files_changed:
+controller_changed: NO
+runner_changed: NO
+policy_schema_changed: NO
+managed_config_changed: NO
+request_or_receipt_schema_changed: NO
+
+## Parser Evidence
+exact_real_banner_parsed:
+banner_with_upstream_suffix_parsed:
+legacy_hyphenated_form_parsed:
+bytes_form_parsed:
+wrong_package_version_rejected:
+release_date_only_rejected:
+unbranded_semver_rejected:
+malformed_version_rejected:
+
+## Actual Local Hermes Smoke
+runtime_nonvirtualized:
+hermes_version:
+tag:
+commit:
+normal_cli_exit_code:
+isolated_probe_launched:
+isolated_probe_exit_code:
+isolated_probe_timed_out:
+isolated_probe_stdout_truncated:
+parsed_semver:
+supported:
+provider_calls: 0
+firecrawl_calls: 0
+real_h1_invocations: 0
+
+## Validation
+preimplementation_readiness:
+focused_tests:
+full_suite:
+final_readiness_check_diff:
+generated_artifact_guard:
+git_diff_check:
+pip_check:
+hosted_ci:
+historical_flake_classification_if_any:
+job_level_rerun_used:
+independent_runtime_review:
+
+## Evidence
+prompt_sha256:
+spec_sha256:
+posted_pr_body_refetched:
+pr_evidence_guard:
+traceability_R001_R018:
+
+## Authority
+tracked_scope_exact_12:
+dependencies_changed: NO
+workflow_files_changed: NO
+credentials_touched: NO
+provider_inference_calls: 0
+firecrawl_research_calls: 0
+H1_real_research_invocations: 0
+capital_at_risk_usd: 0
+orders: 0
+Gate_C: NOT_AUTHORIZED
+Alpha_Factory_started: NO
+runtime_activated: NO
+merge_authorized: NO
+
+## Final Disposition
+READY_FOR_SIDE11_REVIEW: YES / NO
+Ready for review: YES / NO
+blocking_issue:
+next_action:
+
+If READY_FOR_SIDE11_REVIEW = YES:
+  STOP.
+  Do not merge.
+  Do not run H1.
+
+===============================================================================
+24. READINESS SYNTAX / NORMATIVE RULE MATRIX
+===============================================================================
+
+Authority / Non-Authority posture is exactly the governance authority block above.
+The negative test matrix is the acceptance/rejection matrix in Sections 4 and 12.
+The evidence plan is the requirement-to-test-to-evidence mapping R001-R018 in
+Section 15. These readiness labels add no capability, scope, or authority.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|parser|branded_banner|exact_real_shape|ACCEPT|package_version_0_21_3|parse_hermes_version.reported|R001
+NR002|parser|release_date|unbranded_or_suffix|REJECT|never_version_authority|parse_hermes_version.reported|R006
+NR003|parser|wrong_package_version|branded_shape|PRESERVE_EXACT|parse_then_unsupported|parse_hermes_version.reported|R005
+NR004|parser|malformed_token|suffix_characters|REJECT|fail_closed|parse_hermes_version.reported|R006
+NR005|parser|bytes_input|valid_utf8_banner|ACCEPT|decode_then_parse|parse_hermes_version.reported|R007
+END_NORMATIVE_RULE_MATRIX_V1
+
+END WP175J FINAL ONE-SHOT PACKAGE
