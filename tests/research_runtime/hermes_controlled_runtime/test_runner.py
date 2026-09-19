@@ -1446,12 +1446,17 @@ def test_e7_sticky_active_profile_cannot_hijack_h1_home(monkeypatch, tmp_path): 
     # The synthetic per-user mapping (what the child gets on Windows) makes the pinned
     # active_profile the child would read point under the synthetic root, never the real
     # personal file -- so the sticky active_profile cannot re-home the explicit H1 home.
+    # Compare with PureWindowsPath semantics so the check is separator-agnostic across hosts.
+    from pathlib import PureWindowsPath
+
     syn = runner_mod._windows_user_root_env(user_root)
     child_ap = _pinned_active_profile_file(syn)
-    assert str(user_root) in str(child_ap)
-    assert str(child_ap) != str(real_ap)
-    assert not os.path.exists(str(child_ap))  # synthetic hermes/active_profile is absent
-    assert real_ap.exists()  # the real file exists but is unreachable by the child
+    assert PureWindowsPath(syn["LOCALAPPDATA"]) in child_ap.parents
+    assert "real_localappdata" not in str(child_ap)
+    # The synthetic hermes/active_profile does not exist on disk (no override fires)...
+    synthetic_ap_fs = os.path.join(syn["LOCALAPPDATA"], "hermes", "active_profile")
+    assert not os.path.exists(synthetic_ap_fs)
+    assert real_ap.exists()  # ...while the real file exists but is unreachable by the child
 
 
 def test_e8_startup_probe_profile_isolation(monkeypatch):  # E8
