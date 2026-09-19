@@ -4299,6 +4299,10 @@ def test_wp175l_sanitized_windows_runtime_registered() -> None:
     assert "ambient provider credentials forwarded: NO" in project
     assert "STARTUP_PREFLIGHT_FAILED" in combined
     assert "transport_attempt_count 0" in combined
+    # Finding E: hybrid envelope with synthetic per-user roots (not real parent values).
+    assert "Finding E" in project
+    assert "SYNTHETIC" in project and "active_profile" in project
+    assert "MACHINE allowlist" in project
     # Authority + successor boundary.
     assert "RUNTIME ACTIVATED: NO" in project
     assert "H1 #3: NOT AUTHORIZED" in combined

@@ -21,15 +21,23 @@ context, so the pinned chain
 directory.` and research/provider-binding/Firecrawl were NOT_REACHED. `hermes --version`
 passed because it is answered by the fast-version path before profile initialization.
 WP175K was SUCCESSFUL AS OBSERVABILITY HARDENING because its sanitized evidence exposed
-this. WP175L replaces `_minimal_env` with a deterministic platform-aware SANITIZED
+this. WP175L replaces `_minimal_env` with a deterministic platform-aware HYBRID SANITIZED
 RUNTIME ENVELOPE (`_build_sanitized_runtime_env`) — an explicit benign allowlist, never
-`os.environ.copy()` — that forwards the real benign Windows runtime/home variables Hermes
-profile-home resolution and Python `Path.home()` need (USERPROFILE, HOMEDRIVE, HOMEPATH,
-APPDATA, LOCALAPPDATA, COMSPEC, PATHEXT, WINDIR, OS, PROCESSOR_ARCHITECTURE,
-NUMBER_OF_PROCESSORS, PROGRAMDATA, PROGRAMFILES, PROGRAMFILES(X86), COMMONPROGRAMFILES),
-retains the secret-name rejection, and adds an explicit interpreter/shell/capability
-injection denylist so no ambient provider credential or injection variable reaches the
-child. WP175L also adds an OFFLINE startup/profile-init preflight (`hermes --help`,
+`os.environ.copy()`. Side11's exact-head review of `c73934c` raised BLOCKING Finding E:
+forwarding the REAL per-user `LOCALAPPDATA`/`USERPROFILE` let pinned
+`hermes_cli/main.py::_apply_profile_override` read a sticky personal
+`%LOCALAPPDATA%\hermes\active_profile` and re-home the explicit H1 `HERMES_HOME`. The
+hybrid envelope therefore forwards only real benign MACHINE/runtime values (`COMSPEC`,
+`PATHEXT`, `WINDIR`, `OS`, `PROCESSOR_ARCHITECTURE`, `NUMBER_OF_PROCESSORS`, `PROGRAMDATA`,
+`PROGRAMFILES`, `PROGRAMFILES(X86)`, `COMMONPROGRAMFILES`), and SYNTHESIZES the per-user
+Windows identity roots (`USERPROFILE`, `HOMEDRIVE`, `HOMEPATH`, `APPDATA`, `LOCALAPPDATA`)
+under a backend-owned ephemeral runtime-user root — never the real parent values — so
+`Path.home()` works, the pinned default root resolves under a controlled `LOCALAPPDATA`
+(`<root>\AppData\Local\hermes`) that carries no unrelated `active_profile`, and the
+explicit H1 `HERMES_HOME` stays authoritative. The secret-name rejection is retained and
+an explicit interpreter/shell/capability injection denylist is added, so no ambient
+provider credential or injection variable reaches the child. WP175L also adds an OFFLINE
+startup/profile-init preflight (`hermes --help`,
 which exercises the profile/default-home path the `--version` fast path skips) that uses
 the same sanitized envelope and a throwaway `HERMES_HOME`; a launch failure, timeout, or
 nonzero exit is terminal `STARTUP_PREFLIGHT_FAILED` with `transport_attempt_count` 0 and

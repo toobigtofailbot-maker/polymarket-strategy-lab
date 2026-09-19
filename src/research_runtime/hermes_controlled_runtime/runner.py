@@ -491,29 +491,30 @@ _SECRET_ENV_FRAGMENTS = (
 # Cross-platform neutral runtime variables forwarded on every platform.
 _NEUTRAL_ENV_KEYS = ("PATH", "SystemRoot", "TEMP", "TMP", "TMPDIR", "LANG", "LC_ALL")
 
-# Windows-only benign runtime context, frozen after inspecting what the pinned Hermes
-# startup/profile-home resolution and Python actually need on Windows:
-#   * USERPROFILE / HOMEDRIVE / HOMEPATH -- Python ``Path.home()`` /
-#     ``os.path.expanduser("~")`` (WITHOUT one of these, ``Path.home()`` raises
-#     ``RuntimeError: Could not determine home directory.``, the exact H1 #2 failure);
-#   * LOCALAPPDATA -- the PRIMARY branch of pinned
-#     ``hermes_constants._get_platform_default_hermes_home()``
-#     (``base = Path(LOCALAPPDATA) if LOCALAPPDATA else Path.home()/"AppData"/"Local"``);
-#     APPDATA -- ordinary per-user roaming app data;
+# WP175L HYBRID ENVELOPE (Finding E). The Windows runtime split distinguishes:
+#   A. machine/runtime context that is safe to inherit from the REAL parent; and
+#   B. per-user Windows identity/config ROOTS that can cause implicit Hermes
+#      profile/credential discovery and must be CONTROLLED/SYNTHETIC for the child.
+#
+# Finding E: pinned Hermes ``hermes_cli/main.py::_apply_profile_override()`` trusts an
+# explicit ``HERMES_HOME`` immediately only when its immediate parent directory is
+# literally ``profiles``; otherwise it computes ``get_default_hermes_root()`` (Windows:
+# ``Path(LOCALAPPDATA)/"hermes"`` else ``Path.home()/"AppData"/"Local"/"hermes"``) and
+# reads ``<default root>/active_profile``; a sticky non-default profile name there
+# re-homes ``os.environ["HERMES_HOME"]``. Our canonical H1 home is a ROOT-style dir, not
+# ``...\profiles\<name>``, so forwarding the REAL ``LOCALAPPDATA``/``USERPROFILE`` would
+# let an unrelated PERSONAL ``%LOCALAPPDATA%\hermes\active_profile`` override the explicit
+# H1 home. Correctness must not depend on mutable unrelated personal Hermes state.
+#
+# (A) Machine/runtime keys forwarded from the REAL parent (never per-user identity):
 #   * COMSPEC / PATHEXT -- ordinary Windows executable resolution for subprocesses;
 #   * WINDIR -- Windows runtime/DLL resolution (SystemRoot's twin);
 #   * OS / PROCESSOR_ARCHITECTURE / NUMBER_OF_PROCESSORS -- benign platform identity;
 #   * PROGRAMDATA / PROGRAMFILES / PROGRAMFILES(X86) / COMMONPROGRAMFILES -- standard
 #     machine-wide install roots some runtimes consult.
-# Every one is a standard NON-SECRET Windows runtime variable; none names a credential,
-# token, provider, or interpreter/shell-injection surface. The real benign parent value
-# is forwarded (never a fabricated home), consistent with Karl's owner direction.
-_WINDOWS_RUNTIME_ENV_KEYS = (
-    "USERPROFILE",
-    "HOMEDRIVE",
-    "HOMEPATH",
-    "APPDATA",
-    "LOCALAPPDATA",
+# Every one is a standard NON-SECRET machine runtime variable; none names a credential,
+# token, provider, per-user identity, or interpreter/shell-injection surface.
+_WINDOWS_MACHINE_ENV_KEYS = (
     "COMSPEC",
     "PATHEXT",
     "WINDIR",
@@ -524,6 +525,19 @@ _WINDOWS_RUNTIME_ENV_KEYS = (
     "PROGRAMFILES",
     "PROGRAMFILES(X86)",
     "COMMONPROGRAMFILES",
+)
+
+# (B) Per-user Windows identity/config roots. These are NEVER inherited from the real
+# parent; they are SYNTHESIZED under a backend-owned ephemeral runtime-user root so that
+# ``Path.home()`` works, the pinned Hermes default root resolves under a controlled
+# ``LOCALAPPDATA`` that carries no unrelated ``active_profile``, and the explicit H1
+# ``HERMES_HOME`` stays authoritative.
+_WINDOWS_PER_USER_ENV_KEYS = (
+    "USERPROFILE",
+    "HOMEDRIVE",
+    "HOMEPATH",
+    "APPDATA",
+    "LOCALAPPDATA",
 )
 
 # Explicit control / interpreter / shell / capability INJECTION denylist. These can
@@ -589,7 +603,10 @@ class ExternalHermesCliBackend:
         probe_home = tempfile.mkdtemp(prefix="hermes_verprobe_")
         try:
             _write_update_disabled_config(probe_home)
-            env = _build_sanitized_runtime_env(None)
+            # Synthetic per-user Windows root under the probe home (cleaned with it), so
+            # no real personal LOCALAPPDATA/active_profile can influence the probe.
+            user_root = _ensure_windows_user_root(os.path.join(probe_home, "winuser"))
+            env = _build_sanitized_runtime_env(None, runtime_user_root=user_root)
             env["HERMES_HOME"] = probe_home
             try:
                 proc = subprocess.run(  # noqa: S603
@@ -644,7 +661,10 @@ class ExternalHermesCliBackend:
         probe_home = tempfile.mkdtemp(prefix="hermes_startprobe_")
         try:
             _write_update_disabled_config(probe_home)
-            env = _build_sanitized_runtime_env(None)
+            # Synthetic per-user Windows root under the probe home (cleaned with it), so a
+            # sticky personal active_profile cannot re-home the startup probe (Finding E).
+            user_root = _ensure_windows_user_root(os.path.join(probe_home, "winuser"))
+            env = _build_sanitized_runtime_env(None, runtime_user_root=user_root)
             env["HERMES_HOME"] = probe_home
             try:
                 proc = subprocess.run(  # noqa: S603
@@ -689,9 +709,8 @@ class ExternalHermesCliBackend:
         if "/" in usage_file_name or "\\" in usage_file_name or ".." in usage_file_name:
             return _launch_failure()
 
-        env = _build_sanitized_runtime_env(hermes_home)
-        if hermes_home is not None and "HERMES_HOME" not in env:
-            # An unsafe research-home locator fails closed rather than running.
+        # An unsafe research-home locator fails closed rather than running.
+        if hermes_home is not None and not is_safe_research_home(hermes_home):
             return _launch_failure()
         # WP175I H1 control-plane preflight: a dedicated research home must not carry a
         # ``config.yaml`` or a non-empty user ``plugins/`` directory, so the controlled
@@ -711,6 +730,15 @@ class ExternalHermesCliBackend:
             home = os.path.realpath(os.path.expanduser("~"))
             if resolved == home or any(marker in resolved for marker in _FORBIDDEN_PATH_MARKERS):
                 return _launch_failure()
+
+            # Build the hybrid sanitized env AFTER the ephemeral cwd exists: the synthetic
+            # per-user Windows root lives under it (cleaned with temp_dir), so the pinned
+            # Hermes default root resolves under a controlled LOCALAPPDATA with no
+            # unrelated active_profile and the explicit HERMES_HOME stays authoritative.
+            user_root = _ensure_windows_user_root(os.path.join(temp_dir, "winuser"))
+            env = _build_sanitized_runtime_env(hermes_home, runtime_user_root=user_root)
+            if hermes_home is not None and env.get("HERMES_HOME") != hermes_home:
+                return _launch_failure(_elapsed_ms(start))
 
             if managed_config_bytes is not None:
                 managed_dir = tempfile.mkdtemp(prefix="hermes_managed_")
@@ -898,26 +926,70 @@ def _write_update_disabled_config(hermes_home: str) -> None:
 
 
 def _runtime_env_allowlist() -> tuple[str, ...]:
-    """The platform-aware benign runtime allowlist (deterministic, no secrets)."""
+    """The platform-aware benign MACHINE runtime allowlist (deterministic, no secrets).
+
+    Per-user Windows identity/config roots are NOT in this allowlist: they are
+    synthesized from a controlled runtime-user root, never inherited from the parent.
+    """
     if os.name == "nt":
-        return _NEUTRAL_ENV_KEYS + _WINDOWS_RUNTIME_ENV_KEYS
+        return _NEUTRAL_ENV_KEYS + _WINDOWS_MACHINE_ENV_KEYS
     return _NEUTRAL_ENV_KEYS
 
 
-def _build_sanitized_runtime_env(hermes_home: str | None) -> dict[str, str]:
-    """Build the deterministic SANITIZED RUNTIME ENVELOPE for a controlled child.
+def _windows_user_root_env(runtime_user_root: str) -> dict[str, str]:
+    """Synthesize the controlled per-user Windows identity/AppData variables.
+
+    Derives ``USERPROFILE``/``HOMEDRIVE``/``HOMEPATH``/``LOCALAPPDATA``/``APPDATA`` from
+    a backend-owned runtime-user root so ``Path.home()`` works and the pinned Hermes
+    default root resolves under a controlled ``LOCALAPPDATA`` (``<root>\\AppData\\Local``)
+    that carries no unrelated ``active_profile``. Never uses the real parent values.
+    """
+    local = os.path.join(runtime_user_root, "AppData", "Local")
+    roaming = os.path.join(runtime_user_root, "AppData", "Roaming")
+    env = {
+        "USERPROFILE": runtime_user_root,
+        "LOCALAPPDATA": local,
+        "APPDATA": roaming,
+    }
+    drive, tail = os.path.splitdrive(runtime_user_root)
+    if drive:
+        env["HOMEDRIVE"] = drive
+        env["HOMEPATH"] = tail or "\\"
+    return env
+
+
+def _ensure_windows_user_root(runtime_user_root: str) -> str:
+    """Create the synthetic per-user Windows root + AppData subdirs before child launch.
+
+    A no-op for the directory tree on POSIX (per-user synthesis is Windows-only); the
+    absolute root path is returned unchanged so callers can wire it uniformly.
+    """
+    if os.name == "nt":
+        os.makedirs(os.path.join(runtime_user_root, "AppData", "Local"), exist_ok=True)
+        os.makedirs(os.path.join(runtime_user_root, "AppData", "Roaming"), exist_ok=True)
+    return runtime_user_root
+
+
+def _build_sanitized_runtime_env(
+    hermes_home: str | None, *, runtime_user_root: str | None = None
+) -> dict[str, str]:
+    """Build the deterministic HYBRID SANITIZED RUNTIME ENVELOPE for a controlled child.
 
     A platform-aware benign ALLOWLIST of ordinary OS/runtime variables (never a full
-    ``os.environ.copy()``), so the child has a normal/sufficient runtime context -- on
-    Windows this includes the real benign home/AppData variables Hermes profile-home
-    resolution and Python ``Path.home()`` require -- while every secret-, credential-,
-    and interpreter/shell-injection-bearing variable is stripped fail-closed:
+    ``os.environ.copy()``), so the child has a normal/sufficient runtime context, while
+    every secret-, credential-, interpreter/shell-injection-, and per-user-identity
+    variable is handled fail-closed:
 
-      * only names in :func:`_runtime_env_allowlist` are ever considered;
-      * any name that looks secret-bearing (:func:`_looks_secret`) or is a control/
-        injection variable (:func:`_is_injection_denied`) is dropped defensively;
-      * an explicit safe NON-SECRET ``HERMES_HOME`` may be added so Hermes can locate
-        its own out-of-repo credential store (never inherited ambiently);
+      * only MACHINE names in :func:`_runtime_env_allowlist` are inherited from the real
+        parent, and any that looks secret-bearing (:func:`_looks_secret`) or is a
+        control/injection variable (:func:`_is_injection_denied`) is dropped defensively;
+      * per-user Windows identity/config roots (USERPROFILE/HOMEDRIVE/HOMEPATH/APPDATA/
+        LOCALAPPDATA) are NEVER inherited from the parent -- when a ``runtime_user_root``
+        is supplied on Windows they are SYNTHESIZED from it, so an unrelated personal
+        ``%LOCALAPPDATA%\\hermes\\active_profile`` can never re-home the child (Finding E);
+      * an explicit safe NON-SECRET ``HERMES_HOME`` may be added so Hermes can locate its
+        own out-of-repo credential store (never inherited ambiently), and it stays
+        authoritative because the synthetic default root carries no ``active_profile``;
       * runner-owned control-plane variables are never inherited.
 
     No ambient provider credential can reach the child: provider secrets are loaded
@@ -926,15 +998,20 @@ def _build_sanitized_runtime_env(hermes_home: str | None) -> dict[str, str]:
     env: dict[str, str] = {}
     for key in _runtime_env_allowlist():
         # Defensive invariants: the allowlist must never overlap the control-plane,
-        # secret, or injection denylists. These branches cannot trigger for the frozen
-        # allowlist and exist to keep the boundary fail-closed under future edits.
+        # secret, injection, or per-user denylists. These branches cannot trigger for the
+        # frozen machine allowlist and exist to keep the boundary fail-closed.
         if key in _NEVER_FORWARD_ENV:  # pragma: no cover - defensive invariant
+            continue
+        if key in _WINDOWS_PER_USER_ENV_KEYS:  # pragma: no cover - defensive invariant
             continue
         if _looks_secret(key) or _is_injection_denied(key):  # pragma: no cover
             continue
         value = os.environ.get(key)
         if value is not None:
             env[key] = value
+    # Per-user Windows identity is synthetic, never inherited from the real parent.
+    if os.name == "nt" and runtime_user_root is not None:
+        env.update(_windows_user_root_env(runtime_user_root))
     if hermes_home is not None and is_safe_research_home(hermes_home):
         env["HERMES_HOME"] = hermes_home
     # Defensive: a control-plane variable is never inherited even if it were somehow

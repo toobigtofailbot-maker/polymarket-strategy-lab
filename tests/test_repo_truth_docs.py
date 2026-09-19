@@ -315,12 +315,16 @@ def test_wp175l_repo_truth_registers_sanitized_windows_runtime() -> None:
     assert "Could not determine home directory" in combined
     assert "fast-version path" in combined
     assert "_get_platform_default_hermes_home" in combined
-    # Runtime-envelope + preflight contract truth.
+    # Runtime-envelope + preflight contract truth (hybrid design, Finding E).
     assert "SANITIZED RUNTIME ENVELOPE" in combined
     assert "os.environ.copy()" in combined
     assert "LOCALAPPDATA" in combined
     assert "STARTUP_PREFLIGHT_FAILED" in combined
     assert "transport_attempt_count" in combined
+    assert "Finding E" in combined
+    assert "HYBRID SANITIZED\nRUNTIME ENVELOPE" in index or "HYBRID SANITIZED RUNTIME ENVELOPE" in combined.replace("\n", " ")
+    assert "active_profile" in combined
+    assert "SYNTHESIZES" in combined or "synthetic" in combined.lower()
     # The WP175L deferred section blocks any second H1 run behind governance.
     assert "BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION" in deferred
     assert "WP175L-D001" in deferred and "WP175L-D002" in deferred

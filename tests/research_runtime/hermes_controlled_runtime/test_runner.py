@@ -1002,22 +1002,25 @@ def _force_windows(monkeypatch):
 
 def test_env01_safe_windows_runtime_variables_forwarded(monkeypatch):  # ENV-01
     _force_windows(monkeypatch)
-    # Real benign parent runtime paths (never fabricated) are forwarded on Windows.
+    # Real benign parent MACHINE/runtime values (never per-user identity) are forwarded.
     parent = {
-        "USERPROFILE": r"C:\Users\example",
-        "HOMEDRIVE": "C:",
-        "HOMEPATH": r"\Users\example",
-        "LOCALAPPDATA": r"C:\Users\example\AppData\Local",
-        "APPDATA": r"C:\Users\example\AppData\Roaming",
         "COMSPEC": r"C:\Windows\System32\cmd.exe",
         "PATHEXT": ".COM;.EXE;.BAT",
         "WINDIR": r"C:\Windows",
+        "OS": "Windows_NT",
+        "PROCESSOR_ARCHITECTURE": "AMD64",
+        "NUMBER_OF_PROCESSORS": "8",
+        "PROGRAMDATA": r"C:\ProgramData",
     }
     for key, value in parent.items():
         monkeypatch.setenv(key, value)
     env = runner_mod._build_sanitized_runtime_env(None)
     for key, value in parent.items():
         assert env.get(key) == value, key
+    # Finding E: per-user identity roots are NOT inherited from the real parent, even on
+    # Windows, and are absent unless a controlled runtime_user_root is supplied.
+    for key in runner_mod._WINDOWS_PER_USER_ENV_KEYS:
+        assert key not in env, key
 
 
 def test_env02_parent_secret_named_variables_never_forwarded(monkeypatch):  # ENV-02
@@ -1120,11 +1123,12 @@ def test_env07_safe_mode_and_project_plugins_never_inherited(monkeypatch):  # EN
     assert "HERMES_ENABLE_PROJECT_PLUGINS" not in env
 
 
-def test_env08_path_home_succeeds_under_sanitized_env():  # ENV-08
+def test_env08_path_home_succeeds_under_sanitized_env(tmp_path):  # ENV-08
     # The exact H1 #2 failure was Path.home() raising under the tiny env. Under the
-    # sanitized envelope a child resolves Path.home() cleanly (Windows: USERPROFILE;
-    # POSIX: the shared-neutral env plus the pwd fallback).
-    env = runner_mod._build_sanitized_runtime_env(None)
+    # hybrid envelope a child resolves Path.home() cleanly (Windows: the SYNTHETIC
+    # USERPROFILE; POSIX: the shared-neutral env plus the pwd fallback).
+    user_root = runner_mod._ensure_windows_user_root(str(tmp_path / "winuser"))
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=user_root)
     prog = "from pathlib import Path; print(Path.home())"
     proc = runner_mod.subprocess.run(
         [sys.executable, "-c", prog],
@@ -1134,6 +1138,8 @@ def test_env08_path_home_succeeds_under_sanitized_env():  # ENV-08
     assert proc.returncode == 0, proc.stderr.decode(errors="replace")
     assert b"Could not determine home directory" not in proc.stderr
     assert proc.stdout.strip()
+    if os.name == "nt":
+        assert proc.stdout.decode().strip() == user_root
 
 
 # Pinned-equivalent Hermes default-home resolution stand-in (mirrors upstream
@@ -1153,8 +1159,9 @@ _DEFAULT_HOME_PROG = textwrap.dedent(
 )
 
 
-def test_env09_pinned_equivalent_default_home_succeeds_under_sanitized_env():  # ENV-09
-    env = runner_mod._build_sanitized_runtime_env(None)
+def test_env09_pinned_equivalent_default_home_succeeds_under_sanitized_env(tmp_path):  # ENV-09
+    user_root = runner_mod._ensure_windows_user_root(str(tmp_path / "winuser"))
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=user_root)
     proc = runner_mod.subprocess.run(
         [sys.executable, "-c", _DEFAULT_HOME_PROG],
         stdout=runner_mod.subprocess.PIPE, stderr=runner_mod.subprocess.PIPE,
@@ -1165,8 +1172,9 @@ def test_env09_pinned_equivalent_default_home_succeeds_under_sanitized_env():  #
     assert proc.stdout.strip().endswith(b"hermes-agent")
 
 
-def test_env10_default_home_resolution_is_deterministic():  # ENV-10
-    env = runner_mod._build_sanitized_runtime_env(None)
+def test_env10_default_home_resolution_is_deterministic(tmp_path):  # ENV-10
+    user_root = runner_mod._ensure_windows_user_root(str(tmp_path / "winuser"))
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=user_root)
     outs = []
     for _ in range(2):
         proc = runner_mod.subprocess.run(
@@ -1185,8 +1193,11 @@ def test_env11_posix_allowlist_is_the_shared_neutral_set(monkeypatch):  # ENV-11
     monkeypatch.setattr(runner_mod.os, "name", "nt")
     nt_allow = runner_mod._runtime_env_allowlist()
     assert nt_allow[: len(runner_mod._NEUTRAL_ENV_KEYS)] == runner_mod._NEUTRAL_ENV_KEYS
-    for key in runner_mod._WINDOWS_RUNTIME_ENV_KEYS:
+    for key in runner_mod._WINDOWS_MACHINE_ENV_KEYS:
         assert key in nt_allow
+    # Finding E: per-user identity roots are never part of the inherited allowlist.
+    for key in runner_mod._WINDOWS_PER_USER_ENV_KEYS:
+        assert key not in nt_allow
 
 
 def test_env12_unapproved_parent_variable_never_escapes(monkeypatch):  # ENV-12
@@ -1201,10 +1212,11 @@ def test_env12_unapproved_parent_variable_never_escapes(monkeypatch):  # ENV-12
 
 
 def test_env_allowlist_is_disjoint_from_deny_and_secret_boundaries():
-    # Defensive invariant: no allowlisted key is a control-plane, secret-named, or
-    # injection/capability variable.
-    for key in runner_mod._NEUTRAL_ENV_KEYS + runner_mod._WINDOWS_RUNTIME_ENV_KEYS:
+    # Defensive invariant: no inherited (machine/neutral) allowlisted key is a
+    # control-plane, secret-named, injection/capability, or per-user identity variable.
+    for key in runner_mod._NEUTRAL_ENV_KEYS + runner_mod._WINDOWS_MACHINE_ENV_KEYS:
         assert key not in runner_mod._NEVER_FORWARD_ENV
+        assert key not in runner_mod._WINDOWS_PER_USER_ENV_KEYS
         assert not runner_mod._looks_secret(key)
         assert not runner_mod._is_injection_denied(key)
 
@@ -1299,3 +1311,206 @@ def test_startup_probe_home_resolves_under_sanitized_env():
         max_output_bytes=4096, max_wall_seconds=30,
     )
     assert probe.launched is True and probe.exit_code == 0
+
+
+# ---------------------------------------------------------------------------
+# WP175L Finding E: real per-user roots must not re-home pinned Hermes (hybrid envelope)
+# ---------------------------------------------------------------------------
+
+# A child stand-in that reports the exact per-user Windows identity + HERMES_HOME it sees.
+_USER_INSPECT_PROG = textwrap.dedent(
+    """
+    import os, json
+    from pathlib import Path
+    print(json.dumps({
+        "userprofile": os.environ.get("USERPROFILE"),
+        "localappdata": os.environ.get("LOCALAPPDATA"),
+        "appdata": os.environ.get("APPDATA"),
+        "homedrive": os.environ.get("HOMEDRIVE"),
+        "homepath": os.environ.get("HOMEPATH"),
+        "hermes_home": os.environ.get("HERMES_HOME"),
+        "home": str(Path.home()),
+    }))
+    """
+)
+
+
+def _pinned_default_hermes_root_windows(env):
+    """Pinned-equivalent hermes_constants._get_platform_default_hermes_home (Windows)."""
+    la = (env.get("LOCALAPPDATA") or "").strip()
+    base = Path(la) if la else Path(env["USERPROFILE"]) / "AppData" / "Local"
+    return base / "hermes"
+
+
+def _pinned_active_profile_file(env):
+    """Pinned-equivalent path _apply_profile_override reads for a sticky active profile."""
+    return _pinned_default_hermes_root_windows(env) / "active_profile"
+
+
+def test_e1_real_localappdata_does_not_pass(monkeypatch, tmp_path):  # E1
+    _force_windows(monkeypatch)
+    monkeypatch.setenv("LOCALAPPDATA", r"C:\Users\realuser\AppData\Local\UNIQUE_E1_MARKER")
+    user_root = runner_mod._ensure_windows_user_root(str(tmp_path / "winuser"))
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=user_root)
+    assert "UNIQUE_E1_MARKER" not in (env.get("LOCALAPPDATA") or "")
+    assert env["LOCALAPPDATA"].startswith(user_root)
+
+
+def test_e2_real_userprofile_and_home_do_not_pass(monkeypatch, tmp_path):  # E2
+    _force_windows(monkeypatch)
+    monkeypatch.setenv("USERPROFILE", r"C:\Users\REAL_E2_USER")
+    monkeypatch.setenv("HOMEDRIVE", "Z:")
+    monkeypatch.setenv("HOMEPATH", r"\Users\REAL_E2_USER")
+    monkeypatch.setenv("APPDATA", r"C:\Users\REAL_E2_USER\AppData\Roaming")
+    user_root = runner_mod._ensure_windows_user_root(str(tmp_path / "winuser"))
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=user_root)
+    assert "REAL_E2_USER" not in (env.get("USERPROFILE") or "")
+    assert "REAL_E2_USER" not in (env.get("APPDATA") or "")
+    assert env.get("HOMEDRIVE") != "Z:" or env["USERPROFILE"].startswith(user_root)
+    assert env["USERPROFILE"] == user_root
+
+
+def test_e3_synthetic_user_root(monkeypatch, tmp_path):  # E3
+    _force_windows(monkeypatch)
+    user_root = str(tmp_path / "winuser")
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=user_root)
+    assert env["USERPROFILE"] == user_root
+
+
+def test_e4_synthetic_appdata_under_userprofile(monkeypatch, tmp_path):  # E4
+    _force_windows(monkeypatch)
+    user_root = runner_mod._ensure_windows_user_root(str(tmp_path / "winuser"))
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=user_root)
+    assert env["LOCALAPPDATA"] == os.path.join(user_root, "AppData", "Local")
+    assert env["APPDATA"] == os.path.join(user_root, "AppData", "Roaming")
+    assert env["LOCALAPPDATA"].startswith(env["USERPROFILE"])
+    if os.name == "nt":  # dirs are created before launch on the real Windows host
+        assert os.path.isdir(env["LOCALAPPDATA"]) and os.path.isdir(env["APPDATA"])
+
+
+def test_e5_path_home_is_synthetic_userprofile(tmp_path):  # E5
+    user_root = runner_mod._ensure_windows_user_root(str(tmp_path / "winuser"))
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=user_root)
+    proc = runner_mod.subprocess.run(
+        [sys.executable, "-c", _USER_INSPECT_PROG],
+        stdout=runner_mod.subprocess.PIPE, stderr=runner_mod.subprocess.PIPE,
+        env=env, timeout=30, check=False,
+    )
+    assert proc.returncode == 0, proc.stderr.decode(errors="replace")
+    data = json.loads(proc.stdout.decode())
+    if os.name == "nt":
+        assert data["home"] == user_root
+
+
+def test_e6_pinned_default_root_under_synthetic_localappdata(monkeypatch, tmp_path):  # E6
+    _force_windows(monkeypatch)
+    monkeypatch.setenv("LOCALAPPDATA", r"C:\Users\realuser\AppData\Local")
+    user_root = str(tmp_path / "winuser")
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=user_root)
+    default_root = _pinned_default_hermes_root_windows(env)
+    expected = Path(os.path.join(user_root, "AppData", "Local")) / "hermes"
+    assert default_root == expected
+    assert "realuser" not in str(default_root)
+
+
+def test_e7_sticky_active_profile_cannot_hijack_h1_home(monkeypatch, tmp_path):  # E7
+    _force_windows(monkeypatch)
+    # A real parent LOCALAPPDATA carrying a sticky non-default active_profile.
+    real_localappdata = tmp_path / "real_localappdata"
+    (real_localappdata / "hermes").mkdir(parents=True)
+    (real_localappdata / "hermes" / "active_profile").write_text(
+        "malicious-personal-profile", encoding="utf-8"
+    )
+    monkeypatch.setenv("LOCALAPPDATA", str(real_localappdata))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path / "real_userprofile"))
+    safe_home = tmp_path / "h1_research_home"
+    safe_home.mkdir()
+    user_root = runner_mod._ensure_windows_user_root(str(tmp_path / "winuser"))
+    env = runner_mod._build_sanitized_runtime_env(str(safe_home), runtime_user_root=user_root)
+    # The child's LOCALAPPDATA is synthetic, not the real parent's.
+    assert env["LOCALAPPDATA"].startswith(user_root)
+    assert str(real_localappdata) not in env["LOCALAPPDATA"]
+    # The pinned active_profile the child would read is the synthetic one, which does not
+    # exist, so no profile override fires; the real personal active_profile is unreachable.
+    child_ap = _pinned_active_profile_file(env)
+    assert not child_ap.exists()
+    assert child_ap != (real_localappdata / "hermes" / "active_profile")
+    # The explicit H1 HERMES_HOME stays authoritative.
+    assert env["HERMES_HOME"] == str(safe_home)
+
+
+def test_e8_startup_probe_profile_isolation(monkeypatch):  # E8
+    monkeypatch.setenv("LOCALAPPDATA", r"C:\Users\realuser\AppData\Local\UNIQUE_E8_MARKER")
+    monkeypatch.setenv("USERPROFILE", r"C:\Users\REAL_E8_USER")
+    probe = ExternalHermesCliBackend().probe_startup(
+        startup_argv=[sys.executable, "-c", _USER_INSPECT_PROG],
+        max_output_bytes=16_384, max_wall_seconds=30,
+    )
+    assert probe.launched is True and probe.exit_code == 0
+    # probe_startup discards output; prove the sanitized env it builds carries no marker.
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=None)
+    assert "UNIQUE_E8_MARKER" not in (env.get("LOCALAPPDATA") or "")
+    assert "REAL_E8_USER" not in (env.get("USERPROFILE") or "")
+
+
+def test_e9_research_hermes_home_preserved_despite_conflicting_parent(monkeypatch, tmp_path):  # E9
+    monkeypatch.setenv("LOCALAPPDATA", r"C:\Users\realuser\AppData\Local\UNIQUE_E9_MARKER")
+    monkeypatch.setenv("USERPROFILE", r"C:\Users\REAL_E9_USER")
+    safe_home = tmp_path / "h1_research_home"
+    safe_home.mkdir()
+    outcome = ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", _USER_INSPECT_PROG], usage_file_name="hermes_usage.json",
+        max_stdout_bytes=200_000, max_stderr_bytes=65_536, max_usage_bytes=65_536,
+        max_wall_seconds=30, hermes_home=str(safe_home), managed_config_bytes=MANAGED_BYTES,
+    )
+    assert outcome.launch_failed is False and outcome.timed_out is False
+    data = [json.loads(l) for l in outcome.stdout.decode().splitlines() if l.strip()][-1]
+    assert data["hermes_home"] == str(safe_home)
+    assert "UNIQUE_E9_MARKER" not in (data["localappdata"] or "")
+    assert "REAL_E9_USER" not in (data["userprofile"] or "")
+
+
+def test_e10_machine_runtime_still_passes(monkeypatch):  # E10
+    _force_windows(monkeypatch)
+    monkeypatch.setenv("COMSPEC", r"C:\Windows\System32\cmd.exe")
+    monkeypatch.setenv("PATHEXT", ".COM;.EXE;.BAT")
+    monkeypatch.setenv("SystemRoot", r"C:\Windows")
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=None)
+    assert env["COMSPEC"] == r"C:\Windows\System32\cmd.exe"
+    assert env["PATHEXT"] == ".COM;.EXE;.BAT"
+    assert env["SystemRoot"] == r"C:\Windows"
+
+
+def test_e11_secret_and_injection_still_denied_with_user_root(monkeypatch, tmp_path):  # E11
+    _force_windows(monkeypatch)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-should-not-leak")
+    monkeypatch.setenv("PYTHONPATH", "/attacker")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "nope")
+    user_root = runner_mod._ensure_windows_user_root(str(tmp_path / "winuser"))
+    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=user_root)
+    assert "OPENAI_API_KEY" not in env and "PYTHONPATH" not in env
+    assert "AWS_SECRET_ACCESS_KEY" not in env
+    for key in env:
+        assert not runner_mod._looks_secret(key)
+        assert not runner_mod._is_injection_denied(key)
+
+
+def test_e12_synthetic_user_root_cleaned_up(monkeypatch):  # E12
+    created = _capture_mkdtemp(monkeypatch)
+    # Success path.
+    ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", "print('hi')"], usage_file_name="hermes_usage.json",
+        max_stdout_bytes=1000, max_stderr_bytes=1000, max_usage_bytes=1000, max_wall_seconds=30,
+        managed_config_bytes=MANAGED_BYTES,
+    )
+    # Timeout path.
+    ExternalHermesCliBackend().invoke(
+        argv=[sys.executable, "-c", "import time; time.sleep(30)"],
+        usage_file_name="hermes_usage.json", max_stdout_bytes=1000, max_stderr_bytes=1000,
+        max_usage_bytes=1000, max_wall_seconds=1, managed_config_bytes=MANAGED_BYTES,
+    )
+    assert created["hermes_oneshot_"], "at least one ephemeral cwd must have been created"
+    for cwd in created["hermes_oneshot_"]:
+        assert not Path(cwd).exists()
+        # The synthetic per-user root lived under the cwd and is gone with it.
+        assert not Path(cwd, "winuser").exists()

@@ -179,12 +179,25 @@ It is an explicit ALLOWLIST, never os.environ.copy().
 
 Cross-platform neutral keys: PATH, SystemRoot, TEMP, TMP, TMPDIR, LANG, LC_ALL.
 
-Frozen Windows runtime additions (real benign parent values, never fabricated):
-USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, LOCALAPPDATA, COMSPEC, PATHEXT, WINDIR, OS,
+Finding E (Side11 exact-head review of c73934c): forwarding the REAL per-user
+LOCALAPPDATA/USERPROFILE let pinned hermes_cli/main.py::_apply_profile_override read a
+sticky personal %LOCALAPPDATA%\hermes\active_profile and re-home the explicit H1
+HERMES_HOME. The envelope is therefore HYBRID, distinguishing machine context from
+per-user identity roots.
+
+Real MACHINE/runtime keys inherited from the parent: COMSPEC, PATHEXT, WINDIR, OS,
 PROCESSOR_ARCHITECTURE, NUMBER_OF_PROCESSORS, PROGRAMDATA, PROGRAMFILES, PROGRAMFILES(X86),
-COMMONPROGRAMFILES. The minimum robustly supports Hermes native/default-home resolution,
-Python Path.home(), normal subprocess executable resolution, and ordinary Windows temp/
-runtime behavior.
+COMMONPROGRAMFILES.
+
+Per-user Windows identity roots are SYNTHETIC/CONTROLLED, never inherited from the real
+parent: USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, LOCALAPPDATA are derived from a
+backend-owned ephemeral runtime-user root (<runtime-root>\winuser, with AppData\Local and
+AppData\Roaming created before launch). This robustly supports Python Path.home(), makes
+the pinned default root resolve under a controlled LOCALAPPDATA (<synthetic
+LocalAppData>\hermes) carrying no unrelated active_profile so the explicit H1 HERMES_HOME
+stays authoritative, and keeps normal subprocess executable resolution and ordinary
+Windows temp/runtime behavior working. The synthetic roots live under the existing
+ephemeral cwd/probe home and disappear under the existing teardown.
 
 Secret / capability filter must remain strict and fail-closed. Preserve the secret-name
 fragments (KEY, SECRET, TOKEN, PASSWORD, CREDENTIAL, AUTH, PRIVATE). Additionally add an

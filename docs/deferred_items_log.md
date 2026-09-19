@@ -2635,11 +2635,15 @@ root cause is
 `CONTROLLED_WINDOWS_RUNTIME_ENVIRONMENT_INSUFFICIENT_FOR_HERMES_PROFILE_INITIALIZATION`
 (the merged controlled child lacked ordinary Windows home/runtime context, so pinned
 Hermes profile-home resolution raised `RuntimeError: Could not determine home
-directory.`; research/provider-binding/Firecrawl were NOT_REACHED). WP175L forwards a
-bounded benign Windows runtime allowlist (real parent home/AppData paths), keeps the
-secret-name rejection, adds an explicit injection denylist, and gates research on an
-offline `hermes --help` startup preflight; it does not activate the runtime, authorize any
-H1 run, or unlock Alpha.
+directory.`; research/provider-binding/Firecrawl were NOT_REACHED). WP175L uses a HYBRID
+sanitized runtime envelope: it inherits only real benign Windows MACHINE/runtime values
+and SYNTHESIZES the per-user identity roots (USERPROFILE/HOMEDRIVE/HOMEPATH/APPDATA/
+LOCALAPPDATA) under a backend-owned ephemeral runtime-user root, keeps the secret-name
+rejection, adds an explicit injection denylist, and gates research on an offline
+`hermes --help` startup preflight. Side11 Finding E on head c73934c required this hybrid
+correction so a sticky personal `%LOCALAPPDATA%\hermes\active_profile` cannot re-home the
+explicit H1 HERMES_HOME. WP175L does not activate the runtime, authorize any H1 run, or
+unlock Alpha.
 
 | ID | Item | Status | Priority | Resolution gate | Notes |
 |---|---|---|---|---|---|
