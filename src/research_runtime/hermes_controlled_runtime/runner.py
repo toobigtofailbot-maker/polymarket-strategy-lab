@@ -106,10 +106,13 @@ _STDERR_KEYVALUE = re.compile(
     r'(?i)("?\b' + _STDERR_SECRET_KEY_NAMES + r'\b"?\s*[:=]\s*)'
     r'(?:"[^"\n]*"|\'[^\'\n]*\'|[^\s,;}\n]+)'
 )
-_STDERR_WIN_PATH = re.compile(r"[A-Za-z]:[\\/][^\s\"'<>|]*")
+# The drive-letter path uses a negative lookbehind so it does not match the ``s://``
+# inside ``https://`` / ``http://`` (which would mangle a credential-free URL that the
+# excerpt should keep readable); a real ``C:\`` path is preceded by a boundary.
+_STDERR_WIN_PATH = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:[\\/][^\s\"'<>|]*")
 _STDERR_UNC_PATH = re.compile(r"\\\\[^\s\"'<>|]+")
 _STDERR_UNIX_PATH = re.compile(
-    r"/(?:home|Users|tmp|private|root)/[^\s\"'<>|:,]*"
+    r"/(?:home|Users|tmp|private|root|opt|etc|srv|data)/[^\s\"'<>|:,]*"
     r"|/var/(?:folders|tmp)/[^\s\"'<>|:,]*"
 )
 _STDERR_CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -125,7 +128,10 @@ _STDERR_RESIDUAL = (
     re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}"),
     re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{8,}"),
     re.compile(r"\b[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}\b"),
-    re.compile(r"[A-Za-z0-9+/_-]{64,}"),
+    # An unlabeled high-entropy blob no named/prefixed rule targets. 44 is chosen so a
+    # base64-encoded 32-byte key (~44 chars) fails closed while a 40-hex git SHA does
+    # not; privacy wins over excerpt completeness for anything this long.
+    re.compile(r"[A-Za-z0-9+/_-]{44,}"),
 )
 
 
@@ -170,7 +176,6 @@ def _sanitize_stderr(
         redacted = _STDERR_URL_QUERYFRAG.sub(r"\1?" + _STDERR_REDACT_MARK, redacted)
         redacted = _STDERR_KEYVALUE.sub(r"\1" + _STDERR_REDACT_MARK, redacted)
         # D. redact local filesystem identity (paths last).
-        redacted = _STDERR_PEM_ORPHAN.sub(_STDERR_REDACT_MARK, redacted)
         redacted = _STDERR_WIN_PATH.sub(_STDERR_PATH_MARK, redacted)
         redacted = _STDERR_UNC_PATH.sub(_STDERR_PATH_MARK, redacted)
         redacted = _STDERR_UNIX_PATH.sub(_STDERR_PATH_MARK, redacted)

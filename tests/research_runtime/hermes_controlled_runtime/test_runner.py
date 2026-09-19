@@ -787,3 +787,23 @@ def test_wp175k_external_backend_smoke_sanitizes_exit1_child():
     assert "sk-FAKE0000000000000000000000000000" not in excerpt
     assert "carol" not in excerpt and "C:\\Users" not in excerpt
     assert "RuntimeError: synthetic provider failure" in excerpt
+
+
+def test_wp175k_g_credential_free_url_stays_readable():
+    # A plain URL with no userinfo and no query carries no credential and must remain
+    # readable: the drive-letter path rule must not match the "s://" in "https://".
+    raw = b"GET https://example.com/v1/models failed with 500\n"
+    res = _sanitize(raw)
+    assert res.status in ("AVAILABLE", "AVAILABLE_REDACTED")
+    assert "https://example.com/v1/models" in res.excerpt
+    assert "<PATH>" not in res.excerpt
+
+
+def test_wp175k_k_medium_unlabeled_blob_also_fails_closed():
+    # An unlabeled ~48-char high-entropy blob (no key name, no known prefix) that a
+    # base64-encoded 32-byte key would produce must still fail closed.
+    blob = "A1b2C3d4" * 6  # 48 chars, no named/prefixed structure
+    assert 44 <= len(blob) < 64
+    res = _sanitize(f"fatal auth: {blob}\n".encode("utf-8"))
+    assert res.status == "BLOCKED_UNSAFE"
+    assert res.excerpt is None
