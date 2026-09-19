@@ -4205,3 +4205,59 @@ def test_wp175j_version_banner_parser_correction_registered() -> None:
     assert "src/research_runtime/hermes_controlled_runtime/policy.py" in scope["required_changed_files"]
     assert "src/research_runtime/hermes_controlled_runtime/controller.py" not in scope["required_changed_files"]
     assert "src/research_runtime/hermes_controlled_runtime/runner.py" not in scope["required_changed_files"]
+
+
+def test_wp175k_sanitized_failure_evidence_hardening_registered() -> None:
+    project = _read()
+    fragment = (STATUS_ENTRIES / "WP175K.md").read_text(encoding="utf-8")
+    contract = (
+        REPO_ROOT / "docs" / "hermes_controlled_research_runtime_contract.md"
+    ).read_text(encoding="utf-8")
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "WP175K" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    combined = "\n".join((project, fragment, contract))
+    # WP175K is the current review target; WP175J is reconciled as merged.
+    assert "WP175K current review target" in project
+    assert "WP175J / PR #183 merged: YES" in project
+    assert "S10-HERMES-01C" in combined
+    assert "BOUNDED_HERMES_SANITIZED_FAILURE_EVIDENCE_HARDENING" in combined
+    assert "Governance track: RUNTIME" in project and "Risk level: 3" in project
+    assert "Exact changed-file scope: 14" in project
+    # Incident truth: the one authorized H1 run was consumed and failed.
+    assert "S10-GATE-H1 single authorized real invocation consumed = 1" in combined
+    assert "EXIT_CODE_NONZERO" in combined
+    assert "validated research NONE" in combined or "validated research: NONE" in combined
+    assert "ROOT_CAUSE_NARROWED_NOT_CONFIRMED" in combined
+    assert "PREACCOUNTING_PATHS_PASS_ROOT_CAUSE_STILL_UNRECOVERABLE" in combined
+    # Evidence-hardening contract.
+    assert "hermes-research-run-receipt/1.2.0" in combined
+    assert "MAX_SANITIZED_STDERR_EXCERPT_BYTES" in combined and "4096" in combined
+    assert "raw stderr" in combined.lower()
+    # Authority + successor boundary.
+    assert "RUNTIME ACTIVATED: NO" in project
+    assert "H1 rerun: NOT_AUTHORIZED" in project
+    assert "Gate C: NOT AUTHORIZED" in combined
+    assert "Alpha Factory: NOT STARTED" in combined
+    assert "WP176" in combined and "NOT STARTED" in combined
+    assert "SEPARATE human/governance decision" in combined
+    assert "Merge authorized: NO" in combined
+    scope = spec["scope"]
+    assert spec["identity"]["risk_level"] == 3
+    assert scope["exact_scope_required"] is True
+    assert scope["max_changed_files"] == 14
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == 14
+    for path in (
+        "src/research_runtime/hermes_controlled_runtime/runner.py",
+        "src/research_runtime/hermes_controlled_runtime/controller.py",
+        "src/research_runtime/hermes_controlled_runtime/models.py",
+    ):
+        assert path in scope["required_changed_files"]
+    # WP175K is evidence-capture hardening only: policy.py stays out of scope.
+    assert (
+        "src/research_runtime/hermes_controlled_runtime/policy.py"
+        not in scope["required_changed_files"]
+    )

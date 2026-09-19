@@ -2609,3 +2609,20 @@ execute or consume S10-GATE-H1.
 |---|---|---|---|---|---|
 | WP175J-D001 | S10-GATE-H1 Controlled Public Research Pilot (resumed) | BLOCKED_BY_WP175J_VERSION_PREFLIGHT_PARSER_CORRECTION | P1 | WP175J merge, post-merge review, then a fresh human one-real-run checkpoint | Real H1 research entitlement remains unconsumed: research invocations 0, provider/API calls 0, Firecrawl research calls 0; WP175J does not activate runtime |
 | WP175J-D002 | S10-ALPHA-01 Multi-Lane Alpha Factory Core | DEFERRED | P2 | Genuine S10-GATE-H1 PASS plus Side11 quality review | Immediate successor is H1, not Alpha; Gate C and WP176 remain separately blocked |
+
+## WP175K Sanitized Hermes Failure-Evidence Capture Hardening Deferred Items
+
+WP175K hardens only the observability of a failed controlled Hermes research
+invocation. After WP175J merged, the single authorized S10-GATE-H1 real invocation was
+CONSUMED (= 1) and FAILED (FAIL_RUNTIME_CONTRACT / EXIT_CODE_NONZERO, usage evidence
+MISSING, validated research NONE). DIAG-01 = ROOT_CAUSE_NARROWED_NOT_CONFIRMED and
+DIAG-02 = PREACCOUNTING_PATHS_PASS_ROOT_CAUSE_STILL_UNRECOVERABLE. WP175K retains a
+sanitized, bounded, secret/path-scrubbed stderr excerpt (raw stderr still forbidden)
+and bumps the receipt schema to `hermes-research-run-receipt/1.2.0`; it does not repair
+the exit-1 mechanism, activate runtime, authorize any H1 rerun, or unlock Alpha.
+
+| ID | Item | Status | Priority | Resolution gate | Notes |
+|---|---|---|---|---|---|
+| WP175K-D001 | Second real S10-GATE-H1 run decision | BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION | P1 | A separate new human/governance decision after WP175K merge and Side11 review | The one authorized H1 run was consumed (= 1) and failed; the root cause is unconfirmed and unrecoverable from retained evidence; a software correction does not itself recreate H1 authorization; H1 rerun is NOT AUTHORIZED |
+| WP175K-D002 | S10-GATE-H1 unique-diagnosis on any future run | ENABLED_BY_SANITIZED_EVIDENCE_HARDENING | P2 | Only exercised if a future H1 run is separately authorized | Receipt 1.2.0 now preserves a sanitized bounded stderr excerpt, redaction/status flags, and usage-file presence so a future exit-1 is uniquely diagnosable; no network/provider/Firecrawl activity during WP175K |
+| WP175K-D003 | S10-ALPHA-01 Multi-Lane Alpha Factory Core | DEFERRED | P2 | Genuine S10-GATE-H1 PASS plus Side11 quality review | Immediate successor is the second-run governance decision, not Alpha; Gate C and WP176 remain separately blocked |

@@ -587,11 +587,139 @@ def test_r015_receipt_has_no_raw_stderr_env_or_usage_payload():
     result = _run(req, backend)
     serialized = json.dumps(result.receipt.identity_fields())
     assert secret not in serialized
-    assert "stderr" not in serialized.replace("stderr_truncated", "")
+    # WP175K: the receipt now carries SANITIZED stderr-evidence fields, so the word
+    # "stderr" legitimately appears (stderr_truncated / stderr_sanitization_status /
+    # stderr_excerpt / ...). The invariant is that no RAW stderr text/bytes surface:
+    # the only diagnostic text surface is the bounded sanitized excerpt, and there is
+    # no raw-stderr member on the receipt.
+    assert not hasattr(result.receipt, "raw_stderr")
+    assert not hasattr(result.receipt, "stderr")
+    assert not hasattr(result.receipt, "stderr_bytes")
     assert not hasattr(result.receipt, "tool_call_counts")
     assert not hasattr(result.receipt, "raw_stdout")
     for ref in result.receipt.source_references:
         assert len(ref.url_digest) == 64
+
+
+# --- WP175K (S10-HERMES-01C): sanitized failure-evidence capture -------------
+
+
+def _exit_outcome_with_stderr(stdout, usage, *, exit_code, sanitized):
+    """A research-child exit outcome carrying a deterministic sanitized-stderr shape."""
+    return HermesInvocationOutcome(
+        stdout=stdout, stdout_truncated=False, stderr_byte_len=len(sanitized[1] or ""),
+        stderr_truncated=False, usage_file_bytes=usage, usage_file_truncated=False,
+        exit_code=exit_code, timed_out=False, launch_failed=False, duration_ms=10,
+        stderr_sanitization_status=sanitized[0], stderr_excerpt=sanitized[1],
+        stderr_redaction_applied=sanitized[2], stderr_excerpt_truncated=sanitized[3],
+    )
+
+
+def test_wp175k_exit1_preserves_sanitized_stderr_and_usage_absence():
+    """K1: exit 1 keeps EXIT_CODE_NONZERO, no retry, sanitized excerpt in receipt,
+    usage_file_present false when Hermes wrote no usage file."""
+    req = _request()
+    sanitized = ("AVAILABLE", "Traceback ...\nRuntimeError: provider init failed", False, False)
+    backend = FakeHermesBackend(
+        [_exit_outcome_with_stderr(_stdout(req.request_id), None, exit_code=1, sanitized=sanitized)]
+    )
+    result = _run(req, backend)
+    r = result.receipt
+    assert result.error_code == "EXIT_CODE_NONZERO"
+    assert r.terminal_status == "EXIT_CODE_NONZERO"
+    assert r.exit_code == 1
+    assert backend.call_count == 1  # not retried
+    assert r.stderr_sanitization_status == "AVAILABLE"
+    assert r.stderr_excerpt is not None and "RuntimeError" in r.stderr_excerpt
+    assert r.usage_file_present is False
+    assert r.usage_file_truncated is False
+
+
+def test_wp175k_exit1_secret_bearing_stderr_never_surfaces_raw():
+    """K2: a secret-bearing sanitized excerpt keeps redaction truthful and never
+    lets the raw secret into the serialized receipt; terminal status unchanged."""
+    req = _request()
+    redacted_excerpt = "boot failed; API_KEY=<REDACTED>\nRuntimeError: denied"
+    sanitized = ("AVAILABLE_REDACTED", redacted_excerpt, True, False)
+    backend = FakeHermesBackend(
+        [_exit_outcome_with_stderr(_stdout(req.request_id), None, exit_code=1, sanitized=sanitized)]
+    )
+    result = _run(req, backend)
+    r = result.receipt
+    serialized = json.dumps(r.identity_fields())
+    assert "sk-live-should-never-appear" not in serialized  # nothing raw injected
+    assert r.stderr_redaction_applied is True
+    assert r.stderr_sanitization_status == "AVAILABLE_REDACTED"
+    assert r.terminal_status == "EXIT_CODE_NONZERO"
+
+
+def test_wp175k_exit1_existing_failure_usage_file_marks_present():
+    """K3: an existing failure usage file marks usage_file_present true while exit
+    code stays authoritative and existing usage fields remain preservable."""
+    req = _request()
+    # v0.21.3 writes a failure usage file with completed absent/false on a failed run.
+    failure_usage = _usage(completed=False, failed=True)
+    sanitized = ("AVAILABLE", "hermes -z: agent failed: boom", False, False)
+    backend = FakeHermesBackend(
+        [_exit_outcome_with_stderr(_stdout(req.request_id), failure_usage, exit_code=1, sanitized=sanitized)]
+    )
+    result = _run(req, backend)
+    r = result.receipt
+    assert r.terminal_status == "EXIT_CODE_NONZERO" and r.exit_code == 1
+    assert r.usage_file_present is True
+    # The exit-code gate short-circuits usage VALIDATION, but safely-available usage
+    # accounting is still preserved on the receipt.
+    assert r.usage_failed is True
+
+
+def test_wp175k_preflight_failure_uses_empty_evidence_defaults():
+    """K4: a version/preflight failure invoked no research child, so all sanitized
+    evidence fields use empty/default state and backend.call_count is 0."""
+    req = _request()
+    backend = FakeHermesBackend(
+        [_success_outcome(_stdout(req.request_id), _usage())], version_exit_code=1
+    )
+    result = _run(req, backend)
+    r = result.receipt
+    assert r.terminal_status == "VERSION_MISMATCH"
+    assert backend.call_count == 0
+    assert r.stderr_sanitization_status == "EMPTY"
+    assert r.stderr_captured_byte_len == 0
+    assert r.stderr_excerpt is None
+    assert r.stderr_excerpt_truncated is False
+    assert r.stderr_redaction_applied is False
+    assert r.usage_file_present is False
+    assert r.usage_file_truncated is False
+
+
+def test_wp175k_success_receipt_is_schema_1_2_0_with_empty_diagnostics():
+    """K5/K6: success semantics unchanged; receipt is schema 1.2.0; diagnostics empty
+    when stderr is empty; new evidence fields are in the content-addressed identity."""
+    req = _request()
+    backend = FakeHermesBackend.from_transcript(_stdout(req.request_id), usage_file_bytes=_usage())
+    result = _run(req, backend)
+    r = result.receipt
+    assert r.terminal_status == "RESEARCH_DRAFT_VALIDATED"
+    assert r.schema_version == "hermes-research-run-receipt/1.2.0"
+    assert r.stderr_sanitization_status == "EMPTY" and r.stderr_excerpt is None
+    assert r.usage_file_present is True  # a usage file was provided
+    ident = r.identity_fields()
+    for field in (
+        "stderr_captured_byte_len", "stderr_sanitization_status", "stderr_excerpt",
+        "stderr_excerpt_truncated", "stderr_redaction_applied", "usage_file_present",
+        "usage_file_truncated",
+    ):
+        assert field in ident
+
+
+def test_wp175k_receipt_identity_is_deterministic_with_new_fields():
+    """K6: deterministic fake transcript + fixed clock yields a stable receipt id even
+    with the new evidence fields participating in identity."""
+    req = _request()
+    stdout, usage = _stdout(req.request_id), _usage()
+    r1 = _run(req, FakeHermesBackend.from_transcript(stdout, usage_file_bytes=usage))
+    r2 = _run(req, FakeHermesBackend.from_transcript(stdout, usage_file_bytes=usage))
+    assert r1.receipt.receipt_id == r2.receipt.receipt_id
 
 
 # --- R018: deterministic identity -------------------------------------------
