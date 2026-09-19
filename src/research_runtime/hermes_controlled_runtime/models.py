@@ -31,7 +31,7 @@ from typing import Mapping, Sequence
 # ---------------------------------------------------------------------------
 
 REQUEST_SCHEMA_VERSION = "hermes-research-run-request/1.1.0"
-RECEIPT_SCHEMA_VERSION = "hermes-research-run-receipt/1.1.0"
+RECEIPT_SCHEMA_VERSION = "hermes-research-run-receipt/1.2.0"
 DRAFT_SCHEMA_VERSION = "hermes-research-draft/1.0.0"
 
 REQUEST_IDENTITY_PREFIX = "hermesresearchrequest:sha256:"
@@ -529,6 +529,17 @@ class HermesResearchRunReceipt:
     timed_out: bool
     stdout_truncated: bool
     stderr_truncated: bool
+    # WP175K sanitized failure evidence (additive, receipt schema 1.2.0). No raw
+    # stderr is ever stored; ``stderr_excerpt`` is the only diagnostic text surface
+    # and is bounded + secret/path-scrubbed by the runner. ``usage_file_present`` is
+    # true iff Hermes wrote any usage-file bytes (a zero-byte existing file counts).
+    stderr_captured_byte_len: int
+    stderr_sanitization_status: str
+    stderr_excerpt: str | None
+    stderr_excerpt_truncated: bool
+    stderr_redaction_applied: bool
+    usage_file_present: bool
+    usage_file_truncated: bool
     configured_toolsets: tuple[str, ...]
     tool_enforcement: str
     runtime_tool_telemetry: str
@@ -576,6 +587,13 @@ class HermesResearchRunReceipt:
             "timed_out": self.timed_out,
             "stdout_truncated": self.stdout_truncated,
             "stderr_truncated": self.stderr_truncated,
+            "stderr_captured_byte_len": self.stderr_captured_byte_len,
+            "stderr_sanitization_status": self.stderr_sanitization_status,
+            "stderr_excerpt": self.stderr_excerpt,
+            "stderr_excerpt_truncated": self.stderr_excerpt_truncated,
+            "stderr_redaction_applied": self.stderr_redaction_applied,
+            "usage_file_present": self.usage_file_present,
+            "usage_file_truncated": self.usage_file_truncated,
             "configured_toolsets": list(self.configured_toolsets),
             "tool_enforcement": self.tool_enforcement,
             "runtime_tool_telemetry": self.runtime_tool_telemetry,

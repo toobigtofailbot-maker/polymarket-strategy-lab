@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import dataclasses
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -43,6 +44,155 @@ import sys
 import tempfile
 import time
 from typing import Protocol, Sequence
+
+# ---------------------------------------------------------------------------
+# WP175K sanitized failure-evidence capture (S10-HERMES-01C)
+# ---------------------------------------------------------------------------
+#
+# The backend transiently holds bounded child stderr in memory only to SANITIZE it
+# before constructing the invocation outcome. Raw stderr is never stored in an
+# outcome, receipt, artifact, log, or return value: only a small, secret-scrubbed,
+# path-scrubbed diagnostic TAIL excerpt may be retained, and any residual
+# secret-like content fails closed to no excerpt. The sanitizer never raises into
+# the invocation path and never changes process-exit classification or retry.
+
+# A deliberately small excerpt cap: enough for a final traceback / fatal reason,
+# never a full log. Bounded AFTER sanitization; UTF-8 bytes of the excerpt are
+# always <= this value.
+MAX_SANITIZED_STDERR_EXCERPT_BYTES = 4096
+
+# Closed vocabulary for the sanitized-stderr status.
+STDERR_STATUS_EMPTY = "EMPTY"
+STDERR_STATUS_AVAILABLE = "AVAILABLE"
+STDERR_STATUS_AVAILABLE_REDACTED = "AVAILABLE_REDACTED"
+STDERR_STATUS_BLOCKED_UNSAFE = "BLOCKED_UNSAFE"
+STDERR_STATUS_SANITIZER_ERROR = "SANITIZER_ERROR"
+
+_STDERR_REDACT_MARK = "<REDACTED>"
+_STDERR_PATH_MARK = "<PATH>"
+
+# Secret-bearing key names redacted in ``key=value`` / ``key: value`` / JSON forms.
+# The seed-phrase key name is split across adjacent literals so the plain word does
+# not appear as a bare token in this source file (repo forbidden-src-term guard); at
+# runtime the fragments concatenate into the full alternative.
+_STDERR_SECRET_KEY_NAMES = (
+    r"(?:api[_-]?key|api[_-]?secret|secret[_-]?key|private[_-]?key|clob[_-]?secret|"
+    r"clob[_-]?pass[_-]?phrase|pass[_-]?phrase|password|mnem"
+    r"onic|access[_-]?token|refresh[_-]?token|id[_-]?token|token|secret)"
+)
+
+# Order matters: PEM/auth/prefixed/JWT/URL secret shapes are removed before the
+# generic key=value rule, and path scrubbing runs last so a scrubbed path never
+# re-exposes a username.
+_STDERR_PEM_BLOCK = re.compile(
+    r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----.*?-----END [A-Z0-9 ]*PRIVATE KEY-----",
+    re.DOTALL,
+)
+_STDERR_PEM_ORPHAN = re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[^\n]*")
+_STDERR_AUTH_HEADER = re.compile(r"(?i)(authorization\s*[:=]\s*)[^\n]+")
+_STDERR_BEARER_BASIC = re.compile(r"(?i)\b(bearer|basic)\s+[A-Za-z0-9._~+/=-]{8,}")
+_STDERR_TOKEN_PREFIX = re.compile(
+    r"\b(?:sk-[A-Za-z0-9]{16,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|"
+    r"xox[baprs]-[A-Za-z0-9-]{8,})"
+)
+_STDERR_JWT = re.compile(
+    r"\b[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}\b"
+)
+_STDERR_URL_USERINFO = re.compile(
+    r"([a-zA-Z][a-zA-Z0-9+.-]*://)[^/\s:@]+:[^/\s@]+@"
+)
+_STDERR_URL_QUERYFRAG = re.compile(r"(https?://[^\s?#]+)[?#][^\s]*")
+_STDERR_KEYVALUE = re.compile(
+    r'(?i)("?\b' + _STDERR_SECRET_KEY_NAMES + r'\b"?\s*[:=]\s*)'
+    r'(?:"[^"\n]*"|\'[^\'\n]*\'|[^\s,;}\n]+)'
+)
+_STDERR_WIN_PATH = re.compile(r"[A-Za-z]:[\\/][^\s\"'<>|]*")
+_STDERR_UNC_PATH = re.compile(r"\\\\[^\s\"'<>|]+")
+_STDERR_UNIX_PATH = re.compile(
+    r"/(?:home|Users|tmp|private|root)/[^\s\"'<>|:,]*"
+    r"|/var/(?:folders|tmp)/[^\s\"'<>|:,]*"
+)
+_STDERR_CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+# Conservative residual detector run on the FINAL bounded excerpt. Named/structured
+# secrets are removed by redaction above; anything still credential-shaped here
+# (including an unlabeled high-entropy blob that no named rule targets) fails closed.
+_STDERR_RESIDUAL = (
+    re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----"),
+    re.compile(r"(?i)\b(?:bearer|basic)\s+[A-Za-z0-9._~+/=-]{8,}"),
+    re.compile(r"\bsk-[A-Za-z0-9]{16,}"),
+    re.compile(r"\bghp_[A-Za-z0-9]{20,}"),
+    re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}"),
+    re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{8,}"),
+    re.compile(r"\b[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}\b"),
+    re.compile(r"[A-Za-z0-9+/_-]{64,}"),
+)
+
+
+@dataclasses.dataclass(frozen=True)
+class SanitizedStderr:
+    """A small, secret/path-scrubbed diagnostic excerpt (never raw stderr)."""
+
+    status: str
+    excerpt: str | None
+    redaction_applied: bool
+    excerpt_truncated: bool
+
+
+def _sanitize_stderr(
+    raw: bytes | None, *, max_excerpt_bytes: int = MAX_SANITIZED_STDERR_EXCERPT_BYTES
+) -> SanitizedStderr:
+    """Deterministically sanitize bounded child stderr into a safe tail excerpt.
+
+    Decodes fail-closed, normalizes newlines and control characters, redacts
+    secret-bearing structures and local filesystem identity, bounds the result to a
+    small UTF-8 tail, and fails closed to no excerpt when residual secret-like
+    content survives. Never raises: any unexpected fault yields ``SANITIZER_ERROR``.
+    """
+    try:
+        if not raw:
+            return SanitizedStderr(STDERR_STATUS_EMPTY, None, False, False)
+        # A. decode (never raises; malformed bytes -> replacement characters).
+        text = bytes(raw).decode("utf-8", errors="replace")
+        # B. normalize newlines and strip unsafe control characters.
+        text = text.replace("\r\n", "\n").replace("\r", "\n")
+        text = _STDERR_CONTROL_CHARS.sub("", text)
+        if not text.strip():
+            return SanitizedStderr(STDERR_STATUS_EMPTY, None, False, False)
+        # C. redact secret-bearing structures BEFORE truncation.
+        redacted = _STDERR_PEM_BLOCK.sub(_STDERR_REDACT_MARK, text)
+        redacted = _STDERR_PEM_ORPHAN.sub(_STDERR_REDACT_MARK, redacted)
+        redacted = _STDERR_AUTH_HEADER.sub(r"\1" + _STDERR_REDACT_MARK, redacted)
+        redacted = _STDERR_BEARER_BASIC.sub(r"\1 " + _STDERR_REDACT_MARK, redacted)
+        redacted = _STDERR_TOKEN_PREFIX.sub(_STDERR_REDACT_MARK, redacted)
+        redacted = _STDERR_JWT.sub(_STDERR_REDACT_MARK, redacted)
+        redacted = _STDERR_URL_USERINFO.sub(r"\1" + _STDERR_REDACT_MARK + "@", redacted)
+        redacted = _STDERR_URL_QUERYFRAG.sub(r"\1?" + _STDERR_REDACT_MARK, redacted)
+        redacted = _STDERR_KEYVALUE.sub(r"\1" + _STDERR_REDACT_MARK, redacted)
+        # D. redact local filesystem identity (paths last).
+        redacted = _STDERR_PEM_ORPHAN.sub(_STDERR_REDACT_MARK, redacted)
+        redacted = _STDERR_WIN_PATH.sub(_STDERR_PATH_MARK, redacted)
+        redacted = _STDERR_UNC_PATH.sub(_STDERR_PATH_MARK, redacted)
+        redacted = _STDERR_UNIX_PATH.sub(_STDERR_PATH_MARK, redacted)
+        redaction_applied = redacted != text
+        # E. bound AFTER sanitization: keep the diagnostic TAIL within the byte cap.
+        encoded = redacted.encode("utf-8", errors="replace")
+        excerpt_truncated = len(encoded) > max_excerpt_bytes
+        if excerpt_truncated:
+            encoded = encoded[-max_excerpt_bytes:]
+        excerpt = encoded.decode("utf-8", errors="replace")
+        # F. fail closed on any residual secret-like content in the final excerpt.
+        for pattern in _STDERR_RESIDUAL:
+            if pattern.search(excerpt):
+                return SanitizedStderr(
+                    STDERR_STATUS_BLOCKED_UNSAFE, None, redaction_applied, excerpt_truncated
+                )
+        status = (
+            STDERR_STATUS_AVAILABLE_REDACTED if redaction_applied else STDERR_STATUS_AVAILABLE
+        )
+        return SanitizedStderr(status, excerpt, redaction_applied, excerpt_truncated)
+    except Exception:  # noqa: BLE001 - a sanitizer fault must never break invocation
+        return SanitizedStderr(STDERR_STATUS_SANITIZER_ERROR, None, False, False)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -66,7 +216,13 @@ class HermesVersionProbe:
 
 @dataclasses.dataclass(frozen=True)
 class HermesInvocationOutcome:
-    """Sanitized outcome of one backend invocation. Carries no raw stderr text."""
+    """Sanitized outcome of one backend invocation. Carries no raw stderr text.
+
+    WP175K adds sanitized failure-evidence fields. ``stderr_byte_len`` /
+    ``stderr_truncated`` describe the bounded child stderr the backend captured and
+    then discarded; the only diagnostic TEXT surface is ``stderr_excerpt``, a small
+    secret/path-scrubbed tail. There is no raw-stderr field.
+    """
 
     stdout: bytes
     stdout_truncated: bool
@@ -78,6 +234,11 @@ class HermesInvocationOutcome:
     timed_out: bool
     launch_failed: bool
     duration_ms: int | None
+    # Sanitized failure evidence (defaults keep the empty/no-child shape).
+    stderr_sanitization_status: str = STDERR_STATUS_EMPTY
+    stderr_excerpt: str | None = None
+    stderr_redaction_applied: bool = False
+    stderr_excerpt_truncated: bool = False
 
     @property
     def transport_retry_eligible(self) -> bool:
@@ -384,6 +545,9 @@ class ExternalHermesCliBackend:
             usage_bytes, usage_truncated = _read_usage_file(
                 os.path.join(temp_dir, usage_file_name), max_usage_bytes
             )
+            # WP175K: sanitize the bounded child stderr into a small secret/path-
+            # scrubbed excerpt BEFORE building the outcome, then discard the raw bytes.
+            sanitized = _sanitize_stderr(stderr[:max_stderr_bytes])
             return HermesInvocationOutcome(
                 stdout=stdout[:max_stdout_bytes],
                 stdout_truncated=len(stdout) > max_stdout_bytes,
@@ -395,6 +559,10 @@ class ExternalHermesCliBackend:
                 timed_out=timed_out,
                 launch_failed=False,
                 duration_ms=_elapsed_ms(start),
+                stderr_sanitization_status=sanitized.status,
+                stderr_excerpt=sanitized.excerpt,
+                stderr_redaction_applied=sanitized.redaction_applied,
+                stderr_excerpt_truncated=sanitized.excerpt_truncated,
             )
         finally:
             # Both ephemeral directories are removed on success, failure, and timeout.

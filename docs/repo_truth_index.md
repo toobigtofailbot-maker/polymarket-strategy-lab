@@ -1,6 +1,43 @@
 # Repo Truth Index
 
-## WP175J Hermes Version Banner Preflight Parser Correction (current review target)
+## WP175K Sanitized Hermes Failure-Evidence Capture Hardening (current review target)
+
+WP175K / Side11 capability handle S10-HERMES-01C is the RUNTIME-track, risk-3,
+exact 14-file bounded evidence-capture hardening on
+`claude/wp175k-hermes-failure-evidence-hardening`, based on merged WP175J / PR #183 at
+`e4323305a9ab6d8434ad451942420606f9252ff9`. Its source changes are
+`src/research_runtime/hermes_controlled_runtime/runner.py`, `controller.py`, and
+`models.py`; policy identity, managed config, request/draft schemas, dependencies,
+locks, and workflows are unchanged.
+
+After WP175J merged, the one authorized S10-GATE-H1 real research invocation ran exactly
+once and ended FAIL_RUNTIME_CONTRACT / EXIT_CODE_NONZERO (exit code 1, not timed out,
+usage evidence MISSING, validated research NONE, 0 sources); S10-GATE-H1 single
+authorized real invocation consumed = 1. DIAG-01 = ROOT_CAUSE_NARROWED_NOT_CONFIRMED and
+DIAG-02 = PREACCOUNTING_PATHS_PASS_ROOT_CAUSE_STILL_UNRECOVERABLE proved (with zero
+network/provider/Firecrawl calls) that every testable pre-accounting path passes and
+that the decisive child stderr had been intentionally discarded, leaving the exit-1
+mechanism unrecoverable from retained evidence. WP175K fixes only that observability
+gap: a deterministic in-runner sanitizer retains a small, secret-scrubbed, path-scrubbed
+diagnostic tail excerpt (MAX_SANITIZED_STDERR_EXCERPT_BYTES = 4096) plus usage-file
+presence while still discarding raw stderr, and the receipt schema is bumped additively
+`hermes-research-run-receipt/1.1.0` -> `hermes-research-run-receipt/1.2.0` with new
+fields `stderr_captured_byte_len`, `stderr_sanitization_status`, `stderr_excerpt`,
+`stderr_excerpt_truncated`, `stderr_redaction_applied`, `usage_file_present`, and
+`usage_file_truncated`. Raw stderr remains forbidden in every receipt, artifact, log,
+and return value; the sanitized bounded excerpt is the only diagnostic text surface;
+residual secret-like content fails closed to no excerpt and a sanitizer fault fails
+closed without changing terminal status or retry. Controller failure precedence, the
+research argv, provider `openai-codex`, model `gpt-5.6-sol`, the `web`-only toolset, the
+retry/fallback posture, and the frozen H1 request are UNCHANGED. WP175K does not repair
+the unknown exit-1 mechanism, activate the runtime, authorize any H1 rerun, or unlock
+Alpha. H1 rerun is NOT AUTHORIZED, S10-ALPHA-01 is BLOCKED, Gate C is NOT AUTHORIZED,
+Alpha Factory is NOT STARTED, WP176 is NOT STARTED, and merge is NOT AUTHORIZED. The
+immediate successor is a separate human/governance decision on whether the failed first
+run plus this evidence hardening justifies a second real S10-GATE-H1 run; a software
+correction does not itself recreate H1 authorization.
+
+## WP175J Hermes Version Banner Preflight Parser Correction (merged, PR #183)
 
 WP175J / Side11 capability handle S10-HERMES-01B is the RUNTIME-track, risk-3,
 exact 12-file bounded correction on `codex/wp175j-hermes-version-banner-parser`,

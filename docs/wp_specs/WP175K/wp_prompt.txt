@@ -1,0 +1,378 @@
+SIDE11 — WP175K / S10-HERMES-01C
+SANITIZED HERMES FAILURE-EVIDENCE CAPTURE HARDENING
+IMPLEMENTATION-AUTHORIZED WORK PACKAGE
+
+Package Identity:
+  WP ID: WP175K
+  Side11 capability handle: S10-HERMES-01C
+  Title: Sanitized Hermes Failure-Evidence Capture Hardening
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen drafting base: e4323305a9ab6d8434ad451942420606f9252ff9
+  Required predecessor: PR #183 / WP175J
+  Required predecessor head: c2d539b0bc885e874ea7b679e1b01542fbe87618
+  Required predecessor merge: e4323305a9ab6d8434ad451942420606f9252ff9
+  Suggested branch: claude/wp175k-hermes-failure-evidence-hardening
+  Package class: BOUNDED_HERMES_SANITIZED_FAILURE_EVIDENCE_HARDENING
+  Package size class: L
+  Exact changed-file budget: 14
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: BOUNDED_SANITIZED_FAILURE_EVIDENCE_HARDENING_ONLY
+  Product impact: NONE
+  Network impact: GitHub control-plane / hosted CI only; NO provider, Firecrawl, Polymarket, model-catalog, OAuth, or product-web calls during implementation or tests
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: Claude Opus 4.8 — HIGH
+  Reason: the observability gap, sanitizer contract, changed source surface, security matrix, and successor boundary are mechanically specified; implementation is deterministic and offline.
+  Escalate or STOP if: live main drifts; current source/test contracts differ; readiness/spec semantics contradict this package; scope must exceed 14 files; controller failure precedence, provider/model/toolset/retry/managed-profile semantics, or the frozen H1 request would have to change; a dependency/workflow/network/credential change appears necessary.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+===============================================================================
+0. USER AUTHORIZATION / AUTHORITY
+===============================================================================
+
+The user has explicitly authorized implementation of THIS exact bounded software
+package.
+
+Authorized: a dedicated worktree/branch; the exact 14-file scope below; deterministic
+local implementation; focused and full offline tests; deterministic readiness /
+exact-diff validation; generated-artifact guard; git diff --check; pip check; commit;
+push; one draft PR; normal PR-triggered exact-head hosted CI; one combined independent
+exact-head RUNTIME review; PR-body evidence reconciliation and re-fetch; final report.
+
+This package does NOT authorize: merge; any H1 rerun; any Hermes -z / --oneshot
+research execution; provider/model inference; Firecrawl calls; OAuth/login/logout/
+refresh; model-catalog network refresh; reading credential values; Gate C; Alpha
+Factory; capital/orders/signing; dependency or lockfile changes; workflow changes;
+changing Hermes source; changing provider/model/retry/toolset/managed-profile
+semantics; changing the frozen H1 request; or authorizing a future second H1 run.
+
+WP175K is evidence-capture hardening only.
+
+===============================================================================
+1. FROZEN CURRENT FACTS / INCIDENT
+===============================================================================
+
+Live GitHub immediately before drafting:
+  main: e4323305a9ab6d8434ad451942420606f9252ff9
+  latest merge: PR #183 — WP175J — Hermes Version Banner Preflight Parser Correction
+  open PRs: 0
+  post-merge main CI: run 35420259600 SUCCESS, 6/6 required jobs green
+  post-merge Hermes version preflight: PASS_POST_MERGE_VERSION_PREFLIGHT
+
+The one authorized S10-GATE-H1 real research invocation then ran exactly once:
+  classification: FAIL_RUNTIME_CONTRACT
+  reason_code / terminal_status: EXIT_CODE_NONZERO
+  controller_calls: 1
+  real_H1_invocations_consumed: 1
+  exit_code: 1
+  timed_out: false
+  stdout_truncated: false
+  usage evidence: MISSING
+  validated research output: NONE
+  sources: 0
+  H1 rerun currently authorized: NO
+  S10-ALPHA-01 unlocked: NO
+  Gate C: NOT_AUTHORIZED
+  Alpha Factory: NOT_STARTED
+
+Subsequent offline diagnostics (zero network/provider/Firecrawl):
+  DIAG-01: ROOT_CAUSE_NARROWED_NOT_CONFIRMED
+  DIAG-02: PREACCOUNTING_PATHS_PASS_ROOT_CAUSE_STILL_UNRECOVERABLE
+
+DIAG-02 established that exact pinned module imports pass; declare_stateless_channel()
+passes; the "web" toolset validates; the model-selection warning registry returns zero
+warnings for openai-codex / gpt-5.6-sol; the startup model-override guard does not
+exit; the noninteractive user-config guard passes; session-arg normalization passes;
+the synthetic usage writer works; a synthetic run_oneshot with _run_agent monkeypatched
+to fail returns 1 AND writes a failure usage file; plugin/MCP/hook startup exceptions
+are generally swallowed; no reproducible offline technical root cause remains; and the
+decisive child stderr detail was intentionally discarded by the current sanitized
+boundary. Do not rewrite this history into a successful or fixed H1 run. WP175K fixes
+the OBSERVABILITY GAP only.
+
+===============================================================================
+2. OBJECTIVE
+===============================================================================
+
+Retain a SMALL, SECRET-SCRUBBED, PATH-SCRUBBED sanitized diagnostic TAIL excerpt of
+child stderr (and usage-file presence) in the sanitized receipt while continuing to
+discard raw stderr, so any future exit-1 is uniquely diagnosable. Bump the receipt
+schema additively 1.1.0 -> 1.2.0. Leave every invocation, provider/model, toolset,
+retry, managed-profile, request, draft, and policy contract and the controller failure
+precedence exactly unchanged. Do not repair the unknown exit-1 mechanism, activate the
+runtime, authorize any H1 rerun, or unlock Alpha.
+
+The invariant: RAW STDERR IS NEVER STORED IN A RECEIPT, ARTIFACT, LOG, OR RETURN
+VALUE. The backend may transiently hold subprocess stderr in memory exactly as it
+already does, solely to sanitize it before constructing the outcome.
+
+===============================================================================
+3. FROZEN NON-CHANGES
+===============================================================================
+
+Unchanged: Hermes 0.21.3 / tag v2026.9.14 / commit
+345cd2b057a452236de401d3534b8502a7465e8d; provider openai-codex; model gpt-5.6-sol;
+toolset web only; research argv semantics; managed config; managed-config digest
+44e0fa95b0e83db89d0a63886be98fe93b5e15d679eeea39bd19e8cd665df5be; policy schema
+hermes-invocation-policy/2.0.0; profile version 1.0.0; outer research retries 0;
+fallback providers empty; keyless fallback/rescue false; web cache false; Firecrawl
+search/extract pinned; request schema hermes-research-run-request/1.1.0; draft schema
+hermes-research-draft/1.0.0; frozen H1 request identity
+hermesresearchrequest:sha256:d977b2073c685c64a6398475ba437aa9cc63be517b2260c513ffd4e9ba795b69;
+H1 rerun authority NO; Gate C NOT_AUTHORIZED; Alpha Factory NOT_STARTED. Do not modify
+policy.py, response_capture.py, __init__.py, dependencies, lockfiles, workflows, or
+Hermes source. If any becomes necessary: STOP SCOPE_EXPANSION_REQUIRED.
+
+===============================================================================
+4. EXACT CHANGED-FILE SCOPE
+===============================================================================
+
+required_changed_files == allowed_changed_files == exactly these 14 paths:
+
+1. docs/deferred_items_log.md
+2. docs/hermes_controlled_research_runtime_contract.md
+3. docs/project_status.md
+4. docs/repo_truth_index.md
+5. docs/status_entries/WP175K.md
+6. docs/wp_specs/WP175K/wp_prompt.txt
+7. docs/wp_specs/WP175K/wp_spec.json
+8. src/research_runtime/hermes_controlled_runtime/controller.py
+9. src/research_runtime/hermes_controlled_runtime/models.py
+10. src/research_runtime/hermes_controlled_runtime/runner.py
+11. tests/research_runtime/hermes_controlled_runtime/test_controller.py
+12. tests/research_runtime/hermes_controlled_runtime/test_runner.py
+13. tests/test_project_status_docs.py
+14. tests/test_repo_truth_docs.py
+
+Maximum changed files: 14. Exact scope required: YES. No 15th path. If a 15th path is
+genuinely required: STOP SCOPE_EXPANSION_REQUIRED.
+
+===============================================================================
+5. SANITIZED STDERR CONTRACT
+===============================================================================
+
+Implement a private deterministic sanitizer in runner.py (no import from tools/).
+MAX_SANITIZED_STDERR_EXCERPT_BYTES = 4096. Closed statuses: EMPTY, AVAILABLE,
+AVAILABLE_REDACTED, BLOCKED_UNSAFE, SANITIZER_ERROR.
+
+Behavior: (A) decode UTF-8 fail-closed (replacement chars, never raise); (B) normalize
+CRLF/CR to LF and strip NUL/unsafe control chars; (C) redact secret-bearing structures
+BEFORE truncation — named/JSON key=value secret assignments (api_key, private_key,
+secret, clob_secret, clob_pass_phrase, password, pass_phrase, mnemonic, token,
+access_token, refresh_token, id_token, ...), Authorization/Bearer/Basic material, PEM
+private-key blocks and orphan headers, known token prefixes (sk-, ghp_, github_pat_,
+xox*), JWT-shaped tokens, URL userinfo, and URL query/fragment material; (D) scrub
+local filesystem identity (user home, repo, research HERMES_HOME, ephemeral cwd,
+managed dir, Windows drive/UNC paths, /home, /Users, temp paths) to <PATH> without
+exposing the username; (E) bound AFTER sanitization to a <= 4096-byte UTF-8 TAIL and
+record whether it was shortened; (F) fail closed — a conservative residual secret-like
+check yields BLOCKED_UNSAFE with no excerpt, and any sanitizer exception yields
+SANITIZER_ERROR with no excerpt. No sanitizer failure may alter process-exit
+classification or cause a retry.
+
+===============================================================================
+6. INVOCATION OUTCOME + RECEIPT
+===============================================================================
+
+Extend HermesInvocationOutcome with sanitized diagnostic fields only (status, excerpt
+or None, redaction-applied, excerpt-cap-shortened); retain stderr_byte_len,
+stderr_truncated, usage_file_bytes, usage_file_truncated; add no raw-stderr field.
+ExternalHermesCliBackend.invoke sanitizes bounded child stderr BEFORE constructing the
+outcome. FakeHermesBackend supports deterministic construction of these fields. No
+change to launch/timeout/retry/cleanup/env/preflight behavior.
+
+Bump RECEIPT_SCHEMA_VERSION 1.1.0 -> 1.2.0 (do NOT change request/draft schemas). Add
+receipt evidence: stderr_captured_byte_len, stderr_sanitization_status, stderr_excerpt,
+stderr_excerpt_truncated, stderr_redaction_applied, usage_file_present,
+usage_file_truncated; all part of identity_fields() (content-addressed). For preflight
+failures with no research child: captured_byte_len 0, status EMPTY, excerpt None,
+excerpt_truncated false, redaction_applied false, usage_file_present false,
+usage_file_truncated false. For a research child: usage_file_present is true iff
+usage_file_bytes is not None (a zero-byte existing file counts as present); the strict
+usage parser remains independently authoritative for validity. Store no raw stderr,
+environment, usage JSON, provider payload, auth material, credential values, or
+repository/home paths.
+
+===============================================================================
+7. FAILURE PRECEDENCE MUST NOT CHANGE
+===============================================================================
+
+run_controlled_hermes_research failure precedence stays exactly fail-closed: launch
+failure -> TRANSPORT_FAILURE; timeout -> TIMEOUT; exit_code != 0 -> EXIT_CODE_NONZERO
+immediately; stdout truncation fails; usage validation stays downstream; schema/safety/
+provider-model/cost semantics unchanged; no new retry; no inference from stderr may
+override terminal status. For exit-code failure the receipt now preserves the sanitized
+stderr diagnostic and usage-file presence while still returning terminal_status and
+error_code EXIT_CODE_NONZERO. The sanitized diagnostic fields are EVIDENCE ONLY.
+
+===============================================================================
+8. SECURITY + CONTROLLER TEST MATRIX
+===============================================================================
+
+test_runner.py adds the sanitizer matrix: ordinary traceback (reason kept, path
+scrubbed, <= 4096 bytes); named secret assignments; JSON-like secrets; Bearer/
+Authorization/Basic; PEM private key; token prefixes and JWT; URL credentials/query;
+local paths (no username/home/repo/temp exposure); invalid UTF-8 / control chars never
+raise; long stderr keeps a bounded tail with excerpt-truncated true; residual-unsafe
+fails closed (excerpt None, BLOCKED_UNSAFE); sanitizer internal error fails closed
+(excerpt None, SANITIZER_ERROR, exit classification intact); no raw-stderr member; and
+one offline external-backend smoke (a harmless local subprocess, NOT Hermes -z) that
+exits 1 with a synthetic traceback + fake secret + fake path and no usage file, proving
+the secret and path are scrubbed, the reason is retained, and zero network/provider/
+Firecrawl calls occur. Use only clearly-fake deterministic sentinel secret values.
+
+test_controller.py: exit 1 + ordinary sanitized stderr keeps EXIT_CODE_NONZERO, no
+retry, sanitized excerpt in receipt, usage_file_present false when missing; exit 1 +
+secret-bearing stderr never surfaces a raw secret and keeps truthful status/redaction
+fields; exit 1 + existing failure usage file marks usage_file_present true with exit
+code authoritative; version/preflight failure uses empty/default evidence fields with
+research call count 0; success semantics unchanged with a valid receipt 1.2.0 and empty
+diagnostics when stderr empty; deterministic receipt identity with the new fields; and
+the R015 sanitation test now proves RAW stderr/secret/path content is absent (the word
+"stderr" may legitimately appear in the sanitized field names) with the sanitized
+excerpt as the only diagnostic text surface. Zero automatic retry unchanged.
+
+===============================================================================
+9. DOCS / REPO TRUTH
+===============================================================================
+
+Update docs/hermes_controlled_research_runtime_contract.md (sanitized failure-evidence
+clause + receipt 1.2.0), docs/project_status.md, docs/repo_truth_index.md, and
+docs/deferred_items_log.md to state: WP175J MERGED; S10-GATE-H1 single authorized real
+invocation consumed = 1; H1 result FAIL_RUNTIME_CONTRACT / EXIT_CODE_NONZERO; validated
+research NONE; genuine H1 PASS NO; H1 rerun NOT_AUTHORIZED; S10-ALPHA-01 BLOCKED; Gate C
+NOT AUTHORIZED; Alpha Factory NOT STARTED; DIAG-01 ROOT_CAUSE_NARROWED_NOT_CONFIRMED;
+DIAG-02 PREACCOUNTING_PATHS_PASS_ROOT_CAUSE_STILL_UNRECOVERABLE; WP175K purpose =
+sanitized failure-evidence capture hardening ONLY; receipt schema 1.2.0; raw stderr
+remains forbidden; sanitized bounded excerpt only; and that the immediate successor is a
+SEPARATE human/governance decision on whether a second H1 run is justified — not Alpha,
+not an automatic rerun. Do not claim that decision is already made.
+
+===============================================================================
+10. VALIDATION / READINESS
+===============================================================================
+
+Pre-implementation and final: python tools/wp/wp_readiness_gate.py --wp
+docs/wp_specs/WP175K/wp_prompt.txt --spec docs/wp_specs/WP175K/wp_spec.json --repo-root
+. (add --check-diff --base origin/main --head HEAD for the exact 14-file diff) ->
+IMPLEMENTATION_READY. If satisfying readiness requires widening authority, scope,
+capability, or successor: STOP PACKAGE_CONTRACT_MISMATCH.
+
+Focused: python -m pytest -q for test_runner.py, test_controller.py,
+test_project_status_docs.py, test_repo_truth_docs.py, test_architecture_boundaries.py,
+test_hermes_advisory_foundation_architecture_docs.py, and
+test_hermes_input_output_contracts_and_validator_requirements_docs.py. Then the full
+suite python -m pytest -q. Then python tools/git/preflight_generated_artifact_guard.py;
+git diff --check origin/main..HEAD; python -m pip check. No real provider, Firecrawl,
+OAuth, H1, model-catalog, or network activity in any test.
+
+===============================================================================
+11. HARD STOPS
+===============================================================================
+
+STOP STATE_DRIFT if main changed before branch creation.
+STOP EXISTING_WP175K_COLLISION if WP175K already materially exists.
+STOP SCOPE_EXPANSION_REQUIRED if a 15th path is required.
+STOP AUTHORITY_EXPANSION_REQUIRED if implementation needs network/provider/H1/OAuth/economic authority.
+STOP PACKAGE_CONTRACT_MISMATCH if readiness/spec governance fails.
+STOP SECURITY_SANITIZER_INSUFFICIENT if secret/path leakage cannot be made fail-closed within scope.
+STOP TEST_CONTRACT_FAILURE for relevant local failures.
+STOP HOSTED_VALIDATION_FAILED for relevant exact-head CI failure.
+STOP UNAUTHORIZED_HEAD_MUTATION for unexpected remote head mutation.
+STOP EVIDENCE_MISMATCH for posted-evidence inconsistency.
+Under any hard stop: no merge; no H1; no scope improvisation; report exact sanitized facts to Side11.
+
+===============================================================================
+12. REQUIREMENT -> TEST -> EVIDENCE (R001-R018)
+===============================================================================
+
+R001 ordinary traceback keeps reason, scrubs path, <= 4096 bytes -> test_wp175k_a...
+R002 named secret assignments redacted -> test_wp175k_b...
+R003 JSON-like secrets removed -> test_wp175k_c...
+R004 Bearer/Authorization/Basic removed -> test_wp175k_d...
+R005 PEM private key removed -> test_wp175k_e...
+R006 token prefixes + JWT redacted -> test_wp175k_f...
+R007 URL credentials/query removed -> test_wp175k_g...
+R008 local paths scrubbed, no username -> test_wp175k_h...
+R009 invalid UTF-8/control chars never raise -> test_wp175k_i...
+R010 long stderr keeps bounded tail -> test_wp175k_j...
+R011 residual-unsafe fails closed -> test_wp175k_k...
+R012 sanitizer internal error fails closed -> test_wp175k_l...
+R013 no raw-stderr member + offline exit-1 smoke -> test_wp175k_m..., test_wp175k_external_backend_smoke...
+R014 controller exit-1/preflight/success/identity matrix -> test_wp175k_exit1_*, test_wp175k_preflight_*, test_wp175k_success_*, test_wp175k_receipt_identity_*
+R015 receipt has no raw stderr/secret/path; sanitized excerpt only -> test_r015_receipt_has_no_raw_stderr_env_or_usage_payload
+R016 repo/status truth -> test_project_status_docs.py + test_repo_truth_docs.py
+R017 exact scope/readiness -> wp_readiness_gate --check-diff (14 files)
+R018 hosted exact-head CI + posted PR evidence -> gh pr checks + pr_evidence_consistency_guard
+
+===============================================================================
+13. SUCCESSOR BOUNDARY
+===============================================================================
+
+WP175K success means only: source evidence-capture hardening is code-complete;
+deterministic security/controller tests and repo guards pass; exact-head CI passes;
+independent RUNTIME review passes; PR evidence is reconciled; PR is
+READY_FOR_SIDE11_REVIEW. It does NOT mean merged, runtime activated, H1 executed, H1
+PASS, or Alpha authorized. Even if a technical defect were later confirmed and
+corrected, the already-consumed H1 run is not recreated automatically. Any future
+second real H1 run requires a separate new human/governance decision. The immediate
+post-WP175K action is that separate decision, not Alpha.
+
+===============================================================================
+14. FINAL REPORT-BACK
+===============================================================================
+
+Return a final report-back to Side11 with: base/branch/worktree/PR/head/commit-count/
+changed-files; incident truth (historical H1 invocations consumed 1, DIAG-01/DIAG-02,
+H1 rerun NO, Alpha NO); implementation (receipt schema 1.2.0, request/draft/policy
+schemas unchanged, excerpt cap 4096, sanitization status vocabulary, raw stderr
+retained NO, paths/secrets scrubbed, failure precedence unchanged); validation (focused/
+full-suite/readiness/artifact-guard/git-diff/pip-check/security tests/hosted CI/
+independent review/PR evidence guard); authority zeros (network 0, provider 0, Firecrawl
+0, OAuth 0, real H1 during WP175K 0, historical total 1, capital 0, orders 0, Gate C
+NOT_AUTHORIZED, Alpha NOT STARTED, merge NO); and the successor governance boundary.
+
+===============================================================================
+15. READINESS SYNTAX / NORMATIVE RULE MATRIX
+===============================================================================
+
+Authority / Non-Authority posture is exactly the governance authority block above.
+The negative-test matrix is the redaction/rejection matrix in Sections 5 and 8. The
+evidence plan is the requirement-to-test-to-evidence mapping R001-R018 in Section 12.
+These readiness labels add no capability, scope, or authority.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|sanitizer|stderr|ordinary_traceback|ACCEPT|bounded_excerpt|HermesResearchRunReceipt.stderr_excerpt|R001
+NR002|sanitizer|stderr|secret_bearing|REJECT|redacted|HermesResearchRunReceipt.stderr_excerpt|R002
+NR003|sanitizer|stderr|local_path|REJECT|path_scrubbed|HermesResearchRunReceipt.stderr_excerpt|R008
+NR004|sanitizer|stderr|residual_unsafe|FORBID|blocked_unsafe|HermesResearchRunReceipt.stderr_excerpt|R011
+NR005|receipt|schema|additive_bump|PRESERVE_EXACT|receipt_schema_one_two_zero|NONE|R014
+NR006|controller|failure_precedence|exit_nonzero|PRESERVE_EXACT|exit_code_nonzero|NONE|R015
+END_NORMATIVE_RULE_MATRIX_V1
+
+END WP175K PACKAGE

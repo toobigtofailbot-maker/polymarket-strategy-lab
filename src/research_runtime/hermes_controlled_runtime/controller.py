@@ -63,7 +63,7 @@ from .response_capture import (
     cost_acceptance,
     parse_usage_report,
 )
-from .runner import HermesInvocationBackend
+from .runner import HermesInvocationBackend, STDERR_STATUS_EMPTY
 
 ACTIVATION_CODE_COMPLETE = "CODE_COMPLETE_NOT_REMOTE_ACTIVATED"
 ACTIVATION_RUN_COMPLETE = "CONTROLLED_RESEARCH_RUN_COMPLETE"
@@ -211,6 +211,16 @@ def run_controlled_hermes_research(
     builder.end_utc = _utc_iso(clock())
     builder.reported_semver = reported_semver
     builder.exit_code = outcome.exit_code
+    # WP175K: preserve the sanitized failure evidence for EVERY research-child path
+    # (transport failure, timeout, exit-code, truncation, downstream gates). This is
+    # evidence only; it never changes terminal status, error code, or retry.
+    builder.stderr_captured_byte_len = outcome.stderr_byte_len
+    builder.stderr_sanitization_status = outcome.stderr_sanitization_status
+    builder.stderr_excerpt = outcome.stderr_excerpt
+    builder.stderr_excerpt_truncated = outcome.stderr_excerpt_truncated
+    builder.stderr_redaction_applied = outcome.stderr_redaction_applied
+    builder.usage_file_present = outcome.usage_file_bytes is not None
+    builder.usage_file_truncated = outcome.usage_file_truncated
     st = outcome.stdout_truncated
     se = outcome.stderr_truncated
 
@@ -329,6 +339,15 @@ class _ReceiptBuilder:
     verified_provider: str | None = None
     verified_model: str | None = None
     usage_evidence_status: str = _USAGE_NOT_REACHED
+    # WP175K sanitized failure evidence. Defaults are the no-child / preflight shape;
+    # they are overwritten from the invocation outcome for any research-child path.
+    stderr_captured_byte_len: int = 0
+    stderr_sanitization_status: str = STDERR_STATUS_EMPTY
+    stderr_excerpt: str | None = None
+    stderr_excerpt_truncated: bool = False
+    stderr_redaction_applied: bool = False
+    usage_file_present: bool = False
+    usage_file_truncated: bool = False
 
     def build(
         self,
@@ -363,6 +382,13 @@ class _ReceiptBuilder:
             timed_out=terminal_status == _STATUS_TIMEOUT,
             stdout_truncated=stdout_truncated,
             stderr_truncated=stderr_truncated,
+            stderr_captured_byte_len=self.stderr_captured_byte_len,
+            stderr_sanitization_status=self.stderr_sanitization_status,
+            stderr_excerpt=self.stderr_excerpt,
+            stderr_excerpt_truncated=self.stderr_excerpt_truncated,
+            stderr_redaction_applied=self.stderr_redaction_applied,
+            usage_file_present=self.usage_file_present,
+            usage_file_truncated=self.usage_file_truncated,
             configured_toolsets=self.policy.allowed_toolsets,
             tool_enforcement=self.policy.tool_enforcement,
             runtime_tool_telemetry=RUNTIME_TOOL_TELEMETRY,

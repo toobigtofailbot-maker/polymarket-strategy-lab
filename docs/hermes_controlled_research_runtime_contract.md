@@ -292,3 +292,32 @@ UTF-8 decoded fail-closed and supported-version comparison remains exactly `0.21
 Version-probe launch, timeout, nonzero-exit, and stdout-truncation gates are unchanged.
 The isolated update-disabled preflight performs no provider, Firecrawl, or public-web
 research call and does not activate the dormant runtime.
+
+## 10. WP175K sanitized failure-evidence capture (S10-HERMES-01C)
+
+Raw child stderr is never stored in a receipt, artifact, log, or return value. The
+external backend may transiently hold bounded child stderr in memory only to SANITIZE
+it before constructing the invocation outcome. A deterministic in-runner sanitizer
+decodes fail-closed, normalizes newlines and strips unsafe control characters, redacts
+secret-bearing structures (named/JSON secret assignments, Authorization/Bearer/Basic
+material, PEM private-key blocks, `sk-`/`ghp_`/`github_pat_`/`xox*` token prefixes,
+JWT-shaped tokens, URL userinfo, and URL query/fragment material), scrubs local
+filesystem identity (user home, repository, research `HERMES_HOME`, ephemeral cwd,
+managed dir, and Windows/UNC/`/home`/`/Users`/temp paths) to `<PATH>`, and keeps only a
+bounded diagnostic TAIL of at most `MAX_SANITIZED_STDERR_EXCERPT_BYTES` (4096) UTF-8
+bytes. The sanitized status is one of `EMPTY`, `AVAILABLE`, `AVAILABLE_REDACTED`,
+`BLOCKED_UNSAFE`, or `SANITIZER_ERROR`: residual secret-like content in the final
+excerpt fails closed to no excerpt (`BLOCKED_UNSAFE`) and any sanitizer fault fails
+closed (`SANITIZER_ERROR`). No sanitizer outcome changes process-exit classification,
+terminal status, or retry.
+
+The receipt schema is bumped additively from `hermes-research-run-receipt/1.1.0` to
+`hermes-research-run-receipt/1.2.0`, adding content-addressed evidence fields
+`stderr_captured_byte_len`, `stderr_sanitization_status`, `stderr_excerpt`,
+`stderr_excerpt_truncated`, `stderr_redaction_applied`, `usage_file_present`, and
+`usage_file_truncated`. `usage_file_present` is true iff Hermes wrote any usage-file
+bytes (a zero-byte existing file counts as present); the strict usage parser remains
+independently authoritative for validity. The sanitized excerpt is the only diagnostic
+text surface; the controller failure precedence, request and draft schemas, policy
+identity, managed config, provider/model, `web`-only toolset, and retry posture are
+unchanged, and this capture hardening does not activate the dormant runtime.

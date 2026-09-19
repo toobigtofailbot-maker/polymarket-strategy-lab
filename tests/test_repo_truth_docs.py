@@ -256,3 +256,38 @@ def test_wp175j_repo_truth_registers_bounded_parser_correction() -> None:
     assert "Alpha Factory" in combined and "NOT STARTED" in combined
     assert "WP176" in combined and "NOT STARTED" in combined
     assert "Merge authorized: NO" in combined
+
+
+def test_wp175k_repo_truth_registers_sanitized_failure_evidence_hardening() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    status = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "WP175K.md").read_text(
+        encoding="utf-8"
+    )
+    combined = "\n".join((index, status, deferred, fragment))
+    assert "WP175K Sanitized Hermes Failure-Evidence Capture Hardening" in index
+    assert "current review target" in index
+    assert "S10-HERMES-01C" in combined
+    assert "exact 14-file" in combined
+    assert "WP175J / PR #183 merged" in combined or "WP175J / PR #183 merged: YES" in combined
+    # Incident + diagnostics truth (the one authorized H1 run was consumed and failed).
+    assert "S10-GATE-H1 single authorized real invocation consumed = 1" in combined
+    assert "EXIT_CODE_NONZERO" in combined
+    assert "ROOT_CAUSE_NARROWED_NOT_CONFIRMED" in combined
+    assert "PREACCOUNTING_PATHS_PASS_ROOT_CAUSE_STILL_UNRECOVERABLE" in combined
+    # Evidence-hardening contract truth.
+    assert "hermes-research-run-receipt/1.2.0" in combined
+    assert "MAX_SANITIZED_STDERR_EXCERPT_BYTES = 4096" in combined
+    assert "raw stderr" in combined.lower()
+    assert "stderr_excerpt" in combined
+    # The dedicated WP175K deferred section blocks any second H1 run behind governance.
+    assert "BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION" in deferred
+    # Authority + successor boundary.
+    assert "H1 rerun" in combined and "NOT AUTHORIZED" in combined
+    assert "S10-ALPHA-01" in combined and "BLOCKED" in combined
+    assert "Gate C" in combined and "NOT AUTHORIZED" in combined
+    assert "Alpha Factory" in combined and "NOT STARTED" in combined
+    assert "WP176" in combined and "NOT STARTED" in combined
+    assert "separate human/governance decision" in combined.lower()
+    assert "Merge authorized: NO" in combined
