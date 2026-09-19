@@ -1,6 +1,26 @@
 # Repo Truth Index
 
-## WP175I Controlled Research Profile Enforcement (current review target)
+## WP175J Hermes Version Banner Preflight Parser Correction (current review target)
+
+WP175J / Side11 capability handle S10-HERMES-01B is the RUNTIME-track, risk-3,
+exact 12-file bounded correction on `codex/wp175j-hermes-version-banner-parser`,
+based on merged WP175I / PR #182 at `0bc994c6659c6175ed7cf45cb7149ead51774344`.
+Its only source change is `src/research_runtime/hermes_controlled_runtime/policy.py`;
+controller, runner, policy identity, managed config, request/receipt schemas,
+dependencies, locks, and workflows are unchanged.
+
+The exact banner `Hermes Agent v0.21.3 (2026.9.14)` exposed a deterministic parser
+defect: the generic word-boundary semver search skipped `v0.21.3` and selected release
+date `2026.9.14`. WP175J binds package-version identity to a Hermes-branded label and
+rejects release-date-only, unbranded, and malformed tokens. The AppContainer launcher
+issue was setup-only and resolved separately; the non-virtualized pinned CLI succeeds.
+H1 remains blocked and unconsumed until correction merge, Side11 review, and a fresh
+human one-run checkpoint: real H1 research invocations 0, provider/API calls 0,
+Firecrawl research calls 0, RUNTIME ACTIVATED NO. The immediate successor is resumed
+S10-GATE-H1; only genuine H1 PASS plus Side11 review unlocks S10-ALPHA-01. Gate C is
+NOT AUTHORIZED, Alpha Factory is NOT STARTED, WP176 is NOT STARTED, and merge is NOT AUTHORIZED.
+
+## WP175I Controlled Research Profile Enforcement (merged, PR #182)
 
 WP175I / Side10 capability handle S10-HERMES-01A is the RUNTIME-track, risk-3, exact
 15-file controlled research profile correction on

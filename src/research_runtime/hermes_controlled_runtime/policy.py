@@ -173,8 +173,13 @@ MAX_COMMAND_LINE_CHARS = 30_000
 # though invocation is always argv-only, never through a shell).
 _SHELL_METACHARACTERS = re.compile(r"[;&|`$><\n\r\t\"'*?(){}\[\]!~^]")
 
-# A stable semantic-version token, parsed leniently from ``hermes --version`` output.
-_SEMVER_TOKEN = re.compile(r"\b(\d+\.\d+\.\d+)\b")
+# Bind package-version identity to the Hermes-branded ``--version`` label.  The
+# exact tagged banner also contains a release date shaped like a semantic version;
+# an unbranded first-token search can therefore select the wrong value.
+_HERMES_VERSION_TOKEN = re.compile(
+    r"\bhermes(?:\s+agent|-agent)\s+v?(\d+\.\d+\.\d+)\b",
+    re.IGNORECASE,
+)
 
 
 class PolicyBroadeningError(Exception):
@@ -565,7 +570,7 @@ def build_research_envelope(request: HermesResearchRunRequest) -> HermesResearch
 
 
 def parse_hermes_version(reported: object) -> str | None:
-    """Extract the stable semantic-version token from ``hermes --version`` output."""
+    """Extract only the package version attached to a Hermes-branded label."""
     if isinstance(reported, bytes):
         try:
             reported = reported.decode("utf-8")
@@ -573,7 +578,7 @@ def parse_hermes_version(reported: object) -> str | None:
             return None
     if not isinstance(reported, str):
         return None
-    match = _SEMVER_TOKEN.search(reported)
+    match = _HERMES_VERSION_TOKEN.search(reported)
     return match.group(1) if match else None
 
 

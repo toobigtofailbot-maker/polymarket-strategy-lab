@@ -215,13 +215,13 @@ def test_r009_external_backend_truncates_oversized_stdout():
 
 
 def test_external_version_probe_reads_version_no_research_call():
-    prog = "import sys; sys.stdout.write('hermes-agent 0.21.3')"
+    prog = "import sys; sys.stdout.write('Hermes Agent v0.21.3 (2026.9.14)')"
     probe = ExternalHermesCliBackend().probe_version(
         version_argv=[sys.executable, "-c", prog], max_output_bytes=4096, max_wall_seconds=15,
     )
     assert probe.launched is True and probe.timed_out is False
     assert probe.exit_code == 0 and probe.stdout_truncated is False
-    assert "0.21.3" in (probe.version_text or "")
+    assert probe.version_text == "Hermes Agent v0.21.3 (2026.9.14)"
 
 
 # A version-probe stand-in that reports its isolation: HERMES_HOME, that home's

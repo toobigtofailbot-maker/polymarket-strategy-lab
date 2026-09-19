@@ -279,3 +279,16 @@ NO. `models.py` and `response_capture.py`, and the WP175H receipt/provider/model
 schema/safety fail-closed semantics, are unchanged. The successor resumes S10-GATE-H1
 only after WP175I merge and Side10 review; the prior H1 attempt consumed zero real
 research invocations, so its authorization is unspent.
+
+## 9. WP175J branded version-banner preflight correction (S10-HERMES-01B)
+
+Exact tagged `hermes --version` output carries both identities in one banner:
+`Hermes Agent v0.21.3 (2026.9.14)`. Version authority is only the package version
+attached to the case-insensitive Hermes-branded label (`Hermes Agent` or retained
+legacy `hermes-agent`); the release-date token is never version authority. The parser
+is intentionally branded and fail-closed, has no generic semantic-version fallback,
+and rejects release-date-only, unbranded, and malformed package tokens. Bytes remain
+UTF-8 decoded fail-closed and supported-version comparison remains exactly `0.21.3`.
+Version-probe launch, timeout, nonzero-exit, and stdout-truncation gates are unchanged.
+The isolated update-disabled preflight performs no provider, Firecrawl, or public-web
+research call and does not activate the dormant runtime.

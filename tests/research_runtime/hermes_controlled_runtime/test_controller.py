@@ -29,11 +29,13 @@ from src.research_runtime.hermes_controlled_runtime import (
     PolicyBroadeningError,
     REQUEST_SCHEMA_VERSION,
     build_research_run_request,
+    is_supported_hermes_version,
+    parse_hermes_version,
     run_controlled_hermes_research,
 )
 
 FIXED_CLOCK = lambda: datetime(2026, 9, 18, 12, 0, 0, tzinfo=timezone.utc)
-GOOD_VERSION = "hermes-agent 0.21.3"
+GOOD_VERSION = "Hermes Agent v0.21.3 (2026.9.14)"
 
 
 def _request():
@@ -167,11 +169,58 @@ def test_success_produces_validated_receipt():
 # --- R001: version preflight ------------------------------------------------
 
 
-def test_r001_wrong_hermes_version_rejected_before_research_call():
+@pytest.mark.parametrize(
+    ("reported", "expected"),
+    (
+        ("Hermes Agent v0.21.3 (2026.9.14)", "0.21.3"),
+        ("Hermes Agent v0.21.3 (2026.9.14) · upstream 345cd2b", "0.21.3"),
+        ("hermes-agent 0.21.3", "0.21.3"),
+        (b"Hermes Agent v0.21.3 (2026.9.14)", "0.21.3"),
+        ("HERMES AGENT V0.21.3 (2026.9.14)", "0.21.3"),
+    ),
+)
+def test_parse_hermes_version_acceptance_matrix(reported, expected):
+    assert parse_hermes_version(reported) == expected
+    assert is_supported_hermes_version(reported) is True
+
+
+@pytest.mark.parametrize(
+    "reported",
+    (
+        "2026.9.14",
+        "Hermes Agent (2026.9.14)",
+        "unrelated-tool 0.21.3",
+        "Hermes Agent v0.21.3foo (2026.9.14)",
+        b"\xffHermes Agent v0.21.3",
+        None,
+    ),
+)
+def test_parse_hermes_version_rejection_matrix(reported):
+    assert parse_hermes_version(reported) is None
+    assert is_supported_hermes_version(reported) is False
+
+
+def test_real_banner_shape_reaches_exactly_one_fake_research_invocation():
     req = _request()
     backend = FakeHermesBackend.from_transcript(
-        _stdout(req.request_id), usage_file_bytes=_usage(), version_text="hermes-agent 0.20.0"
+        _stdout(req.request_id), usage_file_bytes=_usage(), version_text=GOOD_VERSION
     )
+    result = _run(req, backend)
+    assert result.error_code is None
+    assert backend.version_probe_count == 1
+    assert backend.call_count == 1
+
+
+def test_r001_wrong_hermes_version_rejected_before_research_call():
+    req = _request()
+    wrong_version = "Hermes Agent v0.20.0 (2026.9.14)"
+    backend = FakeHermesBackend.from_transcript(
+        _stdout(req.request_id),
+        usage_file_bytes=_usage(),
+        version_text=wrong_version,
+    )
+    assert parse_hermes_version(wrong_version) == "0.20.0"
+    assert is_supported_hermes_version(wrong_version) is False
     result = _run(req, backend)
     assert result.error_code == "BACKEND_VERSION_MISMATCH"
     assert result.receipt.terminal_status == "VERSION_MISMATCH"
