@@ -4303,6 +4303,15 @@ def test_wp175l_sanitized_windows_runtime_registered() -> None:
     assert "Finding E" in project
     assert "SYNTHETIC" in project and "active_profile" in project
     assert "MACHINE allowlist" in project
+    # Finding F: current WP175L successor names the THIRD real H1 run (H1 #3), not "second".
+    wp175l_line = next(
+        line for line in project.splitlines()
+        if line.startswith("# WP175L current review target")
+    )
+    assert "Historical real H1 research invocations consumed: 2" in wp175l_line
+    assert "H1 #3: NOT AUTHORIZED" in wp175l_line
+    assert "third real S10-GATE-H1 run (H1 #3)" in wp175l_line
+    assert "second real S10-GATE-H1 run" not in wp175l_line
     # Authority + successor boundary.
     assert "RUNTIME ACTIVATED: NO" in project
     assert "H1 #3: NOT AUTHORIZED" in combined

@@ -325,6 +325,16 @@ def test_wp175l_repo_truth_registers_sanitized_windows_runtime() -> None:
     assert "HYBRID SANITIZED\nRUNTIME ENVELOPE" in index or "HYBRID SANITIZED RUNTIME ENVELOPE" in combined.replace("\n", " ")
     assert "active_profile" in combined
     assert "SYNTHESIZES" in combined or "synthetic" in combined.lower()
+    # Finding F: current WP175L truth names the THIRD real H1 run (H1 #3), not "second".
+    wp175l_section = index.split("## WP175L", 1)[1].split("## WP175K", 1)[0]
+    assert "Historical real H1 research invocations consumed = 2" in wp175l_section
+    assert "third real S10-GATE-H1 run (H1 #3)" in wp175l_section
+    assert "second real S10-GATE-H1 run" not in wp175l_section
+    # Current WP175L deferred rows name H1 #3 / third run.
+    assert "Third real S10-GATE-H1 run (H1 #3) decision" in deferred
+    assert "H1 #3 / third-run governance decision" in deferred
+    # Historical WP175K rows are preserved unchanged (history is not rewritten).
+    assert "WP175K-D001 | Second real S10-GATE-H1 run decision" in deferred
     # The WP175L deferred section blocks any second H1 run behind governance.
     assert "BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION" in deferred
     assert "WP175L-D001" in deferred and "WP175L-D002" in deferred

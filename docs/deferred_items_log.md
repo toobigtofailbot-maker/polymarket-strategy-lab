@@ -2648,8 +2648,8 @@ unlock Alpha.
 | ID | Item | Status | Priority | Resolution gate | Notes |
 |---|---|---|---|---|---|
 | WP175L-D001 | Controlled startup preflight using the exact patched runner | POST_MERGE_LOCAL_VERIFICATION | P1 | After WP175L merge and Side11 review, run the controlled startup preflight (not a research invocation) | Verifies the sanitized envelope resolves Hermes profile-home offline; consumes no H1 research slot; provider/Firecrawl/network 0 |
-| WP175L-D002 | Second real S10-GATE-H1 run decision | BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION | P1 | A separate new human/governance decision after WP175L merge, post-merge verification, and Side11 review | Two H1 runs were consumed and failed; a wrapper-runtime correction does not itself recreate H1 authorization; H1 #3 is NOT AUTHORIZED |
-| WP175L-D003 | S10-ALPHA-01 Multi-Lane Alpha Factory Core | DEFERRED | P2 | Genuine S10-GATE-H1 PASS plus Side11 quality review | Immediate successor is post-merge preflight verification then the second-run governance decision, not Alpha; Gate C and WP176 remain separately blocked |
+| WP175L-D002 | Third real S10-GATE-H1 run (H1 #3) decision | BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION | P1 | A separate new human/governance decision after WP175L merge, post-merge verification, and Side11 review | Two real H1 runs (H1 #1, H1 #2) were consumed and failed, so the next possible invocation is H1 #3; a wrapper-runtime correction does not itself recreate H1 authorization; H1 #3 is NOT AUTHORIZED |
+| WP175L-D003 | S10-ALPHA-01 Multi-Lane Alpha Factory Core | DEFERRED | P2 | Genuine S10-GATE-H1 PASS plus Side11 quality review | Immediate successor is post-merge preflight verification then the H1 #3 / third-run governance decision, not Alpha; Gate C and WP176 remain separately blocked |
 
 ## Wallet-Intelligence Roadmap Anchor (durable)
 

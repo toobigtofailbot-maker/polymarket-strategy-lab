@@ -71,7 +71,9 @@ model-catalog network refresh; reading credential values; repeating
 MANUAL-HERMES-ACCEPT-01; editing pinned Hermes source; Gate C; Alpha Factory; wallet
 intelligence; capital/orders/signing; dependency or lockfile changes; workflow changes;
 changing provider/model/retry/toolset/managed-profile semantics; changing the frozen H1
-request; or authorizing a future second H1 run.
+request; or authorizing a future third H1 run (H1 #3). Two real H1 invocations (H1 #1,
+H1 #2) are already consumed, so the next possible invocation is H1 #3, which WP175L does
+NOT authorize.
 
 WP175L hardens the controlled wrapper runtime and preflight only.
 
@@ -345,7 +347,8 @@ code-complete; deterministic tests and repo guards pass; exact-head CI passes; i
 RUNTIME review passes; PR evidence is reconciled; the PR is READY_FOR_SIDE11_REVIEW. It
 does NOT mean merged, runtime activated, H1 executed, H1 PASS, or Alpha authorized. The
 relevant post-merge gate is a controlled startup preflight using the exact patched runner;
-any future second real H1 run requires a separate new human/governance decision. Do not
+any future third real H1 run (H1 #3) requires a separate new human/governance decision
+(H1 #1 and H1 #2 are already consumed). Do not
 implement wallet code or Alpha in WP175L.
 
 ===============================================================================

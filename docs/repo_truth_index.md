@@ -46,8 +46,9 @@ toolset, retry/fallback posture, managed config, request/draft/receipt schemas, 
 controller research failure precedence are UNCHANGED. H1 #3 is NOT AUTHORIZED,
 S10-ALPHA-01 is BLOCKED, Gate C is NOT AUTHORIZED, Alpha Factory is NOT STARTED, WP176 is
 NOT STARTED, and merge is NOT AUTHORIZED. The relevant post-merge gate is a controlled
-startup preflight using the exact patched runner; any second real S10-GATE-H1 run remains
-a separate human/governance decision.
+startup preflight using the exact patched runner; two real H1 invocations (H1 #1, H1 #2)
+are already consumed, so any third real S10-GATE-H1 run (H1 #3) remains a separate
+human/governance decision that WP175L does not authorize.
 
 ## WP175K Sanitized Hermes Failure-Evidence Capture Hardening (merged, PR #184)
 
