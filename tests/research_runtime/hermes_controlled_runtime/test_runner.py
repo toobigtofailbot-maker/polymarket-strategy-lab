@@ -1336,9 +1336,16 @@ _USER_INSPECT_PROG = textwrap.dedent(
 
 
 def _pinned_default_hermes_root_windows(env):
-    """Pinned-equivalent hermes_constants._get_platform_default_hermes_home (Windows)."""
+    """Pinned-equivalent hermes_constants._get_platform_default_hermes_home (Windows).
+
+    Uses ``PureWindowsPath`` so the pinned Windows resolution is exercised deterministically
+    on any host OS (a real ``pathlib.Path`` would refuse to instantiate ``WindowsPath`` on
+    POSIX, and flipping ``os.name`` globally would break pathlib for the whole process).
+    """
+    from pathlib import PureWindowsPath
+
     la = (env.get("LOCALAPPDATA") or "").strip()
-    base = Path(la) if la else Path(env["USERPROFILE"]) / "AppData" / "Local"
+    base = PureWindowsPath(la) if la else PureWindowsPath(env["USERPROFILE"]) / "AppData" / "Local"
     return base / "hermes"
 
 
@@ -1402,41 +1409,49 @@ def test_e5_path_home_is_synthetic_userprofile(tmp_path):  # E5
         assert data["home"] == user_root
 
 
-def test_e6_pinned_default_root_under_synthetic_localappdata(monkeypatch, tmp_path):  # E6
-    _force_windows(monkeypatch)
-    monkeypatch.setenv("LOCALAPPDATA", r"C:\Users\realuser\AppData\Local")
+def test_e6_pinned_default_root_under_synthetic_localappdata(tmp_path):  # E6
+    # The synthetic per-user mapping is computed by a pure helper (no global os.name flip,
+    # which would break pathlib on POSIX); the pinned default root resolves under it.
     user_root = str(tmp_path / "winuser")
-    env = runner_mod._build_sanitized_runtime_env(None, runtime_user_root=user_root)
-    default_root = _pinned_default_hermes_root_windows(env)
-    expected = Path(os.path.join(user_root, "AppData", "Local")) / "hermes"
+    syn = runner_mod._windows_user_root_env(user_root)
+    assert syn["LOCALAPPDATA"].startswith(user_root)
+    from pathlib import PureWindowsPath
+
+    default_root = _pinned_default_hermes_root_windows(syn)
+    expected = PureWindowsPath(os.path.join(user_root, "AppData", "Local")) / "hermes"
     assert default_root == expected
+    # A real personal LocalAppData is never what the child would resolve.
     assert "realuser" not in str(default_root)
 
 
 def test_e7_sticky_active_profile_cannot_hijack_h1_home(monkeypatch, tmp_path):  # E7
-    _force_windows(monkeypatch)
     # A real parent LOCALAPPDATA carrying a sticky non-default active_profile.
     real_localappdata = tmp_path / "real_localappdata"
     (real_localappdata / "hermes").mkdir(parents=True)
-    (real_localappdata / "hermes" / "active_profile").write_text(
-        "malicious-personal-profile", encoding="utf-8"
-    )
+    real_ap = real_localappdata / "hermes" / "active_profile"
+    real_ap.write_text("malicious-personal-profile", encoding="utf-8")
     monkeypatch.setenv("LOCALAPPDATA", str(real_localappdata))
     monkeypatch.setenv("USERPROFILE", str(tmp_path / "real_userprofile"))
     safe_home = tmp_path / "h1_research_home"
     safe_home.mkdir()
     user_root = runner_mod._ensure_windows_user_root(str(tmp_path / "winuser"))
+
+    # The built child env never carries the real parent LOCALAPPDATA/USERPROFILE (they are
+    # not in the inherited allowlist), and the explicit H1 HERMES_HOME stays authoritative.
     env = runner_mod._build_sanitized_runtime_env(str(safe_home), runtime_user_root=user_root)
-    # The child's LOCALAPPDATA is synthetic, not the real parent's.
-    assert env["LOCALAPPDATA"].startswith(user_root)
-    assert str(real_localappdata) not in env["LOCALAPPDATA"]
-    # The pinned active_profile the child would read is the synthetic one, which does not
-    # exist, so no profile override fires; the real personal active_profile is unreachable.
-    child_ap = _pinned_active_profile_file(env)
-    assert not child_ap.exists()
-    assert child_ap != (real_localappdata / "hermes" / "active_profile")
-    # The explicit H1 HERMES_HOME stays authoritative.
+    assert str(real_localappdata) not in (env.get("LOCALAPPDATA") or "")
+    assert str(tmp_path / "real_userprofile") not in (env.get("USERPROFILE") or "")
     assert env["HERMES_HOME"] == str(safe_home)
+
+    # The synthetic per-user mapping (what the child gets on Windows) makes the pinned
+    # active_profile the child would read point under the synthetic root, never the real
+    # personal file -- so the sticky active_profile cannot re-home the explicit H1 home.
+    syn = runner_mod._windows_user_root_env(user_root)
+    child_ap = _pinned_active_profile_file(syn)
+    assert str(user_root) in str(child_ap)
+    assert str(child_ap) != str(real_ap)
+    assert not os.path.exists(str(child_ap))  # synthetic hermes/active_profile is absent
+    assert real_ap.exists()  # the real file exists but is unreachable by the child
 
 
 def test_e8_startup_probe_profile_isolation(monkeypatch):  # E8
