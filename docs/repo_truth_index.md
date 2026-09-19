@@ -1,6 +1,47 @@
 # Repo Truth Index
 
-## WP175K Sanitized Hermes Failure-Evidence Capture Hardening (current review target)
+## WP175L Sanitized Windows Runtime Envelope And Startup Preflight (current review target)
+
+WP175L / Side11 capability handle S10-HERMES-01D is the RUNTIME-track, risk-3, exact
+12-file bounded correction of the controlled Hermes wrapper runtime environment and
+startup preflight on `claude/wp175l-sanitized-windows-runtime`, based on merged WP175K /
+PR #184 at `473fcd4e6fa95f1230fd29d384f8be736e5085e1`. Its source changes are
+`src/research_runtime/hermes_controlled_runtime/runner.py` and `controller.py`;
+`models.py`, `policy.py`, `response_capture.py`, `__init__.py`, dependencies, locks, and
+workflows are unchanged.
+
+Historical real H1 research invocations consumed = 2. H1 #2's confirmed root cause is
+`CONTROLLED_WINDOWS_RUNTIME_ENVIRONMENT_INSUFFICIENT_FOR_HERMES_PROFILE_INITIALIZATION`:
+the merged runner built the controlled child from a tiny neutral whitelist plus
+`HERMES_HOME`/`HERMES_MANAGED_DIR` and did not forward ordinary Windows home/runtime
+context, so the pinned chain
+`hermes_cli/main.py::_apply_profile_override` -> `hermes_constants.get_default_hermes_root`
+-> `_get_platform_default_hermes_home` (which reads `LOCALAPPDATA`, else
+`Path.home()/"AppData"/"Local"`) raised `RuntimeError: Could not determine home
+directory.` and research/provider-binding/Firecrawl were NOT_REACHED. `hermes --version`
+passed because it is answered by the fast-version path before profile initialization.
+WP175K was SUCCESSFUL AS OBSERVABILITY HARDENING because its sanitized evidence exposed
+this. WP175L replaces `_minimal_env` with a deterministic platform-aware SANITIZED
+RUNTIME ENVELOPE (`_build_sanitized_runtime_env`) — an explicit benign allowlist, never
+`os.environ.copy()` — that forwards the real benign Windows runtime/home variables Hermes
+profile-home resolution and Python `Path.home()` need (USERPROFILE, HOMEDRIVE, HOMEPATH,
+APPDATA, LOCALAPPDATA, COMSPEC, PATHEXT, WINDIR, OS, PROCESSOR_ARCHITECTURE,
+NUMBER_OF_PROCESSORS, PROGRAMDATA, PROGRAMFILES, PROGRAMFILES(X86), COMMONPROGRAMFILES),
+retains the secret-name rejection, and adds an explicit interpreter/shell/capability
+injection denylist so no ambient provider credential or injection variable reaches the
+child. WP175L also adds an OFFLINE startup/profile-init preflight (`hermes --help`,
+which exercises the profile/default-home path the `--version` fast path skips) that uses
+the same sanitized envelope and a throwaway `HERMES_HOME`; a launch failure, timeout, or
+nonzero exit is terminal `STARTUP_PREFLIGHT_FAILED` with `transport_attempt_count` 0 and
+consumes no H1 research slot. Provider `openai-codex`, model `gpt-5.6-sol`, the `web`-only
+toolset, retry/fallback posture, managed config, request/draft/receipt schemas, and the
+controller research failure precedence are UNCHANGED. H1 #3 is NOT AUTHORIZED,
+S10-ALPHA-01 is BLOCKED, Gate C is NOT AUTHORIZED, Alpha Factory is NOT STARTED, WP176 is
+NOT STARTED, and merge is NOT AUTHORIZED. The relevant post-merge gate is a controlled
+startup preflight using the exact patched runner; any second real S10-GATE-H1 run remains
+a separate human/governance decision.
+
+## WP175K Sanitized Hermes Failure-Evidence Capture Hardening (merged, PR #184)
 
 WP175K / Side11 capability handle S10-HERMES-01C is the RUNTIME-track, risk-3,
 exact 14-file bounded evidence-capture hardening on

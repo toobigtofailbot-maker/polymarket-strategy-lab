@@ -260,6 +260,33 @@ class HermesVersionProbe:
 
 
 @dataclasses.dataclass(frozen=True)
+class HermesStartupProbe:
+    """Sanitized result of a bounded, OFFLINE startup/profile-init preflight (WP175L).
+
+    ``hermes --version`` is answered by the pinned tagged fast path
+    (``hermes_cli/_startup_fast.try_fast_version()``) BEFORE full CLI/profile
+    initialization, so it never exercises the profile/default-home resolution that
+    failed in H1 #2 (``hermes_cli/main.py::_apply_profile_override()`` ->
+    ``hermes_constants.get_default_hermes_root()`` ->
+    ``_get_platform_default_hermes_home()``). Per Side11 source determination, ``hermes
+    --help`` does NOT use the fast-version path: ``_apply_profile_override()`` runs
+    before normal argument parsing, so ``--help`` exercises the exact default-home path,
+    then argparse prints help and exits BEFORE any agent/research/provider/Firecrawl
+    work. This probe therefore uses the SAME sanitized runtime envelope as the research
+    child and a THROWAWAY ``HERMES_HOME`` (never the credential-bearing research home),
+    forwards no provider secret, makes no research/provider/Firecrawl/network call, is
+    bounded by a short timeout, and captures no output text (only launch/exit/timeout).
+    A startup-preflight failure is NOT a research invocation and never consumes an H1
+    research slot.
+    """
+
+    launched: bool
+    timed_out: bool
+    exit_code: int | None = None
+    stdout_truncated: bool = False
+
+
+@dataclasses.dataclass(frozen=True)
 class HermesInvocationOutcome:
     """Sanitized outcome of one backend invocation. Carries no raw stderr text.
 
@@ -298,6 +325,10 @@ class HermesInvocationBackend(Protocol):
         self, *, version_argv: Sequence[str], max_output_bytes: int, max_wall_seconds: int
     ) -> HermesVersionProbe: ...
 
+    def probe_startup(
+        self, *, startup_argv: Sequence[str], max_output_bytes: int, max_wall_seconds: int
+    ) -> HermesStartupProbe: ...
+
     def invoke(
         self,
         *,
@@ -329,6 +360,10 @@ class FakeHermesBackend:
         version_launched: bool = True,
         version_exit_code: int | None = 0,
         version_stdout_truncated: bool = False,
+        startup_launched: bool = True,
+        startup_timed_out: bool = False,
+        startup_exit_code: int | None = 0,
+        startup_stdout_truncated: bool = False,
     ) -> None:
         if not outcomes:
             raise ValueError("FakeHermesBackend requires at least one outcome")
@@ -340,8 +375,18 @@ class FakeHermesBackend:
             exit_code=version_exit_code,
             stdout_truncated=version_stdout_truncated,
         )
+        # WP175L: a deterministic startup/profile-init preflight result (default: the
+        # patched runtime resolves its default home cleanly, exit 0). No process runs.
+        self._startup = HermesStartupProbe(
+            launched=startup_launched,
+            timed_out=startup_timed_out,
+            exit_code=startup_exit_code,
+            stdout_truncated=startup_stdout_truncated,
+        )
         self.call_count = 0
         self.version_probe_count = 0
+        self.startup_probe_count = 0
+        self.recorded_startup_argv: list[tuple[str, ...]] = []
         self.recorded_argv: list[tuple[str, ...]] = []
         self.recorded_usage_file_names: list[str] = []
         self.recorded_hermes_home: list[str | None] = []
@@ -383,6 +428,13 @@ class FakeHermesBackend:
     ) -> HermesVersionProbe:
         self.version_probe_count += 1
         return self._version
+
+    def probe_startup(
+        self, *, startup_argv: Sequence[str], max_output_bytes: int, max_wall_seconds: int
+    ) -> HermesStartupProbe:
+        self.startup_probe_count += 1
+        self.recorded_startup_argv.append(tuple(startup_argv))
+        return self._startup
 
     def invoke(
         self,
@@ -429,14 +481,85 @@ _SECRET_ENV_FRAGMENTS = (
     "PRIVATE",
 )
 
-# Only these neutral variables are ever forwarded (plus an explicit HERMES_HOME and the
-# backend-created HERMES_MANAGED_DIR set in ``invoke``).
+# WP175L SANITIZED RUNTIME ENVELOPE (S10-HERMES-01D).
+#
+# Karl's runtime-boundary direction: forward a NORMAL / SUFFICIENT OS runtime context
+# (real benign parent paths when safe) rather than an artificially tiny environment that
+# breaks the child's own startup, while keeping STRICT secret / provider / capability
+# boundaries. The envelope is an explicit ALLOWLIST, never ``os.environ.copy()``.
+#
+# Cross-platform neutral runtime variables forwarded on every platform.
 _NEUTRAL_ENV_KEYS = ("PATH", "SystemRoot", "TEMP", "TMP", "TMPDIR", "LANG", "LC_ALL")
 
+# Windows-only benign runtime context, frozen after inspecting what the pinned Hermes
+# startup/profile-home resolution and Python actually need on Windows:
+#   * USERPROFILE / HOMEDRIVE / HOMEPATH -- Python ``Path.home()`` /
+#     ``os.path.expanduser("~")`` (WITHOUT one of these, ``Path.home()`` raises
+#     ``RuntimeError: Could not determine home directory.``, the exact H1 #2 failure);
+#   * LOCALAPPDATA -- the PRIMARY branch of pinned
+#     ``hermes_constants._get_platform_default_hermes_home()``
+#     (``base = Path(LOCALAPPDATA) if LOCALAPPDATA else Path.home()/"AppData"/"Local"``);
+#     APPDATA -- ordinary per-user roaming app data;
+#   * COMSPEC / PATHEXT -- ordinary Windows executable resolution for subprocesses;
+#   * WINDIR -- Windows runtime/DLL resolution (SystemRoot's twin);
+#   * OS / PROCESSOR_ARCHITECTURE / NUMBER_OF_PROCESSORS -- benign platform identity;
+#   * PROGRAMDATA / PROGRAMFILES / PROGRAMFILES(X86) / COMMONPROGRAMFILES -- standard
+#     machine-wide install roots some runtimes consult.
+# Every one is a standard NON-SECRET Windows runtime variable; none names a credential,
+# token, provider, or interpreter/shell-injection surface. The real benign parent value
+# is forwarded (never a fabricated home), consistent with Karl's owner direction.
+_WINDOWS_RUNTIME_ENV_KEYS = (
+    "USERPROFILE",
+    "HOMEDRIVE",
+    "HOMEPATH",
+    "APPDATA",
+    "LOCALAPPDATA",
+    "COMSPEC",
+    "PATHEXT",
+    "WINDIR",
+    "OS",
+    "PROCESSOR_ARCHITECTURE",
+    "NUMBER_OF_PROCESSORS",
+    "PROGRAMDATA",
+    "PROGRAMFILES",
+    "PROGRAMFILES(X86)",
+    "COMMONPROGRAMFILES",
+)
+
+# Explicit control / interpreter / shell / capability INJECTION denylist. These can
+# alter interpreter or runtime AUTHORITY even though their names carry no secret
+# fragment. The allowlist above already excludes everything not named in it, so these
+# can never be forwarded; they are enumerated so the boundary is explicit and testable,
+# applied as a defensive filter, and asserted DISJOINT from the allowlist. Comparison is
+# case-insensitive (e.g. ``http_proxy`` is caught as well as ``HTTP_PROXY``).
+_INJECTION_DENY_ENV_EXACT = frozenset(
+    {
+        "PYTHONPATH",
+        "PYTHONHOME",
+        "PYTHONSTARTUP",
+        "PYTHONINSPECT",
+        "NODE_OPTIONS",
+        "BASH_ENV",
+        "ENV",
+        "SSH_AUTH_SOCK",
+        "GIT_ASKPASS",
+        "GIT_SSH_COMMAND",
+        "KUBECONFIG",
+        "GOOGLE_APPLICATION_CREDENTIALS",
+        "HTTP_PROXY",
+        "HTTPS_PROXY",
+        "ALL_PROXY",
+        "NO_PROXY",
+        "LD_PRELOAD",
+        "LD_LIBRARY_PATH",
+    }
+)
+_INJECTION_DENY_ENV_PREFIXES = ("AWS_", "AZURE_", "DOCKER_", "DYLD_", "PYTHON")
+
 # Control-plane variables that must NEVER be inherited from the parent process. The
-# minimal-env whitelist already excludes everything not in ``_NEUTRAL_ENV_KEYS``; these
-# are named so the boundary is explicit and testable. ``HERMES_MANAGED_DIR`` is set by
-# the backend itself (to its ephemeral managed dir), never inherited; ``HERMES_SAFE_MODE``
+# sanitized-envelope allowlist already excludes everything not named there; these are
+# named so the boundary is explicit and testable. ``HERMES_MANAGED_DIR`` is set by the
+# backend itself (to its ephemeral managed dir), never inherited; ``HERMES_SAFE_MODE``
 # is never set (safe mode would suppress the bundled Firecrawl backend);
 # ``HERMES_ENABLE_PROJECT_PLUGINS`` is never forwarded (project plugins stay disabled).
 _NEVER_FORWARD_ENV = (
@@ -466,7 +589,7 @@ class ExternalHermesCliBackend:
         probe_home = tempfile.mkdtemp(prefix="hermes_verprobe_")
         try:
             _write_update_disabled_config(probe_home)
-            env = _minimal_env(None)
+            env = _build_sanitized_runtime_env(None)
             env["HERMES_HOME"] = probe_home
             try:
                 proc = subprocess.run(  # noqa: S603
@@ -501,6 +624,53 @@ class ExternalHermesCliBackend:
         finally:
             shutil.rmtree(probe_home, ignore_errors=True)
 
+    def probe_startup(
+        self, *, startup_argv: Sequence[str], max_output_bytes: int, max_wall_seconds: int
+    ) -> HermesStartupProbe:
+        """Bounded OFFLINE startup/profile-init preflight (see :class:`HermesStartupProbe`).
+
+        Runs ``startup_argv`` (``hermes --help``) via argv only, from a throwaway
+        ``HERMES_HOME`` whose config disables the passive update check, using the SAME
+        sanitized runtime envelope as the research child. It exercises the pinned
+        profile/default-home path that ``--version`` skips, then argparse exits before
+        any provider/Firecrawl/research work. No provider secret is forwarded; output is
+        bounded and discarded (only launch/exit/timeout are reported); the temporary
+        home is always removed.
+        """
+        startup_argv = list(startup_argv)
+        if not startup_argv:
+            return HermesStartupProbe(launched=False, timed_out=False)
+
+        probe_home = tempfile.mkdtemp(prefix="hermes_startprobe_")
+        try:
+            _write_update_disabled_config(probe_home)
+            env = _build_sanitized_runtime_env(None)
+            env["HERMES_HOME"] = probe_home
+            try:
+                proc = subprocess.run(  # noqa: S603
+                    startup_argv,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=probe_home,
+                    env=env,
+                    timeout=max_wall_seconds,
+                    check=False,
+                )
+            except subprocess.TimeoutExpired:
+                return HermesStartupProbe(launched=True, timed_out=True, exit_code=None)
+            except (OSError, ValueError):
+                return HermesStartupProbe(launched=False, timed_out=False)
+            stdout_len = len(proc.stdout or b"")
+            return HermesStartupProbe(
+                launched=True,
+                timed_out=False,
+                exit_code=proc.returncode,
+                stdout_truncated=stdout_len > max_output_bytes,
+            )
+        finally:
+            shutil.rmtree(probe_home, ignore_errors=True)
+
     def invoke(
         self,
         *,
@@ -519,7 +689,7 @@ class ExternalHermesCliBackend:
         if "/" in usage_file_name or "\\" in usage_file_name or ".." in usage_file_name:
             return _launch_failure()
 
-        env = _minimal_env(hermes_home)
+        env = _build_sanitized_runtime_env(hermes_home)
         if hermes_home is not None and "HERMES_HOME" not in env:
             # An unsafe research-home locator fails closed rather than running.
             return _launch_failure()
@@ -727,25 +897,48 @@ def _write_update_disabled_config(hermes_home: str) -> None:
         handle.write(_UPDATE_DISABLED_CONFIG_YAML)
 
 
-def _minimal_env(hermes_home: str | None) -> dict[str, str]:
-    """A minimal environment with no forwarded provider secrets.
+def _runtime_env_allowlist() -> tuple[str, ...]:
+    """The platform-aware benign runtime allowlist (deterministic, no secrets)."""
+    if os.name == "nt":
+        return _NEUTRAL_ENV_KEYS + _WINDOWS_RUNTIME_ENV_KEYS
+    return _NEUTRAL_ENV_KEYS
 
-    Only neutral variables are kept, and an explicit safe non-secret HERMES_HOME may
-    be added so Hermes can locate its own out-of-repo credential store. No variable
-    whose name looks secret-bearing is ever forwarded, and no full environment dump
-    occurs.
+
+def _build_sanitized_runtime_env(hermes_home: str | None) -> dict[str, str]:
+    """Build the deterministic SANITIZED RUNTIME ENVELOPE for a controlled child.
+
+    A platform-aware benign ALLOWLIST of ordinary OS/runtime variables (never a full
+    ``os.environ.copy()``), so the child has a normal/sufficient runtime context -- on
+    Windows this includes the real benign home/AppData variables Hermes profile-home
+    resolution and Python ``Path.home()`` require -- while every secret-, credential-,
+    and interpreter/shell-injection-bearing variable is stripped fail-closed:
+
+      * only names in :func:`_runtime_env_allowlist` are ever considered;
+      * any name that looks secret-bearing (:func:`_looks_secret`) or is a control/
+        injection variable (:func:`_is_injection_denied`) is dropped defensively;
+      * an explicit safe NON-SECRET ``HERMES_HOME`` may be added so Hermes can locate
+        its own out-of-repo credential store (never inherited ambiently);
+      * runner-owned control-plane variables are never inherited.
+
+    No ambient provider credential can reach the child: provider secrets are loaded
+    only by Hermes itself from its explicit H1 home.
     """
     env: dict[str, str] = {}
-    for key in _NEUTRAL_ENV_KEYS:
+    for key in _runtime_env_allowlist():
+        # Defensive invariants: the allowlist must never overlap the control-plane,
+        # secret, or injection denylists. These branches cannot trigger for the frozen
+        # allowlist and exist to keep the boundary fail-closed under future edits.
         if key in _NEVER_FORWARD_ENV:  # pragma: no cover - defensive invariant
             continue
+        if _looks_secret(key) or _is_injection_denied(key):  # pragma: no cover
+            continue
         value = os.environ.get(key)
-        if value is not None and not _looks_secret(key):
+        if value is not None:
             env[key] = value
     if hermes_home is not None and is_safe_research_home(hermes_home):
         env["HERMES_HOME"] = hermes_home
     # Defensive: a control-plane variable is never inherited even if it were somehow
-    # whitelisted. HERMES_MANAGED_DIR is set later by the backend to its own ephemeral
+    # allowlisted. HERMES_MANAGED_DIR is set later by the backend to its own ephemeral
     # managed scope; HERMES_SAFE_MODE / HERMES_ENABLE_PROJECT_PLUGINS are never set.
     for name in _NEVER_FORWARD_ENV:
         env.pop(name, None)
@@ -755,6 +948,14 @@ def _minimal_env(hermes_home: str | None) -> dict[str, str]:
 def _looks_secret(name: str) -> bool:
     upper = name.upper()
     return any(fragment in upper for fragment in _SECRET_ENV_FRAGMENTS)
+
+
+def _is_injection_denied(name: str) -> bool:
+    """True for an interpreter/shell/capability variable that must never be forwarded."""
+    upper = name.upper()
+    if upper in _INJECTION_DENY_ENV_EXACT:
+        return True
+    return any(upper.startswith(prefix) for prefix in _INJECTION_DENY_ENV_PREFIXES)
 
 
 def _kill_tree(process: "subprocess.Popen[bytes]") -> None:

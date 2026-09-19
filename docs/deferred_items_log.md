@@ -2626,3 +2626,42 @@ the exit-1 mechanism, activate runtime, authorize any H1 rerun, or unlock Alpha.
 | WP175K-D001 | Second real S10-GATE-H1 run decision | BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION | P1 | A separate new human/governance decision after WP175K merge and Side11 review | The one authorized H1 run was consumed (= 1) and failed; the root cause is unconfirmed and unrecoverable from retained evidence; a software correction does not itself recreate H1 authorization; H1 rerun is NOT AUTHORIZED |
 | WP175K-D002 | S10-GATE-H1 unique-diagnosis on any future run | ENABLED_BY_SANITIZED_EVIDENCE_HARDENING | P2 | Only exercised if a future H1 run is separately authorized | Receipt 1.2.0 now preserves a sanitized bounded stderr excerpt, redaction/status flags, and usage-file presence so a future exit-1 is uniquely diagnosable; no network/provider/Firecrawl activity during WP175K |
 | WP175K-D003 | S10-ALPHA-01 Multi-Lane Alpha Factory Core | DEFERRED | P2 | Genuine S10-GATE-H1 PASS plus Side11 quality review | Immediate successor is the second-run governance decision, not Alpha; Gate C and WP176 remain separately blocked |
+
+## WP175L Sanitized Windows Runtime Envelope And Startup Preflight Deferred Items
+
+WP175L corrects the controlled Hermes wrapper runtime environment and adds an offline
+startup preflight. Historical real H1 research invocations consumed = 2; H1 #2's confirmed
+root cause is
+`CONTROLLED_WINDOWS_RUNTIME_ENVIRONMENT_INSUFFICIENT_FOR_HERMES_PROFILE_INITIALIZATION`
+(the merged controlled child lacked ordinary Windows home/runtime context, so pinned
+Hermes profile-home resolution raised `RuntimeError: Could not determine home
+directory.`; research/provider-binding/Firecrawl were NOT_REACHED). WP175L forwards a
+bounded benign Windows runtime allowlist (real parent home/AppData paths), keeps the
+secret-name rejection, adds an explicit injection denylist, and gates research on an
+offline `hermes --help` startup preflight; it does not activate the runtime, authorize any
+H1 run, or unlock Alpha.
+
+| ID | Item | Status | Priority | Resolution gate | Notes |
+|---|---|---|---|---|---|
+| WP175L-D001 | Controlled startup preflight using the exact patched runner | POST_MERGE_LOCAL_VERIFICATION | P1 | After WP175L merge and Side11 review, run the controlled startup preflight (not a research invocation) | Verifies the sanitized envelope resolves Hermes profile-home offline; consumes no H1 research slot; provider/Firecrawl/network 0 |
+| WP175L-D002 | Second real S10-GATE-H1 run decision | BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION | P1 | A separate new human/governance decision after WP175L merge, post-merge verification, and Side11 review | Two H1 runs were consumed and failed; a wrapper-runtime correction does not itself recreate H1 authorization; H1 #3 is NOT AUTHORIZED |
+| WP175L-D003 | S10-ALPHA-01 Multi-Lane Alpha Factory Core | DEFERRED | P2 | Genuine S10-GATE-H1 PASS plus Side11 quality review | Immediate successor is post-merge preflight verification then the second-run governance decision, not Alpha; Gate C and WP176 remain separately blocked |
+
+## Wallet-Intelligence Roadmap Anchor (durable)
+
+Objective: prove when PUBLIC wallet behavior deserves strategic use; do not assume
+profitable wallets should be copied. Frozen packages: WALLET-01 (Public Wallet Event
+Ingestion & PIT Identity Evidence), WALLET-02 (PIT Profiles, Archetypes, Specialization &
+Independent Clusters), WALLET-03 (Historical Copyability & Microstructure Evidence),
+WALLET-04 (Anomaly, Public-Information Control, Consensus & Incremental Edge), and
+GATE-WALLET-01 (wallet-specific evidence gate). Frozen semantics: the wallet gate is NOT
+global; unrelated Alpha hypotheses do not wait for wallet packages; wallet-derived
+hypotheses must satisfy wallet-specific evidence; WP169 public API/CLOB/Polygon
+acquisition must be reused, not duplicated; no deanonymization; no insider-probability
+claims; no nonpublic information; Hermes wallet context is read-only/research-only; Alpha
+Factory owns canonical research memory; and wallet evidence creates NO shortcut around
+qualification/economic/paper/live/Gate-C authority (no wallet live shortcut created).
+
+| ID | Item | Status | Priority | Resolution gate | Notes |
+|---|---|---|---|---|---|
+| WALLET-01 | Public Wallet Event Ingestion & PIT Identity Evidence | ROADMAP_ANCHOR_BLOCKED | P2 | Genuine H1 PASS + Side11 quality acceptance; S10-ALPHA-01 merged/verified; fresh live state; exact WP169 inspection | No wallet code is implemented in WP175L; the wallet gate is wallet-specific and not global |

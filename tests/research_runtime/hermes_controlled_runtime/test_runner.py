@@ -309,7 +309,7 @@ def test_no_provider_secret_env_forwarded(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "sk-should-not-be-forwarded")
     monkeypatch.setenv("HERMES_PROVIDER_SECRET", "nope")
     monkeypatch.setenv("SOME_AUTH_TOKEN", "nope")
-    env = runner_mod._minimal_env(None)
+    env = runner_mod._build_sanitized_runtime_env(None)
     for key in env:
         assert not runner_mod._looks_secret(key)
     assert "OPENAI_API_KEY" not in env
@@ -321,7 +321,7 @@ def test_only_safe_non_secret_hermes_home_is_forwarded(tmp_path):
     safe_home = tmp_path / "research_home"
     safe_home.mkdir()
     assert is_safe_research_home(str(safe_home)) is True
-    env = runner_mod._minimal_env(str(safe_home))
+    env = runner_mod._build_sanitized_runtime_env(str(safe_home))
     assert env.get("HERMES_HOME") == str(safe_home)
 
 
@@ -440,8 +440,8 @@ def test_p020_ambient_safe_mode_and_project_plugins_never_forwarded(monkeypatch)
     assert data["safe_mode"] is None
     assert data["enable_project_plugins"] is None
     assert data["has_secret"] is False
-    # _minimal_env also excludes them directly.
-    env = runner_mod._minimal_env(None)
+    # The sanitized runtime envelope also excludes them directly.
+    env = runner_mod._build_sanitized_runtime_env(None)
     for name in ("HERMES_SAFE_MODE", "HERMES_ENABLE_PROJECT_PLUGINS", "HERMES_MANAGED_DIR"):
         assert name not in env
 
@@ -982,3 +982,320 @@ def test_wp175k_d5_small_cap_never_exceeds_supplied_cap(cap, ch):  # D5
     if res.excerpt is not None:
         assert _enc_len(res.excerpt) <= cap
         assert _REPLACEMENT_CHAR not in res.excerpt
+
+
+# ---------------------------------------------------------------------------
+# WP175L sanitized Windows runtime envelope + startup preflight (S10-HERMES-01D)
+# ---------------------------------------------------------------------------
+
+from src.research_runtime.hermes_controlled_runtime.controller import build_startup_argv
+
+
+def _force_windows(monkeypatch):
+    """Evaluate the platform-aware allowlist as Windows regardless of host OS.
+
+    The allowlist composition and the Windows-variable forwarding are the same on both
+    CI runners this way; the real-spawn home tests below exercise the true host.
+    """
+    monkeypatch.setattr(runner_mod.os, "name", "nt")
+
+
+def test_env01_safe_windows_runtime_variables_forwarded(monkeypatch):  # ENV-01
+    _force_windows(monkeypatch)
+    # Real benign parent runtime paths (never fabricated) are forwarded on Windows.
+    parent = {
+        "USERPROFILE": r"C:\Users\example",
+        "HOMEDRIVE": "C:",
+        "HOMEPATH": r"\Users\example",
+        "LOCALAPPDATA": r"C:\Users\example\AppData\Local",
+        "APPDATA": r"C:\Users\example\AppData\Roaming",
+        "COMSPEC": r"C:\Windows\System32\cmd.exe",
+        "PATHEXT": ".COM;.EXE;.BAT",
+        "WINDIR": r"C:\Windows",
+    }
+    for key, value in parent.items():
+        monkeypatch.setenv(key, value)
+    env = runner_mod._build_sanitized_runtime_env(None)
+    for key, value in parent.items():
+        assert env.get(key) == value, key
+
+
+def test_env02_parent_secret_named_variables_never_forwarded(monkeypatch):  # ENV-02
+    _force_windows(monkeypatch)
+    for name in (
+        "MY_API_KEY",
+        "SOME_SECRET",
+        "SESSION_TOKEN",
+        "DB_PASSWORD",
+        "VENDOR_CREDENTIAL",
+        "SERVICE_AUTH",
+        "SIGNING_PRIVATE_KEY",
+    ):
+        monkeypatch.setenv(name, "must-not-leak")
+    env = runner_mod._build_sanitized_runtime_env(None)
+    for key in env:
+        assert not runner_mod._looks_secret(key)
+    assert not any("must-not-leak" == v for v in env.values())
+
+
+def test_env03_provider_specific_ambient_credentials_never_forwarded(monkeypatch):  # ENV-03
+    _force_windows(monkeypatch)
+    for name in (
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "OPENROUTER_API_KEY",
+        "FIRECRAWL_API_KEY",
+    ):
+        monkeypatch.setenv(name, "sk-should-not-leak")
+    env = runner_mod._build_sanitized_runtime_env(None)
+    for name in (
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "OPENROUTER_API_KEY",
+        "FIRECRAWL_API_KEY",
+    ):
+        assert name not in env
+
+
+def test_env04_injection_capability_variables_never_forwarded(monkeypatch):  # ENV-04
+    _force_windows(monkeypatch)
+    for name in (
+        "PYTHONPATH",
+        "PYTHONHOME",
+        "PYTHONSTARTUP",
+        "PYTHONINSPECT",
+        "NODE_OPTIONS",
+        "BASH_ENV",
+        "ENV",
+        "SSH_AUTH_SOCK",
+        "GIT_ASKPASS",
+        "GIT_SSH_COMMAND",
+        "KUBECONFIG",
+        "GOOGLE_APPLICATION_CREDENTIALS",
+        "HTTP_PROXY",
+        "HTTPS_PROXY",
+        "ALL_PROXY",
+        "NO_PROXY",
+        "LD_PRELOAD",
+        "LD_LIBRARY_PATH",
+        "AWS_ACCESS_KEY_ID",
+        "AZURE_CLIENT_ID",
+        "DOCKER_HOST",
+        "DYLD_INSERT_LIBRARIES",
+    ):
+        monkeypatch.setenv(name, "must-not-leak")
+    env = runner_mod._build_sanitized_runtime_env(None)
+    for name in ("PYTHONPATH", "PYTHONHOME", "NODE_OPTIONS", "LD_PRELOAD", "HTTP_PROXY"):
+        assert name not in env
+    assert not any(v == "must-not-leak" for v in env.values())
+    # Lower-case proxy variants are caught too.
+    assert runner_mod._is_injection_denied("http_proxy") is True
+    assert runner_mod._is_injection_denied("aws_secret_access_key") is True
+
+
+def test_env05_hermes_home_is_explicit_only_and_safe_checked(monkeypatch, tmp_path):  # ENV-05
+    _force_windows(monkeypatch)
+    # An ambient HERMES_HOME is never inherited (it is not in the allowlist).
+    monkeypatch.setenv("HERMES_HOME", r"C:\attacker\home")
+    assert "HERMES_HOME" not in runner_mod._build_sanitized_runtime_env(None)
+    # A safe explicit home is forwarded; an unsafe one (inside the repo) is not.
+    safe = tmp_path / "research_home"
+    safe.mkdir()
+    assert runner_mod._build_sanitized_runtime_env(str(safe)).get("HERMES_HOME") == str(safe)
+    assert "HERMES_HOME" not in runner_mod._build_sanitized_runtime_env(str(REPO_ROOT))
+
+
+def test_env06_managed_dir_never_inherited(monkeypatch):  # ENV-06
+    _force_windows(monkeypatch)
+    monkeypatch.setenv("HERMES_MANAGED_DIR", r"C:\attacker\scope")
+    assert "HERMES_MANAGED_DIR" not in runner_mod._build_sanitized_runtime_env(None)
+
+
+def test_env07_safe_mode_and_project_plugins_never_inherited(monkeypatch):  # ENV-07
+    _force_windows(monkeypatch)
+    monkeypatch.setenv("HERMES_SAFE_MODE", "1")
+    monkeypatch.setenv("HERMES_ENABLE_PROJECT_PLUGINS", "1")
+    env = runner_mod._build_sanitized_runtime_env(None)
+    assert "HERMES_SAFE_MODE" not in env
+    assert "HERMES_ENABLE_PROJECT_PLUGINS" not in env
+
+
+def test_env08_path_home_succeeds_under_sanitized_env():  # ENV-08
+    # The exact H1 #2 failure was Path.home() raising under the tiny env. Under the
+    # sanitized envelope a child resolves Path.home() cleanly (Windows: USERPROFILE;
+    # POSIX: the shared-neutral env plus the pwd fallback).
+    env = runner_mod._build_sanitized_runtime_env(None)
+    prog = "from pathlib import Path; print(Path.home())"
+    proc = runner_mod.subprocess.run(
+        [sys.executable, "-c", prog],
+        stdout=runner_mod.subprocess.PIPE, stderr=runner_mod.subprocess.PIPE,
+        env=env, timeout=30, check=False,
+    )
+    assert proc.returncode == 0, proc.stderr.decode(errors="replace")
+    assert b"Could not determine home directory" not in proc.stderr
+    assert proc.stdout.strip()
+
+
+# Pinned-equivalent Hermes default-home resolution stand-in (mirrors upstream
+# hermes_constants._get_platform_default_hermes_home for both platforms).
+_DEFAULT_HOME_PROG = textwrap.dedent(
+    """
+    import os
+    from pathlib import Path
+    if os.name == "nt":
+        la = os.environ.get("LOCALAPPDATA", "").strip()
+        base = Path(la) if la else Path.home() / "AppData" / "Local"
+    else:
+        xdg = os.environ.get("XDG_DATA_HOME", "").strip()
+        base = Path(xdg) if xdg else Path.home() / ".local" / "share"
+    print(str(base / "hermes-agent"))
+    """
+)
+
+
+def test_env09_pinned_equivalent_default_home_succeeds_under_sanitized_env():  # ENV-09
+    env = runner_mod._build_sanitized_runtime_env(None)
+    proc = runner_mod.subprocess.run(
+        [sys.executable, "-c", _DEFAULT_HOME_PROG],
+        stdout=runner_mod.subprocess.PIPE, stderr=runner_mod.subprocess.PIPE,
+        env=env, timeout=30, check=False,
+    )
+    assert proc.returncode == 0, proc.stderr.decode(errors="replace")
+    assert b"Could not determine home directory" not in proc.stderr
+    assert proc.stdout.strip().endswith(b"hermes-agent")
+
+
+def test_env10_default_home_resolution_is_deterministic():  # ENV-10
+    env = runner_mod._build_sanitized_runtime_env(None)
+    outs = []
+    for _ in range(2):
+        proc = runner_mod.subprocess.run(
+            [sys.executable, "-c", _DEFAULT_HOME_PROG],
+            stdout=runner_mod.subprocess.PIPE, stderr=runner_mod.subprocess.PIPE,
+            env=env, timeout=30, check=False,
+        )
+        assert proc.returncode == 0
+        outs.append(proc.stdout.strip())
+    assert outs[0] == outs[1]
+
+
+def test_env11_posix_allowlist_is_the_shared_neutral_set(monkeypatch):  # ENV-11
+    monkeypatch.setattr(runner_mod.os, "name", "posix")
+    assert runner_mod._runtime_env_allowlist() == runner_mod._NEUTRAL_ENV_KEYS
+    monkeypatch.setattr(runner_mod.os, "name", "nt")
+    nt_allow = runner_mod._runtime_env_allowlist()
+    assert nt_allow[: len(runner_mod._NEUTRAL_ENV_KEYS)] == runner_mod._NEUTRAL_ENV_KEYS
+    for key in runner_mod._WINDOWS_RUNTIME_ENV_KEYS:
+        assert key in nt_allow
+
+
+def test_env12_unapproved_parent_variable_never_escapes(monkeypatch):  # ENV-12
+    _force_windows(monkeypatch)
+    monkeypatch.setenv("SOME_UNAPPROVED_MARKER", "escape-me")
+    monkeypatch.setenv("RANDOM_PROJECT_CONTROL", "escape-me-too")
+    env = runner_mod._build_sanitized_runtime_env(None)
+    for key in env:
+        assert key in runner_mod._runtime_env_allowlist() or key == "HERMES_HOME"
+    assert "SOME_UNAPPROVED_MARKER" not in env
+    assert "RANDOM_PROJECT_CONTROL" not in env
+
+
+def test_env_allowlist_is_disjoint_from_deny_and_secret_boundaries():
+    # Defensive invariant: no allowlisted key is a control-plane, secret-named, or
+    # injection/capability variable.
+    for key in runner_mod._NEUTRAL_ENV_KEYS + runner_mod._WINDOWS_RUNTIME_ENV_KEYS:
+        assert key not in runner_mod._NEVER_FORWARD_ENV
+        assert not runner_mod._looks_secret(key)
+        assert not runner_mod._is_injection_denied(key)
+
+
+# --- startup/profile-init preflight (runner side) ---------------------------
+
+# A startup-probe stand-in that reports the sanitized env it received: whether a
+# provider secret leaked, its HERMES_HOME, and that home's update-disabled config.
+_STARTUP_INSPECT_PROG = textwrap.dedent(
+    """
+    import os, json, pathlib
+    home = os.environ.get("HERMES_HOME")
+    cfg = ""
+    try:
+        cfg = pathlib.Path(home, "config.yaml").read_text(encoding="utf-8")
+    except Exception:
+        cfg = ""
+    print(json.dumps({
+        "home": home,
+        "cfg": cfg,
+        "has_secret": "OPENAI_API_KEY" in os.environ,
+        "has_pythonpath": "PYTHONPATH" in os.environ,
+    }))
+    """
+)
+
+
+def test_build_startup_argv_is_help_argv_only():
+    assert build_startup_argv("hermes") == ("hermes", "--help")
+
+
+def test_preflight03_04_startup_probe_uses_sanitized_env_no_secrets(monkeypatch):  # PREFLIGHT-03/04
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-should-not-leak")
+    monkeypatch.setenv("PYTHONPATH", "/attacker/site-packages")
+    probe = ExternalHermesCliBackend().probe_startup(
+        startup_argv=[sys.executable, "-c", _STARTUP_INSPECT_PROG],
+        max_output_bytes=16_384, max_wall_seconds=30,
+    )
+    assert probe.launched is True and probe.timed_out is False and probe.exit_code == 0
+    # Output text is discarded by probe_startup; re-run to inspect the env it built.
+    env = runner_mod._build_sanitized_runtime_env(None)
+    assert "OPENAI_API_KEY" not in env and "PYTHONPATH" not in env
+
+
+def test_startup_probe_isolated_home_and_cleanup(monkeypatch):
+    created = []
+    real = runner_mod.tempfile.mkdtemp
+
+    def _spy(*args, **kwargs):
+        path = real(*args, **kwargs)
+        if kwargs.get("prefix", "").startswith("hermes_startprobe_"):
+            created.append(path)
+        return path
+
+    monkeypatch.setattr(runner_mod.tempfile, "mkdtemp", _spy)
+    probe = ExternalHermesCliBackend().probe_startup(
+        startup_argv=[sys.executable, "-c", _STARTUP_INSPECT_PROG],
+        max_output_bytes=16_384, max_wall_seconds=30,
+    )
+    assert probe.exit_code == 0
+    assert created, "a throwaway startprobe home must have been created"
+    for path in created:
+        assert not Path(path).exists()
+
+
+def test_startup_probe_nonzero_exit_and_timeout_and_launch_failure():
+    # Nonzero exit is reported faithfully (controller fails closed on it).
+    nonzero = ExternalHermesCliBackend().probe_startup(
+        startup_argv=[sys.executable, "-c", "import sys; sys.exit(7)"],
+        max_output_bytes=4096, max_wall_seconds=30,
+    )
+    assert nonzero.launched is True and nonzero.exit_code == 7
+    # Timeout fails closed.
+    timed = ExternalHermesCliBackend().probe_startup(
+        startup_argv=[sys.executable, "-c", "import time; time.sleep(30)"],
+        max_output_bytes=4096, max_wall_seconds=1,
+    )
+    assert timed.timed_out is True
+    # Missing executable is a launch failure.
+    missing = ExternalHermesCliBackend().probe_startup(
+        startup_argv=["definitely-not-a-real-hermes-binary-xyz"],
+        max_output_bytes=4096, max_wall_seconds=5,
+    )
+    assert missing.launched is False
+
+
+def test_startup_probe_home_resolves_under_sanitized_env():
+    # End-to-end root-cause proof: the pinned-equivalent default-home path exits 0 when
+    # launched through the startup probe's sanitized envelope (the H1 #2 failure is gone).
+    probe = ExternalHermesCliBackend().probe_startup(
+        startup_argv=[sys.executable, "-c", _DEFAULT_HOME_PROG],
+        max_output_bytes=4096, max_wall_seconds=30,
+    )
+    assert probe.launched is True and probe.exit_code == 0

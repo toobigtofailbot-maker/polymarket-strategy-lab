@@ -4261,3 +4261,69 @@ def test_wp175k_sanitized_failure_evidence_hardening_registered() -> None:
         "src/research_runtime/hermes_controlled_runtime/policy.py"
         not in scope["required_changed_files"]
     )
+
+
+# ── WP175L: Sanitized Windows runtime envelope and startup preflight ──────────
+
+
+def test_wp175l_sanitized_windows_runtime_registered() -> None:
+    project = _read()
+    fragment = (STATUS_ENTRIES / "WP175L.md").read_text(encoding="utf-8")
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "WP175L" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    combined = "\n".join((project, fragment))
+    # WP175L is the current review target; WP175K is reconciled as merged.
+    assert "WP175L current review target" in project
+    assert "WP175K / PR #184 merged: YES" in project
+    assert "S10-HERMES-01D" in combined
+    assert "BOUNDED_HERMES_WINDOWS_RUNTIME_ENVELOPE_AND_STARTUP_PREFLIGHT" in combined
+    assert "Governance track: RUNTIME" in project and "Risk level: 3" in project
+    assert "Exact changed-file scope: 12" in project
+    # Incident + confirmed root-cause truth (two H1 runs consumed historically).
+    assert "Historical real H1 research invocations consumed: 2" in combined
+    assert (
+        "CONTROLLED_WINDOWS_RUNTIME_ENVIRONMENT_INSUFFICIENT_FOR_HERMES_PROFILE_INITIALIZATION"
+        in combined
+    )
+    assert "NOT_REACHED" in combined
+    assert "Could not determine home directory" in combined
+    assert "_apply_profile_override" in combined and "_get_platform_default_hermes_home" in combined
+    assert "SUCCESSFUL AS OBSERVABILITY HARDENING" in combined
+    # Runtime-envelope + preflight contract.
+    assert "EXPLICIT_BENIGN_ALLOWLIST_NEVER_OS_ENVIRON_COPY" in project
+    assert "LOCALAPPDATA" in combined and "USERPROFILE" in combined
+    assert "injection/capability denylist: ADDED" in project
+    assert "ambient provider credentials forwarded: NO" in project
+    assert "STARTUP_PREFLIGHT_FAILED" in combined
+    assert "transport_attempt_count 0" in combined
+    # Authority + successor boundary.
+    assert "RUNTIME ACTIVATED: NO" in project
+    assert "H1 #3: NOT AUTHORIZED" in combined
+    assert "S10-ALPHA-01: BLOCKED" in project
+    assert "Gate C: NOT AUTHORIZED" in combined
+    assert "Alpha Factory: NOT STARTED" in combined
+    assert "WP176" in combined and "NOT STARTED" in combined
+    assert "Merge authorized: NO" in combined
+    # Wallet roadmap anchor persisted (not global; no live shortcut).
+    assert "Wallet-intelligence roadmap anchor" in project
+    assert "wallet gate NOT global" in project
+    scope = spec["scope"]
+    assert spec["identity"]["risk_level"] == 3
+    assert scope["exact_scope_required"] is True
+    assert scope["max_changed_files"] == 12
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == 12
+    for path in (
+        "src/research_runtime/hermes_controlled_runtime/runner.py",
+        "src/research_runtime/hermes_controlled_runtime/controller.py",
+    ):
+        assert path in scope["required_changed_files"]
+    # WP175L is a wrapper runtime + preflight correction: models.py and policy.py stay out.
+    for path in (
+        "src/research_runtime/hermes_controlled_runtime/models.py",
+        "src/research_runtime/hermes_controlled_runtime/policy.py",
+    ):
+        assert path not in scope["required_changed_files"]

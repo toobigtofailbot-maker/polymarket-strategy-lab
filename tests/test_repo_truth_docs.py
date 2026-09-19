@@ -291,3 +291,48 @@ def test_wp175k_repo_truth_registers_sanitized_failure_evidence_hardening() -> N
     assert "WP176" in combined and "NOT STARTED" in combined
     assert "separate human/governance decision" in combined.lower()
     assert "Merge authorized: NO" in combined
+
+
+def test_wp175l_repo_truth_registers_sanitized_windows_runtime() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    status = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "WP175L.md").read_text(
+        encoding="utf-8"
+    )
+    combined = "\n".join((index, status, deferred, fragment))
+    assert "WP175L Sanitized Windows Runtime Envelope And Startup Preflight" in index
+    assert "current review target" in index
+    assert "S10-HERMES-01D" in combined
+    assert "exact 12-file" in combined
+    assert "WP175K / PR #184 merged" in combined
+    # Confirmed root cause + why --version missed it.
+    assert "Historical real H1 research invocations consumed = 2" in combined
+    assert (
+        "CONTROLLED_WINDOWS_RUNTIME_ENVIRONMENT_INSUFFICIENT_FOR_HERMES_PROFILE_INITIALIZATION"
+        in combined
+    )
+    assert "Could not determine home directory" in combined
+    assert "fast-version path" in combined
+    assert "_get_platform_default_hermes_home" in combined
+    # Runtime-envelope + preflight contract truth.
+    assert "SANITIZED RUNTIME ENVELOPE" in combined
+    assert "os.environ.copy()" in combined
+    assert "LOCALAPPDATA" in combined
+    assert "STARTUP_PREFLIGHT_FAILED" in combined
+    assert "transport_attempt_count" in combined
+    # The WP175L deferred section blocks any second H1 run behind governance.
+    assert "BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION" in deferred
+    assert "WP175L-D001" in deferred and "WP175L-D002" in deferred
+    # Wallet-intelligence roadmap anchor persisted; not global; no live shortcut.
+    assert "Wallet-Intelligence Roadmap Anchor" in deferred
+    assert "WALLET-01" in deferred and "GATE-WALLET-01" in deferred
+    assert "wallet gate is wallet-specific and not global" in deferred
+    assert "no wallet live shortcut created" in deferred.lower()
+    # Authority + successor boundary.
+    assert "H1 #3 is NOT AUTHORIZED" in combined
+    assert "S10-ALPHA-01" in combined and "BLOCKED" in combined
+    assert "Gate C" in combined and "NOT AUTHORIZED" in combined
+    assert "Alpha Factory" in combined and "NOT STARTED" in combined
+    assert "WP176" in combined and "NOT STARTED" in combined
+    assert "Merge authorized: NO" in combined or "merge is NOT AUTHORIZED" in combined
