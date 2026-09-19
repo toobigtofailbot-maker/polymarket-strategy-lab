@@ -807,3 +807,93 @@ def test_wp175k_k_medium_unlabeled_blob_also_fails_closed():
     res = _sanitize(f"fatal auth: {blob}\n".encode("utf-8"))
     assert res.status == "BLOCKED_UNSAFE"
     assert res.excerpt is None
+
+
+# ---------------------------------------------------------------------------
+# Side11 finding A: an UNQUOTED multiword secret assignment must not leak the
+# remainder tokens after the first whitespace (deterministic, fake words only).
+# ---------------------------------------------------------------------------
+
+
+def test_wp175k_a1_multiword_mnemonic_assignment_fully_redacted():
+    # Every token of an unquoted seed phrase must be gone, not just the first word.
+    raw = b"boot error\nMNEMONIC=alpha bravo charlie delta echo foxtrot\ndenied later\n"
+    res = _sanitize(raw)
+    assert res.status == "AVAILABLE_REDACTED"
+    assert res.redaction_applied is True
+    assert res.excerpt is not None
+    for word in ("alpha", "bravo", "charlie", "delta", "echo", "foxtrot"):
+        assert word not in res.excerpt
+    assert "<REDACTED>" in res.excerpt
+    # Over-redaction stops at the newline, so the next line stays readable.
+    assert "denied later" in res.excerpt
+
+
+def test_wp175k_a2_multiword_password_assignment_fully_redacted():
+    raw = b"PASSWORD=first second third\n"
+    res = _sanitize(raw)
+    assert res.status == "AVAILABLE_REDACTED"
+    assert res.redaction_applied is True
+    assert res.excerpt is not None
+    for word in ("first", "second", "third"):
+        assert word not in res.excerpt
+    assert "<REDACTED>" in res.excerpt
+
+
+def test_wp175k_a_quoted_secret_leaves_following_pair_readable():
+    # The exact-value quoted branch must still scrub only the secret, so a trailing
+    # non-secret key/value on the same JSON line survives (no over-redaction).
+    raw = b'{"password": "hunter2xx", "note": "startup ok"}\n'
+    res = _sanitize(raw)
+    assert res.status == "AVAILABLE_REDACTED"
+    assert res.excerpt is not None
+    assert "hunter2xx" not in res.excerpt
+    assert '"note": "startup ok"' in res.excerpt
+
+
+# ---------------------------------------------------------------------------
+# Side11 finding B: a quoted absolute path with spaces must be fully scrubbed;
+# the bare-path fallbacks alone stop at the first space and leak identity.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("label", "quoted_path", "suffix"),
+    [
+        ("win", '"C:\\Users\\Alice Smith\\proj\\foo.py"', "foo.py"),
+        ("mac", '"/Users/Alice Smith/proj/foo.py"', "foo.py"),
+        ("linux", '"/home/Alice Smith/proj/foo.py"', "foo.py"),
+        ("temp", '"/tmp/Alice Smith/run/output.log"', "output.log"),
+        ("unc", '"\\\\server\\share\\Alice Smith\\proj\\foo.py"', "foo.py"),
+    ],
+)
+def test_wp175k_b_quoted_spaced_path_scrubbed(label, quoted_path, suffix):
+    raw = f"File {quoted_path}, line 7, in main\nRuntimeError: boom\n".encode("utf-8")
+    res = _sanitize(raw)
+    assert res.status in ("AVAILABLE", "AVAILABLE_REDACTED")
+    assert res.excerpt is not None
+    # Synthetic username fragments and the path suffix must all be gone.
+    assert "Alice" not in res.excerpt and "Smith" not in res.excerpt
+    assert suffix not in res.excerpt
+    assert "<PATH>" in res.excerpt
+    # Surrounding traceback text around the path may remain.
+    assert "RuntimeError: boom" in res.excerpt
+
+
+# ---------------------------------------------------------------------------
+# Side11 finding C: credential-bearing query/fragment material must be removed
+# for ws/wss (and any scheme), while the credential-free base URL stays readable.
+# ---------------------------------------------------------------------------
+
+
+def test_wp175k_c_ws_wss_query_fragment_scheme_covered():
+    raw = b"wss://example.invalid/socket?access_token=SYNTHETIC_SECRET#frag=value\n"
+    res = _sanitize(raw)
+    assert res.status == "AVAILABLE_REDACTED"
+    assert res.excerpt is not None
+    assert "SYNTHETIC_SECRET" not in res.excerpt
+    assert "frag=value" not in res.excerpt
+    assert "access_token=SYNTHETIC_SECRET" not in res.excerpt
+    # The safe base URL may remain; no <PATH> corruption of the URL body.
+    assert "wss://example.invalid/socket" in res.excerpt
+    assert "<PATH>" not in res.excerpt

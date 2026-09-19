@@ -101,10 +101,20 @@ _STDERR_JWT = re.compile(
 _STDERR_URL_USERINFO = re.compile(
     r"([a-zA-Z][a-zA-Z0-9+.-]*://)[^/\s:@]+:[^/\s@]+@"
 )
-_STDERR_URL_QUERYFRAG = re.compile(r"(https?://[^\s?#]+)[?#][^\s]*")
+# Query/fragment material can carry credentials on any URI scheme, not only HTTP: an
+# ``access_token`` in a ``wss://`` / ``ws://`` socket URL is just as sensitive. Use a
+# generic RFC-3986 scheme so ws/wss (and any other ``scheme://``) query/fragment is
+# removed while the credential-free base URL stays readable. A URL with no ``?``/``#``
+# has no query/fragment and is left untouched.
+_STDERR_URL_QUERYFRAG = re.compile(r"([A-Za-z][A-Za-z0-9+.-]*://[^\s?#]+)[?#][^\s]*")
+# For a recognized secret-bearing key, a QUOTED/JSON value is scrubbed exactly (so a
+# following non-secret key/value on the same line stays readable), but an UNQUOTED value
+# is consumed to end-of-line: a secret phrase such as ``MNEMONIC=alpha bravo charlie``
+# would otherwise leak every token after the first whitespace. Over-redacting the rest of
+# an unquoted secret-assignment line is deliberate and acceptable; privacy wins.
 _STDERR_KEYVALUE = re.compile(
     r'(?i)("?\b' + _STDERR_SECRET_KEY_NAMES + r'\b"?\s*[:=]\s*)'
-    r'(?:"[^"\n]*"|\'[^\'\n]*\'|[^\s,;}\n]+)'
+    r'(?:"[^"\n]*"|\'[^\'\n]*\'|[^\n]*)'
 )
 # The drive-letter path uses a negative lookbehind so it does not match the ``s://``
 # inside ``https://`` / ``http://`` (which would mangle a credential-free URL that the
@@ -114,6 +124,21 @@ _STDERR_UNC_PATH = re.compile(r"\\\\[^\s\"'<>|]+")
 _STDERR_UNIX_PATH = re.compile(
     r"/(?:home|Users|tmp|private|root|opt|etc|srv|data)/[^\s\"'<>|:,]*"
     r"|/var/(?:folders|tmp)/[^\s\"'<>|:,]*"
+)
+# A double-quoted absolute local path (Windows drive, UNC, or a known Unix root) may
+# contain SPACES that the bare-path rules above stop at, leaving a username/suffix
+# exposed -- e.g. ``File "C:\Users\Alice Smith\proj\foo.py"`` would otherwise scrub only
+# ``C:\Users\Alice`` and leak ``Smith\proj\foo.py``. The whole quoted path collapses to
+# ``"<PATH>"`` so surrounding traceback syntax (``File "..."`, ``, line 7``) stays
+# readable while no identity survives. The opening ``"`` immediately precedes the
+# absolute-path prefix, so a quoted ``"https://..."`` URL is never mistaken for a path.
+_STDERR_QUOTED_PATH = re.compile(
+    r'"(?:'
+    r'[A-Za-z]:[\\/]'
+    r'|\\\\'
+    r'|/(?:home|Users|tmp|private|root|opt|etc|srv|data)/'
+    r'|/var/(?:folders|tmp)/'
+    r')[^"\n]*"'
 )
 _STDERR_CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 
@@ -175,7 +200,10 @@ def _sanitize_stderr(
         redacted = _STDERR_URL_USERINFO.sub(r"\1" + _STDERR_REDACT_MARK + "@", redacted)
         redacted = _STDERR_URL_QUERYFRAG.sub(r"\1?" + _STDERR_REDACT_MARK, redacted)
         redacted = _STDERR_KEYVALUE.sub(r"\1" + _STDERR_REDACT_MARK, redacted)
-        # D. redact local filesystem identity (paths last).
+        # D. redact local filesystem identity (paths last). Quoted absolute paths first,
+        # so a space inside the path cannot leave a username/suffix behind (the bare rules
+        # stop at whitespace); then the bare fallbacks.
+        redacted = _STDERR_QUOTED_PATH.sub('"' + _STDERR_PATH_MARK + '"', redacted)
         redacted = _STDERR_WIN_PATH.sub(_STDERR_PATH_MARK, redacted)
         redacted = _STDERR_UNC_PATH.sub(_STDERR_PATH_MARK, redacted)
         redacted = _STDERR_UNIX_PATH.sub(_STDERR_PATH_MARK, redacted)
