@@ -1,0 +1,389 @@
+SIDE11 — WP175L / S10-HERMES-01D
+SANITIZED WINDOWS RUNTIME ENVELOPE + REAL STARTUP PREFLIGHT
+IMPLEMENTATION-AUTHORIZED WORK PACKAGE
+
+Package Identity:
+  WP ID: WP175L
+  Side11 capability handle: S10-HERMES-01D
+  Title: Sanitized Windows Runtime Envelope And Startup Preflight
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen drafting base: 473fcd4e6fa95f1230fd29d384f8be736e5085e1
+  Required predecessor: PR #184 / WP175K
+  Required predecessor head: 2bfec5a02d18f93c5194e30ce2fb46c35eee710c
+  Required predecessor merge: 473fcd4e6fa95f1230fd29d384f8be736e5085e1
+  Suggested branch: claude/wp175l-sanitized-windows-runtime
+  Package class: BOUNDED_HERMES_WINDOWS_RUNTIME_ENVELOPE_AND_STARTUP_PREFLIGHT
+  Package size class: L
+  Exact changed-file budget: 12
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: CONTROLLED_WRAPPER_RUNTIME_ENVELOPE_AND_STARTUP_PREFLIGHT_ONLY
+  Product impact: NONE
+  Network impact: GitHub control-plane / hosted CI only; NO provider, Firecrawl, Polymarket, model-catalog, OAuth, or product-web calls during implementation or tests
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: Claude Opus 4.8 — MEDIUM
+  Reason: the root cause (controlled-child Windows runtime-environment insufficiency for Hermes profile initialization) is already established; the envelope allowlist, deny boundaries, and offline startup preflight are mechanically specified; implementation is deterministic and offline.
+  Escalate or STOP if: live main drifts; current source/test contracts differ; readiness/spec semantics contradict this package; scope must exceed 12 files; provider/model/retry/toolset/managed-profile semantics or the frozen H1 request would have to change; a raw os.environ.copy() or denylist-only model becomes necessary; a dependency/workflow/network/credential change appears necessary.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+===============================================================================
+0. USER AUTHORIZATION / AUTHORITY
+===============================================================================
+
+The user (Karl) has explicitly authorized implementation of THIS exact bounded software
+package and a more normal/sufficient Hermes runtime environment where needed for robust
+operation, with strict secret/provider/execution/economic boundaries preserved.
+
+Authorized: a dedicated worktree/branch; the exact 12-file scope below; deterministic
+local implementation; focused and full offline tests; deterministic readiness /
+exact-diff validation; generated-artifact guard; git diff --check; pip check; commit;
+push; one PR that is READY FOR REVIEW (not draft); normal PR-triggered exact-head hosted
+CI; one combined independent exact-head RUNTIME review; PR-body evidence reconciliation
+and re-fetch; final report.
+
+This package does NOT authorize: merge; any H1 rerun; any Hermes -z / --oneshot research
+execution; provider/model inference; Firecrawl calls; OAuth/login/logout/refresh;
+model-catalog network refresh; reading credential values; repeating
+MANUAL-HERMES-ACCEPT-01; editing pinned Hermes source; Gate C; Alpha Factory; wallet
+intelligence; capital/orders/signing; dependency or lockfile changes; workflow changes;
+changing provider/model/retry/toolset/managed-profile semantics; changing the frozen H1
+request; or authorizing a future third H1 run (H1 #3). Two real H1 invocations (H1 #1,
+H1 #2) are already consumed, so the next possible invocation is H1 #3, which WP175L does
+NOT authorize.
+
+WP175L hardens the controlled wrapper runtime and preflight only.
+
+===============================================================================
+1. FROZEN CURRENT FACTS / INCIDENT
+===============================================================================
+
+Live GitHub immediately before drafting:
+  main: 473fcd4e6fa95f1230fd29d384f8be736e5085e1
+  latest merge: PR #184 — WP175K — Sanitized Hermes Failure-Evidence Capture Hardening
+  open PRs: 0
+  post-merge main CI: run 35450957499 SUCCESS
+
+Historical real H1 research invocations consumed: 2.
+  H1 #1: consumed YES; terminal FAIL_RUNTIME_CONTRACT / EXIT_CODE_NONZERO; historical
+    root cause not formally confirmed.
+  H1 #2: consumed YES; controller_calls 1; transport_attempt_count 1; Hermes child
+    launched YES; child exit code 1; timed out NO; stdout/stderr not truncated; WP175K
+    sanitized stderr AVAILABLE_REDACTED; usage file present NO; verified provider/model
+    NOT_REACHED; validated research NONE; sources 0; research quality NOT_REACHED.
+  Decisive sanitized startup failure: RuntimeError: Could not determine home directory.
+
+Side11 root-cause determination (confirmed): a controlled-child Windows runtime-
+environment defect. The merged runner built the child environment from a tiny neutral
+whitelist (PATH, SystemRoot, TEMP, TMP, TMPDIR, LANG, LC_ALL) plus HERMES_HOME and the
+backend-created HERMES_MANAGED_DIR, and did NOT forward ordinary Windows home/runtime
+context (LOCALAPPDATA, USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, COMSPEC, PATHEXT).
+Exact pinned upstream call chain (Hermes Agent v0.21.3, tag v2026.9.14, commit
+345cd2b057a452236de401d3534b8502a7465e8d): hermes_cli/main.py::_apply_profile_override()
+-> hermes_constants.get_default_hermes_root() ->
+hermes_constants._get_platform_default_hermes_home(), whose Windows branch reads
+LOCALAPPDATA and otherwise falls back to Path.home()/"AppData"/"Local"; with LOCALAPPDATA
+absent and Python home context also absent, Path.home() raises "Could not determine home
+directory." Research was never reached. This is NOT poor research quality, a provider,
+Firecrawl, OAuth, timeout, or request-schema failure.
+
+H1 #3 is NOT AUTHORIZED. S10-ALPHA-01 is BLOCKED. Gate C is NOT AUTHORIZED. Alpha
+Factory is NOT STARTED. Capital/orders: 0.
+
+===============================================================================
+2. OBJECTIVE
+===============================================================================
+
+Replace the conceptual _minimal_env() with a deterministic platform-aware SANITIZED
+RUNTIME ENVELOPE (_build_sanitized_runtime_env) that forwards a bounded, explicit
+allowlist of ordinary OS/runtime variables — on Windows including the real benign parent
+home/AppData paths pinned Hermes profile-home resolution and Python Path.home() require —
+while keeping the secret-name rejection and adding an explicit interpreter/shell/
+capability injection denylist, so no ambient provider credential or injection variable
+reaches the child. Add a second OFFLINE startup/profile-init preflight (hermes --help)
+that exercises the exact default-home path the version fast-path skips, using the same
+sanitized envelope and a throwaway HERMES_HOME. A startup-preflight failure is terminal
+STARTUP_PREFLIGHT_FAILED with transport_attempt_count 0 and consumes no H1 research slot.
+Provider/model, toolset, retry/fallback, managed profile, request/draft/receipt schemas,
+and controller research failure precedence are unchanged.
+
+The invariant: NORMAL / SUFFICIENT OS RUNTIME CONTEXT plus STRICT secret / provider /
+execution / economic boundaries. Never a raw os.environ.copy() and never a denylist-only
+model.
+
+===============================================================================
+3. FROZEN NON-CHANGES
+===============================================================================
+
+Unchanged: Hermes 0.21.3 / tag v2026.9.14 / commit
+345cd2b057a452236de401d3534b8502a7465e8d; provider openai-codex; model gpt-5.6-sol;
+toolset web only; research argv semantics; managed config and its digest; policy schema
+hermes-invocation-policy/2.0.0; profile version 1.0.0; outer research retries 0; request
+schema hermes-research-run-request/1.1.0; draft schema hermes-research-draft/1.0.0;
+receipt schema hermes-research-run-receipt/1.2.0 (no field added; STARTUP_PREFLIGHT_FAILED
+is an additive terminal_status string only); the frozen H1 request; HERMES_HOME /
+HERMES_MANAGED_DIR / HERMES_SAFE_MODE / HERMES_ENABLE_PROJECT_PLUGINS semantics; H1 rerun
+authority NO; Gate C NOT_AUTHORIZED; Alpha Factory NOT_STARTED. Do not modify policy.py,
+models.py, response_capture.py, __init__.py, dependencies, lockfiles, workflows, or
+Hermes source. If any becomes necessary: STOP SCOPE_EXPANSION_REQUIRED.
+
+===============================================================================
+4. EXACT CHANGED-FILE SCOPE
+===============================================================================
+
+required_changed_files == allowed_changed_files == exactly these 12 paths:
+
+1. docs/deferred_items_log.md
+2. docs/project_status.md
+3. docs/repo_truth_index.md
+4. docs/status_entries/WP175L.md
+5. docs/wp_specs/WP175L/wp_prompt.txt
+6. docs/wp_specs/WP175L/wp_spec.json
+7. src/research_runtime/hermes_controlled_runtime/controller.py
+8. src/research_runtime/hermes_controlled_runtime/runner.py
+9. tests/research_runtime/hermes_controlled_runtime/test_controller.py
+10. tests/research_runtime/hermes_controlled_runtime/test_runner.py
+11. tests/test_project_status_docs.py
+12. tests/test_repo_truth_docs.py
+
+Maximum changed files: 12. Exact scope required: YES. No 13th path. If a 13th path is
+genuinely required: STOP SCOPE_EXPANSION_REQUIRED.
+
+===============================================================================
+5. SANITIZED RUNTIME ENVELOPE CONTRACT
+===============================================================================
+
+Rename/refactor private _minimal_env() into _build_sanitized_runtime_env() in runner.py.
+It is an explicit ALLOWLIST, never os.environ.copy().
+
+Cross-platform neutral keys: PATH, SystemRoot, TEMP, TMP, TMPDIR, LANG, LC_ALL.
+
+Finding E (Side11 exact-head review of c73934c): forwarding the REAL per-user
+LOCALAPPDATA/USERPROFILE let pinned hermes_cli/main.py::_apply_profile_override read a
+sticky personal %LOCALAPPDATA%\hermes\active_profile and re-home the explicit H1
+HERMES_HOME. The envelope is therefore HYBRID, distinguishing machine context from
+per-user identity roots.
+
+Real MACHINE/runtime keys inherited from the parent: COMSPEC, PATHEXT, WINDIR, OS,
+PROCESSOR_ARCHITECTURE, NUMBER_OF_PROCESSORS, PROGRAMDATA, PROGRAMFILES, PROGRAMFILES(X86),
+COMMONPROGRAMFILES.
+
+Per-user Windows identity roots are SYNTHETIC/CONTROLLED, never inherited from the real
+parent: USERPROFILE, HOMEDRIVE, HOMEPATH, APPDATA, LOCALAPPDATA are derived from a
+backend-owned ephemeral runtime-user root (<runtime-root>\winuser, with AppData\Local and
+AppData\Roaming created before launch). This robustly supports Python Path.home(), makes
+the pinned default root resolve under a controlled LOCALAPPDATA (<synthetic
+LocalAppData>\hermes) carrying no unrelated active_profile so the explicit H1 HERMES_HOME
+stays authoritative, and keeps normal subprocess executable resolution and ordinary
+Windows temp/runtime behavior working. The synthetic roots live under the existing
+ephemeral cwd/probe home and disappear under the existing teardown.
+
+Secret / capability filter must remain strict and fail-closed. Preserve the secret-name
+fragments (KEY, SECRET, TOKEN, PASSWORD, CREDENTIAL, AUTH, PRIVATE). Additionally add an
+explicit control / injection denylist: PYTHONPATH, PYTHONHOME, PYTHONSTARTUP,
+PYTHONINSPECT, NODE_OPTIONS, BASH_ENV, ENV, SSH_AUTH_SOCK, GIT_ASKPASS, GIT_SSH_COMMAND,
+KUBECONFIG, GOOGLE_APPLICATION_CREDENTIALS, HTTP_PROXY, HTTPS_PROXY, ALL_PROXY, NO_PROXY,
+LD_PRELOAD, LD_LIBRARY_PATH, and the AWS_ / AZURE_ / DOCKER_ / DYLD_ / PYTHON prefixes.
+The allowlist is disjoint from the secret-name, injection, and control-plane boundaries.
+Provider credentials for H1 continue to come only from Hermes' own loading of the
+explicit H1 auth.json / .env; no ambient provider credential is inherited.
+
+Runner-owned overrides preserved exactly: HERMES_HOME set only from the safe research-home
+locator (never ambient); HERMES_MANAGED_DIR backend-created ephemeral only (never
+inherited); HERMES_SAFE_MODE and HERMES_ENABLE_PROJECT_PLUGINS absent.
+
+===============================================================================
+6. STARTUP PREFLIGHT CONTRACT
+===============================================================================
+
+hermes --version is answered by the pinned fast-version path
+(hermes_cli/_startup_fast.try_fast_version()) BEFORE profile initialization, which is why
+version preflight passed while H1 #2 failed in _apply_profile_override(). Add a second
+LOCAL / NO-PROVIDER / NO-WEB startup/profile-init preflight. Source-verified probe:
+hermes --help — unlike --version it does not use the fast-version path;
+_apply_profile_override() executes before normal argument parsing, so --help exercises the
+exact get_default_hermes_root() path that failed, then argparse prints help and exits
+before agent/research execution; no provider/model inference and no Firecrawl/web request
+are required.
+
+The preflight MUST use the same sanitized runtime envelope builder as the research child;
+use a throwaway HERMES_HOME (not the credential-bearing H1 home) with the update check
+disabled; forward no provider credentials; make no Firecrawl request; enforce a short
+timeout; capture bounded output; clean up all temporary dirs; and fail before research on
+nonzero/timeout/launch failure with STARTUP_PREFLIGHT_FAILED. A startup-preflight failure
+is NOT a research invocation: transport_attempt_count stays 0 and no future H1 research
+slot is consumed. If --help cannot be proven offline in a given environment, the optional
+exact pinned offline startup smoke is SKIP_WITH_REASON (Hermes is not installed here) and
+the deterministic pinned-equivalent home-resolution tests stand as the offline proof.
+
+===============================================================================
+7. OFFLINE PRE-FIX REPRODUCTION
+===============================================================================
+
+Before edits, reproduce (no provider/Firecrawl/OAuth/H1/network): (A) under the current
+merged environment logic with LOCALAPPDATA/USERPROFILE/HOMEDRIVE/HOMEPATH absent, the
+pinned-equivalent Windows default-home resolution and Path.home() fail with "Could not
+determine home directory."; and (B) the preflight gap — a version fast-path stand-in
+succeeds while the profile/default-home path fails under the same environment. Post-fix,
+both resolve under the sanitized envelope.
+
+===============================================================================
+8. SECURITY + CONTROLLER TEST MATRIX
+===============================================================================
+
+test_runner.py adds ENV-01..ENV-12 plus the allowlist-disjointness invariant and the
+external startup-probe tests: safe Windows variables forwarded; secret-named and
+provider-specific ambient credentials never forwarded; injection/capability variables
+never forwarded; HERMES_HOME explicit-only and safe-checked; HERMES_MANAGED_DIR /
+HERMES_SAFE_MODE / HERMES_ENABLE_PROJECT_PLUGINS never inherited; Path.home() and the
+pinned-equivalent default-home resolution succeed and are deterministic under the
+sanitized envelope; POSIX allowlist unchanged; no unapproved parent variable escapes; the
+startup probe uses the sanitized envelope with no secret, isolates and cleans up its home,
+and fails closed on nonzero/timeout/launch failure.
+
+test_controller.py adds the startup-preflight matrix: the preflight runs after the version
+preflight and before research on success; a nonzero exit / timeout / launch failure yields
+STARTUP_PREFLIGHT_FAILED with no research invocation and transport_attempt_count 0; a
+version mismatch still short-circuits before the startup preflight; and the fake backend
+startup preflight remains process/network-free. Zero automatic retry unchanged.
+
+===============================================================================
+9. DOCS / REPO TRUTH
+===============================================================================
+
+Update docs/project_status.md, docs/repo_truth_index.md, and docs/deferred_items_log.md to
+state: WP175K MERGED (PR #184); historical real H1 invocations consumed = 2; H1 #2
+confirmed root cause
+CONTROLLED_WINDOWS_RUNTIME_ENVIRONMENT_INSUFFICIENT_FOR_HERMES_PROFILE_INITIALIZATION; H1
+#2 research/provider-binding/Firecrawl NOT_REACHED; WP175K SUCCESSFUL AS OBSERVABILITY
+HARDENING; WP175L purpose = sanitized Windows runtime envelope + real startup preflight;
+H1 #3 NOT AUTHORIZED; S10-ALPHA-01 BLOCKED; Gate C NOT AUTHORIZED; Alpha Factory NOT
+STARTED; and persist the wallet-intelligence roadmap anchor (WALLET-01..04, GATE-WALLET-01,
+wallet gate NOT global, no live shortcut, WALLET-01 blocked pending genuine H1 PASS and
+S10-ALPHA-01). Do not retroactively edit historical WP175K claims; add current superseding
+truth.
+
+===============================================================================
+10. VALIDATION / READINESS
+===============================================================================
+
+Pre-implementation and final: python tools/wp/wp_readiness_gate.py --wp
+docs/wp_specs/WP175L/wp_prompt.txt --spec docs/wp_specs/WP175L/wp_spec.json --repo-root .
+(add --check-diff --base origin/main --head HEAD for the exact 12-file diff) ->
+IMPLEMENTATION_READY. If satisfying readiness requires widening authority, scope,
+capability, or successor: STOP PACKAGE_CONTRACT_MISMATCH.
+
+Focused: python -m pytest -q for test_runner.py, test_controller.py,
+test_project_status_docs.py, and test_repo_truth_docs.py. Then the full suite python -m
+pytest -q. Then python tools/git/preflight_generated_artifact_guard.py; git diff --check
+origin/main..HEAD; python -m pip check. No real provider, Firecrawl, OAuth, H1,
+model-catalog, or network activity in any test.
+
+===============================================================================
+11. HARD STOPS
+===============================================================================
+
+STOP STATE_DRIFT if main changed before branch creation.
+STOP ROOT_CAUSE_NOT_REPRODUCED if the home-resolution defect cannot be reproduced offline.
+STOP RUNTIME_ENVELOPE_UNSAFE if implementation requires raw os.environ.copy() or a denylist-only model.
+STOP SECRET_BOUNDARY_REGRESSION if ambient provider/secret/capability env escapes into the child.
+STOP STARTUP_PREFLIGHT_NOT_OFFLINE if the candidate preflight can reach provider/web/OAuth/research.
+STOP STARTUP_PREFLIGHT_INEFFECTIVE if the candidate preflight does not exercise the profile/default-home path.
+STOP SCOPE_EXPANSION_REQUIRED if a 13th path is required.
+STOP TEST_CONTRACT_FAILURE for relevant local failures.
+STOP HOSTED_VALIDATION_FAILED for relevant exact-head CI failure.
+Under any hard stop: no merge; no H1; no provider/Firecrawl/OAuth; no scope improvisation; report exact sanitized facts to Side11.
+
+===============================================================================
+12. EVIDENCE PLAN — REQUIREMENT -> TEST -> EVIDENCE (R001-R023)
+===============================================================================
+
+This is the evidence plan / requirement mapping. R001-R013 cover the sanitized runtime
+envelope (allowlist, deny boundaries, home resolution). R014-R019 cover the offline
+startup preflight and controller gating. R020-R021 cover repo/status truth. R022-R023
+cover readiness/exact-diff and hosted exact-head CI plus posted PR evidence. The exact
+node -> file mapping is in wp_spec.json evidence_plan.items.
+
+===============================================================================
+13. NEGATIVE-TEST MATRIX
+===============================================================================
+
+The negative-test matrix is the fail-closed set in Sections 5, 6, and 8: parent secret-
+named variables, provider-specific ambient credentials, and interpreter/shell/capability
+injection variables are REJECTED from the child; ambient HERMES_HOME / HERMES_MANAGED_DIR /
+HERMES_SAFE_MODE / HERMES_ENABLE_PROJECT_PLUGINS are never inherited; and a startup
+preflight nonzero exit, timeout, or launch failure FORBIDS the research invocation with
+transport_attempt_count 0.
+
+===============================================================================
+14. SUCCESSOR BOUNDARY
+===============================================================================
+
+WP175L success means only: the controlled runtime envelope and startup preflight are
+code-complete; deterministic tests and repo guards pass; exact-head CI passes; independent
+RUNTIME review passes; PR evidence is reconciled; the PR is READY_FOR_SIDE11_REVIEW. It
+does NOT mean merged, runtime activated, H1 executed, H1 PASS, or Alpha authorized. The
+relevant post-merge gate is a controlled startup preflight using the exact patched runner;
+any future third real H1 run (H1 #3) requires a separate new human/governance decision
+(H1 #1 and H1 #2 are already consumed). Do not
+implement wallet code or Alpha in WP175L.
+
+===============================================================================
+15. FINAL REPORT-BACK
+===============================================================================
+
+Return a final report-back to Side11 with: base/branch/worktree/PR/head/commit-count/
+changed-files; H1 state (historical invocations consumed 2, H1 #2 root cause confirmed,
+research/provider/Firecrawl NOT_REACHED, H1 #3 NOT AUTHORIZED); root cause (merged env
+before, pinned call chain, why --version missed it, pre-fix reproduction); runtime envelope
+(old _minimal_env replaced, frozen Windows allowlist, secret-name filter, injection
+denylist, ambient provider credentials NOT forwarded, HERMES_HOME/HERMES_MANAGED_DIR
+preserved, provider/model/fallback unchanged); startup preflight (probe mechanism,
+source-verified offline, same sanitized envelope, throwaway home, provider/Firecrawl calls
+0, failure blocks research, failure transport_attempt_count 0); validation (focused/full-
+suite/readiness/artifact-guard/git-diff/pip-check/hosted CI); wallet roadmap persisted;
+authority zeros (network/provider/Firecrawl/OAuth/real-H1 during WP 0, capital 0, orders 0,
+Gate C NOT_AUTHORIZED, Alpha NOT STARTED, merge NO); and the successor governance boundary.
+
+===============================================================================
+16. READINESS SYNTAX / NORMATIVE RULE MATRIX
+===============================================================================
+
+Authority / Non-Authority posture is exactly the governance authority block above. The
+negative-test matrix is Section 13. The evidence plan is the requirement-to-test-to-
+evidence mapping in Section 12 and wp_spec.json. These readiness labels add no capability,
+scope, or authority.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|runtime_env|windows_home|absent_home_context|REQUIRE|home_resolves|sanitized_runtime_env.windows_allowlist|R008
+NR002|runtime_env|ambient_secret|provider_credential|FORBID|not_forwarded|sanitized_runtime_env.secret_injection_boundary|R003
+NR003|runtime_env|injection_variable|python_or_shell|FORBID|not_forwarded|sanitized_runtime_env.secret_injection_boundary|R004
+NR004|preflight|startup|nonzero_exit|FORBID|research_blocked|HermesStartupProbe.exit_code|R015
+NR005|preflight|startup|clean_exit|ACCEPT|research_allowed|HermesStartupProbe.exit_code|R014
+END_NORMATIVE_RULE_MATRIX_V1
+
+END WP175L PACKAGE

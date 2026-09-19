@@ -52,6 +52,7 @@ from .policy import (
     build_version_argv,
     is_supported_hermes_version,
     parse_hermes_version,
+    validate_executable_path,
 )
 from .response_capture import (
     COST_ABOVE_THRESHOLD,
@@ -81,6 +82,9 @@ _STATUS_SAFETY = "SAFETY_VALIDATION_FAILED"
 _STATUS_PROVIDER_MODEL = "PROVIDER_MODEL_MISMATCH"
 _STATUS_COST_UNAVAILABLE = "COST_EVIDENCE_UNAVAILABLE"
 _STATUS_BUDGET = "BUDGET_EXCEEDED"
+# WP175L: a startup/profile-init preflight failure. Terminal and pre-research; it is
+# NOT a research invocation and leaves transport_attempt_count = 0 (no H1 slot spent).
+_STATUS_STARTUP = "STARTUP_PREFLIGHT_FAILED"
 
 _SAFETY_PASS = "PASS"
 _SAFETY_FAILED = "FAILED"
@@ -103,6 +107,22 @@ _MAX_STDERR_BYTES = 65_536
 _MAX_USAGE_BYTES = 65_536
 _VERSION_PROBE_MAX_BYTES = 4_096
 _VERSION_PROBE_MAX_SECONDS = 15
+# WP175L startup/profile-init preflight bounds. ``hermes --help`` prints a few KB of
+# help text and exits; the output is discarded (only launch/exit/timeout matter).
+_STARTUP_PROBE_MAX_BYTES = 16_384
+_STARTUP_PROBE_MAX_SECONDS = 20
+
+
+def build_startup_argv(executable_path: str) -> tuple[str, str]:
+    """Build the argv for the bounded OFFLINE startup/profile-init preflight (WP175L).
+
+    ``hermes --help`` exercises the pinned ``_apply_profile_override()`` ->
+    ``get_default_hermes_root()`` -> ``_get_platform_default_hermes_home()`` path that
+    the ``--version`` fast path skips, then argparse prints help and exits before any
+    agent/research/provider/Firecrawl work. argv only; the executable path is validated
+    with the same guard as every other Hermes argv (no shell, no metacharacters).
+    """
+    return (validate_executable_path(executable_path), "--help")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -176,6 +196,27 @@ def run_controlled_hermes_research(
         builder.end_utc = _utc_iso(clock())
         return builder.failure(
             _STATUS_VERSION, error_code, budget=_BUDGET_NOT_REACHED,
+            reported_semver=reported_semver,
+        )
+
+    # --- Startup/profile-init preflight (R00x, WP175L): the ``--version`` fast path
+    # never exercises Hermes profile/default-home resolution, so a version-clean binary
+    # can still fail at startup (H1 #2: ``RuntimeError: Could not determine home
+    # directory.``). This SECOND preflight runs ``hermes --help`` -- which the pinned
+    # tagged CLI resolves through ``_apply_profile_override()`` BEFORE argparse exits --
+    # in the SAME sanitized runtime envelope and a throwaway HERMES_HOME. It is offline:
+    # no provider, model, Firecrawl, or research call. A launch failure, timeout, or
+    # nonzero exit is terminal STARTUP_PREFLIGHT_FAILED with NO research invocation, so
+    # transport_attempt_count stays 0 and no future H1 research slot is consumed. ---
+    startup = backend.probe_startup(
+        startup_argv=build_startup_argv(executable_path),
+        max_output_bytes=_STARTUP_PROBE_MAX_BYTES,
+        max_wall_seconds=_STARTUP_PROBE_MAX_SECONDS,
+    )
+    if not startup.launched or startup.timed_out or startup.exit_code != 0:
+        builder.end_utc = _utc_iso(clock())
+        return builder.failure(
+            _STATUS_STARTUP, "STARTUP_PREFLIGHT_FAILED", budget=_BUDGET_NOT_REACHED,
             reported_semver=reported_semver,
         )
 

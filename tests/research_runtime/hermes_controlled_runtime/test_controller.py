@@ -926,3 +926,107 @@ def test_expected_contract_surfaces_controlled_profile_facts():
     assert contract["fallback_providers"] == "EMPTY"
     assert contract["api_max_retries"] == "1"
     assert contract["managed_config_sha256"] == CONTROLLED_MANAGED_CONFIG_SHA256
+
+
+# ---------------------------------------------------------------------------
+# WP175L startup/profile-init preflight (S10-HERMES-01D)
+# ---------------------------------------------------------------------------
+
+from src.research_runtime.hermes_controlled_runtime.controller import (  # noqa: E402
+    build_startup_argv,
+)
+
+
+def test_preflight01_version_probe_remains_isolated_and_first():
+    # PREFLIGHT-01: the version probe still runs (and, on the real backend, in an
+    # update-disabled throwaway home -- covered in test_runner). Here it runs exactly
+    # once ahead of the startup preflight on the success path.
+    req = _request()
+    backend = FakeHermesBackend.from_transcript(_stdout(req.request_id), usage_file_bytes=_usage())
+    _run(req, backend)
+    assert backend.version_probe_count == 1
+
+
+def test_preflight02_07_startup_preflight_runs_before_research_on_success():  # PREFLIGHT-02/07
+    req = _request()
+    backend = FakeHermesBackend.from_transcript(_stdout(req.request_id), usage_file_bytes=_usage())
+    result = _run(req, backend)
+    assert result.error_code is None
+    assert result.receipt.terminal_status == "RESEARCH_DRAFT_VALIDATED"
+    # The startup preflight ran exactly once and did not block the normal path.
+    assert backend.startup_probe_count == 1
+    assert backend.call_count == 1
+    # It exercises the profile/default-home path via `hermes --help`.
+    assert backend.recorded_startup_argv == [("hermes", "--help")]
+
+
+def test_preflight05_06_startup_nonzero_exit_blocks_research_zero_transport():  # PREFLIGHT-05/06/09
+    req = _request()
+    backend = FakeHermesBackend(
+        [_success_outcome(_stdout(req.request_id), _usage())], startup_exit_code=1
+    )
+    result = _run(req, backend)
+    assert result.error_code == "STARTUP_PREFLIGHT_FAILED"
+    assert result.receipt.terminal_status == "STARTUP_PREFLIGHT_FAILED"
+    assert result.validated_draft is None
+    # No research invocation happened; startup ran after the version preflight.
+    assert backend.version_probe_count == 1
+    assert backend.startup_probe_count == 1
+    assert backend.call_count == 0
+    # PREFLIGHT-06: no research slot consumed.
+    assert result.receipt.transport_attempt_count == 0
+    # The validated version is still recorded on the receipt.
+    assert result.receipt.hermes_version == "0.21.3"
+
+
+def test_preflight08_startup_timeout_fails_closed():  # PREFLIGHT-08
+    req = _request()
+    backend = FakeHermesBackend(
+        [_success_outcome(_stdout(req.request_id), _usage())], startup_timed_out=True
+    )
+    result = _run(req, backend)
+    assert result.receipt.terminal_status == "STARTUP_PREFLIGHT_FAILED"
+    assert backend.call_count == 0
+    assert result.receipt.transport_attempt_count == 0
+
+
+def test_preflight_startup_launch_failure_fails_closed():
+    req = _request()
+    backend = FakeHermesBackend(
+        [_success_outcome(_stdout(req.request_id), _usage())], startup_launched=False
+    )
+    result = _run(req, backend)
+    assert result.receipt.terminal_status == "STARTUP_PREFLIGHT_FAILED"
+    assert backend.call_count == 0
+
+
+def test_preflight_version_failure_skips_startup_preflight():
+    # Ordering: a version mismatch is terminal BEFORE the startup preflight runs.
+    req = _request()
+    backend = FakeHermesBackend(
+        [_success_outcome(_stdout(req.request_id), _usage())],
+        version_text="Hermes Agent v0.20.0 (2026.9.14)",
+    )
+    result = _run(req, backend)
+    assert result.receipt.terminal_status == "VERSION_MISMATCH"
+    assert backend.startup_probe_count == 0
+    assert backend.call_count == 0
+
+
+def test_preflight10_fake_backend_startup_is_process_free(monkeypatch):  # PREFLIGHT-10
+    def _boom(*args, **kwargs):  # pragma: no cover - must never be called
+        raise AssertionError("fake backend must not spawn a process")
+
+    import src.research_runtime.hermes_controlled_runtime.runner as _runner
+    monkeypatch.setattr(_runner.subprocess, "Popen", _boom)
+    monkeypatch.setattr(_runner.subprocess, "run", _boom)
+    req = _request()
+    backend = FakeHermesBackend.from_transcript(_stdout(req.request_id), usage_file_bytes=_usage())
+    result = _run(req, backend)
+    assert result.error_code is None
+    assert backend.startup_probe_count == 1
+
+
+def test_build_startup_argv_rejects_shell_metacharacters():
+    with pytest.raises(PolicyBroadeningError):
+        build_startup_argv("hermes; rm -rf /")
