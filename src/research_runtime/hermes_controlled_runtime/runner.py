@@ -209,10 +209,22 @@ def _sanitize_stderr(
         redacted = _STDERR_UNIX_PATH.sub(_STDERR_PATH_MARK, redacted)
         redaction_applied = redacted != text
         # E. bound AFTER sanitization: keep the diagnostic TAIL within the byte cap.
+        # ``redacted`` is a valid str, so ``encoded`` is valid UTF-8. A raw byte-slice
+        # tail can begin in the MIDDLE of a multibyte code point; decoding that with
+        # errors="replace" would insert a U+FFFD (3 bytes) and push the final encoded
+        # excerpt OVER the byte cap. Instead, drop only the incomplete leading
+        # continuation bytes (0b10xxxxxx) introduced by the slice boundary so the tail
+        # starts on a code-point boundary: no U+FFFD is created and the re-encoded
+        # excerpt is always <= max_excerpt_bytes. The tail END is always a code-point
+        # boundary (the source encoding is valid and the slice runs to the end).
         encoded = redacted.encode("utf-8", errors="replace")
         excerpt_truncated = len(encoded) > max_excerpt_bytes
         if excerpt_truncated:
-            encoded = encoded[-max_excerpt_bytes:]
+            tail = encoded[-max_excerpt_bytes:]
+            start = 0
+            while start < len(tail) and (tail[start] & 0xC0) == 0x80:
+                start += 1
+            encoded = tail[start:]
         excerpt = encoded.decode("utf-8", errors="replace")
         # F. fail closed on any residual secret-like content in the final excerpt.
         for pattern in _STDERR_RESIDUAL:

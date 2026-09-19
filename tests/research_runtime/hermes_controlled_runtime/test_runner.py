@@ -897,3 +897,88 @@ def test_wp175k_c_ws_wss_query_fragment_scheme_covered():
     # The safe base URL may remain; no <PATH> corruption of the URL body.
     assert "wss://example.invalid/socket" in res.excerpt
     assert "<PATH>" not in res.excerpt
+
+
+# ---------------------------------------------------------------------------
+# Side11 finding D: the <=4096-byte UTF-8 tail cap must hold for the FINAL encoded
+# excerpt even when byte-truncation splits a multibyte code point. The pre-fix code
+# sliced bytes then decode(errors="replace"), inserting a 3-byte U+FFFD for the
+# partial leading code point and pushing the re-encoded excerpt to 4098 bytes.
+# ---------------------------------------------------------------------------
+
+_REPLACEMENT_CHAR = "\ufffd"
+
+
+def _forces_boundary_split(raw_text, cap):
+    """True iff the byte at position len-cap is a UTF-8 continuation byte (0b10xxxxxx),
+    i.e. the plain byte-slice tail would begin in the middle of a code point."""
+    enc = raw_text.encode("utf-8")
+    if len(enc) <= cap:
+        return False
+    return (enc[len(enc) - cap] & 0xC0) == 0x80
+
+
+@pytest.mark.parametrize(
+    ("label", "ch", "width"),
+    [("two_byte", "\u00e9", 2), ("three_byte", "\u20ac", 3), ("four_byte", "\U0001f600", 4)],
+)
+def test_wp175k_d_multibyte_boundary_tail_cap_never_exceeded(label, ch, width):  # D1 + D2
+    # ``reason`` is 15 ASCII bytes; (15 - 4096) % w != 0 for w in {2,3,4}, so the default
+    # 4096-byte tail boundary is GUARANTEED to fall inside a multibyte code point.
+    reason = "RuntimeError:hi"
+    assert len(reason.encode("utf-8")) == 15
+    counts = {2: 3000, 3: 2000, 4: 1500}
+    raw_text = ch * counts[width] + reason
+    assert _enc_len(raw_text) > _MAXEX
+    assert _forces_boundary_split(raw_text, _MAXEX), "fixture must split a code point"
+    res = _sanitize(raw_text.encode("utf-8"))
+    assert res.status in ("AVAILABLE", "AVAILABLE_REDACTED")
+    assert res.excerpt is not None
+    assert res.excerpt_truncated is True
+    # The frozen contract: final encoded excerpt is within the byte cap.
+    assert _enc_len(res.excerpt) <= _MAXEX
+    # The boundary split must NOT introduce a replacement character (input is valid UTF-8).
+    assert _REPLACEMENT_CHAR not in res.excerpt
+    # The newest diagnostic tail text is retained.
+    assert reason in res.excerpt
+
+
+def test_wp175k_d3_ascii_long_tail_exact_boundary_regression():  # D3
+    lines = "".join(f"log line {i} ordinary text\n" for i in range(4000))
+    raw = (lines + "RuntimeError: the real final reason\n").encode("utf-8")
+    res = _sanitize(raw)
+    assert res.status in ("AVAILABLE", "AVAILABLE_REDACTED")
+    assert res.excerpt_truncated is True
+    assert _enc_len(res.excerpt) <= _MAXEX
+    assert "RuntimeError: the real final reason" in res.excerpt
+    assert "log line 0 ordinary text" not in res.excerpt
+
+
+def test_wp175k_d4_redaction_plus_multibyte_stays_capped_and_safe():  # D4
+    # A synthetic secret and a local path early in a long multibyte stream, with a safe
+    # final reason in the tail. Secret/path absent, reason retained, final excerpt capped.
+    prefix = "\u20ac" * 2500  # 7500 bytes of 3-byte chars forces truncation + a split
+    secret_line = f"API_KEY={_FAKE_SK}"
+    path_line = 'File "C:\\Users\\Dana Q\\proj\\x.py", line 9'
+    raw = (prefix + "\n" + secret_line + "\n" + path_line + "\nRuntimeError: boom final\n").encode(
+        "utf-8"
+    )
+    res = _sanitize(raw)
+    assert res.status == "AVAILABLE_REDACTED"
+    assert res.excerpt is not None
+    assert _enc_len(res.excerpt) <= _MAXEX
+    assert _FAKE_SK not in res.excerpt
+    assert "Dana Q" not in res.excerpt and "C:\\Users" not in res.excerpt
+    assert "RuntimeError: boom final" in res.excerpt
+
+
+@pytest.mark.parametrize("cap", [1, 2, 3, 4, 5, 6, 7, 8])
+@pytest.mark.parametrize("ch", ["\u00e9", "\u20ac", "\U0001f600"])
+def test_wp175k_d5_small_cap_never_exceeds_supplied_cap(cap, ch):  # D5
+    # With an arbitrary tiny cap and a purely multibyte tail, the helper must never
+    # return an excerpt whose UTF-8 encoding exceeds the supplied cap, and must not raise.
+    res = _sanitize((ch * 64).encode("utf-8"), max_excerpt_bytes=cap)
+    assert res.status in ("AVAILABLE", "AVAILABLE_REDACTED", "BLOCKED_UNSAFE")
+    if res.excerpt is not None:
+        assert _enc_len(res.excerpt) <= cap
+        assert _REPLACEMENT_CHAR not in res.excerpt
