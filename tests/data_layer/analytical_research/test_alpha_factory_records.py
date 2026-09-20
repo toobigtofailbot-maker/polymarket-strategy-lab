@@ -362,3 +362,164 @@ def test_nested_authority_keys_rejected(key):
 def test_binary_float_rejected_at_every_depth(dims):
     result = af.build_hypothesis_family(family_input(mechanism_dimensions=dims))
     assert not result.is_valid and result.error_codes[0] == "FIELD_TYPE_INVALID"
+
+
+# ── Finding D: normalized sensitive-key comparison (K01-K09) ──────────────────
+def _family_with_dims(dims):
+    return af.build_hypothesis_family(family_input(mechanism_dimensions=dims))
+
+
+@pytest.mark.parametrize("key", ["api_key", "API_KEY", "API-Key", "Api.Key", "api key", "apiKey"])
+def test_k01_api_key_variants_rejected(key):
+    result = _family_with_dims({key: "x"})
+    assert not result.is_valid and result.error_codes == ("FORBIDDEN_CONTENT",)
+
+
+@pytest.mark.parametrize("key", ["access_token", "access-token", "accessToken", "ACCESS.TOKEN"])
+def test_k02_access_token_variants_rejected(key):
+    assert not _family_with_dims({key: "x"}).is_valid
+
+
+@pytest.mark.parametrize("key", ["private_key", "private-key", "privateKey"])
+def test_k03_private_key_variants_rejected(key):
+    assert not _family_with_dims({key: "x"}).is_valid
+
+
+@pytest.mark.parametrize("key", ["place_order", "place-order", "placeOrder"])
+def test_k04_place_order_variants_rejected(key):
+    assert not _family_with_dims({key: "x"}).is_valid
+
+
+@pytest.mark.parametrize("key", ["risk_override", "risk-override", "riskOverride"])
+def test_k05_risk_override_variants_rejected(key):
+    assert not _family_with_dims({key: "x"}).is_valid
+
+
+def test_k06_nfkc_fullwidth_forbidden_key_rejected():
+    # Full-width "api_key" collapses under NFKC to the denylist form.
+    fullwidth = "\uff41\uff50\uff49\uff3f\uff4b\uff45\uff59"  # ａｐｉ＿ｋｅｙ
+    assert af.unicodedata.normalize("NFKC", fullwidth) == "api_key"
+    assert not _family_with_dims({fullwidth: "x"}).is_valid
+
+
+def test_k07_nested_forbidden_key_rejected():
+    result = _family_with_dims({"outer": {"inner": {"authorization": "x"}}})
+    assert not result.is_valid and result.error_codes == ("FORBIDDEN_CONTENT",)
+
+
+@pytest.mark.parametrize("key", ["token_count", "authorization_notes", "order_research_notes", "research_summary"])
+def test_k08_benign_nearby_keys_allowed(key):
+    assert _family_with_dims({key: 1}).is_valid
+
+
+def test_k09_no_rejected_key_echoed():
+    result = _family_with_dims({"api_key": "super-secret-value"})
+    assert result.record is None
+    assert result.error_codes == ("FORBIDDEN_CONTENT",)
+
+
+# ── Finding E: PUBLIC source URL / locality / class hardening (U-series) ──────
+def _https(locator, source_class="OFFICIAL"):
+    return af.build_research_source_reference(
+        source_input(source_kind="PUBLIC_HTTPS", source_class=source_class, source_locator=locator)
+    )
+
+
+def _chain(locator):
+    return af.build_research_source_reference(
+        source_input(source_kind="PUBLIC_BLOCKCHAIN", source_class="PUBLIC_BLOCKCHAIN", source_locator=locator)
+    )
+
+
+@pytest.mark.parametrize(
+    "locator",
+    [
+        "https://x.com/a?api_key=z",              # U01
+        "https://x.com/a?API_KEY=z",              # U02
+        "https://x.com/a?api%5Fkey=z",            # U03
+        "https://x.com/a?%61pi_key=z",            # U04
+        "https://x.com/a?api%255Fkey=z",          # U05
+        "https://x.com/a?access%5Ftoken=z",       # U06
+        "https://x.com/a#authorization=z",        # U07
+        "https://x.com/a?bad=%zz",                # U08 malformed percent
+        "https://x.com:notaport/a",               # U09 bad port
+        "https://x.com:99999/a",                  # U10 out-of-range port
+    ],
+)
+def test_u01_u10_https_query_and_port_rejections(locator):
+    assert not _https(locator).is_valid
+
+
+@pytest.mark.parametrize(
+    "host",
+    ["localhost", "foo.localhost", "localhost.", "foo.localhost.", "host.local", "host.local."],
+)
+def test_u11_u16_local_names_rejected(host):
+    assert not _https(f"https://{host}/a").is_valid
+
+
+@pytest.mark.parametrize(
+    "host",
+    ["127.0.0.1", "[::1]", "10.0.0.1", "192.168.1.1", "[fc00::1]", "169.254.1.1",
+     "[fe80::1]", "0.0.0.0", "[::]", "224.0.0.1", "[ff02::1]", "240.0.0.1"],
+)
+def test_u17_u28_non_public_ip_literals_rejected(host):
+    assert not _https(f"https://{host}/a").is_valid
+
+
+def test_u29_encoded_netloc_rejected():
+    assert not _https("https://ex%41mple.com/a").is_valid
+
+
+def test_u30_public_domain_accepted_and_normalized():
+    result = _https("HTTPS://Example.COM/Path?ok=1#frag")
+    assert result.is_valid
+    assert result.record.source_locator == "https://example.com/Path?ok=1#frag"
+
+
+def test_u31_public_ipv4_accepted():
+    assert _https("https://8.8.8.8/a").is_valid
+
+
+def test_u32_public_ipv6_accepted_brackets_retained():
+    result = _https("https://[2606:4700:4700::1111]/a")
+    assert result.is_valid and "[2606:4700:4700::1111]" in result.record.source_locator
+
+
+def test_u33_valid_port_preserved():
+    result = _https("https://example.com:8443/a")
+    assert result.is_valid and result.record.source_locator == "https://example.com:8443/a"
+
+
+@pytest.mark.parametrize(
+    "locator",
+    ["/tmp/x", r"C:\tmp\x", "../x", r".\x", r"..\x", "file:///etc/passwd"],
+)
+def test_u34_u38_blockchain_path_forms_rejected(locator):
+    assert not _chain(locator).is_valid
+
+
+@pytest.mark.parametrize("locator", ["tx:private_key:abc", "tx:privateKey", "tx:seed phrase leak", "tx:mnemonic"])
+def test_u39_blockchain_secret_variants_rejected(locator):
+    result = _chain(locator)
+    assert not result.is_valid and result.error_codes == ("FORBIDDEN_CONTENT",)
+
+
+def test_u40_ordinary_blockchain_locator_accepted():
+    assert _chain("eip155:1:0xabc123def4567890").is_valid
+
+
+def test_u41_u44_source_class_kind_matrix_rejections():
+    assert not af.build_research_source_reference(
+        source_input(source_kind="PUBLIC_BLOCKCHAIN", source_class="OFFICIAL", source_locator="tx:abc")
+    ).is_valid  # U41
+    assert not af.build_research_source_reference(
+        source_input(source_kind="REPO_EVIDENCE_ID", source_class="OFFICIAL", source_locator="evidence-1")
+    ).is_valid  # U42
+    assert not _https("https://x.com/a", source_class="PUBLIC_BLOCKCHAIN").is_valid  # U43
+    assert not _https("https://x.com/a", source_class="REPO_EVIDENCE").is_valid  # U44
+
+
+@pytest.mark.parametrize("source_class", ["OFFICIAL", "PUBLIC_MARKET_DATA", "NEWS", "REFERENCE", "OTHER_PUBLIC"])
+def test_u45_valid_https_classes_accepted(source_class):
+    assert _https("https://example.com/a", source_class=source_class).is_valid

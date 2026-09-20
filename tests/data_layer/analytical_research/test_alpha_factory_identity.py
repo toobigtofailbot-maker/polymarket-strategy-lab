@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import ast
+import dataclasses
+import hashlib
+import json
 import pathlib
 
 import pytest
@@ -14,6 +17,38 @@ from tests.data_layer.analytical_research.test_alpha_factory_records import (
     family_input,
     source_input,
 )
+
+# ── Independent identity oracle (does NOT call production _semantic_preimage/_digest) ──
+_KIND_PREFIX_ID = {
+    af.ResearchSourceReference: ("research_source_reference", "alphasource:sha256:", "source_reference_id"),
+    af.OpportunityCandidate: ("opportunity_candidate", "alphacandidate:sha256:", "candidate_id"),
+    af.HypothesisFamily: ("hypothesis_family", "alphafamily:sha256:", "hypothesis_family_id"),
+    af.ResearchEpisode: ("research_episode", "alphaepisode:sha256:", "research_episode_id"),
+}
+
+
+def independent_id(record, *, omit_authority_flags: bool = False) -> str:
+    kind, prefix, id_field = _KIND_PREFIX_ID[type(record)]
+    flags = {"advisory_only", "no_execution_authority", "no_strategy_authority", "no_qualification_authority"}
+    preimage = {}
+    for field in dataclasses.fields(record):
+        if field.name == id_field:
+            continue
+        if omit_authority_flags and field.name in flags:
+            continue
+        value = getattr(record, field.name)
+        preimage[field.name] = list(value) if isinstance(value, tuple) else value
+    wrapped = {f"{kind}.identity_preimage": preimage}
+    raw = json.dumps(wrapped, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    return prefix + hashlib.sha256(raw).hexdigest()
+
+
+def _one_of_each():
+    src = af.build_research_source_reference(source_input()).record
+    cand = af.build_opportunity_candidate(candidate_input()).record
+    fam = af.build_hypothesis_family(family_input()).record
+    ep = af.build_research_episode(episode_input()).record
+    return src, cand, fam, ep
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
 ALPHA_SRC = REPO_ROOT / "src" / "data_layer" / "analytical_research" / "alpha_factory.py"
@@ -91,12 +126,30 @@ def test_identity_is_pure_content_no_environment():
     assert len(ids) == 1
 
 
-def test_authority_flags_excluded_from_identity_but_required_true():
-    result = af.build_research_episode(episode_input())
-    record = result.record
-    assert record.advisory_only is True and record.no_qualification_authority is True
-    # Re-validation recomputes identity from the semantic preimage (flags excluded).
-    af._validate_public_record(record)
+def test_authority_flags_included_in_identity_and_required_true():
+    # Finding A: the record-ID preimage is the complete logical record except its own
+    # ID, so the advisory/no-authority booleans DO participate in identity.
+    for record in _one_of_each():
+        assert record.advisory_only is True
+        # Independent oracle including flags matches; omitting them does not.
+        kind, prefix, id_field = _KIND_PREFIX_ID[type(record)]
+        assert getattr(record, id_field) == independent_id(record)
+        assert getattr(record, id_field) != independent_id(record, omit_authority_flags=True)
+
+
+# ── I01 independent identity oracle for all four record types ─────────────────
+def test_independent_identity_oracle_all_four_records():
+    for record in _one_of_each():
+        _kind, _prefix, id_field = _KIND_PREFIX_ID[type(record)]
+        assert getattr(record, id_field) == independent_id(record)
+
+
+# ── I03 round-trip mapping equality for all four records ──────────────────────
+def test_record_to_from_mapping_roundtrip_all_four():
+    for record in _one_of_each():
+        mapping = af.record_to_mapping(record)
+        rebuilt = af.record_from_mapping(type(record), mapping)
+        assert rebuilt == record
 
 
 # ── R017 Alpha / WP170 type separation ───────────────────────────────────────

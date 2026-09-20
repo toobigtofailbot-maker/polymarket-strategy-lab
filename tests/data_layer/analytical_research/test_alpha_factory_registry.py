@@ -334,3 +334,299 @@ def test_one_bad_record_rolls_back_whole_batch(tmp_path):
     after = afr.load_and_verify_alpha_factory_registry(path)
     assert after.snapshot.total_rows == 1
     assert after.snapshot.head_entry_hash == head_before
+
+
+# ── Finding A/B: independent-id forgery helpers ───────────────────────────────
+import dataclasses  # noqa: E402
+import hashlib as _hashlib  # noqa: E402
+import json as _json  # noqa: E402
+
+from tests.data_layer.analytical_research.test_alpha_factory_identity import (  # noqa: E402
+    independent_id,
+    _KIND_PREFIX_ID,
+)
+
+
+def forge(record, **overrides):
+    """Override fields and recompute the content ID so the record is identity-consistent.
+
+    The result matches its own content ID but may be semantically invalid, proving
+    semantic rejection rather than a mere identity mismatch.
+    """
+    _kind, _prefix, id_field = _KIND_PREFIX_ID[type(record)]
+    mutated = dataclasses.replace(record, **overrides)
+    return dataclasses.replace(mutated, **{id_field: independent_id(mutated)})
+
+
+def _append_one(tmp_path, record, name="forge.sqlite3"):
+    path = fresh(tmp_path, name)
+    return afr.append_alpha_factory_records(path, [record])
+
+
+# ── S-series: identity-consistent but semantically invalid records rejected ───
+def test_s01_supportive_empty_evidence_for_rejected(tmp_path):
+    ep = mk_episode(mk_candidate(), mk_family(), mk_source(), state="RESEARCH_SUPPORTIVE")
+    r = _append_one(tmp_path, forge(ep, evidence_for=()))
+    assert not r.is_valid and r.error_codes[0] == "RESULT_EVIDENCE_INVALID"
+
+
+def test_s02_hermes_null_receipt_rejected(tmp_path):
+    ep = af.build_research_episode(
+        episode_input(producer_type="HERMES_CONTROLLED_RESEARCH", producer_receipt_ref="rcpt-1")
+    ).record
+    r = _append_one(tmp_path, forge(ep, producer_receipt_ref=None))
+    assert not r.is_valid and r.error_codes[0] == "RESULT_EVIDENCE_INVALID"
+
+
+def test_s03_human_no_source_refs_rejected(tmp_path):
+    ep = mk_episode(mk_candidate(), mk_family(), mk_source())
+    r = _append_one(tmp_path, forge(ep, source_reference_ids=()))
+    assert not r.is_valid and r.error_codes[0] == "RESULT_EVIDENCE_INVALID"
+
+
+def test_s04_execution_uneconomic_no_det_refs_rejected(tmp_path):
+    ep = mk_episode(mk_candidate(), mk_family(), mk_source(), state="EXECUTION_UNECONOMIC")
+    r = _append_one(tmp_path, forge(ep, deterministic_evidence_refs=()))
+    assert not r.is_valid and r.error_codes[0] == "RESULT_EVIDENCE_INVALID"
+
+
+def test_s05_non_reopen_with_reopened_rejected(tmp_path):
+    ep = mk_episode(mk_candidate(), mk_family(), mk_source())
+    r = _append_one(tmp_path, forge(ep, reopened_episode_id="alphaepisode:sha256:" + "d" * 64))
+    assert not r.is_valid and r.error_codes[0] == "REOPEN_INVALID"
+
+
+def test_s06_reopen_without_material_change_rejected(tmp_path):
+    ep = mk_episode(mk_candidate(), mk_family(), mk_source(), state="REOPEN_TRIGGERED",
+                    reopened="alphaepisode:sha256:" + "d" * 64)
+    r = _append_one(tmp_path, forge(ep, material_change_basis=()))
+    assert not r.is_valid and r.error_codes[0] == "RESULT_EVIDENCE_INVALID"
+
+
+def test_s07_invalid_research_as_of_rejected(tmp_path):
+    ep = mk_episode(mk_candidate(), mk_family(), mk_source())
+    r = _append_one(tmp_path, forge(ep, research_as_of="not-a-timestamp"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s08_duplicate_evidence_text_rejected(tmp_path):
+    ep = mk_episode(mk_candidate(), mk_family(), mk_source())
+    r = _append_one(tmp_path, forge(ep, evidence_for=("dup", "dup")))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s09_unsorted_source_refs_rejected(tmp_path):
+    ep = mk_episode(mk_candidate(), mk_family(), mk_source())
+    r = _append_one(tmp_path, forge(ep, source_reference_ids=("id-b", "id-a")))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s10_human_review_non_bool_rejected(tmp_path):
+    ep = mk_episode(mk_candidate(), mk_family(), mk_source())
+    r = _append_one(tmp_path, forge(ep, human_review_required=1))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_TYPE_INVALID"
+
+
+def test_s11_candidate_scope_disagreement_rejected(tmp_path):
+    cand = mk_candidate()
+    r = _append_one(tmp_path, forge(cand, scope_key="a-different-scope"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s12_candidate_novelty_extra_key_rejected(tmp_path):
+    cand = mk_candidate()
+    bad = _json.dumps(
+        {"subject_keys": ["nfl"], "scope_key": "nfl-2026", "mechanism_key": "cold-scoring", "extra": 1},
+        ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+    )
+    r = _append_one(tmp_path, forge(cand, novelty_dimensions_json=bad))
+    assert not r.is_valid and r.error_codes[0] in {"FIELD_VALUE_INVALID", "REGISTRY_IDENTITY_CONFLICT"}
+
+
+def test_s13_candidate_unsorted_subject_refs_rejected(tmp_path):
+    cand = mk_candidate()
+    r = _append_one(tmp_path, forge(cand, subject_refs=("z-sub", "a-sub")))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s14_candidate_human_review_non_bool_rejected(tmp_path):
+    cand = mk_candidate()
+    r = _append_one(tmp_path, forge(cand, human_review_required="yes"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_TYPE_INVALID"
+
+
+def test_s15_family_pathlike_predecessor_rejected(tmp_path):
+    fam = mk_family()
+    r = _append_one(tmp_path, forge(fam, predecessor_family_id="../evil"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s16_family_noncanonical_mechanism_json_rejected(tmp_path):
+    fam = mk_family()
+    r = _append_one(tmp_path, forge(fam, mechanism_dimensions_json='{"b":1,"a":2}'))
+    assert not r.is_valid and r.error_codes[0] in {"FIELD_VALUE_INVALID", "REGISTRY_IDENTITY_CONFLICT"}
+
+
+def test_s17_family_invalid_provenance_rejected(tmp_path):
+    fam = mk_family()
+    r = _append_one(tmp_path, forge(fam, creation_provenance="   "))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s18_family_human_review_non_bool_rejected(tmp_path):
+    fam = mk_family()
+    r = _append_one(tmp_path, forge(fam, human_review_required=0))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_TYPE_INVALID"
+
+
+def test_s19_source_blockchain_wrong_class_rejected(tmp_path):
+    src = af.build_research_source_reference(
+        source_input(source_kind="PUBLIC_BLOCKCHAIN", source_class="PUBLIC_BLOCKCHAIN", source_locator="tx:abc")
+    ).record
+    r = _append_one(tmp_path, forge(src, source_class="OFFICIAL"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s20_source_repo_evidence_wrong_class_rejected(tmp_path):
+    src = af.build_research_source_reference(
+        source_input(source_kind="REPO_EVIDENCE_ID", source_class="REPO_EVIDENCE", source_locator="evidence-9")
+    ).record
+    r = _append_one(tmp_path, forge(src, source_class="NEWS"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s21_source_https_blockchain_class_rejected(tmp_path):
+    src = mk_source()
+    r = _append_one(tmp_path, forge(src, source_class="PUBLIC_BLOCKCHAIN"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s22_source_invalid_observed_at_rejected(tmp_path):
+    src = mk_source()
+    r = _append_one(tmp_path, forge(src, observed_at="2026-13-99T99:99:99Z"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s23_source_invalid_content_sha_rejected(tmp_path):
+    src = mk_source()
+    r = _append_one(tmp_path, forge(src, content_sha256="XYZ"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s24_source_noncanonical_https_locator_rejected(tmp_path):
+    src = mk_source()
+    r = _append_one(tmp_path, forge(src, source_locator="https://DOCS.Polymarket.com/Rules"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_s25_valid_records_append_and_load(tmp_path):
+    path = fresh(tmp_path)
+    src, cand, fam = mk_source(), mk_candidate(), mk_family()
+    ep = mk_episode(cand, fam, src)
+    r = afr.append_alpha_factory_records(path, [src, cand, fam, ep])
+    assert r.is_valid and r.snapshot.total_rows == 4
+    assert afr.load_and_verify_alpha_factory_registry(path).is_valid
+
+
+# ── 5.6: load-time semantic corruption with self-consistent hashes -> tamper ──
+def _insert_raw_row(path, kind, mapping):
+    id_field = {k: idf for k, _t, idf in afr.RECORD_KIND_TYPES}[kind]
+    record_id = mapping[id_field]
+    payload = af._canonical_bytes(mapping).decode("utf-8")
+    payload_sha = _hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    entry_hash = afr._entry_hash(0, kind, record_id, payload_sha, None)
+    conn = sqlite3.connect(path)
+    try:
+        conn.execute(
+            "INSERT INTO alpha_registry_records(sequence_number,record_kind,record_id,payload_json,payload_sha256,previous_entry_hash,entry_hash) VALUES (?,?,?,?,?,?,?)",
+            (0, kind, record_id, payload, payload_sha, None, entry_hash),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def test_load_semantic_corruption_episode_is_tamper(tmp_path):
+    path = fresh(tmp_path)
+    ep = mk_episode(mk_candidate(), mk_family(), mk_source())
+    mapping = af.record_to_mapping(ep)
+    mapping["falsification_checks_performed"] = []  # semantically invalid; hashes recomputed
+    _insert_raw_row(path, "RESEARCH_EPISODE", mapping)
+    r = afr.load_and_verify_alpha_factory_registry(path)
+    assert not r.is_valid and r.error_codes[0] == "REGISTRY_INTEGRITY_TAMPER"
+
+
+def test_load_semantic_corruption_candidate_is_tamper(tmp_path):
+    path = fresh(tmp_path)
+    cand = mk_candidate()
+    mapping = af.record_to_mapping(cand)
+    mapping["subject_refs"] = list(reversed(mapping["subject_refs"])) + mapping["subject_refs"]
+    _insert_raw_row(path, "OPPORTUNITY_CANDIDATE", mapping)
+    r = afr.load_and_verify_alpha_factory_registry(path)
+    assert not r.is_valid and r.error_codes[0] == "REGISTRY_INTEGRITY_TAMPER"
+
+
+# ── Finding C: exhaustive registry error mapping (E-series) ───────────────────
+def test_e01_mapper_keyset_exact():
+    assert set(afr._ALPHA_TO_REGISTRY_ERROR) == set(af.ALPHA_ERROR_CODES)
+
+
+def test_e02_mapper_values_are_registry_codes():
+    for code, mapped in afr._ALPHA_TO_REGISTRY_ERROR.items():
+        assert mapped in afr.ALPHA_REGISTRY_ERROR_CODES, code
+
+
+def test_e03_unknown_code_maps_to_internal():
+    assert afr._map_alpha_error("SOME_FUTURE_CODE") == "INTERNAL_VALIDATION_FAILED"
+
+
+def test_e04_reject_closes_unknown_code():
+    assert afr._reject("not-a-real-code").error_codes == ("INTERNAL_VALIDATION_FAILED",)
+
+
+def test_e06_identity_mismatch_maps_to_conflict(tmp_path):
+    cand = mk_candidate()
+    wrong = dataclasses.replace(cand, candidate_id="alphacandidate:sha256:" + "0" * 64)
+    r = _append_one(tmp_path, wrong)
+    assert not r.is_valid and r.error_codes[0] == "REGISTRY_IDENTITY_CONFLICT"
+
+
+def test_e07_schema_unsupported_maps_to_field_value_invalid(tmp_path):
+    cand = mk_candidate()
+    r = _append_one(tmp_path, forge(cand, schema_id="wrong-schema-id"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_e08_forbidden_content_maps_to_field_value_invalid(tmp_path):
+    fam = mk_family()
+    r = _append_one(tmp_path, forge(fam, mechanism_dimensions_json='{"api_key":"x"}'))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_e09_lane_invalid_maps_to_field_value_invalid(tmp_path):
+    cand = mk_candidate()
+    r = _append_one(tmp_path, forge(cand, evidence_lanes=("NOT_A_LANE",)))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_e10_result_state_invalid_maps_to_field_value_invalid(tmp_path):
+    ep = mk_episode(mk_candidate(), mk_family(), mk_source())
+    r = _append_one(tmp_path, forge(ep, result_state="BOGUS_STATE"))
+    assert not r.is_valid and r.error_codes[0] == "FIELD_VALUE_INVALID"
+
+
+def test_e11_same_id_different_payload_conflict(tmp_path):
+    path = fresh(tmp_path)
+    cand = mk_candidate()
+    afr.append_alpha_factory_records(path, [cand])
+    tampered = dataclasses.replace(cand, title="DIFFERENT")  # same id, different content
+    r = afr.append_alpha_factory_records(path, [tampered])
+    assert not r.is_valid and r.error_codes[0] == "REGISTRY_IDENTITY_CONFLICT"
+
+
+def test_e13_public_result_only_closed_codes_no_echo(tmp_path):
+    cand = mk_candidate()
+    r = _append_one(tmp_path, forge(cand, title="   "))
+    assert not r.is_valid
+    assert all(code in afr.ALPHA_REGISTRY_ERROR_CODES for code in r.error_codes)
+    assert r.snapshot is None and r.inserted_record_ids == () and r.idempotent_record_ids == ()

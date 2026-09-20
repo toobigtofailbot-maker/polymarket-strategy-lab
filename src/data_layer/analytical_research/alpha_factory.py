@@ -19,10 +19,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, fields
 import hashlib
+import ipaddress
 import json
 import re
+import unicodedata
 from typing import Mapping, Sequence
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 ALPHA_FACTORY_SCHEMA_VERSION = "1.0.0"
 
@@ -135,16 +137,54 @@ _AUTHORITY_KEYS = frozenset({
     "paper_order", "risk_override", "execute", "auto_trade", "auto_copy",
     "scheduler_command", "credential_request",
 })
-# Secret-bearing URL query-key names (case-insensitive) rejected in PUBLIC_HTTPS.
+# Secret-bearing URL query-key names rejected in PUBLIC_HTTPS (normalized-compared).
 _URL_SECRET_QUERY_KEYS = frozenset({
     "api_key", "apikey", "token", "access_token", "auth", "authorization",
     "secret", "password", "passphrase", "signature", "credential", "private_key",
 })
-# Public-blockchain / repo-evidence forbidden private-material fragments.
-_PRIVATE_MATERIAL_FRAGMENTS = (
-    "private_key", "privatekey", "seed_phrase", "seedphrase", "mnem" "onic",
-    "passphrase", "secret",
-)
+# Public-blockchain forbidden private-material tokens (normalized-compared; used to
+# derive the normalized/compact forbidden forms below).
+_BLOCKCHAIN_SECRET_TOKENS = frozenset({
+    "api_key", "apikey", "access_token", "auth_token", "bearer_token",
+    "authorization", "credential", "private_key", "secret", "secret_key",
+    "passphrase", "mnem" "onic", "seed_phrase",
+})
+
+
+def _sensitive_forms(token: str) -> tuple[str, str]:
+    """Return (underscore-normalized, compact) security forms of a key/token.
+
+    Deterministic, offline, and separator/case/Unicode-fold insensitive so
+    ``api-key``, ``Api.Key``, ``api key``, ``apiKey`` and NFKC full-width variants all
+    collapse onto the same denylist form. The compact form additionally removes every
+    separator so camelCase and fully-joined variants are caught.
+    """
+    folded = unicodedata.normalize("NFKC", token).strip().casefold()
+    underscored = re.sub(r"_+", "_", re.sub(r"[\s._\-]+", "_", folded)).strip("_")
+    compact = re.sub(r"[^0-9a-z]+", "", folded)
+    return underscored, compact
+
+
+def _forbidden_forms(vocab: frozenset[str]) -> tuple[frozenset[str], frozenset[str]]:
+    normalized: set[str] = set()
+    compact: set[str] = set()
+    for token in vocab:
+        under, comp = _sensitive_forms(token)
+        normalized.add(under)
+        if comp:
+            compact.add(comp)
+    return frozenset(normalized), frozenset(compact)
+
+
+_FORBIDDEN_KEY_NORMALIZED, _FORBIDDEN_KEY_COMPACT = _forbidden_forms(_SECRET_KEYS | _AUTHORITY_KEYS)
+_URL_SECRET_NORMALIZED, _URL_SECRET_COMPACT = _forbidden_forms(_URL_SECRET_QUERY_KEYS | _SECRET_KEYS)
+_BLOCKCHAIN_SECRET_NORMALIZED, _BLOCKCHAIN_SECRET_COMPACT = _forbidden_forms(_BLOCKCHAIN_SECRET_TOKENS)
+
+
+def _matches_forbidden(name: str, normalized: frozenset[str], compact: frozenset[str]) -> bool:
+    under, comp = _sensitive_forms(name)
+    return under in normalized or (bool(comp) and comp in compact)
+
 
 _SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 _ID_RE = re.compile(r"^[A-Za-z0-9._:-]{1,512}$")
@@ -457,8 +497,7 @@ def _normalize_json(value: object, depth: int, counter: list[int]) -> object:
                 raise _Failure("FIELD_TYPE_INVALID")
             if not key or len(key) > MAX_ALPHA_TEXT_CHARS:
                 raise _Failure("FIELD_VALUE_INVALID")
-            folded = key.casefold()
-            if folded in _SECRET_KEYS or folded in _AUTHORITY_KEYS:
+            if _matches_forbidden(key, _FORBIDDEN_KEY_NORMALIZED, _FORBIDDEN_KEY_COMPACT):
                 raise _Failure("FORBIDDEN_CONTENT")
             normalized[key] = _normalize_json(value[key], depth + 1, counter)
         return normalized
@@ -515,36 +554,104 @@ def _digest(kind: str, prefix: str, preimage: Mapping[str, object]) -> str:
     return prefix + hashlib.sha256(_canonical_bytes(wrapped)).hexdigest()
 
 
-# ── URL / locator validation ─────────────────────────────────────────────────
+# ── URL / locator validation (fully local/offline: no DNS, socket, or HTTP) ───
+_ALLOWED_HTTPS_CLASSES = frozenset({
+    "OFFICIAL", "PUBLIC_MARKET_DATA", "NEWS", "REFERENCE", "OTHER_PUBLIC",
+})
+_SOURCE_CLASS_FOR_KIND = {
+    "PUBLIC_BLOCKCHAIN": "PUBLIC_BLOCKCHAIN",
+    "REPO_EVIDENCE_ID": "REPO_EVIDENCE",
+}
+# Multi-word secret compacts checked as substrings of a blockchain locator's compact
+# form so "seed phrase" / "private key" style material is caught even when split.
+_BLOCKCHAIN_MULTIWORD_COMPACT = frozenset({
+    "privatekey", "seedphrase", "accesstoken", "authtoken", "bearertoken",
+    "secretkey", "apikey",
+})
+_MALFORMED_PERCENT_RE = re.compile(r"%(?![0-9A-Fa-f]{2})")
+
+
+def _validate_source_class_kind(source_kind: str, source_class: str) -> None:
+    """Enforce the source kind/class matrix so labels cannot contradict."""
+    if source_kind == "PUBLIC_BLOCKCHAIN":
+        if source_class != "PUBLIC_BLOCKCHAIN":
+            raise _Failure("FIELD_VALUE_INVALID")
+    elif source_kind == "REPO_EVIDENCE_ID":
+        if source_class != "REPO_EVIDENCE":
+            raise _Failure("FIELD_VALUE_INVALID")
+    elif source_kind == "PUBLIC_HTTPS":
+        if source_class not in _ALLOWED_HTTPS_CLASSES:
+            raise _Failure("FIELD_VALUE_INVALID")
+
+
+def _canonical_https_host(hostname: str) -> str:
+    """Canonical, publicly-routable host component (never resolves the name)."""
+    try:
+        ip = ipaddress.ip_address(hostname)
+    except ValueError:
+        ip = None
+    if ip is not None:
+        if (
+            not ip.is_global or ip.is_loopback or ip.is_private or ip.is_link_local
+            or ip.is_unspecified or ip.is_reserved or ip.is_multicast
+        ):
+            raise _Failure("FIELD_VALUE_INVALID")
+        return f"[{ip.compressed}]" if ip.version == 6 else ip.compressed
+    domain = hostname.lower()
+    if domain.endswith("."):
+        domain = domain[:-1]
+    if (
+        not domain or domain == "localhost" or domain.endswith(".localhost")
+        or domain == "local" or domain.endswith(".local")
+    ):
+        raise _Failure("FIELD_VALUE_INVALID")
+    return domain
+
+
+def _reject_url_secret_keys(query: str, fragment: str) -> None:
+    """Inspection-only decoded view; reject secret-bearing query/fragment keys."""
+    for raw in (query, fragment):
+        if not raw:
+            continue
+        if _MALFORMED_PERCENT_RE.search(raw):
+            raise _Failure("FIELD_VALUE_INVALID")
+        view = raw
+        for _ in range(3):  # raw + up to two bounded decode passes
+            for part in re.split(r"[&;]", view):
+                if not part:
+                    continue
+                name = part.split("=", 1)[0].strip()
+                if name and _matches_forbidden(name, _URL_SECRET_NORMALIZED, _URL_SECRET_COMPACT):
+                    raise _Failure("FIELD_VALUE_INVALID")
+            decoded = unquote(view)
+            if decoded == view:
+                break
+            view = decoded
+
+
 def _validate_public_https(locator: str) -> str:
-    parts = urlsplit(locator)
-    scheme = parts.scheme.lower()
-    if scheme != "https":
-        raise _Failure("FIELD_VALUE_INVALID")
-    if parts.username is not None or parts.password is not None or "@" in parts.netloc:
-        raise _Failure("FIELD_VALUE_INVALID")
-    hostname = parts.hostname
+    try:
+        parts = urlsplit(locator)
+        if parts.scheme.lower() != "https":
+            raise _Failure("FIELD_VALUE_INVALID")
+        netloc = parts.netloc
+        if "@" in netloc or parts.username is not None or parts.password is not None:
+            raise _Failure("FIELD_VALUE_INVALID")
+        if "%" in netloc:
+            # Percent-encoding in the authority creates userinfo/host ambiguity.
+            raise _Failure("FIELD_VALUE_INVALID")
+        hostname = parts.hostname
+        port = parts.port
+    except _Failure:
+        raise
+    except ValueError:
+        raise _Failure("FIELD_VALUE_INVALID") from None
     if not hostname:
         raise _Failure("FIELD_VALUE_INVALID")
-    lowered_host = hostname.lower()
-    if lowered_host in {"localhost"} or lowered_host.endswith(".localhost"):
-        raise _Failure("FIELD_VALUE_INVALID")
-    # Reject secret-bearing query keys and secret-like key=value patterns.
-    if parts.query:
-        for pair in parts.query.split("&"):
-            if not pair:
-                continue
-            key = pair.split("=", 1)[0]
-            if key.casefold() in _URL_SECRET_QUERY_KEYS:
-                raise _Failure("FIELD_VALUE_INVALID")
-    combined = f"{parts.query}\n{parts.fragment}".casefold()
-    if any(secret in combined for secret in _URL_SECRET_QUERY_KEYS):
-        raise _Failure("FIELD_VALUE_INVALID")
-    # Deterministic normalisation: lowercase scheme + hostname, preserve the rest.
-    netloc = lowered_host
-    if parts.port is not None:
-        netloc = f"{netloc}:{parts.port}"
-    normalized = f"{scheme}://{netloc}{parts.path}"
+    host = _canonical_https_host(hostname)
+    _reject_url_secret_keys(parts.query, parts.fragment)
+    netloc_out = host if port is None else f"{host}:{port}"
+    normalized = f"https://{netloc_out}{parts.path}"
     if parts.query:
         normalized += f"?{parts.query}"
     if parts.fragment:
@@ -552,17 +659,37 @@ def _validate_public_https(locator: str) -> str:
     return normalized
 
 
+def _reject_path_locator(text: str) -> None:
+    if text.casefold().startswith("file:"):
+        raise _Failure("FIELD_VALUE_INVALID")
+    if "\\" in text or text.startswith(("/", "~", "./", "../")):
+        raise _Failure("FIELD_VALUE_INVALID")
+    if re.match(r"^[A-Za-z]:", text):
+        raise _Failure("FIELD_VALUE_INVALID")
+    if any(part == ".." for part in re.split(r"/+", text)):
+        raise _Failure("FIELD_VALUE_INVALID")
+
+
+def _reject_blockchain_secret(text: str) -> None:
+    for component in re.split(r"[^0-9A-Za-z]+", text):
+        if component and _matches_forbidden(
+            component, _BLOCKCHAIN_SECRET_NORMALIZED, _BLOCKCHAIN_SECRET_COMPACT
+        ):
+            raise _Failure("FORBIDDEN_CONTENT")
+    compact = re.sub(r"[^0-9a-z]+", "", text.casefold())
+    if any(token in compact for token in _BLOCKCHAIN_MULTIWORD_COMPACT):
+        raise _Failure("FORBIDDEN_CONTENT")
+
+
 def _validate_source_locator(source_kind: str, locator: object) -> str:
     text = _text(locator)
     if source_kind == "PUBLIC_HTTPS":
-        lowered = text.lower()
-        if lowered.startswith("file:") or "://" not in text:
+        if "://" not in text or text.casefold().startswith("file:"):
             raise _Failure("FIELD_VALUE_INVALID")
         return _validate_public_https(text)
     if source_kind == "PUBLIC_BLOCKCHAIN":
-        folded = text.casefold()
-        if any(fragment in folded for fragment in _PRIVATE_MATERIAL_FRAGMENTS):
-            raise _Failure("FORBIDDEN_CONTENT")
+        _reject_path_locator(text)
+        _reject_blockchain_secret(text)
         return text
     # REPO_EVIDENCE_ID: bounded opaque project evidence id/digest, never a path.
     return _evidence_id(text)
@@ -573,10 +700,6 @@ _SOURCE_KEYS = frozenset({
     "source_kind", "source_class", "source_locator", "title", "observed_at",
     "content_sha256", "provenance",
 })
-_SOURCE_CLASS_FOR_KIND = {
-    "PUBLIC_BLOCKCHAIN": "PUBLIC_BLOCKCHAIN",
-    "REPO_EVIDENCE_ID": "REPO_EVIDENCE",
-}
 
 
 def build_research_source_reference(input_mapping: object) -> AlphaFactoryControlResult:
@@ -584,9 +707,7 @@ def build_research_source_reference(input_mapping: object) -> AlphaFactoryContro
         value = _mapping(input_mapping, _SOURCE_KEYS)
         source_kind = _enum(value["source_kind"], ALPHA_SOURCE_KINDS)
         source_class = _enum(value["source_class"], ALPHA_SOURCE_CLASSES)
-        expected_class = _SOURCE_CLASS_FOR_KIND.get(source_kind)
-        if expected_class is not None and source_class != expected_class:
-            raise _Failure("FIELD_VALUE_INVALID")
+        _validate_source_class_kind(source_kind, source_class)
         locator = _validate_source_locator(source_kind, value["source_locator"])
         preimage = {
             "schema_id": SCHEMA_ID_SOURCE,
@@ -599,6 +720,8 @@ def build_research_source_reference(input_mapping: object) -> AlphaFactoryContro
             "content_sha256": _sha(value["content_sha256"], nullable=True),
             "provenance": _text(value["provenance"]),
             "public_research_only": True,
+            "advisory_only": True,
+            "no_execution_authority": True,
         }
         record = ResearchSourceReference(
             SCHEMA_ID_SOURCE, ALPHA_FACTORY_SCHEMA_VERSION,
@@ -607,6 +730,7 @@ def build_research_source_reference(input_mapping: object) -> AlphaFactoryContro
             preimage["title"], preimage["observed_at"], preimage["content_sha256"],
             preimage["provenance"], True, True, True,
         )
+        _validate_public_record(record)
         return _valid(record)
     except _Failure as failure:
         return _rejected(failure.code)
@@ -678,6 +802,10 @@ def build_opportunity_candidate(input_mapping: object) -> AlphaFactoryControlRes
             "novelty_fingerprint": novelty_fingerprint,
             "discovery_provenance": _text(value["discovery_provenance"]),
             "human_review_required": _bool(value["human_review_required"]),
+            "advisory_only": True,
+            "no_execution_authority": True,
+            "no_strategy_authority": True,
+            "no_qualification_authority": True,
         }
         record = OpportunityCandidate(
             SCHEMA_ID_CANDIDATE, ALPHA_FACTORY_SCHEMA_VERSION,
@@ -687,6 +815,7 @@ def build_opportunity_candidate(input_mapping: object) -> AlphaFactoryControlRes
             novelty_json, novelty_fingerprint, preimage["discovery_provenance"],
             preimage["human_review_required"], True, True, True, True,
         )
+        _validate_public_record(record)
         return _valid(record)
     except _Failure as failure:
         return _rejected(failure.code)
@@ -727,6 +856,10 @@ def build_hypothesis_family(input_mapping: object) -> AlphaFactoryControlResult:
             "predecessor_family_id": _evidence_id(value["predecessor_family_id"], nullable=True),
             "creation_provenance": _text(value["creation_provenance"]),
             "human_review_required": _bool(value["human_review_required"]),
+            "advisory_only": True,
+            "no_execution_authority": True,
+            "no_strategy_authority": True,
+            "no_qualification_authority": True,
         }
         record = HypothesisFamily(
             SCHEMA_ID_FAMILY, ALPHA_FACTORY_SCHEMA_VERSION,
@@ -736,6 +869,7 @@ def build_hypothesis_family(input_mapping: object) -> AlphaFactoryControlResult:
             preimage["predecessor_family_id"], preimage["creation_provenance"],
             preimage["human_review_required"], True, True, True, True,
         )
+        _validate_public_record(record)
         return _valid(record)
     except _Failure as failure:
         return _rejected(failure.code)
@@ -791,37 +925,9 @@ def build_research_episode(input_mapping: object) -> AlphaFactoryControlResult:
             value["deterministic_evidence_refs"], allow_empty=True, evidence=True
         )
         producer_receipt_ref = _evidence_id(value["producer_receipt_ref"], nullable=True)
-
-        # Global episode discipline.
-        if not lists["falsification_checks_performed"]:
-            raise _Failure("RESULT_EVIDENCE_INVALID")
-        if not source_reference_ids and not deterministic_evidence_refs:
-            raise _Failure("RESULT_EVIDENCE_INVALID")
-
-        # State-specific evidence matrix.
-        for field_name in _STATE_REQUIRED_FIELDS[result_state]:
-            if not lists[field_name]:
-                raise _Failure("RESULT_EVIDENCE_INVALID")
-        if result_state == "DATA_INSUFFICIENT" and not lists["known_missing_data"]:
-            raise _Failure("RESULT_EVIDENCE_INVALID")
-        if result_state == "EXECUTION_UNECONOMIC" and not deterministic_evidence_refs:
-            raise _Failure("RESULT_EVIDENCE_INVALID")
-
-        # Reopen / lineage caller-shape rules (cross-record resolution is the registry's).
-        if result_state == "REOPEN_TRIGGERED":
-            if reopened is None:
-                raise _Failure("REOPEN_INVALID")
-        elif reopened is not None:
-            raise _Failure("REOPEN_INVALID")
-
-        # Producer provenance fail-closed requirements.
-        if producer_type == "HERMES_CONTROLLED_RESEARCH" and producer_receipt_ref is None:
-            raise _Failure("RESULT_EVIDENCE_INVALID")
-        if producer_type in {"HUMAN_RESEARCH", "OTHER_VALIDATED_ADVISORY"} and not source_reference_ids:
-            raise _Failure("RESULT_EVIDENCE_INVALID")
-        if producer_type == "DETERMINISTIC_ANALYSIS" and not deterministic_evidence_refs:
-            raise _Failure("RESULT_EVIDENCE_INVALID")
-
+        # Result-state, reopen, and producer discipline is enforced by the single shared
+        # record-semantic validator (_validate_public_record) called after construction,
+        # so builder-time and stored-record semantics can never drift.
         preimage = {
             "schema_id": SCHEMA_ID_EPISODE,
             "schema_version": ALPHA_FACTORY_SCHEMA_VERSION,
@@ -855,6 +961,10 @@ def build_research_episode(input_mapping: object) -> AlphaFactoryControlResult:
             "research_as_of": _utc(value["research_as_of"]),
             "creation_provenance": _text(value["creation_provenance"]),
             "human_review_required": _bool(value["human_review_required"]),
+            "advisory_only": True,
+            "no_execution_authority": True,
+            "no_strategy_authority": True,
+            "no_qualification_authority": True,
         }
         record = ResearchEpisode(
             SCHEMA_ID_EPISODE, ALPHA_FACTORY_SCHEMA_VERSION,
@@ -872,6 +982,7 @@ def build_research_episode(input_mapping: object) -> AlphaFactoryControlResult:
             preimage["research_as_of"], preimage["creation_provenance"],
             preimage["human_review_required"], True, True, True, True,
         )
+        _validate_public_record(record)
         return _valid(record)
     except _Failure as failure:
         return _rejected(failure.code)
@@ -910,23 +1021,36 @@ def _semantic_preimage(
     kind, prefix, id_field, schema_id = _RECORD_IDENTITY[record_type]
     preimage: dict[str, object] = {}
     identity = None
+    # The record-ID preimage is the COMPLETE logical record excluding ONLY its own
+    # content-addressed ID field. The advisory/no-authority booleans and
+    # public_research_only/human_review_required therefore participate in identity;
+    # only SQLite/write/environment/session metadata (which are not record fields)
+    # are excluded, because they never appear on the dataclass.
     for field in fields(record):
         name = field.name
         raw = getattr(record, name)
         if name == id_field:
             identity = raw
             continue
-        if name in _AUTHORITY_FLAG_FIELDS:
-            continue
-        if isinstance(raw, tuple):
-            preimage[name] = list(raw)
-        else:
-            preimage[name] = raw
+        preimage[name] = list(raw) if isinstance(raw, tuple) else raw
     return kind, prefix, id_field, schema_id, preimage, identity
 
 
+def _require_tuple(value: object) -> list:
+    if not isinstance(value, tuple):
+        raise _Failure("FIELD_TYPE_INVALID")
+    return list(value)
+
+
 def _validate_public_record(record: object) -> None:
-    """Re-validate a built record's authority flags, schema, and content identity."""
+    """Re-prove a stored/direct record is ALREADY a canonical valid record.
+
+    This is the single shared record-semantic gate for both builder output and
+    stored-record load. It never normalizes or repairs the record: it re-derives the
+    canonical form from the stored fields and rejects any record that is not already
+    exactly canonical, so a directly-constructed dataclass with a self-consistent
+    content ID cannot enter Alpha Factory memory.
+    """
     record_type = type(record)
     if record_type not in _RECORD_IDENTITY:
         raise _Failure("FIELD_TYPE_INVALID")
@@ -936,36 +1060,115 @@ def _validate_public_record(record: object) -> None:
     kind, prefix, id_field, schema_id, preimage, identity = _semantic_preimage(record)
     if record.schema_version != ALPHA_FACTORY_SCHEMA_VERSION or record.schema_id != schema_id:
         raise _Failure("SCHEMA_UNSUPPORTED")
+    _validate_public_record_semantics(record)
     if _digest(kind, prefix, preimage) != identity:
         raise _Failure("IDENTITY_DERIVATION_MISMATCH")
-    _validate_public_record_semantics(record)
 
 
 def _validate_public_record_semantics(record: object) -> None:
     if isinstance(record, ResearchSourceReference):
         if record.public_research_only is not True:
             raise _Failure("FIELD_VALUE_INVALID")
-        _enum(record.source_kind, ALPHA_SOURCE_KINDS)
-        _enum(record.source_class, ALPHA_SOURCE_CLASSES)
-        _validate_source_locator(record.source_kind, record.source_locator)
+        kind = _enum(record.source_kind, ALPHA_SOURCE_KINDS)
+        cls = _enum(record.source_class, ALPHA_SOURCE_CLASSES)
+        _validate_source_class_kind(kind, cls)
+        if _validate_source_locator(kind, record.source_locator) != record.source_locator:
+            # Stored locator must already equal its canonical normalized form.
+            raise _Failure("FIELD_VALUE_INVALID")
+        _text(record.title)
+        _utc(record.observed_at)
+        _sha(record.content_sha256, nullable=True)
+        _text(record.provenance)
     elif isinstance(record, OpportunityCandidate):
-        lanes = _lanes(list(record.evidence_lanes))
+        _opaque(record.candidate_version)
+        for text_field in (
+            record.title, record.research_question, record.thesis,
+            record.scope_key, record.mechanism_hint, record.discovery_provenance,
+        ):
+            _text(text_field)
+        if _tuple_ids(_require_tuple(record.subject_refs)) != record.subject_refs:
+            raise _Failure("FIELD_VALUE_INVALID")
+        lanes = tuple(_lanes(_require_tuple(record.evidence_lanes)))
         if lanes != record.evidence_lanes:
             raise _Failure("LANE_INVALID")
-        if _novelty_fingerprint(_validate_canonical_mapping_json(record.novelty_dimensions_json), lanes) != record.novelty_fingerprint:
+        canonical_novelty = _validate_canonical_mapping_json(record.novelty_dimensions_json)
+        rebuilt_novelty, _mechanism = _novelty_dimensions(json.loads(canonical_novelty), record.scope_key)
+        if rebuilt_novelty != record.novelty_dimensions_json:
+            raise _Failure("FIELD_VALUE_INVALID")
+        if _novelty_fingerprint(record.novelty_dimensions_json, lanes) != record.novelty_fingerprint:
             raise _Failure("IDENTITY_DERIVATION_MISMATCH")
+        _bool(record.human_review_required)
     elif isinstance(record, HypothesisFamily):
-        if _mechanism_fingerprint(record.mechanism_key, _validate_canonical_mapping_json(record.mechanism_dimensions_json)) != record.mechanism_fingerprint:
+        _opaque(record.family_version)
+        _text(record.family_name)
+        _text(record.mechanism_key)
+        _text(record.falsifiable_theme)
+        _text(record.creation_provenance)
+        _evidence_id(record.predecessor_family_id, nullable=True)
+        canonical_mech = _validate_canonical_mapping_json(record.mechanism_dimensions_json)
+        if _mechanism_fingerprint(record.mechanism_key, canonical_mech) != record.mechanism_fingerprint:
             raise _Failure("IDENTITY_DERIVATION_MISMATCH")
+        _bool(record.human_review_required)
     elif isinstance(record, ResearchEpisode):
-        lanes = _lanes(list(record.evidence_lanes))
-        if lanes != record.evidence_lanes:
-            raise _Failure("LANE_INVALID")
-        _enum(record.result_state, RESEARCH_RESULT_STATES)
-        _enum(record.confidence_label, ALPHA_FACTORY_CONFIDENCE_LABELS)
-        _enum(record.producer_type, PRODUCER_TYPES)
-        _validate_canonical_mapping_json(record.exact_scope_json)
-        _validate_canonical_mapping_json(record.evidence_regime_json)
+        _validate_episode_semantics(record)
+
+
+def _validate_episode_semantics(record: "ResearchEpisode") -> None:
+    _opaque(record.episode_version)
+    _evidence_id(record.candidate_id)
+    _evidence_id(record.hypothesis_family_id)
+    _evidence_id(record.predecessor_episode_id, nullable=True)
+    _evidence_id(record.reopened_episode_id, nullable=True)
+    _evidence_id(record.producer_receipt_ref, nullable=True)
+    result_state = _enum(record.result_state, RESEARCH_RESULT_STATES)
+    _enum(record.confidence_label, ALPHA_FACTORY_CONFIDENCE_LABELS)
+    producer_type = _enum(record.producer_type, PRODUCER_TYPES)
+    lanes = tuple(_lanes(_require_tuple(record.evidence_lanes)))
+    if lanes != record.evidence_lanes:
+        raise _Failure("LANE_INVALID")
+    _validate_canonical_mapping_json(record.exact_scope_json)
+    _validate_canonical_mapping_json(record.evidence_regime_json)
+    for text_field in (
+        record.research_question, record.thesis, record.producer_version,
+        record.creation_provenance,
+    ):
+        _text(text_field)
+    _utc(record.research_as_of)
+    _bool(record.human_review_required)
+    lists = {}
+    for name in _EPISODE_LIST_FIELDS:
+        stored = getattr(record, name)
+        if tuple(_tuple_text(_require_tuple(stored), allow_empty=True)) != stored:
+            raise _Failure("FIELD_VALUE_INVALID")
+        lists[name] = stored
+    if tuple(_tuple_ids(_require_tuple(record.source_reference_ids), allow_empty=True)) != record.source_reference_ids:
+        raise _Failure("FIELD_VALUE_INVALID")
+    if tuple(_tuple_ids(_require_tuple(record.deterministic_evidence_refs), allow_empty=True, evidence=True)) != record.deterministic_evidence_refs:
+        raise _Failure("FIELD_VALUE_INVALID")
+    # Global episode discipline.
+    if not lists["falsification_checks_performed"]:
+        raise _Failure("RESULT_EVIDENCE_INVALID")
+    if not record.source_reference_ids and not record.deterministic_evidence_refs:
+        raise _Failure("RESULT_EVIDENCE_INVALID")
+    # State-specific evidence matrix.
+    for field_name in _STATE_REQUIRED_FIELDS[result_state]:
+        if not lists[field_name]:
+            raise _Failure("RESULT_EVIDENCE_INVALID")
+    if result_state == "EXECUTION_UNECONOMIC" and not record.deterministic_evidence_refs:
+        raise _Failure("RESULT_EVIDENCE_INVALID")
+    # Reopen caller-shape rule (cross-record resolution is the registry's).
+    if result_state == "REOPEN_TRIGGERED":
+        if record.reopened_episode_id is None:
+            raise _Failure("REOPEN_INVALID")
+    elif record.reopened_episode_id is not None:
+        raise _Failure("REOPEN_INVALID")
+    # Producer provenance fail-closed requirements.
+    if producer_type == "HERMES_CONTROLLED_RESEARCH" and record.producer_receipt_ref is None:
+        raise _Failure("RESULT_EVIDENCE_INVALID")
+    if producer_type in {"HUMAN_RESEARCH", "OTHER_VALIDATED_ADVISORY"} and not record.source_reference_ids:
+        raise _Failure("RESULT_EVIDENCE_INVALID")
+    if producer_type == "DETERMINISTIC_ANALYSIS" and not record.deterministic_evidence_refs:
+        raise _Failure("RESULT_EVIDENCE_INVALID")
 
 
 def record_to_mapping(record: object) -> dict[str, object]:

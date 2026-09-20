@@ -23,6 +23,7 @@ import sqlite3
 from typing import Mapping
 
 from .alpha_factory import (
+    ALPHA_ERROR_CODES,
     MAX_ALPHA_RECORD_PAYLOAD_BYTES,
     HypothesisFamily,
     OpportunityCandidate,
@@ -155,7 +156,40 @@ class _StoreFailure(Exception):
         self.code = code
 
 
+# Deterministic, exhaustive mapping from every Alpha-model error code to the closed
+# public registry error vocabulary. Any Alpha-model validation failure surfaced during
+# append is translated here so no model-internal code ever leaks to a public result.
+_ALPHA_TO_REGISTRY_ERROR = {
+    "SCHEMA_UNSUPPORTED": "FIELD_VALUE_INVALID",
+    "FIELD_MISSING": "FIELD_VALUE_INVALID",
+    "FIELD_TYPE_INVALID": "FIELD_TYPE_INVALID",
+    "FIELD_VALUE_INVALID": "FIELD_VALUE_INVALID",
+    "FORBIDDEN_CONTENT": "FIELD_VALUE_INVALID",
+    "IDENTITY_DERIVATION_MISMATCH": "REGISTRY_IDENTITY_CONFLICT",
+    "REFERENCE_INVALID": "REFERENCE_INVALID",
+    "LANE_INVALID": "FIELD_VALUE_INVALID",
+    "RESULT_STATE_INVALID": "FIELD_VALUE_INVALID",
+    "NOVELTY_DUPLICATE": "NOVELTY_DUPLICATE",
+    "MECHANISM_CONFLICT": "MECHANISM_CONFLICT",
+    "LINEAGE_INVALID": "LINEAGE_INVALID",
+    "LINEAGE_CYCLE": "LINEAGE_CYCLE",
+    "REOPEN_INVALID": "REOPEN_INVALID",
+    "RESULT_EVIDENCE_INVALID": "RESULT_EVIDENCE_INVALID",
+    "LIMIT_EXCEEDED": "LIMIT_EXCEEDED",
+    "INTERNAL_VALIDATION_FAILED": "INTERNAL_VALIDATION_FAILED",
+}
+_REGISTRY_ERROR_SET = frozenset(ALPHA_REGISTRY_ERROR_CODES)
+
+
+def _map_alpha_error(code: str) -> str:
+    """Translate an Alpha-model error code to a closed registry code, fail-closed."""
+    return _ALPHA_TO_REGISTRY_ERROR.get(code, "INTERNAL_VALIDATION_FAILED")
+
+
 def _reject(code: str) -> AlphaFactoryRegistryResult:
+    # Final public closure: an out-of-vocabulary code can never reach a public result.
+    if code not in _REGISTRY_ERROR_SET:
+        code = "INTERNAL_VALIDATION_FAILED"
     return AlphaFactoryRegistryResult(
         False, "REGISTRY_REJECTED", (code,), None, (), (), True, True, True, True
     )
@@ -309,7 +343,7 @@ def _serialize(record: object) -> tuple[str, str, str, str]:
     except _StoreFailure:
         raise
     except _Failure as failure:
-        raise _StoreFailure(failure.code) from None
+        raise _StoreFailure(_map_alpha_error(failure.code)) from None
     except Exception:
         raise _StoreFailure("INTERNAL_VALIDATION_FAILED") from None
 
@@ -383,8 +417,10 @@ def _verify_cross_record_invariants(snapshot: AlphaFactoryRegistrySnapshot) -> N
                 episodes[record.research_episode_id] = record
         except _StoreFailure:
             raise
-        except _Failure as failure:
-            raise _StoreFailure(failure.code) from None
+        except _Failure:
+            # Reached only for persisted/projected records; any semantic failure here
+            # means persisted corruption, surfaced as tamper (never a model code leak).
+            raise _StoreFailure("REGISTRY_INTEGRITY_TAMPER") from None
         except Exception:
             raise _StoreFailure("REGISTRY_INTEGRITY_TAMPER") from None
 
