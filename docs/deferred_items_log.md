@@ -2651,6 +2651,26 @@ unlock Alpha.
 | WP175L-D002 | Third real S10-GATE-H1 run (H1 #3) decision | BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION | P1 | A separate new human/governance decision after WP175L merge, post-merge verification, and Side11 review | Two real H1 runs (H1 #1, H1 #2) were consumed and failed, so the next possible invocation is H1 #3; a wrapper-runtime correction does not itself recreate H1 authorization; H1 #3 is NOT AUTHORIZED |
 | WP175L-D003 | S10-ALPHA-01 Multi-Lane Alpha Factory Core | DEFERRED | P2 | Genuine S10-GATE-H1 PASS plus Side11 quality review | Immediate successor is post-merge preflight verification then the H1 #3 / third-run governance decision, not Alpha; Gate C and WP176 remain separately blocked |
 
+## WP175M — Hermes Draft Contract Alignment And Schema Diagnostics
+
+WP175M aligns the Hermes draft prompt/output contract with the deterministic validator and
+adds sanitized schema-failure observability. H1 #3 (the third real S10-GATE-H1 run) was
+consumed and failed `OUTPUT_SCHEMA_INVALID` / `DRAFT_FIELD_MISSING` because the permanent
+instruction referenced a research-draft schema the envelope never embedded (only
+`draft_schema_version`); the model improvised an alternative schema and the validator
+failed closed at first missing canonical field `advisory_only`. WP175M embeds a canonical
+machine-generated `draft_output_schema` derived from the validator's own constants, bumps
+the receipt to `hermes-research-run-receipt/1.3.0` with sanitized additive evidence, and
+preserves the actual provider/model on a schema failure. It does not activate the runtime,
+authorize any H1 run, perform substantive post-hoc repair, inject authority flags, or
+unlock Alpha.
+
+| ID | Item | Status | Priority | Resolution gate | Notes |
+|---|---|---|---|---|---|
+| WP175M-D001 | Controlled structured-output contract validation using the exact patched runtime | POST_MERGE_LOCAL_VERIFICATION | P1 | After WP175M merge and Side11 review, validate the embedded output contract locally (not a research invocation) | Confirms the generated schema and validator required sets remain identical; consumes no H1 research slot; provider/Firecrawl/network 0 |
+| WP175M-D002 | Fourth real S10-GATE-H1 run (H1 #4) decision | BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION | P1 | A separate new human/governance decision after WP175M merge, post-merge verification, and Side11 review | Three real H1 runs (H1 #1, H1 #2, H1 #3) were consumed and failed, so the next possible invocation is H1 #4; a prompt/output-contract correction does not itself recreate H1 authorization; H1 #4 is NOT AUTHORIZED |
+| WP175M-D003 | S10-ALPHA-01 Multi-Lane Alpha Factory Core | DEFERRED | P2 | Genuine S10-GATE-H1 PASS plus Side11 quality review | Immediate successor is post-merge contract verification then the H1 #4 / fourth-run governance decision, not Alpha; Gate C and WP176 remain separately blocked |
+
 ## Wallet-Intelligence Roadmap Anchor (durable)
 
 Objective: prove when PUBLIC wallet behavior deserves strategic use; do not assume

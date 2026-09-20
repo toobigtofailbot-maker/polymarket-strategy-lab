@@ -1,0 +1,162 @@
+SIDE11 — WP175M / S10-HERMES-01E
+HERMES DRAFT PROMPT CONTRACT ALIGNMENT + SANITIZED SCHEMA-FAILURE OBSERVABILITY
+IMPLEMENTATION-AUTHORIZED WORK PACKAGE
+
+Package Identity:
+  WP ID: WP175M
+  Side11 capability handle: S10-HERMES-01E
+  Title: Hermes Draft Prompt Contract Alignment And Schema Diagnostics
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen drafting base: b36155201304126339482ea74e77181466181b9c
+  Required predecessor: PR #185 / WP175L
+  Required predecessor merge: b36155201304126339482ea74e77181466181b9c
+  Suggested branch: claude/wp175m-draft-contract-alignment
+  Package class: BOUNDED_HERMES_DRAFT_CONTRACT_ALIGNMENT_AND_SCHEMA_DIAGNOSTICS
+  Package size class: L
+  Exact changed-file budget: 15
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: CONTROLLED_PROMPT_OUTPUT_CONTRACT_AND_RECEIPT_OBSERVABILITY_ONLY
+  Product impact: NONE
+  Network impact: GitHub control-plane / hosted CI only; NO provider, Firecrawl, Polymarket, model-catalog, OAuth, or product-web calls during implementation or tests
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: Claude Opus 4.8 — MEDIUM
+  Reason: the H1 #3 root cause (the permanent instruction referenced a research-draft schema that the envelope never actually embedded) is already established by read-only forensics; the canonical contract, diagnostics, and receipt evidence are mechanically specified; implementation is deterministic and offline.
+  Escalate or STOP if: live main drifts; the generated schema and validator cannot share one canonical required-field/constraint source; the frozen H1 request id no longer derives; the frozen request cannot fit the Windows argv guard after schema embedding; success would require inferring or fabricating substantive research; observability would require retaining raw rejected output or a raw session id; any change would broaden Hermes execution/risk/credential/order/live authority; scope must exceed 15 files; a dependency/workflow/network/credential change appears necessary.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+H1 #3 Incident (authoritative):
+  H1 #3 is the THIRD real S10-GATE-H1 invocation (H1 #1 and H1 #2 already consumed).
+  Terminal status: OUTPUT_SCHEMA_INVALID. Error code: DRAFT_FIELD_MISSING.
+  Hermes child exited 0, did not time out, wrote a VALID usage report (completed,
+  api_call_count 5), and stderr was empty. The persisted session showed 12 web_search
+  and 3 web_extract tool calls with no unexpected tool names, under a managed
+  configuration pinned to Firecrawl with keyless fallback/rescue off. This proves
+  Hermes exercised the intended web tool surface; it does NOT independently prove a
+  remote Firecrawl HTTP transaction (runtime tool telemetry is UNAVAILABLE on pinned
+  v0.21.3). Forensic v1 mismatched the session because session_model_usage includes an
+  auxiliary title_generation usage row; the main research route usage matched the
+  receipt.
+
+Objective:
+  Fix the prompt/output contract BEFORE generation. models.py owns a canonical
+  machine-generated draft output schema derived from the SAME constants
+  validate_research_draft enforces (STOP CONTRACT_VALIDATOR_DRIFT). The private list
+  field collection becomes the public DRAFT_LIST_FIELDS and a canonical ordered
+  DRAFT_REQUIRED_TOP_LEVEL_FIELDS is added. build_research_draft_output_schema embeds
+  every required field, authority const=true flags, confidence and source-class enums,
+  validator-aligned bounds, and the exact request id and draft schema version as
+  constants. The permanent system-instruction version is bumped to
+  hermes-research-system-instruction/1.1.0 and the envelope carries an authoritative
+  draft_output_schema in as_mapping/to_query_bytes/to_prompt_string/envelope_digest.
+  Sanitized draft-structure diagnostics (inspect_research_draft_structure) retain ONLY
+  static canonical field-name tokens and fixed statuses. The receipt is bumped to
+  hermes-research-run-receipt/1.3.0 with additive prompt_envelope_sha256,
+  draft_output_contract_sha256, draft diagnostics, and usage_session_id_digest. With
+  valid usage the actual provider/model are preserved before draft validation. There is
+  NO post-hoc substantive repair and NO wrapper-owned authority-flag injection: a wrong
+  substantive schema still fails closed.
+
+Authority / Non-Authority:
+  This package has advisory research-contract authority only. It grants Hermes NO
+  execution, risk, credential, order, paper, live, scheduler, or merge authority. All
+  draft authority flags remain MODEL-OUTPUT REQUIRED and must be exactly true; the
+  wrapper never injects them. Request identity, policy identity, the Hermes v0.21.3
+  pin, provider/model, toolset, retry/fallback, managed profile, and the WP175L runtime
+  envelope are UNCHANGED. The frozen H1 request id
+  hermesresearchrequest:sha256:d977b2073c685c64a6398475ba437aa9cc63be517b2260c513ffd4e9ba795b69
+  remains reproducible from the same public request payload.
+
+Exact Changed-File Scope (15, exact):
+  docs/deferred_items_log.md
+  docs/hermes_controlled_research_runtime_contract.md
+  docs/project_status.md
+  docs/repo_truth_index.md
+  docs/status_entries/WP175M.md
+  docs/wp_specs/WP175M/wp_prompt.txt
+  docs/wp_specs/WP175M/wp_spec.json
+  src/research_runtime/hermes_controlled_runtime/__init__.py
+  src/research_runtime/hermes_controlled_runtime/controller.py
+  src/research_runtime/hermes_controlled_runtime/models.py
+  src/research_runtime/hermes_controlled_runtime/policy.py
+  tests/research_runtime/hermes_controlled_runtime/test_controller.py
+  tests/research_runtime/hermes_controlled_runtime/test_models.py
+  tests/test_project_status_docs.py
+  tests/test_repo_truth_docs.py
+
+Normative Rule Matrix:
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|draft_contract|required_fields|generated_vs_validator|REQUIRE|sets_identical|draft_output_schema.required_fields|R002
+NR002|draft_contract|request_id|frozen_request|PRESERVE_EXACT|request_id_reproducible|draft_output_schema.request_id_const|R010
+NR003|diagnostics|structure|schema_failure|REQUIRE|canonical_tokens_only|draft_diagnostics.canonical_tokens_only|R004
+NR004|diagnostics|structure|rejected_value|FORBID|not_retained|draft_diagnostics.canonical_tokens_only|R005
+NR005|receipt|provider_model|schema_failure|REQUIRE|usage_evidence_preserved|receipt.provider_model_evidence_on_schema_failure|R014
+NR006|receipt|session_id|valid_usage|REQUIRE|digest_only|receipt.usage_session_id_digest|R017
+NR007|receipt|session_id|raw_value|FORBID|not_retained|receipt.usage_session_id_digest|R017
+END_NORMATIVE_RULE_MATRIX_V1
+
+Negative-Test Matrix:
+  - The synthetic H1 #3 alternative-shape document fails DRAFT_FIELD_MISSING with first
+    missing canonical field advisory_only (never repaired, never normalized).
+  - An empty falsification list and empty/invalid source_references still fail closed.
+  - A missing or false authority flag still fails closed (no wrapper injection).
+  - Diagnostics never emit a rejected value, an arbitrary model key, or a raw session id.
+  - A pre-research preflight failure uses deterministic safe evidence defaults.
+
+Evidence Plan (requirement mapping):
+  The wp_spec.json evidence_plan maps R001-R025 to focused model/controller/docs tests,
+  the readiness gate, and exact-head hosted CI. Run the focused model and controller
+  suites, the docs-truth suites, one authoritative full suite, the readiness gate with
+  --check-diff, and the artifact/diff/pip/security guards.
+
+Successor Boundary:
+  Successor boundary: WP176 and a SEPARATE human/governance decision on whether a fourth
+  real S10-GATE-H1 run (H1 #4) is justified. H1 #1, H1 #2, and H1 #3 are already
+  consumed; the next possible invocation is H1 #4, which WP175M does NOT authorize.
+  S10-ALPHA-01 remains blocked; Gate C is NOT AUTHORIZED; the wallet-intelligence
+  roadmap anchor is preserved and not implemented.
+
+Hard Stops:
+  STOP STATE_DRIFT if base/open-PR state differs. STOP SCOPE_EXPANSION_REQUIRED if a
+  path outside the 15 is required. STOP CONTRACT_VALIDATOR_DRIFT if the generated schema
+  and validator cannot share one canonical source. STOP REQUEST_IDENTITY_DRIFT if the
+  frozen request no longer derives d977. STOP DESIGN_TOO_LARGE if the frozen request
+  cannot fit the Windows argv guard. STOP SUBSTANTIVE_REPAIR_REQUIRED if success would
+  require fabricating substantive research. STOP RAW_OUTPUT_RETENTION_REQUIRED if
+  observability would require retaining raw rejected output. STOP AUTHORITY_BROADENING
+  if any change grants Hermes execution/risk/credential/order/live authority. STOP
+  RECEIPT_EVIDENCE_UNSAFE if diagnostics could contain arbitrary model-controlled
+  names/values or a raw session id. STOP HOSTED_VALIDATION_FAILED for any non-authorized
+  hosted failure.
+
+Report-Back:
+  Report back to Side11 with the exact base and head SHAs, PR number and state, the
+  changed-file set, the H1 #3 root cause and forensic summary, the contract/receipt
+  design, the focused/full/readiness/guard/hosted-CI evidence, and the authority
+  posture (H1 #4 NOT AUTHORIZED, provider/Firecrawl/OAuth/H1 calls 0, Gate C not
+  authorized, capital 0, orders 0, merge authorized NO).

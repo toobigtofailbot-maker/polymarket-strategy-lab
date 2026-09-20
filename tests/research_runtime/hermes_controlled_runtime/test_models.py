@@ -347,3 +347,433 @@ def _iter_str_values(obj):
     elif isinstance(obj, list):
         for item in obj:
             yield from _iter_str_values(item)
+
+
+# ===========================================================================
+# WP175M: canonical draft output contract, prompt envelope, and H1 #3 replay
+# ===========================================================================
+
+from src.research_runtime.hermes_controlled_runtime import (  # noqa: E402
+    CONFIDENCE_LABELS,
+    CONFIDENCE_LABELS_SORTED,
+    DRAFT_LIST_FIELDS,
+    DRAFT_OUTPUT_CONTRACT_ID,
+    DRAFT_REQUIRED_TOP_LEVEL_FIELDS,
+    DraftStructureDiagnostics,
+    HermesResearchEnvelope,
+    MAX_COMMAND_LINE_CHARS,
+    PolicyBroadeningError,
+    SOURCE_CLASSES_SORTED,
+    build_hermes_argv,
+    build_research_draft_output_schema,
+    build_research_envelope,
+    inspect_research_draft_structure,
+    research_draft_output_schema_digest,
+)
+from src.research_runtime.hermes_controlled_runtime import policy as pol  # noqa: E402
+
+
+# The exact H1 #3 ALTERNATIVE structured shape (structural NAMES ONLY; harmless
+# synthetic values -- never raw H1 research content). It carries the two canonical
+# fields Hermes did include plus the alternative top-level keys it improvised.
+_H1_3_ALTERNATIVE_KEYS = (
+    "as_of",
+    "completeness",
+    "cross_category_assessment",
+    "evidence_map",
+    "generated_at",
+    "research_category",
+    "research_question",
+    "scope",
+    "sources",
+)
+
+
+def _h1_3_shape_document(request_id: str) -> dict[str, object]:
+    doc: dict[str, object] = {
+        "schema_version": DRAFT_SCHEMA_VERSION,
+        "request_id": request_id,
+    }
+    for key in _H1_3_ALTERNATIVE_KEYS:
+        doc[key] = "synthetic-placeholder"
+    return doc
+
+
+def _contract_compliant_draft(request_id: str, max_sources: int) -> dict[str, object]:
+    draft: dict[str, object] = {
+        "schema_version": DRAFT_SCHEMA_VERSION,
+        "request_id": request_id,
+        "research_summary": "A synthetic balanced summary of dummy public evidence.",
+        "confidence_label": "moderate",
+        "evidence_for": ["dummy supporting note"],
+        "evidence_against": ["dummy counter note"],
+        "uncertainties": ["dummy uncertainty"],
+        "known_missing_data": ["dummy missing datum"],
+        "falsification_checks_performed": ["searched for dummy disconfirming evidence"],
+        "limitations": ["public web only"],
+        "what_would_change_the_conclusion": ["a dummy official confirmation"],
+        "suggested_next_research_steps": ["monitor the dummy official channel"],
+        "source_references": [
+            {
+                "url": "https://docs.example.com/reference",
+                "title": "Documentation reference",
+                "source_class": "reference",
+            }
+        ],
+    }
+    for flag in DRAFT_AUTHORITY_FLAGS:
+        draft[flag] = True
+    return draft
+
+
+# --- M01-M12: contract derives from validator constants ----------------------
+
+
+def test_m01_required_top_level_field_set_is_deterministic():
+    assert DRAFT_REQUIRED_TOP_LEVEL_FIELDS[0:2] == ("schema_version", "request_id")
+    # advisory_only must be the first missing authority/governance field.
+    assert DRAFT_REQUIRED_TOP_LEVEL_FIELDS[2] == "advisory_only"
+    expected = (
+        ("schema_version", "request_id")
+        + tuple(DRAFT_AUTHORITY_FLAGS)
+        + ("research_summary", "confidence_label")
+        + tuple(DRAFT_LIST_FIELDS)
+        + ("source_references",)
+    )
+    assert DRAFT_REQUIRED_TOP_LEVEL_FIELDS == expected
+
+
+def _schema(request_id="hermesresearchrequest:sha256:deadbeef", max_sources=8):
+    return build_research_draft_output_schema(
+        expected_request_id=request_id, max_sources=max_sources
+    )
+
+
+def test_m02_authority_flags_derive_from_constant():
+    schema = _schema()
+    for flag in DRAFT_AUTHORITY_FLAGS:
+        assert schema["properties"][flag] == {"type": "boolean", "const": True}
+
+
+def test_m03_list_fields_derive_from_constant():
+    schema = _schema()
+    for field in DRAFT_LIST_FIELDS:
+        spec = schema["properties"][field]
+        assert spec["type"] == "array"
+        assert spec["items"]["type"] == "string"
+        assert spec["maxItems"] == m.DRAFT_LIST_MAX_ITEMS
+        assert spec["items"]["maxLength"] == m.DRAFT_LIST_ITEM_MAX_LEN
+
+
+def test_m04_confidence_enum_derives_from_labels():
+    schema = _schema()
+    assert schema["properties"]["confidence_label"]["enum"] == list(CONFIDENCE_LABELS_SORTED)
+    assert set(CONFIDENCE_LABELS_SORTED) == set(CONFIDENCE_LABELS)
+
+
+def test_m05_source_class_enum_derives_from_source_classes():
+    schema = _schema()
+    enum = schema["properties"]["source_references"]["items"]["properties"]["source_class"]["enum"]
+    assert enum == list(SOURCE_CLASSES_SORTED)
+
+
+def test_m06_source_max_derives_from_request_and_absolute_cap():
+    assert _schema(max_sources=5)["properties"]["source_references"]["maxItems"] == 5
+    # capped at the absolute maximum
+    assert _schema(max_sources=999)["properties"]["source_references"]["maxItems"] == MAX_SOURCES_ABSOLUTE
+
+
+def test_m07_falsification_list_schema_is_non_empty():
+    schema = _schema()
+    assert schema["properties"]["falsification_checks_performed"]["minItems"] == 1
+    # other list fields are not forced non-empty (validator allows empty there)
+    assert "minItems" not in schema["properties"]["evidence_for"]
+
+
+def test_m08_source_references_schema_is_non_empty():
+    assert _schema()["properties"]["source_references"]["minItems"] == 1
+
+
+def test_m09_output_contract_canonical_serialization_stable():
+    a = m.canonical_json_bytes(_schema())
+    b = m.canonical_json_bytes(_schema())
+    assert a == b
+
+
+def test_m10_output_contract_digest_stable_for_identical_inputs():
+    assert research_draft_output_schema_digest(_schema()) == research_draft_output_schema_digest(_schema())
+    # a different request id changes the digest
+    assert research_draft_output_schema_digest(_schema(request_id="hermesresearchrequest:sha256:abc")) != \
+        research_draft_output_schema_digest(_schema())
+
+
+def test_m11_exact_request_id_embedded_as_const():
+    schema = _schema(request_id="hermesresearchrequest:sha256:d977")
+    assert schema["properties"]["request_id"] == {"type": "string", "const": "hermesresearchrequest:sha256:d977"}
+
+
+def test_m12_exact_draft_schema_version_embedded_as_const():
+    schema = _schema()
+    assert schema["properties"]["schema_version"] == {"type": "string", "const": DRAFT_SCHEMA_VERSION}
+    assert schema["draft_schema_version"] == DRAFT_SCHEMA_VERSION
+    assert schema["schema_id"] == DRAFT_OUTPUT_CONTRACT_ID
+
+
+def test_contract_required_set_equals_validator_required_set():
+    """STOP CONTRACT_VALIDATOR_DRIFT: generated + validator share one required set."""
+    schema = _schema()
+    assert schema["required"] == list(DRAFT_REQUIRED_TOP_LEVEL_FIELDS)
+
+
+# --- M13-M18: H1 #3 alternative-shape structural failure ---------------------
+
+
+def test_m13_h1_3_alternative_shape_fails_draft_field_missing():
+    req = build_research_run_request(_base_request_fields())
+    doc = _h1_3_shape_document(req.request_id)
+    with pytest.raises(HermesResearchError) as exc:
+        validate_research_draft(
+            json.dumps(doc), expected_request_id=req.request_id, max_sources=req.max_sources
+        )
+    assert exc.value.code == "DRAFT_FIELD_MISSING"
+
+
+def test_m14_m15_m16_diagnostics_present_missing_first():
+    req = build_research_run_request(_base_request_fields())
+    doc = _h1_3_shape_document(req.request_id)
+    diag = inspect_research_draft_structure(json.dumps(doc))
+    assert isinstance(diag, DraftStructureDiagnostics)
+    assert diag.status == "AVAILABLE"
+    assert diag.present_required_fields == ("schema_version", "request_id")
+    assert diag.first_missing_field == "advisory_only"
+    # missing set is exactly the remaining canonical required fields
+    assert set(diag.missing_required_fields) == set(DRAFT_REQUIRED_TOP_LEVEL_FIELDS) - {
+        "schema_version",
+        "request_id",
+    }
+
+
+def test_m17_m18_diagnostics_contain_no_raw_or_arbitrary_values():
+    req = build_research_run_request(_base_request_fields())
+    doc = _h1_3_shape_document(req.request_id)
+    diag = inspect_research_draft_structure(json.dumps(doc))
+    all_tokens = set(diag.present_required_fields) | set(diag.missing_required_fields)
+    if diag.first_missing_field is not None:
+        all_tokens.add(diag.first_missing_field)
+    # every emitted token is a canonical required field name; no alternative model key
+    assert all_tokens.issubset(set(DRAFT_REQUIRED_TOP_LEVEL_FIELDS))
+    for alt_key in _H1_3_ALTERNATIVE_KEYS:
+        assert alt_key not in all_tokens
+    assert "synthetic-placeholder" not in all_tokens
+
+
+def test_diagnostics_invalid_output_status():
+    diag = inspect_research_draft_structure("{not json")
+    assert diag.status == "UNAVAILABLE_INVALID_OUTPUT"
+    assert diag.present_required_fields == ()
+    assert set(diag.missing_required_fields) == set(DRAFT_REQUIRED_TOP_LEVEL_FIELDS)
+
+
+# --- M19-M24: valid synthetic contract-compliant draft -----------------------
+
+
+def test_m19_synthetic_contract_compliant_draft_passes():
+    req = build_research_run_request(_base_request_fields())
+    draft = _contract_compliant_draft(req.request_id, req.max_sources)
+    validated = validate_research_draft(
+        json.dumps(draft), expected_request_id=req.request_id, max_sources=req.max_sources
+    )
+    assert isinstance(validated, ValidatedResearchDraft)
+    # generated schema and validator required-field sets are identical
+    schema = build_research_draft_output_schema(
+        expected_request_id=req.request_id, max_sources=req.max_sources
+    )
+    assert set(schema["required"]) == set(DRAFT_REQUIRED_TOP_LEVEL_FIELDS)
+    diag = inspect_research_draft_structure(json.dumps(draft))
+    assert diag.missing_required_fields == ()
+
+
+@pytest.mark.parametrize("flag", DRAFT_AUTHORITY_FLAGS)
+def test_m20_all_authority_flags_required_true(flag):
+    req = build_research_run_request(_base_request_fields())
+    draft = _contract_compliant_draft(req.request_id, req.max_sources)
+    draft[flag] = False
+    with pytest.raises(HermesResearchError):
+        validate_research_draft(
+            json.dumps(draft), expected_request_id=req.request_id, max_sources=req.max_sources
+        )
+
+
+def test_m21_non_empty_falsification_required():
+    req = build_research_run_request(_base_request_fields())
+    draft = _contract_compliant_draft(req.request_id, req.max_sources)
+    draft["falsification_checks_performed"] = []
+    with pytest.raises(HermesResearchError) as exc:
+        validate_research_draft(
+            json.dumps(draft), expected_request_id=req.request_id, max_sources=req.max_sources
+        )
+    assert exc.value.code == "DRAFT_UNSAFE_CONTENT"
+
+
+def test_m22_non_empty_valid_source_references_required():
+    req = build_research_run_request(_base_request_fields())
+    draft = _contract_compliant_draft(req.request_id, req.max_sources)
+    draft["source_references"] = []
+    with pytest.raises(HermesResearchError) as exc:
+        validate_research_draft(
+            json.dumps(draft), expected_request_id=req.request_id, max_sources=req.max_sources
+        )
+    assert exc.value.code == "DRAFT_SOURCE_INVALID"
+
+
+def test_m23_confidence_closed_vocabulary_preserved():
+    req = build_research_run_request(_base_request_fields())
+    draft = _contract_compliant_draft(req.request_id, req.max_sources)
+    draft["confidence_label"] = "certain"  # not in vocabulary
+    with pytest.raises(HermesResearchError):
+        validate_research_draft(
+            json.dumps(draft), expected_request_id=req.request_id, max_sources=req.max_sources
+        )
+
+
+def test_m24_source_class_closed_vocabulary_preserved():
+    req = build_research_run_request(_base_request_fields())
+    draft = _contract_compliant_draft(req.request_id, req.max_sources)
+    draft["source_references"][0]["source_class"] = "blog"  # not in vocabulary
+    with pytest.raises(HermesResearchError) as exc:
+        validate_research_draft(
+            json.dumps(draft), expected_request_id=req.request_id, max_sources=req.max_sources
+        )
+    assert exc.value.code == "DRAFT_SOURCE_INVALID"
+
+
+# --- P01-P08: prompt envelope --------------------------------------------------
+
+
+def test_p01_permanent_system_instruction_version_is_1_1_0():
+    assert pol.PERMANENT_SYSTEM_INSTRUCTION_VERSION == "hermes-research-system-instruction/1.1.0"
+
+
+def test_p02_envelope_includes_draft_output_schema():
+    req = build_research_run_request(_base_request_fields())
+    env = build_research_envelope(req)
+    assert isinstance(env, HermesResearchEnvelope)
+    assert "draft_output_schema" in env.as_mapping()
+    assert env.as_mapping()["draft_output_schema"]["type"] == "object"
+
+
+def test_p03_envelope_schema_contains_every_canonical_required_field():
+    req = build_research_run_request(_base_request_fields())
+    env = build_research_envelope(req)
+    schema = env.as_mapping()["draft_output_schema"]
+    for field in DRAFT_REQUIRED_TOP_LEVEL_FIELDS:
+        assert field in schema["properties"]
+    assert schema["required"] == list(DRAFT_REQUIRED_TOP_LEVEL_FIELDS)
+    # exact request id + draft schema version embedded as constants
+    assert schema["properties"]["request_id"]["const"] == req.request_id
+    assert schema["properties"]["schema_version"]["const"] == DRAFT_SCHEMA_VERSION
+    # confidence + source-class enums present
+    assert schema["properties"]["confidence_label"]["enum"] == list(CONFIDENCE_LABELS_SORTED)
+    assert schema["properties"]["source_references"]["items"]["properties"]["source_class"]["enum"] == list(SOURCE_CLASSES_SORTED)
+    # source cap aligned to request max_sources
+    assert schema["properties"]["source_references"]["maxItems"] == req.max_sources
+
+
+def test_p04_instruction_forbids_renaming_canonical_fields():
+    instr = pol.PERMANENT_SYSTEM_INSTRUCTION
+    assert "draft_output_schema" in instr
+    assert "EXACTLY" in instr
+    for alias in ("sources", "evidence_map", "completeness", "cross_category_assessment"):
+        assert alias in instr
+    assert "exactly one JSON object" in instr
+
+
+def test_p05_request_identity_independent_of_output_schema():
+    """The frozen H1 request id (d977...) reproduces because request identity derives
+    ONLY from public_fields(); the new draft_output_schema lives in the envelope and
+    never touches request identity."""
+    a = build_research_run_request(_base_request_fields())
+    b = build_research_run_request(_base_request_fields())
+    assert a.request_id == b.request_id
+    env = build_research_envelope(a)
+    # envelope carries the request id verbatim; building the envelope does not mutate it
+    assert env.request_id == a.request_id
+    assert "draft_output_schema" not in a.public_fields()
+
+
+def _request_for_argv() -> dict[str, object]:
+    # A representative controlled request in the exact frozen H1 provider/model shape.
+    fields = _base_request_fields()
+    fields["provider_label"] = "openai-codex"
+    fields["model_label"] = "gpt-5.6-sol"
+    return fields
+
+
+def _max_legal_request_fields() -> dict[str, object]:
+    fields = _base_request_fields()
+    fields["research_question"] = "a" * m._MAX_LONG_TEXT
+    fields["research_objective"] = "b" * m._MAX_LONG_TEXT
+    fields["public_market_context"] = "c" * m._MAX_LONG_TEXT
+    fields["allowed_research_scope"] = sorted(m.ALLOWED_RESEARCH_SCOPE_TOKENS)
+    fields["required_source_types"] = sorted(m.REQUIRED_SOURCE_TYPES)
+    fields["max_sources"] = MAX_SOURCES_ABSOLUTE
+    return fields
+
+
+def test_p06_frozen_shape_request_argv_fits_command_line_guard():
+    req = build_research_run_request(_request_for_argv())
+    env = build_research_envelope(req)
+    prompt = env.to_prompt_string()
+    argv = build_hermes_argv("hermes", req, prompt)
+    assert argv[-2] == "-z" and argv[-1] == prompt
+    import subprocess as _sp
+    assert len(_sp.list2cmdline(list(argv))) <= MAX_COMMAND_LINE_CHARS
+
+
+def test_p07_max_legal_request_preserves_command_line_guard():
+    req = build_research_run_request(_max_legal_request_fields())
+    env = build_research_envelope(req)
+    prompt = env.to_prompt_string()
+    # the max legal request still fits after schema embedding
+    argv = build_hermes_argv("hermes", req, prompt)
+    assert len(argv) >= 1
+    # the CreateProcess guard is not weakened: an oversized prompt still fails closed
+    with pytest.raises(PolicyBroadeningError) as exc:
+        build_hermes_argv("hermes", req, "x" * (pol.MAX_PROMPT_BYTES + 1))
+    assert exc.value.code in {"POLICY_PROMPT_TOO_LARGE", "POLICY_COMMAND_LINE_TOO_LARGE"}
+
+
+def test_p08_envelope_has_no_repo_path_or_credentials():
+    req = build_research_run_request(_base_request_fields())
+    env = build_research_envelope(req)
+    text = env.to_prompt_string()
+    for pattern in m._SECRET_PATTERNS:
+        assert pattern.search(text) is None, pattern.pattern
+    for marker in ("FIRECRAWL_API_KEY", "OPENAI_API_KEY", "local_data", "HERMES_HOME", "C:\\\\", "/home/"):
+        assert marker not in text
+
+
+# --- Section 22: offline H1 #3 contract replay (no provider/Hermes/Firecrawl) --
+
+
+def test_offline_h1_3_contract_replay():
+    req = build_research_run_request(_request_for_argv())
+    # OLD failure shape: alternative top-level schema fails DRAFT_FIELD_MISSING, first
+    # missing canonical field is advisory_only.
+    old = _h1_3_shape_document(req.request_id)
+    with pytest.raises(HermesResearchError) as exc:
+        validate_research_draft(
+            json.dumps(old), expected_request_id=req.request_id, max_sources=req.max_sources
+        )
+    assert exc.value.code == "DRAFT_FIELD_MISSING"
+    assert inspect_research_draft_structure(json.dumps(old)).first_missing_field == "advisory_only"
+    # NEW prompt: explicitly embeds the canonical schema guidance.
+    env = build_research_envelope(req)
+    schema = env.as_mapping()["draft_output_schema"]
+    assert schema["required"] == list(DRAFT_REQUIRED_TOP_LEVEL_FIELDS)
+    assert schema["properties"]["request_id"]["const"] == req.request_id
+    # SYNTHETIC compliant output validates without any post-generation repair.
+    good = _contract_compliant_draft(req.request_id, req.max_sources)
+    validate_research_draft(
+        json.dumps(good), expected_request_id=req.request_id, max_sources=req.max_sources
+    )

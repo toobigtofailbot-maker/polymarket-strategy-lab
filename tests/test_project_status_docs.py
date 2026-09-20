@@ -4340,3 +4340,85 @@ def test_wp175l_sanitized_windows_runtime_registered() -> None:
         "src/research_runtime/hermes_controlled_runtime/policy.py",
     ):
         assert path not in scope["required_changed_files"]
+
+
+# ── WP175M: Hermes draft prompt contract alignment and schema diagnostics ──────
+
+
+def test_wp175m_draft_contract_alignment_registered() -> None:
+    project = _read()
+    fragment = (STATUS_ENTRIES / "WP175M.md").read_text(encoding="utf-8")
+    contract = (
+        REPO_ROOT / "docs" / "hermes_controlled_research_runtime_contract.md"
+    ).read_text(encoding="utf-8")
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "WP175M" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    combined = "\n".join((project, fragment, contract))
+    # WP175M is the current review target; WP175L is reconciled as merged.
+    assert "WP175M current review target" in project
+    assert "WP175L / PR #185 merged: YES" in project
+    assert "S10-HERMES-01E" in combined
+    assert "BOUNDED_HERMES_DRAFT_CONTRACT_ALIGNMENT_AND_SCHEMA_DIAGNOSTICS" in combined
+    assert "Governance track: RUNTIME" in project and "Risk level: 3" in project
+    assert "Exact changed-file scope: 15" in project
+    # H1 #3 incident + root cause truth (three H1 runs consumed historically).
+    assert "Historical real H1 research invocations consumed: 3" in combined
+    assert "OUTPUT_SCHEMA_INVALID / DRAFT_FIELD_MISSING" in combined
+    assert "PROMPT_OUTPUT_CONTRACT_SCHEMA_NOT_ACTUALLY_EMBEDDED" in combined
+    assert "advisory_only" in combined
+    # Web tool wording does not overclaim remote Firecrawl HTTP telemetry.
+    assert "web_search observed" in combined and "web_extract observed" in combined
+    assert "remote Firecrawl HTTP independently proven: NO" in combined or "remote Firecrawl HTTP" in combined
+    assert "UNAVAILABLE_ON_PINNED_V0_21_3" in combined
+    assert "title_generation" in combined
+    # Contract + instruction + receipt design.
+    assert "build_research_draft_output_schema" in combined
+    assert "CONTRACT_VALIDATOR_DRIFT" in combined
+    assert "hermes-research-system-instruction/1.1.0" in combined
+    assert "hermes-research-run-receipt/1.3.0" in combined
+    assert "authority-flag injection: DECLINED" in combined
+    assert "substantive post-hoc repair: NONE" in combined
+    assert "usage_session_id_digest" in combined
+    # Frozen request id preserved.
+    assert "d977b2073c685c64a6398475ba437aa9cc63be517b2260c513ffd4e9ba795b69" in combined
+    # Current WP175M successor names the FOURTH real H1 run (H1 #4), not third.
+    wp175m_line = next(
+        line for line in project.splitlines()
+        if line.startswith("# WP175M current review target")
+    )
+    assert "Historical real H1 research invocations consumed: 3" in wp175m_line
+    assert "H1 #4: NOT AUTHORIZED" in wp175m_line
+    assert "fourth real S10-GATE-H1 run (H1 #4)" in wp175m_line
+    assert "third real S10-GATE-H1 run" not in wp175m_line
+    # Authority + successor boundary.
+    assert "RUNTIME ACTIVATED: NO" in project
+    assert "H1 #4: NOT AUTHORIZED" in combined
+    assert "S10-ALPHA-01: BLOCKED" in project
+    assert "Gate C: NOT AUTHORIZED" in combined
+    assert "Alpha Factory: NOT STARTED" in combined
+    assert "WP176" in combined and "NOT STARTED" in combined
+    assert "Merge authorized: NO" in combined
+    # Wallet roadmap anchor persisted (not global; no live shortcut).
+    assert "Wallet-intelligence roadmap anchor" in project
+    assert "wallet gate NOT global" in project
+    scope = spec["scope"]
+    assert spec["identity"]["risk_level"] == 3
+    assert scope["exact_scope_required"] is True
+    assert scope["max_changed_files"] == 15
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == 15
+    for path in (
+        "src/research_runtime/hermes_controlled_runtime/models.py",
+        "src/research_runtime/hermes_controlled_runtime/policy.py",
+        "src/research_runtime/hermes_controlled_runtime/controller.py",
+    ):
+        assert path in scope["required_changed_files"]
+    # WP175M is a prompt/output-contract correction: runner.py and response_capture.py stay out.
+    for path in (
+        "src/research_runtime/hermes_controlled_runtime/runner.py",
+        "src/research_runtime/hermes_controlled_runtime/response_capture.py",
+    ):
+        assert path not in scope["required_changed_files"]

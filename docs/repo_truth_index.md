@@ -1,6 +1,63 @@
 # Repo Truth Index
 
-## WP175L Sanitized Windows Runtime Envelope And Startup Preflight (current review target)
+## WP175M Hermes Draft Prompt Contract Alignment And Schema Diagnostics (current review target)
+
+WP175M / Side11 capability handle S10-HERMES-01E is the RUNTIME-track, risk-3, exact
+15-file bounded alignment of the Hermes draft prompt/output contract and sanitized
+schema-failure observability on `claude/wp175m-draft-contract-alignment`, based on merged
+WP175L / PR #185 merged at `b36155201304126339482ea74e77181466181b9c`. Its source changes
+are `src/research_runtime/hermes_controlled_runtime/models.py`, `policy.py`,
+`controller.py`, and `__init__.py`; `response_capture.py`, `runner.py`, dependencies,
+locks, and workflows are unchanged.
+
+Historical real H1 research invocations consumed = 3. H1 #3 — the THIRD real S10-GATE-H1
+run — was consumed and, from the runtime/usage perspective, completed a real controlled
+research/model interaction (Hermes child exit 0, not timed out, stderr empty, VALID usage
+report with `api_call_count` 5), yet its terminal result was `OUTPUT_SCHEMA_INVALID` /
+`DRAFT_FIELD_MISSING`. Read-only forensics uniquely identified the persisted session by
+the exact frozen request id: the final JSON had correct `schema_version` and `request_id`
+but all other canonical required fields absent, an alternative structured schema improvised
+(`as_of`, `completeness`, `cross_category_assessment`, `evidence_map`, `generated_at`,
+`research_category`, `research_question`, `scope`, `sources`), validator first missing
+canonical field `advisory_only`, and `web_search`/`web_extract` observed with no unexpected
+tools. Remote Firecrawl HTTP is NOT independently proven (runtime tool telemetry is
+`UNAVAILABLE_ON_PINNED_V0_21_3`). The `title_generation` usage-row lesson: `session_model_usage`
+aggregates an auxiliary title-generation row, so exact aggregate equality is not a safe
+session-identity method; the main research route usage matched the receipt.
+
+H1 #3 exact root cause: `PROMPT_OUTPUT_CONTRACT_SCHEMA_NOT_ACTUALLY_EMBEDDED` — the
+permanent instruction referenced a "provided research-draft schema", but the envelope
+supplied only `draft_schema_version`, never the deterministic field contract
+`validate_research_draft` enforces. WP175M fixes the contract BEFORE generation:
+`models.py` owns `build_research_draft_output_schema` derived from the SAME constants the
+validator enforces (STOP CONTRACT_VALIDATOR_DRIFT); `_DRAFT_LIST_FIELDS` becomes the public
+`DRAFT_LIST_FIELDS` plus a canonical ordered `DRAFT_REQUIRED_TOP_LEVEL_FIELDS`; the schema
+embeds every required field, authority `const: true` flags, confidence/source-class enums,
+validator-aligned bounds, and the exact request id and draft schema version as constants.
+`policy.py` bumps the instruction to `hermes-research-system-instruction/1.1.0` (schema
+authoritative, exact field names, no aliases, real substantive research) and the envelope
+carries an authoritative `draft_output_schema`. Authority-flag injection is DECLINED (all
+draft authority flags remain MODEL-OUTPUT REQUIRED and exactly `true`); there is NO
+substantive post-hoc repair (a wrong schema still fails closed). Sanitized diagnostics
+(`inspect_research_draft_structure`) retain only static canonical field-name tokens and
+fixed statuses, never rejected values or a raw session id. The receipt is bumped
+`hermes-research-run-receipt/1.2.0` -> `hermes-research-run-receipt/1.3.0` with additive
+`prompt_envelope_sha256`, `draft_output_contract_sha256`, draft diagnostics, and
+`usage_session_id_digest`. With valid usage the actual provider/model are preserved before
+draft validation, so a schema failure keeps `verified_provider` `openai-codex` /
+`verified_model` `gpt-5.6-sol` while the terminal status stays `OUTPUT_SCHEMA_INVALID`; the
+mismatch precedence after a valid draft is unchanged. The Hermes pin, provider `openai-codex`,
+model `gpt-5.6-sol`, the `web`-only toolset, retry/managed profile, runtime envelope,
+request identity, and the frozen H1 request id
+`d977b2073c685c64a6398475ba437aa9cc63be517b2260c513ffd4e9ba795b69` are UNCHANGED. H1 #4 is
+NOT AUTHORIZED, S10-ALPHA-01 is BLOCKED, Gate C is NOT AUTHORIZED, Alpha Factory is NOT
+STARTED, WP176 is NOT STARTED, and merge is NOT AUTHORIZED. The relevant post-merge gate is
+a controlled structured-output contract validation using the exact patched runtime; three
+real H1 invocations (H1 #1, H1 #2, H1 #3) are already consumed, so any fourth real
+S10-GATE-H1 run (H1 #4) remains a separate human/governance decision that WP175M does not
+authorize.
+
+## WP175L Sanitized Windows Runtime Envelope And Startup Preflight (merged, PR #185)
 
 WP175L / Side11 capability handle S10-HERMES-01D is the RUNTIME-track, risk-3, exact
 12-file bounded correction of the controlled Hermes wrapper runtime environment and

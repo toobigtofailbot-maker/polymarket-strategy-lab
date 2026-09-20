@@ -65,11 +65,13 @@ from __future__ import annotations
 import dataclasses
 import re
 import subprocess
+from typing import Mapping
 
 from .models import (
     HermesResearchRunRequest,
     ITERATION_CAP_STATUS,
     MAX_TRANSPORT_RETRIES_ABSOLUTE,
+    build_research_draft_output_schema,
     canonical_json_bytes,
     content_address,
     sha256_hex,
@@ -490,7 +492,12 @@ def build_hermes_argv(
 # Deterministic compact research envelope (section 9)
 # ---------------------------------------------------------------------------
 
-PERMANENT_SYSTEM_INSTRUCTION_VERSION = "hermes-research-system-instruction/1.0.0"
+# WP175M: bumped 1.0.0 -> 1.1.0. The permanent instruction now states that the
+# envelope's ``draft_output_schema`` is the authoritative response contract and that
+# canonical field names must be used exactly (never renamed/substituted). The full
+# field list is NOT duplicated in prose -- the machine-generated schema is the source
+# of truth.
+PERMANENT_SYSTEM_INSTRUCTION_VERSION = "hermes-research-system-instruction/1.1.0"
 
 PERMANENT_SYSTEM_INSTRUCTION = (
     "You are a Polymarket public-research assistant. Your role is advisory and "
@@ -502,8 +509,17 @@ PERMANENT_SYSTEM_INSTRUCTION = (
     "uncertainty and missing data. Do not request credentials or private data. "
     "Do not produce execution, risk, order, or live instructions; do not place, "
     "cancel, sign, or submit any order. A human and deterministic review is "
-    "required for every output. Return exactly one JSON object matching the "
-    "provided research-draft schema as your final response."
+    "required for every output. "
+    "Your final response MUST be exactly one JSON object that conforms to the "
+    "`draft_output_schema` provided in this envelope; that schema is authoritative. "
+    "Use the field names EXACTLY as specified there and include EVERY required field. "
+    "Do not rename or substitute canonical fields with aliases such as `sources`, "
+    "`evidence_map`, `completeness`, or `cross_category_assessment`. Every authority "
+    "flag must be present and exactly the boolean true. The substantive research "
+    "fields must reflect real research you actually performed and must never be "
+    "fabricated placeholders: `source_references` must contain the real sources you "
+    "used and `falsification_checks_performed` must record the actual disconfirming "
+    "work you did."
 )
 
 
@@ -522,6 +538,11 @@ class HermesResearchEnvelope:
     required_source_types: tuple[str, ...]
     max_sources: int
     draft_schema_version: str
+    # WP175M: the authoritative deterministic draft output contract, generated from the
+    # validator's canonical constants. It supplies the actual field-name contract the
+    # H1 #3 prompt only referenced by version string. Included in the canonical query
+    # bytes, prompt string, and envelope digest.
+    draft_output_schema: Mapping[str, object]
 
     def to_query_bytes(self) -> bytes:
         return canonical_json_bytes(self.as_mapping())
@@ -542,11 +563,17 @@ class HermesResearchEnvelope:
             "required_source_types": list(self.required_source_types),
             "max_sources": self.max_sources,
             "draft_schema_version": self.draft_schema_version,
+            "draft_output_schema": dict(self.draft_output_schema),
         }
 
     @property
     def envelope_digest(self) -> str:
         return sha256_hex(self.to_query_bytes())
+
+    @property
+    def draft_output_contract_digest(self) -> str:
+        """SHA-256 of the canonical serialization of the embedded output contract."""
+        return sha256_hex(canonical_json_bytes(dict(self.draft_output_schema)))
 
 
 def build_research_envelope(request: HermesResearchRunRequest) -> HermesResearchEnvelope:
@@ -554,6 +581,10 @@ def build_research_envelope(request: HermesResearchRunRequest) -> HermesResearch
     project history, project memory, or the Alpha Factory database."""
     from .models import DRAFT_SCHEMA_VERSION
 
+    draft_output_schema = build_research_draft_output_schema(
+        expected_request_id=request.request_id,
+        max_sources=request.max_sources,
+    )
     return HermesResearchEnvelope(
         system_instruction_version=PERMANENT_SYSTEM_INSTRUCTION_VERSION,
         system_instruction=PERMANENT_SYSTEM_INSTRUCTION,
@@ -566,6 +597,7 @@ def build_research_envelope(request: HermesResearchRunRequest) -> HermesResearch
         required_source_types=request.required_source_types,
         max_sources=request.max_sources,
         draft_schema_version=DRAFT_SCHEMA_VERSION,
+        draft_output_schema=draft_output_schema,
     )
 
 
