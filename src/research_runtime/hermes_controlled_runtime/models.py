@@ -150,6 +150,20 @@ DRAFT_REQUIRED_TOP_LEVEL_FIELDS = (
     "source_references",
 )
 
+# WP175M Finding G: canonical primitives shared EXACTLY by the validator and the
+# generated output schema so the model-facing contract describes precisely the set the
+# validator accepts (STOP CONTRACT_VALIDATOR_DRIFT).
+#
+# ``DRAFT_NON_WHITESPACE_PATTERN`` is a JSON-Schema search-style regex: ``\S`` matches
+# iff the string contains at least one non-whitespace character, which is exactly the
+# validator's ``value.strip()`` non-empty test for ``research_summary`` and source
+# titles. ``DRAFT_SOURCE_URL_PATTERN`` reproduces the accepted set of the former
+# case-insensitive HTTPS regex WITHOUT relying on a regex flag a schema consumer cannot
+# see: only the ``https`` prefix has alphabetic case, so it is spelled with explicit
+# character classes and the rest is unchanged.
+DRAFT_NON_WHITESPACE_PATTERN = r"\S"
+DRAFT_SOURCE_URL_PATTERN = r"^[hH][tT][tT][pP][sS]://[^\s/$.?#].[^\s]*$"
+
 # Validator-aligned draft bounds (shared by the validator and the output-schema helper).
 DRAFT_RESEARCH_SUMMARY_MAX_LEN = _MAX_LONG_TEXT * 4
 DRAFT_LIST_MAX_ITEMS = _MAX_LIST_ITEMS
@@ -165,6 +179,9 @@ SOURCE_CLASSES_SORTED = tuple(sorted(SOURCE_CLASSES))
 DRAFT_DIAGNOSTICS_AVAILABLE = "AVAILABLE"
 DRAFT_DIAGNOSTICS_UNAVAILABLE_INVALID = "UNAVAILABLE_INVALID_OUTPUT"
 DRAFT_DIAGNOSTICS_NOT_REACHED = "NOT_REACHED"
+
+# Compiled once from the shared pattern; reused by the validator (Finding G).
+_DRAFT_NON_WHITESPACE_RE = re.compile(DRAFT_NON_WHITESPACE_PATTERN)
 
 # ---------------------------------------------------------------------------
 # Fail-closed error type
@@ -710,7 +727,10 @@ class ValidatedResearchDraft:
     source_urls: tuple[str, ...]
 
 
-_URL_RE = re.compile(r"^https://[^\s/$.?#].[^\s]*$", re.IGNORECASE)
+# Finding G: compiled from the SAME canonical pattern the generated schema embeds. The
+# explicit ``[hH][tT]...`` prefix preserves the former ``re.IGNORECASE`` accepted set
+# (only the ``https`` prefix has alphabetic case) without a flag a schema consumer sees.
+_URL_RE = re.compile(DRAFT_SOURCE_URL_PATTERN)
 
 
 def _draft_str(value: object, *, max_len: int) -> str:
@@ -758,7 +778,7 @@ def validate_research_draft(
 
     research_summary = document.get("research_summary")
     research_summary = _draft_str(research_summary, max_len=DRAFT_RESEARCH_SUMMARY_MAX_LEN)
-    if not research_summary.strip():
+    if not _DRAFT_NON_WHITESPACE_RE.search(research_summary):
         raise _fail("DRAFT_SCHEMA_INVALID")
 
     confidence_label = document.get("confidence_label")
@@ -832,7 +852,11 @@ def _validate_source_references(
         source_class = item.get("source_class")
         if not isinstance(url, str) or not _URL_RE.match(url) or len(url) > DRAFT_SOURCE_URL_MAX_LEN:
             raise _fail("DRAFT_SOURCE_INVALID")
-        if not isinstance(title, str) or not title.strip() or len(title) > DRAFT_SOURCE_TITLE_MAX_LEN:
+        if (
+            not isinstance(title, str)
+            or not _DRAFT_NON_WHITESPACE_RE.search(title)
+            or len(title) > DRAFT_SOURCE_TITLE_MAX_LEN
+        ):
             raise _fail("DRAFT_SOURCE_INVALID")
         if source_class not in SOURCE_CLASSES:
             raise _fail("DRAFT_SOURCE_INVALID")
@@ -879,6 +903,7 @@ def build_research_draft_output_schema(
     properties["research_summary"] = {
         "type": "string",
         "minLength": 1,
+        "pattern": DRAFT_NON_WHITESPACE_PATTERN,
         "maxLength": DRAFT_RESEARCH_SUMMARY_MAX_LEN,
     }
     properties["confidence_label"] = {
@@ -906,13 +931,13 @@ def build_research_draft_output_schema(
             "properties": {
                 "url": {
                     "type": "string",
-                    "format": "uri",
-                    "pattern": "^https://",
+                    "pattern": DRAFT_SOURCE_URL_PATTERN,
                     "maxLength": DRAFT_SOURCE_URL_MAX_LEN,
                 },
                 "title": {
                     "type": "string",
                     "minLength": 1,
+                    "pattern": DRAFT_NON_WHITESPACE_PATTERN,
                     "maxLength": DRAFT_SOURCE_TITLE_MAX_LEN,
                 },
                 "source_class": {"type": "string", "enum": list(SOURCE_CLASSES_SORTED)},

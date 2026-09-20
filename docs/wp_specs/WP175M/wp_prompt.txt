@@ -154,6 +154,18 @@ Hard Stops:
   names/values or a raw session id. STOP HOSTED_VALIDATION_FAILED for any non-authorized
   hosted failure.
 
+Finding G (follow-up on the same PR #186):
+  Side11's exact-head review of interim head 6bd57f3 found the generated output contract
+  was not yet exactly validator-equivalent (STOP CONTRACT_VALIDATOR_DRIFT): research_summary
+  and source-title used only minLength while the validator rejects whitespace-only strings,
+  and the URL schema invented a validator-absent format: uri with a weaker, case-sensitive
+  pattern. The follow-up shares the exact remaining primitives — a canonical
+  DRAFT_NON_WHITESPACE_PATTERN backing both the validator non-whitespace tests and the
+  schema patterns, and one canonical DRAFT_SOURCE_URL_PATTERN compiling _URL_RE and embedded
+  verbatim in the schema (format: uri removed) — without broadening or narrowing validator
+  behavior and without changing the required-field set, receipt 1.3.0, or the frozen request
+  identity.
+
 Report-Back:
   Report back to Side11 with the exact base and head SHAs, PR number and state, the
   changed-file set, the H1 #3 root cause and forensic summary, the contract/receipt

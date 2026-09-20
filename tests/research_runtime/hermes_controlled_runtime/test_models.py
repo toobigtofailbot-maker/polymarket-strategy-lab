@@ -777,3 +777,150 @@ def test_offline_h1_3_contract_replay():
     validate_research_draft(
         json.dumps(good), expected_request_id=req.request_id, max_sources=req.max_sources
     )
+
+
+# ===========================================================================
+# WP175M Finding G: exact contract/validator alignment (whitespace + URL regex)
+# ===========================================================================
+
+import re as _re_g
+
+
+def _src_schema():
+    return build_research_draft_output_schema(
+        expected_request_id="hermesresearchrequest:sha256:deadbeef", max_sources=8
+    )
+
+
+def test_g01_research_summary_non_whitespace_pattern_matches_validator():
+    schema = _src_schema()
+    assert schema["properties"]["research_summary"]["pattern"] == m.DRAFT_NON_WHITESPACE_PATTERN
+    req = build_research_run_request(_base_request_fields())
+    # whitespace-only summary rejected by the validator
+    ws = _contract_compliant_draft(req.request_id, req.max_sources)
+    ws["research_summary"] = "   \t  "
+    with pytest.raises(HermesResearchError):
+        validate_research_draft(
+            json.dumps(ws), expected_request_id=req.request_id, max_sources=req.max_sources
+        )
+    # a normal summary passes that specific requirement
+    ok = _contract_compliant_draft(req.request_id, req.max_sources)
+    validate_research_draft(
+        json.dumps(ok), expected_request_id=req.request_id, max_sources=req.max_sources
+    )
+
+
+def test_g02_source_title_non_whitespace_pattern_matches_validator():
+    schema = _src_schema()
+    title_schema = schema["properties"]["source_references"]["items"]["properties"]["title"]
+    assert title_schema["pattern"] == m.DRAFT_NON_WHITESPACE_PATTERN
+    req = build_research_run_request(_base_request_fields())
+    bad = _contract_compliant_draft(req.request_id, req.max_sources)
+    bad["source_references"][0]["title"] = "   "
+    with pytest.raises(HermesResearchError) as exc:
+        validate_research_draft(
+            json.dumps(bad), expected_request_id=req.request_id, max_sources=req.max_sources
+        )
+    assert exc.value.code == "DRAFT_SOURCE_INVALID"
+
+
+def test_g03_url_pattern_is_single_source_of_truth():
+    schema = _src_schema()
+    url_schema = schema["properties"]["source_references"]["items"]["properties"]["url"]
+    assert url_schema["pattern"] == m.DRAFT_SOURCE_URL_PATTERN
+    assert m._URL_RE.pattern == m.DRAFT_SOURCE_URL_PATTERN
+
+
+def test_g04_no_invented_uri_format_constraint():
+    url_schema = _src_schema()["properties"]["source_references"]["items"]["properties"]["url"]
+    assert "format" not in url_schema
+
+
+def test_g05_url_behavior_parity_generated_regex_vs_validator():
+    req = build_research_run_request(_base_request_fields())
+    gen = _re_g.compile(m.DRAFT_SOURCE_URL_PATTERN)
+
+    def validator_accepts(url: str) -> bool:
+        draft = _contract_compliant_draft(req.request_id, req.max_sources)
+        draft["source_references"][0]["url"] = url
+        try:
+            validate_research_draft(
+                json.dumps(draft), expected_request_id=req.request_id, max_sources=req.max_sources
+            )
+            return True
+        except HermesResearchError:
+            return False
+
+    over_length = "https://example.com/" + ("a" * (m.DRAFT_SOURCE_URL_MAX_LEN + 10))
+    matrix = [
+        ("https://example.com/report", True, True),
+        ("HTTPS://EXAMPLE.COM/report", True, True),
+        ("https://exa mple.com/report", False, False),   # whitespace
+        ("http://example.com/report", False, False),      # missing https
+        ("https://.example.com", False, False),           # malformed first char
+        # over-length: the regex matches (no length bound) but validator length-rejects
+        (over_length, True, False),
+    ]
+    for url, regex_expected, validator_expected in matrix:
+        assert bool(gen.match(url)) is regex_expected, url
+        assert validator_accepts(url) is validator_expected, url
+
+
+def test_g06_valid_synthetic_contract_fixture_still_passes():
+    req = build_research_run_request(_base_request_fields())
+    draft = _contract_compliant_draft(req.request_id, req.max_sources)
+    validate_research_draft(
+        json.dumps(draft), expected_request_id=req.request_id, max_sources=req.max_sources
+    )
+
+
+def test_g07_h1_3_alternative_shape_fixture_still_fails():
+    req = build_research_run_request(_base_request_fields())
+    doc = _h1_3_shape_document(req.request_id)
+    with pytest.raises(HermesResearchError) as exc:
+        validate_research_draft(
+            json.dumps(doc), expected_request_id=req.request_id, max_sources=req.max_sources
+        )
+    assert exc.value.code == "DRAFT_FIELD_MISSING"
+    assert inspect_research_draft_structure(json.dumps(doc)).first_missing_field == "advisory_only"
+
+
+def test_g08_required_field_set_unchanged():
+    expected = (
+        ("schema_version", "request_id")
+        + tuple(DRAFT_AUTHORITY_FLAGS)
+        + ("research_summary", "confidence_label")
+        + tuple(DRAFT_LIST_FIELDS)
+        + ("source_references",)
+    )
+    assert DRAFT_REQUIRED_TOP_LEVEL_FIELDS == expected
+    assert _src_schema()["required"] == list(DRAFT_REQUIRED_TOP_LEVEL_FIELDS)
+
+
+def test_g09_receipt_1_3_fields_unchanged():
+    from src.research_runtime.hermes_controlled_runtime import RECEIPT_SCHEMA_VERSION
+    assert RECEIPT_SCHEMA_VERSION == "hermes-research-run-receipt/1.3.0"
+    fields = {f.name for f in m.dataclasses.fields(m.HermesResearchRunReceipt)}
+    for field in (
+        "prompt_envelope_sha256",
+        "draft_output_contract_sha256",
+        "draft_diagnostics_status",
+        "draft_present_required_fields",
+        "draft_missing_required_fields",
+        "draft_first_missing_field",
+        "usage_session_id_digest",
+    ):
+        assert field in fields
+
+
+def test_g10_provider_model_evidence_semantics_unchanged():
+    # The validator still binds nothing about provider/model; that stays in the
+    # controller. Here we assert the draft validator is unchanged in what it returns.
+    req = build_research_run_request(_base_request_fields())
+    draft = _contract_compliant_draft(req.request_id, req.max_sources)
+    validated = validate_research_draft(
+        json.dumps(draft), expected_request_id=req.request_id, max_sources=req.max_sources
+    )
+    assert isinstance(validated, ValidatedResearchDraft)
+    for forbidden in ("provider", "model", "verified_provider"):
+        assert not hasattr(validated, forbidden)

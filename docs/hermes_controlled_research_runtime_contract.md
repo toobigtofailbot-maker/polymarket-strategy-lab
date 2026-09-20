@@ -378,3 +378,13 @@ validation. Request identity, policy identity, the frozen H1 request id, provide
 `web`-only toolset, retry posture, managed config, the draft payload schema
 `hermes-research-draft/1.0.0`, and the WP175L runtime envelope are unchanged, and this
 alignment does not activate the dormant runtime.
+
+Finding G exact alignment: the generated contract and the validator share the remaining
+primitives so the model-facing schema describes precisely the validator's accepted set. A
+canonical `DRAFT_NON_WHITESPACE_PATTERN` (`\S`) backs both the validator's
+non-whitespace checks for `research_summary` and source titles and the corresponding
+schema `pattern`s (so a whitespace-only value is rejected by both, not just the
+validator), and a single canonical `DRAFT_SOURCE_URL_PATTERN`
+(`^[hH][tT][tT][pP][sS]://[^\s/$.?#].[^\s]*$`) compiles the validator's `_URL_RE` and is
+embedded verbatim as the schema URL `pattern`; the previously invented `format: uri`
+constraint is removed. This narrows nothing and broadens nothing in validator behavior.
