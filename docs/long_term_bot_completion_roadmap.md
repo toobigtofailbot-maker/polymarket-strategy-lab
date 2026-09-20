@@ -489,3 +489,41 @@ Controlled Public Research Pilot; a successful pilot leads to S10-ALPHA-01
 Multi-Lane Alpha Factory Core. Both are separately gated and NOT STARTED and gain no
 trading authority; WP175 remains merged dormant, Gate C is NOT AUTHORIZED, and
 WP176 Mature Controlled Live is NOT STARTED.
+
+## WP175N / S10-ALPHA-01 Alpha Factory Core And Post-H1 Sequence (current, PLANNING_GUIDANCE_ONLY)
+
+This section is PLANNING_GUIDANCE_ONLY / NOT_AUTHORIZATION; it does not approve any run,
+merge, or Gate-C activation. It records the current post-H1 sequencing truth after
+`GENUINE_H1_PASS`.
+
+- Genuine H1 basis: S10-GATE-H1 is `GENUINE_H1_PASS`; accepted H1 is H1 #4; historical real
+  H1 research invocations consumed = 4 (H1 #1, H1 #2, H1 #3, H1 #4, each separately
+  human-authorized); H1 #5 is NOT AUTHORIZED. HAP-03: configured Firecrawl-only web backend
+  with web_search/web_extract persisted, but remote Firecrawl HTTP is not independently
+  proven (pinned v0.21.3 exposes no downstream backend HTTP telemetry). HAP-04: four
+  separately authorized invocations with no automatic controller rerun or provider/model/
+  backend substitution.
+- Optimization hierarchy: cost per useful research observation -> cost per
+  novel/falsifiable hypothesis -> cost per qualified candidate -> cost per durable realized
+  edge.
+- Current decomposed sequence: GENUINE H1 PASS -> S10-ALPHA-01 -> S10-WALLET-01 ->
+  S10-HERMES-CTX-01 -> S10-WALLET-02 -> S10-ALPHA-02 -> S10-GATE-AF1. After GATE-AF1,
+  non-wallet hypotheses flow to S10-QUAL-01 -> S10-GATE-QUAL-01 -> WP170 -> WP172 -> WP173 ->
+  the existing restricted-live path; wallet-dependent hypotheses flow to S10-WALLET-03 ->
+  S10-WALLET-04 -> S10-GATE-WALLET-01 -> a wallet-specific evidence lane inside S10-QUAL-01
+  -> S10-GATE-QUAL-01 -> the SAME WP170/WP172/WP173 path.
+- Wallet-intelligence track persists as a first-class capability: WALLET-01, WALLET-02,
+  WALLET-03, WALLET-04, and GATE-WALLET-01. S10-GATE-WALLET-01 is CONDITIONAL and is not a
+  global qualification blocker; there is no wallet live shortcut.
+- Immediate software successor after WP175N merge is S10-WALLET-01, then S10-HERMES-CTX-01.
+  WP175N does not start WALLET-01.
+- S10-ALPHA-02 owns universe triage, freshness, material-change detection, automatic reopen,
+  and prioritization; S10-ALPHA-03 owns scheduler/budgets/campaign autonomy; S10-ALPHA-04
+  owns downstream outcome learning. None are in WP175N.
+- S10-HERMES-SI-01 / S10-GATE-HSI-01 (research-layer self-improvement) unlock on sufficient
+  accepted AF1 benchmark material, NOT on full live completion, and may run in parallel with
+  wallet proof, qualification, WP170, WP172, WP173, and later live progression; they gain no
+  deterministic/economic/execution/risk/credential/capital/Gate-C authority.
+- The old monolithic WP180/WP181 Hermes/Alpha sequencing is SUPERSEDED by this Alpha core
+  contract and current roadmap. WP176 remains decomposed into WP176A-E for mature
+  deterministic live capability. Gate C remains human-only and NOT AUTHORIZED.

@@ -2671,6 +2671,21 @@ unlock Alpha.
 | WP175M-D002 | Fourth real S10-GATE-H1 run (H1 #4) decision | BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION | P1 | A separate new human/governance decision after WP175M merge, post-merge verification, and Side11 review | Three real H1 runs (H1 #1, H1 #2, H1 #3) were consumed and failed, so the next possible invocation is H1 #4; a prompt/output-contract correction does not itself recreate H1 authorization; H1 #4 is NOT AUTHORIZED |
 | WP175M-D003 | S10-ALPHA-01 Multi-Lane Alpha Factory Core | DEFERRED | P2 | Genuine S10-GATE-H1 PASS plus Side11 quality review | Immediate successor is post-merge contract verification then the H1 #4 / fourth-run governance decision, not Alpha; Gate C and WP176 remain separately blocked |
 
+## WP175N — Multi-Lane Alpha Factory Core (S10-ALPHA-01, current review target)
+
+WP175N implements the first canonical Alpha Factory research-memory substrate (record model
+plus a separate append-only SQLite registry, application id 1464877425, distinct from
+WP170's 1464877424). It is unlocked by `GENUINE_H1_PASS` (accepted H1 #4; historical real
+H1 invocations 4; H1 #5 NOT AUTHORIZED). Alpha Factory records research history only; it
+performs no qualification, prioritization, economics, scheduling, wallet ingestion, Hermes
+runtime call, or network activity, and creates no strategy/paper/live/Gate-C authority.
+
+| ID | Item | Status | Priority | Resolution gate | Notes |
+|---|---|---|---|---|---|
+| WP175N-D001 | S10-WALLET-01 Public Wallet Event Ingestion & PIT Identity Evidence | DEFERRED | P2 | After WP175N merge and Side11 exact-head review | Immediate software successor after WP175N merge; NOT started by WP175N; the wallet gate is wallet-specific and not global |
+| WP175N-D002 | S10-HERMES-CTX-01 read-only project-aware context broker | DEFERRED | P2 | After S10-WALLET-01 | Consumes verified Alpha memory; no repository shell/admin or trading authority |
+| WP175N-D003 | S10-ALPHA-02 universe triage / freshness / material-change / reopen / prioritization | DEFERRED | P3 | Separate later package | Prioritization and automatic reopen are explicitly out of the WP175N record-memory scope |
+
 ## Wallet-Intelligence Roadmap Anchor (durable)
 
 Objective: prove when PUBLIC wallet behavior deserves strategic use; do not assume
