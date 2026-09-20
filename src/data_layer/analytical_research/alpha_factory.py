@@ -671,12 +671,18 @@ def _reject_path_locator(text: str) -> None:
 
 
 def _reject_blockchain_secret(text: str) -> None:
-    for component in re.split(r"[^0-9A-Za-z]+", text):
-        if component and _matches_forbidden(
-            component, _BLOCKCHAIN_SECRET_NORMALIZED, _BLOCKCHAIN_SECRET_COMPACT
+    # NFKC-normalize the security INSPECTION VIEW before tokenization so compatibility
+    # / full-width equivalents of frozen secret tokens cannot be discarded by an
+    # ASCII-oriented split. Underscores are kept inside a segment (so benign compound
+    # labels like authorization_notes survive), while hyphens and structural URI
+    # separators split segments; _matches_forbidden re-normalizes each segment.
+    view = unicodedata.normalize("NFKC", text)
+    for segment in re.split(r"[\s:/?#=&,\-]+", view):
+        if segment and _matches_forbidden(
+            segment, _BLOCKCHAIN_SECRET_NORMALIZED, _BLOCKCHAIN_SECRET_COMPACT
         ):
             raise _Failure("FORBIDDEN_CONTENT")
-    compact = re.sub(r"[^0-9a-z]+", "", text.casefold())
+    compact = re.sub(r"[^0-9a-z]+", "", view.casefold())
     if any(token in compact for token in _BLOCKCHAIN_MULTIWORD_COMPACT):
         raise _Failure("FORBIDDEN_CONTENT")
 

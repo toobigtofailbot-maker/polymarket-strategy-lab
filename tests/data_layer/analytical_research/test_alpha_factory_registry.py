@@ -528,19 +528,61 @@ def test_s25_valid_records_append_and_load(tmp_path):
     assert afr.load_and_verify_alpha_factory_registry(path).is_valid
 
 
-# ── 5.6: load-time semantic corruption with self-consistent hashes -> tamper ──
-def _insert_raw_row(path, kind, mapping):
-    id_field = {k: idf for k, _t, idf in afr.RECORD_KIND_TYPES}[kind]
-    record_id = mapping[id_field]
-    payload = af._canonical_bytes(mapping).decode("utf-8")
-    payload_sha = _hashlib.sha256(payload.encode("utf-8")).hexdigest()
-    entry_hash = afr._entry_hash(0, kind, record_id, payload_sha, None)
+# ── Blocker B2: identity-self-consistent load-time semantic-corruption oracle ──
+# Independent test-side canonical JSON / entry hash / record mapping — these never
+# call production _semantic_preimage/_digest/_entry_hash/record_to_mapping, so the
+# oracle proves semantic revalidation (not identity or hash mismatch) blocks load.
+_KIND_FOR_TYPE = {t: k for k, t, _idf in afr.RECORD_KIND_TYPES}
+_ID_FIELD_FOR_KIND = {k: idf for k, _t, idf in afr.RECORD_KIND_TYPES}
+
+
+def _indep_canon(value) -> str:
+    return _json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+def _indep_entry_hash(sequence, kind, record_id, payload_sha, previous):
+    preimage = {
+        "sequence_number": sequence, "record_kind": kind, "record_id": record_id,
+        "payload_sha256": payload_sha, "previous_entry_hash": previous,
+    }
+    wrapped = {"alpha_registry_entry.identity_preimage": preimage}
+    return "alpharegistryentry:sha256:" + _hashlib.sha256(_indep_canon(wrapped).encode("utf-8")).hexdigest()
+
+
+def _indep_mapping(record) -> dict:
+    return {
+        field.name: (list(getattr(record, field.name)) if isinstance(getattr(record, field.name), tuple) else getattr(record, field.name))
+        for field in dataclasses.fields(record)
+    }
+
+
+def _with_recomputed_id(record):
+    """Return (record, mapping) with the content-addressed id recomputed after mutation."""
+    _kind, _prefix, id_field = _KIND_PREFIX_ID[type(record)]
+    fixed = dataclasses.replace(record, **{id_field: independent_id(record)})
+    return fixed, _indep_mapping(fixed)
+
+
+def _insert_chain(path, records_in_order):
+    """Insert records as a self-consistent hash chain built entirely test-side."""
     conn = sqlite3.connect(path)
     try:
-        conn.execute(
-            "INSERT INTO alpha_registry_records(sequence_number,record_kind,record_id,payload_json,payload_sha256,previous_entry_hash,entry_hash) VALUES (?,?,?,?,?,?,?)",
-            (0, kind, record_id, payload, payload_sha, None, entry_hash),
-        )
+        previous = None
+        for sequence, record in enumerate(records_in_order):
+            kind = _KIND_FOR_TYPE[type(record)]
+            mapping = _indep_mapping(record)
+            record_id = mapping[_ID_FIELD_FOR_KIND[kind]]
+            payload = _indep_canon(mapping)
+            payload_sha = _hashlib.sha256(payload.encode("utf-8")).hexdigest()
+            entry_hash = _indep_entry_hash(sequence, kind, record_id, payload_sha, previous)
+            # Prove cryptographic + identity self-consistency before load.
+            assert _hashlib.sha256(payload.encode("utf-8")).hexdigest() == payload_sha
+            assert record_id == independent_id(record)
+            conn.execute(
+                "INSERT INTO alpha_registry_records(sequence_number,record_kind,record_id,payload_json,payload_sha256,previous_entry_hash,entry_hash) VALUES (?,?,?,?,?,?,?)",
+                (sequence, kind, record_id, payload, payload_sha, previous, entry_hash),
+            )
+            previous = entry_hash
         conn.commit()
     finally:
         conn.close()
@@ -548,22 +590,40 @@ def _insert_raw_row(path, kind, mapping):
 
 def test_load_semantic_corruption_episode_is_tamper(tmp_path):
     path = fresh(tmp_path)
-    ep = mk_episode(mk_candidate(), mk_family(), mk_source())
-    mapping = af.record_to_mapping(ep)
-    mapping["falsification_checks_performed"] = []  # semantically invalid; hashes recomputed
-    _insert_raw_row(path, "RESEARCH_EPISODE", mapping)
+    # Valid supporting graph so no cross-record reference failure can mask the oracle.
+    src, cand, fam = mk_source(), mk_candidate(), mk_family()
+    valid_ep = mk_episode(cand, fam, src)
+    # Mutate ONE semantic field, then recompute the content id from the mutated record.
+    mutated = dataclasses.replace(valid_ep, falsification_checks_performed=())
+    fixed_ep, _mapping = _with_recomputed_id(mutated)
+    assert fixed_ep.research_episode_id == independent_id(mutated)          # EPI-04
+    assert fixed_ep.research_episode_id != valid_ep.research_episode_id     # EPI-05
+    _insert_chain(path, [src, cand, fam, fixed_ep])
     r = afr.load_and_verify_alpha_factory_registry(path)
     assert not r.is_valid and r.error_codes[0] == "REGISTRY_INTEGRITY_TAMPER"
 
 
-def test_load_semantic_corruption_candidate_is_tamper(tmp_path):
+def test_load_semantic_corruption_non_episode_is_tamper(tmp_path):
     path = fresh(tmp_path)
-    cand = mk_candidate()
-    mapping = af.record_to_mapping(cand)
-    mapping["subject_refs"] = list(reversed(mapping["subject_refs"])) + mapping["subject_refs"]
-    _insert_raw_row(path, "OPPORTUNITY_CANDIDATE", mapping)
+    fam = mk_family()
+    mutated = dataclasses.replace(fam, creation_provenance="   ")  # invalid whitespace-only
+    fixed_fam, _mapping = _with_recomputed_id(mutated)
+    assert fixed_fam.hypothesis_family_id == independent_id(mutated)
+    assert fixed_fam.hypothesis_family_id != fam.hypothesis_family_id
+    _insert_chain(path, [fixed_fam])
     r = afr.load_and_verify_alpha_factory_registry(path)
     assert not r.is_valid and r.error_codes[0] == "REGISTRY_INTEGRITY_TAMPER"
+
+
+def test_load_corruption_control_valid_chain_loads(tmp_path):
+    # Control: the same independent raw-insertion path with VALID records loads cleanly,
+    # proving the tamper result above is caused only by the injected semantic defect.
+    path = fresh(tmp_path)
+    src, cand, fam = mk_source(), mk_candidate(), mk_family()
+    ep = mk_episode(cand, fam, src)
+    _insert_chain(path, [src, cand, fam, ep])
+    r = afr.load_and_verify_alpha_factory_registry(path)
+    assert r.is_valid and r.snapshot.total_rows == 4
 
 
 # ── Finding C: exhaustive registry error mapping (E-series) ───────────────────
@@ -630,3 +690,51 @@ def test_e13_public_result_only_closed_codes_no_echo(tmp_path):
     assert not r.is_valid
     assert all(code in afr.ALPHA_REGISTRY_ERROR_CODES for code in r.error_codes)
     assert r.snapshot is None and r.inserted_record_ids == () and r.idempotent_record_ids == ()
+
+
+# ── Blocker B3: exact frozen Alpha->registry error mapping oracle ─────────────
+_EXPECTED_ERROR_MAP = {
+    "SCHEMA_UNSUPPORTED": "FIELD_VALUE_INVALID",
+    "FIELD_MISSING": "FIELD_VALUE_INVALID",
+    "FIELD_TYPE_INVALID": "FIELD_TYPE_INVALID",
+    "FIELD_VALUE_INVALID": "FIELD_VALUE_INVALID",
+    "FORBIDDEN_CONTENT": "FIELD_VALUE_INVALID",
+    "IDENTITY_DERIVATION_MISMATCH": "REGISTRY_IDENTITY_CONFLICT",
+    "REFERENCE_INVALID": "REFERENCE_INVALID",
+    "LANE_INVALID": "FIELD_VALUE_INVALID",
+    "RESULT_STATE_INVALID": "FIELD_VALUE_INVALID",
+    "NOVELTY_DUPLICATE": "NOVELTY_DUPLICATE",
+    "MECHANISM_CONFLICT": "MECHANISM_CONFLICT",
+    "LINEAGE_INVALID": "LINEAGE_INVALID",
+    "LINEAGE_CYCLE": "LINEAGE_CYCLE",
+    "REOPEN_INVALID": "REOPEN_INVALID",
+    "RESULT_EVIDENCE_INVALID": "RESULT_EVIDENCE_INVALID",
+    "LIMIT_EXCEEDED": "LIMIT_EXCEEDED",
+    "INTERNAL_VALIDATION_FAILED": "INTERNAL_VALIDATION_FAILED",
+}
+
+
+def test_map01_expected_keyset_equals_alpha_error_codes():
+    assert set(_EXPECTED_ERROR_MAP) == set(af.ALPHA_ERROR_CODES)
+
+
+def test_map02_production_table_equals_frozen_expected_table():
+    assert afr._ALPHA_TO_REGISTRY_ERROR == _EXPECTED_ERROR_MAP
+
+
+@pytest.mark.parametrize("alpha_code,registry_code", sorted(_EXPECTED_ERROR_MAP.items()))
+def test_map02b_each_alpha_code_maps_to_exact_registry_code(alpha_code, registry_code):
+    assert afr._map_alpha_error(alpha_code) == registry_code
+
+
+def test_map03_unknown_code_maps_to_internal():
+    assert afr._map_alpha_error("A_FUTURE_UNMAPPED_CODE") == "INTERNAL_VALIDATION_FAILED"
+
+
+def test_map04_reject_final_closure_cannot_expose_unknown():
+    assert afr._reject("A_FUTURE_UNMAPPED_CODE").error_codes == ("INTERNAL_VALIDATION_FAILED",)
+
+
+def test_map05_every_expected_value_is_registry_code():
+    for value in _EXPECTED_ERROR_MAP.values():
+        assert value in afr.ALPHA_REGISTRY_ERROR_CODES

@@ -523,3 +523,57 @@ def test_u41_u44_source_class_kind_matrix_rejections():
 @pytest.mark.parametrize("source_class", ["OFFICIAL", "PUBLIC_MARKET_DATA", "NEWS", "REFERENCE", "OTHER_PUBLIC"])
 def test_u45_valid_https_classes_accepted(source_class):
     assert _https("https://example.com/a", source_class=source_class).is_valid
+
+
+# ── Blocker B1: PUBLIC_BLOCKCHAIN NFKC/full-width secret rejection ────────────
+def _fw(s):
+    """Full-width / compatibility spelling: ascii letters -> full-width, _ and - too."""
+    out = []
+    for ch in s:
+        if "a" <= ch <= "z" or "A" <= ch <= "Z" or "0" <= ch <= "9":
+            out.append(chr(ord(ch) + 0xFEE0))
+        elif ch == "_":
+            out.append("\uff3f")  # full-width low line
+        elif ch == "-":
+            out.append("\uff0d")  # full-width hyphen-minus
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+def test_b1_n01_fullwidth_private_key_rejected():
+    r = _chain("tx:" + _fw("private_key") + ":abc")
+    assert not r.is_valid and r.error_codes == ("FORBIDDEN_CONTENT",)
+    assert r.record is None
+
+
+def test_b1_n02_fullwidth_mnemonic_rejected():
+    r = _chain("tx:" + _fw("mnemonic"))
+    assert not r.is_valid and r.error_codes == ("FORBIDDEN_CONTENT",)
+
+
+def test_b1_n03_fullwidth_hyphen_private_key_rejected():
+    r = _chain("tx:" + _fw("private-key"))
+    assert not r.is_valid and r.error_codes == ("FORBIDDEN_CONTENT",)
+
+
+def test_b1_n04_fullwidth_api_key_rejected():
+    r = _chain("tx:" + _fw("api_key") + ":z")
+    assert not r.is_valid and r.error_codes == ("FORBIDDEN_CONTENT",)
+
+
+def test_b1_n04b_fullwidth_seed_phrase_rejected():
+    r = _chain("tx:" + _fw("seed_phrase"))
+    assert not r.is_valid and r.error_codes == ("FORBIDDEN_CONTENT",)
+
+
+def test_b1_p01_ordinary_locator_accepted():
+    assert _chain("eip155:1:0xabc123def4567890").is_valid
+
+
+def test_b1_p02_benign_token_count_accepted():
+    assert _chain("tx:token_count:42").is_valid
+
+
+def test_b1_p03_benign_authorization_notes_accepted():
+    assert _chain("tx:authorization_notes:public").is_valid
