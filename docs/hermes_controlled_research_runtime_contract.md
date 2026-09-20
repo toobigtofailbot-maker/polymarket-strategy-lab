@@ -321,3 +321,70 @@ independently authoritative for validity. The sanitized excerpt is the only diag
 text surface; the controller failure precedence, request and draft schemas, policy
 identity, managed config, provider/model, `web`-only toolset, and retry posture are
 unchanged, and this capture hardening does not activate the dormant runtime.
+
+## WP175M draft prompt contract alignment and schema diagnostics
+
+H1 #3 — the third real S10-GATE-H1 run — completed a real controlled research/model
+interaction (Hermes child exit 0, valid usage, `api_call_count` 5) but failed terminal
+`OUTPUT_SCHEMA_INVALID` / `DRAFT_FIELD_MISSING`: the permanent system instruction told
+Hermes to match a "provided research-draft schema", but the envelope supplied only
+`draft_schema_version`, never the deterministic field contract `validate_research_draft`
+enforces, so the model improvised an alternative structured schema and the validator
+failed closed at first missing canonical field `advisory_only`. Read-only forensics
+confirmed `web_search`/`web_extract` activity with no unexpected tools under a
+Firecrawl-pinned managed configuration; runtime tool telemetry is
+`UNAVAILABLE_ON_PINNED_V0_21_3`, so a remote Firecrawl HTTP transaction is NOT
+independently proven. The `session_model_usage` aggregate includes an auxiliary
+`title_generation` usage row, so exact aggregate equality is not a safe session-identity
+method; the main research route usage matched the receipt.
+
+WP175M fixes the contract BEFORE generation. `models.py` owns a canonical
+machine-generated draft output contract, `build_research_draft_output_schema(*,
+expected_request_id, max_sources)`, derived from the SAME constants
+`validate_research_draft` enforces: the private list-field collection is promoted to the
+public `DRAFT_LIST_FIELDS`, a canonical ordered `DRAFT_REQUIRED_TOP_LEVEL_FIELDS` places
+`schema_version`/`request_id` first then the authority flags (`advisory_only` first) then
+the substantive fields, and the generated schema embeds every required field, each
+authority flag as `const: true`, the confidence and source-class enums, validator-aligned
+length/cardinality bounds, a non-empty `falsification_checks_performed`, a min-1
+`source_references` capped at `min(max_sources, MAX_SOURCES_ABSOLUTE)`, and the exact draft
+schema version and request id as constants. The generated required set is identical to the
+validator's required set, and no constraint the validator does not enforce is invented.
+`PERMANENT_SYSTEM_INSTRUCTION_VERSION` is bumped to
+`hermes-research-system-instruction/1.1.0`; the instruction states the envelope's
+`draft_output_schema` is authoritative, the response is exactly one JSON object, canonical
+field names must be used exactly (no aliases such as `sources`, `evidence_map`,
+`completeness`, or `cross_category_assessment`), every authority boolean is exactly `true`,
+and substantive fields must reflect real (never fabricated) research. `HermesResearchEnvelope`
+carries `draft_output_schema` in `as_mapping()`, `to_query_bytes()`, `to_prompt_string()`,
+and `envelope_digest`. Authority-flag injection is declined: all draft authority flags
+remain model-output required; there is no substantive post-hoc repair, so a wrong
+substantive schema still fails closed.
+
+Sanitized schema-failure diagnostics (`inspect_research_draft_structure`) retain only
+static canonical field-name tokens and fixed statuses (`AVAILABLE`,
+`UNAVAILABLE_INVALID_OUTPUT`; the controller default is `NOT_REACHED`) and never a rejected
+value, arbitrary model key, or raw session id. The receipt schema is bumped additively
+`hermes-research-run-receipt/1.2.0` -> `hermes-research-run-receipt/1.3.0`, adding
+content-addressed `prompt_envelope_sha256`, `draft_output_contract_sha256`,
+`draft_diagnostics_status`, `draft_present_required_fields`,
+`draft_missing_required_fields`, `draft_first_missing_field`, and `usage_session_id_digest`
+(SHA-256 of a valid usage report's session id; the raw session id is never retained).
+Pre-research and no-draft paths use deterministic fail-closed defaults. With valid usage
+the controller records the actual provider/model before draft validation, so a schema
+failure preserves `verified_provider`/`verified_model` while the terminal status stays
+`OUTPUT_SCHEMA_INVALID`; the provider/model mismatch terminal gate still runs after draft
+validation. Request identity, policy identity, the frozen H1 request id, provider/model,
+`web`-only toolset, retry posture, managed config, the draft payload schema
+`hermes-research-draft/1.0.0`, and the WP175L runtime envelope are unchanged, and this
+alignment does not activate the dormant runtime.
+
+Finding G exact alignment: the generated contract and the validator share the remaining
+primitives so the model-facing schema describes precisely the validator's accepted set. A
+canonical `DRAFT_NON_WHITESPACE_PATTERN` (`\S`) backs both the validator's
+non-whitespace checks for `research_summary` and source titles and the corresponding
+schema `pattern`s (so a whitespace-only value is rejected by both, not just the
+validator), and a single canonical `DRAFT_SOURCE_URL_PATTERN`
+(`^[hH][tT][tT][pP][sS]://[^\s/$.?#].[^\s]*$`) compiles the validator's `_URL_RE` and is
+embedded verbatim as the schema URL `pattern`; the previously invented `format: uri`
+constraint is removed. This narrows nothing and broadens nothing in validator behavior.

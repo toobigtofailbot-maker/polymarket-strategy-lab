@@ -488,7 +488,12 @@ def test_provider_mismatch_fails_closed():  # T18
     result = _run(req, backend)
     assert result.error_code == "PROVIDER_MODEL_MISMATCH"
     assert result.receipt.terminal_status == "PROVIDER_MODEL_MISMATCH"
-    assert result.receipt.verified_provider is None
+    # WP175M (section 10): with valid usage, the ACTUAL usage provider/model are recorded
+    # as evidence before the mismatch gate, so the receipt shows the observed mismatch
+    # (verified provider != requested provider_label) rather than nulls.
+    assert result.receipt.verified_provider == "other-provider"
+    assert result.receipt.verified_model == "example-model"
+    assert result.receipt.provider_label == "example-provider"
     assert backend.call_count == 1
 
 
@@ -692,15 +697,16 @@ def test_wp175k_preflight_failure_uses_empty_evidence_defaults():
     assert r.usage_file_truncated is False
 
 
-def test_wp175k_success_receipt_is_schema_1_2_0_with_empty_diagnostics():
-    """K5/K6: success semantics unchanged; receipt is schema 1.2.0; diagnostics empty
-    when stderr is empty; new evidence fields are in the content-addressed identity."""
+def test_wp175k_success_receipt_schema_and_stderr_evidence_fields():
+    """K5/K6: success semantics unchanged; receipt is now schema 1.3.0 (WP175M);
+    stderr diagnostics empty when stderr is empty; WP175K evidence fields are in the
+    content-addressed identity."""
     req = _request()
     backend = FakeHermesBackend.from_transcript(_stdout(req.request_id), usage_file_bytes=_usage())
     result = _run(req, backend)
     r = result.receipt
     assert r.terminal_status == "RESEARCH_DRAFT_VALIDATED"
-    assert r.schema_version == "hermes-research-run-receipt/1.2.0"
+    assert r.schema_version == "hermes-research-run-receipt/1.3.0"
     assert r.stderr_sanitization_status == "EMPTY" and r.stderr_excerpt is None
     assert r.usage_file_present is True  # a usage file was provided
     ident = r.identity_fields()
@@ -1030,3 +1036,272 @@ def test_preflight10_fake_backend_startup_is_process_free(monkeypatch):  # PREFL
 def test_build_startup_argv_rejects_shell_metacharacters():
     with pytest.raises(PolicyBroadeningError):
         build_startup_argv("hermes; rm -rf /")
+
+
+# ===========================================================================
+# WP175M: controller evidence preservation + sanitized draft diagnostics
+# ===========================================================================
+
+from src.research_runtime.hermes_controlled_runtime import (  # noqa: E402
+    DRAFT_REQUIRED_TOP_LEVEL_FIELDS,
+    build_research_envelope,
+)
+from src.research_runtime.hermes_controlled_runtime import models as _m  # noqa: E402
+
+_H1_3_ALT_KEYS = (
+    "as_of",
+    "completeness",
+    "cross_category_assessment",
+    "evidence_map",
+    "generated_at",
+    "research_category",
+    "research_question",
+    "scope",
+    "sources",
+)
+
+
+def _codex_request():
+    return build_research_run_request(
+        {
+            "schema_version": REQUEST_SCHEMA_VERSION,
+            "research_question": "Will the public event resolve YES by the deadline?",
+            "research_objective": "Assess public evidence for and against the outcome.",
+            "research_category": "event_outcome",
+            "public_market_context": "A Polymarket public market on a future event.",
+            "allowed_research_scope": ["public_web", "public_news"],
+            "required_source_types": ["news", "official"],
+            "max_sources": 8,
+            "provider_label": "openai-codex",
+            "model_label": "gpt-5.6-sol",
+            "max_wall_seconds": 90,
+            "max_output_bytes": 300_000,
+            "max_accepted_estimated_cost_usd": "2",
+            "human_review_required": True,
+            "non_authority_notice": NON_AUTHORITY_NOTICE,
+        }
+    )
+
+
+def _codex_usage(**overrides) -> bytes:
+    doc = {
+        "input_tokens": 50,
+        "output_tokens": 80,
+        "total_tokens": 130,
+        "api_calls": 5,
+        "estimated_cost_usd": 0,
+        "cost_status": "included",
+        "cost_source": "none",
+        "model": "gpt-5.6-sol",
+        "provider": "openai-codex",
+        "session_id": "codex-session-xyz",
+        "completed": True,
+        "failed": False,
+    }
+    doc.update(overrides)
+    return json.dumps(doc).encode("utf-8")
+
+
+def _h1_3_shape_stdout(request_id: str) -> bytes:
+    doc = {"schema_version": DRAFT_SCHEMA_VERSION, "request_id": request_id}
+    for key in _H1_3_ALT_KEYS:
+        doc[key] = "synthetic-placeholder"
+    return json.dumps(doc).encode("utf-8")
+
+
+# --- C01-C04: valid usage evidence preserved on schema failure ---------------
+
+
+def test_c01_c02_c03_c04_schema_failure_preserves_usage_provider_model():
+    req = _codex_request()
+    backend = FakeHermesBackend(
+        [_exit_outcome(_h1_3_shape_stdout(req.request_id), _codex_usage(), exit_code=0)]
+    )
+    result = _run(req, backend)
+    r = result.receipt
+    # C04: terminal OUTPUT_SCHEMA_INVALID / DRAFT_FIELD_MISSING (the H1 #3 incident).
+    assert r.terminal_status == "OUTPUT_SCHEMA_INVALID"
+    assert result.error_code == "DRAFT_FIELD_MISSING"
+    assert r.output_schema_valid is False
+    # C02/C03: the actual usage provider/model are recorded despite the schema failure.
+    assert r.verified_provider == "openai-codex"
+    assert r.verified_model == "gpt-5.6-sol"
+    # C06: sanitized diagnostics recorded (first missing canonical field = advisory_only).
+    assert r.draft_diagnostics_status == "AVAILABLE"
+    assert r.draft_present_required_fields == ("schema_version", "request_id")
+    assert r.draft_first_missing_field == "advisory_only"
+
+
+# --- C05: provider/model mismatch precedence unchanged after valid draft -----
+
+
+def test_c05_provider_model_mismatch_precedence_unchanged():
+    req = _codex_request()
+    # a contract-compliant draft but a mismatching usage provider
+    good = _draft(req.request_id)
+    backend = FakeHermesBackend(
+        [_exit_outcome(json.dumps(good).encode(), _codex_usage(provider="other"), exit_code=0)]
+    )
+    result = _run(req, backend)
+    assert result.receipt.terminal_status == "PROVIDER_MODEL_MISMATCH"
+    assert result.receipt.output_schema_valid is True  # draft validated first
+    assert result.receipt.safety_validation_status == "PASS"
+
+
+# --- C06/C07: diagnostics recorded, no raw rejected stdout retained ----------
+
+
+def test_c07_no_raw_rejected_stdout_in_receipt():
+    req = _codex_request()
+    backend = FakeHermesBackend(
+        [_exit_outcome(_h1_3_shape_stdout(req.request_id), _codex_usage(), exit_code=0)]
+    )
+    r = _run(req, backend).receipt
+    blob = json.dumps(r.identity_fields())
+    # no alternative model key and no synthetic value survives into the receipt
+    for alt_key in _H1_3_ALT_KEYS:
+        assert alt_key not in blob
+    assert "synthetic-placeholder" not in blob
+
+
+# --- C08/C09: deterministic prompt/contract digests --------------------------
+
+
+def test_c08_c09_prompt_and_contract_digests_recorded_deterministically():
+    req = _codex_request()
+    stdout, usage = _stdout(req.request_id), _usage(provider="openai-codex", model="gpt-5.6-sol")
+    # the draft must carry the codex request id and a matching valid usage
+    r1 = _run(req, FakeHermesBackend.from_transcript(stdout, usage_file_bytes=usage)).receipt
+    r2 = _run(req, FakeHermesBackend.from_transcript(stdout, usage_file_bytes=usage)).receipt
+    env = build_research_envelope(req)
+    assert r1.prompt_envelope_sha256 == env.envelope_digest
+    assert r1.draft_output_contract_sha256 == env.draft_output_contract_digest
+    assert r1.prompt_envelope_sha256 == r2.prompt_envelope_sha256
+    assert r1.draft_output_contract_sha256 == r2.draft_output_contract_sha256
+
+
+# --- C10/C11: usage session-id digest, raw session id never retained ---------
+
+
+def test_c10_c11_usage_session_id_digest_recorded_raw_never_retained():
+    req = _codex_request()
+    good = _draft(req.request_id)
+    usage = _codex_usage(session_id="codex-session-xyz")
+    r = _run(req, FakeHermesBackend([_exit_outcome(json.dumps(good).encode(), usage, exit_code=0)])).receipt
+    assert r.terminal_status == "RESEARCH_DRAFT_VALIDATED"
+    assert r.usage_session_id_digest == _m.sha256_hex(b"codex-session-xyz")
+    blob = json.dumps(r.identity_fields())
+    assert "codex-session-xyz" not in blob
+
+
+# --- C12: receipt identity includes the new fields ---------------------------
+
+
+def test_c12_receipt_identity_includes_new_fields():
+    req = _codex_request()
+    good = _draft(req.request_id)
+    r = _run(req, FakeHermesBackend([_exit_outcome(json.dumps(good).encode(), _codex_usage(), exit_code=0)])).receipt
+    ident = r.identity_fields()
+    for field in (
+        "prompt_envelope_sha256",
+        "draft_output_contract_sha256",
+        "draft_diagnostics_status",
+        "draft_present_required_fields",
+        "draft_missing_required_fields",
+        "draft_first_missing_field",
+        "usage_session_id_digest",
+    ):
+        assert field in ident
+
+
+# --- C13: preflight / no-research paths use deterministic safe defaults -------
+
+
+def test_c13_version_mismatch_uses_safe_evidence_defaults():
+    req = _codex_request()
+    backend = FakeHermesBackend(
+        [_exit_outcome(_stdout(req.request_id), _usage(), exit_code=0)],
+        version_text="hermes-agent 0.20.0",
+    )
+    r = _run(req, backend).receipt
+    assert r.terminal_status == "VERSION_MISMATCH"
+    assert r.prompt_envelope_sha256 is None
+    assert r.draft_output_contract_sha256 is None
+    assert r.draft_diagnostics_status == "NOT_REACHED"
+    assert r.draft_present_required_fields == ()
+    assert r.draft_missing_required_fields == ()
+    assert r.draft_first_missing_field is None
+    assert r.usage_session_id_digest is None
+    assert backend.call_count == 0
+
+
+def test_c13_startup_preflight_failure_uses_safe_evidence_defaults():
+    req = _codex_request()
+    backend = FakeHermesBackend(
+        [_exit_outcome(_stdout(req.request_id), _usage(), exit_code=0)],
+        startup_exit_code=1,
+    )
+    r = _run(req, backend).receipt
+    assert r.terminal_status == "STARTUP_PREFLIGHT_FAILED"
+    assert r.prompt_envelope_sha256 is None
+    assert r.draft_diagnostics_status == "NOT_REACHED"
+    assert r.transport_attempt_count == 0
+    assert backend.call_count == 0
+
+
+# --- C14/C15: retry behavior + full success gate chain unchanged -------------
+
+
+def test_c14_no_retry_on_schema_failure():
+    req = _codex_request()
+    backend = FakeHermesBackend(
+        [_exit_outcome(_h1_3_shape_stdout(req.request_id), _codex_usage(), exit_code=0)]
+    )
+    _run(req, backend)
+    assert backend.call_count == 1  # no retry
+
+
+def test_c15_success_requires_full_gate_chain_and_populates_new_evidence():
+    req = _codex_request()
+    good = _draft(req.request_id)
+    r = _run(req, FakeHermesBackend([_exit_outcome(json.dumps(good).encode(), _codex_usage(), exit_code=0)])).receipt
+    assert r.terminal_status == "RESEARCH_DRAFT_VALIDATED"
+    assert r.schema_version == "hermes-research-run-receipt/1.3.0"
+    assert r.output_schema_valid is True and r.safety_validation_status == "PASS"
+    assert r.verified_provider == "openai-codex" and r.verified_model == "gpt-5.6-sol"
+    assert r.source_url_count >= 1
+    # diagnostics AVAILABLE with every canonical field present on a valid draft
+    assert r.draft_diagnostics_status == "AVAILABLE"
+    assert r.draft_missing_required_fields == ()
+    assert set(r.draft_present_required_fields) == set(DRAFT_REQUIRED_TOP_LEVEL_FIELDS)
+
+
+# --- S01-S06: security posture of the new evidence ---------------------------
+
+
+def test_s01_s02_s03_diagnostics_only_canonical_tokens_no_secrets():
+    req = _codex_request()
+    # a draft whose alternative keys resemble a secret name must never be emitted
+    doc = {"schema_version": DRAFT_SCHEMA_VERSION, "request_id": req.request_id,
+           "api_key": "sk-should-never-appear", "FIRECRAWL_API_KEY": "x"}
+    backend = FakeHermesBackend([_exit_outcome(json.dumps(doc).encode(), _codex_usage(), exit_code=0)])
+    r = _run(req, backend).receipt
+    blob = json.dumps(r.identity_fields())
+    assert "sk-should-never-appear" not in blob
+    assert "FIRECRAWL_API_KEY" not in blob
+    all_tokens = set(r.draft_present_required_fields) | set(r.draft_missing_required_fields)
+    assert all_tokens.issubset(set(DRAFT_REQUIRED_TOP_LEVEL_FIELDS))
+
+
+def test_s04_s05_s06_receipt_adds_no_api_or_authority_surface():
+    req = _codex_request()
+    good = _draft(req.request_id)
+    r = _run(req, FakeHermesBackend([_exit_outcome(json.dumps(good).encode(), _codex_usage(), exit_code=0)])).receipt
+    # S06: authority booleans unchanged (fixed non-authority posture).
+    assert r.human_review_required is True
+    assert r.no_execution_authority and r.no_live_authority and r.no_credential_authority
+    assert r.no_risk_authority and r.no_paper_authority
+    # S05: no OAuth/Firecrawl/API payload field is present in the receipt identity.
+    blob = json.dumps(r.identity_fields())
+    for marker in ("oauth", "firecrawl_key", "access_token", "bearer "):
+        assert marker not in blob.lower()

@@ -350,3 +350,71 @@ def test_wp175l_repo_truth_registers_sanitized_windows_runtime() -> None:
     assert "Alpha Factory" in combined and "NOT STARTED" in combined
     assert "WP176" in combined and "NOT STARTED" in combined
     assert "Merge authorized: NO" in combined or "merge is NOT AUTHORIZED" in combined
+
+
+# ── WP175M: Hermes draft prompt contract alignment and schema diagnostics ──────
+
+
+def test_wp175m_repo_truth_registers_draft_contract_alignment() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    status = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "WP175M.md").read_text(
+        encoding="utf-8"
+    )
+    contract = (
+        ROOT / "docs" / "hermes_controlled_research_runtime_contract.md"
+    ).read_text(encoding="utf-8")
+    combined = "\n".join((index, status, deferred, fragment, contract))
+    # WP175M is the current review target; WP175L is reconciled as merged.
+    assert "WP175M Hermes Draft Prompt Contract Alignment And Schema Diagnostics" in index
+    assert "current review target" in index
+    assert "S10-HERMES-01E" in combined
+    assert "15-file" in combined
+    assert "WP175L / PR #185 merged" in combined
+    # Confirmed H1 #3 incident + root cause.
+    assert "Historical real H1 research invocations consumed = 3" in combined
+    assert "PROMPT_OUTPUT_CONTRACT_SCHEMA_NOT_ACTUALLY_EMBEDDED" in combined
+    assert "OUTPUT_SCHEMA_INVALID" in combined and "DRAFT_FIELD_MISSING" in combined
+    assert "advisory_only" in combined
+    # Web tool wording does not overclaim remote Firecrawl HTTP telemetry.
+    assert "UNAVAILABLE_ON_PINNED_V0_21_3" in combined
+    assert "web_search" in combined and "web_extract" in combined
+    assert "not independently proven" in combined.lower()
+    assert "title_generation" in combined
+    # Contract + diagnostics + receipt design.
+    assert "build_research_draft_output_schema" in combined
+    assert "DRAFT_REQUIRED_TOP_LEVEL_FIELDS" in combined
+    assert "CONTRACT_VALIDATOR_DRIFT" in combined
+    assert "hermes-research-system-instruction/1.1.0" in combined
+    assert "hermes-research-run-receipt/1.3.0" in combined
+    assert "usage_session_id_digest" in combined
+    assert "prompt_envelope_sha256" in combined
+    # No substantive repair, no authority-flag injection.
+    assert "post-hoc repair" in combined.lower() or "post-hoc substantive repair" in combined.lower()
+    assert "injection is DECLINED" in combined or "injection is declined" in combined.lower()
+    # Frozen request id preserved.
+    assert "d977b2073c685c64a6398475ba437aa9cc63be517b2260c513ffd4e9ba795b69" in combined
+    # Current WP175M truth names the FOURTH real H1 run (H1 #4), not third.
+    wp175m_section = index.split("## WP175M", 1)[1].split("## WP175L", 1)[0]
+    assert "Historical real H1 research invocations consumed = 3" in wp175m_section
+    assert "fourth real\nS10-GATE-H1 run (H1 #4)" in wp175m_section or "fourth real S10-GATE-H1 run (H1 #4)" in wp175m_section.replace("\n", " ")
+    assert "H1 #4 is\nNOT AUTHORIZED" in wp175m_section or "H1 #4 is NOT AUTHORIZED" in wp175m_section.replace("\n", " ")
+    # Current WP175M deferred rows name H1 #4 / fourth run; historical WP175L/WP175K rows preserved.
+    assert "Fourth real S10-GATE-H1 run (H1 #4) decision" in deferred
+    assert "WP175M-D001" in deferred and "WP175M-D002" in deferred
+    assert "BLOCKED_PENDING_SEPARATE_HUMAN_GOVERNANCE_DECISION" in deferred
+    assert "WP175L-D002 | Third real S10-GATE-H1 run (H1 #3) decision" in deferred
+    assert "WP175K-D001 | Second real S10-GATE-H1 run decision" in deferred
+    # Wallet-intelligence roadmap anchor persisted; not global; no live shortcut.
+    assert "Wallet-Intelligence Roadmap Anchor" in deferred
+    assert "WALLET-01" in deferred and "GATE-WALLET-01" in deferred
+    assert "wallet gate is wallet-specific and not global" in deferred
+    assert "no wallet live shortcut created" in deferred.lower()
+    # Authority + successor boundary.
+    assert "H1 #4 is NOT AUTHORIZED" in combined
+    assert "S10-ALPHA-01" in combined and "BLOCKED" in combined
+    assert "Gate C" in combined and "NOT AUTHORIZED" in combined
+    assert "Alpha Factory" in combined and "NOT STARTED" in combined
+    assert "WP176" in combined and "NOT STARTED" in combined
+    assert "merge is NOT AUTHORIZED" in combined or "Merge authorized: NO" in combined

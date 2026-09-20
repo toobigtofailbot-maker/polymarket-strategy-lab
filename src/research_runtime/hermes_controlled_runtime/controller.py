@@ -29,6 +29,8 @@ from datetime import datetime, timezone
 from typing import Callable, Mapping
 
 from .models import (
+    DRAFT_DIAGNOSTICS_NOT_REACHED,
+    DraftStructureDiagnostics,
     HermesResearchError,
     HermesResearchRunReceipt,
     HermesResearchRunRequest,
@@ -38,6 +40,8 @@ from .models import (
     ValidatedResearchDraft,
     build_research_run_request,
     derive_receipt_id,
+    inspect_research_draft_structure,
+    sha256_hex,
     validate_research_draft,
 )
 from .policy import (
@@ -223,6 +227,11 @@ def run_controlled_hermes_research(
     envelope = build_research_envelope(request)
     prompt_text = envelope.to_prompt_string()
     argv = build_hermes_argv(executable_path, request, prompt_text, policy, USAGE_FILE_NAME)
+    # WP175M: bind the exact canonical prompt bytes and the machine-generated draft
+    # output contract into the receipt evidence. Set once the envelope exists; the
+    # pre-research (version/startup preflight) paths leave these as deterministic None.
+    builder.prompt_envelope_sha256 = envelope.envelope_digest
+    builder.draft_output_contract_sha256 = envelope.draft_output_contract_digest
     # WP175I: the deterministic non-secret controlled managed-scope config bytes are
     # frozen by the policy and handed to the backend, which writes them into an
     # ephemeral HERMES_MANAGED_DIR/config.yaml for the child. The controller neither
@@ -307,6 +316,23 @@ def run_controlled_hermes_research(
                                stdout_truncated=st, stderr_truncated=se)
     builder.usage_evidence_status = _USAGE_VALID
 
+    # WP175M (section 10): with valid usage, preserve the ACTUAL provider/model evidence
+    # BEFORE draft validation so a downstream schema failure still records them (H1 #3
+    # kept them null because validation ran first). This does not change failure
+    # precedence: the provider/model MISMATCH terminal gate still runs after schema
+    # validation below. The sanitized session-id digest anchors future read-only
+    # forensics; the raw session id is never retained in the receipt.
+    builder.verified_provider = usage.provider
+    builder.verified_model = usage.model
+    if usage.session_id:
+        builder.usage_session_id_digest = sha256_hex(usage.session_id.encode("utf-8"))
+
+    # WP175M (section 8): sanitized structural diagnostics for the untrusted draft. Only
+    # static canonical field-name tokens and fixed statuses are retained -- never a
+    # rejected value, research text, URL, or arbitrary model-supplied key.
+    diagnostics = inspect_research_draft_structure(response.final_text)
+    builder.set_draft_diagnostics(diagnostics)
+
     # Authoritative untrusted-draft validation. No retry on any failure (R012).
     try:
         draft = validate_research_draft(
@@ -389,6 +415,22 @@ class _ReceiptBuilder:
     stderr_redaction_applied: bool = False
     usage_file_present: bool = False
     usage_file_truncated: bool = False
+    # WP175M sanitized additive evidence (receipt schema 1.3.0). Defaults are the
+    # deterministic pre-research / no-draft shape; they are overwritten once the
+    # envelope is built and once a draft is inspected.
+    prompt_envelope_sha256: str | None = None
+    draft_output_contract_sha256: str | None = None
+    draft_diagnostics_status: str = DRAFT_DIAGNOSTICS_NOT_REACHED
+    draft_present_required_fields: tuple[str, ...] = ()
+    draft_missing_required_fields: tuple[str, ...] = ()
+    draft_first_missing_field: str | None = None
+    usage_session_id_digest: str | None = None
+
+    def set_draft_diagnostics(self, diagnostics: DraftStructureDiagnostics) -> None:
+        self.draft_diagnostics_status = diagnostics.status
+        self.draft_present_required_fields = diagnostics.present_required_fields
+        self.draft_missing_required_fields = diagnostics.missing_required_fields
+        self.draft_first_missing_field = diagnostics.first_missing_field
 
     def build(
         self,
@@ -438,6 +480,13 @@ class _ReceiptBuilder:
             source_references=source_references,
             output_schema_valid=output_schema_valid,
             safety_validation_status=safety,
+            prompt_envelope_sha256=self.prompt_envelope_sha256,
+            draft_output_contract_sha256=self.draft_output_contract_sha256,
+            draft_diagnostics_status=self.draft_diagnostics_status,
+            draft_present_required_fields=self.draft_present_required_fields,
+            draft_missing_required_fields=self.draft_missing_required_fields,
+            draft_first_missing_field=self.draft_first_missing_field,
+            usage_session_id_digest=self.usage_session_id_digest,
             usage_evidence_status=self.usage_evidence_status,
             usage_completed=getattr(usage, "completed", None),
             usage_failed=getattr(usage, "failed", None),

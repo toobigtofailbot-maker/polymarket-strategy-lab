@@ -31,8 +31,18 @@ from typing import Mapping, Sequence
 # ---------------------------------------------------------------------------
 
 REQUEST_SCHEMA_VERSION = "hermes-research-run-request/1.1.0"
-RECEIPT_SCHEMA_VERSION = "hermes-research-run-receipt/1.2.0"
+# WP175M: bumped 1.2.0 -> 1.3.0. The receipt gains sanitized additive evidence fields
+# (prompt/contract digests, static draft-structure diagnostics, usage session-id
+# digest); historical 1.2.0 H1 #3 receipts remain valid for that run and are not
+# rewritten.
+RECEIPT_SCHEMA_VERSION = "hermes-research-run-receipt/1.3.0"
 DRAFT_SCHEMA_VERSION = "hermes-research-draft/1.0.0"
+
+# WP175M: the canonical machine-generated draft output-contract identifier embedded in
+# the prompt envelope's ``draft_output_schema``. It is NOT the draft payload schema
+# version (that stays ``DRAFT_SCHEMA_VERSION``); it versions the JSON-schema-like
+# contract shape produced by :func:`build_research_draft_output_schema`.
+DRAFT_OUTPUT_CONTRACT_ID = "hermes-research-draft-output-contract/1.0.0"
 
 REQUEST_IDENTITY_PREFIX = "hermesresearchrequest:sha256:"
 RECEIPT_IDENTITY_PREFIX = "hermesresearchreceipt:sha256:"
@@ -110,8 +120,10 @@ DRAFT_AUTHORITY_FLAGS = (
     "no_pr_approval_or_merge_readiness_claim",
 )
 
-# Draft top-level required list fields.
-_DRAFT_LIST_FIELDS = (
+# Draft top-level required list fields. WP175M: promoted from the private
+# ``_DRAFT_LIST_FIELDS`` to the public canonical collection so the prompt output-schema
+# generator and the validator share ONE source of truth (STOP CONTRACT_VALIDATOR_DRIFT).
+DRAFT_LIST_FIELDS = (
     "evidence_for",
     "evidence_against",
     "uncertainties",
@@ -121,6 +133,55 @@ _DRAFT_LIST_FIELDS = (
     "what_would_change_the_conclusion",
     "suggested_next_research_steps",
 )
+# The one list field the validator rejects when empty (falsification discipline).
+DRAFT_NON_EMPTY_LIST_FIELD = "falsification_checks_performed"
+
+# Canonical ordered required top-level draft fields. The order is authoritative for the
+# sanitized "first missing field" diagnostic: schema_version/request_id first, then the
+# authority flags (``advisory_only`` first), then the substantive research fields. The
+# validator and the generated output schema both derive their required set from this.
+DRAFT_REQUIRED_TOP_LEVEL_FIELDS = (
+    "schema_version",
+    "request_id",
+    *DRAFT_AUTHORITY_FLAGS,
+    "research_summary",
+    "confidence_label",
+    *DRAFT_LIST_FIELDS,
+    "source_references",
+)
+
+# WP175M Finding G: canonical primitives shared EXACTLY by the validator and the
+# generated output schema so the model-facing contract describes precisely the set the
+# validator accepts (STOP CONTRACT_VALIDATOR_DRIFT).
+#
+# ``DRAFT_NON_WHITESPACE_PATTERN`` is a JSON-Schema search-style regex: ``\S`` matches
+# iff the string contains at least one non-whitespace character, which is exactly the
+# validator's ``value.strip()`` non-empty test for ``research_summary`` and source
+# titles. ``DRAFT_SOURCE_URL_PATTERN`` reproduces the accepted set of the former
+# case-insensitive HTTPS regex WITHOUT relying on a regex flag a schema consumer cannot
+# see: only the ``https`` prefix has alphabetic case, so it is spelled with explicit
+# character classes and the rest is unchanged.
+DRAFT_NON_WHITESPACE_PATTERN = r"\S"
+DRAFT_SOURCE_URL_PATTERN = r"^[hH][tT][tT][pP][sS]://[^\s/$.?#].[^\s]*$"
+
+# Validator-aligned draft bounds (shared by the validator and the output-schema helper).
+DRAFT_RESEARCH_SUMMARY_MAX_LEN = _MAX_LONG_TEXT * 4
+DRAFT_LIST_MAX_ITEMS = _MAX_LIST_ITEMS
+DRAFT_LIST_ITEM_MAX_LEN = _MAX_LONG_TEXT
+DRAFT_SOURCE_TITLE_MAX_LEN = _MAX_SHORT_TEXT
+DRAFT_SOURCE_URL_MAX_LEN = _MAX_SHORT_TEXT
+
+# Deterministic sorted closed vocabularies for the generated output schema enums.
+CONFIDENCE_LABELS_SORTED = tuple(sorted(CONFIDENCE_LABELS))
+SOURCE_CLASSES_SORTED = tuple(sorted(SOURCE_CLASSES))
+
+# Sanitized draft-structure diagnostic statuses (WP175M section 20).
+DRAFT_DIAGNOSTICS_AVAILABLE = "AVAILABLE"
+DRAFT_DIAGNOSTICS_UNAVAILABLE_INVALID = "UNAVAILABLE_INVALID_OUTPUT"
+DRAFT_DIAGNOSTICS_NOT_REACHED = "NOT_REACHED"
+
+# Compiled once from the shared pattern; reused by the validator (Finding G).
+_DRAFT_NON_WHITESPACE_RE = re.compile(DRAFT_NON_WHITESPACE_PATTERN)
 
 # ---------------------------------------------------------------------------
 # Fail-closed error type
@@ -548,6 +609,19 @@ class HermesResearchRunReceipt:
     source_references: tuple[SanitizedSourceReference, ...]
     output_schema_valid: bool
     safety_validation_status: str
+    # WP175M sanitized additive evidence (receipt schema 1.3.0). ``prompt_envelope_sha256``
+    # binds the exact canonical prompt bytes; ``draft_output_contract_sha256`` binds the
+    # machine-generated output schema; the ``draft_*`` diagnostics use ONLY static
+    # canonical field-name tokens and fixed statuses (never rejected values);
+    # ``usage_session_id_digest`` is the SHA-256 of a valid usage report's session id
+    # (raw session id is never retained) or ``None``.
+    prompt_envelope_sha256: str | None
+    draft_output_contract_sha256: str | None
+    draft_diagnostics_status: str
+    draft_present_required_fields: tuple[str, ...]
+    draft_missing_required_fields: tuple[str, ...]
+    draft_first_missing_field: str | None
+    usage_session_id_digest: str | None
     usage_evidence_status: str
     usage_completed: bool | None
     usage_failed: bool | None
@@ -605,6 +679,13 @@ class HermesResearchRunReceipt:
             ],
             "output_schema_valid": self.output_schema_valid,
             "safety_validation_status": self.safety_validation_status,
+            "prompt_envelope_sha256": self.prompt_envelope_sha256,
+            "draft_output_contract_sha256": self.draft_output_contract_sha256,
+            "draft_diagnostics_status": self.draft_diagnostics_status,
+            "draft_present_required_fields": list(self.draft_present_required_fields),
+            "draft_missing_required_fields": list(self.draft_missing_required_fields),
+            "draft_first_missing_field": self.draft_first_missing_field,
+            "usage_session_id_digest": self.usage_session_id_digest,
             "usage_evidence_status": self.usage_evidence_status,
             "usage_completed": self.usage_completed,
             "usage_failed": self.usage_failed,
@@ -646,7 +727,10 @@ class ValidatedResearchDraft:
     source_urls: tuple[str, ...]
 
 
-_URL_RE = re.compile(r"^https://[^\s/$.?#].[^\s]*$", re.IGNORECASE)
+# Finding G: compiled from the SAME canonical pattern the generated schema embeds. The
+# explicit ``[hH][tT]...`` prefix preserves the former ``re.IGNORECASE`` accepted set
+# (only the ``https`` prefix has alphabetic case) without a flag a schema consumer sees.
+_URL_RE = re.compile(DRAFT_SOURCE_URL_PATTERN)
 
 
 def _draft_str(value: object, *, max_len: int) -> str:
@@ -693,25 +777,25 @@ def validate_research_draft(
             raise _fail("DRAFT_AUTHORITY_FLAG_INVALID")
 
     research_summary = document.get("research_summary")
-    research_summary = _draft_str(research_summary, max_len=_MAX_LONG_TEXT * 4)
-    if not research_summary.strip():
+    research_summary = _draft_str(research_summary, max_len=DRAFT_RESEARCH_SUMMARY_MAX_LEN)
+    if not _DRAFT_NON_WHITESPACE_RE.search(research_summary):
         raise _fail("DRAFT_SCHEMA_INVALID")
 
     confidence_label = document.get("confidence_label")
     if confidence_label not in CONFIDENCE_LABELS:
         raise _fail("DRAFT_SCHEMA_INVALID")
 
-    for list_field in _DRAFT_LIST_FIELDS:
+    for list_field in DRAFT_LIST_FIELDS:
         if list_field not in document:
             raise _fail("DRAFT_FIELD_MISSING")
         value = document[list_field]
-        if not isinstance(value, list) or len(value) > _MAX_LIST_ITEMS:
+        if not isinstance(value, list) or len(value) > DRAFT_LIST_MAX_ITEMS:
             raise _fail("DRAFT_SCHEMA_INVALID")
         for item in value:
-            _draft_str(item, max_len=_MAX_LONG_TEXT)
+            _draft_str(item, max_len=DRAFT_LIST_ITEM_MAX_LEN)
 
     # Falsification discipline: the model must have attempted disconfirmation.
-    if not document["falsification_checks_performed"]:
+    if not document[DRAFT_NON_EMPTY_LIST_FIELD]:
         raise _fail("DRAFT_UNSAFE_CONTENT")
 
     # Unsafe-content gate: reject execution/trading authority claims in the summary.
@@ -766,9 +850,13 @@ def _validate_source_references(
         url = item.get("url")
         title = item.get("title")
         source_class = item.get("source_class")
-        if not isinstance(url, str) or not _URL_RE.match(url) or len(url) > _MAX_SHORT_TEXT:
+        if not isinstance(url, str) or not _URL_RE.match(url) or len(url) > DRAFT_SOURCE_URL_MAX_LEN:
             raise _fail("DRAFT_SOURCE_INVALID")
-        if not isinstance(title, str) or not title.strip() or len(title) > _MAX_SHORT_TEXT:
+        if (
+            not isinstance(title, str)
+            or not _DRAFT_NON_WHITESPACE_RE.search(title)
+            or len(title) > DRAFT_SOURCE_TITLE_MAX_LEN
+        ):
             raise _fail("DRAFT_SOURCE_INVALID")
         if source_class not in SOURCE_CLASSES:
             raise _fail("DRAFT_SOURCE_INVALID")
@@ -779,3 +867,153 @@ def _validate_source_references(
         )
         urls.append(url)
     return tuple(refs), tuple(urls)
+
+
+# ---------------------------------------------------------------------------
+# Canonical machine-generated draft output contract (WP175M section 5)
+# ---------------------------------------------------------------------------
+
+
+def build_research_draft_output_schema(
+    *, expected_request_id: str, max_sources: int
+) -> dict[str, object]:
+    """Deterministic JSON-schema-like draft output contract for the prompt envelope.
+
+    Every constraint is derived from the SAME canonical constants the authoritative
+    :func:`validate_research_draft` enforces (STOP CONTRACT_VALIDATOR_DRIFT): the
+    ordered required top-level field set, the authority-flag ``const=True`` set, the
+    confidence and source-class closed vocabularies, the validator-aligned length/
+    cardinality bounds, and the exact draft schema version and request id embedded as
+    constants. It invents no constraint the validator does not enforce. The output is a
+    plain mapping of literals only -- it carries no repository path, credential, or
+    private data -- and identical inputs yield byte-identical canonical serialization.
+    """
+    if not isinstance(expected_request_id, str) or not expected_request_id:
+        raise _fail("DRAFT_SCHEMA_INVALID")
+    if isinstance(max_sources, bool) or not isinstance(max_sources, int) or max_sources < 1:
+        raise _fail("DRAFT_SCHEMA_INVALID")
+    source_cap = min(max_sources, MAX_SOURCES_ABSOLUTE)
+
+    properties: dict[str, object] = {
+        "schema_version": {"type": "string", "const": DRAFT_SCHEMA_VERSION},
+        "request_id": {"type": "string", "const": expected_request_id},
+    }
+    for flag in DRAFT_AUTHORITY_FLAGS:
+        properties[flag] = {"type": "boolean", "const": True}
+    properties["research_summary"] = {
+        "type": "string",
+        "minLength": 1,
+        "pattern": DRAFT_NON_WHITESPACE_PATTERN,
+        "maxLength": DRAFT_RESEARCH_SUMMARY_MAX_LEN,
+    }
+    properties["confidence_label"] = {
+        "type": "string",
+        "enum": list(CONFIDENCE_LABELS_SORTED),
+    }
+    for field in DRAFT_LIST_FIELDS:
+        field_schema: dict[str, object] = {
+            "type": "array",
+            "maxItems": DRAFT_LIST_MAX_ITEMS,
+            "items": {"type": "string", "maxLength": DRAFT_LIST_ITEM_MAX_LEN},
+        }
+        if field == DRAFT_NON_EMPTY_LIST_FIELD:
+            # The validator rejects an empty falsification list, so the contract
+            # requires at least one entry.
+            field_schema["minItems"] = 1
+        properties[field] = field_schema
+    properties["source_references"] = {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": source_cap,
+        "items": {
+            "type": "object",
+            "required": ["url", "title", "source_class"],
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "pattern": DRAFT_SOURCE_URL_PATTERN,
+                    "maxLength": DRAFT_SOURCE_URL_MAX_LEN,
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": DRAFT_NON_WHITESPACE_PATTERN,
+                    "maxLength": DRAFT_SOURCE_TITLE_MAX_LEN,
+                },
+                "source_class": {"type": "string", "enum": list(SOURCE_CLASSES_SORTED)},
+            },
+        },
+    }
+    return {
+        "type": "object",
+        "schema_id": DRAFT_OUTPUT_CONTRACT_ID,
+        "draft_schema_version": DRAFT_SCHEMA_VERSION,
+        "required": list(DRAFT_REQUIRED_TOP_LEVEL_FIELDS),
+        "properties": properties,
+    }
+
+
+def research_draft_output_schema_digest(schema: Mapping[str, object]) -> str:
+    """SHA-256 of the canonical serialization of a generated draft output schema."""
+    return sha256_hex(canonical_json_bytes(schema))
+
+
+# ---------------------------------------------------------------------------
+# Sanitized draft-structure diagnostics (WP175M section 8)
+# ---------------------------------------------------------------------------
+
+
+@dataclasses.dataclass(frozen=True)
+class DraftStructureDiagnostics:
+    """Bounded, sanitized structural diagnostics for an untrusted draft.
+
+    Only STATIC canonical field-name tokens from
+    :data:`DRAFT_REQUIRED_TOP_LEVEL_FIELDS` and fixed status strings are ever retained.
+    No rejected value, research text, URL, arbitrary model-supplied key, tool payload,
+    or provider content is stored.
+    """
+
+    status: str
+    present_required_fields: tuple[str, ...]
+    missing_required_fields: tuple[str, ...]
+    first_missing_field: str | None
+
+
+def inspect_research_draft_structure(raw: str | bytes) -> DraftStructureDiagnostics:
+    """Return sanitized present/missing canonical-field diagnostics for untrusted output.
+
+    Parses the untrusted JSON but emits ONLY predefined canonical field-name tokens and
+    fixed status values. Non-JSON, non-object, or undecodable input yields
+    ``UNAVAILABLE_INVALID_OUTPUT`` (every canonical field reported missing). A parsed
+    JSON object yields ``AVAILABLE`` with the canonical fields partitioned into present
+    and missing by NAME PRESENCE only (never by value validity), and the first missing
+    field in canonical order.
+    """
+    document: dict[str, object] | None = None
+    if isinstance(raw, (bytes, bytearray)):
+        try:
+            raw = bytes(raw).decode("utf-8")
+        except UnicodeError:
+            raw = None  # type: ignore[assignment]
+    if isinstance(raw, str):
+        try:
+            parsed = json.loads(raw)
+        except (ValueError, RecursionError):
+            parsed = None
+        if isinstance(parsed, dict):
+            document = parsed
+    if document is None:
+        return DraftStructureDiagnostics(
+            status=DRAFT_DIAGNOSTICS_UNAVAILABLE_INVALID,
+            present_required_fields=(),
+            missing_required_fields=DRAFT_REQUIRED_TOP_LEVEL_FIELDS,
+            first_missing_field=DRAFT_REQUIRED_TOP_LEVEL_FIELDS[0],
+        )
+    present = tuple(f for f in DRAFT_REQUIRED_TOP_LEVEL_FIELDS if f in document)
+    missing = tuple(f for f in DRAFT_REQUIRED_TOP_LEVEL_FIELDS if f not in document)
+    return DraftStructureDiagnostics(
+        status=DRAFT_DIAGNOSTICS_AVAILABLE,
+        present_required_fields=present,
+        missing_required_fields=missing,
+        first_missing_field=missing[0] if missing else None,
+    )
