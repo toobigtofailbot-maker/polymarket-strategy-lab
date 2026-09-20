@@ -610,3 +610,24 @@ scheduler/background task, product network, dashboard, strategy, expected-return
 cost-adjusted result authority, paper/live trading, credential, authenticated access,
 signing, order, OMS, execution, reconciliation, or risk authority. WP171 (Interactive
 Operator Cockpit) and WP172–WP178 remain separately gated successors.
+
+## Supersession — Post-H1 Alpha/Hermes Sequencing (WP175N / S10-ALPHA-01)
+
+This section supersedes only the FORWARD SEQUENCING guidance below; it does not rewrite
+history. The foundational measurable-alpha-factory and deterministic-kernel architecture
+locked by WP154 remains valid, exact, and authoritative.
+
+Post-H1 sequencing is now governed by `docs/alpha_factory_core_contract.md` and the current
+`docs/long_term_bot_completion_roadmap.md`. After `GENUINE_H1_PASS` (accepted H1 #4;
+historical real H1 invocations 4; H1 #5 NOT AUTHORIZED), the current sequence is
+GENUINE H1 PASS -> S10-ALPHA-01 -> S10-WALLET-01 -> S10-HERMES-CTX-01 -> S10-WALLET-02 ->
+S10-ALPHA-02 -> S10-GATE-AF1, with S10-GATE-WALLET-01 conditional (not a global
+qualification blocker), S10-HERMES-SI-01 unlocking on accepted AF1 benchmark material in
+parallel with no deterministic/economic authority, WP176 decomposed into WP176A-E, and Gate
+C human-only. The old monolithic WP180/WP181 Hermes/Alpha sequencing is SUPERSEDED and any
+conflicting old phase/order text elsewhere in this document is historical. WP175N adds the
+canonical Alpha Factory research memory (separate SQLite application id 1464877425) and
+leaves WP170 (application id 1464877424), the nine-stage lineage, and the authority split
+unchanged; it grants no provider/model/Hermes runtime, network, scheduler, prioritization,
+qualification, economic, strategy, paper, live, credential, signing, order, or Gate-C
+authority.

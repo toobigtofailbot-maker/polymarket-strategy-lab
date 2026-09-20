@@ -1,5 +1,40 @@
 # Repo Truth Index
 
+## WP175N Multi-Lane Alpha Factory Core (current review target)
+
+WP175N / Side11 capability handle S10-ALPHA-01 is the FAST-track, risk-2, exact 16-file
+bounded implementation of the first canonical Alpha Factory research-memory substrate. It
+adds a standalone record model `src/data_layer/analytical_research/alpha_factory.py` and a
+bounded append-only SQLite registry
+`src/data_layer/analytical_research/alpha_factory_registry.py`, exported from
+`src/data_layer/analytical_research/__init__.py`, plus the canonical contract
+`docs/alpha_factory_core_contract.md` and focused tests
+`tests/data_layer/analytical_research/test_alpha_factory_records.py`,
+`tests/data_layer/analytical_research/test_alpha_factory_identity.py`,
+`tests/data_layer/analytical_research/test_alpha_factory_registry.py`, and
+`tests/data_layer/analytical_research/test_alpha_factory_boundaries.py`. Four frozen
+content-addressed record types (ResearchSourceReference, OpportunityCandidate,
+HypothesisFamily, ResearchEpisode) record public source references, research-worthy
+opportunity candidates, hypothesis/mechanism families, and immutable research episodes with
+primitive multi-lane evidence (COMPOSITE is derived, not stored), nine closed result states
+with a per-state evidence matrix, exact-scope negative evidence, append-only reopen,
+deterministic novelty/mechanism fingerprints, producer provenance, and recursive
+secret/authority/binary-float rejection. The separate append-only SQLite registry uses
+format id `s10-alpha-factory-registry`, integer schema version 1, and application id
+`1464877425` (proven unique and distinct from WP170's `1464877424`), with a per-entry
+SHA-256 hash chain, append-only triggers, caller-order-independent atomic append,
+projected-history cross-reference validation, and read-only verified load. WP170
+`experiment_os.py`/`experiment_registry.py` and application id `1464877424` are UNCHANGED;
+`HypothesisFamily` is not `ExperimentFamily`. This registration grants no
+provider/model/Hermes runtime, Firecrawl, OAuth, network, scheduler, prioritization,
+qualification, economic, strategy, paper, live, credential, signing, order, or Gate-C
+authority. S10-GATE-H1 is `GENUINE_H1_PASS` (accepted H1 #4; historical real H1 invocations
+4; H1 #5 NOT AUTHORIZED; remote Firecrawl HTTP independently proven: NO). The immediate
+software successor after WP175N merge is S10-WALLET-01, then S10-HERMES-CTX-01; the
+wallet-intelligence roadmap anchor (WALLET-01..WALLET-04 + GATE-WALLET-01) persists with a
+conditional, non-global wallet gate. Gate C is NOT AUTHORIZED and merge is not authorized
+pending Side11 exact-head review.
+
 ## WP175M Hermes Draft Prompt Contract Alignment And Schema Diagnostics (current review target)
 
 WP175M / Side11 capability handle S10-HERMES-01E is the RUNTIME-track, risk-3, exact

@@ -1,0 +1,179 @@
+SIDE11 — WP175N / S10-ALPHA-01
+MULTI-LANE ALPHA FACTORY CORE — CANONICAL RESEARCH MEMORY + APPEND-ONLY REGISTRY
+IMPLEMENTATION-AUTHORIZED WORK PACKAGE
+
+Package Identity:
+  WP ID: WP175N
+  Side11 capability handle: S10-ALPHA-01
+  Title: Multi-Lane Alpha Factory Core
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen drafting base: b4e53ea509b41d157a3db81beb42226443093191
+  Required predecessor: PR #186 / WP175M
+  Required predecessor merge: b4e53ea509b41d157a3db81beb42226443093191
+  Suggested branch: claude/s10-alpha-01-factory-core-0f5cfb
+  Package class: DETERMINISTIC_MULTI_LANE_ALPHA_FACTORY_CANONICAL_RESEARCH_MEMORY
+  Package size class: L
+  Exact changed-file budget: 16
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: NONE (local/offline deterministic research-memory record model and SQLite registry only)
+  Product impact: NONE
+  Network impact: GitHub control-plane / hosted CI only; NO provider, Firecrawl, Polymarket, model-catalog, OAuth, wallet, or product-web calls during implementation or tests
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: FAST
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: Claude Opus 4.8 — HIGH
+  Reason: this is the first canonical Alpha Factory state-bearing registry; the external/network surface is zero, but identity, lineage, append-only persistence, negative-evidence, and roadmap semantics must be correct on the first implementation. WP170 provides an exact reusable precedent for canonical JSON, content-addressed identity, and append-only SQLite hash chains.
+  Escalate or STOP if: live main drifts; a path outside the authorized 16 is mechanically required; WP170 source/registry mutation is required; a direct Hermes/research_runtime dependency is required; any network/provider/wallet/market call is required; identity would need model/embedding/random/environment state; application id 1464877425 is already used; a negative result would globalize to a market/category ban; reopen/refresh would mutate an old record; prioritization/scheduler/qualification/economics/authority-broadening appears; a relevant local or hosted test remains red.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Genuine H1 Basis (authoritative):
+  S10-GATE-H1 is GENUINE_H1_PASS. Accepted H1 is H1 #4. Historical real S10-GATE-H1
+  research invocations consumed = 4 (H1 #1, H1 #2, H1 #3, H1 #4, each SEPARATELY
+  human-authorized). H1 #5 is NOT AUTHORIZED. HAP-03: the H1 runtime required a configured
+  Firecrawl-only web backend with keyless fallback/rescue disabled; the matched H1 #4
+  session persisted web_search and web_extract activity, but pinned Hermes v0.21.3 exposes
+  no downstream Firecrawl HTTP telemetry, so remote Firecrawl HTTP is NOT independently
+  proven. HAP-04: there was no automatic controller rerun, provider/model/backend
+  substitution, or automatic paid top-up; each real invocation was separately authorized.
+
+Objective:
+  Build the first canonical Alpha Factory research-memory substrate: a standalone,
+  deterministic, bounded, local/offline record model and a separate append-only SQLite
+  registry that records public/research source references, research-worthy opportunity
+  candidates, hypothesis/mechanism families, and immutable research episodes with primitive
+  multi-lane evidence, closed result states, exact-scope negative evidence, append-only
+  reopen lineage, deterministic novelty/mechanism fingerprints, producer provenance,
+  recursive secret/authority/binary-float rejection, and a per-entry hash chain. Alpha
+  Factory RECORDS research history; deterministic qualification and economic authority
+  remain OUTSIDE this package. Only a validated ResearchEpisode committed to the registry
+  becomes canonical Alpha research memory.
+
+Authority / Non-Authority:
+  This package has advisory research-memory authority only. It grants NO
+  provider/model/Hermes runtime, Firecrawl, OAuth, wallet-network, market-network,
+  scheduler/background, prioritization, qualification, strategy, paper, execution, live,
+  credential, signing, order, economic (EV/PnL/fill/slippage), or Gate-C authority. Every
+  record is advisory_only, no_execution_authority, and (where the field exists)
+  no_strategy_authority and no_qualification_authority, all exactly true. WP170
+  (experiment_os.py / experiment_registry.py, application id 1464877424) is UNCHANGED; no
+  WP170 kinds, application id, AlphaHypothesis, ExperimentFamily, or PreregisteredExperiment
+  are reused or reinterpreted; HypothesisFamily is NOT ExperimentFamily. The package works
+  with zero Hermes installation and never imports src/research_runtime/. Merge remains
+  Karl-only and is NOT authorized by this package.
+
+Exact Changed-File Scope (16, exact):
+  src/data_layer/analytical_research/alpha_factory.py
+  src/data_layer/analytical_research/alpha_factory_registry.py
+  src/data_layer/analytical_research/__init__.py
+  tests/data_layer/analytical_research/test_alpha_factory_records.py
+  tests/data_layer/analytical_research/test_alpha_factory_identity.py
+  tests/data_layer/analytical_research/test_alpha_factory_registry.py
+  tests/data_layer/analytical_research/test_alpha_factory_boundaries.py
+  docs/alpha_factory_core_contract.md
+  docs/status_entries/WP175N.md
+  docs/wp_specs/WP175N/wp_prompt.txt
+  docs/wp_specs/WP175N/wp_spec.json
+  docs/project_status.md
+  docs/repo_truth_index.md
+  docs/deferred_items_log.md
+  docs/long_term_bot_completion_roadmap.md
+  docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md
+
+Normative Rule Matrix:
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|record|content_identity|semantic_field_change|REQUIRE|distinct_identity|record.content_identity|R001
+NR002|record|content_identity|environment_state|FORBID|excluded_from_identity|record.content_identity|R016
+NR003|novelty|fingerprint|prose_variation|REQUIRE|prose_excluded|novelty.fingerprint|R004
+NR004|mechanism|fingerprint|producer_variation|REQUIRE|producer_excluded|mechanism.fingerprint|R005
+NR005|evidence|lanes|composite_label|FORBID|not_stored|evidence.primitive_lanes|R006
+NR006|result_state|episode|missing_required_evidence|REQUIRE|fail_closed|result_state.evidence_matrix|R008
+NR007|episode|lineage|reopen|REQUIRE|append_only|episode.reopen_append_only|R011
+NR008|mapping|freeform|secret_or_authority_key|FORBID|rejected_no_echo|mapping.sensitive_key_rejection|R013
+NR009|registry|records|tamper|REQUIRE|integrity_detected|registry.append_only_hash_chain|R027
+NR010|registry|append|caller_order|REQUIRE|order_independent|registry.caller_order_independent|R029
+NR011|registry|store|application_id|REQUIRE|unique_identifier|registry.application_id|R023
+NR012|wp170|types|reuse|FORBID|separated|wp170.separation|R017
+NR013|authority|package|execution_or_gate_c|FORBID|no_authority|authority.non_authority|R048
+END_NORMATIVE_RULE_MATRIX_V1
+
+Negative-Test Matrix:
+  - A PUBLIC_HTTPS locator with a secret-bearing query key, userinfo, http/file scheme, or
+    localhost is rejected and never fetched.
+  - An unknown or duplicate evidence lane is rejected; COMPOSITE is never a stored lane.
+  - Every result state without its required supporting evidence field fails closed
+    (RESULT_EVIDENCE_INVALID), and every episode without falsification checks or any
+    evidence reference fails closed.
+  - A REOPEN_TRIGGERED episode without a resolvable prior episode of the same
+    candidate/family, or targeting a RESEARCH_SUPPORTIVE/REOPEN_TRIGGERED episode, is
+    rejected; no old record is mutated.
+  - A nested secret-like or authority-like key, or a binary float at any depth, is rejected
+    with no echo of the rejected key/value/payload.
+  - A second non-identical candidate with the same novelty fingerprint, or a second
+    non-identical family with the same mechanism fingerprint, is rejected against existing
+    and projected history.
+  - A batch with one bad record commits zero rows and leaves the head hash and row count
+    unchanged; caller batch order never changes the committed bytes.
+
+Evidence Plan (requirement mapping):
+  The wp_spec.json evidence_plan maps R001-R052 to the focused record, identity, registry,
+  and boundary suites, the WP170 compatibility suites, the docs-truth suites, one
+  authoritative full suite, the readiness gate with --check-diff, and the artifact / diff /
+  pip / security guards, with zero network/provider/Firecrawl/H1/wallet/market calls.
+
+Successor Boundary:
+  Successor boundary: the immediate software successor after WP175N MERGE is S10-WALLET-01,
+  then S10-HERMES-CTX-01; both are separately gated and NOT STARTED by WP175N. S10-ALPHA-02
+  (universe triage/freshness/reopen/prioritization), S10-ALPHA-03 (scheduler/budgets/
+  campaigns), and S10-ALPHA-04 (outcome learning) remain later. S10-HERMES-SI-01 unlocks on
+  accepted AF1 benchmark material in parallel with no deterministic/economic authority. The
+  old monolithic WP180/WP181 Hermes/Alpha sequencing is SUPERSEDED; WP176 remains decomposed
+  into WP176A-E; Gate C remains human-only and NOT AUTHORIZED.
+
+Hard Stops:
+  STOP STATE_DRIFT if base/open-PR state differs. STOP EXISTING_WP_CONFLICT if a WP175N
+  branch/PR/package already exists. STOP SCOPE_CONTRACT_MISMATCH if a path outside the
+  authorized 16 is mechanically required. STOP STATUS_BLAST_RADIUS if accurate tracked truth
+  would require unplanned historical-compatibility edits outside the envelope. STOP
+  ALPHA_WP170_CONFLATION if WP170 source/registry mutation is required. STOP
+  DIRECT_HERMES_COUPLING if a Hermes/research_runtime dependency is required. STOP
+  NETWORK_REQUIRED if any provider/market/wallet/network call is required. STOP
+  QUALIFICATION_SCOPE_LEAK / PRIORITIZATION_SCOPE_LEAK / AUTONOMY_SCOPE_LEAK /
+  WALLET_SCOPE_LEAK / ECONOMICS_SCOPE_LEAK / AUTHORITY_BROADENING if the corresponding
+  out-of-scope behavior appears. STOP IDENTITY_NONDETERMINISTIC if identity needs
+  model/embedding/random/environment state. STOP REGISTRY_COLLISION if application id
+  1464877425 is already used. STOP HISTORY_MUTATION if reopen/refresh needs mutating an old
+  record. STOP NEGATIVE_EVIDENCE_GLOBALIZATION if a negative state becomes a market/category
+  ban. STOP TEST_CONTRACT_FAILURE for any relevant red local test. STOP
+  HOSTED_VALIDATION_FAILED for any non-authorized hosted failure.
+
+Report-Back:
+  Report back to Side11 with the exact base and head SHAs, PR number and state, the
+  changed-file set and count, the Phase-A discovery (application-id collision result and
+  project_status blast-radius result), the record/registry design, the focused / WP170 /
+  docs / full / readiness / guard / hosted-CI evidence, and the authority posture (H1 #5 NOT
+  AUTHORIZED; provider/Firecrawl/OAuth/Hermes/H1/wallet/market calls 0; Gate C NOT
+  AUTHORIZED; capital 0; orders 0; merge authorized NO).
