@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
+import urllib.error
 
 import pytest
 
@@ -10,6 +12,7 @@ from src.data_layer.point_in_time_market_research.research_provenance import (
     build_pit_timestamps,
     build_raw_evidence_reference,
 )
+from src.data_layer.polymarket.public_client import PolymarketPublicClient
 from src.data_layer.wallet_intelligence import contracts as c
 from src.data_layer.wallet_intelligence import ledger as L
 from src.data_layer.wallet_intelligence import public_ingest as pi
@@ -83,6 +86,66 @@ class _Guard:
         return SimpleNamespace(allowed=self.allowed)
 
 
+class _SequenceGuard:
+    def __init__(self, decisions):
+        self.decisions = list(decisions)
+        self.calls = 0
+
+    def record_allowed(self, endpoint_key):
+        decision = self.decisions[min(self.calls, len(self.decisions) - 1)]
+        self.calls += 1
+        return SimpleNamespace(allowed=decision)
+
+
+class _RawResponse:
+    def __init__(self, body, status=200):
+        self.body = body
+        self.status = status
+        self.headers = {}
+        self.position = 0
+
+    def read(self, size=-1):
+        if size is None or size < 0:
+            size = len(self.body) - self.position
+        chunk = self.body[self.position:self.position + size]
+        self.position += len(chunk)
+        return chunk
+
+    def getcode(self):
+        return self.status
+
+    def close(self):
+        pass
+
+
+class _RawOpener:
+    def __init__(self, outcomes=(), attempt_state=None):
+        self.outcomes = list(outcomes)
+        self.attempt_state = attempt_state
+        self.calls = 0
+        self.observed_attempt_counts = []
+
+    def open(self, request, timeout=None):
+        self.calls += 1
+        if self.attempt_state is not None:
+            self.observed_attempt_counts.append(
+                self.attempt_state.transport_attempt_count
+            )
+        if not self.outcomes:
+            raise AssertionError("unexpected raw opener call")
+        outcome = self.outcomes.pop(0)
+        if isinstance(outcome, BaseException):
+            raise outcome
+        return outcome
+
+
+def _valid_response(rows=()):
+    body = json.dumps(
+        {"data": list(rows), "pagination": {"has_more": False, "next_cursor": None}}
+    ).encode("utf-8")
+    return _RawResponse(body)
+
+
 class _WalletClient:
     def __init__(self, log=None):
         self.calls = 0
@@ -124,15 +187,15 @@ def test_dry_run_zero_network_zero_writes(tmp_path):
 @pytest.mark.parametrize("guard", [None, object()])
 def test_network_missing_or_invalid_guard_rejected_before_acquisition(tmp_path, guard):
     path = _new_ledger(tmp_path)
-    client = _WalletClient()
+    opener = _RawOpener()
     result = pi.ingest_wallet_evidence(
-        _request(), ledger_path=path, mode="NETWORK", client=client,
-        opener=object(), guard=guard,
+        _request(), ledger_path=path, mode="NETWORK",
+        client=PolymarketPublicClient(), opener=opener, guard=guard,
     )
     assert result.collection_completion_state == "REJECTED_BEFORE_ACQUISITION"
     assert result.error_codes == ("RATE_LIMIT_GUARD_DENIED",)
     assert result.transport_call_count == result.appended_record_count == 0
-    assert client.calls == 0
+    assert opener.calls == 0
     assert _record_count(
         path, "RAW_EVIDENCE_REFERENCE", "WALLET_FEED_PAGE_EVIDENCE",
         "WALLET_EVENT_OBSERVATION", "WALLET_EVIDENCE_EVENT",
@@ -143,13 +206,14 @@ def test_network_missing_or_invalid_guard_rejected_before_acquisition(tmp_path, 
 def test_network_denied_guard_zero_transport_and_records(tmp_path):
     path = _new_ledger(tmp_path)
     guard = _Guard(False)
-    client = _WalletClient()
+    opener = _RawOpener()
     result = pi.ingest_wallet_evidence(
-        _request(), ledger_path=path, mode="NETWORK", client=client,
-        opener=object(), guard=guard, clock_times=_clock(),
+        _request(), ledger_path=path, mode="NETWORK",
+        client=PolymarketPublicClient(), opener=opener,
+        guard=guard, clock_times=_clock(),
     )
     assert guard.calls == 1
-    assert client.calls == 0
+    assert opener.calls == 0
     assert result.collection_completion_state == "REJECTED_BEFORE_ACQUISITION"
     assert result.error_codes == ("RATE_LIMIT_GUARD_DENIED",)
     assert result.transport_call_count == result.appended_record_count == 0
@@ -160,22 +224,186 @@ def test_network_denied_guard_zero_transport_and_records(tmp_path):
     ) == 0
 
 
-def test_network_guard_immediately_precedes_one_client_request():
-    log = []
-    fetch = pi.make_network_fetcher(
-        _WalletClient(log), request=_request(), opener=object(),
-        guard=_Guard(True, log),
-    )
-    fetch("TRADES", None)
-    assert [entry[0] for entry in log] == ["guard", "client"]
-
-
 def test_make_network_fetcher_rejects_missing_guard():
     with pytest.raises(c.WalletContractError) as exc:
         pi.make_network_fetcher(
-            _WalletClient(), request=_request(), opener=object(), guard=None,
+            PolymarketPublicClient(), request=_request(), opener=_RawOpener(),
+            guard=None, attempt_state=pi._NetworkAttemptState(),
         )
     assert str(exc.value) == "RATE_LIMIT_GUARD_DENIED"
+
+
+@pytest.mark.parametrize(
+    "case",
+    ["duck", "subclass", "public_shadow", "internal_shadow", "class_replaced"],
+)
+def test_network_rejects_every_altered_client_path(tmp_path, monkeypatch, case):
+    custom_calls = {"n": 0}
+
+    def custom(*args, **kwargs):
+        custom_calls["n"] += 1
+        raise AssertionError("custom client path used")
+
+    if case == "duck":
+        client = _WalletClient()
+    elif case == "subclass":
+        class AlteredClient(PolymarketPublicClient):
+            def get_wallet_trades_page(self, **kwargs):
+                return custom(**kwargs)
+
+        client = AlteredClient()
+    else:
+        client = PolymarketPublicClient()
+        if case == "public_shadow":
+            client.get_wallet_trades_page = custom
+        elif case == "internal_shadow":
+            client._wallet_data_api_get_page = custom
+        else:
+            monkeypatch.setattr(
+                PolymarketPublicClient, "_wallet_data_api_get_page", custom
+            )
+
+    path = _new_ledger(tmp_path, f"{case}.sqlite")
+    guard = _Guard(True)
+    opener = _RawOpener()
+    result = pi.ingest_wallet_evidence(
+        _request(), ledger_path=path, mode="NETWORK", client=client,
+        opener=opener, guard=guard,
+    )
+    assert result.collection_completion_state == "REJECTED_BEFORE_ACQUISITION"
+    assert result.error_codes == ("FIELD_VALUE_INVALID",)
+    assert result.transport_call_count == result.appended_record_count == 0
+    assert guard.calls == opener.calls == custom_calls["n"] == 0
+    assert _record_count(
+        path, "RAW_EVIDENCE_REFERENCE", "WALLET_FEED_PAGE_EVIDENCE",
+        "WALLET_EVENT_OBSERVATION", "WALLET_EVIDENCE_EVENT",
+        "WALLET_INGEST_RUN_RECEIPT",
+    ) == 0
+
+    attempt_state = pi._NetworkAttemptState()
+    direct_guard = _Guard(True)
+    direct_opener = _RawOpener()
+    with pytest.raises(c.WalletContractError) as exc:
+        pi.make_network_fetcher(
+            client, request=_request(), opener=direct_opener,
+            guard=direct_guard, attempt_state=attempt_state,
+        )
+    assert str(exc.value) == "FIELD_VALUE_INVALID"
+    assert attempt_state.transport_attempt_count == 0
+    assert direct_guard.calls == direct_opener.calls == custom_calls["n"] == 0
+
+
+@pytest.mark.parametrize(
+    ("failure", "expected_code"),
+    [
+        ("source_unavailable", "SOURCE_UNAVAILABLE"),
+        ("invalid_envelope", "SOURCE_RESPONSE_INVALID"),
+        ("runtime", "INTERNAL_VALIDATION_FAILED"),
+    ],
+)
+def test_network_post_dispatch_failures_preserve_attempt_and_receipt(
+    tmp_path, failure, expected_code
+):
+    if failure == "source_unavailable":
+        outcome = urllib.error.URLError("offline")
+    elif failure == "invalid_envelope":
+        outcome = _RawResponse(b'{"data":[]}')
+    else:
+        outcome = RuntimeError("bounded failure")
+    path = _new_ledger(tmp_path, f"{failure}.sqlite")
+    opener = _RawOpener([outcome])
+    result = pi.ingest_wallet_evidence(
+        _request(), ledger_path=path, mode="NETWORK",
+        client=PolymarketPublicClient(), opener=opener,
+        guard=_SequenceGuard([True, False, False]), clock_times=_clock(),
+    )
+    assert opener.calls == result.transport_call_count == 1
+    assert result.collection_completion_state != "REJECTED_BEFORE_ACQUISITION"
+    assert result.feed_outcomes[0].failure_codes == (expected_code,)
+    assert result.wallet_ingest_run_receipt_id is not None
+    assert _record_count(
+        path, "RAW_EVIDENCE_REFERENCE", "WALLET_FEED_PAGE_EVIDENCE",
+        "WALLET_EVENT_OBSERVATION", "WALLET_EVIDENCE_EVENT",
+    ) == 0
+    assert _record_count(path, "WALLET_INGEST_RUN_RECEIPT") == 1
+
+
+def test_network_zero_dispatch_client_validation_failure_is_terminal(tmp_path):
+    path = _new_ledger(tmp_path)
+    opener = _RawOpener()
+    guard = _Guard(True)
+    result = pi.ingest_wallet_evidence(
+        _request(page_size=101), ledger_path=path, mode="NETWORK",
+        client=PolymarketPublicClient(), opener=opener,
+        guard=guard, clock_times=_clock(),
+    )
+    assert result.collection_completion_state == "REJECTED_BEFORE_ACQUISITION"
+    assert result.error_codes == ("FIELD_VALUE_INVALID",)
+    assert result.transport_call_count == result.appended_record_count == 0
+    assert guard.calls == 1
+    assert opener.calls == 0
+    assert _record_count(
+        path, "RAW_EVIDENCE_REFERENCE", "WALLET_FEED_PAGE_EVIDENCE",
+        "WALLET_EVENT_OBSERVATION", "WALLET_EVIDENCE_EVENT",
+        "WALLET_INGEST_RUN_RECEIPT",
+    ) == 0
+
+
+def test_network_failed_request_then_guard_denial_preserves_both_failures(tmp_path):
+    path = _new_ledger(tmp_path)
+    opener = _RawOpener([urllib.error.URLError("offline")])
+    guard = _SequenceGuard([True, False, False])
+    result = pi.ingest_wallet_evidence(
+        _request(), ledger_path=path, mode="NETWORK",
+        client=PolymarketPublicClient(), opener=opener,
+        guard=guard, clock_times=_clock(),
+    )
+    assert opener.calls == result.transport_call_count == 1
+    assert result.collection_completion_state != "REJECTED_BEFORE_ACQUISITION"
+    assert result.feed_outcomes[0].failure_codes == ("SOURCE_UNAVAILABLE",)
+    assert result.feed_outcomes[1].failure_codes == ("RATE_LIMIT_GUARD_DENIED",)
+    assert result.wallet_ingest_run_receipt_id is not None
+
+
+def test_network_success_then_guard_denial_preserves_page_evidence(tmp_path):
+    path = _new_ledger(tmp_path)
+    opener = _RawOpener([_valid_response()])
+    guard = _SequenceGuard([True, False, False])
+    result = pi.ingest_wallet_evidence(
+        _request(), ledger_path=path, mode="NETWORK",
+        client=PolymarketPublicClient(), opener=opener,
+        guard=guard, clock_times=_clock(),
+    )
+    assert opener.calls == result.transport_call_count == 1
+    assert result.collection_completion_state != "REJECTED_BEFORE_ACQUISITION"
+    assert result.feed_outcomes[0].page_count == 1
+    assert result.feed_outcomes[1].failure_codes == ("RATE_LIMIT_GUARD_DENIED",)
+    assert result.wallet_ingest_run_receipt_id is not None
+    assert _record_count(path, "RAW_EVIDENCE_REFERENCE") == 1
+    assert _record_count(path, "WALLET_FEED_PAGE_EVIDENCE") == 1
+
+
+def test_network_direct_fetcher_counts_only_raw_opener_dispatch():
+    attempt_state = pi._NetworkAttemptState()
+    opener = _RawOpener([_valid_response()], attempt_state=attempt_state)
+    guard = _Guard(True)
+    fetch = pi.make_network_fetcher(
+        PolymarketPublicClient(), request=_request(), opener=opener,
+        guard=guard, attempt_state=attempt_state,
+    )
+    page = fetch("TRADES", None)
+    assert guard.calls == opener.calls == 1
+    assert opener.observed_attempt_counts == [1]
+    assert attempt_state.transport_attempt_count == 1
+    assert "_transport" not in page
+
+    with pytest.raises(c.WalletContractError) as exc:
+        pi.make_network_fetcher(
+            PolymarketPublicClient(), request=_request(),
+            opener=pi._CountingOpener(_RawOpener(), pi._NetworkAttemptState()),
+            guard=_Guard(True), attempt_state=pi._NetworkAttemptState(),
+        )
+    assert str(exc.value) == "FIELD_VALUE_INVALID"
 
 
 def test_network_rejects_arbitrary_page_fetcher_without_invocation(tmp_path):

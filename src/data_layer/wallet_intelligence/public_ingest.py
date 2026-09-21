@@ -31,6 +31,7 @@ from ..polymarket.polling_policy import (
     WALLET_MAX_SOURCE_ROWS_PER_FEED_RUN,
     WALLET_MAX_SOURCE_ROWS_TOTAL_RUN,
 )
+from ..polymarket.public_client import PolymarketPublicClient, WalletDataApiError
 from . import contracts as C
 from . import ledger as L
 from .contracts import (
@@ -69,9 +70,62 @@ INGEST_MODES = (
 
 REQUIRED_FEEDS = ("TRADES", "STANDARD_ACTIVITY", "COMBO_ACTIVITY")
 
+# Freeze the complete approved NETWORK call chain at module import. Runtime
+# class replacement, subclasses, and instance shadowing are rejected before a
+# guard or opener can be consumed.
+_APPROVED_GET_WALLET_TRADES_PAGE = PolymarketPublicClient.get_wallet_trades_page
+_APPROVED_GET_WALLET_ACTIVITY_PAGE = PolymarketPublicClient.get_wallet_activity_page
+_APPROVED_GET_WALLET_ACTIVITY_COMBOS_PAGE = (
+    PolymarketPublicClient.get_wallet_activity_combos_page
+)
+_APPROVED_WALLET_DATA_API_GET_PAGE = PolymarketPublicClient._wallet_data_api_get_page
+_APPROVED_NETWORK_METHODS = (
+    ("get_wallet_trades_page", _APPROVED_GET_WALLET_TRADES_PAGE),
+    ("get_wallet_activity_page", _APPROVED_GET_WALLET_ACTIVITY_PAGE),
+    ("get_wallet_activity_combos_page", _APPROVED_GET_WALLET_ACTIVITY_COMBOS_PAGE),
+    ("_wallet_data_api_get_page", _APPROVED_WALLET_DATA_API_GET_PAGE),
+)
+
 
 def _err(code: str) -> WalletContractError:
     return WalletContractError(code)
+
+
+@dataclass
+class _NetworkAttemptState:
+    transport_attempt_count: int = 0
+
+    def begin_attempt(self) -> None:
+        self.transport_attempt_count += 1
+
+
+class _CountingOpener:
+    def __init__(self, wrapped_opener, attempt_state: _NetworkAttemptState) -> None:
+        self._wrapped_opener = wrapped_opener
+        self._attempt_state = attempt_state
+
+    def open(self, *args, **kwargs):
+        self._attempt_state.begin_attempt()
+        return self._wrapped_opener.open(*args, **kwargs)
+
+
+def _validate_network_client_path(client) -> None:
+    if type(client) is not PolymarketPublicClient:
+        raise _err("FIELD_VALUE")
+    instance_dict = getattr(client, "__dict__", None)
+    if not isinstance(instance_dict, dict):
+        raise _err("FIELD_VALUE")
+    for name, approved in _APPROVED_NETWORK_METHODS:
+        if name in instance_dict:
+            raise _err("FIELD_VALUE")
+        if getattr(PolymarketPublicClient, name, None) is not approved:
+            raise _err("FIELD_VALUE")
+        resolved = getattr(client, name, None)
+        if (
+            getattr(resolved, "__self__", None) is not client
+            or getattr(resolved, "__func__", None) is not approved
+        ):
+            raise _err("FIELD_VALUE")
 
 
 # ---------------------------------------------------------------------------
@@ -505,7 +559,6 @@ def _run_feed(
             completion = stop.completion
             break
 
-        counters["transport"] += page.get("_transport", 0)
         rows = list(page["rows"])
         try:
             projected_feed_rows, projected_run_rows = _validate_projected_row_limits(
@@ -722,6 +775,7 @@ def ingest_wallet_evidence(
             dry_run=True,
         )
 
+    attempt_state: _NetworkAttemptState | None = None
     if mode == "NETWORK":
         if page_fetcher is not None:
             return _rejected_before_acquisition(ingest_run_key, ("FIELD_VALUE_INVALID",))
@@ -729,11 +783,27 @@ def ingest_wallet_evidence(
             return _rejected_before_acquisition(
                 ingest_run_key, ("RATE_LIMIT_GUARD_DENIED",)
             )
-        if client is None or opener is None:
+        try:
+            _validate_network_client_path(client)
+        except WalletContractError:
             return _rejected_before_acquisition(ingest_run_key, ("FIELD_VALUE_INVALID",))
-        page_fetcher = make_network_fetcher(
-            client, request=request, opener=opener, guard=guard
-        )
+        if opener is None or not callable(getattr(opener, "open", None)):
+            return _rejected_before_acquisition(ingest_run_key, ("FIELD_VALUE_INVALID",))
+        try:
+            attempt_state = _NetworkAttemptState()
+            page_fetcher = make_network_fetcher(
+                client,
+                request=request,
+                opener=opener,
+                guard=guard,
+                attempt_state=attempt_state,
+            )
+        except WalletContractError as exc:
+            return _rejected_before_acquisition(ingest_run_key, (str(exc),))
+        except Exception:
+            return _rejected_before_acquisition(
+                ingest_run_key, ("INTERNAL_VALIDATION_FAILED",)
+            )
     elif page_fetcher is None:
         raise _err("FIELD_VALUE")
 
@@ -756,7 +826,7 @@ def ingest_wallet_evidence(
         )
 
     clock = _Clock(list(clock_times) if clock_times else [request.run_started_at or "2026-01-01T00:00:00Z"])
-    counters = {"transport": 0, "appended": 0, "rows": 0}
+    counters = {"appended": 0, "rows": 0}
     outcomes: list[FeedRunOutcome] = []
     for plan in _feed_plan(request):
         outcome = _run_feed(
@@ -770,11 +840,12 @@ def ingest_wallet_evidence(
         )
         outcomes.append(outcome)
         if (
-            outcome.failure_codes == ("RATE_LIMIT_GUARD_DENIED",)
-            and counters["appended"] == 0
+            attempt_state is not None
+            and attempt_state.transport_attempt_count == 0
+            and outcome.failure_codes
         ):
             return _rejected_before_acquisition(
-                ingest_run_key, ("RATE_LIMIT_GUARD_DENIED",)
+                ingest_run_key, outcome.failure_codes
             )
 
     collection_state = _derive_collection_state(outcomes)
@@ -816,7 +887,9 @@ def ingest_wallet_evidence(
         wallet_ingest_run_receipt_id=receipt_id,
         feed_outcomes=tuple(outcomes),
         error_codes=(),
-        transport_call_count=counters["transport"],
+        transport_call_count=(
+            attempt_state.transport_attempt_count if attempt_state is not None else 0
+        ),
         appended_record_count=counters["appended"],
         dry_run=False,
     )
@@ -982,13 +1055,19 @@ def make_local_fixture_fetcher(pages_by_feed: Mapping[str, Sequence[Mapping]]) -
             raise _StopFeed("SOURCE_UNAVAILABLE", "PARTIAL_SOURCE_FAILURE")
         page = dict(pages[index])
         state[feed] = index + 1
-        page.setdefault("_transport", 0)
         return page
 
     return fetch
 
 
-def make_network_fetcher(client, *, request: WalletIngestRequest, opener, guard) -> Callable:
+def make_network_fetcher(
+    client,
+    *,
+    request: WalletIngestRequest,
+    opener,
+    guard,
+    attempt_state: _NetworkAttemptState,
+) -> Callable:
     """Build a fetcher that performs exactly one bounded public GET per page via
     the existing public client. Applies the RateLimitGuard immediately before each
     request; a guard denial performs no request."""
@@ -998,18 +1077,30 @@ def make_network_fetcher(client, *, request: WalletIngestRequest, opener, guard)
         WALLET_ACTIVITY_ENDPOINT_KEY,
         WALLET_TRADES_ENDPOINT_KEY,
     )
-    from ..polymarket.public_client import WalletDataApiError
-
     endpoint_keys = {
         "TRADES": WALLET_TRADES_ENDPOINT_KEY,
         "STANDARD_ACTIVITY": WALLET_ACTIVITY_ENDPOINT_KEY,
         "COMBO_ACTIVITY": WALLET_ACTIVITY_COMBOS_ENDPOINT_KEY,
     }
 
+    _validate_network_client_path(client)
     if guard is None or not callable(getattr(guard, "record_allowed", None)):
         raise _err("GUARD")
+    if (
+        opener is None
+        or isinstance(opener, _CountingOpener)
+        or not callable(getattr(opener, "open", None))
+    ):
+        raise _err("FIELD_VALUE")
+    if type(attempt_state) is not _NetworkAttemptState:
+        raise _err("FIELD_VALUE")
+    counting_opener = _CountingOpener(opener, attempt_state)
 
     def fetch(feed: str, cursor):
+        try:
+            _validate_network_client_path(client)
+        except WalletContractError:
+            raise _StopFeed("FIELD_VALUE_INVALID", "PARTIAL_SOURCE_FAILURE") from None
         try:
             decision = guard.record_allowed(endpoint_keys[feed])
             allowed = decision.allowed
@@ -1018,35 +1109,45 @@ def make_network_fetcher(client, *, request: WalletIngestRequest, opener, guard)
         if not isinstance(allowed, bool) or not allowed:
             raise _StopFeed("RATE_LIMIT_GUARD_DENIED", "PARTIAL_SOURCE_FAILURE")
         try:
+            _validate_network_client_path(client)
             if feed == "TRADES":
-                result = client.get_wallet_trades_page(
+                result = _APPROVED_GET_WALLET_TRADES_PAGE(
+                    client,
                     user=request.frozen_user(),
                     start=request.trades_start,
                     end=request.trades_end,
                     cursor=cursor,
                     page_size=request.page_size,
-                    opener=opener,
+                    opener=counting_opener,
                 )
             elif feed == "STANDARD_ACTIVITY":
-                result = client.get_wallet_activity_page(
+                result = _APPROVED_GET_WALLET_ACTIVITY_PAGE(
+                    client,
                     user=request.frozen_user(),
                     start=request.activity_start,
                     end=request.activity_end,
                     cursor=cursor,
                     page_size=request.page_size,
-                    opener=opener,
+                    opener=counting_opener,
                 )
             else:
-                result = client.get_wallet_activity_combos_page(
+                result = _APPROVED_GET_WALLET_ACTIVITY_COMBOS_PAGE(
+                    client,
                     user=request.frozen_user(),
                     combo_condition=request.combo_condition,
                     cursor=cursor,
                     page_size=request.page_size,
-                    opener=opener,
+                    opener=counting_opener,
                 )
         except WalletDataApiError as exc:
             completion = "PARTIAL_LIMIT" if exc.code == "LIMIT_EXCEEDED" else "PARTIAL_SOURCE_FAILURE"
             raise _StopFeed(exc.code, completion) from None
+        except WalletContractError as exc:
+            raise _StopFeed(str(exc), "PARTIAL_SOURCE_FAILURE") from None
+        except Exception:
+            raise _StopFeed(
+                "INTERNAL_VALIDATION_FAILED", "PARTIAL_SOURCE_FAILURE"
+            ) from None
         return {
             "rows": result.rows,
             "next_cursor": result.next_cursor,
@@ -1054,7 +1155,6 @@ def make_network_fetcher(client, *, request: WalletIngestRequest, opener, guard)
             "content_sha256": result.content_sha256,
             "body_byte_length": result.body_byte_length,
             "request_parameters": result.request_parameters,
-            "_transport": 1,
         }
 
     return fetch
