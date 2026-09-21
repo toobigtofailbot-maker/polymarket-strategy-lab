@@ -226,7 +226,9 @@ ITEM_KEYS = {
     ),
 }
 
-WP_ID_RE = re.compile(r"^WP[1-9][0-9]*(?:[A-Z])?$")
+WP_ID_RE = re.compile(
+    r"^(?:WP[1-9][0-9]*(?:[A-Z])?|S10-[A-Z0-9]+(?:-[A-Z0-9]+)*)$"
+)
 TOKEN_RE = re.compile(r"^[A-Z][A-Z0-9_]{0,127}$")
 LOWER_TOKEN_RE = re.compile(r"^[a-z][a-z0-9_]{0,127}$")
 DOT_PATH_RE = re.compile(

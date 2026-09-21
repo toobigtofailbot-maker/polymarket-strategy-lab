@@ -119,7 +119,10 @@ The constants are `polymarket-work-package-spec` and `1.0.0`.
 
 `identity` has exactly:
 
-- `wp_id`: `^WP[1-9][0-9]*(?:[A-Z])?$`
+- `wp_id`: `^(?:WP[1-9][0-9]*(?:[A-Z])?|S10-[A-Z0-9]+(?:-[A-Z0-9]+)*)$`
+  (legacy `WP` identifiers remain valid; `S10` identifiers require one or more
+  uppercase alphanumeric hyphen-separated tokens, with no empty segments,
+  underscores, whitespace, path separators, lowercase, or other `S`-series prefixes)
 - `title`: string[1,200]
 - `repository`: exactly one `owner/name` pair matching
   `^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})/[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})$`

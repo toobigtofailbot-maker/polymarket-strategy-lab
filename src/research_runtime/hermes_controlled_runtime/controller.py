@@ -69,6 +69,7 @@ from .response_capture import (
     parse_usage_report,
 )
 from .runner import HermesInvocationBackend, STDERR_STATUS_EMPTY
+from .session_evidence import HermesSessionEvidence, collect_hermes_session_evidence
 
 ACTIVATION_CODE_COMPLETE = "CODE_COMPLETE_NOT_REMOTE_ACTIVATED"
 ACTIVATION_RUN_COMPLETE = "CONTROLLED_RESEARCH_RUN_COMPLETE"
@@ -138,6 +139,7 @@ class HermesControlledRunResult:
     error_code: str | None
     request_id: str
     policy_id: str
+    session_evidence: HermesSessionEvidence | None = None
 
 
 def _utc_iso(moment: datetime) -> str:
@@ -155,6 +157,8 @@ def run_controlled_hermes_research(
     clock: Callable[[], datetime] | None = None,
     activation_state: str = ACTIVATION_CODE_COMPLETE,
     hermes_home: str | None = None,
+    context_mode: bool = False,
+    allowed_subject_refs: tuple[str, ...] | None = None,
 ) -> HermesControlledRunResult:
     """Execute one controlled research run and return a sanitized result."""
     if isinstance(request, Mapping):
@@ -224,7 +228,11 @@ def run_controlled_hermes_research(
             reported_semver=reported_semver,
         )
 
-    envelope = build_research_envelope(request)
+    if context_mode and not allowed_subject_refs:
+        raise HermesResearchError("CONTEXT_CLAIM_INVALID")
+    envelope = build_research_envelope(
+        request, context_mode=context_mode, allowed_subject_refs=allowed_subject_refs,
+    )
     prompt_text = envelope.to_prompt_string()
     argv = build_hermes_argv(executable_path, request, prompt_text, policy, USAGE_FILE_NAME)
     # WP175M: bind the exact canonical prompt bytes and the machine-generated draft
@@ -326,6 +334,11 @@ def run_controlled_hermes_research(
     builder.verified_model = usage.model
     if usage.session_id:
         builder.usage_session_id_digest = sha256_hex(usage.session_id.encode("utf-8"))
+        if hermes_home is not None:
+            builder.session_evidence = collect_hermes_session_evidence(
+                hermes_home, session_id=usage.session_id,
+                configured_backend=policy.web_backend,
+            )
 
     # WP175M (section 8): sanitized structural diagnostics for the untrusted draft. Only
     # static canonical field-name tokens and fixed statuses are retained -- never a
@@ -339,6 +352,8 @@ def run_controlled_hermes_research(
             response.final_text,
             expected_request_id=request.request_id,
             max_sources=request.max_sources,
+            context_mode=context_mode,
+            allowed_subject_refs=allowed_subject_refs,
         )
     except HermesResearchError as exc:
         if exc.code == "DRAFT_UNSAFE_CONTENT":
@@ -389,6 +404,7 @@ def run_controlled_hermes_research(
         error_code=None,
         request_id=request.request_id,
         policy_id=policy.policy_id,
+        session_evidence=builder.session_evidence,
     )
 
 
@@ -425,6 +441,7 @@ class _ReceiptBuilder:
     draft_missing_required_fields: tuple[str, ...] = ()
     draft_first_missing_field: str | None = None
     usage_session_id_digest: str | None = None
+    session_evidence: HermesSessionEvidence | None = None
 
     def set_draft_diagnostics(self, diagnostics: DraftStructureDiagnostics) -> None:
         self.draft_diagnostics_status = diagnostics.status
@@ -539,6 +556,7 @@ class _ReceiptBuilder:
             error_code=error_code,
             request_id=self.request.request_id,
             policy_id=self.policy.policy_id,
+            session_evidence=self.session_evidence,
         )
 
 

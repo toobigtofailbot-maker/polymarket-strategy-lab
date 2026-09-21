@@ -399,9 +399,20 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
             "tests/research_runtime/hermes_controlled_runtime/__init__.py",
             "tests/research_runtime/hermes_controlled_runtime/test_models.py",
             "tests/research_runtime/hermes_controlled_runtime/test_response_capture.py",
-            "tests/research_runtime/hermes_controlled_runtime/test_runner.py",
-            "tests/research_runtime/hermes_controlled_runtime/test_controller.py",
-        }
+                "tests/research_runtime/hermes_controlled_runtime/test_runner.py",
+                "tests/research_runtime/hermes_controlled_runtime/test_controller.py",
+                # S10-HERMES-CTX-01: dormant deterministic context protocol,
+                # broker, reconciliation, controller, session evidence, and tests.
+                "src/research_runtime/hermes_controlled_runtime/context_broker.py",
+                "src/research_runtime/hermes_controlled_runtime/context_controller.py",
+                "src/research_runtime/hermes_controlled_runtime/context_protocol.py",
+                "src/research_runtime/hermes_controlled_runtime/context_reconciliation.py",
+                "src/research_runtime/hermes_controlled_runtime/context_store.py",
+                "src/research_runtime/hermes_controlled_runtime/session_evidence.py",
+                "tests/research_runtime/hermes_controlled_runtime/test_context_broker_reconciliation.py",
+                "tests/research_runtime/hermes_controlled_runtime/test_context_controller.py",
+                "tests/research_runtime/hermes_controlled_runtime/test_context_protocol.py",
+            }
     findings = []
     for path in tracked:
         normalized = path.replace("\\", "/")
@@ -410,3 +421,12 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         if any(pattern.search(normalized) for pattern in forbidden_patterns):
             findings.append(normalized)
     assert findings == []
+
+
+def test_s10_hermes_context_contract_records_blind_and_telemetry_boundaries():
+    contract = (REPO_ROOT / "docs" / "hermes_context_broker_reconciliation_contract.md").read_text(encoding="utf-8")
+    runtime = (REPO_ROOT / "docs" / "hermes_controlled_research_runtime_contract.md").read_text(encoding="utf-8")
+    for token in ("BLIND_FROZEN", "evaluate_replay_admissibility", "RAW_DIRECT", "REVISION_REQUIRED", "UNAVAILABLE", "UNKNOWN_POSSIBLE"):
+        assert token in contract
+    assert "--ignore-rules` alone is not proof" in runtime
+    assert "allow_lazy_installs" in (REPO_ROOT / "src" / "research_runtime" / "hermes_controlled_runtime" / "policy.py").read_text(encoding="utf-8")

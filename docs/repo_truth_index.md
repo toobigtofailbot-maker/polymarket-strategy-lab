@@ -1,5 +1,18 @@
 # Repo Truth Index
 
+## S10-HERMES-CTX-01 Blind-First Context Broker (current implementation target)
+
+The canonical contract is `docs/hermes_context_broker_reconciliation_contract.md`; stable
+branch evidence is `docs/status_entries/S10-HERMES-CTX-01.md`; the exact 34-path machine
+package is `docs/wp_specs/S10-HERMES-CTX-01/`. Source is the additive context protocol,
+store, broker, reconciliation, controller, and session-evidence modules under
+`src/research_runtime/hermes_controlled_runtime/`, with focused tests in the matching test
+package. PR #188 / S10-WALLET-01 is merged at
+`7495427820c892497e9c195a8b130c2d32102c67`. No real Hermes/provider/Firecrawl, credential,
+wallet/market network, paper/live, or economic action is authorized. H1 #5, HERMES-SI,
+Gate C, merge, and successor implementation remain unauthorized. After merge/review the
+next mandatory package is S10-WALLET-02; S10-ALPHA-02 remains after WALLET-02.
+
 ## WP175N Multi-Lane Alpha Factory Core (current review target)
 
 WP175N / Side11 capability handle S10-ALPHA-01 is the FAST-track, risk-2, exact 16-file

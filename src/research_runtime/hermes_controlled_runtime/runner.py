@@ -585,6 +585,16 @@ _NEVER_FORWARD_ENV = (
 # A dedicated H1 research home must NOT carry these control-plane files (names only).
 _RESEARCH_HOME_FORBIDDEN_CONFIG = "config.yaml"
 _RESEARCH_HOME_USER_PLUGINS_DIR = "plugins"
+_RESEARCH_HOME_PROFILE_CONTEXT_FILES = (
+    "SOUL.md",
+    "MEMORY.md",
+    "USER.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "GEMINI.md",
+    ".cursorrules",
+)
+_RESEARCH_HOME_PROFILE_SKILLS_DIR = "skills"
 
 
 class ExternalHermesCliBackend:
@@ -903,10 +913,14 @@ def is_clean_research_home_control_plane(hermes_home: str) -> bool:
         return False
     if os.path.exists(os.path.join(root, _RESEARCH_HOME_FORBIDDEN_CONFIG)):
         return False
-    plugins_dir = os.path.join(root, _RESEARCH_HOME_USER_PLUGINS_DIR)
     try:
-        if os.path.isdir(plugins_dir) and any(os.scandir(plugins_dir)):
-            return False
+        for name in _RESEARCH_HOME_PROFILE_CONTEXT_FILES:
+            if os.path.exists(os.path.join(root, name)):
+                return False
+        for name in (_RESEARCH_HOME_USER_PLUGINS_DIR, _RESEARCH_HOME_PROFILE_SKILLS_DIR):
+            directory = os.path.join(root, name)
+            if os.path.isdir(directory) and any(os.scandir(directory)):
+                return False
     except OSError:
         return False
     return True

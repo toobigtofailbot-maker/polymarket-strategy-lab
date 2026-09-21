@@ -173,6 +173,36 @@ def test_validate_spec_returns_deep_copy():
     assert "docs/not-source.md" not in source["scope"]["required_changed_files"]
 
 
+@pytest.mark.parametrize(
+    "wp_id",
+    ["WP159", "WP168G", "WP175N", "S10-HERMES-CTX-01", "S10-WALLET-01", "S10-GATE-H1"],
+)
+def test_package_id_grammar_accepts_legacy_wp_and_s10_ids_through_real_validation(wp_id):
+    validated, errors = guard.validate_spec_document(_generic_normal_spec(wp_id))
+    assert errors == ()
+    assert validated is not None
+    assert validated["identity"]["wp_id"] == wp_id
+
+
+@pytest.mark.parametrize(
+    "wp_id",
+    [
+        "S10-",
+        "S10--CTX",
+        "S10-hermes-CTX-01",
+        "S10-HERMES_CTX-01",
+        "S11-HERMES-CTX-01",
+        "S10/HERMES/CTX/01",
+        " S10-HERMES-CTX-01",
+        "S10-HERMES-CTX-01 ",
+    ],
+)
+def test_package_id_grammar_rejects_malformed_ids_through_real_validation(wp_id):
+    validated, errors = guard.validate_spec_document(_generic_normal_spec(wp_id))
+    assert validated is None
+    assert "FIELD_VALUE_INVALID" in _codes(errors)
+
+
 def test_scope_return_has_exact_fields_and_tuples():
     scope, errors = guard.read_and_validate_spec_scope(SPEC_PATH)
     assert errors == ()

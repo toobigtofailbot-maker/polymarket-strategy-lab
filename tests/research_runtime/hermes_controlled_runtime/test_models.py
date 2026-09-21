@@ -924,3 +924,93 @@ def test_g10_provider_model_evidence_semantics_unchanged():
     assert isinstance(validated, ValidatedResearchDraft)
     for forbidden in ("provider", "model", "verified_provider"):
         assert not hasattr(validated, forbidden)
+
+
+# S10-HERMES-CTX-01: explicit context-mode contract / validator lockstep.
+from src.research_runtime.hermes_controlled_runtime import (  # noqa: E402
+    CONTEXT_CLAIM_DIRECTIONS,
+    CONTEXT_CLAIM_FIELDS,
+    CONTEXT_CLAIM_KINDS,
+    CONTEXT_REQUIRED_TOP_LEVEL_FIELDS,
+    build_context_research_draft_output_schema,
+    validate_context_research_draft,
+)
+
+
+def _context_doc(request_id: str) -> dict[str, object]:
+    doc = _contract_compliant_draft(request_id, 8)
+    doc["context_claims"] = [{
+        "claim_statement": "The source bears on the synthetic subject.",
+        "claim_kind": "INFERENCE", "subject_refs": ["subject:one"],
+        "direction": "SUPPORTING", "source_reference_indices": [0],
+        "assumptions": ["the source is accurate"],
+        "uncertainty_note": "The public record may be incomplete.",
+    }]
+    return doc
+
+
+def test_context_contract_is_additive_and_ordinary_h1_required_set_is_unchanged():
+    request_id = "hermesresearchrequest:sha256:" + "a" * 64
+    ordinary = build_research_draft_output_schema(expected_request_id=request_id, max_sources=8)
+    context = build_context_research_draft_output_schema(
+        expected_request_id=request_id, max_sources=8,
+        allowed_subject_refs=("subject:one",),
+    )
+    assert ordinary["required"] == list(DRAFT_REQUIRED_TOP_LEVEL_FIELDS)
+    assert "context_claims" not in ordinary["required"]
+    assert context["required"] == list(CONTEXT_REQUIRED_TOP_LEVEL_FIELDS)
+    claim_schema = context["properties"]["context_claims"]["items"]
+    assert claim_schema["required"] == list(CONTEXT_CLAIM_FIELDS)
+    assert tuple(claim_schema["properties"]["claim_kind"]["enum"]) == CONTEXT_CLAIM_KINDS
+    assert tuple(claim_schema["properties"]["direction"]["enum"]) == CONTEXT_CLAIM_DIRECTIONS
+    assert claim_schema["properties"]["subject_refs"]["items"]["enum"] == ["subject:one"]
+    assert validate_research_draft(
+        json.dumps(_contract_compliant_draft(request_id, 8)),
+        expected_request_id=request_id, max_sources=8,
+    ).context_claims == ()
+
+
+def test_context_validator_requires_claims_and_retains_falsification_values():
+    request_id = "hermesresearchrequest:sha256:" + "b" * 64
+    with pytest.raises(HermesResearchError, match="CONTEXT_CLAIM_INVALID"):
+        validate_context_research_draft(
+            json.dumps(_contract_compliant_draft(request_id, 8)),
+            expected_request_id=request_id, max_sources=8,
+            allowed_subject_refs=("subject:one",),
+        )
+    validated = validate_context_research_draft(
+        json.dumps(_context_doc(request_id)), expected_request_id=request_id,
+        max_sources=8, allowed_subject_refs=("subject:one",),
+    )
+    assert validated.falsification_checks_performed == ("searched for dummy disconfirming evidence",)
+    assert validated.context_claims[0].claim_id.startswith("hermescontextclaim:sha256:")
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda claim: claim.update(extra="not allowed"),
+    lambda claim: claim.pop("uncertainty_note"),
+    lambda claim: claim.update(claim_kind="COMMAND"),
+    lambda claim: claim.update(source_reference_indices=[99]),
+    lambda claim: claim.update(subject_refs=["other"]),
+    lambda claim: claim.update(claim_statement="place an order"),
+])
+def test_context_schema_negative_matrix_fails_closed(mutation):
+    request_id = "hermesresearchrequest:sha256:" + "c" * 64
+    doc = _context_doc(request_id)
+    mutation(doc["context_claims"][0])
+    with pytest.raises(HermesResearchError):
+        validate_context_research_draft(
+            json.dumps(doc), expected_request_id=request_id, max_sources=8,
+            allowed_subject_refs=("subject:one",),
+        )
+
+
+def test_context_validator_rejects_extra_top_level_field():
+    request_id = "hermesresearchrequest:sha256:" + "d" * 64
+    doc = _context_doc(request_id)
+    doc["extra"] = "not allowed"
+    with pytest.raises(HermesResearchError, match="CONTEXT_CLAIM_INVALID"):
+        validate_context_research_draft(
+            json.dumps(doc), expected_request_id=request_id, max_sources=8,
+            allowed_subject_refs=("subject:one",),
+        )
