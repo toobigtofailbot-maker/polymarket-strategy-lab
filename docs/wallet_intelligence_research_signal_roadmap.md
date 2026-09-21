@@ -323,3 +323,21 @@ The following items are deferred from WP76 to future WPs:
   section M above.
 - **WP76-D007**: Automated copy-trading remains forbidden until delayed-copy
   evidence, paper-trading proof, risk review, and live authorization exist.
+
+## S10-WALLET-01 — Public wallet evidence foundation (update)
+
+WP76-WP90 remain bounded local/offline synthetic/fixture prototypes. They are
+valuable safety and reference material, but they do not make old profile or
+copyability outputs real-data truth.
+
+S10-WALLET-01 is the first real public-evidence foundation. It narrowly
+authorizes **bounded, manual, GET-only, PUBLIC, no-auth** Polymarket Data API v2
+wallet reads (`/v2/trades`, `/v2/activity`, `/v2/activity/combos`), disabled by
+default. It builds the deterministic, replayable, point-in-time-safe wallet
+evidence substrate only. It does not decide skill, rank wallets, compute
+promotion thresholds, decide copyability, run copy-trading, compute follower
+PnL, generate a trade, qualify a strategy, create WP170 experiments, or authorize
+Gate C. Every credential, authenticated-account, signing, order, paper, live,
+scheduler, and bot-loop prohibition above remains intact. Later S10-WALLET-02/03/04
+own real profiling, copyability, and incremental-value studies. See
+`docs/wallet_public_evidence_foundation_contract.md`.

@@ -293,3 +293,183 @@ class TestGetMarketsKeyset(unittest.TestCase):
         strict = PolymarketPublicClient(allow_unverified_endpoints=False)
         with pytest.raises(PolymarketEndpointNotVerifiedError):
             strict.get_markets_keyset(limit=10)
+
+
+# ===========================================================================
+# S10-WALLET-01: bounded public Data API v2 wallet-feed reads.
+# ===========================================================================
+from src.data_layer.polymarket import public_client as _pc
+from src.data_layer.polymarket.public_client import (
+    WALLET_DATA_API_HOST,
+    WALLET_MAX_RESPONSE_BYTES_PER_PAGE,
+    WalletDataApiError,
+    _validate_wallet_data_api_url,
+)
+
+WALLET_ADDR = "0x" + "1" * 40
+
+
+class _FakeResp:
+    def __init__(self, body: bytes, status: int = 200, content_length=None):
+        self._buf = body
+        self._pos = 0
+        self.status = status
+        self.reads = 0
+        self.bytes_read = 0
+        cl = content_length
+
+        class _H:
+            def get(self, key, default=None):
+                if key.lower() == "content-length" and cl is not None:
+                    return str(cl)
+                return default
+
+        self.headers = _H()
+
+    def read(self, n=-1):
+        self.reads += 1
+        if n is None or n < 0:
+            n = len(self._buf) - self._pos
+        chunk = self._buf[self._pos:self._pos + n]
+        self._pos += len(chunk)
+        self.bytes_read += len(chunk)
+        return chunk
+
+    def close(self):
+        pass
+
+    def getcode(self):
+        return self.status
+
+
+class _FakeOpener:
+    def __init__(self, resp):
+        self.resp = resp
+        self.calls = 0
+        self.last_url = None
+
+    def open(self, req, timeout=None):
+        self.calls += 1
+        self.last_url = req.full_url
+        return self.resp
+
+
+def _json_body(obj):
+    return json.dumps(obj).encode("utf-8")
+
+
+def _ok_page():
+    return _json_body({"data": [{"id": "1", "price": 0.5}], "pagination": {"next_cursor": None, "has_more": False}})
+
+
+class TestWalletDataApiHostTrust:
+    def test_trades_uses_fixed_data_api_host(self):
+        op = _FakeOpener(_FakeResp(_ok_page()))
+        client = PolymarketPublicClient()
+        client.get_wallet_trades_page(user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z", opener=op)
+        assert op.last_url.startswith("https://" + WALLET_DATA_API_HOST + "/v2/trades?")
+
+    def test_url_validation_rejects_other_hosts_and_schemes(self):
+        with pytest.raises(WalletDataApiError) as e1:
+            _validate_wallet_data_api_url("https://localhost/v2/trades")
+        assert e1.value.code == "NETWORK_HOST_FORBIDDEN"
+        with pytest.raises(WalletDataApiError) as e2:
+            _validate_wallet_data_api_url("http://data-api.polymarket.com/v2/trades")
+        assert e2.value.code == "NETWORK_SCHEME_FORBIDDEN"
+        with pytest.raises(WalletDataApiError):
+            _validate_wallet_data_api_url("https://user:pass@data-api.polymarket.com/v2/trades")
+        with pytest.raises(WalletDataApiError):
+            _validate_wallet_data_api_url("https://data-api.polymarket.com:8443/v2/trades")
+
+    def test_no_arbitrary_base_url_parameter(self):
+        import inspect
+        sig = inspect.signature(PolymarketPublicClient.get_wallet_trades_page)
+        assert "base_url" not in sig.parameters
+
+
+class TestWalletDataApiReadCap:
+    def test_at_or_under_max_bytes_may_proceed(self):
+        body = _json_body({"data": [], "pagination": {"has_more": False}})
+        op = _FakeOpener(_FakeResp(body))
+        client = PolymarketPublicClient()
+        result = client.get_wallet_trades_page(user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z", opener=op)
+        assert result.body_byte_length == len(body)
+
+    def test_over_max_fails_before_parser_and_bounds_read(self):
+        huge = b"{" + b"a" * (WALLET_MAX_RESPONSE_BYTES_PER_PAGE * 2)
+        resp = _FakeResp(huge)
+        op = _FakeOpener(resp)
+        client = PolymarketPublicClient()
+        with pytest.raises(WalletDataApiError) as e:
+            client.get_wallet_trades_page(user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z", opener=op)
+        assert e.value.code == "LIMIT_EXCEEDED"
+        assert resp.bytes_read <= WALLET_MAX_RESPONSE_BYTES_PER_PAGE + 1
+
+    def test_content_length_oversize_reads_zero_body(self):
+        resp = _FakeResp(b"", content_length=WALLET_MAX_RESPONSE_BYTES_PER_PAGE + 1)
+        op = _FakeOpener(resp)
+        client = PolymarketPublicClient()
+        with pytest.raises(WalletDataApiError) as e:
+            client.get_wallet_trades_page(user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z", opener=op)
+        assert e.value.code == "LIMIT_EXCEEDED"
+        assert resp.reads == 0
+
+    def test_public_error_is_bounded_and_does_not_leak_body(self):
+        resp = _FakeResp(b"secret-internal-detail{bad json", status=200)
+        op = _FakeOpener(resp)
+        client = PolymarketPublicClient()
+        with pytest.raises(WalletDataApiError) as e:
+            client.get_wallet_trades_page(user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z", opener=op)
+        assert str(e.value) == "SOURCE_RESPONSE_INVALID"
+        assert "secret" not in str(e.value)
+
+
+class TestWalletDataApiFeedParameters:
+    def _capture(self, method_name, **kwargs):
+        op = _FakeOpener(_FakeResp(_ok_page()))
+        client = PolymarketPublicClient()
+        getattr(client, method_name)(opener=op, **kwargs)
+        return op.last_url
+
+    def test_trades_sends_user_taker_only_false_and_window(self):
+        url = self._capture("get_wallet_trades_page", user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z")
+        assert "taker_only=false" in url
+        assert "user=" + WALLET_ADDR in url
+        assert "start=2026-01-01" in url and "end=2026-01-02" in url
+
+    def test_activity_sends_required_filters_and_no_type_side_narrowing(self):
+        url = self._capture("get_wallet_activity_page", user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z")
+        assert "exclude_deposits_withdrawals=false" in url
+        assert "sort_direction=ASC" in url
+        assert "type=" not in url and "side=" not in url and "filter_type=" not in url
+
+    def test_combo_sends_user_and_no_time_window(self):
+        url = self._capture("get_wallet_activity_combos_page", user=WALLET_ADDR)
+        assert "user=" + WALLET_ADDR in url
+        assert "start=" not in url and "end=" not in url
+
+    def test_page_size_cannot_exceed_hard_bound(self):
+        op = _FakeOpener(_FakeResp(_ok_page()))
+        client = PolymarketPublicClient()
+        with pytest.raises(WalletDataApiError):
+            client.get_wallet_trades_page(user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z", page_size=101, opener=op)
+
+
+class TestWalletDataApiSourceSafety:
+    def test_source_is_get_only_and_carries_no_auth(self):
+        import pathlib
+        source = pathlib.Path(_pc.__file__).read_text(encoding="utf-8")
+        assert 'method="POST"' not in source
+        assert 'method="PUT"' not in source
+        assert 'method="PATCH"' not in source
+        assert 'method="DELETE"' not in source
+        assert "Authorization" not in source
+        assert "os.environ" not in source
+        assert "execution_gateway" not in source
+
+    def test_decimal_preserving_parse(self):
+        op = _FakeOpener(_FakeResp(_json_body({"data": [{"price": 0.1}], "pagination": {"has_more": False}})))
+        client = PolymarketPublicClient()
+        result = client.get_wallet_trades_page(user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z", opener=op)
+        from decimal import Decimal
+        assert isinstance(result.rows[0]["price"], Decimal)

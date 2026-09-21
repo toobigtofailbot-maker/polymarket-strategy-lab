@@ -1,0 +1,59 @@
+SIDE11 — S10-WALLET-01
+FINAL ONE-SHOT IMPLEMENTATION-AUTHORIZING WORK PACKAGE
+PUBLIC WALLET / POINT-IN-TIME WALLET EVIDENCE FOUNDATION
+
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Authority owner: Karl / Side11
+Date: 2026-09-20
+
+POST-MERGE FROZEN DRAFTING BASE
+- PR #187 / WP175N / S10-ALPHA-01: MERGED
+- merge commit / current main SHA: 584924b5a23e00e13d400885fc50b8eebdd412a3
+- merged PR exact implementation head: 35aee1868e8b622ed7b2298e4b8a6f0456e27788
+- S10-ALPHA-01: COMPLETE; accepted roadmap next: S10-WALLET-01
+- successor after this package, if separately authorized later: S10-HERMES-CTX-01
+
+PURPOSE
+Implement the deterministic, replayable, point-in-time-safe PUBLIC wallet
+evidence substrate required by later S10-WALLET-02/03/04, S10-HERMES-CTX-01,
+S10-ALPHA-02, S10-QUAL-01, and WP170. WALLET-01 is a DATA / EVIDENCE FOUNDATION.
+It does NOT decide skill, rank wallets, compute promotion thresholds, decide
+copyability, run copy-trading, compute follower PnL, generate a trade, qualify a
+strategy, create WP170 experiments, or authorize Gate C.
+
+FROZEN EXTERNAL CONTRACT (Data API v2, revalidated 2026-09-20)
+- Public/no-token GET routes; {data, pagination} envelope; cursor-only pagination;
+  pagination.next_cursor opaque; has_more authoritative.
+- /v2/trades (user, taker_only=false, exact time window), /v2/activity
+  (user, exclude_deposits_withdrawals=false, sort_direction=ASC, exact window, no
+  type/side narrowing), /v2/activity/combos (user, optional combo condition, no
+  time filter).
+- /v2/trades combo-state disposition: E2 = UNKNOWN (primary sources do not prove
+  ordinary-market-only). UNKNOWN is first-class and never coerced to FALSE.
+- On material drift: STOP EXTERNAL_CONTRACT_DRIFT.
+
+IMPLEMENTATION SUMMARY (delivered)
+- Shared research provenance/PIT time/DQ/replay/admissibility core in
+  src/data_layer/point_in_time_market_research/research_provenance.py.
+- New src/data_layer/wallet_intelligence package: contracts.py, reconciliation.py,
+  ledger.py, public_ingest.py, __init__.py.
+- Bounded public Data API v2 wallet GET methods added to
+  src/data_layer/polymarket/public_client.py; hard bounds and disabled-by-default
+  wallet feed policies in src/data_layer/polymarket/polling_policy.py.
+- Focused tests under tests/data_layer/wallet_intelligence/ and
+  tests/data_layer/point_in_time_market_research/test_research_provenance.py, plus
+  extended public-client and polling-policy tests.
+- Docs: docs/wallet_public_evidence_foundation_contract.md and updates to the
+  wallet roadmap/architecture, project status, repo truth index, deferred items
+  log, and long-term roadmap.
+
+AUTHORITY (all zero)
+credentials 0; private keys/signing 0; authenticated API 0; Hermes 0; H1 0;
+qualification NO; WP170 experiment creation NO; paper/live NO; Gate C NOT
+AUTHORIZED; capital 0; orders 0; WALLET-02 NOT STARTED; HERMES-CTX-01 NOT STARTED.
+
+The authoritative, full one-shot WP text is the Side11 S10-WALLET-01 package as
+issued to the implementer; this file records the frozen identity, external
+contract disposition, delivered scope, and authority boundaries for repo truth.
+Do not merge. Do not start WALLET-02 or HERMES-CTX-01. Do not authorize H1 #5.
+Do not activate Gate C. Do not use capital/orders.

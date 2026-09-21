@@ -503,7 +503,9 @@ def _spec_authorized_paths(changed, prefix: str) -> set[str]:
     """
     authorized: set[str] = set()
     for path in changed:
-        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+)\.md", path)
+        # WP-style ids (WP159, WP168G, ...) plus S10-series machine-spec ids
+        # (e.g. S10-WALLET-01) each map to docs/wp_specs/<id>/wp_spec.json.
+        match = re.fullmatch(r"docs/status_entries/([0-9A-Za-z][0-9A-Za-z._-]*)\.md", path)
         if match is None:
             continue
         spec_path = ROOT / "docs" / "wp_specs" / match.group(1) / "wp_spec.json"
