@@ -304,6 +304,40 @@ def test_event_identity_changes_on_one_semantic_field():
     assert a.wallet_event_id != b.wallet_event_id
 
 
+def test_amount_and_payout_are_content_identity_bearing():
+    base = dict(
+        identity_strength="SOURCE_CONTENT_DERIVED",
+        canonical_event_type="REWARD",
+        canonical_wallet="0x" + "1" * 40,
+        source_system_family="POLYMARKET_DATA_API_V2",
+        event_time="2026-01-01T00:00:00Z",
+    )
+    amount_a = c.build_wallet_evidence_event(**base, notional="1.00")
+    amount_b = c.build_wallet_evidence_event(**base, notional="2.00")
+    payout_a = c.build_wallet_evidence_event(**base, payout="3.00")
+    payout_b = c.build_wallet_evidence_event(**base, payout="4.00")
+    assert amount_a.wallet_event_id != amount_b.wallet_event_id
+    assert payout_a.wallet_event_id != payout_b.wallet_event_id
+    assert payout_a.payout == "3"
+
+
+@pytest.mark.parametrize(
+    ("event_type", "side"),
+    [("TRADE_FILL", "IN"), ("TIP", "BUY")],
+)
+def test_event_type_rejects_invalid_shared_side_value(event_type, side):
+    with pytest.raises(c.WalletContractError) as exc:
+        c.build_wallet_evidence_event(
+            identity_strength="WEAK_PARTIAL",
+            canonical_event_type=event_type,
+            canonical_wallet="0x" + "1" * 40,
+            source_system_family="POLYMARKET_DATA_API_V2",
+            side=side,
+            identity_ambiguous=True,
+        )
+    assert str(exc.value) == "FIELD_VALUE_INVALID"
+
+
 def test_event_identity_equivalent_decimal_spellings_same_id():
     a = _trade_event(price="0.5", size="10")
     b = _trade_event(price="0.50", size="10.0")

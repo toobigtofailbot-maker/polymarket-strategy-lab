@@ -314,7 +314,7 @@ _IDENTITY_STRENGTH_SET = frozenset(IDENTITY_STRENGTHS)
 TRADE_COMBO_STATES = ("FALSE", "TRUE", "UNKNOWN")
 _TRADE_COMBO_SET = frozenset(TRADE_COMBO_STATES)
 
-SIDE_VALUES = ("BUY", "SELL")
+SIDE_VALUES = ("BUY", "SELL", "IN", "OUT")
 _SIDE_SET = frozenset(SIDE_VALUES)
 
 # ===========================================================================
@@ -736,6 +736,7 @@ class WalletEvidenceEvent:
     price: str | None
     size: str | None
     notional: str | None
+    payout: str | None
     event_time: str | None
     transaction_hash: str | None
     log_index: int | None
@@ -788,6 +789,7 @@ class WalletEvidenceEvent:
             "price": self.price,
             "size": self.size,
             "notional": self.notional,
+            "payout": self.payout,
             "event_time": self.event_time,
             "transaction_hash": self.transaction_hash,
             "native_event_id": self.native_event_id,
@@ -811,6 +813,7 @@ def build_wallet_evidence_event(
     price: str | None = None,
     size: str | None = None,
     notional: str | None = None,
+    payout: str | None = None,
     event_time: str | None = None,
     transaction_hash: str | None = None,
     log_index: int | None = None,
@@ -837,6 +840,10 @@ def build_wallet_evidence_event(
         combo_state = _validate_enum(combo_state, _TRADE_COMBO_SET)
     if side is not None:
         side = _validate_enum(side, _SIDE_SET)
+        if event_type == "TRADE_FILL" and side not in ("BUY", "SELL"):
+            raise _err("FIELD_VALUE")
+        if event_type == "TIP" and side not in ("IN", "OUT"):
+            raise _err("FIELD_VALUE")
     if chain_id is not None and (not isinstance(chain_id, int) or isinstance(chain_id, bool)):
         raise _err("FIELD_TYPE")
     if log_index is not None and (not isinstance(log_index, int) or isinstance(log_index, bool) or log_index < 0):
@@ -855,6 +862,8 @@ def build_wallet_evidence_event(
         size = canonicalize_quantity(size)
     if notional is not None:
         notional = canonicalize_amount(notional)
+    if payout is not None:
+        payout = canonicalize_amount(payout)
     key = build_economic_object_key(economic_object_key)
 
     # Strength-specific required-field gates (10.6).
@@ -885,6 +894,7 @@ def build_wallet_evidence_event(
         price=price,
         size=size,
         notional=notional,
+        payout=payout,
         event_time=event_time,
         transaction_hash=transaction_hash,
         log_index=log_index,

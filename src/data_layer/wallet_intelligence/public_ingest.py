@@ -26,6 +26,7 @@ from ..point_in_time_market_research.research_provenance import (
     build_raw_evidence_reference,
 )
 from ..polymarket.polling_policy import (
+    WALLET_MAX_PAGE_SIZE,
     WALLET_MAX_PAGES_PER_FEED,
     WALLET_MAX_SOURCE_ROWS_PER_FEED_RUN,
     WALLET_MAX_SOURCE_ROWS_TOTAL_RUN,
@@ -205,7 +206,7 @@ def normalize_trade_row(row: Mapping, *, wallet: str, combo_state: str):
         token_value=(
             C.canonicalize_identifier("CLOB_TOKEN_ID", token) if token is not None else None
         ),
-        side=_normalize_side(_row_get(row, "side")),
+        side=_normalize_trade_side(_row_get(row, "side")),
         price=_row_get(row, "price"),
         size=_row_get(row, "size", "shares"),
         event_time=_row_event_time(row),
@@ -226,15 +227,22 @@ def normalize_activity_row(row: Mapping, *, wallet: str, combo_state: str = "UNK
     combo_state = None
     identity_strength = "SOURCE_CONTENT_DERIVED"
     identity_ambiguous = False
+    condition_context = "DATA_API_RESPONSE_CONDITION_ID"
+    token_context = "CLOB_TOKEN_ID"
     if canonical == "TRADE_FILL":
         is_combo = row.get("is_combo")
         if isinstance(is_combo, bool):
             combo_state = "TRUE" if is_combo else "FALSE"
+            if is_combo:
+                condition_context = "COMBO_CONDITION_ID"
+                token_context = "COMBO_POSITION_ID"
         else:
             # Missing/invalid required combo discriminator: do not invent a value.
             dq = ["SCHEMA_DRIFT"]
             identity_strength = "WEAK_PARTIAL"
             identity_ambiguous = True
+            condition_context = None
+            token_context = None
     elif canonical == "UNKNOWN_PUBLIC_ACTIVITY":
         dq = ["SCHEMA_DRIFT", "PARTIALLY_OBSERVED"]
         identity_strength = "WEAK_PARTIAL"
@@ -246,19 +254,28 @@ def normalize_activity_row(row: Mapping, *, wallet: str, combo_state: str = "UNK
         canonical_wallet=_row_wallet(row, wallet),
         combo_state=combo_state,
         source_system_family=SOURCE_SYSTEM,
-        condition_context="DATA_API_RESPONSE_CONDITION_ID" if condition is not None else None,
+        condition_context=condition_context if condition is not None else None,
         condition_value=(
-            C.canonicalize_identifier("DATA_API_RESPONSE_CONDITION_ID", condition)
-            if condition is not None
+            C.canonicalize_identifier(condition_context, condition)
+            if condition is not None and condition_context is not None
             else None
         ),
-        token_context="CLOB_TOKEN_ID" if token is not None else None,
+        token_context=token_context if token is not None else None,
         token_value=(
-            C.canonicalize_identifier("CLOB_TOKEN_ID", token) if token is not None else None
+            C.canonicalize_identifier(token_context, token)
+            if token is not None and token_context is not None
+            else None
         ),
-        side=_normalize_side(_row_get(row, "side")),
+        side=(
+            _normalize_tip_side(_row_get(row, "side"))
+            if canonical == "TIP"
+            else _normalize_trade_side(_row_get(row, "side"))
+            if canonical == "TRADE_FILL"
+            else None
+        ),
         price=_row_get(row, "price"),
         size=_row_get(row, "size", "shares"),
+        notional=_row_get(row, "usdc_size"),
         event_time=_row_event_time(row),
         transaction_hash=_row_get(row, "transaction_hash", "tx_hash"),
         cost_basis_state=_cost_basis_for(canonical),
@@ -274,6 +291,23 @@ def normalize_combo_row(row: Mapping, *, wallet: str, combo_state: str = "UNKNOW
     canonical = map_combo_activity_type(source_type)
     native = _row_get(row, "id", "native_event_id")
     condition = _row_get(row, "condition_id", "combo_condition_id")
+    token = _row_get(row, "combo_position_id")
+    common = {
+        "condition_context": "COMBO_CONDITION_ID" if condition is not None else None,
+        "condition_value": (
+            C.canonicalize_identifier("COMBO_CONDITION_ID", condition)
+            if condition is not None
+            else None
+        ),
+        "token_context": "COMBO_POSITION_ID" if token is not None else None,
+        "token_value": (
+            C.canonicalize_identifier("COMBO_POSITION_ID", token)
+            if token is not None
+            else None
+        ),
+        "notional": _row_get(row, "amount_usdc"),
+        "payout": _row_get(row, "payout_usdc") if canonical == "REDEEM_SETTLEMENT" else None,
+    }
     dq = ["OK"] if canonical != "UNKNOWN_PUBLIC_ACTIVITY" else ["SCHEMA_DRIFT", "PARTIALLY_OBSERVED"]
     if native is not None:
         event = build_wallet_evidence_event(
@@ -282,12 +316,7 @@ def normalize_combo_row(row: Mapping, *, wallet: str, combo_state: str = "UNKNOW
             canonical_wallet=_row_wallet(row, wallet),
             source_system_family=SOURCE_SYSTEM,
             native_event_id=C.canonicalize_identifier("SOURCE_NATIVE_EVENT_ID", native),
-            condition_context="COMBO_CONDITION_ID" if condition is not None else None,
-            condition_value=(
-                C.canonicalize_identifier("COMBO_CONDITION_ID", condition)
-                if condition is not None
-                else None
-            ),
+            **common,
             event_time=_row_event_time(row),
             transaction_hash=_row_get(row, "transaction_hash", "tx_hash"),
             cost_basis_state=_cost_basis_for(canonical),
@@ -298,12 +327,7 @@ def normalize_combo_row(row: Mapping, *, wallet: str, combo_state: str = "UNKNOW
             canonical_event_type=canonical,
             canonical_wallet=_row_wallet(row, wallet),
             source_system_family=SOURCE_SYSTEM,
-            condition_context="COMBO_CONDITION_ID" if condition is not None else None,
-            condition_value=(
-                C.canonicalize_identifier("COMBO_CONDITION_ID", condition)
-                if condition is not None
-                else None
-            ),
+            **common,
             event_time=_row_event_time(row),
             transaction_hash=_row_get(row, "transaction_hash", "tx_hash"),
             cost_basis_state=_cost_basis_for(canonical),
@@ -312,7 +336,7 @@ def normalize_combo_row(row: Mapping, *, wallet: str, combo_state: str = "UNKNOW
     return event, source_type, tuple(dq) if dq != ["OK"] else ()
 
 
-def _normalize_side(value) -> str | None:
+def _normalize_trade_side(value) -> str | None:
     if value is None:
         return None
     text = str(value).strip().upper()
@@ -323,6 +347,13 @@ def _normalize_side(value) -> str | None:
     if text in ("S", "ASK"):
         return "SELL"
     return None
+
+
+def _normalize_tip_side(value) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip().upper()
+    return text if text in ("IN", "OUT") else None
 
 
 def _cost_basis_for(canonical_event_type: str) -> str:
@@ -348,6 +379,31 @@ _NORMALIZERS = {
     "STANDARD_ACTIVITY": normalize_activity_row,
     "COMBO_ACTIVITY": normalize_combo_row,
 }
+
+
+def _validate_projected_row_limits(
+    *,
+    row_count: int,
+    requested_page_size: int,
+    committed_feed_rows: int,
+    committed_run_rows: int,
+) -> tuple[int, int]:
+    """Validate one received page before normalization or persistence.
+
+    Both counters describe successfully committed rows only.  The projected
+    values are returned so callers advance them only after an atomic append.
+    """
+
+    if row_count > requested_page_size or row_count > WALLET_MAX_PAGE_SIZE:
+        raise _StopFeed("LIMIT_EXCEEDED", "PARTIAL_LIMIT")
+    projected_feed_rows = committed_feed_rows + row_count
+    projected_run_rows = committed_run_rows + row_count
+    if (
+        projected_feed_rows > WALLET_MAX_SOURCE_ROWS_PER_FEED_RUN
+        or projected_run_rows > WALLET_MAX_SOURCE_ROWS_TOTAL_RUN
+    ):
+        raise _StopFeed("LIMIT_EXCEEDED", "PARTIAL_LIMIT")
+    return projected_feed_rows, projected_run_rows
 
 
 # ---------------------------------------------------------------------------
@@ -450,10 +506,22 @@ def _run_feed(
             break
 
         counters["transport"] += page.get("_transport", 0)
+        rows = list(page["rows"])
+        try:
+            projected_feed_rows, projected_run_rows = _validate_projected_row_limits(
+                row_count=len(rows),
+                requested_page_size=request.page_size,
+                committed_feed_rows=source_rows,
+                committed_run_rows=counters["rows"],
+            )
+        except _StopFeed as stop:
+            failure_codes.append(stop.code)
+            feed_dq.update({"PARTIALLY_OBSERVED", "SEQUENCE_GAP"})
+            completion = stop.completion
+            break
+
         first_seen = clock()
         ingestion = clock()
-        rows = list(page["rows"])
-        source_rows += len(rows)
 
         raw = build_raw_evidence_reference(
             source_system=SOURCE_SYSTEM,
@@ -510,12 +578,13 @@ def _run_feed(
         # Second pass: build observations now that the page-evidence id exists.
         records = [raw, page_evidence]
         seen_event_ids: set[str] = set()
+        page_event_ids: list[str] = []
         page_observation_ids: list[str] = []
         for event, source_activity_type, row_dq in normalized:
             if event.wallet_event_id not in seen_event_ids:
                 records.append(event)
                 seen_event_ids.add(event.wallet_event_id)
-                event_ids.append(event.wallet_event_id)
+                page_event_ids.append(event.wallet_event_id)
             observation = build_wallet_event_observation(
                 wallet_event_id=event.wallet_event_id,
                 wallet_feed_page_evidence_id=page_evidence.wallet_feed_page_evidence_id,
@@ -537,9 +606,12 @@ def _run_feed(
             completion = "PARTIAL_SOURCE_FAILURE"
             break
         counters["appended"] += len(append_result.inserted_record_ids)
+        source_rows = projected_feed_rows
+        counters["rows"] = projected_run_rows
 
         page_ids.append(page_evidence.wallet_feed_page_evidence_id)
         raw_ids.append(raw.raw_evidence_reference_id)
+        event_ids.extend(page_event_ids)
         observation_ids.extend(page_observation_ids)
         cursor_chain.append((incoming_cursor, outgoing_cursor))
         for flag in page_dq_flags:
@@ -559,10 +631,6 @@ def _run_feed(
             failure_codes.append("CURSOR_GAP")
             feed_dq.update({"SEQUENCE_GAP"})
             completion = "PARTIAL_CURSOR_GAP"
-            break
-        if source_rows > WALLET_MAX_SOURCE_ROWS_PER_FEED_RUN:
-            feed_dq.update({"PARTIALLY_OBSERVED", "SEQUENCE_GAP"})
-            completion = "PARTIAL_LIMIT"
             break
         seen_cursors.add(outgoing_cursor)
         incoming_cursor = outgoing_cursor
@@ -626,14 +694,16 @@ def ingest_wallet_evidence(
     ledger_path,
     mode: str = "DRY_RUN",
     page_fetcher: Callable | None = None,
+    client=None,
+    opener=None,
+    guard=None,
     clock_times: Sequence[str] | None = None,
 ) -> WalletIngestResult:
     """Run one bounded wallet evidence collection.
 
     ``mode='DRY_RUN'`` performs zero network and zero ledger writes.
-    ``mode='LOCAL_RESPONSE_FIXTURE'`` and ``mode='NETWORK'`` both drive the same
-    deterministic cursor walk through ``page_fetcher``; NETWORK expects a fetcher
-    that performs exactly one bounded GET per page via the public client.
+    ``mode='LOCAL_RESPONSE_FIXTURE'`` uses ``page_fetcher``.  NETWORK accepts no
+    caller fetcher: it internally constructs the guarded public-client path.
     """
 
     if mode not in INGEST_MODES:
@@ -652,7 +722,19 @@ def ingest_wallet_evidence(
             dry_run=True,
         )
 
-    if page_fetcher is None:
+    if mode == "NETWORK":
+        if page_fetcher is not None:
+            return _rejected_before_acquisition(ingest_run_key, ("FIELD_VALUE_INVALID",))
+        if guard is None or not callable(getattr(guard, "record_allowed", None)):
+            return _rejected_before_acquisition(
+                ingest_run_key, ("RATE_LIMIT_GUARD_DENIED",)
+            )
+        if client is None or opener is None:
+            return _rejected_before_acquisition(ingest_run_key, ("FIELD_VALUE_INVALID",))
+        page_fetcher = make_network_fetcher(
+            client, request=request, opener=opener, guard=guard
+        )
+    elif page_fetcher is None:
         raise _err("FIELD_VALUE")
 
     # Collision / reuse guard (15.2.1): a NEW acquisition under an already-used
@@ -674,7 +756,7 @@ def ingest_wallet_evidence(
         )
 
     clock = _Clock(list(clock_times) if clock_times else [request.run_started_at or "2026-01-01T00:00:00Z"])
-    counters = {"transport": 0, "appended": 0}
+    counters = {"transport": 0, "appended": 0, "rows": 0}
     outcomes: list[FeedRunOutcome] = []
     for plan in _feed_plan(request):
         outcome = _run_feed(
@@ -687,6 +769,13 @@ def ingest_wallet_evidence(
             counters=counters,
         )
         outcomes.append(outcome)
+        if (
+            outcome.failure_codes == ("RATE_LIMIT_GUARD_DENIED",)
+            and counters["appended"] == 0
+        ):
+            return _rejected_before_acquisition(
+                ingest_run_key, ("RATE_LIMIT_GUARD_DENIED",)
+            )
 
     collection_state = _derive_collection_state(outcomes)
     run_ended = clock()
@@ -899,7 +988,7 @@ def make_local_fixture_fetcher(pages_by_feed: Mapping[str, Sequence[Mapping]]) -
     return fetch
 
 
-def make_network_fetcher(client, *, request: WalletIngestRequest, opener, guard=None) -> Callable:
+def make_network_fetcher(client, *, request: WalletIngestRequest, opener, guard) -> Callable:
     """Build a fetcher that performs exactly one bounded public GET per page via
     the existing public client. Applies the RateLimitGuard immediately before each
     request; a guard denial performs no request."""
@@ -917,11 +1006,17 @@ def make_network_fetcher(client, *, request: WalletIngestRequest, opener, guard=
         "COMBO_ACTIVITY": WALLET_ACTIVITY_COMBOS_ENDPOINT_KEY,
     }
 
+    if guard is None or not callable(getattr(guard, "record_allowed", None)):
+        raise _err("GUARD")
+
     def fetch(feed: str, cursor):
-        if guard is not None:
+        try:
             decision = guard.record_allowed(endpoint_keys[feed])
-            if not decision.allowed:
-                raise _StopFeed("RATE_LIMIT_GUARD_DENIED", "PARTIAL_SOURCE_FAILURE")
+            allowed = decision.allowed
+        except Exception:
+            raise _StopFeed("RATE_LIMIT_GUARD_DENIED", "PARTIAL_SOURCE_FAILURE") from None
+        if not isinstance(allowed, bool) or not allowed:
+            raise _StopFeed("RATE_LIMIT_GUARD_DENIED", "PARTIAL_SOURCE_FAILURE")
         try:
             if feed == "TRADES":
                 result = client.get_wallet_trades_page(

@@ -696,30 +696,33 @@ def _wallet_page_size(page_size: object) -> int:
 def _extract_wallet_envelope(parsed: object):
     """Extract (rows, next_cursor, has_more) from a Data API v2 response.
 
-    Supports the standard ``{data, pagination}`` envelope (has_more authoritative,
-    next_cursor opaque) and a bare list feed. A malformed envelope fails closed.
+    Only the documented ``{data, pagination}`` envelope is accepted.  Pagination
+    metadata is mandatory and internally consistent; malformed responses fail
+    closed rather than being treated as terminal pages.
     """
 
-    if isinstance(parsed, list):
-        return list(parsed), None, False
     if not isinstance(parsed, dict):
         raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
-    if "data" not in parsed:
+    if "data" not in parsed or "pagination" not in parsed:
         raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
-    rows = parsed.get("data")
+    rows = parsed["data"]
     if not isinstance(rows, list):
         raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
-    pagination = parsed.get("pagination")
-    if pagination is None:
-        return list(rows), None, False
+    pagination = parsed["pagination"]
     if not isinstance(pagination, dict):
         raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
-    has_more = pagination.get("has_more", False)
+    if "has_more" not in pagination or "next_cursor" not in pagination:
+        raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
+    has_more = pagination["has_more"]
     if not isinstance(has_more, bool):
         raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
-    next_cursor = pagination.get("next_cursor")
-    if next_cursor is not None and not isinstance(next_cursor, str):
-        raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
-    if next_cursor is not None and len(next_cursor) > WALLET_MAX_CURSOR_CHARS:
+    next_cursor = pagination["next_cursor"]
+    if next_cursor is not None and (
+        not isinstance(next_cursor, str)
+        or not next_cursor
+        or len(next_cursor) > WALLET_MAX_CURSOR_CHARS
+    ):
         raise WalletDataApiError("CURSOR_INVALID")
+    if has_more != (next_cursor is not None):
+        raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
     return list(rows), next_cursor, has_more

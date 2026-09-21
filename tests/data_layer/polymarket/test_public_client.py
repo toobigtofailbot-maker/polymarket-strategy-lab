@@ -362,6 +362,37 @@ def _ok_page():
     return _json_body({"data": [{"id": "1", "price": 0.5}], "pagination": {"next_cursor": None, "has_more": False}})
 
 
+class TestWalletDataApiEnvelope:
+    def test_valid_envelope_accepted(self):
+        assert _pc._extract_wallet_envelope(
+            {"data": [{"id": "1"}], "pagination": {"has_more": False, "next_cursor": None}}
+        ) == ([{"id": "1"}], None, False)
+
+    @pytest.mark.parametrize("payload", [[{"id": "1"}], {"data": []}])
+    def test_legacy_terminal_shapes_rejected(self, payload):
+        with pytest.raises(WalletDataApiError) as exc:
+            _pc._extract_wallet_envelope(payload)
+        assert exc.value.code == "SOURCE_RESPONSE_INVALID"
+
+    @pytest.mark.parametrize(
+        ("pagination", "code"),
+        [
+            ([], "SOURCE_RESPONSE_INVALID"),
+            ({"next_cursor": None}, "SOURCE_RESPONSE_INVALID"),
+            ({"has_more": False}, "SOURCE_RESPONSE_INVALID"),
+            ({"has_more": "false", "next_cursor": None}, "SOURCE_RESPONSE_INVALID"),
+            ({"has_more": True, "next_cursor": ""}, "CURSOR_INVALID"),
+            ({"has_more": True, "next_cursor": 1}, "CURSOR_INVALID"),
+            ({"has_more": False, "next_cursor": "C2"}, "SOURCE_RESPONSE_INVALID"),
+            ({"has_more": True, "next_cursor": None}, "SOURCE_RESPONSE_INVALID"),
+        ],
+    )
+    def test_malformed_pagination_rejected(self, pagination, code):
+        with pytest.raises(WalletDataApiError) as exc:
+            _pc._extract_wallet_envelope({"data": [], "pagination": pagination})
+        assert exc.value.code == code
+
+
 class TestWalletDataApiHostTrust:
     def test_trades_uses_fixed_data_api_host(self):
         op = _FakeOpener(_FakeResp(_ok_page()))
@@ -389,7 +420,7 @@ class TestWalletDataApiHostTrust:
 
 class TestWalletDataApiReadCap:
     def test_at_or_under_max_bytes_may_proceed(self):
-        body = _json_body({"data": [], "pagination": {"has_more": False}})
+        body = _json_body({"data": [], "pagination": {"has_more": False, "next_cursor": None}})
         op = _FakeOpener(_FakeResp(body))
         client = PolymarketPublicClient()
         result = client.get_wallet_trades_page(user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z", opener=op)
@@ -468,7 +499,7 @@ class TestWalletDataApiSourceSafety:
         assert "execution_gateway" not in source
 
     def test_decimal_preserving_parse(self):
-        op = _FakeOpener(_FakeResp(_json_body({"data": [{"price": 0.1}], "pagination": {"has_more": False}})))
+        op = _FakeOpener(_FakeResp(_json_body({"data": [{"price": 0.1}], "pagination": {"has_more": False, "next_cursor": None}})))
         client = PolymarketPublicClient()
         result = client.get_wallet_trades_page(user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z", opener=op)
         from decimal import Decimal
