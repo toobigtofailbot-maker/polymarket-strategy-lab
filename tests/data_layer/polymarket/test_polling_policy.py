@@ -157,3 +157,30 @@ def test_existing_endpoint_budgets_are_unchanged_by_wp166():
     clob = policy.endpoints["clob_book"]
     assert clob.max_requests_per_window == 10 and clob.max_tokens_per_run == 20
     assert clob.minimum_interval_seconds == 6.0
+
+
+# ── S10-WALLET-01 hard bounds and bounded wallet feed endpoints ──────────────
+def test_wallet_hard_bounds_are_frozen_constants():
+    from src.data_layer.polymarket import polling_policy as p
+
+    assert p.WALLET_MAX_PAGES_PER_FEED == 10
+    assert p.WALLET_MAX_PAGE_SIZE == 100
+    assert p.WALLET_MAX_SOURCE_ROWS_PER_FEED_RUN == 1000
+    assert p.WALLET_MAX_SOURCE_ROWS_TOTAL_RUN == 3000
+    assert p.WALLET_MAX_RESPONSE_BYTES_PER_PAGE == 4_194_304
+    assert p.WALLET_MAX_CURSOR_CHARS == 4096
+
+
+def test_wallet_feed_endpoints_present_disabled_and_conservative():
+    from src.data_layer.polymarket import polling_policy as p
+
+    policy = default_polling_policy()
+    for key in p.WALLET_FEED_ENDPOINT_KEYS:
+        assert key in NETWORK_ENDPOINT_KEYS
+        endpoint = policy.endpoints[key]
+        assert endpoint.enabled_by_default is False
+        assert endpoint.requires_explicit_network is True
+        assert endpoint.allow_automated_loop is False
+        assert endpoint.max_requests_per_window == p.WALLET_MAX_PAGES_PER_FEED
+        assert endpoint.notes.strip()
+    assert validate_polling_policy(policy).passed

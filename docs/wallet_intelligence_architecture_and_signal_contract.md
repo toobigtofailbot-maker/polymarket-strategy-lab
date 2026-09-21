@@ -46,6 +46,18 @@ Wallet intelligence must not connect directly to:
 Any future implementation must remain local/offline/read-only until a later
 approved work package explicitly changes that boundary.
 
+> **S10-WALLET-01 update.** S10-WALLET-01 is that later approved work package,
+> for one narrow boundary only: it authorizes **bounded, manual, GET-only,
+> PUBLIC, no-auth** Polymarket Data API v2 wallet reads (`/v2/trades`,
+> `/v2/activity`, `/v2/activity/combos`), disabled by default and requiring
+> explicit network opt-in. Every credential, authenticated-account, private,
+> signing, order, paper, live, scheduler, and bot-loop prohibition above remains
+> fully intact. This document's earlier prototype language (WP76-WP90) describes
+> bounded synthetic/fixture prototypes; S10-WALLET-01 is the first real
+> public-evidence foundation, and later S10-WALLET-02/03/04 own real profiling,
+> copyability, and incrementality. See
+> `docs/wallet_public_evidence_foundation_contract.md`.
+
 ## 3. Wallet Registry Concept
 
 A future wallet registry is a list of watched wallet profiles. The registry

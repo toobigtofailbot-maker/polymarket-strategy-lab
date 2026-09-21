@@ -139,6 +139,11 @@ APPROVED_SRC_SCOPES = (
     "src/data_layer/hermes_candidate_review_assisted_research_local_dry_run_harness.py",
     "src/data_layer/local_research_value_measurement",
     "src/data_layer/point_in_time_market_research",
+    # S10-WALLET-01 approves the local/offline/read-only public wallet evidence
+    # foundation package. It records observable PUBLIC evidence only via the
+    # existing bounded GET-only client and has no order/signing/paper/live/
+    # qualification/Hermes/WP170/scheduler/execution authority.
+    "src/data_layer/wallet_intelligence",
     "src/data_layer/analytical_research",
     # WP168 approves the local/offline/read-only NautilusTrader offline replay kernel,
     # ParquetDataCatalog adoption, and deterministic replay package (no live/auth clients,

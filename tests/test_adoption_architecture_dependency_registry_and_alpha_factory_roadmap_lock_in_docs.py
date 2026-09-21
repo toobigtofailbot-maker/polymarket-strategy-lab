@@ -802,7 +802,7 @@ def _active_wp_spec_authorized_files(changed):
     active = None
     count = 0
     for path in changed:
-        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+)\.md", path)
+        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+|S10-[A-Z0-9]+(?:-[A-Z0-9]+)*)\.md", path)
         if match is None:
             continue
         spec_path = ROOT / "docs" / "wp_specs" / match.group(1) / "wp_spec.json"
@@ -843,6 +843,17 @@ def test_adoption_scope_guard_derives_active_wp_scope_from_machine_spec() -> Non
     # Ambiguous active WP (two spec-backed status entries) fails closed.
     assert _active_wp_spec_authorized_files(
         {"docs/status_entries/WP168G.md", "docs/status_entries/WP159.md"}
+    ) is None
+    # S10-series recognition: the current package resolves to its real machine spec.
+    s10 = _active_wp_spec_authorized_files({"docs/status_entries/S10-WALLET-01.md"})
+    assert s10 is not None
+    s10_spec = json.loads(
+        (ROOT / "docs/wp_specs/S10-WALLET-01/wp_spec.json").read_text(encoding="utf-8")
+    )
+    assert s10 == frozenset(s10_spec["scope"]["required_changed_files"])
+    # A syntactically S10-like status entry with no machine spec grants no authority.
+    assert _active_wp_spec_authorized_files(
+        {"docs/status_entries/S10-NONEXISTENT-99.md"}
     ) is None
 
 

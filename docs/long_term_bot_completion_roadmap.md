@@ -527,3 +527,13 @@ merge, or Gate-C activation. It records the current post-H1 sequencing truth aft
 - The old monolithic WP180/WP181 Hermes/Alpha sequencing is SUPERSEDED by this Alpha core
   contract and current roadmap. WP176 remains decomposed into WP176A-E for mature
   deterministic live capability. Gate C remains human-only and NOT AUTHORIZED.
+
+- S10-WALLET-01 (Public Wallet / Point-in-Time Wallet Evidence Foundation) delivers the
+  deterministic, replayable, point-in-time-safe PUBLIC wallet evidence substrate: shared
+  research provenance/PIT/DQ/replay core, the wallet_intelligence contracts/reconciliation/
+  ledger/ingest package, and bounded public Data API v2 wallet GET reads (default off). It is
+  evidence-only and creates no qualification, ranking, copyability, order, signing, paper, live,
+  scheduler, Hermes, WP170, or Gate-C authority. Later S10-WALLET-02/03/04, S10-GATE-WALLET-01,
+  QUAL-01, and WP170 own real profiling, copyability, incrementality, the wallet gate,
+  qualification, and preregistered/OOS experiments. Immediate separately gated successor:
+  S10-HERMES-CTX-01. Gate C remains human-only and NOT AUTHORIZED.
