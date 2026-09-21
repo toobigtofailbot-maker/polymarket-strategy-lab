@@ -17,11 +17,14 @@ Endpoint contracts are NOT confirmed as stable production agreements.
 
 from __future__ import annotations
 
+import dataclasses
+import hashlib
 import json
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from decimal import Decimal
 from typing import Optional
 
 from .errors import (
@@ -36,6 +39,11 @@ from .models import (
     OrderBookLevel,
     OrderBookSnapshot,
     ReadOnlyRequestInfo,
+)
+from .polling_policy import (
+    WALLET_MAX_CURSOR_CHARS,
+    WALLET_MAX_PAGE_SIZE,
+    WALLET_MAX_RESPONSE_BYTES_PER_PAGE,
 )
 
 # Endpoint map with verification status.
@@ -115,6 +123,119 @@ DEFAULT_GAMMA_BASE_URL = "https://gamma-api.polymarket.com"
 DEFAULT_CLOB_BASE_URL = "https://clob.polymarket.com"
 DEFAULT_TIMEOUT_SECONDS = 10
 DEFAULT_USER_AGENT = "polymarket-strategy-lab/wp9-contract-validation"
+
+
+# ===========================================================================
+# S10-WALLET-01: bounded public Data API v2 wallet-feed reads.
+#
+# The production Data API trust root is a FIXED hostname; wallet methods never
+# accept an arbitrary base URL. Tests inject an opener/transport seam instead of
+# substituting localhost/private IPs. Each method performs exactly ONE GET, never
+# follows a cursor automatically, never sleeps, never retries, and sends no auth.
+# Contract re-validated against WP Section 4 frozen freeze (2026-09-20).
+# ===========================================================================
+WALLET_DATA_API_SCHEME = "https"
+WALLET_DATA_API_HOST = "data-api.polymarket.com"
+WALLET_DATA_API_TRADES_PATH = "/v2/trades"
+WALLET_DATA_API_ACTIVITY_PATH = "/v2/activity"
+WALLET_DATA_API_ACTIVITY_COMBOS_PATH = "/v2/activity/combos"
+
+WALLET_DATA_API_ERROR_CODES = (
+    "NETWORK_HOST_FORBIDDEN",
+    "NETWORK_SCHEME_FORBIDDEN",
+    "LIMIT_EXCEEDED",
+    "SOURCE_RESPONSE_INVALID",
+    "SOURCE_UNAVAILABLE",
+    "CURSOR_INVALID",
+    "FIELD_VALUE_INVALID",
+)
+
+
+class WalletDataApiError(Exception):
+    """Closed, bounded error for wallet Data API reads. Its string is ONLY the
+    closed code; it never echoes raw response bodies, unsafe URLs, or paths."""
+
+    def __init__(self, code: str) -> None:
+        if code not in WALLET_DATA_API_ERROR_CODES:
+            code = "SOURCE_RESPONSE_INVALID"
+        self.code = code
+        super().__init__(code)
+
+
+@dataclasses.dataclass(frozen=True)
+class WalletDataApiPageResult:
+    """One bounded Data API v2 wallet page and its request/response metadata."""
+
+    feed_key: str
+    endpoint_path: str
+    request_parameters: tuple[tuple[str, str], ...]
+    incoming_cursor: Optional[str]
+    status_code: int
+    body_byte_length: int
+    content_sha256: str
+    rows: tuple[object, ...]
+    next_cursor: Optional[str]
+    has_more: bool
+
+
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Reject every redirect: a cross-origin or scheme-changing redirect must
+    never become a second request."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: D401
+        raise WalletDataApiError("NETWORK_HOST_FORBIDDEN")
+
+
+_WALLET_DATA_API_OPENER = urllib.request.build_opener(_NoRedirectHandler)
+
+
+def _validate_wallet_data_api_url(url: str) -> None:
+    """Revalidate the fully constructed request URL immediately before transport."""
+
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme != WALLET_DATA_API_SCHEME:
+        raise WalletDataApiError("NETWORK_SCHEME_FORBIDDEN")
+    if parts.hostname != WALLET_DATA_API_HOST:
+        raise WalletDataApiError("NETWORK_HOST_FORBIDDEN")
+    if parts.username is not None or parts.password is not None:
+        raise WalletDataApiError("NETWORK_HOST_FORBIDDEN")
+    if parts.fragment:
+        raise WalletDataApiError("NETWORK_HOST_FORBIDDEN")
+    if parts.port is not None and parts.port != 443:
+        raise WalletDataApiError("NETWORK_HOST_FORBIDDEN")
+
+
+def _read_capped(response, max_bytes: int) -> bytes:
+    """Read at most ``max_bytes + 1`` bytes from a response stream.
+
+    A trustworthy Content-Length proving oversize rejects immediately with zero
+    body bytes read. Otherwise at most max+1 bytes are consumed; if the sentinel
+    byte above the maximum is seen the body is abandoned without draining and no
+    JSON parsing occurs.
+    """
+
+    try:
+        declared = response.headers.get("Content-Length")
+    except Exception:  # pragma: no cover - defensive
+        declared = None
+    if declared is not None:
+        try:
+            if int(declared) > max_bytes:
+                raise WalletDataApiError("LIMIT_EXCEEDED")
+        except (TypeError, ValueError):
+            pass
+    remaining = max_bytes + 1
+    chunks: list[bytes] = []
+    while remaining > 0:
+        chunk = response.read(remaining)
+        if not chunk:
+            break
+        chunks.append(chunk)
+        remaining -= len(chunk)
+    body = b"".join(chunks)
+    if len(body) > max_bytes:
+        raise WalletDataApiError("LIMIT_EXCEEDED")
+    return body
 
 
 class PolymarketPublicClient:
@@ -288,6 +409,187 @@ class PolymarketPublicClient:
         )
         return AdapterResult(data=data, request_info=info)
 
+    # -- S10-WALLET-01 bounded public Data API v2 wallet feed reads ----------
+    def _wallet_data_api_get_page(
+        self,
+        *,
+        feed_key: str,
+        endpoint_path: str,
+        parameters: list[tuple[str, str]],
+        incoming_cursor: Optional[str],
+        opener=None,
+    ) -> WalletDataApiPageResult:
+        """Perform exactly ONE GET against a fixed-host Data API v2 wallet feed.
+
+        No auth, no cursor loop, no retry, no sleep. The final URL is revalidated
+        immediately before transport; redirects to another origin are rejected.
+        The response is byte-capped during the read and parsed Decimal-preserving.
+        """
+
+        if incoming_cursor is not None:
+            if not isinstance(incoming_cursor, str) or not (
+                0 < len(incoming_cursor) <= WALLET_MAX_CURSOR_CHARS
+            ):
+                raise WalletDataApiError("CURSOR_INVALID")
+            parameters = parameters + [("cursor", incoming_cursor)]
+        # Repeated feed filters follow the cursor consistently; encode in a stable
+        # deterministic order so the request is reproducible.
+        ordered = sorted(parameters)
+        query = urllib.parse.urlencode(ordered)
+        url = f"{WALLET_DATA_API_SCHEME}://{WALLET_DATA_API_HOST}{endpoint_path}"
+        if query:
+            url = f"{url}?{query}"
+        _validate_wallet_data_api_url(url)
+
+        request = urllib.request.Request(
+            url,
+            method="GET",
+            headers={"Accept": "application/json", "User-Agent": self._user_agent},
+        )
+        active_opener = opener if opener is not None else _WALLET_DATA_API_OPENER
+        response = None
+        try:
+            response = active_opener.open(request, timeout=self._timeout)
+            status = getattr(response, "status", None)
+            if status is None:
+                status = response.getcode()
+            body = _read_capped(response, WALLET_MAX_RESPONSE_BYTES_PER_PAGE)
+        except WalletDataApiError:
+            raise
+        except urllib.error.HTTPError as exc:
+            raise WalletDataApiError("SOURCE_UNAVAILABLE") from exc
+        except urllib.error.URLError as exc:
+            raise WalletDataApiError("SOURCE_UNAVAILABLE") from exc
+        except OSError as exc:
+            raise WalletDataApiError("SOURCE_UNAVAILABLE") from exc
+        finally:
+            if response is not None:
+                try:
+                    response.close()
+                except Exception:  # pragma: no cover - defensive
+                    pass
+
+        if not (200 <= int(status) < 300):
+            raise WalletDataApiError("SOURCE_UNAVAILABLE")
+
+        content_sha256 = hashlib.sha256(body).hexdigest()
+        try:
+            text = body.decode("utf-8")
+            parsed = json.loads(text, parse_float=Decimal)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise WalletDataApiError("SOURCE_RESPONSE_INVALID") from exc
+
+        rows, next_cursor, has_more = _extract_wallet_envelope(parsed)
+        return WalletDataApiPageResult(
+            feed_key=feed_key,
+            endpoint_path=endpoint_path,
+            request_parameters=tuple(ordered),
+            incoming_cursor=incoming_cursor,
+            status_code=int(status),
+            body_byte_length=len(body),
+            content_sha256=content_sha256,
+            rows=tuple(rows),
+            next_cursor=next_cursor,
+            has_more=has_more,
+        )
+
+    def get_wallet_trades_page(
+        self,
+        *,
+        user: str,
+        start: str,
+        end: str,
+        cursor: Optional[str] = None,
+        page_size: int = WALLET_MAX_PAGE_SIZE,
+        opener=None,
+    ) -> WalletDataApiPageResult:
+        """One page of GET /v2/trades for one wallet.
+
+        Sends ``user``, ``taker_only=false`` (the non-taker-only form), the exact
+        requested time window, and no narrowing side/filter parameters.
+        """
+
+        parameters = [
+            ("user", str(user)),
+            ("taker_only", "false"),
+            ("start", str(start)),
+            ("end", str(end)),
+            ("limit", str(_wallet_page_size(page_size))),
+        ]
+        return self._wallet_data_api_get_page(
+            feed_key="TRADES",
+            endpoint_path=WALLET_DATA_API_TRADES_PATH,
+            parameters=parameters,
+            incoming_cursor=cursor,
+            opener=opener,
+        )
+
+    def get_wallet_activity_page(
+        self,
+        *,
+        user: str,
+        start: str,
+        end: str,
+        cursor: Optional[str] = None,
+        page_size: int = WALLET_MAX_PAGE_SIZE,
+        opener=None,
+    ) -> WalletDataApiPageResult:
+        """One page of GET /v2/activity for one wallet.
+
+        Sends ``user``, ``exclude_deposits_withdrawals=false``,
+        ``sort_direction=ASC``, the exact requested time window, and NO type/side
+        narrowing.
+        """
+
+        parameters = [
+            ("user", str(user)),
+            ("exclude_deposits_withdrawals", "false"),
+            ("sort_direction", "ASC"),
+            ("start", str(start)),
+            ("end", str(end)),
+            ("limit", str(_wallet_page_size(page_size))),
+        ]
+        return self._wallet_data_api_get_page(
+            feed_key="STANDARD_ACTIVITY",
+            endpoint_path=WALLET_DATA_API_ACTIVITY_PATH,
+            parameters=parameters,
+            incoming_cursor=cursor,
+            opener=opener,
+        )
+
+    def get_wallet_activity_combos_page(
+        self,
+        *,
+        user: str,
+        combo_condition: Optional[str] = None,
+        cursor: Optional[str] = None,
+        page_size: int = WALLET_MAX_PAGE_SIZE,
+        opener=None,
+    ) -> WalletDataApiPageResult:
+        """One page of GET /v2/activity/combos for one wallet.
+
+        Sends ``user`` and an optional combo-condition scope. The current verified
+        contract exposes no start/end time filter for this lifecycle feed.
+        """
+
+        parameters = [
+            ("user", str(user)),
+            ("limit", str(_wallet_page_size(page_size))),
+        ]
+        if combo_condition is not None:
+            parameters.append(("condition", str(combo_condition)))
+        return self._wallet_data_api_get_page(
+            feed_key="COMBO_ACTIVITY",
+            endpoint_path=WALLET_DATA_API_ACTIVITY_COMBOS_PATH,
+            parameters=parameters,
+            incoming_cursor=cursor,
+            opener=opener,
+        )
+
+    @staticmethod
+    def _wallet_parse_page_size(page_size: object) -> int:
+        return _wallet_page_size(page_size)
+
     @staticmethod
     def _parse_json_string_or_list(value: object) -> list:
         """Parse a value that may be a JSON-encoded string or already a list.
@@ -378,3 +680,46 @@ class PolymarketPublicClient:
             raise PolymarketResponseError(
                 f"Cannot parse OrderBookSnapshot: {exc}"
             ) from exc
+
+
+def _wallet_page_size(page_size: object) -> int:
+    """Validate a requested wallet page size against the hard bound. A caller may
+    not raise the page size beyond WALLET_MAX_PAGE_SIZE through runtime args."""
+
+    if isinstance(page_size, bool) or not isinstance(page_size, int):
+        raise WalletDataApiError("FIELD_VALUE_INVALID")
+    if page_size < 1 or page_size > WALLET_MAX_PAGE_SIZE:
+        raise WalletDataApiError("FIELD_VALUE_INVALID")
+    return page_size
+
+
+def _extract_wallet_envelope(parsed: object):
+    """Extract (rows, next_cursor, has_more) from a Data API v2 response.
+
+    Supports the standard ``{data, pagination}`` envelope (has_more authoritative,
+    next_cursor opaque) and a bare list feed. A malformed envelope fails closed.
+    """
+
+    if isinstance(parsed, list):
+        return list(parsed), None, False
+    if not isinstance(parsed, dict):
+        raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
+    if "data" not in parsed:
+        raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
+    rows = parsed.get("data")
+    if not isinstance(rows, list):
+        raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
+    pagination = parsed.get("pagination")
+    if pagination is None:
+        return list(rows), None, False
+    if not isinstance(pagination, dict):
+        raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
+    has_more = pagination.get("has_more", False)
+    if not isinstance(has_more, bool):
+        raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
+    next_cursor = pagination.get("next_cursor")
+    if next_cursor is not None and not isinstance(next_cursor, str):
+        raise WalletDataApiError("SOURCE_RESPONSE_INVALID")
+    if next_cursor is not None and len(next_cursor) > WALLET_MAX_CURSOR_CHARS:
+        raise WalletDataApiError("CURSOR_INVALID")
+    return list(rows), next_cursor, has_more

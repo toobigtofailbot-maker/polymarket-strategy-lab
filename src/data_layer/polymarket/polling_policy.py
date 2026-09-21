@@ -12,6 +12,29 @@ from typing import Dict, Iterable, List, Mapping, Optional
 from .rate_limit_guard import EndpointBudget, RateLimitWindow
 
 
+# S10-WALLET-01 hard validation limits for bounded public Data API v2 wallet
+# collection. These are HARD limits, not recommendations, and a caller cannot
+# raise them through runtime arguments.
+WALLET_MAX_PAGES_PER_FEED = 10
+WALLET_MAX_PAGE_SIZE = 100
+WALLET_MAX_SOURCE_ROWS_PER_FEED_RUN = 1000
+WALLET_MAX_SOURCE_ROWS_TOTAL_RUN = 3000
+WALLET_MAX_RESPONSE_BYTES_PER_PAGE = 4_194_304
+WALLET_MAX_CURSOR_CHARS = 4096
+
+# S10-WALLET-01 bounded public Data API v2 wallet feed endpoint keys.
+WALLET_TRADES_ENDPOINT_KEY = "wallet_data_api_trades"
+WALLET_ACTIVITY_ENDPOINT_KEY = "wallet_data_api_activity"
+WALLET_ACTIVITY_COMBOS_ENDPOINT_KEY = "wallet_data_api_activity_combos"
+WALLET_FEED_ENDPOINT_KEYS = frozenset(
+    {
+        WALLET_TRADES_ENDPOINT_KEY,
+        WALLET_ACTIVITY_ENDPOINT_KEY,
+        WALLET_ACTIVITY_COMBOS_ENDPOINT_KEY,
+    }
+)
+
+
 NETWORK_ENDPOINT_KEYS = frozenset(
     {
         "gamma_markets",
@@ -24,6 +47,7 @@ NETWORK_ENDPOINT_KEYS = frozenset(
         "manual_snapshot_capture",
         "sandbox_probe",
     }
+    | WALLET_FEED_ENDPOINT_KEYS
 )
 
 
@@ -228,6 +252,51 @@ def default_polling_policy() -> PollingPolicy:
             requires_explicit_network=True,
             allow_automated_loop=False,
             notes="Official-client sandbox probes remain tools-only and explicit-network.",
+        ),
+        WALLET_TRADES_ENDPOINT_KEY: PollingEndpointPolicy(
+            endpoint_key=WALLET_TRADES_ENDPOINT_KEY,
+            enabled_by_default=False,
+            max_requests_per_window=WALLET_MAX_PAGES_PER_FEED,
+            window_seconds=60,
+            minimum_interval_seconds=6.0,
+            requires_explicit_network=True,
+            allow_automated_loop=False,
+            notes=(
+                "S10-WALLET-01 bounded public GET /v2/trades wallet page reads. "
+                "Disabled by default, explicit network required, at most "
+                "WALLET_MAX_PAGES_PER_FEED pages per feed run, no automatic cursor "
+                "loop, no retry or sleep. This is a project-local safety budget, "
+                "not a confirmed official venue limit."
+            ),
+        ),
+        WALLET_ACTIVITY_ENDPOINT_KEY: PollingEndpointPolicy(
+            endpoint_key=WALLET_ACTIVITY_ENDPOINT_KEY,
+            enabled_by_default=False,
+            max_requests_per_window=WALLET_MAX_PAGES_PER_FEED,
+            window_seconds=60,
+            minimum_interval_seconds=6.0,
+            requires_explicit_network=True,
+            allow_automated_loop=False,
+            notes=(
+                "S10-WALLET-01 bounded public GET /v2/activity wallet page reads. "
+                "Disabled by default, explicit network required, bounded pages, no "
+                "cursor loop, no retry or sleep. Project-local safety budget only."
+            ),
+        ),
+        WALLET_ACTIVITY_COMBOS_ENDPOINT_KEY: PollingEndpointPolicy(
+            endpoint_key=WALLET_ACTIVITY_COMBOS_ENDPOINT_KEY,
+            enabled_by_default=False,
+            max_requests_per_window=WALLET_MAX_PAGES_PER_FEED,
+            window_seconds=60,
+            minimum_interval_seconds=6.0,
+            requires_explicit_network=True,
+            allow_automated_loop=False,
+            notes=(
+                "S10-WALLET-01 bounded public GET /v2/activity/combos wallet page "
+                "reads. Disabled by default, explicit network required, bounded "
+                "pages, no cursor loop, no retry or sleep. Project-local safety "
+                "budget only."
+            ),
         ),
     }
     return PollingPolicy(
