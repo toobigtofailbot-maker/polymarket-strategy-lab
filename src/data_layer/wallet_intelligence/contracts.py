@@ -20,10 +20,11 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from decimal import Decimal
+import json
 import re
 import unicodedata
 
-from ..point_in_time_market_research.records import canonical_json_bytes, sha256_hex
+from ..point_in_time_market_research.records import sha256_hex
 from ..point_in_time_market_research.research_provenance import (
     PitTimestamps,
     canonicalize_dq_flags,
@@ -143,6 +144,63 @@ def map_internal_failure_to_public(internal_code: object) -> str:
 
 def _err(internal_code: str) -> WalletContractError:
     return WalletContractError(internal_code)
+
+
+# ---------------------------------------------------------------------------
+# Wallet canonical JSON. Same byte output as the shared PIT canonicalizer for
+# small inputs (so record identities are unchanged), but with generous bounds so
+# a terminal receipt referencing up to the 3000-row hard bound of observation
+# ids still serializes and hashes deterministically. Binary floats are rejected
+# so they never participate in content-addressed identity.
+# ---------------------------------------------------------------------------
+_WALLET_JSON_MAX_DEPTH = 40
+_WALLET_JSON_MAX_NODES = 500_000
+_WALLET_JSON_MAX_ITEMS = 200_000
+_WALLET_JSON_MAX_KEYS = 4_096
+_WALLET_JSON_MAX_STRING = 16_384
+_WALLET_JSON_MAX_BYTES = 8_388_608
+
+
+def wallet_canonical_json_bytes(value: object) -> bytes:
+    node_count = 0
+
+    def normalize(current: object, depth: int) -> object:
+        nonlocal node_count
+        node_count += 1
+        if node_count > _WALLET_JSON_MAX_NODES or depth > _WALLET_JSON_MAX_DEPTH:
+            raise _err("LIMIT")
+        if current is None or isinstance(current, bool):
+            return current
+        if isinstance(current, int):
+            return current
+        if isinstance(current, float):
+            raise _err("DECIMAL")
+        if isinstance(current, str):
+            if len(current) > _WALLET_JSON_MAX_STRING:
+                raise _err("LIMIT")
+            return current
+        if isinstance(current, Mapping):
+            if len(current) > _WALLET_JSON_MAX_KEYS:
+                raise _err("LIMIT")
+            out: dict[str, object] = {}
+            for key in sorted(current.keys()):
+                if not isinstance(key, str):
+                    raise _err("FIELD_TYPE")
+                out[key] = normalize(current[key], depth + 1)
+            return out
+        if isinstance(current, (list, tuple)):
+            if len(current) > _WALLET_JSON_MAX_ITEMS:
+                raise _err("LIMIT")
+            return [normalize(item, depth + 1) for item in current]
+        raise _err("FIELD_TYPE")
+
+    normalized = normalize(value, 0)
+    encoded = json.dumps(
+        normalized, ensure_ascii=False, separators=(",", ":"), sort_keys=True
+    ).encode("utf-8")
+    if len(encoded) > _WALLET_JSON_MAX_BYTES:
+        raise _err("LIMIT")
+    return encoded
 
 
 def _wrap_provenance(func, *args, **kwargs):
@@ -591,7 +649,7 @@ def _validate_enum(value: object, allowed: frozenset[str], code: str = "FIELD_VA
 
 
 def _identity(kind: str, preimage: object) -> str:
-    return _ID_PREFIXES[kind] + sha256_hex(canonical_json_bytes(preimage))
+    return _ID_PREFIXES[kind] + sha256_hex(wallet_canonical_json_bytes(preimage))
 
 
 # --- A. WalletAccountIdentityEvidence -------------------------------------
@@ -1508,4 +1566,4 @@ def derive_ingest_run_key(preimage: Mapping[str, object]) -> str:
 
     if not isinstance(preimage, Mapping):
         raise _err("FIELD_TYPE")
-    return INGEST_RUN_KEY_PREFIX + sha256_hex(canonical_json_bytes(dict(preimage)))
+    return INGEST_RUN_KEY_PREFIX + sha256_hex(wallet_canonical_json_bytes(dict(preimage)))

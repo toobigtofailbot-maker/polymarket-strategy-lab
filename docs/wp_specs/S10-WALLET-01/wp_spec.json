@@ -32,7 +32,6 @@
       "docs/wallet_public_evidence_foundation_contract.md",
       "docs/wp_specs/S10-WALLET-01/wp_prompt.txt",
       "docs/wp_specs/S10-WALLET-01/wp_spec.json",
-      "src/data_layer/point_in_time_market_research/__init__.py",
       "src/data_layer/point_in_time_market_research/research_provenance.py",
       "src/data_layer/polymarket/polling_policy.py",
       "src/data_layer/polymarket/public_client.py",
@@ -49,8 +48,7 @@
       "tests/data_layer/wallet_intelligence/test_public_ingest.py",
       "tests/data_layer/wallet_intelligence/test_reconciliation.py",
       "tests/test_architecture_boundaries.py",
-      "tests/test_wallet_intelligence_architecture_contract_docs.py",
-      "tests/test_wallet_intelligence_roadmap_docs.py"
+      "tests/test_wallet_intelligence_architecture_contract_docs.py"
     ],
     "allowed_changed_files": [
       "docs/deferred_items_log.md",
@@ -63,7 +61,6 @@
       "docs/wallet_public_evidence_foundation_contract.md",
       "docs/wp_specs/S10-WALLET-01/wp_prompt.txt",
       "docs/wp_specs/S10-WALLET-01/wp_spec.json",
-      "src/data_layer/point_in_time_market_research/__init__.py",
       "src/data_layer/point_in_time_market_research/research_provenance.py",
       "src/data_layer/polymarket/polling_policy.py",
       "src/data_layer/polymarket/public_client.py",

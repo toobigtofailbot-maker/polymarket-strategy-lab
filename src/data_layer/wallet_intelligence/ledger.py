@@ -17,7 +17,7 @@ import os
 from pathlib import Path
 import sqlite3
 
-from ..point_in_time_market_research.records import canonical_json_bytes, sha256_hex
+from ..point_in_time_market_research.records import sha256_hex
 from ..point_in_time_market_research.research_provenance import (
     RawEvidenceReference,
     ResearchProvenanceManifest,
@@ -26,6 +26,7 @@ from ..point_in_time_market_research.research_provenance import (
     build_research_provenance_manifest,
 )
 from . import contracts as C
+from .contracts import wallet_canonical_json_bytes
 from .contracts import (
     FeedAcquisitionReceipt,
     WalletAccountIdentityEvidence,
@@ -58,7 +59,7 @@ WALLET_EVIDENCE_LEDGER_STATUSES = (
 )
 
 _MAX_ROWS = 20_000
-_MAX_PAYLOAD_BYTES = 65_536
+_MAX_PAYLOAD_BYTES = 4_194_304
 _GENESIS_HASH = "0" * 64
 
 # Record-kind tie-break ranks (12.2).
@@ -629,7 +630,7 @@ def _decode_payload(payload_json: object, payload_sha256: object) -> dict:
         raise _LedgerFailure("LEDGER_TAMPER") from None
     if not isinstance(decoded, dict):
         raise _LedgerFailure("LEDGER_TAMPER")
-    canonical = canonical_json_bytes(decoded)
+    canonical = wallet_canonical_json_bytes(decoded)
     if canonical.decode("utf-8") != payload_json or sha256_hex(canonical) != payload_sha256:
         raise _LedgerFailure("LEDGER_TAMPER")
     return decoded
@@ -809,7 +810,7 @@ def _prepare_batch(records: Sequence[object]):
         if not isinstance(record_id, str) or not record_id:
             raise _LedgerFailure("IDENTITY")
         payload = _serialize(record, kind)
-        payload_bytes = canonical_json_bytes(payload)
+        payload_bytes = wallet_canonical_json_bytes(payload)
         if len(payload_bytes) > _MAX_PAYLOAD_BYTES:
             raise _LedgerFailure("LIMIT")
         digest = sha256_hex(payload_bytes)
@@ -974,7 +975,7 @@ def append_wallet_evidence_records(
 
         for rid, kind, _rec in ordered:
             payload, digest = payload_by_id[rid]
-            payload_json = canonical_json_bytes(payload).decode("utf-8")
+            payload_json = wallet_canonical_json_bytes(payload).decode("utf-8")
             entry_hash = _entry_hash(prev_hash, kind, rid, digest)
             connection.execute(
                 "INSERT INTO ledger_entries (sequence_number, record_id, record_kind, "
