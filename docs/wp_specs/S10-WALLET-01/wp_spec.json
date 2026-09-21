@@ -47,7 +47,11 @@
       "tests/data_layer/wallet_intelligence/test_ledger.py",
       "tests/data_layer/wallet_intelligence/test_public_ingest.py",
       "tests/data_layer/wallet_intelligence/test_reconciliation.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
       "tests/test_architecture_boundaries.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
       "tests/test_wallet_intelligence_architecture_contract_docs.py"
     ],
     "allowed_changed_files": [
@@ -76,9 +80,12 @@
       "tests/data_layer/wallet_intelligence/test_ledger.py",
       "tests/data_layer/wallet_intelligence/test_public_ingest.py",
       "tests/data_layer/wallet_intelligence/test_reconciliation.py",
+      "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+      "tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
       "tests/test_architecture_boundaries.py",
-      "tests/test_wallet_intelligence_architecture_contract_docs.py",
-      "tests/test_wallet_intelligence_roadmap_docs.py"
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py"
     ],
     "forbidden_prefixes": [
       ".github/workflows/",
@@ -87,7 +94,7 @@
       "src/data_layer/analytical_research/",
       "local_data/"
     ],
-    "max_changed_files": 35,
+    "max_changed_files": 31,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       "docs/wallet_intelligence_research_signal_roadmap.md",

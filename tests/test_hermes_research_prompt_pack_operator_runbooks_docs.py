@@ -32,7 +32,7 @@ def _spec_authorized_paths(changed, prefix: str) -> set:
     """
     authorized: set = set()
     for path in changed:
-        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+)\.md", path)
+        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+|S10-[A-Z0-9]+(?:-[A-Z0-9]+)*)\.md", path)
         if match is None:
             continue
         spec_path = REPO_ROOT / "docs" / "wp_specs" / match.group(1) / "wp_spec.json"
@@ -70,6 +70,17 @@ def test_hermes_src_scope_guard_uses_current_wp_spec_authority() -> None:
     assert "src/execution_gateway/gate_c.py" in authorized
     assert "src/execution_gateway/gateway.py" in authorized
     assert "src/research_runtime/forbidden.py" not in authorized
+
+
+def test_hermes_scope_guard_recognizes_s10_series_machine_spec() -> None:
+    # Legacy WP recognition is unchanged; the S10-series package resolves to its
+    # real machine spec and only paths present in that spec are authorized.
+    s10_src = _spec_authorized_src_paths({"docs/status_entries/S10-WALLET-01.md"})
+    assert "src/data_layer/wallet_intelligence/contracts.py" in s10_src
+    # A path absent from the spec is not authorized merely by prefix.
+    assert "src/data_layer/analytical_research/alpha_factory.py" not in s10_src
+    # A syntactically S10-like status entry with no machine spec grants no authority.
+    assert _spec_authorized_src_paths({"docs/status_entries/S10-NONEXISTENT-99.md"}) == set()
 
 
 def _flat(path: pathlib.Path) -> str:
