@@ -508,3 +508,14 @@ def test_roadmap_lists_live_boundary_conditions():
 
 def test_wallet_intelligence_roadmap_test_file_exists():
     assert os.path.isfile(ROADMAP_TEST_FILE), f"Missing: {ROADMAP_TEST_FILE}"
+
+
+def test_wallet02_roadmap_marks_canonical_profile_and_preserves_separation():
+    content = _read(ROADMAP_DOC)
+    assert "S10-WALLET-02 canonical update" in content
+    assert "WalletProfileSnapshot" in content
+    assert "WP79 remains fixture-era/local prototype" in content
+    assert "not the canonical real-evidence profile" in content
+    assert "WALLET-03 still owns" in content and "follower economics" in content
+    assert "WALLET-04 still owns" in content and "incremental wallet" in content
+    assert "Qualification, strategy, paper, live, and Gate C remain separate" in content

@@ -4454,3 +4454,31 @@ def test_wp175m_draft_contract_alignment_registered() -> None:
         "src/research_runtime/hermes_controlled_runtime/response_capture.py",
     ):
         assert path not in scope["required_changed_files"]
+
+
+def test_s10_wallet02_status_and_exact_machine_scope() -> None:
+    project = _read()
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-WALLET-02" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    current = next(
+        line for line in project.splitlines()
+        if line.startswith("# S10-WALLET-02 current implementation target")
+    )
+    assert "Governance track: FAST" in current and "Risk level: 2" in current
+    assert "Exact changed-file scope: 17" in current
+    assert "45b6cb4db7fc5e8ac2ae21145bf00be658740025" in current
+    assert "PR #189 / S10-HERMES-CTX-01 merged: YES" in current
+    assert "H1 #5: NOT AUTHORIZED" in current
+    assert "Gate C: NOT AUTHORIZED" in current
+    assert "capital at risk: USD 0" in current and "orders: 0" in current
+    assert "successor after separate review and merge: S10-ALPHA-02" in current
+    assert "Merge authorized: NO" in current
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 17
+    assert scope["exact_scope_required"] is True
+    assert spec["identity"]["risk_level"] == 2
+    assert spec["successor_boundary"]["next_wp"] == "S10-ALPHA-02"

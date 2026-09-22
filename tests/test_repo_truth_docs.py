@@ -433,3 +433,23 @@ def test_s10_hermes_ctx_repo_truth_is_stable_and_non_authorizing():
     assert "H1 #5" in combined and "NOT AUTHORIZED" in combined
     assert "Merge authorized: NO" in fragment
     assert "Current live PR head" not in fragment
+
+
+def test_s10_wallet02_repo_truth_and_successor() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    contract = (ROOT / "docs" / "wallet_profile_snapshot_contract.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "S10-WALLET-02.md").read_text(encoding="utf-8")
+    combined = "\n".join((index, contract, fragment))
+    assert "S10-WALLET-02 PIT Wallet Profiles (current implementation target)" in index
+    assert "S10-HERMES-CTX-01 Blind-First Context Broker (merged historical truth)" in index
+    assert "docs/wallet_profile_snapshot_contract.md" in index
+    assert "src/data_layer/wallet_intelligence/profile.py" in index
+    assert "tests/data_layer/wallet_intelligence/test_profile.py" in index
+    for record in ("WalletProfileMarketContext", "WalletDiscoveryCohortSnapshot", "WalletProfileSnapshot"):
+        assert record in combined
+    assert "WP79" in combined and "fixture" in combined.lower() and "not canonical" in combined.lower()
+    assert "WALLET-03" in combined and "WALLET-04" in combined
+    assert "S10-ALPHA-02" in combined and "separately gated" in combined
+    assert "H1 #5" in combined and "NOT AUTHORIZED" in combined
+    assert "Gate C: NOT AUTHORIZED" in combined
+    assert "Merge authorized: NO" in combined

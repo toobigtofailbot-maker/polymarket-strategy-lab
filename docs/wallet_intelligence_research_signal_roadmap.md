@@ -1,5 +1,12 @@
 # Wallet Intelligence Research Signal Roadmap
 
+> **S10-WALLET-02 canonical update (2026-09-21):** WALLET-02 implements the
+> content-addressed PIT discovery-cohort, market-context, and `WalletProfileSnapshot`
+> layer over verified WALLET-01 evidence. WP79 remains fixture-era/local prototype
+> compatibility history, not the canonical real-evidence profile. WALLET-03 still owns
+> observable copyability and follower economics; WALLET-04 still owns incremental wallet
+> information value. Qualification, strategy, paper, live, and Gate C remain separate.
+
 ## A. Status
 
 - WP: WP76 (wallet intelligence roadmap lock-in merged); WP77 (wallet intelligence architecture/profile/signal contract merged); WP78 (wallet trade event snapshot schema/local loader/validator merged); WP79 (wallet signal research profiler and advisory research queue annotation merged); WP80 (copyability delay simulator design and wallet intelligence report contract on branch)
