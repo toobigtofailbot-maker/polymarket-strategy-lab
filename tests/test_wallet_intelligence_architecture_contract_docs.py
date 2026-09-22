@@ -633,3 +633,18 @@ def _changed_files() -> list[str]:
     )
     lines = diff_result.stdout.splitlines() + untracked_result.stdout.splitlines()
     return sorted({line.strip().replace("\\", "/") for line in lines if line.strip()})
+
+
+def test_wallet02_docs_mark_wp79_fixture_profile_historical_and_preserve_future_owners() -> None:
+    architecture = (ROOT / "docs/wallet_intelligence_architecture_and_signal_contract.md").read_text(encoding="utf-8")
+    contract = (ROOT / "docs/wallet_profile_snapshot_contract.md").read_text(encoding="utf-8")
+    combined = architecture + contract
+    assert "S10-WALLET-02 canonical update" in architecture
+    assert "src/data_layer/wallet_intelligence/profile.py" in combined
+    assert "wallet_signal_research_profile.py" in combined
+    assert "fixture-era/local prototype" in combined
+    assert "not canonical" in combined
+    assert "WALLET-03" in combined and "copyability" in combined
+    assert "WALLET-04" in combined and "incremental value" in combined
+    assert "never people" in contract
+    assert "no qualification, strategy, paper, execution" in contract

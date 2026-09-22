@@ -1,5 +1,13 @@
 # Wallet Intelligence Architecture And Signal Contract
 
+> **S10-WALLET-02 canonical update (2026-09-21):** The canonical real-evidence
+> profiling surface is now `src/data_layer/wallet_intelligence/profile.py` and
+> `docs/wallet_profile_snapshot_contract.md`. It reads a verified WALLET-01 ledger and
+> emits immutable PIT cohort/context/profile evidence. The WP79
+> `wallet_signal_research_profile.py` surface remains fixture-era/local prototype
+> compatibility material and is not canonical for real wallet evidence. WALLET-03
+> continues to own copyability economics; WALLET-04 continues to own incremental value.
+
 ## 1. Purpose
 
 Wallet intelligence is an advisory research-signal architecture.

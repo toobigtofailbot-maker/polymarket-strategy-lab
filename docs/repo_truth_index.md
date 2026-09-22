@@ -1,6 +1,28 @@
 # Repo Truth Index
 
-## S10-HERMES-CTX-01 Blind-First Context Broker (current implementation target)
+## S10-WALLET-02 PIT Wallet Profiles (current implementation target)
+
+The canonical contract is `docs/wallet_profile_snapshot_contract.md`; implementation is
+`src/data_layer/wallet_intelligence/profile.py` with additive exports from the package
+`__init__.py`; focused evidence is `tests/data_layer/wallet_intelligence/test_profile.py`;
+the exact 17-path package is `docs/wp_specs/S10-WALLET-02/`; stable branch evidence is
+`docs/status_entries/S10-WALLET-02.md`. The frozen base is PR #189's merge commit
+`45b6cb4db7fc5e8ac2ae21145bf00be658740025`; S10-HERMES-CTX-01 is merged historical truth
+with implementation head `bf346a65cf1b93b5e61d2420a8da1629be2bd191`.
+
+S10-WALLET-02 reads and verifies an existing WALLET-01 ledger without mutation and emits
+immutable content-addressed discovery cohorts, PIT market contexts, and
+`WalletProfileSnapshot` evidence. Historical action time never proves knowability.
+Independent-group sample strength, deterministic Jeffreys shrinkage, descriptive
+specialization, direct-evidence archetypes, and PIT-safe public-account relationships are
+research evidence only. The WP79 fixture-era profile remains compatibility history and is
+not canonical real-evidence profiling. WALLET-03 retains copyability economics;
+WALLET-04 retains incremental-value evidence. No product network, Hermes, credentials,
+qualification, strategy, paper, execution, live, order, capital, or Gate-C authority is
+created. H1 #5 and merge are NOT AUTHORIZED. S10-ALPHA-02 is the next separately gated
+successor after review and merge.
+
+## S10-HERMES-CTX-01 Blind-First Context Broker (merged historical truth)
 
 The canonical contract is `docs/hermes_context_broker_reconciliation_contract.md`; stable
 branch evidence is `docs/status_entries/S10-HERMES-CTX-01.md`; the exact 34-path machine

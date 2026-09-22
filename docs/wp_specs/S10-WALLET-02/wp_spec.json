@@ -1,0 +1,726 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-WALLET-02",
+    "title": "PIT Wallet Profiles, Skill, Specialization, Archetypes and Cohorts",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "DETERMINISTIC_PIT_WALLET_PROFILE_SNAPSHOT_LAYER",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 189,
+      "head_sha": "bf346a65cf1b93b5e61d2420a8da1629be2bd191",
+      "merge_sha": "45b6cb4db7fc5e8ac2ae21145bf00be658740025"
+    },
+    "suggested_branch": "codex/s10-wallet-02-pit-profile-snapshots",
+    "objective": "Implement one local/offline deterministic profiling layer over verified S10-WALLET-01 evidence: immutable content-addressed discovery cohorts, PIT market contexts and WalletProfileSnapshot outputs with honest independent-group sample strength, exact Jeffreys shrinkage, descriptive specialization, direct-evidence archetypes and PIT-safe public-account relationship clustering. No network, copyability, follower economics, qualification, strategy, paper, execution or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-WALLET-02.md",
+      "docs/wallet_intelligence_architecture_and_signal_contract.md",
+      "docs/wallet_intelligence_research_signal_roadmap.md",
+      "docs/wallet_profile_snapshot_contract.md",
+      "docs/wp_specs/S10-WALLET-02/wp_prompt.txt",
+      "docs/wp_specs/S10-WALLET-02/wp_spec.json",
+      "src/data_layer/wallet_intelligence/__init__.py",
+      "src/data_layer/wallet_intelligence/profile.py",
+      "tests/data_layer/wallet_intelligence/test_profile.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_wallet_intelligence_roadmap_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-WALLET-02.md",
+      "docs/wallet_intelligence_architecture_and_signal_contract.md",
+      "docs/wallet_intelligence_research_signal_roadmap.md",
+      "docs/wallet_profile_snapshot_contract.md",
+      "docs/wp_specs/S10-WALLET-02/wp_prompt.txt",
+      "docs/wp_specs/S10-WALLET-02/wp_spec.json",
+      "src/data_layer/wallet_intelligence/__init__.py",
+      "src/data_layer/wallet_intelligence/profile.py",
+      "tests/data_layer/wallet_intelligence/test_profile.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_wallet_intelligence_roadmap_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/data_layer/analytical_research/",
+      "src/data_layer/polymarket/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/risk/",
+      "src/research_runtime/",
+      "tools/"
+    ],
+    "max_changed_files": 17,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/wallet_intelligence_architecture_and_signal_contract.md",
+      "docs/wallet_intelligence_research_signal_roadmap.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_wallet_intelligence_roadmap_docs.py"
+    ],
+    "rollback_surface": "Revert S10-WALLET-02. The new wallet_intelligence/profile.py module, its additive package exports, one focused profile test module, canonical profile contract/status/spec artifacts and bounded wallet/status compatibility edits disappear. WALLET-01 contracts, ledger, reconciliation and public ingest remain byte-unchanged; no profile database, network state, dependency, workflow, credential, Hermes, paper, order, capital or live state exists to unwind.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "S10-WALLET-02 adds one deterministic local/offline wallet profiling Python surface and additive package exports. It does not add storage, networking, provider, strategy, qualification or execution APIs.",
+    "items": [
+      {
+        "surface": "wallet_intelligence.profile builders, records and strict mapping round-trip",
+        "before": "WALLET-01 exposed immutable public wallet evidence but no canonical real-evidence profile/cohort/context records.",
+        "after": "Content-addressed WalletDiscoveryCohortSnapshot, WalletProfileMarketContext and WalletProfileSnapshot records are built deterministically from verified local evidence with closed validation and no persistence/network side effects.",
+        "change_authorized": true,
+        "compatibility_requirement": "WALLET-01 source, ledger schema and ingest remain unchanged; old WP79 fixture profile remains import-compatible but is non-canonical historical scaffolding.",
+        "authority": "LOCAL_OFFLINE_PROFILE_EVIDENCE"
+      },
+      {
+        "surface": "wallet_intelligence.__init__ exports",
+        "before": "Package exports only WALLET-01 contracts, reconciliation, ledger and ingest surfaces.",
+        "after": "Profile/cohort/context records, builders, strict serializers and closed constants are additively exported.",
+        "change_authorized": true,
+        "compatibility_requirement": "No existing export is removed or reinterpreted and no copyability/qualification/trading API is exposed.",
+        "authority": "ADDITIVE_PACKAGE_EXPORTS"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "PIT admissibility, cohort survivorship, reconciliation, independent grouping, shrinkage, specialization, archetype evidence, relationship clustering, content identity, serialization and non-authority are the complete critical semantic surface.",
+    "items": [
+      {
+        "path": "profile.verified_ledger_input",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "The public profile builder accepts an explicit local wallet-ledger path and MUST call load_and_verify_wallet_evidence_ledger(); an arbitrary caller-constructed WalletLedgerSnapshot is not a canonical public input. The resulting exact ledger head hash is committed into every WalletProfileSnapshot.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A missing, foreign, tampered, or unverified ledger fails closed before any profile is emitted; the builder never mutates or initializes the WALLET-01 ledger.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "verified ledger head hash and closed profile error code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "profile.pit_admissibility",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "WalletEventObservation evidence is admitted only through the shared evaluate_replay_admissibility contract using local_first_seen/public_available and retained DQ state. event_time is allowed only for historical action ordering/window placement and NEVER proves knowability.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "An event before T0 whose first-seen/public-available evidence is after T0 cannot increase any profile sample or skill field; correction-after-cutoff and decisive timestamp uncertainty fail closed for use.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ADMISSIBLE / NOT_ADMISSIBLE / INDETERMINATE decision evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "market_context.content_identity",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "WalletProfileMarketContext is immutable and content-addressed over its complete logical content except its own id: exact condition/token identity, instrument class, category/mechanism/horizon labels, independence_group_id, metadata observability/DQ/replay, optional binary resolution plus independent resolution observability/DQ/replay, provenance-manifest ids, policy/schema versions, and no-authority booleans.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Changing metadata, grouping, outcome, observability, provenance, replay/DQ, or authority semantics changes the context id; current metadata first observable after profile as_of is unusable for that snapshot.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "walletmarketctx:sha256 content id",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cohort.content_identity_and_survivorship",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "WalletDiscoveryCohortSnapshot freezes discovery_cutoff, evaluation_start/end, method, selection-policy id/version, sorted member identities/roles/reasons, exact discovery evidence/provenance and member observability, plus RETAIN_MEMBERS_IMMUTABLY. Every member discovery record must be ADMISSIBLE at discovery_cutoff.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A current/later leaderboard or discovery observation cannot manufacture an earlier cohort; inactive/dead members are never deleted from the immutable snapshot; evaluation_start is not earlier than discovery_cutoff and evaluation_end is later than evaluation_start.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "walletcohort:sha256 content id",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "related_addresses.public_account_cluster",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Profiles describe public-account clusters, never human identities. Only PIT-admissible PROTOCOL_DECLARED or ONCHAIN_CONFIRMED WalletAccountIdentityEvidence known by the cohort discovery_cutoff may transitively join subject wallets. SOURCE_REPORTED, STATISTICAL_SIMILARITY and UNKNOWN are evidence-only and never merge profiles.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Strong links discovered only after cohort T0 and all weak/source-reported/similarity links remain non-aggregating; all cluster wallets share one sample accounting surface so linked addresses cannot multiply effective sample size.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "content-addressed public-account subject cluster and relation evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "profile.reconciliation_canonicalization",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Before profile metrics, WALLET-01 reconciliation links are honored: strong same-event/chain-confirmation components deduplicate to one canonical event using identity-strength rank then record id; admissible supersession selects the successor; REORGED_OR_REMOVED and SOURCE_DISAGREEMENT are excluded from skill; unresolved weak similarity is never merged.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "API/chain duplicate representations cannot double count and reorg/disagreement evidence cannot increase sample strength.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "canonical reconciled event set with explicit exclusion dispositions",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "sample.independent_grouping",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "raw_trade_event_count is diagnostic only. Directional evidence first collapses repeated BUY activity to the earliest admissible episode per exact condition/token within an explicit market-context independence_group_id, then all correlated episodes sharing that group contribute at most one independent group result. Missing trustworthy group id yields UNKNOWN_INDEPENDENCE, never a raw-trade fallback.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Many repeated trades or related addresses in one event group cannot raise independent_event_group_count; missing grouping cannot create an effective sample count.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "raw count, eligible episode count, independent group count or UNKNOWN",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "sample.concentration",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "SampleStrengthEvidence reports group episode counts plus max_group_episode_share and HHI over those episode counts using deterministic Decimal arithmetic; skill itself remains equal-weight by independent group and is never size/PnL weighted.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "One event with many repeated episodes is visible as concentration but still contributes at most one independent group trial.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "deterministic decimal concentration diagnostics",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "skill.directional_episode",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "A directional skill episode requires a reconciled/PIT-admissible/DQ-clean TRADE_FILL BUY, exact standard-binary WalletProfileMarketContext, price in [0,1], exact condition/token match, explicit independence_group_id, binary resolved_token_value, resolution evidence ADMISSIBLE by profile as_of, action event_time inside the cohort evaluation window, and action event_time strictly before the decisive resolution-availability time. SELL and unsupported/unknown instruments are not directional-skill episodes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Post-resolution trades, SELL exits, combo/unknown instruments, missing context, or non-admissible outcome evidence cannot enter directional skill.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "eligible directional episode or explicit exclusion reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "skill.jeffreys_shrinkage",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "For each independent group, arithmetic-mean signed entry residual is computed from one episode per condition/token as resolved_token_value - BUY entry_price. Positive group mean = success, negative = failure, zero = neutral. Jeffreys Beta parameters are alpha=successes+0.5, beta=failures+0.5; posterior_mean=alpha/(alpha+beta); posterior_variance=alpha*beta/((alpha+beta)^2*(alpha+beta+1)). Decimal precision is 50 and exported decimals are ROUND_HALF_EVEN quantized to 18 places then stripped canonically. No binary float participates.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A one-event lucky streak is visibly shrunken and low-N; no SKILLED/UNSKILLED/promoted state exists. The Beta summary is explicitly a regularized historical correctness summary, not a future success probability or significance claim.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ESTIMATED_UNCALIBRATED or honest UNKNOWN/INSUFFICIENT state with exact decimals",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "skill.signed_entry_residual",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Per-group signed residuals and the equal-weight mean across independent groups are bounded descriptive diagnostics. Raw realized/unrealized PnL, trade size, leaderboard rank and rebates never become skill authority.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Large PnL, size, rebate or one extreme event cannot directly change the Jeffreys success/failure counts except through an otherwise eligible independent directional group.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded signed entry residual diagnostics",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "specialization.descriptive_distribution",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Specialization is descriptive only: independent event groups are distributed separately across category, mechanism and horizon dimensions from PIT-admissible market context. Each group contributes once per dimension; unanimous label => that label, multiple labels => MIXED, none => UNKNOWN. Counts, shares, HHI and unique dominant label/tie are reported with DESCRIPTIVE_UNCALIBRATED or UNKNOWN_INDEPENDENCE/UNKNOWN_CONTEXT. No SPECIALIST promotion state exists.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "One category observation may describe 100% of one tiny sample but cannot emit a specialist claim or promotion; skill estimates remain separate per scope cell.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "descriptive specialization evidence without specialist authority",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "archetype.direct_evidence_only",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Archetype is observed behavior composition, not skill or profitability. DIRECTIONAL requires an eligible directional episode; MARKET_MAKING requires MAKER_REBATE; ARBITRAGE_CONVERSION uses SPLIT/MERGE/CONVERSION/COMBO_COMPRESS/COMBO_WRAP/COMBO_UNWRAP; INCENTIVE_REBATE uses REWARD/TAKER_REBATE/REFERRAL_REWARD/YIELD; SETTLEMENT uses REDEEM_SETTLEMENT; TRANSFER_CAPITAL_FLOW uses TRANSFER_IN/TRANSFER_OUT/DEPOSIT/WITHDRAWAL. Unsupported events remain unclassified. One observed class => that class; multiple => MIXED; none => UNKNOWN. HEDGE is not inferred in v1.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A generic TRADE_FILL alone cannot force DIRECTIONAL or MARKET_MAKING, and no ML/LLM/intent inference is used.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "evidence-count archetype composition with MIXED/UNKNOWN",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "profile.content_identity",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "WalletProfileSnapshot id is SHA-256 over the complete canonical logical snapshot except its own id and MUST bind schema/profile-policy versions, canonical public-account subject cluster, cohort id, as_of, derived evidence window, exact WALLET-01 ledger head, all considered evidence decisions/event/observation ids, context ids, provenance ids, retained DQ/admissibility basis, related-address basis, all scope cells, sample/skill/specialization/archetype outputs and all no-authority booleans.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Any semantically material input, eligibility decision, scope/context/cohort binding, policy version or output mutation changes the profile id; same semantic inputs in different caller order produce identical bytes/id.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "walletprofile:sha256 content id",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "profile.serialization_and_authority",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Cohort/context/profile mappings use strict canonical JSON with sorted object keys, preserved tuple/list order where schema-defined, explicit nulls, no NaN/Infinity/binary float, strict unknown-key rejection and complete rebuild/revalidation on from_mapping. Every top-level record carries advisory_only, no_execution_authority, no_strategy_authority and no_qualification_authority exactly true. Profile schema has no lead-time, copyability, follower-PnL, expected-return, qualification, strategy, order, signing, sizing, paper, live, Gate-C or insider/deanonymization fields.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Round-trip reproduces the identical mapping/id; tampered id or semantic payload rejects; forbidden downstream-authority fields cannot be accepted or silently ignored.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "strict round-trip snapshot or closed no-echo error",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Product content-addressed cohort/context/profile identities are validated by focused executable tests; no work-package-spec example identity derivation is needed.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "FAST deterministic readiness plus this user-authorized package permits only the exact 17-file local implementation; publication and successor work remain separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "the exact prompt/spec authority mirror, 17-file scope, rule matrix, evidence plan and FAST readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's Side12 instruction authorizes implementation of this exact S10-WALLET-02 package and no broader authority",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside the exact 17-file scope and all required local validation passes with zero product network, Hermes/provider, credential, paper, execution, live, capital or order activity",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "The focused profile/cohort/context and negative-oracle test suite is the executable product oracle.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R025 prove the canonical profile contract, all material bypass oracles, WALLET-01/PIT compatibility, historical committed-diff guards, exact scope/readiness, one final-head full suite, hygiene/security and one fresh exact-head hosted CI without duplicating lower-layer tests.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_market_context_identity_pit_and_roundtrip",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "market context is content-addressed, uses separate metadata/resolution observability, round-trips identically, and rejects tampered identity or future metadata"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_cohort_rejects_post_cutoff_discovery_and_retains_members",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "member discovery must be PIT-admissible at T0, later evidence cannot back-create the cohort, and immutable membership including inactive members remains in identity"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_event_time_never_substitutes_for_observability",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "event_time before as_of with first-seen/public-available after as_of cannot increase any sample or skill field"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_reconciliation_and_repeated_trades_collapse_before_independent_sample",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "API/chain duplicates and repeated buys in one condition/group cannot multiply independent sample count; supersession/reorg/disagreement semantics are honored"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_tiny_sample_uses_exact_jeffreys_shrinkage_without_promotion",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "one successful independent group yields the exact Jeffreys alpha/beta/mean/variance decimals but never a SKILLED or promotion state"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_raw_pnl_size_rank_and_rebates_never_drive_directional_skill",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "skill fields derive only from eligible independent directional groups and not raw PnL, size, leaderboard rank or rebate amount"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_specialization_is_descriptive_and_one_group_never_claims_specialist",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "category/mechanism/horizon distribution is deterministic and separate from skill; one group never emits a specialist or promotion claim"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_archetype_requires_direct_event_evidence_and_trade_fill_alone_is_not_enough",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "direct event mappings produce observed archetypes; plain trade fill does not force directional or market-making classification; multiple classes become MIXED"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_related_address_strength_and_discovery_cutoff_control_aggregation",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "only T0-admissible PROTOCOL_DECLARED/ONCHAIN_CONFIRMED links join the public-account cluster; source-reported/statistical/unknown or later links never merge or multiply sample size"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_current_market_metadata_and_late_resolution_cannot_leak_backward",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "metadata/resolution first observable after profile as_of is excluded and an action after decisive resolution availability is not predictive evidence"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_bad_dq_or_replay_fidelity_cannot_increase_sample_strength",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "non-OK DQ, unsupported replay fidelity, indeterminate observability and unsafe reconciliation remain explicit exclusions and do not increase skill sample"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_profile_identity_binds_every_material_input_and_is_caller_order_invariant",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "cohort/as_of/ledger-head/evidence/context/provenance/policy/relation/output mutations change profile id while equivalent caller ordering does not"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_profile_schema_has_no_copyability_qualification_or_trading_authority",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "schema and exports contain no lead-time, follower-PnL, copyability, qualification, order, sizing, signing, paper, live, Gate-C or insider/deanonymization authority"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_profile_roundtrip_revalidates_and_rejects_tampering_or_unknown_fields",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "cohort/context/profile strict mapping round-trips reproduce exact ids and reject tampered ids, unknown fields, binary floats and non-finite numbers without echo"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_missing_independence_grouping_returns_unknown_not_raw_trade_count",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence/test_profile.py",
+        "expected_result": "missing trustworthy independence grouping produces UNKNOWN_INDEPENDENCE and never falls back to trade or condition count as n_eff"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_wallet02_docs_mark_wp79_fixture_profile_historical_and_preserve_future_owners",
+        "command": "python -m pytest -q tests/test_wallet_intelligence_architecture_contract_docs.py tests/test_wallet_intelligence_roadmap_docs.py",
+        "expected_result": "wallet docs identify S10-WALLET-02 as canonical real-evidence profiling, WP79 as fixture-era compatibility only, and keep WALLET-03/04/QUAL/economics separately gated"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_s10_wallet02_status_and_exact_machine_scope",
+        "command": "python -m pytest -q tests/test_project_status_docs.py",
+        "expected_result": "project status records PR #189 merged, WALLET-02 as current 17-file FAST Risk-2 target, H1 #5/Gate C/live unauthorized, and ALPHA-02 as separately gated successor"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_s10_wallet02_repo_truth_and_successor",
+        "command": "python -m pytest -q tests/test_repo_truth_docs.py",
+        "expected_result": "repo truth indexes the WalletProfileSnapshot contract and current package while preserving merged HERMES-CTX history and separately gated ALPHA-02 successor"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "wallet01 and shared PIT regression suite",
+        "command": "python -m pytest -q tests/data_layer/wallet_intelligence tests/data_layer/point_in_time_market_research/test_research_provenance.py",
+        "expected_result": "all existing WALLET-01 contracts, ledger, ingest, reconciliation and shared replay/PIT provenance behavior remain green with profile layer additive"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "historical architecture and committed-diff guard regression suite",
+        "command": "python -m pytest -q tests/test_architecture_boundaries.py tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py tests/test_human_review_label_workflow_docs.py tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py tests/test_local_research_workflow_value_measurement_harness_contract_docs.py tests/test_wallet_intelligence_architecture_contract_docs.py",
+        "expected_result": "existing architecture, complete-diff and S10 machine-spec-derived guards accept exactly the declared WALLET-02 source/status/spec scope without governance-tool edits"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "artifact-guard",
+        "test": "generated artifact guard",
+        "command": "python tools/git/preflight_generated_artifact_guard.py",
+        "expected_result": "generated-artifact guard passes and no local_data, generated report, cache, database or output artifact is tracked"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "scope-guard",
+        "test": "exact scope helper",
+        "command": "python tools/git/diff_scope_summary.py --base 45b6cb4db7fc5e8ac2ae21145bf00be658740025 --head HEAD --wp-spec docs/wp_specs/S10-WALLET-02/wp_spec.json --require-exact-scope --fail-on-warning",
+        "expected_result": "exact-scope mode reports 17 required, 17 actual, missing zero, extra zero, warnings zero, and no dependency/workflow/generated/protected hit"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "readiness",
+        "test": "final committed-head readiness",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-WALLET-02/wp_prompt.txt --spec docs/wp_specs/S10-WALLET-02/wp_spec.json --repo-root . --check-diff --base 45b6cb4db7fc5e8ac2ae21145bf00be658740025 --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY on the final committed head with FAST minimum/selected track and exact 17-file diff"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "validation",
+        "test": "full suite and repository hygiene",
+        "command": "python -m pytest -q; python -m pip check; git diff --check 45b6cb4db7fc5e8ac2ae21145bf00be658740025 HEAD --; python tools/security/run_available_security_checks.py",
+        "expected_result": "one authoritative full repository suite passes after the final commit; pip has no broken requirements; diff-check is clean; available security checks pass and unavailable tools are reported honestly as SKIPPED_NOT_AVAILABLE rather than fabricated PASS"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "github",
+        "test": "one fresh exact-head hosted CI and Side12 handoff",
+        "command": "gh pr checks --watch",
+        "expected_result": "exactly one draft PR is published for the final head, one fresh hosted CI run for that exact head is green, no source/test/doc/spec edit occurs after that run begins, and merge remains unauthorized pending Side12 exact-head review"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-ALPHA-02",
+    "next_title": "Full-Market Alpha Discovery, Triage, Qualification Readiness and Research Queue Core; wallet copyability remains separately owned by S10-WALLET-03 after the accepted gate sequence.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-WALLET-03",
+    "forbidden_in_this_wp": [
+      "merge",
+      "S10-ALPHA-02 implementation",
+      "S10-WALLET-03 or S10-WALLET-04 implementation",
+      "S10-GATE-WALLET-01 implementation or decision",
+      "leaderboard crawler or real-time wallet monitor",
+      "new Data API, Gamma, RPC, authenticated or other product network fetcher",
+      "Hermes/provider/model invocation or H1 #5",
+      "scheduler, cron, daemon, worker or bot loop",
+      "learned clustering, ML/LLM classifier or global wallet score",
+      "universal SKILLED/UNSKILLED promotion threshold",
+      "observable lead-time or copy-delay model",
+      "copyability, follower PnL, spread, depth, slippage, fee, capacity or orderbook economics",
+      "incremental wallet-value versus non-wallet baseline",
+      "qualification, WP170 experiment construction or Alpha triage",
+      "paper strategy or paper authority",
+      "credential, private key, signing, order create/cancel or execution",
+      "Gate C, capital or live trading",
+      "human deanonymization, same-person/beneficial-owner assertion or insider/private-information classifier",
+      "dependency or lock change",
+      "workflow change",
+      "second profile database or mutation of the WALLET-01 evidence ledger"
+    ]
+  }
+}
