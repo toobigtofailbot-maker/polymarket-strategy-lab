@@ -122,7 +122,7 @@ POLICY_SCHEMA_VERSION = "hermes-invocation-policy/2.0.0"
 # ---------------------------------------------------------------------------
 
 # The controlled managed-profile version. A change here changes policy identity.
-CONTROLLED_PROFILE_VERSION = "hermes-controlled-research-profile/1.0.0"
+CONTROLLED_PROFILE_VERSION = "hermes-controlled-research-profile/1.1.0"
 
 # Deterministic managed-scope config VALUES pinned for every external research
 # invocation. Written verbatim (as JSON, which is valid YAML) into an ephemeral
@@ -140,6 +140,18 @@ MANAGED_WEB_KEYLESS_RESCUE = False
 MANAGED_WEB_CACHE_ENABLED = False
 MANAGED_WEB_PROVIDER_TIER_FIRECRAWL = "paid"
 MANAGED_PLUGINS_ENABLED: tuple[str, ...] = ()
+MANAGED_MEMORY_ENABLED = False
+MANAGED_USER_PROFILE_ENABLED = False
+MANAGED_MEMORY_PROVIDER = ""
+MANAGED_COMPRESSION_ENABLED = False
+MANAGED_AUXILIARY_TRANSIENT_RETRIES = 0
+MANAGED_TITLE_GENERATION_ENABLED = False
+MANAGED_BACKGROUND_REVIEW_ENABLED = False
+MANAGED_SKILLS_PROJECT_DISCOVERY = False
+MANAGED_SKILLS_EXTERNAL_DIRS: tuple[str, ...] = ()
+MANAGED_ALLOW_LAZY_INSTALLS = False
+MANAGED_SECURITY_ALLOW_PRIVATE_URLS = False
+MANAGED_BROWSER_ALLOW_PRIVATE_URLS = False
 
 # Truthful post-correction profile wording (safe mode removed; bundled discovery on).
 CUSTOM_USER_PROJECT_PLUGIN_LOADING = "FORBIDDEN"
@@ -242,6 +254,18 @@ class HermesInvocationPolicy:
     web_cache_enabled: bool = MANAGED_WEB_CACHE_ENABLED
     web_provider_tier_firecrawl: str = MANAGED_WEB_PROVIDER_TIER_FIRECRAWL
     managed_plugins_enabled: tuple[str, ...] = MANAGED_PLUGINS_ENABLED
+    managed_memory_enabled: bool = MANAGED_MEMORY_ENABLED
+    managed_user_profile_enabled: bool = MANAGED_USER_PROFILE_ENABLED
+    managed_memory_provider: str = MANAGED_MEMORY_PROVIDER
+    managed_compression_enabled: bool = MANAGED_COMPRESSION_ENABLED
+    managed_auxiliary_transient_retries: int = MANAGED_AUXILIARY_TRANSIENT_RETRIES
+    managed_title_generation_enabled: bool = MANAGED_TITLE_GENERATION_ENABLED
+    managed_background_review_enabled: bool = MANAGED_BACKGROUND_REVIEW_ENABLED
+    managed_skills_project_discovery: bool = MANAGED_SKILLS_PROJECT_DISCOVERY
+    managed_skills_external_dirs: tuple[str, ...] = MANAGED_SKILLS_EXTERNAL_DIRS
+    managed_allow_lazy_installs: bool = MANAGED_ALLOW_LAZY_INSTALLS
+    managed_security_allow_private_urls: bool = MANAGED_SECURITY_ALLOW_PRIVATE_URLS
+    managed_browser_allow_private_urls: bool = MANAGED_BROWSER_ALLOW_PRIVATE_URLS
     # --- truthful profile posture strings ---
     custom_user_project_plugin_loading: str = CUSTOM_USER_PROJECT_PLUGIN_LOADING
     bundled_backend_discovery: str = BUNDLED_BACKEND_DISCOVERY
@@ -287,6 +311,15 @@ class HermesInvocationPolicy:
             self.updates_check,
             self.research_home_config_allowed,
             self.research_home_user_plugins_allowed,
+            self.managed_memory_enabled,
+            self.managed_user_profile_enabled,
+            self.managed_compression_enabled,
+            self.managed_title_generation_enabled,
+            self.managed_background_review_enabled,
+            self.managed_skills_project_discovery,
+            self.managed_allow_lazy_installs,
+            self.managed_security_allow_private_urls,
+            self.managed_browser_allow_private_urls,
         )
         if any(forbidden_true):
             raise PolicyBroadeningError()
@@ -310,6 +343,9 @@ class HermesInvocationPolicy:
             (self.web_extract_backend, MANAGED_WEB_EXTRACT_BACKEND),
             (self.web_provider_tier_firecrawl, MANAGED_WEB_PROVIDER_TIER_FIRECRAWL),
             (self.managed_plugins_enabled, MANAGED_PLUGINS_ENABLED),
+            (self.managed_memory_provider, MANAGED_MEMORY_PROVIDER),
+            (self.managed_auxiliary_transient_retries, MANAGED_AUXILIARY_TRANSIENT_RETRIES),
+            (self.managed_skills_external_dirs, MANAGED_SKILLS_EXTERNAL_DIRS),
             (self.custom_user_project_plugin_loading, CUSTOM_USER_PROJECT_PLUGIN_LOADING),
             (self.bundled_backend_discovery, BUNDLED_BACKEND_DISCOVERY),
             (self.exposed_agent_toolset, EXPOSED_AGENT_TOOLSET),
@@ -351,6 +387,26 @@ class HermesInvocationPolicy:
             },
             "plugins": {"enabled": list(self.managed_plugins_enabled)},
             "hooks": {},
+            "memory": {
+                "memory_enabled": self.managed_memory_enabled,
+                "user_profile_enabled": self.managed_user_profile_enabled,
+                "provider": self.managed_memory_provider,
+            },
+            "compression": {"enabled": self.managed_compression_enabled},
+            "auxiliary": {
+                "transient_retries": self.managed_auxiliary_transient_retries,
+                "title_generation": {"enabled": self.managed_title_generation_enabled},
+                "background_review": {"enabled": self.managed_background_review_enabled},
+            },
+            "skills": {
+                "project_discovery": self.managed_skills_project_discovery,
+                "external_dirs": list(self.managed_skills_external_dirs),
+            },
+            "security": {
+                "allow_lazy_installs": self.managed_allow_lazy_installs,
+                "allow_private_urls": self.managed_security_allow_private_urls,
+            },
+            "browser": {"allow_private_urls": self.managed_browser_allow_private_urls},
         }
 
     def managed_config_bytes(self) -> bytes:
@@ -410,6 +466,18 @@ class HermesInvocationPolicy:
             "web_backend_fallback_rescue": self.web_backend_fallback_rescue,
             "research_home_config_allowed": self.research_home_config_allowed,
             "research_home_user_plugins_allowed": self.research_home_user_plugins_allowed,
+            "managed_memory_enabled": self.managed_memory_enabled,
+            "managed_user_profile_enabled": self.managed_user_profile_enabled,
+            "managed_memory_provider": self.managed_memory_provider,
+            "managed_compression_enabled": self.managed_compression_enabled,
+            "managed_auxiliary_transient_retries": self.managed_auxiliary_transient_retries,
+            "managed_title_generation_enabled": self.managed_title_generation_enabled,
+            "managed_background_review_enabled": self.managed_background_review_enabled,
+            "managed_skills_project_discovery": self.managed_skills_project_discovery,
+            "managed_skills_external_dirs": list(self.managed_skills_external_dirs),
+            "managed_allow_lazy_installs": self.managed_allow_lazy_installs,
+            "managed_security_allow_private_urls": self.managed_security_allow_private_urls,
+            "managed_browser_allow_private_urls": self.managed_browser_allow_private_urls,
         }
 
 
@@ -576,7 +644,10 @@ class HermesResearchEnvelope:
         return sha256_hex(canonical_json_bytes(dict(self.draft_output_schema)))
 
 
-def build_research_envelope(request: HermesResearchRunRequest) -> HermesResearchEnvelope:
+def build_research_envelope(
+    request: HermesResearchRunRequest, *, context_mode: bool = False,
+    allowed_subject_refs: Sequence[str] | None = None,
+) -> HermesResearchEnvelope:
     """Build the compact envelope. It never includes a repo mount, AGENTS.md, full
     project history, project memory, or the Alpha Factory database."""
     from .models import DRAFT_SCHEMA_VERSION
@@ -584,6 +655,8 @@ def build_research_envelope(request: HermesResearchRunRequest) -> HermesResearch
     draft_output_schema = build_research_draft_output_schema(
         expected_request_id=request.request_id,
         max_sources=request.max_sources,
+        context_mode=context_mode,
+        allowed_subject_refs=allowed_subject_refs,
     )
     return HermesResearchEnvelope(
         system_instruction_version=PERMANENT_SYSTEM_INSTRUCTION_VERSION,

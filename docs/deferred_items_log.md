@@ -6,6 +6,13 @@ This log tracks material issues, unavailable tools, unresolved dependency decisi
 
 Research and workbench artifacts do not gain runtime authority because they are listed here.
 
+- S10-HERMES-CTX-01-D001 (OPEN, evidence limitation): pinned Hermes v0.21.3 exposes no
+  direct remote Firecrawl HTTP/redirect telemetry and cannot always attest whether its
+  bounded same-provider primary-transport recovery fired. Therefore remote HTTP remains
+  `UNAVAILABLE`, remote private-target proof `UNKNOWN`, recovery `UNKNOWN_POSSIBLE`, and
+  exact physical provider-attempt count `UNKNOWN` where direct future evidence is absent.
+  This does not block the deterministic context layer and grants no H1 #5 or runtime authority.
+
 ## Status Definitions
 
 - WP175-D001 (BLOCKED, P0): `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE` — S10-EVID-01B completed `EVIDENCE_INCONCLUSIVE`; genuine PMXT evidence reached WP170/WP172, but the tested candidate missed first-look OOS criteria and PMXT `AS_CAPTURED` correctly remained continuity-incomplete. WP175E does not resolve qualification or authorize live. Revisit only after WP175E merges and a separately gated prospective run preregisters a fresh candidate before its forward OOS/native capture, produces genuine WP172/WP173 evidence, and receives a separate exact-head human Gate-C decision.

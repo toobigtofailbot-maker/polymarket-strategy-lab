@@ -1,0 +1,114 @@
+SIDE11 — S10-HERMES-CTX-01
+FINAL ONE-SHOT IMPLEMENTATION-AUTHORIZING WORK PACKAGE
+BLIND-FIRST HERMES CONTEXT BROKER, REVEAL ELIGIBILITY, RECONCILIATION AND EVIDENCE VERIFICATION
+
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+WP ID: S10-HERMES-CTX-01
+Package class: DETERMINISTIC_HERMES_CONTEXT_BROKER_AND_RECONCILIATION
+Base branch: main
+Frozen base/main SHA: 7495427820c892497e9c195a8b130c2d32102c67
+Required predecessor: PR #188 / S10-WALLET-01 merged at the frozen base.
+Branch: codex/s10-hermes-ctx-01-blind-context-broker
+Governance track expected: RUNTIME
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+OBJECTIVE
+Deliver the bounded blind-first context broker and reconciliation capability described below.
+
+AUTHORITY / NON-AUTHORITY
+This package directly authorizes the exact 34-path deterministic/local implementation,
+one commit, push, one draft PR, final validation, and one fresh exact-head hosted CI run.
+The scope includes the surgical same-WP Amendment 01 compatibility edit to the canonical
+package-id guard, its focused tests, and the normative package-id standard; no other
+governance-tool or product authority is added.
+Amendment 02 adds only the historical Hermes architecture allowlist test needed to recognize
+the six bounded context/reconciliation source modules; it adds no capability or authority.
+Amendment 03 adds only the historical committed-diff tool/scope guard needed to discover the
+active bounded S10 machine spec; it changes no HERMES-CTX product logic or authority.
+It authorizes no real Hermes/provider/Firecrawl invocation, H1 #5, credential/OAuth
+change, paid fallback, dependency/workflow change, merge, WALLET-02, ALPHA-02, HERMES-SI,
+qualification, WP170, paper/live, Gate C, signing, capital, or order action.
+
+MISSION AND FROZEN STATE MACHINE
+Implement project-owned immutable campaign identity and the exact sequence:
+SCOPE_FROZEN -> BLIND_RESEARCH -> BLIND_FROZEN -> REVEAL_ELIGIBILITY ->
+CONTEXT_REVEALED -> RECONCILIATION -> EVIDENCE_VERIFY -> REVISION_REQUIRED /
+TERMINAL_FAILED / TERMINAL_ACCEPTED. The only backward edge is explicit caller-supplied
+REVISION_REQUIRED -> RECONCILIATION; it never auto-invokes Hermes. Persist the blind
+artifact before reveal. Never parse model prose as a state-machine command.
+
+IMPLEMENTATION CONTRACT
+- Add frozen content-addressed protocol records and a caller-rooted exclusive-create,
+  tamper-detecting ContextArtifactStore with no latest/update/delete surface.
+- Add explicit context-mode output contract and validator from shared constants;
+  context_claims is required only for context campaigns and ordinary H1 stays compatible.
+- Reveal only explicit Alpha Factory record ids and exact dependencies from the verified
+  read-only registry. Bind registry entry/payload hashes, shared provenance manifests,
+  EXACT/FAITHFUL replay fidelity, and shared evaluate_replay_admissibility results.
+- Apply RAW_DIRECT > DETERMINISTIC_DERIVED > ALPHA_SUMMARY > HERMES_INFERENCE precedence,
+  exact subject/scope/cutoff/membership grounding, contradiction and falsification passes,
+  and separate structural and substantive quality gates.
+- Pin Hermes v0.21.3 managed memory/profile/compression/auxiliary/skills/lazy-install/
+  private-URL controls; reject instruction-bearing research-home context by name; forward
+  no proxy/interpreter-injection environment.
+- Read only the exact usage session id from state.db and emit sanitized hashes/digests.
+  Configured Firecrawl is not actual-backend attestation. Remote Firecrawl HTTP/redirect
+  telemetry remains UNAVAILABLE; same-provider recovery remains UNKNOWN_POSSIBLE and exact
+  physical provider attempt count remains UNKNOWN where not directly evidenced.
+- Use FakeHermesBackend/local deterministic evidence only. No autonomous loop or retry.
+
+NEGATIVE-TEST MATRIX / ORACLES
+N01 blind prior leak; N02 early reveal; N03 blind mutation; N04 PIT bypass; N05
+cross-campaign reuse; N06 prompt injection; N07 summary overrides raw; N08 citation
+washing/exact URL bytes; N09 schema-valid unsupported claims; N10 fallback/retry/second
+call/lazy install; N11 revision overwrite; N12 identity omission; N13 telemetry
+overclaim; N14 Hermes memory canonicalization. All must fail closed.
+
+Normative Rule Matrix:
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|blind|isolation|alpha_prior_access|FORBID|fail_closed|blind.isolation|R001
+NR002|reveal|admissibility|early_or_inexact|FORBID|fail_closed|reveal.admissibility|R002
+NR003|reconciliation|grounding|unsupported_or_washed|REQUIRE|revision_required|reconciliation.grounding|R006
+NR004|revision|artifact|overwrite|FORBID|append_only|revision.append_only|R008
+NR005|telemetry|evidence|unobserved_state|FORBID|no_upgrade|telemetry.truthfulness|R009
+NR006|package|identity|malformed_id|FORBID|rejected|package.identity|R015
+NR007|authority|package|provider_or_trading|FORBID|no_authority|authority.non_authority|R010
+END_NORMATIVE_RULE_MATRIX_V1
+
+Evidence Plan (requirement mapping):
+The machine specification maps R001-R015 to named focused assertions covering N01-N14,
+ordinary-H1 compatibility, and positive/negative real-path package-id guard behavior.
+
+SCOPE AND HARD STOPS
+The machine spec's required_changed_files and allowed_changed_files are identical and
+exactly 34 paths; max_changed_files=34 and exact_scope_required=true. STOP on state drift,
+a required 35th path, pinned-runtime contradiction, unprovable blind/PIT isolation,
+telemetry overclaim, required test failure, or exact-head hosted-CI failure.
+
+SUCCESSOR BOUNDARY
+After separate Side11 exact-head review and merge authorization only: S10-WALLET-02.
+Never return MERGE AUTHORIZED.
+
+REPORT-BACK
+Return the exact state, scope, test, readiness, security, PR and hosted-CI evidence required
+by the controlling package; do not merge or begin a successor.

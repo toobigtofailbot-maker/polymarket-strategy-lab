@@ -418,3 +418,18 @@ def test_wp175m_repo_truth_registers_draft_contract_alignment() -> None:
     assert "Alpha Factory" in combined and "NOT STARTED" in combined
     assert "WP176" in combined and "NOT STARTED" in combined
     assert "merge is NOT AUTHORIZED" in combined or "Merge authorized: NO" in combined
+
+
+def test_s10_hermes_ctx_repo_truth_is_stable_and_non_authorizing():
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "S10-HERMES-CTX-01.md").read_text(encoding="utf-8")
+    roadmap = (ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8")
+    combined = index + fragment + roadmap
+    assert "the exact 34-path machine\npackage" in index
+    assert "the exact 29-path machine\npackage" not in index
+    assert "7495427820c892497e9c195a8b130c2d32102c67" in combined
+    assert "S10-WALLET-01" in combined and "COMPLETE" in combined
+    assert "S10-WALLET-02" in combined and "S10-ALPHA-02" in combined
+    assert "H1 #5" in combined and "NOT AUTHORIZED" in combined
+    assert "Merge authorized: NO" in fragment
+    assert "Current live PR head" not in fragment

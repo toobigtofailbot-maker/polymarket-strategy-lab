@@ -1,5 +1,21 @@
 # Controlled Hermes Research Runtime Core Contract (WP175H / S10-HERMES-01)
 
+> S10-HERMES-CTX-01 additive pinned-runtime correction: top-level `-z` does not route
+> through the normal chat flag path that applies context/memory suppression, so
+> `--ignore-rules` alone is not proof that `skip_context_files` or `skip_memory` took
+> effect. The managed v0.21.3 profile therefore explicitly disables memory, user profile,
+> compression, auxiliary title/background activity, project skill discovery, external
+> skill dirs, lazy installation, and private URLs. Missing dependencies fail closed.
+> Research-home name-only preflight also rejects SOUL/MEMORY/USER/AGENTS/CLAUDE/GEMINI,
+> `.cursorrules`, and non-empty profile-local skills. SOUL.md is a proven prompt input;
+> the other names are defense in depth, not a claim that each loads on every one-shot.
+> Exact-session `state.db` evidence is now projected read-only by repository code. Pinned
+> local URL checks are enforced before dispatch and on returned final URLs, but remote
+> Firecrawl HTTP/redirect telemetry remains UNAVAILABLE, remote private-target proof is
+> UNKNOWN, same-provider recovery is UNKNOWN_POSSIBLE, and exact physical provider attempt
+> count remains UNKNOWN where direct evidence is absent. See
+> `docs/hermes_context_broker_reconciliation_contract.md`.
+
 Package class: `CONTROLLED_EXTERNAL_HERMES_RESEARCH_RUNTIME_CORE`.
 
 This is the canonical contract for the first repo-owned, dormant-by-default,

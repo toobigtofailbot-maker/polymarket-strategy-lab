@@ -36,6 +36,11 @@ from .models import (
     DRAFT_OUTPUT_CONTRACT_ID,
     DRAFT_REQUIRED_TOP_LEVEL_FIELDS,
     DRAFT_SCHEMA_VERSION,
+    CONTEXT_CLAIM_DIRECTIONS,
+    CONTEXT_CLAIM_FIELDS,
+    CONTEXT_CLAIM_KINDS,
+    CONTEXT_DRAFT_OUTPUT_CONTRACT_ID,
+    CONTEXT_REQUIRED_TOP_LEVEL_FIELDS,
     DraftStructureDiagnostics,
     HermesResearchError,
     HermesResearchRunReceipt,
@@ -52,12 +57,15 @@ from .models import (
     SOURCE_CLASSES_SORTED,
     SanitizedSourceReference,
     ValidatedResearchDraft,
+    ValidatedContextClaim,
+    build_context_research_draft_output_schema,
     build_research_draft_output_schema,
     build_research_run_request,
     derive_receipt_id,
     inspect_research_draft_structure,
     research_draft_output_schema_digest,
     validate_research_draft,
+    validate_context_research_draft,
 )
 from .policy import (
     ALLOWED_TOOLSETS,
@@ -115,6 +123,37 @@ from .runner import (
     is_clean_research_home_control_plane,
     is_safe_research_home,
 )
+from .context_protocol import (
+    BlindResearchArtifact,
+    ContextCampaignScope,
+    ContextCampaignStateRecord,
+    ContextResearchRevision,
+    ContextTerminalDisposition,
+    EvidenceVerificationRecord,
+    RevealEligibilityRecord,
+    RevealedContextSet,
+)
+from .context_store import ContextArtifactStore, ContextStoreError
+from .context_broker import ContextBrokerError, build_revealed_context_set
+from .context_reconciliation import (
+    ContextEvidenceItem,
+    ReconciliationError,
+    build_evidence_item,
+    reconcile_context_research,
+)
+from .context_controller import (
+    BlindPhaseResult,
+    RevealPhaseResult,
+    VerificationPhaseResult,
+    run_blind_phase,
+    run_reveal_phase,
+    verify_reconciliation,
+)
+from .session_evidence import (
+    HermesSessionEvidence,
+    HermesToolCallEvidence,
+    collect_hermes_session_evidence,
+)
 
 __all__ = (
     # controller
@@ -129,12 +168,20 @@ __all__ = (
     "HermesResearchError",
     "SanitizedSourceReference",
     "ValidatedResearchDraft",
+    "ValidatedContextClaim",
     "build_research_run_request",
     "derive_receipt_id",
     "validate_research_draft",
+    "validate_context_research_draft",
+    "build_context_research_draft_output_schema",
     "REQUEST_SCHEMA_VERSION",
     "RECEIPT_SCHEMA_VERSION",
     "DRAFT_SCHEMA_VERSION",
+    "CONTEXT_DRAFT_OUTPUT_CONTRACT_ID",
+    "CONTEXT_REQUIRED_TOP_LEVEL_FIELDS",
+    "CONTEXT_CLAIM_FIELDS",
+    "CONTEXT_CLAIM_KINDS",
+    "CONTEXT_CLAIM_DIRECTIONS",
     "DRAFT_AUTHORITY_FLAGS",
     "DRAFT_LIST_FIELDS",
     "DRAFT_REQUIRED_TOP_LEVEL_FIELDS",
@@ -209,4 +256,30 @@ __all__ = (
     "ExternalHermesCliBackend",
     "is_safe_research_home",
     "is_clean_research_home_control_plane",
+    # context protocol / broker / reconciliation
+    "ContextCampaignScope",
+    "ContextCampaignStateRecord",
+    "BlindResearchArtifact",
+    "RevealEligibilityRecord",
+    "RevealedContextSet",
+    "ContextResearchRevision",
+    "EvidenceVerificationRecord",
+    "ContextTerminalDisposition",
+    "ContextArtifactStore",
+    "ContextStoreError",
+    "ContextBrokerError",
+    "build_revealed_context_set",
+    "ContextEvidenceItem",
+    "ReconciliationError",
+    "build_evidence_item",
+    "reconcile_context_research",
+    "BlindPhaseResult",
+    "RevealPhaseResult",
+    "VerificationPhaseResult",
+    "run_blind_phase",
+    "run_reveal_phase",
+    "verify_reconciliation",
+    "HermesSessionEvidence",
+    "HermesToolCallEvidence",
+    "collect_hermes_session_evidence",
 )

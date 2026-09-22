@@ -1534,3 +1534,29 @@ def test_e12_synthetic_user_root_cleaned_up(monkeypatch):  # E12
         assert not Path(cwd).exists()
         # The synthetic per-user root lived under the cwd and is gone with it.
         assert not Path(cwd, "winuser").exists()
+
+
+@pytest.mark.parametrize(
+    "name,is_directory",
+    [
+        ("SOUL.md", False), ("MEMORY.md", False), ("USER.md", False),
+        ("AGENTS.md", False), ("CLAUDE.md", False), ("GEMINI.md", False),
+        (".cursorrules", False), ("skills", True),
+    ],
+)
+def test_context_profile_artifacts_fail_research_home_preflight(tmp_path, name, is_directory):
+    home = tmp_path / "research-home"
+    home.mkdir()
+    target = home / name
+    if is_directory:
+        target.mkdir(); (target / "instruction.md").write_text("untrusted", encoding="utf-8")
+    else:
+        target.write_text("untrusted", encoding="utf-8")
+    assert not is_clean_research_home_control_plane(str(home))
+
+
+def test_proxy_and_interpreter_injection_are_never_forwarded(monkeypatch):
+    for name in ("HTTP_PROXY", "http_proxy", "HTTPS_PROXY", "ALL_PROXY", "PYTHONPATH", "PYTHONHOME"):
+        monkeypatch.setenv(name, "untrusted")
+    env = runner_mod._build_sanitized_runtime_env(None)
+    assert not set(env).intersection({"HTTP_PROXY", "http_proxy", "HTTPS_PROXY", "ALL_PROXY", "PYTHONPATH", "PYTHONHOME"})

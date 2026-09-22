@@ -340,6 +340,14 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
                 "src/research_runtime/hermes_controlled_runtime/response_capture.py",
                 "src/research_runtime/hermes_controlled_runtime/runner.py",
                 "src/research_runtime/hermes_controlled_runtime/controller.py",
+                # S10-HERMES-CTX-01: bounded context/reconciliation layer only;
+                # no provider, live-trading, execution, or economic authority.
+                "src/research_runtime/hermes_controlled_runtime/context_protocol.py",
+                "src/research_runtime/hermes_controlled_runtime/context_broker.py",
+                "src/research_runtime/hermes_controlled_runtime/context_store.py",
+                "src/research_runtime/hermes_controlled_runtime/context_reconciliation.py",
+                "src/research_runtime/hermes_controlled_runtime/context_controller.py",
+                "src/research_runtime/hermes_controlled_runtime/session_evidence.py",
             }
     findings = []
     for path in tracked:

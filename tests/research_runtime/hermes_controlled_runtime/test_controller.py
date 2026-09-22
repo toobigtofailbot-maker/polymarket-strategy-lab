@@ -11,6 +11,7 @@ Plus: static tool enforcement, cost-cap fail-closed, no fabricated telemetry.
 
 from __future__ import annotations
 
+import dataclasses
 import json
 from datetime import datetime, timezone
 
@@ -1305,3 +1306,37 @@ def test_s04_s05_s06_receipt_adds_no_api_or_authority_surface():
     blob = json.dumps(r.identity_fields())
     for marker in ("oauth", "firecrawl_key", "access_token", "bearer "):
         assert marker not in blob.lower()
+
+
+def test_context_profile_pins_and_lazy_install_broadening_rejected():
+    policy = DEFAULT_HERMES_INVOCATION_POLICY
+    config = policy.managed_config_mapping()
+    assert config["memory"]["memory_enabled"] is False
+    assert config["memory"]["user_profile_enabled"] is False
+    assert config["skills"] == {"project_discovery": False, "external_dirs": []}
+    assert config["security"]["allow_lazy_installs"] is False
+    with pytest.raises(PolicyBroadeningError):
+        dataclasses.replace(policy, managed_allow_lazy_installs=True)
+
+
+def test_exact_usage_session_id_drives_sanitized_read_only_projection(tmp_path):
+    import sqlite3
+    home = tmp_path / "research-home"
+    home.mkdir()
+    db = sqlite3.connect(home / "state.db")
+    db.execute("CREATE TABLE messages (id INTEGER, session_id TEXT, role TEXT, content TEXT, tool_calls TEXT, tool_name TEXT)")
+    calls = json.dumps([{"function": {"name": "web_search", "arguments": "{\\\"query\\\":\\\"synthetic\\\"}"}}])
+    db.execute("INSERT INTO messages VALUES (1,'s1','assistant','',?,NULL)", (calls,))
+    db.execute("INSERT INTO messages VALUES (2,'s1','tool','https://example.com/a',NULL,'web_search')")
+    db.execute("INSERT INTO messages VALUES (3,'other','assistant','',NULL,NULL)")
+    db.commit(); db.close()
+    req = _request()
+    result = run_controlled_hermes_research(
+        req, FakeHermesBackend.from_transcript(_stdout(req.request_id), usage_file_bytes=_usage()),
+        hermes_home=str(home), clock=FIXED_CLOCK,
+    )
+    assert result.session_evidence.transcript_evidence_status == "AVAILABLE"
+    assert result.session_evidence.observed_tool_names == ("web_search",)
+    assert result.session_evidence.remote_firecrawl_http_redirect_telemetry == "UNAVAILABLE"
+    assert result.session_evidence.exact_provider_attempt_count == "UNKNOWN"
+    assert "s1" not in json.dumps(dataclasses.asdict(result.session_evidence))

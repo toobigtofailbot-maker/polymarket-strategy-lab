@@ -4342,6 +4342,38 @@ def test_wp175l_sanitized_windows_runtime_registered() -> None:
         assert path not in scope["required_changed_files"]
 
 
+def test_s10_hermes_ctx_status_and_exact_machine_scope():
+    project = (REPO_ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    spec = json.loads((REPO_ROOT / "docs" / "wp_specs" / "S10-HERMES-CTX-01" / "wp_spec.json").read_text(encoding="utf-8"))
+    scope = spec["scope"]
+    assert "S10-HERMES-CTX-01 current implementation target" in project
+    current_status = next(
+        line for line in project.splitlines()
+        if line.startswith("# S10-HERMES-CTX-01 current implementation target")
+    )
+    assert "Exact changed-file scope: 34" in current_status
+    assert "Exact changed-file scope: 29" not in current_status
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 34
+    assert spec["identity"]["xl_authorization_basis"] == (
+        "Side11 directly authorized the initial exact 29-path one-shot implementation "
+        "package; Side12 Amendments 01-03 boundedly expanded the same WP to the final "
+        "exact 34-path scope; no real provider, Firecrawl, credential, paper, live, "
+        "economic, merge, or H1 #5 authority."
+    )
+    for amendment_path in (
+        "tools/wp/wp_spec_guard.py",
+        "tests/tools/wp/test_wp_spec_guard.py",
+        "docs/ai/codex/WP_SPEC_STANDARD.md",
+        "tests/test_hermes_advisory_foundation_architecture_docs.py",
+        "tests/test_human_review_label_workflow_docs.py",
+    ):
+        assert amendment_path in scope["required_changed_files"]
+    assert scope["exact_scope_required"] is True
+    assert spec["identity"]["required_predecessor"]["merge_sha"] == "7495427820c892497e9c195a8b130c2d32102c67"
+    assert spec["successor_boundary"]["next_wp"] == "S10-WALLET-02"
+
+
 # ── WP175M: Hermes draft prompt contract alignment and schema diagnostics ──────
 
 

@@ -627,11 +627,16 @@ def test_no_dependency_files_modified():
     )
 
 
+_WP_OR_S10_STATUS_RE = re.compile(
+    r"docs/status_entries/(WP[0-9A-Za-z]+|S10-[A-Z0-9]+(?:-[A-Z0-9]+)*)\.md"
+)
+
+
 def _spec_authorized_changed_scopes(changed):
-    """Return exact changed-file scopes declared by active WP machine specs."""
+    """Return exact scopes declared by active legacy-WP or bounded S10 specs."""
     scopes = []
     for path in changed:
-        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+)\.md", path)
+        match = _WP_OR_S10_STATUS_RE.fullmatch(path)
         if match is None:
             continue
         spec_path = os.path.join(
@@ -653,14 +658,13 @@ def _spec_authorized_changed_scopes(changed):
 def _spec_authorized_tool_paths(changed):
     """Governance-tool paths authorized by the current WP machine spec(s).
 
-    Any WP whose status entry is in ``changed`` contributes the ``tools/`` paths declared
-    in its machine-spec ``required_changed_files``. Bounded and deterministic; replaces
-    the earlier WP159-only tool-scope exception so future governance tooling needs no
-    bespoke per-WP allowance.
+    Any legacy-WP or bounded S10 package whose status entry is in ``changed`` contributes
+    the ``tools/`` paths declared in its machine-spec ``required_changed_files``. Bounded
+    and deterministic; replaces the earlier WP159-only tool-scope exception.
     """
     authorized = set()
     for path in changed:
-        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+)\.md", path)
+        match = _WP_OR_S10_STATUS_RE.fullmatch(path)
         if match is None:
             continue
         spec_path = os.path.join(
@@ -688,6 +692,24 @@ def test_historical_tool_scope_guard_uses_current_wp_spec_authority():
     # WP159 remains covered through the same spec-derived mechanism, not a hardcode.
     wp159_authorized = _spec_authorized_tool_paths({"docs/status_entries/WP159.md"})
     assert "tools/wp/wp_spec_guard.py" in wp159_authorized
+    # S10-HERMES-CTX-01 resolves through the same bounded machine-spec mechanism.
+    s10_status = "docs/status_entries/S10-HERMES-CTX-01.md"
+    s10_authorized = _spec_authorized_tool_paths({s10_status})
+    assert "tools/wp/wp_spec_guard.py" in s10_authorized
+    expected_s10_scope = set(json.loads(open(
+        os.path.join(REPO_ROOT, "docs", "wp_specs", "S10-HERMES-CTX-01", "wp_spec.json"),
+        encoding="utf-8",
+    ).read())["scope"]["required_changed_files"])
+    assert _spec_authorized_changed_scopes({s10_status}) == (expected_s10_scope,)
+    for malformed in (
+        "docs/status_entries/S10-.md",
+        "docs/status_entries/S10--CTX.md",
+        "docs/status_entries/S10-hermes-CTX-01.md",
+        "docs/status_entries/S11-HERMES-CTX-01.md",
+        "docs/status_entries/not-a-package.md",
+    ):
+        assert _spec_authorized_tool_paths({malformed}) == set()
+        assert _spec_authorized_changed_scopes({malformed}) == ()
     # No WP status entry changed -> no governance-tool paths are authorized.
     assert _spec_authorized_tool_paths({"docs/project_status.md"}) == set()
 

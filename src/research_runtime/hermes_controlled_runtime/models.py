@@ -43,6 +43,7 @@ DRAFT_SCHEMA_VERSION = "hermes-research-draft/1.0.0"
 # version (that stays ``DRAFT_SCHEMA_VERSION``); it versions the JSON-schema-like
 # contract shape produced by :func:`build_research_draft_output_schema`.
 DRAFT_OUTPUT_CONTRACT_ID = "hermes-research-draft-output-contract/1.0.0"
+CONTEXT_DRAFT_OUTPUT_CONTRACT_ID = "hermes-context-research-draft-output-contract/1.0.0"
 
 REQUEST_IDENTITY_PREFIX = "hermesresearchrequest:sha256:"
 RECEIPT_IDENTITY_PREFIX = "hermesresearchreceipt:sha256:"
@@ -171,6 +172,28 @@ DRAFT_LIST_ITEM_MAX_LEN = _MAX_LONG_TEXT
 DRAFT_SOURCE_TITLE_MAX_LEN = _MAX_SHORT_TEXT
 DRAFT_SOURCE_URL_MAX_LEN = _MAX_SHORT_TEXT
 
+# S10-HERMES-CTX-01 context-mode extension.  These constants are the single source
+# of truth for both the model-facing contract and the authoritative validator.
+CONTEXT_CLAIMS_FIELD = "context_claims"
+CONTEXT_CLAIM_FIELDS = (
+    "claim_statement",
+    "claim_kind",
+    "subject_refs",
+    "direction",
+    "source_reference_indices",
+    "assumptions",
+    "uncertainty_note",
+)
+CONTEXT_CLAIM_KINDS = ("HYPOTHESIS", "INFERENCE", "OBSERVATION")
+CONTEXT_CLAIM_DIRECTIONS = ("CONTRADICTING", "MIXED", "SUPPORTING")
+CONTEXT_CLAIM_MAX_ITEMS = 64
+CONTEXT_CLAIM_TEXT_MAX_LEN = _MAX_LONG_TEXT
+CONTEXT_CLAIM_SUBJECT_MAX_ITEMS = 32
+CONTEXT_CLAIM_EVIDENCE_MAX_ITEMS = MAX_SOURCES_ABSOLUTE
+CONTEXT_CLAIM_ASSUMPTION_MAX_ITEMS = 32
+CONTEXT_REQUIRED_TOP_LEVEL_FIELDS = (*DRAFT_REQUIRED_TOP_LEVEL_FIELDS, CONTEXT_CLAIMS_FIELD)
+CONTEXT_CLAIM_ID_PREFIX = "hermescontextclaim:sha256:"
+
 # Deterministic sorted closed vocabularies for the generated output schema enums.
 CONFIDENCE_LABELS_SORTED = tuple(sorted(CONFIDENCE_LABELS))
 SOURCE_CLASSES_SORTED = tuple(sorted(SOURCE_CLASSES))
@@ -205,6 +228,7 @@ _ERROR_CODES = frozenset(
         "DRAFT_AUTHORITY_FLAG_INVALID",
         "DRAFT_SOURCE_INVALID",
         "DRAFT_UNSAFE_CONTENT",
+        "CONTEXT_CLAIM_INVALID",
         "RECEIPT_IDENTITY_INVALID",
     }
 )
@@ -725,6 +749,33 @@ class ValidatedResearchDraft:
     confidence_label: str
     source_references: tuple[SanitizedSourceReference, ...]
     source_urls: tuple[str, ...]
+    falsification_checks_performed: tuple[str, ...] = ()
+    context_claims: tuple["ValidatedContextClaim", ...] = ()
+
+
+@dataclasses.dataclass(frozen=True)
+class ValidatedContextClaim:
+    """Bounded, repo-identified context claim derived from untrusted model output."""
+
+    claim_id: str
+    claim_statement: str
+    claim_kind: str
+    subject_refs: tuple[str, ...]
+    direction: str
+    source_reference_indices: tuple[int, ...]
+    assumptions: tuple[str, ...]
+    uncertainty_note: str
+
+    def identity_fields(self) -> dict[str, object]:
+        return {
+            "claim_statement": self.claim_statement,
+            "claim_kind": self.claim_kind,
+            "subject_refs": list(self.subject_refs),
+            "direction": self.direction,
+            "source_reference_indices": list(self.source_reference_indices),
+            "assumptions": list(self.assumptions),
+            "uncertainty_note": self.uncertainty_note,
+        }
 
 
 # Finding G: compiled from the SAME canonical pattern the generated schema embeds. The
@@ -742,7 +793,8 @@ def _draft_str(value: object, *, max_len: int) -> str:
 
 
 def validate_research_draft(
-    raw: str | bytes, *, expected_request_id: str, max_sources: int
+    raw: str | bytes, *, expected_request_id: str, max_sources: int,
+    context_mode: bool = False, allowed_subject_refs: Sequence[str] | None = None,
 ) -> ValidatedResearchDraft:
     """Parse and validate the untrusted Hermes final research draft.
 
@@ -763,6 +815,8 @@ def validate_research_draft(
         raise _fail("DRAFT_SCHEMA_INVALID")
     if not isinstance(document, dict):
         raise _fail("DRAFT_SCHEMA_INVALID")
+    if context_mode and set(document) != set(CONTEXT_REQUIRED_TOP_LEVEL_FIELDS):
+        raise _fail("CONTEXT_CLAIM_INVALID")
 
     if document.get("schema_version") != DRAFT_SCHEMA_VERSION:
         raise _fail("DRAFT_SCHEMA_INVALID")
@@ -802,6 +856,13 @@ def validate_research_draft(
     _scan_unsafe_draft(research_summary)
 
     refs, urls = _validate_source_references(document.get("source_references"), max_sources)
+    claims: tuple[ValidatedContextClaim, ...] = ()
+    if context_mode:
+        claims = _validate_context_claims(
+            document.get(CONTEXT_CLAIMS_FIELD),
+            source_count=len(refs),
+            allowed_subject_refs=allowed_subject_refs,
+        )
 
     return ValidatedResearchDraft(
         request_id=expected_request_id,
@@ -809,7 +870,91 @@ def validate_research_draft(
         confidence_label=confidence_label,
         source_references=refs,
         source_urls=urls,
+        falsification_checks_performed=tuple(document[DRAFT_NON_EMPTY_LIST_FIELD]),
+        context_claims=claims,
     )
+
+
+def validate_context_research_draft(
+    raw: str | bytes, *, expected_request_id: str, max_sources: int,
+    allowed_subject_refs: Sequence[str],
+) -> ValidatedResearchDraft:
+    """Validate the explicit context-mode contract without changing ordinary H1."""
+    return validate_research_draft(
+        raw,
+        expected_request_id=expected_request_id,
+        max_sources=max_sources,
+        context_mode=True,
+        allowed_subject_refs=allowed_subject_refs,
+    )
+
+
+def _context_text(value: object, *, allow_empty: bool = False) -> str:
+    text = _draft_str(value, max_len=CONTEXT_CLAIM_TEXT_MAX_LEN)
+    if not allow_empty and not text.strip():
+        raise _fail("CONTEXT_CLAIM_INVALID")
+    _scan_unsafe_draft(text)
+    return text
+
+
+def _context_text_tuple(value: object, *, maximum: int, allow_empty: bool) -> tuple[str, ...]:
+    if not isinstance(value, list) or len(value) > maximum or (not allow_empty and not value):
+        raise _fail("CONTEXT_CLAIM_INVALID")
+    return tuple(_context_text(item) for item in value)
+
+
+def _validate_context_claims(
+    value: object, *, source_count: int, allowed_subject_refs: Sequence[str] | None,
+) -> tuple[ValidatedContextClaim, ...]:
+    if not isinstance(value, list) or not value or len(value) > CONTEXT_CLAIM_MAX_ITEMS:
+        raise _fail("CONTEXT_CLAIM_INVALID")
+    allowed = frozenset(allowed_subject_refs or ())
+    if not allowed:
+        raise _fail("CONTEXT_CLAIM_INVALID")
+    claims: list[ValidatedContextClaim] = []
+    seen: set[str] = set()
+    for item in value:
+        if not isinstance(item, dict) or set(item) != set(CONTEXT_CLAIM_FIELDS):
+            raise _fail("CONTEXT_CLAIM_INVALID")
+        statement = _context_text(item["claim_statement"])
+        kind = item["claim_kind"]
+        direction = item["direction"]
+        if kind not in CONTEXT_CLAIM_KINDS or direction not in CONTEXT_CLAIM_DIRECTIONS:
+            raise _fail("CONTEXT_CLAIM_INVALID")
+        subjects = _context_text_tuple(
+            item["subject_refs"], maximum=CONTEXT_CLAIM_SUBJECT_MAX_ITEMS, allow_empty=False
+        )
+        if len(set(subjects)) != len(subjects) or not set(subjects).issubset(allowed):
+            raise _fail("CONTEXT_CLAIM_INVALID")
+        raw_indices = item["source_reference_indices"]
+        if (
+            not isinstance(raw_indices, list) or not raw_indices
+            or len(raw_indices) > CONTEXT_CLAIM_EVIDENCE_MAX_ITEMS
+            or any(isinstance(index, bool) or not isinstance(index, int) for index in raw_indices)
+        ):
+            raise _fail("CONTEXT_CLAIM_INVALID")
+        indices = tuple(sorted(set(raw_indices)))
+        if len(indices) != len(raw_indices) or any(index < 0 or index >= source_count for index in indices):
+            raise _fail("CONTEXT_CLAIM_INVALID")
+        assumptions = _context_text_tuple(
+            item["assumptions"], maximum=CONTEXT_CLAIM_ASSUMPTION_MAX_ITEMS,
+            allow_empty=kind == "OBSERVATION",
+        )
+        if kind != "OBSERVATION" and not assumptions:
+            raise _fail("CONTEXT_CLAIM_INVALID")
+        uncertainty = _context_text(item["uncertainty_note"])
+        partial = ValidatedContextClaim(
+            claim_id="", claim_statement=statement, claim_kind=kind,
+            subject_refs=tuple(sorted(subjects)), direction=direction,
+            source_reference_indices=indices, assumptions=assumptions,
+            uncertainty_note=uncertainty,
+        )
+        claim_id = content_address(CONTEXT_CLAIM_ID_PREFIX, partial.identity_fields())
+        if claim_id in seen:
+            raise _fail("CONTEXT_CLAIM_INVALID")
+        seen.add(claim_id)
+        claims.append(dataclasses.replace(partial, claim_id=claim_id))
+    return tuple(claims)
 
 
 # Draft content that asserts trading / execution / promotion authority is unsafe.
@@ -875,7 +1020,8 @@ def _validate_source_references(
 
 
 def build_research_draft_output_schema(
-    *, expected_request_id: str, max_sources: int
+    *, expected_request_id: str, max_sources: int, context_mode: bool = False,
+    allowed_subject_refs: Sequence[str] | None = None,
 ) -> dict[str, object]:
     """Deterministic JSON-schema-like draft output contract for the prompt envelope.
 
@@ -944,13 +1090,56 @@ def build_research_draft_output_schema(
             },
         },
     }
-    return {
+    required = DRAFT_REQUIRED_TOP_LEVEL_FIELDS
+    schema_id = DRAFT_OUTPUT_CONTRACT_ID
+    if context_mode:
+        allowed_subjects = tuple(sorted(set(allowed_subject_refs or ())))
+        if not allowed_subjects or any(
+            not isinstance(subject, str) or not subject.strip()
+            or len(subject) > CONTEXT_CLAIM_TEXT_MAX_LEN
+            for subject in allowed_subjects
+        ):
+            raise _fail("CONTEXT_CLAIM_INVALID")
+        schema_id = CONTEXT_DRAFT_OUTPUT_CONTRACT_ID
+        required = CONTEXT_REQUIRED_TOP_LEVEL_FIELDS
+        properties[CONTEXT_CLAIMS_FIELD] = {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": CONTEXT_CLAIM_MAX_ITEMS,
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": list(CONTEXT_CLAIM_FIELDS),
+                "properties": {
+                    "claim_statement": {"type": "string", "minLength": 1, "pattern": DRAFT_NON_WHITESPACE_PATTERN, "maxLength": CONTEXT_CLAIM_TEXT_MAX_LEN},
+                    "claim_kind": {"type": "string", "enum": list(CONTEXT_CLAIM_KINDS)},
+                    "subject_refs": {"type": "array", "minItems": 1, "maxItems": CONTEXT_CLAIM_SUBJECT_MAX_ITEMS, "uniqueItems": True, "items": {"type": "string", "enum": list(allowed_subjects)}},
+                    "direction": {"type": "string", "enum": list(CONTEXT_CLAIM_DIRECTIONS)},
+                    "source_reference_indices": {"type": "array", "minItems": 1, "maxItems": CONTEXT_CLAIM_EVIDENCE_MAX_ITEMS, "uniqueItems": True, "items": {"type": "integer", "minimum": 0}},
+                    "assumptions": {"type": "array", "maxItems": CONTEXT_CLAIM_ASSUMPTION_MAX_ITEMS, "items": {"type": "string", "minLength": 1, "pattern": DRAFT_NON_WHITESPACE_PATTERN, "maxLength": CONTEXT_CLAIM_TEXT_MAX_LEN}},
+                    "uncertainty_note": {"type": "string", "minLength": 1, "pattern": DRAFT_NON_WHITESPACE_PATTERN, "maxLength": CONTEXT_CLAIM_TEXT_MAX_LEN},
+                },
+            },
+        }
+    schema = {
         "type": "object",
-        "schema_id": DRAFT_OUTPUT_CONTRACT_ID,
+        "schema_id": schema_id,
         "draft_schema_version": DRAFT_SCHEMA_VERSION,
-        "required": list(DRAFT_REQUIRED_TOP_LEVEL_FIELDS),
+        "required": list(required),
         "properties": properties,
     }
+    if context_mode:
+        schema["additionalProperties"] = False
+    return schema
+
+
+def build_context_research_draft_output_schema(
+    *, expected_request_id: str, max_sources: int, allowed_subject_refs: Sequence[str]
+) -> dict[str, object]:
+    return build_research_draft_output_schema(
+        expected_request_id=expected_request_id, max_sources=max_sources, context_mode=True,
+        allowed_subject_refs=allowed_subject_refs,
+    )
 
 
 def research_draft_output_schema_digest(schema: Mapping[str, object]) -> str:
