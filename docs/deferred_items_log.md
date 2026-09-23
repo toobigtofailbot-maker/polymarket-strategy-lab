@@ -2691,7 +2691,21 @@ runtime call, or network activity, and creates no strategy/paper/live/Gate-C aut
 |---|---|---|---|---|---|
 | WP175N-D001 | S10-WALLET-01 Public Wallet Event Ingestion & PIT Identity Evidence | DEFERRED | P2 | After WP175N merge and Side11 exact-head review | Immediate software successor after WP175N merge; NOT started by WP175N; the wallet gate is wallet-specific and not global |
 | WP175N-D002 | S10-HERMES-CTX-01 read-only project-aware context broker | DEFERRED | P2 | After S10-WALLET-01 | Consumes verified Alpha memory; no repository shell/admin or trading authority |
-| WP175N-D003 | S10-ALPHA-02 universe triage / freshness / material-change / reopen / prioritization | DEFERRED | P3 | Separate later package | Prioritization and automatic reopen are explicitly out of the WP175N record-memory scope |
+| WP175N-D003 | S10-ALPHA-02 universe triage / freshness / material-change / reopen / prioritization | RESOLVED_BY_S10_ALPHA_02_BOUNDED_SCOPE | P3 | S10-ALPHA-02 review and merge | Resolved only for the deterministic bounded observed-PIT-universe, explicit Alpha-memory-posture, reopen-decision, complete-triage, core/exploration/audit allocation, inert capture-request-data, and separate append-only discovery-memory scope; no scheduler, qualification, economics, or live authority |
+
+## S10-ALPHA-02 — Residual Discovery-Control-Plane Deferrals
+
+S10-ALPHA-02 implements complete triage of the exact frozen observed PIT universe, not exhaustive
+external acquisition or empirical optimization. These residuals are nonblocking for its bounded
+deterministic contract and require separate authority.
+
+| ID | Item | Status | Priority | Resolution gate | Notes |
+|---|---|---|---|---|---|
+| S10-ALPHA-02-D001 | External all-Polymarket universe completeness and automated exhaustive acquisition | DEFERRED | P2 | Separate product-network/acquisition package | ALPHA-02 truth remains BOUNDED_OBSERVED_UNIVERSE / external completeness UNPROVEN; no crawler, pagination loop, or market fetch is authorized |
+| S10-ALPHA-02-D002 | Empirical tuning of soft-change thresholds, queue capacity, lane reservations, category caps, and audit seed policy | DEFERRED | P2 | Separately preregistered evidence/tuning package | V1 exposes explicit parameters and deterministic behavior; it does not claim the chosen values are universal research truths |
+| S10-ALPHA-02-D003 | S10-ALPHA-03 recurring research campaign, scheduler, budgets/rates, and provider escalation | DEFERRED | P2 | S10-ALPHA-03 | No cron, daemon, worker, loop, provider invocation, or automatic capture consumption exists in ALPHA-02 |
+| S10-ALPHA-02-D004 | S10-ALPHA-04 downstream outcome learning and adaptive allocation | DEFERRED | P2 | S10-ALPHA-04 | ALPHA-02 allocation is fixed pre-outcome deterministic control; no settlement-informed selection or bandit learning |
+| S10-ALPHA-02-D005 | Qualification, executable economics, paper trading, execution, Gate C, and live capital | DEFERRED_BLOCKED_BY_SEPARATE_GATES | P1 | S10-GATE-AF1 then QUAL/GATE-QUAL/WP170/WP172/WP173 and human Gate C | Discovery priority is not expected return, qualification, strategy, executable edge, or paper/live authority |
 
 ## Wallet-Intelligence Roadmap Anchor (durable)
 

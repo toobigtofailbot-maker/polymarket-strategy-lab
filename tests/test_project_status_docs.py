@@ -4465,7 +4465,7 @@ def test_s10_wallet02_status_and_exact_machine_scope() -> None:
     )
     current = next(
         line for line in project.splitlines()
-        if line.startswith("# S10-WALLET-02 current implementation target")
+        if line.startswith("# S10-WALLET-02 merged historical truth")
     )
     assert "Governance track: FAST" in current and "Risk level: 2" in current
     assert "Exact changed-file scope: 17" in current
@@ -4474,11 +4474,32 @@ def test_s10_wallet02_status_and_exact_machine_scope() -> None:
     assert "H1 #5: NOT AUTHORIZED" in current
     assert "Gate C: NOT AUTHORIZED" in current
     assert "capital at risk: USD 0" in current and "orders: 0" in current
-    assert "successor after separate review and merge: S10-ALPHA-02" in current
-    assert "Merge authorized: NO" in current
+    assert "S10-ALPHA-02 is now the current separately authorized bounded implementation target" in current
+    assert "Merge authorized for WALLET-02: COMPLETE BY PR #190" in current
     scope = spec["scope"]
     assert scope["required_changed_files"] == scope["allowed_changed_files"]
     assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 17
     assert scope["exact_scope_required"] is True
     assert spec["identity"]["risk_level"] == 2
     assert spec["successor_boundary"]["next_wp"] == "S10-ALPHA-02"
+
+
+def test_s10_alpha02_current_status_and_exact_machine_scope() -> None:
+    project = _read()
+    spec = json.loads((REPO_ROOT / "docs" / "wp_specs" / "S10-ALPHA-02" / "wp_spec.json").read_text(encoding="utf-8"))
+    current = next(line for line in project.splitlines() if line.startswith("# S10-ALPHA-02 current bounded implementation target"))
+    assert "Governance track: FAST" in current and "Risk level: 2" in current
+    assert "Exact changed-file scope: 17" in current
+    assert "a2fba4d770cd6fac1cfb551419d040d65768a8e9" in current
+    assert "PR #190 / S10-WALLET-02 merged: YES" in current
+    assert "external all-Polymarket completeness: UNPROVEN" in current
+    assert "H1 #5: NOT AUTHORIZED" in current and "Gate C: NOT AUTHORIZED" in current
+    assert "capital at risk: USD 0" in current and "orders: 0" in current
+    assert "successor after separate review and merge: S10-GATE-AF1" in current
+    assert "Merge authorized: NO" in current
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 17
+    assert scope["exact_scope_required"] is True
+    assert spec["identity"]["risk_level"] == 2
+    assert spec["successor_boundary"]["next_wp"] == "S10-GATE-AF1"

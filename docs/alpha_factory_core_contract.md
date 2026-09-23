@@ -204,11 +204,15 @@ network surface.
 
 ## 18. Wallet Intelligence First-Class Capability
 
-Wallet intelligence is a required first-class capability. The immediate software successor
-after WP175N MERGE is S10-WALLET-01, then S10-HERMES-CTX-01. WP175N does not authorize or
-start WALLET-01. Wallet intelligence never creates direct strategy, paper/live, or Gate-C
+Wallet intelligence is a required first-class capability. S10-WALLET-01, S10-HERMES-CTX-01,
+and S10-WALLET-02 are merged predecessors of the current S10-ALPHA-02 package. Historical WP175N
+did not authorize or start WALLET-01. Wallet intelligence never creates direct strategy, paper/live, or Gate-C
 authority, automatic copy trading/sizing, deanonymization, "insider probability", a parallel
 Alpha memory, a parallel economics engine, or a parallel paper engine.
+
+The frozen historical package statement remains: the immediate software successor after WP175N
+MERGE is S10-WALLET-01, then S10-HERMES-CTX-01. That sequence is now complete; retaining the
+sentence records WP175N's original boundary and does not redefine the current target.
 
 ## 19. Decomposed Current Roadmap
 
@@ -220,9 +224,9 @@ S10-GATE-WALLET-01 -> a wallet-specific evidence lane inside S10-QUAL-01 -> S10-
 -> the SAME WP170/WP172/WP173 path. S10-GATE-WALLET-01 IS CONDITIONAL: it is not a global
 qualification blocker. Later roadmap owners: S10-HERMES-CTX-01 (read-only project-aware
 context broker consuming verified Alpha memory; no repository shell/admin or trading
-authority), S10-ALPHA-02 (market-universe triage, freshness, material-change detection,
-automatic reopen decisions, prioritization, exploration/exploitation, skipped-market
-allocation), S10-ALPHA-03 (recurring research campaigns, scheduler, budgets/rates, explicit
+authority), S10-ALPHA-02 (now implementing bounded observed-universe triage, freshness,
+material-change evidence, reopen decisions, core/exploration/audit allocation, and skipped-market
+accounting), S10-ALPHA-03 (recurring research campaigns, scheduler, budgets/rates, explicit
 provider/backend fallback/escalation), S10-ALPHA-04 (downstream outcome learning), and
 S10-HERMES-SI-01 / S10-GATE-HSI-01 (research-layer self-improvement). S10-HERMES-SI-01's
 unlock condition is sufficient accepted AF1 benchmark material and it may run in parallel
@@ -241,21 +245,28 @@ qualification are later owned by S10-QUAL-01 and the WP170 experiment OS.
 Gate C is NOT AUTHORIZED. It and live capital remain separately human-authorized. WP175N
 creates no Gate-C authority, capital, or orders.
 
-## 22. Immediate Successor After Merge
+## 22. Historical Successor Reconciliation
 
-The immediate software successor after WP175N MERGE is S10-WALLET-01. WP175N does not start
-it.
+The WP175N successor chain S10-WALLET-01 -> S10-HERMES-CTX-01 -> S10-WALLET-02 is merged.
+S10-ALPHA-02 is the current bounded implementation target; its successor after separate review and
+merge is S10-GATE-AF1.
 
-## 23. Next Successor
+## 23. Current Successor
 
-After S10-WALLET-01, the next successor is S10-HERMES-CTX-01, the read-only project-aware
-context broker that consumes verified Alpha memory.
+After S10-ALPHA-02 review and merge, the next successor is S10-GATE-AF1. The gate remains separate
+and is not decided or implemented by ALPHA-02.
 
 ## 24. ALPHA-02 / ALPHA-03 / ALPHA-04 Ownership
 
-Universe triage, freshness, material-change detection, automatic reopen, and prioritization
-are S10-ALPHA-02. Scheduler, budgets/rates, and campaign autonomy are S10-ALPHA-03.
-Downstream outcome learning is S10-ALPHA-04. None of these are in WP175N.
+Universe triage, freshness, material-change detection, reopen decisioning, deterministic bounded
+research allocation, and complete skip evidence are implemented by S10-ALPHA-02 without changing
+ALPHA-01. Scheduler, budgets/rates, and campaign autonomy remain S10-ALPHA-03. Downstream outcome
+learning and adaptive allocation remain S10-ALPHA-04. None of these are retroactively part of
+WP175N.
+
+The historical ownership shorthand "automatic reopen and prioritization are S10-ALPHA-02" means
+automatic reopen *decisioning* and deterministic research prioritization only. It never means an
+automatic ALPHA-01 append, strategy promotion, scheduling, or execution.
 
 ## 25. HERMES-SI Benchmark-Parallel Rule
 

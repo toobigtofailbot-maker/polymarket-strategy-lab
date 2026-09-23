@@ -440,7 +440,7 @@ def test_s10_wallet02_repo_truth_and_successor() -> None:
     contract = (ROOT / "docs" / "wallet_profile_snapshot_contract.md").read_text(encoding="utf-8")
     fragment = (ROOT / "docs" / "status_entries" / "S10-WALLET-02.md").read_text(encoding="utf-8")
     combined = "\n".join((index, contract, fragment))
-    assert "S10-WALLET-02 PIT Wallet Profiles (current implementation target)" in index
+    assert "S10-WALLET-02 PIT Wallet Profiles (merged historical truth)" in index
     assert "S10-HERMES-CTX-01 Blind-First Context Broker (merged historical truth)" in index
     assert "docs/wallet_profile_snapshot_contract.md" in index
     assert "src/data_layer/wallet_intelligence/profile.py" in index
@@ -449,7 +449,35 @@ def test_s10_wallet02_repo_truth_and_successor() -> None:
         assert record in combined
     assert "WP79" in combined and "fixture" in combined.lower() and "not canonical" in combined.lower()
     assert "WALLET-03" in combined and "WALLET-04" in combined
-    assert "S10-ALPHA-02" in combined and "separately gated" in combined
+    assert "S10-ALPHA-02" in combined and "current" in combined
     assert "H1 #5" in combined and "NOT AUTHORIZED" in combined
     assert "Gate C: NOT AUTHORIZED" in combined
-    assert "Merge authorized: NO" in combined
+    assert "PR #190" in combined
+
+
+def test_s10_alpha02_repo_truth_and_successor() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    contract = (ROOT / "docs" / "alpha_discovery_control_plane_contract.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "S10-ALPHA-02.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    combined = "\n".join((index, contract, fragment, deferred))
+    assert "S10-ALPHA-02 PIT Alpha Discovery Control Plane (current bounded implementation target)" in index
+    for path in (
+        "docs/alpha_discovery_control_plane_contract.md",
+        "src/data_layer/analytical_research/alpha_discovery.py",
+        "src/data_layer/analytical_research/alpha_discovery_registry.py",
+        "tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "tests/data_layer/analytical_research/test_alpha_discovery_registry.py",
+        "tests/data_layer/analytical_research/test_alpha_discovery_boundaries.py",
+        "docs/wp_specs/S10-ALPHA-02/",
+        "docs/status_entries/S10-ALPHA-02.md",
+    ):
+        assert path in index
+    assert "a2fba4d770cd6fac1cfb551419d040d65768a8e9" in combined
+    assert "2d53af9b3a51f8f9a27334e8bc3b2c40efe6864a" in combined
+    assert "BOUNDED_OBSERVED_UNIVERSE" in combined and "UNPROVEN" in combined
+    assert "s10-alpha-discovery-registry" in combined and "1464877426" in combined
+    assert "S10-GATE-AF1" in combined and "S10-ALPHA-03" in combined and "S10-ALPHA-04" in combined
+    assert "H1 #5" in combined and "NOT AUTHORIZED" in combined
+    assert "Merge authorized: NO" in fragment
+    assert "RESOLVED_BY_S10_ALPHA_02_BOUNDED_SCOPE" in deferred
