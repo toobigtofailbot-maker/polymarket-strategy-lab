@@ -1,0 +1,773 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-ALPHA-02",
+    "title": "PIT Market-Universe Alpha Discovery, Material Change, Triage, Reopen Decisioning and Research Queue Core",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "DETERMINISTIC_PIT_ALPHA_DISCOVERY_CONTROL_PLANE",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 190,
+      "head_sha": "2d53af9b3a51f8f9a27334e8bc3b2c40efe6864a",
+      "merge_sha": "a2fba4d770cd6fac1cfb551419d040d65768a8e9"
+    },
+    "suggested_branch": "codex/s10-alpha-02-pit-discovery-control-plane",
+    "objective": "Implement a deterministic local/offline Alpha discovery control plane over verified PIT market evidence with explicit Alpha-memory temporal posture: stable semantic T0 observed-universe snapshots, exact freshness and material-change semantics, typed Alpha subject matching only when current registry use is permitted, fail-closed historical Alpha-memory replay, one closed pre-outcome triage basis per market, deterministic core/exploration/audit allocation, final triage/skip evidence, prospective capture-request data, and separate append-only discovery memory. No product network, Hermes, scheduler, Alpha-registry mutation, qualification, economics, paper, execution or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/alpha_discovery_control_plane_contract.md",
+      "docs/alpha_factory_core_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-ALPHA-02.md",
+      "docs/wp_specs/S10-ALPHA-02/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-02/wp_spec.json",
+      "src/data_layer/analytical_research/__init__.py",
+      "src/data_layer/analytical_research/alpha_discovery.py",
+      "src/data_layer/analytical_research/alpha_discovery_registry.py",
+      "tests/data_layer/analytical_research/test_alpha_discovery.py",
+      "tests/data_layer/analytical_research/test_alpha_discovery_boundaries.py",
+      "tests/data_layer/analytical_research/test_alpha_discovery_registry.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/alpha_discovery_control_plane_contract.md",
+      "docs/alpha_factory_core_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-ALPHA-02.md",
+      "docs/wp_specs/S10-ALPHA-02/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-02/wp_spec.json",
+      "src/data_layer/analytical_research/__init__.py",
+      "src/data_layer/analytical_research/alpha_discovery.py",
+      "src/data_layer/analytical_research/alpha_discovery_registry.py",
+      "tests/data_layer/analytical_research/test_alpha_discovery.py",
+      "tests/data_layer/analytical_research/test_alpha_discovery_boundaries.py",
+      "tests/data_layer/analytical_research/test_alpha_discovery_registry.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/data_layer/point_in_time_market_research/",
+      "src/data_layer/polymarket/",
+      "src/data_layer/wallet_intelligence/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/risk/",
+      "src/research_runtime/",
+      "tools/"
+    ],
+    "max_changed_files": 17,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/alpha_factory_core_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert S10-ALPHA-02. The additive alpha_discovery.py and alpha_discovery_registry.py modules, package exports, focused tests, discovery contract/status/spec artifacts and bounded repo-truth compatibility edits disappear. Canonical PIT records/store/query code, ALPHA-01 records/registry, WALLET-01/02, Hermes, WP170/172/173, dependencies, workflows, credentials and trading/runtime authority remain unchanged. No repository-tracked discovery database, market fetch, provider call, order, paper/live state or capital exists to unwind.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "S10-ALPHA-02 adds a bounded local/offline deterministic discovery/triage surface and separate append-only discovery registry while consuming existing PIT and Alpha Factory APIs read-only.",
+    "items": [
+      {
+        "surface": "analytical_research.alpha_discovery records/builders",
+        "before": "ALPHA-01 records research memory but has no canonical PIT universe, material-change, skip logging, deterministic research allocation or automatic reopen-decision layer.",
+        "after": "Content-addressed policy/universe/change/final-triage/queue records plus an internal pre-allocation basis provide deterministic observed-universe triage with stable T0 universe identity, explicit Alpha-memory temporal posture, canonical PIT subject matching and no network/economic authority.",
+        "change_authorized": true,
+        "compatibility_requirement": "PIT visibility remains delegated to the existing as-of query; current ALPHA-01 schema is read-only and provides no historical availability proof; untyped subject refs remain valid ALPHA-01 data but are nonmatching in ALPHA-02; legacy WP49-64 priority code remains noncanonical.",
+        "authority": "LOCAL_OFFLINE_ALPHA_DISCOVERY_EVIDENCE"
+      },
+      {
+        "surface": "analytical_research.alpha_discovery_registry",
+        "before": "No durable append-only canonical history exists for universe/skip/change/queue decisions.",
+        "after": "A separate bounded SQLite registry persists only ALPHA-02 content-addressed decision evidence with hash-chain integrity and no mutation.",
+        "change_authorized": true,
+        "compatibility_requirement": "Distinct application id/schema/file from ALPHA-01 and WP170; no migration or mutation of either existing registry.",
+        "authority": "LOCAL_APPEND_ONLY_DISCOVERY_MEMORY"
+      },
+      {
+        "surface": "analytical_research.__init__ exports",
+        "before": "No ALPHA-02 discovery API is exported.",
+        "after": "ALPHA-02 records/builders/registry constants/functions are additively exported.",
+        "change_authorized": true,
+        "compatibility_requirement": "No existing export is removed/reinterpreted and no network/Hermes/qualification/trading API is exposed.",
+        "authority": "ADDITIVE_PACKAGE_EXPORTS"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The Side12-corrected contract freezes Alpha-memory temporal availability, direct canonical PIT subject namespaces, exact PIT semantic identity/freshness and review-conflict overlays, candidate/family-grouped reopen, material-change formulas, shared persisted-record semantic validation, closed triage/priority semantics, deterministic no-backfill allocation, append-only persistence and non-authority.",
+    "items": [
+      {
+        "path": "policy.identity_and_parameters",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Every material threshold/allocation knob is explicit and content-addressed; queue capacity, nonzero exploration/audit slots, category cap, eligible statuses, freshness windows, Decimal soft-change thresholds, audit seed and taxonomy version have no hidden selection-affecting defaults.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Invalid/float/nonfinite thresholds, zero configured exploration/audit, duplicate statuses or capacity contradictions fail closed; policy mutation changes id.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "alphadiscoverypolicy:sha256 identity or closed error",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "universe.pit_visibility",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Historical visibility is delegated only to separate family-scoped query_point_in_time_record_set calls with AS_OF_INGESTION_TIME and include_conflicts_for_review=true. Direct verified-store access may only build a complete static entity/filter plus lineage closure without time/latestness filtering; >256 projected records fails PIT_QUERY_INPUT_LIMIT_EXCEEDED rather than truncating. Q-METADATA uses canonical Gamma source, Q-BOOK canonical CLOB source, Q-RULE all resolution sources, and referenced SourceSnapshotRecord visibility is separately proved by Q-SOURCE VISIBLE_HISTORY plus exact source_snapshot_id match. Authoritative/history records alone provide state; review-conflict records never replace authority and only apply exact market, token, resolution-source, or referenced-source overlays. Conflict-only metadata never admits a market.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Post-cutoff ingested metadata/rule/book/referenced source never enters T0; static projection cannot filter by time/latestness; 257-record entity closure fails closed; a source snapshot discoverable in the store but absent from T0 VISIBLE_HISTORY remains SOURCE_EVIDENCE_MISSING; invalid shared query result fails closed. Real shared-query review conflicts preserve authoritative payloads and apply only the exact metadata/book/rule/source overlay; conflict-only metadata is excluded.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PIT-safe authoritative T0 market state",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "universe.semantic_identity_stability",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "AlphaUniverseSnapshot semantic identity binds included-market query spec hashes, query engine/parameter version, exact authoritative T0 record ids and normalized T0 state, but excludes complete current-store digest/count, validated_batch_sha256, full result_sha256/exclusion counts and no-result candidate queries.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Appending an unrelated post-cutoff store record leaves T0 snapshot mapping/id unchanged while changing a true T0 authoritative record changes it.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "stable alphauniverse:sha256 semantic identity",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "universe.external_completeness",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Complete triage is over the frozen observed PIT universe only; external all-Polymarket completeness is UNPROVEN and cannot be upgraded in this WP.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No builder/mapping accepts a proven-complete external claim.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "BOUNDED_OBSERVED_UNIVERSE / EXTERNAL_COMPLETENESS_UNPROVEN",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "freshness.clock_contract",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "AS_OF_INGESTION_TIME/ingestion_time controls historical inclusion; envelope.observed_time controls metadata/book/rule/source freshness. FRESH iff 0<=age<=threshold; STALE iff age>threshold; future/malformed observed_time is INVALID_CLOCK.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Timestamp substitution, negative age and threshold off-by-one behavior fail the focused oracle.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed FRESH/STALE/MISSING/INVALID_CLOCK state",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "alpha_memory.temporal_posture",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Exactly two explicit analysis modes exist: HISTORICAL_REPLAY requires HISTORICAL_AVAILABILITY_UNPROVEN and forbids loading/hashing the current Alpha registry; CURRENT_BUILD_ANALYSIS requires CURRENT_REGISTRY_BUILD_TIME_ONLY and may bind the current verified Alpha head but is never valid historical selection replay. research_as_of never proves registry availability.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "HISTORICAL_REPLAY rejects current-registry posture; a candidate/family/episode added today with earlier research_as_of cannot alter historical T0 triage/priority/reopen/coverage/id. CURRENT_BUILD_ANALYSIS is identity-distinct and explicitly invalid as historical selection replay.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "identity-bound HISTORICAL_REPLAY or CURRENT_BUILD_ANALYSIS with fixed Alpha-memory posture",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "alpha_memory.typed_subject_refs",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Only exact existing canonical PIT market:/event:/token: identifier strings can match ALPHA-01 subject_refs; no additional outer prefix is invented. Arbitrary/noncanonical refs remain valid ALPHA-01 data but are nonmatching. Condition id has no separate v1 subject-ref namespace because canonical event id already carries Gamma condition identity when present.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Same raw suffix across canonical market:/event:/token: namespaces cannot cross-match; invented `market_id:`/`event_id:`/`token_id:` outer prefixes and fuzzy/prose matching are forbidden.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "exact canonical-subject Alpha match set",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "material_change.field_source_formula",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Every hard/soft/review-only class uses the exact Section-10 canonical source field, normalization, missing behavior and Decimal formula; record_version_id change alone is not semantic change; multiple resolution sources are preserved as a sorted source->rule mapping; shared-source rule hashes and source-id sets are compared separately; any comparable shared token crossing a soft threshold emits the class once with affected token ids.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Table-driven oracle covers status/condition/token/outcome/rule/source/tick/min-order/last/mid/spread/depth/question/category and >= threshold boundary.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "typed alphachange event or explicit gap/review-only evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "material_change.set_difference",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Prior/current set-difference semantics require an exact nullable comparison_prior_universe_id. With null prior id there is no newly/prior-only classification. With a supplied prior id, current-only market is NEWLY_OBSERVED_LOCALLY with no fabricated prior MaterialChangeEvent; prior-only market appears only in queue prior_only_market_ids as NO_LONGER_OBSERVED_LOCALLY, gets no current triage/reopen, and local absence is not claimed as exchange disappearance. Comparison-derived triage/queue identities bind the exact prior universe id.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Set difference alone never triggers reopen or market-closure claim; without comparison_prior_universe_id no set-difference classification exists; swapping the prior id changes comparison-bound downstream identity.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded local-universe set-difference evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "triage.closed_decision_table",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Rows T1-T9 are first-match authoritative. Metadata status/conflict/staleness controls defer/ineligible; rule/book/optional metadata gaps are overlay-only; historical Alpha unavailable maps to MARKET_EVIDENCE_ONLY; current exact Alpha match/material/reopen state determines the remaining classes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "One table-driven test proves eligibility, class, reopen, readiness, reasons, requests and core/explore/audit flags for every row/overlay.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "deterministic PreAllocationTriageBasis",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "triage.reopen_matrix",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Reopen is current-memory decision only. Episodes are grouped by exact (candidate_id,hypothesis_family_id) and leaves are determined within each group. WATCH_FOR_CHANGE/RESEARCH_STALE plus reopen-material same-market change may be REOPEN_ELIGIBLE only with one unambiguous governing group; multiple groups, ambiguous groups, or any matched candidate without a usable group fail closed to REOPEN_REVIEW_REQUIRED. Other listed states are review/no-auto; ALPHA-01 is never mutated.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Historical posture disables reopen and Alpha registry bytes remain unchanged; two exact-matched candidates cannot borrow one candidate's WATCH_FOR_CHANGE leaf when the other has no usable lineage.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed reopen disposition",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "triage.priority_vector",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Core priority vector is exactly class rank ASC, hard change count DESC, soft change count DESC, readiness rank ASC, market_id ASC. Category/archetype undercoverage and prior research count are excluded from core ordering.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Input shuffle leaves ordering unchanged and each component obeys frozen direction.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "transparent lexicographic research-priority vector",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "coverage.alpha_lane_mapping",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Exact typed matched Alpha episodes map lanes/producer to coverage only by the Section-14 table; SUPPORTED outranks PARTIAL; unmapped cells remain UNKNOWN; historical Alpha-unavailable posture makes all Alpha-derived cells UNKNOWN.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No prose/category/LLM inference or invented mapping for wallet/latency/behavior/data-publication cells.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "versioned descriptive coverage cells",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "allocation.two_phase_pipeline",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Allocation consumes the complete internal PreAllocationTriageBasis set, including exact nullable comparison_prior_universe_id and non-circular capture-request payloads; final immutable MarketTriageDecision records are materialized only after allocation; AlphaResearchQueueSnapshot only validates/indexes finalized decisions and never recomputes allocation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Same semantic bases in any input order yield identical final triage ids and queue id.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "non-circular deterministic final decisions + queue",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "queue.exploration_audit_caps",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Core reserves exploration/audit slots first and uses exact fixed core capacity/vector/cap; exploration uses current category count ASC, supported coverage count ASC, partial count ASC, core vector, market id; audit uses exact SHA-256 seed order; unused exploration/audit reservations NEVER return to core in v1, so realized selected_count may be below queue_capacity and unused-slot counts/reasons are persisted.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Category monopoly, lane duplication, outcome-informed audit, nonreplayable selection, or optional backfill of reserved capacity fail.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded deterministic allocation and audit design fraction",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "capture_requests.data_only",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Only MARKET_METADATA_REFRESH, ORDER_BOOK, RESOLUTION_RULE and SOURCE_SNAPSHOT requests are emitted by exact decision-table gaps; they are data, never network/scheduler authority. Embedded requests may bind only pre-allocation semantic inputs and MUST NOT contain final MarketTriageDecision/AlphaResearchQueueSnapshot ids, final lane or other post-allocation values. No FEE_CONFIG trigger exists in v1.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "New source modules have no public-client/http/websocket/Hermes/scheduler calls/imports and capture-request serialization is one-way/non-circular.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "bounded capture-request data only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "registry.append_only_and_identity",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Separate s10-alpha-discovery-registry uses application_id 1464877426, user_version 1, canonical kind order POLICY->UNIVERSE->MATERIAL_CHANGE->TRIAGE_DECISION->RESEARCH_QUEUE, hash chain, explicit .sqlite3 path, no update/delete, deterministic append/idempotency and strict cross-record references.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Foreign/tampered/collision/missing-ref fails closed; one invalid batch rolls back; caller order cannot alter bytes.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "verified append-only discovery snapshot",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "serialization_and_authority",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "One shared full semantic validator covers all five persisted records and is invoked by every public builder before return, public to_mapping, public from_mapping after reconstruction, registry append serialization, and registry load/decode. Correct re-hashing never legitimizes semantically invalid content. Closed strict mappings reject floats/nonfinite/unknown fields and preserve true advisory/no-execution/no-strategy/no-qualification booleans; no qualification/expected-return/order/paper/live fields.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A correctly re-hashed MarketTriageDecision with historical_replay_valid_for_alpha_memory=true is rejected by to_mapping, from_mapping and append; valid builder-to-mapping-to-load remains symmetric. Undeclared authority-like fields reject structurally without embedding or reconstructing forbidden live-order API identifiers.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "strict immutable non-authoritative record",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Product content-addressed identities are proved by focused executable tests; no work-package-spec example derivation is needed.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "FAST deterministic readiness plus Karl/Side12 authorization permits only this exact 17-file local implementation; merge/GATE-AF1/later autonomy remain separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 17-file scope, semantic matrix, evidence plan and FAST readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl/Side12 instruction authorizes implementation of this exact S10-ALPHA-02 package and no broader authority",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation remains inside exact scope and all local validation passes with zero product network, Hermes/provider, credential, scheduler, qualification, paper, execution, live, capital or order activity",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused discovery/change/triage/queue/registry negative-oracle suites are the executable product oracle.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R024 cover every corrected material bypass, exact current repo compatibility, committed-head evidence discipline and the narrow known-WP169 same-head retry without creating new test families.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_alpha_memory_temporal_posture_blocks_historical_lookahead",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "historical mode never loads current registry and later current Alpha records cannot change T0 result; current mode binds head but explicitly lacks historical claim"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_typed_subject_namespace_matching_never_cross_matches",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "only exact existing canonical PIT market:/event:/token: ids match; same raw suffix across namespaces cannot cross-match; invented outer prefixes and arbitrary legacy refs remain nonmatching"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_closed_triage_decision_table; test_reopen_is_grouped_by_exact_candidate_and_family",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "one parameterized matrix proves T1-T9 using real current Alpha registries where required; a second exact-matched candidate with no usable lineage forces REOPEN_REVIEW_REQUIRED"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_priority_vector_exact_order_and_direction",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "class ASC, hard DESC, soft DESC, readiness ASC, market id ASC; caller order irrelevant"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_two_phase_allocation_materialization_is_order_invariant",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "capture requests contain no final ids; preallocation bases allocate first; final triage and queue ids are identical across caller permutations"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_material_change_field_source_and_formula_table",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "every hard/soft/review class, exact >= boundary, 0/0 depth, one-sided missing book, source add/remove versus shared-source rule hash, and record-version-only change use the frozen semantics"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_post_cutoff_store_growth_preserves_t0_semantic_universe_identity",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "a real verified PIT store is built, an unrelated valid post-cutoff record is appended through PIT APIs, and rebuilt T0 universe mapping/id remains unchanged"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_newly_and_no_longer_observed_local_semantics",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "set-difference semantics require exact comparison_prior_universe_id; current-only gets local-new reason without fake change; prior-only is retained only in prior_only_market_ids with no triage/reopen; null prior disables both and swapped prior changes comparison-bound identity"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_alpha_lane_to_coverage_mapping_is_closed",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "exact lane/producer mapping only; unmapped and historical-unavailable cells remain UNKNOWN"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_visibility_and_freshness_clocks_are_distinct",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "ingestion controls PIT; observed_time controls freshness; == threshold fresh, > stale, future observed invalid"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_observed_universe_never_overclaims_external_completeness; test_shared_pit_review_conflicts_overlay_exact_scope_without_replacing_authority; test_conflict_only_metadata_does_not_admit_market",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "external completeness remains unproven; real shared PIT queries preserve authority while applying exact metadata/token/rule/source conflict overlays; conflict-only metadata does not admit a market"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_skip_accounting_exploration_caps_and_audit_replay",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "every current market finalizes once; reserved lanes/caps hold with deterministic NO-BACKFILL underfill semantics; deterministic audit/design fraction ignores outcomes"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_capture_requests_are_data_only",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "exact four request types arise only from frozen gap rules and no network/provider/scheduler behavior exists"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_identity_roundtrip_and_authority_boundaries; test_semantic_validation_is_symmetric_across_mapping_append_and_load",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery.py",
+        "expected_result": "closed schema rejects undeclared authority-like fields without forbidden-name reconstruction; correctly re-hashed semantic forgery is rejected by mapping/append/load while valid roundtrip remains symmetric"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_discovery_registry_append_only_hash_chain_and_refs",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery_registry.py",
+        "expected_result": "registry schema/hash chain/canonical order/idempotency/no-update-delete/cross-record refs hold"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_discovery_registry_invalid_batch_rolls_back",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery_registry.py",
+        "expected_result": "mixed invalid batch leaves registry unchanged"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_alpha_discovery_source_boundary",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_discovery_boundaries.py",
+        "expected_result": "new source has no network/Hermes/scheduler/WP170/paper/execution/risk client path and never mutates ALPHA-01"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "ALPHA-01/PIT regression",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_factory_records.py tests/data_layer/analytical_research/test_alpha_factory_identity.py tests/data_layer/analytical_research/test_alpha_factory_registry.py tests/data_layer/analytical_research/test_alpha_factory_boundaries.py tests/data_layer/point_in_time_market_research/test_as_of_query.py tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+        "expected_result": "existing Alpha records/registry and shared PIT query semantics remain green"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "repo truth/status",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
+        "expected_result": "WALLET-02 merged, ALPHA-02 current exact 17-path FAST/Risk-2 target, GATE-AF1 successor, H1#5/Gate-C/live unauthorized"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "committed-head historical architecture/full-diff guards",
+        "command": "python -m pytest -q tests/test_architecture_boundaries.py tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py tests/test_human_review_label_workflow_docs.py tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py tests/test_local_research_workflow_value_measurement_harness_contract_docs.py tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+        "expected_result": "after final commit, complete-diff/architecture guards accept exact 17-path package; staged-only results are not final"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "validation",
+        "test": "generated artifact and available security",
+        "command": "python tools/git/preflight_generated_artifact_guard.py; python tools/security/run_available_security_checks.py",
+        "expected_result": "artifact guard passes; available security checks pass and unavailable tools are honestly skipped"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "validation",
+        "test": "exact scope and readiness",
+        "command": "python tools/git/diff_scope_summary.py --base a2fba4d770cd6fac1cfb551419d040d65768a8e9 --head HEAD --wp-spec docs/wp_specs/S10-ALPHA-02/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-ALPHA-02/wp_prompt.txt --spec docs/wp_specs/S10-ALPHA-02/wp_spec.json --repo-root . --check-diff --base a2fba4d770cd6fac1cfb551419d040d65768a8e9 --head HEAD",
+        "expected_result": "17 required/actual, zero missing/extra/warnings and final committed-head readiness IMPLEMENTATION_READY"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "validation",
+        "test": "final full suite and hygiene",
+        "command": "python -m pip check; git diff --check a2fba4d770cd6fac1cfb551419d040d65768a8e9 HEAD --; python -m pytest -q",
+        "expected_result": "after final committed-head historical guards, one authoritative full suite passes; pip and committed diff clean"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "github",
+        "test": "pre-push drift, exact-head CI, narrow WP169 retry and final live evidence",
+        "command": "gh pr checks --watch",
+        "expected_result": "remote state is rechecked before push; one draft PR/CI lifecycle; at most one exact-head job-only retry only when every failure is inside the exact three-node WP169 reconnect allowlist with known timing shape; final PR/run re-fetch matches tested head before Side12 handoff"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-GATE-AF1",
+    "next_title": "Alpha Factory Research-System Quality, Coverage, Reproducibility and Authority Gate",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-ALPHA-03",
+    "forbidden_in_this_wp": [
+      "merge",
+      "S10-GATE-AF1 implementation or decision",
+      "S10-ALPHA-03 recurring campaign/scheduler implementation",
+      "S10-ALPHA-04 downstream outcome learning or adaptive allocator",
+      "S10-QUAL-01 qualification or B0/B1/B2 implementation",
+      "WP170 preregistered experiment construction or OOS evaluation",
+      "WP172 executable-edge economics",
+      "WP173 paper-trading execution",
+      "new Gamma/CLOB/Data API/RPC/WebSocket or other product network fetcher",
+      "automatic keyset/page walk or market-data crawler",
+      "Hermes/provider/model invocation, Firecrawl or H1 #5",
+      "scheduler, Prefect flow, cron, daemon, worker or bot loop",
+      "learned/ML/LLM triage or contextual-bandit allocator",
+      "automatic hypothesis/thesis/falsification generation",
+      "expected return, fair probability, trade-side, position size or profitability score",
+      "copyability or follower economics",
+      "credential, private key, signing, order create/cancel or execution",
+      "Gate C, capital or live trading",
+      "dependency or lock change",
+      "workflow change",
+      "mutation or migration of PIT, ALPHA-01, WALLET or WP170 stores/contracts",
+      "automatic append of REOPEN_TRIGGERED into ALPHA-01 registry",
+      "retrospective outcome-informed skipped-market/audit selection",
+      "historical Alpha-memory availability inference from current ALPHA-01 registry or ResearchEpisode.research_as_of",
+      "raw-id or invented-outer-prefix subject-ref matching instead of exact canonical PIT market:/event:/token: identifiers",
+      "complete-current-PIT-store digest in semantic T0 universe identity",
+      "allocation-dependent fields in a persisted triage record before allocation completes",
+      "final triage/queue ids embedded inside capture requests that contribute to triage identity",
+      "comparison-derived newly/prior-only semantics without exact comparison_prior_universe_id",
+      "automatic FEE_CONFIG capture request without a canonical v1 trigger"
+    ]
+  }
+}

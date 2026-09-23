@@ -1,6 +1,31 @@
 # Repo Truth Index
 
-## S10-WALLET-02 PIT Wallet Profiles (current implementation target)
+## S10-ALPHA-02 PIT Alpha Discovery Control Plane (current bounded implementation target)
+
+The canonical contract is `docs/alpha_discovery_control_plane_contract.md`; implementation is
+`src/data_layer/analytical_research/alpha_discovery.py` and the separate append-only registry
+`src/data_layer/analytical_research/alpha_discovery_registry.py`, with additive exports from
+`src/data_layer/analytical_research/__init__.py`. Focused evidence is in
+`tests/data_layer/analytical_research/test_alpha_discovery.py`,
+`tests/data_layer/analytical_research/test_alpha_discovery_registry.py`, and
+`tests/data_layer/analytical_research/test_alpha_discovery_boundaries.py`. The exact 17-path FAST,
+Risk-2 package is `docs/wp_specs/S10-ALPHA-02/`; its stable evidence fragment is
+`docs/status_entries/S10-ALPHA-02.md`. The frozen base is PR #190's merge commit
+`a2fba4d770cd6fac1cfb551419d040d65768a8e9`, whose implementation head is
+`2d53af9b3a51f8f9a27334e8bc3b2c40efe6864a`.
+
+ALPHA-02 implements deterministic local/offline observed-PIT-universe snapshots, typed material
+change, explicit historical-versus-current Alpha-memory posture, exact canonical PIT subject
+matching, complete current-market triage/skip evidence, bounded core/exploration/audit research
+allocation, inert prospective capture requests, and separate append-only discovery memory. It does
+not prove exhaustive external market completeness: coverage is `BOUNDED_OBSERVED_UNIVERSE` and
+external completeness is `UNPROVEN`. It does not fetch markets, invoke Hermes, schedule campaigns,
+mutate ALPHA-01, qualify research, compute expected return, create a strategy, place paper/live
+orders, or authorize Gate C/capital. H1 #5 and merge remain NOT AUTHORIZED. After separate review
+and merge, `S10-GATE-AF1` is the next gate; ALPHA-03/04 and downstream layers remain separately
+gated.
+
+## S10-WALLET-02 PIT Wallet Profiles (merged historical truth)
 
 The canonical contract is `docs/wallet_profile_snapshot_contract.md`; implementation is
 `src/data_layer/wallet_intelligence/profile.py` with additive exports from the package
@@ -19,8 +44,9 @@ research evidence only. The WP79 fixture-era profile remains compatibility histo
 not canonical real-evidence profiling. WALLET-03 retains copyability economics;
 WALLET-04 retains incremental-value evidence. No product network, Hermes, credentials,
 qualification, strategy, paper, execution, live, order, capital, or Gate-C authority is
-created. H1 #5 and merge are NOT AUTHORIZED. S10-ALPHA-02 is the next separately gated
-successor after review and merge.
+created. H1 #5 remains NOT AUTHORIZED. S10-WALLET-02 merged through PR #190 at
+`a2fba4d770cd6fac1cfb551419d040d65768a8e9`; S10-ALPHA-02 is now the separately authorized
+bounded implementation target.
 
 ## S10-HERMES-CTX-01 Blind-First Context Broker (merged historical truth)
 
