@@ -530,3 +530,7 @@ def test_wp164a_repo_truth_preserves_af1_block_and_phase_a_authority() -> None:
     assert "Attempt-01" in combined and "Attempt-02" in combined
     assert "Attempt-03" in combined and "not authorized" in combined.lower()
     assert "WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED" in combined
+    assert "exact governed scope from 11 to 13 paths" in combined
+    assert "WP165/WP166 test fixtures" in combined
+    assert "active=True" in combined and "closed=False" in combined
+    assert "31379495e70dee1a0d698300e3371911af62de3a" in combined

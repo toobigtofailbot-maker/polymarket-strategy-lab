@@ -85,10 +85,10 @@ or
 Do not silently widen scope.
 
 ===============================================================================
-3. EXACT SCOPE — 11 PATHS
+3. EXACT SCOPE — 13 PATHS
 ===============================================================================
 
-Required == allowed == max 11:
+Required == allowed == max 13:
 
 1. src/data_layer/point_in_time_market_research/polymarket_public_population.py
 2. tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py
@@ -101,6 +101,8 @@ Required == allowed == max 11:
 9. tests/test_repo_truth_docs.py
 10. docs/wp_specs/WP164A/wp_prompt.txt
 11. docs/wp_specs/WP164A/wp_spec.json
+12. tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py
+13. tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py
 
 Do NOT modify:
 - src/data_layer/point_in_time_market_research/__init__.py — the existing result class export remains valid;
@@ -447,7 +449,7 @@ STOP STATE_DRIFT
 - frozen main changed or overlapping WP164A work appeared.
 
 STOP SCOPE_EXPANSION_REQUIRED
-- a path outside the 11-path contract is mechanically required.
+- a path outside the 13-path contract is mechanically required.
 
 STOP AUTHORITY_EXPANSION_REQUIRED
 - implementation needs a capability not authorized here.
@@ -498,7 +500,7 @@ At the end of THIS Phase A, return only:
 
 - branch;
 - final committed Phase-A SHA;
-- exact 11-path diff;
+- exact 13-path diff;
 - exact PolymarketPublicPopulationResult schema delta;
 - exact market-status mapping implemented;
 - 25/1 offline oracle result;
@@ -540,6 +542,12 @@ END_NORMATIVE_RULE_MATRIX_V1
 ===============================================================================
 
 This is the minimum complete specification.
+
+Follow-up 01 authorizes only historical-test compatibility maintenance in the existing WP165 and
+WP166 test fixture helpers: replace raw `active: "open"` with live-shaped raw `active: true` and
+`closed: false`. No WP165/WP166 production source or WP164A product semantic changes are authorized.
+The historical failed candidate `31379495e70dee1a0d698300e3371911af62de3a` remains an ancestor;
+the final scope is exactly 13 required, 13 allowed, and maximum 13 paths.
 
 Do not add abstractions or files because they might be useful later.
 Do not repeat historical narrative in code/docs.

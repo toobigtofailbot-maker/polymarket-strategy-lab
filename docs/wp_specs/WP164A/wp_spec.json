@@ -32,7 +32,9 @@
       "tests/test_project_status_docs.py",
       "tests/test_repo_truth_docs.py",
       "docs/wp_specs/WP164A/wp_prompt.txt",
-      "docs/wp_specs/WP164A/wp_spec.json"
+      "docs/wp_specs/WP164A/wp_spec.json",
+      "tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py",
+      "tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py"
     ],
     "allowed_changed_files": [
       "src/data_layer/point_in_time_market_research/polymarket_public_population.py",
@@ -45,7 +47,9 @@
       "tests/test_project_status_docs.py",
       "tests/test_repo_truth_docs.py",
       "docs/wp_specs/WP164A/wp_prompt.txt",
-      "docs/wp_specs/WP164A/wp_spec.json"
+      "docs/wp_specs/WP164A/wp_spec.json",
+      "tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py",
+      "tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py"
     ],
     "forbidden_prefixes": [
       ".github/workflows/",
@@ -63,13 +67,15 @@
       "src/risk/",
       "tools/hermes/"
     ],
-    "max_changed_files": 11,
+    "max_changed_files": 13,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       "docs/project_status.md",
       "docs/repo_truth_index.md",
       "tests/test_project_status_docs.py",
-      "tests/test_repo_truth_docs.py"
+      "tests/test_repo_truth_docs.py",
+      "tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py",
+      "tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py"
     ],
     "rollback_surface": "Revert WP164A. The additive WP164 batch-diagnostic result fields, truthful rejection-stage counts, population-local open/closed normalization, focused tests, contract/status/spec records and repo-truth updates disappear. No AF1 branch, Hermes, credentials, scheduler, trading, dependency or workflow state is created by Phase A; any separately authorized public-smoke local artifacts remain noncanonical audit material only.",
     "mode_boundaries": [
@@ -283,7 +289,7 @@
       {
         "from_state": "LOCAL_DRAFT",
         "to_state": "DRAFTABILITY_PASS",
-        "condition": "prompt/spec authority equality, exact 11-path scope, semantic rules, evidence plan and RUNTIME readiness pass",
+        "condition": "prompt/spec authority equality, exact 13-path scope, semantic rules, evidence plan and RUNTIME readiness pass",
         "failure_category": "DRAFTABILITY_INCOMPLETE"
       },
       {
@@ -295,7 +301,7 @@
       {
         "from_state": "AUTHORIZED",
         "to_state": "IMPLEMENTED_LOCAL",
-        "condition": "implementation remains inside the exact 11-path scope and all Phase-A validation passes with zero real product-network, credential, scheduler, Hermes, strategy, paper, execution, live or capital activity",
+        "condition": "implementation remains inside the exact 13-path scope and all Phase-A validation passes with zero real product-network, credential, scheduler, Hermes, strategy, paper, execution, live or capital activity",
         "failure_category": "SEMANTIC_CONTRADICTION"
       }
     ]
@@ -451,7 +457,7 @@
         "source": "validation",
         "test": "exact scope and readiness",
         "command": "python tools/git/diff_scope_summary.py --base 46bc862018208b30971228ed719c7e9337142b41 --head HEAD --wp-spec docs/wp_specs/WP164A/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP164A/wp_prompt.txt --spec docs/wp_specs/WP164A/wp_spec.json --repo-root . --check-diff --base 46bc862018208b30971228ed719c7e9337142b41 --head HEAD",
-        "expected_result": "11 required equals 11 allowed equals 11 actual changed paths with zero warnings and committed-head readiness IMPLEMENTATION_READY"
+        "expected_result": "13 required equals 13 allowed equals 13 actual changed paths with zero warnings and committed-head readiness IMPLEMENTATION_READY"
       },
       {
         "requirement_id": "R010",
@@ -473,6 +479,13 @@
         "test": "future public smoke control",
         "command": "review-frozen-smoke-envelope",
         "expected_result": "the Phase-A report proposes one fresh workspace with a pre-call invocation sentinel, immediate complete typed-result persistence, one 25/1 invocation, zero retry and no AF1 or Hermes authority"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "WP165/WP166 historical fixture compatibility",
+        "command": "python -m pytest -q tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py",
+        "expected_result": "the historical WP165/WP166 test fixtures use raw active true and closed false while production lifecycle semantics remain unchanged"
       }
     ]
   },

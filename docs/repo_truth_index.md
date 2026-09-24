@@ -19,7 +19,7 @@ S10-GATE-AF1 remains blocked; Attempt-01 and Attempt-02 are historical invalidat
 only; Attempt-03 and the WP164A public smoke are not authorized. The required Phase-A stop is
 `WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`.
 
-## WP156A Large Canonical Payload Batch Fingerprint Correction (current review target)
+## WP156A Large Canonical Payload Batch Fingerprint Correction (merged historical truth)
 
 WP156A is the FAST-track, Risk-2, exact 12-file upstream correction on frozen main
 `46bc862018208b30971228ed719c7e9337142b41`. Its package is
@@ -48,10 +48,16 @@ No product/network, public smoke, AF1, Hermes/provider, credential, scheduler, s
 paper, execution, live, order, capital, dependency, lock, workflow, or merge authority
 is created by the implementation package. The SIDE12 WP156A final one-shot closure later
 grants contingent PR/CI/merge authority only after every exact-head hard gate passes.
-WP164A reconciliation and a new zero-network Phase-A candidate remain separately gated.
+WP164A reconciliation and a new zero-network Phase-A candidate were separately gated.
 AF1 Attempt-03 remains unauthorized.
 
-## S10-ALPHA-02 PIT Alpha Discovery Control Plane (current bounded implementation target)
+Follow-up 01 expands the exact governed scope from 11 to 13 paths solely to maintain the historical
+WP165/WP166 test fixtures that reuse WP164 parsing. Their central raw Gamma helpers now use exact
+live-shaped `active=True` and `closed=False`; no WP165/WP166 production source or lifecycle grammar
+is changed. Historical failed candidate `31379495e70dee1a0d698300e3371911af62de3a` remains an
+ancestor of the definitive correction candidate.
+
+## S10-ALPHA-02 PIT Alpha Discovery Control Plane (merged historical truth)
 
 The canonical contract is `docs/alpha_discovery_control_plane_contract.md`; implementation is
 `src/data_layer/analytical_research/alpha_discovery.py` and the separate append-only registry

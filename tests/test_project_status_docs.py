@@ -4551,7 +4551,7 @@ def test_wp164a_is_active_bounded_upstream_repair() -> None:
         if line.startswith("# WP164A active bounded upstream repair")
     )
     assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
-    assert "Exact changed-file scope: 11" in current
+    assert "Exact changed-file scope: 13" in current
     assert "46bc862018208b30971228ed719c7e9337142b41" in current
     assert "PR #191 / S10-ALPHA-02 merged: YES" in current
     assert "Phase-A public-product calls: 0" in current
@@ -4563,4 +4563,14 @@ def test_wp164a_is_active_bounded_upstream_repair() -> None:
     assert "Merge authorized: NO" in current
     scope = spec["scope"]
     assert scope["required_changed_files"] == scope["allowed_changed_files"]
-    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 11
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 13
+    assert (
+        "tests/data_layer/point_in_time_market_research/"
+        "test_polymarket_incremental_population.py"
+        in scope["required_changed_files"]
+    )
+    assert (
+        "tests/data_layer/point_in_time_market_research/"
+        "test_polymarket_scaled_population.py"
+        in scope["required_changed_files"]
+    )
