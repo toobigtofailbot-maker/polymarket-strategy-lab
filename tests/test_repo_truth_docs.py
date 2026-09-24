@@ -534,3 +534,8 @@ def test_wp164a_repo_truth_preserves_af1_block_and_phase_a_authority() -> None:
     assert "WP165/WP166 test fixtures" in combined
     assert "active=True" in combined and "closed=False" in combined
     assert "31379495e70dee1a0d698300e3371911af62de3a" in combined
+    assert "17ce49aa96c798244d852fc5daf16299bee79ef9" in combined
+    assert "WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT" in combined
+    assert "six additive build fields" in combined
+    assert "PAYLOAD_SEQUENCE_LIMIT_EXCEEDED" in combined
+    assert "future Attempt-02" in combined

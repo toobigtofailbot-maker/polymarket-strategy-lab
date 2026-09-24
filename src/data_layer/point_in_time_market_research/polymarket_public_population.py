@@ -53,6 +53,7 @@ from .record_store import (
 from .records import (
     MarketObservationRecord,
     PointInTimeBatchValidationResult,
+    PointInTimeBuildResult,
     SUPPORTED_SCHEMA_ID,
     SUPPORTED_SCHEMA_VERSION,
     build_market_observation,
@@ -190,6 +191,12 @@ class PolymarketPublicPopulationResult:
     batch_exact_duplicate_record_version_ids: tuple[str, ...] = ()
     batch_quarantined_record_version_ids: tuple[str, ...] = ()
     canonical_batch_sha256: str | None = None
+    build_failure_observation_kind: str | None = None
+    build_status: str | None = None
+    build_error_codes: tuple[str, ...] = ()
+    build_warning_codes: tuple[str, ...] = ()
+    build_quarantine_id: str | None = None
+    build_input_fingerprint_sha256: str | None = None
 
 
 # ── Internal control-flow rejection ───────────────────────────────────────────
@@ -200,6 +207,29 @@ class _PopulationReject(Exception):
 
     def __init__(self, code: str):
         self.code = code
+
+
+class _BuildFailure(_PopulationReject):
+    """Carry only the closed safe diagnostics from an invalid WP156 build."""
+
+    def __init__(
+        self,
+        observation_kind: str,
+        built: PointInTimeBuildResult,
+    ):
+        super().__init__("POPULATION_BUILD_FAILED")
+        self.observation_kind = observation_kind
+        self.build_status = built.status
+        self.build_error_codes = tuple(built.error_codes)
+        self.build_warning_codes = tuple(built.warning_codes)
+        self.build_quarantine_id = (
+            None if built.quarantine is None else built.quarantine.quarantine_id
+        )
+        self.build_input_fingerprint_sha256 = (
+            None
+            if built.quarantine is None
+            else built.quarantine.input_fingerprint_sha256
+        )
 
 
 def _order(codes: tuple[str, ...]) -> tuple[str, ...]:
@@ -232,6 +262,12 @@ def _result(
     network_used: bool = False,
     recovery_required: bool = False,
     batch: PointInTimeBatchValidationResult | None = None,
+    build_failure_observation_kind: str | None = None,
+    build_status: str | None = None,
+    build_error_codes: tuple[str, ...] = (),
+    build_warning_codes: tuple[str, ...] = (),
+    build_quarantine_id: str | None = None,
+    build_input_fingerprint_sha256: str | None = None,
 ) -> PolymarketPublicPopulationResult:
     return PolymarketPublicPopulationResult(
         is_valid=is_valid,
@@ -274,6 +310,12 @@ def _result(
         canonical_batch_sha256=(
             None if batch is None else batch.canonical_batch_sha256
         ),
+        build_failure_observation_kind=build_failure_observation_kind,
+        build_status=build_status,
+        build_error_codes=tuple(build_error_codes),
+        build_warning_codes=tuple(build_warning_codes),
+        build_quarantine_id=build_quarantine_id,
+        build_input_fingerprint_sha256=build_input_fingerprint_sha256,
     )
 
 
@@ -526,8 +568,30 @@ def _parse_markets(raw_items: list[dict]) -> list[tuple[str, str, dict]]:
     return parsed
 
 
+def _identity_json_bytes(value: object) -> bytes:
+    """Encode identity preimages without preempting WP156 sequence diagnostics.
+
+    Valid WP156-bounded values retain exactly the existing bytes.  An oversized
+    sequence is encoded only so the immutable identity inputs can be derived and
+    the authoritative WP156 builder can return its closed typed rejection.  This
+    does not make the payload valid or grant persistence authority.
+    """
+
+    try:
+        return canonical_json_bytes(value)
+    except ValueError as exc:
+        if str(exc) != "PAYLOAD_SEQUENCE_LIMIT_EXCEEDED":
+            raise
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+
+
 def _content_id(prefix: str, preimage: dict) -> str:
-    return prefix + sha256_hex(canonical_json_bytes(preimage))
+    return prefix + sha256_hex(_identity_json_bytes(preimage))
 
 
 def _build_gamma_record(
@@ -587,7 +651,7 @@ def _build_gamma_record(
         "human_review_required": False,
         "canonical_payload": payload,
     }
-    return _build_or_reject(input_record)
+    return _build_or_reject(input_record, "MARKET_METADATA")
 
 
 def _normalize_order_book(raw_book: dict, raw_token_id: str) -> dict:
@@ -683,10 +747,13 @@ def _build_order_book_record(
         "human_review_required": False,
         "canonical_payload": payload,
     }
-    return _build_or_reject(input_record)
+    return _build_or_reject(input_record, "ORDER_BOOK")
 
 
-def _build_or_reject(input_record: dict) -> MarketObservationRecord:
+def _build_or_reject(
+    input_record: dict,
+    observation_kind: str,
+) -> MarketObservationRecord:
     try:
         built = build_market_observation(input_record)
     except _PopulationReject:
@@ -694,7 +761,7 @@ def _build_or_reject(input_record: dict) -> MarketObservationRecord:
     except Exception:
         raise _PopulationReject("POPULATION_BUILD_FAILED")
     if not built.is_valid or built.record is None:
-        raise _PopulationReject("POPULATION_BUILD_FAILED")
+        raise _BuildFailure(observation_kind, built)
     if type(built.record) is not MarketObservationRecord:
         raise _PopulationReject("POPULATION_BUILD_FAILED")
     return built.record
@@ -1023,6 +1090,8 @@ def _run_network_population(
     fetched_order_book_count = 0
     built_record_count = 0
     batch: PointInTimeBatchValidationResult | None = None
+    captured_at_utc: str | None = None
+    snapshot_id: str | None = None
     try:
         active_client = client
         if active_client is None:
@@ -1057,11 +1126,11 @@ def _run_network_population(
             key=lambda item: (item[0]["market_id"], "token:polymarket:" + item[1]),
         )
         gamma_payload_hashes = [
-            sha256_hex(canonical_json_bytes(normalized["payload"]))
+            sha256_hex(_identity_json_bytes(normalized["payload"]))
             for _market_id, _raw_gamma_id, normalized in gamma_sorted
         ]
         clob_payload_hashes = [
-            sha256_hex(canonical_json_bytes(payload))
+            sha256_hex(_identity_json_bytes(payload))
             for _parent, _token, payload in book_sorted
         ]
         snapshot_id, ingestion_batch_id = _run_identities(
@@ -1104,11 +1173,35 @@ def _run_network_population(
         batch = _validate_batch(records)
         if not _batch_meets_population_contract(batch, records):
             raise _PopulationReject("POPULATION_BATCH_INVALID")
+    except _BuildFailure as reject:
+        return _result(
+            is_valid=False,
+            status="POPULATION_REJECTED",
+            error_codes=(reject.code,),
+            snapshot_id=snapshot_id,
+            captured_at_utc=captured_at_utc,
+            fetched_market_count=fetched_market_count,
+            fetched_order_book_count=fetched_order_book_count,
+            built_record_count=built_record_count,
+            network_used=network_used,
+            batch=batch,
+            build_failure_observation_kind=reject.observation_kind,
+            build_status=reject.build_status,
+            build_error_codes=reject.build_error_codes,
+            build_warning_codes=reject.build_warning_codes,
+            build_quarantine_id=reject.build_quarantine_id,
+            build_input_fingerprint_sha256=(
+                reject.build_input_fingerprint_sha256
+            ),
+            **limits,
+        )
     except _PopulationReject as reject:
         return _result(
             is_valid=False,
             status="POPULATION_REJECTED",
             error_codes=(reject.code,),
+            snapshot_id=snapshot_id,
+            captured_at_utc=captured_at_utc,
             fetched_market_count=fetched_market_count,
             fetched_order_book_count=fetched_order_book_count,
             built_record_count=built_record_count,

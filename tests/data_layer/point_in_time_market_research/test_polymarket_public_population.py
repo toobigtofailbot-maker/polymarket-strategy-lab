@@ -920,9 +920,22 @@ def test_malformed_clob_response_rejected_and_no_write():
 # ── Build / payload ───────────────────────────────────────────────────────────
 
 
-def test_empty_outcomes_rejected_by_builder():
+@pytest.mark.parametrize(
+    ("tokens", "outcomes", "expected_build_errors"),
+    [
+        (("a",), [], ("FIELD_TYPE_INVALID",)),
+        (
+            tuple(f"token-{index}" for index in range(257)),
+            None,
+            ("PAYLOAD_SEQUENCE_LIMIT_EXCEEDED",),
+        ),
+    ],
+)
+def test_metadata_build_failure_retains_closed_wp156_diagnostics(
+    tokens, outcomes, expected_build_errors
+):
     record_path, manifest_path = _stores()
-    client = FakeClient([_market("100", ["a"], outcomes=[])])
+    client = FakeClient([_market("100", tokens, outcomes=outcomes)])
     result = populate_initial_polymarket_public_data(
         record_path,
         manifest_path,
@@ -931,9 +944,22 @@ def test_empty_outcomes_rejected_by_builder():
         utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_BUILD_FAILED",)
+    assert result.build_failure_observation_kind == "MARKET_METADATA"
+    assert result.build_status == "REJECTED_CONTRACT"
+    assert result.build_error_codes == expected_build_errors
+    assert result.build_warning_codes == ("EVENT_TIME_MISSING_ALLOWED",)
+    assert result.build_quarantine_id is not None
+    assert result.build_input_fingerprint_sha256 is not None
+    assert result.snapshot_id is not None
+    assert result.captured_at_utc == "2026-08-14T12:00:00Z"
+    assert (result.fetched_market_count, result.built_record_count) == (1, 0)
+    assert result.batch_is_valid is None
+    assert result.batch_status is None
+    assert result.batch_error_codes == ()
     assert (
         load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
     )
+    assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
 
 
 def test_normalized_payload_excludes_float_fields():
@@ -1205,6 +1231,61 @@ def test_wp164a_twenty_five_market_one_book_offline_pipeline():
         == typed_batch.quarantined_record_version_ids
     )
     assert result.canonical_batch_sha256 == typed_batch.canonical_batch_sha256
+    assert result.build_failure_observation_kind is None
+    assert result.build_status is None
+    assert result.build_error_codes == ()
+    assert result.build_warning_codes == ()
+    assert result.build_quarantine_id is None
+    assert result.build_input_fingerprint_sha256 is None
+
+
+def test_wp164a_deep_book_retains_exact_order_book_build_diagnostics():
+    markets = [
+        _market(
+            str(index),
+            [f"token-{index}-yes", f"token-{index}-no"],
+            condition=f"0xcondition{index:02d}",
+        )
+        for index in range(25)
+    ]
+    selected_token = "token-0-yes"
+    deep_bids = tuple(("0.40", str(index + 1)) for index in range(257))
+    record_path, manifest_path = _stores()
+    result = populate_initial_polymarket_public_data(
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=25, order_books_limit=1),
+        client=FakeClient(
+            markets,
+            books={selected_token: _book(selected_token, bids=deep_bids)},
+        ),
+        now_provider=_advancing_now(),
+        utcnow_provider=_clock,
+    )
+
+    assert result.error_codes == ("POPULATION_BUILD_FAILED",)
+    assert (result.fetched_market_count, result.fetched_order_book_count) == (25, 1)
+    assert (result.built_record_count, result.inserted_record_count) == (25, 0)
+    assert result.build_failure_observation_kind == "ORDER_BOOK"
+    assert result.build_status == "REJECTED_CONTRACT"
+    assert result.build_error_codes == ("PAYLOAD_SEQUENCE_LIMIT_EXCEEDED",)
+    assert result.build_warning_codes == ("EVENT_TIME_MISSING_ALLOWED",)
+    assert result.build_quarantine_id is not None
+    assert result.build_input_fingerprint_sha256 is not None
+    assert result.snapshot_id is not None
+    assert result.captured_at_utc == "2026-08-14T12:00:00Z"
+    assert result.batch_is_valid is None
+    assert result.batch_status is None
+    assert result.batch_error_codes == ()
+    assert result.batch_warning_codes == ()
+    assert result.batch_accepted_record_version_ids == ()
+    assert result.batch_exact_duplicate_record_version_ids == ()
+    assert result.batch_quarantined_record_version_ids == ()
+    assert result.canonical_batch_sha256 is None
+    assert (
+        load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    )
+    assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
 
 
 # ── Persistence order ─────────────────────────────────────────────────────────

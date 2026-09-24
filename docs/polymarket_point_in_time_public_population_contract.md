@@ -14,9 +14,9 @@ point-in-time research foundation. It coordinates existing merged layers; it doe
 not redesign them.
 
 WP164A is a bounded compatibility repair to this existing coordinator. It adds
-closed typed batch diagnostics, truthful completed-stage counts, and strict
-population-local Gamma lifecycle normalization. It does not add a client,
-endpoint, retry, scheduler, credential, or trading authority.
+closed typed batch and build-failure diagnostics, truthful completed-stage
+counts, and strict population-local Gamma lifecycle normalization. It does not
+add a client, endpoint, retry, scheduler, credential, or trading authority.
 
 ## Official public endpoint basis
 
@@ -106,6 +106,17 @@ when WP156 is valid but WP164's stricter one-accepted-id-per-input invariant
 rejects the population. They contain no raw payload, URL, path, exception text,
 or repr. If batch validation never completes, only the defaults are returned.
 
+The build-diagnostic extension appends six more fail-closed fields:
+`build_failure_observation_kind`, `build_status`, `build_error_codes`,
+`build_warning_codes`, `build_quarantine_id`, and
+`build_input_fingerprint_sha256`. A completed invalid
+`PointInTimeBuildResult` keeps the outer `POPULATION_BUILD_FAILED` code while
+copying only those closed WP156 fields. Observation kind is exactly
+`MARKET_METADATA` or `ORDER_BOOK`. No input record, canonical payload, question,
+market/token identifier, exception, URL, path, or provider content crosses this
+diagnostic boundary. Paths that do not invoke the builder and successful
+populations retain null/empty defaults.
+
 ## Dry-run posture
 
 With the default `allow_network=False`, after verifying valid stores, an empty
@@ -151,6 +162,12 @@ returns, and inserted records only after the append commits. Any later rejection
 preserves these known values and leaves unreached stages at zero. Counts never
 stand in for batch validity, persistence, or registration evidence.
 
+On a build rejection, the result also preserves the already-captured
+`captured_at_utc` and already-derived `snapshot_id`. A metadata failure before
+the first successful build reports zero built records; a later metadata failure
+reports the exact successful prefix; and an order-book failure after 25 metadata
+builds reports 25. No partial batch is persisted.
+
 ## Optional CLOB normalization
 
 Each selected token becomes one WP156 `ORDER_BOOK` observation whose parent is the
@@ -184,6 +201,13 @@ normalizer/validator versions:
 No random UUID is used and API response order never controls dataset identity. The
 final record order is Gamma `MARKET_METADATA` sorted by namespaced `market_id`,
 then `ORDER_BOOK` sorted by `market_id` then `token_id`.
+
+For identity derivation only, values already within WP156 bounds retain the
+exact existing canonical bytes. If an otherwise normalized payload contains an
+oversized sequence, deterministic JSON-compatible identity bytes are derived so
+the authoritative WP156 builder—not the preliminary identity step—returns the
+closed `PAYLOAD_SEQUENCE_LIMIT_EXCEEDED` result. This does not weaken
+`canonical_json_bytes`, validate or reshape the payload, or grant persistence.
 
 ## WP156 validation before persistence
 

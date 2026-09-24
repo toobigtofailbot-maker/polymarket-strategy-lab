@@ -10,8 +10,9 @@ stable fragment is `docs/status_entries/WP164A.md`. The frozen base is PR #191's
 `46bc862018208b30971228ed719c7e9337142b41`, whose S10-ALPHA-02 implementation head is
 `40bcee515251d2e958754bddd3dfae278928ec5c`.
 
-WP164A preserves the complete typed WP156 batch result after validation, retains truthful completed
-stage counts on later rejection, and maps raw Gamma lifecycle booleans locally to exactly `open` or
+WP164A preserves the complete typed WP156 batch result after validation and the closed safe fields
+from a completed invalid WP156 build result, retains truthful completed stage counts and already
+derived run provenance on later rejection, and maps raw Gamma lifecycle booleans locally to exactly `open` or
 `closed`, rejecting every other shape. Its 25-market/1-book proof is synthetic and offline. Phase A
 makes zero real public-product calls and does not modify `PolymarketPublicClient`, WP156, Alpha,
 Hermes, credentials, scheduler, dependencies, workflows, paper, execution, or live paths.
@@ -50,6 +51,18 @@ is created by the implementation package. The SIDE12 WP156A final one-shot closu
 grants contingent PR/CI/merge authority only after every exact-head hard gate passes.
 WP164A reconciliation and a new zero-network Phase-A candidate were separately gated.
 AF1 Attempt-03 remains unauthorized.
+
+The definitive pre-smoke Phase-A SHA
+`17ce49aa96c798244d852fc5daf16299bee79ef9` and historical candidate
+`31379495e70dee1a0d698300e3371911af62de3a` remain ancestors. WP164A public
+smoke Attempt-01 is consumed as `WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT` and
+cannot be retried. Build-diagnostic correction 02 remains inside the exact 13
+paths and performs zero network calls. Its six additive build fields retain only
+kind, status, errors, warnings, quarantine id, and structural input fingerprint.
+The offline 257-level book oracle proves `PAYLOAD_SEQUENCE_LIMIT_EXCEEDED` after
+25 successful metadata builds without truncation, persistence, or batch
+validation. Any future Attempt-02 requires a new SHA, workspace, sentinel,
+authorization envelope, and explicit human authorization.
 
 Follow-up 01 expands the exact governed scope from 11 to 13 paths solely to maintain the historical
 WP165/WP166 test fixtures that reuse WP164 parsing. Their central raw Gamma helpers now use exact

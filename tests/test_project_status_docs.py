@@ -4554,8 +4554,12 @@ def test_wp164a_is_active_bounded_upstream_repair() -> None:
     assert "Exact changed-file scope: 13" in current
     assert "46bc862018208b30971228ed719c7e9337142b41" in current
     assert "PR #191 / S10-ALPHA-02 merged: YES" in current
-    assert "Phase-A public-product calls: 0" in current
-    assert "public repair smoke: NOT AUTHORIZED" in current
+    assert "Phase-A correction public-product calls: 0" in current
+    assert "public repair smoke Attempt-02: NOT AUTHORIZED" in current
+    assert "WP164A public smoke Attempt-01: CONSUMED" in current
+    assert "WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT" in current
+    assert "17ce49aa96c798244d852fc5daf16299bee79ef9" in current
+    assert "257-level deep-book rejection oracle" in current
     assert "S10-GATE-AF1: BLOCKED" in current
     assert "AF1 Attempt-01/02: historical invalidated/consumed evidence only" in current
     assert "AF1 Attempt-03: NOT AUTHORIZED" in current

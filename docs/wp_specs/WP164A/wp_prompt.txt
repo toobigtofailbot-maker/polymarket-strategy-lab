@@ -535,6 +535,8 @@ NR006|population|offline_pipeline|twenty_five_one|REQUIRE|prove_bounded_pipeline
 NR007|phase_a|network|before_smoke_authorization|FORBID|keep_offline|phase_a.network_posture|R010
 NR008|smoke|public_call|later_authorized|REQUIRE|single_nonretryable_call|smoke.one_call|R012
 NR009|downstream|af1|wp164a_phase_a|FORBID|keep_blocked|downstream.af1_blocked|R007
+NR010|population|build_diagnostics|completed_invalid_build|REQUIRE|preserve_closed_build_result|population.build_diagnostics|R014
+NR011|smoke|result_comparison|future_authorized_attempt|REQUIRE|compare_canonical_json_bytes|smoke.one_call|R015
 END_NORMATIVE_RULE_MATRIX_V1
 
 ===============================================================================
@@ -556,5 +558,48 @@ Use one parameterized diagnostic/count/status matrix plus the one 25/1 end-to-en
 
 If a proposed addition does not change implementation, validation, authority, scope, state or
 evidence, omit it.
+
+===============================================================================
+20. BUILD-DIAGNOSTIC CORRECTION 02 — SAME WP / SAME 13 PATHS / ZERO NETWORK
+===============================================================================
+
+WP164A public smoke Attempt-01 at
+`17ce49aa96c798244d852fc5daf16299bee79ef9` is consumed and permanently
+non-retryable with terminal
+`WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT`. Preserve its immutable artifacts;
+do not run Attempt-02 under this package correction.
+
+Append exactly these fail-closed result fields:
+- build_failure_observation_kind: str | None = None
+- build_status: str | None = None
+- build_error_codes: tuple[str, ...] = ()
+- build_warning_codes: tuple[str, ...] = ()
+- build_quarantine_id: str | None = None
+- build_input_fingerprint_sha256: str | None = None
+
+After a completed invalid `build_market_observation`, keep outer
+`POPULATION_BUILD_FAILED`; copy the exact WP156 status/errors/warnings and, when
+present, only quarantine id and input fingerprint. Kind is exactly
+`MARKET_METADATA` or `ORDER_BOOK`. Never expose raw input/payload, question,
+market/token ids solely for diagnostics, exception, URL, path, or provider
+content. Preserve already-captured `captured_at_utc`, derived `snapshot_id`,
+actual fetch counts, and the exact successful-build prefix. Do not persist a
+partial batch.
+
+Add a parameterized metadata rejection proof and a 25-market/1-book deep-book
+proof with 257 valid levels. The latter must retain
+`PAYLOAD_SEQUENCE_LIMIT_EXCEEDED`, report 25 successful metadata builds, keep
+batch fields null/empty, and leave both stores empty. Do not truncate, sample,
+drop, cap, weaken WP156, skip the book, or change the 25/1 envelope. The existing
+25/1 success oracle remains green.
+
+For any future separately authorized smoke, write immutable JSON once, read it
+back, canonical-normalize both the typed result and decoded artifact to the same
+JSON-compatible representation, compare canonical JSON bytes and SHA-256, and
+optionally reconstruct the typed result separately. Never rewrite the artifact
+to make tuple/list structural equality pass.
+
+Correction validation is offline. The successful stop remains:
+`WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`.
 
 END SIDE12 — WP164A FINAL ONE-SHOT IMPLEMENTATION WP — SPECIFICATION CLOSED

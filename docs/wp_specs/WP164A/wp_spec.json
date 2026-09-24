@@ -15,7 +15,7 @@
       "merge_sha": "46bc862018208b30971228ed719c7e9337142b41"
     },
     "suggested_branch": "codex/wp164a-public-population-repair",
-    "objective": "Repair the merged WP164 bounded public-population layer before any S10-GATE-AF1 Attempt-03: retain the complete typed WP156 batch-validation result, preserve truthful stage counts on later rejection, normalize live Gamma lifecycle booleans into the exact open/closed vocabulary required by downstream Alpha discovery, and prove the 25-market/1-book path offline. Phase A performs zero public-market calls. A later one-call public smoke remains separately authorized and non-retryable.",
+    "objective": "Repair the merged WP164 bounded public-population layer before any S10-GATE-AF1 Attempt-03: retain the complete typed WP156 batch-validation and failed-build diagnostics, preserve truthful stage counts and already-derived provenance on later rejection, normalize live Gamma lifecycle booleans into the exact open/closed vocabulary required by downstream Alpha discovery, and prove the 25-market/1-book success and 257-level rejection paths offline. Phase A performs zero public-market calls. Consumed smoke Attempt-01 is immutable and non-retryable; any later Attempt-02 remains separately authorized.",
     "capital_at_risk_usd": 0,
     "xl_explicit_authorization": false,
     "xl_authorization_basis": null
@@ -165,7 +165,7 @@
   },
   "api_matrix": {
     "applicable": true,
-    "reason": "WP164A makes three bounded compatibility changes to the existing WP164 public-population surface and does not add another population API.",
+    "reason": "WP164A makes bounded additive diagnostic and compatibility changes to the existing WP164 public-population surface and does not add another population API.",
     "items": [
       {
         "surface": "PolymarketPublicPopulationResult batch diagnostics",
@@ -174,6 +174,14 @@
         "change_authorized": true,
         "compatibility_requirement": "Existing fields and public functions remain; new fields have fail-closed defaults for paths that never complete batch validation; no raw payload or exception text is exposed.",
         "authority": "ADDITIVE_BATCH_DIAGNOSTICS"
+      },
+      {
+        "surface": "PolymarketPublicPopulationResult build diagnostics",
+        "before": "POPULATION_BUILD_FAILED exposes only the WP164 umbrella error and discards a completed invalid PointInTimeBuildResult.",
+        "after": "Six nullable/empty additive fields copy only exact safe WP156 build status, errors, warnings, observation kind, quarantine id and structural input fingerprint while preserving already-derived run provenance.",
+        "change_authorized": true,
+        "compatibility_requirement": "The outer error remains POPULATION_BUILD_FAILED; successful/non-build paths use defaults; no raw input, payload, question, identifier, exception, URL, path or provider content is exposed.",
+        "authority": "ADDITIVE_BUILD_DIAGNOSTICS"
       },
       {
         "surface": "WP164 network-population rejection stage counts",
@@ -208,6 +216,19 @@
         "validation_rule": "No completed typed batch field is dropped or truncated; paths that never complete validation use only null/empty defaults; POPULATION_BATCH_INVALID remains the outer WP164 rejection.",
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "complete bounded closed WP156 diagnostics",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "population.build_diagnostics",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "After a completed invalid build_market_observation call, retain exactly build_failure_observation_kind, build_status, build_error_codes, build_warning_codes, build_quarantine_id and build_input_fingerprint_sha256 while the outer error remains POPULATION_BUILD_FAILED.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Kind is MARKET_METADATA or ORDER_BOOK; already-derived captured_at_utc and snapshot_id plus exact successful-build prefix are preserved; raw or arbitrary provider data never crosses the result boundary.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed safe WP156 build diagnostics",
         "derivation_rule_id": null
       },
       {
@@ -253,11 +274,11 @@
         "path": "smoke.one_call",
         "source": "CONSTANT",
         "type": "mapping",
-        "required_rule": "A later separately authorized WP164A smoke uses a fresh local workspace, atomically creates a pre-call invocation sentinel, permits exactly one 25-market/1-book WP164 invocation, immediately persists the complete typed result, and never retries the same workspace.",
+        "required_rule": "A later separately authorized WP164A smoke uses a fresh local workspace, atomically creates a pre-call invocation sentinel, permits exactly one 25-market/1-book WP164 invocation, immediately persists the complete typed result once, canonical-normalizes both in-memory and decoded JSON values, compares canonical bytes and SHA-256, and never retries or rewrites the artifact.",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "Existing sentinel means zero new call; process failure after sentinel consumes the workspace; another call requires a new human authorization and fresh workspace.",
+        "validation_rule": "Existing sentinel means zero new call; process failure after sentinel consumes the workspace; tuple/list structural equality is not used; another call requires a new human authorization and fresh workspace.",
         "failure_category": "AUTHORITY_CONTRADICTION",
         "safe_output": "one non-retryable bounded public smoke",
         "derivation_rule_id": null
@@ -486,6 +507,20 @@
         "test": "WP165/WP166 historical fixture compatibility",
         "command": "python -m pytest -q tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py",
         "expected_result": "the historical WP165/WP166 test fixtures use raw active true and closed false while production lifecycle semantics remain unchanged"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_metadata_build_failure_retains_closed_wp156_diagnostics and test_wp164a_deep_book_retains_exact_order_book_build_diagnostics",
+        "command": "python -m pytest -q tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py",
+        "expected_result": "metadata and 257-level order-book failures retain exact closed WP156 build diagnostics, truthful build prefixes and run provenance, keep batch diagnostics empty, and persist nothing"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "review",
+        "test": "future smoke result comparison procedure",
+        "command": "review-frozen-smoke-envelope",
+        "expected_result": "future smoke writes immutable JSON once and compares canonical JSON-compatible bytes and SHA-256 after readback without rewriting the artifact"
       }
     ]
   },

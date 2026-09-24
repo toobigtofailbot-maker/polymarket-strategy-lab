@@ -168,6 +168,19 @@ def test_wp164a_additive_diagnostics_and_stage_counts_are_documented():
     assert "before book normalization" in text
     assert "immediately after its builder returns" in text
     assert "only after the append commits" in text
+    for field in (
+        "build_failure_observation_kind",
+        "build_status",
+        "build_error_codes",
+        "build_warning_codes",
+        "build_quarantine_id",
+        "build_input_fingerprint_sha256",
+    ):
+        assert field in text
+    assert "completed invalid `PointInTimeBuildResult`" in text
+    assert "already-derived `snapshot_id`" in text
+    assert "PAYLOAD_SEQUENCE_LIMIT_EXCEEDED" in text
+    assert "does not weaken `canonical_json_bytes`" in text
 
 
 def test_wp164a_population_local_lifecycle_mapping_is_closed():
