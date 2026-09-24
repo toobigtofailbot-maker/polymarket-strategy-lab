@@ -56,12 +56,22 @@ def _request_info(status: int = 200) -> ReadOnlyRequestInfo:
     )
 
 
-def _market(gamma_id: str, tokens, *, condition=None, question=None, outcomes=None):
+def _market(
+    gamma_id: str,
+    tokens,
+    *,
+    condition=None,
+    question=None,
+    outcomes=None,
+    active=True,
+    closed=False,
+):
     return {
         "id": gamma_id,
         "conditionId": condition if condition is not None else f"0xcond{gamma_id}",
         "question": question if question is not None else f"Question {gamma_id}",
-        "active": "open",
+        "active": active,
+        "closed": closed,
         "outcomes": json.dumps(outcomes if outcomes is not None else ["Yes", "No"]),
         "clobTokenIds": json.dumps(list(tokens)),
         "endDate": "2026-12-31",
@@ -173,9 +183,11 @@ def _raise(exc):
 # ── Forgery builders for recovery re-proof tests ──────────────────────────────
 
 from src.data_layer.point_in_time_market_research.records import (  # noqa: E402
+    PointInTimeBatchValidationResult,
     SUPPORTED_SCHEMA_ID,
     SUPPORTED_SCHEMA_VERSION,
     build_market_observation,
+    validate_record_batch,
 )
 
 
@@ -347,8 +359,11 @@ def _genuine_reference_and_entry():
     record_path, manifest_path = _stores()
     client = FakeClient([_market("999", ["ztok"])])
     populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     snapshot = load_and_verify_manifest_store(manifest_path).snapshot
     return snapshot.dataset_references[0], snapshot.manifest_entries[0]
@@ -417,7 +432,7 @@ def test_package_exports_contain_the_exact_contiguous_wp164_block():
         "recover_initial_polymarket_public_registration",
     )
     start = pit.__all__.index("POLYMARKET_PUBLIC_POPULATION_LABEL")
-    assert pit.__all__[start:start + 8] == expected
+    assert pit.__all__[start : start + 8] == expected
     assert all(getattr(pit, name) is getattr(pop, name) for name in expected)
 
 
@@ -439,9 +454,15 @@ def test_default_dry_run_makes_no_network_call():
     assert result.no_execution_authority is True
     assert result.requested_markets_limit == 3
     assert result.bounded_markets_limit == 3
-    assert (result.fetched_market_count, result.built_record_count, result.inserted_record_count) == (0, 0, 0)
+    assert (
+        result.fetched_market_count,
+        result.built_record_count,
+        result.inserted_record_count,
+    ) == (0, 0, 0)
     assert client.markets_calls == 0
-    assert load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    assert (
+        load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    )
     assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
 
 
@@ -541,14 +562,20 @@ def test_non_empty_record_store_rejected_without_network():
     record_path, manifest_path = _stores()
     client = FakeClient([_market("100", ["tok1"])])
     first = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert first.status == "POPULATION_PERSISTED_AND_REGISTERED"
     second_client = FakeClient([_market("100", ["tok1"])])
     second = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=second_client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=second_client,
+        utcnow_provider=_clock,
     )
     assert second.error_codes == ("POPULATION_RECORD_STORE_NOT_EMPTY",)
     assert second.network_used is False
@@ -562,8 +589,11 @@ def test_single_market_population_persists_and_registers():
     record_path, manifest_path = _stores()
     client = FakeClient([_market("100", ["tok1"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.is_valid is True
     assert result.status == "POPULATION_PERSISTED_AND_REGISTERED"
@@ -592,8 +622,11 @@ def test_multiple_markets_are_deterministically_sorted():
     markets = [_market("300", ["t3"]), _market("100", ["t1"]), _market("200", ["t2"])]
     client = FakeClient(markets)
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=3),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=3),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.status == "POPULATION_PERSISTED_AND_REGISTERED"
     assert result.built_record_count == 3
@@ -618,9 +651,12 @@ def test_response_order_does_not_change_identity():
         # An injected time sequence satisfying the guard intervals lets the
         # multi-book run complete so identity determinism is actually proven.
         return populate_initial_polymarket_public_data(
-            record_path, manifest_path,
+            record_path,
+            manifest_path,
             _config(allow_network=True, markets_limit=2, order_books_limit=4),
-            client=client, now_provider=_advancing_now(), utcnow_provider=_clock,
+            client=client,
+            now_provider=_advancing_now(),
+            utcnow_provider=_clock,
         )
 
     forward = run(["100", "200"])
@@ -629,7 +665,9 @@ def test_response_order_does_not_change_identity():
     assert reverse.status == "POPULATION_PERSISTED_AND_REGISTERED"
     assert forward.snapshot_id is not None
     assert forward.snapshot_id == reverse.snapshot_id
-    assert forward.dataset_snapshot_reference_id == reverse.dataset_snapshot_reference_id
+    assert (
+        forward.dataset_snapshot_reference_id == reverse.dataset_snapshot_reference_id
+    )
     assert forward.manifest_entry_id == reverse.manifest_entry_id
 
 
@@ -637,19 +675,27 @@ def test_duplicate_market_ids_rejected():
     record_path, manifest_path = _stores()
     client = FakeClient([_market("100", ["a"]), _market("100", ["b"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=2),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=2),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_RESPONSE_INVALID",)
-    assert load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    assert (
+        load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    )
 
 
 def test_zero_markets_limit_rejected_in_network_mode():
     record_path, manifest_path = _stores()
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=0),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=0),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_INPUT_INVALID",)
     assert client.markets_calls == 0
@@ -666,9 +712,12 @@ def test_order_book_population_guards_and_normalizes():
     )
     guard = DenyGuard(deny_key=None)  # allow everything, record ordering
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path,
+        record_path,
+        manifest_path,
         _config(allow_network=True, markets_limit=1, order_books_limit=1),
-        client=client, guard=guard, utcnow_provider=_clock,
+        client=client,
+        guard=guard,
+        utcnow_provider=_clock,
     )
     assert result.status == "POPULATION_PERSISTED_AND_REGISTERED"
     assert result.fetched_order_book_count == 1
@@ -738,12 +787,16 @@ def test_ambiguous_token_to_market_mapping_rejected():
         books={"shared": _book("shared")},
     )
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path,
+        record_path,
+        manifest_path,
         _config(allow_network=True, markets_limit=2, order_books_limit=1),
-        client=client, utcnow_provider=_clock,
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_RESPONSE_INVALID",)
-    assert load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    assert (
+        load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    )
 
 
 def test_order_book_asset_id_mismatch_rejected():
@@ -753,9 +806,11 @@ def test_order_book_asset_id_mismatch_rejected():
         books={"tokA": _book("tokA", asset_id="WRONG")},
     )
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path,
+        record_path,
+        manifest_path,
         _config(allow_network=True, markets_limit=1, order_books_limit=1),
-        client=client, utcnow_provider=_clock,
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_RESPONSE_INVALID",)
     assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
@@ -769,8 +824,12 @@ def test_guard_denied_before_gamma_makes_no_call():
     client = FakeClient([_market("100", ["a"])])
     guard = DenyGuard(deny_key="gamma_markets")
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, guard=guard, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        guard=guard,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_GUARD_DENIED",)
     assert client.markets_calls == 0
@@ -778,17 +837,20 @@ def test_guard_denied_before_gamma_makes_no_call():
 
 def test_guard_denied_before_book_persists_nothing():
     record_path, manifest_path = _stores()
-    client = FakeClient(
-        [_market("100", ["tokA"])], books={"tokA": _book("tokA")}
-    )
+    client = FakeClient([_market("100", ["tokA"])], books={"tokA": _book("tokA")})
     guard = DenyGuard(deny_key="clob_book")
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path,
+        record_path,
+        manifest_path,
         _config(allow_network=True, markets_limit=1, order_books_limit=1),
-        client=client, guard=guard, utcnow_provider=_clock,
+        client=client,
+        guard=guard,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_GUARD_DENIED",)
-    assert load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    assert (
+        load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    )
     assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
 
 
@@ -797,8 +859,11 @@ def test_gamma_non_2xx_rejected(status):
     record_path, manifest_path = _stores()
     client = FakeClient([_market("100", ["a"])], markets_status=status)
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_RESPONSE_INVALID",)
 
@@ -807,8 +872,11 @@ def test_gamma_network_exception_is_fetch_failed():
     record_path, manifest_path = _stores()
     client = RaisingClient(RuntimeError("boom https://secret.invalid/path"))
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_FETCH_FAILED",)
 
@@ -817,23 +885,36 @@ def test_malformed_gamma_item_rejected():
     record_path, manifest_path = _stores()
     client = FakeClient([_market("100", ["a"]), "not-a-dict"])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=2),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=2),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_RESPONSE_INVALID",)
 
 
 def test_malformed_clob_response_rejected_and_no_write():
     record_path, manifest_path = _stores()
-    bad_book = {"asset_id": "tokA", "bids": "notalist", "asks": [], "tick_size": "0.01", "min_order_size": "1"}
+    bad_book = {
+        "asset_id": "tokA",
+        "bids": "notalist",
+        "asks": [],
+        "tick_size": "0.01",
+        "min_order_size": "1",
+    }
     client = FakeClient([_market("100", ["tokA"])], books={"tokA": bad_book})
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path,
+        record_path,
+        manifest_path,
         _config(allow_network=True, markets_limit=1, order_books_limit=1),
-        client=client, utcnow_provider=_clock,
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_RESPONSE_INVALID",)
-    assert load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    assert (
+        load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    )
 
 
 # ── Build / payload ───────────────────────────────────────────────────────────
@@ -843,11 +924,16 @@ def test_empty_outcomes_rejected_by_builder():
     record_path, manifest_path = _stores()
     client = FakeClient([_market("100", ["a"], outcomes=[])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_BUILD_FAILED",)
-    assert load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    assert (
+        load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    )
 
 
 def test_normalized_payload_excludes_float_fields():
@@ -856,8 +942,11 @@ def test_normalized_payload_excludes_float_fields():
     market["liquidity"] = 12.5  # a float API field that must never enter the payload
     client = FakeClient([market])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.status == "POPULATION_PERSISTED_AND_REGISTERED"
     record = load_and_verify_point_in_time_record_store(record_path).snapshot.records[0]
@@ -874,6 +963,248 @@ def test_normalized_payload_excludes_float_fields():
         "raw_field_names",
     }
     assert "liquidity" in payload["raw_field_names"]
+
+
+# ── WP164A compatibility repair matrix ──────────────────────────────────────
+
+
+def test_wp164a_complete_batch_diagnostics_are_retained(monkeypatch):
+    accepted_id = "a" * 64
+    duplicate_id = "b" * 64
+    quarantined_id = "c" * 64
+    typed_batch = PointInTimeBatchValidationResult(
+        is_valid=False,
+        status="REJECTED_CONTRACT",
+        error_codes=("FIELD_TYPE_INVALID",),
+        warning_codes=("EVENT_TIME_MISSING_ALLOWED",),
+        accepted_record_version_ids=(accepted_id,),
+        exact_duplicate_record_version_ids=(duplicate_id,),
+        quarantined_record_version_ids=(quarantined_id,),
+        canonical_batch_sha256="d" * 64,
+    )
+    monkeypatch.setattr(pop, "validate_record_batch", lambda records: typed_batch)
+    record_path, manifest_path = _stores()
+    result = populate_initial_polymarket_public_data(
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=FakeClient([_market("100", ["tok1"])]),
+        utcnow_provider=_clock,
+    )
+
+    assert result.error_codes == ("POPULATION_BATCH_INVALID",)
+    assert result.batch_is_valid is typed_batch.is_valid
+    assert result.batch_status == typed_batch.status
+    assert result.batch_error_codes == typed_batch.error_codes
+    assert result.batch_warning_codes == typed_batch.warning_codes
+    assert (
+        result.batch_accepted_record_version_ids
+        == typed_batch.accepted_record_version_ids
+    )
+    assert (
+        result.batch_exact_duplicate_record_version_ids
+        == typed_batch.exact_duplicate_record_version_ids
+    )
+    assert (
+        result.batch_quarantined_record_version_ids
+        == typed_batch.quarantined_record_version_ids
+    )
+    assert result.canonical_batch_sha256 == typed_batch.canonical_batch_sha256
+    assert (result.fetched_market_count, result.built_record_count) == (1, 1)
+    rendered = repr(result)
+    assert "Question 100" not in rendered
+    assert "example.invalid" not in rendered
+    assert record_path not in rendered and manifest_path not in rendered
+
+
+def test_wp164a_stronger_batch_rejection_retains_valid_typed_result(monkeypatch):
+    captured = {}
+
+    def _valid_but_incomplete(records):
+        captured["batch"] = PointInTimeBatchValidationResult(
+            is_valid=True,
+            status="VALID",
+            error_codes=(),
+            warning_codes=(),
+            accepted_record_version_ids=(records[0].envelope.record_version_id,),
+            exact_duplicate_record_version_ids=(),
+            quarantined_record_version_ids=(),
+            canonical_batch_sha256="e" * 64,
+        )
+        return captured["batch"]
+
+    monkeypatch.setattr(pop, "validate_record_batch", _valid_but_incomplete)
+    record_path, manifest_path = _stores()
+    result = populate_initial_polymarket_public_data(
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=2),
+        client=FakeClient([_market("100", ["a"]), _market("200", ["b"])]),
+        utcnow_provider=_clock,
+    )
+
+    batch = captured["batch"]
+    assert result.error_codes == ("POPULATION_BATCH_INVALID",)
+    assert result.batch_is_valid is True
+    assert result.batch_status == "VALID"
+    assert result.batch_accepted_record_version_ids == batch.accepted_record_version_ids
+    assert result.canonical_batch_sha256 == batch.canonical_batch_sha256
+    assert result.inserted_record_count == 0
+
+
+@pytest.mark.parametrize(
+    ("markets", "books", "book_limit", "expected"),
+    [
+        ([_market("100", ["a"], active=False, closed=False)], {}, 0, (1, 0, 0)),
+        (
+            [_market("100", ["a"])],
+            {
+                "a": {
+                    "asset_id": "a",
+                    "bids": "invalid",
+                    "asks": [],
+                    "tick_size": "0.01",
+                    "min_order_size": "1",
+                }
+            },
+            1,
+            (1, 1, 0),
+        ),
+        (
+            [_market("100", ["a"]), _market("200", ["b"], outcomes=[])],
+            {},
+            0,
+            (2, 0, 1),
+        ),
+    ],
+)
+def test_wp164a_rejection_preserves_completed_stage_counts(
+    markets, books, book_limit, expected
+):
+    record_path, manifest_path = _stores()
+    result = populate_initial_polymarket_public_data(
+        record_path,
+        manifest_path,
+        _config(
+            allow_network=True,
+            markets_limit=len(markets),
+            order_books_limit=book_limit,
+        ),
+        client=FakeClient(markets, books=books),
+        guard=DenyGuard(deny_key=None),
+        utcnow_provider=_clock,
+    )
+    assert result.is_valid is False
+    assert (
+        result.fetched_market_count,
+        result.fetched_order_book_count,
+        result.built_record_count,
+    ) == expected
+    assert result.inserted_record_count == 0
+
+
+@pytest.mark.parametrize(
+    ("active", "closed", "expected_status"),
+    [
+        (True, False, "open"),
+        (False, True, "closed"),
+        (True, True, "closed"),
+        (False, False, None),
+        ("true", False, None),
+        (True, "false", None),
+        (None, None, None),
+    ],
+)
+def test_wp164a_market_status_normalization_is_closed(active, closed, expected_status):
+    record_path, manifest_path = _stores()
+    result = populate_initial_polymarket_public_data(
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=FakeClient([_market("100", ["a"], active=active, closed=closed)]),
+        utcnow_provider=_clock,
+    )
+    if expected_status is None:
+        assert result.error_codes == ("POPULATION_RESPONSE_INVALID",)
+        assert result.built_record_count == 0
+    else:
+        assert result.is_valid is True
+        records = load_and_verify_point_in_time_record_store(
+            record_path
+        ).snapshot.records
+        payload = json.loads(records[0].canonical_payload_json)
+        assert payload["market_status"] == expected_status
+
+
+def test_wp164a_twenty_five_market_one_book_offline_pipeline():
+    markets = [
+        _market(
+            str(index),
+            [f"token-{index}-yes", f"token-{index}-no"],
+            condition=f"0xcondition{index:02d}",
+        )
+        for index in range(25)
+    ]
+    selected_token = "token-0-yes"
+    record_path, manifest_path = _stores()
+    result = populate_initial_polymarket_public_data(
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=25, order_books_limit=1),
+        client=FakeClient(markets, books={selected_token: _book(selected_token)}),
+        now_provider=_advancing_now(),
+        utcnow_provider=_clock,
+    )
+
+    assert (result.requested_markets_limit, result.bounded_markets_limit) == (25, 25)
+    assert (result.requested_order_books_limit, result.bounded_order_books_limit) == (
+        1,
+        1,
+    )
+    assert (
+        result.fetched_market_count,
+        result.fetched_order_book_count,
+        result.built_record_count,
+        result.inserted_record_count,
+    ) == (25, 1, 26, 26)
+    assert result.status == "POPULATION_PERSISTED_AND_REGISTERED"
+    assert result.batch_is_valid is True
+    assert result.batch_status == "VALID_WITH_WARNINGS"
+    assert result.batch_error_codes == ()
+    assert result.batch_exact_duplicate_record_version_ids == ()
+    assert result.batch_quarantined_record_version_ids == ()
+    assert len(result.batch_accepted_record_version_ids) == 26
+    assert len(set(result.batch_accepted_record_version_ids)) == 26
+    assert result.dataset_snapshot_reference_id is not None
+    assert result.manifest_entry_id is not None
+
+    records = load_and_verify_point_in_time_record_store(record_path).snapshot.records
+    metadata = [
+        record for record in records if record.observation_kind == "MARKET_METADATA"
+    ]
+    assert len(metadata) == 25
+    assert all(
+        json.loads(record.canonical_payload_json)["market_status"] == "open"
+        for record in metadata
+    )
+    typed_batch = validate_record_batch(records)
+    assert result.batch_is_valid == typed_batch.is_valid
+    assert result.batch_status == typed_batch.status
+    assert result.batch_error_codes == typed_batch.error_codes
+    assert result.batch_warning_codes == typed_batch.warning_codes
+    assert (
+        result.batch_accepted_record_version_ids
+        == typed_batch.accepted_record_version_ids
+    )
+    assert (
+        result.batch_exact_duplicate_record_version_ids
+        == typed_batch.exact_duplicate_record_version_ids
+    )
+    assert (
+        result.batch_quarantined_record_version_ids
+        == typed_batch.quarantined_record_version_ids
+    )
+    assert result.canonical_batch_sha256 == typed_batch.canonical_batch_sha256
 
 
 # ── Persistence order ─────────────────────────────────────────────────────────
@@ -899,8 +1230,11 @@ def test_record_append_failure_creates_no_manifest_reference(monkeypatch):
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_RECORD_APPEND_FAILED",)
     assert result.record_store_error_codes == ("RECORD_STORE_WRITE_FAILED",)
@@ -919,8 +1253,11 @@ def test_registration_failure_keeps_records_and_requires_recovery(monkeypatch):
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
     assert result.is_valid is False
@@ -931,7 +1268,10 @@ def test_registration_failure_keeps_records_and_requires_recovery(monkeypatch):
     assert result.dataset_snapshot_reference_id is None
     assert result.manifest_entry_id is None
     # Records remain committed.
-    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+    assert (
+        len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+        == 1
+    )
 
 
 # ── Recovery ──────────────────────────────────────────────────────────────────
@@ -945,9 +1285,7 @@ def _seed_unregistered(monkeypatch_ctx, record_path, manifest_path, cfg):
         ("ADAPTER_STORE_APPEND_FAILED",)
     )
     try:
-        client = FakeClient(
-            [_market("100", ["tokA"])], books={"tokA": _book("tokA")}
-        )
+        client = FakeClient([_market("100", ["tokA"])], books={"tokA": _book("tokA")})
         result = populate_initial_polymarket_public_data(
             record_path, manifest_path, cfg, client=client, utcnow_provider=_clock
         )
@@ -969,7 +1307,10 @@ def test_offline_recovery_after_registration_failure():
     assert recovered.recovery_required is False
     assert recovered.dataset_snapshot_reference_id is not None
     assert recovered.manifest_entry_id is not None
-    assert len(load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries) == 1
+    assert (
+        len(load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries)
+        == 1
+    )
 
 
 def test_recovery_is_idempotent_when_already_registered():
@@ -1018,8 +1359,11 @@ def test_failure_result_never_echoes_secret_url_or_question():
     url = "https://secret.invalid/leak?token=abc"
     client = RaisingClient(RuntimeError(f"{marker} {url}"))
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     text = repr(result)
     assert marker not in text
@@ -1033,8 +1377,11 @@ def test_build_failure_does_not_expose_question_text():
         [_market("100", ["a"], question="SUPERSECRETQUESTION", outcomes=[])]
     )
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_BUILD_FAILED",)
     assert "SUPERSECRETQUESTION" not in repr(result)
@@ -1091,9 +1438,7 @@ def _attribute_names() -> set[str]:
     import ast
 
     tree = ast.parse(_module_source())
-    return {
-        node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)
-    }
+    return {node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)}
 
 
 def test_module_has_no_direct_network_or_forbidden_imports():
@@ -1165,15 +1510,20 @@ def test_real_guard_constant_time_denies_second_book():
         books={"tokA": _book("tokA"), "tokB": _book("tokB")},
     )
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path,
+        record_path,
+        manifest_path,
         _config(allow_network=True, markets_limit=1, order_books_limit=2),
-        client=client, now_provider=lambda: 1000.0, utcnow_provider=_clock,
+        client=client,
+        now_provider=lambda: 1000.0,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_GUARD_DENIED",)
     assert result.network_used is True
     # First book fetched; second denied before its client call; nothing persisted.
     assert client.book_calls == ["tokA"]
-    assert load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    assert (
+        load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
+    )
     assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
 
 
@@ -1184,9 +1534,12 @@ def test_injected_advancing_time_allows_multiple_books():
         books={"tokA": _book("tokA"), "tokB": _book("tokB")},
     )
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path,
+        record_path,
+        manifest_path,
         _config(allow_network=True, markets_limit=1, order_books_limit=2),
-        client=client, now_provider=_advancing_now(), utcnow_provider=_clock,
+        client=client,
+        now_provider=_advancing_now(),
+        utcnow_provider=_clock,
     )
     assert result.status == "POPULATION_PERSISTED_AND_REGISTERED"
     assert result.fetched_order_book_count == 2
@@ -1201,8 +1554,12 @@ def test_gamma_guard_denial_reports_network_used_false():
     client = FakeClient([_market("100", ["a"])])
     guard = DenyGuard(deny_key="gamma_markets")
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, guard=guard, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        guard=guard,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_GUARD_DENIED",)
     assert result.network_used is False
@@ -1214,9 +1571,12 @@ def test_book_guard_denial_after_gamma_reports_network_used_true():
     client = FakeClient([_market("100", ["tokA"])], books={"tokA": _book("tokA")})
     guard = DenyGuard(deny_key="clob_book")
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path,
+        record_path,
+        manifest_path,
         _config(allow_network=True, markets_limit=1, order_books_limit=1),
-        client=client, guard=guard, utcnow_provider=_clock,
+        client=client,
+        guard=guard,
+        utcnow_provider=_clock,
     )
     assert result.error_codes == ("POPULATION_GUARD_DENIED",)
     assert result.network_used is True
@@ -1237,8 +1597,11 @@ def test_registration_exception_after_commit_preserves_recovery(monkeypatch):
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
     assert result.is_valid is False
@@ -1251,7 +1614,10 @@ def test_registration_exception_after_commit_preserves_recovery(monkeypatch):
     text = repr(result)
     assert marker not in text and url not in text
     # Records remain committed; manifest untouched.
-    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+    assert (
+        len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+        == 1
+    )
     assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
 
 
@@ -1274,14 +1640,19 @@ def test_offline_recovery_after_raised_registration_exception(monkeypatch):
     )
     assert recovered.status == "POPULATION_RECOVERED_REGISTRATION"
     assert recovered.network_used is False
-    assert len(load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries) == 1
+    assert (
+        len(load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries)
+        == 1
+    )
 
 
 def test_recovery_side_registration_exception_fails_closed(monkeypatch):
     record_path, manifest_path = _stores()
     cfg = _config(allow_network=True, markets_limit=1, order_books_limit=1)
     _seed_unregistered(None, record_path, manifest_path, cfg)
-    before = len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+    before = len(
+        load_and_verify_point_in_time_record_store(record_path).snapshot.records
+    )
     marker = "SECRET_RECOVER_MARKER_cafe"
     url = "https://recover.invalid/leak"
     monkeypatch.setattr(
@@ -1312,9 +1683,14 @@ def test_recovery_rejects_forged_seed_with_arbitrary_identity_ids():
     # A WP156-valid record reusing WP164 source IDs but with arbitrary, self-
     # consistent snapshot/batch IDs (source ids derived from the arbitrary snapshot).
     forged = _make_gamma_record(
-        cfg, snapshot_id=_ARB_SNAPSHOT, ingestion_batch_id=_ARB_INGEST, captured=_ARB_TIME
+        cfg,
+        snapshot_id=_ARB_SNAPSHOT,
+        ingestion_batch_id=_ARB_INGEST,
+        captured=_ARB_TIME,
     )
-    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+    from src.data_layer.point_in_time_market_research import (
+        append_point_in_time_records,
+    )
 
     append_point_in_time_records(record_path, (forged,))
     result = recover_initial_polymarket_public_registration(
@@ -1334,7 +1710,9 @@ def test_recovery_rejects_book_only_store():
         captured=_ARB_TIME,
         raw_token="tokA",
     )
-    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+    from src.data_layer.point_in_time_market_research import (
+        append_point_in_time_records,
+    )
 
     append_point_in_time_records(record_path, (book,))
     result = recover_initial_polymarket_public_registration(
@@ -1360,7 +1738,9 @@ def test_recovery_rejects_orphan_clob_token():
         captured=_ARB_TIME,
         raw_token="tokORPHAN",
     )
-    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+    from src.data_layer.point_in_time_market_research import (
+        append_point_in_time_records,
+    )
 
     append_point_in_time_records(record_path, (gamma, orphan))
     result = recover_initial_polymarket_public_registration(
@@ -1400,7 +1780,9 @@ def test_recovery_rejects_misparented_clob():
         market_id="market:polymarket:200",
         event_id="event:polymarket:0xcond200",
     )
-    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+    from src.data_layer.point_in_time_market_research import (
+        append_point_in_time_records,
+    )
 
     append_point_in_time_records(record_path, (g1, g2, misparented))
     result = recover_initial_polymarket_public_registration(
@@ -1419,7 +1801,9 @@ def test_recovery_rejects_wrong_source_snapshot_id():
         captured=_ARB_TIME,
         source_snapshot_id="srcsnap:sha256:" + "c" * 64,  # not the WP164 derivation
     )
-    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+    from src.data_layer.point_in_time_market_research import (
+        append_point_in_time_records,
+    )
 
     append_point_in_time_records(record_path, (forged,))
     result = recover_initial_polymarket_public_registration(
@@ -1438,8 +1822,11 @@ def test_registration_none_result_after_commit_is_recoverable(monkeypatch):
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
     assert result.recovery_required is True
@@ -1447,7 +1834,10 @@ def test_registration_none_result_after_commit_is_recoverable(monkeypatch):
     assert result.dataset_snapshot_reference_id is None
     assert result.manifest_entry_id is None
     assert "POPULATION_UNEXPECTED_ERROR" not in result.error_codes
-    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+    assert (
+        len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+        == 1
+    )
     assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
 
 
@@ -1466,15 +1856,21 @@ def test_registration_result_with_raising_property_is_recoverable(monkeypatch):
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
     assert result.recovery_required is True
     assert "POPULATION_UNEXPECTED_ERROR" not in result.error_codes
     text = repr(result)
     assert marker not in text and url not in text
-    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+    assert (
+        len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+        == 1
+    )
 
 
 def test_registration_fake_success_missing_fields_is_registration_failure(monkeypatch):
@@ -1492,8 +1888,11 @@ def test_registration_fake_success_missing_fields_is_registration_failure(monkey
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     # Not a success and not a generic exception.
     assert result.is_valid is False
@@ -1502,14 +1901,19 @@ def test_registration_fake_success_missing_fields_is_registration_failure(monkey
     assert result.dataset_snapshot_reference_id is None
     assert result.manifest_entry_id is None
     assert "POPULATION_UNEXPECTED_ERROR" not in result.error_codes
-    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+    assert (
+        len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+        == 1
+    )
 
 
 def test_recovery_side_malformed_registration_result_fails_closed(monkeypatch):
     record_path, manifest_path = _stores()
     cfg = _config(allow_network=True, markets_limit=1, order_books_limit=1)
     _seed_unregistered(None, record_path, manifest_path, cfg)
-    before = len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+    before = len(
+        load_and_verify_point_in_time_record_store(record_path).snapshot.records
+    )
     monkeypatch.setattr(
         pop, "persist_validated_record_batch_snapshot", lambda *a, **k: None
     )
@@ -1584,7 +1988,9 @@ def test_recovery_rejects_cross_market_ambiguous_token():
         market_id="market:polymarket:100",
         event_id="event:polymarket:0xcond100",
     )
-    from src.data_layer.point_in_time_market_research import append_point_in_time_records
+    from src.data_layer.point_in_time_market_research import (
+        append_point_in_time_records,
+    )
 
     append_point_in_time_records(record_path, (g1, g2, book))
     result = recover_initial_polymarket_public_registration(
@@ -1606,8 +2012,11 @@ def test_registration_arbitrary_error_code_string_is_not_echoed(monkeypatch):
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
     assert result.recovery_required is True
@@ -1615,7 +2024,10 @@ def test_registration_arbitrary_error_code_string_is_not_echoed(monkeypatch):
     assert result.registration_error_codes == ()
     text = repr(result)
     assert "SECRET_MARKER_face" not in text and "secret.invalid" not in text
-    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+    assert (
+        len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+        == 1
+    )
     assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
 
 
@@ -1631,8 +2043,11 @@ def test_registration_known_closed_code_is_preserved(monkeypatch):
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
     assert result.registration_error_codes == ("ADAPTER_STORE_APPEND_FAILED",)
@@ -1653,14 +2068,20 @@ def test_registration_error_codes_raising_iterable_fails_closed(monkeypatch):
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
     assert result.recovery_required is True
     assert result.registration_error_codes == ()
     assert "SECRET_ITER" not in repr(result)
-    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+    assert (
+        len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+        == 1
+    )
 
 
 # ── Nested success-object fields are validated, never blindly dereferenced ─────
@@ -1676,8 +2097,11 @@ def test_success_result_with_fake_dataset_reference_fails_closed(monkeypatch):
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.is_valid is False
     assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
@@ -1685,7 +2109,10 @@ def test_success_result_with_fake_dataset_reference_fails_closed(monkeypatch):
     assert result.dataset_snapshot_reference_id is None
     assert result.manifest_entry_id is None
     assert "POPULATION_UNEXPECTED_ERROR" not in result.error_codes
-    assert len(load_and_verify_point_in_time_record_store(record_path).snapshot.records) == 1
+    assert (
+        len(load_and_verify_point_in_time_record_store(record_path).snapshot.records)
+        == 1
+    )
 
 
 def test_success_result_with_fake_manifest_entry_fails_closed(monkeypatch):
@@ -1698,8 +2125,11 @@ def test_success_result_with_fake_manifest_entry_fails_closed(monkeypatch):
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     assert result.is_valid is False
     assert result.status == "POPULATION_RECORDS_PERSISTED_REGISTRATION_FAILED"
@@ -1726,8 +2156,11 @@ def test_success_result_with_raising_nested_id_property_fails_closed(monkeypatch
     )
     client = FakeClient([_market("100", ["a"])])
     result = populate_initial_polymarket_public_data(
-        record_path, manifest_path, _config(allow_network=True, markets_limit=1),
-        client=client, utcnow_provider=_clock,
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1),
+        client=client,
+        utcnow_provider=_clock,
     )
     # The exact-type gate rejects the fake reference before its id is ever read.
     assert result.is_valid is False

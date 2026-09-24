@@ -32,9 +32,7 @@ def test_contract_document_exists():
 def test_label_and_posture_are_exact():
     text = _contract()
     assert "POLYMARKET_REAL_PUBLIC_INITIAL_POINT_IN_TIME_POPULATION" in text
-    assert (
-        "EXPLICIT_NETWORK_GET_ONLY_BOUNDED_INITIAL_SEED_NO_TRADING_AUTHORITY" in text
-    )
+    assert "EXPLICIT_NETWORK_GET_ONLY_BOUNDED_INITIAL_SEED_NO_TRADING_AUTHORITY" in text
     assert (
         "src/data_layer/point_in_time_market_research/polymarket_public_population.py"
         in text
@@ -112,8 +110,8 @@ def test_recovery_reproves_wp164_construction_documented():
 
 def test_deterministic_identity_and_order_documented():
     text = _flat(_contract())
-    assert 'snapshot:sha256:' in text
-    assert 'ingest:sha256:' in text
+    assert "snapshot:sha256:" in text
+    assert "ingest:sha256:" in text
     assert "response order never controls dataset identity" in text
     assert "No random UUID" in text
 
@@ -128,7 +126,9 @@ def test_no_jsonl_no_raw_response_no_scheduler_documented():
 
 def test_recovery_semantics_documented():
     text = _flat(_contract())
-    assert "recover_initial_polymarket_public_registration` performs zero network" in text
+    assert (
+        "recover_initial_polymarket_public_registration` performs zero network" in text
+    )
     assert "never writes records" in text
     assert "1..45 total records" in text
 
@@ -148,3 +148,34 @@ def test_module_matches_documented_public_symbols():
         "recover_initial_polymarket_public_registration",
     ):
         assert symbol in module_text
+
+
+def test_wp164a_additive_diagnostics_and_stage_counts_are_documented():
+    text = _flat(_contract())
+    for field in (
+        "batch_is_valid",
+        "batch_status",
+        "batch_error_codes",
+        "batch_warning_codes",
+        "batch_accepted_record_version_ids",
+        "batch_exact_duplicate_record_version_ids",
+        "batch_quarantined_record_version_ids",
+        "canonical_batch_sha256",
+    ):
+        assert field in text
+    assert "complete typed `PointInTimeBatchValidationResult`" in text
+    assert "successful Gamma list response" in text
+    assert "before book normalization" in text
+    assert "immediately after its builder returns" in text
+    assert "only after the append commits" in text
+
+
+def test_wp164a_population_local_lifecycle_mapping_is_closed():
+    text = _flat(_contract())
+    assert "`closed is True`" in text and "exactly `closed`" in text
+    assert "`active is True`" in text and "`closed is False`" in text
+    assert "exactly `open`" in text
+    assert "POPULATION_RESPONSE_INVALID" in text
+    assert "There is no fallback" in text
+    assert "`PolymarketPublicClient`" in text
+    assert "downstream Alpha eligible statuses remain unchanged" in text

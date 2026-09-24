@@ -1,0 +1,502 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP164A",
+    "title": "Public Population Batch Diagnostics And Market Status Normalization Repair",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "BOUNDED_PUBLIC_POPULATION_LIVE_COMPATIBILITY_REPAIR",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 191,
+      "head_sha": "40bcee515251d2e958754bddd3dfae278928ec5c",
+      "merge_sha": "46bc862018208b30971228ed719c7e9337142b41"
+    },
+    "suggested_branch": "codex/wp164a-public-population-repair",
+    "objective": "Repair the merged WP164 bounded public-population layer before any S10-GATE-AF1 Attempt-03: retain the complete typed WP156 batch-validation result, preserve truthful stage counts on later rejection, normalize live Gamma lifecycle booleans into the exact open/closed vocabulary required by downstream Alpha discovery, and prove the 25-market/1-book path offline. Phase A performs zero public-market calls. A later one-call public smoke remains separately authorized and non-retryable.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/point_in_time_market_research/polymarket_public_population.py",
+      "tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py",
+      "docs/polymarket_point_in_time_public_population_contract.md",
+      "tests/test_polymarket_point_in_time_public_population_contract_docs.py",
+      "docs/status_entries/WP164A.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "docs/wp_specs/WP164A/wp_prompt.txt",
+      "docs/wp_specs/WP164A/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/point_in_time_market_research/polymarket_public_population.py",
+      "tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py",
+      "docs/polymarket_point_in_time_public_population_contract.md",
+      "tests/test_polymarket_point_in_time_public_population_contract_docs.py",
+      "docs/status_entries/WP164A.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "docs/wp_specs/WP164A/wp_prompt.txt",
+      "docs/wp_specs/WP164A/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/data_layer/analytical_research/",
+      "src/data_layer/polymarket/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/risk/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 11,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert WP164A. The additive WP164 batch-diagnostic result fields, truthful rejection-stage counts, population-local open/closed normalization, focused tests, contract/status/spec records and repo-truth updates disappear. No AF1 branch, Hermes, credentials, scheduler, trading, dependency or workflow state is created by Phase A; any separately authorized public-smoke local artifacts remain noncanonical audit material only.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "WP164A makes three bounded compatibility changes to the existing WP164 public-population surface and does not add another population API.",
+    "items": [
+      {
+        "surface": "PolymarketPublicPopulationResult batch diagnostics",
+        "before": "POPULATION_BATCH_INVALID exposes only the WP164 umbrella error; the completed PointInTimeBatchValidationResult is discarded.",
+        "after": "The public result adds nullable/empty additive fields that copy the complete completed WP156 batch result: is_valid, status, errors, warnings, accepted ids, exact-duplicate ids, quarantined ids and canonical batch hash.",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing fields and public functions remain; new fields have fail-closed defaults for paths that never complete batch validation; no raw payload or exception text is exposed.",
+        "authority": "ADDITIVE_BATCH_DIAGNOSTICS"
+      },
+      {
+        "surface": "WP164 network-population rejection stage counts",
+        "before": "The generic _PopulationReject catch path can return zero fetched/built counts even after earlier stages completed.",
+        "after": "Already-known fetched-market, fetched-book and successfully-built-record counts survive later rejection; unexecuted stages remain zero and inserted count changes only after committed append.",
+        "change_authorized": true,
+        "compatibility_requirement": "Counts describe completed stages only and never substitute for persistence or validator evidence.",
+        "authority": "TRUTHFUL_STAGE_EVIDENCE"
+      },
+      {
+        "surface": "WP164 population-local Gamma market_status normalization",
+        "before": "WP164 copies MarketSummary.market_status, while the public parser converts Gamma active via str(...), so boolean true can become the noncanonical string True.",
+        "after": "WP164 derives market_status directly from raw Gamma lifecycle booleans: closed is exactly true -> closed; active is exactly true and closed is exactly false -> open; every other combination rejects POPULATION_RESPONSE_INVALID.",
+        "change_authorized": true,
+        "compatibility_requirement": "PolymarketPublicClient is unchanged, AF1 eligible statuses are unchanged, and no market is inferred open from price or book activity.",
+        "authority": "POPULATION_LOCAL_STATUS_NORMALIZATION"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The repair must expose exact closed diagnostics and normalize lifecycle state without weakening WP156 or broadening runtime authority.",
+    "items": [
+      {
+        "path": "population.batch_diagnostics",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "After a completed validate_record_batch call, copy the complete typed result into additive WP164 result fields: batch_is_valid, batch_status, batch_error_codes, batch_warning_codes, batch_accepted_record_version_ids, batch_exact_duplicate_record_version_ids, batch_quarantined_record_version_ids and canonical_batch_sha256.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No completed typed batch field is dropped or truncated; paths that never complete validation use only null/empty defaults; POPULATION_BATCH_INVALID remains the outer WP164 rejection.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "complete bounded closed WP156 diagnostics",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "population.stage_counts",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "fetched_market_count is fixed immediately after successful Gamma GET; fetched_order_book_count increments after each successful CLOB GET before normalization; built_record_count increments after each successful record build; inserted_record_count changes only after append commits.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Later rejection preserves already-known counts and never infers counts for stages not reached.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "truthful bounded stage counts",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "population.market_status",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "raw closed is exactly true -> closed; else raw active is exactly true and raw closed is exactly false -> open; every other lifecycle combination rejects POPULATION_RESPONSE_INVALID.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No str(True)/str(False), no alternate fallback state, no AF1 eligibility widening, and no inference from order-book or price data.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "open or closed, otherwise closed rejection",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "phase_a.network_posture",
+        "source": "CONSTANT",
+        "type": "string",
+        "required_rule": "Phase A implementation, tests, CI and validation perform zero real Polymarket/public-product calls; only fake/in-memory transports are permitted.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Any real public-market call before the separate smoke authorization is an authority violation.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "offline Phase-A evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "smoke.one_call",
+        "source": "CONSTANT",
+        "type": "mapping",
+        "required_rule": "A later separately authorized WP164A smoke uses a fresh local workspace, atomically creates a pre-call invocation sentinel, permits exactly one 25-market/1-book WP164 invocation, immediately persists the complete typed result, and never retries the same workspace.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Existing sentinel means zero new call; process failure after sentinel consumes the workspace; another call requires a new human authorization and fresh workspace.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "one non-retryable bounded public smoke",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "downstream.af1_blocked",
+        "source": "CONSTANT",
+        "type": "boolean",
+        "required_rule": "S10-GATE-AF1 Attempt-03 remains unauthorized and its existing branch/workspaces are not modified by WP164A.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No AF1 population, Hermes call, branch edit, rebase or attempt-03 authorization occurs in this WP Phase A.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "AF1 remains blocked",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "WP164A adds diagnostic evidence but no new content-addressed product identity derivation.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "RUNTIME package readiness and explicit user authority permit only the exact offline Phase-A repair; the real public smoke and merge remain separate checkpoints.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "prompt/spec authority equality, exact 11-path scope, semantic rules, evidence plan and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl authorizes implementation of this exact WP164A Phase-A package and no public smoke",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation remains inside the exact 11-path scope and all Phase-A validation passes with zero real product-network, credential, scheduler, Hermes, strategy, paper, execution, live or capital activity",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused executable tests and the deterministic 25/1 offline oracle are the product examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Focused tests prove complete batch diagnostics, truthful stage counts, exact lifecycle normalization and the 25/1 pipeline; regressions and committed-head validation prove compatibility and scope.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_wp164a_complete_batch_diagnostics_are_retained",
+        "command": "python -m pytest -q tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py",
+        "expected_result": "completed WP156 batch results retain all eight typed diagnostic fields on success and POPULATION_BATCH_INVALID paths without raw payload leakage"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_wp164a_rejection_preserves_completed_stage_counts",
+        "command": "python -m pytest -q tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py",
+        "expected_result": "parser/build/batch rejection preserves only counts for transport/build stages actually completed and never fabricates inserted records"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_wp164a_market_status_normalization_is_closed",
+        "command": "python -m pytest -q tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py",
+        "expected_result": "closed true maps closed; active true plus closed false maps open; every other lifecycle shape rejects POPULATION_RESPONSE_INVALID"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_wp164a_twenty_five_market_one_book_offline_pipeline",
+        "command": "python -m pytest -q tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py",
+        "expected_result": "25 live-shaped unique Gamma markets plus one live-shaped CLOB book produce 25 fetched markets, one fetched book, 26 built and accepted records, valid batch diagnostics, successful persistence/registration and open metadata using fake transport only"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "WP164 contract docs regression",
+        "command": "python -m pytest -q tests/test_polymarket_point_in_time_public_population_contract_docs.py",
+        "expected_result": "the canonical WP164 contract documents the additive diagnostics, truthful stage-count semantics and closed population-local open/closed normalization"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "WP156 WP162 WP163 regression",
+        "command": "python -m pytest -q tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py tests/data_layer/point_in_time_market_research/test_record_store.py tests/data_layer/point_in_time_market_research/test_dataset_persistence_adapter.py",
+        "expected_result": "WP156 validation and WP162/WP163 persistence/store semantics remain unchanged and green"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "repo truth and status regression",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
+        "expected_result": "WP164A is the bounded upstream repair target, AF1 remains blocked, Attempt-01/02 remain historical invalidated evidence and protected live/trading authorities remain unchanged"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "historical architecture and changed-diff guards",
+        "command": "python -m pytest -q tests/test_architecture_boundaries.py tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+        "expected_result": "current generic active-WP guards accept exactly the frozen WP164A machine-spec scope and no forbidden subsystem or authority path is introduced"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "validation",
+        "test": "exact scope and readiness",
+        "command": "python tools/git/diff_scope_summary.py --base 46bc862018208b30971228ed719c7e9337142b41 --head HEAD --wp-spec docs/wp_specs/WP164A/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP164A/wp_prompt.txt --spec docs/wp_specs/WP164A/wp_spec.json --repo-root . --check-diff --base 46bc862018208b30971228ed719c7e9337142b41 --head HEAD",
+        "expected_result": "11 required equals 11 allowed equals 11 actual changed paths with zero warnings and committed-head readiness IMPLEMENTATION_READY"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "validation",
+        "test": "security generated artifacts and hygiene",
+        "command": "python tools/git/preflight_generated_artifact_guard.py; python tools/security/run_available_security_checks.py; python -m pip check",
+        "expected_result": "generated-artifact guard and available security checks pass, unavailable security tools are honestly reported, and installed dependency health is clean"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "full repository suite",
+        "command": "python -m pytest -q",
+        "expected_result": "one authoritative full repository suite passes on the final committed Phase-A head before any public smoke authorization is requested"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "review",
+        "test": "future public smoke control",
+        "command": "review-frozen-smoke-envelope",
+        "expected_result": "the Phase-A report proposes one fresh workspace with a pre-call invocation sentinel, immediate complete typed-result persistence, one 25/1 invocation, zero retry and no AF1 or Hermes authority"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-GATE-AF1",
+    "next_title": "Resume Alpha Factory Research-System Gate only after WP164A independent review and merge",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-GATE-AF1",
+    "forbidden_in_this_wp": [
+      "S10-GATE-AF1 Attempt-03 authorization or execution",
+      "modification or rebase of the existing AF1 branch during WP164A Phase A",
+      "Hermes or provider invocation",
+      "credential or authenticated Polymarket access",
+      "scheduler, daemon, cron, recurring population or crawler",
+      "Data API, RPC, WebSocket or new public-network client",
+      "raw HTTP response persistence",
+      "weakening or replacement of validate_record_batch",
+      "dropping or deduplicating records merely to make a batch pass",
+      "broadening AF1 eligible market statuses",
+      "modification of PolymarketPublicClient unless separately proven to require scope expansion",
+      "dependency or lock change",
+      "workflow change",
+      "paper, order, signing, execution, Gate C, capital or live trading",
+      "merge without independent review and explicit authorization"
+    ]
+  }
+}

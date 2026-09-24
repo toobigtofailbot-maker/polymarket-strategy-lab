@@ -13,6 +13,11 @@ WP164 is the first bounded real/public Polymarket population into the merged
 point-in-time research foundation. It coordinates existing merged layers; it does
 not redesign them.
 
+WP164A is a bounded compatibility repair to this existing coordinator. It adds
+closed typed batch diagnostics, truthful completed-stage counts, and strict
+population-local Gamma lifecycle normalization. It does not add a client,
+endpoint, retry, scheduler, credential, or trading authority.
+
 ## Official public endpoint basis
 
 Re-verified against current official Polymarket documentation at implementation
@@ -90,6 +95,17 @@ testing/injection seams only. Schema v1 defines no warning codes, so
 `warning_codes` is always empty; every result fixes `advisory_only=True` and
 `no_execution_authority=True`.
 
+The WP164A result extension appends the following fields with fail-closed
+null/empty defaults: `batch_is_valid`, `batch_status`, `batch_error_codes`,
+`batch_warning_codes`, `batch_accepted_record_version_ids`,
+`batch_exact_duplicate_record_version_ids`,
+`batch_quarantined_record_version_ids`, and `canonical_batch_sha256`. After a
+completed `validate_record_batch` call, these fields preserve the complete typed
+`PointInTimeBatchValidationResult`, including on `POPULATION_BATCH_INVALID` and
+when WP156 is valid but WP164's stricter one-accepted-id-per-input invariant
+rejects the population. They contain no raw payload, URL, path, exception text,
+or repr. If batch validation never completes, only the defaults are returned.
+
 ## Dry-run posture
 
 With the default `allow_network=False`, after verifying valid stores, an empty
@@ -116,6 +132,24 @@ Every selected market is parsed through the public `parse_market_summary`; a
 malformed selected market or a duplicate market id rejects the whole run rather
 than being silently skipped. `markets_limit == 0` in a network run is rejected as
 `POPULATION_INPUT_INVALID` rather than registering an empty seed.
+
+WP164A derives canonical `market_status` locally from the raw Gamma lifecycle
+booleans. If `closed is True`, the status is exactly `closed`. Otherwise, only
+`active is True` together with `closed is False` produces exactly `open`. Every
+other type or lifecycle combination rejects with `POPULATION_RESPONSE_INVALID`.
+There is no fallback and no inference from price, liquidity, token/book presence,
+accepting-orders data, or outcome. `PolymarketPublicClient` and downstream Alpha
+eligible statuses remain unchanged.
+
+## Truthful completed-stage counts
+
+WP164A initializes bounded counters before network population and advances them
+only after completed facts: fetched markets immediately after a successful Gamma
+list response, each fetched book immediately after its successful CLOB response
+and before book normalization, each built record immediately after its builder
+returns, and inserted records only after the append commits. Any later rejection
+preserves these known values and leaves unreached stages at zero. Counts never
+stand in for batch validity, persistence, or registration evidence.
 
 ## Optional CLOB normalization
 

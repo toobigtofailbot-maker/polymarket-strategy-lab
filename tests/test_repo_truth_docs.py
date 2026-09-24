@@ -509,3 +509,24 @@ def test_wp156a_repo_truth_and_successor_boundary() -> None:
     assert "Merge authorized: YES, conditionally" in fragment
     assert "SIDE12 WP156A final one-shot" in combined
     assert "WP164A" in fragment and "separately authorized" in fragment
+
+
+def test_wp164a_repo_truth_preserves_af1_block_and_phase_a_authority() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "WP164A.md").read_text(
+        encoding="utf-8"
+    )
+    combined = "\n".join((index, fragment))
+    assert (
+        "WP164A Public Population Compatibility Repair (active bounded upstream repair)"
+        in index
+    )
+    assert "docs/wp_specs/WP164A/" in index
+    assert "46bc862018208b30971228ed719c7e9337142b41" in combined
+    assert "complete typed WP156 batch" in combined
+    assert "25-market/1-book" in combined
+    assert "zero real public-product calls" in combined
+    assert "S10-GATE-AF1 remains blocked" in combined
+    assert "Attempt-01" in combined and "Attempt-02" in combined
+    assert "Attempt-03" in combined and "not authorized" in combined.lower()
+    assert "WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED" in combined

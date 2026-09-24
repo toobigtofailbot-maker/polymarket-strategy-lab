@@ -1,5 +1,24 @@
 # Repo Truth Index
 
+## WP164A Public Population Compatibility Repair (active bounded upstream repair)
+
+The canonical package is `docs/wp_specs/WP164A/`; implementation is a narrow additive repair to
+`src/data_layer/point_in_time_market_research/polymarket_public_population.py`; canonical behavior
+remains in `docs/polymarket_point_in_time_public_population_contract.md`; focused evidence remains
+in `tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py`; and the
+stable fragment is `docs/status_entries/WP164A.md`. The frozen base is PR #191's merge commit
+`46bc862018208b30971228ed719c7e9337142b41`, whose S10-ALPHA-02 implementation head is
+`40bcee515251d2e958754bddd3dfae278928ec5c`.
+
+WP164A preserves the complete typed WP156 batch result after validation, retains truthful completed
+stage counts on later rejection, and maps raw Gamma lifecycle booleans locally to exactly `open` or
+`closed`, rejecting every other shape. Its 25-market/1-book proof is synthetic and offline. Phase A
+makes zero real public-product calls and does not modify `PolymarketPublicClient`, WP156, Alpha,
+Hermes, credentials, scheduler, dependencies, workflows, paper, execution, or live paths.
+S10-GATE-AF1 remains blocked; Attempt-01 and Attempt-02 are historical invalidated/consumed evidence
+only; Attempt-03 and the WP164A public smoke are not authorized. The required Phase-A stop is
+`WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`.
+
 ## WP156A Large Canonical Payload Batch Fingerprint Correction (current review target)
 
 WP156A is the FAST-track, Risk-2, exact 12-file upstream correction on frozen main

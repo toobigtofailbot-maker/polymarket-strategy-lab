@@ -4536,3 +4536,31 @@ def test_wp156a_current_status_and_exact_machine_scope() -> None:
     assert scope["exact_scope_required"] is True
     assert spec["identity"]["risk_level"] == 2
     assert spec["successor_boundary"]["next_wp"] == "WP164A"
+
+
+def test_wp164a_is_active_bounded_upstream_repair() -> None:
+    project = _read()
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "WP164A" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    current = next(
+        line
+        for line in project.splitlines()
+        if line.startswith("# WP164A active bounded upstream repair")
+    )
+    assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
+    assert "Exact changed-file scope: 11" in current
+    assert "46bc862018208b30971228ed719c7e9337142b41" in current
+    assert "PR #191 / S10-ALPHA-02 merged: YES" in current
+    assert "Phase-A public-product calls: 0" in current
+    assert "public repair smoke: NOT AUTHORIZED" in current
+    assert "S10-GATE-AF1: BLOCKED" in current
+    assert "AF1 Attempt-01/02: historical invalidated/consumed evidence only" in current
+    assert "AF1 Attempt-03: NOT AUTHORIZED" in current
+    assert "WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED" in current
+    assert "Merge authorized: NO" in current
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 11
