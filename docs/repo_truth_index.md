@@ -27,9 +27,10 @@ duplicate/tamper behavior, and offline WP164 large-book persistence/registration
 
 No product/network, public smoke, AF1, Hermes/provider, credential, scheduler, strategy,
 paper, execution, live, order, capital, dependency, lock, workflow, or merge authority
-is created. After separate review and explicit merge authorization, WP164A reconciliation
-and a new zero-network Phase-A candidate remain separately gated. AF1 Attempt-03 remains
-unauthorized.
+is created by the implementation package. The SIDE12 WP156A final one-shot closure later
+grants contingent PR/CI/merge authority only after every exact-head hard gate passes.
+WP164A reconciliation and a new zero-network Phase-A candidate remain separately gated.
+AF1 Attempt-03 remains unauthorized.
 
 ## S10-ALPHA-02 PIT Alpha Discovery Control Plane (current bounded implementation target)
 

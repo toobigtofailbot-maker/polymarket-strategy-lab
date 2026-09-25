@@ -4525,7 +4525,11 @@ def test_wp156a_current_status_and_exact_machine_scope() -> None:
     assert "public/product network calls: 0" in current
     assert "AF1 Attempt-03: NOT AUTHORIZED" in current
     assert "capital at risk: USD 0" in current
-    assert "Merge authorized: NO" in current
+    assert (
+        "Merge authorized: "
+        "YES_CONDITIONAL_BY_SIDE12_FINAL_ONE_SHOT_CLOSURE_AFTER_ALL_EXACT_HEAD_HARD_GATES"
+        in current
+    )
     scope = spec["scope"]
     assert scope["required_changed_files"] == scope["allowed_changed_files"]
     assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 12

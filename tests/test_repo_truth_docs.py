@@ -506,5 +506,6 @@ def test_wp156a_repo_truth_and_successor_boundary() -> None:
     assert "Attempt-02" in combined and "permanently consumed" in combined
     assert "Product/public network calls: 0" in fragment
     assert "AF1 Attempt-03: unauthorized" in fragment
-    assert "Merge authorized: NO" in fragment
+    assert "Merge authorized: YES, conditionally" in fragment
+    assert "SIDE12 WP156A final one-shot" in combined
     assert "WP164A" in fragment and "separately authorized" in fragment
