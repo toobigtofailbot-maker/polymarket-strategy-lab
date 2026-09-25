@@ -64,6 +64,35 @@ def _record(case_id: str):
     return result.record
 
 
+def _large_valid_order_book_record():
+    candidate = pit.load_synthetic_case_input(
+        "PIT-C02-VALID-ORDER-BOOK-MISSING-EVENT-TIME"
+    )
+    candidate["canonical_payload"] = {
+        "bids": [
+            {"price": f"0.{index:03d}", "size": str(index)}
+            for index in range(1, 129)
+        ],
+        "asks": [
+            {"price": f"0.{index + 200:03d}", "size": str(index)}
+            for index in range(1, 129)
+        ],
+        "tick_size": "0.001",
+        "minimum_order_size": "1",
+    }
+    result = pit.build_market_observation(candidate)
+    assert result.is_valid and result.record is not None
+    return result.record
+
+
+def _payload_node_count(value: object) -> int:
+    if isinstance(value, dict):
+        return 1 + sum(_payload_node_count(item) for item in value.values())
+    if isinstance(value, list):
+        return 1 + sum(_payload_node_count(item) for item in value)
+    return 1
+
+
 def _recursive_text(value: object) -> str:
     if is_dataclass(value) and not isinstance(value, type):
         return _recursive_text(asdict(value))
@@ -596,6 +625,88 @@ def test_canonical_json_depth_node_and_byte_bounds() -> None:
         pit.canonical_json_bytes(nodes)
     with pytest.raises(ValueError, match="^PAYLOAD_SIZE_EXCEEDED$"):
         pit.canonical_json_bytes({"x": "é" * 4096, "items": ["é" * 4096] * 8})
+
+
+def test_large_canonical_payload_batch_fingerprint_regression() -> None:
+    record = _large_valid_order_book_record()
+    payload = json.loads(record.canonical_payload_json)
+
+    assert record.observation_kind == "ORDER_BOOK"
+    assert record.envelope.classification == "PRIMARY_ASSERTION"
+    assert record.envelope.lifecycle_state == "NORMALIZED_ACCEPTED"
+    assert len(payload["bids"]) <= record_module._MAX_ITEMS
+    assert len(payload["asks"]) <= record_module._MAX_ITEMS
+    assert _payload_node_count(payload) <= record_module._MAX_NODES
+    assert all(
+        len(value) <= record_module._MAX_STRING
+        for side in (payload["bids"], payload["asks"])
+        for level in side
+        for value in level.values()
+    )
+    assert len(record.canonical_payload_json.encode("utf-8")) <= (
+        record_module._MAX_PAYLOAD_BYTES
+    )
+    assert len(record.canonical_payload_json) > record_module._MAX_STRING
+
+    with pytest.raises(ValueError, match="^PAYLOAD_STRING_LIMIT_EXCEEDED$"):
+        pit.canonical_json_bytes(
+            {"canonical_payload_json": record.canonical_payload_json}
+        )
+
+    batch = pit.validate_record_batch([record])
+    assert batch.is_valid is True
+    assert batch.error_codes == ()
+    assert batch.accepted_record_version_ids == (
+        record.envelope.record_version_id,
+    )
+    assert batch.quarantined_record_version_ids == ()
+
+
+def test_large_canonical_payload_exact_duplicate_remains_valid() -> None:
+    record = _large_valid_order_book_record()
+
+    batch = pit.validate_record_batch([record, record])
+
+    assert batch.is_valid is True
+    assert batch.error_codes == ()
+    assert batch.accepted_record_version_ids == (
+        record.envelope.record_version_id,
+    )
+    assert batch.exact_duplicate_record_version_ids == (
+        record.envelope.record_version_id,
+    )
+    assert batch.quarantined_record_version_ids == ()
+
+
+def test_large_canonical_payload_json_tamper_is_quarantined() -> None:
+    record = _large_valid_order_book_record()
+    changed_payload = json.loads(record.canonical_payload_json)
+    changed_payload["tick_size"] = "0.002"
+    changed_json = pit.canonical_json_bytes(changed_payload).decode("utf-8")
+    assert changed_json != record.canonical_payload_json
+    assert json.loads(changed_json) == changed_payload
+    tampered = replace(record, canonical_payload_json=changed_json)
+
+    batch = pit.validate_record_batch([tampered])
+
+    record_id = record.envelope.record_version_id
+    assert batch.is_valid is False
+    assert "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH" in batch.error_codes
+    assert record_id not in batch.accepted_record_version_ids
+    assert record_id in batch.quarantined_record_version_ids
+
+
+def test_large_canonical_payload_fingerprint_field_tamper_is_quarantined() -> None:
+    record = _large_valid_order_book_record()
+    tampered = replace(record, source_assertion_id="assertion:wp156a:changed")
+
+    batch = pit.validate_record_batch([tampered])
+
+    record_id = record.envelope.record_version_id
+    assert batch.is_valid is False
+    assert "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH" in batch.error_codes
+    assert record_id not in batch.accepted_record_version_ids
+    assert record_id in batch.quarantined_record_version_ids
 
 
 def test_sha256_fixed_outputs_and_canonical_fixture_hashes() -> None:

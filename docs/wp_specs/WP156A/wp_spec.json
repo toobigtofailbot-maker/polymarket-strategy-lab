@@ -1,0 +1,82 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "WP156A",
+    "title": "Large Canonical Payload Batch Fingerprint Correction",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "LARGE_CANONICAL_PAYLOAD_BATCH_FINGERPRINT_CORRECTION",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {"pr_number": 191, "head_sha": "40bcee515251d2e958754bddd3dfae278928ec5c", "merge_sha": "46bc862018208b30971228ed719c7e9337142b41"},
+    "suggested_branch": "codex/wp156a-large-payload-batch-fingerprint",
+    "objective": "Repair only WP156 private batch fingerprint representation so an ordinary valid record whose canonical payload JSON exceeds the per-string bound remains batch-valid: replace the re-wrapped complete payload string with an explicit SHA-256 of its exact UTF-8 bytes plus exact UTF-8 byte length, while preserving canonical payload limits, record-version identity, batch hash material, duplicates, lineage, public dataclasses and vocabulary. Permanently prove the legacy wrapper contradiction, the corrected large-record path, duplicate/tamper compatibility, and an offline WP164 large-book population boundary. No network, smoke, AF1, Hermes, credentials, trading, dependencies, workflows, or merge authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/point_in_time_observation_schema_validator_and_synthetic_fixture_implementation.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP156A.md",
+      "docs/wp_specs/WP156A/wp_prompt.txt",
+      "docs/wp_specs/WP156A/wp_spec.json",
+      "src/data_layer/point_in_time_market_research/records.py",
+      "tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py",
+      "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/point_in_time_observation_schema_validator_and_synthetic_fixture_implementation.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/WP156A.md",
+      "docs/wp_specs/WP156A/wp_prompt.txt",
+      "docs/wp_specs/WP156A/wp_spec.json",
+      "src/data_layer/point_in_time_market_research/records.py",
+      "tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py",
+      "tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [".github/workflows/", "agent_memory/", "agent_runtime/", "credentials/", "local_data/", "secrets/", "src/execution_gateway/", "src/oms/", "src/paper_trading/", "src/risk/", "src/research_runtime/", "tools/polymarket/"],
+    "max_changed_files": 12,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": ["docs/deferred_items_log.md", "docs/project_status.md", "docs/repo_truth_index.md", "tests/test_project_status_docs.py", "tests/test_repo_truth_docs.py"],
+    "rollback_surface": "Revert WP156A. The private fingerprint returns to embedding complete canonical_payload_json as one bounded string; the permanent regression oracles and additive current-truth records are removed. No product data, public-smoke, AF1, Hermes, credential, dependency, workflow, execution, trading, or capital state exists to unwind; consumed WP164A Attempt-02 evidence remains untouched outside this branch.",
+    "mode_boundaries": [
+      {"boundary":"workflow_governance","crossed":false},{"boundary":"local_offline_tooling","crossed":false},{"boundary":"canonical_evidence_policy","crossed":true},{"boundary":"docs","crossed":true},{"boundary":"tests","crossed":true},{"boundary":"source_runtime","crossed":true},{"boundary":"workflow_files","crossed":false},{"boundary":"dependencies","crossed":false},{"boundary":"network","crossed":false},{"boundary":"credentials","crossed":false},{"boundary":"scheduler","crossed":false},{"boundary":"hermes_runtime","crossed":false},{"boundary":"strategy","crossed":false},{"boundary":"paper","crossed":false},{"boundary":"execution","crossed":false},{"boundary":"live","crossed":false}
+    ]
+  },
+  "authority": {"workflow_governance":false,"local_offline_tooling":false,"canonical_evidence_policy":true,"docs":true,"tests":true,"source_runtime":true,"workflow_files":false,"dependencies":false,"network":false,"credentials":false,"scheduler":false,"hermes_runtime":false,"strategy":false,"paper":false,"execution":false,"live":false},
+  "api_matrix": {"applicable":true,"reason":"WP156A changes only the private collision-detection fingerprint representation used by validate_record_batch; all public record and result types remain unchanged.","items":[{"surface":"records._record_fingerprint","before":"The complete canonical_payload_json was embedded as one string node in another bounded WP156 canonical mapping, so a valid serialized payload over 4096 characters raised PAYLOAD_STRING_LIMIT_EXCEEDED during batch validation.","after":"The fingerprint commits canonical_payload_json_sha256 over the exact UTF-8 bytes and canonical_payload_json_byte_length while retaining all other material unchanged.","change_authorized":true,"compatibility_requirement":"canonical_json_bytes and every payload/tree/byte bound stay unchanged; record-version identity, canonical payload hash, batch hash material, duplicates, lineage, public dataclasses and vocabulary stay unchanged.","authority":"PRIVATE_BATCH_FINGERPRINT_CORRECTION"}]},
+  "semantic_fields": {"applicable":true,"reason":"The exact payload bytes must remain committed without reinterpreting their serialized representation as one semantic payload string.","items":[{"path":"_record_fingerprint.payload_component","source":"DERIVED","type":"mapping","required_rule":"commit the exact UTF-8 canonical payload bytes through canonical_payload_json_sha256 and canonical_payload_json_byte_length; never embed the complete serialized payload as a string node","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"same bytes yield same projection; any syntactically valid semantic payload change changes the digest or length and fails committed-record validation","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"bounded private fingerprint material","derivation_rule_id":null}]},
+  "identity_derivations": {"applicable":false,"reason":"Record-version identity, canonical payload identity, canonical batch material, and public ids remain unchanged; the private fingerprint is collision-detection material only.","items":[]},
+  "state_transitions": {"applicable":true,"reason":"Deterministic FAST readiness plus explicit user authorization permits only this correction; merge and downstream WP164A reconciliation remain separately gated.","items":[{"from_state":"LOCAL_DRAFT","to_state":"DRAFTABILITY_PASS","condition":"prompt/spec authority equality, exact scope, normative matrix, semantics and evidence plan pass deterministic readiness","failure_category":"DRAFTABILITY_INCOMPLETE"},{"from_state":"DRAFTABILITY_PASS","to_state":"AUTHORIZED","condition":"Karl authorizes this exact WP156A package","failure_category":"AUTHORITY_CONTRADICTION"},{"from_state":"AUTHORIZED","to_state":"IMPLEMENTED_LOCAL","condition":"root cause reproduces before production edit and final implementation remains within exact 12-file scope with all local validation green and zero network/product calls","failure_category":"SEMANTIC_CONTRADICTION"}]},
+  "failure_precedence": {"applicable":true,"reason":"Fixed polymarket-work-package-spec 1.0.0 guard precedence.","items":[{"condition_id":"file_unreadable","category":"FILE_READ_ERROR","priority":10},{"condition_id":"json_invalid","category":"JSON_PARSE_INVALID","priority":20},{"condition_id":"schema_unsupported","category":"SCHEMA_UNSUPPORTED","priority":30},{"condition_id":"unknown_field","category":"UNKNOWN_FIELD","priority":40},{"condition_id":"field_missing","category":"FIELD_MISSING","priority":50},{"condition_id":"field_type_invalid","category":"FIELD_TYPE_INVALID","priority":60},{"condition_id":"field_value_invalid","category":"FIELD_VALUE_INVALID","priority":70},{"condition_id":"certificate_hash_mismatch","category":"CERTIFICATE_HASH_MISMATCH","priority":80},{"condition_id":"draftability_incomplete","category":"DRAFTABILITY_INCOMPLETE","priority":90},{"condition_id":"scope_policy_invalid","category":"SCOPE_POLICY_INVALID","priority":100},{"condition_id":"authority_contradiction","category":"AUTHORITY_CONTRADICTION","priority":110},{"condition_id":"semantic_contradiction","category":"SEMANTIC_CONTRADICTION","priority":120},{"condition_id":"identity_derivation_invalid","category":"IDENTITY_DERIVATION_INVALID","priority":130},{"condition_id":"failure_precedence_invalid","category":"FAILURE_PRECEDENCE_INVALID","priority":140},{"condition_id":"example_truth_invalid","category":"EXAMPLE_TRUTH_INVALID","priority":150}]},
+  "examples": {"applicable":false,"reason":"Executable focused and cross-layer regression tests are the authoritative examples.","items":[]},
+  "evidence_plan": {"applicable":true,"reason":"R001-R015 cover deterministic reproduction, permanent legacy oracle, corrected large record, duplicate/tamper matrix, unchanged limits/identity, conflict compatibility, WP164 integration, dependent regressions, docs/truth, exact scope, full suite, security and authority boundaries.","items":[
+    {"requirement_id":"R001","source":"pytest","test":"test_large_canonical_payload_batch_fingerprint_regression","command":"python -m pytest -q tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py","expected_result":"ordinary ORDER_BOOK payload tree builds valid with canonical_payload_json over 4096"},
+    {"requirement_id":"R002","source":"pytest","test":"test_large_canonical_payload_batch_fingerprint_regression","command":"python -m pytest -q tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py","expected_result":"legacy one-string wrapper raises exactly PAYLOAD_STRING_LIMIT_EXCEEDED while true limits remain unchanged"},
+    {"requirement_id":"R003","source":"pytest","test":"test_large_canonical_payload_batch_fingerprint_regression","command":"python -m pytest -q tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py","expected_result":"corrected batch validation accepts exactly the large valid record"},
+    {"requirement_id":"R004","source":"pytest","test":"test_large_canonical_payload_exact_duplicate_remains_valid","command":"python -m pytest -q tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py","expected_result":"large exact duplicate accepts once and reports exactly its id as duplicate"},
+    {"requirement_id":"R005","source":"pytest","test":"test_large_canonical_payload_json_tamper_is_quarantined","command":"python -m pytest -q tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py","expected_result":"canonical syntactically valid semantic payload tamper fails collision integrity and is quarantined"},
+    {"requirement_id":"R006","source":"pytest","test":"test_large_canonical_payload_fingerprint_field_tamper_is_quarantined","command":"python -m pytest -q tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py","expected_result":"fingerprint-relevant field tamper fails collision integrity and is quarantined"},
+    {"requirement_id":"R007","source":"pytest","test":"existing synthetic corpus identity and batch tests","command":"python -m pytest -q tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py","expected_result":"unchanged small inputs retain identities, batch hashes and results"},
+    {"requirement_id":"R008","source":"pytest","test":"review conflict compatibility tests","command":"python -m pytest -q tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py tests/data_layer/point_in_time_market_research/test_record_store.py","expected_result":"revalidate_review_conflict_record behavior remains unchanged"},
+    {"requirement_id":"R009","source":"pytest","test":"test_large_valid_order_book_population_persists_and_registers","command":"python -m pytest -q tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py","expected_result":"offline live-shaped large book builds, batch-validates, persists and registers without collision mismatch"},
+    {"requirement_id":"R010","source":"pytest","test":"WP157/WP163/WP165/WP166 dependent regressions","command":"python -m pytest -q tests/data_layer/point_in_time_market_research","expected_result":"record revalidation, persistence, incremental and scaled population remain compatible"},
+    {"requirement_id":"R011","source":"pytest","test":"WP156A docs truth tests","command":"python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py","expected_result":"current WP156A, consumed WP164A Attempt-02, authority and successor truth pass"},
+    {"requirement_id":"R012","source":"validation","test":"exact scope and readiness","command":"python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP156A/wp_prompt.txt --spec docs/wp_specs/WP156A/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD","expected_result":"IMPLEMENTATION_READY and exact 12-file diff"},
+    {"requirement_id":"R013","source":"pytest","test":"authoritative full suite","command":"python -m pytest -q","expected_result":"full repository suite passes"},
+    {"requirement_id":"R014","source":"security","test":"generated-artifact, gitleaks, Semgrep, pip-audit, pip check and diff checks","command":"run each available local check and report unavailable tools honestly","expected_result":"all available checks pass with no generated/protected/dependency drift"},
+    {"requirement_id":"R015","source":"boundary","test":"authority and successor freeze","command":"inspect exact diff and status evidence","expected_result":"zero network/product/Hermes calls; no smoke, AF1, credential, workflow, dependency, execution, trading or merge action"}
+  ]},
+  "successor_boundary": {"next_wp":"WP164A","next_title":"Post-merge reconciliation of consumed WP164A evidence and a new zero-network Phase-A candidate before any separately authorized Attempt-03","separately_gated":true,"feature_validator_moved_to":"WP164A","forbidden_in_this_wp":["merge","editing or rebasing the WP164A branch","another WP164A public smoke or any product network call","AF1 Attempt-03 or AF1 branch reconciliation","Hermes or provider calls","credentials, scheduler, strategy, paper, execution, live, orders or capital","dependency, lock or workflow changes","successor implementation"]}
+}

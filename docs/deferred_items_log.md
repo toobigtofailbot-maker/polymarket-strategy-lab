@@ -6,6 +6,15 @@ This log tracks material issues, unavailable tools, unresolved dependency decisi
 
 Research and workbench artifacts do not gain runtime authority because they are listed here.
 
+## WP156A Deferred-Item Reconciliation
+
+WP156A adds no new product capability and resolves only the private large-canonical-payload
+batch-fingerprint contradiction. Consumed WP164A Attempt-02 remains permanently consumed.
+WP164A branch reconciliation, a new zero-network Phase-A candidate, any future fresh public
+smoke, and AF1 Attempt-03 remain separately gated and are not started by WP156A. No existing
+dependency, security-tool, rate-limit, persistence, scheduler, strategy, paper/live, execution,
+or capital deferral is promoted or silently resolved.
+
 - S10-HERMES-CTX-01-D001 (OPEN, evidence limitation): pinned Hermes v0.21.3 exposes no
   direct remote Firecrawl HTTP/redirect telemetry and cannot always attest whether its
   bounded same-provider primary-transport recovery fired. Therefore remote HTTP remains

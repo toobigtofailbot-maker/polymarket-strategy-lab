@@ -1622,7 +1622,9 @@ def _record_fingerprint(record: PointInTimeRecord) -> str:
         field.name: getattr(envelope, field.name) for field in fields(PointInTimeEnvelope)
     }
     material["record_type"] = type(record).__name__
-    material["canonical_payload_json"] = record.canonical_payload_json
+    payload_bytes = record.canonical_payload_json.encode("utf-8")
+    material["canonical_payload_json_sha256"] = sha256_hex(payload_bytes)
+    material["canonical_payload_json_byte_length"] = len(payload_bytes)
     for field in fields(type(record)):
         if field.name not in {"envelope", "canonical_payload_json"}:
             material[field.name] = getattr(record, field.name)

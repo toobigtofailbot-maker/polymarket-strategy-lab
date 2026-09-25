@@ -1,5 +1,36 @@
 # Repo Truth Index
 
+## WP156A Large Canonical Payload Batch Fingerprint Correction (current review target)
+
+WP156A is the FAST-track, Risk-2, exact 12-file upstream correction on frozen main
+`46bc862018208b30971228ed719c7e9337142b41`. Its package is
+`docs/wp_specs/WP156A/`, stable evidence fragment is
+`docs/status_entries/WP156A.md`, implementation change is confined to the private
+`_record_fingerprint` in
+`src/data_layer/point_in_time_market_research/records.py`, and focused evidence is
+in the existing WP156 and WP164 test modules.
+
+Consumed WP164A public-smoke Attempt-02 remains permanently consumed after terminal
+`WP164A_PUBLIC_SMOKE_BATCH_INVALID` with 25 markets, one book, 26 built records,
+zero inserted records, and exact batch error
+`RECORD_VERSION_HASH_COLLISION_OR_MISMATCH`. WP156A deterministically reproduces
+the upstream contradiction: an ordinary valid ORDER_BOOK payload tree can serialize
+above 4,096 characters, while the legacy private fingerprint re-wrapped that complete
+serialization as one bounded string and raised `PAYLOAD_STRING_LIMIT_EXCEEDED`.
+
+The correction replaces only that payload contribution with the SHA-256 of the exact
+UTF-8 serialized payload plus its exact UTF-8 byte length. Every true WP156 bound,
+record-version and canonical-payload identity, canonical batch material, duplicate and
+lineage semantic, public dataclass, and error/warning vocabulary remains unchanged.
+Permanent tests retain the legacy contradiction oracle, corrected large-record success,
+duplicate/tamper behavior, and offline WP164 large-book persistence/registration.
+
+No product/network, public smoke, AF1, Hermes/provider, credential, scheduler, strategy,
+paper, execution, live, order, capital, dependency, lock, workflow, or merge authority
+is created. After separate review and explicit merge authorization, WP164A reconciliation
+and a new zero-network Phase-A candidate remain separately gated. AF1 Attempt-03 remains
+unauthorized.
+
 ## S10-ALPHA-02 PIT Alpha Discovery Control Plane (current bounded implementation target)
 
 The canonical contract is `docs/alpha_discovery_control_plane_contract.md`; implementation is
