@@ -481,3 +481,31 @@ def test_s10_alpha02_repo_truth_and_successor() -> None:
     assert "H1 #5" in combined and "NOT AUTHORIZED" in combined
     assert "Merge authorized: NO" in fragment
     assert "RESOLVED_BY_S10_ALPHA_02_BOUNDED_SCOPE" in deferred
+
+
+def test_wp156a_repo_truth_and_successor_boundary() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    contract = (
+        ROOT
+        / "docs"
+        / "point_in_time_observation_schema_validator_and_synthetic_fixture_implementation.md"
+    ).read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "WP156A.md").read_text(
+        encoding="utf-8"
+    )
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(
+        encoding="utf-8"
+    )
+    combined = "\n".join((index, contract, fragment, deferred))
+    assert "WP156A Large Canonical Payload Batch Fingerprint Correction" in index
+    assert "46bc862018208b30971228ed719c7e9337142b41" in combined
+    assert "WP164A_PUBLIC_SMOKE_BATCH_INVALID" in combined
+    assert "PAYLOAD_STRING_LIMIT_EXCEEDED" in combined
+    assert "canonical_payload_json_sha256" in combined
+    assert "canonical_payload_json_byte_length" in combined
+    assert "Attempt-02" in combined and "permanently consumed" in combined
+    assert "Product/public network calls: 0" in fragment
+    assert "AF1 Attempt-03: unauthorized" in fragment
+    assert "Merge authorized: YES, conditionally" in fragment
+    assert "SIDE12 WP156A final one-shot" in combined
+    assert "WP164A" in fragment and "separately authorized" in fragment

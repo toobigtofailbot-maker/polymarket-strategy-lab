@@ -686,6 +686,50 @@ def test_order_book_population_guards_and_normalizes():
     assert payload["bids"] == [{"price": "0.40", "size": "10"}]
 
 
+def test_large_valid_order_book_population_persists_and_registers():
+    record_path, manifest_path = _stores()
+    bids = tuple((f"0.{index:03d}", str(index)) for index in range(1, 129))
+    asks = tuple(
+        (f"0.{index + 200:03d}", str(index)) for index in range(1, 129)
+    )
+    client = FakeClient(
+        [_market("100", ["tokA"])],
+        books={"tokA": _book("tokA", bids=bids, asks=asks)},
+    )
+
+    result = populate_initial_polymarket_public_data(
+        record_path,
+        manifest_path,
+        _config(allow_network=True, markets_limit=1, order_books_limit=1),
+        client=client,
+        guard=DenyGuard(deny_key=None),
+        utcnow_provider=_clock,
+    )
+
+    assert result.is_valid is True
+    assert result.status == "POPULATION_PERSISTED_AND_REGISTERED"
+    assert result.error_codes == ()
+    assert result.fetched_market_count == 1
+    assert result.fetched_order_book_count == 1
+    assert result.built_record_count == 2
+    assert result.inserted_record_count == 2
+    assert result.registration_status == "ADAPTER_PERSISTED"
+    assert result.dataset_snapshot_reference_id is not None
+    assert result.manifest_entry_id is not None
+    assert client.markets_calls == 1
+    assert client.book_calls == ["tokA"]
+
+    records = load_and_verify_point_in_time_record_store(record_path).snapshot.records
+    book = next(record for record in records if record.observation_kind == "ORDER_BOOK")
+    assert len(book.canonical_payload_json) > 4096
+    assert (
+        "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH" not in result.error_codes
+    )
+    manifest = load_and_verify_manifest_store(manifest_path).snapshot
+    assert len(manifest.dataset_references) == 1
+    assert len(manifest.manifest_entries) == 1
+
+
 def test_ambiguous_token_to_market_mapping_rejected():
     record_path, manifest_path = _stores()
     # Same token appears in two different markets.

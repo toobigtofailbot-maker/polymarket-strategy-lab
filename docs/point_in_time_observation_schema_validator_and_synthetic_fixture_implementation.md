@@ -598,3 +598,39 @@ Recommended, not implemented:
 WP157 requires separate approval. WP156 contains no as-of reconstruction,
 query receipt, persistence, Arrow/Parquet, DuckDB/Polars, collector, network,
 credentials, scheduler, strategy, paper, or live behavior.
+
+## 21. WP156A Large Canonical Payload Batch Fingerprint Correction
+
+WP156A corrects one private batch-integrity representation exposed by consumed
+WP164A public-smoke Attempt-02. An ordinary valid canonical payload tree may
+serialize above 4,096 characters while every individual string remains at or
+below `_MAX_STRING`, both order-book sides remain at or below `_MAX_ITEMS`, the
+tree remains below `_MAX_NODES`, and the encoded payload remains at or below
+`_MAX_PAYLOAD_BYTES`. The public builder correctly accepts that payload.
+
+The former `_record_fingerprint` then embedded the complete serialized
+`canonical_payload_json` as one new string node in another
+`canonical_json_bytes` mapping. That legacy wrapper correctly raised
+`PAYLOAD_STRING_LIMIT_EXCEEDED`, but at the wrong abstraction boundary, causing
+`validate_record_batch` to emit
+`RECORD_VERSION_HASH_COLLISION_OR_MISMATCH` for an otherwise valid record.
+
+The corrected private fingerprint commits the exact serialized payload through:
+
+- `canonical_payload_json_sha256 = sha256_hex(canonical_payload_json.encode("utf-8"))`
+- `canonical_payload_json_byte_length = len(canonical_payload_json.encode("utf-8"))`
+
+All other fingerprint material is unchanged. `canonical_json_bytes`,
+`_MAX_STRING`, `_MAX_ITEMS`, `_MAX_NODES`, `_MAX_PAYLOAD_BYTES`, record-version
+identity, canonical payload identity, canonical batch material, duplicate and
+lineage semantics, public dataclasses, and error/warning vocabularies are
+unchanged.
+
+Permanent deterministic tests prove the original legacy-wrapper contradiction,
+successful batch validation for the same ordinary >4,096-character ORDER_BOOK
+record, exact-duplicate compatibility, syntactically valid canonical-payload
+tamper rejection, fingerprint-field tamper rejection, and an offline WP164
+large-book population that persists and registers through existing fake/local
+seams. WP156A makes no product/network call and grants no smoke, AF1, Hermes,
+credential, scheduler, strategy, paper, execution, live, order, capital, or
+merge authority.

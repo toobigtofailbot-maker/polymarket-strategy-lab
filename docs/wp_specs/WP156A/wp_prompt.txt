@@ -1,0 +1,223 @@
+SIDE12 — WP156A LARGE-CANONICAL-PAYLOAD BATCH-FINGERPRINT CORRECTION
+FINAL IMPLEMENTATION-AUTHORIZED WORK PACKAGE
+
+Package Identity:
+  WP ID: WP156A
+  Title: Large Canonical Payload Batch Fingerprint Correction
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base: 46bc862018208b30971228ed719c7e9337142b41
+  Required predecessor: PR #191 / S10-ALPHA-02
+  Required predecessor head: 40bcee515251d2e958754bddd3dfae278928ec5c
+  Required predecessor merge: 46bc862018208b30971228ed719c7e9337142b41
+  Suggested branch: codex/wp156a-large-payload-batch-fingerprint
+  Package class: LARGE_CANONICAL_PAYLOAD_BATCH_FINGERPRINT_CORRECTION
+  Package size class: L
+  Exact changed-file budget: 12
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: LOCAL_OFFLINE_DETERMINISTIC_VALIDATOR_CORRECTION_ONLY
+  Product impact: NONE
+  Network impact: NONE
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: FAST
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+===============================================================================
+0. OBJECTIVE AND AUTHORITY / NON-AUTHORITY POSTURE
+===============================================================================
+
+Objective: remove the private batch-fingerprint contradiction for valid large
+canonical payloads without weakening any WP156 limit or changing public identity.
+
+Karl authorizes this exact local/offline deterministic correction, its focused and
+cross-layer tests, exact 12-file documentation/evidence updates, validation, commit,
+and normal independent-review PR publication if required by repository workflow.
+
+This package grants no external network, Polymarket product call, Hermes/provider,
+credential, scheduler, strategy, paper/live execution, order/signing/cancel, Gate C,
+capital, merge, WP164A branch mutation, replacement public smoke, AF1 attempt, workflow,
+dependency, lock-file, or successor authority. Protected boundary groups remain those
+defined by docs/ai/codex/PROTECTED_PATHS.md. Capital at risk is USD 0.
+
+===============================================================================
+1. CONFIRMED CONTEXT AND ROOT-CAUSE GATE
+===============================================================================
+
+Consumed WP164A public-smoke Attempt-02 ended
+WP164A_PUBLIC_SMOKE_BATCH_INVALID after 25 markets, one CLOB book, 26 built
+records, zero inserted records, and exact batch error
+RECORD_VERSION_HASH_COLLISION_OR_MISMATCH. It is permanently consumed.
+
+Current WP156 _record_fingerprint(record) embeds the already-serialized
+record.canonical_payload_json as one string node in a new canonical_json_bytes outer
+mapping. canonical_json_bytes correctly limits every semantic string node to 4096,
+while an otherwise valid payload tree may serialize above 4096 bytes when each inner
+string, sequence, node, and total-byte limit remains valid. The builder can therefore
+accept the record and the batch fingerprint can reject it.
+
+Before changing production, construct an ordinary authoritative ORDER_BOOK record in
+the existing WP156 focused test file. Require public builder validity, true payload-tree
+bounds, len(canonical_payload_json) > 4096, and the exact current batch failure shape:
+invalid, error_codes exactly RECORD_VERSION_HASH_COLLISION_OR_MISMATCH, accepted empty,
+quarantined empty. If that does not reproduce, stop ROOT_CAUSE_NOT_REPRODUCED and make
+no semantic fix.
+
+The final green test must preserve both sides: the same record remains ordinarily valid;
+the legacy wrapper canonical_json_bytes({canonical_payload_json: complete string}) raises
+exactly PAYLOAD_STRING_LIMIT_EXCEEDED; corrected validate_record_batch succeeds.
+
+===============================================================================
+2. MINIMUM PRODUCTION CHANGE
+===============================================================================
+
+Change only private _record_fingerprint representation. Replace the complete payload
+string contribution with both:
+
+  canonical_payload_json_sha256 =
+    sha256_hex(record.canonical_payload_json.encode("utf-8"))
+
+  canonical_payload_json_byte_length =
+    len(record.canonical_payload_json.encode("utf-8"))
+
+Keep every remaining envelope and record-specific fingerprint field unchanged.
+Do not alter canonical_json_bytes, _MAX_STRING, _MAX_PAYLOAD_BYTES, _MAX_ITEMS,
+_MAX_NODES, record-version identity, envelope fields, canonical batch material,
+duplicate classification, lineage, public dataclasses, or error/warning vocabulary.
+Do not weaken or reshape the CLOB payload.
+
+===============================================================================
+3. REQUIRED NEGATIVE TEST MATRIX
+===============================================================================
+
+A. Large ordinary record: same >4096 valid ORDER_BOOK record builds and validates;
+accepted ids exactly its id; quarantine empty; no collision/mismatch error.
+
+B. Exact duplicate: [record, record] remains valid; accepted once; exact duplicate ids
+contains exactly its id.
+
+C1. Canonical payload tamper: use syntactically valid, canonically serialized,
+semantically changed JSON without rebuilding the envelope. Batch invalid; collision or
+mismatch present; id absent from accepted and present in quarantine.
+
+C2. Fingerprint-relevant field tamper: change one relevant record/envelope field without
+rebuilding committed identity. Require the same fail-closed acceptance/quarantine shape.
+
+D. Small compatibility: existing synthetic-corpus batch hashes and valid small records
+remain unchanged.
+
+E. Conflict/review compatibility: revalidate_review_conflict_record remains unchanged.
+
+F. Cross-layer regression: in the existing WP164 population test file, use only fake/local
+seams to normalize one valid live-shaped CLOB book whose canonical payload exceeds 4096
+while remaining within true WP156 tree bounds. Population batch validation, persistence,
+and registration must succeed with no collision/mismatch. No product network call.
+
+===============================================================================
+4. EXACT SCOPE
+===============================================================================
+
+required_changed_files == allowed_changed_files == exactly:
+
+1. src/data_layer/point_in_time_market_research/records.py
+2. tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py
+3. tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py
+4. docs/point_in_time_observation_schema_validator_and_synthetic_fixture_implementation.md
+5. docs/status_entries/WP156A.md
+6. docs/project_status.md
+7. docs/repo_truth_index.md
+8. docs/deferred_items_log.md
+9. docs/wp_specs/WP156A/wp_prompt.txt
+10. docs/wp_specs/WP156A/wp_spec.json
+11. tests/test_project_status_docs.py
+12. tests/test_repo_truth_docs.py
+
+Maximum changed files: 12. Exact scope required: YES. No thirteenth path.
+
+Explicitly forbidden: polymarket_public_population.py, current WP164A branch files beyond
+the listed merged test surface, public_client.py, record_store.py, manifest_store.py,
+dataset_persistence_adapter.py, ALPHA/HERMES/AF1 source, tools/polymarket runtime
+operators, workflows, dependencies/locks, and tracked local_data artifacts.
+
+===============================================================================
+5. HARD MERGE GATE / COMPATIBILITY / HARD STOP CONDITIONS
+===============================================================================
+
+Local main and origin/main must both equal the frozen base, tracked main must be clean,
+the generated-artifact guard must pass, and this branch must start directly from main.
+The correction is compatible because _record_fingerprint is private collision-detection
+material; public record identity and batch hash inputs stay unchanged.
+
+STOP ROOT_CAUSE_NOT_REPRODUCED if the exact deterministic contradiction does not occur.
+STOP SCOPE_EXPANSION_REQUIRED if a thirteenth path or forbidden path is required.
+STOP PACKAGE_CONTRACT_MISMATCH if readiness needs broader authority or semantics.
+STOP TEST_CONTRACT_FAILURE if tamper, duplicate, small-corpus, review-conflict, or WP164
+regressions cannot remain fail-closed and green.
+STOP STATE_DRIFT if the frozen base, branch ancestry, or clean-state requirements differ.
+Under any stop, make no public call, smoke, AF1 attempt, merge, or scope expansion.
+
+===============================================================================
+6. CONTEXT BUDGET / VALIDATION / EVIDENCE PLAN / REQUIREMENT MAPPING
+===============================================================================
+
+Read mandatory startup and workflow docs first; then only the 12 scoped paths, WP156
+record builder/validator dependencies needed to understand existing behavior, and affected
+WP157/WP163/WP165/WP166 tests. Run pre-implementation deterministic readiness after
+creating this prompt/spec. Preserve a permanent legacy-failure oracle on the final green
+head rather than retaining broken production behavior.
+
+Before final commit run focused WP156, reproduction/fix matrix, WP164 cross-layer,
+WP157/WP163, WP165/WP166, contract/status/truth tests, committed-diff/architecture and
+generated-artifact guards, available gitleaks/Semgrep/pip-audit, pip check, exact 12-file
+readiness, and base-to-head git diff --check. On the committed head rerun focused and
+dependency regressions, exact readiness, one authoritative full suite, hygiene/security,
+pip check, and base-to-head diff check. Runtime/product network calls remain zero.
+
+Requirement-to-evidence traceability is R001-R015 in wp_spec.json. The negative-test
+matrix is Section 3. The stable status fragment and PR body must remain consistent.
+
+===============================================================================
+7. SUCCESSOR BOUNDARY AND REQUIRED STOP / REPORT-BACK
+===============================================================================
+
+After independent review and a separate Karl merge authorization only: merge WP156A,
+refresh main, reconcile the blocked WP164A branch, preserve consumed Attempt-01/02
+evidence, run a new zero-network WP164A Phase A, and stop for a separately authorized
+fresh Attempt-03 proposal. This package does none of those steps.
+
+When fully green, stop WP156A_MERGE_AUTHORIZATION_REQUIRED. Report branch, definitive
+SHA, exact 12/12 inventory, pre-fix reproduction, production projection change, large,
+duplicate, tamper, WP164 regression, validation/security counts, clean worktree,
+network/product calls zero, PR state, and merge unauthorized.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|fingerprint|canonical_payload_json|valid_serialized_payload_over_4096|REQUIRE|sha256_and_utf8_byte_length|_record_fingerprint.payload_component|R003
+NR002|limits|canonical_json_bytes|all_inputs|PRESERVE_EXACT|no_limit_weakening|_record_fingerprint.payload_component|R002
+NR003|identity|record_version_and_batch_hash|unchanged_inputs|PRESERVE_EXACT|byte_compatible_identity|_record_fingerprint.payload_component|R010
+NR004|integrity|tampered_payload_or_field|committed_identity_not_rebuilt|REJECT|collision_mismatch_and_quarantine|_record_fingerprint.payload_component|R006
+NR005|runtime|wp164_large_valid_book|offline_fake_client|ACCEPT|persist_and_register_without_collision|_record_fingerprint.payload_component|R009
+NR006|authority|network_and_successors|all_wp156a_execution|FORBID|zero_product_calls_no_smoke_no_af1|NONE|R015
+END_NORMATIVE_RULE_MATRIX_V1
+
+END WP156A IMPLEMENTATION-AUTHORIZED PACKAGE

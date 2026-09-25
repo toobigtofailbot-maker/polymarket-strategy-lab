@@ -4503,3 +4503,36 @@ def test_s10_alpha02_current_status_and_exact_machine_scope() -> None:
     assert scope["exact_scope_required"] is True
     assert spec["identity"]["risk_level"] == 2
     assert spec["successor_boundary"]["next_wp"] == "S10-GATE-AF1"
+
+
+def test_wp156a_current_status_and_exact_machine_scope() -> None:
+    project = _read()
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "WP156A" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    current = next(
+        line
+        for line in project.splitlines()
+        if line.startswith("# WP156A active upstream correction")
+    )
+    assert "Governance track: FAST" in current and "Risk level: 2" in current
+    assert "Exact changed-file scope: 12" in current
+    assert "46bc862018208b30971228ed719c7e9337142b41" in current
+    assert "WP164A_PUBLIC_SMOKE_BATCH_INVALID" in current
+    assert "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH" in current
+    assert "public/product network calls: 0" in current
+    assert "AF1 Attempt-03: NOT AUTHORIZED" in current
+    assert "capital at risk: USD 0" in current
+    assert (
+        "Merge authorized: "
+        "YES_CONDITIONAL_BY_SIDE12_FINAL_ONE_SHOT_CLOSURE_AFTER_ALL_EXACT_HEAD_HARD_GATES"
+        in current
+    )
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 12
+    assert scope["exact_scope_required"] is True
+    assert spec["identity"]["risk_level"] == 2
+    assert spec["successor_boundary"]["next_wp"] == "WP164A"
