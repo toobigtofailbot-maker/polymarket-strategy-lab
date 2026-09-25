@@ -52,6 +52,8 @@ from .record_store import (
 )
 from .records import (
     MarketObservationRecord,
+    PointInTimeBatchValidationResult,
+    PointInTimeBuildResult,
     SUPPORTED_SCHEMA_ID,
     SUPPORTED_SCHEMA_VERSION,
     build_market_observation,
@@ -181,6 +183,20 @@ class PolymarketPublicPopulationResult:
     recovery_required: bool
     advisory_only: bool
     no_execution_authority: bool
+    batch_is_valid: bool | None = None
+    batch_status: str | None = None
+    batch_error_codes: tuple[str, ...] = ()
+    batch_warning_codes: tuple[str, ...] = ()
+    batch_accepted_record_version_ids: tuple[str, ...] = ()
+    batch_exact_duplicate_record_version_ids: tuple[str, ...] = ()
+    batch_quarantined_record_version_ids: tuple[str, ...] = ()
+    canonical_batch_sha256: str | None = None
+    build_failure_observation_kind: str | None = None
+    build_status: str | None = None
+    build_error_codes: tuple[str, ...] = ()
+    build_warning_codes: tuple[str, ...] = ()
+    build_quarantine_id: str | None = None
+    build_input_fingerprint_sha256: str | None = None
 
 
 # ── Internal control-flow rejection ───────────────────────────────────────────
@@ -191,6 +207,29 @@ class _PopulationReject(Exception):
 
     def __init__(self, code: str):
         self.code = code
+
+
+class _BuildFailure(_PopulationReject):
+    """Carry only the closed safe diagnostics from an invalid WP156 build."""
+
+    def __init__(
+        self,
+        observation_kind: str,
+        built: PointInTimeBuildResult,
+    ):
+        super().__init__("POPULATION_BUILD_FAILED")
+        self.observation_kind = observation_kind
+        self.build_status = built.status
+        self.build_error_codes = tuple(built.error_codes)
+        self.build_warning_codes = tuple(built.warning_codes)
+        self.build_quarantine_id = (
+            None if built.quarantine is None else built.quarantine.quarantine_id
+        )
+        self.build_input_fingerprint_sha256 = (
+            None
+            if built.quarantine is None
+            else built.quarantine.input_fingerprint_sha256
+        )
 
 
 def _order(codes: tuple[str, ...]) -> tuple[str, ...]:
@@ -222,6 +261,13 @@ def _result(
     registration_status: str | None = None,
     network_used: bool = False,
     recovery_required: bool = False,
+    batch: PointInTimeBatchValidationResult | None = None,
+    build_failure_observation_kind: str | None = None,
+    build_status: str | None = None,
+    build_error_codes: tuple[str, ...] = (),
+    build_warning_codes: tuple[str, ...] = (),
+    build_quarantine_id: str | None = None,
+    build_input_fingerprint_sha256: str | None = None,
 ) -> PolymarketPublicPopulationResult:
     return PolymarketPublicPopulationResult(
         is_valid=is_valid,
@@ -248,6 +294,28 @@ def _result(
         recovery_required=recovery_required,
         advisory_only=True,
         no_execution_authority=True,
+        batch_is_valid=None if batch is None else batch.is_valid,
+        batch_status=None if batch is None else batch.status,
+        batch_error_codes=() if batch is None else tuple(batch.error_codes),
+        batch_warning_codes=() if batch is None else tuple(batch.warning_codes),
+        batch_accepted_record_version_ids=(
+            () if batch is None else tuple(batch.accepted_record_version_ids)
+        ),
+        batch_exact_duplicate_record_version_ids=(
+            () if batch is None else tuple(batch.exact_duplicate_record_version_ids)
+        ),
+        batch_quarantined_record_version_ids=(
+            () if batch is None else tuple(batch.quarantined_record_version_ids)
+        ),
+        canonical_batch_sha256=(
+            None if batch is None else batch.canonical_batch_sha256
+        ),
+        build_failure_observation_kind=build_failure_observation_kind,
+        build_status=build_status,
+        build_error_codes=tuple(build_error_codes),
+        build_warning_codes=tuple(build_warning_codes),
+        build_quarantine_id=build_quarantine_id,
+        build_input_fingerprint_sha256=build_input_fingerprint_sha256,
     )
 
 
@@ -270,7 +338,9 @@ def _rejected(
 
 
 def _valid_scalar(value: object) -> bool:
-    return type(value) is str and 0 < len(value) <= _MAX_SCALAR and value == value.strip()
+    return (
+        type(value) is str and 0 < len(value) <= _MAX_SCALAR and value == value.strip()
+    )
 
 
 def _validate_config(config: object) -> None:
@@ -452,6 +522,12 @@ def _parse_markets(raw_items: list[dict]) -> list[tuple[str, str, dict]]:
     parsed: list[tuple[str, str, dict]] = []
     seen_gamma_ids: set[str] = set()
     for raw_item in raw_items:
+        if raw_item.get("closed") is True:
+            market_status = "closed"
+        elif raw_item.get("active") is True and raw_item.get("closed") is False:
+            market_status = "open"
+        else:
+            raise _PopulationReject("POPULATION_RESPONSE_INVALID")
         try:
             summary = PolymarketPublicClient.parse_market_summary(raw_item)
         except _PopulationReject:
@@ -472,7 +548,7 @@ def _parse_markets(raw_items: list[dict]) -> list[tuple[str, str, dict]]:
             event_id = "event:polymarket:market-" + raw_gamma_id
         payload = {
             "question_text": summary.question,
-            "market_status": summary.market_status,
+            "market_status": market_status,
             "outcome_labels": list(summary.outcome_labels),
             "condition_id": summary.condition_id,
             "token_ids": [str(token) for token in summary.token_ids],
@@ -492,8 +568,30 @@ def _parse_markets(raw_items: list[dict]) -> list[tuple[str, str, dict]]:
     return parsed
 
 
+def _identity_json_bytes(value: object) -> bytes:
+    """Encode identity preimages without preempting WP156 sequence diagnostics.
+
+    Valid WP156-bounded values retain exactly the existing bytes.  An oversized
+    sequence is encoded only so the immutable identity inputs can be derived and
+    the authoritative WP156 builder can return its closed typed rejection.  This
+    does not make the payload valid or grant persistence authority.
+    """
+
+    try:
+        return canonical_json_bytes(value)
+    except ValueError as exc:
+        if str(exc) != "PAYLOAD_SEQUENCE_LIMIT_EXCEEDED":
+            raise
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+
+
 def _content_id(prefix: str, preimage: dict) -> str:
-    return prefix + sha256_hex(canonical_json_bytes(preimage))
+    return prefix + sha256_hex(_identity_json_bytes(preimage))
 
 
 def _build_gamma_record(
@@ -553,7 +651,7 @@ def _build_gamma_record(
         "human_review_required": False,
         "canonical_payload": payload,
     }
-    return _build_or_reject(input_record)
+    return _build_or_reject(input_record, "MARKET_METADATA")
 
 
 def _normalize_order_book(raw_book: dict, raw_token_id: str) -> dict:
@@ -649,10 +747,13 @@ def _build_order_book_record(
         "human_review_required": False,
         "canonical_payload": payload,
     }
-    return _build_or_reject(input_record)
+    return _build_or_reject(input_record, "ORDER_BOOK")
 
 
-def _build_or_reject(input_record: dict) -> MarketObservationRecord:
+def _build_or_reject(
+    input_record: dict,
+    observation_kind: str,
+) -> MarketObservationRecord:
     try:
         built = build_market_observation(input_record)
     except _PopulationReject:
@@ -660,7 +761,7 @@ def _build_or_reject(input_record: dict) -> MarketObservationRecord:
     except Exception:
         raise _PopulationReject("POPULATION_BUILD_FAILED")
     if not built.is_valid or built.record is None:
-        raise _PopulationReject("POPULATION_BUILD_FAILED")
+        raise _BuildFailure(observation_kind, built)
     if type(built.record) is not MarketObservationRecord:
         raise _PopulationReject("POPULATION_BUILD_FAILED")
     return built.record
@@ -680,7 +781,10 @@ def _select_tokens(parsed_markets: list[tuple[str, str, dict]], bounded_books: i
     for _market_id, _raw_gamma_id, normalized in parsed_markets:
         for raw_token in normalized["raw_token_ids"]:
             existing = token_to_market.get(raw_token)
-            if existing is not None and existing["market_id"] != normalized["market_id"]:
+            if (
+                existing is not None
+                and existing["market_id"] != normalized["market_id"]
+            ):
                 raise _PopulationReject("POPULATION_RESPONSE_INVALID")
             token_to_market.setdefault(raw_token, normalized)
 
@@ -724,7 +828,9 @@ def _run_identities(
         "normalizer_version": config.normalizer_version,
         "validator_version": config.validator_version,
     }
-    snapshot_id = _content_id("snapshot:sha256:", dict(base, identity_kind="snapshot_id"))
+    snapshot_id = _content_id(
+        "snapshot:sha256:", dict(base, identity_kind="snapshot_id")
+    )
     ingestion_batch_id = _content_id(
         "ingest:sha256:", dict(base, identity_kind="ingestion_batch_id")
     )
@@ -734,7 +840,9 @@ def _run_identities(
 # ── Batch validation, append, and registration (R025-R032) ────────────────────
 
 
-def _validate_batch(records: tuple[MarketObservationRecord, ...]) -> None:
+def _validate_batch(
+    records: tuple[MarketObservationRecord, ...],
+) -> PointInTimeBatchValidationResult:
     if not records or len(records) > 256:
         raise _PopulationReject("POPULATION_BATCH_INVALID")
     try:
@@ -743,13 +851,22 @@ def _validate_batch(records: tuple[MarketObservationRecord, ...]) -> None:
         raise
     except Exception:
         raise _PopulationReject("POPULATION_BATCH_INVALID")
-    if batch.is_valid is not True:
-        raise _PopulationReject("POPULATION_BATCH_INVALID")
-    if batch.quarantined_record_version_ids:
-        raise _PopulationReject("POPULATION_BATCH_INVALID")
+    return batch
+
+
+def _batch_meets_population_contract(
+    batch: PointInTimeBatchValidationResult,
+    records: tuple[MarketObservationRecord, ...],
+) -> bool:
     accepted = tuple(batch.accepted_record_version_ids)
-    if len(accepted) != len(records) or len(set(accepted)) != len(accepted):
-        raise _PopulationReject("POPULATION_BATCH_INVALID")
+    expected = {record.envelope.record_version_id for record in records}
+    return (
+        batch.is_valid is True
+        and not batch.quarantined_record_version_ids
+        and len(accepted) == len(records)
+        and len(set(accepted)) == len(accepted)
+        and set(accepted) == expected
+    )
 
 
 def _append_records(
@@ -785,9 +902,7 @@ def _closed_adapter_codes(value: object) -> tuple[str, ...]:
 
     try:
         return tuple(
-            code
-            for code in value
-            if type(code) is str and code in _ADAPTER_ERROR_CODES
+            code for code in value if type(code) is str and code in _ADAPTER_ERROR_CODES
         )
     except Exception:
         return ()
@@ -831,7 +946,8 @@ def _safe_register(
         if (
             registration.is_valid is True
             and type(registration.status) is str
-            and registration.status in ("ADAPTER_PERSISTED", "ADAPTER_ALREADY_PERSISTED")
+            and registration.status
+            in ("ADAPTER_PERSISTED", "ADAPTER_ALREADY_PERSISTED")
         ):
             reference = registration.dataset_reference
             entry = registration.manifest_entry
@@ -970,6 +1086,12 @@ def _run_network_population(
     # ``network_used`` stays False until the Gamma GET is actually attempted, so a
     # guard denial before the first GET is reported honestly as no network use.
     network_used = False
+    fetched_market_count = 0
+    fetched_order_book_count = 0
+    built_record_count = 0
+    batch: PointInTimeBatchValidationResult | None = None
+    captured_at_utc: str | None = None
+    snapshot_id: str | None = None
     try:
         active_client = client
         if active_client is None:
@@ -990,9 +1112,9 @@ def _run_network_population(
             _consult_guard(rate_guard, _CLOB_ENDPOINT_KEY, now_provider)
             parent = token_to_market[raw_token]
             raw_book = _get_order_book(active_client, raw_token)
+            fetched_order_book_count += 1
             payload = _normalize_order_book(raw_book, raw_token)
             raw_books.append((parent, raw_token, payload))
-        fetched_order_book_count = len(raw_books)
 
         captured_at_utc = _capture_time(utc_now)
 
@@ -1004,11 +1126,11 @@ def _run_network_population(
             key=lambda item: (item[0]["market_id"], "token:polymarket:" + item[1]),
         )
         gamma_payload_hashes = [
-            sha256_hex(canonical_json_bytes(normalized["payload"]))
+            sha256_hex(_identity_json_bytes(normalized["payload"]))
             for _market_id, _raw_gamma_id, normalized in gamma_sorted
         ]
         clob_payload_hashes = [
-            sha256_hex(canonical_json_bytes(payload))
+            sha256_hex(_identity_json_bytes(payload))
             for _parent, _token, payload in book_sorted
         ]
         snapshot_id, ingestion_batch_id = _run_identities(
@@ -1018,41 +1140,73 @@ def _run_network_population(
             config=config,
         )
 
-        gamma_records = [
-            _build_gamma_record(
-                normalized,
-                snapshot_id=snapshot_id,
-                ingestion_batch_id=ingestion_batch_id,
-                captured_at_utc=captured_at_utc,
-                config=config,
+        gamma_records = []
+        for _market_id, _raw_gamma_id, normalized in parsed_markets:
+            gamma_records.append(
+                _build_gamma_record(
+                    normalized,
+                    snapshot_id=snapshot_id,
+                    ingestion_batch_id=ingestion_batch_id,
+                    captured_at_utc=captured_at_utc,
+                    config=config,
+                )
             )
-            for _market_id, _raw_gamma_id, normalized in parsed_markets
-        ]
-        book_records = [
-            _build_order_book_record(
-                parent,
-                raw_token,
-                payload,
-                snapshot_id=snapshot_id,
-                ingestion_batch_id=ingestion_batch_id,
-                captured_at_utc=captured_at_utc,
-                config=config,
+            built_record_count += 1
+        book_records = []
+        for parent, raw_token, payload in raw_books:
+            book_records.append(
+                _build_order_book_record(
+                    parent,
+                    raw_token,
+                    payload,
+                    snapshot_id=snapshot_id,
+                    ingestion_batch_id=ingestion_batch_id,
+                    captured_at_utc=captured_at_utc,
+                    config=config,
+                )
             )
-            for parent, raw_token, payload in raw_books
-        ]
+            built_record_count += 1
 
         gamma_records.sort(key=lambda record: record.market_id)
         book_records.sort(key=lambda record: (record.market_id, record.token_id or ""))
         records = tuple(gamma_records) + tuple(book_records)
-        built_record_count = len(records)
-
-        _validate_batch(records)
+        batch = _validate_batch(records)
+        if not _batch_meets_population_contract(batch, records):
+            raise _PopulationReject("POPULATION_BATCH_INVALID")
+    except _BuildFailure as reject:
+        return _result(
+            is_valid=False,
+            status="POPULATION_REJECTED",
+            error_codes=(reject.code,),
+            snapshot_id=snapshot_id,
+            captured_at_utc=captured_at_utc,
+            fetched_market_count=fetched_market_count,
+            fetched_order_book_count=fetched_order_book_count,
+            built_record_count=built_record_count,
+            network_used=network_used,
+            batch=batch,
+            build_failure_observation_kind=reject.observation_kind,
+            build_status=reject.build_status,
+            build_error_codes=reject.build_error_codes,
+            build_warning_codes=reject.build_warning_codes,
+            build_quarantine_id=reject.build_quarantine_id,
+            build_input_fingerprint_sha256=(
+                reject.build_input_fingerprint_sha256
+            ),
+            **limits,
+        )
     except _PopulationReject as reject:
         return _result(
             is_valid=False,
             status="POPULATION_REJECTED",
             error_codes=(reject.code,),
+            snapshot_id=snapshot_id,
+            captured_at_utc=captured_at_utc,
+            fetched_market_count=fetched_market_count,
+            fetched_order_book_count=fetched_order_book_count,
+            built_record_count=built_record_count,
             network_used=network_used,
+            batch=batch,
             **limits,
         )
 
@@ -1071,6 +1225,7 @@ def _run_network_population(
             fetched_order_book_count=fetched_order_book_count,
             built_record_count=built_record_count,
             network_used=True,
+            batch=batch,
             **limits,
         )
 
@@ -1105,6 +1260,7 @@ def _run_network_population(
             registration_status=None,
             network_used=True,
             recovery_required=True,
+            batch=batch,
             **limits,
         )
 
@@ -1127,6 +1283,7 @@ def _run_network_population(
         record_store_status=record_store_status,
         registration_status=registration_status,
         network_used=True,
+        batch=batch,
         **limits,
     )
 
@@ -1171,7 +1328,33 @@ def recover_initial_polymarket_public_registration(
         ingestion_time = records[0].envelope.ingestion_time
         ordered = _wp164_sort(records)
 
-        _validate_batch(ordered)
+        try:
+            batch = _validate_batch(ordered)
+        except _PopulationReject as reject:
+            return _result(
+                is_valid=False,
+                status="POPULATION_REJECTED",
+                error_codes=(reject.code,),
+                snapshot_id=snapshot_id,
+                captured_at_utc=ingestion_time,
+                requested_markets_limit=config.markets_limit,
+                requested_order_books_limit=config.order_books_limit,
+                built_record_count=len(ordered),
+                record_store_status="RECORD_STORE_LOADED_VERIFIED",
+            )
+        if not _batch_meets_population_contract(batch, ordered):
+            return _result(
+                is_valid=False,
+                status="POPULATION_REJECTED",
+                error_codes=("POPULATION_BATCH_INVALID",),
+                snapshot_id=snapshot_id,
+                captured_at_utc=ingestion_time,
+                requested_markets_limit=config.markets_limit,
+                requested_order_books_limit=config.order_books_limit,
+                built_record_count=len(ordered),
+                record_store_status="RECORD_STORE_LOADED_VERIFIED",
+                batch=batch,
+            )
 
         (
             ok,
@@ -1194,6 +1377,7 @@ def recover_initial_polymarket_public_registration(
                 requested_order_books_limit=config.order_books_limit,
                 built_record_count=len(ordered),
                 record_store_status="RECORD_STORE_LOADED_VERIFIED",
+                batch=batch,
             )
 
         status = (
@@ -1215,6 +1399,7 @@ def recover_initial_polymarket_public_registration(
             registration_status=registration_status,
             network_used=False,
             recovery_required=False,
+            batch=batch,
         )
     except Exception:
         return _result(
@@ -1224,7 +1409,9 @@ def recover_initial_polymarket_public_registration(
         )
 
 
-def _load_recovery_records(record_store_path: object) -> tuple[MarketObservationRecord, ...]:
+def _load_recovery_records(
+    record_store_path: object,
+) -> tuple[MarketObservationRecord, ...]:
     try:
         loaded = load_and_verify_point_in_time_record_store(record_store_path)
     except Exception:
@@ -1345,14 +1532,16 @@ def _prove_wp164_construction(
         prefix = "market:polymarket:"
         if not record.market_id.startswith(prefix):
             raise _PopulationReject("POPULATION_RECOVERY_INVALID")
-        raw_gamma_id = record.market_id[len(prefix):]
+        raw_gamma_id = record.market_id[len(prefix) :]
         if not raw_gamma_id:
             raise _PopulationReject("POPULATION_RECOVERY_INVALID")
         if record.token_id is not None:
             raise _PopulationReject("POPULATION_RECOVERY_INVALID")
         condition_id = payload["condition_id"]
         condition_norm = (
-            condition_id.strip() if isinstance(condition_id, str) and condition_id else ""
+            condition_id.strip()
+            if isinstance(condition_id, str) and condition_id
+            else ""
         )
         expected_event = (
             "event:polymarket:" + condition_norm
@@ -1402,7 +1591,7 @@ def _prove_wp164_construction(
         prefix = "token:polymarket:"
         if record.token_id is None or not record.token_id.startswith(prefix):
             raise _PopulationReject("POPULATION_RECOVERY_INVALID")
-        raw_token = record.token_id[len(prefix):]
+        raw_token = record.token_id[len(prefix) :]
         owners = token_owner.get(raw_token, set())
         if len(owners) != 1:
             # Zero unique owners (orphan) or more than one distinct owner

@@ -1,6 +1,27 @@
 # Repo Truth Index
 
-## WP156A Large Canonical Payload Batch Fingerprint Correction (current review target)
+## WP164A Public Population Compatibility Repair (active bounded upstream repair)
+
+The canonical package is `docs/wp_specs/WP164A/`; implementation is a narrow additive repair to
+`src/data_layer/point_in_time_market_research/polymarket_public_population.py`; canonical behavior
+remains in `docs/polymarket_point_in_time_public_population_contract.md`; focused evidence remains
+in `tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py`; and the
+stable fragment is `docs/status_entries/WP164A.md`. The frozen base is PR #192's merge commit
+`9332aa2b2591d7e3fb015ae10165f063aeb8fa1d`, whose WP156A implementation head is
+`053f7dd73d27262f84dc0651d05e0fe737cadd33`.
+
+WP164A preserves the complete typed WP156 batch result after validation and the closed safe fields
+from a completed invalid WP156 build result, retains truthful completed stage counts and already
+derived run provenance on later rejection, and maps raw Gamma lifecycle booleans locally to exactly `open` or
+`closed`, rejecting every other shape. Its 25-market/1-book proof is synthetic and offline. Phase A
+makes zero real public-product calls and does not modify `PolymarketPublicClient`, WP156, Alpha,
+Hermes, credentials, scheduler, dependencies, workflows, paper, execution, or live paths.
+S10-GATE-AF1 remains blocked; AF1 Attempt-01 and Attempt-02 are historical invalidated/consumed
+evidence only; WP164A public-smoke Attempt-01 and Attempt-02 are permanently consumed. Attempt-03
+is not authorized. The required Phase-A stop is
+`WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`.
+
+## WP156A Large Canonical Payload Batch Fingerprint Correction (merged historical truth)
 
 WP156A is the FAST-track, Risk-2, exact 12-file upstream correction on frozen main
 `46bc862018208b30971228ed719c7e9337142b41`. Its package is
@@ -29,10 +50,44 @@ No product/network, public smoke, AF1, Hermes/provider, credential, scheduler, s
 paper, execution, live, order, capital, dependency, lock, workflow, or merge authority
 is created by the implementation package. The SIDE12 WP156A final one-shot closure later
 grants contingent PR/CI/merge authority only after every exact-head hard gate passes.
-WP164A reconciliation and a new zero-network Phase-A candidate remain separately gated.
+WP164A reconciliation and a new zero-network Phase-A candidate were separately gated.
 AF1 Attempt-03 remains unauthorized.
 
-## S10-ALPHA-02 PIT Alpha Discovery Control Plane (current bounded implementation target)
+The definitive pre-smoke Phase-A SHA
+`17ce49aa96c798244d852fc5daf16299bee79ef9` and historical candidate
+`31379495e70dee1a0d698300e3371911af62de3a` remain ancestors. WP164A public
+smoke Attempt-01 is consumed as `WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT` and
+cannot be retried. Build-diagnostic correction 02 remains inside the exact 13
+paths and performs zero network calls. Its six additive build fields retain only
+kind, status, errors, warnings, quarantine id, and structural input fingerprint.
+The offline 257-level book oracle proves `PAYLOAD_SEQUENCE_LIMIT_EXCEEDED` after
+25 successful metadata builds without truncation, persistence, or batch
+validation. Attempt-02 is permanently consumed and cannot be retried.
+
+Execution-surface correction 03 expanded the exact package from 13 to 14 paths by
+adding only `tools/polymarket/run_wp164a_public_smoke.py`. The first state-drift
+checkpoint at `53da1d50fb8a91ecdb32cd44611241f0062925ff` made no call. The definitive
+pre-reconciliation head `5a7044147c018389402e71f35a759e1d621c4b25` later consumed Attempt-02 and ended
+`WP164A_PUBLIC_SMOKE_BATCH_INVALID` with 25 markets, one book, 26 built, zero inserted,
+`RECORD_VERSION_HASH_COLLISION_OR_MISMATCH`, 25 accepted, zero quarantine, and zero duplicate.
+Merged WP156A corrects that upstream fingerprint defect. The operator is the sole future
+Attempt-03 surface and freezes the exact four-option
+command, the four `wp164a:public-smoke:1.0.0` provenance labels, 25/1 limits,
+one call, zero retry, exact sibling paths, four artifact names, six terminals,
+and the exact 28-key `wp164a-public-smoke-authorization-envelope/1.0.0` schema.
+The post-WP156A reconciliation adds full offline operator-chain proofs for exact 25/1,
+large-book, fewer-count, zero-book, closed failure, one-call, and zero-retry behavior. It performs
+zero public/product calls and stops for a new commit-bound Attempt-03 human authorization using
+`I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03` and
+`local_data/wp164a_public_smoke/<NEW_SHA>/attempt-03`.
+
+Follow-up 01 expands the exact governed scope from 11 to 13 paths solely to maintain the historical
+WP165/WP166 test fixtures that reuse WP164 parsing. Their central raw Gamma helpers now use exact
+live-shaped `active=True` and `closed=False`; no WP165/WP166 production source or lifecycle grammar
+is changed. Historical failed candidate `31379495e70dee1a0d698300e3371911af62de3a` remains an
+ancestor of the definitive correction candidate.
+
+## S10-ALPHA-02 PIT Alpha Discovery Control Plane (merged historical truth)
 
 The canonical contract is `docs/alpha_discovery_control_plane_contract.md`; implementation is
 `src/data_layer/analytical_research/alpha_discovery.py` and the separate append-only registry

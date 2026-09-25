@@ -13,6 +13,11 @@ WP164 is the first bounded real/public Polymarket population into the merged
 point-in-time research foundation. It coordinates existing merged layers; it does
 not redesign them.
 
+WP164A is a bounded compatibility repair to this existing coordinator. It adds
+closed typed batch and build-failure diagnostics, truthful completed-stage
+counts, and strict population-local Gamma lifecycle normalization. It does not
+add a client, endpoint, retry, scheduler, credential, or trading authority.
+
 ## Official public endpoint basis
 
 Re-verified against current official Polymarket documentation at implementation
@@ -90,6 +95,92 @@ testing/injection seams only. Schema v1 defines no warning codes, so
 `warning_codes` is always empty; every result fixes `advisory_only=True` and
 `no_execution_authority=True`.
 
+The WP164A result extension appends the following fields with fail-closed
+null/empty defaults: `batch_is_valid`, `batch_status`, `batch_error_codes`,
+`batch_warning_codes`, `batch_accepted_record_version_ids`,
+`batch_exact_duplicate_record_version_ids`,
+`batch_quarantined_record_version_ids`, and `canonical_batch_sha256`. After a
+completed `validate_record_batch` call, these fields preserve the complete typed
+`PointInTimeBatchValidationResult`, including on `POPULATION_BATCH_INVALID` and
+when WP156 is valid but WP164's stricter one-accepted-id-per-input invariant
+rejects the population. They contain no raw payload, URL, path, exception text,
+or repr. If batch validation never completes, only the defaults are returned.
+
+The build-diagnostic extension appends six more fail-closed fields:
+`build_failure_observation_kind`, `build_status`, `build_error_codes`,
+`build_warning_codes`, `build_quarantine_id`, and
+`build_input_fingerprint_sha256`. A completed invalid
+`PointInTimeBuildResult` keeps the outer `POPULATION_BUILD_FAILED` code while
+copying only those closed WP156 fields. Observation kind is exactly
+`MARKET_METADATA` or `ORDER_BOOK`. No input record, canonical payload, question,
+market/token identifier, exception, URL, path, or provider content crosses this
+diagnostic boundary. Paths that do not invoke the builder and successful
+populations retain null/empty defaults.
+
+## Frozen WP164A public-smoke execution surface
+
+The only future WP164A public-smoke execution surface is the manual foreground
+operator `tools/polymarket/run_wp164a_public_smoke.py`. Without the exact
+`--allow-public-network` flag and acknowledgement
+`I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03`, it makes zero coordinator and
+product calls. Its only other arguments are `--workspace` and
+`--authorization-envelope`; limits, provenance, client, guard, clock, endpoint,
+retry, stores, and artifact names are not caller-selectable.
+
+The command template is exactly:
+
+```text
+python tools/polymarket/run_wp164a_public_smoke.py --workspace local_data/wp164a_public_smoke/<NEW_SHA>/attempt-03 --authorization-envelope local_data/wp164a_public_smoke/<NEW_SHA>/attempt-03.authorization.json --allow-public-network --acknowledgement I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03
+```
+
+Attempt-01 and Attempt-02 are permanently consumed historical evidence. Attempt-02 ended
+`WP164A_PUBLIC_SMOKE_BATCH_INVALID` after 25 markets, one book, 26 built records, zero inserted
+records, and `RECORD_VERSION_HASH_COLLISION_OR_MISMATCH`. Merged WP156A corrects that upstream
+large-canonical-payload fingerprint defect. Offline operator-chain tests re-prove exact 25/1
+success, an ordinary 128-bid/128-ask book whose canonical payload exceeds 4,096 characters,
+fewer-than-limit success with a book, zero-book success, closed failure terminals, one invocation,
+and zero retry. These proofs grant no public-network authority; any future execution is Attempt-03
+and remains separately human-authorized.
+
+The dedicated non-AF1 provenance is fixed as
+`manifest:wp164a:public-smoke:1.0.0`,
+`params:wp164a:public-smoke:1.0.0`,
+`normalizer:wp164a:public-smoke:1.0.0`, and
+`validator:wp164a:public-smoke:1.0.0`. Limits are 25 markets and one order book;
+the coordinator invocation maximum is one and retry is zero. The normal clock,
+default `RateLimitGuard`, and production `PolymarketPublicClient` are used with
+no injection.
+
+The sibling authorization file uses schema
+`wp164a-public-smoke-authorization-envelope/1.0.0` and exactly 28 keys:
+`schema_id`, `schema_version`, `wp_id`, `base_sha`, `phase_a_commit_sha`,
+`wp_prompt_sha256`, `wp_spec_sha256`, `contract_sha256`, `operator_path`,
+`operator_sha256`, `workspace_attempt_id`, `workspace_relpath`, `manifest_id`,
+`parameter_set_id`, `normalizer_version`, `validator_version`, `markets_limit`,
+`order_books_limit`, `max_coordinator_invocations`, `retry_limit`,
+`replacement_invocation_authorized`, `public_network_authorized`,
+`hermes_provider_authorized`, `h1_fifth_invocation_authorized`,
+`af1_attempt_03_authorized`, `merge_authorized`, `credentials_authorized`, and
+`scheduler_authorized`. Every value and scalar type is closed; missing, extra,
+aliased, mismatched, or path-escaping material rejects before the sentinel.
+
+The workspace must not exist before execution. Its write-once artifacts are
+`WP164A_PUBLIC_SMOKE_INVOCATION.json` and
+`WP164A_PUBLIC_SMOKE_RESULT.json`; its stores are
+`point_in_time_records.sqlite3` and `point_in_time_manifest.sqlite3`. The
+envelope is outside the workspace at the exact sibling path. The operator
+validates repo state, bytes, paths, fresh stores, and the complete result
+readback; it canonical-normalizes tuples/lists before comparing bytes and
+SHA-256 and never rewrites an artifact.
+
+The exact terminals are `WP164A_PUBLIC_SMOKE_STATE_DRIFT`,
+`WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT`,
+`WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS`, `WP164A_PUBLIC_SMOKE_BUILD_FAILED`,
+`WP164A_PUBLIC_SMOKE_BATCH_INVALID`, and
+`WP164A_PUBLIC_SMOKE_EXTERNAL_FETCH_OR_RESPONSE_INVALID`. This vocabulary does
+not classify AF1 A1/A2 evidence and grants no AF1, Hermes, credential,
+scheduler, execution, or trading authority.
+
 ## Dry-run posture
 
 With the default `allow_network=False`, after verifying valid stores, an empty
@@ -116,6 +207,30 @@ Every selected market is parsed through the public `parse_market_summary`; a
 malformed selected market or a duplicate market id rejects the whole run rather
 than being silently skipped. `markets_limit == 0` in a network run is rejected as
 `POPULATION_INPUT_INVALID` rather than registering an empty seed.
+
+WP164A derives canonical `market_status` locally from the raw Gamma lifecycle
+booleans. If `closed is True`, the status is exactly `closed`. Otherwise, only
+`active is True` together with `closed is False` produces exactly `open`. Every
+other type or lifecycle combination rejects with `POPULATION_RESPONSE_INVALID`.
+There is no fallback and no inference from price, liquidity, token/book presence,
+accepting-orders data, or outcome. `PolymarketPublicClient` and downstream Alpha
+eligible statuses remain unchanged.
+
+## Truthful completed-stage counts
+
+WP164A initializes bounded counters before network population and advances them
+only after completed facts: fetched markets immediately after a successful Gamma
+list response, each fetched book immediately after its successful CLOB response
+and before book normalization, each built record immediately after its builder
+returns, and inserted records only after the append commits. Any later rejection
+preserves these known values and leaves unreached stages at zero. Counts never
+stand in for batch validity, persistence, or registration evidence.
+
+On a build rejection, the result also preserves the already-captured
+`captured_at_utc` and already-derived `snapshot_id`. A metadata failure before
+the first successful build reports zero built records; a later metadata failure
+reports the exact successful prefix; and an order-book failure after 25 metadata
+builds reports 25. No partial batch is persisted.
 
 ## Optional CLOB normalization
 
@@ -150,6 +265,13 @@ normalizer/validator versions:
 No random UUID is used and API response order never controls dataset identity. The
 final record order is Gamma `MARKET_METADATA` sorted by namespaced `market_id`,
 then `ORDER_BOOK` sorted by `market_id` then `token_id`.
+
+For identity derivation only, values already within WP156 bounds retain the
+exact existing canonical bytes. If an otherwise normalized payload contains an
+oversized sequence, deterministic JSON-compatible identity bytes are derived so
+the authoritative WP156 builder—not the preliminary identity step—returns the
+closed `PAYLOAD_SEQUENCE_LIMIT_EXCEEDED` result. This does not weaken
+`canonical_json_bytes`, validate or reshape the payload, or grant persistence.
 
 ## WP156 validation before persistence
 

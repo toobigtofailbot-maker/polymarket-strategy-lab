@@ -1,0 +1,708 @@
+SIDE12 — WP164A POST-WP156A ONE-SHOT RECONCILIATION + ATTEMPT-03 CERTIFICATION
+## Public Population Diagnostics, WP156A Reconciliation & Frozen Attempt-03 Surface
+
+Repository:
+toobigtofailbot-maker/polymarket-strategy-lab
+
+Frozen base:
+9332aa2b2591d7e3fb015ae10165f063aeb8fa1d
+
+Required predecessor:
+PR #192 / WP156A
+head: 053f7dd73d27262f84dc0651d05e0fe737cadd33
+merge: 9332aa2b2591d7e3fb015ae10165f063aeb8fa1d
+
+WP ID:
+WP164A
+
+Package class:
+BOUNDED_PUBLIC_POPULATION_LIVE_COMPATIBILITY_REPAIR
+
+Suggested branch:
+codex/wp164a-public-population-repair
+
+Governance track expected: RUNTIME
+
+Current authorization:
+PHASE A IMPLEMENTATION ONLY.
+
+By sending this exact WP to Codex, Karl authorizes:
+- local/offline implementation inside the exact scope below;
+- tests, docs, status/spec materialization and committed-head validation;
+- zero real Polymarket/public-product calls during Phase A.
+
+This message DOES NOT authorize:
+- the later WP164A public smoke;
+- S10-GATE-AF1 Attempt-03;
+- Hermes/provider calls;
+- credentials;
+- scheduler;
+- paper/execution/live;
+- merge.
+
+The package-level machine authority has network=true only because WP164A contains a separately
+gated future one-call public smoke. Runtime activation remains FALSE until Karl explicitly
+authorizes the exact post-Phase-A smoke envelope.
+
+===============================================================================
+1. OBJECTIVE
+===============================================================================
+
+Reconcile the exact WP164A Phase-A package onto merged WP156A and certify, entirely offline, the
+sole future Attempt-03 public-smoke surface before spending another AF1 runtime attempt.
+
+The original WP164A repair established complete WP156 diagnostics, truthful stage counts, and
+closed Gamma lifecycle normalization. Consumed Attempt-02 then exposed the upstream WP156
+large-canonical-payload fingerprint defect at batch validation. WP156A corrected that defect and is
+now merged; this package preserves the repair while re-proving the exact operator chain on merged
+main.
+
+WP164A must:
+1. retain the complete typed WP156 batch-validation result without raw payloads;
+2. preserve truthful stage counts on later rejection;
+3. normalize live Gamma lifecycle booleans to the exact WP164 `"open"` / `"closed"` vocabulary;
+4. prove the 25-market / 1-book path offline with live-shaped synthetic data;
+5. stop for separate authorization before one bounded public repair smoke.
+
+Do not special-case the known Attempt-02 payload or weaken WP156. The merged WP156A correction and
+ordinary full-chain regression must carry the case.
+
+===============================================================================
+2. STARTUP / STATE
+===============================================================================
+
+Before edits:
+- fetch/refresh origin;
+- require origin/main == 9332aa2b2591d7e3fb015ae10165f063aeb8fa1d;
+- require no open/overlapping WP164A PR or remote branch;
+- do not modify/rebase the existing S10-GATE-AF1 branch;
+- preserve AF1 Attempt-01 and Attempt-02 as historical invalidated evidence only;
+- inspect the current WP164/WP156 public interfaces and the current active-WP scope guards.
+
+Any main drift, overlapping WP164A work, or need for a path outside the frozen scope:
+  STOP STATE_DRIFT
+or
+  STOP SCOPE_EXPANSION_REQUIRED
+
+Do not silently widen scope.
+
+===============================================================================
+3. EXACT SCOPE — 14 PATHS
+===============================================================================
+
+Required == allowed == max 14:
+
+1. src/data_layer/point_in_time_market_research/polymarket_public_population.py
+2. tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py
+3. docs/polymarket_point_in_time_public_population_contract.md
+4. tests/test_polymarket_point_in_time_public_population_contract_docs.py
+5. docs/status_entries/WP164A.md
+6. docs/project_status.md
+7. docs/repo_truth_index.md
+8. tests/test_project_status_docs.py
+9. tests/test_repo_truth_docs.py
+10. docs/wp_specs/WP164A/wp_prompt.txt
+11. docs/wp_specs/WP164A/wp_spec.json
+12. tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py
+13. tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py
+14. tools/polymarket/run_wp164a_public_smoke.py
+
+Do NOT modify:
+- src/data_layer/point_in_time_market_research/__init__.py — the existing result class export remains valid;
+- src/data_layer/polymarket/public_client.py;
+- records.py / record_store.py / manifest_store.py / dataset_persistence_adapter.py;
+- ALPHA-01/02;
+- HERMES-CTX;
+- S10-GATE-AF1 source/operator/contracts/branch;
+- dependencies/locks/workflows;
+- local_data as a tracked artifact.
+
+If live implementation proof shows public_client.py or another path is genuinely required:
+  STOP SCOPE_EXPANSION_REQUIRED
+Do not edit it under this WP.
+
+===============================================================================
+4. AUTHORITY / NON-AUTHORITY — GOVERNANCE MIRROR
+===============================================================================
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Phase-A runtime activation:
+- public Polymarket network: NOT AUTHORIZED;
+- WP164A public smoke: NOT AUTHORIZED;
+- capital at risk: USD 0.
+
+===============================================================================
+5. PRODUCT CONTRACT A — COMPLETE WP156 BATCH DIAGNOSTICS
+===============================================================================
+
+Extend frozen PolymarketPublicPopulationResult ADDITIVELY at the end of the dataclass with
+fail-closed defaults:
+
+- batch_is_valid: bool | None = None
+- batch_status: str | None = None
+- batch_error_codes: tuple[str, ...] = ()
+- batch_warning_codes: tuple[str, ...] = ()
+- batch_accepted_record_version_ids: tuple[str, ...] = ()
+- batch_exact_duplicate_record_version_ids: tuple[str, ...] = ()
+- batch_quarantined_record_version_ids: tuple[str, ...] = ()
+- canonical_batch_sha256: str | None = None
+
+These fields are the exact bounded projection of the existing PointInTimeBatchValidationResult.
+
+Rules:
+- if validate_record_batch is never completed: use only null/empty defaults;
+- after a completed call: preserve EVERY field above exactly;
+- do not truncate accepted, duplicate or quarantined id lists;
+- do not expose raw payloads, URLs, paths, exception text or reprs;
+- POPULATION_BATCH_INVALID remains the outer WP164 error whenever WP164's existing batch acceptance
+  contract is not met;
+- do not weaken validate_record_batch;
+- do not silently quarantine, drop or deduplicate input to manufacture success.
+
+A completed WP156 result MUST remain available even if:
+- batch.is_valid is false;
+- quarantined ids exist;
+- or WP156 itself is valid but WP164 rejects because accepted ids are not exactly one unique id per
+  input record.
+
+Implementation may refactor private WP164 helper shape as needed, but adds no second validator and no
+new public population function.
+
+===============================================================================
+6. PRODUCT CONTRACT B — TRUTHFUL STAGE COUNTS ON REJECTION
+===============================================================================
+
+Initialize bounded counters before the network population stages and update only on completed facts:
+
+- fetched_market_count:
+  set to len(raw_markets) immediately after a successful Gamma GET returns its list.
+
+- fetched_order_book_count:
+  increment immediately after each successful CLOB GET returns, before later book normalization.
+
+- built_record_count:
+  increment after each MarketObservationRecord builder successfully returns.
+
+- inserted_record_count:
+  remains governed by existing append semantics and changes only for records actually committed.
+
+Any later _PopulationReject must return the already-known values.
+
+Do NOT:
+- reset known counts to zero;
+- infer counts for stages not reached;
+- use counts as proof of batch validity, persistence or registration.
+
+===============================================================================
+7. PRODUCT CONTRACT C — CLOSED MARKET-STATUS NORMALIZATION
+===============================================================================
+
+Keep PolymarketPublicClient unchanged.
+
+Inside WP164 population parsing, derive canonical payload["market_status"] from the RAW Gamma
+lifecycle booleans using exactly:
+
+1. if raw_item["closed"] is exactly True:
+     "closed"
+
+2. else if raw_item["active"] is exactly True AND raw_item["closed"] is exactly False:
+     "open"
+
+3. else:
+     raise the existing closed POPULATION_RESPONSE_INVALID rejection.
+
+No fallback status exists in WP164A.
+
+Do NOT:
+- use str(True) / str(False) as canonical market state;
+- broaden AF1 eligible_market_statuses;
+- infer "open" from prices, liquidity, token/book presence, accepting-orders data or current outcome;
+- modify public_client.py.
+
+All other MarketSummary fields continue to come through the existing public parser.
+
+===============================================================================
+8. DETERMINISTIC 25-MARKET / 1-BOOK OFFLINE ORACLE
+===============================================================================
+
+In the EXISTING WP164 test file, add one live-shaped synthetic end-to-end case.
+
+Use:
+- 25 unique Gamma market dicts;
+- unique raw Gamma ids;
+- unique conditionId values;
+- exactly two unique clobTokenIds per market;
+- JSON-encoded outcomes/clobTokenIds matching current public-client expectations;
+- active=True;
+- closed=False;
+- one live-shaped selected CLOB book;
+- fake/in-memory transport only;
+- existing test-only advancing/allowing rate-guard seam when needed;
+- no real network.
+
+Require exactly:
+- requested/bounded markets = 25 / 25;
+- requested/bounded books = 1 / 1;
+- fetched_market_count = 25;
+- fetched_order_book_count = 1;
+- built_record_count = 26;
+- batch_is_valid = true;
+- batch status is the exact WP156 valid status produced by the fixture;
+- batch_error_codes = ();
+- no quarantined ids;
+- no exact-duplicate ids;
+- 26 accepted unique record ids;
+- persistence and reference registration succeed;
+- all 25 metadata canonical payloads contain market_status == "open";
+- complete retained batch diagnostics equal the typed validate_record_batch result.
+
+This oracle proves deterministic size/shape/pipeline compatibility only.
+It does NOT claim the live endpoint is healthy.
+
+===============================================================================
+9. CLOSED FAILURE / DIAGNOSTIC BEHAVIOR
+===============================================================================
+
+Do not special-case Attempt-02.
+
+If a future run returns POPULATION_BATCH_INVALID:
+- preserve the full typed batch diagnostics if validation completed;
+- preserve truthful completed stage counts;
+- keep outer POPULATION_BATCH_INVALID;
+- stop for review.
+
+Do not:
+- lower the market limit;
+- remove the one book merely to force success;
+- switch AF1 to another population subsystem;
+- weaken WP156;
+- change lineage/classification semantics;
+- alter current rate-limit authority.
+
+===============================================================================
+10. NEGATIVE TEST MATRIX
+===============================================================================
+
+Use the existing WP164 test family only.
+
+N01 — COMPLETE_BATCH_DIAGNOSTICS
+A completed invalid WP156 result retains is_valid/status/errors/warnings/accepted/exact-duplicate/
+quarantined/hash exactly.
+
+N02 — WP164_STRONGER_BATCH_REJECTION
+A typed WP156 result that is valid but violates WP164's accepted-count/no-quarantine invariant still
+returns POPULATION_BATCH_INVALID while retaining the exact typed result.
+
+N03 — STAGE_COUNT_PRESERVATION
+Failures after Gamma fetch, after book fetch, during record build and after batch validation preserve
+only the exact stages completed.
+
+N04 — CLOSED_STATUS_MAPPING
+closed=True -> closed; active=True + closed=False -> open; every other lifecycle shape rejects
+POPULATION_RESPONSE_INVALID.
+
+N05 — TWENTY_FIVE_ONE_PIPELINE
+The exact offline 25/1 live-shaped fixture produces 26 accepted records and successful persistence/
+registration.
+
+N06 — NO_RAW_DIAGNOSTIC_LEAK
+Batch diagnostics never contain arbitrary payload text, exception messages, URLs or paths.
+
+N07 — NO_AUTHORITY_WIDENING
+No real network is used by tests/Phase A; no new client, credential, scheduler, Hermes, trading or
+execution surface appears.
+
+Do not create another test file/family.
+
+===============================================================================
+11. DOCS / REPO TRUTH
+===============================================================================
+
+Update the existing WP164 canonical contract only for the additive WP164A truth:
+- complete batch-diagnostic projection;
+- truthful rejection-stage counts;
+- exact population-local open/closed mapping;
+- unchanged GET-only/rate-guard/no-trading boundaries.
+
+Create docs/status_entries/WP164A.md and update current project/repo truth narrowly:
+- WP164A is the active bounded upstream repair;
+- S10-GATE-AF1 remains blocked;
+- Attempt-01/02 remain historical invalidated/consumed evidence;
+- no Attempt-03 or Hermes authority;
+- no public smoke has run in Phase A.
+
+Do not rewrite historical WP164 status as if WP164A had always existed.
+Do not add unrelated roadmap or deferred-item changes.
+
+===============================================================================
+12. MATERIALIZE THE CANONICAL WP PACKAGE FIRST
+===============================================================================
+
+Before product implementation:
+- create docs/wp_specs/WP164A/wp_prompt.txt from this prompt body;
+- create docs/wp_specs/WP164A/wp_spec.json exactly from Appendix A;
+- run deterministic readiness:
+
+python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP164A/wp_prompt.txt --spec docs/wp_specs/WP164A/wp_spec.json --repo-root .
+
+Require:
+  IMPLEMENTATION_READY
+
+If readiness fails:
+  STOP PHASE_A_VALIDATION_FAILED
+
+Do not begin product implementation against a different prompt/spec.
+
+===============================================================================
+13. PHASE-A VALIDATION
+===============================================================================
+
+After implementation stabilizes:
+
+1. run focused WP164 tests including N01-N07;
+2. run WP164 contract-doc tests;
+3. run WP156 records/batch regression;
+4. run WP162/WP163 persistence/store regressions;
+5. run repo-truth/status tests;
+6. run relevant historical architecture/full-diff guards;
+7. run generated-artifact guard and available security checks;
+8. run python -m pip check;
+9. create the final Phase-A checkpoint commit;
+10. require clean worktree;
+11. on that COMMITTED HEAD rerun all committed-diff-sensitive guards;
+12. run exact diff scope/readiness against frozen base;
+13. run git diff --check 9332aa2b2591d7e3fb015ae10165f063aeb8fa1d HEAD --;
+14. run ONE authoritative full repository suite on the same committed HEAD.
+
+If anything fails:
+  STOP PHASE_A_VALIDATION_FAILED
+
+All corrections must occur before any real public smoke.
+
+===============================================================================
+14. LATER PUBLIC SMOKE — SEPARATE HUMAN AUTHORIZATION ONLY
+===============================================================================
+
+DO NOT RUN THIS PHASE UNDER THE CURRENT AUTHORIZATION.
+
+After a fully-green Phase-A checkpoint, report a proposed exact smoke envelope containing:
+- exact Phase-A SHA;
+- exact prompt/spec/contract digests;
+- exact fresh local workspace path under local_data/wp164a_public_smoke/**;
+- exact WP164 provenance config;
+- markets_limit=25;
+- order_books_limit=1;
+- normal real clock/default RateLimitGuard;
+- exactly one population invocation;
+- retry=0.
+
+The later authorized smoke MUST use two local noncanonical artifacts:
+
+A. WP164A_PUBLIC_SMOKE_INVOCATION.json
+Create atomically/exclusively BEFORE the coordinator call.
+It binds the authorized Phase-A SHA, authorization-envelope digest, workspace attempt id and 25/1
+limits.
+
+B. WP164A_PUBLIC_SMOKE_RESULT.json
+Immediately after the coordinator returns, persist the complete typed
+PolymarketPublicPopulationResult deterministically.
+
+Rules:
+- if the invocation sentinel already exists: make ZERO new population calls;
+- never delete/overwrite it to permit retry;
+- if the process dies after the sentinel but before result persistence, that workspace is consumed;
+- another call requires a NEW explicit human authorization and a fresh workspace;
+- no Hermes/provider;
+- no AF1 workspace;
+- no raw response persistence.
+
+Live smoke interpretation:
+- always report requested/bounded and ACTUAL typed-result counts exactly;
+- do not require live fetched count to equal 25 merely because 25 was requested;
+- success requires the returned result itself to be valid, its retained batch diagnostics valid, and
+  persisted/store/reference evidence internally consistent;
+- POPULATION_BATCH_INVALID returns the newly retained exact diagnostics and stops with no second call;
+- external fetch/response unavailability is a WP164A smoke outcome only and is never fabricated into
+  AF1 A1 evidence.
+
+===============================================================================
+15. HARD STOPS
+===============================================================================
+
+STOP STATE_DRIFT
+- frozen main changed or overlapping WP164A work appeared.
+
+STOP SCOPE_EXPANSION_REQUIRED
+- a path outside the 14-path contract is mechanically required.
+
+STOP AUTHORITY_EXPANSION_REQUIRED
+- implementation needs a capability not authorized here.
+
+STOP PHASE_A_VALIDATION_FAILED
+- readiness, focused tests, guards, scope, hygiene or full suite fail.
+
+STOP UNAUTHORIZED_PRODUCT_NETWORK
+- any real Polymarket/public-product call occurs before the later explicit smoke authorization.
+
+Planned successful Phase-A checkpoint:
+  WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED
+
+This planned stop is not a failed one-shot WP.
+
+===============================================================================
+16. SUCCESSOR BOUNDARY
+===============================================================================
+
+Do NOT:
+- authorize or execute AF1 Attempt-03;
+- edit/rebase the AF1 branch during WP164A Phase A;
+- run Hermes;
+- use credentials;
+- add scheduler/recurring population;
+- modify public_client.py;
+- weaken WP156;
+- broaden Alpha eligible statuses;
+- add dependencies/workflows;
+- merge without independent review + explicit merge authorization.
+
+Only after:
+1. WP164A Phase A is green;
+2. Karl separately authorizes one public smoke;
+3. smoke evidence is independently reviewed;
+4. WP164A is review-ready and later explicitly merged;
+
+may Side12 return to S10-GATE-AF1, refresh main, reconcile the AF1 branch, create a new definitive AF1
+Phase-A checkpoint, and seek a NEW Attempt-03 runtime authorization.
+
+No old AF1 runtime authorization survives the upstream merge.
+
+===============================================================================
+17. EVIDENCE PLAN / REPORT BACK
+===============================================================================
+
+At the end of THIS Phase A, return only:
+
+- branch;
+- final committed Phase-A SHA;
+- exact 14-path diff;
+- exact PolymarketPublicPopulationResult schema delta;
+- exact market-status mapping implemented;
+- 25/1 offline oracle result;
+- focused/upstream regression results;
+- committed-head scope/readiness result;
+- full-suite result;
+- confirmation real public-product calls = 0;
+- confirmation AF1 branch untouched;
+- confirmation no Hermes/credentials/scheduler/trading/live authority used;
+- exact proposed future smoke workspace/envelope/command surface;
+- Ready for public smoke authorization: YES/NO.
+
+Do NOT run the smoke.
+Do NOT create/merge a PR merely because Phase A is green.
+Do NOT begin AF1 Attempt-03.
+
+Expected stop:
+  WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED
+
+===============================================================================
+18. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|population|batch_diagnostics|completed_validation|REQUIRE|preserve_complete_batch|population.batch_diagnostics|R001
+NR002|population|stage_counts|later_rejection|REQUIRE|preserve_stage_counts|population.stage_counts|R002
+NR003|population|market_status|closed_true|REQUIRE|normalize_closed|population.market_status|R003
+NR004|population|market_status|active_true_closed_false|REQUIRE|normalize_open|population.market_status|R003
+NR005|population|market_status|other_lifecycle|REJECT|reject_noncanonical|population.market_status|R003
+NR006|population|offline_pipeline|twenty_five_one|REQUIRE|prove_bounded_pipeline|population.batch_diagnostics|R004
+NR007|phase_a|network|before_smoke_authorization|FORBID|keep_offline|phase_a.network_posture|R010
+NR008|smoke|public_call|later_authorized|REQUIRE|single_nonretryable_call|smoke.one_call|R012
+NR009|downstream|af1|wp164a_phase_a|FORBID|keep_blocked|downstream.af1_blocked|R007
+NR010|population|build_diagnostics|completed_invalid_build|REQUIRE|preserve_closed_build_result|population.build_diagnostics|R014
+NR011|smoke|result_comparison|future_authorized_attempt|REQUIRE|compare_canonical_json_bytes|smoke.one_call|R015
+NR012|smoke|execution_surface|future_attempt_03|REQUIRE|use_frozen_operator_only|smoke.execution_surface|R016
+NR013|smoke|authorization_envelope|future_attempt_03|REQUIRE|validate_exact_28_keys|smoke.authorization_envelope|R016
+NR014|phase_a|product_network|correction_03|FORBID|keep_zero_network|phase_a.network_posture|R010
+END_NORMATIVE_RULE_MATRIX_V1
+
+===============================================================================
+19. EFFICIENCY RULE
+===============================================================================
+
+This is the minimum complete specification.
+
+Follow-up 01 authorizes only historical-test compatibility maintenance in the existing WP165 and
+WP166 test fixture helpers: replace raw `active: "open"` with live-shaped raw `active: true` and
+`closed: false`. No WP165/WP166 production source or WP164A product semantic changes are authorized.
+The historical failed candidate `31379495e70dee1a0d698300e3371911af62de3a` remains an ancestor;
+the final compatibility scope first became 13 paths; execution-surface correction 03 expands it to
+exactly 14 required, 14 allowed, and maximum 14 paths.
+
+Do not add abstractions or files because they might be useful later.
+Do not repeat historical narrative in code/docs.
+Do not turn each batch field into a separate test.
+Use one parameterized diagnostic/count/status matrix plus the one 25/1 end-to-end oracle.
+
+If a proposed addition does not change implementation, validation, authority, scope, state or
+evidence, omit it.
+
+===============================================================================
+20. BUILD-DIAGNOSTIC CORRECTION 02 — SAME WP / SAME 13 PATHS / ZERO NETWORK
+===============================================================================
+
+WP164A public smoke Attempt-01 at
+`17ce49aa96c798244d852fc5daf16299bee79ef9` is consumed and permanently
+non-retryable with terminal
+`WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT`. Preserve its immutable artifacts;
+do not run Attempt-02 under this package correction.
+
+Append exactly these fail-closed result fields:
+- build_failure_observation_kind: str | None = None
+- build_status: str | None = None
+- build_error_codes: tuple[str, ...] = ()
+- build_warning_codes: tuple[str, ...] = ()
+- build_quarantine_id: str | None = None
+- build_input_fingerprint_sha256: str | None = None
+
+After a completed invalid `build_market_observation`, keep outer
+`POPULATION_BUILD_FAILED`; copy the exact WP156 status/errors/warnings and, when
+present, only quarantine id and input fingerprint. Kind is exactly
+`MARKET_METADATA` or `ORDER_BOOK`. Never expose raw input/payload, question,
+market/token ids solely for diagnostics, exception, URL, path, or provider
+content. Preserve already-captured `captured_at_utc`, derived `snapshot_id`,
+actual fetch counts, and the exact successful-build prefix. Do not persist a
+partial batch.
+
+Add a parameterized metadata rejection proof and a 25-market/1-book deep-book
+proof with 257 valid levels. The latter must retain
+`PAYLOAD_SEQUENCE_LIMIT_EXCEEDED`, report 25 successful metadata builds, keep
+batch fields null/empty, and leave both stores empty. Do not truncate, sample,
+drop, cap, weaken WP156, skip the book, or change the 25/1 envelope. The existing
+25/1 success oracle remains green.
+
+For any future separately authorized smoke, write immutable JSON once, read it
+back, canonical-normalize both the typed result and decoded artifact to the same
+JSON-compatible representation, compare canonical JSON bytes and SHA-256, and
+optionally reconstruct the typed result separately. Never rewrite the artifact
+to make tuple/list structural equality pass.
+
+Correction validation is offline. The successful stop remains:
+`WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`.
+
+===============================================================================
+21. EXECUTION-SURFACE FREEZE CORRECTION 03
+===============================================================================
+
+The state-drift stop at Phase-A SHA
+`53da1d50fb8a91ecdb32cd44611241f0062925ff` made zero coordinator and product
+calls and did not consume Attempt-02. Add the sole new scope path
+`tools/polymarket/run_wp164a_public_smoke.py`; final exact scope is 14 paths.
+
+This foreground operator is the only future WP164A smoke surface. Its exact CLI
+is `--workspace`, `--authorization-envelope`, `--allow-public-network`, and
+`--acknowledgement`; the only acknowledgement is
+`I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_02`. The frozen command template
+is:
+
+python tools/polymarket/run_wp164a_public_smoke.py --workspace local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02 --authorization-envelope local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02.authorization.json --allow-public-network --acknowledgement I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_02
+
+Freeze provenance as `manifest:wp164a:public-smoke:1.0.0`,
+`params:wp164a:public-smoke:1.0.0`,
+`normalizer:wp164a:public-smoke:1.0.0`, and
+`validator:wp164a:public-smoke:1.0.0`, with limits 25/1, one coordinator call,
+and zero retry.
+
+The exact envelope schema is
+`wp164a-public-smoke-authorization-envelope/1.0.0` and contains exactly these
+28 keys: schema_id, schema_version, wp_id, base_sha, phase_a_commit_sha,
+wp_prompt_sha256, wp_spec_sha256, contract_sha256, operator_path,
+operator_sha256, workspace_attempt_id, workspace_relpath, manifest_id,
+parameter_set_id, normalizer_version, validator_version, markets_limit,
+order_books_limit, max_coordinator_invocations, retry_limit,
+replacement_invocation_authorized, public_network_authorized,
+hermes_provider_authorized, h1_fifth_invocation_authorized,
+af1_attempt_03_authorized, merge_authorized, credentials_authorized, and
+scheduler_authorized. Missing, extra, aliased, mistyped, mismatched, or
+path-escaping material rejects before the sentinel and makes zero calls.
+
+The envelope is the workspace sibling
+`local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02.authorization.json`.
+The absent pre-call workspace is
+`local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02`. Inside it,
+freeze `WP164A_PUBLIC_SMOKE_INVOCATION.json`,
+`WP164A_PUBLIC_SMOKE_RESULT.json`, `point_in_time_records.sqlite3`, and
+`point_in_time_manifest.sqlite3`.
+
+Freeze exactly six terminals: `WP164A_PUBLIC_SMOKE_STATE_DRIFT`,
+`WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT`,
+`WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS`, `WP164A_PUBLIC_SMOKE_BUILD_FAILED`,
+`WP164A_PUBLIC_SMOKE_BATCH_INVALID`, and
+`WP164A_PUBLIC_SMOKE_EXTERNAL_FETCH_OR_RESPONSE_INVALID`. Phase-A tests use
+offline injected coordinator behavior only. This correction creates no envelope,
+workspace, sentinel, or product call and stops at
+`WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`.
+
+===============================================================================
+22. POST-WP156A RECONCILIATION + ATTEMPT-03 CERTIFICATION
+===============================================================================
+
+WP164A public-smoke Attempt-01 is consumed at
+`17ce49aa96c798244d852fc5daf16299bee79ef9`. The definitive pre-reconciliation
+Phase-A head is `5a7044147c018389402e71f35a759e1d621c4b25`. Attempt-02 is also permanently
+consumed: it ended `WP164A_PUBLIC_SMOKE_BATCH_INVALID` with 25 markets, one book,
+26 built, zero inserted, exact batch error
+`RECORD_VERSION_HASH_COLLISION_OR_MISMATCH`, 25 accepted, zero quarantine, and
+zero duplicate. Preserve both attempts and all local evidence without mutation.
+
+WP156A PR #192 is merged at
+`9332aa2b2591d7e3fb015ae10165f063aeb8fa1d`, with implementation head
+`053f7dd73d27262f84dc0651d05e0fe737cadd33`. Reconcile only the exact 14 paths
+onto this base. `records.py` is forbidden because the WP156A correction comes
+from merged main.
+
+Offline tests must exercise the complete operator through the actual population
+coordinator and fake transport for: exact 25/1 success; an ordinary 128-bid and
+128-ask order book whose canonical payload exceeds 4,096 characters;
+fewer-than-limit success with one book; zero-book success; closed build/external
+failure behavior; one invocation; zero retry; write-once artifacts; and the
+existing pre-sentinel safety matrix. These tests make zero product calls.
+
+The former Attempt-02 execution details in correction 03 are historical. The
+only future runtime values are:
+
+- acknowledgement: `I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03`
+- attempt id: `wp164a-public-smoke-attempt-03`
+- workspace: `local_data/wp164a_public_smoke/<NEW_SHA>/attempt-03`
+- sibling envelope: `local_data/wp164a_public_smoke/<NEW_SHA>/attempt-03.authorization.json`
+- limits: 25 markets / 1 order book / maximum one invocation / retry zero
+- envelope: the same exact 28-key schema and closed authority values
+
+This package does not create the envelope or runtime workspace and does not
+execute the operator. After final committed-head validation, compute and report
+the raw SHA-256 digests of the operator, prompt, spec, and contract; prepare the
+local proposed envelope only; prove the future workspace, sentinel, and result
+are absent; report the canonical envelope SHA-256 and the exact command; and stop
+at `WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`. Attempt-03, AF1 Attempt-03,
+Hermes, credentials, scheduler, trading, PR, and merge remain unauthorized.
+
+END SIDE12 — WP164A POST-WP156A ONE-SHOT RECONCILIATION + ATTEMPT-03 CERTIFICATION
