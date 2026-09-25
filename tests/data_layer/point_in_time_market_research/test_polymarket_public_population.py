@@ -10,8 +10,11 @@ import datetime
 import json
 import os
 import tempfile
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
+from tools.polymarket import run_wp164a_public_smoke as smoke
 
 import src.data_layer.point_in_time_market_research as pit
 from src.data_layer.polymarket.models import AdapterResult, ReadOnlyRequestInfo
@@ -178,6 +181,88 @@ def _raise(exc):
         raise exc
 
     return _boom
+
+
+def _smoke_envelope(root: Path, phase_sha: str) -> tuple[dict, str, str]:
+    tracked = {
+        smoke.PROMPT_PATH: b"prompt",
+        smoke.SPEC_PATH: b"spec",
+        smoke.CONTRACT_PATH: b"contract",
+        smoke.OPERATOR_PATH: Path(smoke.__file__).read_bytes(),
+    }
+    for relative, payload in tracked.items():
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+    workspace = f"local_data/wp164a_public_smoke/{phase_sha}/attempt-02"
+    envelope_path = workspace + ".authorization.json"
+    mapping = {
+        "schema_id": smoke.ENVELOPE_SCHEMA_ID,
+        "schema_version": smoke.ENVELOPE_SCHEMA_VERSION,
+        "wp_id": smoke.WP_ID,
+        "base_sha": smoke.BASE_SHA,
+        "phase_a_commit_sha": phase_sha,
+        "wp_prompt_sha256": smoke._sha256_bytes(tracked[smoke.PROMPT_PATH]),
+        "wp_spec_sha256": smoke._sha256_bytes(tracked[smoke.SPEC_PATH]),
+        "contract_sha256": smoke._sha256_bytes(tracked[smoke.CONTRACT_PATH]),
+        "operator_path": smoke.OPERATOR_PATH,
+        "operator_sha256": smoke._sha256_bytes(tracked[smoke.OPERATOR_PATH]),
+        "workspace_attempt_id": smoke.WORKSPACE_ATTEMPT_ID,
+        "workspace_relpath": workspace,
+        "manifest_id": smoke.MANIFEST_ID,
+        "parameter_set_id": smoke.PARAMETER_SET_ID,
+        "normalizer_version": smoke.NORMALIZER_VERSION,
+        "validator_version": smoke.VALIDATOR_VERSION,
+        "markets_limit": smoke.MARKETS_LIMIT,
+        "order_books_limit": smoke.ORDER_BOOKS_LIMIT,
+        "max_coordinator_invocations": smoke.MAX_COORDINATOR_INVOCATIONS,
+        "retry_limit": smoke.RETRY_LIMIT,
+        "replacement_invocation_authorized": False,
+        "public_network_authorized": True,
+        "hermes_provider_authorized": False,
+        "h1_fifth_invocation_authorized": False,
+        "af1_attempt_03_authorized": False,
+        "merge_authorized": False,
+        "credentials_authorized": False,
+        "scheduler_authorized": False,
+    }
+    target = root / envelope_path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(smoke._canonical_json_bytes(mapping))
+    return mapping, workspace, envelope_path
+
+
+def _prepare_smoke_repo(monkeypatch, tmp_path: Path):
+    phase_sha = "5" * 40
+    (tmp_path / ".git").mkdir()
+    envelope, workspace, envelope_path = _smoke_envelope(tmp_path, phase_sha)
+    monkeypatch.setattr(smoke, "REPO_ROOT", tmp_path)
+    monkeypatch.chdir(tmp_path)
+
+    def _fake_git(*args):
+        if args == ("rev-parse", "HEAD"):
+            return phase_sha
+        if args == ("branch", "--show-current"):
+            return smoke.BRANCH
+        if args == ("rev-parse", "origin/main"):
+            return smoke.BASE_SHA
+        if args == ("merge-base", "--is-ancestor", smoke.BASE_SHA, phase_sha):
+            return ""
+        if args == ("status", "--porcelain"):
+            return ""
+        raise AssertionError(args)
+
+    monkeypatch.setattr(smoke, "_git", _fake_git)
+    argv = [
+        "--workspace",
+        workspace,
+        "--authorization-envelope",
+        envelope_path,
+        "--allow-public-network",
+        "--acknowledgement",
+        smoke.ACKNOWLEDGEMENT,
+    ]
+    return envelope, workspace, envelope_path, argv
 
 
 # ── Forgery builders for recovery re-proof tests ──────────────────────────────
@@ -1286,6 +1371,366 @@ def test_wp164a_deep_book_retains_exact_order_book_build_diagnostics():
         load_and_verify_point_in_time_record_store(record_path).snapshot.records == ()
     )
     assert load_and_verify_manifest_store(manifest_path).snapshot.manifest_entries == ()
+
+
+# ── WP164A frozen public-smoke operator (offline only) ──────────────────────
+
+
+def test_wp164a_smoke_operator_cli_denies_without_exact_opt_in():
+    calls = []
+    missing_opt_in = [
+        "--workspace",
+        "local_data/wp164a_public_smoke/" + "5" * 40 + "/attempt-02",
+        "--authorization-envelope",
+        "local_data/wp164a_public_smoke/" + "5" * 40 + "/attempt-02.authorization.json",
+        "--acknowledgement",
+        smoke.ACKNOWLEDGEMENT,
+    ]
+    code, summary = smoke.run(
+        missing_opt_in, coordinator=lambda *args: calls.append(args)
+    )
+    assert code == 2 and summary["terminal"] == smoke.STATE_DRIFT
+    wrong_ack = missing_opt_in[:4] + [
+        "--allow-public-network",
+        "--acknowledgement",
+        "WRONG",
+    ]
+    code, summary = smoke.run(wrong_ack, coordinator=lambda *args: calls.append(args))
+    assert code == 2 and summary["terminal"] == smoke.STATE_DRIFT
+    assert calls == []
+
+
+def test_wp164a_smoke_operator_freezes_exact_cli_surface():
+    parser = smoke._build_parser()
+    assert {
+        action.dest for action in parser._actions if action.dest != "help"
+    } == {
+        "workspace",
+        "authorization_envelope",
+        "allow_public_network",
+        "acknowledgement",
+    }
+
+
+def test_wp164a_smoke_operator_accepts_exact_envelope_and_sibling_paths(
+    monkeypatch, tmp_path
+):
+    envelope, workspace, envelope_path, _argv = _prepare_smoke_repo(
+        monkeypatch, tmp_path
+    )
+    phase_sha, resolved_workspace, resolved_envelope = smoke._validate_envelope(
+        envelope,
+        workspace_arg=workspace,
+        envelope_arg=envelope_path,
+    )
+    assert phase_sha == "5" * 40
+    assert resolved_workspace == (tmp_path / workspace).resolve()
+    assert resolved_envelope == (tmp_path / envelope_path).resolve()
+    assert set(envelope) == smoke.ENVELOPE_KEYS
+    assert len(envelope) == 28
+
+
+@pytest.mark.parametrize(
+    ("mutation", "value"),
+    [
+        ("missing", None),
+        ("extra", None),
+        ("markets_limit", True),
+        ("retry_limit", False),
+        ("operator_path", "tools/polymarket/alias.py"),
+        ("manifest_id", "manifest:wrong"),
+        ("public_network_authorized", False),
+    ],
+)
+def test_wp164a_smoke_operator_rejects_envelope_drift(
+    monkeypatch, tmp_path, mutation, value
+):
+    envelope, workspace, envelope_path, _argv = _prepare_smoke_repo(
+        monkeypatch, tmp_path
+    )
+    if mutation == "missing":
+        envelope.pop("wp_id")
+    elif mutation == "extra":
+        envelope["wp"] = "WP164A"
+    else:
+        envelope[mutation] = value
+    with pytest.raises(smoke._StateDrift):
+        smoke._validate_envelope(
+            envelope,
+            workspace_arg=workspace,
+            envelope_arg=envelope_path,
+        )
+
+
+@pytest.mark.parametrize(
+    ("workspace_change", "envelope_change"),
+    [
+        ("../escape", None),
+        (None, "../authorization.json"),
+        ("local_data/wp164a_public_smoke/wrong/attempt-02", None),
+        (None, "local_data/wp164a_public_smoke/wrong.authorization.json"),
+    ],
+)
+def test_wp164a_smoke_operator_rejects_path_drift(
+    monkeypatch, tmp_path, workspace_change, envelope_change
+):
+    envelope, workspace, envelope_path, _argv = _prepare_smoke_repo(
+        monkeypatch, tmp_path
+    )
+    with pytest.raises(smoke._StateDrift):
+        smoke._validate_envelope(
+            envelope,
+            workspace_arg=workspace_change or workspace,
+            envelope_arg=envelope_change or envelope_path,
+        )
+
+
+def test_wp164a_smoke_operator_wrong_frozen_digest_makes_zero_calls(
+    monkeypatch, tmp_path
+):
+    envelope, _workspace, envelope_path, argv = _prepare_smoke_repo(
+        monkeypatch, tmp_path
+    )
+    envelope["wp_prompt_sha256"] = "0" * 64
+    (tmp_path / envelope_path).write_bytes(smoke._canonical_json_bytes(envelope))
+    calls = []
+    code, summary = smoke.run(argv, coordinator=lambda *args: calls.append(args))
+    assert code == 2 and summary["terminal"] == smoke.STATE_DRIFT
+    assert calls == []
+
+
+def test_wp164a_smoke_operator_rejects_duplicate_envelope_key(tmp_path):
+    path = tmp_path / "duplicate.json"
+    path.write_text('{"schema_id":"a","schema_id":"b"}', encoding="utf-8")
+    with pytest.raises(smoke._StateDrift):
+        smoke._bounded_json_object(path)
+
+
+def test_wp164a_smoke_operator_preexisting_workspace_makes_zero_calls(
+    monkeypatch, tmp_path
+):
+    _envelope, workspace, _envelope_path, argv = _prepare_smoke_repo(
+        monkeypatch, tmp_path
+    )
+    (tmp_path / workspace).mkdir()
+    (tmp_path / workspace / smoke.SENTINEL_NAME).write_text(
+        "already consumed", encoding="utf-8"
+    )
+    calls = []
+    code, summary = smoke.run(argv, coordinator=lambda *args: calls.append(args))
+    assert code == 2 and summary["terminal"] == smoke.STATE_DRIFT
+    assert calls == []
+    assert (tmp_path / workspace / smoke.SENTINEL_NAME).read_text(
+        encoding="utf-8"
+    ) == "already consumed"
+
+
+def test_wp164a_smoke_operator_store_initialization_failure_makes_zero_calls(
+    monkeypatch, tmp_path
+):
+    _envelope, workspace, _envelope_path, argv = _prepare_smoke_repo(
+        monkeypatch, tmp_path
+    )
+    monkeypatch.setattr(
+        smoke,
+        "initialize_point_in_time_record_store",
+        lambda path: SimpleNamespace(is_valid=False, snapshot=None),
+    )
+    calls = []
+    code, summary = smoke.run(argv, coordinator=lambda *args: calls.append(args))
+    assert code == 2 and summary["terminal"] == smoke.STATE_DRIFT
+    assert calls == []
+    assert not (tmp_path / workspace / smoke.SENTINEL_NAME).exists()
+
+
+def test_wp164a_smoke_operator_one_call_exact_config_and_canonical_result(
+    monkeypatch, tmp_path
+):
+    envelope, workspace, _envelope_path, argv = _prepare_smoke_repo(
+        monkeypatch, tmp_path
+    )
+    captured = []
+    writes = []
+    real_write = smoke._exclusive_json_write
+
+    def _count_write(path, mapping):
+        writes.append(path.name)
+        return real_write(path, mapping)
+
+    monkeypatch.setattr(smoke, "_exclusive_json_write", _count_write)
+
+    def _coordinator(record_path, manifest_path, config):
+        captured.append((record_path, manifest_path, config))
+        assert (record_path.parent / smoke.SENTINEL_NAME).is_file()
+        assert load_and_verify_point_in_time_record_store(
+            record_path
+        ).snapshot.records == ()
+        manifest = load_and_verify_manifest_store(manifest_path).snapshot
+        assert manifest.dataset_references == () and manifest.manifest_entries == ()
+        return pop._result(
+            is_valid=False,
+            status="POPULATION_REJECTED",
+            error_codes=("POPULATION_BUILD_FAILED",),
+            snapshot_id="snapshot:sha256:" + "a" * 64,
+            captured_at_utc="2026-09-24T12:00:00Z",
+            requested_markets_limit=25,
+            bounded_markets_limit=25,
+            requested_order_books_limit=1,
+            bounded_order_books_limit=1,
+            fetched_market_count=25,
+            fetched_order_book_count=1,
+            built_record_count=25,
+            network_used=True,
+            build_failure_observation_kind="ORDER_BOOK",
+            build_status="REJECTED_CONTRACT",
+            build_error_codes=("PAYLOAD_SEQUENCE_LIMIT_EXCEEDED",),
+            build_warning_codes=("EVENT_TIME_MISSING_ALLOWED",),
+            build_quarantine_id="quarantine:sha256:" + "b" * 64,
+            build_input_fingerprint_sha256="c" * 64,
+        )
+
+    code, summary = smoke.run(argv, coordinator=_coordinator)
+    assert code == 2 and summary["terminal"] == smoke.BUILD_FAILED
+    assert len(captured) == 1
+    record_path, manifest_path, config = captured[0]
+    assert record_path.name == smoke.RECORD_STORE_NAME
+    assert manifest_path.name == smoke.MANIFEST_STORE_NAME
+    assert config == Cfg(
+        manifest_id=smoke.MANIFEST_ID,
+        parameter_set_id=smoke.PARAMETER_SET_ID,
+        normalizer_version=smoke.NORMALIZER_VERSION,
+        validator_version=smoke.VALIDATOR_VERSION,
+        markets_limit=25,
+        order_books_limit=1,
+        allow_network=True,
+    )
+    sentinel_path = tmp_path / workspace / smoke.SENTINEL_NAME
+    result_path = tmp_path / workspace / smoke.RESULT_NAME
+    assert sentinel_path.is_file() and result_path.is_file()
+    sentinel = json.loads(sentinel_path.read_text(encoding="utf-8"))
+    artifact = json.loads(result_path.read_text(encoding="utf-8"))
+    assert sentinel["invocation_state"] == "STARTED"
+    assert sentinel["authorization_envelope_sha256"] == smoke._sha256_bytes(
+        smoke._canonical_json_bytes(envelope)
+    )
+    assert artifact["error_codes"] == ["POPULATION_BUILD_FAILED"]
+    assert artifact["build_error_codes"] == ["PAYLOAD_SEQUENCE_LIMIT_EXCEEDED"]
+    assert summary["result_sha256"] == smoke._file_sha256(result_path)
+    assert summary["coordinator_invocations"] == 1
+    assert writes == [smoke.SENTINEL_NAME, smoke.RESULT_NAME]
+
+
+def test_wp164a_smoke_operator_post_sentinel_exception_is_nonretryable(
+    monkeypatch, tmp_path
+):
+    _envelope, workspace, _envelope_path, argv = _prepare_smoke_repo(
+        monkeypatch, tmp_path
+    )
+    calls = []
+
+    def _raise_after_sentinel(*args):
+        calls.append(args)
+        raise RuntimeError("must not escape or retry")
+
+    code, summary = smoke.run(argv, coordinator=_raise_after_sentinel)
+    assert code == 2 and summary["terminal"] == smoke.LOCAL_EVIDENCE_DEFECT
+    assert len(calls) == 1
+    assert (tmp_path / workspace / smoke.SENTINEL_NAME).is_file()
+    assert not (tmp_path / workspace / smoke.RESULT_NAME).exists()
+    code, summary = smoke.run(argv, coordinator=_raise_after_sentinel)
+    assert code == 2 and summary["terminal"] == smoke.STATE_DRIFT
+    assert len(calls) == 1
+
+
+def _empty_verified_stores():
+    return (
+        SimpleNamespace(is_valid=True, snapshot=SimpleNamespace(records=())),
+        SimpleNamespace(
+            is_valid=True,
+            snapshot=SimpleNamespace(dataset_references=(), manifest_entries=()),
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    ("errors", "network_used", "expected"),
+    [
+        (("POPULATION_BUILD_FAILED",), True, smoke.BUILD_FAILED),
+        (("POPULATION_BATCH_INVALID",), True, smoke.BATCH_INVALID),
+        (("POPULATION_FETCH_FAILED",), True, smoke.EXTERNAL_INVALID),
+        (("POPULATION_RESPONSE_INVALID",), True, smoke.EXTERNAL_INVALID),
+        (("POPULATION_FETCH_FAILED",), False, smoke.LOCAL_EVIDENCE_DEFECT),
+        (
+            ("POPULATION_BUILD_FAILED", "POPULATION_BATCH_INVALID"),
+            True,
+            smoke.LOCAL_EVIDENCE_DEFECT,
+        ),
+        (("POPULATION_UNEXPECTED_ERROR",), True, smoke.LOCAL_EVIDENCE_DEFECT),
+    ],
+)
+def test_wp164a_smoke_operator_closed_failure_terminal_mapping(
+    errors, network_used, expected
+):
+    record_store, manifest_store = _empty_verified_stores()
+    result = pop._result(
+        is_valid=False,
+        status="POPULATION_REJECTED",
+        error_codes=errors,
+        network_used=network_used,
+    )
+    assert smoke._classify(result, record_store, manifest_store) == expected
+
+
+def test_wp164a_smoke_operator_success_allows_actual_counts_below_limits():
+    accepted_id = "a" * 64
+    batch = PointInTimeBatchValidationResult(
+        is_valid=True,
+        status="VALID_WITH_WARNINGS",
+        error_codes=(),
+        warning_codes=("EVENT_TIME_MISSING_ALLOWED",),
+        accepted_record_version_ids=(accepted_id,),
+        exact_duplicate_record_version_ids=(),
+        quarantined_record_version_ids=(),
+        canonical_batch_sha256="b" * 64,
+    )
+    result = pop._result(
+        is_valid=True,
+        status="POPULATION_PERSISTED_AND_REGISTERED",
+        requested_markets_limit=25,
+        bounded_markets_limit=25,
+        requested_order_books_limit=1,
+        bounded_order_books_limit=1,
+        fetched_market_count=1,
+        fetched_order_book_count=0,
+        built_record_count=1,
+        inserted_record_count=1,
+        dataset_snapshot_reference_id="reference:1",
+        manifest_entry_id="entry:1",
+        record_store_status="RECORD_STORE_APPEND_COMMITTED",
+        registration_status="ADAPTER_PERSISTED",
+        network_used=True,
+        batch=batch,
+    )
+    record_store = SimpleNamespace(
+        is_valid=True,
+        snapshot=SimpleNamespace(
+            records=(
+                SimpleNamespace(
+                    envelope=SimpleNamespace(record_version_id=accepted_id)
+                ),
+            )
+        ),
+    )
+    manifest_store = SimpleNamespace(
+        is_valid=True,
+        snapshot=SimpleNamespace(
+            dataset_references=(
+                SimpleNamespace(dataset_snapshot_reference_id="reference:1"),
+            ),
+            manifest_entries=(SimpleNamespace(manifest_entry_id="entry:1"),),
+        ),
+    )
+    assert smoke._classify(result, record_store, manifest_store) == smoke.COMPLETE_SUCCESS
 
 
 # ── Persistence order ─────────────────────────────────────────────────────────

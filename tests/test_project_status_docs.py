@@ -4551,23 +4551,26 @@ def test_wp164a_is_active_bounded_upstream_repair() -> None:
         if line.startswith("# WP164A active bounded upstream repair")
     )
     assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
-    assert "Exact changed-file scope: 13" in current
+    assert "Exact changed-file scope: 14" in current
     assert "46bc862018208b30971228ed719c7e9337142b41" in current
     assert "PR #191 / S10-ALPHA-02 merged: YES" in current
-    assert "Phase-A correction public-product calls: 0" in current
-    assert "public repair smoke Attempt-02: NOT AUTHORIZED" in current
-    assert "WP164A public smoke Attempt-01: CONSUMED" in current
+    assert "Phase-A correction 03 public-product calls: 0" in current
+    assert "public smoke Attempt-02: NOT AUTHORIZED" in current
+    assert "Attempt-01: CONSUMED" in current
     assert "WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT" in current
     assert "17ce49aa96c798244d852fc5daf16299bee79ef9" in current
-    assert "257-level deep-book rejection oracle" in current
+    assert "257-level rejection oracles" in current
+    assert "Attempt-02 state-drift checkpoint" in current
+    assert "NOT CONSUMED" in current
+    assert "28-key commit-bound envelope" in current
     assert "S10-GATE-AF1: BLOCKED" in current
-    assert "AF1 Attempt-01/02: historical invalidated/consumed evidence only" in current
+    assert "AF1 Attempt-01/02 remain historical invalidated/consumed evidence only" in project
     assert "AF1 Attempt-03: NOT AUTHORIZED" in current
     assert "WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED" in current
     assert "Merge authorized: NO" in current
     scope = spec["scope"]
     assert scope["required_changed_files"] == scope["allowed_changed_files"]
-    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 13
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 14
     assert (
         "tests/data_layer/point_in_time_market_research/"
         "test_polymarket_incremental_population.py"
@@ -4578,3 +4581,4 @@ def test_wp164a_is_active_bounded_upstream_repair() -> None:
         "test_polymarket_scaled_population.py"
         in scope["required_changed_files"]
     )
+    assert "tools/polymarket/run_wp164a_public_smoke.py" in scope["required_changed_files"]

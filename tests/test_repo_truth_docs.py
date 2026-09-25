@@ -539,3 +539,7 @@ def test_wp164a_repo_truth_preserves_af1_block_and_phase_a_authority() -> None:
     assert "six additive build fields" in combined
     assert "PAYLOAD_SEQUENCE_LIMIT_EXCEEDED" in combined
     assert "future Attempt-02" in combined
+    assert "exact package from 13 to 14 paths" in combined
+    assert "tools/polymarket/run_wp164a_public_smoke.py" in combined
+    assert "wp164a-public-smoke-authorization-envelope/1.0.0" in combined
+    assert "Attempt-02 is unconsumed" in combined

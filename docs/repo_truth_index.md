@@ -64,6 +64,17 @@ The offline 257-level book oracle proves `PAYLOAD_SEQUENCE_LIMIT_EXCEEDED` after
 validation. Any future Attempt-02 requires a new SHA, workspace, sentinel,
 authorization envelope, and explicit human authorization.
 
+Execution-surface correction 03 expands the exact package from 13 to 14 paths by
+adding only `tools/polymarket/run_wp164a_public_smoke.py`. The state-drift stop
+at `53da1d50fb8a91ecdb32cd44611241f0062925ff` created no Attempt-02 workspace,
+sentinel, result, coordinator call, or product call; Attempt-02 is unconsumed.
+The operator is the sole future smoke surface and freezes the exact four-option
+command, the four `wp164a:public-smoke:1.0.0` provenance labels, 25/1 limits,
+one call, zero retry, exact sibling paths, four artifact names, six terminals,
+and the exact 28-key `wp164a-public-smoke-authorization-envelope/1.0.0` schema.
+Correction 03 itself performs zero public/product calls and stops for a new
+commit-bound human authorization.
+
 Follow-up 01 expands the exact governed scope from 11 to 13 paths solely to maintain the historical
 WP165/WP166 test fixtures that reuse WP164 parsing. Their central raw Gamma helpers now use exact
 live-shaped `active=True` and `closed=False`; no WP165/WP166 production source or lifecycle grammar

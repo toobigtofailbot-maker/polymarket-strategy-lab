@@ -15,7 +15,7 @@
       "merge_sha": "46bc862018208b30971228ed719c7e9337142b41"
     },
     "suggested_branch": "codex/wp164a-public-population-repair",
-    "objective": "Repair the merged WP164 bounded public-population layer before any S10-GATE-AF1 Attempt-03: retain the complete typed WP156 batch-validation and failed-build diagnostics, preserve truthful stage counts and already-derived provenance on later rejection, normalize live Gamma lifecycle booleans into the exact open/closed vocabulary required by downstream Alpha discovery, and prove the 25-market/1-book success and 257-level rejection paths offline. Phase A performs zero public-market calls. Consumed smoke Attempt-01 is immutable and non-retryable; any later Attempt-02 remains separately authorized.",
+    "objective": "Repair the merged WP164 bounded public-population layer before any S10-GATE-AF1 Attempt-03: retain complete WP156 batch/build diagnostics and truthful provenance, preserve closed lifecycle normalization, prove success/rejection paths offline, and freeze one exact foreground public-smoke operator, command, provenance configuration and 28-key authorization envelope. Phase A performs zero public-market calls. Attempt-01 is consumed; the state-drift stop did not consume Attempt-02, whose future execution remains separately authorized.",
     "capital_at_risk_usd": 0,
     "xl_explicit_authorization": false,
     "xl_authorization_basis": null
@@ -34,7 +34,8 @@
       "docs/wp_specs/WP164A/wp_prompt.txt",
       "docs/wp_specs/WP164A/wp_spec.json",
       "tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py",
-      "tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py"
+      "tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py",
+      "tools/polymarket/run_wp164a_public_smoke.py"
     ],
     "allowed_changed_files": [
       "src/data_layer/point_in_time_market_research/polymarket_public_population.py",
@@ -49,7 +50,8 @@
       "docs/wp_specs/WP164A/wp_prompt.txt",
       "docs/wp_specs/WP164A/wp_spec.json",
       "tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py",
-      "tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py"
+      "tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py",
+      "tools/polymarket/run_wp164a_public_smoke.py"
     ],
     "forbidden_prefixes": [
       ".github/workflows/",
@@ -67,7 +69,7 @@
       "src/risk/",
       "tools/hermes/"
     ],
-    "max_changed_files": 13,
+    "max_changed_files": 14,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       "docs/project_status.md",
@@ -77,7 +79,7 @@
       "tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py",
       "tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py"
     ],
-    "rollback_surface": "Revert WP164A. The additive WP164 batch-diagnostic result fields, truthful rejection-stage counts, population-local open/closed normalization, focused tests, contract/status/spec records and repo-truth updates disappear. No AF1 branch, Hermes, credentials, scheduler, trading, dependency or workflow state is created by Phase A; any separately authorized public-smoke local artifacts remain noncanonical audit material only.",
+    "rollback_surface": "Revert WP164A. The additive WP164 diagnostics, truthful rejection-stage counts, population-local open/closed normalization, sole frozen public-smoke operator, focused tests, contract/status/spec records and repo-truth updates disappear. No AF1 branch, Hermes, credentials, scheduler, trading, dependency or workflow state is created by Phase A; any separately authorized public-smoke local artifacts remain noncanonical audit material only.",
     "mode_boundaries": [
       {
         "boundary": "workflow_governance",
@@ -184,6 +186,14 @@
         "authority": "ADDITIVE_BUILD_DIAGNOSTICS"
       },
       {
+        "surface": "WP164A public-smoke execution surface",
+        "before": "The package described a future smoke but froze no executable operator, exact command, provenance configuration or authorization-envelope key set, so Attempt-02 correctly stopped before any call.",
+        "after": "One foreground operator at tools/polymarket/run_wp164a_public_smoke.py exclusively owns the exact four-option command, 28-key commit-bound envelope, dedicated provenance, write-once artifacts, one coordinator invocation and closed terminal mapping.",
+        "change_authorized": true,
+        "compatibility_requirement": "Default/mismatched input makes zero calls; no alternate wrapper, configurable limit/client/guard/clock/endpoint/retry, credential, Hermes, scheduler or trading surface is added.",
+        "authority": "FROZEN_SINGLE_USE_PUBLIC_SMOKE_OPERATOR"
+      },
+      {
         "surface": "WP164 network-population rejection stage counts",
         "before": "The generic _PopulationReject catch path can return zero fetched/built counts even after earlier stages completed.",
         "after": "Already-known fetched-market, fetched-book and successfully-built-record counts survive later rejection; unexecuted stages remain zero and inserted count changes only after committed append.",
@@ -229,6 +239,32 @@
         "validation_rule": "Kind is MARKET_METADATA or ORDER_BOOK; already-derived captured_at_utc and snapshot_id plus exact successful-build prefix are preserved; raw or arbitrary provider data never crosses the result boundary.",
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "closed safe WP156 build diagnostics",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "smoke.execution_surface",
+        "source": "CONSTANT",
+        "type": "mapping",
+        "required_rule": "The only future WP164A smoke surface is tools/polymarket/run_wp164a_public_smoke.py with exactly --workspace, --authorization-envelope, --allow-public-network and --acknowledgement; dedicated provenance labels, limits 25/1, one coordinator call and zero retry are not caller-selectable.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Offline tests prove default deny, exact config, exclusive sentinel/result writes, canonical readback and the six closed operator terminals without a real product call.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "one frozen foreground operator",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "smoke.authorization_envelope",
+        "source": "CONSTANT",
+        "type": "mapping",
+        "required_rule": "A future smoke requires the exact wp164a-public-smoke-authorization-envelope/1.0.0 mapping with exactly 28 commit/digest/path/provenance/limit/authority keys and an envelope file at the exact workspace sibling path.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Missing, extra, alias, wrong scalar type, semantic mismatch, digest mismatch or path escape fails before the sentinel with zero coordinator calls.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "exact commit-bound authorization envelope",
         "derivation_rule_id": null
       },
       {
@@ -310,7 +346,7 @@
       {
         "from_state": "LOCAL_DRAFT",
         "to_state": "DRAFTABILITY_PASS",
-        "condition": "prompt/spec authority equality, exact 13-path scope, semantic rules, evidence plan and RUNTIME readiness pass",
+        "condition": "prompt/spec authority equality, exact 14-path scope, semantic rules, evidence plan and RUNTIME readiness pass",
         "failure_category": "DRAFTABILITY_INCOMPLETE"
       },
       {
@@ -322,7 +358,7 @@
       {
         "from_state": "AUTHORIZED",
         "to_state": "IMPLEMENTED_LOCAL",
-        "condition": "implementation remains inside the exact 13-path scope and all Phase-A validation passes with zero real product-network, credential, scheduler, Hermes, strategy, paper, execution, live or capital activity",
+        "condition": "implementation remains inside the exact 14-path scope and all Phase-A validation passes with zero real product-network, credential, scheduler, Hermes, strategy, paper, execution, live or capital activity",
         "failure_category": "SEMANTIC_CONTRADICTION"
       }
     ]
@@ -478,7 +514,7 @@
         "source": "validation",
         "test": "exact scope and readiness",
         "command": "python tools/git/diff_scope_summary.py --base 46bc862018208b30971228ed719c7e9337142b41 --head HEAD --wp-spec docs/wp_specs/WP164A/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/WP164A/wp_prompt.txt --spec docs/wp_specs/WP164A/wp_spec.json --repo-root . --check-diff --base 46bc862018208b30971228ed719c7e9337142b41 --head HEAD",
-        "expected_result": "13 required equals 13 allowed equals 13 actual changed paths with zero warnings and committed-head readiness IMPLEMENTATION_READY"
+        "expected_result": "14 required equals 14 allowed equals 14 actual changed paths with zero warnings and committed-head readiness IMPLEMENTATION_READY"
       },
       {
         "requirement_id": "R010",
@@ -514,6 +550,13 @@
         "test": "test_metadata_build_failure_retains_closed_wp156_diagnostics and test_wp164a_deep_book_retains_exact_order_book_build_diagnostics",
         "command": "python -m pytest -q tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py",
         "expected_result": "metadata and 257-level order-book failures retain exact closed WP156 build diagnostics, truthful build prefixes and run provenance, keep batch diagnostics empty, and persist nothing"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "WP164A frozen public-smoke operator matrix",
+        "command": "python -m pytest -q tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py",
+        "expected_result": "offline tests prove exact CLI, 28-key envelope, sibling paths, store/sentinel ordering, one frozen config call, canonical write-once result verification and six closed terminals with zero real product network"
       },
       {
         "requirement_id": "R015",

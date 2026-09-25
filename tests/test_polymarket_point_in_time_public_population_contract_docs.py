@@ -192,3 +192,34 @@ def test_wp164a_population_local_lifecycle_mapping_is_closed():
     assert "There is no fallback" in text
     assert "`PolymarketPublicClient`" in text
     assert "downstream Alpha eligible statuses remain unchanged" in text
+
+
+def test_wp164a_frozen_smoke_operator_contract_is_exact():
+    text = _flat(_contract())
+    assert "tools/polymarket/run_wp164a_public_smoke.py" in text
+    assert "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_02" in text
+    assert "wp164a-public-smoke-authorization-envelope/1.0.0" in text
+    assert "exactly 28 keys" in text
+    for label in (
+        "manifest:wp164a:public-smoke:1.0.0",
+        "params:wp164a:public-smoke:1.0.0",
+        "normalizer:wp164a:public-smoke:1.0.0",
+        "validator:wp164a:public-smoke:1.0.0",
+    ):
+        assert label in text
+    for artifact in (
+        "WP164A_PUBLIC_SMOKE_INVOCATION.json",
+        "WP164A_PUBLIC_SMOKE_RESULT.json",
+        "point_in_time_records.sqlite3",
+        "point_in_time_manifest.sqlite3",
+    ):
+        assert artifact in text
+    for terminal in (
+        "WP164A_PUBLIC_SMOKE_STATE_DRIFT",
+        "WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT",
+        "WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS",
+        "WP164A_PUBLIC_SMOKE_BUILD_FAILED",
+        "WP164A_PUBLIC_SMOKE_BATCH_INVALID",
+        "WP164A_PUBLIC_SMOKE_EXTERNAL_FETCH_OR_RESPONSE_INVALID",
+    ):
+        assert terminal in text

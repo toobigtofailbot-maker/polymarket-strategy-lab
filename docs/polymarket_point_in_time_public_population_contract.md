@@ -117,6 +117,61 @@ market/token identifier, exception, URL, path, or provider content crosses this
 diagnostic boundary. Paths that do not invoke the builder and successful
 populations retain null/empty defaults.
 
+## Frozen WP164A public-smoke execution surface
+
+The only future WP164A public-smoke execution surface is the manual foreground
+operator `tools/polymarket/run_wp164a_public_smoke.py`. Without the exact
+`--allow-public-network` flag and acknowledgement
+`I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_02`, it makes zero coordinator and
+product calls. Its only other arguments are `--workspace` and
+`--authorization-envelope`; limits, provenance, client, guard, clock, endpoint,
+retry, stores, and artifact names are not caller-selectable.
+
+The command template is exactly:
+
+```text
+python tools/polymarket/run_wp164a_public_smoke.py --workspace local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02 --authorization-envelope local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02.authorization.json --allow-public-network --acknowledgement I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_02
+```
+
+The dedicated non-AF1 provenance is fixed as
+`manifest:wp164a:public-smoke:1.0.0`,
+`params:wp164a:public-smoke:1.0.0`,
+`normalizer:wp164a:public-smoke:1.0.0`, and
+`validator:wp164a:public-smoke:1.0.0`. Limits are 25 markets and one order book;
+the coordinator invocation maximum is one and retry is zero. The normal clock,
+default `RateLimitGuard`, and production `PolymarketPublicClient` are used with
+no injection.
+
+The sibling authorization file uses schema
+`wp164a-public-smoke-authorization-envelope/1.0.0` and exactly 28 keys:
+`schema_id`, `schema_version`, `wp_id`, `base_sha`, `phase_a_commit_sha`,
+`wp_prompt_sha256`, `wp_spec_sha256`, `contract_sha256`, `operator_path`,
+`operator_sha256`, `workspace_attempt_id`, `workspace_relpath`, `manifest_id`,
+`parameter_set_id`, `normalizer_version`, `validator_version`, `markets_limit`,
+`order_books_limit`, `max_coordinator_invocations`, `retry_limit`,
+`replacement_invocation_authorized`, `public_network_authorized`,
+`hermes_provider_authorized`, `h1_fifth_invocation_authorized`,
+`af1_attempt_03_authorized`, `merge_authorized`, `credentials_authorized`, and
+`scheduler_authorized`. Every value and scalar type is closed; missing, extra,
+aliased, mismatched, or path-escaping material rejects before the sentinel.
+
+The workspace must not exist before execution. Its write-once artifacts are
+`WP164A_PUBLIC_SMOKE_INVOCATION.json` and
+`WP164A_PUBLIC_SMOKE_RESULT.json`; its stores are
+`point_in_time_records.sqlite3` and `point_in_time_manifest.sqlite3`. The
+envelope is outside the workspace at the exact sibling path. The operator
+validates repo state, bytes, paths, fresh stores, and the complete result
+readback; it canonical-normalizes tuples/lists before comparing bytes and
+SHA-256 and never rewrites an artifact.
+
+The exact terminals are `WP164A_PUBLIC_SMOKE_STATE_DRIFT`,
+`WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT`,
+`WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS`, `WP164A_PUBLIC_SMOKE_BUILD_FAILED`,
+`WP164A_PUBLIC_SMOKE_BATCH_INVALID`, and
+`WP164A_PUBLIC_SMOKE_EXTERNAL_FETCH_OR_RESPONSE_INVALID`. This vocabulary does
+not classify AF1 A1/A2 evidence and grants no AF1, Hermes, credential,
+scheduler, execution, or trading authority.
+
 ## Dry-run posture
 
 With the default `allow_network=False`, after verifying valid stores, an empty

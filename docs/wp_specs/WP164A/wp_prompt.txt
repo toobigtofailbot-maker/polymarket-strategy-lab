@@ -85,10 +85,10 @@ or
 Do not silently widen scope.
 
 ===============================================================================
-3. EXACT SCOPE — 13 PATHS
+3. EXACT SCOPE — 14 PATHS
 ===============================================================================
 
-Required == allowed == max 13:
+Required == allowed == max 14:
 
 1. src/data_layer/point_in_time_market_research/polymarket_public_population.py
 2. tests/data_layer/point_in_time_market_research/test_polymarket_public_population.py
@@ -103,6 +103,7 @@ Required == allowed == max 13:
 11. docs/wp_specs/WP164A/wp_spec.json
 12. tests/data_layer/point_in_time_market_research/test_polymarket_incremental_population.py
 13. tests/data_layer/point_in_time_market_research/test_polymarket_scaled_population.py
+14. tools/polymarket/run_wp164a_public_smoke.py
 
 Do NOT modify:
 - src/data_layer/point_in_time_market_research/__init__.py — the existing result class export remains valid;
@@ -449,7 +450,7 @@ STOP STATE_DRIFT
 - frozen main changed or overlapping WP164A work appeared.
 
 STOP SCOPE_EXPANSION_REQUIRED
-- a path outside the 13-path contract is mechanically required.
+- a path outside the 14-path contract is mechanically required.
 
 STOP AUTHORITY_EXPANSION_REQUIRED
 - implementation needs a capability not authorized here.
@@ -500,7 +501,7 @@ At the end of THIS Phase A, return only:
 
 - branch;
 - final committed Phase-A SHA;
-- exact 13-path diff;
+- exact 14-path diff;
 - exact PolymarketPublicPopulationResult schema delta;
 - exact market-status mapping implemented;
 - 25/1 offline oracle result;
@@ -537,6 +538,9 @@ NR008|smoke|public_call|later_authorized|REQUIRE|single_nonretryable_call|smoke.
 NR009|downstream|af1|wp164a_phase_a|FORBID|keep_blocked|downstream.af1_blocked|R007
 NR010|population|build_diagnostics|completed_invalid_build|REQUIRE|preserve_closed_build_result|population.build_diagnostics|R014
 NR011|smoke|result_comparison|future_authorized_attempt|REQUIRE|compare_canonical_json_bytes|smoke.one_call|R015
+NR012|smoke|execution_surface|future_attempt_02|REQUIRE|use_frozen_operator_only|smoke.execution_surface|R016
+NR013|smoke|authorization_envelope|future_attempt_02|REQUIRE|validate_exact_28_keys|smoke.authorization_envelope|R016
+NR014|phase_a|product_network|correction_03|FORBID|keep_zero_network|phase_a.network_posture|R010
 END_NORMATIVE_RULE_MATRIX_V1
 
 ===============================================================================
@@ -549,7 +553,8 @@ Follow-up 01 authorizes only historical-test compatibility maintenance in the ex
 WP166 test fixture helpers: replace raw `active: "open"` with live-shaped raw `active: true` and
 `closed: false`. No WP165/WP166 production source or WP164A product semantic changes are authorized.
 The historical failed candidate `31379495e70dee1a0d698300e3371911af62de3a` remains an ancestor;
-the final scope is exactly 13 required, 13 allowed, and maximum 13 paths.
+the final compatibility scope first became 13 paths; execution-surface correction 03 expands it to
+exactly 14 required, 14 allowed, and maximum 14 paths.
 
 Do not add abstractions or files because they might be useful later.
 Do not repeat historical narrative in code/docs.
@@ -600,6 +605,59 @@ optionally reconstruct the typed result separately. Never rewrite the artifact
 to make tuple/list structural equality pass.
 
 Correction validation is offline. The successful stop remains:
+`WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`.
+
+===============================================================================
+21. EXECUTION-SURFACE FREEZE CORRECTION 03
+===============================================================================
+
+The state-drift stop at Phase-A SHA
+`53da1d50fb8a91ecdb32cd44611241f0062925ff` made zero coordinator and product
+calls and did not consume Attempt-02. Add the sole new scope path
+`tools/polymarket/run_wp164a_public_smoke.py`; final exact scope is 14 paths.
+
+This foreground operator is the only future WP164A smoke surface. Its exact CLI
+is `--workspace`, `--authorization-envelope`, `--allow-public-network`, and
+`--acknowledgement`; the only acknowledgement is
+`I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_02`. The frozen command template
+is:
+
+python tools/polymarket/run_wp164a_public_smoke.py --workspace local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02 --authorization-envelope local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02.authorization.json --allow-public-network --acknowledgement I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_02
+
+Freeze provenance as `manifest:wp164a:public-smoke:1.0.0`,
+`params:wp164a:public-smoke:1.0.0`,
+`normalizer:wp164a:public-smoke:1.0.0`, and
+`validator:wp164a:public-smoke:1.0.0`, with limits 25/1, one coordinator call,
+and zero retry.
+
+The exact envelope schema is
+`wp164a-public-smoke-authorization-envelope/1.0.0` and contains exactly these
+28 keys: schema_id, schema_version, wp_id, base_sha, phase_a_commit_sha,
+wp_prompt_sha256, wp_spec_sha256, contract_sha256, operator_path,
+operator_sha256, workspace_attempt_id, workspace_relpath, manifest_id,
+parameter_set_id, normalizer_version, validator_version, markets_limit,
+order_books_limit, max_coordinator_invocations, retry_limit,
+replacement_invocation_authorized, public_network_authorized,
+hermes_provider_authorized, h1_fifth_invocation_authorized,
+af1_attempt_03_authorized, merge_authorized, credentials_authorized, and
+scheduler_authorized. Missing, extra, aliased, mistyped, mismatched, or
+path-escaping material rejects before the sentinel and makes zero calls.
+
+The envelope is the workspace sibling
+`local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02.authorization.json`.
+The absent pre-call workspace is
+`local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02`. Inside it,
+freeze `WP164A_PUBLIC_SMOKE_INVOCATION.json`,
+`WP164A_PUBLIC_SMOKE_RESULT.json`, `point_in_time_records.sqlite3`, and
+`point_in_time_manifest.sqlite3`.
+
+Freeze exactly six terminals: `WP164A_PUBLIC_SMOKE_STATE_DRIFT`,
+`WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT`,
+`WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS`, `WP164A_PUBLIC_SMOKE_BUILD_FAILED`,
+`WP164A_PUBLIC_SMOKE_BATCH_INVALID`, and
+`WP164A_PUBLIC_SMOKE_EXTERNAL_FETCH_OR_RESPONSE_INVALID`. Phase-A tests use
+offline injected coordinator behavior only. This correction creates no envelope,
+workspace, sentinel, or product call and stops at
 `WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`.
 
 END SIDE12 — WP164A FINAL ONE-SHOT IMPLEMENTATION WP — SPECIFICATION CLOSED
