@@ -461,7 +461,7 @@ def test_s10_alpha02_repo_truth_and_successor() -> None:
     fragment = (ROOT / "docs" / "status_entries" / "S10-ALPHA-02.md").read_text(encoding="utf-8")
     deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
     combined = "\n".join((index, contract, fragment, deferred))
-    assert "S10-ALPHA-02 PIT Alpha Discovery Control Plane (current bounded implementation target)" in index
+    assert "S10-ALPHA-02 PIT Alpha Discovery Control Plane (merged historical truth)" in index
     for path in (
         "docs/alpha_discovery_control_plane_contract.md",
         "src/data_layer/analytical_research/alpha_discovery.py",
@@ -522,7 +522,7 @@ def test_wp164a_repo_truth_preserves_af1_block_and_phase_a_authority() -> None:
         in index
     )
     assert "docs/wp_specs/WP164A/" in index
-    assert "46bc862018208b30971228ed719c7e9337142b41" in combined
+    assert "9332aa2b2591d7e3fb015ae10165f063aeb8fa1d" in combined
     assert "complete typed WP156 batch" in combined
     assert "25-market/1-book" in combined
     assert "zero real public-product calls" in combined
@@ -538,8 +538,9 @@ def test_wp164a_repo_truth_preserves_af1_block_and_phase_a_authority() -> None:
     assert "WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT" in combined
     assert "six additive build fields" in combined
     assert "PAYLOAD_SEQUENCE_LIMIT_EXCEEDED" in combined
-    assert "future Attempt-02" in combined
+    assert "Attempt-02 is permanently consumed" in combined
     assert "exact package from 13 to 14 paths" in combined
     assert "tools/polymarket/run_wp164a_public_smoke.py" in combined
     assert "wp164a-public-smoke-authorization-envelope/1.0.0" in combined
-    assert "Attempt-02 is unconsumed" in combined
+    assert "5a7044147c018389402e71f35a759e1d621c4b25" in combined
+    assert "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03" in combined

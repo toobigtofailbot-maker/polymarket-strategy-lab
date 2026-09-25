@@ -194,7 +194,7 @@ def _smoke_envelope(root: Path, phase_sha: str) -> tuple[dict, str, str]:
         target = root / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(payload)
-    workspace = f"local_data/wp164a_public_smoke/{phase_sha}/attempt-02"
+    workspace = f"local_data/wp164a_public_smoke/{phase_sha}/attempt-03"
     envelope_path = workspace + ".authorization.json"
     mapping = {
         "schema_id": smoke.ENVELOPE_SCHEMA_ID,
@@ -1380,9 +1380,9 @@ def test_wp164a_smoke_operator_cli_denies_without_exact_opt_in():
     calls = []
     missing_opt_in = [
         "--workspace",
-        "local_data/wp164a_public_smoke/" + "5" * 40 + "/attempt-02",
+        "local_data/wp164a_public_smoke/" + "5" * 40 + "/attempt-03",
         "--authorization-envelope",
-        "local_data/wp164a_public_smoke/" + "5" * 40 + "/attempt-02.authorization.json",
+        "local_data/wp164a_public_smoke/" + "5" * 40 + "/attempt-03.authorization.json",
         "--acknowledgement",
         smoke.ACKNOWLEDGEMENT,
     ]
@@ -1467,7 +1467,7 @@ def test_wp164a_smoke_operator_rejects_envelope_drift(
     [
         ("../escape", None),
         (None, "../authorization.json"),
-        ("local_data/wp164a_public_smoke/wrong/attempt-02", None),
+        ("local_data/wp164a_public_smoke/wrong/attempt-03", None),
         (None, "local_data/wp164a_public_smoke/wrong.authorization.json"),
     ],
 )
@@ -1618,6 +1618,154 @@ def test_wp164a_smoke_operator_one_call_exact_config_and_canonical_result(
     assert summary["result_sha256"] == smoke._file_sha256(result_path)
     assert summary["coordinator_invocations"] == 1
     assert writes == [smoke.SENTINEL_NAME, smoke.RESULT_NAME]
+
+
+def _real_smoke_coordinator(client):
+    def _coordinator(record_path, manifest_path, config):
+        return populate_initial_polymarket_public_data(
+            record_path,
+            manifest_path,
+            config,
+            client=client,
+            now_provider=_advancing_now(),
+            utcnow_provider=_clock,
+        )
+
+    return _coordinator
+
+
+@pytest.mark.parametrize(
+    ("markets", "books", "expected_counts"),
+    [
+        (
+            [
+                _market(
+                    str(index),
+                    [f"token-{index}-yes", f"token-{index}-no"],
+                    condition=f"0xcondition{index:02d}",
+                )
+                for index in range(25)
+            ],
+            {"token-0-yes": _book("token-0-yes")},
+            (25, 1, 26, 26),
+        ),
+        (
+            [_market("100", ["tokA"])],
+            {
+                "tokA": _book(
+                    "tokA",
+                    bids=tuple(
+                        (f"0.{index:03d}", str(index)) for index in range(1, 129)
+                    ),
+                    asks=tuple(
+                        (f"0.{index + 200:03d}", str(index))
+                        for index in range(1, 129)
+                    ),
+                )
+            },
+            (1, 1, 2, 2),
+        ),
+        (
+            [_market("100", ["tokA"]), _market("200", ["tokB"])],
+            {"tokA": _book("tokA")},
+            (2, 1, 3, 3),
+        ),
+        (
+            [_market("100", [])],
+            {},
+            (1, 0, 1, 1),
+        ),
+    ],
+    ids=("exact-25-1", "large-book", "fewer-with-book", "zero-book"),
+)
+def test_wp164a_smoke_operator_real_chain_success_variants(
+    monkeypatch, tmp_path, markets, books, expected_counts
+):
+    _envelope, workspace, _envelope_path, argv = _prepare_smoke_repo(
+        monkeypatch, tmp_path
+    )
+    client = FakeClient(markets, books=books)
+
+    code, summary = smoke.run(argv, coordinator=_real_smoke_coordinator(client))
+
+    assert code == 0
+    assert summary["terminal"] == smoke.COMPLETE_SUCCESS
+    assert summary["coordinator_invocations"] == 1
+    assert summary["retry_count"] == 0
+    actual_counts = (
+        summary["fetched_market_count"],
+        summary["fetched_order_book_count"],
+        summary["built_record_count"],
+        summary["inserted_record_count"],
+    )
+    assert actual_counts == expected_counts
+    assert client.markets_calls == 1
+    assert len(client.book_calls) == expected_counts[1]
+    artifact = json.loads(
+        (tmp_path / workspace / smoke.RESULT_NAME).read_text(encoding="utf-8")
+    )
+    assert artifact["batch_is_valid"] is True
+    assert len(artifact["batch_accepted_record_version_ids"]) == expected_counts[2]
+    assert artifact["batch_exact_duplicate_record_version_ids"] == []
+    assert artifact["batch_quarantined_record_version_ids"] == []
+    records = load_and_verify_point_in_time_record_store(
+        tmp_path / workspace / smoke.RECORD_STORE_NAME
+    ).snapshot.records
+    if expected_counts == (1, 1, 2, 2):
+        book = next(
+            record for record in records if record.observation_kind == "ORDER_BOOK"
+        )
+        assert len(book.canonical_payload_json) > 4096
+
+
+@pytest.mark.parametrize(
+    ("client", "expected_terminal", "expected_counts"),
+    [
+        (
+            FakeClient(
+                [
+                    _market(
+                        str(index),
+                        [f"token-{index}-yes", f"token-{index}-no"],
+                        condition=f"0xcondition{index:02d}",
+                    )
+                    for index in range(25)
+                ],
+                books={
+                    "token-0-yes": _book(
+                        "token-0-yes",
+                        bids=tuple(("0.40", str(index + 1)) for index in range(257)),
+                    )
+                },
+            ),
+            smoke.BUILD_FAILED,
+            (25, 1, 25, 0),
+        ),
+        (FakeClient([], markets_status=503), smoke.EXTERNAL_INVALID, (0, 0, 0, 0)),
+    ],
+    ids=("typed-build-failure", "external-response-failure"),
+)
+def test_wp164a_smoke_operator_real_chain_closed_failures(
+    monkeypatch, tmp_path, client, expected_terminal, expected_counts
+):
+    _envelope, workspace, _envelope_path, argv = _prepare_smoke_repo(
+        monkeypatch, tmp_path
+    )
+
+    code, summary = smoke.run(argv, coordinator=_real_smoke_coordinator(client))
+
+    assert code == 2
+    assert summary["terminal"] == expected_terminal
+    assert summary["coordinator_invocations"] == 1
+    assert summary["retry_count"] == 0
+    assert (
+        summary["fetched_market_count"],
+        summary["fetched_order_book_count"],
+        summary["built_record_count"],
+        summary["inserted_record_count"],
+    ) == expected_counts
+    assert (tmp_path / workspace / smoke.SENTINEL_NAME).is_file()
+    assert (tmp_path / workspace / smoke.RESULT_NAME).is_file()
 
 
 def test_wp164a_smoke_operator_post_sentinel_exception_is_nonretryable(

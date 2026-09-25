@@ -4552,21 +4552,22 @@ def test_wp164a_is_active_bounded_upstream_repair() -> None:
     )
     assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
     assert "Exact changed-file scope: 14" in current
-    assert "46bc862018208b30971228ed719c7e9337142b41" in current
-    assert "PR #191 / S10-ALPHA-02 merged: YES" in current
-    assert "Phase-A correction 03 public-product calls: 0" in current
-    assert "public smoke Attempt-02: NOT AUTHORIZED" in current
+    assert "9332aa2b2591d7e3fb015ae10165f063aeb8fa1d" in current
+    assert "PR #192 / WP156A merged: YES" in current
+    assert "post-WP156A reconciliation public-product calls: 0" in current
+    assert "public smoke Attempt-03: NOT AUTHORIZED" in current
     assert "Attempt-01: CONSUMED" in current
     assert "WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT" in current
     assert "17ce49aa96c798244d852fc5daf16299bee79ef9" in current
-    assert "257-level rejection oracles" in current
-    assert "Attempt-02 state-drift checkpoint" in current
-    assert "NOT CONSUMED" in current
-    assert "28-key commit-bound envelope" in current
+    assert "Attempt-02: CONSUMED / WP164A_PUBLIC_SMOKE_BATCH_INVALID" in current
+    assert "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH" in current
+    assert "128-bid/128-ask large-book" in current
+    assert "pending new definitive SHA/envelope" in current
     assert "S10-GATE-AF1: BLOCKED" in current
     assert "AF1 Attempt-01/02 remain historical invalidated/consumed evidence only" in project
     assert "AF1 Attempt-03: NOT AUTHORIZED" in current
     assert "WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED" in current
+    assert "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03" in current
     assert "Merge authorized: NO" in current
     scope = spec["scope"]
     assert scope["required_changed_files"] == scope["allowed_changed_files"]

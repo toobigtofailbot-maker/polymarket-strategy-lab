@@ -122,7 +122,7 @@ populations retain null/empty defaults.
 The only future WP164A public-smoke execution surface is the manual foreground
 operator `tools/polymarket/run_wp164a_public_smoke.py`. Without the exact
 `--allow-public-network` flag and acknowledgement
-`I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_02`, it makes zero coordinator and
+`I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03`, it makes zero coordinator and
 product calls. Its only other arguments are `--workspace` and
 `--authorization-envelope`; limits, provenance, client, guard, clock, endpoint,
 retry, stores, and artifact names are not caller-selectable.
@@ -130,8 +130,17 @@ retry, stores, and artifact names are not caller-selectable.
 The command template is exactly:
 
 ```text
-python tools/polymarket/run_wp164a_public_smoke.py --workspace local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02 --authorization-envelope local_data/wp164a_public_smoke/<DEFINITIVE_PHASE_A_SHA>/attempt-02.authorization.json --allow-public-network --acknowledgement I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_02
+python tools/polymarket/run_wp164a_public_smoke.py --workspace local_data/wp164a_public_smoke/<NEW_SHA>/attempt-03 --authorization-envelope local_data/wp164a_public_smoke/<NEW_SHA>/attempt-03.authorization.json --allow-public-network --acknowledgement I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03
 ```
+
+Attempt-01 and Attempt-02 are permanently consumed historical evidence. Attempt-02 ended
+`WP164A_PUBLIC_SMOKE_BATCH_INVALID` after 25 markets, one book, 26 built records, zero inserted
+records, and `RECORD_VERSION_HASH_COLLISION_OR_MISMATCH`. Merged WP156A corrects that upstream
+large-canonical-payload fingerprint defect. Offline operator-chain tests re-prove exact 25/1
+success, an ordinary 128-bid/128-ask book whose canonical payload exceeds 4,096 characters,
+fewer-than-limit success with a book, zero-book success, closed failure terminals, one invocation,
+and zero retry. These proofs grant no public-network authority; any future execution is Attempt-03
+and remains separately human-authorized.
 
 The dedicated non-AF1 provenance is fixed as
 `manifest:wp164a:public-smoke:1.0.0`,

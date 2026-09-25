@@ -197,7 +197,10 @@ def test_wp164a_population_local_lifecycle_mapping_is_closed():
 def test_wp164a_frozen_smoke_operator_contract_is_exact():
     text = _flat(_contract())
     assert "tools/polymarket/run_wp164a_public_smoke.py" in text
-    assert "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_02" in text
+    assert "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03" in text
+    assert "/attempt-03" in text
+    assert "Attempt-01 and Attempt-02 are permanently consumed" in text
+    assert "128-bid/128-ask" in text
     assert "wp164a-public-smoke-authorization-envelope/1.0.0" in text
     assert "exactly 28 keys" in text
     for label in (

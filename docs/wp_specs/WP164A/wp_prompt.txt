@@ -1,16 +1,16 @@
-SIDE12 — WP164A FINAL ONE-SHOT IMPLEMENTATION WP — SPECIFICATION CLOSED
-## Public Population Batch Diagnostics, Truthful Stage Counts & Market-Status Normalization Repair
+SIDE12 — WP164A POST-WP156A ONE-SHOT RECONCILIATION + ATTEMPT-03 CERTIFICATION
+## Public Population Diagnostics, WP156A Reconciliation & Frozen Attempt-03 Surface
 
 Repository:
 toobigtofailbot-maker/polymarket-strategy-lab
 
 Frozen base:
-46bc862018208b30971228ed719c7e9337142b41
+9332aa2b2591d7e3fb015ae10165f063aeb8fa1d
 
 Required predecessor:
-PR #191
-head: 40bcee515251d2e958754bddd3dfae278928ec5c
-merge: 46bc862018208b30971228ed719c7e9337142b41
+PR #192 / WP156A
+head: 053f7dd73d27262f84dc0651d05e0fe737cadd33
+merge: 9332aa2b2591d7e3fb015ae10165f063aeb8fa1d
 
 WP ID:
 WP164A
@@ -48,13 +48,14 @@ authorizes the exact post-Phase-A smoke envelope.
 1. OBJECTIVE
 ===============================================================================
 
-Repair the merged WP164 public-population layer before spending another AF1 runtime attempt.
+Reconcile the exact WP164A Phase-A package onto merged WP156A and certify, entirely offline, the
+sole future Attempt-03 public-smoke surface before spending another AF1 runtime attempt.
 
-Attempt-02 proved only that WP164 reached validate_record_batch and returned the outer
-POPULATION_BATCH_INVALID. The merged layer currently discards the completed WP156 batch result and
-can lose already-known stage counts on rejection. Separately, WP164 copies the public parser's
-stringified Gamma `active` value into market_status, while downstream Alpha discovery expects the
-canonical lower-case status "open".
+The original WP164A repair established complete WP156 diagnostics, truthful stage counts, and
+closed Gamma lifecycle normalization. Consumed Attempt-02 then exposed the upstream WP156
+large-canonical-payload fingerprint defect at batch validation. WP156A corrected that defect and is
+now merged; this package preserves the repair while re-proving the exact operator chain on merged
+main.
 
 WP164A must:
 1. retain the complete typed WP156 batch-validation result without raw payloads;
@@ -63,7 +64,8 @@ WP164A must:
 4. prove the 25-market / 1-book path offline with live-shaped synthetic data;
 5. stop for separate authorization before one bounded public repair smoke.
 
-Do not guess or special-case the hidden Attempt-02 batch root cause. Observability comes first.
+Do not special-case the known Attempt-02 payload or weaken WP156. The merged WP156A correction and
+ordinary full-chain regression must carry the case.
 
 ===============================================================================
 2. STARTUP / STATE
@@ -71,7 +73,7 @@ Do not guess or special-case the hidden Attempt-02 batch root cause. Observabili
 
 Before edits:
 - fetch/refresh origin;
-- require origin/main == 46bc862018208b30971228ed719c7e9337142b41;
+- require origin/main == 9332aa2b2591d7e3fb015ae10165f063aeb8fa1d;
 - require no open/overlapping WP164A PR or remote branch;
 - do not modify/rebase the existing S10-GATE-AF1 branch;
 - preserve AF1 Attempt-01 and Attempt-02 as historical invalidated evidence only;
@@ -388,7 +390,7 @@ After implementation stabilizes:
 10. require clean worktree;
 11. on that COMMITTED HEAD rerun all committed-diff-sensitive guards;
 12. run exact diff scope/readiness against frozen base;
-13. run git diff --check 46bc862018208b30971228ed719c7e9337142b41 HEAD --;
+13. run git diff --check 9332aa2b2591d7e3fb015ae10165f063aeb8fa1d HEAD --;
 14. run ONE authoritative full repository suite on the same committed HEAD.
 
 If anything fails:
@@ -538,8 +540,8 @@ NR008|smoke|public_call|later_authorized|REQUIRE|single_nonretryable_call|smoke.
 NR009|downstream|af1|wp164a_phase_a|FORBID|keep_blocked|downstream.af1_blocked|R007
 NR010|population|build_diagnostics|completed_invalid_build|REQUIRE|preserve_closed_build_result|population.build_diagnostics|R014
 NR011|smoke|result_comparison|future_authorized_attempt|REQUIRE|compare_canonical_json_bytes|smoke.one_call|R015
-NR012|smoke|execution_surface|future_attempt_02|REQUIRE|use_frozen_operator_only|smoke.execution_surface|R016
-NR013|smoke|authorization_envelope|future_attempt_02|REQUIRE|validate_exact_28_keys|smoke.authorization_envelope|R016
+NR012|smoke|execution_surface|future_attempt_03|REQUIRE|use_frozen_operator_only|smoke.execution_surface|R016
+NR013|smoke|authorization_envelope|future_attempt_03|REQUIRE|validate_exact_28_keys|smoke.authorization_envelope|R016
 NR014|phase_a|product_network|correction_03|FORBID|keep_zero_network|phase_a.network_posture|R010
 END_NORMATIVE_RULE_MATRIX_V1
 
@@ -660,4 +662,47 @@ offline injected coordinator behavior only. This correction creates no envelope,
 workspace, sentinel, or product call and stops at
 `WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`.
 
-END SIDE12 — WP164A FINAL ONE-SHOT IMPLEMENTATION WP — SPECIFICATION CLOSED
+===============================================================================
+22. POST-WP156A RECONCILIATION + ATTEMPT-03 CERTIFICATION
+===============================================================================
+
+WP164A public-smoke Attempt-01 is consumed at
+`17ce49aa96c798244d852fc5daf16299bee79ef9`. The definitive pre-reconciliation
+Phase-A head is `5a7044147c018389402e71f35a759e1d621c4b25`. Attempt-02 is also permanently
+consumed: it ended `WP164A_PUBLIC_SMOKE_BATCH_INVALID` with 25 markets, one book,
+26 built, zero inserted, exact batch error
+`RECORD_VERSION_HASH_COLLISION_OR_MISMATCH`, 25 accepted, zero quarantine, and
+zero duplicate. Preserve both attempts and all local evidence without mutation.
+
+WP156A PR #192 is merged at
+`9332aa2b2591d7e3fb015ae10165f063aeb8fa1d`, with implementation head
+`053f7dd73d27262f84dc0651d05e0fe737cadd33`. Reconcile only the exact 14 paths
+onto this base. `records.py` is forbidden because the WP156A correction comes
+from merged main.
+
+Offline tests must exercise the complete operator through the actual population
+coordinator and fake transport for: exact 25/1 success; an ordinary 128-bid and
+128-ask order book whose canonical payload exceeds 4,096 characters;
+fewer-than-limit success with one book; zero-book success; closed build/external
+failure behavior; one invocation; zero retry; write-once artifacts; and the
+existing pre-sentinel safety matrix. These tests make zero product calls.
+
+The former Attempt-02 execution details in correction 03 are historical. The
+only future runtime values are:
+
+- acknowledgement: `I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03`
+- attempt id: `wp164a-public-smoke-attempt-03`
+- workspace: `local_data/wp164a_public_smoke/<NEW_SHA>/attempt-03`
+- sibling envelope: `local_data/wp164a_public_smoke/<NEW_SHA>/attempt-03.authorization.json`
+- limits: 25 markets / 1 order book / maximum one invocation / retry zero
+- envelope: the same exact 28-key schema and closed authority values
+
+This package does not create the envelope or runtime workspace and does not
+execute the operator. After final committed-head validation, compute and report
+the raw SHA-256 digests of the operator, prompt, spec, and contract; prepare the
+local proposed envelope only; prove the future workspace, sentinel, and result
+are absent; report the canonical envelope SHA-256 and the exact command; and stop
+at `WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`. Attempt-03, AF1 Attempt-03,
+Hermes, credentials, scheduler, trading, PR, and merge remain unauthorized.
+
+END SIDE12 — WP164A POST-WP156A ONE-SHOT RECONCILIATION + ATTEMPT-03 CERTIFICATION

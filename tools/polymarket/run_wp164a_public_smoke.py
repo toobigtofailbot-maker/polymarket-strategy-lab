@@ -33,10 +33,10 @@ from src.data_layer.point_in_time_market_research import (  # noqa: E402
 )
 
 
-BASE_SHA = "46bc862018208b30971228ed719c7e9337142b41"
+BASE_SHA = "9332aa2b2591d7e3fb015ae10165f063aeb8fa1d"
 BRANCH = "codex/wp164a-public-population-repair"
 WP_ID = "WP164A"
-ACKNOWLEDGEMENT = "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_02"
+ACKNOWLEDGEMENT = "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03"
 OPERATOR_PATH = "tools/polymarket/run_wp164a_public_smoke.py"
 PROMPT_PATH = "docs/wp_specs/WP164A/wp_prompt.txt"
 SPEC_PATH = "docs/wp_specs/WP164A/wp_spec.json"
@@ -44,7 +44,7 @@ CONTRACT_PATH = "docs/polymarket_point_in_time_public_population_contract.md"
 
 ENVELOPE_SCHEMA_ID = "wp164a-public-smoke-authorization-envelope"
 ENVELOPE_SCHEMA_VERSION = "1.0.0"
-WORKSPACE_ATTEMPT_ID = "wp164a-public-smoke-attempt-02"
+WORKSPACE_ATTEMPT_ID = "wp164a-public-smoke-attempt-03"
 MANIFEST_ID = "manifest:wp164a:public-smoke:1.0.0"
 PARAMETER_SET_ID = "params:wp164a:public-smoke:1.0.0"
 NORMALIZER_VERSION = "normalizer:wp164a:public-smoke:1.0.0"
@@ -253,7 +253,7 @@ def _validate_envelope(
 
     phase_sha = _require_sha(envelope["phase_a_commit_sha"])
     expected_workspace = (
-        f"local_data/wp164a_public_smoke/{phase_sha}/attempt-02"
+        f"local_data/wp164a_public_smoke/{phase_sha}/attempt-03"
     )
     expected_envelope = expected_workspace + ".authorization.json"
     exact_values: dict[str, object] = {
