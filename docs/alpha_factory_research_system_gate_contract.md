@@ -181,3 +181,11 @@ and 02 remain consumed historical evidence; AF1 Attempt-03 and H1 #5 remain unau
 - **Envelope.** `AF1_RUNTIME_AUTHORIZATION_ENVELOPE.json` inside
   `local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-03` is an exact closed 38-key schema whose
   three contract digests must equal the raw bytes on disk.
+- **Runtime-environment preflight.** `run-real` requires explicit `--hermes-executable`
+  and `--hermes-home` machine-local launch parameters (never envelope keys or committed
+  evidence). Before the population sentinel exists, both must be absolute, alias-free real
+  paths outside the repository and `local_data`, the home must pass the existing safe and
+  clean control-plane checks, and the pinned executable must pass the merged offline
+  version (exactly 0.21.3) and `--help` startup probes. Any failure is
+  `PHASE_B_LOCAL_EVIDENCE_DEFECT` with zero calls, and the attempt is not consumed. The
+  validated values reach every `run_blind_phase` call; no PATH or default-home fallback.

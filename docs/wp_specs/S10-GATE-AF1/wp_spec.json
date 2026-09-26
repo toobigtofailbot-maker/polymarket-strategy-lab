@@ -262,7 +262,7 @@
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "Default CLI/tests make zero network/provider calls. Real mode requires explicit flags, exact acknowledgement, exact authorized provider/model, and the exact closed 38-key AF1_RUNTIME_AUTHORIZATION_ENVELOPE.json inside the fresh workspace local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-NN (attempt-01/02 consumed) whose three frozen contract digests equal the raw bytes on disk; the digest is computed only after validation. No manifest exists before its inputs.",
+        "validation_rule": "Default CLI/tests make zero network/provider calls. Real mode requires explicit flags, exact acknowledgement, exact authorized provider/model, explicit --hermes-executable and --hermes-home, and the exact closed 38-key AF1_RUNTIME_AUTHORIZATION_ENVELOPE.json inside the fresh workspace local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-NN (attempt-01/02 consumed) whose three frozen contract digests equal the raw bytes on disk; the digest is computed only after validation. No manifest exists before its inputs.",
         "failure_category": "AUTHORITY_CONTRADICTION",
         "safe_output": "manual foreground runtime checkpoint",
         "derivation_rule_id": null
@@ -538,6 +538,19 @@
         "validation_rule": "Status/repo-truth and operator boundary tests bind the current base/predecessor and reject the stale 46bc862 base in current AF1 state.",
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "current certified AF1 Phase-A base",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate.runtime_environment_preflight",
+        "source": "CALLER",
+        "type": "mapping",
+        "required_rule": "run-real requires --hermes-executable and --hermes-home: machine-local, noncanonical runtime-launch parameters that never enter the 38-key envelope, canonical records or committed evidence. Before the population sentinel, stores or any call, the operator requires absolute, traversal-free, alias-free real paths outside the repository and local_data, an existing regular executable accepted by validate_executable_path, a research home accepted by is_safe_research_home and is_clean_research_home_control_plane (names only), and the merged update-check-disabled version probe (exit 0, untruncated, exactly 0.21.3) plus the offline --help startup probe. The validated values reach every run_blind_phase call; PATH 'hermes' and default homes are never substituted.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Offline oracles: missing/relative/nonexistent/in-repo/local_data/traversal executable or home, version mismatch/launch/timeout/exit/truncation, startup failure and unclean home all stop PHASE_B_LOCAL_EVIDENCE_DEFECT with no sentinel, stores, population or Hermes call; a valid environment probes version then startup before population and binds the exact paths into every case.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "unconsumed attempt on any runtime-environment defect",
         "derivation_rule_id": null
       }
     ]
@@ -856,6 +869,13 @@
         "test": "test_population_result_digest_is_manifest_and_receipt_identity_material",
         "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_factory_gate.py",
         "expected_result": "mutating the retained typed population-result digest changes AF1BenchmarkManifest and manifest-backed AF1GateReceipt identities while the A1 manifest-null receipt independently binds the same digest"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "pytest",
+        "test": "test_valid_environment_preflight_precedes_population_and_binds_exact_paths",
+        "command": "python -m pytest -q tests/tools/alpha/test_run_s10_gate_af1.py",
+        "expected_result": "pre-sentinel Hermes executable/home/version/startup preflight precedes population; every invalid environment stops with zero calls and no sentinel; exact validated paths reach run_blind_phase"
       }
     ]
   },

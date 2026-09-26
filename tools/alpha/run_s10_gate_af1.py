@@ -11,12 +11,18 @@ Exact command grammar (every ``--workspace`` is resolved beneath
   run-real            --workspace W --activation-envelope W/AF1_RUNTIME_AUTHORIZATION_ENVELOPE.json
                       --provider-label P --model-label M
                       --acknowledgement I_AUTHORIZE_EXACT_S10_GATE_AF1_RUNTIME_ENVELOPE
-                      --allow-public-network --allow-hermes-provider [--hermes-home H]
+                      --allow-public-network --allow-hermes-provider
+                      --hermes-executable ABSOLUTE_EXE --hermes-home ABSOLUTE_RESEARCH_HOME
   verify-run          --workspace W
   build-review-bundle --workspace W
   verify-review       --workspace W --review W/AF1_SIDE12_BLIND_REVIEW_DECISION.json
   finalize            --workspace W [--review W/AF1_SIDE12_BLIND_REVIEW_DECISION.json]
   verify-final        --evidence docs/gate_evidence/S10-GATE-AF1/af1_gate_evidence.json
+
+``--hermes-executable`` and ``--hermes-home`` are machine-local, noncanonical runtime
+launch parameters.  Both are validated, and the pinned executable passes the existing
+offline version and startup probes, BEFORE the population sentinel exists: any failure
+is PHASE_B_LOCAL_EVIDENCE_DEFECT with zero calls and the attempt stays unconsumed.
 """
 
 from __future__ import annotations
@@ -96,7 +102,22 @@ from src.research_runtime.hermes_controlled_runtime import (  # noqa: E402
     ContextArtifactStore,
     ExternalHermesCliBackend,
     HermesResearchRunReceipt,
+    build_version_argv,
+    is_clean_research_home_control_plane,
+    is_safe_research_home,
+    is_supported_hermes_version,
     run_blind_phase,
+)
+from src.research_runtime.hermes_controlled_runtime.controller import (  # noqa: E402
+    _STARTUP_PROBE_MAX_BYTES,
+    _STARTUP_PROBE_MAX_SECONDS,
+    _VERSION_PROBE_MAX_BYTES,
+    _VERSION_PROBE_MAX_SECONDS,
+    build_startup_argv,
+)
+from src.research_runtime.hermes_controlled_runtime.policy import (  # noqa: E402
+    PolicyBroadeningError,
+    validate_executable_path,
 )
 
 
@@ -215,7 +236,15 @@ REVIEW_INSTRUCTIONS = (
 
 
 class AF1OperatorError(RuntimeError):
-    """Closed, sanitized operator stop."""
+    """Closed, sanitized operator stop.
+
+    ``str(error)`` is always the closed stop code; ``reason`` optionally carries a
+    precise internal diagnostic (never a path, credential or raw output).
+    """
+
+    def __init__(self, code: str, reason: str | None = None) -> None:
+        super().__init__(code)
+        self.reason = reason
 
 
 def raw_sha256(path: Path) -> str:
@@ -870,6 +899,77 @@ def _inspect_success(
     return None, cost, body
 
 
+# ── Pre-sentinel Hermes runtime-environment preflight (zero network) ──────────
+
+
+def _preflight_defect(reason: str) -> AF1OperatorError:
+    return AF1OperatorError("PHASE_B_LOCAL_EVIDENCE_DEFECT", reason)
+
+
+def _outside_repository(resolved: str, repo_root: Path | None) -> bool:
+    if "local_data" in Path(resolved).parts:
+        return False
+    lowered = os.path.normcase(resolved)
+    root = os.path.normcase(str(_repo_root(repo_root)))
+    return lowered != root and not lowered.startswith(root + os.sep)
+
+
+def _resolve_launch_path(raw: object, *, reason: str, repo_root: Path | None) -> str:
+    """Absolute, traversal-free, alias-free real path outside the repository."""
+    if not isinstance(raw, str) or not raw.strip() or not os.path.isabs(raw) or ".." in Path(raw).parts:
+        raise _preflight_defect(reason)
+    resolved = os.path.realpath(raw)
+    if os.path.normcase(resolved) != os.path.normcase(os.path.abspath(raw)):
+        raise _preflight_defect(reason)  # symlink/junction alias ambiguity
+    if not _outside_repository(resolved, repo_root):
+        raise _preflight_defect(reason)
+    return resolved
+
+
+def validate_hermes_runtime_environment(
+    hermes_executable: object, hermes_home: object, *, backend: object | None = None,
+    repo_root: Path | None = None,
+) -> tuple[str, str]:
+    """Prove the exact pinned executable and research home are usable, offline.
+
+    Reuses the merged HERMES-CTX mechanisms: executable-path validation, the
+    update-check-disabled version probe, the offline ``--help`` startup/profile-init
+    probe and the safe/clean research-home checks (names only; no credential is read).
+    Returns the validated ``(executable_path, hermes_home)`` passed to every case.
+    """
+    executable = _resolve_launch_path(hermes_executable, reason="HERMES_EXECUTABLE_INVALID", repo_root=repo_root)
+    if not os.path.isfile(executable):
+        raise _preflight_defect("HERMES_EXECUTABLE_INVALID")
+    try:
+        validate_executable_path(executable)
+        version_argv = build_version_argv(executable)
+        startup_argv = build_startup_argv(executable)
+    except PolicyBroadeningError:
+        raise _preflight_defect("HERMES_EXECUTABLE_INVALID") from None
+    home = _resolve_launch_path(hermes_home, reason="HERMES_HOME_INVALID", repo_root=repo_root)
+    if not os.path.isdir(home) or not is_safe_research_home(home):
+        raise _preflight_defect("HERMES_HOME_INVALID")
+    if not is_clean_research_home_control_plane(home):
+        raise _preflight_defect("HERMES_HOME_CONTROL_PLANE_INVALID")
+    probe_backend = backend if backend is not None else ExternalHermesCliBackend()
+    version = probe_backend.probe_version(  # type: ignore[attr-defined]
+        version_argv=version_argv, max_output_bytes=_VERSION_PROBE_MAX_BYTES,
+        max_wall_seconds=_VERSION_PROBE_MAX_SECONDS,
+    )
+    if (
+        not version.launched or version.timed_out or version.exit_code != 0
+        or version.stdout_truncated or not is_supported_hermes_version(version.version_text)
+    ):
+        raise _preflight_defect("HERMES_VERSION_PREFLIGHT_FAILED")
+    startup = probe_backend.probe_startup(  # type: ignore[attr-defined]
+        startup_argv=startup_argv, max_output_bytes=_STARTUP_PROBE_MAX_BYTES,
+        max_wall_seconds=_STARTUP_PROBE_MAX_SECONDS,
+    )
+    if not startup.launched or startup.timed_out or startup.exit_code != 0:
+        raise _preflight_defect("HERMES_STARTUP_PREFLIGHT_FAILED")
+    return executable, home
+
+
 # ── Runtime phase ─────────────────────────────────────────────────────────────
 
 
@@ -907,8 +1007,10 @@ def _require_cutoff_chain(cutoff: str, universe: AlphaUniverseSnapshot, campaign
 
 def execute_real_phase(
     workspace: Path, envelope: Mapping[str, object], *, provider_label: str,
-    model_label: str, hermes_home: str | None = None, repo_root: Path | None = None,
+    model_label: str, hermes_executable: str, hermes_home: str,
+    repo_root: Path | None = None,
     backend_factory: Callable[[ContextCampaignScope], object] | None = None,
+    preflight_backend: object | None = None,
 ) -> dict[str, object]:
     """Perform the single bounded Phase-B composition after external authorization.
 
@@ -929,6 +1031,10 @@ def execute_real_phase(
     manifest_store = workspace / MANIFEST_STORE_FILENAME
     if record_store.exists() or manifest_store.exists() or (workspace / CONTEXT_STORE_DIRNAME).exists():
         raise AF1OperatorError("STATE_DRIFT")
+    # Pre-sentinel: nothing below may run unless the exact Hermes runtime is usable.
+    executable_path, research_home = validate_hermes_runtime_environment(
+        hermes_executable, hermes_home, backend=preflight_backend, repo_root=repo_root,
+    )
     if not initialize_point_in_time_record_store(record_store).is_valid:
         raise AF1OperatorError("PHASE_B_LOCAL_EVIDENCE_DEFECT")
     if not initialize_manifest_store(manifest_store).is_valid:
@@ -956,7 +1062,7 @@ def execute_real_phase(
             result, workspace=workspace, envelope=envelope, envelope_digest=envelope_digest,
             population_mapping=population_mapping, population_digest=population_digest,
             record_store=record_store, provider_label=provider_label, model_label=model_label,
-            hermes_home=hermes_home, backend_factory=backend_factory,
+            executable_path=executable_path, hermes_home=research_home, backend_factory=backend_factory,
         )
     except AF1OperatorError as exc:
         # TRUE STOP: retain local audit evidence, never a gate receipt, never retried.
@@ -970,7 +1076,8 @@ def execute_real_phase(
 def _run_benchmark(
     result: dict[str, object], *, workspace: Path, envelope: Mapping[str, object],
     envelope_digest: str, population_mapping: Mapping[str, object], population_digest: str,
-    record_store: Path, provider_label: str, model_label: str, hermes_home: str | None,
+    record_store: Path, provider_label: str, model_label: str, executable_path: str,
+    hermes_home: str,
     backend_factory: Callable[[ContextCampaignScope], object] | None,
 ) -> None:
     cutoff = str(population_mapping["captured_at_utc"])
@@ -1084,6 +1191,7 @@ def _run_benchmark(
         try:
             blind = run_blind_phase(
                 campaign=campaign, store=store, backend=factory(campaign),
+                executable_path=executable_path,
                 policy=DEFAULT_HERMES_INVOCATION_POLICY, hermes_home=hermes_home,
             )
         except Exception as exc:
@@ -1529,7 +1637,8 @@ def build_parser() -> argparse.ArgumentParser:
     real.add_argument("--acknowledgement", required=True)
     real.add_argument("--allow-public-network", action="store_true")
     real.add_argument("--allow-hermes-provider", action="store_true")
-    real.add_argument("--hermes-home")
+    real.add_argument("--hermes-executable", required=True)
+    real.add_argument("--hermes-home", required=True)
     verify_final = sub.add_parser("verify-final")
     verify_final.add_argument("--evidence", type=Path, required=True)
     return parser
@@ -1572,7 +1681,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             result = execute_real_phase(
                 workspace, envelope, provider_label=args.provider_label,
-                model_label=args.model_label, hermes_home=args.hermes_home,
+                model_label=args.model_label, hermes_executable=args.hermes_executable,
+                hermes_home=args.hermes_home,
             )
             print(result["terminal_reason"] or result["runtime_state"])
             return 0
@@ -1596,7 +1706,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(evidence["gate_receipt"]["overall_disposition"])  # type: ignore[index]
         return 0
     except (AF1OperatorError, ValueError, OSError, zipfile.BadZipFile) as exc:
-        print(str(exc), file=sys.stderr)
+        reason = getattr(exc, "reason", None)
+        print(str(exc) + (f" {reason}" if reason else ""), file=sys.stderr)
         return 2
 
 

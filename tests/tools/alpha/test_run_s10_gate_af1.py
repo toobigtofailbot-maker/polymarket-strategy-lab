@@ -210,6 +210,21 @@ def repo(tmp_path, monkeypatch):
     return root
 
 
+def _runtime(repo: Path, **probe_overrides) -> dict:
+    """Machine-local launch parameters outside the repository plus an offline probe."""
+    bin_dir = repo.parent / "hermes-runtime"
+    bin_dir.mkdir(exist_ok=True)
+    executable = bin_dir / "hermes.exe"
+    if not executable.exists():
+        executable.write_bytes(b"fake pinned executable")
+    home = repo.parent / "research-home"
+    home.mkdir(exist_ok=True)
+    return {
+        "hermes_executable": str(executable), "hermes_home": str(home),
+        "preflight_backend": FakeHermesBackend([_timeout_outcome()], **probe_overrides),
+    }
+
+
 def _workspace(root: Path, attempt: str = "attempt-03") -> Path:
     workspace = root / "local_data" / "s10_gate_af1" / PHASE_SHA / attempt
     workspace.mkdir(parents=True)
@@ -262,7 +277,7 @@ def _run(repo, monkeypatch, *, markets=None, plan=None, fail=False):
     plan = plan or BackendPlan()
     result = execute_real_phase(
         workspace, envelope, provider_label=PROVIDER, model_label=MODEL,
-        repo_root=repo, backend_factory=plan,
+        repo_root=repo, backend_factory=plan, **_runtime(repo),
     )
     return workspace, result, calls, plan
 
@@ -530,7 +545,7 @@ def test_rerun_of_consumed_workspace_makes_zero_coordinator_or_provider_calls(re
     envelope = json.loads((workspace / ACTIVATION_ENVELOPE_FILENAME).read_text(encoding="utf-8"))
     second_plan = BackendPlan()
     with pytest.raises(AF1OperatorError, match="PHASE_B_LOCAL_EVIDENCE_DEFECT"):
-        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, backend_factory=second_plan)
+        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, **_runtime(repo), backend_factory=second_plan)
     assert len(calls) == 1 and second_plan.campaigns == []
 
 
@@ -539,11 +554,11 @@ def test_process_failure_after_sentinel_records_true_stop_and_blocks_rerun(repo,
     envelope = _envelope(repo, workspace)
     monkeypatch.setattr(operator, "populate_initial_polymarket_public_data", lambda *a: (_ for _ in ()).throw(RuntimeError("x")))
     with pytest.raises(AF1OperatorError, match="PHASE_B_LOCAL_EVIDENCE_DEFECT"):
-        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, backend_factory=BackendPlan())
+        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, **_runtime(repo), backend_factory=BackendPlan())
     assert (workspace / POPULATION_INVOCATION_FILENAME).is_file()
     calls = _patch_population(monkeypatch, [_gamma("1")])
     with pytest.raises(AF1OperatorError):
-        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, backend_factory=BackendPlan())
+        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, **_runtime(repo), backend_factory=BackendPlan())
     assert calls == []
 
 
@@ -721,7 +736,7 @@ def test_hermes_exception_before_receipt_is_true_stop_and_consumes_case(repo, mo
     envelope = _envelope(repo, workspace)
     _patch_population(monkeypatch, [_gamma(str(100 + i)) for i in range(3)])
     with pytest.raises(AF1OperatorError, match="PHASE_B_LOCAL_EVIDENCE_DEFECT"):
-        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, backend_factory=BackendPlan())
+        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, **_runtime(repo), backend_factory=BackendPlan())
     stop = json.loads((workspace / RUNTIME_RESULT_FILENAME).read_text(encoding="utf-8"))
     assert stop["runtime_state"] == "TRUE_STOP" and stop["controller_invocation_count"] == 1
     with pytest.raises(AF1OperatorError, match="RUNTIME_TRUE_STOP_NOT_FINALIZABLE"):
@@ -1030,7 +1045,8 @@ def test_run_real_requires_exact_explicit_activation(repo, monkeypatch):
     calls = _patch_population(monkeypatch, [_gamma("1")])
     workspace = _workspace(repo)
     _envelope(repo, workspace)
-    base = ["run-real", "--workspace", str(workspace), "--activation-envelope", str(workspace / ACTIVATION_ENVELOPE_FILENAME), "--provider-label", PROVIDER, "--model-label", MODEL]
+    env = _runtime(repo)
+    base = ["run-real", "--workspace", str(workspace), "--activation-envelope", str(workspace / ACTIVATION_ENVELOPE_FILENAME), "--provider-label", PROVIDER, "--model-label", MODEL, "--hermes-executable", env["hermes_executable"], "--hermes-home", env["hermes_home"]]
     assert main([*base, "--acknowledgement", RUNTIME_ACKNOWLEDGEMENT]) == 2
     assert main([*base, "--acknowledgement", "yes", "--allow-public-network", "--allow-hermes-provider"]) == 2
     assert main([*base, "--acknowledgement", RUNTIME_ACKNOWLEDGEMENT, "--allow-public-network"]) == 2
@@ -1076,7 +1092,7 @@ def test_cli_selects_exact_core_exploration_audit_cases_without_cherry_pick(repo
         envelope = _envelope(repo, workspace)
         _patch_population(monkeypatch, ordered)
         plan = BackendPlan()
-        result = execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, backend_factory=plan)
+        result = execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, **_runtime(repo), backend_factory=plan)
         manifest = result["benchmark_manifest"]
         selections.append((
             manifest["selected_core_triage_id"], manifest["selected_exploration_triage_id"],
@@ -1094,7 +1110,7 @@ def test_phase_continuation_freezes_code_contract_and_detects_state_drift(repo, 
     contract = repo / "docs" / "alpha_factory_research_system_gate_contract.md"
     contract.write_bytes(contract.read_bytes() + b"drift\n")
     with pytest.raises(AF1OperatorError, match="STATE_DRIFT"):
-        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, backend_factory=BackendPlan())
+        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, **_runtime(repo), backend_factory=BackendPlan())
     assert calls == [] and not (workspace / POPULATION_INVOCATION_FILENAME).exists()
     # A workspace not bound to the envelope's Phase-A SHA is also drift.
     other = repo / "local_data" / "s10_gate_af1" / ("9" * 40) / "attempt-03"
@@ -1104,3 +1120,181 @@ def test_phase_continuation_freezes_code_contract_and_detects_state_drift(repo, 
     # A different authorized provider/model at run time is drift.
     with pytest.raises(AF1OperatorError, match="STATE_DRIFT"):
         validate_activation_envelope(envelope, workspace=workspace, provider_label="other", model_label=MODEL, repo_root=repo)
+
+
+# ── Pre-sentinel Hermes runtime-environment preflight (oracles A-M) ───────────
+
+
+def _preflight_case(repo, monkeypatch, **overrides):
+    workspace = _workspace(repo)
+    envelope = _envelope(repo, workspace)
+    calls = _patch_population(monkeypatch, [_gamma(str(100 + i)) for i in range(3)])
+    plan = BackendPlan()
+    kwargs = {**_runtime(repo), **overrides}
+    return workspace, envelope, calls, plan, kwargs
+
+
+def _assert_unconsumed(workspace, calls, plan):
+    assert calls == [] and plan.campaigns == []
+    for name in (POPULATION_INVOCATION_FILENAME, POPULATION_RESULT_FILENAME, RUNTIME_RESULT_FILENAME, "pit_records.sqlite3", "pit_manifests.sqlite3"):
+        assert not (workspace / name).exists(), name
+
+
+def _cli_base(repo, workspace):
+    return ["run-real", "--workspace", str(workspace), "--activation-envelope", str(workspace / ACTIVATION_ENVELOPE_FILENAME),
+            "--provider-label", PROVIDER, "--model-label", MODEL, "--acknowledgement", RUNTIME_ACKNOWLEDGEMENT,
+            "--allow-public-network", "--allow-hermes-provider"]
+
+
+@pytest.mark.parametrize("missing", ["--hermes-executable", "--hermes-home"])
+def test_preflight_missing_runtime_argument_rejects_before_sentinel(repo, monkeypatch, missing):
+    workspace, _, calls, plan, env = _preflight_case(repo, monkeypatch)
+    args = _cli_base(repo, workspace)
+    if missing != "--hermes-executable":
+        args += ["--hermes-executable", env["hermes_executable"]]
+    if missing != "--hermes-home":
+        args += ["--hermes-home", env["hermes_home"]]
+    with pytest.raises(SystemExit) as exc:
+        main(args)
+    assert exc.value.code == 2
+    _assert_unconsumed(workspace, calls, plan)
+
+
+@pytest.mark.parametrize("field,value,reason", [
+    ("hermes_executable", "relative/hermes.exe", "HERMES_EXECUTABLE_INVALID"),
+    ("hermes_executable", "", "HERMES_EXECUTABLE_INVALID"),
+    ("hermes_executable", "MISSING", "HERMES_EXECUTABLE_INVALID"),
+    ("hermes_executable", "DIRECTORY", "HERMES_EXECUTABLE_INVALID"),
+    ("hermes_executable", "INSIDE_REPO", "HERMES_EXECUTABLE_INVALID"),
+    ("hermes_executable", "TRAVERSAL", "HERMES_EXECUTABLE_INVALID"),
+    ("hermes_home", "relative/home", "HERMES_HOME_INVALID"),
+    ("hermes_home", "MISSING", "HERMES_HOME_INVALID"),
+    ("hermes_home", "INSIDE_REPO", "HERMES_HOME_INVALID"),
+    ("hermes_home", "INSIDE_LOCAL_DATA", "HERMES_HOME_INVALID"),
+    ("hermes_home", "TRAVERSAL", "HERMES_HOME_INVALID"),
+])
+def test_preflight_invalid_paths_reject_before_sentinel(repo, monkeypatch, field, value, reason):
+    workspace, envelope, calls, plan, env = _preflight_case(repo, monkeypatch)
+    outside = repo.parent
+    if value == "MISSING":
+        value = str(outside / "absent" / ("hermes.exe" if field == "hermes_executable" else "home"))
+    elif value == "DIRECTORY":
+        value = str(outside)
+    elif value == "INSIDE_REPO":
+        target = repo / "tools" / ("hermes.exe" if field == "hermes_executable" else "home")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(b"x") if field == "hermes_executable" else target.mkdir(exist_ok=True)
+        value = str(target)
+    elif value == "INSIDE_LOCAL_DATA":
+        target = outside / "local_data" / "home"
+        target.mkdir(parents=True, exist_ok=True)
+        value = str(target)
+    elif value == "TRAVERSAL":
+        value = str(Path(env[field]).parent / ".." / Path(env[field]).parent.name / Path(env[field]).name)
+    env[field] = value
+    with pytest.raises(AF1OperatorError, match="PHASE_B_LOCAL_EVIDENCE_DEFECT") as exc:
+        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, backend_factory=plan, **env)
+    assert exc.value.reason == reason
+    assert env["preflight_backend"].version_probe_count == 0  # nothing launched
+    _assert_unconsumed(workspace, calls, plan)
+
+
+@pytest.mark.parametrize("overrides,reason", [
+    ({"version_text": "hermes-agent 0.21.4"}, "HERMES_VERSION_PREFLIGHT_FAILED"),
+    ({"version_text": None}, "HERMES_VERSION_PREFLIGHT_FAILED"),
+    ({"version_launched": False}, "HERMES_VERSION_PREFLIGHT_FAILED"),
+    ({"version_timed_out": True}, "HERMES_VERSION_PREFLIGHT_FAILED"),
+    ({"version_exit_code": 1}, "HERMES_VERSION_PREFLIGHT_FAILED"),
+    ({"version_stdout_truncated": True}, "HERMES_VERSION_PREFLIGHT_FAILED"),
+    ({"startup_exit_code": 1}, "HERMES_STARTUP_PREFLIGHT_FAILED"),
+    ({"startup_launched": False}, "HERMES_STARTUP_PREFLIGHT_FAILED"),
+    ({"startup_timed_out": True}, "HERMES_STARTUP_PREFLIGHT_FAILED"),
+])
+def test_preflight_version_or_startup_failure_rejects_before_sentinel(repo, monkeypatch, overrides, reason):
+    workspace, envelope, calls, plan, env = _preflight_case(repo, monkeypatch)
+    env["preflight_backend"] = FakeHermesBackend([_timeout_outcome()], **overrides)
+    with pytest.raises(AF1OperatorError, match="PHASE_B_LOCAL_EVIDENCE_DEFECT") as exc:
+        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, backend_factory=plan, **env)
+    assert exc.value.reason == reason
+    assert env["preflight_backend"].call_count == 0  # probes only; never a research invocation
+    _assert_unconsumed(workspace, calls, plan)
+
+
+@pytest.mark.parametrize("marker", ["config.yaml", "SOUL.md", "plugins/plugin.py"])
+def test_preflight_unclean_research_home_rejects_before_sentinel(repo, monkeypatch, marker):
+    workspace, envelope, calls, plan, env = _preflight_case(repo, monkeypatch)
+    target = Path(env["hermes_home"]) / marker
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(b"x")
+    with pytest.raises(AF1OperatorError, match="PHASE_B_LOCAL_EVIDENCE_DEFECT") as exc:
+        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, backend_factory=plan, **env)
+    assert exc.value.reason == "HERMES_HOME_CONTROL_PLANE_INVALID"
+    _assert_unconsumed(workspace, calls, plan)
+
+
+def test_preflight_symlink_alias_cannot_bypass_boundary(repo, monkeypatch):
+    workspace, envelope, calls, plan, env = _preflight_case(repo, monkeypatch)
+    alias = repo.parent / "alias-home"
+    try:
+        os.symlink(env["hermes_home"], alias, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlink creation unavailable")
+    env["hermes_home"] = str(alias)
+    with pytest.raises(AF1OperatorError, match="PHASE_B_LOCAL_EVIDENCE_DEFECT"):
+        execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, backend_factory=plan, **env)
+    _assert_unconsumed(workspace, calls, plan)
+
+
+def test_valid_environment_preflight_precedes_population_and_binds_exact_paths(repo, monkeypatch):
+    workspace, envelope, _, plan, env = _preflight_case(repo, monkeypatch)
+    order = []
+    probe = env["preflight_backend"]
+    original_version, original_startup = probe.probe_version, probe.probe_startup
+
+    def version(**kwargs):
+        order.append(("version", tuple(kwargs["version_argv"])))
+        return original_version(**kwargs)
+
+    def startup(**kwargs):
+        order.append(("startup", tuple(kwargs["startup_argv"])))
+        return original_startup(**kwargs)
+
+    probe.probe_version, probe.probe_startup = version, startup
+    calls = []
+
+    def coordinator(record_store, manifest_store, config):
+        assert (workspace / POPULATION_INVOCATION_FILENAME).is_file()
+        order.append(("population", None))
+        calls.append(config)
+        return wp164.populate_initial_polymarket_public_data(
+            record_store, manifest_store, config,
+            client=FakePublicClient([_gamma(str(100 + i)) for i in range(3)]), utcnow_provider=lambda: CAPTURED,
+        )
+
+    monkeypatch.setattr(operator, "populate_initial_polymarket_public_data", coordinator)
+    result = execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, backend_factory=plan, **env)
+    exe, home = os.path.realpath(env["hermes_executable"]), os.path.realpath(env["hermes_home"])
+    assert [item[0] for item in order] == ["version", "startup", "population"]
+    assert order[0][1] == (exe, "--version") and order[1][1] == (exe, "--help")
+    assert result["runtime_state"] == "BLIND_REVIEW_REQUIRED" and len(calls) == 1
+    for backend in plan.backends:
+        # Exact validated executable and research home reach every real case; no
+        # PATH "hermes" or default-home substitution is possible.
+        assert backend.recorded_argv and all(argv[0] == exe for argv in backend.recorded_argv)
+        assert backend.recorded_startup_argv == [(exe, "--help")]
+        assert backend.recorded_hermes_home == [home]
+        assert all(argv[0] != "hermes" for argv in backend.recorded_argv)
+
+
+def test_run_real_cli_passes_explicit_runtime_parameters(repo, monkeypatch):
+    workspace, _, calls, plan, env = _preflight_case(repo, monkeypatch)
+    seen = {}
+
+    def fake_execute(workspace_arg, envelope_arg, **kwargs):
+        seen.update(kwargs)
+        return {"terminal_reason": None, "runtime_state": "BLIND_REVIEW_REQUIRED"}
+
+    monkeypatch.setattr(operator, "execute_real_phase", fake_execute)
+    args = _cli_base(repo, workspace) + ["--hermes-executable", env["hermes_executable"], "--hermes-home", env["hermes_home"]]
+    assert main(args) == 0
+    assert seen["hermes_executable"] == env["hermes_executable"] and seen["hermes_home"] == env["hermes_home"]

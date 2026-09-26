@@ -45,3 +45,10 @@ passes an absolute `ContextArtifactStore` root, and distinguishes AF1 `retry_lim
 from the truthful managed Hermes `api_max_retries=1`. The exact activation envelope has
 38 keys. Offline tests drive the real WP164A coordinator, PIT stores, ALPHA-02 allocator,
 and HERMES-CTX `run_blind_phase` with fakes only.
+
+Runtime-environment micro-correction: the first Attempt-03 authorization stopped before any
+call (Attempt-03 unconsumed) because the operator could not prove the pinned Hermes executable
+and research home before the population sentinel. `run-real` now requires explicit
+`--hermes-executable` and `--hermes-home` and runs the merged offline version/startup probes and
+safe/clean home checks before the sentinel; any failure is `PHASE_B_LOCAL_EVIDENCE_DEFECT` with
+zero calls. The 38-key envelope is unchanged.
