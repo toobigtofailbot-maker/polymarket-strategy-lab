@@ -188,3 +188,10 @@ campaign/scheduler, learn from outcomes, qualify candidates, calculate economics
 or live execution authority. After separate review and merge, the next gate is `S10-GATE-AF1`.
 `S10-ALPHA-03`, `S10-ALPHA-04`, qualification, economics, paper, Gate C, and live remain separately
 gated.
+
+## S10-GATE-AF1 benchmark posture
+
+S10-GATE-AF1 consumes the frozen universe, complete triage/skip accounting, and queue identity
+under `HISTORICAL_REPLAY` with `HISTORICAL_AVAILABILITY_UNPROVEN` Alpha memory. The benchmark does
+not manufacture an Alpha registry head and does not reinterpret discovery priority as expected
+return, qualification, or strategy authority.

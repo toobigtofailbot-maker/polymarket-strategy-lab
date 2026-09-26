@@ -511,14 +511,14 @@ def test_wp156a_repo_truth_and_successor_boundary() -> None:
     assert "WP164A" in fragment and "separately authorized" in fragment
 
 
-def test_wp164a_repo_truth_preserves_af1_block_and_phase_a_authority() -> None:
+def test_wp164a_repo_truth_is_merged_runtime_certified_dependency() -> None:
     index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
     fragment = (ROOT / "docs" / "status_entries" / "WP164A.md").read_text(
         encoding="utf-8"
     )
     combined = "\n".join((index, fragment))
     assert (
-        "WP164A Public Population Compatibility Repair (active bounded upstream repair)"
+        "WP164A Public Population Compatibility Repair (merged runtime-certified dependency)"
         in index
     )
     assert "docs/wp_specs/WP164A/" in index
@@ -526,10 +526,6 @@ def test_wp164a_repo_truth_preserves_af1_block_and_phase_a_authority() -> None:
     assert "complete typed WP156 batch" in combined
     assert "25-market/1-book" in combined
     assert "zero real public-product calls" in combined
-    assert "S10-GATE-AF1 remains blocked" in combined
-    assert "Attempt-01" in combined and "Attempt-02" in combined
-    assert "Attempt-03" in combined and "not authorized" in combined.lower()
-    assert "WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED" in combined
     assert "exact governed scope from 11 to 13 paths" in combined
     assert "WP165/WP166 test fixtures" in combined
     assert "active=True" in combined and "closed=False" in combined
@@ -543,7 +539,49 @@ def test_wp164a_repo_truth_preserves_af1_block_and_phase_a_authority() -> None:
     assert "tools/polymarket/run_wp164a_public_smoke.py" in combined
     assert "wp164a-public-smoke-authorization-envelope/1.0.0" in combined
     assert "5a7044147c018389402e71f35a759e1d621c4b25" in combined
-    assert "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03" in combined
+    # Frozen historical pre-smoke authorization evidence stays in the fragment.
+    assert "S10-GATE-AF1 remains blocked" in fragment
+    assert "WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED" in fragment
+    assert "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03" in fragment
+    # Current truth in the index is post-smoke and post-merge.
+    assert "S10-GATE-AF1 remains blocked" not in index
+    assert "1c7de22f31cd093771d6bc0748c440ad5284b105" in index
+    assert "70f867bdcd5e97b0dc05d4008c2c023feb461658" in index
+    assert "WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS" in index
+    assert "EVENT_TIME_MISSING_ALLOWED" in index
+    assert "historical runtime evidence, not future guarantees" in index
+    assert "WP164A dependency certification is COMPLETE" in index
+    assert "S10-GATE-AF1 is no longer blocked by WP164A" in index
+    assert "AF1 Attempt-03 itself remains NOT AUTHORIZED" in index
+    assert "There is no WP164A Attempt-04" in index
+
+
+def test_s10_gate_af1_contract_and_phase_a_evidence_are_registered() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    project = (ROOT / "docs" / "project_status.md").read_text(encoding="utf-8")
+    contract = ROOT / "docs" / "alpha_factory_research_system_gate_contract.md"
+    evidence = ROOT / "docs" / "gate_evidence" / "S10-GATE-AF1" / "af1_gate_evidence.json"
+    assert contract.is_file() and evidence.is_file()
+    assert "alpha_factory_research_system_gate_contract.md" in index
+    assert "PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED" in project
+    assert "Real public population, Hermes-provider" in index
+
+
+def test_s10_gate_af1_correction_is_registered_without_runtime_authority() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    assert "S10-GATE-AF1 research-system gate (Phase-A correction target; post-WP164A recertification)" in index
+    assert "retry_limit=0" in index
+    assert "public_population_result_sha256" in index
+    assert "No new population or provider call" in index
+    assert "70f867bdcd5e97b0dc05d4008c2c023feb461658" in index
+    assert "complete 38-field WP164A population" in index
+    assert "AF1_RUNTIME_AUTHORIZATION_REQUIRED" in index
+    fragment = (ROOT / "docs" / "status_entries" / "S10-GATE-AF1.md").read_text(encoding="utf-8")
+    contract = (ROOT / "docs" / "alpha_factory_research_system_gate_contract.md").read_text(encoding="utf-8")
+    assert "Base: `70f867bdcd5e97b0dc05d4008c2c023feb461658`" in fragment
+    assert "PR #193 / `WP164A`" in fragment and "AF1 Attempt-03 NOT AUTHORIZED" in fragment
+    assert "Post-WP164A reconciliation and Phase-A recertification" in contract
+    assert "38-field" in contract and "REQUIRED_LANE_NOT_RESEARCH_EXECUTABLE" in contract
 
 
 def test_s10_hermes_ctx02_repo_truth_registers_exact_stock_only_soul() -> None:
@@ -565,7 +603,7 @@ def test_s10_hermes_ctx02_repo_truth_registers_exact_stock_only_soul() -> None:
     assert "tests/research_runtime/hermes_controlled_runtime/test_runner.py" in index
     assert "docs/hermes_controlled_research_runtime_contract.md" in index
     # Historical package entries remain intact.
-    assert "WP164A Public Population Compatibility Repair (active bounded upstream repair)" in index
+    assert "WP164A Public Population Compatibility Repair (merged runtime-certified dependency)" in index
     assert "S10-HERMES-CTX-01 Blind-First Context Broker (merged historical truth)" in index
     for text in (index, fragment, contract):
         assert digest in text and "667" in text

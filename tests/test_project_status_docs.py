@@ -4538,7 +4538,7 @@ def test_wp156a_current_status_and_exact_machine_scope() -> None:
     assert spec["successor_boundary"]["next_wp"] == "WP164A"
 
 
-def test_wp164a_is_active_bounded_upstream_repair() -> None:
+def test_wp164a_is_merged_runtime_certified_dependency() -> None:
     project = _read()
     spec = json.loads(
         (REPO_ROOT / "docs" / "wp_specs" / "WP164A" / "wp_spec.json").read_text(
@@ -4548,41 +4548,58 @@ def test_wp164a_is_active_bounded_upstream_repair() -> None:
     current = next(
         line
         for line in project.splitlines()
-        if line.startswith("# WP164A active bounded upstream repair")
+        if line.startswith("# WP164A merged runtime-certified upstream dependency")
     )
     assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
     assert "Exact changed-file scope: 14" in current
     assert "9332aa2b2591d7e3fb015ae10165f063aeb8fa1d" in current
-    assert "PR #192 / WP156A merged: YES" in current
-    assert "post-WP156A reconciliation public-product calls: 0" in current
-    assert "public smoke Attempt-03: NOT AUTHORIZED" in current
-    assert "Attempt-01: CONSUMED" in current
-    assert "WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT" in current
-    assert "17ce49aa96c798244d852fc5daf16299bee79ef9" in current
+    assert "PR #193 merged: YES" in current
+    assert "merge commit: 70f867bdcd5e97b0dc05d4008c2c023feb461658" in current
+    assert "exact runtime-tested head: 1c7de22f31cd093771d6bc0748c440ad5284b105" in current
+    assert "Attempt-01: CONSUMED / WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT" in current
     assert "Attempt-02: CONSUMED / WP164A_PUBLIC_SMOKE_BATCH_INVALID" in current
     assert "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH" in current
-    assert "128-bid/128-ask large-book" in current
-    assert "pending new definitive SHA/envelope" in current
-    assert "S10-GATE-AF1: BLOCKED" in current
-    assert "AF1 Attempt-01/02 remain historical invalidated/consumed evidence only" in project
+    assert "Attempt-03: CONSUMED / WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS" in current
+    assert "EVENT_TIME_MISSING_ALLOWED warning retained" in current
+    assert "coordinator invocations: exactly 1" in current
+    assert "not future guarantees" in current
+    assert "WP164A dependency certification: COMPLETE" in current
+    assert "S10-GATE-AF1 blocked by WP164A: NO" in current
     assert "AF1 Attempt-03: NOT AUTHORIZED" in current
-    assert "WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED" in current
-    assert "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03" in current
-    assert "Merge authorized: NO" in current
+    assert "no WP164A Attempt-04" in current
+    assert "public smoke Attempt-03: NOT AUTHORIZED" not in current
+    assert "S10-GATE-AF1: BLOCKED" not in current
+    assert "AF1 Attempt-01/02 remain historical invalidated/consumed evidence only" in project
     scope = spec["scope"]
     assert scope["required_changed_files"] == scope["allowed_changed_files"]
     assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 14
-    assert (
-        "tests/data_layer/point_in_time_market_research/"
-        "test_polymarket_incremental_population.py"
-        in scope["required_changed_files"]
-    )
-    assert (
-        "tests/data_layer/point_in_time_market_research/"
-        "test_polymarket_scaled_population.py"
-        in scope["required_changed_files"]
-    )
     assert "tools/polymarket/run_wp164a_public_smoke.py" in scope["required_changed_files"]
+
+
+def test_s10_gate_af1_phase_a_status_is_non_runtime_and_non_authoritative() -> None:
+    current = next(
+        line
+        for line in _read().splitlines()
+        if line.startswith("# S10-GATE-AF1 current Phase-A implementation target")
+    )
+    assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
+    assert "Exact changed-file scope: 19" in current
+    assert "Frozen base: 70f867bdcd5e97b0dc05d4008c2c023feb461658" in current
+    assert "PR #193 / WP164A merged: YES" in current
+    assert "1c7de22f31cd093771d6bc0748c440ad5284b105" in current
+    assert "S10-GATE-AF1 blocked by WP164A: NO" in current
+    assert "evidence state: PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED" in current
+    assert "runtime activation: NOT AUTHORIZED" in current
+    assert "AF1 Attempt-03: NOT AUTHORIZED" in current
+    assert "H1 #5: NOT AUTHORIZED" in current
+    assert "capital at risk: USD 0" in current
+    assert "Merge authorized: NO" in current
+    assert "LOCAL-EVIDENCE DEFECT CORRECTION 01" in current
+    assert "historical runtime evidence/envelope 0f7a2680 invalidated" in current
+    assert "closed retry_limit=0 envelope schema" in current
+    assert "complete 38-field typed population-result persistence" in current
+    assert "AF1_RUNTIME_AUTHORIZATION_REQUIRED" in current
+    assert "46bc862018208b30971228ed719c7e9337142b41" not in current
 
 
 def test_s10_hermes_ctx02_is_current_bounded_compatibility_repair() -> None:
@@ -4597,7 +4614,7 @@ def test_s10_hermes_ctx02_is_current_bounded_compatibility_repair() -> None:
         for line in project.splitlines()
         if line.startswith("# S10-HERMES-CTX-02 current bounded compatibility repair")
     )
-    assert project.index(current) < project.index("# WP164A active bounded upstream repair")
+    assert project.index(current) < project.index("# WP164A merged runtime-certified upstream dependency")
     assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
     assert "Exact changed-file scope: 10" in current
     assert "70f867bdcd5e97b0dc05d4008c2c023feb461658" in current

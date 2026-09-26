@@ -1,5 +1,28 @@
 # Repo Truth Index
 
+## S10-GATE-AF1 research-system gate (Phase-A correction target; post-WP164A recertification)
+
+The canonical contract is `docs/alpha_factory_research_system_gate_contract.md`;
+records are in `src/data_layer/analytical_research/alpha_factory_gate.py`; the sole
+manual runtime boundary is `tools/alpha/run_s10_gate_af1.py`. Local-evidence defect
+correction 01 preserves historical commit `af07264a` while invalidating its attempted
+runtime evidence and envelope `0f7a2680...`. The historical `current` workspace is
+quarantined. The corrected contract uses only `retry_limit=0`, creates an exclusive
+pre-call population sentinel, immediately persists the complete typed coordinator
+result, and binds `public_population_result_sha256` into canonical manifest/receipt
+identity. No new population or provider call, H1 #5, successor, merge, or trading
+authority is granted. A later attempt requires a new explicit authorization bound to
+a fresh Phase-A commit, fresh digests, and a fresh workspace.
+
+Post-WP164A reconciliation rebases the AF1 package onto `70f867bdcd5e97b0dc05d4008c2c023feb461658`
+with immediate predecessor PR #193 (runtime-certified head
+`1c7de22f31cd093771d6bc0748c440ad5284b105`). It freezes the complete 38-field WP164A population
+result, success on actual returned counts rather than request limits, retained
+`EVENT_TIME_MISSING_ALLOWED` warnings, fresh-status `POPULATION_ALREADY_REGISTERED` rejection, one
+canonical `captured_at_utc` cutoff, the HISTORICAL_REPLAY Alpha posture, the selected
+`question_text` coverage precondition, and an absolute `ContextArtifactStore` root. AF1 Attempt-03
+remains NOT AUTHORIZED; the expected stop is `AF1_RUNTIME_AUTHORIZATION_REQUIRED`.
+
 ## S10-HERMES-CTX-03 Canonical Public Polymarket Identifier Secret-Scanner Compatibility Repair (current bounded compatibility repair)
 
 The canonical package is `docs/wp_specs/S10-HERMES-CTX-03/`; the stable fragment is
@@ -52,7 +75,7 @@ AF1 Attempt-03 remains unconsumed and not authorized; S10-GATE-AF1 remains block
 merge, AF1 reconciliation onto repaired main, and a fresh exact authorization. H1 #5, Gate C,
 capital, and orders are unchanged.
 
-## WP164A Public Population Compatibility Repair (active bounded upstream repair)
+## WP164A Public Population Compatibility Repair (merged runtime-certified dependency)
 
 The canonical package is `docs/wp_specs/WP164A/`; implementation is a narrow additive repair to
 `src/data_layer/point_in_time_market_research/polymarket_public_population.py`; canonical behavior
@@ -68,10 +91,23 @@ derived run provenance on later rejection, and maps raw Gamma lifecycle booleans
 `closed`, rejecting every other shape. Its 25-market/1-book proof is synthetic and offline. Phase A
 makes zero real public-product calls and does not modify `PolymarketPublicClient`, WP156, Alpha,
 Hermes, credentials, scheduler, dependencies, workflows, paper, execution, or live paths.
-S10-GATE-AF1 remains blocked; AF1 Attempt-01 and Attempt-02 are historical invalidated/consumed
-evidence only; WP164A public-smoke Attempt-01 and Attempt-02 are permanently consumed. Attempt-03
-is not authorized. The required Phase-A stop is
-`WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`.
+AF1 Attempt-01 and Attempt-02 are historical invalidated/consumed evidence only; WP164A
+public-smoke Attempt-01 and Attempt-02 are permanently consumed.
+
+Current WP164A truth (post-smoke, post-merge): WP164A public-smoke Attempt-03 was separately
+authorized and executed on exact tested head `1c7de22f31cd093771d6bc0748c440ad5284b105` before
+PR #193 merged it as `70f867bdcd5e97b0dc05d4008c2c023feb461658`; the tested head is contained in
+merged main with zero file difference, and PR #193 exact-head hosted CI passed. Attempt-03 is
+CONSUMED with terminal `WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS`: 25 markets fetched, 1 order book
+fetched, 26 records built, 26 inserted; batch valid with 26 unique accepted, 0 quarantined,
+0 duplicates, and warning `EVENT_TIME_MISSING_ALLOWED` retained; exactly 1 coordinator invocation
+and 0 retries/replacements. Those counts are historical runtime evidence, not future guarantees.
+WP164A dependency certification is COMPLETE and S10-GATE-AF1 is no longer blocked by WP164A.
+AF1 Attempt-03 itself remains NOT AUTHORIZED. There is no WP164A Attempt-04; the single-use
+WP164A operator binding its historical pre-merge base is expectedly non-runnable after merge. The
+frozen WP164A prompt/spec/operator/status fragment keep their pre-smoke Phase-A wording (including
+the historical stop `WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED`) as historical authorization
+evidence only.
 
 ## WP156A Large Canonical Payload Batch Fingerprint Correction (merged historical truth)
 
@@ -161,8 +197,11 @@ not prove exhaustive external market completeness: coverage is `BOUNDED_OBSERVED
 external completeness is `UNPROVEN`. It does not fetch markets, invoke Hermes, schedule campaigns,
 mutate ALPHA-01, qualify research, compute expected return, create a strategy, place paper/live
 orders, or authorize Gate C/capital. H1 #5 and merge remain NOT AUTHORIZED. After separate review
-and merge, `S10-GATE-AF1` is the next gate; ALPHA-03/04 and downstream layers remain separately
-gated.
+and merge, `S10-GATE-AF1` is the current Phase-A research-system gate target; its deterministic
+records, seeded oracles, and zero-network operator boundary are defined in
+`docs/alpha_factory_research_system_gate_contract.md`. Real public population, Hermes-provider
+activation, blind review, successors, and merge remain separately authorized; ALPHA-03/04 and
+downstream layers remain separately gated.
 
 ## S10-WALLET-02 PIT Wallet Profiles (merged historical truth)
 

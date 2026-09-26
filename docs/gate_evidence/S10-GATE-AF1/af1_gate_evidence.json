@@ -1,0 +1,9 @@
+{
+  "base_sha": "70f867bdcd5e97b0dc05d4008c2c023feb461658",
+  "benchmark_manifest": null,
+  "evidence_state": "PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED",
+  "gate_receipt": null,
+  "schema_id": "s10-gate-af1-evidence",
+  "schema_version": "1.0.0",
+  "wp_id": "S10-GATE-AF1"
+}

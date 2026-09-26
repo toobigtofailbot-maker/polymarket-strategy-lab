@@ -6,6 +6,16 @@ This log tracks material issues, unavailable tools, unresolved dependency decisi
 
 Research and workbench artifacts do not gain runtime authority because they are listed here.
 
+## S10-GATE-AF1 Post-WP164A Deferred-Item Reconciliation
+
+WP164A Attempt-03 was consumed on runtime-certified head
+`1c7de22f31cd093771d6bc0748c440ad5284b105` as `WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS`
+and merged by PR #193 at `70f867bdcd5e97b0dc05d4008c2c023feb461658`; the WP164A
+dependency certification is complete and no longer blocks S10-GATE-AF1. AF1 Attempt-03
+itself remains deferred pending explicit runtime authorization (S10-GATE-AF1-D001/D004).
+No new public, provider, credential, scheduler, strategy, paper/live, execution, or
+capital authority is created.
+
 ## WP156A Deferred-Item Reconciliation
 
 WP156A adds no new product capability and resolves only the private large-canonical-payload
@@ -2738,3 +2748,8 @@ qualification/economic/paper/live/Gate-C authority (no wallet live shortcut crea
 | S10-WALLET-01-D002 | Live/public chain acquisition provider (RPC/indexer) | DEFERRED_NONBLOCKING | P3 | Separate gated adapter WP | S10-WALLET-01 implements canonical chain-native evidence schema, deterministic LOCAL chain import/normalization, API/chain reconciliation, and finality/reorg representation, but adds no RPC/indexer credentials or always-on listener. A live chain adapter is separately gated. |
 | S10-WALLET-01-D003 | Wallet n_eff / promotion / cluster thresholds | PARTIALLY_RESOLVED_BY_WALLET_02 | P3 | Future empirical threshold package | S10-WALLET-02 implements deterministic independent-group sample evidence, PIT cohorts, descriptive specialization, and strong-evidence public-account clustering. Universal promotion, minimum-n, HHI, posterior, and empirical cluster thresholds remain deliberately deferred; no SKILLED/UNSKILLED or specialist promotion state was invented. |
 | S10-WALLET-01-D004 | L2 / fill / copyability calibration | DEFERRED_TO_LATER_WP | P3 | ALPHA-02 / WALLET-03 / QUAL / WP170 | Executable copy edge, latency, spread/depth/slippage, partial fill, crowding/capacity remain later WPs. |
+| S10-GATE-AF1-D001 | Real AF1 public population and up to three controlled blind provider invocations | DEFERRED_PENDING_EXPLICIT_RUNTIME_AUTHORIZATION | P1 | Karl authorization of the exact frozen Phase-A activation envelope | Phase-A implementation and validation authorize zero public-market/provider calls; max later envelope is 25 markets, 1 book, 3 calls, USD 5/case and USD 15 aggregate with zero retry/fallback |
+| S10-GATE-AF1-D002 | Independent blinded Side12 usefulness review | DEFERRED_PENDING_VALID_THREE_CASE_BUNDLE | P1 | Three distinct immutable valid review-body hashes after separately authorized runtime | Review is required only on the three-valid-case path; all other closed runtime terminals finalize without a review pause |
+| S10-GATE-AF1-D003 | Qualification, wallet copyability, ALPHA-03/04, WP170/172/173, execution, Gate C and live capital | DEFERRED_BLOCKED_BY_SEPARATE_GATES | P1 | Honest AF1 result plus later separately approved packages and human gates | AF1_PASS measures research-system quality only and never proves hypothesis quality, predictive edge, executable edge, or profitability |
+| S10-GATE-AF1-D004 | AF1 Attempt-03 after invalidated Attempts 01/02 | DEFERRED_PENDING_NEW_EXPLICIT_RUNTIME_AUTHORIZATION | P1 | Fully green post-WP164A Phase-A commit on base 70f867bdcd5e97b0dc05d4008c2c023feb461658, its three contract digests, the exact closed 38-key retry_limit=0 envelope, and fresh workspace local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-03 | Historical envelope 0f7a2680 and local_data/s10_gate_af1/current stay quarantined; attempt-01/attempt-02 workspaces are rejected as consumed; WP164A Attempt-03 is a different, already consumed WP164A smoke and is never reused as AF1 runtime evidence |
+| S10-GATE-AF1-D005 | Frozen contract digest verification on non-LF checkouts | OPEN_OPERATIONAL_CONSTRAINT | P2 | Run Phase B from a checkout whose working-tree bytes of the three frozen contract files equal the committed LF bytes | run-real compares raw on-disk bytes with the authorized digests and fails closed as STATE_DRIFT with zero calls on byte drift, including CRLF conversion |

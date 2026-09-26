@@ -281,3 +281,10 @@ network, market network, scheduler/background, prioritization, qualification, st
 paper, execution, live, credential, signing, order, or Gate-C authority. Provider/model
 calls 0, Firecrawl 0, OAuth 0, Hermes runtime calls 0, H1 invocations 0, wallet network 0,
 market network 0, capital at risk USD 0, orders 0. Merge authorized: NO.
+
+## 27. S10-GATE-AF1 Consumer Boundary
+
+S10-GATE-AF1 reads canonical ALPHA-01 memory and ALPHA-02 discovery evidence without adding record
+kinds to either registry. Its Phase-A implementation does not qualify a hypothesis, activate a
+provider, or grant strategy, paper, execution, Gate C, capital, or live authority. The canonical
+gate contract is `docs/alpha_factory_research_system_gate_contract.md`.

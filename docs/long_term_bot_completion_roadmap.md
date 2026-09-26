@@ -10,7 +10,11 @@
   evidence. External all-Polymarket completeness remains UNPROVEN. It adds no product network,
   Hermes/provider call, scheduler, credential, qualification, expected-return, strategy,
   paper/live, capital, signing, order, H1 #5, or Gate-C authority. After separate review and merge,
-  S10-GATE-AF1 is the next mandatory gate. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
+  S10-GATE-AF1 is the current Phase-A implementation target and next mandatory gate, recertified on
+  base 70f867bdcd5e97b0dc05d4008c2c023feb461658 after WP164A (PR #193) completed its runtime
+  certification. Its real public-population/provider benchmark (AF1 Attempt-03) remains separately
+  authorized after a fully green frozen Phase-A commit; historical AF1 Attempts 01/02 are invalidated
+  and cannot be reused. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
   separately gated scopes.
 
 - WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged; merge commit a310e641eb790bd3906d054d703dd11945180e6c); WP57 (local/offline/read-only feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (architecture direction lock-in and microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged; merge commit e1ab1aa7e0915a3c65afc9eb5a55c58292ef6910); WP64 (research queue/report/session packet merged; merge commit 7795efd45b19ab89c943bd49602449baa67411db); WP65 (local research queue export/operator runbook merged; merge commit 5c5b0c7ef8a2d1f094a2eff6dabbe6fd4be434f7); WP75 (human review label fixture loader merged; PR #76 merge commit 0160ac1c7087625a4596edd541524445bc004bd5); WP76 (wallet intelligence roadmap lock-in merged; PR #77 merge commit 91cd26e4fe16d492fa2f7b319fba176ee60cd9d5); WP77 (wallet intelligence architecture/profile/signal contract merged; PR #78 merge commit 24badbfb7a9da06ee4c8ae94795e1f2c862af913); WP78 (wallet trade event snapshot schema/local loader/validator on branch)
