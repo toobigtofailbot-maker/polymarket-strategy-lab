@@ -1,13 +1,16 @@
 # S10-HERMES-CTX-02 — Pinned Hermes Default SOUL.md Research-Home Compatibility Repair
 
-Status: DRAFT (implementation complete; awaiting independent RUNTIME implementation review
-and Side13 exact-head review)
+Status: implementation complete; independent RUNTIME implementation review complete.
 
 PR and current head: see GitHub PR metadata and PR body. This committed fragment is stable
-and does not contain a mutable branch-head SHA.
+and does not contain a mutable branch-head SHA; exact-head hosted CI and validation evidence
+are recorded in the PR body.
 
-Ready for review: NO until exact-head hosted CI and posted PR evidence are reconciled.
+Independent RUNTIME implementation review: PASS_WITH_NOTES, no blocking findings.
+Ready for review: YES.
+Side13 final exact-head review: PENDING.
 Merge authorized: NO.
+AF1 continuation: NOT AUTHORIZED by this WP.
 
 ## Frozen base and scope
 
@@ -53,7 +56,7 @@ H1 #5: NOT AUTHORIZED. Gate C: NOT AUTHORIZED. Capital/orders: 0.
 
 ## Successor boundary
 
-After independent review and Karl's separate merge only: refresh merged main, reconcile the
+After Side13 final review and Karl's separate merge only: refresh merged main, reconcile the
 existing local AF1 branch onto repaired main, produce a new AF1 Phase-A head, re-validate,
 freeze new digests, and obtain a new exact Attempt-03 authorization bound to that head before
 re-checking the AF1 credential home. This package authorizes none of those steps.
