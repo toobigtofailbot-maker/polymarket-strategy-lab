@@ -10,9 +10,9 @@
     "risk_level": 3,
     "base_branch": "main",
     "required_predecessor": {
-      "pr_number": 193,
-      "head_sha": "1c7de22f31cd093771d6bc0748c440ad5284b105",
-      "merge_sha": "70f867bdcd5e97b0dc05d4008c2c023feb461658"
+      "pr_number": 194,
+      "head_sha": "f6b337ce1d4581516c3d10d792034f00043a8a74",
+      "merge_sha": "15097f70f5f5358879fde73b2b30d26ecdb80402"
     },
     "suggested_branch": "codex/s10-gate-af1-research-system-gate",
     "objective": "Implement and execute the bounded Alpha Factory research-system evidence gate: immutable deterministic gate records and seeded adversarial cases, a manual foreground operator that reuses the existing bounded public PIT population and HERMES-CTX blind runtime only after separate human runtime activation, deterministic CORE/EXPLORATION/AUDIT benchmark selection, digest-bound blinded Side12 usefulness review, and a sanitized final AF1 PASS/FAIL/INCONCLUSIVE receipt. The gate measures integrity, PIT/provenance, duplicate/negative/reopen correctness, claim/evidence support, failure visibility, bounded cost, selection accounting, reproducibility and authority containment; it never proves profitability or grants qualification/trading authority.",
@@ -552,6 +552,19 @@
         "failure_category": "AUTHORITY_CONTRADICTION",
         "safe_output": "unconsumed attempt on any runtime-environment defect",
         "derivation_rule_id": null
+      },
+      {
+        "path": "gate.post_hermes_ctx02_reconciliation",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "AF1 Phase A is reconciled onto base 15097f70f5f5358879fde73b2b30d26ecdb80402, the PR #194 (S10-HERMES-CTX-02, head f6b337ce1d4581516c3d10d792034f00043a8a74) merge. The merged runner admits SOUL.md in the research HERMES_HOME only as the exact pinned Hermes v0.21.3 stock file (667 bytes, SHA-256 36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f, regular non-symlink); every other clean-home rule stays fail-closed. AF1 semantics, the 38-key envelope, limits, retry, fallback and authority are unchanged; the WP164A runtime dependency (PR #193) remains an ancestor. AF1 Attempt-03 stays unconsumed and needs a fresh exact authorization.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Operator boundary and status/repo-truth tests bind the current base and PR #194 predecessor; the AF1 preflight reuses the merged is_clean_research_home_control_plane unchanged.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "current certified post-repair AF1 base",
+        "derivation_rule_id": null
       }
     ]
   },
@@ -797,7 +810,7 @@
         "requirement_id": "R018",
         "source": "validation",
         "test": "exact scope and final readiness",
-        "command": "python tools/git/diff_scope_summary.py --base 70f867bdcd5e97b0dc05d4008c2c023feb461658 --head HEAD --wp-spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-GATE-AF1/wp_prompt.txt --spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --repo-root . --check-diff --base 70f867bdcd5e97b0dc05d4008c2c023feb461658 --head HEAD",
+        "command": "python tools/git/diff_scope_summary.py --base 15097f70f5f5358879fde73b2b30d26ecdb80402 --head HEAD --wp-spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-GATE-AF1/wp_prompt.txt --spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --repo-root . --check-diff --base 15097f70f5f5358879fde73b2b30d26ecdb80402 --head HEAD",
         "expected_result": "19 required/actual and IMPLEMENTATION_READY on definitive Phase-A committed HEAD before runtime authorization, then again on final committed HEAD after evidence/status finalization"
       },
       {
@@ -825,7 +838,7 @@
         "requirement_id": "R022",
         "source": "validation",
         "test": "final full suite and hygiene",
-        "command": "python -m pip check; git diff --check 70f867bdcd5e97b0dc05d4008c2c023feb461658 HEAD --; python -m pytest -q",
+        "command": "python -m pip check; git diff --check 15097f70f5f5358879fde73b2b30d26ecdb80402 HEAD --; python -m pytest -q",
         "expected_result": "two authoritative committed-head suite lifecycles exist: Phase-A full suite green before any runtime authorization/evidence, and final evidence/status committed-head guards+focused+scope/readiness followed by one final full suite; pip and explicit base-to-head diff checks are clean in both applicable phases"
       },
       {

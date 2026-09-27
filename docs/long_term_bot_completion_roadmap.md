@@ -11,7 +11,7 @@
   Hermes/provider call, scheduler, credential, qualification, expected-return, strategy,
   paper/live, capital, signing, order, H1 #5, or Gate-C authority. After separate review and merge,
   S10-GATE-AF1 is the current Phase-A implementation target and next mandatory gate, recertified on
-  base 70f867bdcd5e97b0dc05d4008c2c023feb461658 after WP164A (PR #193) completed its runtime
+  base 15097f70f5f5358879fde73b2b30d26ecdb80402 (PR #194, S10-HERMES-CTX-02) after WP164A (PR #193) completed its runtime
   certification. Its real public-population/provider benchmark (AF1 Attempt-03) remains separately
   authorized after a fully green frozen Phase-A commit; historical AF1 Attempts 01/02 are invalidated
   and cannot be reused. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their

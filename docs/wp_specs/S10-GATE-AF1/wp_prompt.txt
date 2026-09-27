@@ -18,10 +18,11 @@ WP ID: S10-GATE-AF1
 Title: Alpha Factory Research-System Quality, Coverage, Reproducibility & Authority Gate
 Repository: toobigtofailbot-maker/polymarket-strategy-lab
 Base branch: main
-Current certified base / required current main: 70f867bdcd5e97b0dc05d4008c2c023feb461658
-Required predecessor: PR #193 / WP164A (runtime-certified public population dependency)
-Required predecessor implementation head: 1c7de22f31cd093771d6bc0748c440ad5284b105
-Required predecessor merge SHA: 70f867bdcd5e97b0dc05d4008c2c023feb461658
+Current certified base / required current main: 15097f70f5f5358879fde73b2b30d26ecdb80402
+Required predecessor: PR #194 / S10-HERMES-CTX-02 (pinned stock SOUL.md research-home compatibility repair)
+Required predecessor implementation head: f6b337ce1d4581516c3d10d792034f00043a8a74
+Required predecessor merge SHA: 15097f70f5f5358879fde73b2b30d26ecdb80402
+Runtime dependency: PR #193 / WP164A, runtime-certified head 1c7de22f31cd093771d6bc0748c440ad5284b105, merge 70f867bdcd5e97b0dc05d4008c2c023feb461658 (ancestor)
 Historical drafting base: 46bc862018208b30971228ed719c7e9337142b41 (PR #191 / S10-ALPHA-02, head fe9628ed2176ea4f18bef026bbbcf15ead472244; superseded by Section 31)
 Suggested branch: codex/s10-gate-af1-research-system-gate
 Package class: ALPHA_FACTORY_RESEARCH_SYSTEM_GATE
@@ -156,9 +157,9 @@ Perform a read-only startup check.
 Required:
 1. read the standard mandatory startup files;
 2. fetch origin;
-3. verify origin/main == 70f867bdcd5e97b0dc05d4008c2c023feb461658;
+3. verify origin/main == 15097f70f5f5358879fde73b2b30d26ecdb80402;
 4. verify local main can synchronize exactly to that SHA without losing work;
-5. verify PR #193 is merged at 70f867bdcd5e97b0dc05d4008c2c023feb461658 with head 1c7de22f31cd093771d6bc0748c440ad5284b105;
+5. verify PR #194 is merged at 15097f70f5f5358879fde73b2b30d26ecdb80402 with head f6b337ce1d4581516c3d10d792034f00043a8a74 (PR #193 / WP164A remains an ancestor);
 6. list open PRs and remote branches;
 7. verify no S10-GATE-AF1 branch, PR, status/spec or implementation exists;
 8. verify working tree clean;
@@ -564,7 +565,7 @@ Implement the exact 19 paths and create the safe committed evidence placeholder:
   schema_id=s10-gate-af1-evidence
   schema_version=1.0.0
   wp_id=S10-GATE-AF1
-  base_sha=70f867bdcd5e97b0dc05d4008c2c023feb461658
+  base_sha=15097f70f5f5358879fde73b2b30d26ecdb80402
   evidence_state=PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED
   benchmark_manifest=null
   gate_receipt=null
@@ -779,7 +780,7 @@ Final wrapper:
 - schema_id = s10-gate-af1-evidence
 - schema_version = 1.0.0
 - wp_id = S10-GATE-AF1
-- base_sha = 70f867bdcd5e97b0dc05d4008c2c023feb461658
+- base_sha = 15097f70f5f5358879fde73b2b30d26ecdb80402
 - evidence_state = FINALIZED
 - exact Phase-A benchmark commit SHA
 - frozen wp_prompt raw-byte SHA-256
@@ -1044,7 +1045,7 @@ After the candidate Phase-A commit exists, run on that exact committed HEAD, in 
 6. exact scope + readiness --check-diff against frozen base;
 7. generated-artifact + available-security checks;
 8. python -m pip check;
-9. git diff --check 70f867bdcd5e97b0dc05d4008c2c023feb461658 HEAD --;
+9. git diff --check 15097f70f5f5358879fde73b2b30d26ecdb80402 HEAD --;
 10. ONE authoritative full repository suite.
 
 Only a fully green committed HEAD may become the definitive Phase-A benchmark commit and request runtime authorization. A staged/pre-commit guard pass is preliminary only.
@@ -1056,7 +1057,7 @@ After final evidence/status commit exists, run on that exact HEAD, in order:
 3. exact scope + readiness --check-diff;
 4. ONE authoritative full repository suite;
 5. python -m pip check;
-6. git diff --check 70f867bdcd5e97b0dc05d4008c2c023feb461658 HEAD --;
+6. git diff --check 15097f70f5f5358879fde73b2b30d26ecdb80402 HEAD --;
 7. Section-26 remote reconfirmation/publication.
 
 If the relevant committed HEAD changes after either authoritative suite, rerun affected checks and the corresponding full suite. Do not repeatedly run full suites while source/tests are still moving.
@@ -1073,7 +1074,7 @@ Only after:
 
 then, immediately before push/publication:
 1. refresh origin/main, open PRs and remote target branches;
-2. require origin/main still == frozen base 70f867bdcd5e97b0dc05d4008c2c023feb461658;
+2. require origin/main still == frozen base 15097f70f5f5358879fde73b2b30d26ecdb80402;
 3. require no overlapping AF1 PR/branch appeared unexpectedly;
 4. prove final branch still contains the exact Phase-A benchmark commit as ancestor;
 5. prove all post-runtime tracked changes are limited to the six Section-20 evidence/status paths;
@@ -1234,7 +1235,7 @@ research question, real-case selection, blind review, terminal overrides, no-pro
 no-trading authority) are unchanged.
 
 A. CURRENT BASE / PREDECESSOR
-- Current certified base: 70f867bdcd5e97b0dc05d4008c2c023feb461658 (PR #193 merge commit).
+- WP164A certified base: 70f867bdcd5e97b0dc05d4008c2c023feb461658 (PR #193 merge commit; superseded as the current base by Section 33).
 - Immediate predecessor: PR #193 / WP164A, runtime-certified head
   1c7de22f31cd093771d6bc0748c440ad5284b105, merge 70f867bdcd5e97b0dc05d4008c2c023feb461658.
 - WP164A Attempt-03 was separately authorized and executed on that exact head before merge:
@@ -1370,6 +1371,27 @@ Sections 0-31 is unchanged.
   defaults are never substituted.
 
 ===============================================================================
+33. POST-S10-HERMES-CTX-02 RECONCILIATION + EXACT REFREEZE
+===============================================================================
+
+The Attempt-03 continuation stopped before any call with HERMES_HOME_CONTROL_PLANE_INVALID:
+pinned Hermes v0.21.3 seeds its stock SOUL.md into every initialized home, so the former
+universal SOUL.md rejection could never pass. S10-HERMES-CTX-02 (PR #194, head
+f6b337ce1d4581516c3d10d792034f00043a8a74) repaired the shared runner and merged at 15097f70f5f5358879fde73b2b30d26ecdb80402.
+
+- Current certified base: 15097f70f5f5358879fde73b2b30d26ecdb80402. The WP164A runtime dependency (PR #193) and every Section 31/32
+  fact remain in force; this section only moves the base and predecessor.
+- The merged is_clean_research_home_control_plane admits SOUL.md only as the exact pinned stock
+  file (667 bytes, SHA-256 36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f, regular non-symlink, no normalization). Any other SOUL.md and
+  every other clean-home rule remain fail-closed; AF1 reuses that check unchanged.
+- AF1 capability, benchmark policy, ten dimensions, S1..S8, terminal table, blind review, the
+  38-key envelope, 25/1 limits, three case calls, USD 5 / USD 15, retry_limit=0, no fallback and
+  the pre-sentinel Hermes preflight are unchanged.
+- AF1 Attempt-03 is UNCONSUMED; it requires a fresh exact authorization bound to the new
+  Phase-A head, its four digests and the exact command including --hermes-executable and
+  --hermes-home. H1 #5, Gate C, capital and orders remain unauthorized.
+
+===============================================================================
 APPENDIX A — EXACT S10-GATE-AF1 MACHINE SPEC JSON
 ===============================================================================
 
@@ -1390,9 +1412,9 @@ Do not semantically alter it unless the preimplementation readiness gate proves 
     "risk_level": 3,
     "base_branch": "main",
     "required_predecessor": {
-      "pr_number": 193,
-      "head_sha": "1c7de22f31cd093771d6bc0748c440ad5284b105",
-      "merge_sha": "70f867bdcd5e97b0dc05d4008c2c023feb461658"
+      "pr_number": 194,
+      "head_sha": "f6b337ce1d4581516c3d10d792034f00043a8a74",
+      "merge_sha": "15097f70f5f5358879fde73b2b30d26ecdb80402"
     },
     "suggested_branch": "codex/s10-gate-af1-research-system-gate",
     "objective": "Implement and execute the bounded Alpha Factory research-system evidence gate: immutable deterministic gate records and seeded adversarial cases, a manual foreground operator that reuses the existing bounded public PIT population and HERMES-CTX blind runtime only after separate human runtime activation, deterministic CORE/EXPLORATION/AUDIT benchmark selection, digest-bound blinded Side12 usefulness review, and a sanitized final AF1 PASS/FAIL/INCONCLUSIVE receipt. The gate measures integrity, PIT/provenance, duplicate/negative/reopen correctness, claim/evidence support, failure visibility, bounded cost, selection accounting, reproducibility and authority containment; it never proves profitability or grants qualification/trading authority.",
@@ -1932,6 +1954,19 @@ Do not semantically alter it unless the preimplementation readiness gate proves 
         "failure_category": "AUTHORITY_CONTRADICTION",
         "safe_output": "unconsumed attempt on any runtime-environment defect",
         "derivation_rule_id": null
+      },
+      {
+        "path": "gate.post_hermes_ctx02_reconciliation",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "AF1 Phase A is reconciled onto base 15097f70f5f5358879fde73b2b30d26ecdb80402, the PR #194 (S10-HERMES-CTX-02, head f6b337ce1d4581516c3d10d792034f00043a8a74) merge. The merged runner admits SOUL.md in the research HERMES_HOME only as the exact pinned Hermes v0.21.3 stock file (667 bytes, SHA-256 36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f, regular non-symlink); every other clean-home rule stays fail-closed. AF1 semantics, the 38-key envelope, limits, retry, fallback and authority are unchanged; the WP164A runtime dependency (PR #193) remains an ancestor. AF1 Attempt-03 stays unconsumed and needs a fresh exact authorization.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Operator boundary and status/repo-truth tests bind the current base and PR #194 predecessor; the AF1 preflight reuses the merged is_clean_research_home_control_plane unchanged.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "current certified post-repair AF1 base",
+        "derivation_rule_id": null
       }
     ]
   },
@@ -2177,7 +2212,7 @@ Do not semantically alter it unless the preimplementation readiness gate proves 
         "requirement_id": "R018",
         "source": "validation",
         "test": "exact scope and final readiness",
-        "command": "python tools/git/diff_scope_summary.py --base 70f867bdcd5e97b0dc05d4008c2c023feb461658 --head HEAD --wp-spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-GATE-AF1/wp_prompt.txt --spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --repo-root . --check-diff --base 70f867bdcd5e97b0dc05d4008c2c023feb461658 --head HEAD",
+        "command": "python tools/git/diff_scope_summary.py --base 15097f70f5f5358879fde73b2b30d26ecdb80402 --head HEAD --wp-spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-GATE-AF1/wp_prompt.txt --spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --repo-root . --check-diff --base 15097f70f5f5358879fde73b2b30d26ecdb80402 --head HEAD",
         "expected_result": "19 required/actual and IMPLEMENTATION_READY on definitive Phase-A committed HEAD before runtime authorization, then again on final committed HEAD after evidence/status finalization"
       },
       {
@@ -2205,7 +2240,7 @@ Do not semantically alter it unless the preimplementation readiness gate proves 
         "requirement_id": "R022",
         "source": "validation",
         "test": "final full suite and hygiene",
-        "command": "python -m pip check; git diff --check 70f867bdcd5e97b0dc05d4008c2c023feb461658 HEAD --; python -m pytest -q",
+        "command": "python -m pip check; git diff --check 15097f70f5f5358879fde73b2b30d26ecdb80402 HEAD --; python -m pytest -q",
         "expected_result": "two authoritative committed-head suite lifecycles exist: Phase-A full suite green before any runtime authorization/evidence, and final evidence/status committed-head guards+focused+scope/readiness followed by one final full suite; pip and explicit base-to-head diff checks are clean in both applicable phases"
       },
       {

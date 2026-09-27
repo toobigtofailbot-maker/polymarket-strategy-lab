@@ -578,7 +578,9 @@ def test_s10_gate_af1_correction_is_registered_without_runtime_authority() -> No
     assert "AF1_RUNTIME_AUTHORIZATION_REQUIRED" in index
     fragment = (ROOT / "docs" / "status_entries" / "S10-GATE-AF1.md").read_text(encoding="utf-8")
     contract = (ROOT / "docs" / "alpha_factory_research_system_gate_contract.md").read_text(encoding="utf-8")
-    assert "Base: `70f867bdcd5e97b0dc05d4008c2c023feb461658`" in fragment
+    assert "Base: `15097f70f5f5358879fde73b2b30d26ecdb80402`" in fragment
+    assert "PR #194 / `S10-HERMES-CTX-02`" in fragment
+    assert "15097f70f5f5358879fde73b2b30d26ecdb80402" in index and "Post-S10-HERMES-CTX-02 reconciliation" in index
     assert "PR #193 / `WP164A`" in fragment and "AF1 Attempt-03 NOT AUTHORIZED" in fragment
     assert "Post-WP164A reconciliation and Phase-A recertification" in contract
     assert "38-field" in contract and "REQUIRED_LANE_NOT_RESEARCH_EXECUTABLE" in contract

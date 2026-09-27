@@ -23,6 +23,11 @@ canonical `captured_at_utc` cutoff, the HISTORICAL_REPLAY Alpha posture, the sel
 `question_text` coverage precondition, and an absolute `ContextArtifactStore` root. AF1 Attempt-03
 remains NOT AUTHORIZED; the expected stop is `AF1_RUNTIME_AUTHORIZATION_REQUIRED`.
 
+Post-S10-HERMES-CTX-02 reconciliation replays the AF1 package onto `15097f70f5f5358879fde73b2b30d26ecdb80402` (PR #194, head
+`f6b337ce1d4581516c3d10d792034f00043a8a74`). The shared research-home check now admits only the exact pinned stock SOUL.md;
+AF1 semantics, the 38-key envelope and the pre-sentinel Hermes preflight are unchanged, and AF1
+Attempt-03 remains unconsumed pending a fresh exact authorization.
+
 ## S10-HERMES-CTX-03 Canonical Public Polymarket Identifier Secret-Scanner Compatibility Repair (current bounded compatibility repair)
 
 The canonical package is `docs/wp_specs/S10-HERMES-CTX-03/`; the stable fragment is
@@ -71,8 +76,8 @@ pinned stock default (667 bytes, SHA-256
 no normalization); every other SOUL.md and every other clean-home rule stays fail-closed, and
 `.env`/`auth.json` values are never opened. No provider, model, Firecrawl, Polymarket, OAuth,
 credential, dependency, workflow, policy, argv, retry, telemetry, or context-protocol change.
-AF1 Attempt-03 remains unconsumed and not authorized; S10-GATE-AF1 remains blocked pending
-merge, AF1 reconciliation onto repaired main, and a fresh exact authorization. H1 #5, Gate C,
+AF1 Attempt-03 remains unconsumed and not authorized. PR #194 merged this repair at
+`15097f70f5f5358879fde73b2b30d26ecdb80402`; S10-GATE-AF1 is reconciled onto it and awaits only a fresh exact authorization. H1 #5, Gate C,
 capital, and orders are unchanged.
 
 ## WP164A Public Population Compatibility Repair (merged runtime-certified dependency)

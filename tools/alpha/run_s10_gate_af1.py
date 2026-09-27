@@ -122,11 +122,12 @@ from src.research_runtime.hermes_controlled_runtime.policy import (  # noqa: E40
 
 
 WP_ID = "S10-GATE-AF1"
-# Current certified base: PR #193 (WP164A) merge commit; its runtime-certified head
-# 1c7de22f31cd093771d6bc0748c440ad5284b105 is the immediate runtime dependency.
-BASE_SHA = "70f867bdcd5e97b0dc05d4008c2c023feb461658"
-PREDECESSOR_PR = 193
-PREDECESSOR_HEAD_SHA = "1c7de22f31cd093771d6bc0748c440ad5284b105"
+# Current certified base: PR #194 (S10-HERMES-CTX-02) merge commit. The WP164A runtime
+# dependency (PR #193, runtime-certified head 1c7de22f31cd093771d6bc0748c440ad5284b105,
+# merge 70f867bdcd5e97b0dc05d4008c2c023feb461658) is an ancestor of this base.
+BASE_SHA = "15097f70f5f5358879fde73b2b30d26ecdb80402"
+PREDECESSOR_PR = 194
+PREDECESSOR_HEAD_SHA = "f6b337ce1d4581516c3d10d792034f00043a8a74"
 PREDECESSOR_MERGE_SHA = BASE_SHA
 RUNTIME_ACKNOWLEDGEMENT = "I_AUTHORIZE_EXACT_S10_GATE_AF1_RUNTIME_ENVELOPE"
 ACTIVATION_ENVELOPE_SCHEMA_ID = "s10-gate-af1-runtime-authorization-envelope"

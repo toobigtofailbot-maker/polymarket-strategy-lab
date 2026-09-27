@@ -4584,7 +4584,9 @@ def test_s10_gate_af1_phase_a_status_is_non_runtime_and_non_authoritative() -> N
     )
     assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
     assert "Exact changed-file scope: 19" in current
-    assert "Frozen base: 70f867bdcd5e97b0dc05d4008c2c023feb461658" in current
+    assert "Frozen base: 15097f70f5f5358879fde73b2b30d26ecdb80402" in current
+    assert "PR #194 / S10-HERMES-CTX-02 merged: YES" in current
+    assert "f6b337ce1d4581516c3d10d792034f00043a8a74" in current
     assert "PR #193 / WP164A merged: YES" in current
     assert "1c7de22f31cd093771d6bc0748c440ad5284b105" in current
     assert "S10-GATE-AF1 blocked by WP164A: NO" in current

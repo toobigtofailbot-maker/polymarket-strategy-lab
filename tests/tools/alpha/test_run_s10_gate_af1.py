@@ -1038,7 +1038,7 @@ def test_prepare_defaults_to_zero_network(repo):
     assert payload["network_used"] is False and payload["controller_invocation_count"] == 0
     assert payload["population_config"] == {**operator.WP164_LABELS, "markets_limit": 25, "order_books_limit": 1, "allow_network": False}
     assert payload["activation_envelope_keys"] == sorted(ACTIVATION_ENVELOPE_KEYS)
-    assert payload["predecessor"] == {"pr_number": 193, "head_sha": "1c7de22f31cd093771d6bc0748c440ad5284b105", "merge_sha": operator.BASE_SHA}
+    assert payload["predecessor"] == {"pr_number": 194, "head_sha": "f6b337ce1d4581516c3d10d792034f00043a8a74", "merge_sha": operator.BASE_SHA}
 
 
 def test_run_real_requires_exact_explicit_activation(repo, monkeypatch):

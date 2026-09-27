@@ -2,7 +2,9 @@
 
 - WP: `S10-GATE-AF1` — Alpha Factory Research-System Quality, Coverage,
   Reproducibility & Authority Gate
-- Base: `70f867bdcd5e97b0dc05d4008c2c023feb461658` (post-WP164A reconciliation)
+- Base: `15097f70f5f5358879fde73b2b30d26ecdb80402` (post-S10-HERMES-CTX-02 reconciliation)
+- Predecessor: PR #194 / `S10-HERMES-CTX-02`, head `f6b337ce1d4581516c3d10d792034f00043a8a74`, merged at the base
+  SHA; exact pinned stock SOUL.md admitted by the shared research-home check
 - Immediate predecessor: PR #193 / `WP164A`, runtime-certified head
   `1c7de22f31cd093771d6bc0748c440ad5284b105`, merged at the base SHA; WP164A
   Attempt-03 CONSUMED / `WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS`; dependency

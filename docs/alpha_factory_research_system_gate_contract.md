@@ -141,7 +141,7 @@ fresh workspace, attempt identity, stores, sentinel, and envelope.
 
 ## Post-WP164A reconciliation and Phase-A recertification
 
-The current certified base is `70f867bdcd5e97b0dc05d4008c2c023feb461658`, the PR #193
+The WP164A certified base is `70f867bdcd5e97b0dc05d4008c2c023feb461658`, the PR #193
 merge of WP164A whose exact runtime-certified head is
 `1c7de22f31cd093771d6bc0748c440ad5284b105`. WP164A Attempt-03 is consumed as
 `WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS`; its observed 25/1/26/26 counts are historical
@@ -189,3 +189,13 @@ and 02 remain consumed historical evidence; AF1 Attempt-03 and H1 #5 remain unau
   version (exactly 0.21.3) and `--help` startup probes. Any failure is
   `PHASE_B_LOCAL_EVIDENCE_DEFECT` with zero calls, and the attempt is not consumed. The
   validated values reach every `run_blind_phase` call; no PATH or default-home fallback.
+
+## Post-S10-HERMES-CTX-02 reconciliation
+
+The current certified base is `15097f70f5f5358879fde73b2b30d26ecdb80402`, the PR #194 merge of S10-HERMES-CTX-02 (head
+`f6b337ce1d4581516c3d10d792034f00043a8a74`); the WP164A dependency above remains an ancestor. The merged runner admits a
+research-home `SOUL.md` only as the exact pinned Hermes v0.21.3 stock file (667 bytes, SHA-256
+`36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f`, regular non-symlink); every other clean-home rule stays fail-closed, and the AF1
+pre-sentinel preflight reuses that check unchanged. No AF1 semantic, envelope key, limit, retry,
+fallback, or authority changed. AF1 Attempt-03 remains unconsumed and requires a fresh exact
+authorization bound to the new Phase-A head and digests.
