@@ -276,6 +276,10 @@ def content_address(prefix: str, payload: Mapping[str, object]) -> str:
 # Secret / authority-escalation scanning (never echoes matched content)
 # ---------------------------------------------------------------------------
 
+# Wallet / long-hex identifiers. Kept as a named member of ``_SECRET_PATTERNS`` so the
+# public_market_context compatibility path (S10-HERMES-CTX-03) can reference it exactly.
+_LONG_HEX_SECRET_PATTERN = re.compile(r"\b0x[a-fA-F0-9]{40,}\b")
+
 # Credential / secret indicators. Matching fails closed WITHOUT echoing content.
 _SECRET_PATTERNS = (
     re.compile(r"api[\s_-]?key", re.IGNORECASE),
@@ -288,7 +292,22 @@ _SECRET_PATTERNS = (
     re.compile(r"\bghp_[a-z0-9]{20,}", re.IGNORECASE),
     re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
     re.compile(r"\baccess[\s_-]?token\b", re.IGNORECASE),
-    re.compile(r"\b0x[a-fA-F0-9]{40,}\b"),  # wallet / long hex identifiers
+    _LONG_HEX_SECRET_PATTERN,  # wallet / long hex identifiers
+)
+
+# Exact, complete, repo-canonical PUBLIC Polymarket identifiers (S10-HERMES-CTX-03):
+# Gamma market id, condition-backed event id (repository condition-id contract
+# ``^0x[0-9a-f]{64}$``), Gamma-fallback event id, and CLOB token id. Case-sensitive and
+# delimited on both sides by a closed set: start/end, whitespace, quotes, brackets,
+# commas, ``=`` before and a JSON-escape backslash after. Wrong namespaces, other hex
+# lengths, uppercase hex and any trailing token characters therefore never match.
+_CANONICAL_PUBLIC_POLYMARKET_ID = re.compile(
+    r"(?<![^\s\"'(\[{,=])"
+    r"(?:market:polymarket:[1-9][0-9]*"
+    r"|event:polymarket:0x[0-9a-f]{64}"
+    r"|event:polymarket:market-[1-9][0-9]*"
+    r"|token:polymarket:[1-9][0-9]*)"
+    r"(?![^\s\"'\\)\]},])"
 )
 
 # Attempts to grant trading / risk / credential / scheduler / file / shell authority.
@@ -321,6 +340,20 @@ def _scan_secret(text: str) -> None:
             raise _fail("REQUEST_SECRET_DETECTED")
 
 
+def _scan_public_market_context_secret(text: str) -> None:
+    """Secret scan for ``public_market_context`` only (S10-HERMES-CTX-03).
+
+    The full scanner runs over a validation-only copy in which exact canonical public
+    Polymarket identifiers are replaced by a space, and every rule other than the
+    long-hex rule also runs over the original text, so masking can never hide a
+    credential marker. The masked copy is never stored or hashed.
+    """
+    _scan_secret(_CANONICAL_PUBLIC_POLYMARKET_ID.sub(" ", text))
+    for pattern in _SECRET_PATTERNS:
+        if pattern is not _LONG_HEX_SECRET_PATTERN and pattern.search(text):
+            raise _fail("REQUEST_SECRET_DETECTED")
+
+
 def _scan_authority(text: str) -> None:
     for pattern in _AUTHORITY_PATTERNS:
         if pattern.search(text):
@@ -345,6 +378,19 @@ def _require_str(value: object, *, max_len: int, allow_empty: bool = False) -> s
     if len(value) > max_len:
         raise _fail("REQUEST_BOUND_EXCEEDED")
     _scan_secret(value)
+    _scan_authority(value)
+    return value
+
+
+def _require_public_market_context(value: object, *, max_len: int) -> str:
+    """``_require_str`` for ``public_market_context`` with the public-id-aware scan."""
+    if not isinstance(value, str):
+        raise _fail("REQUEST_FIELD_TYPE_INVALID")
+    if not value.strip():
+        raise _fail("REQUEST_FIELD_VALUE_INVALID")
+    if len(value) > max_len:
+        raise _fail("REQUEST_BOUND_EXCEEDED")
+    _scan_public_market_context_secret(value)
     _scan_authority(value)
     return value
 
@@ -506,7 +552,7 @@ def build_research_run_request(fields: Mapping[str, object]) -> HermesResearchRu
     if research_category not in RESEARCH_CATEGORIES:
         raise _fail("REQUEST_FIELD_VALUE_INVALID")
 
-    public_market_context = _require_str(
+    public_market_context = _require_public_market_context(
         fields["public_market_context"], max_len=_MAX_LONG_TEXT
     )
 

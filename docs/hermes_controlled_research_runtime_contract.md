@@ -31,6 +31,29 @@
 > repeated before every invocation, so a post-preflight mutation fails before spawn.
 > No provider, model, toolset, managed-profile, argv, retry, fallback, telemetry,
 > context-protocol, or authority behavior changes.
+>
+> S10-HERMES-CTX-03 canonical public Polymarket identifier compatibility
+> (public_market_context only): request secret scanning remains fail-closed, and the
+> generic long-hex rule `\b0x[a-fA-F0-9]{40,}\b` stays in the global secret rules. The
+> repository's canonical public event identity can be `event:polymarket:0x` + 64 hex (the
+> condition id), and the context controller serializes canonical `subject_refs` and exact
+> scope into `public_market_context`, so the generic rule rejected a public identifier
+> (AF1 Attempt-03 stopped `REQUEST_SECRET_DETECTED` before any Hermes launch). Inside
+> `public_market_context` ONLY, exact complete canonical public identifiers
+> `market:polymarket:<decimal>`, `event:polymarket:0x<exactly 64 lowercase hex>`,
+> `event:polymarket:market-<decimal>` and `token:polymarket:<decimal>` (decimal: non-empty,
+> no leading zero), delimited by start/end, whitespace, quotes, brackets, commas, `=`
+> before or a JSON-escape backslash after, are masked in a validation-only copy before the
+> full secret scan; every other secret rule also runs over the original text, and the
+> authority scan runs over the original text. Bare long-hex values, wallet/account-shaped
+> `0x` + 40 hex, wrong namespaces, other hex lengths, uppercase hex, extra token
+> characters, and every credential marker remain rejected; the same values in any other
+> request field remain rejected by the ordinary strict scan. The exception does not
+> authorize wallet, account, or credential material, and there is no global or
+> caller-configurable allowlist. The stored `public_market_context` and the
+> content-addressed request identity use the original unmasked bytes. No schema version,
+> invocation policy identity, provider, model, toolset, retry, output-parsing, or authority
+> behavior changes.
 > Exact-session `state.db` evidence is now projected read-only by repository code. Pinned
 > local URL checks are enforced before dispatch and on returned final URLs, but remote
 > Firecrawl HTTP/redirect telemetry remains UNAVAILABLE, remote private-target proof is
@@ -141,6 +164,8 @@ that enables any forbidden control fails closed.
   canonical public fields; rejects unknown fields, binary floats where numeric
   canonicality matters, over-bound values, path traversal/absolute paths, embedded
   secrets, and authority-escalation content, without echoing rejected content.
+  `public_market_context` alone uses the S10-HERMES-CTX-03 canonical public Polymarket
+  identifier rule recorded above.
 - **Policy** (`HermesInvocationPolicy`): frozen constants (`allowed_toolsets =
   ("web",)`, `tool_enforcement = STATIC_EXACT_TOOLSET_POLICY`, `output_mode =
   PLAIN_STDOUT_PLUS_USAGE_FILE`, `iteration_cap =

@@ -1,0 +1,143 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-CTX-03",
+    "title": "Canonical Public Polymarket Identifier Secret-Scanner Compatibility Repair",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "BOUNDED_HERMES_PUBLIC_IDENTIFIER_SECRET_SCANNER_COMPATIBILITY_REPAIR",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {"pr_number": 194, "head_sha": "f6b337ce1d4581516c3d10d792034f00043a8a74", "merge_sha": "15097f70f5f5358879fde73b2b30d26ecdb80402"},
+    "suggested_branch": "codex/s10-hermes-ctx-03-public-id-secret-scan",
+    "objective": "Repair the consumed AF1 Attempt-03 TRUE_STOP PHASE_B_LOCAL_EVIDENCE_DEFECT caused by the shared HERMES request secret scanner flagging the canonical public Polymarket event id event:polymarket:0x<64 hex> as REQUEST_SECRET_DETECTED. Inside the request field public_market_context only, exact complete canonical public Polymarket market, event and token identifiers survive the generic long-hex rule; the global 0x{40,} rule, every credential rule, every other request field, the authority scan and original-bytes request identity stay unchanged and fail-closed. No schema, policy identity, provider, credential, AF1 successor attempt, H1 #5, Gate C, capital, order or merge authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/hermes_controlled_research_runtime_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-HERMES-CTX-03.md",
+      "docs/wp_specs/S10-HERMES-CTX-03/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-CTX-03/wp_spec.json",
+      "src/research_runtime/hermes_controlled_runtime/models.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_context_controller.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_models.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/hermes_controlled_research_runtime_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-HERMES-CTX-03.md",
+      "docs/wp_specs/S10-HERMES-CTX-03/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-CTX-03/wp_spec.json",
+      "src/research_runtime/hermes_controlled_runtime/models.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_context_controller.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_models.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/data_layer/analytical_research/",
+      "src/data_layer/point_in_time_market_research/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/risk/",
+      "tools/alpha/"
+    ],
+    "max_changed_files": 11,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": ["docs/project_status.md", "docs/repo_truth_index.md", "tests/test_project_status_docs.py", "tests/test_repo_truth_docs.py"],
+    "rollback_surface": "One private public_market_context-only canonical public Polymarket identifier recognizer and scan helper in models.py plus focused tests and truth docs; no dependency, workflow, schema, policy, argv, managed-config, provider, retry, output-parsing, context-protocol, context-controller, execution, OMS, risk or live-trading change.",
+    "mode_boundaries": [
+      {"boundary":"workflow_governance","crossed":false},
+      {"boundary":"local_offline_tooling","crossed":true},
+      {"boundary":"canonical_evidence_policy","crossed":true},
+      {"boundary":"docs","crossed":true},
+      {"boundary":"tests","crossed":true},
+      {"boundary":"source_runtime","crossed":true},
+      {"boundary":"workflow_files","crossed":false},
+      {"boundary":"dependencies","crossed":false},
+      {"boundary":"network","crossed":false},
+      {"boundary":"credentials","crossed":false},
+      {"boundary":"scheduler","crossed":false},
+      {"boundary":"hermes_runtime","crossed":true},
+      {"boundary":"strategy","crossed":false},
+      {"boundary":"paper","crossed":false},
+      {"boundary":"execution","crossed":false},
+      {"boundary":"live","crossed":false}
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {"applicable":true,"reason":"The package narrows one existing request-field secret scan; no public signature, field set or schema version changes.","items":[
+    {"surface":"build_research_run_request public_market_context secret scan","before":"public_market_context received the same generic secret scan as prose, so the repo-canonical public event id event:polymarket:0x<64 hex> matched the generic 0x{40,} rule and the controlled context request failed REQUEST_SECRET_DETECTED before any backend launch.","after":"Only inside public_market_context, exact complete canonical public Polymarket market, event and token identifiers are masked in a validation-only copy for the generic long-hex rule; every other secret rule evaluates the original text and the full scanner evaluates the masked copy.","change_authorized":true,"compatibility_requirement":"Signature, request field set, schema versions, error codes, authority scan, stored bytes and content-addressed request identity are unchanged; every other request field still uses the ordinary strict path.","authority":"LOCAL_OFFLINE_REQUEST_VALIDATION"}
+  ]},
+  "semantic_fields": {"applicable":true,"reason":"Exact grammar, field boundary, unchanged global rules, original-bytes identity, no-echo, no broadening and non-authority are mandatory deterministic semantics.","items":[
+    {"path":"public_id.admission","source":"DERIVED","type":"mapping","required_rule":"Inside public_market_context only, exact complete tokens market:polymarket:<decimal>, event:polymarket:0x<exactly 64 lowercase hex>, event:polymarket:market-<decimal> and token:polymarket:<decimal> are treated as public identifiers for the generic long-hex rule; <decimal> is a non-empty digit string without a leading zero; the 64-hex form follows the repository condition-id contract ^0x[0-9a-f]{64}$.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"canonical event, long decimal token and market+event+token contexts build valid requests","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"validated request","derivation_rule_id":null},
+    {"path":"public_id.exact_grammar","source":"CONSTANT","type":"mapping","required_rule":"Recognition is case-sensitive and bounded by non-identifier characters on both sides; wrong namespace, wrong prefix, 40, 63 or 65 hex, uppercase hex, extra token characters and sk- or other non-grammar payloads are never masked and remain subject to the generic scan.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"wrong namespace and malformed near-matches fail REQUEST_SECRET_DETECTED","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"fail-closed closed code","derivation_rule_id":null},
+    {"path":"public_id.field_boundary","source":"CONSTANT","type":"mapping","required_rule":"Only public_market_context uses the public-identifier-aware scan; research_question, research_objective and every other string field keep the ordinary strict _require_str path, so the same canonical or bare 0x64 value is rejected there.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"same value rejected in research_question and research_objective; source inspection shows one call site","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"fail-closed closed code","derivation_rule_id":null},
+    {"path":"secret.global_rules_unchanged","source":"CONSTANT","type":"mapping","required_rule":"The generic rule \\b0x[a-fA-F0-9]{40,}\\b stays in _SECRET_PATTERNS unchanged; bare 0x64 and bare 0x40 values still reject in public_market_context; every non-long-hex secret rule evaluates the original unmasked public_market_context so a credential marker overlapping or adjacent to an identifier cannot be hidden.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"bare hex and valid-id-plus-credential contexts fail REQUEST_SECRET_DETECTED","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"fail-closed closed code","derivation_rule_id":null},
+    {"path":"request.identity_unchanged","source":"DERIVED","type":"mapping","required_rule":"The stored public_market_context and content-addressed request_id derive from the original exact string; the masked copy is validation-only and never stored or hashed.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"built field equals input and changing one identifier changes request_id","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"original bytes","derivation_rule_id":null},
+    {"path":"request.no_echo","source":"CONSTANT","type":"mapping","required_rule":"Rejections raise only the closed code REQUEST_SECRET_DETECTED and never echo rejected content.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"error text equals the closed code","failure_category":"AUTHORITY_CONTRADICTION","safe_output":"closed code only","derivation_rule_id":null},
+    {"path":"context.live_shape","source":"DERIVED","type":"mapping","required_rule":"A ContextCampaignScope carrying live-shaped canonical market, 0x64 event and long decimal token subject_refs reaches the offline fake backend through the unchanged _context_request and run_blind_phase; a secret-bearing scope still fails before any backend call.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"fake backend call_count is 1 for live shape and 0 for secret-bearing scope","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"offline fake backend only","derivation_rule_id":null},
+    {"path":"public_id.no_broadening","source":"CONSTANT","type":"mapping","required_rule":"No global long-hex allowlist, caller-configurable whitelist, caller-supplied digest, normalization of arbitrary strings or schema, policy-identity, provider, retry or output-parsing change exists; the Hermes invocation policy id is unchanged.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"module surface and helper signatures expose no broadening hook","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"frozen private recognizer","derivation_rule_id":null},
+    {"path":"authority.non_authority","source":"CONSTANT","type":"mapping","required_rule":"No provider, model, Firecrawl, Polymarket, OAuth, credential, dependency, workflow, scheduler, strategy, paper, execution, live, AF1 successor attempt, H1 number five, Gate C, capital, order or merge authority is granted; AF1 Attempt-03 stays CONSUMED with no gate result.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"authority booleans remain as mirrored and tests use only offline fake backends","failure_category":"AUTHORITY_CONTRADICTION","safe_output":"advisory local evidence only","derivation_rule_id":null}
+  ]},
+  "identity_derivations": {"applicable":false,"reason":"No content-addressed identity is added or changed; request identity continues to hash the original request fields.","items":[]},
+  "state_transitions": {"applicable":true,"reason":"The canonical authorization chain is unchanged for this implementation package.","items":[
+    {"from_state":"LOCAL_DRAFT","to_state":"DRAFTABILITY_PASS","condition":"prompt, strict machine spec, authority mirror, exact scope and deterministic readiness pass","failure_category":"DRAFTABILITY_INCOMPLETE"},
+    {"from_state":"DRAFTABILITY_PASS","to_state":"AUTHORIZED","condition":"Side13/Karl authorize this exact final one-shot package","failure_category":"AUTHORITY_CONTRADICTION"},
+    {"from_state":"AUTHORIZED","to_state":"IMPLEMENTED_LOCAL","condition":"implementation remains within the exact 11 paths and all local validation passes","failure_category":"SEMANTIC_CONTRADICTION"}
+  ]},
+  "failure_precedence": {"applicable":true,"reason":"Fixed polymarket-work-package-spec 1.0.0 guard precedence.","items":[
+    {"condition_id":"file_unreadable","category":"FILE_READ_ERROR","priority":10},{"condition_id":"json_invalid","category":"JSON_PARSE_INVALID","priority":20},{"condition_id":"schema_unsupported","category":"SCHEMA_UNSUPPORTED","priority":30},{"condition_id":"unknown_field","category":"UNKNOWN_FIELD","priority":40},{"condition_id":"field_missing","category":"FIELD_MISSING","priority":50},{"condition_id":"field_type_invalid","category":"FIELD_TYPE_INVALID","priority":60},{"condition_id":"field_value_invalid","category":"FIELD_VALUE_INVALID","priority":70},{"condition_id":"certificate_hash_mismatch","category":"CERTIFICATE_HASH_MISMATCH","priority":80},{"condition_id":"draftability_incomplete","category":"DRAFTABILITY_INCOMPLETE","priority":90},{"condition_id":"scope_policy_invalid","category":"SCOPE_POLICY_INVALID","priority":100},{"condition_id":"authority_contradiction","category":"AUTHORITY_CONTRADICTION","priority":110},{"condition_id":"semantic_contradiction","category":"SEMANTIC_CONTRADICTION","priority":120},{"condition_id":"identity_derivation_invalid","category":"IDENTITY_DERIVATION_INVALID","priority":130},{"condition_id":"failure_precedence_invalid","category":"FAILURE_PRECEDENCE_INVALID","priority":140},{"condition_id":"example_truth_invalid","category":"EXAMPLE_TRUTH_INVALID","priority":150}
+  ]},
+  "examples": {"applicable":false,"reason":"Focused executable T01-T15 tests are the product oracle.","items":[]},
+  "evidence_plan": {"applicable":true,"reason":"R001-R015 bind T01-T15 one-to-one to named focused assertions.","items":[
+    {"requirement_id":"R001","source":"pytest","test":"test_ctx03_t01_existing_secret_controls_preserved","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T01 API-key and credential markers still fail REQUEST_SECRET_DETECTED without echo"},
+    {"requirement_id":"R002","source":"pytest","test":"test_ctx03_t02_bare_64_hex_rejected","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T02 bare 0x plus 64 hex in public_market_context fails REQUEST_SECRET_DETECTED"},
+    {"requirement_id":"R003","source":"pytest","test":"test_ctx03_t03_bare_wallet_shaped_40_hex_rejected","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T03 bare 0x plus 40 hex in public_market_context fails REQUEST_SECRET_DETECTED"},
+    {"requirement_id":"R004","source":"pytest","test":"test_ctx03_t04_canonical_event_id_accepted_in_public_market_context","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T04 exact event:polymarket:0x<64 hex> in public_market_context builds a request"},
+    {"requirement_id":"R005","source":"pytest","test":"test_ctx03_t05_same_hex_rejected_in_other_request_fields","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T05 the same canonical or bare value in research_question or research_objective fails REQUEST_SECRET_DETECTED"},
+    {"requirement_id":"R006","source":"pytest","test":"test_ctx03_t06_wrong_namespace_rejected","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T06 noncanonical namespaces carrying 0x64 fail REQUEST_SECRET_DETECTED"},
+    {"requirement_id":"R007","source":"pytest","test":"test_ctx03_t07_malformed_canonical_near_matches_rejected","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T07 40, 63 and 65 hex, uppercase, extra token characters and wrong prefixes are never partially masked and fail"},
+    {"requirement_id":"R008","source":"pytest","test":"test_ctx03_t08_valid_id_plus_real_secret_rejected","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T08 a valid canonical id beside sk-, Bearer, Authorization, ghp_, PEM, password or access-token material still fails"},
+    {"requirement_id":"R009","source":"pytest","test":"test_ctx03_t09_live_shaped_token_id_accepted","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T09 a 77-digit canonical token:polymarket id in public_market_context builds a request"},
+    {"requirement_id":"R010","source":"pytest","test":"test_ctx03_t10_live_shaped_market_event_token_context_accepted","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T10 a canonical JSON context with market, 0x64 event and long token ids builds a content-addressed request"},
+    {"requirement_id":"R011","source":"pytest","test":"test_ctx03_t11_original_bytes_drive_request_id","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T11 stored public_market_context equals the input and changing one identifier changes request_id"},
+    {"requirement_id":"R012","source":"pytest","test":"test_ctx03_t12_mixed_rejection_never_echoes","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T12 a rejected mixed context yields only the closed code text"},
+    {"requirement_id":"R013","source":"pytest","test":"test_ctx03_t13_live_shaped_scope_reaches_offline_backend","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_context_controller.py","expected_result":"T13 live-shaped subject_refs and exact scope reach the fake backend exactly once and freeze a blind artifact"},
+    {"requirement_id":"R014","source":"pytest","test":"test_ctx03_t14_secret_bearing_scope_stops_before_backend","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_context_controller.py","expected_result":"T14 a secret-bearing campaign fails REQUEST_SECRET_DETECTED with zero fake backend calls and no echo"},
+    {"requirement_id":"R015","source":"pytest","test":"test_ctx03_t15_no_broad_global_allowlist","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_models.py","expected_result":"T15 generic 0x{40,} rule present, single public_market_context call site, no configurable allowlist hook"}
+  ]},
+  "successor_boundary": {"next_wp":"S10-GATE-AF1","next_title":"S10-GATE-AF1 post-repair reconciliation onto merged main, live-shaped AF1 fixture, new Phase-A head and explicit successor-attempt semantics closure remain separately gated after independent review and Karl's merge.","separately_gated":true,"feature_validator_moved_to":"S10-GATE-AF1","forbidden_in_this_wp":["merge","AF1 branch or workspace modification or rebase","AF1 Attempt-03 evidence reuse or mutation","AF1 successor attempt or Attempt-04 authorization","real Hermes research or hermes auth","provider, model, Firecrawl, Polymarket or OAuth calls","reading, copying or transforming real secrets","dependency, lock or workflow changes","H1 number five","Gate C","capital, paper, live, signing or economic orders"]}
+}
