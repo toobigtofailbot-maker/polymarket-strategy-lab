@@ -544,3 +544,40 @@ def test_wp164a_repo_truth_preserves_af1_block_and_phase_a_authority() -> None:
     assert "wp164a-public-smoke-authorization-envelope/1.0.0" in combined
     assert "5a7044147c018389402e71f35a759e1d621c4b25" in combined
     assert "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03" in combined
+
+
+def test_s10_hermes_ctx02_repo_truth_registers_exact_stock_only_soul() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "S10-HERMES-CTX-02.md").read_text(
+        encoding="utf-8"
+    )
+    contract = (ROOT / "docs" / "hermes_controlled_research_runtime_contract.md").read_text(
+        encoding="utf-8"
+    )
+    digest = "36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f"
+    assert (
+        "S10-HERMES-CTX-02 Pinned Default SOUL.md Compatibility Repair "
+        "(current bounded compatibility repair)"
+    ) in index
+    assert "docs/wp_specs/S10-HERMES-CTX-02/" in index
+    assert "docs/status_entries/S10-HERMES-CTX-02.md" in index
+    assert "src/research_runtime/hermes_controlled_runtime/runner.py" in index
+    assert "tests/research_runtime/hermes_controlled_runtime/test_runner.py" in index
+    assert "docs/hermes_controlled_research_runtime_contract.md" in index
+    # Historical package entries remain intact.
+    assert "WP164A Public Population Compatibility Repair (active bounded upstream repair)" in index
+    assert "S10-HERMES-CTX-01 Blind-First Context Broker (merged historical truth)" in index
+    for text in (index, fragment, contract):
+        assert digest in text and "667" in text
+    assert "10 required = 10 allowed = 10 actual paths" in fragment
+    assert "AF1 Attempt-03: UNCONSUMED and NOT AUTHORIZED" in fragment
+    assert "H1 #5: NOT AUTHORIZED" in fragment and "Merge authorized: NO" in fragment
+    assert "does not contain a mutable branch-head SHA" in fragment
+    # Contract records exact-stock-only semantics, not a universal SOUL rejection.
+    assert "exact-stock-only" in contract
+    assert "the exception does NOT mean arbitrary SOUL files are" in contract
+    assert "remains fail-closed" in contract
+    assert "rejects SOUL/MEMORY" not in contract
+    flat = " ".join(contract.replace("\n> ", " ").split())
+    assert "whose values this preflight never opens or inspects" in flat
+    assert "admission verification only" in flat

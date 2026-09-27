@@ -22,7 +22,9 @@ inherits an ambient ``HERMES_MANAGED_DIR``, ``HERMES_SAFE_MODE``, or
 (success, failure, timeout). For an H1-grade research home, a fail-closed preflight
 rejects unexpected control-plane material -- a present ``config.yaml`` or a non-empty
 user ``plugins/`` directory -- BEFORE spawn, inspecting directory/file NAMES only and
-never reading a credential value.
+never reading a credential value. The single non-secret file it may read is
+``SOUL.md``, admitted only when its raw bytes are exactly the pinned Hermes v0.21.3
+stock default (S10-HERMES-CTX-02).
 
 Pinned v0.21.3 carries the prompt as the ``-z`` argv element, so no prompt file is
 written into the working directory. The backend records no secret-bearing
@@ -35,10 +37,12 @@ configured out-of-repo by S10-GATE-H1.
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import os
 import re
 import shutil
 import signal
+import stat
 import subprocess
 import sys
 import tempfile
@@ -586,7 +590,6 @@ _NEVER_FORWARD_ENV = (
 _RESEARCH_HOME_FORBIDDEN_CONFIG = "config.yaml"
 _RESEARCH_HOME_USER_PLUGINS_DIR = "plugins"
 _RESEARCH_HOME_PROFILE_CONTEXT_FILES = (
-    "SOUL.md",
     "MEMORY.md",
     "USER.md",
     "AGENTS.md",
@@ -595,6 +598,20 @@ _RESEARCH_HOME_PROFILE_CONTEXT_FILES = (
     ".cursorrules",
 )
 _RESEARCH_HOME_PROFILE_SKILLS_DIR = "skills"
+
+# S10-HERMES-CTX-02 pinned default SOUL.md compatibility exception. SOUL.md is real
+# instruction-bearing prompt material, so an arbitrary SOUL.md is never trusted. But
+# pinned Hermes v0.21.3 (release tag v2026.9.14, source commit 345cd2b)
+# ``hermes_cli.config._ensure_default_soul_md`` seeds its stock ``DEFAULT_SOUL_MD``
+# (UTF-8, no appended newline; identical to the built-in ``DEFAULT_AGENT_IDENTITY``)
+# whenever a home is initialized, so the stock file is unavoidable in a real research
+# home. Exactly those raw bytes -- carrying no user-authored customization -- are
+# admitted; every other SOUL.md stays forbidden. Frozen here rather than imported so
+# the project runtime stays independently fail-closed with no Hermes dependency. No
+# normalization, legacy template, prefix/fuzzy match, or caller-supplied digest exists.
+_RESEARCH_HOME_SOUL_FILE = "SOUL.md"
+_PINNED_STOCK_SOUL_MD_BYTE_LENGTH = 667
+_PINNED_STOCK_SOUL_MD_SHA256 = "36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f"
 
 
 class ExternalHermesCliBackend:
@@ -898,11 +915,16 @@ def is_clean_research_home_control_plane(hermes_home: str) -> bool:
       traversal) -- reuses :func:`is_safe_research_home`;
     * ``config.yaml`` must be ABSENT (exact tagged ``load_config`` reads
       ``$HERMES_HOME/config.yaml`` regardless of ``--ignore-user-config``);
-    * a user ``plugins/`` directory must be absent or empty (opt-in user plugins).
+    * a user ``plugins/`` directory must be absent or empty (opt-in user plugins);
+    * ``MEMORY.md`` / ``USER.md`` / ``AGENTS.md`` / ``CLAUDE.md`` / ``GEMINI.md`` /
+      ``.cursorrules`` and a non-empty profile-local ``skills/`` must be absent;
+    * ``SOUL.md`` must be absent or be exactly the pinned Hermes v0.21.3 stock default
+      (:func:`_is_absent_or_pinned_stock_soul_md`; S10-HERMES-CTX-02).
 
     An ``.env`` / ``auth.json`` / session / cache file is permitted -- Hermes loads its
-    own out-of-repo credential store from there. This inspects directory/file NAMES
-    only and never reads or echoes a credential value.
+    own out-of-repo credential store from there. Credential files are inspected by
+    NAME only and never opened; the only file whose bytes are read is the non-secret
+    ``SOUL.md``. Never mutates the home.
     """
     if not is_safe_research_home(hermes_home):
         return False
@@ -917,6 +939,8 @@ def is_clean_research_home_control_plane(hermes_home: str) -> bool:
         for name in _RESEARCH_HOME_PROFILE_CONTEXT_FILES:
             if os.path.exists(os.path.join(root, name)):
                 return False
+        if not _is_absent_or_pinned_stock_soul_md(root):
+            return False
         for name in (_RESEARCH_HOME_USER_PLUGINS_DIR, _RESEARCH_HOME_PROFILE_SKILLS_DIR):
             directory = os.path.join(root, name)
             if os.path.isdir(directory) and any(os.scandir(directory)):
@@ -924,6 +948,62 @@ def is_clean_research_home_control_plane(hermes_home: str) -> bool:
     except OSError:
         return False
     return True
+
+
+def _is_absent_or_pinned_stock_soul_md(root: str) -> bool:
+    """True iff ``<root>/SOUL.md`` is absent or is exactly the pinned stock default.
+
+    Admission verification only (never deletes, rewrites, or normalizes). Fail-closed:
+    any stat/open/read error, a symlink or reparse point, any non-regular object, a
+    size other than the pinned length, or any raw-byte SHA-256 other than the pinned
+    digest returns False. The size is checked before any byte is read, and the opened
+    handle must be the same regular file of the same size that was checked.
+    """
+    path = os.path.join(root, _RESEARCH_HOME_SOUL_FILE)
+    try:
+        before = os.lstat(path)
+    except FileNotFoundError:
+        return True
+    except OSError:
+        return False
+    if not stat.S_ISREG(before.st_mode):
+        return False
+    if getattr(before, "st_file_attributes", 0) & getattr(
+        stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0
+    ):
+        return False
+    if before.st_size != _PINNED_STOCK_SOUL_MD_BYTE_LENGTH:
+        return False
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        fd = os.open(path, flags)
+    except OSError:
+        return False
+    try:
+        opened = os.fstat(fd)
+        if (
+            not stat.S_ISREG(opened.st_mode)
+            or (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino)
+            or opened.st_size != _PINNED_STOCK_SOUL_MD_BYTE_LENGTH
+        ):
+            return False
+        # Read one byte past the pinned length so a concurrent extension is detected.
+        chunks: list[bytes] = []
+        remaining = _PINNED_STOCK_SOUL_MD_BYTE_LENGTH + 1
+        while remaining > 0:
+            chunk = os.read(fd, remaining)
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+    except OSError:
+        return False
+    finally:
+        os.close(fd)
+    raw = b"".join(chunks)
+    if len(raw) != _PINNED_STOCK_SOUL_MD_BYTE_LENGTH:
+        return False
+    return hashlib.sha256(raw).hexdigest() == _PINNED_STOCK_SOUL_MD_SHA256
 
 
 # Config written into the throwaway version-probe HERMES_HOME. Exact tagged
