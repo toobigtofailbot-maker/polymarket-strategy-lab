@@ -44,7 +44,10 @@
 > `event:polymarket:market-<decimal>` and `token:polymarket:<decimal>` (decimal: non-empty,
 > no leading zero), delimited by start/end, whitespace, quotes, brackets, commas, `=`
 > before or a JSON-escape backslash after, are masked in a validation-only copy before the
-> full secret scan; every other secret rule also runs over the original text, and the
+> full secret scan; every occurrence of the literal namespace `event:polymarket:` must begin
+> an exact, delimited canonical event id or the request fails `REQUEST_SECRET_DETECTED`
+> (malformed canonical-looking event ids, including word-glued forms the generic rule would
+> miss, fail closed); every other secret rule also runs over the original text, and the
 > authority scan runs over the original text. Bare long-hex values, wallet/account-shaped
 > `0x` + 40 hex, wrong namespaces, other hex lengths, uppercase hex, extra token
 > characters, and every credential marker remain rejected; the same values in any other

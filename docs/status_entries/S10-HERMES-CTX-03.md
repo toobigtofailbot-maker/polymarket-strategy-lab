@@ -14,9 +14,7 @@ Successor AF1 runtime attempt: NOT AUTHORIZED by this WP.
 
 - Base/main and PR #194 / S10-HERMES-CTX-02 merge SHA:
   `15097f70f5f5358879fde73b2b30d26ecdb80402`.
-- Governance track RUNTIME, risk level 3. Package size class L in `wp_spec.json`: the prompt
-  front matter says M, but the canonical `wp_spec_guard` budget for M is 10 files and the
-  frozen exact scope is 11; the relabel changes no path, risk, track or authority.
+- Governance track RUNTIME, risk level 3, package size class L, exact scope 11.
 - Exact changed scope: 11 required = 11 allowed = 11 actual paths.
 - Negative matrix: T01-T12 and T15 in
   `tests/research_runtime/hermes_controlled_runtime/test_models.py`; T13-T14 in
@@ -46,8 +44,13 @@ long-hex secret rule `\b0x[a-fA-F0-9]{40,}\b`. Canonical market and token ids di
   `^0x[0-9a-f]{64}$`), `event:polymarket:market-<decimal>` and `token:polymarket:<decimal>`
   (decimal: non-empty, no leading zero), case-sensitive, delimited by a closed set of
   characters.
+- Malformed-event guard: every occurrence of the literal namespace `event:polymarket:` in
+  `public_market_context` must begin an exact, delimited canonical event identifier, or the
+  request fails `REQUEST_SECRET_DETECTED`. Malformed canonical-looking event ids (other hex
+  lengths, `0X`, uppercase or mixed hex, word-glued suffixes such as `g` or `_x`, glued values,
+  empty or `sk-` suffixes) fail closed even where the generic rule would miss them.
 - `public_market_context` alone goes through `_require_public_market_context`: the same type,
-  non-empty and length checks as `_require_str`; the full `_scan_secret` over a
+  non-empty and length checks as `_require_str`; the malformed-event guard; the full `_scan_secret` over a
   validation-only copy with recognized identifiers masked; every other secret rule over the
   original text; `_scan_authority` over the original text. Every other request field still
   uses `_require_str`.

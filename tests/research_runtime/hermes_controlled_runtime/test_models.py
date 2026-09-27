@@ -1157,43 +1157,63 @@ def test_ctx03_t06_wrong_namespace_rejected():
 
 def test_ctx03_t07_malformed_canonical_near_matches_rejected():
     hexdigits = _CTX03_CONDITION[2:]
-    rejected = (
+    mixed = hexdigits[:32] + hexdigits[32:].upper()
+    malformed_events = (
         "event:polymarket:0x" + hexdigits[:40],
         "event:polymarket:0x" + hexdigits[:63],
         "event:polymarket:0x" + hexdigits + "a",
+        "event:polymarket:0x" + hexdigits + "g",
+        "event:polymarket:0x" + hexdigits + "_x",
+        "event:polymarket:0x" + hexdigits + _CTX03_WALLET,
+        "event:polymarket:0x" + hexdigits + "12345",
+        "event:polymarket:0X" + hexdigits,
         "event:polymarket:0x" + hexdigits.upper(),
+        "event:polymarket:0x" + mixed,
         "event:polymarket:0x" + hexdigits + ".1",
         "event:polymarket:0x" + hexdigits + "-a",
         "event:polymarket:0x" + hexdigits + ":x",
         "event:polymarket:0x" + hexdigits + "/x",
-        "event:polymarket:0x" + hexdigits + " " + _CTX03_WALLET,
+        "event:polymarket:",
+        "event:polymarket: ",
+        "event:polymarket:market-",
+        "event:polymarket:market-0123",
+        "event:polymarket:market-12x",
         "event:polymarket:" + _CTX03_EVENT_ID,
         "event:polymarket:sk-abcdef0123456789abcdef",
+    )
+    rejected = malformed_events + (
+        "event:polymarket:0x" + hexdigits + " " + _CTX03_WALLET,
         "token:polymarket:sk-abcdef0123456789abcdef",
     )
     for value in rejected:
         assert _ctx03_rejected_code(value) == "REQUEST_SECRET_DETECTED", value
-    # Hex run glued to a word character never matched the unchanged global \b rule
-    # (identical on base); such near-matches are not recognized, so the outcome is
-    # exactly the global scanner's outcome -- no masking, no new acceptance.
-    word_suffixed = (
-        "event:polymarket:0x" + hexdigits + "g",
-        "event:polymarket:0x" + hexdigits + "_x",
-        "event:polymarket:0x" + hexdigits + _CTX03_WALLET,
-        "event:polymarket:0X" + hexdigits,
-    )
-    for value in word_suffixed:
-        m._scan_secret(value)  # global rule does not flag it
-        assert _ctx03_build(value).public_market_context == value
-    # No near-match is ever recognized (so nothing is partially masked into safety).
-    for value in tuple(v for v in rejected if _CTX03_WALLET not in v) + word_suffixed + (
+        # Rejected in prose and JSON too, even beside a valid canonical event id.
+        assert _ctx03_rejected_code(f"{_CTX03_EVENT_ID} and {value} here") == (
+            "REQUEST_SECRET_DETECTED"
+        ), value
+        assert _ctx03_rejected_code('{"ref":"' + value + '"}') == "REQUEST_SECRET_DETECTED"
+    # No malformed event near-match is recognized, so nothing is partially masked.
+    for value in malformed_events + (
         "market:polymarket:0512345",
         "market:polymarket:",
         "token:polymarket:1.5",
-        "event:polymarket:market-",
     ):
         assert m._CANONICAL_PUBLIC_POLYMARKET_ID.search(value) is None, value
         assert m._CANONICAL_PUBLIC_POLYMARKET_ID.sub(" ", value) == value
+    # The field-aware guard is stricter than the unchanged global rule, which still
+    # misses word-glued hex; that global behavior is not broadened here.
+    for value in ("event:polymarket:0x" + hexdigits + "g", "event:polymarket:0X" + hexdigits):
+        m._scan_secret(value)
+
+
+def test_ctx03_t07b_malformed_event_guard_is_load_bearing(monkeypatch):
+    """Bypassing the namespace guard re-opens the word-glued acceptance (mutation check)."""
+    glued = "event:polymarket:" + _CTX03_CONDITION + "g"
+    assert _ctx03_rejected_code(glued) == "REQUEST_SECRET_DETECTED"
+    monkeypatch.setattr(m, "_CANONICAL_EVENT_NAMESPACE", "\x00never-present\x00")
+    assert _ctx03_build(glued).public_market_context == glued
+    monkeypatch.undo()
+    assert _ctx03_rejected_code(glued) == "REQUEST_SECRET_DETECTED"
 
 
 def test_ctx03_t08_valid_id_plus_real_secret_rejected():

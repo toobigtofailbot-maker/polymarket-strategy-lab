@@ -15,7 +15,7 @@ Package class:
 BOUNDED_HERMES_PUBLIC_IDENTIFIER_SECRET_SCANNER_COMPATIBILITY_REPAIR
 
 Package size class:
-M
+L
 
 Governance track expected:
 RUNTIME
@@ -906,10 +906,7 @@ APPENDIX A — CANONICAL MACHINE MIRROR (mirrors wp_spec.json; adds no authority
 ===============================================================================
 
 Governance track expected: RUNTIME
-Canonical package size class: L. The front matter above says M, but the canonical
-wp_spec_guard budget for M is 10 changed files; the frozen exact 11-path scope is
-therefore classified L in wp_spec.json (repo truth wins; precedent WP175J/WP175L/WP156A).
-This relabel changes no path, risk level, governance track or authority.
+Canonical package size class: L
 Base branch: main (frozen 15097f70f5f5358879fde73b2b30d26ecdb80402; PR #194 / S10-HERMES-CTX-02 merged)
 
 OBJECTIVE
@@ -918,7 +915,10 @@ repo-canonical PUBLIC Polymarket identifiers survive the generic long-hex secret
 inside the request field public_market_context. Admitted forms: market:polymarket:<decimal>,
 event:polymarket:0x<exactly 64 lowercase hex> (the repository condition-id contract is
 ^0x[0-9a-f]{64}$), event:polymarket:market-<decimal> and token:polymarket:<decimal>, where
-<decimal> is a non-empty digit string without a leading zero. The generic 0x{40,} rule stays
+<decimal> is a non-empty digit string without a leading zero. Every occurrence of the literal
+namespace event:polymarket: in public_market_context must begin an exact, delimited canonical
+event identifier or the request fails REQUEST_SECRET_DETECTED, so malformed canonical-looking
+event ids fail closed even where the generic rule would miss them. The generic 0x{40,} rule stays
 in the global secret rules; every other secret rule still evaluates the original text; every
 other request field keeps the ordinary strict scan; stored request bytes and identity are the
 original unmasked string.

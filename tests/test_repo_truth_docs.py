@@ -628,3 +628,11 @@ def test_s10_hermes_ctx03_repo_truth_registers_public_id_compatibility_rule() ->
     assert "The exception does not authorize wallet, account, or credential material" in flat
     assert "use the original unmasked bytes" in flat
     assert "there is no global or caller-configurable allowlist" in flat
+    # Malformed canonical-looking event ids fail closed (no accepted gap remains).
+    assert "must begin an exact canonical event id or fail closed" in " ".join(index.split())
+    assert "Malformed-event guard" in fragment
+    assert "must begin an exact, delimited canonical event id" in flat
+    section_start = index.index("## S10-HERMES-CTX-03 ")
+    section = index[section_start : index.index("\n## ", section_start + 1)]
+    for text in (section, fragment, contract):
+        assert "accepted gap" not in text and "parity" not in text

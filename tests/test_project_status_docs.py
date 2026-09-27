@@ -4676,9 +4676,25 @@ def test_s10_hermes_ctx03_is_current_bounded_compatibility_repair() -> None:
     for stale in ("NOT STARTED", "not started", "repair pending"):
         assert stale not in current, stale
     assert "Attempt-03 is recorded as neither AF1 PASS nor AF1 FAIL" in project
+    assert "malformed canonical-looking event:polymarket: ids fail closed" in current
     identity = spec["identity"]
     assert identity["wp_id"] == "S10-HERMES-CTX-03"
     assert identity["risk_level"] == 3 and identity["package_size_class"] == "L"
+    # Package size is L everywhere; the former M discrepancy cannot recur.
+    package_dir = REPO_ROOT / "docs" / "wp_specs" / "S10-HERMES-CTX-03"
+    prompt = (package_dir / "wp_prompt.txt").read_text(encoding="utf-8")
+    fragment = (
+        REPO_ROOT / "docs" / "status_entries" / "S10-HERMES-CTX-03.md"
+    ).read_text(encoding="utf-8")
+    assert "Package size class:\nL\n" in prompt
+    assert "Package size class:\nM\n" not in prompt
+    assert "Canonical package size class: L\n" in prompt
+    assert "Package size class: L;" in current
+    assert "package size class L, exact scope 11" in fragment
+    for text in (prompt, fragment, current):
+        for stale in ("front matter says M", "prompt front matter M", "relabel",
+                      "budget for M", "M budget"):
+            assert stale not in text, stale
     assert identity["required_predecessor"]["merge_sha"] == (
         "15097f70f5f5358879fde73b2b30d26ecdb80402"
     )

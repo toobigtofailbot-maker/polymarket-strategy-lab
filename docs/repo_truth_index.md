@@ -19,7 +19,9 @@ Compatibility rule: inside `public_market_context` only, exact complete canonica
 identifiers `market:polymarket:<decimal>`, `event:polymarket:0x<exactly 64 lowercase hex>`,
 `event:polymarket:market-<decimal>` and the canonical CLOB token id form (polymarket token
 namespace + decimal; exact grammar in the contract) survive the generic
-long-hex rule, which remains a global secret rule; bare long-hex, wallet/account-shaped,
+long-hex rule, which remains a global secret rule; every occurrence of the literal
+namespace `event:polymarket:` there must begin an exact canonical event id or fail closed;
+bare long-hex, wallet/account-shaped,
 credential, wrong-namespace and malformed values remain fail-closed, every other request field
 keeps the ordinary strict scan, and request identity uses the original bytes. No schema,
 invocation policy identity, provider, model, retry, output-parsing, network, credential,

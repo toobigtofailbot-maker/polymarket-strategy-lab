@@ -309,6 +309,7 @@ _CANONICAL_PUBLIC_POLYMARKET_ID = re.compile(
     r"|token:polymarket:[1-9][0-9]*)"
     r"(?![^\s\"'\\)\]},])"
 )
+_CANONICAL_EVENT_NAMESPACE = "event:polymarket:"
 
 # Attempts to grant trading / risk / credential / scheduler / file / shell authority.
 _AUTHORITY_PATTERNS = (
@@ -347,7 +348,16 @@ def _scan_public_market_context_secret(text: str) -> None:
     Polymarket identifiers are replaced by a space, and every rule other than the
     long-hex rule also runs over the original text, so masking can never hide a
     credential marker. The masked copy is never stored or hashed.
+
+    Every occurrence of the canonical event namespace must begin an exact, delimited
+    canonical event identifier; any malformed canonical-looking event id fails closed
+    even where the generic long-hex rule would not flag it.
     """
+    start = text.find(_CANONICAL_EVENT_NAMESPACE)
+    while start != -1:
+        if _CANONICAL_PUBLIC_POLYMARKET_ID.match(text, start) is None:
+            raise _fail("REQUEST_SECRET_DETECTED")
+        start = text.find(_CANONICAL_EVENT_NAMESPACE, start + 1)
     _scan_secret(_CANONICAL_PUBLIC_POLYMARKET_ID.sub(" ", text))
     for pattern in _SECRET_PATTERNS:
         if pattern is not _LONG_HEX_SECRET_PATTERN and pattern.search(text):
