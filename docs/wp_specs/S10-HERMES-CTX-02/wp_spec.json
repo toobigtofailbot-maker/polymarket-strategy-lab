@@ -1,0 +1,135 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-CTX-02",
+    "title": "Pinned Hermes Default SOUL.md Research-Home Compatibility Repair",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "BOUNDED_HERMES_DEFAULT_SOUL_RESEARCH_HOME_COMPATIBILITY_REPAIR",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {"pr_number": 193, "head_sha": "1c7de22f31cd093771d6bc0748c440ad5284b105", "merge_sha": "70f867bdcd5e97b0dc05d4008c2c023feb461658"},
+    "suggested_branch": "codex/s10-hermes-ctx-02-default-soul-compat",
+    "objective": "Repair the AF1 Phase-B HERMES_HOME_CONTROL_PLANE_INVALID defect by admitting SOUL.md in a dedicated controlled research HERMES_HOME only when it is a regular non-symlink file whose raw bytes exactly equal the pinned Hermes v0.21.3 (tag v2026.9.14, commit 345cd2b) stock auto-seeded default: 667 bytes, SHA-256 36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f. Every other SOUL.md and every other existing clean-home rule remains fail-closed. Admission verification only; no mutation-to-pass, no policy/schema churn, and no provider, credential, AF1 Attempt-03, H1 #5, Gate C, capital, order or merge authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/hermes_controlled_research_runtime_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-HERMES-CTX-02.md",
+      "docs/wp_specs/S10-HERMES-CTX-02/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-CTX-02/wp_spec.json",
+      "src/research_runtime/hermes_controlled_runtime/runner.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_runner.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/hermes_controlled_research_runtime_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-HERMES-CTX-02.md",
+      "docs/wp_specs/S10-HERMES-CTX-02/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-CTX-02/wp_spec.json",
+      "src/research_runtime/hermes_controlled_runtime/runner.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_runner.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/risk/"
+    ],
+    "max_changed_files": 10,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": ["docs/project_status.md", "docs/repo_truth_index.md", "tests/test_project_status_docs.py", "tests/test_repo_truth_docs.py"],
+    "rollback_surface": "One private exact-bytes SOUL.md admission verifier and its frozen constants in runner.py plus focused tests and truth docs; no dependency, workflow, policy, argv, managed-config, provider, retry, telemetry, context-protocol, execution, OMS, risk or live-trading change.",
+    "mode_boundaries": [
+      {"boundary":"workflow_governance","crossed":false},
+      {"boundary":"local_offline_tooling","crossed":true},
+      {"boundary":"canonical_evidence_policy","crossed":true},
+      {"boundary":"docs","crossed":true},
+      {"boundary":"tests","crossed":true},
+      {"boundary":"source_runtime","crossed":true},
+      {"boundary":"workflow_files","crossed":false},
+      {"boundary":"dependencies","crossed":false},
+      {"boundary":"network","crossed":false},
+      {"boundary":"credentials","crossed":false},
+      {"boundary":"scheduler","crossed":false},
+      {"boundary":"hermes_runtime","crossed":true},
+      {"boundary":"strategy","crossed":false},
+      {"boundary":"paper","crossed":false},
+      {"boundary":"execution","crossed":false},
+      {"boundary":"live","crossed":false}
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {"applicable":true,"reason":"The package narrows one existing research-home admission predicate; no public signature changes.","items":[
+    {"surface":"is_clean_research_home_control_plane SOUL.md handling","before":"Any SOUL.md present in the research HERMES_HOME rejected the home, which is structurally incompatible with pinned Hermes v0.21.3 seeding its stock SOUL.md on home initialization.","after":"An absent SOUL.md or a regular non-symlink SOUL.md whose raw bytes are exactly the pinned 667-byte stock default (SHA-256 36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f) is admitted; every other SOUL.md rejects.","change_authorized":true,"compatibility_requirement":"Signature, return type, every other forbidden name, config.yaml, plugins, skills, safe-home and credential-name-only rules are unchanged; ExternalHermesCliBackend.invoke still rechecks before every spawn.","authority":"LOCAL_OFFLINE_RESEARCH_HOME_ADMISSION"}
+  ]},
+  "semantic_fields": {"applicable":true,"reason":"Exact-bytes SOUL admission, no broadening, unchanged other rules, credential opacity, per-invoke recheck, frozen pin and non-authority are mandatory deterministic semantics.","items":[
+    {"path":"soul.admission","source":"DERIVED","type":"mapping","required_rule":"SOUL.md is admitted only when absent or when it is a regular non-symlink non-reparse file whose size is exactly 667 bytes and whose raw-byte SHA-256 is exactly 36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f; any stat/open/read error, other size, other digest, symlink or non-regular object rejects.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"exact stock passes; one-byte, same-size, truncated, extended, custom and symlink SOUL fail closed","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"boolean admission only","derivation_rule_id":null},
+    {"path":"soul.no_broadening","source":"CONSTANT","type":"mapping","required_rule":"No normalization, legacy-template set, prefix or fuzzy match, alternate encoding, arbitrary allowlist or caller-supplied digest exists; the verifier takes no accepted-digest parameter and never mutates, deletes, rewrites or replaces SOUL.md.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"verifier signature and module surface expose no broadening hook","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"frozen exact-bytes verifier","derivation_rule_id":null},
+    {"path":"soul.pin","source":"CONSTANT","type":"mapping","required_rule":"Private constants bind the exception to pinned Hermes v0.21.3 tag v2026.9.14 commit 345cd2b stock DEFAULT_SOUL_MD: byte length 667 and SHA-256 36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f; Hermes Agent is not imported.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"focused test binds both constants to the frozen values","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"frozen pin constants","derivation_rule_id":null},
+    {"path":"home.other_rules_unchanged","source":"CONSTANT","type":"mapping","required_rule":"config.yaml, non-empty plugins/, non-empty skills/, MEMORY.md, USER.md, AGENTS.md, CLAUDE.md, GEMINI.md and .cursorrules still reject, and the safe-home locator rule is unchanged.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"direct negative tests for each remaining forbidden artifact","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"fail-closed preflight","derivation_rule_id":null},
+    {"path":"credentials.opacity","source":"CONSTANT","type":"mapping","required_rule":"The clean-home checker never opens, parses or emits .env or auth.json; only the non-secret SOUL.md is read.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"fake sentinel credential values never appear and credential files are never opened by the checker","failure_category":"AUTHORITY_CONTRADICTION","safe_output":"names-only credential presence","derivation_rule_id":null},
+    {"path":"invoke.recheck","source":"DERIVED","type":"mapping","required_rule":"ExternalHermesCliBackend.invoke re-runs the clean-home check before every spawn so a SOUL.md mutated after an earlier passing preflight fails before any child process starts.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"stock passes, mutated SOUL makes a later invoke fail with launch_failed and no spawn","failure_category":"SEMANTIC_CONTRADICTION","safe_output":"launch failure before spawn","derivation_rule_id":null},
+    {"path":"authority.non_authority","source":"CONSTANT","type":"mapping","required_rule":"No provider, model, Firecrawl, Polymarket, OAuth, credential, dependency, workflow, scheduler, strategy, paper, execution, live, AF1 Attempt-03, H1 number five, Gate C, capital, order or merge authority is granted.","mutable":false,"identity_role":"NONE","exclusion_reason":null,"validation_rule":"authority booleans remain as mirrored and tests use only local offline children","failure_category":"AUTHORITY_CONTRADICTION","safe_output":"advisory local evidence only","derivation_rule_id":null}
+  ]},
+  "identity_derivations": {"applicable":false,"reason":"No content-addressed product identity is added; the frozen SOUL digest is a pinned external constant verified by a focused test.","items":[]},
+  "state_transitions": {"applicable":true,"reason":"The canonical authorization chain is unchanged for this implementation package.","items":[
+    {"from_state":"LOCAL_DRAFT","to_state":"DRAFTABILITY_PASS","condition":"prompt, strict machine spec, authority mirror, exact scope and deterministic readiness pass","failure_category":"DRAFTABILITY_INCOMPLETE"},
+    {"from_state":"DRAFTABILITY_PASS","to_state":"AUTHORIZED","condition":"Side13/Karl authorize this exact final one-shot package","failure_category":"AUTHORITY_CONTRADICTION"},
+    {"from_state":"AUTHORIZED","to_state":"IMPLEMENTED_LOCAL","condition":"implementation remains within the exact 10 paths and all local validation passes","failure_category":"SEMANTIC_CONTRADICTION"}
+  ]},
+  "failure_precedence": {"applicable":true,"reason":"Fixed polymarket-work-package-spec 1.0.0 guard precedence.","items":[
+    {"condition_id":"file_unreadable","category":"FILE_READ_ERROR","priority":10},{"condition_id":"json_invalid","category":"JSON_PARSE_INVALID","priority":20},{"condition_id":"schema_unsupported","category":"SCHEMA_UNSUPPORTED","priority":30},{"condition_id":"unknown_field","category":"UNKNOWN_FIELD","priority":40},{"condition_id":"field_missing","category":"FIELD_MISSING","priority":50},{"condition_id":"field_type_invalid","category":"FIELD_TYPE_INVALID","priority":60},{"condition_id":"field_value_invalid","category":"FIELD_VALUE_INVALID","priority":70},{"condition_id":"certificate_hash_mismatch","category":"CERTIFICATE_HASH_MISMATCH","priority":80},{"condition_id":"draftability_incomplete","category":"DRAFTABILITY_INCOMPLETE","priority":90},{"condition_id":"scope_policy_invalid","category":"SCOPE_POLICY_INVALID","priority":100},{"condition_id":"authority_contradiction","category":"AUTHORITY_CONTRADICTION","priority":110},{"condition_id":"semantic_contradiction","category":"SEMANTIC_CONTRADICTION","priority":120},{"condition_id":"identity_derivation_invalid","category":"IDENTITY_DERIVATION_INVALID","priority":130},{"condition_id":"failure_precedence_invalid","category":"FAILURE_PRECEDENCE_INVALID","priority":140},{"condition_id":"example_truth_invalid","category":"EXAMPLE_TRUTH_INVALID","priority":150}
+  ]},
+  "examples": {"applicable":false,"reason":"Focused executable T01-T14 tests are the product oracle.","items":[]},
+  "evidence_plan": {"applicable":true,"reason":"R001-R014 bind T01-T14 one-to-one to named focused assertions.","items":[
+    {"requirement_id":"R001","source":"pytest","test":"test_ctx02_t01_no_soul_clean_home_still_passes","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T01 a clean research home without SOUL.md still passes preflight"},
+    {"requirement_id":"R002","source":"pytest","test":"test_ctx02_t02_exact_stock_soul_with_credential_store_passes","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T02 exact 667-byte pinned stock SOUL.md with fake .env/auth.json and empty plugins/skills passes"},
+    {"requirement_id":"R003","source":"pytest","test":"test_ctx02_t03_exact_stock_soul_reaches_offline_child","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T03 invoke with exact stock SOUL launches the offline inspection child without admission failure"},
+    {"requirement_id":"R004","source":"pytest","test":"test_ctx02_t04_one_byte_modified_soul_rejected","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T04 a one-byte modification of the stock SOUL fails closed"},
+    {"requirement_id":"R005","source":"pytest","test":"test_ctx02_t05_same_size_wrong_content_rejected","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T05 a different 667-byte regular file fails closed"},
+    {"requirement_id":"R006","source":"pytest","test":"test_ctx02_t06_truncated_or_extended_soul_rejected","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T06 truncated, extended, CRLF, BOM and trailing-newline variants fail before hashing can pass"},
+    {"requirement_id":"R007","source":"pytest","test":"test_ctx02_t07_arbitrary_custom_soul_rejected","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T07 custom persona, legacy scaffold and empty SOUL.md files fail closed"},
+    {"requirement_id":"R008","source":"pytest","test":"test_ctx02_t08_symlink_or_non_regular_soul_rejected","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T08 a SOUL.md symlink to exact stock bytes and a SOUL.md directory fail closed"},
+    {"requirement_id":"R009","source":"pytest","test":"test_ctx02_t09_other_profile_artifacts_still_fail_with_stock_soul","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T09 MEMORY USER AGENTS CLAUDE GEMINI and .cursorrules still fail even beside stock SOUL"},
+    {"requirement_id":"R010","source":"pytest","test":"test_ctx02_t10_config_plugins_skills_still_fail_with_stock_soul","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T10 config.yaml, non-empty plugins and non-empty skills still fail beside stock SOUL"},
+    {"requirement_id":"R011","source":"pytest","test":"test_ctx02_t11_credential_values_never_opened_or_emitted","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T11 the checker opens only SOUL.md and fake credential sentinels never appear in evidence"},
+    {"requirement_id":"R012","source":"pytest","test":"test_ctx02_t12_post_preflight_soul_mutation_fails_before_spawn","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T12 stock passes then a mutated SOUL makes the later invoke fail before child spawn"},
+    {"requirement_id":"R013","source":"pytest","test":"test_ctx02_t13_frozen_pin_constants","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T13 accepted constants equal 667 bytes and the frozen 36c1f5a2 SHA-256 digest"},
+    {"requirement_id":"R014","source":"pytest","test":"test_ctx02_t14_no_broad_allowlist_surface","command":"python -m pytest -q tests/research_runtime/hermes_controlled_runtime/test_runner.py","expected_result":"T14 verifier takes only the home path and no legacy normalization or caller digest hook exists"}
+  ]},
+  "successor_boundary": {"next_wp":"S10-GATE-AF1","next_title":"S10-GATE-AF1 post-repair reconciliation onto merged main, new Phase-A head and new exact Attempt-03 authorization remain separately gated after independent review and Karl's merge.","separately_gated":true,"feature_validator_moved_to":"S10-GATE-AF1","forbidden_in_this_wp":["merge","AF1 branch or workspace modification or rebase","AF1 Attempt-03 consumption, sentinel, workspace or envelope","AF1 runtime authorization","QUAL-01","real Hermes research or hermes auth","provider, model, Firecrawl, Polymarket or OAuth calls","reading, copying or transforming real secrets","dependency, lock or workflow changes","H1 number five","Gate C","capital, paper, live, signing or economic orders"]}
+}

@@ -1,0 +1,749 @@
+SIDE13 — S10-HERMES-CTX-02
+FINAL ONE-SHOT IMPLEMENTATION-AUTHORIZING WORK PACKAGE
+PINNED DEFAULT SOUL.MD RESEARCH-HOME COMPATIBILITY REPAIR
+
+Repository:
+toobigtofailbot-maker/polymarket-strategy-lab
+
+WP ID:
+S10-HERMES-CTX-02
+
+Title:
+Pinned Hermes Default SOUL.md Research-Home Compatibility Repair
+
+Package class:
+BOUNDED_HERMES_DEFAULT_SOUL_RESEARCH_HOME_COMPATIBILITY_REPAIR
+
+Package size class:
+M
+
+Governance track expected:
+RUNTIME
+
+Risk level:
+3
+
+Frozen base branch:
+main
+
+Frozen base/main SHA:
+70f867bdcd5e97b0dc05d4008c2c023feb461658
+
+Required current GitHub state at start:
+- main == 70f867bdcd5e97b0dc05d4008c2c023feb461658
+- 0 open PRs unless Karl explicitly supplies a newer controlling state
+- PR #193 / WP164A merged
+- S10-HERMES-CTX-01 already merged historically
+- AF1 remains local/unpublished and MUST NOT be modified by this package
+- AF1 Attempt-03 remains unconsumed under the latest supplied evidence
+- H1 #5 remains NOT AUTHORIZED
+- Gate C remains NOT AUTHORIZED
+- capital/orders remain 0 / NOT AUTHORIZED
+
+Suggested branch:
+codex/s10-hermes-ctx-02-default-soul-compat
+
+===============================================================================
+0. PURPOSE AND AUTHORITY
+===============================================================================
+
+This is the narrow upstream repair required by the AF1 Phase-B local evidence defect:
+
+PHASE_B_LOCAL_EVIDENCE_DEFECT
+reason = HERMES_HOME_CONTROL_PLANE_INVALID
+
+The defect is now pre-draft closed:
+
+1. the merged project runtime rejects any research HERMES_HOME containing SOUL.md;
+2. pinned Hermes v0.21.3 / tag v2026.9.14 / commit 345cd2b seeds its own stock
+   SOUL.md when the home is initialized;
+3. the controlled runtime repeats the same clean-home check before every real Hermes
+   invocation;
+4. therefore the current rule and the pinned runtime are structurally incompatible;
+5. deleting SOUL.md to pass preflight is NOT an acceptable fix because Hermes may
+   recreate it and the project forbids mutation-to-pass;
+6. broad acceptance of arbitrary SOUL.md is also NOT acceptable because SOUL.md is
+   instruction-bearing prompt material.
+
+This WP authorizes ONLY the smallest safe compatibility repair:
+
+Permit SOUL.md in a dedicated controlled research HERMES_HOME ONLY when its exact bytes
+match the stock auto-seeded SOUL.md of the already-pinned Hermes v0.21.3 artifact.
+
+Every customized, modified, unknown, symlinked, malformed, truncated, extended, or
+otherwise non-exact SOUL.md MUST continue to fail closed.
+
+No AF1 product semantics, AF1 gate semantics, HERMES-CTX reconciliation semantics,
+provider/model policy, managed profile, retry posture, credentials, dependency,
+workflow, execution, live, strategy, paper, Gate C, capital, order, or merge authority
+may change.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+This package MAY:
+- create the exact branch;
+- create/update its own canonical WP prompt/spec/status evidence;
+- change the exact 10 paths listed below;
+- run local deterministic/offline tests;
+- run the normal full suite once the source candidate is stable;
+- push the branch;
+- create/update one draft PR;
+- obtain fresh exact-head hosted CI;
+- report evidence.
+
+This package MUST NOT:
+- modify the AF1 local branch or workspace;
+- read, copy, print, transform, validate, rotate, or recreate any real secret;
+- run `hermes auth`;
+- use the AF1 credential home as a test fixture;
+- run real Hermes research;
+- make any provider/model/Firecrawl/Polymarket product call;
+- consume AF1 Attempt-03;
+- create an AF1 attempt sentinel/workspace/envelope;
+- authorize any retry or fallback;
+- authorize H1 #5;
+- modify dependencies or lock files;
+- modify workflows;
+- modify execution/risk/live paths;
+- merge the PR;
+- begin the AF1 continuation after merge.
+
+GitHub branch/push/PR operations required by normal WP execution are permitted repo
+operations and are not product/provider-network authority.
+
+===============================================================================
+1. PRE-DRAFT CLOSED EXTERNAL CONTRACT
+===============================================================================
+
+The following pinned external facts are frozen for this repair and MUST NOT be
+reinterpreted during implementation:
+
+Pinned Hermes:
+- release: v0.21.3
+- release tag: v2026.9.14
+- source commit: 345cd2b
+
+Pinned Hermes source establishes:
+- `hermes_cli.config._ensure_default_soul_md(home)` writes DEFAULT_SOUL_MD directly
+  with UTF-8 and no appended newline;
+- initialization reaches that seeding path through normal home initialization;
+- the stock DEFAULT_SOUL_MD is identical to Hermes' built-in DEFAULT_AGENT_IDENTITY;
+- a customized SOUL.md is preserved by Hermes rather than overwritten;
+- SOUL.md is real instruction-bearing prompt material when loaded;
+- the project therefore MUST NOT accept arbitrary SOUL.md merely because Hermes
+  supports it.
+
+Exact stock v0.21.3 SOUL.md bytes:
+- UTF-8 byte length:
+  667
+- SHA-256:
+  36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f
+
+These values were derived from exact pinned source commit 345cd2b.
+
+If implementation-time read-only verification of the exact pinned artifact contradicts
+either the length or digest above, STOP:
+PINNED_HERMES_SOUL_CONTRACT_DRIFT
+
+Do NOT broaden the accepted file to compensate.
+
+===============================================================================
+2. EXACT CHANGED-FILE SCOPE
+===============================================================================
+
+Required changed files == allowed changed files == exactly these 10 paths:
+
+1. docs/hermes_controlled_research_runtime_contract.md
+2. docs/project_status.md
+3. docs/repo_truth_index.md
+4. docs/status_entries/S10-HERMES-CTX-02.md
+5. docs/wp_specs/S10-HERMES-CTX-02/wp_prompt.txt
+6. docs/wp_specs/S10-HERMES-CTX-02/wp_spec.json
+7. src/research_runtime/hermes_controlled_runtime/runner.py
+8. tests/research_runtime/hermes_controlled_runtime/test_runner.py
+9. tests/test_project_status_docs.py
+10. tests/test_repo_truth_docs.py
+
+max_changed_files = 10
+exact_scope_required = true
+
+Forbidden prefixes include at minimum:
+- .github/workflows/
+- src/execution_gateway/
+- local_data/
+- dependency/lock files
+- the AF1 local branch/worktree/artifact home
+
+Do NOT edit:
+- src/research_runtime/hermes_controlled_runtime/policy.py
+- src/research_runtime/hermes_controlled_runtime/controller.py
+- src/research_runtime/hermes_controlled_runtime/context_*.py
+- docs/hermes_context_broker_reconciliation_contract.md
+- any AF1 source/spec/operator/gate file
+unless a genuine hard stop is reached and Side13/Karl separately authorizes a broader
+package.
+
+A normal test/doc correction inside the exact 10-path capability is NOT a reason to
+stop or create a follow-up WP.
+
+===============================================================================
+3. IMPLEMENTATION CONTRACT
+===============================================================================
+
+A. Preserve current clean-home semantics
+----------------------------------------
+
+`is_clean_research_home_control_plane(hermes_home)` remains fail-closed.
+
+The existing requirements remain unchanged:
+- home must satisfy `is_safe_research_home`;
+- config.yaml is forbidden;
+- non-empty user plugins/ is forbidden;
+- MEMORY.md is forbidden;
+- USER.md is forbidden;
+- AGENTS.md is forbidden;
+- CLAUDE.md is forbidden;
+- GEMINI.md is forbidden;
+- .cursorrules is forbidden;
+- non-empty profile-local skills/ is forbidden;
+- .env and auth.json remain permitted credential-store files;
+- the function must not read or echo credential values.
+
+B. Replace only the unconditional SOUL.md rejection
+---------------------------------------------------
+
+Current behavior:
+- any SOUL.md => reject.
+
+Required behavior:
+- no SOUL.md => preserve current PASS behavior;
+- exact pinned stock SOUL.md => permit;
+- every other SOUL.md => reject.
+
+Implement a private deterministic verifier in runner.py for the pinned default file.
+
+The verifier MUST:
+1. inspect only `<hermes_home>/SOUL.md`;
+2. use fail-closed filesystem handling;
+3. reject a symlink or any object that is not a normal regular file;
+4. require exact file size == 667 bytes before hashing;
+5. read only that non-secret SOUL.md file;
+6. compute SHA-256 over its raw bytes exactly as stored;
+7. require exact digest:
+   36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f
+8. catch filesystem/read/stat errors and return false;
+9. never normalize whitespace, BOMs, line endings, Unicode, or content;
+10. never accept legacy templates, prefixes, subsets, fuzzy matches, alternate
+    encodings, normalized equivalents, or "looks like stock" content.
+
+The accepted compatibility artifact is exact raw bytes only.
+
+C. Freeze local constants
+-------------------------
+
+runner.py must contain clear private constants binding the compatibility exception to
+the pinned artifact, including at least:
+- pinned Hermes release/commit context in comments;
+- exact accepted SOUL byte length;
+- exact accepted SOUL SHA-256.
+
+Do NOT import Hermes Agent as a new runtime dependency merely to obtain the constant.
+The project runtime must remain independently fail-closed and pinned to the already
+verified external contract.
+
+D. No mutation-to-pass
+----------------------
+
+The project must NOT:
+- delete SOUL.md;
+- rewrite SOUL.md;
+- normalize SOUL.md;
+- replace it with a project copy;
+- create a clean shadow credential home;
+- copy auth.json;
+- copy .env;
+- move credentials between homes.
+
+The repair is admission verification only.
+
+E. Preserve prompt-isolation intent
+-----------------------------------
+
+The rationale must be explicit in code/docs/tests:
+
+The exact accepted stock SOUL carries no user-authored customization and is byte-for-byte
+the pinned Hermes default identity. The exception does NOT mean arbitrary SOUL files are
+trusted.
+
+The existing `--ignore-user-config`, `--ignore-rules`, managed-profile memory/profile/
+compression/skills controls, ephemeral cwd, managed scope, web-only toolset, plugin
+controls, retry/fallback controls, and all no-authority controls remain unchanged.
+
+Do NOT claim that top-level one-shot `--ignore-rules` alone proves all context suppression.
+The merged contract already records that nuance.
+
+F. No policy or schema churn
+----------------------------
+
+Do NOT bump:
+- Hermes invocation policy schema/version;
+- controlled profile version;
+- research draft schema;
+- receipt schema;
+- HERMES-CTX state machine;
+- context protocol schemas.
+
+Do NOT change:
+- build_hermes_argv;
+- managed config bytes;
+- provider/model selection;
+- Firecrawl backend policy;
+- retry/fallback semantics;
+- telemetry semantics.
+
+This is a research-home compatibility correction only.
+
+===============================================================================
+4. REQUIRED TEST / NEGATIVE-ORACLE MATRIX
+===============================================================================
+
+Implement focused deterministic tests in
+tests/research_runtime/hermes_controlled_runtime/test_runner.py.
+
+At minimum prove:
+
+T01 — NO SOUL REGRESSION
+A currently valid clean research home with no SOUL.md still passes.
+
+T02 — EXACT STOCK SOUL ACCEPTED
+A home containing:
+- .env with clearly fake sentinel value;
+- auth.json with clearly fake sentinel value;
+- empty plugins/ if desired;
+- empty skills/ if desired;
+- exact 667-byte pinned stock SOUL.md
+passes `is_clean_research_home_control_plane`.
+
+T03 — EXACT STOCK SOUL REACHES OFFLINE CHILD
+`ExternalHermesCliBackend.invoke()` with the exact stock SOUL and the existing fake/offline
+inspection child does not fail at clean-home admission.
+
+No real Hermes/provider/network call.
+
+T04 — ONE-BYTE MODIFICATION REJECTED
+Change one byte of the stock SOUL. Fail closed.
+
+T05 — SAME-SIZE WRONG CONTENT REJECTED
+A different 667-byte regular file fails.
+
+T06 — TRUNCATED / EXTENDED REJECTED
+Both byte-length mismatches fail before accepted hashing semantics can pass.
+
+T07 — ARBITRARY CUSTOM SOUL REJECTED
+A normal custom persona/instruction file fails.
+
+T08 — SYMLINK SOUL REJECTED
+A SOUL.md symlink must fail closed.
+If platform permissions make symlink construction impossible in the test environment,
+use the repository's normal deterministic platform-aware skip pattern; do not weaken
+production behavior.
+
+T09 — OTHER PROFILE ARTIFACTS STILL FAIL
+Retain direct negative coverage for:
+- MEMORY.md
+- USER.md
+- AGENTS.md
+- CLAUDE.md
+- GEMINI.md
+- .cursorrules
+
+T10 — CONFIG / PLUGINS / SKILLS STILL FAIL
+- config.yaml fails;
+- non-empty plugins/ fails;
+- non-empty skills/ fails.
+
+T11 — CREDENTIAL VALUES REMAIN OPAQUE
+Existing fake .env/auth.json sentinel values must never appear in returned/sanitized
+evidence. The clean-home checker must not open or parse them.
+
+T12 — RECHECK CATCHES POST-PREFLIGHT MUTATION
+Prove that:
+1. exact stock SOUL passes;
+2. mutate SOUL before a later `invoke`;
+3. the invocation fails before child spawn.
+This preserves the value of the per-invocation clean-home check.
+
+T13 — FROZEN PIN CONSTANT
+A focused test must bind the accepted length/digest constants to:
+- 667 bytes
+- 36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f
+
+T14 — NO BROAD ALLOWLIST
+No legacy-template set, prefix match, normalization function, arbitrary allowlist, or
+caller-supplied accepted digest may exist.
+
+Existing tests that previously asserted all SOUL.md files fail must be surgically updated
+to distinguish:
+- exact pinned stock SOUL = allowed;
+- arbitrary/custom SOUL = rejected.
+
+Do not remove negative coverage merely to make the suite green.
+
+===============================================================================
+5. DOCUMENTATION / TRUTH RECONCILIATION
+===============================================================================
+
+A. Runtime contract
+-------------------
+
+Update docs/hermes_controlled_research_runtime_contract.md narrowly.
+
+Replace the inaccurate universal statement that research-home preflight rejects SOUL.md
+with truthful semantics:
+
+- exact pinned auto-seeded v0.21.3 stock SOUL.md is admitted only by exact raw-byte
+  length + SHA-256 verification;
+- arbitrary/custom SOUL.md remains fail-closed;
+- other profile-context names remain rejected as before;
+- .env/auth.json are still credential stores and their values are not inspected by this
+  preflight;
+- the exception exists solely because pinned Hermes necessarily initializes the stock
+  file;
+- no provider/retry/authority behavior changes.
+
+Do not rewrite unrelated Hermes history.
+
+B. Project status
+-----------------
+
+Add a compact top/current block for S10-HERMES-CTX-02 recording:
+- trigger: AF1 `HERMES_HOME_CONTROL_PLANE_INVALID`;
+- exact root cause;
+- AF1 Attempt-03 unconsumed;
+- no provider/Firecrawl/Polymarket calls consumed by discovery of the defect;
+- package is local/offline implementation repair;
+- AF1 remains blocked until repair merge + AF1 reconciliation + fresh exact authorization;
+- H1 #5 / Gate C / capital/orders unchanged.
+
+Do not falsely rewrite historical S10-HERMES-CTX-01 or H1 evidence.
+
+C. Repo truth
+-------------
+
+Register the new repair package and its canonical source/test/contract surfaces.
+Keep historical package entries intact.
+
+D. Stable status fragment
+-------------------------
+
+Create docs/status_entries/S10-HERMES-CTX-02.md with stable package facts.
+Do not put a mutable branch-head SHA in the stable fragment.
+
+E. Docs tests
+-------------
+
+Update only the focused project-status/repo-truth tests required to prove:
+- the package is registered;
+- scope is exactly 10/10;
+- authority remains non-provider/non-credential/non-trading;
+- AF1 Attempt-03 remains unconsumed/blocked pending successor reconciliation;
+- the runtime contract records exact-stock-only SOUL semantics.
+
+===============================================================================
+6. MACHINE SPEC REQUIREMENTS
+===============================================================================
+
+Create:
+docs/wp_specs/S10-HERMES-CTX-02/wp_spec.json
+
+The machine spec must mirror this prompt exactly.
+
+Required high-level fields:
+- package id/title/class;
+- frozen base;
+- RUNTIME / risk 3 authority;
+- exact 10 required == 10 allowed paths;
+- max_changed_files = 10;
+- exact_scope_required = true;
+- no dependency/workflow changes;
+- no product/provider/network authority;
+- no credential authority;
+- no AF1 Attempt-03 authority;
+- no H1 #5;
+- no Gate C/capital/orders;
+- semantic rule for exact-stock-only SOUL admission;
+- exact length/digest;
+- requirement-to-test evidence mapping T01-T14;
+- hard stops below;
+- successor boundary below.
+
+Authority mirror must equal this prompt.
+
+Do not use a PROTECTED certificate because the package does not grant credential,
+execution, live, workflow, dependency, or capital authority.
+
+Run the canonical WP spec/readiness guard before source implementation. It must pass
+for this exact package before code edits proceed.
+
+===============================================================================
+7. HARD STOPS
+===============================================================================
+
+STOP and report; do not improvise if any of these occur:
+
+H01 — BASE_STATE_DRIFT
+Current main/open-PR state materially differs from the frozen start state and cannot be
+truthfully reconciled before branch creation.
+
+H02 — PINNED_HERMES_SOUL_CONTRACT_DRIFT
+Exact pinned Hermes v0.21.3 / commit 345cd2b does not produce the frozen 667-byte /
+36c1f5... stock file.
+
+H03 — STOCK_SOUL_NOT_SUFFICIENT
+Hermes requires arbitrary/custom SOUL.md rather than the exact stock artifact for the
+controlled runtime to function.
+
+H04 — CREDENTIAL_READ_REQUIRED
+The repair would need to inspect/copy/transform `.env`, auth.json, OAuth material, or any
+secret.
+
+H05 — DEPENDENCY_OR_HERMES_VERSION_CHANGE_REQUIRED
+The fix requires a dependency/lock/version update.
+
+H06 — AUTHORITY_EXPANSION_REQUIRED
+Provider/network/credential/scheduler/strategy/paper/execution/live authority is required.
+
+H07 — OUT_OF_SCOPE_PRODUCT_PATH_REQUIRED
+A genuine product correction requires an 11th path or a path outside the exact package,
+rather than an ordinary same-capability test/doc correction inside the 10-path scope.
+
+H08 — ISOLATION_WEAKENING_REQUIRED
+Passing the real runtime would require accepting arbitrary SOUL, enabling user/project
+plugins, allowing config.yaml, or weakening existing managed-profile isolation.
+
+H09 — REQUIRED_VALIDATION_FAILURE
+A required focused, broad/full, security, readiness, or hosted-CI check cannot be made
+green without violating this contract.
+
+Ordinary defects inside the exact capability/scope are NOT hard stops.
+Fix them in-package.
+
+===============================================================================
+8. EXECUTION / VALIDATION PROTOCOL
+===============================================================================
+
+Before implementation:
+1. refresh main and open PRs;
+2. confirm frozen base;
+3. create the exact branch;
+4. materialize prompt/spec/status package;
+5. run canonical WP readiness/spec validation;
+6. confirm exact 10-path envelope.
+
+During implementation:
+- use focused runner tests;
+- use the project/repo-truth focused tests when docs stabilize;
+- do not repeatedly run the whole suite while source is moving.
+
+Required focused validation must include at minimum:
+- tests/research_runtime/hermes_controlled_runtime/test_runner.py
+- tests/research_runtime/hermes_controlled_runtime/test_controller.py
+- tests/research_runtime/hermes_controlled_runtime/test_context_controller.py
+- tests/research_runtime/hermes_controlled_runtime/test_context_broker_reconciliation.py
+- tests/test_project_status_docs.py
+- tests/test_repo_truth_docs.py
+- the canonical WP spec/readiness guards
+- exact diff/scope checks
+- normal security/secret scans applicable to the changed surface
+
+Stable-candidate rule:
+After the final source change, run the authoritative broad/full repository suite ONCE.
+
+Then:
+1. commit stable candidate;
+2. push;
+3. create/update one draft PR;
+4. run/obtain fresh exact-head hosted CI;
+5. do not change source afterward without invalidating/re-running the required evidence;
+6. report exact final head and all evidence truthfully.
+
+Because this is RUNTIME / risk 3:
+- obtain the normal independent implementation review required by current governance;
+- Side13 will separately perform final exact-head review;
+- Karl alone decides merge.
+
+No real provider, Firecrawl, Polymarket, OAuth, or AF1 runtime execution is part of this WP.
+
+===============================================================================
+9. ACCEPTANCE CRITERIA
+===============================================================================
+
+Implementation is complete only if ALL are true:
+
+A01 exact scope = 10/10.
+A02 canonical readiness = IMPLEMENTATION_READY or current equivalent.
+A03 exact pinned stock SOUL passes clean-home preflight.
+A04 arbitrary/custom/modified SOUL fails closed.
+A05 symlink/non-regular SOUL fails closed.
+A06 all other existing profile-context forbiddances remain closed.
+A07 config/non-empty plugins/non-empty skills remain closed.
+A08 .env/auth.json credential contents are never inspected or emitted.
+A09 `ExternalHermesCliBackend.invoke` accepts exact stock SOUL but rejects a mutated SOUL
+    before child spawn.
+A10 no policy/provider/model/tool/retry/fallback/context/receipt semantics changed.
+A11 no AF1 file/artifact/attempt state changed.
+A12 no provider/model/Firecrawl/Polymarket/OAuth call occurred.
+A13 no dependency/lock/workflow change occurred.
+A14 focused validation green.
+A15 broad/full stable-candidate suite green.
+A16 exact-head hosted CI green.
+A17 PR/status/repo-truth evidence is truthful and non-contradictory.
+A18 independent RUNTIME implementation review complete.
+A19 Side13 review still pending after Codex completion.
+A20 merge not performed.
+
+===============================================================================
+10. SUCCESSOR BOUNDARY
+===============================================================================
+
+This repair does NOT authorize AF1 execution.
+
+After this WP is independently reviewed and Karl merges it:
+
+1. refresh merged main;
+2. reconcile the existing local AF1 branch onto the repaired main;
+3. produce a NEW exact AF1 Phase-A head;
+4. re-run AF1 focused/full validation as required;
+5. freeze new AF1 prompt/spec/gate/operator digests;
+6. obtain a NEW exact Attempt-03 runtime authorization bound to that new head;
+7. only then re-check the existing AF1 credential home against the repaired runtime;
+8. only then may the separately authorized AF1 continuation proceed.
+
+The existing AF1:
+- 38-key envelope semantics;
+- actual-count semantics;
+- population/result binding;
+- CORE/EXPLORATION/AUDIT logic;
+- blind-review protocol;
+- gate dimensions;
+- retry_limit = 0;
+- no fallback;
+- one Attempt-03 boundary
+
+remain unchanged by this repair.
+
+Do not:
+- rebase AF1 in this WP;
+- issue AF1 runtime authorization in this WP;
+- consume Attempt-03;
+- start QUAL-01.
+
+===============================================================================
+11. REPORT BACK
+===============================================================================
+
+Return one concise completion report containing:
+
+1. exact base SHA;
+2. exact final branch/head SHA;
+3. actual changed paths and confirmation 10/10;
+4. exact implementation summary;
+5. exact accepted SOUL length/digest;
+6. focused test commands/results;
+7. broad/full suite result;
+8. readiness/spec result;
+9. security/secret/diff/scope result;
+10. provider/network/OAuth call count = 0;
+11. AF1 Attempt-03 state = UNCONSUMED;
+12. PR number/URL and exact PR head;
+13. hosted CI result on that exact head;
+14. independent implementation-review disposition;
+15. explicit:
+    - H1 #5 NOT AUTHORIZED
+    - Gate C NOT AUTHORIZED
+    - capital/orders 0
+    - merge NOT AUTHORIZED
+    - AF1 continuation NOT AUTHORIZED by this WP.
+
+FINAL EXECUTOR RULE:
+
+Do the narrow compatibility repair only.
+
+The product invariant after this WP must be:
+
+"An exact, non-user-authored, pinned Hermes v0.21.3 stock SOUL.md is a permitted runtime
+compatibility artifact. Any user-authored, modified, unknown, symlinked, or otherwise
+non-exact SOUL.md remains forbidden."
+
+Nothing else about Hermes authority, AF1 authority, or trading authority changes.
+
+===============================================================================
+APPENDIX A — CANONICAL MACHINE MIRROR (mirrors wp_spec.json; adds no authority)
+===============================================================================
+
+Governance track expected: RUNTIME
+Base branch: main (frozen 70f867bdcd5e97b0dc05d4008c2c023feb461658; PR #193 / WP164A merged)
+
+OBJECTIVE
+Admit SOUL.md in a dedicated controlled research HERMES_HOME only when it is a regular,
+non-symlink file whose raw bytes are exactly the pinned Hermes v0.21.3 stock default
+(667 bytes, SHA-256 36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f);
+every other SOUL.md and every other existing clean-home rule stays fail-closed.
+
+AUTHORITY / NON-AUTHORITY
+Exactly the governance authority block above. No provider, model, Firecrawl, Polymarket,
+OAuth, credential, dependency, workflow, scheduler, strategy, paper, execution, live,
+AF1 Attempt-03, H1 #5, Gate C, capital, order, or merge authority.
+
+CHANGED-FILE SCOPE
+Exactly the 10 paths in section 2; required == allowed == 10; exact_scope_required=true.
+
+NEGATIVE-TEST MATRIX
+T01-T14 in section 4, all as focused deterministic tests in
+tests/research_runtime/hermes_controlled_runtime/test_runner.py.
+
+HARD STOPS
+H01-H09 in section 7.
+
+Normative Rule Matrix:
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|soul|admission|absent|ACCEPT|clean_home_unchanged|soul.admission|R001
+NR002|soul|admission|exact_pinned_stock_bytes|ACCEPT|admitted|soul.admission|R002
+NR003|soul|admission|non_exact_bytes|REJECT|fail_closed|soul.admission|R004
+NR004|soul|admission|symlink_or_non_regular|REJECT|fail_closed|soul.admission|R008
+NR005|soul|admission|normalized_or_legacy_or_caller_digest|FORBID|fail_closed|soul.no_broadening|R014
+NR006|home|profile_context|other_named_artifact|REJECT|fail_closed|home.other_rules_unchanged|R009
+NR007|home|control_plane|config_or_nonempty_plugins_or_skills|REJECT|fail_closed|home.other_rules_unchanged|R010
+NR008|home|credentials|value_inspection|FORBID|names_only|credentials.opacity|R011
+NR009|invoke|admission|post_preflight_mutation|REJECT|fail_before_spawn|invoke.recheck|R012
+NR010|soul|pin|constant_drift|FORBID|frozen_667_36c1f5a2|soul.pin|R013
+NR011|authority|package|provider_or_trading_or_af1|FORBID|no_authority|authority.non_authority|NONE
+END_NORMATIVE_RULE_MATRIX_V1
+
+Evidence Plan (requirement mapping):
+R001-R014 map one-to-one to T01-T14 as named focused assertions in
+tests/research_runtime/hermes_controlled_runtime/test_runner.py (see wp_spec.json
+evidence_plan).
+
+SUCCESSOR BOUNDARY
+Section 10. Next: S10-GATE-AF1 post-repair reconciliation, separately authorized only.
+Never return MERGE AUTHORIZED.

@@ -6,9 +6,31 @@
 > effect. The managed v0.21.3 profile therefore explicitly disables memory, user profile,
 > compression, auxiliary title/background activity, project skill discovery, external
 > skill dirs, lazy installation, and private URLs. Missing dependencies fail closed.
-> Research-home name-only preflight also rejects SOUL/MEMORY/USER/AGENTS/CLAUDE/GEMINI,
-> `.cursorrules`, and non-empty profile-local skills. SOUL.md is a proven prompt input;
-> the other names are defense in depth, not a claim that each loads on every one-shot.
+> Research-home name-only preflight also rejects MEMORY/USER/AGENTS/CLAUDE/GEMINI,
+> `.cursorrules`, and non-empty profile-local skills. SOUL.md is a proven prompt input
+> and is governed by the S10-HERMES-CTX-02 exact-stock-only rule below; the other names
+> are defense in depth, not a claim that each loads on every one-shot.
+>
+> S10-HERMES-CTX-02 pinned default SOUL.md compatibility (exact-stock-only): pinned
+> Hermes v0.21.3 (tag v2026.9.14, commit 345cd2b) necessarily seeds its stock
+> `DEFAULT_SOUL_MD` into any initialized home, so a universal SOUL.md rejection is
+> structurally incompatible with the pinned runtime. The research-home preflight
+> therefore admits SOUL.md ONLY when it is a regular, non-symlink file whose raw bytes
+> are exactly the pinned auto-seeded stock default, verified by exact raw-byte length
+> **667** and SHA-256
+> **`36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f`** with no
+> normalization of whitespace, BOM, line endings, Unicode, or encoding. That file carries
+> no user-authored customization; the exception does NOT mean arbitrary SOUL files are
+> trusted. Every custom, modified, truncated, extended, symlinked, non-regular, or
+> unreadable SOUL.md remains fail-closed, and there is no legacy-template, prefix, fuzzy,
+> or caller-supplied-digest path. All other profile-context names, `config.yaml`,
+> non-empty `plugins/`, and non-empty `skills/` remain rejected as before. `.env` and
+> `auth.json` remain permitted credential stores whose values this preflight never
+> opens or inspects; SOUL.md is the only file whose bytes it reads. The check is
+> admission verification only (never deletes, rewrites, or replaces SOUL.md) and is
+> repeated before every invocation, so a post-preflight mutation fails before spawn.
+> No provider, model, toolset, managed-profile, argv, retry, fallback, telemetry,
+> context-protocol, or authority behavior changes.
 > Exact-session `state.db` evidence is now projected read-only by repository code. Pinned
 > local URL checks are enforced before dispatch and on returned final URLs, but remote
 > Firecrawl HTTP/redirect telemetry remains UNAVAILABLE, remote private-target proof is

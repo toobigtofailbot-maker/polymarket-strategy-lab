@@ -4583,3 +4583,52 @@ def test_wp164a_is_active_bounded_upstream_repair() -> None:
         in scope["required_changed_files"]
     )
     assert "tools/polymarket/run_wp164a_public_smoke.py" in scope["required_changed_files"]
+
+
+def test_s10_hermes_ctx02_is_current_bounded_compatibility_repair() -> None:
+    project = _read()
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-HERMES-CTX-02" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    current = next(
+        line
+        for line in project.splitlines()
+        if line.startswith("# S10-HERMES-CTX-02 current bounded compatibility repair")
+    )
+    assert project.index(current) < project.index("# WP164A active bounded upstream repair")
+    assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
+    assert "Exact changed-file scope: 10" in current
+    assert "70f867bdcd5e97b0dc05d4008c2c023feb461658" in current
+    assert "HERMES_HOME_CONTROL_PLANE_INVALID" in current
+    assert "667 bytes" in current
+    assert "36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f" in current
+    assert "defect-discovery provider/Firecrawl/Polymarket calls: 0" in current
+    assert "AF1 Attempt-03: UNCONSUMED / NOT AUTHORIZED" in current
+    assert "S10-GATE-AF1: BLOCKED until this repair merges" in current
+    assert "H1 #5: NOT AUTHORIZED" in current and "Gate C: NOT AUTHORIZED" in current
+    assert "capital/orders: 0" in current and "Merge authorized: NO" in current
+    assert "historical S10-HERMES-CTX-01 and S10-GATE-H1 evidence is unchanged" in project
+    identity = spec["identity"]
+    assert identity["wp_id"] == "S10-HERMES-CTX-02"
+    assert identity["risk_level"] == 3 and identity["package_size_class"] == "M"
+    assert identity["required_predecessor"]["merge_sha"] == (
+        "70f867bdcd5e97b0dc05d4008c2c023feb461658"
+    )
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 10
+    assert scope["exact_scope_required"] is True
+    assert "src/research_runtime/hermes_controlled_runtime/runner.py" in scope[
+        "required_changed_files"
+    ]
+    authority = spec["authority"]
+    for key in ("network", "credentials", "dependencies", "workflow_files", "scheduler",
+                "strategy", "paper", "execution", "live"):
+        assert authority[key] is False
+    assert authority["hermes_runtime"] is True and authority["source_runtime"] is True
+    assert spec["successor_boundary"]["next_wp"] == "S10-GATE-AF1"
+    forbidden = " ".join(spec["successor_boundary"]["forbidden_in_this_wp"])
+    assert "AF1 Attempt-03" in forbidden and "H1 number five" in forbidden
+    assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]

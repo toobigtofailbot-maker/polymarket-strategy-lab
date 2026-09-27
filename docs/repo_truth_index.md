@@ -1,5 +1,27 @@
 # Repo Truth Index
 
+## S10-HERMES-CTX-02 Pinned Default SOUL.md Compatibility Repair (current bounded compatibility repair)
+
+The canonical package is `docs/wp_specs/S10-HERMES-CTX-02/`; the stable fragment is
+`docs/status_entries/S10-HERMES-CTX-02.md`. The frozen base is PR #193's merge commit
+`70f867bdcd5e97b0dc05d4008c2c023feb461658`. The only source change is a private exact-bytes
+verifier in `src/research_runtime/hermes_controlled_runtime/runner.py` used by
+`is_clean_research_home_control_plane`; focused T01-T14 evidence is in
+`tests/research_runtime/hermes_controlled_runtime/test_runner.py`; the canonical semantics are
+recorded in `docs/hermes_controlled_research_runtime_contract.md`.
+
+Trigger: S10-GATE-AF1 Phase-B `HERMES_HOME_CONTROL_PLANE_INVALID`. Pinned Hermes v0.21.3
+(tag v2026.9.14, commit 345cd2b) seeds its stock SOUL.md into every initialized home, so the
+former universal SOUL.md rejection could never pass. SOUL.md is now admitted only as the exact
+pinned stock default (667 bytes, SHA-256
+`36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f`, regular non-symlink file,
+no normalization); every other SOUL.md and every other clean-home rule stays fail-closed, and
+`.env`/`auth.json` values are never opened. No provider, model, Firecrawl, Polymarket, OAuth,
+credential, dependency, workflow, policy, argv, retry, telemetry, or context-protocol change.
+AF1 Attempt-03 remains unconsumed and not authorized; S10-GATE-AF1 remains blocked pending
+merge, AF1 reconciliation onto repaired main, and a fresh exact authorization. H1 #5, Gate C,
+capital, and orders are unchanged.
+
 ## WP164A Public Population Compatibility Repair (active bounded upstream repair)
 
 The canonical package is `docs/wp_specs/WP164A/`; implementation is a narrow additive repair to
