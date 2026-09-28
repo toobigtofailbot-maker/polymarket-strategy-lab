@@ -1,0 +1,1982 @@
+SIDE13 — S10-GATE-QUAL-01
+FINAL ONE-SHOT IMPLEMENTATION-AUTHORIZING WORK PACKAGE
+DETERMINISTIC QUALIFICATION PACKET ACCEPTANCE GATE
+
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Authority owner: Karl / Side13
+Drafting date: 2026-09-28
+Draft status: FINAL — READY FOR KARL TO SEND
+This exact package authorizes implementation of S10-GATE-QUAL-01 when Karl sends/approves it.
+It does NOT authorize merge, a real qualification evaluation, WP170 construction/OOS, economics,
+paper, execution, live trading, Gate C, capital, credentials, network or any successor.
+
+===============================================================================
+0. FROZEN LIVE STATE / PACKAGE IDENTITY
+===============================================================================
+
+WP ID:
+S10-GATE-QUAL-01
+
+Title:
+Deterministic Qualification Packet Acceptance Gate
+
+Repository:
+toobigtofailbot-maker/polymarket-strategy-lab
+
+Base branch:
+main
+
+Frozen drafting base / required current main:
+b5cfb9846ff78af2d1a260843d5f2f1a67639305
+
+Required predecessor:
+PR #197 / S10-QUAL-01
+
+Required predecessor final implementation head:
+652a2181926ac6f92f72d0013af99ec5e24ba892
+
+Required predecessor merge SHA:
+b5cfb9846ff78af2d1a260843d5f2f1a67639305
+
+Required predecessor PR state at drafting freeze:
+MERGED / isDraft=false
+
+Open PRs at final drafting freeze:
+0
+
+Overlapping remote S10-GATE-QUAL-01 branch found at final drafting freeze:
+none
+
+Suggested branch:
+codex/s10-gate-qual-01-acceptance-gate
+
+Package class:
+DETERMINISTIC_QUALIFICATION_PACKET_ACCEPTANCE_GATE
+
+Package size class:
+L
+
+Exact changed-file budget:
+15
+
+Evidence mode expected:
+PRIVATE_REPO_MANUAL_VERIFIED
+
+Governance track expected: FAST
+Risk level: 2
+Capital at risk: USD 0
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Core authority invariant:
+
+  canonical Alpha research support
+  + immutable S10-QUAL-01 candidate
+  + exact AF1 predecessor evidence
+  + exact PIT/provenance evidence
+      |
+      v
+  S10-GATE-QUAL-01 qualification decision
+      |
+      +-- QUAL_PASS         -> eligible to BEGIN separately authorized WP170 candidate work
+      +-- QUAL_FAIL         -> NOT eligible for WP170
+      +-- QUAL_INCONCLUSIVE -> NOT eligible for WP170; evidence/research remains incomplete
+
+QUAL_PASS
+!= predictive edge
+!= OOS success
+!= executable edge
+!= profitability
+!= paper authority
+!= live authority
+!= Gate C authority.
+
+This implementation WP builds the deterministic gate capability only.
+It MUST NOT manufacture or evaluate a real production/local candidate merely to obtain QUAL_PASS.
+
+Use the highest practical coding/reasoning mode.
+
+Do not ask Karl ordinary implementation questions. Resolve same-capability implementation/test/doc
+defects autonomously inside this exact package. Stop only for the hard stops in Section 18.
+
+CRITICAL PR PUBLICATION RULE FOR THIS AND ALL FOLLOWING EXECUTION:
+The GitHub pull request MUST be created as Ready for Review from the start.
+NEVER create, convert, or leave the PR as a Draft, even temporarily.
+Do not use `gh pr create --draft`.
+Before final handoff, `gh pr view --json isDraft,state,headRefOid` MUST prove:
+  isDraft == false
+  state == OPEN
+  headRefOid == exact tested/published head.
+
+===============================================================================
+1. SINGLE CAPABILITY / OBJECTIVE
+===============================================================================
+
+Implement exactly one new deterministic crossing capability:
+
+  existing immutable NON_WALLET QualificationCandidate
+  + current verified AlphaFactoryRegistrySnapshot
+  + exact candidate-bound AF1GateReceipt
+  + exact candidate-bound ResearchProvenanceManifest set
+      |
+      v
+  structural revalidation / exact external rebinding
+      |
+      v
+  eight closed qualification-readiness dimensions
+      |
+      v
+  immutable content-addressed QualificationGateReceipt
+      |
+      v
+  QUAL_PASS / QUAL_FAIL / QUAL_INCONCLUSIVE
+
+S10-GATE-QUAL-01 is qualification authority only.
+
+A valid QUAL_PASS says exactly:
+"The exact candidate packet and the evidence bound by this policy are sufficiently ready to enter
+a separately authorized candidate-specific WP170 implementation."
+
+It does NOT say:
+- that the hypothesis is predictive out of sample;
+- that B1/B2 models have been implemented or fitted;
+- that an OOS result exists;
+- that expected return or executable economics are positive;
+- that paper/live trading is allowed;
+- that capital may be deployed;
+- that Gate C may be entered.
+
+No real candidate evaluation occurs in this implementation WP.
+Synthetic deterministic fixtures MUST prove all terminal paths.
+
+===============================================================================
+2. STARTUP / STATE GATE
+===============================================================================
+
+Before branch creation or implementation:
+
+1. read the mandatory startup files from WP_EXECUTION_STATE_MACHINE;
+2. fetch origin;
+3. verify origin/main == b5cfb9846ff78af2d1a260843d5f2f1a67639305;
+4. verify local main can synchronize exactly to that SHA without losing local work;
+5. verify PR #197 is merged with:
+   - head 652a2181926ac6f92f72d0013af99ec5e24ba892
+   - merge b5cfb9846ff78af2d1a260843d5f2f1a67639305
+   - GitHub isDraft == false;
+6. verify the merged S10-QUAL-01 implementation still provides:
+   - src/data_layer/analytical_research/qualification.py;
+   - QualificationCandidate;
+   - QualificationControlResult;
+   - build_qualification_candidate;
+   - validate_qualification_candidate;
+   - qualification_candidate_to_mapping;
+   - qualification_candidate_from_mapping;
+   - exact NON_WALLET / wallet-gated behavior;
+7. verify the canonical AF1 predecessor remains FINALIZED AF1_PASS with all ten dimensions PASS;
+8. list open PRs and remote branches;
+9. verify no S10-GATE-QUAL-01 branch/PR/status/spec/source implementation already exists;
+10. verify working tree clean;
+11. reopen only the minimum live contract surfaces:
+    - src/data_layer/analytical_research/qualification.py
+    - src/data_layer/analytical_research/alpha_factory.py
+    - src/data_layer/analytical_research/alpha_factory_registry.py
+    - src/data_layer/analytical_research/alpha_factory_gate.py
+    - src/data_layer/analytical_research/experiment_os.py
+    - src/data_layer/point_in_time_market_research/research_provenance.py
+    - src/data_layer/analytical_research/__init__.py
+    - docs/qualification_candidate_contract.md
+    - docs/deferred_items_log.md
+    - docs/long_term_bot_completion_roadmap.md
+    - docs/project_status.md
+    - docs/repo_truth_index.md
+    - docs/ai/codex/WP_DRAFTING_STANDARD.md
+    - docs/ai/codex/WP_SPEC_STANDARD.md
+    - docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md
+    - tests/test_project_status_docs.py
+    - tests/test_repo_truth_docs.py
+
+Do NOT repeat broad external research.
+
+Hard startup results:
+- STATE_DRIFT
+- EXISTING_WP_CONFLICT
+- OPEN_SCOPE_CONFLICT
+- S10_GATE_QUAL_01_SCOPE_EXPANSION_REQUIRED
+- AUTHORITY_EXPANSION_REQUIRED
+
+If startup passes, create exactly:
+  codex/s10-gate-qual-01-acceptance-gate
+from:
+  b5cfb9846ff78af2d1a260843d5f2f1a67639305
+
+===============================================================================
+3. PACKAGE MATERIALIZATION / PRE-IMPLEMENTATION READINESS
+===============================================================================
+
+Before source implementation:
+
+- materialize this complete UTF-8 package at:
+  docs/wp_specs/S10-GATE-QUAL-01/wp_prompt.txt
+
+- materialize Appendix A exactly at:
+  docs/wp_specs/S10-GATE-QUAL-01/wp_spec.json
+
+- create NO draftability certificate.
+  FAST / Risk 2 does not require one.
+
+Run:
+
+  python tools/wp/wp_readiness_gate.py \
+    --wp docs/wp_specs/S10-GATE-QUAL-01/wp_prompt.txt \
+    --spec docs/wp_specs/S10-GATE-QUAL-01/wp_spec.json \
+    --repo-root .
+
+Require:
+
+  IMPLEMENTATION_READY
+  governance_track FAST
+  minimum_governance_track FAST
+  scope_file_count 15
+  certificate_required false
+
+A prompt/spec internal contradiction may be corrected only inside the two package artifacts, only
+if capability, authority and exact 15-path scope remain unchanged. Otherwise STOP.
+
+Materialization correction note (executor, Section 3 allowance): the pre-implementation
+readiness gate reported READINESS_PROMPT_STRUCTURE_INVALID because the prompt lacked the closed
+"report-back" structural signal. The only correction is the Section 23 heading wording
+("FINAL HANDOFF / REPORT-BACK TO SIDE13") plus this note. Capability, authority, the exact
+15-path scope and Appendix A (byte-identical to wp_spec.json) are unchanged.
+
+===============================================================================
+4. EXACT CHANGED-FILE SCOPE — 15 PATHS
+===============================================================================
+
+Change exactly:
+
+  01. docs/qualification_gate_contract.md
+  02. docs/qualification_candidate_contract.md
+  03. docs/deferred_items_log.md
+  04. docs/long_term_bot_completion_roadmap.md
+  05. docs/project_status.md
+  06. docs/repo_truth_index.md
+  07. docs/status_entries/S10-GATE-QUAL-01.md
+  08. docs/wp_specs/S10-GATE-QUAL-01/wp_prompt.txt
+  09. docs/wp_specs/S10-GATE-QUAL-01/wp_spec.json
+  10. src/data_layer/analytical_research/__init__.py
+  11. src/data_layer/analytical_research/qualification_gate.py
+  12. tests/data_layer/analytical_research/test_qualification_gate.py
+  13. tests/data_layer/analytical_research/test_qualification_gate_boundaries.py
+  14. tests/test_project_status_docs.py
+  15. tests/test_repo_truth_docs.py
+
+No 16th path.
+
+Specifically DO NOT modify:
+- src/data_layer/analytical_research/qualification.py
+- src/data_layer/analytical_research/experiment_os.py
+- src/data_layer/analytical_research/experiment_registry.py
+- src/data_layer/analytical_research/alpha_factory.py
+- src/data_layer/analytical_research/alpha_factory_registry.py
+- src/data_layer/analytical_research/alpha_factory_gate.py
+- src/data_layer/analytical_research/alpha_discovery.py
+- src/data_layer/analytical_research/alpha_discovery_registry.py
+- src/data_layer/point_in_time_market_research/**
+- src/data_layer/polymarket/**
+- src/data_layer/wallet_intelligence/**
+- src/research_runtime/**
+- src/paper_trading/**
+- src/execution_gateway/**
+- src/oms/**
+- src/risk/**
+- tools/**
+- .github/workflows/**
+- dependencies or lock files
+- local_data/** as tracked content.
+
+The existing S10-QUAL-01 status fragment is historical predecessor evidence and is NOT rewritten
+in this package. Current truth moves forward through project_status, repo_truth_index and the new
+S10-GATE-QUAL-01 status fragment.
+
+If a 16th path is mechanically necessary:
+STOP S10_GATE_QUAL_01_SCOPE_EXPANSION_REQUIRED.
+
+===============================================================================
+5. AUTHORITY / NON-AUTHORITY
+===============================================================================
+
+AUTHORIZED:
+- one deterministic local/offline qualification-gate source module;
+- one immutable content-addressed QualificationGateReceipt;
+- one closed QualificationGateControlResult;
+- deterministic revalidation/rebinding of already-supplied in-memory canonical objects;
+- deterministic PASS/FAIL/INCONCLUSIVE qualification decision under this frozen policy;
+- qualification-only `wp170_entry_eligible` derivation;
+- exact package exports;
+- focused deterministic synthetic tests;
+- contract/status/roadmap/spec updates;
+- normal git branch/commit/push;
+- creation of exactly one GitHub PR in Ready-for-Review state (`isDraft=false`);
+- same-capability correction cycles inside the 15 files before stable final head.
+
+NOT AUTHORIZED:
+- a real production/local candidate build or real qualification run;
+- persistence/publication of a real QualificationGateReceipt;
+- any product/network call;
+- Hermes/provider/model/Firecrawl;
+- H1 #5;
+- wallet API/chain acquisition;
+- scheduler/daemon/worker/Prefect flow;
+- credential/OAuth/private key/account access;
+- qualification registry/gate registry/file writer;
+- modification of S10-QUAL-01 candidate schema or implementation;
+- WP170 experiment creation/persistence/lifecycle/OOS release;
+- candidate-specific model/calibrator/FeatureDefinition implementation;
+- WP172 economics;
+- WP173 paper;
+- strategy/paper/execution/live;
+- signing/order create/cancel;
+- Gate C/capital;
+- dependency/workflow changes;
+- merge.
+
+===============================================================================
+6. ARCHITECTURE — ONE GATE RECEIPT, NO SECOND TRUTH SYSTEM
+===============================================================================
+
+Add exactly:
+
+  src/data_layer/analytical_research/qualification_gate.py
+
+The package adds:
+- ONE immutable QualificationGateReceipt;
+- ONE closed QualificationGateControlResult;
+- deterministic evaluate/validate/mapping-roundtrip functions;
+- NO SQLite registry;
+- NO file writer;
+- NO CLI/operator;
+- NO current-time lookup;
+- NO random source;
+- NO environment lookup;
+- NO new provenance family;
+- NO new Alpha memory;
+- NO WP170 object.
+
+Canonical authorities remain:
+- Alpha Factory registry -> canonical Alpha research memory;
+- AF1GateReceipt -> research-system gate predecessor evidence;
+- ResearchProvenanceManifest -> shared PIT/DQ/replay provenance core;
+- QualificationCandidate -> frozen non-qualifying candidate packet;
+- S10-GATE-QUAL-01 QualificationGateReceipt -> qualification decision only;
+- WP170 -> later preregistration/OOS authority;
+- WP172 -> executable economics;
+- WP173 -> paper.
+
+The gate binds existing authorities by immutable ids and verified supplied objects.
+It does not replace or duplicate their stores.
+
+===============================================================================
+7. STRUCTURAL CONTROL RESULT != SUBSTANTIVE QUALIFICATION RESULT
+===============================================================================
+
+This separation is mandatory.
+
+STRUCTURAL CONTROL REJECTION:
+- candidate malformed/tampered/not semantically valid;
+- current Alpha snapshot structurally invalid or not an append-only descendant/equal history;
+- wrong/malformed/unbound AF1 receipt;
+- wrong/malformed/unbound provenance manifest set;
+- schema/type/identity/authority invariant failure;
+- internal validation failure.
+
+Structural rejection returns:
+  QualificationGateControlResult.is_valid == false
+  status == QUALIFICATION_GATE_REJECTED
+  receipt == None
+  exactly one closed error code
+
+It MUST NOT manufacture:
+  QUAL_FAIL
+  QUAL_INCONCLUSIVE
+
+SUBSTANTIVE GATE DECISION:
+Only after all structural/external-binding admission checks succeed may the gate emit an immutable
+QualificationGateReceipt whose overall_disposition is exactly one of:
+
+  QUAL_PASS
+  QUAL_FAIL
+  QUAL_INCONCLUSIVE
+
+This prevents malformed evidence from being reinterpreted as a research conclusion.
+
+===============================================================================
+8. PUBLIC API / IMMUTABLE RECEIPT
+===============================================================================
+
+Export from `src.data_layer.analytical_research` exactly the new public surface needed by future
+consumers and tests.
+
+Required public constants:
+
+  QUALIFICATION_GATE_SCHEMA_VERSION = "1.0.0"
+  QUALIFICATION_GATE_RECEIPT_SCHEMA_ID = "polymarket-qualification-gate-receipt"
+  QUALIFICATION_GATE_POLICY_VERSION = "qualification-gate-policy/1.0.0"
+
+  QUALIFICATION_GATE_STATUSES:
+    QUALIFICATION_GATE_VALID
+    QUALIFICATION_GATE_REJECTED
+
+  QUALIFICATION_GATE_DIMENSIONS, exact order:
+    PACKET_INTEGRITY
+    CURRENT_RESEARCH_LINEAGE
+    PREDECESSOR_EVIDENCE
+    PIT_PROVENANCE_READINESS
+    SAMPLE_POWER_READINESS
+    WP170_CROSSING_READINESS
+    EXECUTION_EVIDENCE_READINESS
+    AUTHORITY_CONTAINMENT
+
+  QUALIFICATION_GATE_DIMENSION_STATUSES:
+    PASS
+    FAIL
+    INCONCLUSIVE
+
+  QUALIFICATION_GATE_DISPOSITIONS:
+    QUAL_PASS
+    QUAL_FAIL
+    QUAL_INCONCLUSIVE
+
+Required public types/functions:
+
+  QualificationGateReceipt
+  QualificationGateControlResult
+  evaluate_qualification_gate(...)
+  validate_qualification_gate_receipt(...)
+  qualification_gate_receipt_to_mapping(...)
+  qualification_gate_receipt_from_mapping(...)
+
+Primary evaluator signature:
+
+  evaluate_qualification_gate(
+      candidate,
+      alpha_registry_snapshot,
+      af1_gate_receipt,
+      provenance_manifests,
+  ) -> QualificationGateControlResult
+
+No path argument. No store write. No clock. No random seed. No environment. No network.
+
+QualificationGateReceipt exact semantic fields, in stable dataclass order:
+
+  schema_id
+  schema_version
+  qualification_gate_receipt_id
+  policy_version
+  qualification_candidate_id
+  candidate_version
+  candidate_information_cutoff
+  candidate_alpha_registry_head_entry_hash
+  current_alpha_registry_head_entry_hash
+  alpha_candidate_id
+  hypothesis_family_id
+  governing_research_episode_id
+  af1_gate_receipt_id
+  research_provenance_manifest_ids
+  experiment_os_schema_version
+  dimension_statuses
+  overall_disposition
+  wp170_entry_eligible
+  successor_authorization_required
+  no_strategy_authority
+  no_paper_authority
+  no_execution_authority
+  no_live_authority
+  no_gate_c_authority
+
+Fixed:
+  schema_version == "1.0.0"
+  policy_version == "qualification-gate-policy/1.0.0"
+  successor_authorization_required == true
+  no_strategy_authority == true
+  no_paper_authority == true
+  no_execution_authority == true
+  no_live_authority == true
+  no_gate_c_authority == true
+
+ID:
+  qualificationgate:sha256:<64 lowercase hex>
+
+Identity covers every normalized semantic field except `qualification_gate_receipt_id`.
+
+`dimension_statuses` is the exact ordered eight-dimension tuple/list representation; caller order
+cannot alter canonical identity.
+
+QualificationGateControlResult exact fields:
+
+  is_valid
+  status
+  error_codes
+  receipt
+  no_strategy_authority
+  no_paper_authority
+  no_execution_authority
+  no_live_authority
+  no_gate_c_authority
+
+The five control-result no-authority flags are always true.
+
+Serialized receipt validation proves only the receipt's own closed schema/identity/aggregation.
+Only `evaluate_qualification_gate(...)` performs current external rebinding.
+
+===============================================================================
+9. ALPHA APPEND-ONLY ANCESTRY + CURRENT LINEAGE
+===============================================================================
+
+The gate consumes an already-verified current AlphaFactoryRegistrySnapshot in memory.
+It MUST NOT open or mutate the registry itself.
+
+Recheck enough closed semantics to prevent caller-fabricated snapshot objects from bypassing the
+gate:
+- exact AlphaFactoryRegistrySnapshot type/schema/version;
+- all four snapshot no-authority flags true;
+- entries is a nonempty tuple;
+- total_rows == len(entries);
+- sequence numbers are exact 0..N-1;
+- previous_entry_hash linkage is exact;
+- current head_entry_hash equals the final entry hash;
+- every candidate/family/episode record used by this gate passes the existing public Alpha
+  record-semantic roundtrip/validator;
+- candidate/family/episode ids and references are exact.
+
+CRITICAL ANCESTRY RULE:
+
+The candidate stores the Alpha registry head that existed when the candidate packet was built.
+The current Alpha registry is append-only. Therefore:
+
+  candidate.alpha_registry_head_entry_hash
+  MAY be older than
+  current_snapshot.head_entry_hash.
+
+Do NOT require equality.
+
+Instead require:
+- the candidate-bound head occurs as an exact entry_hash in the current linked chain;
+- therefore it is an ancestor of, or equal to, the current head;
+- the exact candidate, family and governing episode are present within the history up to that
+  bound head.
+
+If the candidate-bound head is absent, or chain/history compatibility cannot be established:
+  structural reject ALPHA_ANCESTRY_INVALID
+  no qualification receipt.
+
+Then evaluate current lineage across the complete current snapshot.
+
+Current-lineage PASS requires:
+- exact `(alpha_candidate_id, hypothesis_family_id)` lineage;
+- exactly ONE current leaf under the existing predecessor/reopened convention;
+- current leaf id == candidate.governing_research_episode_id;
+- current leaf.result_state == RESEARCH_SUPPORTIVE.
+
+If unrelated Alpha records were appended after the candidate head:
+  CURRENT_RESEARCH_LINEAGE = PASS.
+
+If later same-lineage research supersedes the candidate's governing episode, even with another
+RESEARCH_SUPPORTIVE episode:
+  CURRENT_RESEARCH_LINEAGE = FAIL.
+
+If the current exact lineage is ambiguous/multi-leaf or the governing leaf is any non-supportive
+state:
+  CURRENT_RESEARCH_LINEAGE = FAIL.
+
+This FAIL means the exact candidate packet no longer satisfies the gate's current-lineage
+criterion. It does not relabel every such research state as "hypothesis falsified."
+
+===============================================================================
+10. EXACT AF1 PREDECESSOR REBINDING
+===============================================================================
+
+The supplied AF1GateReceipt MUST:
+- be exact AF1GateReceipt type;
+- pass existing `validate_af1_record`;
+- have gate_receipt_id exactly equal candidate.af1_gate_receipt_id;
+- have evidence_state == FINALIZED;
+- have overall_disposition == AF1_PASS;
+- carry exactly the canonical AF1 dimension keyset;
+- have every AF1 dimension == PASS;
+- preserve all existing AF1 no-authority invariants.
+
+Any mismatch:
+  structural rejection
+  receipt == None.
+
+Do NOT hardcode the currently known AF1 receipt id as a universal product constant.
+The current receipt remains predecessor proof/fixture only.
+
+For any admitted evaluation:
+  PREDECESSOR_EVIDENCE = PASS.
+
+===============================================================================
+11. EXACT PROVENANCE REBINDING + READINESS
+===============================================================================
+
+11A. Structural binding
+
+`provenance_manifests` must be a nonempty bounded sequence of exact
+ResearchProvenanceManifest records.
+
+Require:
+- every manifest identity verifies using existing provenance validation;
+- every schema id/version is current;
+- every manifest information_cutoff is canonical UTC;
+- sorted unique supplied ids equal candidate.research_provenance_manifest_ids EXACTLY;
+- no missing and no extra manifest;
+- every manifest cutoff <= candidate.information_cutoff;
+- every split-plan dataset_snapshot_reference_id occurs in the union of manifest.dataset_refs.
+
+Any failure above:
+  structural PROVENANCE_INVALID / PROVENANCE_BINDING_INVALID
+  no gate receipt.
+
+11B. Readiness policy
+
+After structural binding, derive the complete candidate-declared evidence-reference set from:
+- every feature_plan.feature_evidence_refs value;
+- every label_plan.evidence_reference_ids value;
+- sample_power_plan.power_analysis_reference_id;
+- every nonempty execution_feasibility_plan.evidence_reference_ids value.
+
+Let:
+  bound_evidence_refs
+be the union of all supplied manifest.input_evidence_reference_ids.
+
+PIT_PROVENANCE_READINESS = PASS iff:
+- every declared evidence ref is in bound_evidence_refs;
+- every manifest.dq_flags == exactly ("OK",);
+- every manifest.replay_fidelity is EXACT or FAITHFUL;
+- every manifest.gap_summary == exactly "".
+
+Otherwise:
+  PIT_PROVENANCE_READINESS = INCONCLUSIVE.
+
+Never convert:
+- event_time into public availability;
+- a missing evidence ref into an inferred source;
+- PARTIAL into FAITHFUL;
+- a nonempty gap into "probably fine";
+- opaque evidence ids into content claims.
+
+The gate does not fetch/dereference arbitrary evidence ids.
+
+===============================================================================
+12. SAMPLE / POWER READINESS
+===============================================================================
+
+Decode the candidate's already-canonical sample_power_plan_json and dataset_split_plan_json.
+
+SAMPLE_POWER_READINESS = PASS iff all are true:
+
+  available_sample_count >= required_sample_count
+  available_independent_group_count >= required_independent_group_count
+  available_sample_count >= 3 * min_samples_per_role
+
+The final check is a necessary aggregate feasibility condition for the three future roles:
+formation, selection and OOS. It does NOT claim that role membership has already been materialized.
+
+Any shortfall:
+  SAMPLE_POWER_READINESS = INCONCLUSIVE.
+
+Never:
+- call the shortfall a structural invalidity;
+- turn adequate counts into proof of predictive power;
+- recompute a universal power formula;
+- alter target_power/significance/MDE;
+- materialize samples or OOS membership.
+
+The declared power method/reference/target/significance/MDE remain frozen candidate facts.
+
+===============================================================================
+13. WP170 CROSSING READINESS — DO NOT INVENT CURRENT B1 SUPPORT
+===============================================================================
+
+WP170_CROSSING_READINESS asks only:
+
+"Is the existing valid QualificationCandidate sufficiently specified to BEGIN separately
+authorized candidate-specific WP170 implementation work?"
+
+It does NOT ask:
+
+"Can the current unmodified WP170 implementation instantiate every requested candidate object
+without candidate-specific implementation?"
+
+Required:
+- candidate passes `validate_qualification_candidate`;
+- candidate.experiment_os_schema_version equals current EXPERIMENT_OS_SCHEMA_VERSION;
+- the candidate's already-validated hypothesis/feature/label/split/test-family plan remains intact;
+- GENERIC_METRIC or BINARY_PROBABILITY forecast plan remains exactly valid under S10-QUAL-01;
+- no gate code rewrites plan semantics.
+
+For a structurally admitted current candidate:
+  WP170_CROSSING_READINESS = PASS.
+
+Important limitation preserved:
+Current WP170 `SAFE_FEATURE_SOURCE_DEPENDENCIES` are market-observation fields only.
+The gate MUST NOT pretend PUBLIC_NON_MARKET B1 qualification feature refs are already valid
+WP170 FeatureDefinition ids.
+
+Exact feature/model/calibrator implementation remains candidate-specific WP170 successor work.
+
+Do NOT modify:
+  qualification.py
+  experiment_os.py
+  experiment_registry.py
+
+===============================================================================
+14. EXECUTION-EVIDENCE READINESS — MINIMUM FOUNDATION ONLY
+===============================================================================
+
+The gate is NOT WP172.
+
+Critical foundation classes for qualification entry:
+
+  FEES
+  RESOLUTION_RULES
+  TICK_SIZE_MIN_ORDER
+
+EXECUTION_EVIDENCE_READINESS = PASS iff:
+- each critical class state == AVAILABLE;
+- each has nonempty evidence refs by existing S10-QUAL rules;
+- each of those refs is included in bound provenance evidence refs.
+
+If any critical class is PARTIAL / MISSING / NOT_APPLICABLE, or its refs are not provenance-bound:
+  EXECUTION_EVIDENCE_READINESS = INCONCLUSIVE.
+
+These classes are NOT gate blockers when structurally valid:
+  SPREAD_DEPTH
+  LATENCY
+  PARTIAL_FILL
+
+They may remain:
+  AVAILABLE
+  PARTIAL
+  MISSING
+  NOT_APPLICABLE
+
+Their current state stays bound in the candidate and is carried forward.
+WP172 later owns executable economics.
+
+S10-GATE-QUAL-01 MUST NOT compute:
+- expected return;
+- fair value;
+- price edge;
+- spread-adjusted edge;
+- slippage;
+- latency impact;
+- partial-fill economics;
+- capacity/crowding;
+- position size;
+- PnL;
+- profitability;
+- trade side.
+
+===============================================================================
+15. EXACT EIGHT DIMENSIONS + AGGREGATION
+===============================================================================
+
+Every valid QualificationGateReceipt contains exactly these eight dimensions, in this order:
+
+1. PACKET_INTEGRITY
+2. CURRENT_RESEARCH_LINEAGE
+3. PREDECESSOR_EVIDENCE
+4. PIT_PROVENANCE_READINESS
+5. SAMPLE_POWER_READINESS
+6. WP170_CROSSING_READINESS
+7. EXECUTION_EVIDENCE_READINESS
+8. AUTHORITY_CONTAINMENT
+
+Dimension semantics:
+
+PACKET_INTEGRITY
+  PASS only.
+  Structural candidate failure yields no receipt.
+
+CURRENT_RESEARCH_LINEAGE
+  PASS or FAIL.
+
+PREDECESSOR_EVIDENCE
+  PASS only.
+  Structural AF1 failure yields no receipt.
+
+PIT_PROVENANCE_READINESS
+  PASS or INCONCLUSIVE.
+
+SAMPLE_POWER_READINESS
+  PASS or INCONCLUSIVE.
+
+WP170_CROSSING_READINESS
+  PASS only after structural candidate admission.
+
+EXECUTION_EVIDENCE_READINESS
+  PASS or INCONCLUSIVE.
+
+AUTHORITY_CONTAINMENT
+  PASS only.
+  Authority invariant failure yields no receipt.
+
+Aggregate deterministically:
+
+  if ANY dimension == FAIL:
+      overall_disposition = QUAL_FAIL
+  else if ANY dimension == INCONCLUSIVE:
+      overall_disposition = QUAL_INCONCLUSIVE
+  else:
+      overall_disposition = QUAL_PASS
+
+FAIL precedence over INCONCLUSIVE is mandatory.
+
+Derive:
+
+  wp170_entry_eligible = (overall_disposition == QUAL_PASS)
+
+Caller cannot supply:
+- dimension statuses;
+- overall disposition;
+- wp170_entry_eligible.
+
+===============================================================================
+16. AUTHORITY CONTAINMENT
+===============================================================================
+
+QualificationGateReceipt has real authority only for the qualification gate.
+
+It MUST NOT retain S10-QUAL-01's `no_qualification_authority=true`, because that would contradict
+the purpose of this successor gate.
+
+Instead the receipt must freeze:
+
+  successor_authorization_required == true
+  no_strategy_authority == true
+  no_paper_authority == true
+  no_execution_authority == true
+  no_live_authority == true
+  no_gate_c_authority == true
+
+Meaning:
+
+QUAL_PASS permits Karl/Side13 to consider/draft/authorize candidate-specific WP170 work.
+It does NOT itself authorize WP170 implementation or execution.
+
+QUAL_FAIL:
+  wp170_entry_eligible == false.
+
+QUAL_INCONCLUSIVE:
+  wp170_entry_eligible == false.
+
+No gate result grants:
+- wallet shortcut;
+- model training;
+- OOS exposure;
+- economic execution assessment;
+- paper trading;
+- live trading;
+- Gate C;
+- capital.
+
+===============================================================================
+17. CLOSED PRODUCT ERROR VOCABULARY / PUBLIC FAILURE DISCIPLINE
+===============================================================================
+
+Closed product error vocabulary, deterministic order:
+
+  SCHEMA_UNSUPPORTED
+  FIELD_TYPE_INVALID
+  FIELD_VALUE_INVALID
+  IDENTITY_DERIVATION_MISMATCH
+  CANDIDATE_INVALID
+  ALPHA_REGISTRY_INVALID
+  ALPHA_ANCESTRY_INVALID
+  AF1_RECEIPT_INVALID
+  AF1_BINDING_INVALID
+  PROVENANCE_INVALID
+  PROVENANCE_BINDING_INVALID
+  AUTHORITY_INVARIANT_INVALID
+  LIMIT_EXCEEDED
+  INTERNAL_VALIDATION_FAILED
+
+Public structural failures expose only:
+- closed status;
+- one closed error code;
+- no receipt.
+
+Never echo:
+- raw candidate mappings;
+- raw manifest mappings;
+- question text;
+- URLs;
+- secrets;
+- filesystem paths;
+- exception repr;
+- local environment details.
+
+===============================================================================
+18. HARD STOPS — ONLY MATERIAL BLOCKERS
+===============================================================================
+
+STOP, do not improvise, if:
+
+H01. origin/main != b5cfb9846ff78af2d1a260843d5f2f1a67639305 before branch creation.
+H02. PR #197/head/merge predecessor truth is contradicted.
+H03. an S10-GATE-QUAL-01 implementation/branch/PR already exists.
+H04. a 16th changed path is mechanically necessary.
+H05. qualification.py, experiment_os.py or experiment_registry.py must change.
+H06. an upstream Alpha/AF1/provenance schema/store must change.
+H07. a product network/Hermes/provider/wallet-runtime call is required.
+H08. credentials, scheduler, paper, execution, live or Gate-C authority is required.
+H09. a registry, file writer, real candidate run or real receipt persistence is mechanically
+     required to implement the deterministic gate capability.
+H10. valid append-only Alpha ancestry cannot be distinguished from current-head equality without
+     changing an upstream canonical contract.
+H11. the gate cannot truthfully separate structural rejection from QUAL_FAIL/QUAL_INCONCLUSIVE
+     within the authorized module.
+H12. final required tests/security/readiness/full suite/hosted CI remain red after ordinary
+     same-scope fixes.
+
+NOT hard stops:
+- ordinary code defect;
+- fixture defect;
+- docs wording defect;
+- import/export defect;
+- lint/type issue;
+- focused/full test failure whose repair stays inside the 15 files;
+- PR-body/evidence wording defect;
+- same-scope hosted-CI defect.
+
+Fix those autonomously, revalidate once stable, and continue.
+
+===============================================================================
+19. TEST MATRIX / ACCEPTANCE ORACLES
+===============================================================================
+
+Use deterministic synthetic fixtures only.
+Do NOT touch production/local research data.
+
+Focused tests must cover, at minimum:
+
+Q01 deterministic receipt identity and exact mapping roundtrip;
+Q02 included-field mutation changes receipt identity;
+Q03 unknown field / float / malformed mapping / self-consistent rehash forgery fails closed;
+Q04 invalid/tampered QualificationCandidate -> structural rejection / no receipt;
+Q05 candidate-bound Alpha head equal current head -> ancestry valid;
+Q06 unrelated Alpha append -> older candidate head remains valid ancestor and lineage stays PASS;
+Q07 missing candidate-bound Alpha head / broken chain -> ALPHA_ANCESTRY_INVALID / no receipt;
+Q08 later same-lineage supportive episode -> original candidate CURRENT_RESEARCH_LINEAGE FAIL;
+Q09 non-supportive current same-lineage leaf -> CURRENT_RESEARCH_LINEAGE FAIL;
+Q10 ambiguous/multiple current lineage leaves -> CURRENT_RESEARCH_LINEAGE FAIL;
+Q11 exact candidate-bound FINALIZED AF1_PASS/all dimensions PASS -> predecessor PASS;
+Q12 wrong/malformed/non-PASS/non-final AF1 -> structural rejection / no receipt;
+Q13 provenance exact-id set/cutoff/dataset refs rebind structurally;
+Q14 non-OK DQ / PARTIAL-or-UNREPLAYABLE replay / nonempty gap -> provenance INCONCLUSIVE;
+Q15 every declared feature/label/power/execution evidence ref must be provenance-bound for
+    provenance PASS;
+Q16 sufficient sample/group/three-role aggregate counts -> power PASS;
+Q17 any sample/group/three-role shortfall -> power INCONCLUSIVE;
+Q18 valid GENERIC_METRIC and BINARY_PROBABILITY packets -> WP170_CROSSING_READINESS PASS;
+Q19 gate does NOT claim current WP170 FeatureDefinition can already encode PUBLIC_NON_MARKET B1;
+Q20 FEES + RESOLUTION_RULES + TICK_SIZE_MIN_ORDER AVAILABLE/provenance-bound -> execution PASS;
+Q21 a critical execution class PARTIAL/MISSING/NOT_APPLICABLE -> execution INCONCLUSIVE;
+Q22 missing/PARTIAL SPREAD_DEPTH/LATENCY/PARTIAL_FILL alone does NOT block gate PASS;
+Q23 any FAIL overrides simultaneous INCONCLUSIVE -> QUAL_FAIL;
+Q24 no FAIL + any INCONCLUSIVE -> QUAL_INCONCLUSIVE;
+Q25 all eight PASS -> QUAL_PASS and wp170_entry_eligible true;
+Q26 QUAL_FAIL/QUAL_INCONCLUSIVE -> wp170_entry_eligible false;
+Q27 all successor/no-strategy/no-paper/no-execution/no-live/no-Gate-C flags exact true;
+Q28 no network/Hermes/provider/wallet-runtime/scheduler/credential/paper/execution/live path;
+Q29 no file writer/new registry/current time/random/env dependency;
+Q30 package exports exact; qualification.py and existing WP170 API remain unchanged;
+Q31 docs/status record PR #197 merged predecessor truth and no real QUAL result;
+Q32 exact 15/15/15 scope.
+
+Use parameterization for closed matrices. Do not inflate the suite with duplicate tests.
+
+Synthetic test fixtures MUST include at least:
+- one QUAL_PASS case;
+- one QUAL_FAIL case;
+- one QUAL_INCONCLUSIVE case;
+- one structural rejection case.
+
+A synthetic QUAL_PASS MUST be labelled synthetic/test-only everywhere and MUST NOT be written to
+canonical status as a real qualified candidate.
+
+===============================================================================
+20. DOCS / STATUS / DEFERRED-ITEM TRUTH
+===============================================================================
+
+Create:
+  docs/qualification_gate_contract.md
+  docs/status_entries/S10-GATE-QUAL-01.md
+
+Update:
+  docs/qualification_candidate_contract.md
+  docs/deferred_items_log.md
+  docs/long_term_bot_completion_roadmap.md
+  docs/project_status.md
+  docs/repo_truth_index.md
+
+Required status truth after implementation:
+
+- PR #197 / S10-QUAL-01 is MERGED:
+    head 652a2181926ac6f92f72d0013af99ec5e24ba892
+    merge b5cfb9846ff78af2d1a260843d5f2f1a67639305
+- S10-QUAL-01 remains a non-qualifying packet substrate.
+- S10-GATE-QUAL-01 deterministic gate implementation is complete on the branch.
+- Gate policy has eight closed dimensions and QUAL_PASS/QUAL_FAIL/QUAL_INCONCLUSIVE.
+- No real candidate was created/evaluated by this WP.
+- No real QualificationGateReceipt exists or is persisted by this WP.
+- Synthetic terminal outcomes are test fixtures only.
+- WP170 experiment/OOS: NOT STARTED / NOT AUTHORIZED by this WP.
+- WP172/WP173: NOT STARTED.
+- wallet qualification remains blocked on S10-WALLET-03 -> S10-WALLET-04 ->
+  S10-GATE-WALLET-01 -> real wallet evidence lane.
+- H1 #5: NOT AUTHORIZED.
+- Gate C: NOT AUTHORIZED.
+- capital/orders: 0.
+- product network/Hermes/provider/wallet runtime/scheduler/credentials: 0.
+- Merge authorized: NO.
+
+Deferred log:
+- mark S10-QUAL-01-D001's implementation-capability dependency as resolved by
+  S10-GATE-QUAL-01 implementation ONLY when this WP is implemented; do not imply a real
+  candidate has passed;
+- preserve S10-QUAL-01-D002 (WP170 B1/model/calibrator work);
+- preserve S10-QUAL-01-D003 (wallet-dependent qualification);
+- preserve S10-QUAL-01-D004 (first real candidate) as not authorized;
+- add a compact gate-specific deferred item recording that first real candidate evaluation,
+  durable real receipt handling/binding into candidate-specific WP170, and any required
+  persistence mechanism are successor work and are NOT invented here.
+
+Do NOT rewrite broad project history.
+
+===============================================================================
+21. VALIDATION PLAN — BALANCED, STABLE-CANDIDATE FIRST
+===============================================================================
+
+During implementation:
+- use focused tests while code is moving;
+- use affected-adjacent tests when the implementation stabilizes;
+- do not repeatedly run the full suite on unstable intermediate commits.
+
+At stable local candidate, run at minimum:
+
+A. Focused gate:
+  python -m pytest -q \
+    tests/data_layer/analytical_research/test_qualification_gate.py \
+    tests/data_layer/analytical_research/test_qualification_gate_boundaries.py \
+    tests/test_project_status_docs.py \
+    tests/test_repo_truth_docs.py
+
+B. Predecessor/adjacent:
+  python -m pytest -q \
+    tests/data_layer/analytical_research/test_qualification.py \
+    tests/data_layer/analytical_research/test_qualification_boundaries.py \
+    tests/data_layer/analytical_research/test_alpha_factory_registry.py \
+    tests/data_layer/analytical_research/test_alpha_factory_gate.py \
+    tests/data_layer/analytical_research/test_experiment_os_boundaries.py \
+    tests/data_layer/point_in_time_market_research/test_research_provenance.py
+
+C. Historical governance guards:
+  python -m pytest -q \
+    tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py \
+    tests/test_local_research_workflow_value_measurement_harness_contract_docs.py \
+    tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py
+
+D. Package readiness:
+  python tools/wp/wp_readiness_gate.py \
+    --wp docs/wp_specs/S10-GATE-QUAL-01/wp_prompt.txt \
+    --spec docs/wp_specs/S10-GATE-QUAL-01/wp_spec.json \
+    --repo-root .
+
+E. Exact scope:
+  python tools/git/diff_scope_summary.py \
+    --base b5cfb9846ff78af2d1a260843d5f2f1a67639305 \
+    --head HEAD \
+    --wp-spec docs/wp_specs/S10-GATE-QUAL-01/wp_spec.json \
+    --require-exact-scope \
+    --fail-on-warning
+
+F. Final committed-head readiness:
+  python tools/wp/wp_readiness_gate.py \
+    --wp docs/wp_specs/S10-GATE-QUAL-01/wp_prompt.txt \
+    --spec docs/wp_specs/S10-GATE-QUAL-01/wp_spec.json \
+    --repo-root . \
+    --check-diff \
+    --base b5cfb9846ff78af2d1a260843d5f2f1a67639305 \
+    --head HEAD
+
+G. Hygiene/security:
+  python tools/git/preflight_generated_artifact_guard.py
+  python tools/security/run_available_security_checks.py
+  python -m pip check
+  git diff --check b5cfb9846ff78af2d1a260843d5f2f1a67639305 HEAD --
+
+Run directly available project-local gitleaks/semgrep tooling when available and report unavailable
+security tooling truthfully. Do not claim a skipped/unavailable tool passed.
+
+H. Authoritative full suite:
+  python -m pytest -q
+
+Run ONE authoritative full suite on the stable committed candidate unless a genuine fix changes
+the candidate afterwards. If a fix changes it materially, rerun what is affected and rerun the
+authoritative full suite before publication.
+
+===============================================================================
+22. COMMIT / READY-FOR-REVIEW PR / HOSTED CI / EVIDENCE
+===============================================================================
+
+Only after local stable-candidate validation:
+
+1. commit the complete 15-path candidate;
+2. verify exact scope/readiness on committed HEAD;
+3. push the branch;
+4. create exactly one GitHub pull request WITHOUT the `--draft` flag.
+
+The PR MUST be Ready for Review from the instant it is created.
+
+FORBIDDEN:
+- `gh pr create --draft`;
+- creating a Draft PR and later marking it ready;
+- converting the PR back to Draft while fixing CI;
+- handing the PR back with `isDraft=true`.
+
+If same-scope CI/evidence corrections are required:
+- keep the same Ready-for-Review PR open;
+- fix inside authorized scope;
+- push;
+- rerun required validation;
+- do NOT change the PR to Draft.
+
+Immediately after creation and again at final handoff run:
+
+  gh pr view --json number,state,isDraft,headRefOid
+
+Require:
+  state == OPEN
+  isDraft == false
+  headRefOid == exact current branch HEAD
+
+Then:
+- populate the PR body with complete requirement -> evidence traceability;
+- include exact base/head SHAs;
+- include exact 15 required/allowed/actual paths;
+- include focused/adjacent/full-suite counts;
+- include readiness and diff-scope results;
+- include honest security-tool availability;
+- include network/activity statement proving product calls = 0;
+- include explicit "Ready for review: YES";
+- include explicit "Merge authorized: NO";
+- make no claim that a real candidate was qualified.
+
+Hosted CI:
+- trigger/watch the normal existing workflow only;
+- do not change workflows;
+- require all required jobs green on the exact final PR head;
+- if hosted CI fails, perform only same-capability/same-scope fixes;
+- after the final fix, require exact-head hosted CI green.
+
+Private-repo evidence:
+- use authenticated GitHub CLI/manual live verification when the public unauthenticated verifier
+  cannot read the repository;
+- report PRIVATE_REPO_MANUAL_VERIFIED truthfully;
+- do not invent a public verifier PASS.
+
+If the PR-body evidence consistency guard applies under current workflow, run it against the posted
+body after publication and require PASS. Its text evidence readiness does not replace the live
+GitHub `isDraft=false` check.
+
+===============================================================================
+23. FINAL HANDOFF / REPORT-BACK TO SIDE13
+===============================================================================
+
+Final Codex/Claude report must include:
+
+- WP ID/title;
+- base SHA;
+- final branch/head SHA;
+- PR number;
+- GitHub PR state:
+    OPEN
+    isDraft=false
+    Ready for Review
+- exact 15 changed files;
+- implementation summary;
+- eight dimension contract;
+- synthetic QUAL_PASS/QUAL_FAIL/QUAL_INCONCLUSIVE evidence only;
+- explicit statement:
+    REAL QUALIFICATION CANDIDATE EVALUATED: NO
+    REAL QUALIFICATION GATE RECEIPT PERSISTED: NO
+- focused test counts;
+- adjacent/regression counts;
+- authoritative full-suite count;
+- readiness result;
+- exact-scope result;
+- security results/unavailable tooling;
+- exact-head hosted CI result;
+- evidence mode;
+- explicit authority line:
+    first real candidate/evaluation: NOT AUTHORIZED BY THIS WP
+    WP170 experiment/OOS: NOT STARTED / NOT AUTHORIZED BY THIS WP
+    WP172/WP173: NOT STARTED
+    wallet qualification: NOT AUTHORIZED
+    H1 #5: NOT AUTHORIZED
+    Gate C: NOT AUTHORIZED
+    capital/orders: 0
+    Merge authorized: NO
+- Ready for review: YES.
+
+Then STOP.
+
+Do not merge.
+
+===============================================================================
+24. SUCCESSOR BOUNDARY
+===============================================================================
+
+After independent Side13 exact-head PASS and Karl merge of this gate implementation:
+
+1. The immediate operational dependency is a SEPARATELY AUTHORIZED real NON_WALLET
+   QualificationCandidate build/evaluation using canonical project evidence.
+2. That real evaluation must use the merged gate and produce a valid real QualificationGateReceipt.
+3. A real QUAL_FAIL means WP170 is not eligible for that candidate.
+4. A real QUAL_INCONCLUSIVE means WP170 is not eligible; missing evidence/research must be closed
+   without treating absence as failure or PASS.
+5. Only a real valid QUAL_PASS makes candidate-specific WP170 work eligible to be separately
+   drafted/authorized.
+6. WP170 must still solve candidate-specific feature/model/calibrator construction and an explicit,
+   durable qualification-receipt handoff/binding without pretending the current
+   PreregisteredExperiment already has a qualification_gate_receipt_id field.
+
+Nothing in this WP authorizes:
+- the first real candidate/evaluation;
+- persistence of a real gate receipt;
+- WP170 implementation;
+- OOS;
+- economics;
+- paper;
+- wallet shortcut;
+- execution/live;
+- Gate C.
+
+Machine-spec `successor_boundary.next_wp` is WP170 because that is the next software WP after a
+separate real QUAL_PASS; it is NOT permission to skip the real-evaluation dependency.
+
+===============================================================================
+25. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|gate|receipt|valid_evaluation|REQUIRE|content_addressed_qualification_only_receipt|gate.receipt|R001
+NR002|gate|control_boundary|structural_invalidity|REJECT|no_substantive_disposition_no_receipt|gate.control_boundary|R002
+NR003|alpha|ancestry|always|REQUIRE|candidate_head_ancestor_or_equal_current_head|alpha.ancestry|R003
+NR004|alpha|current_lineage|admitted_snapshot|REQUIRE|exact_current_supportive_governing_leaf|alpha.current_lineage|R004
+NR005|predecessor|af1|always|REQUIRE|exact_bound_final_af1_pass_all_dimensions|predecessor.af1_binding|R005
+NR006|provenance|binding|always|REQUIRE|exact_manifest_set_cutoff_dataset_binding|provenance.binding|R006
+NR007|provenance|readiness|admitted_binding|REQUIRE|dq_replay_gap_and_evidence_ref_sufficiency|provenance.readiness|R007
+NR008|qualification|sample_power|admitted_candidate|REQUIRE|declared_count_sufficiency_without_recalculation|qualification.sample_power_readiness|R008
+NR009|qualification|wp170_crossing|admitted_candidate|REQUIRE|candidate_specific_successor_readiness_not_current_feature_fiction|qualification.wp170_crossing|R009
+NR010|qualification|execution_foundation|admitted_candidate|REQUIRE|critical_evidence_available_noncritical_deferred|qualification.execution_readiness|R010
+NR011|gate|aggregation|valid_dimensions|REQUIRE|fail_then_inconclusive_then_pass_precedence|gate.aggregation|R011
+NR012|authority|gate_receipt|always|REQUIRE|qualification_only_no_successor_trading_authority|gate.authority|R011
+NR013|successor|real_evaluation_then_wp170|always|REQUIRE|separate_real_qual_pass_before_wp170|NONE|R018
+END_NORMATIVE_RULE_MATRIX_V1
+
+Evidence Plan (requirement mapping):
+R001-R011 -> focused qualification-gate tests;
+R012 -> qualification-gate boundary/import/side-effect tests;
+R013 -> S10-QUAL/Alpha/AF1/provenance/WP170 predecessor regression set;
+R014 -> project-status and repo-truth transition tests;
+R015 -> historical governance guards;
+R016 -> artifact/security/exact-scope/final-readiness checks;
+R017 -> pip/diff hygiene plus one authoritative stable-candidate full suite;
+R018 -> exact-head GitHub Ready-for-Review (`isDraft=false`) publication plus hosted CI.
+
+===============================================================================
+APPENDIX A — EXACT S10-GATE-QUAL-01 MACHINE SPEC JSON
+===============================================================================
+
+Materialize the JSON below at:
+  docs/wp_specs/S10-GATE-QUAL-01/wp_spec.json
+
+Do not semantically alter it unless the preimplementation readiness gate proves this Appendix
+itself internally invalid. A same-capability correction must remain inside the two package
+artifacts and preserve FAST/Risk-2 authority and exact 15-path scope. Otherwise STOP.
+
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-GATE-QUAL-01",
+    "title": "Deterministic Qualification Packet Acceptance Gate",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "DETERMINISTIC_QUALIFICATION_PACKET_ACCEPTANCE_GATE",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 197,
+      "head_sha": "652a2181926ac6f92f72d0013af99ec5e24ba892",
+      "merge_sha": "b5cfb9846ff78af2d1a260843d5f2f1a67639305"
+    },
+    "suggested_branch": "codex/s10-gate-qual-01-acceptance-gate",
+    "objective": "Implement one deterministic local/offline S10-GATE-QUAL-01 acceptance gate over the existing immutable NON_WALLET QualificationCandidate. The gate revalidates the packet, accepts an append-only descendant current Alpha snapshot, rebinds the exact AF1 receipt and exact provenance-manifest set, evaluates eight closed readiness dimensions, and emits one immutable qualification-only receipt with QUAL_PASS, QUAL_FAIL or QUAL_INCONCLUSIVE. QUAL_PASS means only eligible to begin separately authorized candidate-specific WP170 work; no real candidate evaluation, receipt persistence, WP170 construction/OOS, economics, paper, execution, live, Gate C, network, credentials or merge authority is included.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/qualification_gate_contract.md",
+      "docs/qualification_candidate_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-GATE-QUAL-01.md",
+      "docs/wp_specs/S10-GATE-QUAL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-GATE-QUAL-01/wp_spec.json",
+      "src/data_layer/analytical_research/__init__.py",
+      "src/data_layer/analytical_research/qualification_gate.py",
+      "tests/data_layer/analytical_research/test_qualification_gate.py",
+      "tests/data_layer/analytical_research/test_qualification_gate_boundaries.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/qualification_gate_contract.md",
+      "docs/qualification_candidate_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-GATE-QUAL-01.md",
+      "docs/wp_specs/S10-GATE-QUAL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-GATE-QUAL-01/wp_spec.json",
+      "src/data_layer/analytical_research/__init__.py",
+      "src/data_layer/analytical_research/qualification_gate.py",
+      "tests/data_layer/analytical_research/test_qualification_gate.py",
+      "tests/data_layer/analytical_research/test_qualification_gate_boundaries.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/data_layer/point_in_time_market_research/",
+      "src/data_layer/polymarket/",
+      "src/data_layer/wallet_intelligence/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/risk/",
+      "tools/"
+    ],
+    "max_changed_files": 15,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/qualification_candidate_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert S10-GATE-QUAL-01. The additive qualification_gate.py module, package exports, focused tests, gate contract/status/spec artifacts and bounded predecessor/roadmap/status compatibility edits disappear. S10-QUAL-01 QualificationCandidate, Alpha/AF1/provenance authorities, WP170 experiment OS/registry, wallet/Hermes/PIT, dependencies, workflows and all paper/execution/live surfaces remain unchanged. This implementation WP performs no real candidate evaluation and persists no real qualification receipt, experiment, OOS evidence, economic result, order or capital state.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "S10-GATE-QUAL-01 adds one deterministic local/offline qualification-gate API and package-root exports while consuming S10-QUAL-01, Alpha, AF1, provenance and WP170 schema constants read-only.",
+    "items": [
+      {
+        "surface": "analytical_research.qualification_gate",
+        "before": "No canonical deterministic PASS/FAIL/INCONCLUSIVE acceptance gate exists for QualificationCandidate.",
+        "after": "One immutable QualificationGateReceipt, one closed control result, deterministic evaluation, validation and exact mapping roundtrip provide qualification-only gate authority.",
+        "change_authorized": true,
+        "compatibility_requirement": "No registry, writer, clock, randomness, environment, network, Hermes/provider, wallet-runtime, WP170 mutation, economics or trading path.",
+        "authority": "LOCAL_OFFLINE_QUALIFICATION_GATE"
+      },
+      {
+        "surface": "analytical_research package exports",
+        "before": "Qualification gate constants/types/functions are absent from the package root.",
+        "after": "Only the frozen S10-GATE-QUAL-01 public constants/types/functions are added.",
+        "change_authorized": true,
+        "compatibility_requirement": "All existing S10-QUAL-01 and WP170 exports/signatures remain unchanged.",
+        "authority": "IMPORT_SURFACE_ONLY"
+      },
+      {
+        "surface": "S10-QUAL-01 QualificationCandidate",
+        "before": "Candidate packet is immutable, advisory and non-qualifying.",
+        "after": "Gate consumes and revalidates the exact existing candidate without changing qualification.py or its schema.",
+        "change_authorized": false,
+        "compatibility_requirement": "No candidate field/schema/id/policy change; no real candidate is built in this implementation WP.",
+        "authority": "READ_ONLY_CONSUMPTION"
+      },
+      {
+        "surface": "WP170 experiment OS",
+        "before": "WP170 owns feature/label/dataset/split/metric/baseline/family/preregistration/OOS and has no qualification receipt field.",
+        "after": "Unchanged. QUAL_PASS means only eligible to begin a separately authorized candidate-specific WP170 package; receipt persistence/binding and B1 public-non-market implementation remain successor work.",
+        "change_authorized": false,
+        "compatibility_requirement": "Do not modify experiment_os.py or experiment_registry.py and do not create/persist/start any WP170 experiment.",
+        "authority": "READ_ONLY_COMPATIBILITY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These fields close qualification-gate identity, structural-vs-substantive semantics, append-only Alpha currentness, evidence sufficiency, deterministic aggregation and qualification-only authority without implementing a real evaluation or WP170.",
+    "items": [
+      {
+        "path": "gate.receipt",
+        "source": "DERIVED",
+        "type": "content_addressed_record",
+        "required_rule": "QualificationGateReceipt is immutable schema polymarket-qualification-gate-receipt/1.0.0 with policy qualification-gate-policy/1.0.0 and qualificationgate:sha256: identity over every normalized semantic field except its own id.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exact-keyset mapping roundtrip, canonical ordering, closed dimensions/disposition, aggregation consistency and identity recomputation must pass; unknown fields, binary floats and self-consistent semantic forgeries reject.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "immutable receipt or closed control error",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate.control_boundary",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Malformed, tampered, unbound or structurally unverifiable inputs are control rejections with no gate receipt; only structurally valid evaluations may produce QUAL_PASS, QUAL_FAIL or QUAL_INCONCLUSIVE.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Control rejection status/error vocabulary is closed and never converted into a substantive gate disposition.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed rejection code with no raw input echo",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "alpha.ancestry",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "The candidate-bound alpha_registry_head_entry_hash must occur in the current verified Alpha snapshot chain as an ancestor of or equal to the current head; equality to the current head is NOT required.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Unrelated append-only Alpha additions preserve eligibility; missing candidate-bound head, broken sequence/previous links, malformed records or incompatible history reject structurally.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bound historical/current head ids only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "alpha.current_lineage",
+        "source": "DERIVED",
+        "type": "closed_mapping",
+        "required_rule": "Across the current snapshot, the exact candidate/family lineage must still have exactly one leaf and that leaf must equal the candidate governing_research_episode_id with result_state RESEARCH_SUPPORTIVE.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Unrelated Alpha appends leave PASS; any later same-lineage episode, ambiguous leaves, stale selected episode or non-RESEARCH_SUPPORTIVE current leaf makes CURRENT_RESEARCH_LINEAGE FAIL rather than mutating the candidate.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PASS or FAIL dimension only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "predecessor.af1_binding",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "The supplied AF1GateReceipt must validate under the existing AF1 validator, exactly equal the candidate af1_gate_receipt_id, be FINALIZED AF1_PASS and carry the exact AF1 dimension keyset with every dimension PASS.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Wrong id, malformed receipt, non-final evidence, non-PASS disposition, missing dimension or authority broadening is a structural control rejection with no qualification receipt.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "exact AF1 receipt id only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "provenance.binding",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "The supplied ResearchProvenanceManifest set must validate, have sorted unique ids exactly equal to candidate research_provenance_manifest_ids, stay at/before the candidate cutoff, and cover every split-plan dataset snapshot reference.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Identity, exact-set, cutoff or split-dataset binding mismatch is a structural control rejection; the gate never substitutes event_time for knowability.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "verified manifest ids and cutoff relation",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "provenance.readiness",
+        "source": "DERIVED",
+        "type": "closed_mapping",
+        "required_rule": "PIT_PROVENANCE_READINESS passes only when every manifest has dq_flags exactly OK, replay_fidelity EXACT or FAITHFUL, gap_summary exactly empty, and the union of manifest input_evidence_reference_ids covers every feature, label, power-analysis and execution-feasibility evidence reference declared by the candidate.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Any non-OK DQ, PARTIAL/UNREPLAYABLE replay, nonempty gap_summary or unbound declared evidence reference yields INCONCLUSIVE; the gate does not dereference arbitrary opaque evidence ids or invent content truth.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PASS or INCONCLUSIVE dimension only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.sample_power_readiness",
+        "source": "DERIVED",
+        "type": "closed_mapping",
+        "required_rule": "SAMPLE_POWER_READINESS passes only when available_sample_count >= required_sample_count, available_independent_group_count >= required_independent_group_count, and available_sample_count >= 3 * dataset_split_plan.min_samples_per_role.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Any shortfall yields INCONCLUSIVE, never automatic FAIL; the declared power method/reference/target/significance/MDE are consumed as frozen facts and no universal power calculator is introduced.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PASS or INCONCLUSIVE dimension only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.wp170_crossing",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "WP170_CROSSING_READINESS means the already-valid candidate freezes enough hypothesis, feature/label, split, test-family and conditional B0/B1/B2 semantics to begin separately authorized candidate-specific WP170 construction; it does not claim immediate constructibility under the current FeatureDefinition public-non-market limitation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Candidate validation and current experiment_os schema binding must pass; current WP170 SAFE_FEATURE_SOURCE_DEPENDENCIES are not broadened and experiment_os.py/experiment_registry.py remain unchanged.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "crossing-readiness fact only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.execution_readiness",
+        "source": "DERIVED",
+        "type": "closed_mapping",
+        "required_rule": "EXECUTION_EVIDENCE_READINESS passes only when FEES, RESOLUTION_RULES and TICK_SIZE_MIN_ORDER are AVAILABLE with provenance-bound evidence refs. SPREAD_DEPTH, LATENCY and PARTIAL_FILL may remain AVAILABLE, PARTIAL, MISSING or NOT_APPLICABLE and are carried forward to WP172.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Any critical foundation class not AVAILABLE, or any critical evidence ref not provenance-bound, yields INCONCLUSIVE; no spread/slippage/latency/capacity/PnL/sizing or profitability calculation occurs.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PASS or INCONCLUSIVE dimension only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate.aggregation",
+        "source": "DERIVED",
+        "type": "closed_mapping",
+        "required_rule": "Exactly eight ordered dimensions aggregate deterministically: any FAIL -> QUAL_FAIL; else any INCONCLUSIVE -> QUAL_INCONCLUSIVE; else all PASS -> QUAL_PASS. wp170_entry_eligible is true iff overall_disposition is QUAL_PASS.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "FAIL has precedence over INCONCLUSIVE; caller cannot set disposition or eligibility independently.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed disposition plus eligibility boolean",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate.authority",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "A valid QualificationGateReceipt has qualification-gate authority only. successor_authorization_required, no_strategy_authority, no_paper_authority, no_execution_authority, no_live_authority and no_gate_c_authority are exactly true.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Any authority broadening or false fixed flag invalidates the receipt; QUAL_PASS never authorizes WP170 execution, economics, paper, live or Gate C by itself.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "qualification-only gate authority",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "QualificationGateReceipt product identity and aggregation are proved by focused executable mutation/roundtrip tests; a machine-spec worked identity example would duplicate the executable oracle.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "FAST deterministic readiness plus Karl authorization permits only this offline gate implementation; merge, first real evaluation and WP170 remain separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 15-file scope, semantic matrix and FAST readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl sends/approves this exact S10-GATE-QUAL-01 package for implementation",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation remains inside exact scope and required local validation passes with zero forbidden runtime/economic activity and no real candidate evaluation",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused gate tests are the executable oracle for synthetic PASS, FAIL, INCONCLUSIVE and structural rejection; machine-spec examples are unnecessary.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R018 cover receipt identity, structural separation, Alpha ancestry/currentness, AF1/provenance rebinding, readiness policy, authority containment, regressions, exact scope, full validation and Ready-for-Review publication.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "gate receipt identity and exact roundtrip",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py",
+        "expected_result": "deterministic receipt identity, exact field order/keyset, mapping roundtrip, aggregation recomputation and mutation sensitivity pass; semantic forgery rejects"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "structural rejection is separate from substantive gate disposition",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py",
+        "expected_result": "invalid/tampered candidate or unbound malformed external evidence returns QUALIFICATION_GATE_REJECTED with no receipt and never QUAL_FAIL/QUAL_INCONCLUSIVE"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "append-only Alpha ancestry and unrelated append tolerance",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py",
+        "expected_result": "candidate-bound Alpha head may be an ancestor of current head; unrelated append preserves CURRENT_RESEARCH_LINEAGE PASS; missing/broken ancestry rejects"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "current same-lineage qualification criterion",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py",
+        "expected_result": "exact governing supportive leaf passes; later same-lineage leaf, stale governing episode, ambiguity or non-supportive current leaf makes the lineage dimension FAIL and overall QUAL_FAIL"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "exact AF1 predecessor rebinding",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py",
+        "expected_result": "candidate-bound exact FINALIZED AF1_PASS/all-dimensions-PASS receipt passes; wrong id, malformed/non-PASS/non-final or authority-invalid receipt is rejected without a gate receipt"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "provenance exact binding",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py",
+        "expected_result": "exact manifest-id set, identities, cutoffs and split dataset refs are rebound; structural mismatches reject"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "provenance readiness and declared-evidence coverage",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py",
+        "expected_result": "OK plus EXACT/FAITHFUL plus empty gaps plus complete feature/label/power/execution evidence-ref coverage passes; any limitation/unbound ref gives INCONCLUSIVE"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "sample and independent-group power readiness",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py",
+        "expected_result": "declared counts satisfying required counts and three-role minimum pass; any shortfall gives INCONCLUSIVE; no universal power calculation exists"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "WP170 crossing readiness without capability fiction",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py tests/data_layer/analytical_research/test_experiment_os_boundaries.py",
+        "expected_result": "valid generic/binary candidates are crossing-ready while current WP170 B1 public-non-market FeatureDefinition limitation is preserved and WP170 remains unchanged"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "execution evidence foundation",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py",
+        "expected_result": "FEES/RESOLUTION_RULES/TICK_SIZE_MIN_ORDER AVAILABLE and provenance-bound is sufficient for gate readiness; critical gaps are INCONCLUSIVE; spread/depth/latency/partial-fill gaps remain WP172 work"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "closed aggregation and authority containment",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py",
+        "expected_result": "FAIL precedence, then INCONCLUSIVE, then PASS is exact; wp170_entry_eligible iff QUAL_PASS; all successor/no-strategy/no-paper/no-execution/no-live/no-Gate-C flags are fixed true"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "no runtime side effects and exact public surface",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate_boundaries.py",
+        "expected_result": "no file writer/registry/clock/random/env/network/Hermes/wallet/paper/execution/live path; exact gate exports only; qualification.py and WP170 remain read-only"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "predecessor regressions",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py tests/data_layer/analytical_research/test_qualification_boundaries.py tests/data_layer/analytical_research/test_alpha_factory_registry.py tests/data_layer/analytical_research/test_alpha_factory_gate.py tests/data_layer/point_in_time_market_research/test_research_provenance.py",
+        "expected_result": "S10-QUAL-01, Alpha registry, AF1 and provenance predecessor contracts remain green and unchanged"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "status and repo-truth transition",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
+        "expected_result": "PR #197/S10-QUAL-01 is recorded as merged historical predecessor; S10-GATE-QUAL-01 is current implementation target; no real QUAL decision or WP170 authority is claimed"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "affected historical governance guards",
+        "command": "python -m pytest -q tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py tests/test_local_research_workflow_value_measurement_harness_contract_docs.py tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+        "expected_result": "active exact-scope/package governance accepts the successor transition without historical authority or roadmap drift"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "validation",
+        "test": "artifact, security and exact scope/readiness",
+        "command": "python tools/git/preflight_generated_artifact_guard.py; python tools/security/run_available_security_checks.py; python tools/git/diff_scope_summary.py --base b5cfb9846ff78af2d1a260843d5f2f1a67639305 --head HEAD --wp-spec docs/wp_specs/S10-GATE-QUAL-01/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-GATE-QUAL-01/wp_prompt.txt --spec docs/wp_specs/S10-GATE-QUAL-01/wp_spec.json --repo-root . --check-diff --base b5cfb9846ff78af2d1a260843d5f2f1a67639305 --head HEAD",
+        "expected_result": "artifact/security reporting is honest; exactly 15 required/allowed/actual files, zero extras/missing/warnings, final committed-head readiness IMPLEMENTATION_READY"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "validation",
+        "test": "one authoritative full suite and hygiene",
+        "command": "python -m pip check; git diff --check b5cfb9846ff78af2d1a260843d5f2f1a67639305 HEAD --; python -m pytest -q",
+        "expected_result": "one stable-candidate full suite passes with zero failures; pip and committed diff are clean"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "github",
+        "test": "Ready-for-Review publication and exact-head hosted CI",
+        "command": "gh pr view --json isDraft,state,headRefOid; gh pr checks --watch",
+        "expected_result": "exactly one OPEN PR on the tested head, isDraft=false from creation through handoff, PR body evidence is current, hosted CI is green, Ready for review: YES, then stop for independent Side13 exact-head review"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP170",
+    "next_title": "Candidate-specific preregistration/OOS work, only after a separately authorized real qualification evaluation produces a valid QUAL_PASS",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP170",
+    "forbidden_in_this_wp": [
+      "merge",
+      "creation or evaluation of a real production/local QualificationCandidate",
+      "persistence or committed publication of a real QualificationGateReceipt",
+      "claim that a synthetic test QUAL_PASS is a real candidate qualification",
+      "construction, persistence or lifecycle start of a WP170 PreregisteredExperiment",
+      "formation/selection/OOS materialization, evaluation or OOS release",
+      "candidate-specific forecast model or calibrator implementation",
+      "claim that qualification feature refs are existing WP170 FeatureDefinition ids",
+      "extension or mutation of qualification.py, experiment_os.py or experiment_registry.py",
+      "expected return, fair-value trade edge, PnL, sizing, slippage-adjusted economics, capacity or profitability",
+      "WP172 executable-edge evaluation",
+      "WP173 paper trading",
+      "wallet-dependent qualification before S10-WALLET-03, S10-WALLET-04, S10-GATE-WALLET-01 and a real wallet evidence lane exist",
+      "placeholder/fabricated wallet-gate receipt schema or arbitrary wallet evidence bypass",
+      "product network, Gamma/CLOB/Data API/RPC/WebSocket fetch",
+      "Hermes/provider/model/Firecrawl invocation or H1 #5",
+      "scheduler, daemon, worker, recurring campaign or Prefect flow",
+      "credential, OAuth, private-key, signing or account handling",
+      "order create/cancel, execution or live trading",
+      "Gate C or capital",
+      "dependency/lock change",
+      "workflow change",
+      "new qualification registry, gate registry, file writer or second provenance/Alpha truth system",
+      "mutation/migration of Alpha, discovery, PIT, wallet or AF1 canonical stores/evidence",
+      "website/displayed current probability scraping as baseline evidence",
+      "silent use of future/current information after a decision cutoff"
+    ]
+  }
+}

@@ -1,6 +1,30 @@
 # Repo Truth Index
 
-## S10-QUAL-01 Deterministic Qualification Candidate Packet (current bounded implementation target)
+## S10-GATE-QUAL-01 Deterministic Qualification Packet Acceptance Gate (current bounded implementation target)
+
+The canonical contract is `docs/qualification_gate_contract.md`; the single module is
+`src/data_layer/analytical_research/qualification_gate.py`; the status fragment is
+`docs/status_entries/S10-GATE-QUAL-01.md`. Base `b5cfb9846ff78af2d1a260843d5f2f1a67639305` (PR #197 /
+S10-QUAL-01 merged, head `652a2181926ac6f92f72d0013af99ec5e24ba892`). FAST, risk 2, exact 15-path
+scope. The gate re-validates an existing NON-WALLET QualificationCandidate, re-proves the supplied
+Alpha snapshot against the registry hash chain, accepts a candidate-bound Alpha head that is an
+append-only ancestor of (or equal to) the current head, re-binds the exact AF1 receipt and exact
+provenance manifest set, and evaluates eight closed dimensions into one content-addressed
+QualificationGateReceipt with QUAL_PASS / QUAL_FAIL / QUAL_INCONCLUSIVE (FAIL precedence;
+wp170_entry_eligible iff QUAL_PASS). Structural rejections return no receipt and are never
+relabelled QUAL_FAIL or QUAL_INCONCLUSIVE. QUAL_PASS is qualification-only and never predictive edge,
+OOS success, executable edge, profitability, paper, live or Gate C authority. Current WP170 B1
+public-non-market FeatureDefinition capability is not claimed; qualification.py, experiment_os.py
+and experiment_registry.py are unchanged. No real candidate was created or evaluated and no real
+QualificationGateReceipt exists or is persisted; synthetic outcomes are test fixtures only. First
+real candidate/evaluation, WP170 experiment/OOS, wallet qualification, H1 #5 and Gate C are NOT
+AUTHORIZED; WP172/WP173 are NOT STARTED; capital/orders 0; merge NOT AUTHORIZED.
+
+## S10-QUAL-01 Deterministic Qualification Candidate Packet (merged historical predecessor: PR #197)
+
+PR #197 / S10-QUAL-01 merged at `b5cfb9846ff78af2d1a260843d5f2f1a67639305` with head
+`652a2181926ac6f92f72d0013af99ec5e24ba892`; the packet remains the non-qualifying substrate. The
+historical implementation-target record follows unchanged.
 
 The canonical contract is `docs/qualification_candidate_contract.md`; the single module is
 `src/data_layer/analytical_research/qualification.py`; the status fragment is
