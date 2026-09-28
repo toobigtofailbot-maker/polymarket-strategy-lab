@@ -1,6 +1,24 @@
 # Repo Truth Index
 
-## S10-GATE-QUAL-01 Deterministic Qualification Packet Acceptance Gate (current bounded implementation target)
+## S10-TEST-WS-01 Deterministic Reconnect Synchronization in Market WebSocket Tests (current bounded implementation target)
+
+The status fragment is `docs/status_entries/S10-TEST-WS-01.md`; the package is
+`docs/wp_specs/S10-TEST-WS-01/`. Base `d7891ed63b4c58c9cc150cd0c750c262ca8e5a74` (PR #198 /
+S10-GATE-QUAL-01 merged, head `ec97a25b3e3174bfa71e3799110e729247dfa026`). FAST, risk 1, exact 8-path
+scope, tests-only. The four WP169 reconnect tests in
+`tests/data_layer/polymarket/test_market_truth_websocket.py` no longer infer completion of the real 1s
+reconnect backoff from fixed wall-clock sleeps; they await the observable condition itself (reconnect
+subscription payload emitted on the second connection, HEALED gap evidence persisted, bounded socket #2
+open events), each bounded by a finite 30s timeout that stops the runner and fails clearly. The product
+backoff is exercised unchanged: no src/ change, no `_BACKOFF_SCHEDULE` change, no injection API, no
+dependency or workflow change. Strategy, paper, execution, live and Gate C remain NOT AUTHORIZED;
+capital/orders 0; merge NOT AUTHORIZED.
+
+## S10-GATE-QUAL-01 Deterministic Qualification Packet Acceptance Gate (merged historical predecessor: PR #198)
+
+PR #198 / S10-GATE-QUAL-01 merged at `d7891ed63b4c58c9cc150cd0c750c262ca8e5a74` with head
+`ec97a25b3e3174bfa71e3799110e729247dfa026`; the gate remains the deterministic qualification acceptance
+gate. The historical implementation-target record follows unchanged.
 
 The canonical contract is `docs/qualification_gate_contract.md`; the single module is
 `src/data_layer/analytical_research/qualification_gate.py`; the status fragment is
