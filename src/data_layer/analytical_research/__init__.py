@@ -282,6 +282,24 @@ from .alpha_discovery_registry import (
     initialize_alpha_discovery_registry,
     load_and_verify_alpha_discovery_registry,
 )
+from .qualification import (
+    QUALIFICATION_SCHEMA_VERSION,
+    QUALIFICATION_CANDIDATE_SCHEMA_ID,
+    QUALIFICATION_STATUSES,
+    QUALIFICATION_MODES,
+    WALLET_DEPENDENCY_MODES,
+    QUALIFICATION_FEATURE_SOURCE_CLASSES,
+    QUALIFICATION_PROPER_SCORE_IDS,
+    EXECUTION_FEASIBILITY_CLASSES,
+    EXECUTION_FEASIBILITY_STATES,
+    QUALIFICATION_ERROR_CODES,
+    QualificationCandidate,
+    QualificationControlResult,
+    build_qualification_candidate,
+    validate_qualification_candidate,
+    qualification_candidate_to_mapping,
+    qualification_candidate_from_mapping,
+)
 
 __all__ = [
     # experiment OS and registry
@@ -477,6 +495,23 @@ __all__ = [
     "initialize_alpha_discovery_registry",
     "append_alpha_discovery_records",
     "load_and_verify_alpha_discovery_registry",
+    # S10-QUAL-01 deterministic non-qualifying qualification candidate packet
+    "QUALIFICATION_SCHEMA_VERSION",
+    "QUALIFICATION_CANDIDATE_SCHEMA_ID",
+    "QUALIFICATION_STATUSES",
+    "QUALIFICATION_MODES",
+    "WALLET_DEPENDENCY_MODES",
+    "QUALIFICATION_FEATURE_SOURCE_CLASSES",
+    "QUALIFICATION_PROPER_SCORE_IDS",
+    "EXECUTION_FEASIBILITY_CLASSES",
+    "EXECUTION_FEASIBILITY_STATES",
+    "QUALIFICATION_ERROR_CODES",
+    "QualificationCandidate",
+    "QualificationControlResult",
+    "build_qualification_candidate",
+    "validate_qualification_candidate",
+    "qualification_candidate_to_mapping",
+    "qualification_candidate_from_mapping",
     # research_dataset — labels, versions, constants
     "ANALYTICAL_RESEARCH_LABEL",
     "ANALYTICAL_RESEARCH_POSTURE",

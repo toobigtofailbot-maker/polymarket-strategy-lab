@@ -4764,3 +4764,55 @@ def test_s10_hermes_ctx03_is_current_bounded_compatibility_repair() -> None:
     forbidden = " ".join(spec["successor_boundary"]["forbidden_in_this_wp"])
     assert "AF1 successor attempt" in forbidden and "H1 number five" in forbidden
     assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
+
+
+def test_s10_qual_01_is_current_non_qualifying_packet_target() -> None:
+    current = next(
+        line
+        for line in _read().splitlines()
+        if line.startswith("# S10-QUAL-01 current bounded implementation target")
+    )
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-QUAL-01" / "wp_spec.json").read_text(encoding="utf-8")
+    )
+    assert "Governance track: FAST" in current and "Risk level: 2" in current
+    assert "Exact changed-file scope: 15" in current
+    assert "Frozen base: 3b877a01ed797d26fddf81a8936c880692573028" in current
+    assert "PR #196 / S10-GATE-AF1 merged: YES" in current
+    assert "d456dafc407d7b079b642fc34cd10781690eb8b0" in current
+    assert "af1gate:sha256:281c5e05f5e4f8e30687f232e0289b99b0719c87fab61c8b1d1d417dc0b5cbb2" in current
+    assert "AF1_PASS remains research-system gate success only" in current
+    assert "S10-QUAL-01 itself produces NO QUAL PASS/FAIL/INCONCLUSIVE decision" in current
+    assert "no real candidate is qualified by this implementation WP" in current
+    assert "current WP170 B1 public-non-market FeatureDefinition capability is not claimed" in current
+    assert "WP170 remains preregistration/OOS authority" in current
+    assert "WALLET_GATE_REQUIRED" in current
+    for line in (
+        "S10-GATE-QUAL-01: NOT AUTHORIZED", "WP170 experiment/OOS: NOT STARTED",
+        "WP172/WP173: NOT STARTED", "H1 #5: NOT AUTHORIZED", "Gate C: NOT AUTHORIZED",
+        "capital at risk: USD 0", "orders: 0", "Merge authorized: NO",
+    ):
+        assert line in current, line
+    for stale in ("S10-GATE-QUAL-01: AUTHORIZED", "QUAL PASS recorded", "Merge authorized: YES",
+                  "Gate C: AUTHORIZED", "wallet-dependent qualification: AUTHORIZED"):
+        assert stale not in current, stale
+    # The finalized AF1 predecessor line is preserved as research-system evidence only.
+    assert any(line.startswith("# S10-GATE-AF1 current finalized research-system gate")
+               for line in _read().splitlines())
+    assert spec["identity"]["wp_id"] == "S10-QUAL-01"
+    assert spec["identity"]["risk_level"] == 2
+    assert spec["identity"]["required_predecessor"] == {
+        "pr_number": 196,
+        "head_sha": "d456dafc407d7b079b642fc34cd10781690eb8b0",
+        "merge_sha": "3b877a01ed797d26fddf81a8936c880692573028",
+    }
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 15
+    authority = spec["authority"]
+    for key in ("network", "credentials", "scheduler", "hermes_runtime", "strategy", "paper",
+                "execution", "live", "dependencies", "workflow_files"):
+        assert authority[key] is False, key
+    assert spec["successor_boundary"]["next_wp"] == "S10-GATE-QUAL-01"
+    assert spec["successor_boundary"]["separately_gated"] is True
+    assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]

@@ -696,3 +696,43 @@ def test_s10_hermes_ctx03_repo_truth_registers_public_id_compatibility_rule() ->
     section = index[section_start : index.index("\n## ", section_start + 1)]
     for text in (section, fragment, contract):
         assert "accepted gap" not in text and "parity" not in text
+
+
+def test_s10_qual_01_repo_truth_registers_non_qualifying_packet() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "S10-QUAL-01.md").read_text(encoding="utf-8")
+    contract = (ROOT / "docs" / "qualification_candidate_contract.md").read_text(encoding="utf-8")
+    alpha = (ROOT / "docs" / "alpha_factory_core_contract.md").read_text(encoding="utf-8")
+    roadmap = (ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    section_start = index.index("## S10-QUAL-01 ")
+    section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    assert "docs/qualification_candidate_contract.md" in section
+    assert "src/data_layer/analytical_research/qualification.py" in section
+    assert "3b877a01ed797d26fddf81a8936c880692573028" in section
+    assert "S10-QUAL-01 itself produces NO qualification PASS/FAIL/INCONCLUSIVE decision" in section
+    assert "AF1_PASS remains research-system gate success only" in section
+    assert "feature/model implementation remains WP170" in section
+    assert "S10-GATE-QUAL-01" in section and "NOT AUTHORIZED" in section
+    # AF1 predecessor truth is preserved, not rewritten.
+    assert "## S10-GATE-AF1 research-system gate (finalized: AF1_PASS; Attempt-04 CONSUMED)" in index
+    flat_fragment = " ".join(fragment.split())
+    assert "Base: `3b877a01ed797d26fddf81a8936c880692573028`" in fragment
+    assert "PR #196 / `S10-GATE-AF1`" in fragment
+    assert "S10-QUAL-01 itself produces NO QUAL PASS/FAIL/INCONCLUSIVE decision" in flat_fragment
+    assert "No real candidate is qualified by this implementation WP" in flat_fragment
+    assert "Merge authorized: NO" in fragment
+    assert "S10-GATE-QUAL-01: NOT AUTHORIZED" in flat_fragment
+    assert "Evidence mode: `PRIVATE_REPO_MANUAL_VERIFIED`" in fragment
+    flat_contract = " ".join(contract.split())
+    for text in (
+        "NOT a qualification PASS", "NOT claimed to be current WP170 FeatureDefinition ids",
+        "PIT_MARKET_PROBABILITY_V1", "WALLET_GATE_REQUIRED", "EVIDENCE AVAILABILITY only",
+        "WP170 remains the preregistration/OOS authority", "Merge: NOT AUTHORIZED",
+    ):
+        assert text in flat_contract, text
+    assert "## 28. S10-QUAL-01 Consumer Boundary" in alpha
+    assert "S10-QUAL-01 (base 3b877a01ed797d26fddf81a8936c880692573028" in roadmap
+    for item in ("S10-QUAL-01-D001", "S10-QUAL-01-D002", "S10-QUAL-01-D003", "S10-QUAL-01-D004"):
+        assert f"| {item} |" in deferred, item

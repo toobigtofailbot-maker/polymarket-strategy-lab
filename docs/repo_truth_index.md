@@ -1,5 +1,27 @@
 # Repo Truth Index
 
+## S10-QUAL-01 Deterministic Qualification Candidate Packet (current bounded implementation target)
+
+The canonical contract is `docs/qualification_candidate_contract.md`; the single module is
+`src/data_layer/analytical_research/qualification.py`; the status fragment is
+`docs/status_entries/S10-QUAL-01.md`. Base `3b877a01ed797d26fddf81a8936c880692573028` (PR #196 /
+S10-GATE-AF1 merged, head `d456dafc407d7b079b642fc34cd10781690eb8b0`). FAST, risk 2, exact
+15-path scope. S10-QUAL-01 implements the deterministic NON-WALLET QualificationCandidate
+substrate: one immutable content-addressed advisory packet binding a unique current
+RESEARCH_SUPPORTIVE Alpha lineage leaf, an AF1_PASS receipt with all ten dimensions PASS,
+verified ResearchProvenanceManifest ids and cutoffs, frozen hypothesis / feature / label /
+dataset-split / sample-power / test-family plans, the B0/B1/B2 forecast-evaluation interface
+and execution-feasibility evidence availability. It adds no registry, file writer, operator,
+provenance family, Alpha memory or gate receipt. S10-QUAL-01 itself produces NO qualification
+PASS/FAIL/INCONCLUSIVE decision and no real candidate is qualified by it. AF1_PASS remains
+research-system gate success only. Qualification feature refs are logical refs; the current
+WP170 FeatureDefinition surface is not claimed to support B1 public-non-market inputs, and
+feature/model implementation remains WP170. WP170 remains the preregistration/OOS authority.
+Wallet-dependent packets fail WALLET_GATE_REQUIRED until S10-WALLET-03 / S10-WALLET-04 /
+S10-GATE-WALLET-01 exist. Next and separately gated: S10-GATE-QUAL-01. S10-GATE-QUAL-01,
+wallet qualification, H1 #5 and Gate C are NOT AUTHORIZED; WP170 experiment/OOS and WP172/WP173
+are NOT STARTED; capital/orders 0; merge NOT AUTHORIZED.
+
 ## S10-GATE-AF1 research-system gate (finalized: AF1_PASS; Attempt-04 CONSUMED)
 
 The canonical contract is `docs/alpha_factory_research_system_gate_contract.md`;

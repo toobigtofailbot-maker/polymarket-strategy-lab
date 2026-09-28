@@ -239,6 +239,8 @@ capability.
 
 The Alpha Factory does not qualify strategies. Evidence sufficiency and deterministic
 qualification are later owned by S10-QUAL-01 and the WP170 experiment OS.
+S10-QUAL-01 now implements only the non-qualifying QualificationCandidate packet (see section 28);
+the acceptance decision belongs to the separately gated S10-GATE-QUAL-01.
 
 ## 21. Gate-C Boundary
 
@@ -288,3 +290,13 @@ S10-GATE-AF1 reads canonical ALPHA-01 memory and ALPHA-02 discovery evidence wit
 kinds to either registry. Its Phase-A implementation does not qualify a hypothesis, activate a
 provider, or grant strategy, paper, execution, Gate C, capital, or live authority. The canonical
 gate contract is `docs/alpha_factory_research_system_gate_contract.md`.
+
+## 28. S10-QUAL-01 Consumer Boundary
+
+S10-QUAL-01 (`docs/qualification_candidate_contract.md`) reads a verified Alpha Factory registry
+snapshot read-only and rechecks the records it uses with the existing public Alpha record
+validator. It binds only the registry head, the exact candidate and family, and the unique current
+`RESEARCH_SUPPORTIVE` episode leaf of that lineage (a non-leaf is any episode a later episode names
+as predecessor or reopened episode). It adds no record kind, writes no registry, and treats ALPHA-02
+CORE / EXPLORATION / AUDIT selection as research allocation only, never qualification authority. The
+packet itself is advisory and produces no qualification decision.
