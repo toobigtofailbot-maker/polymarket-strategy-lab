@@ -4538,7 +4538,7 @@ def test_wp156a_current_status_and_exact_machine_scope() -> None:
     assert spec["successor_boundary"]["next_wp"] == "WP164A"
 
 
-def test_wp164a_is_active_bounded_upstream_repair() -> None:
+def test_wp164a_is_merged_runtime_certified_dependency() -> None:
     project = _read()
     spec = json.loads(
         (REPO_ROOT / "docs" / "wp_specs" / "WP164A" / "wp_spec.json").read_text(
@@ -4548,41 +4548,88 @@ def test_wp164a_is_active_bounded_upstream_repair() -> None:
     current = next(
         line
         for line in project.splitlines()
-        if line.startswith("# WP164A active bounded upstream repair")
+        if line.startswith("# WP164A merged runtime-certified upstream dependency")
     )
     assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
     assert "Exact changed-file scope: 14" in current
     assert "9332aa2b2591d7e3fb015ae10165f063aeb8fa1d" in current
-    assert "PR #192 / WP156A merged: YES" in current
-    assert "post-WP156A reconciliation public-product calls: 0" in current
-    assert "public smoke Attempt-03: NOT AUTHORIZED" in current
-    assert "Attempt-01: CONSUMED" in current
-    assert "WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT" in current
-    assert "17ce49aa96c798244d852fc5daf16299bee79ef9" in current
+    assert "PR #193 merged: YES" in current
+    assert "merge commit: 70f867bdcd5e97b0dc05d4008c2c023feb461658" in current
+    assert "exact runtime-tested head: 1c7de22f31cd093771d6bc0748c440ad5284b105" in current
+    assert "Attempt-01: CONSUMED / WP164A_PUBLIC_SMOKE_LOCAL_EVIDENCE_DEFECT" in current
     assert "Attempt-02: CONSUMED / WP164A_PUBLIC_SMOKE_BATCH_INVALID" in current
     assert "RECORD_VERSION_HASH_COLLISION_OR_MISMATCH" in current
-    assert "128-bid/128-ask large-book" in current
-    assert "pending new definitive SHA/envelope" in current
-    assert "S10-GATE-AF1: BLOCKED" in current
-    assert "AF1 Attempt-01/02 remain historical invalidated/consumed evidence only" in project
+    assert "Attempt-03: CONSUMED / WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS" in current
+    assert "EVENT_TIME_MISSING_ALLOWED warning retained" in current
+    assert "coordinator invocations: exactly 1" in current
+    assert "not future guarantees" in current
+    assert "WP164A dependency certification: COMPLETE" in current
+    assert "S10-GATE-AF1 blocked by WP164A: NO" in current
     assert "AF1 Attempt-03: NOT AUTHORIZED" in current
-    assert "WP164A_PUBLIC_SMOKE_AUTHORIZATION_REQUIRED" in current
-    assert "I_AUTHORIZE_EXACT_WP164A_PUBLIC_SMOKE_ATTEMPT_03" in current
-    assert "Merge authorized: NO" in current
+    assert "no WP164A Attempt-04" in current
+    assert "public smoke Attempt-03: NOT AUTHORIZED" not in current
+    assert "S10-GATE-AF1: BLOCKED" not in current
+    assert "AF1 Attempt-01/02 remain historical invalidated/consumed evidence only" in project
     scope = spec["scope"]
     assert scope["required_changed_files"] == scope["allowed_changed_files"]
     assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 14
-    assert (
-        "tests/data_layer/point_in_time_market_research/"
-        "test_polymarket_incremental_population.py"
-        in scope["required_changed_files"]
-    )
-    assert (
-        "tests/data_layer/point_in_time_market_research/"
-        "test_polymarket_scaled_population.py"
-        in scope["required_changed_files"]
-    )
     assert "tools/polymarket/run_wp164a_public_smoke.py" in scope["required_changed_files"]
+
+
+def test_s10_gate_af1_phase_a_status_is_non_runtime_and_non_authoritative() -> None:
+    current = next(
+        line
+        for line in _read().splitlines()
+        if line.startswith("# S10-GATE-AF1 current finalized research-system gate")
+    )
+    assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
+    assert "Exact changed-file scope: 19" in current
+    assert "Frozen base: 1ccf42df0e95586b98c79a0bf912343f9c34df31" in current
+    assert "PR #195 / S10-HERMES-CTX-03 merged: YES" in current
+    assert "ddc25d189359b6e365edcf08c762cb0552b7170a" in current
+    assert "PR #194 / S10-HERMES-CTX-02 merged: YES" in current
+    assert "f6b337ce1d4581516c3d10d792034f00043a8a74" in current
+    assert "PR #193 / WP164A merged: YES" in current
+    assert "1c7de22f31cd093771d6bc0748c440ad5284b105" in current
+    assert "S10-GATE-AF1 blocked by WP164A: NO" in current
+    # Final lifecycle state: Attempt-04 consumed and deterministically finalized.
+    assert "evidence state: FINALIZED" in current
+    assert "evidence state: PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED" not in current
+    assert "final AF1 outcome: AF1_PASS (research-system gate success only)" in current
+    assert "all ten dimensions: PASS" in current
+    assert "final AF1GateReceipt: af1gate:sha256:281c5e05f5e4f8e30687f232e0289b99b0719c87fab61c8b1d1d417dc0b5cbb2" in current
+    assert "runtime execution head: dead42658e8fc9139d82f772e1f2fff67ba07674" in current
+    assert "Side13/Karl lifecycle-test recovery amendment" in current
+    assert "runtime activation: CONSUMED (no further activation authorized)" in current
+    assert "additional AF1 attempt: NOT AUTHORIZED" in current
+    assert "S10-QUAL-01 now separately eligible to be drafted/authorized" in current
+    assert "none authorized" in current
+    assert "does not prove profitability" in current
+    assert "Gate C: NOT AUTHORIZED" in current
+    # Attempt-03 is historical and consumed with no gate result; Attempt-04 is the successor.
+    assert "AF1 Attempt-03: CONSUMED / TRUE_STOP / PHASE_B_LOCAL_EVIDENCE_DEFECT" in current
+    assert "Attempt-03 AF1 gate result: NONE" in current
+    assert "Attempt-03 public population: SUCCEEDED" in current
+    assert "fcf5a085aef0954f91812f53231405b9746e583886ea950ca2cd91bc0cf9dc8e" in current
+    assert "Attempt-03 Hermes/provider/model calls: 0" in current
+    assert "AF1 Attempt-04 (s10-gate-af1-attempt-04): CONSUMED" in current
+    assert "no Attempt-03 store reuse" in current
+    assert "Attempt-04 cases C1/C2/C3: RESEARCH_DRAFT_VALIDATED" in current
+    assert "Firecrawl call count: UNKNOWN" in current
+    assert "live-shaped AF1 cross-layer regression: ADDED" in current
+    for stale in ("AF1 Attempt-03: NOT AUTHORIZED", "Attempt-03: UNCONSUMED", "AF1 PASS", "AF1 FAIL",
+                  "AF1_INCONCLUSIVE", "Attempt-04 (s10-gate-af1-attempt-04): UNCONSUMED",
+                  "AF1_ATTEMPT04_RUNTIME_AUTHORIZATION_REQUIRED", "S10-QUAL-01: AUTHORIZED",
+                  "Gate C: AUTHORIZED", "Merge authorized: YES"):
+        assert stale not in current, stale
+    assert "H1 #5: NOT AUTHORIZED" in current
+    assert "capital at risk: USD 0" in current
+    assert "Merge authorized: NO" in current
+    assert "LOCAL-EVIDENCE DEFECT CORRECTION 01" in current
+    assert "historical runtime evidence/envelope 0f7a2680 invalidated" in current
+    assert "closed retry_limit=0 envelope schema" in current
+    assert "complete 38-field typed population-result persistence" in current
+    assert "46bc862018208b30971228ed719c7e9337142b41" not in current
 
 
 def test_s10_hermes_ctx02_is_current_bounded_compatibility_repair() -> None:
@@ -4597,7 +4644,7 @@ def test_s10_hermes_ctx02_is_current_bounded_compatibility_repair() -> None:
         for line in project.splitlines()
         if line.startswith("# S10-HERMES-CTX-02 current bounded compatibility repair")
     )
-    assert project.index(current) < project.index("# WP164A active bounded upstream repair")
+    assert project.index(current) < project.index("# WP164A merged runtime-certified upstream dependency")
     assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
     assert "Exact changed-file scope: 10" in current
     assert "70f867bdcd5e97b0dc05d4008c2c023feb461658" in current

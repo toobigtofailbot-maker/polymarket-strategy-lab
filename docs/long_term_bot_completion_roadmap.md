@@ -10,7 +10,15 @@
   evidence. External all-Polymarket completeness remains UNPROVEN. It adds no product network,
   Hermes/provider call, scheduler, credential, qualification, expected-return, strategy,
   paper/live, capital, signing, order, H1 #5, or Gate-C authority. After separate review and merge,
-  S10-GATE-AF1 is the next mandatory gate. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
+  S10-GATE-AF1 is the current Phase-A implementation target and next mandatory gate, recertified on
+  base 1ccf42df0e95586b98c79a0bf912343f9c34df31 (PR #195, S10-HERMES-CTX-03) after WP164A (PR #193) completed its runtime
+  certification. AF1 Attempt-03 was consumed with TRUE_STOP / PHASE_B_LOCAL_EVIDENCE_DEFECT and no
+  AF1 gate result (shared request-scanner defect repaired by PR #195); its successor AF1 Attempt-04
+  ran on runtime execution head dead42658e8fc9139d82f772e1f2fff67ba07674, is CONSUMED, and finalized AF1_PASS (all ten
+  dimensions PASS; receipt af1gate:sha256:281c5e05f5e4f8e30687f232e0289b99b0719c87fab61c8b1d1d417dc0b5cbb2). AF1_PASS is research-system gate success only;
+  non-wallet S10-QUAL-01 is now separately eligible to be drafted/authorized, the wallet-specific
+  path and ALPHA-03/HERMES-SI remain separately gated, and none is authorized; no additional AF1
+  attempt is authorized. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
   separately gated scopes.
 
 - WP: WP52 (merged; merge commit 259fac091a3b8d0d22aaab13345f440d5a958af2); WP55 (resolution ambiguity taxonomy/manual-label workflow merged); WP56 (label schema validation merged; merge commit a310e641eb790bd3906d054d703dd11945180e6c); WP57 (local/offline/read-only feature extraction from validated labels merged); WP60A (agent-neutral startup layer merged); WP61 (architecture direction lock-in and microstructure quality metadata merged); WP62 (cross-market relationship metadata merged); WP63 (resolution source hierarchy metadata merged; merge commit e1ab1aa7e0915a3c65afc9eb5a55c58292ef6910); WP64 (research queue/report/session packet merged; merge commit 7795efd45b19ab89c943bd49602449baa67411db); WP65 (local research queue export/operator runbook merged; merge commit 5c5b0c7ef8a2d1f094a2eff6dabbe6fd4be434f7); WP75 (human review label fixture loader merged; PR #76 merge commit 0160ac1c7087625a4596edd541524445bc004bd5); WP76 (wallet intelligence roadmap lock-in merged; PR #77 merge commit 91cd26e4fe16d492fa2f7b319fba176ee60cd9d5); WP77 (wallet intelligence architecture/profile/signal contract merged; PR #78 merge commit 24badbfb7a9da06ee4c8ae94795e1f2c862af913); WP78 (wallet trade event snapshot schema/local loader/validator on branch)
