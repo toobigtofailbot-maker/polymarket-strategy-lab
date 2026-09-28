@@ -37,8 +37,9 @@ public population succeeded (25/1, built 26, inserted 26, result SHA-256
 `fcf5a085aef0954f91812f53231405b9746e583886ea950ca2cd91bc0cf9dc8e`) and the C1 request failed in the
 shared secret scanner before any Hermes launch (provider/model/Firecrawl calls 0, cost USD 0). PR #195
 repaired that shared root cause. AF1 adds a live-shaped cross-layer regression (canonical
-`market:polymarket:<decimal>`, `event:polymarket:0x<64 lowercase hex>`, ~77-digit
-`token:polymarket:<decimal>` refs reach the offline fake Hermes backend through `run_blind_phase`).
+`market:polymarket:<decimal>`, `event:polymarket:0x<64 lowercase hex>` and canonical CLOB token id
+refs (polymarket token namespace + ~77-digit decimal) reach the offline fake Hermes backend through
+`run_blind_phase`).
 The successor runtime instance is AF1 Attempt-04 (`s10-gate-af1-attempt-04`): the operator rejects
 `attempt-01`..`attempt-03` and admits only `attempt-04`, with no automatic increment; Attempt-04
 uses a fresh bounded 25/1 population into new empty stores and never reuses Attempt-03 stores.

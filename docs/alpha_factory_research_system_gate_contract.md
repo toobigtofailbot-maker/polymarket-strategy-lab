@@ -223,7 +223,7 @@ policy id, schemas, argv, provider/model/tool and retry semantics are unchanged.
 
 **Live-shaped cross-layer regression.** AF1 tests now use live-shaped canonical refs
 (`market:polymarket:<decimal>`, `event:polymarket:0x<64 lowercase hex>`,
-`token:polymarket:<~77-digit decimal>`) through AF1 case construction, `ContextCampaignScope`,
+canonical CLOB token ids: polymarket token namespace + ~77-digit decimal) through AF1 case construction, `ContextCampaignScope`,
 `public_market_context`, `build_research_run_request` and `run_blind_phase` to the offline fake
 Hermes backend, and prove that reintroducing the pre-CTX-03 strict scan reproduces the Attempt-03
 stop. The HERMES-CTX-03 negative matrix remains owned by that package.

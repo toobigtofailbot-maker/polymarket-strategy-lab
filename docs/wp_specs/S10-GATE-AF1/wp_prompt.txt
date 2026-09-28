@@ -1425,7 +1425,8 @@ B. CURRENT BASE / POLICY
 
 C. LIVE-SHAPED AF1 CROSS-LAYER REGRESSION (tests/tools/alpha/test_run_s10_gate_af1.py)
 - Live-shaped canonical refs market:polymarket:<positive decimal>,
-  event:polymarket:0x<exactly 64 lowercase hex>, token:polymarket:<70-78 digit decimal> flow
+  event:polymarket:0x<exactly 64 lowercase hex> and the canonical CLOB token id form (polymarket
+  token namespace + 70-78 digit decimal) flow
   through AF1 case construction -> ContextCampaignScope -> public_market_context ->
   build_research_run_request -> run_blind_phase -> the existing offline fake Hermes backend.
   No real process, provider, Firecrawl or network.
@@ -2073,7 +2074,7 @@ Do not semantically alter it unless the preimplementation readiness gate proves 
         "path": "gate.live_shaped_cross_layer_regression",
         "source": "DERIVED",
         "type": "mapping",
-        "required_rule": "AF1 operator tests use live-shaped canonical refs market:polymarket:<positive decimal>, event:polymarket:0x<exactly 64 lowercase hex> and token:polymarket:<70-78 digit decimal> through AF1 case construction, ContextCampaignScope, public_market_context, build_research_run_request and run_blind_phase to the existing offline fake Hermes backend, with no real process, provider, Firecrawl or network. Reintroducing the pre-CTX-03 strict scan on public_market_context must reproduce REQUEST_SECRET_DETECTED with zero backend calls. The full HERMES-CTX-03 negative matrix stays owned by that package.",
+        "required_rule": "AF1 operator tests use live-shaped canonical refs market:polymarket:<positive decimal>, event:polymarket:0x<exactly 64 lowercase hex> and the canonical CLOB token id form (polymarket token namespace + 70-78 digit decimal) through AF1 case construction, ContextCampaignScope, public_market_context, build_research_run_request and run_blind_phase to the existing offline fake Hermes backend, with no real process, provider, Firecrawl or network. Reintroducing the pre-CTX-03 strict scan on public_market_context must reproduce REQUEST_SECRET_DETECTED with zero backend calls. The full HERMES-CTX-03 negative matrix stays owned by that package.",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
