@@ -1,12 +1,16 @@
 """Blind orchestration, no-retry, policy-invariance, and phase-path oracles."""
 
+import hashlib
 import json
+
+import pytest
 
 from src.research_runtime.hermes_controlled_runtime import (
     ContextArtifactStore,
     DEFAULT_HERMES_INVOCATION_POLICY,
     FakeHermesBackend,
     HermesInvocationOutcome,
+    HermesResearchError,
     run_blind_phase,
 )
 from src.research_runtime.hermes_controlled_runtime.context_controller import _context_request
@@ -101,3 +105,68 @@ def test_managed_policy_memory_auxiliary_and_lazy_install_pins_are_closed():
     assert config["auxiliary"]["transient_retries"] == 0
     assert config["security"] == {"allow_lazy_installs": False, "allow_private_urls": False}
     assert config["browser"] == {"allow_private_urls": False}
+
+
+# --- S10-HERMES-CTX-03: live-shaped canonical public ids through the blind phase ----
+
+_CTX03_CONDITION = "0x3f5a9c1e7b2d4a6c8e0f1b3d5a7c9e2f4b6d8a0c2e4f6a8b0d2c4e6f8a1b3c5d"
+_CTX03_MARKET_ID = "market:polymarket:512345"
+_CTX03_EVENT_ID = "event:polymarket:" + _CTX03_CONDITION
+_CTX03_TOKEN_ID = (
+    "token:polymarket:"
+    "71321045679252212594626385532706912750332728571942532289631379312455583992563"
+)
+
+
+def _ctx03_campaign(subject_refs):
+    return campaign(
+        subject_refs=tuple(subject_refs),
+        scope_key="af1-market-scope:" + hashlib.sha256(_CTX03_MARKET_ID.encode()).hexdigest(),
+        exact_scope_json={
+            "market_id": _CTX03_MARKET_ID, "event_id": _CTX03_EVENT_ID,
+            "token_ids": [_CTX03_TOKEN_ID],
+        },
+        requested_provider_label="example-provider", requested_model_label="example-model",
+    )
+
+
+def test_ctx03_t13_live_shaped_scope_reaches_offline_backend(tmp_path):
+    c = _ctx03_campaign((_CTX03_MARKET_ID, _CTX03_EVENT_ID, _CTX03_TOKEN_ID))
+    request = _context_request(c)
+    assert _CTX03_CONDITION in request.public_market_context
+    doc = json.loads(context_stdout(request.request_id))
+    doc["context_claims"][0]["subject_refs"] = [_CTX03_EVENT_ID]
+    backend = FakeHermesBackend.from_transcript(
+        json.dumps(doc).encode(), usage_file_bytes=_usage(),
+    )
+    result = run_blind_phase(
+        campaign=c, store=ContextArtifactStore(tmp_path / "context"), backend=backend,
+    )
+    assert backend.call_count == 1
+    assert result.run_result.validated_draft is not None
+    assert result.blind_artifact is not None
+    assert result.blind_frozen_state.state == "BLIND_FROZEN"
+    assert c.policy_id == DEFAULT_HERMES_INVOCATION_POLICY.policy_id
+
+
+@pytest.mark.parametrize(
+    "secret_ref",
+    [
+        "token:polymarket:sk-abcdef0123456789abcdef",
+        "0x" + "ab12cd34ef" * 4,
+        _CTX03_CONDITION,
+        "event:polymarket:" + _CTX03_CONDITION.upper().replace("0X", "0x"),
+        "note:ghp_abcdefghijklmnopqrstuvwx",
+    ],
+)
+def test_ctx03_t14_secret_bearing_scope_stops_before_backend(tmp_path, secret_ref):
+    c = _ctx03_campaign((_CTX03_MARKET_ID, _CTX03_EVENT_ID, _CTX03_TOKEN_ID, secret_ref))
+    backend = FakeHermesBackend.from_transcript(b"{}", usage_file_bytes=_usage())
+    with pytest.raises(HermesResearchError) as exc:
+        run_blind_phase(
+            campaign=c, store=ContextArtifactStore(tmp_path / "context"), backend=backend,
+        )
+    assert exc.value.code == "REQUEST_SECRET_DETECTED"
+    assert str(exc.value) == "REQUEST_SECRET_DETECTED"
+    assert secret_ref not in repr(exc.value)
+    assert backend.call_count == 0

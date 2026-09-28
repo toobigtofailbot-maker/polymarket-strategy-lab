@@ -581,3 +581,58 @@ def test_s10_hermes_ctx02_repo_truth_registers_exact_stock_only_soul() -> None:
     flat = " ".join(contract.replace("\n> ", " ").split())
     assert "whose values this preflight never opens or inspects" in flat
     assert "admission verification only" in flat
+
+
+def test_s10_hermes_ctx03_repo_truth_registers_public_id_compatibility_rule() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "S10-HERMES-CTX-03.md").read_text(
+        encoding="utf-8"
+    )
+    contract = (ROOT / "docs" / "hermes_controlled_research_runtime_contract.md").read_text(
+        encoding="utf-8"
+    )
+    assert (
+        "S10-HERMES-CTX-03 Canonical Public Polymarket Identifier Secret-Scanner "
+        "Compatibility Repair (current bounded compatibility repair)"
+    ) in index
+    for path in (
+        "docs/wp_specs/S10-HERMES-CTX-03/",
+        "docs/status_entries/S10-HERMES-CTX-03.md",
+        "src/research_runtime/hermes_controlled_runtime/models.py",
+        "tests/research_runtime/hermes_controlled_runtime/test_models.py",
+        "tests/research_runtime/hermes_controlled_runtime/test_context_controller.py",
+        "docs/hermes_controlled_research_runtime_contract.md",
+    ):
+        assert path in index, path
+    # Historical package entries remain intact.
+    assert (
+        "S10-HERMES-CTX-02 Pinned Default SOUL.md Compatibility Repair" in index
+    )
+    assert "S10-HERMES-CTX-01 Blind-First Context Broker (merged historical truth)" in index
+    rule = "`event:polymarket:0x<exactly 64 lowercase hex>`"
+    for text in (index, fragment, contract):
+        assert rule in text
+        assert "public_market_context" in text
+    assert "AF1 gate result NONE" in index and "CONSUMED" in index
+    assert "authorizes no successor AF1 attempt" in index
+    assert "11 required = 11 allowed = 11 actual paths" in fragment
+    assert "AF1 Attempt-03: CONSUMED, gate result NONE" in fragment
+    assert "Another AF1 attempt: NOT AUTHORIZED" in fragment
+    assert "neither an AF1 PASS nor an AF1 FAIL" in fragment
+    assert "Network authority: NONE. Credential authority: NONE." in fragment
+    assert "H1 #5: NOT AUTHORIZED" in fragment and "Merge authorized: NO" in fragment
+    assert "does not contain a mutable branch-head SHA" in fragment
+    flat = " ".join(contract.replace("\n> ", " ").split())
+    assert "the generic long-hex rule `\\b0x[a-fA-F0-9]{40,}\\b` stays in the global secret rules" in flat
+    assert "Inside `public_market_context` ONLY" in flat
+    assert "The exception does not authorize wallet, account, or credential material" in flat
+    assert "use the original unmasked bytes" in flat
+    assert "there is no global or caller-configurable allowlist" in flat
+    # Malformed canonical-looking event ids fail closed (no accepted gap remains).
+    assert "must begin an exact canonical event id or fail closed" in " ".join(index.split())
+    assert "Malformed-event guard" in fragment
+    assert "must begin an exact, delimited canonical event id" in flat
+    section_start = index.index("## S10-HERMES-CTX-03 ")
+    section = index[section_start : index.index("\n## ", section_start + 1)]
+    for text in (section, fragment, contract):
+        assert "accepted gap" not in text and "parity" not in text

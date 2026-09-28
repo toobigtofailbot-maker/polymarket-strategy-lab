@@ -1,5 +1,35 @@
 # Repo Truth Index
 
+## S10-HERMES-CTX-03 Canonical Public Polymarket Identifier Secret-Scanner Compatibility Repair (current bounded compatibility repair)
+
+The canonical package is `docs/wp_specs/S10-HERMES-CTX-03/`; the stable fragment is
+`docs/status_entries/S10-HERMES-CTX-03.md`. The frozen base is PR #194's merge commit
+`15097f70f5f5358879fde73b2b30d26ecdb80402`. The shared runtime surface is
+`src/research_runtime/hermes_controlled_runtime/models.py` (`build_research_run_request`,
+field `public_market_context` only); focused T01-T12 and T15 evidence is in
+`tests/research_runtime/hermes_controlled_runtime/test_models.py` and T13-T14 in
+`tests/research_runtime/hermes_controlled_runtime/test_context_controller.py`; the canonical
+semantics are recorded in `docs/hermes_controlled_research_runtime_contract.md`.
+
+Trigger: S10-GATE-AF1 Attempt-03 is CONSUMED with terminal TRUE_STOP /
+PHASE_B_LOCAL_EVIDENCE_DEFECT and AF1 gate result NONE; its public population succeeded, then
+the first blind case failed `REQUEST_SECRET_DETECTED` in the request builder before any Hermes
+launch (Hermes/provider/model calls 0, Firecrawl calls 0, accepted provider cost USD 0).
+Compatibility rule: inside `public_market_context` only, exact complete canonical public
+identifiers `market:polymarket:<decimal>`, `event:polymarket:0x<exactly 64 lowercase hex>`,
+`event:polymarket:market-<decimal>` and the canonical CLOB token id form (polymarket token
+namespace + decimal; exact grammar in the contract) survive the generic
+long-hex rule, which remains a global secret rule; every occurrence of the literal
+namespace `event:polymarket:` there must begin an exact canonical event id or fail closed;
+bare long-hex, wallet/account-shaped,
+credential, wrong-namespace and malformed values remain fail-closed, every other request field
+keeps the ordinary strict scan, and request identity uses the original bytes. No schema,
+invocation policy identity, provider, model, retry, output-parsing, network, credential,
+dependency or workflow change. Successor boundary: after Side13 review and Karl's merge only,
+AF1 is reconciled onto repaired main with its own live-shaped fixture, a new Phase-A head, and
+an explicit successor-attempt semantics closure before any new runtime authorization; this
+package authorizes no successor AF1 attempt. H1 #5, Gate C, capital, and orders are unchanged.
+
 ## S10-HERMES-CTX-02 Pinned Default SOUL.md Compatibility Repair (current bounded compatibility repair)
 
 The canonical package is `docs/wp_specs/S10-HERMES-CTX-02/`; the stable fragment is

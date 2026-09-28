@@ -1,0 +1,972 @@
+SIDE13 — S10-HERMES-CTX-03
+FINAL ONE-SHOT IMPLEMENTATION-AUTHORIZING WORK PACKAGE
+CANONICAL PUBLIC POLYMARKET IDENTIFIER SECRET-SCANNER COMPATIBILITY REPAIR
+
+Repository:
+toobigtofailbot-maker/polymarket-strategy-lab
+
+WP ID:
+S10-HERMES-CTX-03
+
+Title:
+Canonical Public Polymarket Identifier Secret-Scanner Compatibility Repair
+
+Package class:
+BOUNDED_HERMES_PUBLIC_IDENTIFIER_SECRET_SCANNER_COMPATIBILITY_REPAIR
+
+Package size class:
+L
+
+Governance track expected:
+RUNTIME
+
+Risk level:
+3
+
+Frozen base branch:
+main
+
+Frozen base/main SHA:
+15097f70f5f5358879fde73b2b30d26ecdb80402
+
+Required current GitHub state at start:
+- main == 15097f70f5f5358879fde73b2b30d26ecdb80402
+- PR #194 / S10-HERMES-CTX-02 merged at that SHA
+- 0 open PRs unless Karl supplies a newer controlling state
+
+Runtime trigger state:
+- S10-GATE-AF1 Attempt-03 is CONSUMED
+- Attempt-03 terminal: TRUE_STOP / PHASE_B_LOCAL_EVIDENCE_DEFECT
+- Attempt-03 produced NO AF1 gate result
+- public population succeeded before the stop
+- exactly 1 public population call occurred
+- 0 Hermes/provider/model calls occurred
+- 0 Firecrawl calls occurred
+- accepted provider cost = USD 0
+- no retry/replacement/fourth call occurred
+- H1 #5 NOT AUTHORIZED
+- Gate C NOT AUTHORIZED
+- capital/orders = 0
+
+Suggested branch:
+codex/s10-hermes-ctx-03-public-id-secret-scan
+
+===============================================================================
+0. PURPOSE
+===============================================================================
+
+This is the narrow upstream repair required by AF1 Attempt-03's consumed true stop.
+
+Attempt-03 successfully completed its bounded public population and selected its benchmark
+cases. The first blind Hermes case then failed before Hermes was launched:
+
+_context_request(...)
+→ build_research_run_request(...)
+→ request secret scan
+→ REQUEST_SECRET_DETECTED
+
+The rejected value was a canonical PUBLIC Polymarket event identifier carried inside the
+controlled request's `public_market_context`:
+
+event:polymarket:0x<64 hex condition id>
+
+Current merged HERMES-CTX contains this generic secret-like pattern:
+
+    \b0x[a-fA-F0-9]{40,}\b
+
+That rule is useful and MUST remain fail-closed for bare long-hex material, wallet/account
+identifiers, private-key-like values and arbitrary request text.
+
+The incompatibility is that the repository itself canonically represents public Polymarket
+condition/event identity with a 0x-prefixed 64-hex value, and the controlled context path
+serializes the canonical `subject_refs` into `public_market_context`.
+
+This package therefore authorizes ONLY a field-aware compatibility exception:
+
+- preserve the generic long-hex secret rule;
+- preserve all existing secret/credential scanners;
+- in `public_market_context` only, recognize narrowly defined canonical PUBLIC Polymarket
+  identifiers as public identifiers rather than secrets;
+- scan every remaining byte/string surface with the existing secret and authority rules;
+- do not create a global long-hex allowlist;
+- do not admit wallet/account identifiers merely because they are public blockchain values.
+
+This package does NOT authorize another AF1 attempt.
+
+===============================================================================
+1. GOVERNANCE AUTHORITY
+===============================================================================
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+This WP MAY:
+- create one dedicated worktree/branch for S10-HERMES-CTX-03;
+- create/update its own governed prompt/spec/status evidence;
+- modify exactly the 11 paths frozen below;
+- run deterministic local/offline tests;
+- run the authoritative full suite once the source candidate is stable;
+- use normal git/GitHub publication operations;
+- push the branch;
+- create/update one draft PR;
+- obtain exact-head hosted CI;
+- obtain the normal independent RUNTIME implementation review.
+
+This WP MUST NOT:
+- modify the local AF1 branch/workspace;
+- touch the consumed Attempt-03 workspace/evidence;
+- create or authorize Attempt-04 or any successor attempt;
+- reuse or mutate Attempt-03 runtime evidence;
+- make Polymarket product/runtime calls;
+- launch real Hermes research;
+- call a provider/model;
+- call Firecrawl;
+- run OAuth/auth setup;
+- read/copy/transform secrets;
+- change Hermes version or dependencies;
+- change workflows;
+- alter strategy/paper/execution/live code;
+- authorize H1 #5;
+- authorize Gate C;
+- authorize capital/orders;
+- merge its own PR.
+
+===============================================================================
+2. PRE-DRAFT VERIFIED ROOT CAUSE
+===============================================================================
+
+The following facts are frozen as the compatibility basis.
+
+A. Current shared secret scanner
+--------------------------------
+
+`src/research_runtime/hermes_controlled_runtime/models.py` contains a closed
+`_SECRET_PATTERNS` tuple including:
+
+- API-key phrases;
+- secret-key phrases;
+- password/private-key phrases;
+- Bearer/Authorization material;
+- `sk-...`;
+- `ghp_...`;
+- PEM private-key headers;
+- access-token phrases;
+- `\b0x[a-fA-F0-9]{40,}\b`.
+
+`_scan_secret(text)` raises only the closed code:
+
+REQUEST_SECRET_DETECTED
+
+and does not echo the matched content.
+
+B. Request-builder application
+------------------------------
+
+`build_research_run_request()` currently sends ordinary request strings through
+`_require_str`, which invokes `_scan_secret` and `_scan_authority`.
+
+`public_market_context` currently receives the same generic scan as ordinary prose.
+
+C. Controlled-context construction
+----------------------------------
+
+`src/research_runtime/hermes_controlled_runtime/context_controller.py::_context_request`
+builds a canonical JSON context containing:
+
+- campaign_id
+- scope_key
+- exact_scope_json
+- exact_scope_sha256
+- information_cutoff
+- subject_refs
+- alpha_context_present = false
+
+and passes that JSON string as `public_market_context`.
+
+D. Canonical public Polymarket identifiers
+------------------------------------------
+
+Merged repository truth already defines public PIT identities including:
+
+- `market:polymarket:<gamma id>`
+- `event:polymarket:<condition id>` when a condition id exists
+- `event:polymarket:market-<gamma id>` otherwise
+- `token:polymarket:<raw token id>`
+
+The public population contract states Gamma market id is the public market identifier and
+CLOB token ids are public no-authentication identifiers.
+
+The public population implementation constructs:
+
+    event_id = "event:polymarket:" + condition_id
+
+for a populated market with a condition id.
+
+The Alpha discovery layer carries canonical market/event/token ids as
+`canonical_market_subject_refs(...)`.
+
+E. Existing repository precedent
+---------------------------------
+
+The execution-gateway sanitization layer already distinguishes public Polymarket condition/
+market identifiers shaped as `0x` + 64 hex and long decimal token/asset ids from generic
+secret-like material using field-aware logic.
+
+Do NOT import or couple HERMES-CTX to execution-gateway code.
+This is precedent for the semantic distinction only.
+
+F. Attempt-03 evidence
+----------------------
+
+Provided local runtime evidence establishes that the real C1 campaign reproduced offline
+with a fake backend and failed in the request builder before the Hermes backend was invoked.
+
+The triggering public identifier had canonical form:
+
+event:polymarket:0x<64 hex characters>
+
+The AF1 synthetic Phase-A corpus had not carried that real identifier shape through this
+scanner, so the incompatibility was not exposed before the consumed runtime attempt.
+
+===============================================================================
+3. FROZEN REPAIR DESIGN
+===============================================================================
+
+The repair MUST be FIELD-AWARE and FAIL-CLOSED.
+
+A. Do not weaken the global scanner
+-----------------------------------
+
+The existing generic long-hex pattern MUST remain in the global secret rules.
+
+Do NOT:
+- remove it;
+- reduce its minimum length merely to make the test pass;
+- exempt all 0x values;
+- exempt all 64-hex values;
+- exempt wallet addresses;
+- add caller-supplied "safe digests";
+- add a configurable public-id allowlist;
+- normalize arbitrary strings into an accepted form.
+
+All non-`public_market_context` request fields retain the existing generic secret scan.
+
+B. Public-market-context-only admission
+---------------------------------------
+
+Introduce a private validation path used ONLY for the request field:
+
+public_market_context
+
+It must preserve the ordinary:
+- string type validation;
+- non-empty requirement;
+- maximum length;
+- authority-escalation scan;
+- exact returned/original request bytes used for request identity.
+
+It may treat ONLY exact canonical PUBLIC Polymarket identifiers as non-secret tokens for
+secret-scanning purposes.
+
+The minimum recognized canonical public forms are:
+
+1. Gamma market id:
+   `market:polymarket:<positive/non-empty decimal digits>`
+
+2. Condition-backed event id:
+   `event:polymarket:0x<exactly 64 hexadecimal characters>`
+
+3. Gamma-fallback event id:
+   `event:polymarket:market-<positive/non-empty decimal digits>`
+
+4. CLOB token id:
+   `token:polymarket:<positive/non-empty decimal digits>`
+
+Use the repository's actual canonical case/shape contract where an existing validator
+already makes it stricter. Do not invent a broader grammar.
+
+The implementation may use private exact recognizers and a validation-only masking/removal
+step before the existing `_scan_secret`, provided:
+
+- the original `public_market_context` string is returned/stored unchanged;
+- request identity is derived from the original exact string, not the masked copy;
+- only exact complete canonical public identifier tokens are masked/ignored;
+- malformed near-matches are not partially masked into safety;
+- all remaining content still passes through the full existing `_scan_secret`;
+- `_scan_authority` still evaluates the original public-market-context text.
+
+C. No arbitrary namespaced bypass
+---------------------------------
+
+The following MUST NOT become a bypass:
+
+- `event:other:0x<64 hex>`
+- `foo:polymarket:0x<64 hex>`
+- `event:polymarket:0x<40 hex>`
+- `event:polymarket:0x<63 hex>`
+- `event:polymarket:0x<65 hex>`
+- `event:polymarket:0x<64 hex><extra token characters>`
+- `event:polymarket:sk-...`
+- `token:polymarket:sk-...`
+- arbitrary caller text merely containing the word `polymarket`.
+
+If a string looks like an attempted canonical Polymarket identifier but does not satisfy the
+exact accepted grammar, it must NOT be stripped before generic secret scanning.
+
+D. Wallet/account addresses stay outside the exception
+------------------------------------------------------
+
+A bare EVM-shaped address:
+
+0x<40 hex>
+
+must remain secret/sensitive-request material and fail with:
+
+REQUEST_SECRET_DETECTED
+
+A 64-hex bare value must also remain rejected.
+
+A 64-hex value in any other request field remains rejected even if it happens to equal a
+real public Polymarket condition id.
+
+This repair is about canonical public market identifiers in the dedicated public-market
+context, not about permitting arbitrary blockchain identifiers in Hermes requests.
+
+E. Existing credential protection remains intact
+-------------------------------------------------
+
+At minimum these classes must remain rejected in `public_market_context` even when valid
+public Polymarket ids are also present:
+
+- API-key/secret-key markers;
+- password/private-key markers;
+- Bearer tokens;
+- Authorization headers;
+- `sk-...`;
+- `ghp_...`;
+- PEM private keys;
+- access-token material.
+
+The error remains a closed code and must not echo rejected text.
+
+F. No schema / policy / authority churn
+---------------------------------------
+
+Do NOT bump solely for this correction:
+
+- Hermes research request schema;
+- Hermes receipt schema;
+- ContextCampaignScope schema/version;
+- Hermes invocation policy schema/version;
+- controlled profile version;
+- context reconciliation schemas.
+
+Do NOT change:
+- provider/model policy;
+- Hermes executable/version;
+- toolset;
+- argv;
+- safe-mode;
+- managed config;
+- memory/profile controls;
+- retry/fallback semantics;
+- output parsing;
+- source/claim validation;
+- blind/reveal protocol.
+
+The Hermes invocation policy ID should remain unchanged unless implementation proves the
+policy object itself necessarily changes. If it must change, STOP rather than introducing
+unplanned identity churn.
+
+===============================================================================
+4. EXACT CHANGED-FILE SCOPE
+===============================================================================
+
+Required changed files == allowed changed files == exactly these 11 paths:
+
+1. docs/hermes_controlled_research_runtime_contract.md
+2. docs/project_status.md
+3. docs/repo_truth_index.md
+4. docs/status_entries/S10-HERMES-CTX-03.md
+5. docs/wp_specs/S10-HERMES-CTX-03/wp_prompt.txt
+6. docs/wp_specs/S10-HERMES-CTX-03/wp_spec.json
+7. src/research_runtime/hermes_controlled_runtime/models.py
+8. tests/research_runtime/hermes_controlled_runtime/test_models.py
+9. tests/research_runtime/hermes_controlled_runtime/test_context_controller.py
+10. tests/test_project_status_docs.py
+11. tests/test_repo_truth_docs.py
+
+max_changed_files = 11
+exact_scope_required = true
+
+Forbidden product surfaces include:
+- .github/workflows/
+- dependency/lock files
+- src/execution_gateway/
+- src/data_layer/analytical_research/
+- src/data_layer/point_in_time_market_research/
+- tools/alpha/
+- local_data/
+- AF1 local worktree/runtime evidence
+
+Do NOT change `context_controller.py` in this WP unless the frozen design is proven
+impossible without it.
+
+The required implementation is expected to be achievable inside `models.py` because
+`public_market_context` already has a distinct request field boundary.
+
+If changing `context_controller.py` becomes genuinely necessary for correctness, STOP with:
+
+HERMES_CTX03_SCOPE_EXPANSION_REQUIRED
+
+Do not silently add a 12th path.
+
+===============================================================================
+5. REQUIRED TEST MATRIX
+===============================================================================
+
+Add focused deterministic regression coverage.
+
+At minimum prove all of the following.
+
+T01 — EXISTING SECRET CONTROLS PRESERVED
+Existing API-key secret test still fails closed with REQUEST_SECRET_DETECTED and no echo.
+
+T02 — BARE 64-HEX VALUE STILL REJECTED
+`0x` + exactly 64 hex characters in `public_market_context` without the canonical namespace
+fails with REQUEST_SECRET_DETECTED.
+
+T03 — EVM WALLET-SHAPED VALUE STILL REJECTED
+Bare `0x` + exactly 40 hex characters in `public_market_context` fails with
+REQUEST_SECRET_DETECTED.
+
+T04 — CANONICAL EVENT ID ACCEPTED IN PUBLIC MARKET CONTEXT
+A request whose `public_market_context` includes exactly:
+
+event:polymarket:0x<64 hex>
+
+is accepted when no other invalid material is present.
+
+T05 — SAME 64-HEX VALUE REJECTED IN OTHER REQUEST FIELD
+Place the same bare/canonical 64-hex value in `research_question` or
+`research_objective`. It remains rejected under the ordinary generic secret scanner.
+
+Do not create a cross-field global exception.
+
+T06 — WRONG NAMESPACE REJECTED
+A secret-looking 0x64 value under a noncanonical namespace does not become accepted.
+
+T07 — MALFORMED CANONICAL NEAR-MATCHES REJECTED
+Cover at least:
+- 63 hex;
+- 65 hex;
+- extra token characters;
+- wrong prefix/namespace.
+
+No partial masking acceptance.
+
+T08 — VALID ID PLUS REAL SECRET STILL REJECTED
+A `public_market_context` containing a valid canonical public event id AND an `sk-...`,
+Bearer, Authorization, or equivalent frozen secret marker still fails closed.
+
+T09 — LIVE-SHAPED TOKEN ID ACCEPTED
+A canonical `token:polymarket:<long decimal token id>` in public-market context remains
+accepted.
+
+Use a realistic long decimal shape comparable to the 70+ digit public CLOB token ids.
+
+T10 — LIVE-SHAPED MARKET + EVENT + TOKEN CONTEXT ACCEPTED
+A canonical context containing:
+- `market:polymarket:<gamma integer id>`;
+- `event:polymarket:0x<64 hex>`;
+- `token:polymarket:<long decimal token id>`
+
+builds a valid content-addressed request.
+
+T11 — ORIGINAL BYTES DRIVE REQUEST ID
+Validation-only masking must not alter stored/public request content.
+The built request's `public_market_context` equals the original exact string, and changing a
+public identifier changes request identity.
+
+T12 — NO-ECHO PRESERVED
+On a rejected mixed context, error text contains only the closed code and does not expose
+the secret-bearing input.
+
+T13 — CONTEXT CONTROLLER LIVE-SHAPE REACHES OFFLINE BACKEND
+Build a `ContextCampaignScope` whose `subject_refs` contain live-shaped canonical:
+- market id;
+- 0x64 event id;
+- long decimal token id.
+
+Run `run_blind_phase` with the existing fake/offline backend pattern.
+
+Prove request construction succeeds and control reaches the fake backend rather than
+raising REQUEST_SECRET_DETECTED.
+
+No real Hermes, provider, Firecrawl, or network activity.
+
+T14 — CONTEXT CONTROLLER STILL FAILS ON NONPUBLIC SECRET
+A campaign/scope that causes a genuine secret marker to enter the controlled request fails
+before fake-backend invocation and does not echo the secret.
+
+T15 — NO BROAD GLOBAL ALLOWLIST
+Mechanically prove or inspect that:
+- the generic 0x{40,} secret rule still exists;
+- only `public_market_context` uses the narrow public-identifier-aware path;
+- there is no caller-configurable whitelist/digest;
+- other request fields still call the ordinary strict path.
+
+Keep all existing request/controller tests.
+Do not delete negative coverage to make the suite green.
+
+===============================================================================
+6. COMPATIBILITY / IMPOSSIBILITY CHECK BEFORE SOURCE EDIT
+===============================================================================
+
+Before implementation, produce the normal compatibility table covering at minimum:
+
+Required behavior:
+Canonical public Polymarket event id reaches context-controlled Hermes request construction.
+
+Controlling mechanism:
+`models.py` request field validation + `_SECRET_PATTERNS`.
+
+Required behavior:
+Bare long hex remains secret-like.
+
+Controlling mechanism:
+unchanged global `_SECRET_PATTERNS`.
+
+Required behavior:
+Only public_market_context receives the narrow exception.
+
+Controlling mechanism:
+field-specific request builder branch/private helper.
+
+Required behavior:
+Context controller reaches offline fake backend with live-shaped subject refs.
+
+Controlling mechanism:
+existing `_context_request` and `run_blind_phase`.
+
+Required behavior:
+No request/schema/policy identity redesign.
+
+Controlling mechanism:
+unchanged request field set, schema versions and invocation policy object.
+
+If the compatibility table proves any of these incompatible within the exact 11-path scope,
+STOP before source edits.
+
+===============================================================================
+7. DOCUMENTATION / REPO TRUTH
+===============================================================================
+
+A. Hermes controlled runtime contract
+-------------------------------------
+
+Update `docs/hermes_controlled_research_runtime_contract.md` narrowly.
+
+Record:
+
+- generic request secret scanning remains fail-closed;
+- bare long-hex and wallet/account-shaped identifiers remain rejected;
+- the `public_market_context` field has a narrow exact canonical-public-Polymarket-id
+  compatibility rule;
+- the rule exists because canonical repo public event identity can be 0x + 64 hex;
+- the exception does not authorize wallet/account/credential material;
+- all remaining content is still scanned for secrets and authority escalation;
+- original request bytes remain content-addressed unchanged;
+- no provider/model/tool/retry/authority behavior changes.
+
+Do not rewrite unrelated Hermes history.
+
+B. Project status
+-----------------
+
+Add a compact current block for S10-HERMES-CTX-03 recording:
+
+- AF1 Attempt-03 = CONSUMED;
+- runtime terminal = TRUE_STOP / PHASE_B_LOCAL_EVIDENCE_DEFECT;
+- public population succeeded;
+- AF1 gate result = NONE;
+- Hermes/provider/model calls = 0;
+- Firecrawl calls = 0;
+- accepted provider cost = USD 0;
+- root cause = canonical public Polymarket event id false-positive in shared HERMES request
+  secret scanner;
+- S10-HERMES-CTX-03 is a local/offline compatibility repair;
+- no successor AF1 runtime attempt is authorized by this package.
+
+Do not rewrite Attempt-03 into AF1 FAIL or PASS.
+
+C. Repo truth index
+-------------------
+
+Register:
+- the new package;
+- its shared runtime surface;
+- its test surfaces;
+- exact compatibility rule;
+- consumed/no-gate-result AF1 trigger;
+- successor boundary.
+
+Preserve historical S10-HERMES-CTX-01/02 entries.
+
+D. Stable status fragment
+-------------------------
+
+Create:
+
+docs/status_entries/S10-HERMES-CTX-03.md
+
+It must remain stable/non-self-referential and include:
+- trigger;
+- root cause;
+- exact repair boundary;
+- RUNTIME / risk 3;
+- no network/credential/provider authority;
+- Attempt-03 consumed / no gate result;
+- another AF1 attempt not authorized;
+- H1 #5 / Gate C / capital/orders unchanged;
+- merge authorized NO until Karl decides after Side13 exact-head review.
+
+E. Focused docs tests
+---------------------
+
+Add only the project-status/repo-truth assertions necessary to prevent:
+- accidental rewriting of Attempt-03 as unconsumed;
+- accidental AF1 PASS/FAIL claim;
+- loss of the exact public-id compatibility rule;
+- accidental runtime/network/credential authority expansion;
+- stale "repair not started" wording after implementation candidate exists.
+
+===============================================================================
+8. MACHINE SPEC
+===============================================================================
+
+Create:
+
+docs/wp_specs/S10-HERMES-CTX-03/wp_spec.json
+
+It must exactly mirror this prompt.
+
+Required machine-spec facts include:
+
+- wp_id/title/class;
+- frozen base;
+- track RUNTIME;
+- risk 3;
+- exact 11 required/allowed paths;
+- max_changed_files = 11;
+- exact_scope_required = true;
+- authority mirror exactly matching Section 1;
+- no workflows/dependencies/network/credentials;
+- no AF1 runtime attempt authority;
+- no H1 #5 / Gate C / capital/orders;
+- public-market-context-only compatibility rule;
+- global long-hex scanner remains active;
+- exact canonical public identifier shapes;
+- T01-T15 evidence mapping;
+- hard stops;
+- successor boundary.
+
+No PROTECTED draftability certificate is required.
+
+Run canonical readiness/spec validation BEFORE source implementation.
+
+===============================================================================
+9. HARD STOPS
+===============================================================================
+
+STOP and report; do not improvise if:
+
+H01 — BASE_STATE_DRIFT
+Main/open-PR state materially differs from the frozen start and cannot be truthfully
+reconciled before branch creation.
+
+H02 — ROOT_CAUSE_CONTRADICTED
+Offline reproduction does not show the canonical public event id as the false-positive source.
+
+H03 — GLOBAL_SECRET_WEAKENING_REQUIRED
+The only way to pass live-shaped public ids appears to require removing/broadly weakening the
+generic long-hex secret rule.
+
+H04 — ARBITRARY_WALLET_ALLOWANCE_REQUIRED
+The controlled runtime would need to accept bare wallet/account/long-hex identifiers rather
+than exact canonical public market ids.
+
+H05 — CONTEXT_CONTROLLER_SOURCE_CHANGE_REQUIRED
+Correctness requires changing `context_controller.py` or another 12th product path.
+
+H06 — SCHEMA_OR_POLICY_ID_REDESIGN_REQUIRED
+The repair genuinely requires changing request schema, context protocol schema or Hermes
+invocation policy identity.
+
+H07 — CREDENTIAL_OR_NETWORK_REQUIRED
+Any real credential read, real Hermes research, provider, Firecrawl, OAuth, or Polymarket
+runtime call is required to prove correctness.
+
+H08 — DEPENDENCY_OR_WORKFLOW_CHANGE_REQUIRED
+A dependency, lock, Hermes version, or workflow edit is required.
+
+H09 — AF1_RUNTIME_OR_EVIDENCE_MUTATION_REQUIRED
+The repair requires touching Attempt-03 evidence or the local AF1 branch.
+
+H10 — VALIDATION_CANNOT_PASS
+Required focused/full/security/CI validation cannot be made green without capability,
+authority, or scope expansion.
+
+Ordinary implementation mistakes, test fixes, docs fixes, lint/type/import failures and
+same-scope CI defects remain executor-owned inside this package.
+
+===============================================================================
+10. VALIDATION PROTOCOL
+===============================================================================
+
+Before source edits:
+1. refresh main/open PRs;
+2. create one dedicated worktree/branch;
+3. materialize prompt/spec/status package;
+4. run canonical readiness/spec gate;
+5. prove exact 11-path envelope;
+6. complete compatibility/impossibility table.
+
+While editing:
+- run `test_models.py` focused secret/public-id tests;
+- run `test_context_controller.py` live-shaped controller tests;
+- run adjacent controlled-runtime request/controller tests as needed;
+- do not repeatedly run the full suite.
+
+Required stable-candidate focused validation includes at minimum:
+
+- tests/research_runtime/hermes_controlled_runtime/test_models.py
+- tests/research_runtime/hermes_controlled_runtime/test_context_controller.py
+- tests/research_runtime/hermes_controlled_runtime/test_controller.py
+- tests/research_runtime/hermes_controlled_runtime/test_runner.py
+- tests/research_runtime/hermes_controlled_runtime/test_context_protocol.py
+  if that file exists in the current suite
+- tests/research_runtime/hermes_controlled_runtime/test_context_broker_reconciliation.py
+  if that remains the current file name
+- tests/test_project_status_docs.py
+- tests/test_repo_truth_docs.py
+- canonical WP readiness with `--check-diff`
+- exact diff/scope guard
+- generated-artifact guard
+- `git diff --check`
+- actual-surface security checks
+
+After the final source/docs/test change:
+- run ONE authoritative full repository suite;
+- freeze the stable candidate;
+- commit;
+- push;
+- create/update one draft PR;
+- obtain exact-head hosted CI;
+- obtain the normal combined independent RUNTIME implementation review;
+- synchronize PR body/status evidence;
+- stop for Side13 exact-head review.
+
+If source changes after the authoritative full suite, invalidate and rerun the evidence required
+by current governance.
+
+===============================================================================
+11. ACCEPTANCE CRITERIA
+===============================================================================
+
+Implementation is complete only if ALL are true:
+
+A01 — exact changed scope = 11/11/11.
+A02 — readiness = IMPLEMENTATION_READY or exact current equivalent.
+A03 — global generic 0x{40,} secret detection remains present.
+A04 — bare 0x64 remains rejected.
+A05 — bare 0x40 wallet-shaped value remains rejected.
+A06 — exact canonical `event:polymarket:0x<64 hex>` is accepted only through the
+      public-market-context compatibility path.
+A07 — same secret-like value remains rejected in ordinary request fields.
+A08 — wrong/malformed namespaces and lengths do not bypass scanning.
+A09 — canonical long decimal token id is accepted in public-market context.
+A10 — valid public id plus real credential material still rejects.
+A11 — request identity uses exact original unmasked public-market-context bytes.
+A12 — rejected input is never echoed.
+A13 — live-shaped ContextCampaignScope reaches fake/offline backend.
+A14 — secret-bearing controlled context still stops before backend.
+A15 — no caller-configurable or global public-id whitelist exists.
+A16 — request/context/policy schemas unchanged.
+A17 — Hermes policy ID unchanged.
+A18 — provider/model/tool/retry/fallback semantics unchanged.
+A19 — no AF1 source/workspace/evidence changed.
+A20 — no real Hermes/provider/Firecrawl/Polymarket/OAuth call occurred.
+A21 — focused validation green.
+A22 — full suite green on stable candidate.
+A23 — exact-head hosted CI green.
+A24 — independent RUNTIME implementation review has no blocking finding.
+A25 — PR/status/repo-truth evidence agree.
+A26 — Side13 exact-head review remains separate.
+A27 — merge not performed by executor.
+
+===============================================================================
+12. SUCCESSOR BOUNDARY
+===============================================================================
+
+This package repairs only the shared HERMES request compatibility defect.
+
+It does NOT decide or authorize the next AF1 runtime attempt.
+
+After Side13 exact-head review and Karl's merge:
+
+1. refresh merged main;
+2. reconcile the existing local AF1 branch onto the repaired main;
+3. add the missing AF1 live-shaped fixture/regression inside AF1's own frozen capability;
+4. produce a new exact AF1 Phase-A head;
+5. revalidate/refreeze AF1;
+6. independently close successor-attempt semantics BEFORE runtime authorization.
+
+That successor closure MUST explicitly decide whether a new attempt:
+- reuses Attempt-03's already-successful persisted public population/cutoff/case-selection
+  evidence under a formally supported continuation path; OR
+- requires a fresh public population under a new attempt identity.
+
+Do NOT assume either outcome here.
+
+Important:
+`POPULATION_ALREADY_REGISTERED` was not a fresh-population success under the prior frozen AF1
+contract. Therefore do not casually authorize a new run against the consumed Attempt-03
+population without an explicit operator/contract analysis.
+
+Only after that closure may Side13 issue a fresh exact runtime authorization for a successor
+attempt identity.
+
+Attempt-03 itself remains permanently CONSUMED.
+
+===============================================================================
+13. REPORT BACK
+===============================================================================
+
+Return one concise completion report containing:
+
+1. base SHA;
+2. final branch/head SHA;
+3. actual changed paths and 11/11/11 confirmation;
+4. implementation summary;
+5. proof global long-hex secret rule remains;
+6. exact canonical public-id forms admitted;
+7. focused tests/results, including T01-T15;
+8. full-suite result;
+9. readiness/spec result;
+10. security/diff/scope/artifact results;
+11. exact Hermes invocation policy ID and confirmation unchanged;
+12. provider/model/Firecrawl/Polymarket/OAuth runtime calls = 0;
+13. confirmation AF1 Attempt-03 evidence/workspace untouched;
+14. PR number/URL and exact head;
+15. exact-head CI result;
+16. independent RUNTIME review disposition;
+17. explicit authority state:
+    - Attempt-03 CONSUMED
+    - AF1 gate result NONE
+    - successor attempt NOT AUTHORIZED
+    - H1 #5 NOT AUTHORIZED
+    - Gate C NOT AUTHORIZED
+    - capital/orders 0
+    - merge NOT AUTHORIZED
+
+Then STOP for Side13 final exact-head review.
+
+FINAL EXECUTOR RULE:
+
+Fix only the shared false-positive boundary:
+
+Canonical repo-defined PUBLIC Polymarket market/event/token identifiers may survive secret
+validation only inside `public_market_context`.
+
+Bare long-hex, wallet/account, credential, secret and arbitrary request material remain
+fail-closed everywhere.
+
+Do not run AF1 again.
+
+===============================================================================
+APPENDIX A — CANONICAL MACHINE MIRROR (mirrors wp_spec.json; adds no authority)
+===============================================================================
+
+Governance track expected: RUNTIME
+Canonical package size class: L
+Base branch: main (frozen 15097f70f5f5358879fde73b2b30d26ecdb80402; PR #194 / S10-HERMES-CTX-02 merged)
+
+OBJECTIVE
+Repair the AF1 Attempt-03 request-builder false positive by letting exact, complete,
+repo-canonical PUBLIC Polymarket identifiers survive the generic long-hex secret rule only
+inside the request field public_market_context. Admitted forms: market:polymarket:<decimal>,
+event:polymarket:0x<exactly 64 lowercase hex> (the repository condition-id contract is
+^0x[0-9a-f]{64}$), event:polymarket:market-<decimal> and token:polymarket:<decimal>, where
+<decimal> is a non-empty digit string without a leading zero. Every occurrence of the literal
+namespace event:polymarket: in public_market_context must begin an exact, delimited canonical
+event identifier or the request fails REQUEST_SECRET_DETECTED, so malformed canonical-looking
+event ids fail closed even where the generic rule would miss them. The generic 0x{40,} rule stays
+in the global secret rules; every other secret rule still evaluates the original text; every
+other request field keeps the ordinary strict scan; stored request bytes and identity are the
+original unmasked string.
+
+AUTHORITY / NON-AUTHORITY
+Exactly the governance authority block above. No provider, model, Firecrawl, Polymarket,
+OAuth, credential, dependency, workflow, scheduler, strategy, paper, execution, live,
+AF1 successor-attempt, H1 #5, Gate C, capital, order, or merge authority.
+AF1 Attempt-03 stays CONSUMED with no gate result.
+
+CHANGED-FILE SCOPE
+Exactly the 11 paths in section 4; required == allowed == 11; exact_scope_required=true.
+
+NEGATIVE-TEST MATRIX
+T01-T12 and T15 as focused deterministic tests in
+tests/research_runtime/hermes_controlled_runtime/test_models.py; T13-T14 in
+tests/research_runtime/hermes_controlled_runtime/test_context_controller.py.
+
+HARD STOPS
+H01-H10 in section 9.
+
+Normative Rule Matrix:
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|secret|global_rules|credential_marker_any_field|REJECT|fail_closed|secret.global_rules_unchanged|R001
+NR002|secret|long_hex|bare_0x64_public_market_context|REJECT|fail_closed|secret.global_rules_unchanged|R002
+NR003|secret|long_hex|bare_0x40_wallet_shape|REJECT|fail_closed|secret.global_rules_unchanged|R003
+NR004|public_id|public_market_context|exact_canonical_event_id|ACCEPT|admitted|public_id.admission|R004
+NR005|public_id|other_request_field|canonical_or_bare_0x64|REJECT|fail_closed|public_id.field_boundary|R005
+NR006|public_id|namespace|noncanonical_namespace|REJECT|fail_closed|public_id.exact_grammar|R006
+NR007|public_id|grammar|malformed_near_match|REJECT|fail_closed|public_id.exact_grammar|R007
+NR008|public_id|public_market_context|valid_id_plus_credential|REJECT|fail_closed|secret.global_rules_unchanged|R008
+NR009|public_id|public_market_context|canonical_long_decimal_token_id|ACCEPT|admitted|public_id.admission|R009
+NR010|public_id|public_market_context|canonical_market_event_token_set|ACCEPT|admitted|public_id.admission|R010
+NR011|request|identity|masked_copy_used_for_identity|FORBID|original_bytes_identity|request.identity_unchanged|R011
+NR012|request|error|rejected_content_echo|FORBID|closed_code_only|request.no_echo|R012
+NR013|context|blind_phase|live_shaped_subject_refs|ACCEPT|reaches_offline_backend|context.live_shape|R013
+NR014|context|blind_phase|secret_bearing_scope|REJECT|fail_before_backend|context.live_shape|R014
+NR015|public_id|allowlist|global_or_caller_configurable|FORBID|narrow_private_path_only|public_id.no_broadening|R015
+NR016|authority|package|provider_or_trading_or_af1|FORBID|no_authority|authority.non_authority|NONE
+END_NORMATIVE_RULE_MATRIX_V1
+
+Evidence Plan (requirement mapping):
+R001-R015 map one-to-one to T01-T15 as named focused assertions (see wp_spec.json
+evidence_plan): R001-R012 and R015 in
+tests/research_runtime/hermes_controlled_runtime/test_models.py; R013-R014 in
+tests/research_runtime/hermes_controlled_runtime/test_context_controller.py.
+
+SUCCESSOR BOUNDARY
+Section 12. Next: S10-GATE-AF1 post-repair reconciliation and successor-attempt semantics
+closure, separately authorized only. Never return MERGE AUTHORIZED.

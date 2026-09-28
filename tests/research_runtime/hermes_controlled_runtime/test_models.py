@@ -1014,3 +1014,335 @@ def test_context_validator_rejects_extra_top_level_field():
             json.dumps(doc), expected_request_id=request_id, max_sources=8,
             allowed_subject_refs=("subject:one",),
         )
+
+
+# --- S10-HERMES-CTX-03: canonical public Polymarket ids in public_market_context --
+#
+# Live-shaped canonical PUBLIC identifiers (synthetic values with the real shapes: a
+# 0x + 64 lowercase-hex condition id and a 77-digit CLOB token id). No network.
+
+_CTX03_CONDITION = "0x3f5a9c1e7b2d4a6c8e0f1b3d5a7c9e2f4b6d8a0c2e4f6a8b0d2c4e6f8a1b3c5d"
+_CTX03_EVENT_ID = "event:polymarket:" + _CTX03_CONDITION
+_CTX03_MARKET_ID = "market:polymarket:512345"
+_CTX03_TOKEN_ID = (
+    "token:polymarket:"
+    "71321045679252212594626385532706912750332728571942532289631379312455583992563"
+)
+_CTX03_WALLET = "0x" + "ab12cd34ef" * 4
+_CTX03_CREDENTIALS = (
+    "api_key=abc",
+    "secret key here",
+    "password",
+    "private_key",
+    "Bearer abcdefgh12345678",
+    "Authorization: Basic abc",
+    "sk-abcdef0123456789abcdef",
+    "ghp_abcdefghijklmnopqrstuvwx",
+    "-----BEGIN RSA " + "PRIVATE KEY-----",
+    "access token",
+)
+
+
+def _ctx03_build(public_market_context: str, **overrides: object):
+    fields = _base_request_fields()
+    fields["public_market_context"] = public_market_context
+    fields.update(overrides)
+    return build_research_run_request(fields)
+
+
+def _ctx03_rejected_code(public_market_context: str, **overrides: object) -> str:
+    with pytest.raises(HermesResearchError) as exc:
+        _ctx03_build(public_market_context, **overrides)
+    assert str(exc.value) == exc.value.code
+    return exc.value.code
+
+
+def _ctx03_live_context() -> str:
+    exact_scope = {
+        "event_id": _CTX03_EVENT_ID,
+        "market_id": _CTX03_MARKET_ID,
+        "token_ids": [_CTX03_TOKEN_ID],
+    }
+    scope = {
+        "alpha_context_present": False,
+        "campaign_id": "contextcampaign:sha256:" + "1" * 64,
+        "exact_scope_json": m.canonical_json_bytes(exact_scope).decode("utf-8"),
+        "exact_scope_sha256": "2" * 64,
+        "information_cutoff": "2026-09-27T00:00:00Z",
+        "scope_key": "af1-market-scope:" + "3" * 64,
+        "subject_refs": sorted([_CTX03_EVENT_ID, _CTX03_MARKET_ID, _CTX03_TOKEN_ID]),
+    }
+    return m.canonical_json_bytes(scope).decode("utf-8")
+
+
+def test_ctx03_t01_existing_secret_controls_preserved():
+    test_r007_secret_looking_request_content_rejected_without_echo()
+    for credential in _CTX03_CREDENTIALS:
+        for field in ("public_market_context", "research_question"):
+            fields = _base_request_fields()
+            fields[field] = f"context {credential}"
+            with pytest.raises(HermesResearchError) as exc:
+                build_research_run_request(fields)
+            assert exc.value.code == "REQUEST_SECRET_DETECTED", credential
+            assert credential not in str(exc.value)
+
+
+def test_ctx03_t02_bare_64_hex_rejected():
+    for value in (
+        _CTX03_CONDITION,
+        f"condition {_CTX03_CONDITION} is public",
+        '{"condition_id":"' + _CTX03_CONDITION + '"}',
+        _CTX03_CONDITION.upper().replace("0X", "0x"),
+    ):
+        assert _ctx03_rejected_code(value) == "REQUEST_SECRET_DETECTED"
+
+
+def test_ctx03_t03_bare_wallet_shaped_40_hex_rejected():
+    for value in (
+        _CTX03_WALLET,
+        f"wallet {_CTX03_WALLET}",
+        "0x" + "AbCdEf0123" * 4,
+        f"{_CTX03_EVENT_ID} {_CTX03_WALLET}",
+    ):
+        assert _ctx03_rejected_code(value) == "REQUEST_SECRET_DETECTED"
+
+
+def test_ctx03_t04_canonical_event_id_accepted_in_public_market_context():
+    for value in (
+        _CTX03_EVENT_ID,
+        f"Subject {_CTX03_EVENT_ID} is a public Polymarket event.",
+        '{"subject_refs":["' + _CTX03_EVENT_ID + '"]}',
+        "event:polymarket:market-512345",
+    ):
+        req = _ctx03_build(value)
+        assert req.public_market_context == value
+        assert req.request_id.startswith("hermesresearchrequest:sha256:")
+
+
+def test_ctx03_t05_same_hex_rejected_in_other_request_fields():
+    for field in ("research_question", "research_objective"):
+        for value in (
+            f"About {_CTX03_EVENT_ID}?",
+            f"About {_CTX03_EVENT_ID} today",
+            _CTX03_EVENT_ID,
+            f"About {_CTX03_CONDITION} today",
+        ):
+            fields = _base_request_fields()
+            fields["public_market_context"] = _CTX03_EVENT_ID  # valid here
+            fields[field] = value
+            with pytest.raises(HermesResearchError) as exc:
+                build_research_run_request(fields)
+            assert exc.value.code == "REQUEST_SECRET_DETECTED"
+
+
+def test_ctx03_t06_wrong_namespace_rejected():
+    hex64 = _CTX03_CONDITION
+    for value in (
+        "event:other:" + hex64,
+        "foo:polymarket:" + hex64,
+        "market:polymarket:" + hex64,
+        "token:polymarket:" + hex64,
+        "Event:Polymarket:" + hex64,
+        "EVENT:POLYMARKET:" + hex64,
+        "event:kalshi:" + hex64,
+        "polymarket:" + hex64,
+        "event:polymarket-x:" + hex64,
+        "xevent:polymarket:" + hex64,
+        "prefix:event:polymarket:" + hex64,
+        "wallet.event:polymarket:" + hex64,
+        "polymarket " + hex64,
+    ):
+        assert _ctx03_rejected_code(value) == "REQUEST_SECRET_DETECTED", value
+
+
+def test_ctx03_t07_malformed_canonical_near_matches_rejected():
+    hexdigits = _CTX03_CONDITION[2:]
+    mixed = hexdigits[:32] + hexdigits[32:].upper()
+    malformed_events = (
+        "event:polymarket:0x" + hexdigits[:40],
+        "event:polymarket:0x" + hexdigits[:63],
+        "event:polymarket:0x" + hexdigits + "a",
+        "event:polymarket:0x" + hexdigits + "g",
+        "event:polymarket:0x" + hexdigits + "_x",
+        "event:polymarket:0x" + hexdigits + _CTX03_WALLET,
+        "event:polymarket:0x" + hexdigits + "12345",
+        "event:polymarket:0X" + hexdigits,
+        "event:polymarket:0x" + hexdigits.upper(),
+        "event:polymarket:0x" + mixed,
+        "event:polymarket:0x" + hexdigits + ".1",
+        "event:polymarket:0x" + hexdigits + "-a",
+        "event:polymarket:0x" + hexdigits + ":x",
+        "event:polymarket:0x" + hexdigits + "/x",
+        "event:polymarket:",
+        "event:polymarket: ",
+        "event:polymarket:market-",
+        "event:polymarket:market-0123",
+        "event:polymarket:market-12x",
+        "event:polymarket:" + _CTX03_EVENT_ID,
+        "event:polymarket:sk-abcdef0123456789abcdef",
+    )
+    rejected = malformed_events + (
+        "event:polymarket:0x" + hexdigits + " " + _CTX03_WALLET,
+        "token:polymarket:sk-abcdef0123456789abcdef",
+    )
+    for value in rejected:
+        assert _ctx03_rejected_code(value) == "REQUEST_SECRET_DETECTED", value
+        # Rejected in prose and JSON too, even beside a valid canonical event id.
+        assert _ctx03_rejected_code(f"{_CTX03_EVENT_ID} and {value} here") == (
+            "REQUEST_SECRET_DETECTED"
+        ), value
+        assert _ctx03_rejected_code('{"ref":"' + value + '"}') == "REQUEST_SECRET_DETECTED"
+    # No malformed event near-match is recognized, so nothing is partially masked.
+    for value in malformed_events + (
+        "market:polymarket:0512345",
+        "market:polymarket:",
+        "token:polymarket:1.5",
+    ):
+        assert m._CANONICAL_PUBLIC_POLYMARKET_ID.search(value) is None, value
+        assert m._CANONICAL_PUBLIC_POLYMARKET_ID.sub(" ", value) == value
+    # The field-aware guard is stricter than the unchanged global rule, which still
+    # misses word-glued hex; that global behavior is not broadened here.
+    for value in ("event:polymarket:0x" + hexdigits + "g", "event:polymarket:0X" + hexdigits):
+        m._scan_secret(value)
+
+
+def test_ctx03_t07b_malformed_event_guard_is_load_bearing(monkeypatch):
+    """Bypassing the namespace guard re-opens the word-glued acceptance (mutation check)."""
+    glued = "event:polymarket:" + _CTX03_CONDITION + "g"
+    assert _ctx03_rejected_code(glued) == "REQUEST_SECRET_DETECTED"
+    monkeypatch.setattr(m, "_CANONICAL_EVENT_NAMESPACE", "\x00never-present\x00")
+    assert _ctx03_build(glued).public_market_context == glued
+    monkeypatch.undo()
+    assert _ctx03_rejected_code(glued) == "REQUEST_SECRET_DETECTED"
+
+
+def test_ctx03_t08_valid_id_plus_real_secret_rejected():
+    for credential in _CTX03_CREDENTIALS:
+        for value in (
+            f"{_CTX03_EVENT_ID} {credential}",
+            f"{credential} {_CTX03_EVENT_ID}",
+            _ctx03_live_context()[:-1] + ',"note":"' + credential + '"}',
+        ):
+            assert _ctx03_rejected_code(value) == "REQUEST_SECRET_DETECTED", credential
+    # Credential markers that overlap or abut an identifier are checked on the original.
+    for value in (
+        f"access {_CTX03_TOKEN_ID}",
+        f"authorization: {_CTX03_EVENT_ID}",
+        f"secret {_CTX03_TOKEN_ID.replace('token:', 'key:')}",
+    ):
+        assert _ctx03_rejected_code(value) == "REQUEST_SECRET_DETECTED", value
+
+
+def test_ctx03_t09_live_shaped_token_id_accepted():
+    assert len(_CTX03_TOKEN_ID) - len("token:polymarket:") == 77
+    for value in (_CTX03_TOKEN_ID, f"Outcome token {_CTX03_TOKEN_ID} (public CLOB id)."):
+        req = _ctx03_build(value)
+        assert req.public_market_context == value
+
+
+def test_ctx03_t10_live_shaped_market_event_token_context_accepted():
+    context = _ctx03_live_context()
+    # The exact scope is embedded as an escaped JSON string as well as in subject_refs.
+    assert context.count(_CTX03_CONDITION) == 2
+    req = _ctx03_build(context)
+    assert req.public_market_context == context
+    assert req.request_id == m.content_address(
+        m.REQUEST_IDENTITY_PREFIX, req.public_fields()
+    )
+
+
+def test_ctx03_t11_original_bytes_drive_request_id():
+    context = _ctx03_live_context()
+    req = _ctx03_build(context)
+    assert req.public_market_context == context
+    assert req.public_fields()["public_market_context"] == context
+    assert _CTX03_CONDITION in req.public_market_context
+    assert req == _ctx03_build(context)
+    changed_condition = _CTX03_CONDITION[:-1] + "e"
+    changed = _ctx03_build(context.replace(_CTX03_CONDITION, changed_condition))
+    assert changed.request_id != req.request_id
+    changed_token = _ctx03_build(context.replace("992563", "992564"))
+    assert changed_token.request_id != req.request_id
+    # A masked copy would be identity-colliding across different identifiers.
+    masked = m._CANONICAL_PUBLIC_POLYMARKET_ID.sub(" ", context)
+    assert masked != context
+    assert m._CANONICAL_PUBLIC_POLYMARKET_ID.sub(
+        " ", context.replace(_CTX03_CONDITION, changed_condition)
+    ) == masked
+
+
+def test_ctx03_t12_mixed_rejection_never_echoes():
+    secret = "sk-abcdef0123456789abcdef0123456789"
+    context = f"{_CTX03_EVENT_ID} {_CTX03_TOKEN_ID} {secret} {_CTX03_WALLET}"
+    with pytest.raises(HermesResearchError) as exc:
+        _ctx03_build(context)
+    assert exc.value.code == "REQUEST_SECRET_DETECTED"
+    assert str(exc.value) == "REQUEST_SECRET_DETECTED"
+    assert exc.value.args == ("REQUEST_SECRET_DETECTED",)
+    for fragment in (secret, "sk-", _CTX03_CONDITION, _CTX03_WALLET, "polymarket"):
+        assert fragment not in str(exc.value)
+        assert fragment not in repr(exc.value)
+
+
+def test_ctx03_t15_no_broad_global_allowlist(monkeypatch):
+    import ast
+    import inspect
+
+    # The generic long-hex rule is still a global secret rule, unchanged.
+    assert m._LONG_HEX_SECRET_PATTERN in m._SECRET_PATTERNS
+    assert m._LONG_HEX_SECRET_PATTERN.pattern == r"\b0x[a-fA-F0-9]{40,}\b"
+    assert m._LONG_HEX_SECRET_PATTERN.flags == m.re.compile("").flags
+    assert len(m._SECRET_PATTERNS) == 11
+    # The global scanner still rejects canonical event ids outside the narrow path.
+    with pytest.raises(HermesResearchError):
+        m._scan_secret(_CTX03_EVENT_ID)
+    # Private fixed-signature helpers: no caller-supplied allowlist or digest hook.
+    assert list(inspect.signature(m._scan_public_market_context_secret).parameters) == ["text"]
+    assert list(inspect.signature(m._require_public_market_context).parameters) == [
+        "value", "max_len"
+    ]
+    for name in dir(m):
+        lowered = name.lower()
+        assert "allowlist" not in lowered and "whitelist" not in lowered, name
+        assert "safe_digest" not in lowered, name
+    import src.research_runtime.hermes_controlled_runtime as package
+
+    for name in ("_CANONICAL_PUBLIC_POLYMARKET_ID", "_scan_public_market_context_secret",
+                 "_require_public_market_context", "_LONG_HEX_SECRET_PATTERN"):
+        assert name not in getattr(package, "__all__", ())
+    # Exactly one call site, bound to the public_market_context field only.
+    tree = ast.parse(inspect.getsource(m))
+    calls = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        and node.func.id in {"_require_public_market_context",
+                             "_scan_public_market_context_secret"}
+    ]
+    assert len(calls) == 2
+    pmc_call = next(c for c in calls if c.func.id == "_require_public_market_context")
+    assert ast.unparse(pmc_call.args[0]) == "fields['public_market_context']"
+    # Runtime spy: every other string field still takes the ordinary strict path.
+    strict_values: list[object] = []
+    narrow_values: list[object] = []
+    real_strict = m._require_str
+    real_narrow = m._require_public_market_context
+
+    def strict_spy(value, **kwargs):
+        strict_values.append(value)
+        return real_strict(value, **kwargs)
+
+    def narrow_spy(value, **kwargs):
+        narrow_values.append(value)
+        return real_narrow(value, **kwargs)
+
+    monkeypatch.setattr(m, "_require_str", strict_spy)
+    monkeypatch.setattr(m, "_require_public_market_context", narrow_spy)
+    fields = _base_request_fields()
+    fields["public_market_context"] = _ctx03_live_context()
+    build_research_run_request(fields)
+    assert narrow_values == [fields["public_market_context"]]
+    assert fields["public_market_context"] not in strict_values
+    for field in ("schema_version", "research_question", "research_objective",
+                  "research_category", "provider_label", "model_label",
+                  "non_authority_notice"):
+        assert fields[field] in strict_values, field

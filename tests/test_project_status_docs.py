@@ -4632,3 +4632,88 @@ def test_s10_hermes_ctx02_is_current_bounded_compatibility_repair() -> None:
     forbidden = " ".join(spec["successor_boundary"]["forbidden_in_this_wp"])
     assert "AF1 Attempt-03" in forbidden and "H1 number five" in forbidden
     assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
+
+
+def test_s10_hermes_ctx03_is_current_bounded_compatibility_repair() -> None:
+    project = _read()
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-HERMES-CTX-03" / "wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    current = next(
+        line
+        for line in project.splitlines()
+        if line.startswith("# S10-HERMES-CTX-03 current bounded compatibility repair")
+    )
+    assert project.index(current) < project.index(
+        "# S10-HERMES-CTX-02 current bounded compatibility repair"
+    )
+    assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
+    assert "Exact changed-file scope: 11" in current
+    assert "15097f70f5f5358879fde73b2b30d26ecdb80402" in current
+    # Attempt-03 stays consumed with no gate result; never rewritten as PASS/FAIL/unconsumed.
+    assert "S10-GATE-AF1 Attempt-03 = CONSUMED" in current
+    assert "TRUE_STOP / PHASE_B_LOCAL_EVIDENCE_DEFECT" in current
+    assert "public population: SUCCEEDED" in current
+    assert "AF1 gate result: NONE" in current
+    for claim in ("Attempt-03: UNCONSUMED", "AF1 PASS", "AF1 FAIL", "gate result: PASS",
+                  "gate result: FAIL"):
+        assert claim not in current, claim
+    assert "Hermes/provider/model calls: 0" in current and "Firecrawl calls: 0" in current
+    assert "accepted provider cost: USD 0" in current
+    # Exact public-id compatibility rule remains recorded.
+    assert "event:polymarket:0x<exactly 64 lowercase hex>" in current
+    assert "inside public_market_context only" in current
+    assert "the generic long-hex rule remains global" in current
+    assert "request identity uses original bytes" in current
+    # No authority expansion; no stale not-started wording.
+    assert "network authority: NONE" in current and "credential authority: NONE" in current
+    assert "successor AF1 runtime attempt: NOT AUTHORIZED by this package" in current
+    assert "H1 #5: NOT AUTHORIZED" in current and "Gate C: NOT AUTHORIZED" in current
+    assert "capital/orders: 0" in current and "Merge authorized: NO" in current
+    assert "implemented in models.py" in current
+    for stale in ("NOT STARTED", "not started", "repair pending"):
+        assert stale not in current, stale
+    assert "Attempt-03 is recorded as neither AF1 PASS nor AF1 FAIL" in project
+    assert "malformed canonical-looking event:polymarket: ids fail closed" in current
+    identity = spec["identity"]
+    assert identity["wp_id"] == "S10-HERMES-CTX-03"
+    assert identity["risk_level"] == 3 and identity["package_size_class"] == "L"
+    # Package size is L everywhere; the former M discrepancy cannot recur.
+    package_dir = REPO_ROOT / "docs" / "wp_specs" / "S10-HERMES-CTX-03"
+    prompt = (package_dir / "wp_prompt.txt").read_text(encoding="utf-8")
+    fragment = (
+        REPO_ROOT / "docs" / "status_entries" / "S10-HERMES-CTX-03.md"
+    ).read_text(encoding="utf-8")
+    assert "Package size class:\nL\n" in prompt
+    assert "Package size class:\nM\n" not in prompt
+    assert "Canonical package size class: L\n" in prompt
+    assert "Package size class: L;" in current
+    assert "package size class L, exact scope 11" in fragment
+    for text in (prompt, fragment, current):
+        for stale in ("front matter says M", "prompt front matter M", "relabel",
+                      "budget for M", "M budget"):
+            assert stale not in text, stale
+    assert identity["required_predecessor"]["merge_sha"] == (
+        "15097f70f5f5358879fde73b2b30d26ecdb80402"
+    )
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 11
+    assert scope["exact_scope_required"] is True
+    assert "src/research_runtime/hermes_controlled_runtime/models.py" in scope[
+        "required_changed_files"
+    ]
+    assert "src/research_runtime/hermes_controlled_runtime/context_controller.py" not in scope[
+        "required_changed_files"
+    ]
+    authority = spec["authority"]
+    for key in ("network", "credentials", "dependencies", "workflow_files", "scheduler",
+                "strategy", "paper", "execution", "live", "workflow_governance"):
+        assert authority[key] is False
+    assert authority["hermes_runtime"] is True and authority["source_runtime"] is True
+    assert spec["successor_boundary"]["next_wp"] == "S10-GATE-AF1"
+    forbidden = " ".join(spec["successor_boundary"]["forbidden_in_this_wp"])
+    assert "AF1 successor attempt" in forbidden and "H1 number five" in forbidden
+    assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
