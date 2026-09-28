@@ -563,19 +563,23 @@ def test_s10_gate_af1_contract_and_phase_a_evidence_are_registered() -> None:
     evidence = ROOT / "docs" / "gate_evidence" / "S10-GATE-AF1" / "af1_gate_evidence.json"
     assert contract.is_file() and evidence.is_file()
     assert "alpha_factory_research_system_gate_contract.md" in index
-    assert "PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED" in project
+    assert "evidence state: FINALIZED" in project
     assert "Real public population, Hermes-provider" in index
 
 
 def test_s10_gate_af1_correction_is_registered_without_runtime_authority() -> None:
     index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
-    assert "S10-GATE-AF1 research-system gate (Phase-A refreeze target; post-S10-HERMES-CTX-03 Attempt-04 preparation)" in index
+    assert "S10-GATE-AF1 research-system gate (finalized: AF1_PASS; Attempt-04 CONSUMED)" in index
     assert "retry_limit=0" in index
     assert "public_population_result_sha256" in index
     assert "No new population or provider call" in index
     assert "70f867bdcd5e97b0dc05d4008c2c023feb461658" in index
     assert "complete 38-field WP164A population" in index
-    assert "AF1_ATTEMPT04_RUNTIME_AUTHORIZATION_REQUIRED" in index
+    assert "AF1_ATTEMPT04_RUNTIME_AUTHORIZATION_REQUIRED" not in index
+    assert "af1gate:sha256:281c5e05f5e4f8e30687f232e0289b99b0719c87fab61c8b1d1d417dc0b5cbb2" in index and "dead42658e8fc9139d82f772e1f2fff67ba07674" in index
+    assert "all ten dimensions\nPASS" in index or "all ten dimensions PASS" in " ".join(index.split())
+    assert "research-system gate success\nonly" in index or "research-system gate success only" in " ".join(index.split())
+    assert "none is authorized" in " ".join(index.split())
     fragment = (ROOT / "docs" / "status_entries" / "S10-GATE-AF1.md").read_text(encoding="utf-8")
     contract = (ROOT / "docs" / "alpha_factory_research_system_gate_contract.md").read_text(encoding="utf-8")
     assert "Base: `1ccf42df0e95586b98c79a0bf912343f9c34df31`" in fragment
@@ -586,7 +590,12 @@ def test_s10_gate_af1_correction_is_registered_without_runtime_authority() -> No
     # Attempt-03 is consumed historical evidence with no gate result; Attempt-04 is the successor.
     assert "AF1 Attempt-03 NOT AUTHORIZED" not in fragment
     assert "AF1 Attempt-03 CONSUMED" in fragment and "AF1 gate result NONE" in fragment
-    assert "AF1 Attempt-04 UNCONSUMED / NOT AUTHORIZED" in fragment
+    assert "AF1 Attempt-04 UNCONSUMED" not in fragment
+    assert "AF1 Attempt-04 CONSUMED" in fragment
+    assert "Final AF1 outcome: `AF1_PASS`" in fragment and "af1gate:sha256:281c5e05f5e4f8e30687f232e0289b99b0719c87fab61c8b1d1d417dc0b5cbb2" in fragment
+    assert "Runtime execution head: `dead42658e8fc9139d82f772e1f2fff67ba07674`" in fragment
+    assert "additional AF1 attempt NOT" in " ".join(fragment.split()) or "No additional AF1 attempt is" in " ".join(fragment.split())
+    assert "Merge authorized: NO" in fragment
     assert "`s10-gate-af1-attempt-04`" in fragment and "attempt-04" in index
     assert "AF1 Attempt-03 is permanently CONSUMED" in index and "AF1 gate result NONE" in index
     assert "never reuses Attempt-03 stores" in index

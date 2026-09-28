@@ -53,6 +53,7 @@ from tools.alpha.run_s10_gate_af1 import (
 )
 from src.data_layer.analytical_research.alpha_discovery import ObservedMarketState
 from src.data_layer.analytical_research.alpha_factory_gate import (
+    AF1_DIMENSIONS,
     AF1BenchmarkManifest,
     AF1GateReceipt,
     af1_record_from_mapping,
@@ -1212,17 +1213,81 @@ def test_cli_default_and_prepare_paths_make_zero_network_or_provider_calls(repo,
         assert main([*command, "--workspace", workspace]) == 2
 
 
-def test_placeholder_evidence_is_phase_a_only():
+_PHASE_A_PLACEHOLDER = {
+    "schema_id": "s10-gate-af1-evidence", "schema_version": "1.0.0", "wp_id": "S10-GATE-AF1",
+    "base_sha": operator.BASE_SHA, "evidence_state": "PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED",
+    "benchmark_manifest": None, "gate_receipt": None,
+}
+_FORBIDDEN_TRACKED_TEXT = (
+    "local_data", "hermes_home", "\\users\\", "/users/", "/home/", "http://", "https://",
+    "transcript", "reasoning", "api_key", "auth.json", ".env", "stderr", "stdout", "review_body\"",
+)
+
+
+def _assert_tracked_evidence_lifecycle(payload):
+    """The designed lifecycle: Phase-A placeholder -> runtime -> review -> FINALIZED.
+
+    Either state is valid; a FINALIZED wrapper must pass the frozen offline verifier
+    (which replays the closed ten-dimension derivation) and stay sanitized. The expected
+    outcome is never hard-coded here.
+    """
+    assert payload["schema_id"] == "s10-gate-af1-evidence"
+    assert payload["schema_version"] == "1.0.0" and payload["wp_id"] == "S10-GATE-AF1"
+    assert payload["base_sha"] == operator.BASE_SHA
+    if payload["evidence_state"] == "PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED":
+        assert payload == _PHASE_A_PLACEHOLDER
+        operator.verify_evidence(payload, require_final=False)
+        with pytest.raises(AF1OperatorError):
+            operator.verify_evidence(payload, require_final=True)
+        return
+    assert payload["evidence_state"] == "FINALIZED"
+    operator.verify_evidence(payload, require_final=True)
+    receipt = payload["gate_receipt"]
+    assert receipt is not None and receipt["evidence_state"] == "FINALIZED"
+    assert tuple(sorted(receipt["dimension_statuses"])) == tuple(sorted(AF1_DIMENSIONS))
+    assert receipt["overall_disposition"] in ("AF1_PASS", "AF1_FAIL", "AF1_INCONCLUSIVE")
+    lowered = json.dumps(payload).lower()
+    for token in _FORBIDDEN_TRACKED_TEXT:
+        assert token not in lowered, token
+    # Slots appear only inside canonical review records bound to their real-case evidence;
+    # no standalone slot -> case lookup field exists.
+    assert "slot_to_case" not in lowered and "slot_map" not in lowered
+
+
+def test_tracked_evidence_follows_phase_a_to_finalized_lifecycle():
     root = Path(__file__).resolve().parents[3]
     payload = json.loads((root / "docs" / "gate_evidence" / "S10-GATE-AF1" / "af1_gate_evidence.json").read_text(encoding="utf-8"))
-    assert payload == {
-        "schema_id": "s10-gate-af1-evidence", "schema_version": "1.0.0", "wp_id": "S10-GATE-AF1",
-        "base_sha": operator.BASE_SHA, "evidence_state": "PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED",
-        "benchmark_manifest": None, "gate_receipt": None,
-    }
-    operator.verify_evidence(payload, require_final=False)
-    with pytest.raises(AF1OperatorError):
-        operator.verify_evidence(payload, require_final=True)
+    _assert_tracked_evidence_lifecycle(payload)
+
+
+def test_phase_a_placeholder_remains_a_valid_lifecycle_state():
+    _assert_tracked_evidence_lifecycle(dict(_PHASE_A_PLACEHOLDER))
+    with pytest.raises(AssertionError):
+        _assert_tracked_evidence_lifecycle({**_PHASE_A_PLACEHOLDER, "gate_receipt": {"x": 1}})
+
+
+def _tamper_dimension(payload):
+    receipt = payload["gate_receipt"]
+    first = sorted(receipt["dimension_statuses"])[0]
+    receipt["dimension_statuses"][first] = "FAIL" if receipt["dimension_statuses"][first] != "FAIL" else "PASS"
+
+
+@pytest.mark.parametrize("tamper", [
+    _tamper_dimension,
+    lambda payload: payload.update(gate_receipt=None),
+    lambda payload: payload.update(evidence_state="PENDING_RUNTIME"),
+    lambda payload: payload["benchmark_manifest"].update(cutoff="C:\\Users\\x\\local_data"),
+    lambda payload: payload.update(extra_field="x"),
+    lambda payload: payload["real_case_evidence"].pop(),
+])
+def test_malformed_finalized_tracked_evidence_fails_lifecycle(tamper):
+    root = Path(__file__).resolve().parents[3]
+    payload = json.loads((root / "docs" / "gate_evidence" / "S10-GATE-AF1" / "af1_gate_evidence.json").read_text(encoding="utf-8"))
+    if payload["evidence_state"] != "FINALIZED":
+        pytest.skip("tracked evidence is still the Phase-A placeholder")
+    tamper(payload)
+    with pytest.raises((AssertionError, AF1OperatorError, KeyError, TypeError, ValueError)):
+        _assert_tracked_evidence_lifecycle(payload)
 
 
 def test_benchmark_policy_is_exact_uncalibrated_starting_policy():

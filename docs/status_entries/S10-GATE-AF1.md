@@ -16,26 +16,43 @@
   and `af07264a6dc85b9a7bfe6016042011685c957554`
 - Governance: RUNTIME, risk 3, capital at risk USD 0
 - Scope: exactly 19 paths; dependencies, locks, and workflows unchanged
-- Phase: SIDE13 final one-shot post-S10-HERMES-CTX-03 reconciliation and Attempt-04
-  Phase-A refreeze (same-capability continuation; not a new roadmap WP); expected stop
-  `AF1_ATTEMPT04_RUNTIME_AUTHORIZATION_REQUIRED`
+- Phase: FINALIZED after AF1 Attempt-04 runtime, independent Side12 blind review and
+  deterministic Phase-C finalization; post-runtime publication under the explicit
+  Side13/Karl lifecycle-test recovery amendment
+- Runtime execution head: `dead42658e8fc9139d82f772e1f2fff67ba07674` (the only head that made real Attempt-04 calls);
+  final publication head: later recovery commit(s) descending from it
+- Final AF1 outcome: `AF1_PASS`; all ten dimensions PASS; receipt
+  `af1gate:sha256:281c5e05f5e4f8e30687f232e0289b99b0719c87fab61c8b1d1d417dc0b5cbb2`
 - Attempts: AF1 Attempt-01 and Attempt-02 CONSUMED / historical invalidated
   evidence; AF1 Attempt-03 CONSUMED on Phase-A head
   `777b33d5e3eb3ae6814716f45f3dc6a8a673ed16` (TRUE_STOP / `PHASE_B_LOCAL_EVIDENCE_DEFECT`,
-  AF1 gate result NONE); AF1 Attempt-04 UNCONSUMED / NOT AUTHORIZED (future workspace
-  `local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-04`, `workspace_attempt_id`
-  `s10-gate-af1-attempt-04`)
-- Runtime evidence in this package: none; public/product calls 0; Hermes/provider
-  calls 0; Firecrawl calls 0; credentials untouched; H1 #5 NOT AUTHORIZED
-- Gate outcome: not yet evaluated; the committed evidence state is
-  `PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED`
+  AF1 gate result NONE); AF1 Attempt-04 CONSUMED (`workspace_attempt_id`
+  `s10-gate-af1-attempt-04`, envelope SHA-256 `627fcd4cb6c946cabfb86bb2b38ef18b27b8c7fbb73400314b96adeb1d3530b1`); additional AF1 attempt NOT
+  AUTHORIZED
+- Attempt-04 runtime evidence: exactly 1 public population call (25 markets / 1 book actual,
+  built 26, inserted 26, `VALID_WITH_WARNINGS` / `EVENT_TIME_MISSING_ALLOWED`, result SHA-256
+  `9adb1b68420afbd15172a92dca57aec2feffc6b39df82753d97ae15b311534cc`, cutoff `2026-09-28T01:54:02.507161Z`);
+  3 controller invocations, all `RESEARCH_DRAFT_VALIDATED` (openai-codex / gpt-5.6-sol); retry,
+  replacement, fallback and fourth call 0; receipt-reported accepted cost USD 0.0 per case;
+  backend telemetry NOT_DIRECTLY_ATTESTED; Firecrawl call count UNKNOWN (no invoice-level cost
+  attestation); credentials untouched; H1 #5 NOT AUTHORIZED
+- Blind review: bundle SHA-256 `12058c282bd24d332bb767b7a75c201e4f0b9fcbdebdf0f7cb09c07672a8e74f`; Side12 decision SHA-256
+  `eba65849219faf65f27849a6b5be0fe1c1cf27e0cc47bb3ada084afb77d99bc3`; labels USEFUL_RESEARCH_OUTPUT x3
+- Gate outcome: `AF1_PASS` (research-system gate success only); committed evidence state
+  `FINALIZED`, byte-identical to the deterministic local evidence (SHA-256 `130a82b5ace6eb2cedf49b540ddd30df48be05cfcc57bf3173b45b452cce22ab`);
+  verify-run / verify-review / verify-final VALID
+- AF1_PASS does not prove profitability, expected return, qualification, OOS validity,
+  executable edge, paper/live readiness or Gate C; non-wallet S10-QUAL-01 is now separately
+  eligible to be drafted/authorized, wallet/ALPHA-03/HERMES-SI paths stay separately gated, and
+  none is authorized
 - Historical envelope `0f7a2680...`: invalidated; historical `current` workspace
   quarantined and not reusable
 - Authority: research-system evidence only; no qualification, strategy, expected
   return, paper, execution, risk override, Gate C, capital, or live authority
-- Evidence mode: `BLOCKED_NOT_READY` until the later runtime and blind-review
-  checkpoints complete
-- Ready for review: NO at the Phase-A runtime-authorization checkpoint
+- Evidence mode: `PRIVATE_REPO_MANUAL_VERIFIED` for the final publication PR
+- Post-runtime recovery: the package hard-stopped because Phase-A tests pinned the transient
+  placeholder/pre-runtime status; the explicit Side13/Karl amendment authorized only the three
+  AF1 lifecycle/status test paths plus the six evidence/status paths (follow-up class G)
 - Merge authorized: NO
 
 Phase A freezes five content-addressed record contracts, eight deterministic seeded
@@ -77,3 +94,10 @@ empty stores, and keeps the 38-key envelope, gate criteria, three calls, USD 5 /
 `retry_limit=0`, no fallback/replacement/fourth call and all authority limits unchanged.
 Attempt-03 local evidence is untouched. Attempt-04 workspace, envelope and sentinel are absent;
 Attempt-04 public and Hermes/provider calls are 0.
+
+Final Attempt-04 outcome: Attempt-04 executed on runtime execution head `dead42658e8fc9139d82f772e1f2fff67ba07674` and is
+CONSUMED. After the independent Side12 blind review, the frozen deterministic finalizer produced
+`AF1_PASS` with all ten dimensions PASS and receipt `af1gate:sha256:281c5e05f5e4f8e30687f232e0289b99b0719c87fab61c8b1d1d417dc0b5cbb2`; an independent re-derivation
+was byte-identical. No public, Hermes, provider or Firecrawl call occurred after runtime, and no
+source, operator, prompt, spec or gate-contract byte changed. No additional AF1 attempt is
+authorized.

@@ -4580,7 +4580,7 @@ def test_s10_gate_af1_phase_a_status_is_non_runtime_and_non_authoritative() -> N
     current = next(
         line
         for line in _read().splitlines()
-        if line.startswith("# S10-GATE-AF1 current Phase-A implementation target")
+        if line.startswith("# S10-GATE-AF1 current finalized research-system gate")
     )
     assert "Governance track: RUNTIME" in current and "Risk level: 3" in current
     assert "Exact changed-file scope: 19" in current
@@ -4592,19 +4592,35 @@ def test_s10_gate_af1_phase_a_status_is_non_runtime_and_non_authoritative() -> N
     assert "PR #193 / WP164A merged: YES" in current
     assert "1c7de22f31cd093771d6bc0748c440ad5284b105" in current
     assert "S10-GATE-AF1 blocked by WP164A: NO" in current
-    assert "evidence state: PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED" in current
-    assert "runtime activation: NOT AUTHORIZED" in current
+    # Final lifecycle state: Attempt-04 consumed and deterministically finalized.
+    assert "evidence state: FINALIZED" in current
+    assert "evidence state: PHASE_A_IMPLEMENTED_RUNTIME_NOT_AUTHORIZED" not in current
+    assert "final AF1 outcome: AF1_PASS (research-system gate success only)" in current
+    assert "all ten dimensions: PASS" in current
+    assert "final AF1GateReceipt: af1gate:sha256:281c5e05f5e4f8e30687f232e0289b99b0719c87fab61c8b1d1d417dc0b5cbb2" in current
+    assert "runtime execution head: dead42658e8fc9139d82f772e1f2fff67ba07674" in current
+    assert "Side13/Karl lifecycle-test recovery amendment" in current
+    assert "runtime activation: CONSUMED (no further activation authorized)" in current
+    assert "additional AF1 attempt: NOT AUTHORIZED" in current
+    assert "S10-QUAL-01 now separately eligible to be drafted/authorized" in current
+    assert "none authorized" in current
+    assert "does not prove profitability" in current
+    assert "Gate C: NOT AUTHORIZED" in current
     # Attempt-03 is historical and consumed with no gate result; Attempt-04 is the successor.
     assert "AF1 Attempt-03: CONSUMED / TRUE_STOP / PHASE_B_LOCAL_EVIDENCE_DEFECT" in current
     assert "Attempt-03 AF1 gate result: NONE" in current
     assert "Attempt-03 public population: SUCCEEDED" in current
     assert "fcf5a085aef0954f91812f53231405b9746e583886ea950ca2cd91bc0cf9dc8e" in current
     assert "Attempt-03 Hermes/provider/model calls: 0" in current
-    assert "AF1 Attempt-04 (s10-gate-af1-attempt-04): UNCONSUMED / NOT AUTHORIZED" in current
+    assert "AF1 Attempt-04 (s10-gate-af1-attempt-04): CONSUMED" in current
     assert "no Attempt-03 store reuse" in current
+    assert "Attempt-04 cases C1/C2/C3: RESEARCH_DRAFT_VALIDATED" in current
+    assert "Firecrawl call count: UNKNOWN" in current
     assert "live-shaped AF1 cross-layer regression: ADDED" in current
-    for stale in ("AF1 Attempt-03: NOT AUTHORIZED", "Attempt-03: UNCONSUMED", "AF1 PASS",
-                  "AF1 FAIL", "AF1_INCONCLUSIVE"):
+    for stale in ("AF1 Attempt-03: NOT AUTHORIZED", "Attempt-03: UNCONSUMED", "AF1 PASS", "AF1 FAIL",
+                  "AF1_INCONCLUSIVE", "Attempt-04 (s10-gate-af1-attempt-04): UNCONSUMED",
+                  "AF1_ATTEMPT04_RUNTIME_AUTHORIZATION_REQUIRED", "S10-QUAL-01: AUTHORIZED",
+                  "Gate C: AUTHORIZED", "Merge authorized: YES"):
         assert stale not in current, stale
     assert "H1 #5: NOT AUTHORIZED" in current
     assert "capital at risk: USD 0" in current
@@ -4613,7 +4629,6 @@ def test_s10_gate_af1_phase_a_status_is_non_runtime_and_non_authoritative() -> N
     assert "historical runtime evidence/envelope 0f7a2680 invalidated" in current
     assert "closed retry_limit=0 envelope schema" in current
     assert "complete 38-field typed population-result persistence" in current
-    assert "AF1_ATTEMPT04_RUNTIME_AUTHORIZATION_REQUIRED" in current
     assert "46bc862018208b30971228ed719c7e9337142b41" not in current
 
 
