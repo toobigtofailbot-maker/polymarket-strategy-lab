@@ -1,0 +1,377 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-ALPHA-REAL-01",
+    "title": "First Real Non-Wallet Alpha Evidence Seed",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "FIRST_REAL_NON_WALLET_ALPHA_EVIDENCE_SEED",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 199,
+      "head_sha": "99c300421f3404a68b573674d1d6d09e8c363412",
+      "merge_sha": "f74e183a514d21a28013bf433c79126a68c72389"
+    },
+    "suggested_branch": "claude/s10-alpha-real-01-seed-746777",
+    "objective": "Implement one manual foreground operator that, after separate explicit runtime activation, performs at most one controlled Hermes v0.21.3 public-web research child launch for the frozen NWS daily-rain research program, recaptures and revalidates the full research draft tool-side, obtains one Side13 result-state decision, and appends exactly one canonical non-wallet Alpha source/candidate/family/episode lineage to a dedicated local registry. Negative and inconclusive results are preserved. No QualificationCandidate, qualification decision, strategy, paper, execution, live, credential, scheduler, Gate-C or capital authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/alpha_real_non_wallet_seed_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-ALPHA-REAL-01.md",
+      "docs/wp_specs/S10-ALPHA-REAL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-REAL-01/wp_spec.json",
+      "tools/alpha/run_s10_alpha_real_01.py",
+      "tests/tools/alpha/test_run_s10_alpha_real_01.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/alpha_real_non_wallet_seed_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-ALPHA-REAL-01.md",
+      "docs/wp_specs/S10-ALPHA-REAL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-REAL-01/wp_spec.json",
+      "tools/alpha/run_s10_alpha_real_01.py",
+      "tests/tools/alpha/test_run_s10_alpha_real_01.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/risk/"
+    ],
+    "max_changed_files": 12,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert S10-ALPHA-REAL-01. The manual operator, focused tests, contract/status/spec artifacts and bounded repo-truth edits disappear. Existing Alpha Factory, Hermes runtime, AF1, QualificationCandidate, qualification gate, WP170/WP172/WP173 and trading surfaces remain unchanged. Runtime evidence under ignored local_data is not tracked code and grants no downstream authority.",
+    "mode_boundaries": [
+      {"boundary": "workflow_governance", "crossed": false},
+      {"boundary": "local_offline_tooling", "crossed": true},
+      {"boundary": "canonical_evidence_policy", "crossed": true},
+      {"boundary": "docs", "crossed": true},
+      {"boundary": "tests", "crossed": true},
+      {"boundary": "source_runtime", "crossed": false},
+      {"boundary": "workflow_files", "crossed": false},
+      {"boundary": "dependencies", "crossed": false},
+      {"boundary": "network", "crossed": true},
+      {"boundary": "credentials", "crossed": false},
+      {"boundary": "scheduler", "crossed": false},
+      {"boundary": "hermes_runtime", "crossed": true},
+      {"boundary": "strategy", "crossed": false},
+      {"boundary": "paper", "crossed": false},
+      {"boundary": "execution", "crossed": false},
+      {"boundary": "live", "crossed": false}
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "The package adds one manual operator surface under tools/alpha and no new src API.",
+    "items": [
+      {
+        "surface": "tools.alpha.run_s10_alpha_real_01",
+        "before": "No governed operator exists for creating the first genuine non-wallet Alpha lineage from controlled public-web research, and merged ValidatedResearchDraft does not retain the substantive research lists a ResearchEpisode needs.",
+        "after": "One manual foreground operator with commands prepare, verify-local, run-real, verify-run, build-review-bundle, verify-review, finalize-alpha and verify-final; a tool-side capture/delegation backend; full-draft revalidation; one bounded research-child launch; append-only Alpha persistence; sanitized evidence output.",
+        "change_authorized": true,
+        "compatibility_requirement": "Consumes merged run_controlled_hermes_research, ExternalHermesCliBackend, capture_final_response, validate_research_draft, build_research_run_request, DEFAULT_HERMES_INVOCATION_POLICY, the four Alpha builders and the Alpha registry APIs unchanged; no src/** change.",
+        "authority": "LOCAL_TOOLING_RUNTIME"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The operator crosses a real provider/public-web boundary and creates canonical research evidence, so request literals, invocation bounds, capture/revalidation, review binding, Alpha constants and registry behavior are frozen.",
+    "items": [
+      {
+        "path": "runtime.request",
+        "source": "CONSTANT",
+        "type": "mapping",
+        "required_rule": "The research request is built only by merged build_research_run_request from the exact Section 4 literals (research_question, research_objective, research_category fundamental, public_market_context, scope tokens, source types, max_sources 12, max_wall_seconds 300, max_output_bytes 1000000, cost 5, openai-codex, gpt-5.6-sol, human_review_required true, merged NON_AUTHORITY_NOTICE). Expected request_id hermesresearchrequest:sha256:efca8c27a92b32282cac6bee0a7a6d2455da590bdc54f6b883bfc16308bfdf2d.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "prepare and run-real rebuild the request and require the exact expected request_id; any mismatch is PRE_RUNTIME_STOP REQUEST_IDENTITY_MISMATCH with zero launches.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "request_id and literal digest only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "runtime.invocation_bounds",
+        "source": "CONSTANT",
+        "type": "mapping",
+        "required_rule": "run_controlled_hermes_research with DEFAULT_HERMES_INVOCATION_POLICY (policy_id hermesinvocationpolicy:sha256:18b8f788fa436712b377c81b10bdbd594cdb7afb3844fcc8559fde3b28c25e81), context_mode False, web-only. Controller executions max 1; research-child launches max 1; automatic controller rerun, replacement run, content/schema rerun, provider/model fallback and backend fallback/rescue all 0. Internal same-provider Hermes recovery and multiple provider API requests inside the one child are not additional runs. USD 5 is the accepted reported estimated-cost ceiling, not invoice-attested and not a pre-spend limit.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The capture backend refuses any second invoke; receipt transport_attempt_count must equal 1 after a launch; api_call_count is reported and never treated as a violation by itself.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "counts, policy id, receipt id and closed terminal only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "runtime.hermes_home",
+        "source": "CONSTANT",
+        "type": "mapping",
+        "required_rule": "Executable C:\\Users\\dersu\\polymarket-h1-runtime\\hermes-agent-v0.21.3\\.venv\\Scripts\\hermes.exe and dedicated home C:\\Users\\dersu\\polymarket-alpha-real-01\\hermes-home are pinned. The AF1 and H1 homes are not reused. Home credential setup is human-only at checkpoint HUMAN_CREDENTIAL_SETUP_REQUIRED; the operator never reads, creates, edits or echoes credential content.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Before any launch: executable exists, is_safe_research_home true, is_clean_research_home_control_plane true, offline version probe reports 0.21.3 and offline startup probe exits 0; missing home is HUMAN_CREDENTIAL_SETUP_REQUIRED; every failure is non-consuming PRE_RUNTIME_STOP.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "pinned paths, boolean checks and closed stop code only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "runtime.activation",
+        "source": "CALLER",
+        "type": "mapping",
+        "required_rule": "run-real requires the exact prepare-written activation envelope SHA-256 named in Karl's runtime authorization, the acknowledgement I_AUTHORIZE_EXACT_S10_ALPHA_REAL_01_RUNTIME_ENVELOPE and the credential-setup confirmation I_CONFIRM_S10_ALPHA_REAL_01_HERMES_HOME_CREDENTIAL_SETUP_COMPLETE. The attempt is consumed only when the capture backend durably creates the attempt sentinel immediately before delegating invoke.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Wrong or missing envelope digest, acknowledgement, confirmation, head, workspace state or policy is PRE_RUNTIME_STOP with zero launches and no sentinel; an existing sentinel rejects run-real as ATTEMPT_ALREADY_CONSUMED.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "envelope digest, closed stop code, consumed yes/no",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "capture.full_draft",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "After RESEARCH_DRAFT_VALIDATED, the operator applies merged capture_final_response to the exact captured stdout, re-runs merged validate_research_draft with the receipt request_id, max_sources 12 and context_mode False, and requires equality with the controller validated_draft on request_id, research_summary, confidence_label, source_references, source_urls and falsification_checks_performed. Only then it builds FULL_DRAFT_PROJECTION from the validated JSON. Mismatch is RUNTIME_FAILURE DRAFT_REVALIDATION_MISMATCH.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Only the canonical projection and its SHA-256 plus the sanitized receipt are persisted; raw stdout, stderr, environment and credentials are never persisted or printed.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "projection SHA-256, receipt id, request id",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "review.decision",
+        "source": "CALLER",
+        "type": "mapping",
+        "required_rule": "Side13 supplies one immutable decision file with exactly the Section 11 keys, binding the exact projection SHA-256, review bundle SHA-256, Hermes receipt id and request id, and exactly one result_state among RESEARCH_SUPPORTIVE, NO_EDGE_CURRENTLY, HYPOTHESIS_FALSIFIED, DATA_INSUFFICIENT, WATCH_FOR_CHANGE. It cannot edit any research content. The operator has no default state.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Missing, malformed, extra-key, wrong-binding or unsupported decision rejects with no append; a state whose required projection list is empty stops REVIEW_STATE_EVIDENCE_MISMATCH.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed result state and binding digests",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "alpha.records",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Candidate, family and episode inputs use the exact Section 12 constants; expected candidate id alphacandidate:sha256:2d1523c8086acf536ad07512e1eaffed9cb9405b65e83c87b89b40ba77ee3add and family id alphafamily:sha256:136000bd56f2fc27cf490cf675ddf2715b0acfc1ee934aa5cdf2579925c208d8. Episode lists are copied verbatim from the projection; confidence_label from the projection; result_state from the decision; producer_receipt_ref and the only deterministic_evidence_ref are the receipt id; research_as_of is receipt end_utc.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Builders must return ALPHA_RECORD_VALID and derived candidate/family ids must equal the expected ids; any rejection stops ALPHA_BUILD_REJECTED with no append.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "content-addressed ids and closed status only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "alpha.sources",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Sources come only from the projection in draft order; exact duplicate (url, title, source_class) tuples keep the first occurrence. Class map official OFFICIAL, news NEWS, reference REFERENCE, public_market_data PUBLIC_MARKET_DATA, academic OTHER_PUBLIC, other_public OTHER_PUBLIC; kind PUBLIC_HTTPS; locator exact url; title exact; observed_at receipt end_utc; content_sha256 null; provenance is the frozen prefix plus receipt id. A source the Alpha builder rejects is excluded with its index and error code.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Zero usable sources stops FINALIZE_NO_USABLE_SOURCE with no append; no title, url, hash or timestamp is invented.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "source ids, counts and excluded indexes with codes",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "alpha.registry",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "One dedicated registry at local_data/s10_alpha_real_01/attempt-01/alpha_registry.sqlite3. Before append the operator loads and verifies it; if its record-id set is empty it appends the full batch atomically; if it equals the exact expected batch id set it returns IDEMPOTENT_FINALIZED_SUCCESS and appends nothing; any other content stops ALPHA_FINALIZATION_CONFLICT. After append it reloads and verifies chain, head, ids and counts.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The merged registry accepts a second divergent episode for the same candidate/family, so the operator exact-set pre-check is mandatory and tested.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ids, counts and head entry hash only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "inventory.preexisting",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "prepare inventories repo-root local_data read-only: every file with SQLite header and application id 1464877425 outside the dedicated path is loaded read-only and verified; the expected candidate/family with a unique current RESEARCH_SUPPORTIVE leaf stops ALREADY_SATISFIED_EXISTING_ALPHA; the same mechanism key or novelty fingerprint with other ids, a non-supportive leaf, or an unverifiable registry stops EXISTING_ALPHA_CONFLICT. s10_gate_af1 and s10_gate_h1 files are digested and must be unchanged at verify-final.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Inventory stops make zero launches and do not consume the attempt.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "relative paths, digests and closed stop code only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "successor.unlock",
+        "source": "DERIVED",
+        "type": "boolean",
+        "required_rule": "Only a verified unique current ResearchEpisode with result_state RESEARCH_SUPPORTIVE for the expected candidate/family, or verified ALREADY_SATISFIED_EXISTING_ALPHA, makes S10-QUAL-REAL-01 eligible to be drafted; every other result preserves evidence and keeps real qualification blocked.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Status fragment, project status, repo truth and final evidence agree with the verified registry leaf state.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "eligible true/false",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.boundaries",
+        "source": "CONSTANT",
+        "type": "mapping",
+        "required_rule": "The operator imports and calls no QualificationCandidate, qualification gate, WP170/WP172/WP173, paper, execution, live, OMS, risk, credential, scheduler or repo Polymarket product API client code; Hermes web-only reads of public HTTPS Polymarket pages are untrusted evidence, not repo API calls.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Static import/call-path test and runtime monkeypatch guards prove unreachability.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "closed boolean checks only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "All request, receipt, source, candidate, family and episode identities are produced by merged canonical Hermes/Alpha code; the projection digest is plain SHA-256 over merged canonical_json_bytes and introduces no new content-addressing algorithm.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "RUNTIME package separates deterministic package readiness, Karl implementation authority and later explicit real-runtime activation.",
+    "items": [
+      {"from_state": "LOCAL_DRAFT", "to_state": "DRAFTABILITY_PASS", "condition": "exact prompt/spec, 12-path scope and RUNTIME readiness pass", "failure_category": "DRAFTABILITY_INCOMPLETE"},
+      {"from_state": "DRAFTABILITY_PASS", "to_state": "AUTHORIZED", "condition": "Karl sends/approves the exact S10-ALPHA-REAL-01 v0.2 package for Phase-A implementation", "failure_category": "AUTHORITY_CONTRADICTION"},
+      {"from_state": "AUTHORIZED", "to_state": "IMPLEMENTED_LOCAL", "condition": "operator/tests/docs are implemented on exact scope and local validation passes; a real research-child launch still requires the separate runtime activation", "failure_category": "SEMANTIC_CONTRADICTION"}
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed work-package-spec precedence.",
+    "items": [
+      {"condition_id": "file_unreadable", "category": "FILE_READ_ERROR", "priority": 10},
+      {"condition_id": "json_invalid", "category": "JSON_PARSE_INVALID", "priority": 20},
+      {"condition_id": "schema_unsupported", "category": "SCHEMA_UNSUPPORTED", "priority": 30},
+      {"condition_id": "unknown_field", "category": "UNKNOWN_FIELD", "priority": 40},
+      {"condition_id": "field_missing", "category": "FIELD_MISSING", "priority": 50},
+      {"condition_id": "field_type_invalid", "category": "FIELD_TYPE_INVALID", "priority": 60},
+      {"condition_id": "field_value_invalid", "category": "FIELD_VALUE_INVALID", "priority": 70},
+      {"condition_id": "certificate_hash_mismatch", "category": "CERTIFICATE_HASH_MISMATCH", "priority": 80},
+      {"condition_id": "draftability_incomplete", "category": "DRAFTABILITY_INCOMPLETE", "priority": 90},
+      {"condition_id": "scope_policy_invalid", "category": "SCOPE_POLICY_INVALID", "priority": 100},
+      {"condition_id": "authority_contradiction", "category": "AUTHORITY_CONTRADICTION", "priority": 110},
+      {"condition_id": "semantic_contradiction", "category": "SEMANTIC_CONTRADICTION", "priority": 120},
+      {"condition_id": "identity_derivation_invalid", "category": "IDENTITY_DERIVATION_INVALID", "priority": 130},
+      {"condition_id": "failure_precedence_invalid", "category": "FAILURE_PRECEDENCE_INVALID", "priority": 140},
+      {"condition_id": "example_truth_invalid", "category": "EXAMPLE_TRUTH_INVALID", "priority": 150}
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused operator tests with the merged FakeHermesBackend behind the capture backend are the executable oracle.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Evidence covers zero-launch preflight, one-launch bounds, full-draft capture/revalidation, review binding, Alpha construction, registry idempotency, inventory, authority boundaries, status truth, readiness and publication.",
+    "items": [
+      {"requirement_id": "R001", "source": "pytest", "test": "test_preflight_failures_make_zero_launches_and_do_not_consume", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "wrong head, workspace, executable, home, version, startup, policy, provider, model, request id, envelope digest, acknowledgement or credential confirmation each stop PRE_RUNTIME_STOP with zero invokes and no sentinel"},
+      {"requirement_id": "R002", "source": "pytest", "test": "test_single_research_child_launch_and_no_rerun", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "capture backend refuses a second invoke, sentinel is created exactly once before delegation, second run-real rejects ATTEMPT_ALREADY_CONSUMED and no replacement, fallback or content rerun path exists"},
+      {"requirement_id": "R003", "source": "pytest", "test": "test_capture_backend_returns_delegated_outcome_unchanged", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "probe calls delegate unchanged and invoke returns the identical HermesInvocationOutcome object whose stdout is bounded by the merged backend max_stdout_bytes"},
+      {"requirement_id": "R004", "source": "pytest", "test": "test_full_draft_revalidation_mismatch_blocks_append", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "matching revalidation yields the projection; any divergence of the six retained fields yields RUNTIME_FAILURE DRAFT_REVALIDATION_MISMATCH and no projection or Alpha append"},
+      {"requirement_id": "R005", "source": "pytest", "test": "test_only_validated_projection_persisted", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "workspace files contain the canonical projection, its SHA-256 and sanitized receipt only; raw stdout, stderr, environment values and credential-like strings never appear in files or console output"},
+      {"requirement_id": "R006", "source": "pytest", "test": "test_review_decision_binding_rejections", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "missing, malformed, extra-key, wrong projection digest, wrong bundle digest, wrong receipt id, wrong request id or unsupported state rejects; no default state exists; decision cannot alter any research field"},
+      {"requirement_id": "R007", "source": "pytest", "test": "test_review_state_evidence_mismatch_rejects", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "each of the five states with its required projection list empty stops REVIEW_STATE_EVIDENCE_MISMATCH with no append"},
+      {"requirement_id": "R008", "source": "pytest", "test": "test_five_review_states_map_to_episode", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py tests/data_layer/analytical_research/test_alpha_factory_records.py", "expected_result": "each state produces a valid ResearchEpisode whose result_state equals the decision and whose lists equal the projection verbatim, mapped to the correct terminal"},
+      {"requirement_id": "R009", "source": "pytest", "test": "test_source_mapping_dedup_and_null_content_hash", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "exact six-entry class map, first-occurrence exact-tuple dedup, content_sha256 null, receipt end_utc observed_at, excluded builder rejections recorded, zero usable sources stops FINALIZE_NO_USABLE_SOURCE"},
+      {"requirement_id": "R010", "source": "pytest", "test": "test_frozen_alpha_constants_and_expected_ids", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "frozen request literals reproduce the expected request_id and frozen candidate/family constants reproduce the expected candidate and family ids through merged builders"},
+      {"requirement_id": "R011", "source": "pytest", "test": "test_finalize_idempotent_and_divergent_registry_rejects", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py tests/data_layer/analytical_research/test_alpha_factory_registry.py", "expected_result": "first finalize appends atomically and reload verifies; rerun returns IDEMPOTENT_FINALIZED_SUCCESS with unchanged head; partial, extra or divergent registry content stops ALPHA_FINALIZATION_CONFLICT"},
+      {"requirement_id": "R012", "source": "pytest", "test": "test_prepare_inventory_existing_alpha_outcomes", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "expected supportive lineage stops ALREADY_SATISFIED_EXISTING_ALPHA, conflicting or unverifiable registry stops EXISTING_ALPHA_CONFLICT, both with zero launches; protected AF1/H1 digests unchanged"},
+      {"requirement_id": "R013", "source": "pytest", "test": "test_no_forbidden_import_or_call_paths", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "no qualification, gate, WP170/WP172/WP173, paper, execution, live, OMS, risk, credential, scheduler or repo Polymarket product API module is imported or reachable"},
+      {"requirement_id": "R014", "source": "pytest", "test": "test_api_call_count_reported_not_violation", "command": "python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py", "expected_result": "a validated run with api_call_count greater than one succeeds and reports the count; reported cost above USD 5 or unavailable cost is RUNTIME_FAILURE"},
+      {"requirement_id": "R015", "source": "pytest", "test": "test_s10_alpha_real_01_status_truth", "command": "python -m pytest -q tests/test_project_status_docs.py", "expected_result": "project status and status fragment state Phase-A or the one closed post-runtime terminal honestly and unlock S10-QUAL-REAL-01 only on a verified supportive leaf"},
+      {"requirement_id": "R016", "source": "pytest", "test": "test_s10_alpha_real_01_repo_truth", "command": "python -m pytest -q tests/test_repo_truth_docs.py", "expected_result": "repo truth index lists the contract, operator and status fragment and does not claim qualification, edge, profitability or paper/live readiness"},
+      {"requirement_id": "R017", "source": "validation", "test": "scope/security/readiness", "command": "python tools/git/preflight_generated_artifact_guard.py; python tools/security/run_available_security_checks.py; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-ALPHA-REAL-01/wp_prompt.txt --spec docs/wp_specs/S10-ALPHA-REAL-01/wp_spec.json --repo-root . --check-diff --base f74e183a514d21a28013bf433c79126a68c72389 --head HEAD", "expected_result": "guards pass and the exact 12-path diff is IMPLEMENTATION_READY on the final committed head"},
+      {"requirement_id": "R018", "source": "validation", "test": "stable candidate full suite", "command": "python -m pip check; git diff --check f74e183a514d21a28013bf433c79126a68c72389 HEAD --; python -m pytest -q", "expected_result": "one authoritative final full suite passes after the last operator or test change"},
+      {"requirement_id": "R019", "source": "github", "test": "ready-for-review publication and exact-head CI", "command": "gh pr checks --watch; gh pr view --json isDraft,state,headRefOid", "expected_result": "PR created Ready for Review from the start, isDraft false, state OPEN, headRefOid equals the exact tested head, hosted checks green, executor does not merge"}
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-QUAL-REAL-01",
+    "next_title": "First Real NON-WALLET QualificationCandidate Build + S10-GATE-QUAL-01 Evaluation",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-QUAL-REAL-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "QualificationCandidate construction or persistence",
+      "S10-GATE-QUAL-01 evaluation or real QualificationGateReceipt creation",
+      "WP170 experiment/preregistration/OOS work",
+      "candidate tuning after research result",
+      "second research-child launch or second controller execution",
+      "provider/model/backend fallback or replacement",
+      "H1 #5",
+      "repo/operator Polymarket Gamma/CLOB/Data API/RPC/WebSocket calls",
+      "wallet-dependent research or wallet gate",
+      "scheduler/daemon/Prefect recurring campaign",
+      "operator credential/OAuth/private-key/account access",
+      "strategy/paper/execution/live/order/signing/Gate C/capital",
+      "dependency or workflow changes",
+      "modification of src/ canonical Alpha, Hermes, qualification, experiment, trading or data-plane code"
+    ]
+  }
+}
