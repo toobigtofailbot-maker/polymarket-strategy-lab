@@ -12,11 +12,23 @@ daily-rain research program. After Karl's separate runtime activation it perform
 Hermes v0.21.3 research-child launch through the merged `run_controlled_hermes_research` (context mode off),
 recaptures and revalidates the full research draft tool-side, takes one Side13 result-state decision and
 appends exactly one non-wallet Alpha source/candidate/family/episode lineage to a dedicated ignored
-registry with an exact record-set idempotency check. Phase A only: no research-child launch occurred, no
-attempt was consumed and no real Alpha lineage was created from provider research. RESEARCH_SUPPORTIVE is
-not qualification, OOS success, executable edge, profitability, paper, live or Gate C authority.
-S10-QUAL-REAL-01 is NOT AUTHORIZED and becomes draft-eligible only after a verified unique current
-RESEARCH_SUPPORTIVE leaf. QualificationCandidate construction, S10-GATE-QUAL-01 evaluation, WP170/WP172/WP173,
+registry with an exact record-set idempotency check. Post-runtime verified result (attempt-01, consumed,
+exactly one research-child launch at Phase-A head `4db1cb8e4ffa9cb6122f064faab82d379c74ad44`, envelope
+`eee8003c216cfd892f54666c030520ec2b8920d20a52d222401e3e7f48c24af0`): receipt
+`hermesresearchreceipt:sha256:69037db6d6df59283da89110998ef17d2854c73c29052039b20acb89ac6cbd0f`,
+projection SHA-256 `d23f304d57eef4d6dc05ee73afe98227d15dbc5a4334aa630569084b17b78064`, review bundle
+SHA-256 `14ec89f6760d3d2ae0b2c4751ddc8ec647d1e65b2350735d1b5810e622478be6`, Side13 decision
+RESEARCH_SUPPORTIVE, final terminal ALPHA_REAL_01_SUPPORTIVE; 12 usable sources, candidate
+`alphacandidate:sha256:2d1523c8086acf536ad07512e1eaffed9cb9405b65e83c87b89b40ba77ee3add`, family
+`alphafamily:sha256:136000bd56f2fc27cf490cf675ddf2715b0acfc1ee934aa5cdf2579925c208d8`, episode
+`alphaepisode:sha256:2e4c0f484649930ba2677bc360070f0e9ba6ef0e09ecd23b383a32ff3b69000c`; dedicated ignored
+registry 15 rows, head `alpharegistryentry:sha256:4b9a20f7f0e931dfea7cced80a64d7a4be7ccc58e265dbb9ebde15edb2d79847`;
+protected AF1/H1 evidence unchanged. RESEARCH_SUPPORTIVE is not qualification, OOS success, executable edge,
+profitability, paper, live or Gate C authority, and is not a claim that weather information beats market
+probability; qualification/data readiness is NOT proven. S10-QUAL-REAL-01 is NOT AUTHORIZED; it is now
+DRAFT-ELIGIBLE only (verified unique current RESEARCH_SUPPORTIVE leaf) and must independently establish real
+dataset refs, PIT provenance, sample/power, a B0/B1/B2 or generic metric plan, critical execution evidence and
+exact AF1 binding. No QualificationCandidate was created and no qualification gate was run. QualificationCandidate construction, S10-GATE-QUAL-01 evaluation, WP170/WP172/WP173,
 wallet evidence, H1 #5 and Gate C are NOT AUTHORIZED; capital/orders 0; merge NOT AUTHORIZED.
 
 ## S10-TEST-WS-01 Deterministic Reconnect Synchronization in Market WebSocket Tests (merged historical predecessor: PR #199)

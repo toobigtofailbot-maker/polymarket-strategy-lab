@@ -1,6 +1,6 @@
 # S10-ALPHA-REAL-01 — First Real Non-Wallet Alpha Evidence Seed Contract
 
-Status: Phase-A contract. The frozen package is `docs/wp_specs/S10-ALPHA-REAL-01/`
+Status: Phase-A contract; runtime attempt-01 executed once and finalized (Section 11). The frozen package is `docs/wp_specs/S10-ALPHA-REAL-01/`
 (prompt SHA-256 `c7f607f1f388b33b696c228b5393eace5048bbeb87d06343323d52ca5c39e5ea`, spec SHA-256
 `9745d4ceb68c7332d1faed7c10509a949507943191ecd956c51c65bf9edd8e5d`). The operator is
 `tools/alpha/run_s10_alpha_real_01.py`; its tests are `tests/tools/alpha/test_run_s10_alpha_real_01.py`.
@@ -121,3 +121,32 @@ No src/** change, workflow or dependency change, operator credential access, sch
 paper, execution, live, OMS, risk, orders, signing, Gate C, capital, QualificationCandidate,
 S10-GATE-QUAL-01 evaluation, WP170/WP172/WP173, wallet evidence, H1 #5 or merge. Capital at risk:
 USD 0. Merge: NOT AUTHORIZED.
+
+## 11. Post-runtime verified result (attempt-01)
+
+Runtime attempt-01 ran exactly once at Phase-A head `4db1cb8e4ffa9cb6122f064faab82d379c74ad44` under the
+Karl-authorized envelope `eee8003c216cfd892f54666c030520ec2b8920d20a52d222401e3e7f48c24af0` and is
+CONSUMED (no rerun, no replacement, no attempt-02).
+
+- `run-real`: RUN_VALIDATED; research-child launch count 1; transport_attempt_count 1; api_call_count 9;
+  verified `openai-codex` / `gpt-5.6-sol`; accepted reported estimated cost USD 0.0 (cost status
+  `included`, cost source `none`, not invoice-attested).
+- Receipt `hermesresearchreceipt:sha256:69037db6d6df59283da89110998ef17d2854c73c29052039b20acb89ac6cbd0f`;
+  projection SHA-256 `d23f304d57eef4d6dc05ee73afe98227d15dbc5a4334aa630569084b17b78064`; review bundle
+  SHA-256 `14ec89f6760d3d2ae0b2c4751ddc8ec647d1e65b2350735d1b5810e622478be6`.
+- Side13 decision RESEARCH_SUPPORTIVE (decision SHA-256
+  `e31d98dd5909ceaa77759932103f878d5c26624366e140ac07a395f8966e96dd`); final terminal
+  ALPHA_REAL_01_SUPPORTIVE; verify-final FINAL_EVIDENCE_VALID with S10-QUAL-REAL-01 draft eligibility true.
+- 12 usable sources (0 excluded), candidate and family equal to the expected ids, episode
+  `alphaepisode:sha256:2e4c0f484649930ba2677bc360070f0e9ba6ef0e09ecd23b383a32ff3b69000c`; registry 15 rows,
+  head `alpharegistryentry:sha256:4b9a20f7f0e931dfea7cced80a64d7a4be7ccc58e265dbb9ebde15edb2d79847`;
+  protected AF1/H1 evidence unchanged.
+
+RESEARCH_SUPPORTIVE here means only that the mechanism is sufficiently evidence-grounded and falsifiable
+that further deterministic qualification/data-readiness work may be worthwhile. It is not a claim that
+weather information beats market probability, not a qualification PASS, not OOS evidence, not executable
+edge, not expected return or profitability and not paper/live/Gate-C authority. Qualification/data
+readiness is NOT proven: historical-vintage, price-construction, rule-census, sample/power and PIT facts
+remain missing, and S10-QUAL-REAL-01 (DRAFT-ELIGIBLE only, NOT AUTHORIZED) must independently establish
+real dataset refs, PIT provenance, sample/power, a B0/B1/B2 or generic metric plan, critical execution
+evidence and exact AF1 binding. No QualificationCandidate was created and no qualification gate was run.
