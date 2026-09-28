@@ -4881,12 +4881,15 @@ def test_s10_gate_qual_01_is_merged_acceptance_gate_predecessor() -> None:
 
 
 
-def test_s10_test_ws_01_is_current_tests_only_target() -> None:
+def test_s10_test_ws_01_is_merged_tests_only_predecessor() -> None:
     lines = _read().splitlines()
     current = next(
         line for line in lines
-        if line.startswith("# S10-TEST-WS-01 current bounded implementation target")
+        if line.startswith("# S10-TEST-WS-01 merged historical truth")
     )
+    assert "PR #199 / S10-TEST-WS-01 merged: YES at f74e183a514d21a28013bf433c79126a68c72389" in current
+    assert "99c300421f3404a68b573674d1d6d09e8c363412" in current
+    assert "tests-only reconnect synchronization repair retained" in current
     spec = json.loads(
         (REPO_ROOT / "docs" / "wp_specs" / "S10-TEST-WS-01" / "wp_spec.json").read_text(encoding="utf-8")
     )
@@ -4904,7 +4907,7 @@ def test_s10_test_ws_01_is_current_tests_only_target() -> None:
         assert text in current, text
     for stale in ("Merge authorized: YES", "_BACKOFF_SCHEDULE: CHANGED", "Gate C: AUTHORIZED"):
         assert stale not in current, stale
-    # The tests-only target is the newest current record, above its merged predecessor.
+    # The tests-only record sits above its own merged predecessor record.
     assert lines.index(current) < next(
         index for index, line in enumerate(lines)
         if line.startswith("# S10-GATE-QUAL-01 merged historical truth")
@@ -4924,5 +4927,90 @@ def test_s10_test_ws_01_is_current_tests_only_target() -> None:
     for key in ("source_runtime", "network", "credentials", "scheduler", "hermes_runtime", "strategy",
                 "paper", "execution", "live", "dependencies", "workflow_files"):
         assert spec["authority"][key] is False, key
+    assert spec["successor_boundary"]["separately_gated"] is True
+    assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
+
+
+
+# S10-ALPHA-REAL-01 declares exactly one closed state in both the status fragment and the
+# project-status line. The Phase-A state and every closed post-runtime terminal are accepted, so the
+# post-runtime reconciliation needs no test mutation; each state pins its launch/consumption/lineage
+# /eligibility facts and eligibility is YES only for a supportive (or pre-existing supportive) leaf.
+_S10_ALPHA_REAL_01_STATE_FACTS = {
+    "PHASE_A_ONLY_RUNTIME_NOT_ACTIVATED": ("NO", "NO", "NO", "NO"),
+    "ALPHA_REAL_01_SUPPORTIVE": ("YES", "YES", "YES", "YES"),
+    "ALPHA_REAL_01_NON_SUPPORTIVE": ("YES", "YES", "YES", "NO"),
+    "ALPHA_REAL_01_INSUFFICIENT": ("YES", "YES", "YES", "NO"),
+    "ALREADY_SATISFIED_EXISTING_ALPHA": ("NO", "NO", "NO", "YES"),
+    "RUNTIME_FAILURE": ("YES", "YES", "NO", "NO"),
+    "PRE_RUNTIME_STOP": ("NO", "NO", "NO", "NO"),
+}
+
+
+def test_s10_alpha_real_01_status_truth() -> None:
+    import hashlib
+    import re
+
+    lines = _read().splitlines()
+    current = next(
+        line for line in lines
+        if line.startswith("# S10-ALPHA-REAL-01 current bounded implementation target")
+    )
+    fragment = (REPO_ROOT / "docs" / "status_entries" / "S10-ALPHA-REAL-01.md").read_text(encoding="utf-8")
+    package = REPO_ROOT / "docs" / "wp_specs" / "S10-ALPHA-REAL-01"
+    spec = json.loads((package / "wp_spec.json").read_text(encoding="utf-8"))
+    assert hashlib.sha256((package / "wp_prompt.txt").read_bytes()).hexdigest() == (
+        "c7f607f1f388b33b696c228b5393eace5048bbeb87d06343323d52ca5c39e5ea")
+    assert hashlib.sha256((package / "wp_spec.json").read_bytes()).hexdigest() == (
+        "9745d4ceb68c7332d1faed7c10509a949507943191ecd956c51c65bf9edd8e5d")
+    pattern = re.compile(r"Current S10-ALPHA-REAL-01 state: ([A-Z0-9_]+)")
+    states = {pattern.search(current).group(1), pattern.search(fragment).group(1)}
+    assert len(states) == 1, states
+    state = states.pop()
+    assert state in _S10_ALPHA_REAL_01_STATE_FACTS, state
+    launch, consumed, lineage, eligible = _S10_ALPHA_REAL_01_STATE_FACTS[state]
+    for surface in (current, fragment):
+        for text in (
+            f"Real research-child launch occurred: {launch}", f"Attempt consumed: {consumed}",
+            f"Real Alpha lineage created from provider research: {lineage}",
+            f"S10-QUAL-REAL-01 draft eligibility: {eligible}", "S10-QUAL-REAL-01: NOT AUTHORIZED",
+            "Gate C: NOT AUTHORIZED", "Merge authorized: NO",
+        ):
+            assert text in surface, text
+        for stale in ("Merge authorized: YES", "Gate C: AUTHORIZED", "S10-QUAL-REAL-01: AUTHORIZED",
+                      "qualified: YES", "profitable: YES", "paper ready: YES", "live ready: YES"):
+            assert stale not in surface, stale
+    for text in (
+        "Governance track: RUNTIME", "Risk level: 3", "Exact changed-file scope: 12",
+        "Frozen base: f74e183a514d21a28013bf433c79126a68c72389",
+        "PR #199 / S10-TEST-WS-01 merged: YES", "99c300421f3404a68b573674d1d6d09e8c363412",
+        "Current branch: claude/s10-alpha-real-01-seed-746777",
+        "tools/alpha/run_s10_alpha_real_01.py", "docs/alpha_real_non_wallet_seed_contract.md",
+        "maximum research-child launches 1", "src/ changes: 0", "Dependencies/locks/workflows: UNCHANGED",
+        "RESEARCH_SUPPORTIVE is not qualification", "capital at risk: USD 0", "orders: 0",
+    ):
+        assert text in current, text
+    # The seed is the newest current record, above its merged predecessor record.
+    assert lines.index(current) < next(
+        index for index, line in enumerate(lines)
+        if line.startswith("# S10-TEST-WS-01 merged historical truth")
+    )
+    assert spec["identity"]["wp_id"] == "S10-ALPHA-REAL-01"
+    assert spec["identity"]["risk_level"] == 3
+    assert spec["identity"]["required_predecessor"] == {
+        "pr_number": 199,
+        "head_sha": "99c300421f3404a68b573674d1d6d09e8c363412",
+        "merge_sha": "f74e183a514d21a28013bf433c79126a68c72389",
+    }
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 12
+    assert not any(path.startswith("src/") for path in scope["required_changed_files"])
+    for key in ("network", "hermes_runtime", "local_offline_tooling"):
+        assert spec["authority"][key] is True, key
+    for key in ("source_runtime", "credentials", "scheduler", "strategy", "paper", "execution", "live",
+                "dependencies", "workflow_files"):
+        assert spec["authority"][key] is False, key
+    assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-REAL-01"
     assert spec["successor_boundary"]["separately_gated"] is True
     assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]

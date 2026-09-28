@@ -1,6 +1,29 @@
 # Repo Truth Index
 
-## S10-TEST-WS-01 Deterministic Reconnect Synchronization in Market WebSocket Tests (current bounded implementation target)
+## S10-ALPHA-REAL-01 First Real Non-Wallet Alpha Evidence Seed (current bounded implementation target)
+
+The canonical contract is `docs/alpha_real_non_wallet_seed_contract.md`; the operator is
+`tools/alpha/run_s10_alpha_real_01.py`; the status fragment is `docs/status_entries/S10-ALPHA-REAL-01.md`;
+the frozen package is `docs/wp_specs/S10-ALPHA-REAL-01/`. Base `f74e183a514d21a28013bf433c79126a68c72389`
+(PR #199 / S10-TEST-WS-01 merged, head `99c300421f3404a68b573674d1d6d09e8c363412`). RUNTIME, risk 3, exact
+12-path scope, no src/ change. The manual foreground operator (prepare, verify-local, run-real, verify-run,
+build-review-bundle, verify-review, finalize-alpha, verify-final) targets the frozen NWS-resolved Polymarket
+daily-rain research program. After Karl's separate runtime activation it performs at most one controlled
+Hermes v0.21.3 research-child launch through the merged `run_controlled_hermes_research` (context mode off),
+recaptures and revalidates the full research draft tool-side, takes one Side13 result-state decision and
+appends exactly one non-wallet Alpha source/candidate/family/episode lineage to a dedicated ignored
+registry with an exact record-set idempotency check. Phase A only: no research-child launch occurred, no
+attempt was consumed and no real Alpha lineage was created from provider research. RESEARCH_SUPPORTIVE is
+not qualification, OOS success, executable edge, profitability, paper, live or Gate C authority.
+S10-QUAL-REAL-01 is NOT AUTHORIZED and becomes draft-eligible only after a verified unique current
+RESEARCH_SUPPORTIVE leaf. QualificationCandidate construction, S10-GATE-QUAL-01 evaluation, WP170/WP172/WP173,
+wallet evidence, H1 #5 and Gate C are NOT AUTHORIZED; capital/orders 0; merge NOT AUTHORIZED.
+
+## S10-TEST-WS-01 Deterministic Reconnect Synchronization in Market WebSocket Tests (merged historical predecessor: PR #199)
+
+PR #199 / S10-TEST-WS-01 merged at `f74e183a514d21a28013bf433c79126a68c72389` with head
+`99c300421f3404a68b573674d1d6d09e8c363412`; the tests-only reconnect synchronization repair is retained.
+The historical implementation-target record follows unchanged.
 
 The status fragment is `docs/status_entries/S10-TEST-WS-01.md`; the package is
 `docs/wp_specs/S10-TEST-WS-01/`. Base `d7891ed63b4c58c9cc150cd0c750c262ca8e5a74` (PR #198 /

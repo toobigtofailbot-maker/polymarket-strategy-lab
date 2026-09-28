@@ -21,7 +21,17 @@
   attempt is authorized. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
   separately gated scopes.
 
-- Current bounded implementation target: S10-GATE-QUAL-01 (base b5cfb9846ff78af2d1a260843d5f2f1a67639305,
+- Current bounded implementation target: S10-ALPHA-REAL-01 (base f74e183a514d21a28013bf433c79126a68c72389,
+  after PR #199 / S10-TEST-WS-01 merged with head 99c300421f3404a68b573674d1d6d09e8c363412) implements the
+  Phase-A manual operator for the first real NON-WALLET Alpha evidence seed (frozen NWS-resolved Polymarket
+  daily-rain research program): at most one controlled Hermes research-child launch after Karl's separate
+  runtime activation, tool-side full-draft revalidation, one Side13 result-state decision and one canonical
+  Alpha source/candidate/family/episode lineage. Phase A launched nothing and consumed no attempt. Only a
+  verified unique current RESEARCH_SUPPORTIVE leaf makes S10-QUAL-REAL-01 (first real NON-WALLET
+  QualificationCandidate build + S10-GATE-QUAL-01 evaluation) eligible to be drafted; S10-QUAL-REAL-01,
+  WP170, H1 #5 and Gate C are NOT AUTHORIZED; capital/orders 0.
+
+- Historical predecessor (PR #198 merged at d7891ed63b4c58c9cc150cd0c750c262ca8e5a74), formerly the bounded implementation target: S10-GATE-QUAL-01 (base b5cfb9846ff78af2d1a260843d5f2f1a67639305,
   after PR #197 / S10-QUAL-01 merged with head 652a2181926ac6f92f72d0013af99ec5e24ba892) implements the
   deterministic qualification packet acceptance gate only: eight closed dimensions and
   QUAL_PASS / QUAL_FAIL / QUAL_INCONCLUSIVE over an existing NON-WALLET QualificationCandidate, with

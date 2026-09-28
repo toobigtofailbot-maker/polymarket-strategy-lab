@@ -794,7 +794,8 @@ def test_s10_test_ws_01_repo_truth_registers_tests_only_sync_repair() -> None:
     fragment = (ROOT / "docs" / "status_entries" / "S10-TEST-WS-01.md").read_text(encoding="utf-8")
     section_start = index.index("## S10-TEST-WS-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    assert "(merged historical predecessor: PR #199)" in section
+    assert "f74e183a514d21a28013bf433c79126a68c72389" in section
     for text in (
         "docs/status_entries/S10-TEST-WS-01.md",
         "tests/data_layer/polymarket/test_market_truth_websocket.py",
@@ -811,3 +812,39 @@ def test_s10_test_ws_01_repo_truth_registers_tests_only_sync_repair() -> None:
         "20/20 runs passed",
     ):
         assert text in flat_fragment, text
+
+
+
+def test_s10_alpha_real_01_repo_truth() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    contract = (ROOT / "docs" / "alpha_real_non_wallet_seed_contract.md").read_text(encoding="utf-8")
+    roadmap = (ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    section_start = index.index("## S10-ALPHA-REAL-01 ")
+    section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    for text in (
+        "docs/alpha_real_non_wallet_seed_contract.md", "tools/alpha/run_s10_alpha_real_01.py",
+        "docs/status_entries/S10-ALPHA-REAL-01.md", "docs/wp_specs/S10-ALPHA-REAL-01/",
+        "f74e183a514d21a28013bf433c79126a68c72389", "99c300421f3404a68b573674d1d6d09e8c363412",
+        "no src/ change", "at most one controlled Hermes v0.21.3 research-child launch",
+        "RESEARCH_SUPPORTIVE is not qualification", "S10-QUAL-REAL-01 is NOT AUTHORIZED",
+        "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    for claim in ("S10-QUAL-REAL-01 is AUTHORIZED", "qualified: YES", "is profitable", "paper ready: YES",
+                  "live ready: YES", "Gate C is AUTHORIZED"):
+        assert claim not in section, claim
+    assert index.index("## S10-ALPHA-REAL-01 ") < index.index("## S10-TEST-WS-01 ")
+    flat_contract = " ".join(contract.split())
+    for text in (
+        "RESEARCH_SUPPORTIVE is NOT qualified", "DRAFT_REVALIDATION_MISMATCH",
+        "REVIEW_STATE_EVIDENCE_MISMATCH", "IDEMPOTENT_FINALIZED_SUCCESS", "ALPHA_FINALIZATION_CONFLICT",
+        "HUMAN_CREDENTIAL_SETUP_REQUIRED", "`content_sha256` is null", "not invoice-attested",
+        "Merge: NOT AUTHORIZED",
+    ):
+        assert text in flat_contract, text
+    assert "S10-ALPHA-REAL-01 (base f74e183a514d21a28013bf433c79126a68c72389" in roadmap
+    for item in ("S10-ALPHA-REAL-01-D001", "S10-ALPHA-REAL-01-D002", "S10-ALPHA-REAL-01-D003",
+                 "S10-ALPHA-REAL-01-D004"):
+        assert f"| {item} |" in deferred, item
