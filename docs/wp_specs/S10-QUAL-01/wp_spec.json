@@ -1,0 +1,656 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-QUAL-01",
+    "title": "Deterministic Qualification Candidate Packet and WP170 Crossing Contract",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "DETERMINISTIC_QUALIFICATION_CANDIDATE_PACKET",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 196,
+      "head_sha": "d456dafc407d7b079b642fc34cd10781690eb8b0",
+      "merge_sha": "3b877a01ed797d26fddf81a8936c880692573028"
+    },
+    "suggested_branch": "codex/s10-qual-01-qualification-candidate",
+    "objective": "Implement the deterministic local/offline S10-QUAL-01 crossing substrate: one immutable content-addressed QualificationCandidate built only from a verified current supportive Alpha lineage, a canonical AF1_PASS receipt, verified ResearchProvenanceManifest inputs, frozen hypothesis/feature/label/dataset-split/sample-power/test-family plans, conditional B0/B1/B2 forecast evaluation semantics, and execution-feasibility evidence states. The packet is advisory and explicitly non-qualifying; S10-GATE-QUAL-01 remains the separate acceptance gate and WP170 remains the preregistration/OOS experiment authority. No network, Hermes, wallet gate invention, economics, strategy, paper, execution, live or Gate-C authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/qualification_candidate_contract.md",
+      "docs/alpha_factory_core_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-QUAL-01.md",
+      "docs/wp_specs/S10-QUAL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-01/wp_spec.json",
+      "src/data_layer/analytical_research/__init__.py",
+      "src/data_layer/analytical_research/qualification.py",
+      "tests/data_layer/analytical_research/test_qualification.py",
+      "tests/data_layer/analytical_research/test_qualification_boundaries.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/qualification_candidate_contract.md",
+      "docs/alpha_factory_core_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-QUAL-01.md",
+      "docs/wp_specs/S10-QUAL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-01/wp_spec.json",
+      "src/data_layer/analytical_research/__init__.py",
+      "src/data_layer/analytical_research/qualification.py",
+      "tests/data_layer/analytical_research/test_qualification.py",
+      "tests/data_layer/analytical_research/test_qualification_boundaries.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/data_layer/point_in_time_market_research/",
+      "src/data_layer/polymarket/",
+      "src/data_layer/wallet_intelligence/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/risk/",
+      "tools/"
+    ],
+    "max_changed_files": 15,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/alpha_factory_core_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert S10-QUAL-01. The additive qualification.py module, package exports, focused tests, qualification contract/status/spec artifacts and bounded roadmap/status compatibility edits disappear. Existing AF1 evidence, Alpha Factory/discovery registries, common provenance, WP170 experiment OS/registry, WALLET, Hermes, PIT, dependencies, workflows and all paper/execution/live surfaces remain unchanged. No qualification registry, runtime workspace, network state, experiment, OOS exposure, economic result, order or capital exists to unwind.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "S10-QUAL-01 adds one deterministic qualification-packet API and package-root exports while consuming existing Alpha, AF1, provenance and WP170 constants read-only.",
+    "items": [
+      {
+        "surface": "analytical_research.qualification",
+        "before": "No deterministic object exists between canonical Alpha research memory and the later qualification gate/WP170 experiment OS.",
+        "after": "One immutable QualificationCandidate plus closed validation/serialization/build result surfaces freeze the exact non-wallet qualification-readiness packet without making a qualification decision.",
+        "change_authorized": true,
+        "compatibility_requirement": "No new registry, filesystem writer, clock, randomness, network, Hermes/provider, wallet-runtime, WP170 mutation or execution path.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_QUALIFICATION_PACKET"
+      },
+      {
+        "surface": "analytical_research package exports",
+        "before": "Qualification packet types/builders are absent from the package root.",
+        "after": "Only the frozen S10-QUAL-01 public constants/types/functions are exported.",
+        "change_authorized": true,
+        "compatibility_requirement": "All existing exports and signatures remain unchanged; experiment_os.py and experiment_registry.py are untouched.",
+        "authority": "IMPORT_SURFACE_ONLY"
+      },
+      {
+        "surface": "WP170 crossing",
+        "before": "WP170 owns hypothesis/dataset/split/metric/baseline/family/preregistration/OOS contracts but has no S10-QUAL packet input.",
+        "after": "S10-QUAL-01 freezes a crossing plan whose WP170-compatible portions are explicit while candidate-specific feature/model implementation remains later WP170 scope.",
+        "change_authorized": false,
+        "compatibility_requirement": "Do not modify or wrap WP170 builders/registry and do not create a PreregisteredExperiment or expose OOS.",
+        "authority": "READ_ONLY_COMPATIBILITY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These fields close the qualification crossing semantics without implementing the later gate or experiment.",
+    "items": [
+      {
+        "path": "candidate.identity",
+        "source": "DERIVED",
+        "type": "content_addressed_record",
+        "required_rule": "QualificationCandidate uses schema polymarket-qualification-candidate/1.0.0 and qualificationcandidate:sha256: over canonical normalized fields excluding only qualification_candidate_id.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Roundtrip validation re-derives the exact identity; binary floats, unknown fields, noncanonical nested JSON and authority-flag changes reject.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded immutable candidate or closed error code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "alpha.lineage",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Bind alpha registry head plus exact OpportunityCandidate, HypothesisFamily and unique current ResearchEpisode leaf; leaf must equal caller-selected governing id and be RESEARCH_SUPPORTIVE.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Missing/ambiguous/stale/mismatched/non-supportive lineage rejects; ALPHA-02 lane priority never grants qualification.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "content ids only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "predecessor.af1",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Supplied AF1GateReceipt must pass existing validate_af1_record, have AF1_PASS and every AF1 dimension PASS, and preserve all three no-authority flags.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Any non-PASS, malformed or authority-expanded receipt rejects; current merged receipt is predecessor evidence, not a universal hardcoded product constant.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "gate receipt id only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "provenance.binding",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Bind sorted unique verified ResearchProvenanceManifest ids; all manifest cutoffs and governing research_as_of are <= candidate information_cutoff and all dataset snapshot refs in the split plan appear in the supplied manifest dataset_refs union.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Identity/cutoff/dataset-ref inconsistency rejects; DQ/replay limitations are never upgraded.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "manifest ids and candidate cutoff",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.hypothesis_plan",
+        "source": "CALLER",
+        "type": "closed_mapping",
+        "required_rule": "Freeze the WP170 AlphaHypothesis-compatible research intent, with predecessor_candidate_ids derived later from alpha_candidate_id and human_review_state exactly REVIEWED.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exact key set, bounded text/opaque fields and REVIEWED assertion only.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "canonical hypothesis plan JSON",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.feature_label_plan",
+        "source": "CALLER",
+        "type": "closed_mapping",
+        "required_rule": "Feature refs are qualification logical refs with source class PUBLIC_NON_MARKET, MARKET_PIT or TIME_ONLY and exact at-or-before-decision availability; label plan freezes target/horizon/outcome/availability/censoring semantics. These are not claimed to be current WP170 FeatureDefinition ids.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Feature/source/evidence maps have identical keysets; refs are unique; no future-information rule is exact; label evidence refs are sorted unique.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "canonical feature and label plan JSON",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.dataset_split_plan",
+        "source": "CALLER",
+        "type": "closed_mapping",
+        "required_rule": "Freeze PIT dataset refs, EXCLUSIVE leakage grouping, LEAKAGE_MARKET_RELATED_EXCLUSIVE event grouping, ordered formation/selection/OOS boundaries, WP170 purge rule, embargo, half-open inclusion and minimum samples per role.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "formation < selection < oos < end; group_policy EXCLUSIVE; exact purge/inclusion/event-grouping literals; nonnegative embargo and positive minimum.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "canonical split-plan JSON",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.sample_power_plan",
+        "source": "CALLER",
+        "type": "closed_mapping",
+        "required_rule": "Freeze analysis unit, available/required sample and independent-group counts, declared power method/reference, target power, significance level and minimum detectable effect as facts only.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Counts and canonical decimal domains validate; availability shortfall does not make the record structurally invalid and does not auto-qualify.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "canonical feasibility facts",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.test_family_plan",
+        "source": "CALLER",
+        "type": "closed_mapping",
+        "required_rule": "Freeze research program, metric family, primary/secondary metrics, WP170 metric direction and correction policy, declared multiplicity method/family size, WP170-compatible primary threshold mapping and baseline acceptance rule.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "SINGLETON requires family_size 1; FAMILY_TRIAL_COUNT requires >=1; threshold operator matches metric direction; baseline rule matches direction.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "canonical test-family JSON",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.forecast_evaluation_plan",
+        "source": "CALLER",
+        "type": "closed_mapping",
+        "required_rule": "GENERIC_METRIC requires exact NOT_APPLICABLE form. BINARY_PROBABILITY requires PIT_MARKET_PROBABILITY_V1 B0, independent-information B1, B2 equal to B1 plus explicit MARKET_PIT additions, identical OOS membership, Brier or log-loss proper score, calibration diagnostic and required B1-vs-B0/B2-vs-B0/B2-vs-B1 comparisons.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "B1 cannot include MARKET_PIT refs; B2 additions must all be MARKET_PIT and exact union semantics hold; all required comparison booleans true; binary primary metric is LOWER_IS_BETTER.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "canonical B0/B1/B2 evaluation interface",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.execution_feasibility_plan",
+        "source": "CALLER",
+        "type": "closed_mapping",
+        "required_rule": "Exactly FEES, RESOLUTION_RULES, TICK_SIZE_MIN_ORDER, SPREAD_DEPTH, LATENCY and PARTIAL_FILL; each records AVAILABLE, PARTIAL, MISSING or NOT_APPLICABLE plus evidence refs only.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "AVAILABLE/PARTIAL require evidence refs; MISSING/NOT_APPLICABLE require none; no expected return, PnL, sizing, slippage-adjusted edge or profitability fields exist.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "evidence availability only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.wallet_dependency",
+        "source": "CALLER",
+        "type": "closed_enum",
+        "required_rule": "NON_WALLET is admitted in v1; WALLET_DEPENDENT fails closed with WALLET_GATE_REQUIRED until a real S10-GATE-WALLET-01 receipt contract exists.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No placeholder wallet receipt id/schema/prefix or arbitrary wallet evidence bypass is accepted.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "NON_WALLET only in valid candidate",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "qualification.authority",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Every candidate is advisory_only, human_review_required, no_execution_authority, no_strategy_authority and no_qualification_authority exactly true.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Any false or omitted authority invariant rejects.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "non-authoritative record only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "QualificationCandidate product identity is proved by focused executable mutation/roundtrip tests; no work-package-spec worked identity example is required.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "FAST deterministic readiness plus Karl authorization permits only this exact offline implementation; merge and the qualification gate remain separate.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 15-file scope, semantic matrix and FAST readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl sends/approves this exact S10-QUAL-01 package for implementation",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation remains inside exact scope and required local validation passes with zero forbidden runtime/economic activity",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused qualification tests are the executable product oracle; machine-spec worked examples are unnecessary.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R018 cover the complete qualification packet contract, current predecessor bindings, no-authority boundary, exact scope and final evidence discipline.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "candidate identity and serialization roundtrip",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py",
+        "expected_result": "canonical mapping is deterministic; field mutation changes identity; key/order canonicalization and nested-plan validation behave exactly; binary floats/unknown fields reject"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "verified Alpha current-leaf crossing",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py",
+        "expected_result": "exact candidate/family unique current RESEARCH_SUPPORTIVE leaf is accepted while missing, stale, mismatched, ambiguous and non-supportive leaves reject"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "AF1 predecessor binding",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py",
+        "expected_result": "valid AF1_PASS/all-dimensions-PASS receipt is admitted and malformed/non-PASS/authority-invalid receipt rejects"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "provenance and cutoff binding",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py",
+        "expected_result": "manifest identities validate; dataset refs are covered; research/manifest cutoffs cannot exceed candidate cutoff; limitations are not upgraded"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "hypothesis feature label and split contracts",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py",
+        "expected_result": "closed key sets, REVIEWED hypothesis, feature source/evidence keysets, label semantics and EXCLUSIVE temporal split/event grouping are enforced"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "sample power facts do not self-qualify",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py",
+        "expected_result": "valid shortfall packets remain structurally valid facts; invalid counts/decimal domains reject; no PASS/FAIL qualification is produced"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test-family WP170 compatibility",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py tests/data_layer/analytical_research/test_experiment_os_preregistration.py",
+        "expected_result": "metric direction/correction policy/threshold/baseline rules match current WP170 vocabulary without changing WP170"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "B0 B1 B2 interface",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py",
+        "expected_result": "generic mode requires NOT_APPLICABLE; binary mode requires PIT B0, B1 non-market-only refs, B2 exact B1 plus market refs, same OOS and proper-score/incrementality controls"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "execution feasibility and wallet fail closed",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py",
+        "expected_result": "exact six feasibility classes/state-ref consistency hold; WALLET_DEPENDENT returns WALLET_GATE_REQUIRED and no candidate"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "authority and import boundaries",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_boundaries.py",
+        "expected_result": "no network/Hermes/wallet-runtime/paper/execution/live imports or side effects; no registry writer/clock/random/env path; all candidate no-authority flags remain true"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "package exports and WP170 unchanged",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_boundaries.py tests/data_layer/analytical_research/test_experiment_os_boundaries.py",
+        "expected_result": "exact qualification exports exist; existing WP170 signatures/dataclass fields/export invariants remain unchanged"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "Alpha AF1 provenance regressions",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_alpha_factory_records.py tests/data_layer/analytical_research/test_alpha_factory_registry.py tests/data_layer/analytical_research/test_alpha_factory_gate.py tests/data_layer/point_in_time_market_research/test_research_provenance.py",
+        "expected_result": "consumed predecessor contracts remain green and read-only"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "status and repo truth",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
+        "expected_result": "AF1 PASS remains research-system only; S10-QUAL-01 packet is non-qualifying; S10-GATE-QUAL-01/WP170/economics/live remain separate and unauthorized"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "affected historical governance guards",
+        "command": "python -m pytest -q tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py tests/test_local_research_workflow_value_measurement_harness_contract_docs.py tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py",
+        "expected_result": "active exact-scope/package governance accepts S10-QUAL-01 without historical authority drift"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "validation",
+        "test": "generated artifact and available security",
+        "command": "python tools/git/preflight_generated_artifact_guard.py; python tools/security/run_available_security_checks.py",
+        "expected_result": "artifact guard passes; available checks pass and unavailable tools are reported honestly"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "validation",
+        "test": "exact scope and final readiness",
+        "command": "python tools/git/diff_scope_summary.py --base 3b877a01ed797d26fddf81a8936c880692573028 --head HEAD --wp-spec docs/wp_specs/S10-QUAL-01/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-01/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-01/wp_spec.json --repo-root . --check-diff --base 3b877a01ed797d26fddf81a8936c880692573028 --head HEAD",
+        "expected_result": "15 required/allowed/actual paths, zero extras/missing/warnings, final committed-head readiness IMPLEMENTATION_READY"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "validation",
+        "test": "final full suite and hygiene",
+        "command": "python -m pip check; git diff --check 3b877a01ed797d26fddf81a8936c880692573028 HEAD --; python -m pytest -q",
+        "expected_result": "one authoritative stable-candidate full suite passes; pip and committed diff are clean"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "github",
+        "test": "exact-head publication and CI",
+        "command": "gh pr checks --watch",
+        "expected_result": "one draft PR on exact tested head; required hosted CI green; PR body requirement-to-evidence traceability current; then stop for independent Side13 exact-head review"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-GATE-QUAL-01",
+    "next_title": "Deterministic Qualification Packet Acceptance Gate",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP170",
+    "forbidden_in_this_wp": [
+      "merge",
+      "S10-GATE-QUAL-01 implementation or qualification PASS/FAIL/INCONCLUSIVE decision",
+      "construction, persistence or lifecycle start of a WP170 PreregisteredExperiment",
+      "formation/selection/OOS evaluation or OOS release",
+      "candidate-specific forecast model or calibrator implementation",
+      "claim that qualification feature refs are existing WP170 FeatureDefinition ids",
+      "extension or mutation of experiment_os.py or experiment_registry.py",
+      "expected return, fair-value trade edge, PnL, sizing, slippage-adjusted economics or profitability",
+      "WP172 executable-edge evaluation",
+      "WP173 paper trading",
+      "wallet-dependent qualification before a real S10-GATE-WALLET-01 receipt contract exists",
+      "placeholder/fabricated wallet-gate receipt schema or arbitrary wallet evidence bypass",
+      "product network, Gamma/CLOB/Data API/RPC/WebSocket fetch",
+      "Hermes/provider/model/Firecrawl invocation or H1 #5",
+      "scheduler, daemon, worker, recurring campaign or Prefect flow",
+      "credential, OAuth, private-key, signing or account handling",
+      "order create/cancel, execution or live trading",
+      "Gate C or capital",
+      "dependency/lock change",
+      "workflow change",
+      "new qualification registry or second provenance/Alpha truth system",
+      "mutation/migration of Alpha, discovery, PIT, wallet or AF1 canonical stores/evidence",
+      "website/displayed Polymarket probability scraping as B0",
+      "silent use of future/current information after a decision cutoff"
+    ]
+  }
+}
