@@ -569,20 +569,31 @@ def test_s10_gate_af1_contract_and_phase_a_evidence_are_registered() -> None:
 
 def test_s10_gate_af1_correction_is_registered_without_runtime_authority() -> None:
     index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
-    assert "S10-GATE-AF1 research-system gate (Phase-A correction target; post-WP164A recertification)" in index
+    assert "S10-GATE-AF1 research-system gate (Phase-A refreeze target; post-S10-HERMES-CTX-03 Attempt-04 preparation)" in index
     assert "retry_limit=0" in index
     assert "public_population_result_sha256" in index
     assert "No new population or provider call" in index
     assert "70f867bdcd5e97b0dc05d4008c2c023feb461658" in index
     assert "complete 38-field WP164A population" in index
-    assert "AF1_RUNTIME_AUTHORIZATION_REQUIRED" in index
+    assert "AF1_ATTEMPT04_RUNTIME_AUTHORIZATION_REQUIRED" in index
     fragment = (ROOT / "docs" / "status_entries" / "S10-GATE-AF1.md").read_text(encoding="utf-8")
     contract = (ROOT / "docs" / "alpha_factory_research_system_gate_contract.md").read_text(encoding="utf-8")
-    assert "Base: `15097f70f5f5358879fde73b2b30d26ecdb80402`" in fragment
-    assert "PR #194 / `S10-HERMES-CTX-02`" in fragment
+    assert "Base: `1ccf42df0e95586b98c79a0bf912343f9c34df31`" in fragment
+    assert "PR #195 / `S10-HERMES-CTX-03`" in fragment and "PR #194 / `S10-HERMES-CTX-02`" in fragment
     assert "15097f70f5f5358879fde73b2b30d26ecdb80402" in index and "Post-S10-HERMES-CTX-02 reconciliation" in index
-    assert "PR #193 / `WP164A`" in fragment and "AF1 Attempt-03 NOT AUTHORIZED" in fragment
+    assert "1ccf42df0e95586b98c79a0bf912343f9c34df31" in index and "Post-S10-HERMES-CTX-03 reconciliation" in index
+    assert "PR #193 / `WP164A`" in fragment
+    # Attempt-03 is consumed historical evidence with no gate result; Attempt-04 is the successor.
+    assert "AF1 Attempt-03 NOT AUTHORIZED" not in fragment
+    assert "AF1 Attempt-03 CONSUMED" in fragment and "AF1 gate result NONE" in fragment
+    assert "AF1 Attempt-04 UNCONSUMED / NOT AUTHORIZED" in fragment
+    assert "`s10-gate-af1-attempt-04`" in fragment and "attempt-04" in index
+    assert "AF1 Attempt-03 is permanently CONSUMED" in index and "AF1 gate result NONE" in index
+    assert "never reuses Attempt-03 stores" in index
     assert "Post-WP164A reconciliation and Phase-A recertification" in contract
+    assert "Post-S10-HERMES-CTX-03 reconciliation and Attempt-04 Phase-A refreeze" in contract
+    assert "Attempt-03 (historical, permanently CONSUMED)" in contract
+    assert "Attempt-04 (successor, NOT AUTHORIZED)" in contract
     assert "38-field" in contract and "REQUIRED_LANE_NOT_RESEARCH_EXECUTABLE" in contract
 
 

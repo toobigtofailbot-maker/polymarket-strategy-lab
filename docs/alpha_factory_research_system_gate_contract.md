@@ -146,7 +146,8 @@ merge of WP164A whose exact runtime-certified head is
 `1c7de22f31cd093771d6bc0748c440ad5284b105`. WP164A Attempt-03 is consumed as
 `WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS`; its observed 25/1/26/26 counts are historical
 evidence, not contract guarantees, and AF1 is no longer blocked by WP164A. AF1 Attempts 01
-and 02 remain consumed historical evidence; AF1 Attempt-03 and H1 #5 remain unauthorized.
+and 02 remain consumed historical evidence; at that recertification AF1 Attempt-03 was not yet
+authorized (it was later executed and consumed; see below), and H1 #5 remains unauthorized.
 
 - **Complete result.** The operator retains the exact current 38-field
   `PolymarketPublicPopulationResult` before any other work; the key set must equal that
@@ -179,8 +180,9 @@ and 02 remain consumed historical evidence; AF1 Attempt-03 and H1 #5 remain unau
   dimensions derive from one closed override table replayed by `verify-final`, and only the
   three-valid-case path produces the opaque review bundle.
 - **Envelope.** `AF1_RUNTIME_AUTHORIZATION_ENVELOPE.json` inside
-  `local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-03` is an exact closed 38-key schema whose
-  three contract digests must equal the raw bytes on disk.
+  `local_data/s10_gate_af1/<PHASE_A_SHA>/<attempt>` (the only authorizable attempt directory is
+  currently `attempt-04`; see below) is an exact closed 38-key schema whose three contract
+  digests must equal the raw bytes on disk.
 - **Runtime-environment preflight.** `run-real` requires explicit `--hermes-executable`
   and `--hermes-home` machine-local launch parameters (never envelope keys or committed
   evidence). Before the population sentinel exists, both must be absolute, alias-free real
@@ -197,5 +199,45 @@ The current certified base is `15097f70f5f5358879fde73b2b30d26ecdb80402`, the PR
 research-home `SOUL.md` only as the exact pinned Hermes v0.21.3 stock file (667 bytes, SHA-256
 `36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f`, regular non-symlink); every other clean-home rule stays fail-closed, and the AF1
 pre-sentinel preflight reuses that check unchanged. No AF1 semantic, envelope key, limit, retry,
-fallback, or authority changed. AF1 Attempt-03 remains unconsumed and requires a fresh exact
-authorization bound to the new Phase-A head and digests.
+fallback, or authority changed. As of that reconciliation AF1 Attempt-03 was unconsumed; it was
+subsequently authorized, executed and CONSUMED (see below).
+
+## Post-S10-HERMES-CTX-03 reconciliation and Attempt-04 Phase-A refreeze
+
+**Attempt-03 (historical, permanently CONSUMED).** Executed on Phase-A head
+`777b33d5e3eb3ae6814716f45f3dc6a8a673ed16`: terminal TRUE_STOP /
+`PHASE_B_LOCAL_EVIDENCE_DEFECT`; AF1 gate result NONE (neither AF1_PASS, AF1_FAIL nor
+AF1_INCONCLUSIVE, and no gate receipt). Exactly one public population call succeeded (requested
+and actual 25 markets / 1 book, built 26, inserted 26, population result SHA-256
+`fcf5a085aef0954f91812f53231405b9746e583886ea950ca2cd91bc0cf9dc8e`). The C1 controller was
+entered, but request construction failed `REQUEST_SECRET_DETECTED` before any Hermes launch:
+provider/model calls 0, Firecrawl calls 0, accepted provider cost USD 0; C2/C3 not attempted;
+no blind artifact. Its local workspace remains immutable, noncanonical historical evidence.
+
+**Root cause and repair.** The shared HERMES request secret scanner's generic long-hex rule
+flagged the canonical public event id `event:polymarket:0x<64 lowercase hex>` inside
+`public_market_context`. S10-HERMES-CTX-03 (PR #195, head
+`ddc25d189359b6e365edcf08c762cb0552b7170a`) repaired it and merged at
+`1ccf42df0e95586b98c79a0bf912343f9c34df31`, the current certified base. The Hermes invocation
+policy id, schemas, argv, provider/model/tool and retry semantics are unchanged.
+
+**Live-shaped cross-layer regression.** AF1 tests now use live-shaped canonical refs
+(`market:polymarket:<decimal>`, `event:polymarket:0x<64 lowercase hex>`,
+`token:polymarket:<~77-digit decimal>`) through AF1 case construction, `ContextCampaignScope`,
+`public_market_context`, `build_research_run_request` and `run_blind_phase` to the offline fake
+Hermes backend, and prove that reintroducing the pre-CTX-03 strict scan reproduces the Attempt-03
+stop. The HERMES-CTX-03 negative matrix remains owned by that package.
+
+**Attempt-04 (successor, NOT AUTHORIZED).** `s10-gate-af1-attempt-04` is a separately
+authorized successor runtime instance of the same frozen gate, not an automatic retry;
+`retry_limit=0` is unchanged. The operator treats `attempt-01`..`attempt-03` as consumed and
+admits only `attempt-04` under `local_data/s10_gate_af1/<PHASE_A_SHA>/`; there is no automatic
+attempt increment, and a later attempt needs a new Phase-A package and authorization.
+Attempt-04 performs its own fresh bounded public population (request bounds 25/1; success on
+actual returned counts) into new empty stores; Attempt-03 stores are never imported, resumed or
+reused, and `POPULATION_ALREADY_REGISTERED` remains a local defect. Attempt-04 is consumed only
+when its durable pre-call population sentinel is created. The 38-key envelope schema
+(`s10-gate-af1-runtime-authorization-envelope` 1.0.0), gate criteria, ten dimensions, terminal
+table, blind review, budgets (three calls, USD 5 per case, USD 15 aggregate), fallback,
+replacement and authority rules are unchanged. This package grants no qualification,
+profitability, paper, live, Gate C, capital, order, or H1 #5 authority.

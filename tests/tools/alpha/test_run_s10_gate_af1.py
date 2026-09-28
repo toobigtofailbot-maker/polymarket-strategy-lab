@@ -87,12 +87,26 @@ def _request_info() -> ReadOnlyRequestInfo:
     return ReadOnlyRequestInfo(method="GET", url="https://example.invalid", status_code=200, latency_ms=1.0)
 
 
+def _live_condition_id(gamma_id: str) -> str:
+    """Live-shaped Polymarket condition id: 0x + exactly 64 lowercase hex digits."""
+    return "0x" + hashlib.sha256(f"condition-{gamma_id}".encode()).hexdigest()
+
+
+def _live_token_id(gamma_id: str, outcome: str) -> str:
+    """Live-shaped CLOB token id: a 77-digit positive decimal string."""
+    digest = int(hashlib.sha256(f"token-{gamma_id}-{outcome}".encode()).hexdigest(), 16)
+    return str(10**76 + digest % (9 * 10**76))
+
+
 def _gamma(gamma_id: str, *, question: str | None = None, category: str = "Sports") -> dict:
+    # Live-shaped Gamma payload: the WP164A coordinator derives canonical
+    # market:polymarket:<gamma id>, event:polymarket:0x<64 hex> and
+    # token:polymarket:<decimal> refs from it, exactly as Attempt-03 observed.
     return {
-        "id": gamma_id, "conditionId": f"0xcond{gamma_id}",
+        "id": gamma_id, "conditionId": _live_condition_id(gamma_id),
         "question": question if question is not None else f"Will public event {gamma_id} resolve Yes?",
         "active": True, "closed": False, "outcomes": json.dumps(["Yes", "No"]),
-        "clobTokenIds": json.dumps([f"tok{gamma_id}a", f"tok{gamma_id}b"]),
+        "clobTokenIds": json.dumps([_live_token_id(gamma_id, "a"), _live_token_id(gamma_id, "b")]),
         "endDate": "2026-12-31", "category": category,
     }
 
@@ -225,8 +239,8 @@ def _runtime(repo: Path, **probe_overrides) -> dict:
     }
 
 
-def _workspace(root: Path, attempt: str = "attempt-03") -> Path:
-    workspace = root / "local_data" / "s10_gate_af1" / PHASE_SHA / attempt
+def _workspace(root: Path, attempt: str = "attempt-04", phase: str = PHASE_SHA) -> Path:
+    workspace = root / "local_data" / "s10_gate_af1" / phase / attempt
     workspace.mkdir(parents=True)
     return workspace.resolve()
 
@@ -498,7 +512,7 @@ def test_population_sentinel_precedes_call_and_result_is_immediately_persisted(t
         assert json.loads((workspace / POPULATION_INVOCATION_FILENAME).read_text(encoding="utf-8")) == {
             "schema_id": "s10-gate-af1-public-population-invocation", "schema_version": "1.0.0",
             "phase_a_commit_sha": PHASE_SHA, "runtime_authorization_envelope_sha256": "3" * 64,
-            "workspace_attempt_id": "s10-gate-af1-attempt-03",
+            "workspace_attempt_id": "s10-gate-af1-attempt-04",
             "requested_markets_limit": 25, "requested_order_books_limit": 1, "invocation_state": "STARTED",
         }
         assert not (workspace / POPULATION_RESULT_FILENAME).exists()
@@ -509,7 +523,7 @@ def test_population_sentinel_precedes_call_and_result_is_immediately_persisted(t
     returned, mapping, digest = invoke_public_population_once(
         workspace, record_store=workspace / "r", manifest_store=workspace / "m",
         config=benchmark_population_config(allow_network=True), phase_a_commit_sha=PHASE_SHA,
-        envelope_sha256="3" * 64, workspace_attempt_id="s10-gate-af1-attempt-03",
+        envelope_sha256="3" * 64, workspace_attempt_id="s10-gate-af1-attempt-04",
     )
     assert len(calls) == 1 and calls[0] == benchmark_population_config(allow_network=True)
     assert json.loads((workspace / POPULATION_RESULT_FILENAME).read_text(encoding="utf-8")) == mapping
@@ -528,7 +542,7 @@ def test_exception_after_sentinel_is_permanently_nonretryable(tmp_path, monkeypa
     kwargs = dict(
         record_store=tmp_path / "r", manifest_store=tmp_path / "m",
         config=benchmark_population_config(allow_network=True), phase_a_commit_sha=PHASE_SHA,
-        envelope_sha256="3" * 64, workspace_attempt_id="s10-gate-af1-attempt-03",
+        envelope_sha256="3" * 64, workspace_attempt_id="s10-gate-af1-attempt-04",
     )
     with pytest.raises(AF1OperatorError, match="PHASE_B_LOCAL_EVIDENCE_DEFECT"):
         invoke_public_population_once(tmp_path, **kwargs)
@@ -786,9 +800,9 @@ def test_af1_retry_is_zero_while_managed_hermes_recovery_stays_truthful():
 
 
 def test_relative_repository_root_workspace_resolves_absolute(repo):
-    resolved = resolve_workspace(f"local_data/s10_gate_af1/{PHASE_SHA}/attempt-03", repo_root=repo)
+    resolved = resolve_workspace(f"local_data/s10_gate_af1/{PHASE_SHA}/attempt-04", repo_root=repo)
     assert resolved.is_absolute()
-    assert resolved == (repo / "local_data" / "s10_gate_af1" / PHASE_SHA / "attempt-03").resolve()
+    assert resolved == (repo / "local_data" / "s10_gate_af1" / PHASE_SHA / "attempt-04").resolve()
     root = context_store_root(resolved, 1)
     assert root.is_absolute() and root.parent.parent == resolved
     store = ContextArtifactStore(root)  # accepted: no ARTIFACT_PATH_INVALID
@@ -797,7 +811,7 @@ def test_relative_repository_root_workspace_resolves_absolute(repo):
 
 @pytest.mark.parametrize("raw", [
     "local_data/s10_gate_af1/../escape",
-    "local_data/other/attempt-03",
+    "local_data/other/attempt-04",
     "local_data/s10_gate_af1",
     "../outside",
 ])
@@ -821,7 +835,7 @@ def test_symlink_workspace_escape_rejects(repo, tmp_path):
     except (OSError, NotImplementedError):
         pytest.skip("symlink creation unavailable")
     with pytest.raises(AF1OperatorError):
-        resolve_workspace("local_data/s10_gate_af1/link/attempt-03", repo_root=repo)
+        resolve_workspace("local_data/s10_gate_af1/link/attempt-04", repo_root=repo)
 
 
 def test_unresolved_relative_context_root_is_never_passed(tmp_path):
@@ -863,11 +877,73 @@ def test_activation_envelope_rejects_missing_nonzero_alias_unknown_and_stale(rep
         validate_activation_envelope(envelope, workspace=workspace, provider_label=PROVIDER, model_label=MODEL, repo_root=repo)
 
 
-def test_consumed_attempt_workspaces_are_rejected(repo):
-    workspace = _workspace(repo, "attempt-02")
+@pytest.mark.parametrize("attempt", ["attempt-01", "attempt-02", "attempt-03"])
+def test_consumed_attempt_workspaces_are_rejected(repo, attempt):
+    workspace = _workspace(repo, attempt)
     envelope = _envelope(repo, workspace)
     with pytest.raises(AF1OperatorError, match="STATE_DRIFT"):
         validate_activation_envelope(envelope, workspace=workspace, provider_label=PROVIDER, model_label=MODEL, repo_root=repo)
+
+
+@pytest.mark.parametrize("attempt", ["attempt-00", "attempt-05", "attempt-99"])
+def test_only_attempt_04_is_authorizable_without_automatic_increment(repo, attempt):
+    assert operator.AUTHORIZED_ATTEMPT_DIRECTORY == "attempt-04"
+    assert "attempt-03" in operator.CONSUMED_ATTEMPT_DIRECTORIES
+    workspace = _workspace(repo, attempt)
+    envelope = _envelope(repo, workspace)
+    with pytest.raises(AF1OperatorError, match="STATE_DRIFT"):
+        validate_activation_envelope(envelope, workspace=workspace, provider_label=PROVIDER, model_label=MODEL, repo_root=repo)
+
+
+def test_attempt_04_envelope_binds_attempt_04_identity(repo):
+    workspace = _workspace(repo)
+    envelope = _envelope(repo, workspace)
+    assert workspace.name == "attempt-04" and envelope["workspace_attempt_id"] == "s10-gate-af1-attempt-04"
+    assert len(envelope) == 38 and set(envelope) == ACTIVATION_ENVELOPE_KEYS
+    assert (envelope["schema_id"], envelope["schema_version"]) == ("s10-gate-af1-runtime-authorization-envelope", "1.0.0")
+    assert envelope["base_sha"] == operator.BASE_SHA == "1ccf42df0e95586b98c79a0bf912343f9c34df31"
+    validate_activation_envelope(envelope, workspace=workspace, provider_label=PROVIDER, model_label=MODEL, repo_root=repo)
+
+
+@pytest.mark.parametrize("mutation", [
+    # Historical Attempt-03 identity / base cannot authorize Attempt-04.
+    lambda value: value.update(workspace_attempt_id="s10-gate-af1-attempt-03"),
+    lambda value: value.update(base_sha="15097f70f5f5358879fde73b2b30d26ecdb80402"),
+    lambda value: value.update(phase_a_commit_sha="777b33d5e3eb3ae6814716f45f3dc6a8a673ed16"),
+    lambda value: value.update(gate_contract_sha256="0" * 64),
+    lambda value: value.update(wp_spec_sha256="0" * 64),
+    # Type coercion is never accepted.
+    lambda value: value.update(markets_limit="25"),
+    lambda value: value.update(order_books_limit=1.0),
+    lambda value: value.update(max_case_cost_usd=5),
+    lambda value: value.update(fourth_call_authorized=0),
+    lambda value: value.update(alpha_registry_path=""),
+])
+def test_attempt_03_envelope_or_coerced_values_cannot_authorize_attempt_04(repo, mutation):
+    workspace = _workspace(repo)
+    envelope = _envelope(repo, workspace)
+    mutation(envelope)
+    with pytest.raises(AF1OperatorError, match="STATE_DRIFT"):
+        validate_activation_envelope(envelope, workspace=workspace, provider_label=PROVIDER, model_label=MODEL, repo_root=repo)
+
+
+def test_historical_attempt_03_workspace_never_collides_with_attempt_04(repo, monkeypatch):
+    historical = _workspace(repo, "attempt-03")
+    historical_files = {
+        ACTIVATION_ENVELOPE_FILENAME: b'{"historical": "attempt-03"}',
+        POPULATION_INVOCATION_FILENAME: b'{"historical": "sentinel"}',
+        POPULATION_RESULT_FILENAME: b'{"historical": "result"}',
+    }
+    for name, payload in historical_files.items():
+        (historical / name).write_bytes(payload)
+    workspace, result, calls, _ = _run(repo, monkeypatch)
+    assert workspace.name == "attempt-04" and workspace.parent == historical.parent
+    assert len(calls) == 1 and result["runtime_state"] == "BLIND_REVIEW_REQUIRED"
+    # Fresh population into new empty Attempt-04 stores: nothing is imported from Attempt-03.
+    assert (calls[0].markets_limit, calls[0].order_books_limit) == (25, 1)
+    assert {path.name: path.read_bytes() for path in historical.iterdir()} == historical_files
+    invocation = json.loads((workspace / POPULATION_INVOCATION_FILENAME).read_text(encoding="utf-8"))
+    assert invocation["workspace_attempt_id"] == "s10-gate-af1-attempt-04"
 
 
 # ── HERMES-CTX exact scope ────────────────────────────────────────────────────
@@ -906,6 +982,80 @@ def test_real_campaign_is_accepted_by_run_blind_phase(tmp_path):
     assert blind.run_result.receipt.terminal_status == "RESEARCH_DRAFT_VALIDATED"
     body = operator.review_body_from_blind_result(exact_scope={"market_id": "m1"}, blind_result=blind)
     assert set(body) == {"research_scope", "research_summary", "confidence_label", "sources", "falsification_checks_performed", "context_claims"}
+
+
+# ── Live-shaped canonical public identifiers (post-S10-HERMES-CTX-03) ────────
+#
+# Cross-layer AF1 regression for the Attempt-03 stop: the AF1 case construction →
+# ContextCampaignScope → public_market_context → build_research_run_request →
+# run_blind_phase seam must carry live-shaped canonical refs to the (offline, fake)
+# Hermes backend. The full HERMES-CTX-03 negative matrix is owned by that package.
+
+LIVE_MARKET_ID = "market:polymarket:516710"
+LIVE_EVENT_ID = "event:polymarket:0x" + hashlib.sha256(b"af1-live-shaped-condition").hexdigest()
+LIVE_TOKEN_IDS = (
+    "token:polymarket:" + _live_token_id("516710", "yes"),
+    "token:polymarket:" + _live_token_id("516710", "no"),
+)
+CANONICAL_MARKET_RE = r"market:polymarket:[1-9][0-9]*"
+CANONICAL_EVENT_RE = r"event:polymarket:0x[0-9a-f]{64}"
+CANONICAL_TOKEN_RE = r"token:polymarket:[1-9][0-9]{69,77}"
+
+
+def _live_market():
+    return replace(_market(), market_id=LIVE_MARKET_ID, event_id=LIVE_EVENT_ID, token_ids=LIVE_TOKEN_IDS)
+
+
+def test_live_shaped_fixture_matches_attempt_03_identifier_shapes():
+    import re
+
+    assert re.fullmatch(CANONICAL_MARKET_RE, LIVE_MARKET_ID)
+    assert re.fullmatch(CANONICAL_EVENT_RE, LIVE_EVENT_ID) and len(LIVE_EVENT_ID) == len("event:polymarket:0x") + 64
+    for token in LIVE_TOKEN_IDS:
+        digits = token[len("token:polymarket:"):]
+        assert re.fullmatch(CANONICAL_TOKEN_RE, token) and 70 <= len(digits) <= 78
+    # The generic long-hex secret rule (global, unchanged by CTX-03) flags the event id alone.
+    from src.research_runtime.hermes_controlled_runtime import models as hermes_models
+
+    assert hermes_models._LONG_HEX_SECRET_PATTERN.search(LIVE_EVENT_ID)
+
+
+def test_live_shaped_canonical_refs_reach_offline_hermes_backend_through_af1_seam(tmp_path):
+    campaign = context_campaign(_live_market(), cutoff=CAPTURED_TEXT, provider_label=PROVIDER, model_label=MODEL, phase_a_commit_sha=PHASE_SHA)
+    assert set(campaign.subject_refs) == {LIVE_MARKET_ID, LIVE_EVENT_ID, *LIVE_TOKEN_IDS}
+    assert json.loads(campaign.exact_scope_json) == {"market_id": LIVE_MARKET_ID, "event_id": LIVE_EVENT_ID, "token_ids": sorted(LIVE_TOKEN_IDS)}
+    request = _context_request(campaign)  # public_market_context → build_research_run_request
+    for ref in (LIVE_MARKET_ID, LIVE_EVENT_ID, *LIVE_TOKEN_IDS):
+        assert ref in request.public_market_context
+    backend = BackendPlan()(campaign)
+    blind = run_blind_phase(campaign=campaign, store=ContextArtifactStore(tmp_path / "ctx"), backend=backend, policy=DEFAULT_HERMES_INVOCATION_POLICY)
+    assert backend.call_count == 1  # the fake/offline backend was reached; no real process
+    assert blind.run_result.receipt.terminal_status == "RESEARCH_DRAFT_VALIDATED"
+
+
+def test_live_shaped_regression_fails_if_pre_ctx03_long_hex_false_positive_returns(tmp_path, monkeypatch):
+    from src.research_runtime.hermes_controlled_runtime import models as hermes_models
+
+    campaign = context_campaign(_live_market(), cutoff=CAPTURED_TEXT, provider_label=PROVIDER, model_label=MODEL, phase_a_commit_sha=PHASE_SHA)
+    backend = BackendPlan()(campaign)
+    # Reintroduce the pre-CTX-03 behaviour: the ordinary strict scan on public_market_context.
+    monkeypatch.setattr(hermes_models, "_require_public_market_context", hermes_models._require_str)
+    with pytest.raises(Exception, match="REQUEST_SECRET_DETECTED"):
+        run_blind_phase(campaign=campaign, store=ContextArtifactStore(tmp_path / "ctx"), backend=backend, policy=DEFAULT_HERMES_INVOCATION_POLICY)
+    assert backend.call_count == 0  # exactly the Attempt-03 stop: before any Hermes launch
+
+
+def test_live_shaped_population_chain_reaches_offline_backend_for_all_three_cases(repo, monkeypatch):
+    import re
+
+    workspace, result, calls, plan = _run(repo, monkeypatch)
+    assert len(calls) == 1 and result["runtime_state"] == "BLIND_REVIEW_REQUIRED"
+    assert len(plan.campaigns) == 3 and plan.physical_calls == 3
+    for campaign in plan.campaigns:
+        scope = json.loads(campaign.exact_scope_json)
+        assert re.fullmatch(CANONICAL_MARKET_RE, scope["market_id"])
+        assert re.fullmatch(CANONICAL_EVENT_RE, scope["event_id"])
+        assert scope["token_ids"] and all(re.fullmatch(CANONICAL_TOKEN_RE, token) for token in scope["token_ids"])
 
 
 # ── L/M. Blind review, finalization, identity ─────────────────────────────────
@@ -1032,13 +1182,13 @@ def test_verify_final_rejects_forged_dimensions(repo, monkeypatch):
 
 
 def test_prepare_defaults_to_zero_network(repo):
-    workspace = f"local_data/s10_gate_af1/{PHASE_SHA}/attempt-03"
+    workspace = f"local_data/s10_gate_af1/{PHASE_SHA}/attempt-04"
     assert main(["prepare", "--workspace", workspace]) == 0
     payload = json.loads((repo / workspace / "AF1_PREPARE.json").read_text())
     assert payload["network_used"] is False and payload["controller_invocation_count"] == 0
     assert payload["population_config"] == {**operator.WP164_LABELS, "markets_limit": 25, "order_books_limit": 1, "allow_network": False}
     assert payload["activation_envelope_keys"] == sorted(ACTIVATION_ENVELOPE_KEYS)
-    assert payload["predecessor"] == {"pr_number": 194, "head_sha": "f6b337ce1d4581516c3d10d792034f00043a8a74", "merge_sha": operator.BASE_SHA}
+    assert payload["predecessor"] == {"pr_number": 195, "head_sha": "ddc25d189359b6e365edcf08c762cb0552b7170a", "merge_sha": operator.BASE_SHA}
 
 
 def test_run_real_requires_exact_explicit_activation(repo, monkeypatch):
@@ -1056,7 +1206,7 @@ def test_run_real_requires_exact_explicit_activation(repo, monkeypatch):
 def test_cli_default_and_prepare_paths_make_zero_network_or_provider_calls(repo, monkeypatch):
     monkeypatch.setattr(operator, "populate_initial_polymarket_public_data", lambda *a, **k: pytest.fail("network"))
     monkeypatch.setattr(operator, "run_blind_phase", lambda *a, **k: pytest.fail("provider"))
-    workspace = f"local_data/s10_gate_af1/{PHASE_SHA}/attempt-03"
+    workspace = f"local_data/s10_gate_af1/{PHASE_SHA}/attempt-04"
     assert main(["prepare", "--workspace", workspace]) == 0
     for command in (["verify-run"], ["build-review-bundle"], ["finalize"]):
         assert main([*command, "--workspace", workspace]) == 2
@@ -1087,9 +1237,9 @@ def test_benchmark_policy_is_exact_uncalibrated_starting_policy():
 def test_cli_selects_exact_core_exploration_audit_cases_without_cherry_pick(repo, monkeypatch):
     markets = [_gamma(str(100 + i)) for i in range(6)]
     selections = []
-    for attempt, ordered in (("attempt-03", markets), ("attempt-04", list(reversed(markets)))):
-        workspace = _workspace(repo, attempt)
-        envelope = _envelope(repo, workspace)
+    for phase, ordered in ((PHASE_SHA, markets), ("4" * 40, list(reversed(markets)))):
+        workspace = _workspace(repo, phase=phase)
+        envelope = _envelope(repo, workspace, phase_a_commit_sha=phase)
         _patch_population(monkeypatch, ordered)
         plan = BackendPlan()
         result = execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, **_runtime(repo), backend_factory=plan)
@@ -1113,7 +1263,7 @@ def test_phase_continuation_freezes_code_contract_and_detects_state_drift(repo, 
         execute_real_phase(workspace, envelope, provider_label=PROVIDER, model_label=MODEL, repo_root=repo, **_runtime(repo), backend_factory=BackendPlan())
     assert calls == [] and not (workspace / POPULATION_INVOCATION_FILENAME).exists()
     # A workspace not bound to the envelope's Phase-A SHA is also drift.
-    other = repo / "local_data" / "s10_gate_af1" / ("9" * 40) / "attempt-03"
+    other = repo / "local_data" / "s10_gate_af1" / ("9" * 40) / "attempt-04"
     other.mkdir(parents=True)
     with pytest.raises(AF1OperatorError, match="STATE_DRIFT"):
         validate_activation_envelope(envelope, workspace=other.resolve(), provider_label=PROVIDER, model_label=MODEL, repo_root=repo)

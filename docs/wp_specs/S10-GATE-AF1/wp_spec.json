@@ -10,9 +10,9 @@
     "risk_level": 3,
     "base_branch": "main",
     "required_predecessor": {
-      "pr_number": 194,
-      "head_sha": "f6b337ce1d4581516c3d10d792034f00043a8a74",
-      "merge_sha": "15097f70f5f5358879fde73b2b30d26ecdb80402"
+      "pr_number": 195,
+      "head_sha": "ddc25d189359b6e365edcf08c762cb0552b7170a",
+      "merge_sha": "1ccf42df0e95586b98c79a0bf912343f9c34df31"
     },
     "suggested_branch": "codex/s10-gate-af1-research-system-gate",
     "objective": "Implement and execute the bounded Alpha Factory research-system evidence gate: immutable deterministic gate records and seeded adversarial cases, a manual foreground operator that reuses the existing bounded public PIT population and HERMES-CTX blind runtime only after separate human runtime activation, deterministic CORE/EXPLORATION/AUDIT benchmark selection, digest-bound blinded Side12 usefulness review, and a sanitized final AF1 PASS/FAIL/INCONCLUSIVE receipt. The gate measures integrity, PIT/provenance, duplicate/negative/reopen correctness, claim/evidence support, failure visibility, bounded cost, selection accounting, reproducibility and authority containment; it never proves profitability or grants qualification/trading authority.",
@@ -531,7 +531,7 @@
         "path": "gate.post_wp164a_reconciliation",
         "source": "DERIVED",
         "type": "mapping",
-        "required_rule": "AF1 Phase A is recertified on base 70f867bdcd5e97b0dc05d4008c2c023feb461658 with immediate predecessor PR #193 (WP164A, runtime-certified head 1c7de22f31cd093771d6bc0748c440ad5284b105; Attempt-03 CONSUMED as WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS). AF1 Attempts 01/02 remain consumed historical evidence; AF1 Attempt-03 and H1 #5 remain NOT AUTHORIZED; frozen WP164A prompt/spec/operator/status-fragment pre-smoke wording stays historical.",
+        "required_rule": "AF1 Phase A is recertified on base 70f867bdcd5e97b0dc05d4008c2c023feb461658 with immediate predecessor PR #193 (WP164A, runtime-certified head 1c7de22f31cd093771d6bc0748c440ad5284b105; Attempt-03 CONSUMED as WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS). AF1 Attempts 01/02 remain consumed historical evidence; at that recertification AF1 Attempt-03 was not yet authorized (later consumed; see gate.post_hermes_ctx03_reconciliation) and H1 #5 remains NOT AUTHORIZED; frozen WP164A prompt/spec/operator/status-fragment pre-smoke wording stays historical.",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
@@ -557,13 +557,52 @@
         "path": "gate.post_hermes_ctx02_reconciliation",
         "source": "DERIVED",
         "type": "mapping",
-        "required_rule": "AF1 Phase A is reconciled onto base 15097f70f5f5358879fde73b2b30d26ecdb80402, the PR #194 (S10-HERMES-CTX-02, head f6b337ce1d4581516c3d10d792034f00043a8a74) merge. The merged runner admits SOUL.md in the research HERMES_HOME only as the exact pinned Hermes v0.21.3 stock file (667 bytes, SHA-256 36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f, regular non-symlink); every other clean-home rule stays fail-closed. AF1 semantics, the 38-key envelope, limits, retry, fallback and authority are unchanged; the WP164A runtime dependency (PR #193) remains an ancestor. AF1 Attempt-03 stays unconsumed and needs a fresh exact authorization.",
+        "required_rule": "AF1 Phase A was reconciled onto base 15097f70f5f5358879fde73b2b30d26ecdb80402, the PR #194 (S10-HERMES-CTX-02, head f6b337ce1d4581516c3d10d792034f00043a8a74) merge. The merged runner admits SOUL.md in the research HERMES_HOME only as the exact pinned Hermes v0.21.3 stock file (667 bytes, SHA-256 36c1f5a2e92cd1d018311eaf4c8f1e8886672eae78212e033c681d0e3d5d506f, regular non-symlink); every other clean-home rule stays fail-closed. AF1 semantics, the 38-key envelope, limits, retry, fallback and authority are unchanged; the WP164A runtime dependency (PR #193) remains an ancestor. As of that reconciliation AF1 Attempt-03 was unconsumed; it was later executed and consumed (gate.post_hermes_ctx03_reconciliation).",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
         "validation_rule": "Operator boundary and status/repo-truth tests bind the current base and PR #194 predecessor; the AF1 preflight reuses the merged is_clean_research_home_control_plane unchanged.",
         "failure_category": "SEMANTIC_CONTRADICTION",
-        "safe_output": "current certified post-repair AF1 base",
+        "safe_output": "historical post-CTX-02 AF1 base (superseded by post-CTX-03 base)",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate.post_hermes_ctx03_reconciliation",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "Same-capability continuation/amendment (not a new roadmap WP): AF1 Phase A is reconciled onto base 1ccf42df0e95586b98c79a0bf912343f9c34df31, the PR #195 (S10-HERMES-CTX-03, head ddc25d189359b6e365edcf08c762cb0552b7170a) merge. AF1 Attempt-03 is permanently CONSUMED on Phase-A head 777b33d5e3eb3ae6814716f45f3dc6a8a673ed16: TRUE_STOP / PHASE_B_LOCAL_EVIDENCE_DEFECT, AF1 gate result NONE, one successful public population (25/1, built 26, inserted 26, result SHA-256 fcf5a085aef0954f91812f53231405b9746e583886ea950ca2cd91bc0cf9dc8e), C1 request construction failed before any Hermes launch, provider/model/Firecrawl calls 0, cost USD 0. Root cause (canonical event:polymarket:0x<64 hex> secret-scanner false positive) repaired upstream. Hermes policy id, schema, argv, provider/model/tool and retry semantics unchanged. Attempt-03 local evidence is immutable and never reused.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Operator boundary and status/repo-truth tests bind base 1ccf42d and PR #195; docs record Attempt-03 as CONSUMED with gate result NONE and never as AF1 PASS/FAIL/INCONCLUSIVE or unconsumed.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "current certified post-CTX-03 AF1 base",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate.attempt04_successor_identity",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "The only future runtime instance is AF1 Attempt-04: workspace local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-04, workspace_attempt_id s10-gate-af1-attempt-04. It is a separately authorized successor, not an automatic retry; retry_limit=0 is unchanged. attempt-01, attempt-02 and attempt-03 are rejected as consumed and every other attempt directory is rejected; there is no automatic attempt increment. Attempt-04 performs its own fresh bounded public population (request bounds 25/1, success on actual returned counts) into new empty stores; Attempt-03 stores are never imported, resumed or reused and POPULATION_ALREADY_REGISTERED stays a local defect. Attempt-04 is consumed only when its durable pre-call population sentinel is created. The exact 38-key envelope schema s10-gate-af1-runtime-authorization-envelope 1.0.0 is unchanged. This Phase A authorizes no Attempt-04 runtime.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Operator tests reject attempt-01..03 and attempt-00/05/99, reject Attempt-03 identity/base/head, stale digests and type-coerced envelope values for Attempt-04, and prove a historical Attempt-03 workspace never collides with a fresh one-call Attempt-04 population.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "unconsumed Attempt-04 pending separate exact authorization",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate.live_shaped_cross_layer_regression",
+        "source": "DERIVED",
+        "type": "mapping",
+        "required_rule": "AF1 operator tests use live-shaped canonical refs market:polymarket:<positive decimal>, event:polymarket:0x<exactly 64 lowercase hex> and token:polymarket:<70-78 digit decimal> through AF1 case construction, ContextCampaignScope, public_market_context, build_research_run_request and run_blind_phase to the existing offline fake Hermes backend, with no real process, provider, Firecrawl or network. Reintroducing the pre-CTX-03 strict scan on public_market_context must reproduce REQUEST_SECRET_DETECTED with zero backend calls. The full HERMES-CTX-03 negative matrix stays owned by that package.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "tests/tools/alpha/test_run_s10_gate_af1.py live-shaped tests pass on the frozen head and fail if the generic long-hex false positive returns.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "zero-call AF1 seam proof for canonical public ids",
         "derivation_rule_id": null
       }
     ]
@@ -790,7 +829,7 @@
         "source": "pytest",
         "test": "repo truth/status",
         "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
-        "expected_result": "WP164A/PR #193 merged runtime-certified truth (Attempt-03 CONSUMED / WP164A_PUBLIC_SMOKE_COMPLETE_SUCCESS) is reconciled, AF1 exact 19-path RUNTIME/Risk3 gate is current on base 70f867b, AF1 Attempt-03/H1#5/Gate-C/capital remain unauthorized and successor eligibility depends on final AF1 outcome"
+        "expected_result": "WP164A/PR #193, S10-HERMES-CTX-02/PR #194 and S10-HERMES-CTX-03/PR #195 merged truth is reconciled; AF1 exact 19-path RUNTIME/Risk3 gate is current on base 1ccf42d; AF1 Attempt-03 is CONSUMED with gate result NONE; AF1 Attempt-04/H1#5/Gate-C/capital remain unauthorized and successor eligibility depends on final AF1 outcome"
       },
       {
         "requirement_id": "R016",
@@ -810,21 +849,21 @@
         "requirement_id": "R018",
         "source": "validation",
         "test": "exact scope and final readiness",
-        "command": "python tools/git/diff_scope_summary.py --base 15097f70f5f5358879fde73b2b30d26ecdb80402 --head HEAD --wp-spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-GATE-AF1/wp_prompt.txt --spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --repo-root . --check-diff --base 15097f70f5f5358879fde73b2b30d26ecdb80402 --head HEAD",
+        "command": "python tools/git/diff_scope_summary.py --base 1ccf42df0e95586b98c79a0bf912343f9c34df31 --head HEAD --wp-spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-GATE-AF1/wp_prompt.txt --spec docs/wp_specs/S10-GATE-AF1/wp_spec.json --repo-root . --check-diff --base 1ccf42df0e95586b98c79a0bf912343f9c34df31 --head HEAD",
         "expected_result": "19 required/actual and IMPLEMENTATION_READY on definitive Phase-A committed HEAD before runtime authorization, then again on final committed HEAD after evidence/status finalization"
       },
       {
         "requirement_id": "R019",
         "source": "runtime",
         "test": "bounded AF1 runtime evidence",
-        "command": "python tools/alpha/run_s10_gate_af1.py verify-run --workspace local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-03",
+        "command": "python tools/alpha/run_s10_gate_af1.py verify-run --workspace local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-04",
         "expected_result": "after separate Karl authorization, activation envelope binds exact WP164 labels/25x1 limits plus HISTORICAL_REPLAY/no-registry posture; valid population builds historical queue/manifest before Hermes or A1/A2 finalizes with zero Hermes calls"
       },
       {
         "requirement_id": "R020",
         "source": "human",
         "test": "independent blinded usefulness review — three-valid-blind-case path only",
-        "command": "python tools/alpha/run_s10_gate_af1.py verify-review --workspace local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-03 --review local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-03/AF1_SIDE12_BLIND_REVIEW_DECISION.json",
+        "command": "python tools/alpha/run_s10_gate_af1.py verify-review --workspace local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-04 --review local_data/s10_gate_af1/<PHASE_A_SHA>/attempt-04/AF1_SIDE12_BLIND_REVIEW_DECISION.json",
         "expected_result": "Applicable only when three valid distinct review bodies exist. Side12 decision binds REVIEW-01/02/03 to exact review_body_sha256 values only; bundle hides internal AF1-Cx/lane/priority/cost/runtime identity; finalization hashes supplied wrapper bodies, matches immutable AF1RealCaseEvidence hashes and rederives slots before internal linkage. All non-review terminal paths are NOT_APPLICABLE_BY_TERMINAL_PATH and never create a review pause."
       },
       {
@@ -838,7 +877,7 @@
         "requirement_id": "R022",
         "source": "validation",
         "test": "final full suite and hygiene",
-        "command": "python -m pip check; git diff --check 15097f70f5f5358879fde73b2b30d26ecdb80402 HEAD --; python -m pytest -q",
+        "command": "python -m pip check; git diff --check 1ccf42df0e95586b98c79a0bf912343f9c34df31 HEAD --; python -m pytest -q",
         "expected_result": "two authoritative committed-head suite lifecycles exist: Phase-A full suite green before any runtime authorization/evidence, and final evidence/status committed-head guards+focused+scope/readiness followed by one final full suite; pip and explicit base-to-head diff checks are clean in both applicable phases"
       },
       {
@@ -889,6 +928,20 @@
         "test": "test_valid_environment_preflight_precedes_population_and_binds_exact_paths",
         "command": "python -m pytest -q tests/tools/alpha/test_run_s10_gate_af1.py",
         "expected_result": "pre-sentinel Hermes executable/home/version/startup preflight precedes population; every invalid environment stops with zero calls and no sentinel; exact validated paths reach run_blind_phase"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "test_live_shaped_canonical_refs_reach_offline_hermes_backend_through_af1_seam",
+        "command": "python -m pytest -q tests/tools/alpha/test_run_s10_gate_af1.py",
+        "expected_result": "live-shaped canonical market/event/token refs reach the offline fake Hermes backend through ContextCampaignScope, build_research_run_request and run_blind_phase; test_live_shaped_regression_fails_if_pre_ctx03_long_hex_false_positive_returns proves the Attempt-03 stop is reproduced with zero backend calls if the pre-CTX-03 strict scan returns"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "pytest",
+        "test": "test_historical_attempt_03_workspace_never_collides_with_attempt_04",
+        "command": "python -m pytest -q tests/tools/alpha/test_run_s10_gate_af1.py",
+        "expected_result": "only attempt-04 is authorizable (attempt-01..03 consumed, no automatic increment); Attempt-03 identity/base/head envelopes cannot authorize Attempt-04; Attempt-04 performs exactly one fresh 25/1 mocked population into new empty stores while historical Attempt-03 bytes stay unchanged"
       }
     ]
   },

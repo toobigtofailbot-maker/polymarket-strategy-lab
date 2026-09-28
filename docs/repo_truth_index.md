@@ -1,6 +1,6 @@
 # Repo Truth Index
 
-## S10-GATE-AF1 research-system gate (Phase-A correction target; post-WP164A recertification)
+## S10-GATE-AF1 research-system gate (Phase-A refreeze target; post-S10-HERMES-CTX-03 Attempt-04 preparation)
 
 The canonical contract is `docs/alpha_factory_research_system_gate_contract.md`;
 records are in `src/data_layer/analytical_research/alpha_factory_gate.py`; the sole
@@ -20,13 +20,31 @@ with immediate predecessor PR #193 (runtime-certified head
 result, success on actual returned counts rather than request limits, retained
 `EVENT_TIME_MISSING_ALLOWED` warnings, fresh-status `POPULATION_ALREADY_REGISTERED` rejection, one
 canonical `captured_at_utc` cutoff, the HISTORICAL_REPLAY Alpha posture, the selected
-`question_text` coverage precondition, and an absolute `ContextArtifactStore` root. AF1 Attempt-03
-remains NOT AUTHORIZED; the expected stop is `AF1_RUNTIME_AUTHORIZATION_REQUIRED`.
+`question_text` coverage precondition, and an absolute `ContextArtifactStore` root. At that
+recertification AF1 Attempt-03 was not yet authorized (historical expected stop
+`AF1_RUNTIME_AUTHORIZATION_REQUIRED`).
 
 Post-S10-HERMES-CTX-02 reconciliation replays the AF1 package onto `15097f70f5f5358879fde73b2b30d26ecdb80402` (PR #194, head
 `f6b337ce1d4581516c3d10d792034f00043a8a74`). The shared research-home check now admits only the exact pinned stock SOUL.md;
-AF1 semantics, the 38-key envelope and the pre-sentinel Hermes preflight are unchanged, and AF1
-Attempt-03 remains unconsumed pending a fresh exact authorization.
+AF1 semantics, the 38-key envelope and the pre-sentinel Hermes preflight are unchanged; AF1
+Attempt-03 was then authorized and executed on Phase-A head `777b33d5e3eb3ae6814716f45f3dc6a8a673ed16`.
+
+Post-S10-HERMES-CTX-03 reconciliation replays the AF1 package onto
+`1ccf42df0e95586b98c79a0bf912343f9c34df31` (PR #195, head
+`ddc25d189359b6e365edcf08c762cb0552b7170a`). AF1 Attempt-03 is permanently CONSUMED: TRUE_STOP /
+`PHASE_B_LOCAL_EVIDENCE_DEFECT`, AF1 gate result NONE (never AF1 PASS, FAIL or INCONCLUSIVE); its one
+public population succeeded (25/1, built 26, inserted 26, result SHA-256
+`fcf5a085aef0954f91812f53231405b9746e583886ea950ca2cd91bc0cf9dc8e`) and the C1 request failed in the
+shared secret scanner before any Hermes launch (provider/model/Firecrawl calls 0, cost USD 0). PR #195
+repaired that shared root cause. AF1 adds a live-shaped cross-layer regression (canonical
+`market:polymarket:<decimal>`, `event:polymarket:0x<64 lowercase hex>`, ~77-digit
+`token:polymarket:<decimal>` refs reach the offline fake Hermes backend through `run_blind_phase`).
+The successor runtime instance is AF1 Attempt-04 (`s10-gate-af1-attempt-04`): the operator rejects
+`attempt-01`..`attempt-03` and admits only `attempt-04`, with no automatic increment; Attempt-04
+uses a fresh bounded 25/1 population into new empty stores and never reuses Attempt-03 stores.
+The 38-key envelope, gate criteria, limits, `retry_limit=0`, budgets and authority are unchanged.
+Attempt-04 is UNCONSUMED and NOT AUTHORIZED; the expected stop is
+`AF1_ATTEMPT04_RUNTIME_AUTHORIZATION_REQUIRED`.
 
 ## S10-HERMES-CTX-03 Canonical Public Polymarket Identifier Secret-Scanner Compatibility Repair (current bounded compatibility repair)
 

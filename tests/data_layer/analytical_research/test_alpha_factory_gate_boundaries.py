@@ -72,7 +72,10 @@ def test_context_store_is_only_built_from_the_absolute_workspace_root():
 
 def test_operator_binds_current_certified_base_and_predecessor():
     operator = OPERATOR.read_text(encoding="utf-8")
-    assert 'BASE_SHA = "15097f70f5f5358879fde73b2b30d26ecdb80402"' in operator
-    assert 'PREDECESSOR_HEAD_SHA = "f6b337ce1d4581516c3d10d792034f00043a8a74"' in operator
+    assert 'BASE_SHA = "1ccf42df0e95586b98c79a0bf912343f9c34df31"' in operator
+    assert "PREDECESSOR_PR = 195" in operator
+    assert 'PREDECESSOR_HEAD_SHA = "ddc25d189359b6e365edcf08c762cb0552b7170a"' in operator
+    assert 'CONSUMED_ATTEMPT_DIRECTORIES = frozenset({"attempt-01", "attempt-02", "attempt-03"})' in operator
+    assert 'AUTHORIZED_ATTEMPT_DIRECTORY = "attempt-04"' in operator
     assert "46bc862018208b30971228ed719c7e9337142b41" not in operator
     assert "CURRENT_BUILD_ANALYSIS" not in operator
