@@ -707,7 +707,8 @@ def test_s10_qual_01_repo_truth_registers_non_qualifying_packet() -> None:
     deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
     section_start = index.index("## S10-QUAL-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    assert "(merged historical predecessor: PR #197)" in section
+    assert "b5cfb9846ff78af2d1a260843d5f2f1a67639305" in section
     assert "docs/qualification_candidate_contract.md" in section
     assert "src/data_layer/analytical_research/qualification.py" in section
     assert "3b877a01ed797d26fddf81a8936c880692573028" in section
@@ -736,3 +737,51 @@ def test_s10_qual_01_repo_truth_registers_non_qualifying_packet() -> None:
     assert "S10-QUAL-01 (base 3b877a01ed797d26fddf81a8936c880692573028" in roadmap
     for item in ("S10-QUAL-01-D001", "S10-QUAL-01-D002", "S10-QUAL-01-D003", "S10-QUAL-01-D004"):
         assert f"| {item} |" in deferred, item
+
+
+
+def test_s10_gate_qual_01_repo_truth_registers_acceptance_gate() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "S10-GATE-QUAL-01.md").read_text(encoding="utf-8")
+    contract = (ROOT / "docs" / "qualification_gate_contract.md").read_text(encoding="utf-8")
+    candidate_contract = (ROOT / "docs" / "qualification_candidate_contract.md").read_text(encoding="utf-8")
+    roadmap = (ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    section_start = index.index("## S10-GATE-QUAL-01 ")
+    section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    for text in (
+        "docs/qualification_gate_contract.md",
+        "src/data_layer/analytical_research/qualification_gate.py",
+        "b5cfb9846ff78af2d1a260843d5f2f1a67639305", "652a2181926ac6f92f72d0013af99ec5e24ba892",
+        "QUAL_PASS / QUAL_FAIL / QUAL_INCONCLUSIVE",
+        "No real candidate was created or evaluated",
+        "synthetic outcomes are test fixtures only", "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    assert index.index("## S10-GATE-QUAL-01 ") < index.index("## S10-QUAL-01 ")
+    flat_fragment = " ".join(fragment.split())
+    for text in (
+        "Base: `b5cfb9846ff78af2d1a260843d5f2f1a67639305`", "PR #197 / `S10-QUAL-01`",
+        "REAL QUALIFICATION CANDIDATE EVALUATED: NO", "REAL QUALIFICATION GATE RECEIPT PERSISTED: NO",
+        "Evidence mode: `PRIVATE_REPO_MANUAL_VERIFIED`", "Merge authorized: NO",
+        "first real candidate/evaluation: NOT AUTHORIZED BY THIS WP",
+    ):
+        assert text in flat_fragment, text
+    flat_contract = " ".join(contract.split())
+    for text in (
+        "QUAL_PASS is NOT predictive edge", "ALPHA_ANCESTRY_INVALID", "MAY be older than the current head",
+        "does NOT claim that PUBLIC_NON_MARKET B1 qualification feature refs are valid WP170 FeatureDefinition ids",
+        "any FAIL -> QUAL_FAIL; else any INCONCLUSIVE -> QUAL_INCONCLUSIVE; else QUAL_PASS",
+        "Merge: NOT AUTHORIZED",
+    ):
+        assert text in flat_contract, text
+    assert "## 13. Merged Predecessor And Qualification Gate Consumer (S10-GATE-QUAL-01)" in candidate_contract
+    assert "S10-GATE-QUAL-01 (base b5cfb9846ff78af2d1a260843d5f2f1a67639305" in roadmap
+    d001 = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-01-D001 |"))
+    assert "CAPABILITY_RESOLVED_BY_S10_GATE_QUAL_01_IMPLEMENTATION" in d001
+    assert "No real candidate has been evaluated or has passed" in d001
+    for item in ("S10-QUAL-01-D002", "S10-QUAL-01-D003", "S10-QUAL-01-D004", "S10-GATE-QUAL-01-D001"):
+        assert f"| {item} |" in deferred, item
+    assert "DEFERRED_NOT_AUTHORIZED" in next(
+        line for line in deferred.splitlines() if line.startswith("| S10-QUAL-01-D004 |"))

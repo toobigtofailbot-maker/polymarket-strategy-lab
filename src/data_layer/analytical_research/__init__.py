@@ -300,6 +300,22 @@ from .qualification import (
     qualification_candidate_to_mapping,
     qualification_candidate_from_mapping,
 )
+from .qualification_gate import (
+    QUALIFICATION_GATE_SCHEMA_VERSION,
+    QUALIFICATION_GATE_RECEIPT_SCHEMA_ID,
+    QUALIFICATION_GATE_POLICY_VERSION,
+    QUALIFICATION_GATE_STATUSES,
+    QUALIFICATION_GATE_DIMENSIONS,
+    QUALIFICATION_GATE_DIMENSION_STATUSES,
+    QUALIFICATION_GATE_DISPOSITIONS,
+    QUALIFICATION_GATE_ERROR_CODES,
+    QualificationGateReceipt,
+    QualificationGateControlResult,
+    evaluate_qualification_gate,
+    validate_qualification_gate_receipt,
+    qualification_gate_receipt_to_mapping,
+    qualification_gate_receipt_from_mapping,
+)
 
 __all__ = [
     # experiment OS and registry
@@ -512,6 +528,21 @@ __all__ = [
     "validate_qualification_candidate",
     "qualification_candidate_to_mapping",
     "qualification_candidate_from_mapping",
+    # S10-GATE-QUAL-01 deterministic qualification packet acceptance gate
+    "QUALIFICATION_GATE_SCHEMA_VERSION",
+    "QUALIFICATION_GATE_RECEIPT_SCHEMA_ID",
+    "QUALIFICATION_GATE_POLICY_VERSION",
+    "QUALIFICATION_GATE_STATUSES",
+    "QUALIFICATION_GATE_DIMENSIONS",
+    "QUALIFICATION_GATE_DIMENSION_STATUSES",
+    "QUALIFICATION_GATE_DISPOSITIONS",
+    "QUALIFICATION_GATE_ERROR_CODES",
+    "QualificationGateReceipt",
+    "QualificationGateControlResult",
+    "evaluate_qualification_gate",
+    "validate_qualification_gate_receipt",
+    "qualification_gate_receipt_to_mapping",
+    "qualification_gate_receipt_from_mapping",
     # research_dataset — labels, versions, constants
     "ANALYTICAL_RESEARCH_LABEL",
     "ANALYTICAL_RESEARCH_POSTURE",

@@ -21,7 +21,16 @@
   attempt is authorized. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
   separately gated scopes.
 
-- Current bounded implementation target: S10-QUAL-01 (base 3b877a01ed797d26fddf81a8936c880692573028,
+- Current bounded implementation target: S10-GATE-QUAL-01 (base b5cfb9846ff78af2d1a260843d5f2f1a67639305,
+  after PR #197 / S10-QUAL-01 merged with head 652a2181926ac6f92f72d0013af99ec5e24ba892) implements the
+  deterministic qualification packet acceptance gate only: eight closed dimensions and
+  QUAL_PASS / QUAL_FAIL / QUAL_INCONCLUSIVE over an existing NON-WALLET QualificationCandidate, with
+  structural rejections kept separate from substantive dispositions. No real candidate is evaluated and
+  no real gate receipt is persisted. Next and separately gated: a real NON-WALLET candidate evaluation
+  with the merged gate; only a real QUAL_PASS makes candidate-specific WP170 work eligible to be drafted,
+  then WP172 / WP173. First real evaluation, WP170, H1 #5 and Gate C are NOT AUTHORIZED; capital/orders 0.
+
+- Historical predecessor (PR #197 merged at b5cfb9846ff78af2d1a260843d5f2f1a67639305), formerly the bounded implementation target: S10-QUAL-01 (base 3b877a01ed797d26fddf81a8936c880692573028,
   after PR #196 / S10-GATE-AF1) implements the deterministic NON-WALLET QualificationCandidate
   substrate only. It produces NO qualification PASS/FAIL/INCONCLUSIVE decision, qualifies no real
   candidate, keeps WP170 as the preregistration/OOS authority (feature/model implementation remains

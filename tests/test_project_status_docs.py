@@ -4766,12 +4766,15 @@ def test_s10_hermes_ctx03_is_current_bounded_compatibility_repair() -> None:
     assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
 
 
-def test_s10_qual_01_is_current_non_qualifying_packet_target() -> None:
+def test_s10_qual_01_is_merged_non_qualifying_packet_predecessor() -> None:
     current = next(
         line
         for line in _read().splitlines()
-        if line.startswith("# S10-QUAL-01 current bounded implementation target")
+        if line.startswith("# S10-QUAL-01 merged historical truth")
     )
+    assert "PR #197 / S10-QUAL-01 merged: YES at b5cfb9846ff78af2d1a260843d5f2f1a67639305" in current
+    assert "652a2181926ac6f92f72d0013af99ec5e24ba892" in current
+    assert "non-qualifying packet substrate retained" in current
     spec = json.loads(
         (REPO_ROOT / "docs" / "wp_specs" / "S10-QUAL-01" / "wp_spec.json").read_text(encoding="utf-8")
     )
@@ -4814,5 +4817,62 @@ def test_s10_qual_01_is_current_non_qualifying_packet_target() -> None:
                 "execution", "live", "dependencies", "workflow_files"):
         assert authority[key] is False, key
     assert spec["successor_boundary"]["next_wp"] == "S10-GATE-QUAL-01"
+    assert spec["successor_boundary"]["separately_gated"] is True
+    assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
+
+
+
+def test_s10_gate_qual_01_is_current_acceptance_gate_target() -> None:
+    lines = _read().splitlines()
+    current = next(
+        line for line in lines
+        if line.startswith("# S10-GATE-QUAL-01 current bounded implementation target")
+    )
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-GATE-QUAL-01" / "wp_spec.json").read_text(encoding="utf-8")
+    )
+    assert "Governance track: FAST" in current and "Risk level: 2" in current
+    assert "Exact changed-file scope: 15" in current
+    assert "Frozen base: b5cfb9846ff78af2d1a260843d5f2f1a67639305" in current
+    assert "PR #197 / S10-QUAL-01 merged: YES" in current
+    assert "652a2181926ac6f92f72d0013af99ec5e24ba892" in current
+    assert "S10-QUAL-01 remains a non-qualifying packet substrate" in current
+    assert "S10-GATE-QUAL-01 deterministic gate implementation is complete on the branch" in current
+    for text in (
+        "PACKET_INTEGRITY", "CURRENT_RESEARCH_LINEAGE", "PREDECESSOR_EVIDENCE",
+        "PIT_PROVENANCE_READINESS", "SAMPLE_POWER_READINESS", "WP170_CROSSING_READINESS",
+        "EXECUTION_EVIDENCE_READINESS", "AUTHORITY_CONTAINMENT",
+        "QUAL_PASS/QUAL_FAIL/QUAL_INCONCLUSIVE",
+        "No real candidate was created/evaluated by this WP",
+        "No real QualificationGateReceipt exists or is persisted by this WP",
+        "synthetic terminal outcomes are test fixtures only",
+        "WP170 experiment/OOS: NOT STARTED / NOT AUTHORIZED by this WP", "WP172/WP173: NOT STARTED",
+        "S10-WALLET-03 -> S10-WALLET-04 -> S10-GATE-WALLET-01 -> real wallet evidence lane",
+        "H1 #5: NOT AUTHORIZED", "Gate C: NOT AUTHORIZED", "capital at risk: USD 0", "orders: 0",
+        "product network/Hermes/provider/wallet runtime/scheduler/credentials: 0",
+        "Merge authorized: NO",
+    ):
+        assert text in current, text
+    for stale in ("real candidate qualified: YES", "Merge authorized: YES", "Gate C: AUTHORIZED",
+                  "WP170 experiment/OOS: STARTED", "first real candidate/evaluation: AUTHORIZED"):
+        assert stale not in current, stale
+    # The gate is the newest current target and sits above its merged predecessor record.
+    assert lines.index(current) < next(
+        index for index, line in enumerate(lines) if line.startswith("# S10-QUAL-01 merged historical truth")
+    )
+    assert spec["identity"]["wp_id"] == "S10-GATE-QUAL-01"
+    assert spec["identity"]["risk_level"] == 2
+    assert spec["identity"]["required_predecessor"] == {
+        "pr_number": 197,
+        "head_sha": "652a2181926ac6f92f72d0013af99ec5e24ba892",
+        "merge_sha": "b5cfb9846ff78af2d1a260843d5f2f1a67639305",
+    }
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 15
+    for key in ("network", "credentials", "scheduler", "hermes_runtime", "strategy", "paper",
+                "execution", "live", "dependencies", "workflow_files"):
+        assert spec["authority"][key] is False, key
+    assert spec["successor_boundary"]["next_wp"] == "WP170"
     assert spec["successor_boundary"]["separately_gated"] is True
     assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]

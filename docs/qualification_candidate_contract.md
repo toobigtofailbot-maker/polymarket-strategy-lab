@@ -201,3 +201,17 @@ S10-GATE-QUAL-01: NOT AUTHORIZED. WP170 experiment/OOS: NOT STARTED. WP172/WP173
 Wallet qualification: NOT AUTHORIZED. H1 #5: NOT AUTHORIZED. Gate C: NOT AUTHORIZED.
 Capital/orders: 0. Network, Hermes/provider, scheduler, credential, strategy, paper, execution
 and live authority: none. Merge: NOT AUTHORIZED by the executor.
+
+## 13. Merged Predecessor And Qualification Gate Consumer (S10-GATE-QUAL-01)
+
+Section 12 is the historical S10-QUAL-01 boundary. PR #197 / S10-QUAL-01 is MERGED (head
+`652a2181926ac6f92f72d0013af99ec5e24ba892`, merge `b5cfb9846ff78af2d1a260843d5f2f1a67639305`) and
+this packet remains a non-qualifying substrate: `QualificationCandidate` and `qualification.py`
+are unchanged. The separately authorized S10-GATE-QUAL-01 consumer
+(`docs/qualification_gate_contract.md`, `qualification_gate.py`) re-validates an existing packet
+with `validate_qualification_candidate`, re-binds its Alpha ancestry / current lineage, AF1
+receipt and exact provenance manifest set, and alone emits QUAL_PASS / QUAL_FAIL /
+QUAL_INCONCLUSIVE in a separate `QualificationGateReceipt`. A packet's `no_qualification_authority`
+flag stays true; qualification decision authority lives only in the gate receipt. No real
+candidate has been built or evaluated; the first real candidate, WP170 and merge remain NOT
+AUTHORIZED by that WP.
