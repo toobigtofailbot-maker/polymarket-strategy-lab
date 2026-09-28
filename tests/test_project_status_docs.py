@@ -4822,12 +4822,14 @@ def test_s10_qual_01_is_merged_non_qualifying_packet_predecessor() -> None:
 
 
 
-def test_s10_gate_qual_01_is_current_acceptance_gate_target() -> None:
+def test_s10_gate_qual_01_is_merged_acceptance_gate_predecessor() -> None:
     lines = _read().splitlines()
     current = next(
         line for line in lines
-        if line.startswith("# S10-GATE-QUAL-01 current bounded implementation target")
+        if line.startswith("# S10-GATE-QUAL-01 merged historical truth")
     )
+    assert "PR #198 / S10-GATE-QUAL-01 merged: YES at d7891ed63b4c58c9cc150cd0c750c262ca8e5a74" in current
+    assert "ec97a25b3e3174bfa71e3799110e729247dfa026" in current
     spec = json.loads(
         (REPO_ROOT / "docs" / "wp_specs" / "S10-GATE-QUAL-01" / "wp_spec.json").read_text(encoding="utf-8")
     )
@@ -4856,7 +4858,7 @@ def test_s10_gate_qual_01_is_current_acceptance_gate_target() -> None:
     for stale in ("real candidate qualified: YES", "Merge authorized: YES", "Gate C: AUTHORIZED",
                   "WP170 experiment/OOS: STARTED", "first real candidate/evaluation: AUTHORIZED"):
         assert stale not in current, stale
-    # The gate is the newest current target and sits above its merged predecessor record.
+    # The gate record sits above its own merged predecessor record.
     assert lines.index(current) < next(
         index for index, line in enumerate(lines) if line.startswith("# S10-QUAL-01 merged historical truth")
     )
@@ -4874,5 +4876,53 @@ def test_s10_gate_qual_01_is_current_acceptance_gate_target() -> None:
                 "execution", "live", "dependencies", "workflow_files"):
         assert spec["authority"][key] is False, key
     assert spec["successor_boundary"]["next_wp"] == "WP170"
+    assert spec["successor_boundary"]["separately_gated"] is True
+    assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
+
+
+
+def test_s10_test_ws_01_is_current_tests_only_target() -> None:
+    lines = _read().splitlines()
+    current = next(
+        line for line in lines
+        if line.startswith("# S10-TEST-WS-01 current bounded implementation target")
+    )
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-TEST-WS-01" / "wp_spec.json").read_text(encoding="utf-8")
+    )
+    for text in (
+        "Governance track: FAST", "Risk level: 1", "Exact changed-file scope: 8",
+        "Frozen base: d7891ed63b4c58c9cc150cd0c750c262ca8e5a74",
+        "PR #198 / S10-GATE-QUAL-01 merged: YES", "ec97a25b3e3174bfa71e3799110e729247dfa026",
+        "Current branch: codex/s10-test-ws-01-deterministic-reconnect-sync",
+        "tests/data_layer/polymarket/test_market_truth_websocket.py",
+        "the real 1s product reconnect backoff is preserved", "src/ changes: 0",
+        "_BACKOFF_SCHEDULE: UNCHANGED", "backoff/sleeper injection API: NONE",
+        "Dependencies/locks/workflows: UNCHANGED", "Gate C: NOT AUTHORIZED",
+        "capital at risk: USD 0", "Merge authorized: NO",
+    ):
+        assert text in current, text
+    for stale in ("Merge authorized: YES", "_BACKOFF_SCHEDULE: CHANGED", "Gate C: AUTHORIZED"):
+        assert stale not in current, stale
+    # The tests-only target is the newest current record, above its merged predecessor.
+    assert lines.index(current) < next(
+        index for index, line in enumerate(lines)
+        if line.startswith("# S10-GATE-QUAL-01 merged historical truth")
+    )
+    assert spec["identity"]["wp_id"] == "S10-TEST-WS-01"
+    assert spec["identity"]["risk_level"] == 1
+    assert spec["identity"]["required_predecessor"] == {
+        "pr_number": 198,
+        "head_sha": "ec97a25b3e3174bfa71e3799110e729247dfa026",
+        "merge_sha": "d7891ed63b4c58c9cc150cd0c750c262ca8e5a74",
+    }
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 8
+    assert not any(path.startswith("src/") for path in scope["required_changed_files"])
+    assert "src/" in scope["forbidden_prefixes"]
+    for key in ("source_runtime", "network", "credentials", "scheduler", "hermes_runtime", "strategy",
+                "paper", "execution", "live", "dependencies", "workflow_files"):
+        assert spec["authority"][key] is False, key
     assert spec["successor_boundary"]["separately_gated"] is True
     assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]

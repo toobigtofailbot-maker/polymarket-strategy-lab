@@ -1,0 +1,684 @@
+SIDE13 — S10-TEST-WS-01
+FINAL IMPLEMENTATION-AUTHORIZED WORK PACKAGE
+DETERMINISTIC RECONNECT SYNCHRONIZATION IN MARKET WEBSOCKET TESTS
+
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Authority owner: Karl / Side13
+Drafting date: 2026-09-28
+Draft status: FINAL — AUTHORIZED BY SIDE13 (Option B: all four wall-clock-sensitive reconnect tests)
+This exact package authorizes implementation of S10-TEST-WS-01 only. It does NOT authorize merge,
+any product/runtime change, any dependency or workflow change, or any successor.
+
+===============================================================================
+0. FROZEN LIVE STATE / PACKAGE IDENTITY
+===============================================================================
+
+WP ID:
+S10-TEST-WS-01
+
+Title:
+Deterministic Reconnect Synchronization in Market WebSocket Tests
+
+Repository:
+toobigtofailbot-maker/polymarket-strategy-lab
+
+Base branch:
+main
+
+Frozen base / required current main (post-PR-198 merge):
+d7891ed63b4c58c9cc150cd0c750c262ca8e5a74
+
+Required predecessor:
+PR #198 / S10-GATE-QUAL-01
+
+Required predecessor final implementation head:
+ec97a25b3e3174bfa71e3799110e729247dfa026
+
+Required predecessor merge SHA:
+d7891ed63b4c58c9cc150cd0c750c262ca8e5a74
+
+Required predecessor PR state:
+MERGED (PR #198 is already merged; nothing in this WP rebases, reruns or modifies it)
+
+Suggested branch:
+codex/s10-test-ws-01-deterministic-reconnect-sync
+
+Package class:
+DETERMINISTIC_TEST_SYNCHRONIZATION_REPAIR
+
+Package size class:
+M
+
+Exact changed-file budget:
+8
+
+Evidence mode expected:
+PRIVATE_REPO_MANUAL_VERIFIED
+
+Governance track expected: FAST
+Risk level: 1
+Capital at risk: USD 0
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 1
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+CRITICAL PR PUBLICATION RULE:
+The GitHub pull request MUST be created as Ready for Review from the start (isDraft=false).
+NEVER create, convert, or leave the PR as a Draft. Do not use `gh pr create --draft`.
+
+===============================================================================
+1. TRIGGER / OBJECTIVE
+===============================================================================
+
+Trigger evidence: hosted CI run 36437422894 (PR #198, head ec97a25), compat job
+windows-2022 / py3.12, failed
+tests/data_layer/polymarket/test_market_truth_websocket.py::test_non_store_limit_failed_append_reconnects_not_silently_continues
+with `assert 1 >= 2` (only one socket opened). The test slept a fixed 1.4 s and then set stop,
+assuming the runner's real first reconnect backoff (_BACKOFF_SCHEDULE[0] == 1 s, awaited via
+asyncio.wait_for(stop_event.wait(), timeout=delay)) had completed. On a slow runner stop landed
+during RECONNECT_WAIT, the runner returned CALLER_STOP and no second socket opened. It passed
+locally and on the other three compat jobs: a timing flake, not a product regression.
+
+The backoff is a module constant and is not injectable through _run_market_websocket.
+
+Objective: remove runner-speed dependence from all four wall-clock-sensitive reconnect tests in
+tests/data_layer/polymarket/test_market_truth_websocket.py as one coherent deterministic-test-
+synchronization WP, using condition-driven synchronization appropriate to each test:
+
+1. test_reconnect_uses_current_subscription_set_not_original
+   - wait for the second connection's reconnect subscription payload to actually be emitted
+     (sockets[1].sent non-empty) before stopping; socket creation alone is insufficient because the
+     test reads sockets[1].sent[0]. The pre-disconnect fixed sleeps are likewise replaced by waits
+     for the first connection's initial payload and for all three dynamic updates being sent.
+2. test_normal_book_gaps_are_persisted_and_healed
+   - wait deterministically for the durable OPEN TIMESTAMP_REGRESSION gap row before queueing the
+     fresh book, then for the HEALED gap evidence itself; no fixed sleep is a success condition.
+3. test_continuity_fault_triggers_reconnect_wait
+   - bounded asyncio.Event for creation/opening of socket #1 (before feeding frames) and socket #2.
+4. test_non_store_limit_failed_append_reconnects_not_silently_continues
+   - bounded asyncio.Event for creation/opening of socket #2.
+
+Every wait has a generous finite timeout (30 s) and fails clearly (stop the runner, await it with
+the same bound, pytest.fail naming the missing condition) rather than hanging. The real 1-second
+product backoff is preserved: this WP removes runner-speed dependence, it does not bypass the
+production behavior being tested. Existing assertions are preserved unchanged.
+
+===============================================================================
+2. STARTUP / STATE GATE
+===============================================================================
+
+1. read the mandatory startup files per WP_EXECUTION_STATE_MACHINE;
+2. refresh remote state immediately before branch creation (git fetch origin);
+3. verify origin/main == local main == d7891ed63b4c58c9cc150cd0c750c262ca8e5a74 and a clean tree;
+4. verify PR #198 MERGED at that SHA with head ec97a25b3e3174bfa71e3799110e729247dfa026;
+5. verify no open PR or remote branch already implements S10-TEST-WS-01;
+6. stop on any drift.
+
+===============================================================================
+3. EXACT CHANGED-FILE SCOPE — 8 PATHS
+===============================================================================
+
+- docs/project_status.md
+- docs/repo_truth_index.md
+- docs/status_entries/S10-TEST-WS-01.md
+- docs/wp_specs/S10-TEST-WS-01/wp_prompt.txt
+- docs/wp_specs/S10-TEST-WS-01/wp_spec.json
+- tests/data_layer/polymarket/test_market_truth_websocket.py
+- tests/test_project_status_docs.py
+- tests/test_repo_truth_docs.py
+
+The status/repo-truth doc and test edits are bounded transition edits only: S10-GATE-QUAL-01
+(PR #198) becomes merged historical predecessor and S10-TEST-WS-01 becomes the current target.
+No deferred item is created or resolved (no material issue is deferred by this WP).
+
+===============================================================================
+4. AUTHORITY / NON-AUTHORITY
+===============================================================================
+
+Authority: edit test synchronization in the one WP169 websocket test file, plus the bounded
+governance/status artifacts above. Protected boundary groups per
+docs/ai/codex/PROTECTED_PATHS.md (Centralized Boundary Group Reference) are untouched.
+
+Non-authority: no change under src/ (including src/data_layer/polymarket/); no _BACKOFF_SCHEDULE
+change; no backoff/sleeper/clock injection API; no dependency (no pytest-timeout, pytest-repeat,
+freezegun); no workflow change; no product network, Hermes/provider, scheduler, credentials,
+strategy, paper, execution, live, Gate C or capital. Workflow network only: Remote Main Sync Gate,
+git fetch/push, Ready-for-Review PR publication and hosted-CI observation.
+
+===============================================================================
+5. HARD STOPS
+===============================================================================
+
+Stop and report (do not widen this WP) if:
+- implementation requires any change under src/, any workflow or dependency change, or another
+  failure domain;
+- the repaired reconnect tests flake in the 20x local repetition or hang;
+- exact-head hosted CI is not green on the first run: never rerun to mask a flake of the repaired
+  tests; stop and report instead;
+- the readiness gate requires files outside the 8-path scope;
+- local main is stale/diverged/dirty or generated artifacts appear.
+
+===============================================================================
+6. NEGATIVE-TEST MATRIX
+===============================================================================
+
+NOT_APPLICABLE: no validator, scorer, parser, schema validator, boundary guard, evidence guard or
+semantic wording filter is added or modified. Red-sensitivity (R006) is the negative evidence:
+local-only uncommitted mutations suppress each test's reconnect/heal trigger and must fail
+clearly within the bound without hanging; an uncommitted local pytest plugin stretching the first
+backoff to 3 s must leave all four repaired tests green (the old 1.3 s / 1.4 s sleeps would fail).
+
+===============================================================================
+7. VALIDATION PLAN
+===============================================================================
+
+- the four repaired tests, then 20x consecutive local repetition (20/20 required);
+- red-sensitivity and slow-backoff independence proofs (local-only, never committed);
+- focused file tests/data_layer/polymarket/test_market_truth_websocket.py;
+- tests/test_project_status_docs.py and tests/test_repo_truth_docs.py;
+- artifact guard, available security checks, exact-scope diff summary and committed-head readiness;
+- pip check, git diff --check, one authoritative full suite on the final committed candidate;
+- exact-head hosted CI green without a rerun.
+
+===============================================================================
+8. REPORT-BACK TO SIDE13
+===============================================================================
+
+Report back: branch, exact tested head, PR URL (isDraft=false, OPEN, headRefOid == tested head),
+per-test synchronization chosen, 20x result, red-sensitivity and slow-backoff results, focused /
+governance / full-suite counts, readiness and exact-scope results, hosted CI job list for the exact
+head (no rerun), evidence mode PRIVATE_REPO_MANUAL_VERIFIED, Ready for review, Merge authorized: NO.
+Do not merge.
+
+===============================================================================
+9. SUCCESSOR BOUNDARY
+===============================================================================
+
+This tests-only WP has no product successor. Roadmap work resumes unchanged and separately gated:
+a separately authorized real qualification evaluation and, only after a real valid QUAL_PASS,
+candidate-specific WP170 work. Nothing here authorizes either.
+
+===============================================================================
+10. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|sync|reconnect_payload|before_stop|REQUIRE|second_connection_payload_emitted|sync.reconnect_payload|R001
+NR002|sync|heal_evidence|before_stop|REQUIRE|healed_gap_row_persisted|sync.heal_evidence|R002
+NR003|sync|socket_open|continuity_fault|REQUIRE|bounded_event_socket_two_opened|sync.socket_open|R003
+NR004|sync|socket_open|failed_non_store_limit_append|REQUIRE|bounded_event_socket_two_opened|sync.socket_open|R004
+NR005|sync|bounded_wait|timeout|REJECT|stop_runner_and_fail_clearly_never_hang|sync.bounded_wait|R006
+NR006|sync|wall_clock_sleep|success_condition|FORBID|no_fixed_sleep_success_condition|sync.bounded_wait|R005
+NR007|product|backoff|always|PRESERVE_EXACT|real_one_second_backoff_unchanged|product.backoff_preserved|R008
+NR008|product|source_runtime|always|FORBID|zero_src_changes_no_injection_api|product.backoff_preserved|R008
+NR009|publication|ci|flake|FORBID|no_rerun_stop_and_report|NONE|R010
+END_NORMATIVE_RULE_MATRIX_V1
+
+Evidence Plan (requirement mapping):
+R001-R004 -> the four repaired websocket reconnect tests;
+R005 -> 20x consecutive local repetition;
+R006 -> red-sensitivity and slow-backoff independence (local-only, uncommitted);
+R007 -> project-status and repo-truth transition tests;
+R008 -> artifact/security/exact-scope/final committed-head readiness checks;
+R009 -> pip/diff hygiene plus one authoritative final-candidate full suite;
+R010 -> exact-head Ready-for-Review (`isDraft=false`) publication plus hosted CI without rerun.
+
+===============================================================================
+APPENDIX A — EXACT S10-TEST-WS-01 MACHINE SPEC JSON
+===============================================================================
+
+Materialize the JSON below at:
+  docs/wp_specs/S10-TEST-WS-01/wp_spec.json
+
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-TEST-WS-01",
+    "title": "Deterministic Reconnect Synchronization in Market WebSocket Tests",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "DETERMINISTIC_TEST_SYNCHRONIZATION_REPAIR",
+    "package_size_class": "M",
+    "risk_level": 1,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 198,
+      "head_sha": "ec97a25b3e3174bfa71e3799110e729247dfa026",
+      "merge_sha": "d7891ed63b4c58c9cc150cd0c750c262ca8e5a74"
+    },
+    "suggested_branch": "codex/s10-test-ws-01-deterministic-reconnect-sync",
+    "objective": "Remove runner-speed dependence from the four WP169 Market WebSocket reconnect tests in tests/data_layer/polymarket/test_market_truth_websocket.py (test_reconnect_uses_current_subscription_set_not_original, test_normal_book_gaps_are_persisted_and_healed, test_continuity_fault_triggers_reconnect_wait, test_non_store_limit_failed_append_reconnects_not_silently_continues). Each fixed wall-clock sleep that assumed the real 1-second reconnect backoff had elapsed is replaced by condition-driven synchronization on the observable condition itself (second-connection subscription payload emitted, HEALED gap evidence persisted, reconnect socket #2 opened), each bounded by a generous finite timeout that stops the runner and fails clearly instead of hanging. The real product backoff and all assertions are preserved. Tests-only: no change under src/, no _BACKOFF_SCHEDULE change, no backoff/sleeper injection API, no dependency, workflow, network, credential, strategy, paper, execution or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-TEST-WS-01.md",
+      "docs/wp_specs/S10-TEST-WS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-TEST-WS-01/wp_spec.json",
+      "tests/data_layer/polymarket/test_market_truth_websocket.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-TEST-WS-01.md",
+      "docs/wp_specs/S10-TEST-WS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-TEST-WS-01/wp_spec.json",
+      "tests/data_layer/polymarket/test_market_truth_websocket.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/",
+      "tools/"
+    ],
+    "max_changed_files": 8,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert S10-TEST-WS-01. The four WP169 reconnect tests return to their prior fixed wall-clock sleeps and the S10-TEST-WS-01 status/spec artifacts and bounded status-transition edits disappear. No product/runtime code, backoff schedule, dependency, workflow, store, evidence, order or capital state is touched by this WP.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "Tests-only synchronization repair; no public or private product API is added, changed or injected (no backoff/sleeper parameter).",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These rules close which observable condition each repaired reconnect test awaits, the bounded-failure discipline and preservation of the real product backoff.",
+    "items": [
+      {
+        "path": "sync.reconnect_payload",
+        "source": "CONSTANT",
+        "type": "test_synchronization_rule",
+        "required_rule": "test_reconnect_uses_current_subscription_set_not_original awaits the first connection's initial payload, then all three dynamic subscription updates sent on socket #1, then the reconnect subscription payload actually emitted on socket #2 (sockets[1].sent non-empty) before stop; socket creation alone is insufficient.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No fixed sleep remains as a synchronization condition; the sockets[1].sent[0] assertions are unchanged.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "sync.heal_evidence",
+        "source": "CONSTANT",
+        "type": "test_synchronization_rule",
+        "required_rule": "test_normal_book_gaps_are_persisted_and_healed awaits the durable OPEN TIMESTAMP_REGRESSION gap row before queueing the fresh book, then awaits the HEALED gap row itself before stop.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The success condition is persisted HEALED gap evidence, never elapsed wall-clock time; the exact OPEN reason and healed>=1 assertions are unchanged.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "sync.socket_open",
+        "source": "CONSTANT",
+        "type": "test_synchronization_rule",
+        "required_rule": "test_continuity_fault_triggers_reconnect_wait and test_non_store_limit_failed_append_reconnects_not_silently_continues await a bounded asyncio.Event set by the connection factory when reconnect socket #2 is created (the continuity test also awaits socket #1 before feeding frames).",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The len(sockets) >= 2 and STORAGE_FAILURE assertions are unchanged.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "sync.bounded_wait",
+        "source": "CONSTANT",
+        "type": "test_synchronization_rule",
+        "required_rule": "Every synchronization wait uses a finite 30-second timeout; on timeout it sets stop, awaits the runner with the same bound and calls pytest.fail naming the missing condition.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A regression that prevents reconnect yields a clear pytest failure within the bound and never hangs.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "product.backoff_preserved",
+        "source": "CONSTANT",
+        "type": "test_synchronization_rule",
+        "required_rule": "The real product reconnect backoff (_BACKOFF_SCHEDULE[0] == 1s) is exercised unchanged; nothing under src/ changes and no injection API is added.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The exact-scope diff shows zero src/ paths; the tests still wait the real backoff.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No content-addressed identity is introduced or changed.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "FAST deterministic readiness plus Side13/Karl authorization permits only this tests-only synchronization repair; merge remains separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 8-file scope, rule matrix and FAST readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Side13/Karl authorizes this exact S10-TEST-WS-01 package (Option B, all four tests)",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside exact scope with zero src/ change and required local validation, 20x repetition and red-sensitivity proofs pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "The four repaired pytest nodes plus the 20x repetition and red-sensitivity runs are the executable oracle; machine-spec examples are unnecessary.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R010 cover each repaired test's condition-driven synchronization, repetition stability, red sensitivity, slow-backoff independence, status transition, exact scope/readiness, full suite and exact-head Ready-for-Review publication with hosted CI.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_reconnect_uses_current_subscription_set_not_original",
+        "command": "python -m pytest -q tests/data_layer/polymarket/test_market_truth_websocket.py",
+        "expected_result": "second-connection reconnect payload is awaited before stop and contains the current set 11 and 99 without 7; checkpoint asset_ids equal 11 and 99"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_normal_book_gaps_are_persisted_and_healed",
+        "command": "python -m pytest -q tests/data_layer/polymarket/test_market_truth_websocket.py",
+        "expected_result": "OPEN TIMESTAMP_REGRESSION gap is persisted and the HEALED gap row is awaited as the success condition after reconnect"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_continuity_fault_triggers_reconnect_wait",
+        "command": "python -m pytest -q tests/data_layer/polymarket/test_market_truth_websocket.py",
+        "expected_result": "reconnect socket #2 is awaited via a bounded event and len(sockets) >= 2 holds"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_non_store_limit_failed_append_reconnects_not_silently_continues",
+        "command": "python -m pytest -q tests/data_layer/polymarket/test_market_truth_websocket.py",
+        "expected_result": "reconnect socket #2 is awaited via a bounded event; len(sockets) >= 2 and the STORAGE_FAILURE open gap hold"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "validation",
+        "test": "20x repetition of the four repaired tests",
+        "command": "python -m pytest -q tests/data_layer/polymarket/test_market_truth_websocket.py -k 'reconnect_uses_current_subscription_set_not_original or normal_book_gaps_are_persisted_and_healed or continuity_fault_triggers_reconnect_wait or non_store_limit_failed_append_reconnects_not_silently_continues'",
+        "expected_result": "20 of 20 consecutive local invocations pass with 4 passed each"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "validation",
+        "test": "red sensitivity and slow-backoff independence",
+        "command": "local-only uncommitted mutations suppress each test's reconnect/heal trigger; an uncommitted pytest plugin separately stretches the first backoff to 3s",
+        "expected_result": "each mutation fails clearly naming the timed-out condition within the bound and never hangs; with a 3s first backoff all four repaired tests still pass"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "status and repo-truth transition",
+        "command": "python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
+        "expected_result": "PR #198/S10-GATE-QUAL-01 is recorded as merged historical predecessor and S10-TEST-WS-01 is the current tests-only target with no product authority"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "validation",
+        "test": "artifact, security and exact scope/readiness",
+        "command": "python tools/git/preflight_generated_artifact_guard.py; python tools/security/run_available_security_checks.py; python tools/git/diff_scope_summary.py --base d7891ed63b4c58c9cc150cd0c750c262ca8e5a74 --head HEAD --wp-spec docs/wp_specs/S10-TEST-WS-01/wp_spec.json --require-exact-scope --fail-on-warning; python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-TEST-WS-01/wp_prompt.txt --spec docs/wp_specs/S10-TEST-WS-01/wp_spec.json --repo-root . --check-diff --base d7891ed63b4c58c9cc150cd0c750c262ca8e5a74 --head HEAD",
+        "expected_result": "artifact/security reporting is honest; exactly 8 required/allowed/actual files with zero src/ paths and zero extras/missing/warnings; final committed-head readiness IMPLEMENTATION_READY"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "validation",
+        "test": "one authoritative full suite and hygiene",
+        "command": "python -m pip check; git diff --check d7891ed63b4c58c9cc150cd0c750c262ca8e5a74 HEAD --; python -m pytest -q",
+        "expected_result": "one final-committed-candidate full suite passes with zero failures; pip and committed diff are clean"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "github",
+        "test": "Ready-for-Review publication and exact-head hosted CI",
+        "command": "gh pr view --json isDraft,state,headRefOid; gh pr checks --watch",
+        "expected_result": "exactly one OPEN PR on the tested head, isDraft=false from creation, all hosted CI jobs including windows-2022 py3.12 compat green on the exact head without any rerun; then stop for Side13 exact-head review"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "WP170",
+    "next_title": "Roadmap work resumes unchanged: separately authorized real qualification evaluation and, only after a real valid QUAL_PASS, candidate-specific WP170 work; not affected or authorized by this tests-only WP",
+    "separately_gated": true,
+    "feature_validator_moved_to": "WP170",
+    "forbidden_in_this_wp": [
+      "merge",
+      "any change under src/, including src/data_layer/polymarket/market_truth_websocket.py",
+      "changing _BACKOFF_SCHEDULE or any reconnect/backoff product semantics",
+      "adding a backoff, sleeper, clock or timing injection API to product code",
+      "dependency/lock change including pytest-timeout, pytest-repeat or freezegun",
+      "workflow change",
+      "rerunning hosted CI to mask a flake of the repaired tests",
+      "weakening, deleting or skipping any existing assertion of the four repaired tests",
+      "fixing other test files or other failure domains",
+      "product network, WebSocket, Gamma/CLOB/Data API/RPC fetch",
+      "Hermes/provider/model invocation, scheduler, credentials, strategy, paper, execution, live or Gate C"
+    ]
+  }
+}

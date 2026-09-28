@@ -749,7 +749,8 @@ def test_s10_gate_qual_01_repo_truth_registers_acceptance_gate() -> None:
     deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
     section_start = index.index("## S10-GATE-QUAL-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    assert "(merged historical predecessor: PR #198)" in section
+    assert "d7891ed63b4c58c9cc150cd0c750c262ca8e5a74" in section
     for text in (
         "docs/qualification_gate_contract.md",
         "src/data_layer/analytical_research/qualification_gate.py",
@@ -785,3 +786,28 @@ def test_s10_gate_qual_01_repo_truth_registers_acceptance_gate() -> None:
         assert f"| {item} |" in deferred, item
     assert "DEFERRED_NOT_AUTHORIZED" in next(
         line for line in deferred.splitlines() if line.startswith("| S10-QUAL-01-D004 |"))
+
+
+
+def test_s10_test_ws_01_repo_truth_registers_tests_only_sync_repair() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs" / "status_entries" / "S10-TEST-WS-01.md").read_text(encoding="utf-8")
+    section_start = index.index("## S10-TEST-WS-01 ")
+    section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    for text in (
+        "docs/status_entries/S10-TEST-WS-01.md",
+        "tests/data_layer/polymarket/test_market_truth_websocket.py",
+        "d7891ed63b4c58c9cc150cd0c750c262ca8e5a74", "ec97a25b3e3174bfa71e3799110e729247dfa026",
+        "no src/ change", "no `_BACKOFF_SCHEDULE` change", "no injection API", "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    assert index.index("## S10-TEST-WS-01 ") < index.index("## S10-GATE-QUAL-01 ")
+    flat_fragment = " ".join(fragment.split())
+    for text in (
+        "Base: `d7891ed63b4c58c9cc150cd0c750c262ca8e5a74`", "PR #198 / `S10-GATE-QUAL-01`",
+        "`src/` changes: 0", "`_BACKOFF_SCHEDULE`: UNCHANGED", "backoff/sleeper injection API: NONE",
+        "Evidence mode: `PRIVATE_REPO_MANUAL_VERIFIED`", "Merge authorized: NO",
+        "20/20 runs passed",
+    ):
+        assert text in flat_fragment, text

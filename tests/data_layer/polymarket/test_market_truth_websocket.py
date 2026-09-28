@@ -226,6 +226,31 @@ def _feed_conn(sock: _FeedSocket):
     return lambda url, max_size: _Conn()
 
 
+# Reconnect tests keep the REAL product backoff (_BACKOFF_SCHEDULE[0] == 1s) but never infer
+# its completion from wall-clock sleeps: they await the observable condition itself, bounded
+# by a generous finite timeout that stops the runner and fails clearly instead of hanging.
+_SYNC_TIMEOUT_SECONDS = 30.0
+_POLL_SECONDS = 0.005
+
+
+async def _wait_for_condition(condition, stop: asyncio.Event, task, what: str) -> None:
+    """Await `condition()` (a coroutine function) or stop the runner and fail on timeout."""
+    try:
+        await asyncio.wait_for(condition(), timeout=_SYNC_TIMEOUT_SECONDS)
+    except asyncio.TimeoutError:
+        stop.set()
+        await asyncio.wait_for(task, timeout=_SYNC_TIMEOUT_SECONDS)
+        pytest.fail(f"timed out after {_SYNC_TIMEOUT_SECONDS}s waiting for {what}")
+
+
+def _polling(predicate):
+    """Coroutine function that yields to the loop until `predicate()` is true."""
+    async def _poll() -> None:
+        while not predicate():
+            await asyncio.sleep(_POLL_SECONDS)
+    return _poll
+
+
 def test_runner_emits_periodic_heartbeat_ping_and_stops(tmp_path) -> None:
     """B: the runner emits an outgoing text PING at the heartbeat seam and shuts down
     on the stop event; incoming PING is answered with PONG."""
@@ -372,17 +397,28 @@ def test_reconnect_uses_current_subscription_set_not_original(tmp_path) -> None:
                     heartbeat_waiter=heartbeat, now=lambda: "2024-07-03T10:00:00.000000Z",
                 )
             )
-            await asyncio.sleep(0.05)
+            # First connection has sent its initial subscription payload.
+            await _wait_for_condition(
+                _polling(lambda: len(sockets) >= 1 and len(sockets[0].sent) >= 1),
+                stop, task, "the first connection's initial subscription payload",
+            )
             controller.submit(mt.SubscriptionUpdate("subscribe", ("11",)))
-            await asyncio.sleep(0.03)
             controller.submit(mt.SubscriptionUpdate("subscribe", ("99",)))
-            await asyncio.sleep(0.03)
             controller.submit(mt.SubscriptionUpdate("unsubscribe", ("7",)))
-            await asyncio.sleep(0.05)
+            # All three dynamic updates were sent on the wire (membership mutates only after
+            # a successful send), so the authoritative set is {11, 99} before the disconnect.
+            await _wait_for_condition(
+                _polling(lambda: len(sockets[0].sent) >= 4),
+                stop, task, "the three dynamic subscription updates to be sent",
+            )
             # Force a disconnect: the first socket closes -> reconnect on a fresh socket.
             await sockets[0].q.put(None)
-            # Wait past the first reconnect backoff (1s) so the reconnect actually fires.
-            await asyncio.sleep(1.3)
+            # The reconnect (after the real 1s backoff) actually emitted its subscription
+            # payload on the second connection; socket creation alone is insufficient.
+            await _wait_for_condition(
+                _polling(lambda: len(sockets) >= 2 and len(sockets[1].sent) >= 1),
+                stop, task, "the second connection's reconnect subscription payload",
+            )
             stop.set()
             await task
             key_ids = None
@@ -436,17 +472,32 @@ def test_normal_book_gaps_are_persisted_and_healed(tmp_path) -> None:
                     heartbeat_waiter=heartbeat, now=lambda: "2024-07-03T10:00:00.000000Z",
                 )
             )
+            conn = store._require()
+
+            def gap_count(state: str, reason: str | None = None) -> int:
+                sql = "SELECT COUNT(*) FROM gap_events WHERE state=?"
+                args: tuple[str, ...] = (state,)
+                if reason is not None:
+                    sql += " AND reason=?"
+                    args += (reason,)
+                return conn.execute(sql, args).fetchone()[0]
+
             await sock.q.put(book_msg("1720000000000"))
-            await asyncio.sleep(0.05)
             await sock.q.put(regress)  # READY -> GAPPED (timestamp regression) -> reconnect
-            await asyncio.sleep(0.1)
-            # The continuity fault left STREAMING for RECONNECT_WAIT (1s backoff); queue the
-            # fresh full book so the reconnected session consumes it and heals the gap.
+            # The durable OPEN gap is written synchronously on the continuity fault, just
+            # before the runner leaves STREAMING for RECONNECT_WAIT (real 1s backoff).
+            await _wait_for_condition(
+                _polling(lambda: gap_count("OPEN", "TIMESTAMP_REGRESSION") >= 1),
+                stop, task, "the OPEN TIMESTAMP_REGRESSION gap evidence",
+            )
+            # Queue the fresh full book so the reconnected session consumes it and heals the gap.
             await sock.q.put(book_msg("1720000005000"))
-            await asyncio.sleep(1.4)  # past the 1s reconnect backoff so the heal is applied
+            await _wait_for_condition(
+                _polling(lambda: gap_count("HEALED") >= 1),
+                stop, task, "the HEALED gap evidence after reconnect",
+            )
             stop.set()
             await task
-            conn = store._require()
             open_reasons = [r[0] for r in conn.execute(
                 "SELECT reason FROM gap_events WHERE state='OPEN'"
             ).fetchall()]
@@ -720,10 +771,13 @@ def test_continuity_fault_triggers_reconnect_wait(tmp_path) -> None:
     async def scenario():
         sockets: list[_FeedSocket] = []
         stop = asyncio.Event()
+        socket_opened = {1: asyncio.Event(), 2: asyncio.Event()}
 
         def factory(url, max_size):
             sock = _FeedSocket()
             sockets.append(sock)
+            if len(sockets) in socket_opened:
+                socket_opened[len(sockets)].set()
 
             class _Conn:
                 async def __aenter__(self):
@@ -750,11 +804,11 @@ def test_continuity_fault_triggers_reconnect_wait(tmp_path) -> None:
                     now=lambda: "2024-07-03T10:00:00.000000Z",
                 )
             )
-            await asyncio.sleep(0.05)
+            await _wait_for_condition(socket_opened[1].wait, stop, task, "socket #1 to open")
             await sockets[0].q.put(book_msg)
-            await asyncio.sleep(0.05)
             await sockets[0].q.put(regress)
-            await asyncio.sleep(1.3)
+            # Socket #2 opens only via the reconnect path, after the real 1s backoff.
+            await _wait_for_condition(socket_opened[2].wait, stop, task, "reconnect socket #2 to open")
             stop.set()
             await task
         return sockets
@@ -772,6 +826,7 @@ def test_non_store_limit_failed_append_reconnects_not_silently_continues(tmp_pat
     async def scenario():
         sockets: list[_FeedSocket] = []
         stop = asyncio.Event()
+        socket_opened = {2: asyncio.Event()}
 
         def book_msg(ts_ms: str) -> str:
             return json.dumps({"event_type": "book", "asset_id": "7", "market": CONDITION,
@@ -781,6 +836,8 @@ def test_non_store_limit_failed_append_reconnects_not_silently_continues(tmp_pat
         def factory(url, max_size):
             sock = _FeedSocket()
             sockets.append(sock)
+            if len(sockets) in socket_opened:
+                socket_opened[len(sockets)].set()
             if len(sockets) == 1:
                 # Good frame (asset 7 -> READY), then the frame whose store.append FAILS.
                 sock.q.put_nowait(book_msg("1720000000000"))
@@ -816,7 +873,8 @@ def test_non_store_limit_failed_append_reconnects_not_silently_continues(tmp_pat
                     now=lambda: "2024-07-03T10:00:00.000000Z",
                 )
             )
-            await asyncio.sleep(1.4)  # past the 1s reconnect backoff so a fresh socket opens
+            # Socket #2 opens only via the reconnect path, after the real 1s backoff.
+            await _wait_for_condition(socket_opened[2].wait, stop, task, "reconnect socket #2 to open")
             stop.set()
             await task
             conn = store._require()
