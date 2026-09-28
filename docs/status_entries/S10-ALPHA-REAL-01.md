@@ -169,6 +169,15 @@ Forbidden prefixes: `src/`, `.github/workflows/`, `local_data/`, `credentials/`,
 Post-runtime reconciliation: verify-final rerun PASS; focused docs tests PASS; exact six-path
 post-runtime diff; operator/test/prompt/spec bytes unchanged; results recorded in the PR body.
 
+D006 micro-amendment (Side13-authorized, test-only, after the runtime): the non-hermetic
+`test_cli_prepare_prints_closed_code_only` now injects the missing-home checkpoint through the
+operator `check_home` seam instead of depending on the real pinned research home; exactly three
+paths changed (this fragment, the deferred log and the operator test file). Operator, `src/`,
+prompt and spec bytes are unchanged. Runtime evidence remains the exact original attempt-01
+evidence; no second research launch occurred; the Alpha registry was not mutated and the terminal
+remains ALPHA_REAL_01_SUPPORTIVE. A fresh authoritative full suite and new exact-head hosted CI are
+recorded in the PR body.
+
 
 - Focused tests: `python -m pytest -q tests/tools/alpha/test_run_s10_alpha_real_01.py` -> PASS
 - Docs tests: `python -m pytest -q tests/test_project_status_docs.py tests/test_repo_truth_docs.py` -> PASS
@@ -181,5 +190,5 @@ post-runtime diff; operator/test/prompt/spec bytes unchanged; results recorded i
 
 - Added: S10-ALPHA-REAL-01-D001 (merged draft list retention), D002 (receipt binds no response
   digest), D003 (webpage content bytes not captured), D004 (cost evidence reported-estimate only),
-  D005 (qualification/data readiness not proven; handed to S10-QUAL-REAL-01), D006 (operator CLI test
-  assumes the pinned research home is absent; fails locally only after the human home setup).
+  D005 (qualification/data readiness not proven; handed to S10-QUAL-REAL-01), D006 (non-hermetic
+  operator CLI test; RESOLVED_IN_PR200_D006_MICRO_AMENDMENT).

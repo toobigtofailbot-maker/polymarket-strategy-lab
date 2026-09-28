@@ -370,16 +370,24 @@ def test_only_validated_projection_persisted(env, monkeypatch, capsys) -> None:
 
 
 def test_cli_prepare_prints_closed_code_only(monkeypatch, tmp_path, capsys) -> None:
+    # Hermetic: the missing-home checkpoint is injected through the check_home seam, so the
+    # result never depends on whether the real pinned research home exists on this machine.
     repo = tmp_path / "repo"
     (repo / "local_data").mkdir(parents=True)
     monkeypatch.setattr(operator, "REPO_ROOT", repo)
     monkeypatch.setattr(operator, "read_git_state", lambda root: GIT_OK)
+    seen: list[operator.RuntimePaths] = []
+
+    def missing_home(paths: operator.RuntimePaths) -> None:
+        seen.append(paths)
+        raise operator.AlphaRealOperatorError("HUMAN_CREDENTIAL_SETUP_REQUIRED", "PRE_RUNTIME_STOP")
+
+    monkeypatch.setattr(operator, "check_home", missing_home)
     assert operator.main(["prepare"]) == 2
     printed = capsys.readouterr()
     assert printed.out == ""
-    assert printed.err.strip() in {
-        "PRE_RUNTIME_STOP HUMAN_CREDENTIAL_SETUP_REQUIRED", "PRE_RUNTIME_STOP HERMES_HOME_UNSAFE",
-    }
+    assert printed.err.strip() == "PRE_RUNTIME_STOP HUMAN_CREDENTIAL_SETUP_REQUIRED"
+    assert seen == [operator.PINNED_RUNTIME_PATHS]
     assert not operator.workspace_path(repo).exists()
 
 
