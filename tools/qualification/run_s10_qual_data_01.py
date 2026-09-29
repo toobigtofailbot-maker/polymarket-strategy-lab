@@ -130,6 +130,14 @@ DISCOVERY_HOURS_UTC = (11, 12)
 LABEL_WINDOW = timedelta(minutes=30)
 PROBE_HOUR = "2026-08-19/11"
 PROBE_MARKET_HOUR = "2026-08-19/12"
+PROBE_STEPS = (
+    "v3_manifest_product_range_sha256",
+    "gamma_by_id_identity",
+    "rule_semantics",
+    "nws_station_metadata",
+    "v3_targeted_row_group_read",
+    "ndfd_production_decode",
+)
 
 STOP_CODES = (
     "USAGE_ERROR",
@@ -964,11 +972,20 @@ def command_probe(env: Environment) -> dict[str, object]:
         checks["ndfd_probe_value_present"] = decoded.station_values[0].pop12_percent is not None
     except OperatorStop as stop:
         status = stop.code
+        failure_code = stop.code
     except (TransportFailure, TransportRefused, BudgetExhausted, v3.PendulumFlowError, ndfd.NdfdError,
-            qd.ReadinessError, qd.RuleExclusion, ValueError):
+            qd.ReadinessError, qd.RuleExclusion) as error:
         status = "SOURCE_CONTRACT_DRIFT"
+        failure_code = str(getattr(error, "code", "SOURCE_CONTRACT_DRIFT"))
+    except ValueError:
+        status = "SOURCE_CONTRACT_DRIFT"
+        failure_code = "VALUE_INVALID"
     result = {"status": status, "checks": checks, "ledger": ledger.to_mapping(),
               "plan_sha256": sha256_hex(canonical(plan))}
+    if status != "PROBE_PASS":
+        # Closed diagnostic only: the first probe step that did not pass and its closed code.
+        result["failed_step"] = next((step for step in PROBE_STEPS if step not in checks), "UNKNOWN")
+        result["failure_code"] = failure_code
     write_json_atomic(env.workspace / PROBE_FILENAME, result)
     if status != "PROBE_PASS":
         raise OperatorStop("SOURCE_CONTRACT_DRIFT")

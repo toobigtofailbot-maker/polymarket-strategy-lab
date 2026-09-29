@@ -71,17 +71,21 @@ def cid(byte: int) -> bytes:
     return bytes([byte]) * 32
 
 
+def tok(decimal_id: str) -> bytes:
+    return int(decimal_id).to_bytes(32, "big")  # observed v3 token-id shape
+
+
 def _new_market(market_id: str, received: str) -> dict[str, object]:
     byte, slug = MARKETS[market_id]
     tokens = [YES, NO] if market_id == "3719310" else [f"{market_id}1", f"{market_id}2"]
     return {"timestamp_received": ts(received), "sequence": 1, "timestamp": ts(received), "market": cid(byte),
-            "id": market_id, "assets_ids": [t.encode() for t in tokens], "outcomes": ["Yes", "No"],
+            "id": market_id, "assets_ids": [tok(t) for t in tokens], "outcomes": ["Yes", "No"],
             "question": "Will it rain?", "slug": slug}
 
 
 def _bba(received: str, bid: str, ask: str, asset: str = YES) -> dict[str, object]:
     return {"timestamp_received": ts(received), "sequence": 3, "timestamp": ts(received), "market": cid(0x0F),
-            "asset_id": asset.encode(), "best_bid": Decimal(bid), "best_ask": Decimal(ask), "spread": Decimal(ask) - Decimal(bid)}
+            "asset_id": tok(asset), "best_bid": Decimal(bid), "best_ask": Decimal(ask), "spread": Decimal(ask) - Decimal(bid)}
 
 
 def build_world() -> dict[str, tuple[bytes, dict[str, object]]]:
@@ -96,15 +100,15 @@ def build_world() -> dict[str, tuple[bytes, dict[str, object]]]:
                              _bba("2026-09-03T12:30:00Z", "0.99", "0.99"),
                              _bba("2026-09-03T12:06:00Z", "0.60", "0.70", asset=NO)],
             "last_trade_price": [{"timestamp_received": ts("2026-09-03T12:02:00Z"), "sequence": 4, "timestamp": ts("2026-09-03T12:01:59Z"),
-                                  "market": cid(0x0F), "asset_id": YES.encode(), "price": Decimal("0.35"), "size": Decimal("5"),
+                                  "market": cid(0x0F), "asset_id": tok(YES), "price": Decimal("0.35"), "size": Decimal("5"),
                                   "side": "BUY", "fee_rate_bps": 1000, "transaction_hash": b"\x01"}],
             "tick_size_change": [{"timestamp_received": ts("2026-09-03T12:00:30Z"), "sequence": 5, "timestamp": ts("2026-09-03T12:00:30Z"),
-                                  "market": cid(0x0F), "asset_id": YES.encode(), "old_tick_size": Decimal("0.01"), "new_tick_size": Decimal("0.001")}],
+                                  "market": cid(0x0F), "asset_id": tok(YES), "old_tick_size": Decimal("0.01"), "new_tick_size": Decimal("0.001")}],
         },
         "2026-09-04/14": {
             "market_resolved": [{"timestamp_received": ts("2026-09-04T14:18:58.893393Z"), "sequence": 6, "timestamp": ts("2026-09-04T14:17:58Z"),
-                                 "market": cid(0x0F), "id": "3719310", "assets_ids": [YES.encode(), NO.encode()],
-                                 "winning_asset_id": NO.encode(), "winning_outcome": "No"}],
+                                 "market": cid(0x0F), "id": "3719310", "assets_ids": [tok(YES), tok(NO)],
+                                 "winning_asset_id": tok(NO), "winning_outcome": "No"}],
         },
     }
     return {hour: builders.build_v3_hour(hour, rows) for hour, rows in hours.items()}
@@ -548,6 +552,8 @@ def test_probe_required_and_source_contract_drift_stops(world) -> None:
     assert excinfo.value.code == "SOURCE_CONTRACT_DRIFT"
     probe = json.loads((world.env.workspace / operator.PROBE_FILENAME).read_text(encoding="utf-8"))
     assert probe["status"] == "SOURCE_CONTRACT_DRIFT"
+    assert probe["failed_step"] == "gamma_by_id_identity" and probe["failure_code"] == "SOURCE_CONTRACT_DRIFT"
+    assert probe["checks"] == {"v3_manifest_product_range_sha256": "PASS"}
     with pytest.raises(operator.OperatorStop) as excinfo:
         operator.command_verify(world.env)
     assert excinfo.value.code == "RUN_NOT_FINAL"

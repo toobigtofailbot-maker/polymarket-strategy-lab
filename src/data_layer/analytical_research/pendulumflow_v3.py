@@ -648,13 +648,28 @@ def normalize_condition_id(value: object) -> str:
     raise PendulumFlowError("V3_ROW_INVALID")
 
 
+ASSET_ID_BYTES = 32  # observed v3 shape: unsigned 256-bit big-endian CLOB token id
+_CANONICAL_DECIMAL_RE = re.compile(r"^[1-9][0-9]{0,77}$")
+
+
 def normalize_asset_id(value: object) -> str:
+    """Canonical decimal token id.
+
+    The observed PendulumFlow v3 shape is exactly 32 raw bytes holding the unsigned big-endian
+    256-bit CLOB token id; it decodes to its decimal string (the Gamma ``clobTokenIds`` form). An
+    already-canonical decimal string (no sign, no leading zero, value < 2**256) is accepted
+    unchanged. Any other type, byte length or text shape (including ASCII-digit bytes and zero)
+    fails closed.
+    """
+
     if isinstance(value, (bytes, bytearray)):
-        try:
-            value = bytes(value).decode("ascii")
-        except UnicodeDecodeError:
-            raise PendulumFlowError("V3_ROW_INVALID") from None
-    if isinstance(value, str) and _DIGITS_RE.fullmatch(value):
+        if len(value) != ASSET_ID_BYTES:
+            raise PendulumFlowError("V3_ROW_INVALID")
+        number = int.from_bytes(bytes(value), "big", signed=False)
+        if number == 0:
+            raise PendulumFlowError("V3_ROW_INVALID")
+        return str(number)
+    if isinstance(value, str) and _CANONICAL_DECIMAL_RE.fullmatch(value) and int(value) < 2 ** 256:
         return value
     raise PendulumFlowError("V3_ROW_INVALID")
 

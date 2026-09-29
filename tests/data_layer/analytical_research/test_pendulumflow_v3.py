@@ -54,6 +54,11 @@ def cid(n: int) -> bytes:
     return bytes([n]) * 32
 
 
+def tok(decimal_id: str) -> bytes:
+    """Observed v3 token-id shape: 32 raw bytes, unsigned big-endian."""
+    return int(decimal_id).to_bytes(32, "big")
+
+
 def ts(text: str) -> datetime:
     return datetime.fromisoformat(text.replace("Z", "+00:00"))
 
@@ -62,15 +67,15 @@ def _filler_row(family: str) -> dict[str, object]:
     base = {"timestamp_received": ts("2026-08-19T11:00:00Z"), "sequence": 1, "timestamp": ts("2026-08-19T11:00:00Z"),
             "market": b"\xff" * 32}
     if family == "best_bid_ask":
-        base.update(asset_id=b"999", best_bid=Decimal("0.1"), best_ask=Decimal("0.2"), spread=Decimal("0.1"))
+        base.update(asset_id=tok("999"), best_bid=Decimal("0.1"), best_ask=Decimal("0.2"), spread=Decimal("0.1"))
     elif family == "last_trade_price":
-        base.update(asset_id=b"999", price=Decimal("0.1"), size=Decimal("1"), side="BUY", fee_rate_bps=0, transaction_hash=b"\x00")
+        base.update(asset_id=tok("999"), price=Decimal("0.1"), size=Decimal("1"), side="BUY", fee_rate_bps=0, transaction_hash=b"\x00")
     elif family == "market_resolved":
-        base.update(id="1", assets_ids=[b"998", b"999"], winning_asset_id=b"999", winning_outcome="No")
+        base.update(id="1", assets_ids=[tok("998"), tok("999")], winning_asset_id=tok("999"), winning_outcome="No")
     elif family == "new_market":
-        base.update(id="1", assets_ids=[b"998", b"999"], outcomes=["Yes", "No"], question="Filler?", slug="filler")
+        base.update(id="1", assets_ids=[tok("998"), tok("999")], outcomes=["Yes", "No"], question="Filler?", slug="filler")
     else:
-        base.update(asset_id=b"999", old_tick_size=Decimal("0.01"), new_tick_size=Decimal("0.001"))
+        base.update(asset_id=tok("999"), old_tick_size=Decimal("0.01"), new_tick_size=Decimal("0.001"))
     return base
 
 
@@ -148,7 +153,7 @@ def audit_html(partial_hours: list[str], measured_hours: int = 981, published: i
 
 def bba_row(market: int, asset: str, received: str, venue: str, bid: str = "0.40", ask: str = "0.45") -> dict[str, object]:
     return {"timestamp_received": ts(received), "sequence": 7, "timestamp": ts(venue), "market": cid(market),
-            "asset_id": asset.encode(), "best_bid": Decimal(bid), "best_ask": Decimal(ask),
+            "asset_id": tok(asset), "best_bid": Decimal(bid), "best_ask": Decimal(ask),
             "spread": Decimal(ask) - Decimal(bid)}
 
 
@@ -267,7 +272,7 @@ def test_event_timestamps_remain_distinct() -> None:
         ({"timestamp_received": datetime(2026, 8, 19, 12)}, "best_bid_ask"),
         ({"best_bid": 0.4}, "best_bid_ask"),
         ({"id": "abc", "assets_ids": [b"1"], "outcomes": ["Yes"], "question": "q", "slug": "s"}, "new_market"),
-        ({"id": "5", "assets_ids": [b"1", b"2"], "outcomes": ["Yes"], "question": "q", "slug": "s"}, "new_market"),
+        ({"id": "5", "assets_ids": [tok("1"), tok("2")], "outcomes": ["Yes"], "question": "q", "slug": "s"}, "new_market"),
     ],
 )
 def test_row_normalization_rejects_malformed_fields(row_patch: dict[str, object], family: str) -> None:
@@ -275,6 +280,30 @@ def test_row_normalization_rejects_malformed_fields(row_patch: dict[str, object]
     with pytest.raises(v3.PendulumFlowError) as excinfo:
         v3.normalize_row(family, HOUR, 0, row)
     assert excinfo.value.code == "V3_ROW_INVALID"
+
+
+REAL_TOKEN = "104019219973195927512773044938021400951414920684302388248992716945822821205929"
+
+
+def test_asset_id_real_binary_shape_and_rejections() -> None:
+    raw = bytes.fromhex("e5f8cac924929b9be558efa97e42cceebd76bfde7ec371af281d157a66f547a9")  # observed v3 bytes
+    assert v3.normalize_asset_id(raw) == REAL_TOKEN
+    assert v3.normalize_asset_id(bytearray(raw)) == REAL_TOKEN
+    assert v3.normalize_asset_id(REAL_TOKEN) == REAL_TOKEN  # canonical decimal accepted unchanged
+    assert v3.normalize_asset_id(tok("7")) == "7"
+    row = {**bba_row(1, REAL_TOKEN, "2026-08-19T12:01:00Z", "2026-08-19T12:01:00Z")}
+    assert v3.normalize_row("best_bid_ask", HOUR, 0, row).asset_id == REAL_TOKEN
+    for bad in (raw[:31], raw + b"\x00", b"", b"\x00" * 32, REAL_TOKEN.encode(), b"104", "0104", "-5", "0", "",
+                "1" * 79, str(2 ** 256), 104, None, 1.5):
+        with pytest.raises(v3.PendulumFlowError) as excinfo:
+            v3.normalize_asset_id(bad)
+        assert excinfo.value.code == "V3_ROW_INVALID"
+    resolved = {"timestamp_received": ts("2026-08-20T14:18:58Z"), "timestamp": ts("2026-08-20T14:17:58Z"), "market": cid(1),
+                "id": "3719310", "assets_ids": [raw, tok("5")], "winning_asset_id": raw, "winning_outcome": "No"}
+    event = v3.normalize_row("market_resolved", "2026-08-20/14", 0, resolved)
+    assert event.field("winning_asset_id") == REAL_TOKEN and event.field("assets_ids") == f"{REAL_TOKEN},5"
+    with pytest.raises(v3.PendulumFlowError):
+        v3.normalize_row("market_resolved", "2026-08-20/14", 0, {**resolved, "winning_asset_id": raw[:16]})
 
 
 def test_coverage_class_admission() -> None:
