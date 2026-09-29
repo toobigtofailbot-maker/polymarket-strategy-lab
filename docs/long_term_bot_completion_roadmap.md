@@ -21,7 +21,16 @@
   attempt is authorized. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
   separately gated scopes.
 
-- Current bounded implementation target: S10-ALPHA-REAL-01 (base f74e183a514d21a28013bf433c79126a68c72389,
+- Current bounded implementation target: S10-NDFD-GRIB-01 (base 3d3e3b673e53dae4d2e3b28a6816264b205bb015,
+  after PR #200 / S10-ALPHA-REAL-01 merged with head 80faf1dcb32d760a15c5de3c008cd2aefa3a6f12) enables
+  optional offline NDFD GRIB2 decoding only: the exact optional extra ndfd-grib (eccodes==2.48.0;
+  eccodeslib==2.48.0.26 on non-Windows), proven on ubuntu-24.04 / windows-2022 Python 3.12 against one
+  committed official NDFD PoP12 fixture. It resolves only the S10-QUAL-DATA-01 NDFD_DEPENDENCY_REQUIRED
+  decoder blocker; global Python support remains 3.12-3.14. S10-QUAL-DATA-01 may be redrafted/resumed
+  next and remains unimplemented; no QualificationCandidate or real gate receipt exists; WP170/WP172/WP173,
+  Gate C and live remain NOT AUTHORIZED; capital/orders 0.
+
+- Historical predecessor (PR #200 merged at 3d3e3b673e53dae4d2e3b28a6816264b205bb015), formerly the bounded implementation target: S10-ALPHA-REAL-01 (base f74e183a514d21a28013bf433c79126a68c72389,
   after PR #199 / S10-TEST-WS-01 merged with head 99c300421f3404a68b573674d1d6d09e8c363412) implements the
   Phase-A manual operator for the first real NON-WALLET Alpha evidence seed (frozen NWS-resolved Polymarket
   daily-rain research program): at most one controlled Hermes research-child launch after Karl's separate

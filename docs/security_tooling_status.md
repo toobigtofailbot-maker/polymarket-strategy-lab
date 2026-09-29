@@ -4,6 +4,25 @@
 
 This document records local security-tool availability and scan results through WP15. It is status evidence only; it does not authorize runtime dependency integration, copied external code, venue API integration, or live trading.
 
+## S10-NDFD-GRIB-01 Optional NDFD GRIB2 Decoder Security Posture
+
+S10-NDFD-GRIB-01 adds one optional extra `ndfd-grib` with the exact ECMWF ecCodes family
+(`eccodes==2.48.0`, Apache-2.0; `eccodeslib==2.48.0.26` on non-Windows, which pulls the binary
+`eckitlib==2.1.1.26`). The family is installed from binary wheels only; no ecCodes source is built,
+vendored or copied, and no base pin, lock file or existing CI job changes. The authoritative audit of
+the resolved base-plus-`ndfd-grib` closure is the hosted `ndfd-grib-dependency-audit` job
+(ubuntu-24.04 / Python 3.12, `pip check` plus `pip-audit`); the existing `dependency-audit` job is
+unchanged. Tests decode only the committed official NDFD fixture and make zero external requests; no
+secret, credential, product API, schedule or trading path is involved.
+
+| Tool | Availability | Result | S10-NDFD-GRIB-01 boundary |
+|---|---|---|---|
+| pip-audit (hosted `ndfd-grib-dependency-audit`) | HOSTED_CI | See exact-head PR checks | Resolved base + `ndfd-grib` closure on ubuntu-24.04 / Python 3.12 |
+| pip-audit (local Docker `python:3.12` replica) | LOCAL_CONTAINER | See S10-NDFD-GRIB-01 PR body | Pre-push replica of the same closure; non-authoritative |
+| pip check | INTERPRETER / HOSTED_CI | See exact-head PR checks | Base closure plus the extra coexist on both decoder targets |
+| gitleaks / Semgrep (project-local) | See S10-NDFD-GRIB-01 PR body | Reported exactly as run; an unavailable tool is UNAVAILABLE, never PASS | Worktree scan of the 16-path change |
+| npm audit / cargo audit | NOT_APPLICABLE | SKIPPED_NOT_APPLICABLE | No Node or Rust dependency change |
+
 ## WP175 Restricted Live Canary Security Posture
 
 WP175 changes no dependency, lock, workflow, or generated artifact. The Gate-C

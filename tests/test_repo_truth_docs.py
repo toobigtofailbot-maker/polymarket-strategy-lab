@@ -822,7 +822,8 @@ def test_s10_alpha_real_01_repo_truth() -> None:
     deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
     section_start = index.index("## S10-ALPHA-REAL-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    assert "(merged historical predecessor: PR #200)" in section
+    assert "3d3e3b673e53dae4d2e3b28a6816264b205bb015" in section
     for text in (
         "docs/alpha_real_non_wallet_seed_contract.md", "tools/alpha/run_s10_alpha_real_01.py",
         "docs/status_entries/S10-ALPHA-REAL-01.md", "docs/wp_specs/S10-ALPHA-REAL-01/",
@@ -848,3 +849,36 @@ def test_s10_alpha_real_01_repo_truth() -> None:
     for item in ("S10-ALPHA-REAL-01-D001", "S10-ALPHA-REAL-01-D002", "S10-ALPHA-REAL-01-D003",
                  "S10-ALPHA-REAL-01-D004"):
         assert f"| {item} |" in deferred, item
+
+
+
+def test_s10_ndfd_grib_01_repo_truth() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    roadmap = (ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    security = (ROOT / "docs" / "security_tooling_status.md").read_text(encoding="utf-8")
+    section_start = index.index("## S10-NDFD-GRIB-01 ")
+    section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    for text in (
+        "docs/ndfd_grib_decoder_dependency_contract.md", "docs/status_entries/S10-NDFD-GRIB-01.md",
+        "docs/wp_specs/S10-NDFD-GRIB-01/", "3d3e3b673e53dae4d2e3b28a6816264b205bb015",
+        "80faf1dcb32d760a15c5de3c008cd2aefa3a6f12", "no src/ change",
+        "S10-NDFD-GRIB-01 enables optional offline NDFD GRIB2 decoding only",
+        "global Python support remains 3.12-3.14",
+        "proven only on ubuntu-24.04 / windows-2022 Python 3.12",
+        "S10-QUAL-DATA-01 may be redrafted/resumed next",
+        "S10-QUAL-DATA-01 itself remains unimplemented by this WP",
+        "No QualificationCandidate exists yet", "no real qualification gate receipt exists yet",
+        "WP170/WP172/WP173 remain not started", "Gate C is NOT AUTHORIZED", "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    for claim in ("Gate C is AUTHORIZED", "S10-QUAL-DATA-01 is implemented", "qualified: YES", "live ready: YES"):
+        assert claim not in section, claim
+    assert index.index("## S10-NDFD-GRIB-01 ") < index.index("## S10-ALPHA-REAL-01 ")
+    assert "S10-NDFD-GRIB-01 (base 3d3e3b673e53dae4d2e3b28a6816264b205bb015" in roadmap
+    assert "Historical predecessor (PR #200 merged at 3d3e3b673e53dae4d2e3b28a6816264b205bb015)" in roadmap
+    for item in ("S10-NDFD-GRIB-01-D001", "S10-NDFD-GRIB-01-D002", "S10-NDFD-GRIB-01-D003"):
+        assert f"| {item} |" in deferred, item
+    assert "## S10-NDFD-GRIB-01 Optional NDFD GRIB2 Decoder Security Posture" in security
+    assert "never PASS" in security

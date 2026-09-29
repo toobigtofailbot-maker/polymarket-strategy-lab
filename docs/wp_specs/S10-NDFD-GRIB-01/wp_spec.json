@@ -1,0 +1,617 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-NDFD-GRIB-01",
+    "title": "NDFD GRIB2 Decoder Dependency Enablement",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "RUNTIME_DEPENDENCY_NDFD_GRIB2_ENABLEMENT",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 200,
+      "head_sha": "80faf1dcb32d760a15c5de3c008cd2aefa3a6f12",
+      "merge_sha": "3d3e3b673e53dae4d2e3b28a6816264b205bb015"
+    },
+    "suggested_branch": "codex/s10-ndfd-grib-01-eccodes",
+    "objective": "Add one isolated, deterministic, optional NDFD GRIB2 decoding dependency capability: the exact ECMWF ecCodes optional extra ndfd-grib (eccodes==2.48.0 on Python 3.12; eccodeslib==2.48.0.26 on non-Windows Python 3.12), one committed official NDFD CONUS PoP12 GRIB2 message fixture with frozen source/hash identity, a focused offline decode compatibility test with a frozen oracle and fingerprint, and dedicated ubuntu-24.04/windows-2022 Python 3.12 hosted CI plus a pip-audit job for the resolved closure. Resolves only the S10-QUAL-DATA-01 NDFD_DEPENDENCY_REQUIRED decoder blocker; no src/ change, no product/runtime network, no weather adapter, no qualification, credentials, paper, execution or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/ndfd_grib_decoder_dependency_contract.md",
+      "docs/status_entries/S10-NDFD-GRIB-01.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/security_tooling_status.md",
+      "docs/wp_specs/S10-NDFD-GRIB-01/wp_prompt.txt",
+      "docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json",
+      "pyproject.toml",
+      ".github/workflows/ci.yml",
+      "tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+      "tests/fixtures/ndfd_grib/ndfd_pop12_reference.grib2",
+      "tests/test_ndfd_grib_decoder_dependency_contract_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/ndfd_grib_decoder_dependency_contract.md",
+      "docs/status_entries/S10-NDFD-GRIB-01.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/security_tooling_status.md",
+      "docs/wp_specs/S10-NDFD-GRIB-01/wp_prompt.txt",
+      "docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json",
+      "pyproject.toml",
+      ".github/workflows/ci.yml",
+      "tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+      "tests/fixtures/ndfd_grib/ndfd_pop12_reference.grib2",
+      "tests/test_ndfd_grib_decoder_dependency_contract_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/",
+      "tools/"
+    ],
+    "max_changed_files": 16,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/security_tooling_status.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert S10-NDFD-GRIB-01. The ndfd-grib optional extra, the two dedicated ndfd-grib CI jobs, the committed NDFD fixture, the focused/contract tests and the S10-NDFD-GRIB-01 docs/status/spec artifacts disappear. Base dependencies, the Python range, existing CI jobs, src/ and all runtime, evidence, order and capital state are untouched.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": true
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": true
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": true,
+    "dependencies": true,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "No product or runtime API is added or changed; the decoder is exercised only by tests against a committed fixture.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These rules close the exact optional pins, unchanged base facts, binary-only install, fixture identity, decode oracle, supported matrix, fail-closed behavior, collection discipline, authority boundaries and successor boundary.",
+    "items": [
+      {
+        "path": "dependency.ndfd_grib_extra",
+        "source": "CONSTANT",
+        "type": "dependency_capability_rule",
+        "required_rule": "pyproject.toml declares exactly one new optional extra ndfd-grib = ['eccodes==2.48.0; python_version == \"3.12\"', 'eccodeslib==2.48.0.26; python_version == \"3.12\" and platform_system != \"Windows\"'].",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_pyproject_declares_exact_ndfd_grib_optional_pins asserts the exact list and the exact extra set {test, cockpit, ndfd-grib}.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "dependency.base_unchanged",
+        "source": "CONSTANT",
+        "type": "dependency_capability_rule",
+        "required_rule": "requires-python stays >=3.12,<3.15; the six base direct pins and the test/cockpit extras are unchanged; no lock or requirements file is added.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_base_dependencies_python_range_and_other_extras_unchanged and test_pyproject_declares_exact_ndfd_grib_optional_pins assert equality and lock-file absence.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "dependency.binary_only",
+        "source": "CONSTANT",
+        "type": "dependency_capability_rule",
+        "required_rule": "The eccodes/eccodeslib/eckitlib family is installed from binary wheels only (pip --only-binary); no source build and no vendored ecCodes source.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The ndfd-grib-compat and ndfd-grib-dependency-audit hosted jobs install with --only-binary=eccodes,eccodeslib,eckitlib.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "fixture.identity",
+        "source": "CONSTANT",
+        "type": "dependency_capability_rule",
+        "required_rule": "The committed fixture is the first GRIB2 message (offset 80, length 453433, SHA-256 ecdac869039c2342f8a8ff8c57aa4fef602728e3257d0de7af5c091047c719ea) of official noaa-ndfd-pds object wmo/pop12/2026/09/03/YDUZ98_KWBN_202609031046 (SHA-256 50ab9671f38381bb4799d8b7bb92fe82ab2af734506ca86925650a347852f5d4).",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_fixture_bytes_match_frozen_identity asserts length, SHA-256 and complete single-message structure.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "decode.oracle",
+        "source": "CONSTANT",
+        "type": "dependency_capability_rule",
+        "required_rule": "ecCodes decodes the fixture to the frozen header oracle (templates 3.30/4.9/5.3, discipline 0 category 1 number 8, 2145x1377 grid, reference 2026-09-03T11:00Z, interval end 2026-09-03T12:00Z), fixed point index 1846511 value 99 and canonical fingerprint 0b5e478b2fff21519adbe12a993f0f3106f449343640f0fb521e4e8f792653ec.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The decoder-dependent focused tests assert every oracle field and the fingerprint twice.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "decode.supported_matrix",
+        "source": "CONSTANT",
+        "type": "dependency_capability_rule",
+        "required_rule": "The NDFD decoder capability is claimed only for ubuntu-24.04 and windows-2022 with CPython 3.12; Python 3.13/3.14, macOS and ARM are not claimed; global Python support is unchanged.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Both ndfd-grib-compat matrix jobs run strict focused tests; test_eccodes_binding_and_library_versions_exact asserts Python 3.12.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "decode.fail_closed",
+        "source": "CONSTANT",
+        "type": "dependency_capability_rule",
+        "required_rule": "Malformed or truncated fixture bytes are rejected with exactly one closed code and no byte/path/value echo; ecCodes itself raises on raw truncations.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_malformed_fixture_bytes_fail_closed_structurally and test_truncated_fixture_fails_closed_in_decoder.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "decode.collection",
+        "source": "CONSTANT",
+        "type": "dependency_capability_rule",
+        "required_rule": "Decoder-dependent tests are defined only when ecCodes is importable or NDFD_GRIB_STRICT=1, so the unchanged general no-skip jobs collect no decoder test and report no skip, and a strict job without the decoder fails.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_decoder_presence_matches_capability_mode.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.boundaries",
+        "source": "CONSTANT",
+        "type": "dependency_capability_rule",
+        "required_rule": "No src/ change, product/runtime network, test-time request, subprocess decoder, credential, environment secret, paper, execution, live, Gate C, capital or order authority.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_module_imports_no_network_subprocess_decoder_or_trading_surface and test_decode_makes_no_network_connection; exact-scope diff shows zero src/ paths.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "successor.qual_data",
+        "source": "CONSTANT",
+        "type": "dependency_capability_rule",
+        "required_rule": "S10-QUAL-DATA-01 may be redrafted/resumed next but is not implemented here; no QualificationCandidate or real gate receipt exists; WP170/WP172/WP173 not started.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Status/repo-truth tests assert the successor statements.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No content-addressed identity is introduced; the fixture and fingerprint digests are frozen constants checked by tests.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Karl's package-receipt authorization plus RUNTIME readiness permits only this bounded dependency enablement; merge remains separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 16-path scope, rule matrix and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's receipt of this exact S10-NDFD-GRIB-01 package is the implementation authorization",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside the exact 16-path scope with zero src/ change and focused, status and stable-candidate validation pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "The focused pytest nodes and the two hosted decoder matrix jobs are the executable oracle; machine-spec examples are unnecessary.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R024 map one-to-one onto the Section 15 acceptance requirements.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "startup/live-state gate",
+        "command": "git fetch origin --prune; git rev-parse origin/main; gh pr view 200 --json state,isDraft,headRefOid,mergeCommit; gh pr list --state open",
+        "expected_result": "origin/main 3d3e3b673e53dae4d2e3b28a6816264b205bb015; PR #200 MERGED with head 80faf1dcb32d760a15c5de3c008cd2aefa3a6f12; zero open PRs; clean worktree"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "validation",
+        "test": "governed prompt/spec readiness",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-NDFD-GRIB-01/wp_prompt.txt --spec docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json --repo-root .",
+        "expected_result": "IMPLEMENTATION_READY on governance track RUNTIME with 16 files"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_base_dependencies_python_range_and_other_extras_unchanged",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+        "expected_result": "requires-python equals >=3.12,<3.15 exactly"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_base_dependencies_python_range_and_other_extras_unchanged",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+        "expected_result": "the six base direct dependency pins are unchanged in order and value"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_base_dependencies_python_range_and_other_extras_unchanged",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+        "expected_result": "test and cockpit optional extras are unchanged"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_pyproject_declares_exact_ndfd_grib_optional_pins",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+        "expected_result": "ndfd-grib extra equals the exact two PEP 508 pins and the extra set is exactly test/cockpit/ndfd-grib"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_pyproject_declares_exact_ndfd_grib_optional_pins",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+        "expected_result": "no uv.lock, poetry.lock, pylock.toml or requirements.txt exists"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "github",
+        "test": "binary-only install in ndfd-grib jobs",
+        "command": "gh run view --log (ndfd-grib-compat and ndfd-grib-dependency-audit install steps)",
+        "expected_result": "pip installs eccodes/eccodeslib/eckitlib with --only-binary and uses wheels only; no build step"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_fixture_bytes_match_frozen_identity",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+        "expected_result": "fixture length 453433 and SHA-256 ecdac869039c2342f8a8ff8c57aa4fef602728e3257d0de7af5c091047c719ea with complete single-message structure"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "github",
+        "test": "ndfd-grib-compat (ubuntu-24.04 / py3.12)",
+        "command": "gh pr checks",
+        "expected_result": "strict focused NDFD tests pass on ubuntu-24.04 Python 3.12 with zero skips"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "github",
+        "test": "ndfd-grib-compat (windows-2022 / py3.12)",
+        "command": "gh pr checks",
+        "expected_result": "strict focused NDFD tests pass on windows-2022 Python 3.12 with zero skips"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_decode_fingerprint_is_deterministic",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+        "expected_result": "two independent decodes produce the frozen fingerprint 0b5e478b2fff21519adbe12a993f0f3106f449343640f0fb521e4e8f792653ec on both targets"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_malformed_fixture_bytes_fail_closed_structurally",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+        "expected_result": "every malformed/truncated mutation is rejected with exactly its closed code and no echo"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_eccodes_selfcheck_succeeds",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+        "expected_result": "selfcheck reports ecCodes v2.48.0 and system ready in both strict jobs"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "github",
+        "test": "pip check in ndfd-grib jobs",
+        "command": "gh pr checks",
+        "expected_result": "python -m pip check passes on both ndfd-grib-compat jobs and the audit job"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "github",
+        "test": "ndfd-grib-dependency-audit (ubuntu-24.04 / py3.12)",
+        "command": "gh pr checks",
+        "expected_result": "pip-audit reports no known vulnerability in the resolved base plus ndfd-grib environment"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "github",
+        "test": "existing general CI jobs",
+        "command": "gh pr checks",
+        "expected_result": "the four existing compat jobs, dependency-audit and cockpit-frontend are unchanged and green with no skip"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "validation",
+        "test": "exact 16-path scope",
+        "command": "python tools/git/diff_scope_summary.py --base 3d3e3b673e53dae4d2e3b28a6816264b205bb015 --head HEAD --wp-spec docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json --require-exact-scope --fail-on-warning",
+        "expected_result": "exactly 16 required/allowed/actual paths with zero extras, missing or warnings"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_module_imports_no_network_subprocess_decoder_or_trading_surface",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+        "expected_result": "no network, subprocess, alternative decoder, product client or trading import; zero src/ paths"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "validation",
+        "test": "stable-candidate repository validation",
+        "command": "python -m pytest -q -p no:cacheprovider; python tools/git/preflight_generated_artifact_guard.py; python tools/security/run_available_security_checks.py; python -m pip check; git diff --check 3d3e3b673e53dae4d2e3b28a6816264b205bb015 HEAD --",
+        "expected_result": "one authoritative full suite with zero failures; artifact guard, pip check and diff check clean; security tools reported honestly"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "github",
+        "test": "exact-head hosted CI",
+        "command": "gh pr checks",
+        "expected_result": "every hosted job is green on the exact PR head"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "validation",
+        "test": "independent implementation review",
+        "command": "separate reviewer context inspects the exact-head diff",
+        "expected_result": "one combined independent implementation review returns PASS or PASS_WITH_NOTES"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "github",
+        "test": "re-fetched PR evidence",
+        "command": "gh pr view --json number,state,isDraft,headRefOid,body,files",
+        "expected_result": "PR state, head, body and changed files re-fetched and consistent with the exact final head"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "validation",
+        "test": "Side14 separation",
+        "command": "report-back to Side14",
+        "expected_result": "executor self-review is not presented as Side14 exact-head review; merge not authorized"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-QUAL-DATA-01",
+    "next_title": "Redraft/resume weather qualification-data readiness using the proven optional ecCodes NDFD decoder capability; separately gated and not implemented by this WP",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-QUAL-DATA-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "any dependency other than the exact optional ecCodes family (eccodes==2.48.0, eccodeslib==2.48.0.26)",
+      "cfgrib, xarray, grib2io, NCEPLIBS-g2c, ecmwflibs, degrib, wgrib2, conda or custom/vendored GRIB decoder code",
+      "source build of eccodes or eccodeslib",
+      "lock or requirements file",
+      "changing requires-python or the base dependency pins",
+      "changing or removing existing CI jobs or the existing dependency audit",
+      "any change under src/",
+      "product/runtime network or test-time NDFD download",
+      "historical NDFD adapter or S10-QUAL-DATA-01 implementation",
+      "QualificationCandidate construction, S10-GATE-QUAL-01 evaluation, WP170/WP172/WP173",
+      "credentials, private APIs, scheduler, Hermes runtime, strategy, paper, execution, live, Gate C, capital or orders"
+    ]
+  }
+}

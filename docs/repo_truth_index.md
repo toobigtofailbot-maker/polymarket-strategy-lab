@@ -1,6 +1,33 @@
 # Repo Truth Index
 
-## S10-ALPHA-REAL-01 First Real Non-Wallet Alpha Evidence Seed (current bounded implementation target)
+## S10-NDFD-GRIB-01 NDFD GRIB2 Decoder Dependency Enablement (current bounded implementation target)
+
+The canonical contract is `docs/ndfd_grib_decoder_dependency_contract.md`; the status fragment is
+`docs/status_entries/S10-NDFD-GRIB-01.md`; the frozen package is `docs/wp_specs/S10-NDFD-GRIB-01/`.
+Base `3d3e3b673e53dae4d2e3b28a6816264b205bb015` (PR #200 / S10-ALPHA-REAL-01 merged, head
+`80faf1dcb32d760a15c5de3c008cd2aefa3a6f12`). RUNTIME, risk 3, exact 16-path scope, no src/ change. It
+resolves only the S10-QUAL-DATA-01 `NDFD_DEPENDENCY_REQUIRED` decoder blocker. S10-NDFD-GRIB-01 enables
+optional offline NDFD GRIB2 decoding only: one optional `pyproject.toml` extra `ndfd-grib` with exact
+pins `eccodes==2.48.0` (Python 3.12) and `eccodeslib==2.48.0.26` (non-Windows Python 3.12), binary
+wheels only, no source build, no vendored decoder and no lock file. `requires-python` (>=3.12,<3.15),
+the six base pins and the test/cockpit extras are unchanged; global Python support remains 3.12-3.14.
+The NDFD decoder capability is proven only on ubuntu-24.04 / windows-2022 Python 3.12 (dedicated hosted
+`ndfd-grib-compat` jobs plus `ndfd-grib-dependency-audit` pip-audit); Python 3.13/3.14, macOS and ARM
+are not claimed. The committed official fixture `tests/fixtures/ndfd_grib/ndfd_pop12_reference.grib2`
+(first GRIB2 message of `noaa-ndfd-pds` `wmo/pop12/2026/09/03/YDUZ98_KWBN_202609031046`, SHA-256
+`ecdac869039c2342f8a8ff8c57aa4fef602728e3257d0de7af5c091047c719ea`; templates 3.30/4.9/5.3) is a
+compatibility oracle only and not canonical research evidence; frozen decode fingerprint
+`0b5e478b2fff21519adbe12a993f0f3106f449343640f0fb521e4e8f792653ec`. No product/runtime network. S10-QUAL-DATA-01
+may be redrafted/resumed next; S10-QUAL-DATA-01 itself remains unimplemented by this WP. No
+QualificationCandidate exists yet and no real qualification gate receipt exists yet; WP170/WP172/WP173
+remain not started for this weather candidate. Live disabled; Gate C is NOT AUTHORIZED; capital/orders
+0; merge NOT AUTHORIZED.
+
+## S10-ALPHA-REAL-01 First Real Non-Wallet Alpha Evidence Seed (merged historical predecessor: PR #200)
+
+PR #200 / S10-ALPHA-REAL-01 merged at `3d3e3b673e53dae4d2e3b28a6816264b205bb015` with head
+`80faf1dcb32d760a15c5de3c008cd2aefa3a6f12`; the RESEARCH_SUPPORTIVE non-wallet Alpha seed is retained.
+The historical implementation-target record follows unchanged.
 
 The canonical contract is `docs/alpha_real_non_wallet_seed_contract.md`; the operator is
 `tools/alpha/run_s10_alpha_real_01.py`; the status fragment is `docs/status_entries/S10-ALPHA-REAL-01.md`;
