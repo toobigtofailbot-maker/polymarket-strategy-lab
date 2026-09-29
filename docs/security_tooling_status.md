@@ -20,7 +20,7 @@ secret, credential, product API, schedule or trading path is involved.
 | pip-audit (hosted `ndfd-grib-dependency-audit`) | HOSTED_CI | See exact-head PR checks | Resolved base + `ndfd-grib` closure on ubuntu-24.04 / Python 3.12 |
 | pip-audit (local Docker `python:3.12` replica) | LOCAL_CONTAINER | See S10-NDFD-GRIB-01 PR body | Pre-push replica of the same closure; non-authoritative |
 | pip check | INTERPRETER / HOSTED_CI | See exact-head PR checks | Base closure plus the extra coexist on both decoder targets |
-| gitleaks / Semgrep (project-local) | See S10-NDFD-GRIB-01 PR body | Reported exactly as run; an unavailable tool is UNAVAILABLE, never PASS | Worktree scan of the 16-path change |
+| gitleaks / Semgrep (project-local) | See S10-NDFD-GRIB-01 PR body | Reported exactly as run; an unavailable tool is UNAVAILABLE, never PASS | Worktree scan of the 19-path change |
 | npm audit / cargo audit | NOT_APPLICABLE | SKIPPED_NOT_APPLICABLE | No Node or Rust dependency change |
 
 ## WP175 Restricted Live Canary Security Posture
