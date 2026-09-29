@@ -267,6 +267,58 @@ def test_rule_cohort_parsing_deterministic() -> None:
         assert excinfo.value.code == code
 
 
+OBSERVED_BASE = RULE_FIRST.split("Resolution is based on")[0]
+OBSERVED_LAST_1400 = OBSERVED_BASE + (
+    "This market will resolve according to the NWS Daily Climate Report as published by 2:00 PM ET on the day following the "
+    "observation date. If multiple versions of the report are issued, the last version published before that time governs. "
+    'If no figure has been published by that time, this market will resolve to "No".\n\n'
+    "The resolution source for this market is the NWS Daily Climate Report (CLI) for KNYC, published at "
+    "https://forecast.weather.gov/product.php?site=NWS&product=CLI&issuedby=NYC.")
+OBSERVED_LATEST_2359 = OBSERVED_BASE + (
+    "Resolution is based on the most recent CLI report published for the observation date. If multiple versions of the report "
+    "are issued, the last version published before 11:59 PM ET on the day following the observation date governs. If no figure "
+    'has been published by that time, this market will resolve to "No".\n\n'
+    "The resolution source for this market is the NWS Daily Climate Report (CLI) for KNYC.")
+
+
+def test_rule_parser_accepts_observed_frozen_policy_word_orders() -> None:
+    """S10-QUAL-DATA-01-D008: the real Gamma word orders map to the already-frozen labels only."""
+    last = qd.parse_rule(OBSERVED_LAST_1400)
+    latest = qd.parse_rule(OBSERVED_LATEST_2359)
+    assert last.finality_policy == "LAST_BEFORE_1400_ET" and latest.finality_policy == "LATEST_BEFORE_2359_ET"
+    assert last.rule_cohort_id == qd.parse_rule(RULE_LAST_1400).rule_cohort_id  # same normalized semantics
+    assert latest.rule_cohort_id == qd.parse_rule(RULE_LATEST).rule_cohort_id
+    assert {last.station_id, latest.station_id} == {"KNYC"} and last.threshold_inches == latest.threshold_inches == "0.01"
+    assert set(qd.FINALITY_POLICIES) == {"FIRST_PUBLISHED_FINAL", "LATEST_BEFORE_2359_ET", "LAST_BEFORE_1400_ET"}
+    near_misses = {
+        # 2 PM cutoff but the FIRST version governs: not the frozen "last version" semantics.
+        "first_version": OBSERVED_LAST_1400.replace("the last version published before that time governs",
+                                                    "the first version published before that time governs"),
+        # Cutoff without the governing-version sentence is not explicit enough.
+        "no_governing_sentence": OBSERVED_LAST_1400.replace(
+            "If multiple versions of the report are issued, the last version published before that time governs. ", ""),
+        # Different cutoff hour.
+        "wrong_hour": OBSERVED_LAST_1400.replace("2:00 PM ET", "5:00 PM ET"),
+        # Most recent report but a different cutoff.
+        "latest_wrong_cutoff": OBSERVED_LATEST_2359.replace("11:59 PM ET", "9:00 AM ET"),
+        # Both frozen policies stated at once: ambiguous, never guessed.
+        "both_policies": OBSERVED_LAST_1400 + " Resolution is based on the most recent CLI report published for the observation "
+                         "date. If multiple versions of the report are issued, the last version published before 11:59 PM ET "
+                         "on the day following the observation date governs.",
+    }
+    for name, text in near_misses.items():
+        with pytest.raises(qd.RuleExclusion) as excinfo:
+            qd.parse_rule(text)
+        assert excinfo.value.code == "RULE_SEMANTICS_UNSUPPORTED", name
+    # Station, threshold and climate-day requirements are not loosened by the new wordings.
+    for text, code in ((OBSERVED_LAST_1400.replace("KNYC", "the station"), "RULE_STATION_MISSING"),
+                       (OBSERVED_LATEST_2359.replace("0.01 inches or more", "0.05 inches or more"), "RULE_THRESHOLD_MISSING"),
+                       (OBSERVED_LAST_1400.replace("local standard time", "local time"), "RULE_CLIMATE_DAY_MISSING")):
+        with pytest.raises(qd.RuleExclusion) as excinfo:
+            qd.parse_rule(text)
+        assert excinfo.value.code == code
+
+
 def test_pendulumflow_never_canonical_pit() -> None:
     history = qd.market_history_evidence(
         event("best_bid_ask", "2026-09-03T12:00:00Z", best_bid="0.3", best_ask="0.4", spread="0.1"), None, CHECKPOINT,

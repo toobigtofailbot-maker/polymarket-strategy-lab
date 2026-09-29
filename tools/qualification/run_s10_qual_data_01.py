@@ -329,6 +329,20 @@ def urllib_fetch(method: str, url: str, headers: Mapping[str, str], timeout: flo
         return response.status, {k.lower(): v for k, v in response.headers.items()}, body
 
 
+def content_length(headers: Mapping[str, str]) -> int | None:
+    """A trustworthy declared ``Content-Length`` (plain non-negative decimal), else ``None``.
+
+    Absent, malformed or encoded (``Content-Encoding`` other than identity) lengths are not
+    trusted; those bodies fall back to the bounded stream / byte-limit policy.
+    """
+
+    value = headers.get("content-length")
+    encoding = (headers.get("content-encoding") or "identity").strip().lower()
+    if value is None or encoding != "identity" or not re.fullmatch(r"\d{1,15}", value.strip()):
+        return None
+    return int(value.strip())
+
+
 @dataclasses.dataclass(frozen=True)
 class Response:
     status: int
@@ -396,6 +410,17 @@ class BoundedTransport:
                     raise TransportFailure("RANGE_RESPONSE_INVALID")
             elif status != 200:
                 raise TransportFailure(f"HTTP_{status}")
+            else:
+                declared = content_length(response_headers)
+                if declared is not None and len(body) < declared:
+                    # A short plain-200 body is a transport truncation (S10-QUAL-DATA-01-D009): one
+                    # immediate retry, then a closed failure; a known-truncated body is never retained.
+                    if attempt <= MAX_RETRIES_PER_REQUEST:
+                        self.ledger.retries += 1
+                        continue
+                    raise TransportFailure("BODY_TRUNCATED")
+                if declared is not None and len(body) > declared:
+                    raise TransportFailure("BODY_LENGTH_MISMATCH")
             return Response(status, response_headers, body)
         raise TransportFailure("TRANSPORT_EXHAUSTED")  # pragma: no cover
 
@@ -1019,7 +1044,9 @@ class MarketState:
     label: qd.LabelEvidence | None = None
     observable: datetime | None = None
     checkpoint_a: datetime | None = None
-    weather: dict | None = None
+    checkpoints: dict = dataclasses.field(default_factory=dict)  # checkpoint id -> time (eligible only)
+    weather_by_cp: dict = dataclasses.field(default_factory=dict)
+    scanned_by_cp: dict = dataclasses.field(default_factory=dict)
     weather_keys: set = dataclasses.field(default_factory=set)
     excluded: str | None = None
     row_excluded: dict = dataclasses.field(default_factory=dict)
@@ -1188,24 +1215,31 @@ class ReadinessPipeline:
             gamma_open = qd.gamma_open_time_if_trustworthy(state.gamma.open_time if state.gamma else None, receive)
             state.observable = qd.observable_time(receive, gamma_open)
             state.checkpoint_a = qd.checkpoint_a(receive, gamma_open)
-            _b_time, eligible = qd.checkpoint_b(state.target_day, state.offset, state.observable)  # type: ignore[arg-type]
-            if not eligible:
+            state.checkpoints[qd.CHECKPOINT_A] = state.checkpoint_a
+            b_time, eligible = qd.checkpoint_b(state.target_day, state.offset, state.observable)  # type: ignore[arg-type]
+            if eligible:
+                state.checkpoints[qd.CHECKPOINT_B] = b_time
+            else:
                 state.row_excluded[qd.CHECKPOINT_B] = "CHECKPOINT_B_MARKET_NOT_OPEN_60M"
-            if state.label is not None and qd.parse_utc(state.label.v3_resolution_received) <= state.checkpoint_a:
-                state.row_excluded[qd.CHECKPOINT_A] = "LABEL_RESOLVED_BEFORE_CHECKPOINT"
+            for checkpoint_id, checkpoint in state.checkpoints.items():
+                if state.label is not None and qd.parse_utc(state.label.v3_resolution_received) <= checkpoint:
+                    state.row_excluded[checkpoint_id] = "LABEL_RESOLVED_BEFORE_CHECKPOINT"
 
     def _row_pending(self, state: MarketState, checkpoint_id: str) -> bool:
-        return state.excluded is None and checkpoint_id not in state.row_excluded
+        return (state.excluded is None and checkpoint_id in state.checkpoints
+                and checkpoint_id not in state.row_excluded)
+
+    def _pending_pairs(self) -> list[tuple[MarketState, str, datetime]]:
+        """Every (market, eligible checkpoint) still pending, in deterministic order."""
+
+        return [(state, checkpoint_id, state.checkpoints[checkpoint_id])
+                for state in self._active() for checkpoint_id in qd.CHECKPOINT_IDS
+                if self._row_pending(state, checkpoint_id)]
 
     def phase_weather(self) -> None:
         assert self.ndfd is not None
-        # Only checkpoint A can be eligible for these markets (checkpoint B rows are resolved above).
-        plans: dict[str, tuple[ndfd.NdfdObject, MarketState]] = {}
-        for state in self._active():
-            if not self._row_pending(state, qd.CHECKPOINT_A):
-                continue
-            checkpoint = state.checkpoint_a
-            assert checkpoint is not None
+        plans: dict[tuple[str, str], tuple[ndfd.NdfdObject, MarketState, str, datetime]] = {}
+        for state, checkpoint_id, checkpoint in self._pending_pairs():
             low = checkpoint - qd.NDFD_VINTAGE_LOOKBACK
             days = sorted({(low + timedelta(hours=h)).date() for h in range(0, 49)} | {checkpoint.date()})
             objects: list[ndfd.NdfdObject] = []
@@ -1214,17 +1248,17 @@ class ReadinessPipeline:
                     objects.extend(self.ndfd.listing(day))
                     state.weather_keys |= self.ndfd.keys_by_day.get(day.isoformat(), set())
             except ndfd.NdfdError:
-                state.row_excluded[qd.CHECKPOINT_A] = "WEATHER_SOURCE_INVALID"
+                state.row_excluded[checkpoint_id] = "WEATHER_SOURCE_INVALID"
                 continue
             vintage = ndfd.select_vintage(objects, checkpoint, qd.NDFD_VINTAGE_LOOKBACK)
             if vintage is None:
-                state.row_excluded[qd.CHECKPOINT_A] = "WEATHER_NO_ELIGIBLE_VINTAGE"
+                state.row_excluded[checkpoint_id] = "WEATHER_NO_ELIGIBLE_VINTAGE"
                 continue
-            plans[state.candidate.market_id] = (vintage, state)
+            plans[(state.candidate.market_id, checkpoint_id)] = (vintage, state, checkpoint_id, checkpoint)
         decoded_cache: dict[tuple[str, int], tuple[ndfd.MessageSlice, ndfd.DecodedPop12] | str] = {}
         needs: dict[tuple[str, int], dict[str, ndfd.StationMetadata]] = {}
         object_info: dict[str, tuple[bytes, tuple[ndfd.MessageSlice, ...], list[ndfd.Pop12Header]] | str] = {}
-        for market_id, (vintage, state) in sorted(plans.items()):
+        for _key, (vintage, state, checkpoint_id, _checkpoint) in sorted(plans.items()):
             if vintage.key not in object_info:
                 try:
                     data = self.ndfd.object_bytes(vintage)
@@ -1236,7 +1270,7 @@ class ReadinessPipeline:
             info = object_info[vintage.key]
             state.weather_keys |= self.ndfd.keys_by_object.get(vintage.key, set())
             if isinstance(info, str):
-                state.row_excluded[qd.CHECKPOINT_A] = info
+                state.row_excluded[checkpoint_id] = info
                 continue
             start, end = ndfd.climate_day_window(state.target_day, state.offset)  # type: ignore[arg-type]
             for index in ndfd.intervals_overlapping(info[2], start, end):
@@ -1248,8 +1282,8 @@ class ReadinessPipeline:
                 decoded_cache[(key, index)] = (slices[index], decoded)
             except ndfd.NdfdError as error:
                 decoded_cache[(key, index)] = "GRID_BINDING_INVALID" if error.code == "GRID_BINDING_INVALID" else "WEATHER_SOURCE_INVALID"
-        for market_id, (vintage, state) in sorted(plans.items()):
-            if not self._row_pending(state, qd.CHECKPOINT_A):
+        for _key, (vintage, state, checkpoint_id, checkpoint) in sorted(plans.items()):
+            if not self._row_pending(state, checkpoint_id):
                 continue
             info = object_info[vintage.key]
             assert not isinstance(info, str)
@@ -1264,7 +1298,7 @@ class ReadinessPipeline:
                     break
                 pairs.append(item)
             if failure:
-                state.row_excluded[qd.CHECKPOINT_A] = failure
+                state.row_excluded[checkpoint_id] = failure
                 continue
             # ``weather_evidence`` expects decoded periods indexed like the object's messages.
             full = []
@@ -1273,35 +1307,36 @@ class ReadinessPipeline:
                 if item is not None and not isinstance(item, str):
                     full.append(item)
             try:
-                state.weather = qd.weather_evidence(vintage, sha256_hex(info[0]), full, state.station, state.offset,  # type: ignore[arg-type]
-                                                    state.target_day, state.checkpoint_a)  # type: ignore[arg-type]
+                state.weather_by_cp[checkpoint_id] = qd.weather_evidence(
+                    vintage, sha256_hex(info[0]), full, state.station, state.offset,  # type: ignore[arg-type]
+                    state.target_day, checkpoint)
             except qd.RuleExclusion as exclusion:
-                state.row_excluded[qd.CHECKPOINT_A] = exclusion.code
+                state.row_excluded[checkpoint_id] = exclusion.code
 
     def phase_market_history(self) -> None:
         assert self.hours is not None
-        pending = [s for s in self._active() if self._row_pending(s, qd.CHECKPOINT_A)]
-        by_date: dict[date, list[MarketState]] = {}
-        for state in pending:
-            by_date.setdefault(state.target_day, []).append(state)
+        by_date: dict[date, list[tuple[MarketState, str, datetime]]] = {}
+        for pair in self._pending_pairs():
+            by_date.setdefault(pair[0].target_day, []).append(pair)
         for day in sorted(by_date):
-            states = by_date[day]
-            lower = {s.candidate.market_id: v3.hour_start(v3.hour_key(max(s.checkpoint_a - qd.MARKET_HISTORY_LOOKBACK,  # type: ignore[operator]
-                                                                          qd.parse_utc(s.candidate.first_received)))) for s in states}
-            top = max(v3.hour_start(v3.hour_key(s.checkpoint_a)) for s in states)  # type: ignore[arg-type]
-            found: set[str] = set()
+            pairs = by_date[day]
+            key = lambda pair: (pair[0].candidate.market_id, pair[1])  # noqa: E731
+            lower = {key(p): v3.hour_start(v3.hour_key(max(p[2] - qd.MARKET_HISTORY_LOOKBACK,
+                                                          qd.parse_utc(p[0].candidate.first_received)))) for p in pairs}
+            top = max(v3.hour_start(v3.hour_key(p[2])) for p in pairs)
+            found: set[tuple[str, str]] = set()
             cursor = top
             while True:
-                active = [s for s in states if s.candidate.market_id not in found
-                          and v3.hour_start(v3.hour_key(s.checkpoint_a)) >= cursor >= lower[s.candidate.market_id]]  # type: ignore[arg-type]
+                active = [p for p in pairs if key(p) not in found
+                          and v3.hour_start(v3.hour_key(p[2])) >= cursor >= lower[key(p)]]
                 if not active:
-                    if all(cursor < lower[s.candidate.market_id] or s.candidate.market_id in found for s in states):
+                    if all(cursor < lower[key(p)] or key(p) in found for p in pairs):
                         break
                     cursor -= timedelta(hours=1)
                     continue
                 hour = v3.hour_key(cursor)
                 self._hour(hour)
-                conditions = sorted({s.candidate.condition_id for s in active})
+                conditions = sorted({p[0].candidate.condition_id for p in active})
                 for family in ("best_bid_ask", "last_trade_price"):
                     try:
                         events = self.hours.targeted_events(hour, family, conditions)
@@ -1313,14 +1348,16 @@ class ReadinessPipeline:
                         self.events[(hour, "tick_size_change")] = list(self.hours.full_product_events(hour, "tick_size_change"))
                     except v3.PendulumFlowError:
                         self.events[(hour, "tick_size_change")] = []
-                for state in active:
-                    state.scanned_hours.append(hour)
+                for state, checkpoint_id, checkpoint in active:
+                    state.scanned_by_cp.setdefault(checkpoint_id, []).append(hour)
+                    if hour not in state.scanned_hours:
+                        state.scanned_hours.append(hour)
                     token = qd.yes_token(state.gamma)  # type: ignore[arg-type]
-                    if any(e.asset_id == token and qd.parse_utc(e.timestamp_received) <= state.checkpoint_a  # type: ignore[operator]
+                    if any(e.asset_id == token and qd.parse_utc(e.timestamp_received) <= checkpoint
                            for e in self.events[(hour, "best_bid_ask")]):
-                        found.add(state.candidate.market_id)
+                        found.add((state.candidate.market_id, checkpoint_id))
                 cursor -= timedelta(hours=1)
-            for state in states:
+            for state, _checkpoint_id, _checkpoint in pairs:
                 state.history_complete = True
 
     def _coverage_map(self, product: str) -> dict[str, str]:
@@ -1334,7 +1371,7 @@ class ReadinessPipeline:
         rows: list[dict[str, object]] = []
         row_exclusions: list[dict[str, object]] = []
         execution: dict[str, dict[str, object]] = {}
-        candidate_rows: list[tuple[MarketState, dict[str, object], dict[str, object]]] = []
+        candidate_rows: list[tuple[MarketState, str, datetime, dict[str, object], dict[str, object], dict[str, object]]] = []
         for state in sorted(self.markets.values(), key=lambda s: (s.target_day, len(s.candidate.market_id), s.candidate.market_id)):
             market_id = state.candidate.market_id
             if state.excluded is not None:
@@ -1347,41 +1384,51 @@ class ReadinessPipeline:
                            if e.asset_id in state.candidate.asset_ids]
             execution[market_id] = qd.execution_facts(state.gamma, state.rule, trade_events, tick_events)  # type: ignore[arg-type]
             for checkpoint_id in qd.CHECKPOINT_IDS:
+                # Every checkpoint either has its actual closed exclusion reason or was evaluated.
                 reason = state.row_excluded.get(checkpoint_id)
-                if reason is None and checkpoint_id == qd.CHECKPOINT_A:
+                if reason is None and checkpoint_id not in state.checkpoints:
+                    if self.budget_exhausted is None:
+                        raise qd.ReadinessError("READINESS_INPUT_INVALID")
+                    reason = "BUDGET_EXHAUSTED_BEFORE_EVALUATION"
+                if reason is None:
+                    checkpoint = state.checkpoints[checkpoint_id]
+                    scanned = state.scanned_by_cp.get(checkpoint_id, [])
                     try:
+                        if checkpoint_id not in state.weather_by_cp:
+                            raise qd.RuleExclusion("BUDGET_EXHAUSTED_BEFORE_EVALUATION" if self.budget_exhausted
+                                                   else "WEATHER_SOURCE_INVALID")
                         token = qd.yes_token(state.gamma)  # type: ignore[arg-type]
-                        bba_events = [e for h in state.scanned_hours for e in self.events.get((h, "best_bid_ask"), [])
+                        bba_events = [e for h in scanned for e in self.events.get((h, "best_bid_ask"), [])
                                       if e.condition_id == state.candidate.condition_id]
                         bba = qd.select_latest_market_event(
-                            bba_events, family="best_bid_ask", asset_id=token, checkpoint=state.checkpoint_a,  # type: ignore[arg-type]
-                            lookback=qd.MARKET_HISTORY_LOOKBACK, scanned_hours=state.scanned_hours, hour_coverage=bba_coverage)
+                            bba_events, family="best_bid_ask", asset_id=token, checkpoint=checkpoint,
+                            lookback=qd.MARKET_HISTORY_LOOKBACK, scanned_hours=scanned, hour_coverage=bba_coverage)
+                        cp_trades = [e for h in scanned for e in self.events.get((h, "last_trade_price"), [])
+                                     if e.condition_id == state.candidate.condition_id]
                         try:
                             ltp = qd.select_latest_market_event(
-                                trade_events, family="last_trade_price", asset_id=token, checkpoint=state.checkpoint_a,  # type: ignore[arg-type]
-                                lookback=qd.MARKET_HISTORY_LOOKBACK, scanned_hours=state.scanned_hours, hour_coverage=ltp_coverage)
+                                cp_trades, family="last_trade_price", asset_id=token, checkpoint=checkpoint,
+                                lookback=qd.MARKET_HISTORY_LOOKBACK, scanned_hours=scanned, hour_coverage=ltp_coverage)
                         except qd.RuleExclusion:
                             ltp = None
-                        history = qd.market_history_evidence(bba, ltp, state.checkpoint_a, bba_coverage,  # type: ignore[arg-type]
-                                                             ltp_coverage, state.scanned_hours)
-                        candidate_rows.append((state, history, state.label.to_mapping(state.rule)))  # type: ignore[union-attr,arg-type]
+                        history = qd.market_history_evidence(bba, ltp, checkpoint, bba_coverage, ltp_coverage, scanned)
+                        candidate_rows.append((state, checkpoint_id, checkpoint, history, state.weather_by_cp[checkpoint_id],
+                                               state.label.to_mapping(state.rule)))  # type: ignore[union-attr,arg-type]
                     except qd.RuleExclusion as exclusion:
                         reason = exclusion.code
-                elif reason is None:
-                    reason = "CHECKPOINT_B_MARKET_NOT_OPEN_60M"
                 if reason is not None:
                     row_exclusions.append(qd.exclusion(market_id, reason, checkpoint_id, state.target_day.isoformat()))
         manifests, ready_ids_by_date, diagnostic_ids, dataset_ids = self._provenance(candidate_rows)
-        for state, history, label in candidate_rows:
+        for state, checkpoint_id, checkpoint, history, weather, label in candidate_rows:
             ready = ready_ids_by_date.get(state.target_day.isoformat())
             if not ready:
                 row_exclusions.append(qd.exclusion(state.candidate.market_id, "MARKET_HISTORY_SOURCE_INVALID",
-                                                   qd.CHECKPOINT_A, state.target_day.isoformat()))
+                                                   checkpoint_id, state.target_day.isoformat()))
                 continue
             rows.append(qd.build_row(
-                candidate=state.candidate, target_day=state.target_day, checkpoint_id=qd.CHECKPOINT_A,
-                checkpoint_time=state.checkpoint_a, yes_token_id=qd.yes_token(state.gamma),  # type: ignore[arg-type]
-                market_history=history, weather=state.weather, label=label, manifest_ids=ready))  # type: ignore[arg-type]
+                candidate=state.candidate, target_day=state.target_day, checkpoint_id=checkpoint_id,
+                checkpoint_time=checkpoint, yes_token_id=qd.yes_token(state.gamma),  # type: ignore[arg-type]
+                market_history=history, weather=weather, label=label, manifest_ids=ready))
         counts = qd.derive_counts(self.discovered, rows, self.market_exclusions, row_exclusions, bba_coverage,
                                   [r["feature_evidence"]["weather"]["object_key"] for r in rows])  # type: ignore[index]
         if self.budget_exhausted:
@@ -1545,13 +1592,13 @@ class ReadinessPipeline:
                     if key in self.store.index and "failed" not in self.store.index[key]:
                         kind, coverage = self._v3_kind(key, hour)
                         add(day, "GAMMA_NWS_RULE_LABEL_METADATA", key, self._artifact(key, kind, coverage))
-        for state, history, label in candidate_rows:
+        for state, checkpoint_id, checkpoint, history, weather, label in candidate_rows:
             day = state.target_day.isoformat()
-            record = {"market_id": state.candidate.market_id, "checkpoint_id": qd.CHECKPOINT_A,
-                      "evidence_sha256": sha256_hex(qd.canonical_json_bytes({"market_history": history, "weather": state.weather, "label": label}))}
+            record = {"market_id": state.candidate.market_id, "checkpoint_id": checkpoint_id,
+                      "evidence_sha256": sha256_hex(qd.canonical_json_bytes({"market_history": history, "weather": weather, "label": label}))}
             for family in ("PENDULUMFLOW_MARKET_HISTORY", "NOAA_NDFD_WEATHER", "GAMMA_NWS_RULE_LABEL_METADATA"):
                 outputs.setdefault((day, family), []).append(record)
-                cutoffs[(day, family)] = max(cutoffs.get((day, family), state.checkpoint_a), state.checkpoint_a)  # type: ignore[arg-type]
+                cutoffs[(day, family)] = max(cutoffs.get((day, family), checkpoint), checkpoint)
         all_manifests = []
         ready_by_date: dict[str, list[str]] = {}
         ready_families: dict[str, set[str]] = {}
@@ -1601,8 +1648,8 @@ class ReadinessPipeline:
         if self.budget_exhausted:
             # Markets with no final disposition are recorded truthfully, never silently dropped.
             for state in self.markets.values():
-                if (state.excluded is None and qd.CHECKPOINT_A not in state.row_excluded
-                        and not state.history_complete):
+                if (state.excluded is None and not state.history_complete
+                        and any(self._row_pending(state, cp) for cp in qd.CHECKPOINT_IDS)):
                     state.excluded = "BUDGET_EXHAUSTED_BEFORE_EVALUATION"
             if self.hours is None:
                 self.hours = V3Hours(self.store, self.audit)

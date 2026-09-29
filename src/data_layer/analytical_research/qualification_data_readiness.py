@@ -311,16 +311,36 @@ class RuleSemantics:
         }
 
 
-_FINALITY_PATTERNS = {
+# Each frozen finality policy is recognized by one or more alternative wordings; every pattern of
+# one alternative must match. The second alternatives of LATEST_BEFORE_2359_ET and
+# LAST_BEFORE_1400_ET are the observed real Gamma word orders (S10-QUAL-DATA-01-D008): the cutoff
+# is stated once ("... before 11:59 PM ET ..." / "... published by 2:00 PM ET ...") and "the last
+# version published before (that time|11:59 PM ET) governs" selects the latest version. No fourth
+# policy exists; a rule matching zero or more than one policy stays RULE_SEMANTICS_UNSUPPORTED.
+_FINALITY_PATTERNS: dict[str, tuple[tuple[str, ...], ...]] = {
     "FIRST_PUBLISHED_FINAL": (
-        r"\bfirst published (?:precipitation )?(?:figure|value)\b",
-        r"\b(?:subsequent )?revisions or corrections\b.{0,80}\bwill not be considered\b",
+        (
+            r"\bfirst published (?:precipitation )?(?:figure|value)\b",
+            r"\b(?:subsequent )?revisions or corrections\b.{0,80}\bwill not be considered\b",
+        ),
     ),
     "LATEST_BEFORE_2359_ET": (
-        r"\b(?:latest|most recent) (?:published )?(?:precipitation )?(?:figure|value|report)\b.{0,120}\b(?:11:59 ?pm et|23:59 et)\b",
+        (
+            r"\b(?:latest|most recent) (?:published )?(?:precipitation )?(?:figure|value|report)\b.{0,120}\b(?:11:59 ?pm et|23:59 et)\b",
+        ),
+        (
+            r"\bbased on the most recent cli report published for the observation date\b",
+            r"\bthe last version published before 11:59 ?pm et on the day following the observation date governs\b",
+        ),
     ),
     "LAST_BEFORE_1400_ET": (
-        r"\b(?:last|latest|most recent|final) (?:published )?(?:precipitation )?(?:figure|value|report)\b.{0,120}\b(?:2:00 ?pm et|2 ?pm et|14:00 et)\b",
+        (
+            r"\b(?:last|latest|most recent|final) (?:published )?(?:precipitation )?(?:figure|value|report)\b.{0,120}\b(?:2:00 ?pm et|2 ?pm et|14:00 et)\b",
+        ),
+        (
+            r"\bresolve according to the nws daily climate report as published by 2:00 ?pm et on the day following the observation date\b",
+            r"\bthe last version published before that time governs\b",
+        ),
     ),
 }
 
@@ -345,8 +365,8 @@ def parse_rule(description: object) -> RuleSemantics:
         raise RuleExclusion("RULE_CLIMATE_DAY_MISSING")
     trace_excluded = bool(re.search(r'trace \("t"\) does not qualify', lowered))
     matched = [
-        policy for policy, patterns in _FINALITY_PATTERNS.items()
-        if all(re.search(pattern, lowered) for pattern in patterns)
+        policy for policy, alternatives in _FINALITY_PATTERNS.items()
+        if any(all(re.search(pattern, lowered) for pattern in patterns) for patterns in alternatives)
     ]
     if len(matched) != 1 or not trace_excluded:
         raise RuleExclusion("RULE_SEMANTICS_UNSUPPORTED")

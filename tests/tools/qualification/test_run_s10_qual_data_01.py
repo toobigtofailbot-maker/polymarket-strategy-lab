@@ -38,6 +38,8 @@ MARKETS = {  # market id -> (condition byte, slug)
     "3719311": (0x2A, "where-will-it-rain-on-october-3-2026-new-york-ny"),
     "3719312": (0x3B, "where-will-it-rain-on-september-3-2026-miami-fl"),
     "3719313": (0x4C, "where-will-it-rain-on-september-3-2026-denver-co"),
+    # Created the day before its target date, so checkpoint B (LST midnight) is genuinely eligible.
+    "3719314": (0x5D, "where-will-it-rain-on-september-4-2026-new-york-ny"),
 }
 NDFD_KEY = "wmo/pop12/2026/09/03/YDUZ98_KWBN_202609031046"
 
@@ -83,8 +85,8 @@ def _new_market(market_id: str, received: str) -> dict[str, object]:
             "question": "Will it rain?", "slug": slug}
 
 
-def _bba(received: str, bid: str, ask: str, asset: str = YES) -> dict[str, object]:
-    return {"timestamp_received": ts(received), "sequence": 3, "timestamp": ts(received), "market": cid(0x0F),
+def _bba(received: str, bid: str, ask: str, asset: str = YES, market: int = 0x0F) -> dict[str, object]:
+    return {"timestamp_received": ts(received), "sequence": 3, "timestamp": ts(received), "market": cid(market),
             "asset_id": tok(asset), "best_bid": Decimal(bid), "best_ask": Decimal(ask), "spread": Decimal(ask) - Decimal(bid)}
 
 
@@ -98,12 +100,20 @@ def build_world() -> dict[str, tuple[bytes, dict[str, object]]]:
         "2026-09-03/12": {
             "best_bid_ask": [_bba("2026-09-03T12:05:00.000001Z", "0.31", "0.39"),
                              _bba("2026-09-03T12:30:00Z", "0.99", "0.99"),
-                             _bba("2026-09-03T12:06:00Z", "0.60", "0.70", asset=NO)],
+                             _bba("2026-09-03T12:06:00Z", "0.60", "0.70", asset=NO),
+                             _bba("2026-09-03T12:07:00Z", "0.20", "0.25", asset="37193141", market=0x5D)],
             "last_trade_price": [{"timestamp_received": ts("2026-09-03T12:02:00Z"), "sequence": 4, "timestamp": ts("2026-09-03T12:01:59Z"),
                                   "market": cid(0x0F), "asset_id": tok(YES), "price": Decimal("0.35"), "size": Decimal("5"),
                                   "side": "BUY", "fee_rate_bps": 1000, "transaction_hash": b"\x01"}],
             "tick_size_change": [{"timestamp_received": ts("2026-09-03T12:00:30Z"), "sequence": 5, "timestamp": ts("2026-09-03T12:00:30Z"),
                                   "market": cid(0x0F), "asset_id": tok(YES), "old_tick_size": Decimal("0.01"), "new_tick_size": Decimal("0.001")}],
+        },
+        "2026-09-04/04": {"best_bid_ask": [_bba("2026-09-04T04:30:00Z", "0.21", "0.26", asset="37193141", market=0x5D)]},
+        "2026-09-04/05": {"best_bid_ask": [_bba("2026-09-04T05:30:00Z", "0.90", "0.95", asset="37193141", market=0x5D)]},
+        "2026-09-05/14": {
+            "market_resolved": [{"timestamp_received": ts("2026-09-05T14:19:00Z"), "sequence": 7, "timestamp": ts("2026-09-05T14:18:00Z"),
+                                 "market": cid(0x5D), "id": "3719314", "assets_ids": [tok("37193141"), tok("37193142")],
+                                 "winning_asset_id": tok("37193142"), "winning_outcome": "No"}],
         },
         "2026-09-04/14": {
             "market_resolved": [{"timestamp_received": ts("2026-09-04T14:18:58.893393Z"), "sequence": 6, "timestamp": ts("2026-09-04T14:17:58Z"),
@@ -114,8 +124,19 @@ def build_world() -> dict[str, tuple[bytes, dict[str, object]]]:
     return {hour: builders.build_v3_hour(hour, rows) for hour, rows in hours.items()}
 
 
+def _shifted_message(days: int) -> bytes:
+    """The committed message with its PoP12 interval end moved ``days`` later (structure intact)."""
+    data = bytearray(FIXTURE.read_bytes())
+    position = 16
+    while data[position + 4] != 4:
+        position += int.from_bytes(data[position:position + 4], "big")
+    data[position + 50] += days  # section-4 day of end of overall time interval
+    return bytes(data)
+
+
 def wmo_object() -> bytes:
-    return b"\x01\r\r\n001\r\r\nYDUB12 KWBN 031046\r\r\n" + FIXTURE.read_bytes() + b"\r\r\n\x03"
+    return (b"\x01\r\r\n001\r\r\nYDUB12 KWBN 031046\r\r\n" + FIXTURE.read_bytes()
+            + b"\r\r\n\x03\x01\r\r\n002\r\r\nYDUC12 KWBN 031046\r\r\n" + _shifted_message(1) + b"\r\r\n\x03")
 
 
 def listing(prefix: str) -> bytes:
@@ -150,6 +171,9 @@ def gamma_document(market_id: str) -> dict[str, object]:
         document["conditionId"] = "0x" + cid(0x99).hex()  # Gamma/v3 identity mismatch
     if market_id == "3719313":
         document["closed"] = False  # not final
+    if market_id == "3719314":
+        document["startDate"] = "2026-09-03T11:09:13Z"
+        document["closedTime"] = "2026-09-05 14:18:05.177609+00"
     return document
 
 
@@ -504,6 +528,50 @@ def test_transport_resets_and_truncation_retry_once_then_fail_closed(tmp_path: P
         assert excinfo.value.kind == kind
 
 
+def test_plain_200_content_length_truncation_retries_once_then_fails_closed(tmp_path: Path) -> None:
+    url = "https://api.weather.gov/stations/KNYC"
+    full = b'{"a": 1}'
+
+    def scripted(bodies, headers):
+        calls = []
+
+        def fetch(method, u, h, timeout):
+            calls.append(1)
+            return 200, dict(headers), bodies[len(calls) - 1]
+        return fetch, calls
+
+    exact = {"content-length": str(len(full))}
+    fetch, calls = scripted([full], exact)
+    ledger = operator.Ledger()
+    assert operator.BoundedTransport(ledger, fetch).request("GET", url).body == full
+    assert ledger.attempts == 1 and ledger.retries == 0
+    fetch, calls = scripted([full[:3], full], exact)  # truncated, then complete on the single retry
+    ledger = operator.Ledger()
+    assert operator.BoundedTransport(ledger, fetch).request("GET", url).body == full
+    assert ledger.attempts == 2 and ledger.retries == 1
+    fetch, calls = scripted([full[:3], full[:5]], exact)  # still truncated after the one retry
+    ledger = operator.Ledger()
+    with pytest.raises(operator.TransportFailure) as excinfo:
+        operator.BoundedTransport(ledger, fetch).request("GET", url)
+    assert excinfo.value.code == "BODY_TRUNCATED" and ledger.attempts == 2 and len(calls) == 2
+    fetch, _ = scripted([full + b"x"], exact)
+    with pytest.raises(operator.TransportFailure) as excinfo:
+        operator.BoundedTransport(operator.Ledger(), fetch).request("GET", url)
+    assert excinfo.value.code == "BODY_LENGTH_MISMATCH"
+    # Absent or untrustworthy Content-Length falls back to the bounded stream policy.
+    for headers in ({}, {"content-length": "abc"}, {"content-length": "999", "content-encoding": "gzip"}):
+        fetch, calls = scripted([full[:3]], headers)
+        assert operator.BoundedTransport(operator.Ledger(), fetch).request("GET", url).body == full[:3]
+        assert len(calls) == 1
+    assert operator.content_length({"content-length": " 12 "}) == 12 and operator.content_length({}) is None
+    # A known-truncated body is never retained: the store records only the closed failure.
+    fetch, _ = scripted([full[:3], full[:3]], exact)
+    store = operator.ArtifactStore(tmp_path / "s", operator.BoundedTransport(operator.Ledger(), fetch))
+    with pytest.raises(operator.TransportFailure):
+        store.get(url)
+    assert list(store.index.values()) == [{"failed": "BODY_TRUNCATED"}] and not (tmp_path / "s" / "raw").exists()
+
+
 # ── R026 / R027 / R028 end to end ─────────────────────────────────────────────
 
 
@@ -528,12 +596,19 @@ def test_end_to_end_ready_run_counts_and_rerun_refused(world) -> None:
     assert report["terminal"] == bundle["terminal"] == "QUAL_DATA_READY"
     assert bundle["terminal_reason"] == "EVIDENCE_COMPLETE_ROWS_PRESENT"
     counts = bundle["dataset"]["counts"]
-    assert counts["discovered_candidates"] == 4 and counts["included_markets"] == 1
+    assert counts["discovered_candidates"] == 5 and counts["included_markets"] == 2
     assert counts["market_exclusion_reasons"] == {"GAMMA_V3_IDENTITY_MISMATCH": 1, "LABEL_GAMMA_NOT_FINAL": 1,
                                                   "TARGET_DATE_OUTSIDE_CORPUS": 1}
-    assert counts["checkpoint_usable_rows"] == {"MARKET_OBSERVABLE_PLUS_60M_V1": 1, "TARGET_CLIMATE_DAY_START_V1": 0}
+    assert counts["checkpoint_usable_rows"] == {"MARKET_OBSERVABLE_PLUS_60M_V1": 2, "TARGET_CLIMATE_DAY_START_V1": 1}
+    # Only the same-day-created market is excluded at B, with its actual reason.
     assert counts["checkpoint_row_exclusion_reasons"]["TARGET_CLIMATE_DAY_START_V1"] == {"CHECKPOINT_B_MARKET_NOT_OPEN_60M": 1}
-    assert counts["independent_target_dates"]["ANY_CHECKPOINT"] == 1
+    assert counts["independent_target_dates"] == {"MARKET_OBSERVABLE_PLUS_60M_V1": 2, "TARGET_CLIMATE_DAY_START_V1": 1,
+                                                  "ANY_CHECKPOINT": 2}
+    b_row = next(r for r in bundle["rows"] if r["checkpoint_id"] == "TARGET_CLIMATE_DAY_START_V1")
+    assert (b_row["market_id"], b_row["target_date"], b_row["checkpoint_time"]) == ("3719314", "2026-09-04", "2026-09-04T05:00:00Z")
+    b_bba = b_row["feature_evidence"]["market_history"]["best_bid_ask"]
+    assert (b_bba["best_bid"], b_bba["timestamp_received"]) == ("0.21", "2026-09-04T04:30:00.000000Z")  # 05:30 is after B
+    assert [p["valid_end"] for p in b_row["feature_evidence"]["weather"]["periods"]] == ["2026-09-04T12:00:00Z"]
     row = bundle["rows"][0]
     assert row["checkpoint_time"] == "2026-09-03T12:09:14.805697Z"
     bba = row["feature_evidence"]["market_history"]["best_bid_ask"]
