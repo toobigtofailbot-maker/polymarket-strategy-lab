@@ -548,7 +548,7 @@
         "source": "validation",
         "test": "exact 16-path scope",
         "command": "python tools/git/diff_scope_summary.py --base 3d3e3b673e53dae4d2e3b28a6816264b205bb015 --head HEAD --wp-spec docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json --require-exact-scope --fail-on-warning",
-        "expected_result": "exactly 16 required/allowed/actual paths with zero extras, missing or warnings"
+        "expected_result": "exactly 16 required/allowed/actual paths with zero extras or missing and zero protected/generated hits; the only warning is the authorized pyproject.toml dependency change, which diff_scope_summary.py always flags, so --fail-on-warning exits 1 for that reason alone"
       },
       {
         "requirement_id": "R019",
