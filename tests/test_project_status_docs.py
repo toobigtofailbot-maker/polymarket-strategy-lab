@@ -5033,7 +5033,7 @@ def test_s10_ndfd_grib_01_is_current_dependency_enablement_target() -> None:
         (REPO_ROOT / "docs" / "wp_specs" / "S10-NDFD-GRIB-01" / "wp_spec.json").read_text(encoding="utf-8")
     )
     for text in (
-        "Governance track: RUNTIME", "Risk level: 3", "Exact changed-file scope: 16",
+        "Governance track: RUNTIME", "Risk level: 3", "Exact changed-file scope: 19",
         "Frozen base: 3d3e3b673e53dae4d2e3b28a6816264b205bb015",
         "PR #200 / S10-ALPHA-REAL-01 merged: YES", "80faf1dcb32d760a15c5de3c008cd2aefa3a6f12",
         "Current branch: codex/s10-ndfd-grib-01-eccodes", "readiness: IMPLEMENTATION_READY (RUNTIME)",
@@ -5067,7 +5067,7 @@ def test_s10_ndfd_grib_01_is_current_dependency_enablement_target() -> None:
     }
     scope = spec["scope"]
     assert scope["required_changed_files"] == scope["allowed_changed_files"]
-    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 16
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 19
     assert not any(path.startswith("src/") for path in scope["required_changed_files"])
     for key in ("dependencies", "workflow_files"):
         assert spec["authority"][key] is True, key

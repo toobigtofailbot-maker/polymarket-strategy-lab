@@ -940,3 +940,34 @@ and fingerprint; pip check / pip-audit / gitleaks / Semgrep results (unavailable
 as UNAVAILABLE, never PASS); readiness --check-diff and exact-scope results; one authoritative
 full-suite count; exact-head hosted check runs; independent review result; Evidence mode; Ready
 for review; Merge authorized: NO.
+
+================================================================================
+APPENDIX B. SIDE14 SAME-WP SCOPE AMENDMENT (16 -> 19 PATHS)
+================================================================================
+
+Karl accepted Side14's same-WP amendment after the executor stopped with
+SCOPE_EXPANSION_REQUIRED. The full suite showed that three historical guards did not yet
+understand a governed dependency/workflow WP, contradicting the Section 12 closure fact that
+current full-changed-set guards derive authority from the machine spec. The exact scope is now
+19 paths: the 16 paths of Section 12 unchanged, plus exactly:
+
+17. tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py
+18. tests/test_wallet_intelligence_architecture_contract_docs.py
+19. tests/test_official_client_sandbox_boundary.py
+
+No 20th path. Wherever Sections 0-21 say 16 paths, the amended exact scope is 19 paths.
+Guard corrections (compatibility only; historical assertions preserved):
+
+- Hermes prompt/runbook guard: .github/workflows/ci.yml and dependency files are authorized only
+  when the active WP machine spec both lists the exact path and grants workflow_files /
+  dependencies authority; no prefix-level or arbitrary change is authorized.
+- Wallet architecture guard: dependency files are authorized only when the active WP machine spec
+  grants dependencies authority, and the changed dependency set must equal the exact
+  spec-listed set; historical lock-file protections are unchanged.
+- Official-client sandbox guard: tracked files are searched as raw bytes for the ASCII
+  official-client terms, so binary fixtures no longer crash it; text-file results are identical
+  and the allowed path prefixes are unchanged.
+
+Dependency choice, versions, Python policy, fixture, decode oracle, authority and the
+canonical_evidence_policy correction are unchanged. The diff_scope_summary.py dependency-file
+warning continues to be reported truthfully.

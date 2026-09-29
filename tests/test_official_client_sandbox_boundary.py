@@ -252,8 +252,11 @@ def test_official_client_import_strings_only_in_allowed_paths() -> None:
         path = ROOT / tracked
         if not path.is_file():
             continue
-        text = _read(path)
-        if any(term in text for term in ("py_clob_client", "py_clob_client_v2")):
+        # Search raw bytes for the ASCII terms: identical to the former UTF-8 text match for
+        # text files, and tracked binary fixtures (e.g. the S10-NDFD-GRIB-01 .grib2 file) are
+        # still scanned instead of crashing the guard. Allowed prefixes are unchanged.
+        data = path.read_bytes()
+        if any(term in data for term in (b"py_clob_client", b"py_clob_client_v2")):
             normalized = tracked.replace("\\", "/")
             if not normalized.startswith(allowed_prefixes):
                 offenders.append(normalized)

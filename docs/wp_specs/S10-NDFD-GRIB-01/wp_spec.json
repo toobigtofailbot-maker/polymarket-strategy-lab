@@ -37,7 +37,10 @@
       "tests/fixtures/ndfd_grib/ndfd_pop12_reference.grib2",
       "tests/test_ndfd_grib_decoder_dependency_contract_docs.py",
       "tests/test_project_status_docs.py",
-      "tests/test_repo_truth_docs.py"
+      "tests/test_repo_truth_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_official_client_sandbox_boundary.py"
     ],
     "allowed_changed_files": [
       "docs/ndfd_grib_decoder_dependency_contract.md",
@@ -55,7 +58,10 @@
       "tests/fixtures/ndfd_grib/ndfd_pop12_reference.grib2",
       "tests/test_ndfd_grib_decoder_dependency_contract_docs.py",
       "tests/test_project_status_docs.py",
-      "tests/test_repo_truth_docs.py"
+      "tests/test_repo_truth_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_official_client_sandbox_boundary.py"
     ],
     "forbidden_prefixes": [
       "agent_memory/",
@@ -67,7 +73,7 @@
       "src/",
       "tools/"
     ],
-    "max_changed_files": 16,
+    "max_changed_files": 19,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       "docs/deferred_items_log.md",
@@ -76,9 +82,12 @@
       "docs/repo_truth_index.md",
       "docs/security_tooling_status.md",
       "tests/test_project_status_docs.py",
-      "tests/test_repo_truth_docs.py"
+      "tests/test_repo_truth_docs.py",
+      "tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py",
+      "tests/test_wallet_intelligence_architecture_contract_docs.py",
+      "tests/test_official_client_sandbox_boundary.py"
     ],
-    "rollback_surface": "Revert S10-NDFD-GRIB-01. The ndfd-grib optional extra, the two dedicated ndfd-grib CI jobs, the committed NDFD fixture, the focused/contract tests and the S10-NDFD-GRIB-01 docs/status/spec artifacts disappear. Base dependencies, the Python range, existing CI jobs, src/ and all runtime, evidence, order and capital state are untouched.",
+    "rollback_surface": "Revert S10-NDFD-GRIB-01. The ndfd-grib optional extra, the two dedicated ndfd-grib CI jobs, the committed NDFD fixture, the focused/contract tests, the three spec-derived historical-guard corrections and the S10-NDFD-GRIB-01 docs/status/spec artifacts disappear. Base dependencies, the Python range, existing CI jobs, src/ and all runtime, evidence, order and capital state are untouched.",
     "mode_boundaries": [
       {
         "boundary": "workflow_governance",
@@ -317,7 +326,7 @@
       {
         "from_state": "LOCAL_DRAFT",
         "to_state": "DRAFTABILITY_PASS",
-        "condition": "exact prompt/spec authority mirror, 16-path scope, rule matrix and RUNTIME readiness pass",
+        "condition": "exact prompt/spec authority mirror, 19-path scope, rule matrix and RUNTIME readiness pass",
         "failure_category": "DRAFTABILITY_INCOMPLETE"
       },
       {
@@ -329,7 +338,7 @@
       {
         "from_state": "AUTHORIZED",
         "to_state": "IMPLEMENTED_LOCAL",
-        "condition": "implementation stays inside the exact 16-path scope with zero src/ change and focused, status and stable-candidate validation pass",
+        "condition": "implementation stays inside the exact 19-path scope with zero src/ change and focused, status and stable-candidate validation pass",
         "failure_category": "SEMANTIC_CONTRADICTION"
       }
     ]
@@ -436,7 +445,7 @@
         "source": "validation",
         "test": "governed prompt/spec readiness",
         "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-NDFD-GRIB-01/wp_prompt.txt --spec docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json --repo-root .",
-        "expected_result": "IMPLEMENTATION_READY on governance track RUNTIME with 16 files"
+        "expected_result": "IMPLEMENTATION_READY on governance track RUNTIME with 19 files"
       },
       {
         "requirement_id": "R003",
@@ -546,9 +555,9 @@
       {
         "requirement_id": "R018",
         "source": "validation",
-        "test": "exact 16-path scope",
+        "test": "exact 19-path scope",
         "command": "python tools/git/diff_scope_summary.py --base 3d3e3b673e53dae4d2e3b28a6816264b205bb015 --head HEAD --wp-spec docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json --require-exact-scope --fail-on-warning",
-        "expected_result": "exactly 16 required/allowed/actual paths with zero extras or missing and zero protected/generated hits; the only warning is the authorized pyproject.toml dependency change, which diff_scope_summary.py always flags, so --fail-on-warning exits 1 for that reason alone"
+        "expected_result": "exactly 19 required/allowed/actual paths with zero extras or missing and zero protected/generated hits; the only warning is the authorized pyproject.toml dependency change, which diff_scope_summary.py always flags, so --fail-on-warning exits 1 for that reason alone"
       },
       {
         "requirement_id": "R019",

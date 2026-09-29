@@ -97,7 +97,7 @@ def test_status_fragment_and_spec_are_consistent() -> None:
     flat = _flat(STATUS)
     spec = json.loads(SPEC.read_text(encoding="utf-8"))
     assert spec["identity"]["wp_id"] == "S10-NDFD-GRIB-01"
-    assert len(spec["scope"]["required_changed_files"]) == 16
+    assert len(spec["scope"]["required_changed_files"]) == 19
     assert not any(path.startswith("src/") for path in spec["scope"]["required_changed_files"])
     for key in ("dependencies", "workflow_files", "docs", "tests"):
         assert spec["authority"][key] is True, key
@@ -105,7 +105,7 @@ def test_status_fragment_and_spec_are_consistent() -> None:
         assert spec["authority"][key] is False, key
     assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-DATA-01"
     for text in (
-        FINGERPRINT, FIXTURE_SHA256, "Exact changed-file scope: 16", "Merge authorized: NO",
+        FINGERPRINT, FIXTURE_SHA256, "Exact changed-file scope: 19", "Merge authorized: NO",
         "Gate C: NOT AUTHORIZED", "S10-QUAL-DATA-01: NOT IMPLEMENTED by this WP",
     ):
         assert text in flat, text

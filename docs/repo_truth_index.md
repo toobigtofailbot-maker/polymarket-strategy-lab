@@ -5,7 +5,7 @@
 The canonical contract is `docs/ndfd_grib_decoder_dependency_contract.md`; the status fragment is
 `docs/status_entries/S10-NDFD-GRIB-01.md`; the frozen package is `docs/wp_specs/S10-NDFD-GRIB-01/`.
 Base `3d3e3b673e53dae4d2e3b28a6816264b205bb015` (PR #200 / S10-ALPHA-REAL-01 merged, head
-`80faf1dcb32d760a15c5de3c008cd2aefa3a6f12`). RUNTIME, risk 3, exact 16-path scope, no src/ change. It
+`80faf1dcb32d760a15c5de3c008cd2aefa3a6f12`). RUNTIME, risk 3, exact 19-path scope, no src/ change. It
 resolves only the S10-QUAL-DATA-01 `NDFD_DEPENDENCY_REQUIRED` decoder blocker. S10-NDFD-GRIB-01 enables
 optional offline NDFD GRIB2 decoding only: one optional `pyproject.toml` extra `ndfd-grib` with exact
 pins `eccodes==2.48.0` (Python 3.12) and `eccodeslib==2.48.0.26` (non-Windows Python 3.12), binary

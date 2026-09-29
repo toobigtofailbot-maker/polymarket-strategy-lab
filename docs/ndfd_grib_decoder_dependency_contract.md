@@ -3,7 +3,7 @@
 ## Status and authority
 
 - WP: `S10-NDFD-GRIB-01` — NDFD GRIB2 Decoder Dependency Enablement
-- Governance track: RUNTIME; risk level 3; exact 16-path scope
+- Governance track: RUNTIME; risk level 3; exact 19-path scope (Side14 same-WP amendment)
 - Capability: optional offline NDFD GRIB2 decoding only (`S10_NDFD_GRIB_DECODER_READY`)
 - Product impact: NONE. No `src/` change, no product/runtime network, no weather adapter.
 - Canonical evidence: NONE. The committed fixture is a compatibility oracle only and is never

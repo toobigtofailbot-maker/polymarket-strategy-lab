@@ -8,9 +8,9 @@
   `SOURCE_COMPATIBILITY_BLOCKED:NDFD_DEPENDENCY_REQUIRED` (no GRIB2 template 5.3 decoder)
 - Package class: `RUNTIME_DEPENDENCY_NDFD_GRIB2_ENABLEMENT`; size L
 - Governance: RUNTIME, risk 3, capital at risk USD 0; no draftability certificate required
-- Exact changed-file scope: 16; zero `src/` paths
+- Exact changed-file scope: 19 (Side14 same-WP amendment from 16); zero `src/` paths
 - Branch: `codex/s10-ndfd-grib-01-eccodes`
-- Readiness: `IMPLEMENTATION_READY` (governance track RUNTIME, minimum RUNTIME, 16 files,
+- Readiness: `IMPLEMENTATION_READY` (governance track RUNTIME, minimum RUNTIME, 19 files,
   24 evidence items, 13 normative rules)
 - Authorization: Karl's receipt of the exact package (no second go); merge separately gated
 - Evidence mode: `PRIVATE_REPO_MANUAL_VERIFIED`
@@ -58,6 +58,23 @@ Templates 3.30 / 4.9 / 5.3 (spatial differencing order 2); discipline 0, categor
 - Local Python 3.14 without the optional extra: focused test 13 passed, 0 skipped (decoder tests
   not collected by design).
 
+## Scope Amendment And Validation Notes
+
+- Side14 same-WP amendment (accepted by Karl): exact scope 16 -> 19 paths after the first full
+  suite showed three historical guards not yet understanding a governed dependency/workflow WP.
+  The Hermes prompt/runbook and wallet architecture guards now authorize `.github/workflows/ci.yml`
+  / dependency files only when the active machine spec lists the exact path and grants
+  `workflow_files` / `dependencies` authority; the official-client sandbox guard scans tracked
+  files as raw bytes so binary fixtures no longer crash it (allowed prefixes unchanged).
+- `tools/git/diff_scope_summary.py --require-exact-scope --fail-on-warning`: exact scope PASS
+  with zero extra/missing/protected/generated paths; exit 1 solely because the helper always
+  flags the authorized `pyproject.toml` dependency change as a warning (reported, not weakened).
+- Local Linux replica of the audit job (Docker `python:3.12-slim`, base closure plus the extra,
+  binary ecCodes family): `pip check` clean, `pip-audit` "No known vulnerabilities found".
+- Project-local security tools on the worktree: gitleaks 8.27.2 PASS, Semgrep PASS, pip-audit
+  PASS; npm audit / cargo audit SKIPPED_NOT_APPLICABLE.
+- Authoritative full-suite count, exact-head hosted CI and independent review: see PR body.
+
 ## Capability Boundary
 
 - `NDFD_GRIB_SUPPORTED`: ubuntu-24.04 / CPython 3.12; windows-2022 / CPython 3.12
@@ -89,7 +106,7 @@ Templates 3.30 / 4.9 / 5.3 (spatial differencing order 2); discipline 0, categor
 
 ## Scope Boundary
 
-Changed files (exactly 16):
+Changed files (exactly 19):
 - `docs/ndfd_grib_decoder_dependency_contract.md`
 - `docs/status_entries/S10-NDFD-GRIB-01.md`
 - `docs/deferred_items_log.md`
@@ -106,3 +123,6 @@ Changed files (exactly 16):
 - `tests/test_ndfd_grib_decoder_dependency_contract_docs.py`
 - `tests/test_project_status_docs.py`
 - `tests/test_repo_truth_docs.py`
+- `tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py`
+- `tests/test_wallet_intelligence_architecture_contract_docs.py`
+- `tests/test_official_client_sandbox_boundary.py`
