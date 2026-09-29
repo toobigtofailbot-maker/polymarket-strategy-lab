@@ -433,12 +433,75 @@ def test_transport_allowlist_methods_budget_fail_closed(monkeypatch: pytest.Monk
         operator.BoundedTransport(operator.Ledger(), scripted([(200, {}, b"12345")])).request("GET", url)
     assert excinfo.value.code == "RESPONSE_TOO_LARGE"
     with pytest.raises(operator.TransportFailure) as excinfo:
-        operator.BoundedTransport(operator.Ledger(), scripted([(206, {"content-range": "bytes 0-1/9"}, b"ab")])).request(
+        operator.BoundedTransport(operator.Ledger(), scripted([(206, {"content-range": "bytes 0-1/9"}, b"abc")])).request(
             "GET", "https://archive.pendulumflow.com/v3/2026-09-03/12/2026-09-03T12.parquet", byte_range=(0, 3))
     assert excinfo.value.code == "RANGE_RESPONSE_INVALID"
     store = operator.ArtifactStore(Path("unused"), None, replay=True)
     with pytest.raises(operator.TransportRefused):
         store.gamma_market("12; DROP", operator.Ledger())
+
+
+def test_transport_resets_and_truncation_retry_once_then_fail_closed(tmp_path: Path) -> None:
+    import http.client
+
+    part = "https://archive.pendulumflow.com/v3/2026-09-03/12/2026-09-03T12.parquet"
+    calls: list[int] = []
+
+    def truncated_then(full_second: bool):
+        def fetch(method, url, headers, timeout):
+            calls.append(1)
+            body = b"abcd" if (full_second and len(calls) == 2) else b"ab"
+            return 206, {"content-range": "bytes 0-3/9"}, body
+        return fetch
+
+    ledger = operator.Ledger()
+    assert operator.BoundedTransport(ledger, truncated_then(True)).request("GET", part, byte_range=(0, 4)).body == b"abcd"
+    assert ledger.attempts == 2 and ledger.retries == 1
+    calls.clear()
+    ledger = operator.Ledger()
+    with pytest.raises(operator.TransportFailure) as excinfo:
+        operator.BoundedTransport(ledger, truncated_then(False)).request("GET", part, byte_range=(0, 4))
+    assert excinfo.value.code == "RANGE_TRUNCATED" and ledger.attempts == 2 and ledger.retries == 1
+
+    class ResettingClient:
+        def __init__(self, failures: int) -> None:
+            self.failures = failures
+            self.calls = 0
+
+        def get_market(self, market_id: str):
+            self.calls += 1
+            if self.calls <= self.failures:
+                raise http.client.RemoteDisconnected("Remote end closed connection without response")
+            return SimpleNamespace(data={"id": market_id}, request_info=SimpleNamespace(status_code=200))
+
+    for failures, expect_ok in ((1, True), (2, False)):
+        client = ResettingClient(failures)
+        store = operator.ArtifactStore(tmp_path / f"s{failures}", None, lambda c=client: c)
+        ledger = operator.Ledger()
+        if expect_ok:
+            assert store.gamma_market("3719310", ledger) == {"id": "3719310"}
+        else:
+            with pytest.raises(operator.TransportFailure) as excinfo:
+                store.gamma_market("3719310", ledger)
+            assert excinfo.value.code == "TRANSPORT_ERROR"
+            # The failure is retained and replays identically; no third attempt is ever made.
+            with pytest.raises(operator.TransportFailure):
+                store.gamma_market("3719310", ledger)
+        assert ledger.attempts == 2 and ledger.retries == 1 and client.calls == 2
+
+    def raising(exc):
+        class Opener:
+            def open(self, request, timeout):
+                raise exc
+        return Opener()
+
+    import unittest.mock as mock
+    for exc, kind in ((http.client.RemoteDisconnected("x"), "RESET"), (ConnectionResetError(), "RESET"),
+                      (http.client.IncompleteRead(b""), "RESET"), (OSError("no route"), "UNREACHABLE")):
+        with mock.patch.object(operator, "_NO_REDIRECT_OPENER", raising(exc)):
+            with pytest.raises(operator._TransportError) as excinfo:
+                operator.urllib_fetch("GET", "https://api.weather.gov/stations/KNYC", {}, 1)
+        assert excinfo.value.kind == kind
 
 
 # ── R026 / R027 / R028 end to end ─────────────────────────────────────────────

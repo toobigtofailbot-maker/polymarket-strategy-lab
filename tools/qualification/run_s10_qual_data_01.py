@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import hashlib
+import http.client
 import json
 import os
 from pathlib import Path
@@ -307,20 +308,23 @@ def urllib_fetch(method: str, url: str, headers: Mapping[str, str], timeout: flo
         return error.code, {k.lower(): v for k, v in (error.headers or {}).items()}, body
     except (socket.timeout, TimeoutError):
         raise _TransportError("TIMEOUT") from None
-    except (ConnectionResetError, ConnectionAbortedError):
+    except (ConnectionResetError, ConnectionAbortedError, http.client.HTTPException):
+        # Includes http.client.RemoteDisconnected / IncompleteRead: a transport reset.
         raise _TransportError("RESET") from None
     except urllib.error.URLError as error:
         if isinstance(error.reason, (socket.timeout, TimeoutError)):
             raise _TransportError("TIMEOUT") from None
-        if isinstance(error.reason, (ConnectionResetError, ConnectionAbortedError)):
+        if isinstance(error.reason, (ConnectionResetError, ConnectionAbortedError, http.client.HTTPException)):
             raise _TransportError("RESET") from None
+        raise _TransportError("UNREACHABLE") from None
+    except OSError:
         raise _TransportError("UNREACHABLE") from None
     with response:
         try:
             body = response.read(MAX_SINGLE_RESPONSE + 1)
         except (socket.timeout, TimeoutError):
             raise _TransportError("TIMEOUT") from None
-        except (ConnectionResetError, ConnectionAbortedError):
+        except (ConnectionResetError, ConnectionAbortedError, http.client.HTTPException, OSError):
             raise _TransportError("RESET") from None
         return response.status, {k.lower(): v for k, v in response.headers.items()}, body
 
@@ -378,6 +382,13 @@ class BoundedTransport:
                     continue
                 raise TransportFailure(f"HTTP_{status}")
             if byte_range is not None:
+                if status == 206 and len(body) < byte_range[1] - byte_range[0]:
+                    # A short 206 body is a transport truncation (connection dropped mid-body):
+                    # the same single immediate retry as a timeout/reset, then a closed failure.
+                    if attempt <= MAX_RETRIES_PER_REQUEST:
+                        self.ledger.retries += 1
+                        continue
+                    raise TransportFailure("RANGE_TRUNCATED")
                 if status != 206 or len(body) != byte_range[1] - byte_range[0]:
                     raise TransportFailure("RANGE_RESPONSE_INVALID")
                 content_range = response_headers.get("content-range", "")
@@ -495,7 +506,9 @@ class ArtifactStore:
                     ledger.retries += 1
                     continue
                 break
-            except PolymarketReadOnlyError:
+            except (PolymarketReadOnlyError, ConnectionError, TimeoutError, http.client.HTTPException, OSError):
+                # The existing public client wraps only urllib URLError; a raw connection reset
+                # (e.g. http.client.RemoteDisconnected) is the same transport class here.
                 ledger.record(GAMMA_HOST, None, 0)
                 failure_code = "TRANSPORT_ERROR"
                 if attempt <= MAX_RETRIES_PER_REQUEST:
