@@ -1,6 +1,33 @@
 # Repo Truth Index
 
-## S10-NDFD-GRIB-01 NDFD GRIB2 Decoder Dependency Enablement (current bounded implementation target)
+## S10-QUAL-DATA-01 Weather Qualification Data Readiness (current bounded implementation target)
+
+The canonical contract is `docs/qualification_weather_data_readiness_contract.md`; the operator is
+`tools/qualification/run_s10_qual_data_01.py`; the status fragment is `docs/status_entries/S10-QUAL-DATA-01.md`;
+the frozen package is `docs/wp_specs/S10-QUAL-DATA-01/`. Base `77738717fee422fe83d8bb2b7765c36dfbe6b283`
+(PR #201 / S10-NDFD-GRIB-01 merged, head `cd70800d40f60f4ec20f5b17e107cc56643562a2`). RUNTIME, risk 3, exact
+20-path scope; no dependency, workflow, qualification, gate, provenance or public-client change. Offline
+modules `src/data_layer/analytical_research/pendulumflow_v3.py`, `nws_ndfd_history.py` and
+`qualification_data_readiness.py` make zero network calls; the foreground operator is the only network owner
+(https GET/HEAD/Range to archive.pendulumflow.com, noaa-ndfd-pds.s3.amazonaws.com, gamma-api.polymarket.com via
+the existing public client, api.weather.gov; frozen budgets). S10-QUAL-DATA-01 is data formation/readiness
+only for the PR #200 RESEARCH_SUPPORTIVE daily-rain lineage: target dates 2026-08-18..2026-09-26,
+checkpoints MARKET_OBSERVABLE_PLUS_60M_V1 and TARGET_CLIMATE_DAY_START_V1, 24 h market-history and 48 h NDFD
+lookbacks. PendulumFlow v3 is THIRD_PARTY_NATIVE_FRAME_ARCHIVE / EXTERNAL_THIRD_PARTY_PIT_RECONSTRUCTION and
+never canonical PIT; b0_contract_compatibility is EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION unless
+canonical PIT is independently bound. The terminal is QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT; the authoritative
+replacement run terminated QUAL_DATA_INSUFFICIENT (FROZEN_BUDGET_EXHAUSTED; bundle `weatherqualbundle:sha256:ceca0252b4d41cf9b49591bb3a65ed9e0b79d9321b269ecbab86f5a90ea085e1`, logical dataset
+`weatherqualdataset:sha256:9058a05354390ca7e61bcb47871f93b925e99571f7cc48f40b057eb0e8454413`; 212 evidence-complete rows over 12 target dates; verify-final VERIFIED with zero network).
+The earlier QUAL_DATA_READY run is retained as SUPERSEDED_DEFECTIVE_RUN_D008_D009 evidence (rule-parser coverage
+defect S10-QUAL-DATA-01-D008, truncated manifests D009); see the status fragment. No QualificationCandidate is created and no qualification gate
+is run; WP170/WP172/WP173 remain not started. Live disabled; Gate C is NOT AUTHORIZED; capital/orders 0;
+merge NOT AUTHORIZED.
+
+## S10-NDFD-GRIB-01 NDFD GRIB2 Decoder Dependency Enablement (merged historical predecessor: PR #201)
+
+PR #201 / S10-NDFD-GRIB-01 merged at `77738717fee422fe83d8bb2b7765c36dfbe6b283` with head
+`cd70800d40f60f4ec20f5b17e107cc56643562a2`; the optional ndfd-grib decoder capability is retained and consumed
+unchanged by S10-QUAL-DATA-01. The historical implementation-target record follows unchanged.
 
 The canonical contract is `docs/ndfd_grib_decoder_dependency_contract.md`; the status fragment is
 `docs/status_entries/S10-NDFD-GRIB-01.md`; the frozen package is `docs/wp_specs/S10-NDFD-GRIB-01/`.

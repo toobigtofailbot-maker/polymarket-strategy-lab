@@ -21,7 +21,20 @@
   attempt is authorized. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
   separately gated scopes.
 
-- Current bounded implementation target: S10-NDFD-GRIB-01 (base 3d3e3b673e53dae4d2e3b28a6816264b205bb015,
+- Current bounded implementation target: S10-QUAL-DATA-01 (base 77738717fee422fe83d8bb2b7765c36dfbe6b283,
+  after PR #201 / S10-NDFD-GRIB-01 merged with head cd70800d40f60f4ec20f5b17e107cc56643562a2) forms one bounded,
+  content-addressed weather qualification-data readiness corpus for the PR #200 RESEARCH_SUPPORTIVE daily-rain
+  lineage (PendulumFlow v3 external market history, official NDFD PoP12 vintages, Gamma/NWS rules and labels,
+  two fixed checkpoints, factual counts and execution facts) with terminal QUAL_DATA_READY or
+  QUAL_DATA_INSUFFICIENT. After the Side14 same-WP correction (D008/D009), the authoritative replacement run
+  terminated QUAL_DATA_INSUFFICIENT (frozen byte budget exhausted; 212 evidence-complete rows over 12 target
+  dates; verify-final VERIFIED); the superseded QUAL_DATA_READY run is retained as defect evidence.
+  Data formation only: PendulumFlow is never canonical PIT (B0 compatibility
+  EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION); no QualificationCandidate, no qualification gate run;
+  S10-QUAL-REAL-01 or a B0 compatibility decision is separately gated; WP170/WP172/WP173, Gate C and live remain
+  NOT AUTHORIZED; capital/orders 0.
+
+- Historical predecessor (PR #201 merged at 77738717fee422fe83d8bb2b7765c36dfbe6b283), formerly the bounded implementation target: S10-NDFD-GRIB-01 (base 3d3e3b673e53dae4d2e3b28a6816264b205bb015,
   after PR #200 / S10-ALPHA-REAL-01 merged with head 80faf1dcb32d760a15c5de3c008cd2aefa3a6f12) enables
   optional offline NDFD GRIB2 decoding only: the exact optional extra ndfd-grib (eccodes==2.48.0;
   eccodeslib==2.48.0.26 on non-Windows), proven on ubuntu-24.04 / windows-2022 Python 3.12 against one

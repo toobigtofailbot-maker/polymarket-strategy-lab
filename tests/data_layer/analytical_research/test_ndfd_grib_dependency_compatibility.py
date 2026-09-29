@@ -217,6 +217,24 @@ def test_malformed_fixture_bytes_fail_closed_structurally(mutation: str, code: s
     assert str(FIXTURE) not in str(excinfo.value)
 
 
+def test_production_adapter_structural_codes_match_oracle() -> None:
+    """S10-QUAL-DATA-01: the production adapter enforces the same closed structural codes."""
+    from src.data_layer.analytical_research import nws_ndfd_history
+
+    data = FIXTURE.read_bytes()
+    nws_ndfd_history.validate_grib2_structure(data)
+    assert set(nws_ndfd_history.STRUCTURE_CODES) | {"DECODER_REJECTED"} == REJECTION_CODES
+    for mutated in (b"", data[:12], b"XXXX" + data[4:], data[:7] + b"" + data[8:], data[:-4],
+                    data[:-4] + b"7770"):
+        with pytest.raises(NdfdFixtureRejected) as oracle:
+            _validate_grib2_structure(mutated)
+        with pytest.raises(nws_ndfd_history.NdfdError) as production:
+            nws_ndfd_history.validate_grib2_structure(mutated)
+        assert production.value.code == oracle.value.code
+    header = nws_ndfd_history.parse_pop12_header(data)
+    assert (header.reference_time, header.valid_end) == ("2026-09-03T11:00:00Z", "2026-09-03T12:00:00Z")
+
+
 def test_decoder_presence_matches_capability_mode() -> None:
     if NDFD_GRIB_STRICT:
         # Dedicated hosted ndfd-grib-compat job: decoder must be present and exact.
@@ -239,6 +257,8 @@ _FORBIDDEN_IMPORT_ROOTS = frozenset(
         "src", "tools",
     }
 )
+# S10-QUAL-DATA-01: the only permitted repository import is the offline production NDFD adapter.
+_PRODUCTION_ADAPTER = "src.data_layer.analytical_research.nws_ndfd_history"
 
 
 def test_module_imports_no_network_subprocess_decoder_or_trading_surface() -> None:
@@ -246,8 +266,10 @@ def test_module_imports_no_network_subprocess_decoder_or_trading_surface() -> No
     roots: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
-            roots.update(alias.name.split(".")[0] for alias in node.names)
+            roots.update(alias.name.split(".")[0] for alias in node.names if alias.name != _PRODUCTION_ADAPTER)
         elif isinstance(node, ast.ImportFrom) and node.module:
+            if node.module == "src.data_layer.analytical_research" and [a.name for a in node.names] == ["nws_ndfd_history"]:
+                continue
             roots.add(node.module.split(".")[0])
     assert not roots & _FORBIDDEN_IMPORT_ROOTS, sorted(roots & _FORBIDDEN_IMPORT_ROOTS)
     source = pathlib.Path(__file__).read_text(encoding="utf-8")
@@ -419,3 +441,25 @@ if DECODER_TESTS_DEFINED:
         monkeypatch.setattr(socket, "getaddrinfo", _refuse)
         decoded_offline = _decode(FIXTURE.read_bytes())
         assert _fingerprint(decoded_offline) == EXPECTED_FINGERPRINT
+
+    def test_production_adapter_decodes_committed_fixture() -> None:
+        """S10-QUAL-DATA-01: the PRODUCTION adapter decodes the committed official fixture to the
+        frozen oracle (structural guard, lazy exact-version ecCodes, PoP12 semantics, nearest grid)."""
+        from src.data_layer.analytical_research import nws_ndfd_history
+
+        station = nws_ndfd_history.StationMetadata("KNYC", ORACLE_QUERY[0], ORACLE_QUERY[1], "America/New_York", "Central Park")
+        first = nws_ndfd_history.decode_pop12_message(FIXTURE.read_bytes(), [station])
+        second = nws_ndfd_history.decode_pop12_message(FIXTURE.read_bytes(), [station])
+        assert first == second
+        assert first.header.reference_time == "2026-09-03T11:00:00Z"
+        assert (first.header.valid_start, first.header.valid_end) == ("2026-09-03T00:00:00Z", "2026-09-03T12:00:00Z")
+        decoder_header = dict(first.decoder_header)
+        for key in ("discipline", "parameterCategory", "parameterNumber", "productDefinitionTemplateNumber",
+                    "lengthOfTimeRange", "Nx", "Ny", "numberOfDataPoints", "totalLength"):
+            assert decoder_header[key] == EXPECTED_HEADER[key], key
+        value = first.station_values[0]
+        assert value.grid_index == ORACLE_INDEX and value.pop12_percent == int(ORACLE_VALUE)
+        assert value.distance_km < 3.0
+        with pytest.raises(nws_ndfd_history.NdfdError) as excinfo:
+            nws_ndfd_history.decode_pop12_message(FIXTURE.read_bytes()[:-4], [station])
+        assert excinfo.value.code == "LENGTH_MISMATCH"
