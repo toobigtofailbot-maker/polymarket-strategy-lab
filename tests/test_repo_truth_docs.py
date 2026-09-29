@@ -910,6 +910,9 @@ def test_s10_qual_data_01_repo_truth() -> None:
     assert "Current bounded implementation target: S10-QUAL-DATA-01 (base 77738717fee422fe83d8bb2b7765c36dfbe6b283" in roadmap
     assert "Historical predecessor (PR #201 merged at 77738717fee422fe83d8bb2b7765c36dfbe6b283)" in roadmap
     for item in ("S10-QUAL-DATA-01-D001", "S10-QUAL-DATA-01-D002", "S10-QUAL-DATA-01-D003", "S10-QUAL-DATA-01-D004",
-                 "S10-QUAL-DATA-01-D005", "S10-QUAL-DATA-01-D006", "S10-QUAL-DATA-01-D007"):
+                 "S10-QUAL-DATA-01-D005", "S10-QUAL-DATA-01-D006", "S10-QUAL-DATA-01-D007", "S10-QUAL-DATA-01-D008",
+                 "S10-QUAL-DATA-01-D009", "S10-QUAL-DATA-01-D010"):
         assert f"| {item} |" in deferred, item
     assert "DEFERRED_TO_SEPARATE_COMPATIBILITY_DECISION" in deferred
+    # The real run's terminal and the rule-parser finding are recorded, never hidden.
+    assert "terminated QUAL_DATA_READY" in section and "S10-QUAL-DATA-01-D008" in section

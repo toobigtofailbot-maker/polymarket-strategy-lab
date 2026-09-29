@@ -20,7 +20,7 @@
   containing itself.
 - Merge authorized: NO
 
-Current S10-QUAL-DATA-01 state: PHASE_A_IMPLEMENTED_REAL_RUN_PENDING
+Current S10-QUAL-DATA-01 state: QUAL_DATA_READY
 
 ## Change
 
@@ -54,10 +54,72 @@ Current S10-QUAL-DATA-01 state: PHASE_A_IMPLEMENTED_REAL_RUN_PENDING
 
 ## Real Run
 
-- Phase A candidate validated locally; the single real run (`prepare`, `probe-sources`,
-  `run-readiness`, `verify-final`) follows under Python 3.12 with the merged optional `ndfd-grib`
-  extra in an isolated environment. Actual terminal, counts, ids and network totals are recorded
-  here only after the run.
+Environment: isolated Docker `python:3.12` (CPython 3.12.14) with the unchanged merged base pins plus
+`eccodes==2.48.0` / `eccodeslib==2.48.0.26` (binary wheels; `pip check` clean; ecCodes selfcheck OK). No
+repository dependency change.
+
+- Terminal: QUAL_DATA_READY (reason `EVIDENCE_COMPLETE_ROWS_PRESENT`)
+- Bundle id: weatherqualbundle:sha256:0d37fcab27fb1e4bf128b60dd491a8c9af08d33b7220d38f521bcd2f33c446a6
+- Logical dataset id: weatherqualdataset:sha256:e1863b72800eeecda0f0509f661c50972a00fea915889167488e0088dbda2ab7
+- Plan hash: `fbd30b1e3006e111306ad476f5f529b2645dfcfe0dc71068768bf670d70bcf67` (repo code identity = commit `127d66c`)
+- B0 contract compatibility: EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION
+- verify-final: VERIFIED (zero network; 1457 retained artifacts re-hashed; deterministic replay produced
+  the byte-identical bundle; 24 ready manifests re-validated)
+- Alpha registry: genuine PR #200 registry found under one git worktree root, verified (15 rows, head
+  `alpharegistryentry:sha256:4b9a20f7...`, RESEARCH_SUPPORTIVE), copied and re-verified; AF1 receipt
+  `af1gate:sha256:281c5e05...` FINALIZED AF1_PASS, ten dimensions PASS.
+- Markets: 585 discovered / 119 included / 466 excluded (450 `RULE_SEMANTICS_UNSUPPORTED`,
+  15 `TARGET_DATE_OUTSIDE_CORPUS`, 1 `GAMMA_UNAVAILABLE`).
+- Checkpoint A (`MARKET_OBSERVABLE_PLUS_60M_V1`) usable rows: 104 over 7 independent target dates
+  (2026-08-19, -20, -21, -23, -24, -25, -26); 15 rows of 2026-08-22 excluded
+  `MARKET_HISTORY_COVERAGE_INADMISSIBLE`.
+- Checkpoint B (`TARGET_CLIMATE_DAY_START_V1`) usable rows: 0 (119 `CHECKPOINT_B_MARKET_NOT_OPEN_60M`:
+  markets are created about 11:09Z on the target date, after its local-standard midnight).
+- All 104 rows: one rule cohort (`FIRST_PUBLISHED_FINAL`), best_bid_ask coverage FULL; last_trade_price
+  observed in the searched hours for 7 rows (97 `NOT_OBSERVED_IN_SEARCHED_HOURS`).
+- PendulumFlow hours touched: 117; best_bid_ask coverage over classified hours FULL 92, PARTIAL 16,
+  SINGLE-BY-DESIGN 5, SINGLE-BY-DEFECT 2. Discovery-hour failures: 2026-09-09/12 and 2026-09-24/11
+  (truncated manifest bodies, see D009). 905 non-target `market_resolved` rows with a 32-byte
+  `winning_asset_id` that does not decode canonically were skipped fail-closed; no target market lost its
+  label (0 `LABEL_V3_RESOLUTION_MISSING`).
+- NDFD vintages selected: 7 (one YDUZ98_KWBN object per row date, public 11:48-11:53Z, before every
+  checkpoint); 15 NWS stations.
+- Execution facts (per included market): FEES 35 HISTORICALLY_EVIDENCED / 84 CURRENT_ONLY;
+  RESOLUTION_RULES 119 CURRENT_ONLY; TICK_SIZE_MIN_ORDER 119 CURRENT_ONLY.
+
+### Network accounting
+
+- Pre-run non-authoritative implementation diagnostics (before the governed operator existed; not
+  bound into the bundle and not evidence that any probe/run passed): 24 direct anonymous GETs to the
+  allowlisted hosts totalling exactly 4,842,329 response bytes, plus 2 documentation page fetches
+  (PendulumFlow `formats/v3`, `audit/v3`) whose byte counts are unavailable.
+- Governed operator traffic (only `tools/qualification/run_s10_qual_data_01.py`):
+  - failed first probe (commit 2e6b196): 4 attempts / 526,439 bytes, preserved under
+    `local_data/s10_qual_data_01/diagnostic-probe-attempt-01/`;
+  - fresh probe (commit b9cb207): 14 attempts / 5,330,969 bytes, PROBE_PASS (plan superseded);
+  - first run-readiness (commit b9cb207) stopped without any terminal on an unhandled Gamma connection
+    reset (`http.client.RemoteDisconnected`); preserved under
+    `local_data/s10_qual_data_01/diagnostic-run-attempt-01-transport-interrupted/`;
+  - after the same-scope transport fix (commit 127d66c) the plan was re-prepared, the probe re-run
+    (15 attempts / 5,330,969 bytes, PROBE_PASS) and run-01 resumed from the 327 hash-verified artifacts
+    of the interrupted attempt (failed entries dropped so they received the single retry);
+  - run-01 cumulative ledger (including the interrupted attempt and its one unrecorded crashing Gamma
+    attempt): 1,472 transport attempts, 483,015,050 bytes, 11 immediate retries, max single response
+    11,342,214 bytes; by host: archive.pendulumflow.com 857 / 462,852,459, gamma-api.polymarket.com
+    582 / 2,161,628 (canonical JSON bytes), noaa-ndfd-pds 18 / 17,968,809, api.weather.gov 15 / 32,154.
+  - Budgets never exhausted.
+
+### Findings for Side14 (recorded, not tuned; run-01 is final)
+
+- Rule-parser coverage defect: all 450 `RULE_SEMANTICS_UNSUPPORTED` markets carry wording of the two
+  frozen policies the parser did not match: 420 `LAST_BEFORE_1400_ET` ("as published by 2:00 PM ET on the
+  day following ... the last version published before that time governs"), 30 `LATEST_BEFORE_2359_ET`
+  ("the most recent CLI report ... the last version published before 11:59 PM ET ... governs"). Correcting
+  the parser changes the frozen code digests and would require new network acquisition for those markets,
+  i.e. a second corpus run, which this WP does not authorize. The READY result therefore understates the
+  available corpus (S10-QUAL-DATA-01-D008).
+- Transport: two manifest responses were truncated HTTP 200 bodies accepted without a Content-Length
+  check (S10-QUAL-DATA-01-D009).
 
 ## Boundaries
 
