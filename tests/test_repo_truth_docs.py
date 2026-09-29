@@ -914,5 +914,9 @@ def test_s10_qual_data_01_repo_truth() -> None:
                  "S10-QUAL-DATA-01-D009", "S10-QUAL-DATA-01-D010"):
         assert f"| {item} |" in deferred, item
     assert "DEFERRED_TO_SEPARATE_COMPATIBILITY_DECISION" in deferred
-    # The real run's terminal and the rule-parser finding are recorded, never hidden.
-    assert "terminated QUAL_DATA_READY" in section and "S10-QUAL-DATA-01-D008" in section
+    # The authoritative replacement terminal and the retained superseded defective run are both recorded.
+    assert "replacement run terminated QUAL_DATA_INSUFFICIENT (FROZEN_BUDGET_EXHAUSTED" in section
+    assert "SUPERSEDED_DEFECTIVE_RUN_D008_D009" in section and "S10-QUAL-DATA-01-D008" in section
+    for item in ("S10-QUAL-DATA-01-D011", "S10-QUAL-DATA-01-D012"):
+        assert f"| {item} |" in deferred, item
+    assert "RESOLVED_BY_SIDE14_CORRECTION_A456D2E_REPLACEMENT_RUN_0_UNSUPPORTED" in deferred

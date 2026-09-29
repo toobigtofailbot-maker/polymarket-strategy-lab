@@ -26,8 +26,9 @@
   content-addressed weather qualification-data readiness corpus for the PR #200 RESEARCH_SUPPORTIVE daily-rain
   lineage (PendulumFlow v3 external market history, official NDFD PoP12 vintages, Gamma/NWS rules and labels,
   two fixed checkpoints, factual counts and execution facts) with terminal QUAL_DATA_READY or
-  QUAL_DATA_INSUFFICIENT. The single real run terminated QUAL_DATA_READY (104 checkpoint-A rows over 7 target
-  dates; checkpoint B 0; verify-final VERIFIED; 450 rule-parser misses recorded as S10-QUAL-DATA-01-D008).
+  QUAL_DATA_INSUFFICIENT. After the Side14 same-WP correction (D008/D009), the authoritative replacement run
+  terminated QUAL_DATA_INSUFFICIENT (frozen byte budget exhausted; 212 evidence-complete rows over 12 target
+  dates; verify-final VERIFIED); the superseded QUAL_DATA_READY run is retained as defect evidence.
   Data formation only: PendulumFlow is never canonical PIT (B0 compatibility
   EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION); no QualificationCandidate, no qualification gate run;
   S10-QUAL-REAL-01 or a B0 compatibility decision is separately gated; WP170/WP172/WP173, Gate C and live remain

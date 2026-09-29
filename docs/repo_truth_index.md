@@ -15,10 +15,11 @@ only for the PR #200 RESEARCH_SUPPORTIVE daily-rain lineage: target dates 2026-0
 checkpoints MARKET_OBSERVABLE_PLUS_60M_V1 and TARGET_CLIMATE_DAY_START_V1, 24 h market-history and 48 h NDFD
 lookbacks. PendulumFlow v3 is THIRD_PARTY_NATIVE_FRAME_ARCHIVE / EXTERNAL_THIRD_PARTY_PIT_RECONSTRUCTION and
 never canonical PIT; b0_contract_compatibility is EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION unless
-canonical PIT is independently bound. The terminal is QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT; the single real run
-terminated QUAL_DATA_READY (bundle `weatherqualbundle:sha256:0d37fcab27fb1e4bf128b60dd491a8c9af08d33b7220d38f521bcd2f33c446a6`, logical dataset `weatherqualdataset:sha256:e1863b72800eeecda0f0509f661c50972a00fea915889167488e0088dbda2ab7`,
-104 checkpoint-A rows over 7 target dates, checkpoint B 0 rows, verify-final VERIFIED with zero network). 450 markets
-whose rules use frozen-policy wording the parser missed were excluded (S10-QUAL-DATA-01-D008); see the status fragment. No QualificationCandidate is created and no qualification gate
+canonical PIT is independently bound. The terminal is QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT; the authoritative
+replacement run terminated QUAL_DATA_INSUFFICIENT (FROZEN_BUDGET_EXHAUSTED; bundle `weatherqualbundle:sha256:ceca0252b4d41cf9b49591bb3a65ed9e0b79d9321b269ecbab86f5a90ea085e1`, logical dataset
+`weatherqualdataset:sha256:9058a05354390ca7e61bcb47871f93b925e99571f7cc48f40b057eb0e8454413`; 212 evidence-complete rows over 12 target dates; verify-final VERIFIED with zero network).
+The earlier QUAL_DATA_READY run is retained as SUPERSEDED_DEFECTIVE_RUN_D008_D009 evidence (rule-parser coverage
+defect S10-QUAL-DATA-01-D008, truncated manifests D009); see the status fragment. No QualificationCandidate is created and no qualification gate
 is run; WP170/WP172/WP173 remain not started. Live disabled; Gate C is NOT AUTHORIZED; capital/orders 0;
 merge NOT AUTHORIZED.
 
