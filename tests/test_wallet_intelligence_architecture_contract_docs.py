@@ -611,7 +611,45 @@ def test_no_dependency_or_lock_files_changed() -> None:
         "pdm.lock",
         "Pipfile.lock",
     }
+    spec_deps = _spec_authorized_dependency_paths(changed, forbidden_names)
+    if spec_deps:
+        # A governed WP whose machine spec grants dependencies authority (S10-NDFD-GRIB-01+)
+        # may change exactly the dependency paths its spec lists and nothing else.
+        assert {path for path in changed if Path(path).name in forbidden_names} == spec_deps
+        return
     assert not any(Path(path).name in forbidden_names for path in changed)
+
+
+def _spec_authorized_dependency_paths(changed: list[str], dependency_names: set[str]) -> set[str]:
+    """Exact dependency paths listed by a current WP spec that also grants dependencies authority."""
+    authorized: set[str] = set()
+    for path in changed:
+        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+|S10-[A-Z0-9]+(?:-[A-Z0-9]+)*)\.md", path)
+        if match is None:
+            continue
+        spec_path = ROOT / "docs" / "wp_specs" / match.group(1) / "wp_spec.json"
+        if not spec_path.is_file():
+            continue
+        try:
+            spec = json.loads(spec_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if spec.get("authority", {}).get("dependencies") is not True:
+            continue
+        for listed in spec.get("scope", {}).get("required_changed_files", []):
+            if isinstance(listed, str) and Path(listed).name in dependency_names:
+                authorized.add(listed)
+    return authorized
+
+
+def test_dependency_guard_spec_authority_is_exact_and_bounded() -> None:
+    names = {"pyproject.toml", "uv.lock", "requirements.txt"}
+    assert _spec_authorized_dependency_paths(["docs/status_entries/S10-NDFD-GRIB-01.md"], names) == {
+        "pyproject.toml"}
+    # A spec without dependencies authority grants nothing; unknown specs grant nothing.
+    assert _spec_authorized_dependency_paths(["docs/status_entries/S10-WALLET-01.md"], names) == set()
+    assert _spec_authorized_dependency_paths(["docs/status_entries/S10-NONEXISTENT-99.md"], names) == set()
+    assert _spec_authorized_dependency_paths(["docs/project_status.md"], names) == set()
 
 
 def _changed_files() -> list[str]:

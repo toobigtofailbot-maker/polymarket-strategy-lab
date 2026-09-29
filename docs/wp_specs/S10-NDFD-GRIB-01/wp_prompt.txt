@@ -1,0 +1,973 @@
+Package Identity:
+  WP ID: S10-NDFD-GRIB-01
+  Title: NDFD GRIB2 Decoder Dependency Enablement
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Drafting-time main SHA: 3d3e3b673e53dae4d2e3b28a6816264b205bb015
+  Required software predecessor: PR #200 / S10-ALPHA-REAL-01
+  Required predecessor final head: 80faf1dcb32d760a15c5de3c008cd2aefa3a6f12
+  Required predecessor merge SHA: 3d3e3b673e53dae4d2e3b28a6816264b205bb015
+  Triggering blocker: S10-QUAL-DATA-01 source probe /
+    SOURCE_COMPATIBILITY_BLOCKED:NDFD_DEPENDENCY_REQUIRED
+  Suggested branch: codex/s10-ndfd-grib-01-eccodes
+  Package class: RUNTIME_DEPENDENCY_NDFD_GRIB2_ENABLEMENT
+  Package size class: L
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: optional local/offline NDFD GRIB2 decode capability only
+  Product impact: NONE
+  Network impact: no product/runtime network; PyPI/checkout CI plus one bounded
+    implementation-time official NOAA fixture acquisition only
+  Credential impact: NONE
+  Dependency impact: exact optional ecCodes dependency family only
+  Trading impact: NONE
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: high
+  Reason: native runtime dependency + workflow change requiring cross-platform proof
+  Escalate to higher reasoning or STOP if: exact pinned binary packages cannot install
+    on the frozen Python 3.12 Windows/Linux matrix; NDFD decoding is not reproducible;
+    a source build or different dependency family becomes necessary; or exact scope /
+    authority must expand
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: true
+dependencies: true
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+================================================================================
+0. IMPLEMENTATION AUTHORIZATION — NO SECOND GO
+================================================================================
+
+THIS PACKAGE IS ALREADY IMPLEMENTATION-AUTHORIZED BY KARL.
+
+Karl explicitly requested this next software WP. Receipt of this exact package from Karl
+is the execution instruction for the bounded lifecycle defined below.
+
+Do NOT ask Karl to reply "execute", "confirm", "go", or equivalent.
+
+Once the deterministic package-readiness gate returns IMPLEMENTATION_READY, continue
+automatically through:
+- worktree/branch creation;
+- exact dependency/workflow changes;
+- fixture acquisition;
+- focused implementation/testing;
+- same-scope repair;
+- stable-candidate validation;
+- commit/push;
+- Ready-for-Review PR publication;
+- exact-head hosted CI;
+- independent implementation review;
+- Side14 handoff.
+
+Implementation authority does NOT include:
+- merge;
+- any dependency other than the exact optional ecCodes family defined here;
+- changing the project's global Python support range;
+- S10-QUAL-DATA-01 implementation;
+- qualification/WP170/WP172/WP173;
+- credentials/private APIs;
+- paper/execution/live/Gate C/capital/orders.
+
+Ordinary same-capability code/test/docs/CI corrections inside this exact authority and
+16-path scope belong to this run and do not require another Karl message.
+
+Merge remains a separate Karl decision after Side14 exact-head review.
+
+================================================================================
+1. CURRENT TRUTH / WHY THIS WP EXISTS
+================================================================================
+
+Verified at freeze on 2026-09-28:
+
+- origin/main =
+  3d3e3b673e53dae4d2e3b28a6816264b205bb015
+- open PRs = 0
+- PR #200 is merged
+- S10-QUAL-DATA-01 attempted no implementation and opened no PR
+- its PendulumFlow v3 source probe PASSED
+- its official NDFD source probe reached one genuine blocker:
+  raw historical NDFD GRIB2 is available, but the repo currently has no decoder
+- NCEI subset/OPeNDAP/WCS paths were empirically unavailable in that probe
+- raw GRIB2 access remained available
+- no QualificationCandidate was created
+- no qualification gate was run
+- no WP170/WP172/WP173 work started
+- Gate C remains unauthorized
+- live remains disabled
+- capital/orders remain USD 0 / 0
+
+This WP resolves only that decoder dependency blocker.
+
+It does not retry or perform S10-QUAL-DATA-01.
+
+================================================================================
+2. OBJECTIVE
+================================================================================
+
+Add one isolated, deterministic, optional NDFD GRIB2 decoding dependency capability:
+
+  official fixed NDFD GRIB2 fixture
+      |
+      v
+  exact ecCodes optional dependency
+      |
+      v
+  deterministic offline decode proof
+      |
+      +-- Windows 2022 / Python 3.12
+      +-- Ubuntu 24.04 / Python 3.12
+      |
+      v
+  S10_NDFD_GRIB_DECODER_READY
+
+This package proves only:
+
+> the repository can reproducibly decode the NDFD GRIB2 formats needed by the blocked
+> weather qualification-data workflow using a pinned audited optional dependency.
+
+It does NOT:
+- download weather data at product runtime;
+- implement the historical NDFD adapter;
+- implement PendulumFlow v3;
+- produce qualification data;
+- construct QualificationCandidate;
+- run S10-GATE-QUAL-01;
+- test alpha/profitability;
+- enable paper/live trading.
+
+================================================================================
+3. FROZEN DEPENDENCY DECISION
+================================================================================
+
+Adopt ECMWF ecCodes.
+
+Add one optional extra to pyproject.toml:
+
+  ndfd-grib
+
+Exact direct optional pins:
+
+  eccodes==2.48.0; python_version == "3.12"
+
+and, for non-Windows Python 3.12 only:
+
+  eccodeslib==2.48.0.26;
+    python_version == "3.12" and platform_system != "Windows"
+
+The executor may normalize valid PEP 508 quoting/ordering mechanically, but may not
+change versions or dependency names.
+
+Why this shape:
+
+- `eccodes==2.48.0` is the maintained ECMWF Python GRIB/BUFR interface.
+- PyPI publishes a CPython 3.12 Windows x86-64 binary wheel for 2.48.0.
+- Windows Python 3.14 has no equivalent ecCodes 2.48.0 binary wheel.
+- `eccodeslib==2.48.0.26` publishes CPython 3.12 Linux binary wheels and matches the
+  ecCodes 2.48.0 binary-library family.
+- the existing project-wide `requires-python = ">=3.12,<3.15"` remains unchanged.
+- all existing base runtime dependencies remain unchanged.
+- existing cockpit/test optional extras remain unchanged.
+
+Capability support for this package is therefore:
+
+  NDFD_GRIB_SUPPORTED:
+    ubuntu-24.04 / CPython 3.12
+    windows-2022 / CPython 3.12
+
+  NDFD_GRIB_NOT_CLAIMED:
+    Python 3.13
+    Python 3.14
+    macOS
+    ARM
+
+"Not claimed" is not a regression of the project's global Python support. It applies
+only to this new optional research capability.
+
+Do NOT add:
+- cfgrib
+- xarray
+- grib2io
+- NCEPLIBS-g2c
+- ecmwflibs
+- degrib
+- wgrib2
+- conda
+- custom/vendored GRIB decoder code
+- runtime extension download logic
+- a lock file
+
+Do NOT source-build ecCodes/eccodeslib.
+
+Binary-wheel availability is a package acceptance requirement.
+
+================================================================================
+4. AUTHORITY / NON-AUTHORITY POSTURE
+================================================================================
+
+Implementation authority:
+YES — this exact dependency/workflow/test/docs package and ordinary same-run repairs.
+
+Dependency-change authority:
+YES — only the exact `ndfd-grib` optional extra and exact pins in Section 3.
+
+Workflow-file authority:
+YES — only `.github/workflows/ci.yml`, only for the dedicated NDFD decoder
+compatibility/audit proof described here.
+
+Network authority:
+NO product/runtime network capability. During implementation only, one bounded GET of an
+official NOAA/NCEI/AWS NDFD object may be used to create the committed fixed test fixture.
+Hosted CI may use ordinary checkout/PyPI package-install network. Tests themselves must
+decode the committed fixture and make zero external requests.
+
+Canonical evidence authority:
+NO. The fixture is a compatibility oracle only and is not canonical market/weather
+research evidence.
+
+Report/export authority:
+NONE beyond normal test/PR evidence.
+
+Paper authority: NO.
+Execution authority: NO.
+Live authority: NO.
+Credential authority: NO.
+Runtime/scheduler authority: NO.
+Merge authority: NO.
+
+Protected boundary groups crossed:
+- dependency/lock changes: CROSSED only for pyproject.toml; no lock file exists or may be added
+- workflow files: CROSSED only for .github/workflows/ci.yml
+
+Not crossed:
+- credentials/secrets
+- authenticated clients
+- wallet/account behavior
+- order placement/cancel
+- execution gateway
+- paper engine
+- scheduler/bot loop
+- runtime/daemon
+- dashboard/deployment
+- external code copying
+- generated artifacts
+- Hermes runtime
+- strategy
+- live
+
+================================================================================
+5. START / STATE GATE
+================================================================================
+
+Run:
+
+git fetch origin --prune
+git status --short --branch
+git rev-parse HEAD
+git rev-parse origin/main
+git log -1 --oneline origin/main
+gh pr view 200 --json state,isDraft,headRefOid,mergeCommit
+gh pr list --state open
+git branch --all
+
+Required:
+
+1. PR #200 remains merged with final head
+   80faf1dcb32d760a15c5de3c008cd2aefa3a6f12.
+2. main contains that merge.
+3. no S10-NDFD-GRIB-01 branch/PR with implementation already exists.
+4. the worktree used for this WP is clean.
+5. the generated-artifact preflight passes.
+6. no newer main change materially alters:
+   - pyproject dependency policy;
+   - hosted CI matrix;
+   - dependency security requirements;
+   - active WP/spec guard behavior.
+
+Use a dedicated worktree + new branch where possible:
+
+  codex/s10-ndfd-grib-01-eccodes
+
+The clean blocked S10-QUAL-DATA-01 branch is a different capability. Do not reuse it.
+
+If main is newer but non-conflicting, refresh base fields in prompt/spec/status and continue.
+Do not ask Karl merely because the base SHA advanced harmlessly.
+
+STOP only if newer repo truth materially invalidates this package.
+
+================================================================================
+6. CONTEXT BUDGET
+================================================================================
+
+Read first:
+- AGENTS.md
+- AI_CODING_AGENT_START_HERE.md
+- CODEX_START_HERE.md / CLAUDE_START_HERE.md as applicable
+- docs/project_status.md
+- docs/repo_truth_index.md
+- docs/deferred_items_log.md
+- docs/ai/codex/WP_DRAFTING_STANDARD.md
+- docs/ai/codex/WP_SPEC_STANDARD.md
+- docs/ai/codex/VALIDATION_MATRIX.md
+- docs/ai/codex/PROTECTED_PATHS.md
+- docs/security_tooling_requirements.md
+- docs/security_tooling_status.md
+
+Read for this WP:
+- pyproject.toml
+- .github/workflows/ci.yml
+- tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py
+- tests/research_runtime/nautilus_offline/test_runtime_compatibility.py
+- tests/test_operator_cockpit.py
+- tests/test_project_status_docs.py
+- tests/test_repo_truth_docs.py
+
+Read only if blocked:
+- existing dependency/WP167/WP168 specs
+- full-changed-set historical governance guards
+- project-local security helper implementation
+
+Do not read/touch:
+- credentials/private clients
+- paper/execution/live code
+- qualification.py / qualification_gate.py
+- S10-QUAL-DATA-01 source implementation
+- local Alpha evidence
+- unrelated strategy/Hermes/wallet code
+
+Search terms if needed:
+eccodes; eccodeslib; optional-dependencies; dependency-audit; WP167_DEPS;
+WP171_DEPS; pyproject; workflow; active WP machine spec; full changed set.
+
+================================================================================
+7. PACKAGE MATERIALIZATION / READINESS
+================================================================================
+
+Before dependency or workflow edits, materialize:
+
+- docs/wp_specs/S10-NDFD-GRIB-01/wp_prompt.txt
+- docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json
+
+The spec must encode exactly:
+- Risk 3 / RUNTIME;
+- authority mirror above;
+- exact 16-path scope below;
+- dependency + workflow authority only;
+- no product/runtime network;
+- no credentials/paper/execution/live;
+- exact optional pins;
+- exact supported NDFD decoder matrix;
+- validation/evidence plan;
+- S10-QUAL-DATA-01 as separately gated successor.
+
+Run:
+
+python tools/wp/wp_readiness_gate.py \
+  --wp docs/wp_specs/S10-NDFD-GRIB-01/wp_prompt.txt \
+  --spec docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json \
+  --repo-root .
+
+Required:
+IMPLEMENTATION_READY
+
+Karl's authorization is already present.
+Do not stop after readiness for another confirmation.
+
+Mechanical prompt/spec corrections that do not alter capability, authority or scope remain
+same-run repairs.
+
+================================================================================
+8. FIXED NDFD COMPATIBILITY FIXTURE
+================================================================================
+
+Create exactly one small committed real-data fixture:
+
+tests/fixtures/ndfd_grib/ndfd_pop12_reference.grib2
+
+Source requirements:
+- official NOAA/NCEI or `noaa-ndfd-pds` only;
+- historical NDFD;
+- WMO `YDUZ98_KWBN_*` / CONUS PoP12 family;
+- inside the already researched 2026 weather period;
+- no authentication;
+- no generated/synthetic replacement.
+
+Prefer the exact sample already identified by the prior authorized S10-QUAL-DATA-01
+probe if its local diagnostic is available.
+
+If that local diagnostic is unavailable, choose one fixed representative object from the
+official source family above. This choice is empirical fixture selection, not an architecture
+decision and requires no Karl round trip.
+
+The contract and focused test must freeze:
+- official source locator/object identity;
+- source retrieval date;
+- full downloaded object SHA-256;
+- extracted fixture byte offset/length if the committed fixture is one GRIB message;
+- committed fixture SHA-256;
+- WMO header / issuance timestamp where available;
+- GRIB edition;
+- reference time;
+- grid definition template;
+- product definition template;
+- data representation template;
+- parameter identity;
+- valid time/period;
+- grid shape;
+- one fixed location/index/value compatibility oracle.
+
+Keep the fixture as small as possible while retaining the real NDFD format features that
+blocked the previous package.
+
+Do not commit the full raw source object if one self-contained GRIB message can provide the
+required proof.
+
+No fixture is canonical research evidence.
+
+================================================================================
+9. DECODER COMPATIBILITY TEST
+================================================================================
+
+Add:
+
+tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py
+
+It must prove, using the committed fixture and no network:
+
+1. pyproject declares the exact `ndfd-grib` optional pins.
+2. the project's six current base direct dependencies are unchanged.
+3. project `requires-python` remains `>=3.12,<3.15`.
+4. ecCodes metadata reports exactly the expected Python binding version.
+5. `python -m eccodes selfcheck` / equivalent library availability succeeds in the
+   dedicated CI environment.
+6. the real GRIB2 fixture opens.
+7. the required NDFD PoP12 message can be located deterministically.
+8. reference time and valid-time semantics decode.
+9. grid/product/data-representation template identities equal the frozen fixture oracle.
+10. grid coordinates can be obtained.
+11. one fixed point/index value equals the frozen compatibility oracle within the exact
+    decoder representation semantics.
+12. a canonical bounded decode fingerprint is deterministic.
+13. malformed/truncated fixture bytes fail closed.
+14. no network, credentials, environment secret, subprocess-based external decoder, source
+    build, arbitrary path echo, or trading authority is involved.
+
+The test is a dependency compatibility proof.
+Do not implement the future weather adapter here.
+
+Add a small contract-doc test:
+
+tests/test_ndfd_grib_decoder_dependency_contract_docs.py
+
+It must ensure the canonical dependency/fixture/authority/matrix statements remain present and
+consistent with pyproject/CI/status.
+
+================================================================================
+10. CI CONTRACT
+================================================================================
+
+Preserve all existing CI jobs and the existing 4-way general compatibility matrix unchanged.
+
+Add one dedicated job family:
+
+  ndfd-grib-compat
+
+Matrix:
+- ubuntu-24.04 / Python 3.12
+- windows-2022 / Python 3.12
+
+The job must:
+- checkout with existing LF normalization discipline;
+- set up Python 3.12;
+- install the project/base dependency closure plus the `ndfd-grib` optional extra;
+- require binary distributions for `eccodes` / `eccodeslib`; no source build fallback;
+- run `python -m pip check`;
+- assert exact optional dependency versions actually installed;
+- run ecCodes selfcheck;
+- run the focused NDFD GRIB dependency test;
+- fail on skip.
+
+Add or extend one Ubuntu 24.04 / Python 3.12 dependency-audit surface so the resolved
+`ndfd-grib` closure is also covered by `pip-audit`.
+
+Do not remove or weaken the existing dependency audit.
+
+No test job downloads NDFD data.
+The real fixture is committed.
+
+No secrets.
+No product API.
+No schedule.
+No trading.
+
+================================================================================
+11. SECURITY / DEPENDENCY GATE
+================================================================================
+
+This is a runtime dependency WP.
+
+Before Ready for Review, run the current required project security process:
+
+- generated-artifact guard;
+- gitleaks;
+- Semgrep;
+- pip check;
+- pip-audit against the resolved NDFD optional-dependency environment;
+- exact package/version assertions.
+
+Update docs/security_tooling_status.md truthfully.
+
+A scanner/tool that is genuinely unavailable must be reported according to current repo policy;
+do not falsely mark it PASS.
+
+Material unresolved vulnerability in the exact decoder dependency closure is a hard stop.
+
+The package may not use vendored/copied ecCodes source.
+
+================================================================================
+12. EXACT CHANGED-FILE SCOPE — 16 PATHS
+================================================================================
+
+Required/allowed changed files are exactly:
+
+1.  docs/ndfd_grib_decoder_dependency_contract.md
+2.  docs/status_entries/S10-NDFD-GRIB-01.md
+3.  docs/deferred_items_log.md
+4.  docs/long_term_bot_completion_roadmap.md
+5.  docs/project_status.md
+6.  docs/repo_truth_index.md
+7.  docs/security_tooling_status.md
+8.  docs/wp_specs/S10-NDFD-GRIB-01/wp_prompt.txt
+9.  docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json
+10. pyproject.toml
+11. .github/workflows/ci.yml
+12. tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py
+13. tests/fixtures/ndfd_grib/ndfd_pop12_reference.grib2
+14. tests/test_ndfd_grib_decoder_dependency_contract_docs.py
+15. tests/test_project_status_docs.py
+16. tests/test_repo_truth_docs.py
+
+No 17th path.
+
+Known scope closures:
+- no `src/` change is required;
+- `src/data_layer/analytical_research/` is already an approved namespace, but this WP adds
+  no product/runtime code there;
+- existing base-dependency compatibility tests do not need edits because base direct
+  dependencies are unchanged;
+- existing cockpit optional-dependency test does not need an edit because its `cockpit`
+  extra is unchanged;
+- architecture boundaries do not need an edit;
+- current full-changed-set governance guards can derive the active package authority from
+  this WP's machine spec and therefore do not need bespoke S10-NDFD-GRIB-01 branches.
+
+Run the affected historical full-changed-set guards unchanged during implementation.
+
+If current-main mechanics disprove one of those closure facts and a 17th path is genuinely
+necessary, STOP SCOPE_EXPANSION_REQUIRED rather than silently expanding.
+
+================================================================================
+13. SAME-RUN REPAIR RULE
+================================================================================
+
+Executor owns without Karl interruption:
+- optional-dependency marker/packaging syntax corrections;
+- fixture extraction/size reduction;
+- focused fixture oracle corrections caused by truthful decode;
+- CI command/quoting differences between Bash and Windows-hosted Bash;
+- docs/status/spec reconciliation;
+- ordinary test failures caused by this exact dependency integration;
+- security-tool reporting corrections;
+- PR evidence corrections.
+
+Do not create a follow-up WP for ordinary in-scope defects.
+
+A new amendment/successor is justified only if:
+- a different dependency family is required;
+- a new dependency beyond the exact pins is required as a direct dependency;
+- Python support policy must change;
+- source builds are unavoidable;
+- a new `src/` runtime capability must be added;
+- scope needs a 17th path;
+- credentials/product runtime network/paper/execution/live authority becomes necessary.
+
+================================================================================
+14. TRUE HARD STOPS
+================================================================================
+
+STOP STATE_DRIFT if current main materially changes the dependency/workflow/security policy
+this package relies on — because the package would no longer be frozen against current truth.
+
+STOP DEPENDENCY_COMPATIBILITY_BLOCKED if `eccodes==2.48.0` cannot install from a binary wheel
+and selfcheck on Windows 2022 / Python 3.12 — because Windows is a required decoder target.
+
+STOP DEPENDENCY_COMPATIBILITY_BLOCKED if the exact Linux pins cannot install from binary
+wheels on Ubuntu 24.04 / Python 3.12 — because source compilation is not authorized.
+
+STOP DECODER_SEMANTICS_BLOCKED if the representative real NDFD fixture cannot be decoded
+deterministically on both required targets — because this WP exists specifically to prove that
+format compatibility.
+
+STOP DEPENDENCY_EXPANSION_REQUIRED if cfgrib/xarray/grib2io/NCEPLIBS/ecmwflibs/conda/
+system package installation/custom decoder code becomes necessary — because that is a different
+dependency architecture.
+
+STOP SECURITY_BLOCKED if the exact resolved decoder environment has a material unresolved
+vulnerability — because runtime dependency adoption cannot proceed without the security gate.
+
+STOP SCOPE_EXPANSION_REQUIRED if a 17th changed file is mechanically unavoidable.
+
+STOP AUTHORITY_EXPANSION_REQUIRED if credentials, product-runtime network, scheduler, Hermes,
+strategy, paper, execution, live, Gate C, capital or orders become necessary.
+
+Do NOT stop for:
+- the old S10-QUAL-DATA-01 branch remaining clean/unmerged;
+- ordinary optional-extra TOML syntax;
+- test fixture extraction mechanics;
+- an in-scope CI quoting/test/docs defect;
+- local machine inability to load a native module if the required hosted matrix proves it
+  and current repo policy permits hosted evidence for that class.
+
+================================================================================
+15. ACCEPTANCE REQUIREMENTS
+================================================================================
+
+R001  Startup/live-state gate passes.
+R002  Governed prompt/spec pass IMPLEMENTATION_READY.
+R003  Base Python range remains >=3.12,<3.15.
+R004  Existing base runtime dependency set remains unchanged.
+R005  Existing cockpit/test optional extras remain unchanged.
+R006  Exact `ndfd-grib` optional dependency pins are present.
+R007  No lock file is added.
+R008  No source build is used for eccodes/eccodeslib.
+R009  Fixed official NDFD PoP12 fixture has recorded source + hashes.
+R010  Fixture decodes successfully under Ubuntu 24.04 / Python 3.12.
+R011  Fixture decodes successfully under Windows 2022 / Python 3.12.
+R012  Both targets satisfy the same frozen decode oracle/fingerprint.
+R013  Malformed/truncated fixture fails closed.
+R014  ecCodes selfcheck succeeds on both target jobs.
+R015  pip check succeeds on both target jobs.
+R016  resolved optional dependency environment passes required dependency/security audit.
+R017  Existing general CI compatibility jobs remain unchanged and green.
+R018  Exact 16-path scope is preserved.
+R019  No src/product-network/credential/paper/execution/live authority is introduced.
+R020  Full stable-candidate repository validation is green.
+R021  Exact-head hosted CI is green.
+R022  One combined independent implementation review passes.
+R023  PR evidence is re-fetched and matches exact final head.
+R024  Side14 exact-head review remains separate from executor self-review.
+
+================================================================================
+16. VALIDATION
+================================================================================
+
+While editing:
+run only focused NDFD dependency/contract tests plus immediately affected status/guard tests.
+
+Minimum focused:
+
+python -m pytest -q \
+  tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py \
+  tests/test_ndfd_grib_decoder_dependency_contract_docs.py
+
+Status:
+
+python -m pytest -q \
+  tests/test_project_status_docs.py \
+  tests/test_repo_truth_docs.py
+
+Run the existing mechanically affected full-changed-set governance guards unchanged.
+
+Stable candidate:
+
+python tools/wp/wp_readiness_gate.py \
+  --wp docs/wp_specs/S10-NDFD-GRIB-01/wp_prompt.txt \
+  --spec docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json \
+  --repo-root . \
+  --check-diff \
+  --base <EXECUTION_BASE_SHA> \
+  --head HEAD
+
+python tools/git/diff_scope_summary.py \
+  --base <EXECUTION_BASE_SHA> \
+  --head HEAD \
+  --wp-spec docs/wp_specs/S10-NDFD-GRIB-01/wp_spec.json \
+  --require-exact-scope \
+  --fail-on-warning
+
+python tools/git/preflight_generated_artifact_guard.py
+python tools/security/run_available_security_checks.py
+python -m pip check
+git diff --check <EXECUTION_BASE_SHA> HEAD --
+
+Run ONE authoritative full suite only after the last source-of-truth/fixture/workflow/status
+change:
+
+python -m pytest -q -p no:cacheprovider
+
+Hosted exact-head evidence must include:
+- existing compatibility jobs;
+- existing cockpit/frontend jobs as applicable;
+- dependency audit;
+- both NDFD GRIB compatibility matrix jobs;
+- NDFD optional-dependency audit if implemented as a separate job.
+
+A changed head invalidates previous exact-head validation/review evidence.
+
+================================================================================
+17. PR / EVIDENCE
+================================================================================
+
+Open the PR Ready for Review only after the stable candidate is pushed.
+
+Do not use a Draft PR merely as a parking place.
+
+Before final handoff, re-fetch:
+- PR number/state/body/head;
+- changed files;
+- exact-head check runs;
+- reviews/threads.
+
+PR body must contain:
+- exact base/head;
+- exact 16 changed paths;
+- dependency pins;
+- platform/Python capability boundary;
+- fixture source + hashes;
+- Windows/Linux decode dispositions;
+- pip/security audit results;
+- exact validation commands/results;
+- requirement-to-evidence table R001–R024;
+- Evidence mode;
+- Ready for review: YES only if all mandatory evidence is current.
+
+Executor self-audit is not the independent implementation review.
+
+Merge is not authorized.
+
+================================================================================
+18. REPO-TRUTH / DEFERRED STATUS
+================================================================================
+
+On successful implementation, repo truth must state:
+
+- S10-NDFD-GRIB-01 enables optional offline NDFD GRIB2 decoding only;
+- global Python support remains 3.12–3.14;
+- NDFD decoder capability is proven only on Ubuntu/Windows Python 3.12;
+- S10-QUAL-DATA-01 may be redrafted/resumed next;
+- S10-QUAL-DATA-01 itself remains unimplemented by this WP;
+- no QualificationCandidate exists yet;
+- no real qualification gate receipt exists yet;
+- WP170/WP172/WP173 remain not started for this weather candidate;
+- Gate C remains unauthorized;
+- live remains disabled;
+- capital/orders remain USD 0 / 0.
+
+The previous NDFD decoder blocker may be marked resolved only after exact-head decoder
+compatibility evidence is green.
+
+================================================================================
+19. SUCCESSOR BOUNDARY
+================================================================================
+
+If S10-NDFD-GRIB-01 completes successfully:
+
+Next Side-owned action:
+
+  redraft/resume S10-QUAL-DATA-01
+
+That successor may then use the proven ecCodes optional capability to implement the real
+historical NDFD adapter and weather qualification-data readiness run.
+
+Do NOT automatically implement S10-QUAL-DATA-01 from this package.
+
+If this WP is blocked:
+return the exact hard-stop category and evidence.
+Do not silently adopt another decoder.
+
+================================================================================
+20. FROZEN EXTERNAL SOURCE FACTS
+================================================================================
+
+Verified during pre-draft research on 2026-09-28:
+
+ECMWF ecCodes Python:
+https://pypi.org/project/eccodes/2.48.0/
+
+Relevant frozen facts:
+- version 2.48.0;
+- Apache-2.0;
+- GRIB1/GRIB2 + BUFR decoding;
+- CPython 3.12 Windows x86-64 binary wheel published;
+- no CPython 3.14 Windows x86-64 wheel published for this release.
+
+ECMWF eccodeslib:
+https://pypi.org/project/eccodeslib/2.48.0.26/
+
+Relevant frozen facts:
+- version 2.48.0.26;
+- CPython 3.12 manylinux x86-64 binary wheel published;
+- belongs to ecCodes 2.48.0 binary-library family.
+
+Official ECMWF installation guidance:
+https://github.com/ecmwf/eccodes-python
+https://confluence.ecmwf.int/spaces/ECC/pages/45757987/ecCodes+installation
+
+Official NDFD:
+https://www.ncei.noaa.gov/products/weather-climate-models/national-digital-forecast-database
+https://registry.opendata.aws/noaa-ndfd/
+
+Relevant frozen fact:
+historical/raw NDFD is official public GRIB2 data; the AWS open-data copy requires no account.
+
+External documentation informs dependency compatibility only.
+It grants no repo authority.
+
+================================================================================
+21. FINAL EXECUTOR INSTRUCTION
+================================================================================
+
+Proceed now.
+
+Do not ask Karl for another implementation authorization.
+
+Execute:
+
+startup / fresh worktree
+→ materialize prompt/spec
+→ IMPLEMENTATION_READY
+→ add exact optional dependency
+→ acquire/hash/minimize one official NDFD PoP12 fixture
+→ add focused compatibility + contract tests
+→ add dedicated Python-3.12 Windows/Linux CI + dependency audit
+→ update status/security/repo truth
+→ focused tests / same-run repair
+→ stable candidate
+→ readiness --check-diff / exact scope / security
+→ one authoritative full suite
+→ commit/push
+→ Ready-for-Review PR
+→ exact-head hosted CI
+→ independent implementation review
+→ Side14 handoff
+
+Stop only on the hard stops in Section 14.
+
+Do not merge.
+
+================================================================================
+APPENDIX A. EXECUTOR MATERIALIZATION NOTES (MECHANICAL, NON-EXPANDING)
+================================================================================
+
+Sections 0-21 above are Karl's package text verbatim except for one mechanical correction in
+the governance-authority block: `canonical_evidence_policy` is `true`, not `false`.
+docs/ai/codex/WP_SPEC_STANDARD.md and tools/wp/wp_spec_guard.py map the exact
+`docs/wp_specs/<WP>/` artifacts that Section 7 requires this package to commit onto the
+`canonical_evidence_policy` authority bit; with `false` the required prompt/spec paths are an
+AUTHORITY_CONTRADICTION. The bit covers only this package's own prompt/spec artifacts.
+Section 4 "Canonical evidence authority: NO" is unchanged in meaning: the committed NDFD
+fixture is a compatibility oracle only and is never canonical market/weather research evidence.
+No capability, dependency, workflow, network, credential, paper, execution or live authority
+changes, and scope remains exactly the 16 paths of Section 12.
+
+Fixture selection (Section 8): the prior S10-QUAL-DATA-01 local diagnostic was available and
+identified YDUZ98_KWBN_202609031046 with a 453433-byte first message. The executor fetched that
+exact official object once (anonymous GET) from the noaa-ndfd-pds open-data bucket and committed
+only that first self-contained GRIB2 message. Exact source/hash facts are frozen in
+docs/ndfd_grib_decoder_dependency_contract.md and the focused test.
+
+Collection discipline (Sections 9/10): the existing general compatibility jobs run
+tests/data_layer/analytical_research with a no-skip rule and do not install the optional extra.
+Decoder-dependent tests are therefore defined only when ecCodes is importable or when
+NDFD_GRIB_STRICT=1; the dedicated ndfd-grib-compat jobs set strict mode, so a missing decoder
+fails there. Pin, fixture-identity, structural fail-closed and boundary tests run everywhere.
+The existing jobs stay unchanged and report no skip.
+
+Negative-test matrix (docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md): the fixture structural
+validator in the focused test is a parser-style guard, so the following negative tests apply:
+
+| Case | Expected closed result |
+|---|---|
+| empty bytes | EMPTY |
+| header truncated to 12 bytes | BAD_MAGIC |
+| magic not GRIB | BAD_MAGIC |
+| edition byte 1 | BAD_EDITION |
+| truncated inside data section | LENGTH_MISMATCH |
+| end section removed (ecCodes itself would still decode) | LENGTH_MISMATCH |
+| section-0 total length off by one | LENGTH_MISMATCH |
+| end section not 7777 | MISSING_END_SECTION |
+| ecCodes on raw truncations at 4/16/100/1000/200000 bytes | GribInternalError raised |
+| rejection diagnostics | exactly the closed code; no bytes, path or value echoed |
+
+Evidence plan (requirement mapping): R001-R024 of Section 15 map one-to-one onto the
+spec evidence_plan items; pytest items name the planned focused nodes.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|dependency|ndfd_grib_extra|always|PRESERVE_EXACT|exact_eccodes_and_non_windows_eccodeslib_pins|dependency.ndfd_grib_extra|R006
+NR002|dependency|base_closure|always|PRESERVE_EXACT|six_base_pins_python_range_and_other_extras_unchanged|dependency.base_unchanged|R004
+NR003|dependency|lock_file|always|FORBID|no_lock_or_requirements_file_added|dependency.base_unchanged|R007
+NR004|dependency|install|source_distribution_needed|REJECT|binary_wheels_only_for_eccodes_family|dependency.binary_only|R008
+NR005|fixture|identity|always|PRESERVE_EXACT|official_source_offset_length_and_sha256_frozen|fixture.identity|R009
+NR006|decode|oracle|always|REQUIRE|header_templates_times_point_value_and_fingerprint_equal_oracle|decode.oracle|R012
+NR007|decode|matrix|always|REQUIRE|ubuntu_and_windows_python312_only_capability_claim|decode.supported_matrix|R011
+NR008|decode|structure|malformed_or_truncated|REJECT|closed_code_without_echo|decode.fail_closed|R013
+NR009|decode|collection|decoder_absent_non_strict|ACCEPT|decoder_tests_not_collected_no_skip|decode.collection|R017
+NR010|decode|collection|strict_mode_decoder_absent|REJECT|strict_job_fails|decode.collection|R014
+NR011|authority|network|always|FORBID|product_runtime_network_and_test_time_requests|authority.boundaries|R019
+NR012|authority|trading|always|FORBID|credentials_paper_execution_live_gate_c_capital_orders|authority.boundaries|R019
+NR013|successor|qual_data|always|REQUIRE|s10_qual_data_01_separately_gated_not_implemented|successor.qual_data|R020
+END_NORMATIVE_RULE_MATRIX_V1
+
+Report-back to Side14: exact base/head; PR URL/number and isDraft=false; exact 16 changed
+paths; pins and capability matrix; fixture source/hashes; Ubuntu/Windows decode dispositions
+and fingerprint; pip check / pip-audit / gitleaks / Semgrep results (unavailable tools reported
+as UNAVAILABLE, never PASS); readiness --check-diff and exact-scope results; one authoritative
+full-suite count; exact-head hosted check runs; independent review result; Evidence mode; Ready
+for review; Merge authorized: NO.
+
+================================================================================
+APPENDIX B. SIDE14 SAME-WP SCOPE AMENDMENT (16 -> 19 PATHS)
+================================================================================
+
+Karl accepted Side14's same-WP amendment after the executor stopped with
+SCOPE_EXPANSION_REQUIRED. The full suite showed that three historical guards did not yet
+understand a governed dependency/workflow WP, contradicting the Section 12 closure fact that
+current full-changed-set guards derive authority from the machine spec. The exact scope is now
+19 paths: the 16 paths of Section 12 unchanged, plus exactly:
+
+17. tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py
+18. tests/test_wallet_intelligence_architecture_contract_docs.py
+19. tests/test_official_client_sandbox_boundary.py
+
+No 20th path. Wherever Sections 0-21 say 16 paths, the amended exact scope is 19 paths.
+Guard corrections (compatibility only; historical assertions preserved):
+
+- Hermes prompt/runbook guard: .github/workflows/ci.yml and dependency files are authorized only
+  when the active WP machine spec both lists the exact path and grants workflow_files /
+  dependencies authority; no prefix-level or arbitrary change is authorized.
+- Wallet architecture guard: dependency files are authorized only when the active WP machine spec
+  grants dependencies authority, and the changed dependency set must equal the exact
+  spec-listed set; historical lock-file protections are unchanged.
+- Official-client sandbox guard: tracked files are searched as raw bytes for the ASCII
+  official-client terms, so binary fixtures no longer crash it; text-file results are identical
+  and the allowed path prefixes are unchanged.
+
+Dependency choice, versions, Python policy, fixture, decode oracle, authority and the
+canonical_evidence_policy correction are unchanged. The diff_scope_summary.py dependency-file
+warning continues to be reported truthfully.

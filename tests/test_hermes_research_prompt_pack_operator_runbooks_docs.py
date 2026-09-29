@@ -56,6 +56,54 @@ def _spec_authorized_src_paths(changed) -> set:
     return _spec_authorized_paths(changed, "src/")
 
 
+def _spec_authorized_protected_paths(changed, candidates, authority_key: str) -> set:
+    """Exact workflow/dependency paths a current WP machine spec both lists and authorizes.
+
+    A path counts only when the WP's status entry is in ``changed``, the path is in that
+    spec's ``required_changed_files``, and the spec's ``authority[authority_key]`` is true.
+    No prefix-level or arbitrary dependency/workflow change is ever authorized.
+    """
+    authorized: set = set()
+    for path in changed:
+        match = re.fullmatch(r"docs/status_entries/(WP[0-9A-Za-z]+|S10-[A-Z0-9]+(?:-[A-Z0-9]+)*)\.md", path)
+        if match is None:
+            continue
+        spec_path = REPO_ROOT / "docs" / "wp_specs" / match.group(1) / "wp_spec.json"
+        if not spec_path.is_file():
+            continue
+        try:
+            spec = json.loads(spec_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if spec.get("authority", {}).get(authority_key) is not True:
+            continue
+        for changed_file in spec.get("scope", {}).get("required_changed_files", []):
+            if changed_file in candidates:
+                authorized.add(changed_file)
+    return authorized
+
+
+_WORKFLOW_FILES = frozenset({".github/workflows/ci.yml"})
+_DEPENDENCY_FILES = frozenset({
+    "requirements.txt", "pyproject.toml", "package.json",
+    "package-lock.json", "poetry.lock", "Cargo.toml", "Cargo.lock",
+})
+
+
+def test_hermes_workflow_and_dependency_guard_uses_current_wp_spec_authority() -> None:
+    ndfd = {"docs/status_entries/S10-NDFD-GRIB-01.md"}
+    assert _spec_authorized_protected_paths(ndfd, _WORKFLOW_FILES, "workflow_files") == {
+        ".github/workflows/ci.yml"}
+    assert _spec_authorized_protected_paths(ndfd, _DEPENDENCY_FILES, "dependencies") == {"pyproject.toml"}
+    # A spec without dependency/workflow authority grants neither, even for listed paths.
+    wallet = {"docs/status_entries/S10-WALLET-01.md"}
+    assert _spec_authorized_protected_paths(wallet, _WORKFLOW_FILES, "workflow_files") == set()
+    assert _spec_authorized_protected_paths(wallet, _DEPENDENCY_FILES, "dependencies") == set()
+    assert _spec_authorized_protected_paths({"docs/project_status.md"}, _DEPENDENCY_FILES, "dependencies") == set()
+    assert _spec_authorized_protected_paths(
+        {"docs/status_entries/S10-NONEXISTENT-99.md"}, _WORKFLOW_FILES, "workflow_files") == set()
+
+
 def test_hermes_tool_scope_guard_uses_current_wp_spec_authority() -> None:
     authorized = _spec_authorized_tool_paths({"docs/status_entries/WP168G.md"})
     assert "tools/wp/wp_readiness_gate.py" in authorized
@@ -883,6 +931,10 @@ def test_no_src_implementation_for_wp98() -> None:
                 "src/data_layer/polymarket/polling_policy.py",
             }
     later_authorized_src.update(_spec_authorized_src_paths(changed_files))
+    # Workflow/dependency files are authorized only when the current WP machine spec both
+    # lists the exact path and grants workflow_files/dependencies authority (S10-NDFD-GRIB-01+).
+    spec_workflow = _spec_authorized_protected_paths(changed_files, _WORKFLOW_FILES, "workflow_files")
+    spec_deps = _spec_authorized_protected_paths(changed_files, _DEPENDENCY_FILES, "dependencies")
     for f in changed_files:
         assert not f.startswith("src/") or f in later_authorized_src, (
             f"Forbidden src/ file changed: {f}"
@@ -890,13 +942,11 @@ def test_no_src_implementation_for_wp98() -> None:
         assert not f.startswith("tools/") or f in allowed_later_tools, (
             f"Forbidden tools/ file changed: {f}"
         )
-        assert not f.startswith(".github/workflows/"), f"Forbidden workflow file changed: {f}"
-        forbidden_deps = (
-            "requirements.txt", "pyproject.toml", "package.json",
-            "package-lock.json", "poetry.lock", "Cargo.toml", "Cargo.lock",
+        assert not f.startswith(".github/workflows/") or f in spec_workflow, (
+            f"Forbidden workflow file changed: {f}"
         )
-        for dep in forbidden_deps:
-            assert f != dep, f"Forbidden dependency file changed: {f}"
+        for dep in _DEPENDENCY_FILES:
+            assert f != dep or f in spec_deps, f"Forbidden dependency file changed: {f}"
 
 
 def test_prior_hermes_docs_still_exist_and_canonical() -> None:

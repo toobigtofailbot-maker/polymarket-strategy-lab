@@ -31,6 +31,8 @@ env:
   WP174_DEPS: "polymarket-client==0.10.0 websockets==15.0.1"
   # WP171 optional local cockpit pins (loopback/read-only, no product network).
   WP171_DEPS: "fastapi==0.141.1 uvicorn==0.52.4"
+  # S10-NDFD-GRIB-01 optional `ndfd-grib` extra is read from pyproject.toml by the
+  # dedicated ndfd-grib-* jobs (Python 3.12 only); the general matrix does not install it.
   # Strict DuckDB mode: DuckDB-dependent tests must execute; any import failure or
   # skip in a required hosted job fails the job rather than producing green CI.
   WP167_STRICT_DUCKDB: "1"
@@ -172,6 +174,86 @@ jobs:
         run: python -m pip check
 
       - name: pip-audit resolved environment
+        run: python -m pip_audit
+
+  ndfd-grib-compat:
+    # S10-NDFD-GRIB-01 optional NDFD GRIB2 decoder capability proof. Installs the base
+    # dependency closure plus the exact `ndfd-grib` extra read from pyproject.toml, with
+    # binary wheels only for the ecCodes family (no source build), and decodes the committed
+    # official NDFD PoP12 fixture. No NDFD download, no secrets, no product API, no trading.
+    name: ndfd-grib-compat (${{ matrix.os }} / py3.12)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    env:
+      NDFD_GRIB_STRICT: "1"
+    steps:
+      - name: Normalize line endings before checkout
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install base closure plus exact ndfd-grib extra (binary ecCodes only)
+        run: |
+          python -m pip install --upgrade pip
+          python -c "import tomllib; p = tomllib.load(open('pyproject.toml', 'rb'))['project']; print('\n'.join(p['dependencies'] + p['optional-dependencies']['ndfd-grib']))" > "$RUNNER_TEMP/ndfd_grib_requirements.txt"
+          cat "$RUNNER_TEMP/ndfd_grib_requirements.txt"
+          python -m pip install --only-binary=eccodes,eccodeslib,eckitlib -r "$RUNNER_TEMP/ndfd_grib_requirements.txt" "pytest>=8.0"
+
+      - name: pip check
+        run: python -m pip check
+
+      - name: Assert exact installed ndfd-grib versions
+        run: |
+          python -c "import importlib.metadata as m, platform; assert m.version('eccodes') == '2.48.0', m.version('eccodes'); assert platform.system() == 'Windows' or m.version('eccodeslib') == '2.48.0.26'; print('eccodes', m.version('eccodes'))"
+
+      - name: ecCodes selfcheck
+        run: python -m eccodes selfcheck
+
+      - name: Focused NDFD GRIB dependency tests (strict, no skips permitted)
+        run: |
+          set -o pipefail
+          python -m pytest -rs -q \
+            tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py \
+            tests/test_ndfd_grib_decoder_dependency_contract_docs.py \
+            | tee "$RUNNER_TEMP/ndfd_grib_focused.txt"
+          if grep -Eq "[0-9]+ skipped" "$RUNNER_TEMP/ndfd_grib_focused.txt"; then
+            echo "::error::An NDFD GRIB dependency test was skipped under strict hosted CI"
+            exit 1
+          fi
+
+  ndfd-grib-dependency-audit:
+    name: ndfd-grib-dependency-audit (ubuntu-24.04 / py3.12)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install base closure plus exact ndfd-grib extra and audit tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -c "import tomllib; p = tomllib.load(open('pyproject.toml', 'rb'))['project']; print('\n'.join(p['dependencies'] + p['optional-dependencies']['ndfd-grib']))" > "$RUNNER_TEMP/ndfd_grib_requirements.txt"
+          python -m pip install --only-binary=eccodes,eccodeslib,eckitlib -r "$RUNNER_TEMP/ndfd_grib_requirements.txt" "pytest>=8.0" pip-audit
+
+      - name: pip check
+        run: python -m pip check
+
+      - name: pip-audit resolved ndfd-grib environment
         run: python -m pip_audit
 
   cockpit-frontend:

@@ -4954,8 +4954,11 @@ def test_s10_alpha_real_01_status_truth() -> None:
     lines = _read().splitlines()
     current = next(
         line for line in lines
-        if line.startswith("# S10-ALPHA-REAL-01 current bounded implementation target")
+        if line.startswith("# S10-ALPHA-REAL-01 merged historical truth")
     )
+    assert "PR #200 / S10-ALPHA-REAL-01 merged: YES at 3d3e3b673e53dae4d2e3b28a6816264b205bb015" in current
+    assert "80faf1dcb32d760a15c5de3c008cd2aefa3a6f12" in current
+    assert "RESEARCH_SUPPORTIVE Alpha seed retained" in current
     fragment = (REPO_ROOT / "docs" / "status_entries" / "S10-ALPHA-REAL-01.md").read_text(encoding="utf-8")
     package = REPO_ROOT / "docs" / "wp_specs" / "S10-ALPHA-REAL-01"
     spec = json.loads((package / "wp_spec.json").read_text(encoding="utf-8"))
@@ -4990,7 +4993,7 @@ def test_s10_alpha_real_01_status_truth() -> None:
         "RESEARCH_SUPPORTIVE is not qualification", "capital at risk: USD 0", "orders: 0",
     ):
         assert text in current, text
-    # The seed is the newest current record, above its merged predecessor record.
+    # The seed record sits above its own merged predecessor record.
     assert lines.index(current) < next(
         index for index, line in enumerate(lines)
         if line.startswith("# S10-TEST-WS-01 merged historical truth")
@@ -5012,5 +5015,65 @@ def test_s10_alpha_real_01_status_truth() -> None:
                 "dependencies", "workflow_files"):
         assert spec["authority"][key] is False, key
     assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-REAL-01"
+    assert spec["successor_boundary"]["separately_gated"] is True
+    assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
+
+
+
+def test_s10_ndfd_grib_01_is_current_dependency_enablement_target() -> None:
+    lines = _read().splitlines()
+    current = next(
+        line for line in lines
+        if line.startswith("# S10-NDFD-GRIB-01 current bounded implementation target")
+    )
+    fragment = " ".join(
+        (REPO_ROOT / "docs" / "status_entries" / "S10-NDFD-GRIB-01.md").read_text(encoding="utf-8").split()
+    )
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-NDFD-GRIB-01" / "wp_spec.json").read_text(encoding="utf-8")
+    )
+    for text in (
+        "Governance track: RUNTIME", "Risk level: 3", "Exact changed-file scope: 19",
+        "Frozen base: 3d3e3b673e53dae4d2e3b28a6816264b205bb015",
+        "PR #200 / S10-ALPHA-REAL-01 merged: YES", "80faf1dcb32d760a15c5de3c008cd2aefa3a6f12",
+        "Current branch: codex/s10-ndfd-grib-01-eccodes", "readiness: IMPLEMENTATION_READY (RUNTIME)",
+        "S10-NDFD-GRIB-01 enables optional offline NDFD GRIB2 decoding only",
+        "eccodes==2.48.0", "eccodeslib==2.48.0.26", "global Python support remains 3.12-3.14",
+        "proven only on ubuntu-24.04 / windows-2022 Python 3.12",
+        "ecdac869039c2342f8a8ff8c57aa4fef602728e3257d0de7af5c091047c719ea",
+        "S10-QUAL-DATA-01 may be redrafted/resumed next", "S10-QUAL-DATA-01: NOT IMPLEMENTED by this WP",
+        "QualificationCandidate created: NO", "real qualification gate receipt: NONE",
+        "WP170/WP172/WP173: NOT STARTED", "live: DISABLED", "Gate C: NOT AUTHORIZED",
+        "capital at risk: USD 0", "orders: 0", "src/ changes: 0", "Merge authorized: NO",
+    ):
+        assert text in current, text
+    for stale in ("Merge authorized: YES", "Gate C: AUTHORIZED", "S10-QUAL-DATA-01: IMPLEMENTED",
+                  "QualificationCandidate created: YES", "live: ENABLED"):
+        assert stale not in current, stale
+        assert stale not in fragment, stale
+    for text in ("S10-QUAL-DATA-01: NOT IMPLEMENTED by this WP", "Gate C: NOT AUTHORIZED", "Merge authorized: NO"):
+        assert text in fragment, text
+    # The dependency-enablement target is the newest current record, above its merged predecessor.
+    assert lines.index(current) < next(
+        index for index, line in enumerate(lines)
+        if line.startswith("# S10-ALPHA-REAL-01 merged historical truth")
+    )
+    assert spec["identity"]["wp_id"] == "S10-NDFD-GRIB-01"
+    assert spec["identity"]["risk_level"] == 3
+    assert spec["identity"]["required_predecessor"] == {
+        "pr_number": 200,
+        "head_sha": "80faf1dcb32d760a15c5de3c008cd2aefa3a6f12",
+        "merge_sha": "3d3e3b673e53dae4d2e3b28a6816264b205bb015",
+    }
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 19
+    assert not any(path.startswith("src/") for path in scope["required_changed_files"])
+    for key in ("dependencies", "workflow_files"):
+        assert spec["authority"][key] is True, key
+    for key in ("source_runtime", "network", "credentials", "scheduler", "hermes_runtime", "strategy",
+                "paper", "execution", "live"):
+        assert spec["authority"][key] is False, key
+    assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-DATA-01"
     assert spec["successor_boundary"]["separately_gated"] is True
     assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
