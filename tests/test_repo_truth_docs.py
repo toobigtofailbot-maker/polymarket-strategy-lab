@@ -859,7 +859,8 @@ def test_s10_ndfd_grib_01_repo_truth() -> None:
     security = (ROOT / "docs" / "security_tooling_status.md").read_text(encoding="utf-8")
     section_start = index.index("## S10-NDFD-GRIB-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    assert "(merged historical predecessor: PR #201)" in section
+    assert "77738717fee422fe83d8bb2b7765c36dfbe6b283" in section and "cd70800d40f60f4ec20f5b17e107cc56643562a2" in section
     for text in (
         "docs/ndfd_grib_decoder_dependency_contract.md", "docs/status_entries/S10-NDFD-GRIB-01.md",
         "docs/wp_specs/S10-NDFD-GRIB-01/", "3d3e3b673e53dae4d2e3b28a6816264b205bb015",
@@ -882,3 +883,33 @@ def test_s10_ndfd_grib_01_repo_truth() -> None:
         assert f"| {item} |" in deferred, item
     assert "## S10-NDFD-GRIB-01 Optional NDFD GRIB2 Decoder Security Posture" in security
     assert "never PASS" in security
+
+
+
+def test_s10_qual_data_01_repo_truth() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    roadmap = (ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8")
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    section_start = index.index("## S10-QUAL-DATA-01 ")
+    section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    for text in (
+        "docs/qualification_weather_data_readiness_contract.md", "tools/qualification/run_s10_qual_data_01.py",
+        "docs/status_entries/S10-QUAL-DATA-01.md", "docs/wp_specs/S10-QUAL-DATA-01/",
+        "77738717fee422fe83d8bb2b7765c36dfbe6b283", "cd70800d40f60f4ec20f5b17e107cc56643562a2",
+        "exact 20-path scope", "make zero network calls", "only network owner",
+        "THIRD_PARTY_NATIVE_FRAME_ARCHIVE / EXTERNAL_THIRD_PARTY_PIT_RECONSTRUCTION", "never canonical PIT",
+        "EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION", "QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT",
+        "No QualificationCandidate is created and no qualification gate is run",
+        "WP170/WP172/WP173 remain not started", "Gate C is NOT AUTHORIZED", "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    for claim in ("Gate C is AUTHORIZED", "canonical PIT is available", "qualified: YES", "live ready: YES", "QUAL_PASS"):
+        assert claim not in section, claim
+    assert index.index("## S10-QUAL-DATA-01 ") < index.index("## S10-NDFD-GRIB-01 ") < index.index("## S10-ALPHA-REAL-01 ")
+    assert "Current bounded implementation target: S10-QUAL-DATA-01 (base 77738717fee422fe83d8bb2b7765c36dfbe6b283" in roadmap
+    assert "Historical predecessor (PR #201 merged at 77738717fee422fe83d8bb2b7765c36dfbe6b283)" in roadmap
+    for item in ("S10-QUAL-DATA-01-D001", "S10-QUAL-DATA-01-D002", "S10-QUAL-DATA-01-D003", "S10-QUAL-DATA-01-D004",
+                 "S10-QUAL-DATA-01-D005", "S10-QUAL-DATA-01-D006", "S10-QUAL-DATA-01-D007"):
+        assert f"| {item} |" in deferred, item
+    assert "DEFERRED_TO_SEPARATE_COMPATIBILITY_DECISION" in deferred

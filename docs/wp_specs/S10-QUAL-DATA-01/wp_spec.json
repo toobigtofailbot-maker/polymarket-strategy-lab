@@ -1,0 +1,954 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-QUAL-DATA-01",
+    "title": "Weather Qualification Data Readiness",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "WEATHER_QUALIFICATION_DATA_READINESS",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 201,
+      "head_sha": "cd70800d40f60f4ec20f5b17e107cc56643562a2",
+      "merge_sha": "77738717fee422fe83d8bb2b7765c36dfbe6b283"
+    },
+    "suggested_branch": "codex/s10-qual-data-01-weather-readiness",
+    "objective": "Build one bounded, auditable weather qualification-data readiness corpus for the exact PR #200 NON_WALLET daily-rain lineage: verified PR #200 Alpha registry and AF1 receipt, real rain-market/rule/outcome census, provenance-separated PendulumFlow v3 market history (external, never canonical PIT), official historical NDFD PoP12 vintages decoded by a production offline adapter, exact station/spatial/time binding, two fixed checkpoints, factual counts and execution-feasibility facts, sealed as a content-addressed WeatherQualificationDataReadinessBundle with terminal QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT. Data formation only: no QualificationCandidate, gate run, predictive metric, dependency/workflow change, credential, paper, execution or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/qualification_weather_data_readiness_contract.md",
+      "docs/status_entries/S10-QUAL-DATA-01.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/wp_specs/S10-QUAL-DATA-01/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-DATA-01/wp_spec.json",
+      "src/data_layer/analytical_research/pendulumflow_v3.py",
+      "src/data_layer/analytical_research/nws_ndfd_history.py",
+      "src/data_layer/analytical_research/qualification_data_readiness.py",
+      "tools/qualification/run_s10_qual_data_01.py",
+      "tests/data_layer/analytical_research/test_pendulumflow_v3.py",
+      "tests/data_layer/analytical_research/test_nws_ndfd_history.py",
+      "tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+      "tests/tools/qualification/test_run_s10_qual_data_01.py",
+      "tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+      "tests/test_qualification_weather_data_readiness_contract_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/qualification_weather_data_readiness_contract.md",
+      "docs/status_entries/S10-QUAL-DATA-01.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/wp_specs/S10-QUAL-DATA-01/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-DATA-01/wp_spec.json",
+      "src/data_layer/analytical_research/pendulumflow_v3.py",
+      "src/data_layer/analytical_research/nws_ndfd_history.py",
+      "src/data_layer/analytical_research/qualification_data_readiness.py",
+      "tools/qualification/run_s10_qual_data_01.py",
+      "tests/data_layer/analytical_research/test_pendulumflow_v3.py",
+      "tests/data_layer/analytical_research/test_nws_ndfd_history.py",
+      "tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+      "tests/tools/qualification/test_run_s10_qual_data_01.py",
+      "tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+      "tests/test_qualification_weather_data_readiness_contract_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "local_data/",
+      "secrets/"
+    ],
+    "max_changed_files": 20,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert S10-QUAL-DATA-01. The three offline src modules, the foreground operator, their focused/contract tests, the compatibility-test production-adapter binding and the docs/status/spec artifacts disappear. Ignored local_data evidence is untouched by revert; dependencies, workflows, qualification contracts and all runtime, order and capital state are unchanged.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "No product or trading API is added; the operator consumes the existing verified PolymarketPublicClient.get_market unchanged and public read-only research endpoints only.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These rules freeze lineage, corpus, checkpoints, windows, source authority, structure, clocks, binding, labels, provenance, identity, counts, execution facts, B0 state, network bounds, finalization, authority and successor boundary.",
+    "items": [
+      {
+        "path": "lineage.alpha_registry",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "prepare discovers alpha_registry.sqlite3 only under git worktree roots, verifies the exact 15-row PR #200 snapshot (candidate/family/episode ids, RESEARCH_SUPPORTIVE, head) with the merged registry API, copies and re-verifies it; zero -> ALPHA_LINEAGE_EVIDENCE_MISSING, conflict -> ALPHA_LINEAGE_CONFLICT; never reconstructed.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_prepare_verifies_and_copies_genuine_alpha_registry",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lineage.af1_receipt",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Committed S10-GATE-AF1 evidence must validate as FINALIZED AF1_PASS with receipt af1gate:sha256:281c5e05f5e4f8e30687f232e0289b99b0719c87fab61c8b1d1d417dc0b5cbb2 and ten PASS dimensions, else AF1_EVIDENCE_DRIFT.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_af1_receipt_revalidated_and_bound",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "corpus.target_dates",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Target dates are exactly 2026-08-18 through 2026-09-26 inclusive (40 dates) with no extension.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_frozen_dates_and_checkpoint_formulas",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "checkpoint.market_observable_plus_60m",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "MARKET_OBSERVABLE_PLUS_60M_V1 = max(v3 new_market timestamp_received, trustworthy Gamma open time when present) + 60 minutes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_frozen_dates_and_checkpoint_formulas",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "checkpoint.target_climate_day_start",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "TARGET_CLIMATE_DAY_START_V1 = target-date midnight in the rule-bound station's local standard time with the explicit standard UTC offset; eligible only if observably open >= 60 minutes before.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_frozen_dates_and_checkpoint_formulas",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "window.market_history_lookback",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Market-history evidence lookback is exactly 24 hours before each checkpoint.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_lookback_windows_frozen",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "window.ndfd_vintage_lookback",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "NDFD vintage discovery inspects only PoP12 objects with public availability in [checkpoint - 48h, checkpoint].",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_lookback_windows_frozen",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "feature.no_look_ahead",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "No checkpoint feature evidence may be received or publicly available after the checkpoint; reference/valid time never substitutes availability.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_feature_evidence_never_after_checkpoint",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "pendulumflow.source_class",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "PendulumFlow v3 is THIRD_PARTY_NATIVE_FRAME_ARCHIVE with b0_source_authority EXTERNAL_THIRD_PARTY_PIT_RECONSTRUCTION; never SOURCE_KIND_CANONICAL_PIT or a DatasetSnapshotReference.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_pendulumflow_never_canonical_pit",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "pendulumflow.manifest_validation",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Manifest schema, product byte ranges, row-group bounds and product SHA-256 are validated fail-closed with closed codes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_manifest_validation_fail_closed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "pendulumflow.timestamps",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "timestamp_received (capture availability) and venue timestamp stay distinct; ordering uses timestamp_received; sequence/file order is never claimed as arrival order.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_event_timestamps_remain_distinct",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "pendulumflow.coverage",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "FULL and SINGLE-BY-DESIGN hours are admissible and the class is preserved in provenance.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_coverage_class_admission",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "pendulumflow.coverage_exclusion",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "PARTIAL and SINGLE-BY-DEFECT hours are diagnostic/exclusion only with PARTIALLY_OBSERVED and PARTIAL fidelity.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_coverage_class_admission",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ndfd.structure",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Before ecCodes sees a message: non-empty, GRIB magic, edition 2, section-0 length equals slice length, final 7777; else a closed code.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_grib_structure_rejects_malformed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ndfd.slicing",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Multi-message objects are scanned deterministically into single declared messages; ambiguous/truncated structure rejects.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_multi_message_slicing_deterministic",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ndfd.clocks",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "WMO bulletin time, public availability time (object LastModified bound), GRIB reference time and forecast valid interval are preserved separately.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_pop12_four_clocks_distinct",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ndfd.decoder",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "ecCodes is lazy-imported only on decode paths; the real run requires Python 3.12 with eccodes==2.48.0 (and eccodeslib==2.48.0.26 off Windows).",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_production_adapter_decodes_committed_fixture",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "station.binding",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Station id comes from the rule; NWS metadata supplies coordinate/timezone only; standard offset via stdlib zoneinfo; nearest grid via ecCodes; ambiguity excludes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_station_binding_and_offset_fail_closed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "rule.cohort",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Rule cohort id is SHA-256 over normalized station/product/threshold/LST/finality semantics; FIRST_PUBLISHED_FINAL, LATEST_BEFORE_2359_ET, LAST_BEFORE_1400_ET only; else RULE_SEMANTICS_UNSUPPORTED.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_rule_cohort_parsing_deterministic",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "label.agreement",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Labels require v3 market_resolved and Gamma final outcome agreement and stay separate from checkpoint feature evidence.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_labels_separated_and_require_agreement",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "provenance.ready_subset",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Ready-subset manifests have dq_flags ('OK',), replay fidelity EXACT or FAITHFUL and empty gap summary; manifests stay <=256 items.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_ready_manifest_subset_dq_ok_only",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "identity.dataset",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "weatherqualdataset:sha256 and bundle ids are canonical-JSON SHA-256 over committed content and exclude paths, host, wall-clock, latency and retry timing.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_dataset_identity_path_time_independent_and_mutation_sensitive",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "counts.factual",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Only actual derived counts are reported; no required sample, group, power, MDE or significance threshold is invented.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_counts_factual_no_power_thresholds",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "execution.facts",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "FEES, RESOLUTION_RULES and TICK_SIZE_MIN_ORDER per market use HISTORICALLY_EVIDENCED, CURRENT_ONLY, MISSING or SOURCE_DISAGREEMENT; no AVAILABLE is forced.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_execution_evidence_factual_states",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "b0.compatibility",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "b0_contract_compatibility is EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION unless canonical PIT is independently bound.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_b0_compatibility_external_only",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "network.allowlist",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "Only the operator touches the network: https GET/HEAD/Range to archive.pendulumflow.com, noaa-ndfd-pds.s3.amazonaws.com, gamma-api.polymarket.com, api.weather.gov; no redirect, auth or arbitrary URL.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_transport_allowlist_methods_budget_fail_closed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "network.budget",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "<=40 dates, <=1024 candidates, <=128 stations, <=2000 hours, <=8192 attempts, <=2 GiB bytes, <=256 MiB per response, at most one immediate retry; exhaustion -> QUAL_DATA_INSUFFICIENT.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_transport_allowlist_methods_budget_fail_closed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "operator.finalization",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "run-01 runs once; after a semantic terminal no rerun with changed dates, checkpoints, windows, policy or budgets; verify-final is zero network.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_verify_final_rederives_identities",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.boundaries",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "No QualificationCandidate, qualification gate, WP170/WP172/WP173, credential, scheduler, Hermes, strategy, paper, execution, live, Gate C, capital or order path.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_no_qualification_candidate_gate_or_trading_path",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "successor.boundary",
+        "source": "CONSTANT",
+        "type": "weather_readiness_rule",
+        "required_rule": "The successor (S10-QUAL-REAL-01 or a B0 compatibility decision) is separately gated and not authorized; merge not authorized.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_s10_qual_data_01_is_current_weather_readiness_target",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Content-addressed identities (rule cohort, rows, dataset, bundle) are frozen in the contract and verified by focused mutation/independence pytest nodes; no machine example is needed.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Karl's package-receipt authorization plus RUNTIME readiness permits only this bounded data-readiness lifecycle; merge remains separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 20-path scope, rule matrix and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's receipt of this exact S10-QUAL-DATA-01 package is the implementation and bounded public-network authorization",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside the exact 20-path scope, the single bounded real run terminates truthfully and focused/status/stable-candidate validation passes",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused pytest nodes and the single bounded real run are the executable oracle; machine-spec examples are unnecessary.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R034 map one-to-one onto the Section 21 required test/evidence properties.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "remote-main start gate",
+        "command": "git fetch origin --prune; git rev-parse origin/main; gh pr view 201 --json state,isDraft,headRefOid,mergeCommit; gh pr list --state open; python tools/git/preflight_generated_artifact_guard.py",
+        "expected_result": "origin/main 77738717fee422fe83d8bb2b7765c36dfbe6b283; PR #201 MERGED with head cd70800d40f60f4ec20f5b17e107cc56643562a2 and merge 77738717fee422fe83d8bb2b7765c36dfbe6b283; zero open PRs; artifact guard passed"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "validation",
+        "test": "governed prompt/spec readiness",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-DATA-01/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-DATA-01/wp_spec.json --repo-root .",
+        "expected_result": "IMPLEMENTATION_READY on governance track RUNTIME with 20 scope files and the exact authority mirror"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "validation",
+        "test": "exact 20-path scope",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-DATA-01/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-DATA-01/wp_spec.json --repo-root . --check-diff --base 77738717fee422fe83d8bb2b7765c36dfbe6b283 --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY with diff equal to exactly the 20 required paths; no pyproject, workflow, lock, __init__, qualification, gate, provenance or public-client edit"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_prepare_verifies_and_copies_genuine_alpha_registry",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_01.py",
+        "expected_result": "genuine registry verified by the merged Alpha registry API, copied, re-verified; missing -> ALPHA_LINEAGE_EVIDENCE_MISSING, conflict -> ALPHA_LINEAGE_CONFLICT; no reconstruction"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_af1_receipt_revalidated_and_bound",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_01.py",
+        "expected_result": "committed AF1 evidence validates as FINALIZED AF1_PASS with the exact receipt id and ten PASS dimensions; drift -> AF1_EVIDENCE_DRIFT"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_manifest_validation_fail_closed",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_pendulumflow_v3.py",
+        "expected_result": "malformed manifest, out-of-file or overlapping byte range, row-group bound and sha256 mismatch each return exactly one closed code"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_event_timestamps_remain_distinct",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_pendulumflow_v3.py",
+        "expected_result": "normalized events keep timestamp_received and venue timestamp as separate fields and order by timestamp_received"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_coverage_class_admission",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_pendulumflow_v3.py",
+        "expected_result": "FULL and SINGLE-BY-DESIGN are admissible; PARTIAL and SINGLE-BY-DEFECT are diagnostic-only with PARTIALLY_OBSERVED/PARTIAL"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_grib_structure_rejects_malformed",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_nws_ndfd_history.py",
+        "expected_result": "empty, bad magic, bad edition, length mismatch, missing end section and truncation each reject with one closed code and no echo"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_multi_message_slicing_deterministic",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_nws_ndfd_history.py",
+        "expected_result": "multi-message objects slice into identical declared message offsets/lengths on repeated runs; ambiguous boundaries reject"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_pop12_four_clocks_distinct",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_nws_ndfd_history.py",
+        "expected_result": "bulletin time, public availability, GRIB reference time and valid interval are preserved separately and never substituted"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_production_adapter_decodes_committed_fixture",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
+        "expected_result": "the production nws_ndfd_history adapter decodes the committed fixture to the frozen oracle under strict Python 3.12 ndfd-grib"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_station_binding_and_offset_fail_closed",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_nws_ndfd_history.py",
+        "expected_result": "station binding is deterministic; unknown timezone, id mismatch or missing coordinate excludes the sample"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_frozen_dates_and_checkpoint_formulas",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "exactly 40 target dates 2026-08-18..2026-09-26; checkpoint A = later observable + 60 min; checkpoint B = LST midnight eligible only after 60 min open"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_feature_evidence_never_after_checkpoint",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "market rows received after the checkpoint and NDFD objects public after the checkpoint are never selected"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_labels_separated_and_require_agreement",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "label evidence is held apart from feature evidence; v3/Gamma disagreement or missing resolution excludes the sample"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_rule_cohort_parsing_deterministic",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "rule cohort id is stable across repeats; ambiguous or unknown finality returns RULE_SEMANTICS_UNSUPPORTED"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_lookback_windows_frozen",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "market-history lookback is exactly 24h and NDFD lookback exactly 48h; widened inputs reject"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_pendulumflow_never_canonical_pit",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "PendulumFlow evidence carries THIRD_PARTY_NATIVE_FRAME_ARCHIVE and EXTERNAL_THIRD_PARTY_PIT_RECONSTRUCTION; a canonical-PIT label rejects"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_dataset_identity_path_time_independent_and_mutation_sensitive",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "dataset and bundle ids ignore paths/wall-clock/latency and change on any committed-field mutation or row reorder"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "pytest",
+        "test": "test_ready_manifest_subset_dq_ok_only",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "only DQ OK + EXACT/FAITHFUL + empty gap manifests enter the ready subset; weaker manifests are diagnostic"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "pytest",
+        "test": "test_counts_factual_no_power_thresholds",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "counts equal derived counts; fabricated counts reject; no required-sample, power, MDE or alpha threshold field exists"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "pytest",
+        "test": "test_execution_evidence_factual_states",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "FEES, RESOLUTION_RULES and TICK_SIZE_MIN_ORDER states come only from HISTORICALLY_EVIDENCED/CURRENT_ONLY/MISSING/SOURCE_DISAGREEMENT"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "pytest",
+        "test": "test_b0_compatibility_external_only",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "without independently bound canonical PIT the bundle reports EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "pytest",
+        "test": "test_transport_allowlist_methods_budget_fail_closed",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_01.py",
+        "expected_result": "unlisted host, non-https, redirect, POST, auth header and every budget cap are refused before or at transport"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "pytest",
+        "test": "test_operator_tests_hermetic_no_real_network",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_01.py",
+        "expected_result": "operator tests use fake transports and tmp_path; socket connect is refused and never called"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "validation",
+        "test": "one real run-readiness",
+        "command": "python tools/qualification/run_s10_qual_data_01.py run-readiness",
+        "expected_result": "terminal exactly QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT with actual counts, attempts, bytes and the immutable plan hash"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "pytest",
+        "test": "test_verify_final_rederives_identities",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_01.py",
+        "expected_result": "verify-final re-hashes every raw artifact and re-derives rows, manifests, dataset and bundle ids with zero network; tamper fails"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "pytest",
+        "test": "test_no_qualification_candidate_gate_or_trading_path",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "no qualification/gate/experiment/paper/execution/live import or call is reachable from the new modules or operator"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "test_s10_qual_data_01_is_current_weather_readiness_target",
+        "command": "python -m pytest -q tests/test_project_status_docs.py",
+        "expected_result": "project status marks PR #201 merged historical truth and S10-QUAL-DATA-01 as the current target with actual terminal facts"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "validation",
+        "test": "stable-candidate full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "one authoritative full-suite run with zero failures on the stable candidate"
+      },
+      {
+        "requirement_id": "R032",
+        "source": "github",
+        "test": "exact-head hosted CI",
+        "command": "gh pr checks",
+        "expected_result": "every hosted job green on the exact PR head including the strict ndfd-grib-compat ubuntu-24.04 and windows-2022 jobs"
+      },
+      {
+        "requirement_id": "R033",
+        "source": "validation",
+        "test": "independent implementation review",
+        "command": "separate reviewer context inspects the exact-head diff",
+        "expected_result": "one combined independent implementation review returns PASS or PASS_WITH_NOTES"
+      },
+      {
+        "requirement_id": "R034",
+        "source": "github",
+        "test": "re-fetched PR evidence",
+        "command": "gh pr view --json number,state,isDraft,headRefOid,body,files",
+        "expected_result": "PR state, head, body and files re-fetched and consistent with the exact final head before Ready for review YES"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-QUAL-REAL-01",
+    "next_title": "Real QualificationCandidate formation, only after Side14 review of this bundle and, when B0 is external-only, a separately gated B0 provenance/qualification-contract compatibility decision; not authorized by this WP",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-QUAL-REAL-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "any dependency, lock or pyproject change",
+      ".github/workflows change",
+      "src/data_layer/analytical_research/__init__.py edit",
+      "qualification.py, qualification_gate.py, experiment_os.py, research_provenance.py, external_dataset.py, pmxt_v2.py or public_client.py edit",
+      "QualificationCandidate construction or S10-GATE-QUAL-01 evaluation",
+      "sample-power thresholds, split sizes, Brier/log-loss or any predictive metric",
+      "labelling PendulumFlow evidence canonical PIT or fabricating a DatasetSnapshotReference",
+      "widening dates, checkpoints, lookbacks, allowlist or budgets during the run",
+      "a second real run-readiness after a semantic terminal",
+      "credentials, private or authenticated endpoints, Hermes/provider/model calls, scheduler or background service",
+      "WP170, WP172, WP173, strategy, paper, execution, live, Gate C, capital or orders"
+    ]
+  }
+}

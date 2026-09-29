@@ -1,0 +1,1585 @@
+Package Identity:
+  WP ID: S10-QUAL-DATA-01
+  Title: Weather Qualification Data Readiness
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Drafting-time main SHA: 77738717fee422fe83d8bb2b7765c36dfbe6b283
+  Required predecessor: PR #201 / S10-NDFD-GRIB-01
+  Required predecessor final head: cd70800d40f60f4ec20f5b17e107cc56643562a2
+  Required predecessor merge SHA: 77738717fee422fe83d8bb2b7765c36dfbe6b283
+  Historical Alpha predecessor: PR #200 / S10-ALPHA-REAL-01
+  Suggested branch: codex/s10-qual-data-01-weather-readiness
+  Package class: WEATHER_QUALIFICATION_DATA_READINESS
+  Package size class: L
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: bounded public read-only research-data acquisition into ignored local evidence plus deterministic offline normalization
+  Product impact: NONE
+  Network impact: bounded public GET/HEAD/Range only against the exact allowlist in this package
+  Credential impact: NONE
+  Dependency impact: NONE; consumes merged optional ndfd-grib capability unchanged
+  Trading impact: NONE
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: high
+  Reason: one bounded real-data corpus run crosses public-network, external-history, PIT/provenance and cross-platform decoder boundaries without trading authority
+  Escalate to higher reasoning or STOP if: predecessor/source contracts materially drift; the exact 20-path scope is insufficient; a dependency/workflow/qualification-contract change becomes necessary; the real PR #200 Alpha lineage cannot be independently verified; or any credential/private/paper/execution/live authority is required
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+================================================================================
+0. EXECUTOR ROUTING + IMPLEMENTATION AUTHORIZATION
+================================================================================
+
+SEND THIS WP TO: A NEW CLAUDE CODE CHAT / SESSION.
+
+Reason:
+- PR #201 is merged;
+- this is a new capability on fresh main;
+- the earlier blocked S10-QUAL-DATA-01 branches are historical local evidence only and must
+  not be reused as implementation branches;
+- the package is self-contained.
+
+THIS PACKAGE IS ALREADY IMPLEMENTATION-AUTHORIZED BY KARL.
+
+Karl explicitly asked Side14 to produce the next software WP. Receipt of this exact package
+from Karl is the execution instruction for the bounded lifecycle below.
+
+Do NOT ask Karl for another "execute", "confirm", "go", public-network approval, or runtime
+approval for the specifically bounded public GET/HEAD/Range work authorized here.
+
+After deterministic readiness returns IMPLEMENTATION_READY, continue automatically through:
+- fresh worktree/branch creation;
+- the exact scoped implementation;
+- bounded source smoke/drift probes;
+- one bounded real `run-readiness` corpus run;
+- same-scope repairs;
+- final local validation;
+- commit/push;
+- Ready-for-Review PR;
+- exact-head hosted CI;
+- one combined independent implementation review;
+- final Side14 handoff.
+
+NOT authorized:
+- merge;
+- dependency or workflow changes;
+- credentials/private/authenticated endpoints;
+- Hermes/provider/model calls;
+- scheduler/background service;
+- a QualificationCandidate;
+- qualification-gate execution;
+- WP170/WP172/WP173;
+- strategy/paper/execution/live/Gate C/capital/orders;
+- any successor package.
+
+Merge remains a separate Karl decision after Side14 exact-head review.
+
+================================================================================
+1. LIVE FREEZE / PREDECESSORS
+================================================================================
+
+Verified at Side14 freeze:
+
+Current main:
+  77738717fee422fe83d8bb2b7765c36dfbe6b283
+
+Open PRs:
+  0
+
+PR #201 / S10-NDFD-GRIB-01:
+  MERGED
+  final head:
+    cd70800d40f60f4ec20f5b17e107cc56643562a2
+  merge:
+    77738717fee422fe83d8bb2b7765c36dfbe6b283
+
+Merged PR #201 proves:
+- optional `ndfd-grib` capability;
+- eccodes==2.48.0 on Python 3.12;
+- eccodeslib==2.48.0.26 on non-Windows Python 3.12;
+- Windows 2022 / Python 3.12 decode PASS;
+- Ubuntu 24.04 / Python 3.12 decode PASS;
+- matching frozen decoder fingerprint;
+- dependency audit PASS;
+- no source weather adapter yet;
+- no qualification candidate/gate run.
+
+Historical PR #200 real Alpha lineage remains:
+  alpha candidate:
+    alphacandidate:sha256:2d1523c8086acf536ad07512e1eaffed9cb9405b65e83c87b89b40ba77ee3add
+  family:
+    alphafamily:sha256:136000bd56f2fc27cf490cf675ddf2715b0acfc1ee934aa5cdf2579925c208d8
+  episode:
+    alphaepisode:sha256:2e4c0f484649930ba2677bc360070f0e9ba6ef0e09ecd23b383a32ff3b69000c
+  dedicated registry head:
+    alpharegistryentry:sha256:4b9a20f7f0e931dfea7cced80a64d7a4be7ccc58e265dbb9ebde15edb2d79847
+  terminal:
+    RESEARCH_SUPPORTIVE
+
+Canonical committed AF1 predecessor receipt:
+  af1gate:sha256:281c5e05f5e4f8e30687f232e0289b99b0719c87fab61c8b1d1d417dc0b5cbb2
+
+RESEARCH_SUPPORTIVE and AF1_PASS remain research-system evidence only. Neither proves
+qualification, predictive edge, profitability, execution readiness, paper/live readiness or
+Gate C.
+
+================================================================================
+2. OBJECTIVE — ONE CAPABILITY
+================================================================================
+
+Build one bounded, auditable weather qualification-data readiness corpus for the exact PR #200
+NON_WALLET daily-rain research lineage:
+
+  verified PR #200 Alpha lineage
+  + real rain-market/rule/outcome census
+  + provenance-separated PendulumFlow v3 market history
+  + official historical NDFD PoP12 forecast vintages
+  + exact station/spatial/time binding
+  + two fixed readiness checkpoints
+  + factual sample / independent-date / missingness counts
+  + factual execution-feasibility evidence inventory
+        |
+        v
+  content-addressed WeatherQualificationDataReadinessBundle
+        |
+        +-- QUAL_DATA_READY
+        +-- QUAL_DATA_INSUFFICIENT
+
+This WP is DATA FORMATION / READINESS ONLY.
+
+It does NOT:
+- build or validate a real QualificationCandidate;
+- run S10-GATE-QUAL-01;
+- choose sample-power thresholds;
+- choose final experiment split sizes;
+- calculate Brier/log-loss or predictive performance;
+- tune a checkpoint;
+- implement a weather feature/model;
+- claim a canonical-PIT B0 source from third-party history;
+- calculate edge/economics/slippage/capacity;
+- paper trade;
+- execute/live trade.
+
+================================================================================
+3. SIDE14 CORRECTIONS TO THE PRE-DRAFT RESEARCH
+================================================================================
+
+The attached pre-draft direction is accepted with these binding corrections.
+
+3.1 QUAL_DATA_READY is NOT gate/sample-power readiness.
+
+The existing qualification gate owns SAMPLE_POWER_READINESS. This WP records actual:
+- usable sample count;
+- independent target-date count;
+- per-checkpoint count;
+- exclusion/missingness counts;
+- source/evidence completeness.
+
+It MUST NOT invent:
+- required sample count;
+- required independent-group count;
+- min_samples_per_role;
+- MDE;
+- target power;
+- alpha/significance threshold.
+
+`QUAL_DATA_READY` means only:
+
+> the frozen corpus run completed truthfully and produced at least one evidence-complete
+> weather + market-history + rule + outcome row at a predeclared checkpoint, with all source
+> authority, provenance, exclusions and missing execution facts exposed well enough for Side14
+> to choose the next qualification step.
+
+It does NOT mean a future qualification gate will PASS or even that a current
+QualificationCandidate can already be built without a separate compatibility decision.
+
+3.2 Do not relabel PendulumFlow as canonical PIT.
+
+The current qualification contract describes B0 `PIT_MARKET_PROBABILITY_V1` using canonical
+PIT market evidence. PendulumFlow v3 is explicitly:
+
+  THIRD_PARTY_NATIVE_FRAME_ARCHIVE
+
+Therefore this WP must record:
+
+  b0_source_authority = EXTERNAL_THIRD_PARTY_PIT_RECONSTRUCTION
+
+for PendulumFlow-derived checkpoint market history.
+
+Never emit:
+- SOURCE_KIND_CANONICAL_PIT;
+- DatasetSnapshotReference for PendulumFlow;
+- a claim that external history already satisfies the current canonical-B0 contract.
+
+The final bundle must contain:
+
+  b0_contract_compatibility:
+    CANONICAL_PIT_AVAILABLE
+    OR
+    EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION
+
+For this WP's PendulumFlow path, the latter is the expected truthful state unless genuine
+existing canonical PIT evidence for the same samples is independently bound without fabrication.
+
+This is not a hard stop for DATA formation. It controls the successor:
+- canonical B0 actually available -> S10-QUAL-REAL-01 may be the next draft;
+- external-only B0 -> a separately gated minimal B0 provenance/contract compatibility decision
+  is required before S10-QUAL-REAL-01.
+
+Do not modify `qualification.py`, `qualification_gate.py`, their contracts, WP170, or canonical
+PIT semantics in this WP.
+
+3.3 Preserve the real PR #200 Alpha registry, not just its documented IDs.
+
+The PR #200 dedicated Alpha registry is ignored local evidence, not a committed repo database.
+`prepare` must locate and verify the genuine existing registry; it must never reconstruct one
+from status-document IDs.
+
+See Section 8.
+
+3.4 Contract drift protection is worth one file.
+
+Use the full L budget of 20 paths by adding one focused contract-doc test. Do not expand beyond
+20.
+
+================================================================================
+4. AUTHORITY / NON-AUTHORITY POSTURE
+================================================================================
+
+Implementation authority:
+YES — exact 20-path package plus ordinary same-capability repairs within those paths.
+
+Report/export authority:
+Local ignored corpus/evidence artifacts plus sanitized PR evidence only.
+
+Canonical evidence policy authority:
+YES only for this WP's governed prompt/spec and use of the existing common provenance APIs.
+No new canonical PIT authority.
+
+Network authority:
+YES, bounded public read-only traffic only as specified in Sections 16–17.
+
+Dependency-change authority:
+NO.
+
+Workflow-file authority:
+NO.
+
+Credential authority:
+NO.
+
+Runtime/scheduler authority:
+NO scheduler/daemon/background service. One manual foreground bounded operator run is authorized.
+
+Paper authority:
+NO.
+
+Execution authority:
+NO.
+
+Live authority:
+NO.
+
+Merge authority:
+NO.
+
+Boundary groups NOT crossed:
+- credentials/secrets;
+- authenticated/private clients;
+- wallet/account;
+- order placement/cancel;
+- execution gateway;
+- paper engine;
+- scheduler/bot loop;
+- service/daemon;
+- deployment;
+- dependency/lock;
+- workflow;
+- external copied/vendored code;
+- Gate C;
+- capital/orders.
+
+Generated evidence under `local_data/` is ignored and never committed.
+
+================================================================================
+5. START / REMOTE-MAIN GATE
+================================================================================
+
+Run before branch creation:
+
+git fetch origin --prune
+git status --short --branch
+git rev-parse origin/main
+git log -1 --oneline origin/main
+gh pr view 201 --json state,isDraft,headRefOid,mergeCommit
+gh pr list --state open
+git branch --all
+git worktree list --porcelain
+python tools/git/preflight_generated_artifact_guard.py
+
+Required:
+1. PR #201 remains MERGED.
+2. PR #201 final head is exactly
+   cd70800d40f60f4ec20f5b17e107cc56643562a2.
+3. main contains merge
+   77738717fee422fe83d8bb2b7765c36dfbe6b283.
+4. no open S10-QUAL-DATA-01 PR exists.
+5. generated-artifact guard passes.
+6. no current-main material change invalidates:
+   - PR #201 decoder contract;
+   - qualification/provenance interfaces;
+   - current WP readiness/spec rules;
+   - public-client Gamma-by-id interface;
+   - current spec-derived source/tool scope guards.
+
+If origin/main is a harmless descendant of the drafting-time SHA:
+- inspect only the controlling delta;
+- use that current main as EXECUTION_BASE_SHA;
+- mechanically reconcile base fields in the governed prompt/spec/status;
+- continue without asking Karl.
+
+If the controlling semantics changed materially:
+STOP `STATE_DRIFT`.
+
+Create a NEW dedicated worktree/branch from current main:
+  codex/s10-qual-data-01-weather-readiness
+
+Do not reuse any prior blocked/abandoned S10-QUAL-DATA branch.
+
+Old worktrees may be inspected READ-ONLY only for the exact PR #200 ignored Alpha-registry
+discovery in Section 8.
+
+================================================================================
+6. CONTEXT BUDGET / PRE-FREEZE GUARD DISCOVERY
+================================================================================
+
+Read first:
+- AGENTS.md
+- AI_CODING_AGENT_START_HERE.md
+- CODEX_START_HERE.md / CLAUDE_START_HERE.md as applicable
+- docs/project_status.md
+- docs/repo_truth_index.md
+- docs/deferred_items_log.md
+- docs/long_term_bot_completion_roadmap.md
+- docs/ai/codex/WP_DRAFTING_STANDARD.md
+- docs/ai/codex/WP_SPEC_STANDARD.md
+- docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md
+- docs/ai/codex/VALIDATION_MATRIX.md
+- docs/ai/codex/PROTECTED_PATHS.md
+
+Read for this WP:
+- docs/ndfd_grib_decoder_dependency_contract.md
+- docs/status_entries/S10-NDFD-GRIB-01.md
+- docs/alpha_real_non_wallet_seed_contract.md
+- docs/status_entries/S10-ALPHA-REAL-01.md
+- docs/qualification_candidate_contract.md
+- docs/qualification_gate_contract.md
+- docs/gate_evidence/S10-GATE-AF1/af1_gate_evidence.json
+- src/data_layer/analytical_research/alpha_factory_registry.py
+- src/data_layer/analytical_research/external_dataset.py
+- src/data_layer/analytical_research/qualification.py (read-only)
+- src/data_layer/analytical_research/qualification_gate.py (read-only)
+- src/data_layer/point_in_time_market_research/research_provenance.py
+- src/data_layer/polymarket/public_client.py
+- tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py
+- current full-changed-set guard implementations that inspect src/tools scope
+
+Read only if mechanically blocked:
+- S10-QUAL-01 / S10-GATE-QUAL-01 specs/tests;
+- WP175D external-history bridge contract for provenance precedent;
+- adjacent current source/test implementation.
+
+Do not broadly read unrelated wallet/Hermes/execution/live history.
+
+Before implementation freeze, prove:
+- `src/data_layer/analytical_research/` is already an approved source namespace;
+- current guards derive current S10 source/tool exact paths from its machine spec;
+- `tools/qualification/run_s10_qual_data_01.py` needs no proactive historical-guard edit;
+- no dependency/workflow edit is mechanically needed.
+
+A later ordinary assertion/test defect inside the exact capability remains same-run repair.
+A genuinely required 21st changed path is a true scope stop.
+
+================================================================================
+7. GOVERNED PACKAGE MATERIALIZATION / READINESS
+================================================================================
+
+Before product source edits, materialize:
+
+- docs/wp_specs/S10-QUAL-DATA-01/wp_prompt.txt
+- docs/wp_specs/S10-QUAL-DATA-01/wp_spec.json
+
+The governed prompt must preserve this package's semantics.
+
+Machine spec:
+- schema 1.0.0;
+- size L;
+- max/required/allowed paths exactly 20;
+- risk 3;
+- RUNTIME;
+- authority mirror exactly as above;
+- dependencies=false;
+- workflow_files=false;
+- credentials/paper/execution/live=false;
+- successor boundary from Section 23;
+- exact requirements/evidence plan from Section 21.
+
+Run:
+
+python tools/wp/wp_readiness_gate.py \
+  --wp docs/wp_specs/S10-QUAL-DATA-01/wp_prompt.txt \
+  --spec docs/wp_specs/S10-QUAL-DATA-01/wp_spec.json \
+  --repo-root .
+
+Required:
+  IMPLEMENTATION_READY
+
+Karl's implementation authorization is already present.
+Do not stop for a second authorization after readiness.
+
+Mechanical prompt/spec repairs that preserve capability/scope/authority remain same-run.
+
+================================================================================
+8. PR #200 ALPHA + AF1 BINDING
+================================================================================
+
+`prepare` is zero-network and must establish the genuine research lineage before corpus work.
+
+8.1 Alpha registry discovery
+
+Expected historical relative path:
+  local_data/s10_alpha_real_01/attempt-01/alpha_registry.sqlite3
+
+Discover candidates only beneath Git worktree roots returned by:
+  git worktree list --porcelain
+
+Do not crawl arbitrary filesystem roots.
+
+For each candidate:
+- identify the correct Alpha registry application;
+- load and fully verify with existing Alpha registry APIs;
+- require exact semantic snapshot:
+  - 15 rows;
+  - candidate id = frozen candidate above;
+  - family id = frozen family above;
+  - episode id = frozen episode above;
+  - episode result_state = RESEARCH_SUPPORTIVE;
+  - head = frozen registry head above.
+
+Rules:
+- zero valid exact snapshots ->
+    STOP `ALPHA_LINEAGE_EVIDENCE_MISSING`;
+- two valid snapshots with different semantic content/head ->
+    STOP `ALPHA_LINEAGE_CONFLICT`;
+- multiple byte/path copies of the same verified semantic snapshot are acceptable.
+
+Copy one verified registry into the new ignored run workspace.
+The source absolute path MUST NOT enter logical identity, bundle output or PR evidence.
+Verify the copied registry again.
+
+Never:
+- reconstruct a registry from documented IDs;
+- rerun PR #200 research;
+- mutate the old registry.
+
+8.2 AF1
+
+Read the committed canonical S10-GATE-AF1 evidence.
+Require validator-valid FINALIZED AF1_PASS with the exact receipt id above and all ten dimensions
+PASS.
+
+Mismatch ->
+  STOP `AF1_EVIDENCE_DRIFT`.
+
+================================================================================
+9. FROZEN CORPUS + TWO CHECKPOINTS
+================================================================================
+
+Target dates are exactly:
+  2026-08-18 through 2026-09-26 inclusive
+
+No date extension during the run.
+
+A disappointing count is a valid result.
+
+Checkpoint A:
+  MARKET_OBSERVABLE_PLUS_60M_V1
+
+For each market:
+- v3 `new_market.timestamp_received` is required;
+- if a trustworthy Gamma start/open timestamp is also present, conservative observable time is
+  the later of the two;
+- if Gamma open time is absent, use the v3 receive time;
+- checkpoint = conservative observable time + 60 minutes.
+
+Checkpoint B:
+  TARGET_CLIMATE_DAY_START_V1
+
+Definition:
+- target date midnight using the rule-bound station's LOCAL STANDARD TIME;
+- station standard UTC offset is preserved explicitly;
+- checkpoint is eligible only if the market was observably open >=60 minutes beforehand.
+
+This WP does not choose a final experiment checkpoint.
+
+For market-history evidence at each checkpoint:
+  fixed maximum lookback = 24 hours
+
+For NDFD vintage discovery at each checkpoint:
+  inspect only official PoP12 objects with public-availability evidence in
+  [checkpoint - 48 hours, checkpoint]
+
+No window may be widened after seeing missingness or performance.
+
+No predictive metric is computed anywhere in this WP.
+
+================================================================================
+10. RAIN-MARKET / RULE / LABEL CENSUS
+================================================================================
+
+Discovery authority:
+- PendulumFlow v3 `new_market` is the bounded family-discovery source.
+- Use its real market integer `id`, condition id (`market`), assets/tokens, question/slug and
+  receive time.
+- Enrich each discovered candidate only through existing verified
+  `PolymarketPublicClient.get_market(integer_id)`.
+- Do not use the repo-unverified Gamma keyset endpoint.
+- Do not build a second market crawler.
+
+`probe-sources` must prove on one real sample that:
+- v3 integer id resolves through existing Gamma-by-id;
+- Gamma condition id matches the v3 condition id;
+- token/outcome identity is coherent.
+
+Systemic contradiction ->
+  STOP `SOURCE_CONTRACT_DRIFT`.
+
+Corpus-level individual malformed/mismatched markets:
+  exclude with a closed reason and continue.
+
+Include only the exact daily-rain family for target dates in the frozen window.
+Every discovered candidate receives an INCLUDED or closed EXCLUDED disposition.
+Report actual counts only.
+
+Rule binding:
+- preserve exact canonicalized Gamma response snapshot and rule-text hash;
+- require explicit NWS station/product identity;
+- require measurable-precipitation threshold semantics;
+- require local-standard-time climate-day semantics;
+- parse only explicit finality/revision semantics;
+- derive a content-addressed `rule_cohort_id` from normalized semantics.
+
+Known policy labels to support:
+- FIRST_PUBLISHED_FINAL
+- LATEST_BEFORE_2359_ET
+- LAST_BEFORE_1400_ET
+
+A rule with unambiguous equivalent wording may map to one of those normalized policies.
+A different/ambiguous finality policy is:
+  RULE_SEMANTICS_UNSUPPORTED
+and is excluded, not guessed.
+
+Outcome/label:
+- require PendulumFlow `market_resolved`;
+- require final/current Gamma outcome;
+- require agreement;
+- bind rule cohort/hash and resolution evidence.
+
+Disagreement/missing final resolution:
+  exclude sample.
+
+Do NOT require reconstruction of the raw CLI precipitation number merely to obtain the economic
+binary label.
+
+Label evidence is post-outcome evidence and MUST NEVER enter checkpoint feature evidence.
+
+================================================================================
+11. PENDULUMFLOW V3 CONTRACT
+================================================================================
+
+Provider:
+  pendulumflow
+
+Dataset:
+  v3
+
+Source class:
+  THIRD_PARTY_NATIVE_FRAME_ARCHIVE
+
+Never:
+  SOURCE_KIND_CANONICAL_PIT
+
+Required event families:
+- new_market
+- market_resolved
+- best_bid_ask
+- last_trade_price
+- tick_size_change
+
+`book` is NOT a default requirement. Read it only if a specific market-state assertion cannot
+be established from top-of-book/trade evidence and doing so stays inside the frozen plan/budget.
+
+Offline module:
+  src/data_layer/analytical_research/pendulumflow_v3.py
+
+It owns:
+- manifest schema/bounds validation;
+- product byte-range / row-group metadata validation;
+- product SHA-256 verification;
+- event-family normalization;
+- market/asset/condition identity normalization;
+- venue `timestamp` vs `timestamp_received` separation;
+- deterministic source ordering;
+- product coverage classification;
+- no network.
+
+Acquisition:
+  manifest first
+  -> product metadata/range
+  -> Parquet footer/row-group targeting
+  -> only row groups needed for the target markets/checkpoints
+
+Do not default to whole-hour downloads.
+
+Order market-history evidence by `timestamp_received` for observability.
+Do not claim file order or `sequence` is a single live-socket arrival order.
+
+Coverage class is product-specific:
+
+Admissible for qualification-readiness rows:
+- FULL
+- SINGLE-BY-DESIGN
+
+For SINGLE-BY-DESIGN:
+- preserve the class explicitly in source-version/provenance metadata;
+- it may still have `dq_flags=("OK",)` only if all required bytes/events for the row are
+  internally complete and verified.
+
+Diagnostic/exclusion only:
+- PARTIAL
+- SINGLE-BY-DEFECT
+
+For those, use existing common DQ vocabulary truthfully (for example
+`PARTIALLY_OBSERVED`) and replay fidelity `PARTIAL`; never launder them into the ready subset.
+
+Raw verified byte ranges retained exactly may be `EXACT`.
+Derived market-state rows are `FAITHFUL`, never canonical PIT.
+
+================================================================================
+12. NDFD PoP12 CONTRACT
+================================================================================
+
+Primary raw source:
+  official NOAA NDFD public `noaa-ndfd-pds` WMO objects
+
+Source class:
+  OFFICIAL_HISTORICAL_EXPORT
+
+Required feature source:
+  PoP12 only
+
+QPF is not a readiness requirement in this WP.
+
+Offline module:
+  src/data_layer/analytical_research/nws_ndfd_history.py
+
+Before ecCodes sees any candidate GRIB2 message, production code must require:
+1. non-empty;
+2. bytes[0:4] == b"GRIB";
+3. edition == 2;
+4. section-0 declared total length == exact sliced message length;
+5. final four bytes == b"7777".
+
+Multi-message object scanning:
+- find GRIB boundary deterministically;
+- read edition-2 total length;
+- slice exactly one declared message;
+- validate structure;
+- then lazy-import/use ecCodes;
+- reject ambiguous/truncated structure with closed errors.
+
+The module must:
+- import successfully in normal base Python 3.14 environments without ecCodes;
+- lazy-import decoder only in actual decode paths;
+- require the merged exact decoder versions under the real Python 3.12 run;
+- validate PoP12 parameter/threshold and 12-hour interval semantics;
+- preserve separately:
+  1. WMO bulletin/product time;
+  2. public availability time;
+  3. GRIB reference time;
+  4. forecast valid interval;
+- never substitute reference/valid time for public availability;
+- use public object LastModified/response metadata as a conservative public-availability bound;
+- extract all PoP12 intervals overlapping the target climate day from the selected eligible
+  vintage;
+- preserve raw object identity/hash and each selected message identity.
+
+Spatial binding:
+- exact station id comes from the market rule;
+- current official NWS station metadata may be used only as spatial/reference metadata, not as
+  predictive evidence;
+- persist station id, official coordinate, station timezone/reference metadata,
+  derived explicit standard UTC offset, chosen NDFD grid point/index/coordinate and distance;
+- use ecCodes nearest-grid logic;
+- ambiguous station identity or materially conflicting coordinate history -> exclude.
+
+Use standard-library timezone support in the supported Python 3.12 runtime; do not add a timezone
+package. If an unambiguous standard offset cannot be derived, exclude the sample.
+
+Do not aggregate multiple PoP12 periods into a model probability here.
+
+================================================================================
+13. CHECKPOINT MARKET + WEATHER ROWS
+================================================================================
+
+For each eligible market/checkpoint retain factual market-history evidence available at or before
+the checkpoint:
+
+- latest admissible best_bid_ask within 24h;
+- best bid / best ask / spread;
+- exact receive/availability time;
+- latest admissible last_trade_price within 24h;
+- trade price / receive time;
+- condition id / market id / outcome token id;
+- source manifest/product/range hashes;
+- source coverage class.
+
+Do NOT apply future `max_midpoint_spread` or `max_last_trade_age_seconds`.
+Those belong to S10-QUAL-REAL-01.
+
+For weather:
+- choose only a PoP12 vintage whose conservative public-availability time <= checkpoint;
+- preserve all selected overlapping 12-hour intervals and raw values;
+- no future information;
+- no weather-probability combination/model.
+
+Each readiness row must explicitly distinguish:
+- checkpoint feature evidence;
+- post-outcome label/rule evidence;
+- source authority class.
+
+Rows with no admissible market-history evidence OR no admissible PoP12 evidence OR no valid
+rule/station/outcome binding are not ready rows; retain their closed exclusion reasons.
+
+================================================================================
+14. PROVENANCE + LOGICAL DATASET IDENTITY
+================================================================================
+
+Reuse existing unchanged:
+- ExternalDatasetDescriptor;
+- RawEvidenceReference;
+- PitTimestamps;
+- ResearchProvenanceManifest;
+- common DQ/replay vocabularies.
+
+Do not modify their modules.
+
+Source/date sharding:
+prefer at most three provenance shards per target date:
+- PendulumFlow market history;
+- NOAA NDFD weather history;
+- Gamma/NWS metadata/rule/label support.
+
+With 40 target dates this stays safely below the qualification gate's 256-manifest bound.
+
+Each individual manifest sequence must remain <=256 items by deterministic sub-sharding if
+required. Sub-sharding is same capability and does not change target dates/checkpoints.
+
+Ready-subset manifests that might later be supplied to qualification must truthfully satisfy:
+- dq_flags == ("OK",)
+- replay_fidelity in {"EXACT", "FAITHFUL"}
+- gap_summary == ""
+
+Diagnostic/excluded manifests may carry weaker truthful DQ/replay/gap state but must never enter
+the future ready manifest subset.
+
+EXACT requires retained exact raw bytes and a durable content-addressed `raw_snapshot_ref`
+under ignored local evidence.
+
+Derived normalized rows are generally FAITHFUL.
+
+Logical readiness dataset:
+  weatherqualdataset:sha256:<64 lowercase hex>
+
+Identity is SHA-256 over canonical JSON committing at minimum:
+- schema/version;
+- PR #200 Alpha ids/head;
+- AF1 receipt id;
+- corpus window;
+- checkpoint definitions;
+- included normalized row identities in deterministic order;
+- source-authority classes;
+- provenance manifest ids;
+- factual counts/exclusions;
+- execution-evidence factual states;
+- B0 contract-compatibility state;
+- no-authority flags.
+
+Exclude from identity:
+- absolute paths;
+- username/hostname;
+- wall-clock execution time;
+- transport latency;
+- retry timing;
+- PR number/head generated after the dataset;
+- secrets (none exist).
+
+No canonical DatasetSnapshotReference is fabricated.
+
+================================================================================
+15. B0 AUTHORITY BOUNDARY — DO NOT PAPER OVER IT
+================================================================================
+
+The current qualification contract's:
+  PIT_MARKET_PROBABILITY_V1
+remains unchanged and read-only in this WP.
+
+PendulumFlow checkpoint rows may demonstrate real point-in-time market-history availability, but
+their source authority is external third-party capture.
+
+Therefore the bundle must separately report:
+
+  market_history_rows_available: <actual count>
+
+and
+
+  b0_contract_compatibility:
+    EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION
+
+unless genuine already-existing canonical PIT evidence for the same row/checkpoint is independently
+verified without importing/backdating the external archive.
+
+Do not rename external evidence `MARKET_PIT` merely to satisfy downstream naming.
+
+This WP is still useful if the state is EXTERNAL_ONLY:
+it establishes whether the real historical corpus is good enough to justify a narrow future
+qualification-contract decision rather than changing qualification policy blindly before seeing
+the data.
+
+================================================================================
+16. EXECUTION-FEASIBILITY FACTS — NO PREMATURE GATE DECISION
+================================================================================
+
+Collect and provenance-bind factual evidence for the three gate-critical classes:
+
+- FEES
+- RESOLUTION_RULES
+- TICK_SIZE_MIN_ORDER
+
+But do NOT run the gate and do NOT force `AVAILABLE`.
+
+RESOLUTION_RULES:
+- exact Gamma rule response;
+- normalized semantic hash/cohort;
+- station / threshold / climate-day / finality fields.
+
+FEES:
+- per-market `feesEnabled` / equivalent metadata where present;
+- v3 `last_trade_price.fee_rate_bps` when actually observed;
+- current Polymarket category docs are supporting context only;
+- never backdate today's weather fee table to a historical market without market-specific
+  evidence.
+
+TICK SIZE:
+- v3 `tick_size_change` evidence when observed;
+- current market metadata may be supporting/current-only evidence;
+- do not invent an unobserved historical initial tick.
+
+MINIMUM ORDER:
+- use market-specific official/Gamma/CLOB configuration evidence only if historically applicable
+  can be defended;
+- otherwise record CURRENT_ONLY or MISSING.
+
+For each class/market report factual state from a closed vocabulary such as:
+- HISTORICALLY_EVIDENCED
+- CURRENT_ONLY
+- MISSING
+- SOURCE_DISAGREEMENT
+
+The future qualification package maps those facts to its own AVAILABLE/PARTIAL/MISSING semantics.
+
+Absence of critical execution evidence does not crash this data WP. It may lead the later gate
+to INCONCLUSIVE.
+
+================================================================================
+17. NETWORK OWNER, ALLOWLIST AND BUDGET
+================================================================================
+
+The only network owner is:
+  tools/qualification/run_s10_qual_data_01.py
+
+Offline `src/` modules make zero network calls.
+
+Exact public host allowlist:
+- archive.pendulumflow.com
+- noaa-ndfd-pds.s3.amazonaws.com
+- gamma-api.polymarket.com
+- api.weather.gov
+
+No arbitrary URL input.
+
+Methods:
+- GET
+- HEAD
+- Range GET
+
+No:
+- POST/PUT/PATCH/DELETE;
+- auth headers/tokens;
+- private endpoints;
+- redirects to an unlisted host;
+- cursor/background loop;
+- sleep/backoff loop;
+- WebSocket;
+- provider/model calls.
+
+NWS API:
+- fixed public User-Agent identifying this project;
+- `/stations/{stationId}` only for exact rule-bound station metadata.
+
+Gamma:
+- use existing verified `PolymarketPublicClient.get_market(integer_id)`;
+- do not duplicate its network stack;
+- canonicalize/persist the returned safe response for FAITHFUL provenance;
+- do not use unverified keyset pagination.
+
+Hard run budgets:
+- <=40 target dates;
+- <=1024 discovered market candidates;
+- <=128 unique stations;
+- <=2000 distinct PendulumFlow hours inspected;
+- <=8192 total HTTP transport attempts INCLUDING any retry;
+- <=2 GiB total response bytes INCLUDING retries;
+- <=256 MiB any single response;
+- at most ONE immediate retry for transport timeout/reset, HTTP 408/429, or 5xx;
+- no semantic retry/fallback/replacement query.
+
+Every request/attempt/byte is counted and reported truthfully.
+
+Budget exhaustion is a valid:
+  QUAL_DATA_INSUFFICIENT
+when the frozen plan cannot finish within budget;
+it is not permission to enlarge the budget during the run.
+
+================================================================================
+18. OPERATOR STATE MACHINE
+================================================================================
+
+Operator:
+  tools/qualification/run_s10_qual_data_01.py
+
+Commands:
+
+1. prepare
+   ZERO network.
+   - verify exact repo/predecessor state;
+   - verify/copy PR #200 Alpha registry (Section 8);
+   - verify committed AF1 receipt;
+   - verify fixed dates/checkpoints/allowlist/budgets;
+   - create ignored:
+       local_data/s10_qual_data_01/run-01/
+   - write deterministic plan + plan hash.
+   - refuse a conflicting existing workspace.
+
+2. probe-sources
+   Small drift smoke only.
+   Authorized without another Karl message.
+   - one v3 manifest/product-range sample;
+   - one real historical NDFD object decoded through PRODUCTION `nws_ndfd_history.py` under
+     supported Python 3.12 + merged `ndfd-grib`;
+   - one v3 new_market -> existing Gamma-by-id identity check;
+   - one exact NWS station metadata request if needed.
+   - typed closed result.
+   - source-contract contradiction -> hard stop.
+
+3. run-readiness
+   ONE bounded real corpus run from the frozen plan.
+   - no performance metric;
+   - no checkpoint tuning;
+   - no date/window extension.
+   - immutable raw artifacts stored by content hash.
+   - may resume only from already hash-verified artifacts after transport interruption.
+   - terminal is exactly QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT.
+
+4. verify-final
+   ZERO network.
+   Re-hash/revalidate:
+   - copied Alpha registry;
+   - AF1 binding;
+   - raw source objects/ranges;
+   - normalized rows;
+   - source descriptors;
+   - provenance manifests;
+   - logical dataset id;
+   - counts/exclusions;
+   - B0 authority state;
+   - execution-evidence facts;
+   - bundle identity/no-authority flags.
+
+Once run-01 reaches a semantic final terminal, do not rerun it with changed dates, checkpoints,
+lookbacks, source policy, or budgets to seek a better result.
+
+================================================================================
+19. IMPLEMENTATION SURFACES
+================================================================================
+
+A. `src/data_layer/analytical_research/pendulumflow_v3.py`
+Offline deterministic parser/validator only.
+No HTTP/client code.
+
+B. `src/data_layer/analytical_research/nws_ndfd_history.py`
+Offline deterministic GRIB2 structure/PoP12/station-grid decoder only.
+Lazy ecCodes import.
+No HTTP/client code.
+
+C. `src/data_layer/analytical_research/qualification_data_readiness.py`
+Candidate-specific data assembly and content-addressed records:
+- census/exclusion records;
+- checkpoint rows;
+- rule cohort identity;
+- evidence/provenance binding;
+- sample/group counts;
+- execution evidence factual inventory;
+- B0 source-authority compatibility;
+- WeatherQualificationDataReadinessBundle.
+
+It must not construct QualificationCandidate or call qualification gate.
+
+D. `tools/qualification/run_s10_qual_data_01.py`
+All public network and ignored local artifact writing.
+Foreground, finite, bounded.
+
+No `src/data_layer/analytical_research/__init__.py` edit.
+Use explicit module imports.
+
+No dependency/workflow changes.
+
+================================================================================
+20. EXACT CHANGED-FILE SCOPE — 20 PATHS
+================================================================================
+
+Exact required/allowed scope:
+
+01. docs/qualification_weather_data_readiness_contract.md
+02. docs/status_entries/S10-QUAL-DATA-01.md
+03. docs/deferred_items_log.md
+04. docs/long_term_bot_completion_roadmap.md
+05. docs/project_status.md
+06. docs/repo_truth_index.md
+07. docs/wp_specs/S10-QUAL-DATA-01/wp_prompt.txt
+08. docs/wp_specs/S10-QUAL-DATA-01/wp_spec.json
+09. src/data_layer/analytical_research/pendulumflow_v3.py
+10. src/data_layer/analytical_research/nws_ndfd_history.py
+11. src/data_layer/analytical_research/qualification_data_readiness.py
+12. tools/qualification/run_s10_qual_data_01.py
+13. tests/data_layer/analytical_research/test_pendulumflow_v3.py
+14. tests/data_layer/analytical_research/test_nws_ndfd_history.py
+15. tests/data_layer/analytical_research/test_qualification_data_readiness.py
+16. tests/tools/qualification/test_run_s10_qual_data_01.py
+17. tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py
+18. tests/test_qualification_weather_data_readiness_contract_docs.py
+19. tests/test_project_status_docs.py
+20. tests/test_repo_truth_docs.py
+
+No 21st path.
+
+Explicitly forbidden unless a future separately authorized package:
+- pyproject.toml
+- .github/workflows/ci.yml
+- requirements/lock files
+- src/data_layer/analytical_research/__init__.py
+- src/data_layer/analytical_research/qualification.py
+- src/data_layer/analytical_research/qualification_gate.py
+- src/data_layer/analytical_research/experiment_os.py
+- src/data_layer/point_in_time_market_research/research_provenance.py
+- src/data_layer/analytical_research/external_dataset.py
+- src/data_layer/analytical_research/pmxt_v2.py
+- src/data_layer/polymarket/public_client.py
+
+The existing PR #201 NDFD compatibility test is intentionally in scope so its strict
+Windows/Linux Python-3.12 jobs exercise the PRODUCTION structural/decode adapter against the
+already committed official fixture. Do not change the workflow.
+
+================================================================================
+21. REQUIRED TEST / EVIDENCE PROPERTIES
+================================================================================
+
+R001  PR #201 exact predecessor merged; execution base current/non-conflicting.
+R002  prompt/spec return IMPLEMENTATION_READY with exact authority mirror.
+R003  exact 20-path scope; no dependency/workflow/qualification-contract edit.
+R004  real PR #200 Alpha registry is independently verified and copied; no reconstruction.
+R005  canonical AF1 PASS evidence is revalidated and exact receipt bound.
+R006  v3 manifest/range/hash/schema validation is fail-closed.
+R007  v3 event identity/timestamp_received/source timestamp remain distinct.
+R008  FULL + SINGLE-BY-DESIGN admission and PARTIAL/SINGLE-BY-DEFECT exclusion are tested.
+R009  production GRIB structural checks reject bad magic/edition/length/end/truncation.
+R010  multi-message NDFD slicing is deterministic.
+R011  PoP12 semantic/time fields and four clocks remain distinct.
+R012  production NDFD adapter passes existing committed fixture under strict merged NDFD CI.
+R013  station/grid binding is deterministic and ambiguous station/offset fails closed.
+R014  frozen corpus dates and both checkpoint formulas are exact.
+R015  feature evidence never uses source public after checkpoint.
+R016  labels are separated from feature evidence and require v3/Gamma agreement.
+R017  rule cohort parsing/hash is deterministic; unsupported ambiguity excludes.
+R018  market-history lookback 24h and NDFD source lookback 48h cannot widen.
+R019  PendulumFlow never emits canonical-PIT authority.
+R020  logical dataset/bundle identities are path/time/environment independent and mutation-sensitive.
+R021  ready manifest subset uses only DQ OK + EXACT/FAITHFUL + empty gap.
+R022  actual sample/independent-date counts are reported; no required power thresholds are invented.
+R023  execution classes retain factual historical/current/missing distinction.
+R024  B0 compatibility truthfully reports external-only unless real canonical PIT is independently bound.
+R025  operator host/method/request/byte limits fail closed; no arbitrary URL/auth/private network.
+R026  operator tests are hermetic with fake transports/tmp_path; no real network in pytest.
+R027  one real run terminates READY or INSUFFICIENT with actual counts and immutable plan hash.
+R028  verify-final re-derives every bound content identity with zero network.
+R029  no QualificationCandidate/gate/WP170/WP172/WP173/paper/execution/live path is reachable.
+R030  status/roadmap/repo truth reconcile PR #201 as merged and this WP as current.
+R031  stable candidate has one authoritative full-suite result.
+R032  exact-head hosted CI green, including existing strict NDFD Windows/Linux jobs.
+R033  one combined independent implementation review covers exact final head.
+R034  posted PR evidence is re-fetched and consistent before Ready for Review YES.
+
+Focused tests must include adversarial cases for:
+- malformed GRIB;
+- timestamp substitution/look-ahead;
+- v3 hash/range mismatch;
+- partial/defective coverage;
+- Gamma/v3 identity mismatch;
+- rule ambiguity;
+- resolution disagreement;
+- missing station/offset;
+- B0 source-authority laundering;
+- fabricated sample counts;
+- unsafe URLs/redirects/methods;
+- budget overflow;
+- rerun after finalization;
+- invalid/missing Alpha registry;
+- identity mutation/no absolute path.
+
+================================================================================
+22. SAME-RUN REPAIR VS TRUE HARD STOPS
+================================================================================
+
+Ordinary same-run repairs owned by the executor:
+- parser/schema correction for an observed in-contract source shape;
+- fixture/test correction;
+- rule normalization for semantically equivalent wording within the frozen policy model;
+- docs/status/spec synchronization;
+- ordinary lint/test failures;
+- local path/hermeticity defects;
+- network typed diagnostic fixes;
+- CI-only platform defect inside the existing 20 paths;
+- PR evidence correction.
+
+Do not create a follow-up WP for those.
+
+TRUE HARD STOPS:
+
+STOP `STATE_DRIFT`
+if merged repo truth materially invalidates the frozen interfaces.
+
+STOP `ALPHA_LINEAGE_EVIDENCE_MISSING`
+if no genuine exact PR #200 Alpha registry snapshot can be verified.
+
+STOP `ALPHA_LINEAGE_CONFLICT`
+if valid discovered PR #200 registry snapshots disagree.
+
+STOP `AF1_EVIDENCE_DRIFT`
+if committed AF1 evidence no longer validates.
+
+STOP `DEPENDENCY_EXPANSION_REQUIRED`
+if a new dependency/package/lock change is necessary.
+
+STOP `WORKFLOW_EXPANSION_REQUIRED`
+if `.github/workflows/` must change.
+
+STOP `QUALIFICATION_CONTRACT_EXPANSION_REQUIRED`
+if completing DATA formation itself requires changing qualification/gate/experiment/provenance
+contracts rather than merely recording the B0 compatibility gap.
+
+STOP `SOURCE_CONTRACT_DRIFT`
+if the bounded source smoke contradicts a frozen source interface in a way not safely expressible
+as an individual-sample exclusion.
+
+STOP `SCOPE_EXPANSION_REQUIRED`
+if a 21st changed file is mechanically unavoidable.
+
+STOP `AUTHORITY_EXPANSION_REQUIRED`
+if credentials/private APIs/Hermes/provider/scheduler/strategy/paper/execution/live/Gate C/capital
+or orders become necessary.
+
+Do NOT hard-stop merely because:
+- some target dates have no usable markets;
+- a market/rule/station is excluded;
+- an hour is PARTIAL/SINGLE-BY-DEFECT;
+- B0 evidence is external-only;
+- FEES/TICK_SIZE_MIN_ORDER are CURRENT_ONLY/MISSING;
+- usable sample count is small;
+- independent-date count is small;
+- run hits the frozen budget and terminates QUAL_DATA_INSUFFICIENT.
+
+Those are real research outcomes.
+
+================================================================================
+23. VALIDATION / EXECUTION ORDER
+================================================================================
+
+Use the minimum-complete sequence.
+
+A. While editing
+Run focused tests only:
+- test_pendulumflow_v3.py
+- test_nws_ndfd_history.py
+- test_qualification_data_readiness.py
+- test_run_s10_qual_data_01.py
+- contract-doc test
+- existing NDFD dependency compatibility test
+- directly affected project/repo truth tests
+
+Run current historical full-changed-set guards unchanged once the 20-path set exists.
+
+B. Stable Phase-A candidate before real corpus
+- readiness `--check-diff`;
+- exact diff scope;
+- generated-artifact guard;
+- git diff --check;
+- security checks required for public-network source work;
+- focused tests green.
+
+C. Real source work
+- `prepare`
+- `probe-sources`
+- one `run-readiness`
+- `verify-final`
+
+No second Karl authorization.
+
+D. Reconcile docs/status to ACTUAL terminal/counts/hashes.
+Never assume request limits equal returned counts.
+
+E. Final focused tests after reconciliation.
+
+F. ONE authoritative broad/full suite:
+  python -m pytest -q -p no:cacheprovider
+
+Do not repeatedly rerun the full suite while the candidate is changing.
+
+G. Final:
+- readiness `--check-diff`;
+- exact scope;
+- artifact guard;
+- security scan;
+- diff check;
+- commit/push;
+- Ready-for-Review PR;
+- exact-head hosted CI;
+- one combined independent implementation review;
+- re-fetch PR/checks/review threads;
+- Side14 handoff.
+
+Any final-head code/doc change invalidates prior exact-head CI/review evidence and requires the
+appropriate exact-head rerun/reconfirmation.
+
+================================================================================
+24. PR / FINAL EVIDENCE
+================================================================================
+
+Create the PR Ready for Review, never Draft, only after the stable final candidate is pushed.
+
+PR body must truthfully include:
+- execution base + exact final head;
+- predecessor #201 head/merge;
+- exact 20 paths;
+- Alpha registry semantic verification;
+- AF1 receipt verification;
+- source probe dispositions;
+- actual network request/transport/byte counts;
+- actual discovered/included/excluded market counts;
+- actual per-checkpoint usable row counts;
+- actual independent target-date counts;
+- actual v3 coverage-class counts;
+- actual NDFD vintage coverage;
+- actual execution-evidence factual states;
+- exact logical dataset/bundle ids;
+- exact terminal;
+- exact B0 contract-compatibility state;
+- focused/full test results;
+- security checks;
+- exact-head hosted checks;
+- independent review;
+- R001–R034 traceability;
+- Evidence mode;
+- Ready for review YES/NO;
+- Merge authorized: NO.
+
+Never claim:
+- QUAL PASS;
+- predictive edge;
+- OOS success;
+- profitability;
+- paper/live readiness;
+- Gate C authority.
+
+Final executor report:
+
+S10-QUAL-DATA-01 FINAL
+Disposition: READY_FOR_SIDE14_REVIEW / BLOCKED
+Base:
+Final head:
+PR:
+Exact changed paths: 20 / 20
+Alpha registry verification:
+AF1 verification:
+Source probe:
+Terminal: QUAL_DATA_READY / QUAL_DATA_INSUFFICIENT
+Bundle id:
+Logical dataset id(s):
+B0 contract compatibility:
+Markets discovered / included / excluded:
+Checkpoint A usable rows:
+Checkpoint B usable rows:
+Independent target dates:
+Pendulum coverage:
+NDFD vintage coverage:
+FEES factual state:
+RESOLUTION_RULES factual state:
+TICK_SIZE_MIN_ORDER factual state:
+Network transport attempts / bytes:
+Focused tests:
+Full suite:
+Readiness --check-diff:
+Exact-head CI:
+Independent implementation review:
+Evidence mode:
+QualificationCandidate created: NO
+Qualification gate run: NO
+WP170/WP172/WP173: NOT STARTED
+Gate C/live/capital/orders: NO / DISABLED / USD 0 / 0
+Merge authorized: NO
+
+================================================================================
+25. SUCCESSOR BOUNDARY
+================================================================================
+
+This WP does not authorize its successor.
+
+After Side14 reviews the real bundle:
+
+A. If terminal = QUAL_DATA_INSUFFICIENT:
+- do not tune dates/checkpoints/source policy;
+- Side14 decides whether to close the weather line or separately authorize a genuinely new
+  evidence capability.
+
+B. If terminal = QUAL_DATA_READY and:
+   b0_contract_compatibility = CANONICAL_PIT_AVAILABLE
+then Side14 may draft:
+   S10-QUAL-REAL-01
+to freeze sample-power/splits/B0 parameters before performance and build/evaluate the real
+QualificationCandidate.
+
+C. If terminal = QUAL_DATA_READY and:
+   b0_contract_compatibility = EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION
+then do NOT silently build S10-QUAL-REAL-01.
+Side14 first decides/drafts the smallest separate B0 provenance/qualification-contract
+compatibility package justified by the observed external corpus.
+
+Any future compatibility package must preserve:
+- PendulumFlow external provenance;
+- no canonical backdating;
+- no performance-informed policy choice.
+
+WP170 remains eligible only after a future real qualification gate produces a valid QUAL_PASS.
+WP172, WP173, Gate C and live remain separately gated.
+
+================================================================================
+26. FROZEN EXTERNAL SOURCE REFERENCES
+================================================================================
+
+PendulumFlow v3:
+  https://archive.pendulumflow.com/formats/v3
+  https://archive.pendulumflow.com/audit/v3
+
+Frozen use:
+- live v3 begins 2026-08-18T06;
+- one Parquet + manifest per hour;
+- event-type byte ranges / row counts / SHA-256;
+- timestamp_received is capture availability, distinct from venue timestamp;
+- sequence is not global order;
+- FULL/PARTIAL/SINGLE-BY-DESIGN/SINGLE-BY-DEFECT are source coverage facts.
+
+NOAA NDFD open data:
+  https://registry.opendata.aws/noaa-ndfd/
+
+Frozen use:
+- public no-account `noaa-ndfd-pds`;
+- WMO structure:
+    wmo/<parameter>/<year>/<month>/<day>/<wmo-file-name>
+- PoP12 raw GRIB2 only in this WP.
+
+NWS public API:
+  https://api.weather.gov
+  https://www.weather.gov/documentation/services-web-api
+
+Frozen use:
+- public station metadata only;
+- `/stations/{stationId}`;
+- fixed User-Agent;
+- not predictive weather evidence.
+
+Polymarket fee context:
+  https://help.polymarket.com/en/articles/13364478-trading-fees
+  https://help.polymarket.com/en/articles/13364471-maker-rebates-program
+
+Frozen interpretation:
+- current weather category table is supporting context;
+- fees apply only to eligible fee-enabled markets after activation;
+- per-market historical applicability must be evidenced and is never inferred solely from the
+  current category table.
+
+================================================================================
+27. FINAL EXECUTOR INSTRUCTION
+================================================================================
+
+Proceed now in a NEW Claude Code chat/session and a fresh worktree from current main.
+
+Do not ask Karl for another implementation or bounded public-network authorization.
+
+Execute:
+
+remote-main gate
+-> fresh worktree
+-> materialize governed prompt/spec
+-> IMPLEMENTATION_READY
+-> exact 20-path implementation
+-> focused tests / unchanged guard checks
+-> stable Phase-A validation
+-> prepare
+-> bounded source smoke
+-> ONE frozen real readiness run
+-> zero-network verify-final
+-> reconcile actual evidence
+-> final focused tests
+-> ONE authoritative full suite
+-> final readiness/scope/security
+-> commit/push
+-> Ready-for-Review PR
+-> exact-head hosted CI
+-> combined independent implementation review
+-> exact-head PR re-fetch
+-> Side14 handoff
+
+Stop only on the true hard stops in Section 22.
+
+Do not merge.
+
+================================================================================
+APPENDIX A. EXECUTOR MECHANICAL MATERIALIZATION ADDITIONS (NO SEMANTIC CHANGE)
+================================================================================
+
+Materialized by the executor under Section 7 ("Mechanical prompt/spec repairs that preserve
+capability/scope/authority remain same-run"). This appendix adds only the structural blocks the
+deterministic readiness gate requires. It does not change capability, scope, authority, dates,
+checkpoints, windows, allowlist, budgets or stop conditions stated in Sections 0-27.
+
+Execution base reconciliation: origin/main at execution equals the drafting-time SHA
+77738717fee422fe83d8bb2b7765c36dfbe6b283, so EXECUTION_BASE_SHA is that SHA and no base field
+reconciliation is needed. Worktree: a fresh branch codex/s10-qual-data-01-weather-readiness
+created from origin/main at that SHA.
+
+Pre-freeze guard discovery (Section 6) result: src/data_layer/analytical_research/ is an approved
+source scope in tests/test_architecture_boundaries.py; the historical full-changed-set guards
+(adoption/append-only/Hermes-runbook families) derive S10 src/tools exact paths from
+docs/status_entries/S10-QUAL-DATA-01.md plus this machine spec, so
+tools/qualification/run_s10_qual_data_01.py needs no proactive historical-guard edit; tests/tools/
+subdirectories need no __init__.py (tests/tools/alpha precedent); no dependency or workflow edit is
+mechanically needed. The real Python 3.12 run uses the unchanged merged ndfd-grib optional extra
+installed into an isolated local Python 3.12 environment (no repository dependency change).
+
+Negative-test matrix (NEGATIVE_TEST_MATRIX_POLICY; Section 21 adversarial list):
+- malformed GRIB: empty, bad magic, bad edition, length mismatch, missing 7777, truncation,
+  ambiguous multi-message boundaries -> closed structural code, no echo.
+- timestamp substitution/look-ahead: reference/valid time presented as availability, NDFD object
+  LastModified after checkpoint, market row received after checkpoint -> rejected/excluded.
+- v3 hash/range mismatch: product byte range outside file, overlapping ranges, row-group bounds,
+  sha256 mismatch, malformed manifest -> closed code.
+- partial/defective coverage: PARTIAL and SINGLE-BY-DEFECT never enter the ready subset.
+- Gamma/v3 identity mismatch: condition id / token / outcome mismatch -> excluded.
+- rule ambiguity: two policies matched, unknown policy, missing station/threshold/LST -> excluded.
+- resolution disagreement: v3 winner != Gamma winner, missing market_resolved -> excluded.
+- missing station/offset: station metadata absent, id mismatch, unknown timezone -> excluded.
+- B0 source-authority laundering: canonical-PIT label on PendulumFlow evidence -> rejected.
+- fabricated sample counts: supplied counts not equal to derived counts -> rejected.
+- unsafe URLs/redirects/methods: unlisted host, non-https, userinfo, redirect, POST, auth header ->
+  refused before transport.
+- budget overflow: attempts/bytes/single-response/hours/stations/candidates caps -> fail closed.
+- rerun after finalization: finalized run-01 refuses run-readiness and conflicting prepare.
+- invalid/missing Alpha registry: zero valid snapshots -> ALPHA_LINEAGE_EVIDENCE_MISSING; two
+  semantically different valid snapshots -> ALPHA_LINEAGE_CONFLICT.
+- identity mutation/no absolute path: any committed-field mutation changes the id; absolute paths,
+  wall-clock and latency never enter identity.
+
+Evidence Plan (requirement mapping): R001-R034 in Section 21 map one-to-one onto
+wp_spec.json evidence_plan items R001-R034 (pytest node, validation command or GitHub check).
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|lineage|alpha_registry|always|REQUIRE|genuine_pr200_registry_verified_and_copied_never_reconstructed|lineage.alpha_registry|R004
+NR002|lineage|alpha_registry|zero_valid_snapshots|REJECT|stop_alpha_lineage_evidence_missing|lineage.alpha_registry|R004
+NR003|lineage|alpha_registry|conflicting_valid_snapshots|REJECT|stop_alpha_lineage_conflict|lineage.alpha_registry|R004
+NR004|lineage|af1_receipt|always|REQUIRE|finalized_af1_pass_exact_receipt_all_ten_pass|lineage.af1_receipt|R005
+NR005|corpus|target_dates|always|PRESERVE_EXACT|dates_2026_08_18_through_2026_09_26_inclusive_no_extension|corpus.target_dates|R014
+NR006|checkpoint|a|always|PRESERVE_EXACT|later_of_v3_receive_and_gamma_open_plus_60_minutes|checkpoint.market_observable_plus_60m|R014
+NR007|checkpoint|b|always|PRESERVE_EXACT|station_lst_midnight_eligible_only_if_open_60_minutes_before|checkpoint.target_climate_day_start|R014
+NR008|window|market_history|always|PRESERVE_EXACT|exact_24_hour_lookback_never_widened|window.market_history_lookback|R018
+NR009|window|ndfd_vintage|always|PRESERVE_EXACT|exact_48_hour_public_availability_lookback_never_widened|window.ndfd_vintage_lookback|R018
+NR010|feature|availability|public_after_checkpoint|REJECT|excluded_from_checkpoint_feature_evidence|feature.no_look_ahead|R015
+NR011|pendulumflow|source_class|always|PRESERVE_EXACT|third_party_native_frame_archive_never_canonical_pit|pendulumflow.source_class|R019
+NR012|pendulumflow|manifest|invalid_range_hash_or_schema|REJECT|closed_code_fail_closed|pendulumflow.manifest_validation|R006
+NR013|pendulumflow|timestamps|always|PRESERVE_EXACT|timestamp_received_and_venue_timestamp_distinct|pendulumflow.timestamps|R007
+NR014|pendulumflow|coverage|full_or_single_by_design|ACCEPT|ready_subset_eligible_class_preserved|pendulumflow.coverage|R008
+NR015|pendulumflow|coverage|partial_or_single_by_defect|REJECT|diagnostic_only_never_ready|pendulumflow.coverage_exclusion|R008
+NR016|ndfd|structure|malformed_or_truncated|REJECT|closed_structural_code_before_eccodes|ndfd.structure|R009
+NR017|ndfd|slicing|always|REQUIRE|deterministic_single_declared_message_slices|ndfd.slicing|R010
+NR018|ndfd|clocks|always|PRESERVE_EXACT|bulletin_availability_reference_valid_interval_distinct|ndfd.clocks|R011
+NR019|ndfd|decoder|always|REQUIRE|lazy_eccodes_exact_merged_versions_python312|ndfd.decoder|R012
+NR020|station|binding|ambiguous_station_or_offset|REJECT|sample_excluded|station.binding|R013
+NR021|rule|cohort|always|REQUIRE|content_addressed_normalized_semantics|rule.cohort|R017
+NR022|rule|finality|unsupported_or_ambiguous|REJECT|rule_semantics_unsupported_excluded|rule.cohort|R017
+NR023|label|agreement|v3_gamma_disagree_or_missing|REJECT|sample_excluded|label.agreement|R016
+NR024|label|separation|always|FORBID|post_outcome_evidence_in_checkpoint_features|label.agreement|R016
+NR025|provenance|ready_subset|always|REQUIRE|dq_ok_exact_or_faithful_empty_gap_only|provenance.ready_subset|R021
+NR026|identity|dataset|always|REQUIRE|path_time_environment_independent_mutation_sensitive|identity.dataset|R020
+NR027|counts|sample_power|always|FORBID|invented_required_sample_or_power_thresholds|counts.factual|R022
+NR028|execution|facts|always|PRESERVE_EXACT|historically_evidenced_current_only_missing_disagreement|execution.facts|R023
+NR029|b0|compatibility|external_only|REQUIRE|external_only_requires_separate_compatibility_decision|b0.compatibility|R024
+NR030|network|allowlist|unlisted_host_method_redirect_or_auth|REJECT|refused_before_transport|network.allowlist|R025
+NR031|network|budget|cap_exceeded|REJECT|fail_closed_run_insufficient|network.budget|R025
+NR032|operator|finalization|rerun_after_final_terminal|REJECT|refused_no_second_run|operator.finalization|R027
+NR033|authority|qualification|always|FORBID|qualification_candidate_gate_wp170_paper_execution_live|authority.boundaries|R029
+NR034|successor|next|always|REQUIRE|separately_gated_not_authorized|successor.boundary|R030
+END_NORMATIVE_RULE_MATRIX_V1
+
+Report-back to Side14: the Section 24 final executor report fields (exact base/head, PR URL and
+isDraft=false, exact 20 paths, Alpha/AF1 verification, source probe, terminal, bundle and dataset
+ids, B0 compatibility, factual counts, coverage, execution facts, network attempts/bytes, focused
+and full test results, readiness --check-diff, exact-head CI, independent review, Evidence mode,
+Ready for review, Merge authorized: NO).

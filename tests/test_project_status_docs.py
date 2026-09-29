@@ -5024,8 +5024,11 @@ def test_s10_ndfd_grib_01_is_current_dependency_enablement_target() -> None:
     lines = _read().splitlines()
     current = next(
         line for line in lines
-        if line.startswith("# S10-NDFD-GRIB-01 current bounded implementation target")
+        if line.startswith("# S10-NDFD-GRIB-01 merged historical truth")
     )
+    assert "PR #201 / S10-NDFD-GRIB-01 merged: YES at 77738717fee422fe83d8bb2b7765c36dfbe6b283" in current
+    assert "cd70800d40f60f4ec20f5b17e107cc56643562a2" in current
+    assert "optional ndfd-grib decoder capability retained" in current
     fragment = " ".join(
         (REPO_ROOT / "docs" / "status_entries" / "S10-NDFD-GRIB-01.md").read_text(encoding="utf-8").split()
     )
@@ -5053,7 +5056,7 @@ def test_s10_ndfd_grib_01_is_current_dependency_enablement_target() -> None:
         assert stale not in fragment, stale
     for text in ("S10-QUAL-DATA-01: NOT IMPLEMENTED by this WP", "Gate C: NOT AUTHORIZED", "Merge authorized: NO"):
         assert text in fragment, text
-    # The dependency-enablement target is the newest current record, above its merged predecessor.
+    # The dependency-enablement record sits above its own merged predecessor record.
     assert lines.index(current) < next(
         index for index, line in enumerate(lines)
         if line.startswith("# S10-ALPHA-REAL-01 merged historical truth")
@@ -5077,3 +5080,69 @@ def test_s10_ndfd_grib_01_is_current_dependency_enablement_target() -> None:
     assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-DATA-01"
     assert spec["successor_boundary"]["separately_gated"] is True
     assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
+
+
+
+S10_QUAL_DATA_01_STATES = ("PHASE_A_IMPLEMENTED_REAL_RUN_PENDING", "QUAL_DATA_READY", "QUAL_DATA_INSUFFICIENT")
+
+
+def _s10_qual_data_01_state(text: str) -> str:
+    marker = "Current S10-QUAL-DATA-01 state: "
+    start = text.index(marker) + len(marker)
+    token = text[start:].split(";")[0].split()[0]
+    assert token in S10_QUAL_DATA_01_STATES, token
+    return token
+
+
+def test_s10_qual_data_01_is_current_weather_readiness_target() -> None:
+    lines = _read().splitlines()
+    current = next(
+        line for line in lines
+        if line.startswith("# S10-QUAL-DATA-01 current bounded implementation target")
+    )
+    fragment = " ".join(
+        (REPO_ROOT / "docs" / "status_entries" / "S10-QUAL-DATA-01.md").read_text(encoding="utf-8").split()
+    )
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-QUAL-DATA-01" / "wp_spec.json").read_text(encoding="utf-8")
+    )
+    for text in (
+        "Governance track: RUNTIME", "Risk level: 3", "Exact changed-file scope: 20",
+        "Frozen base: 77738717fee422fe83d8bb2b7765c36dfbe6b283",
+        "PR #201 / S10-NDFD-GRIB-01 merged: YES", "cd70800d40f60f4ec20f5b17e107cc56643562a2",
+        "Current branch: codex/s10-qual-data-01-weather-readiness", "readiness: IMPLEMENTATION_READY (RUNTIME)",
+        "S10-QUAL-DATA-01 is data formation/readiness only", "THIRD_PARTY_NATIVE_FRAME_ARCHIVE",
+        "EXTERNAL_THIRD_PARTY_PIT_RECONSTRUCTION", "never canonical PIT",
+        "EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION", "dependency/workflow changes: 0",
+        "QualificationCandidate created: NO", "Qualification gate run: NO", "WP170/WP172/WP173: NOT STARTED",
+        "live: DISABLED", "Gate C: NOT AUTHORIZED", "capital at risk: USD 0", "orders: 0", "Merge authorized: NO",
+    ):
+        assert text in current, text
+    state = _s10_qual_data_01_state(current)
+    assert _s10_qual_data_01_state(fragment) == state  # fragment and project status agree
+    if state != "PHASE_A_IMPLEMENTED_REAL_RUN_PENDING":
+        # Post-run reconciliation records actual facts, never request limits.
+        for text in (f"Terminal: {state}", "Bundle id: weatherqualbundle:sha256:",
+                     "Logical dataset id: weatherqualdataset:sha256:", "verify-final: VERIFIED",
+                     "B0 contract compatibility: EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION"):
+            assert text in fragment, text
+    for stale in ("Merge authorized: YES", "Gate C: AUTHORIZED", "QualificationCandidate created: YES", "live: ENABLED",
+                  "QUAL_PASS recorded", "B0 contract compatibility: CANONICAL_PIT_AVAILABLE"):
+        assert stale not in current, stale
+        assert stale not in fragment, stale
+    assert lines.index(current) < next(
+        index for index, line in enumerate(lines)
+        if line.startswith("# S10-NDFD-GRIB-01 merged historical truth")
+    )
+    assert spec["identity"]["wp_id"] == "S10-QUAL-DATA-01"
+    assert spec["identity"]["risk_level"] == 3
+    assert spec["identity"]["required_predecessor"]["pr_number"] == 201
+    scope = spec["scope"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 20
+    for key in ("source_runtime", "network"):
+        assert spec["authority"][key] is True, key
+    for key in ("dependencies", "workflow_files", "credentials", "scheduler", "hermes_runtime", "strategy", "paper",
+                "execution", "live"):
+        assert spec["authority"][key] is False, key
+    assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-REAL-01"
+    assert spec["successor_boundary"]["separately_gated"] is True
