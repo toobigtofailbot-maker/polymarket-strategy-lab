@@ -21,7 +21,18 @@
   attempt is authorized. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
   separately gated scopes.
 
-- Current bounded implementation target: S10-QUAL-DATA-01 (base 77738717fee422fe83d8bb2b7765c36dfbe6b283,
+- Current bounded implementation target: S10-QUAL-DATA-02 (base 6f67bac990d8ab338f1b87140ae077e9df4172dd,
+  after PR #202 / S10-QUAL-DATA-01 merged with head 33c031f41626550294eb6667620b4ce75589d719) completes the frozen
+  S10-QUAL-DATA-01 weather qualification corpus in one bounded run seeded from the verified PR #202 run-01 raw
+  artifacts (cache only; whole corpus re-derived), with the D011 failed-read rules, a frozen 429/503 backoff and
+  bounded new-network caps; dates, checkpoints, windows and policies unchanged; terminal QUAL_DATA_READY or
+  QUAL_DATA_INSUFFICIENT. The single completion run terminated QUAL_DATA_READY (783 evidence-complete rows over
+  32 target dates; budget not exhausted; verify-final VERIFIED). Data formation only: B0 compatibility stays
+  EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION; no QualificationCandidate, no qualification gate run; the
+  B0 compatibility package or any rerun is separately gated; WP170/WP172/WP173, Gate C and live remain NOT
+  AUTHORIZED; capital/orders 0.
+
+- Historical predecessor (PR #202 merged at 6f67bac990d8ab338f1b87140ae077e9df4172dd), formerly the bounded implementation target: S10-QUAL-DATA-01 (base 77738717fee422fe83d8bb2b7765c36dfbe6b283,
   after PR #201 / S10-NDFD-GRIB-01 merged with head cd70800d40f60f4ec20f5b17e107cc56643562a2) forms one bounded,
   content-addressed weather qualification-data readiness corpus for the PR #200 RESEARCH_SUPPORTIVE daily-rain
   lineage (PendulumFlow v3 external market history, official NDFD PoP12 vintages, Gamma/NWS rules and labels,

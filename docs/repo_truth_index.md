@@ -1,6 +1,31 @@
 # Repo Truth Index
 
-## S10-QUAL-DATA-01 Weather Qualification Data Readiness (current bounded implementation target)
+## S10-QUAL-DATA-02 Weather Qualification Corpus Completion (current bounded implementation target)
+
+The canonical contract is `docs/qualification_weather_corpus_completion_contract.md`; the operator is
+`tools/qualification/run_s10_qual_data_02.py`; the status fragment is `docs/status_entries/S10-QUAL-DATA-02.md`;
+the frozen package is `docs/wp_specs/S10-QUAL-DATA-02/`. Base `6f67bac990d8ab338f1b87140ae077e9df4172dd` (PR #202 / S10-QUAL-DATA-01
+merged, head `33c031f41626550294eb6667620b4ce75589d719`). RUNTIME, risk 3, exact 15-path scope; no dependency, workflow,
+qualification, gate, provenance or public-client change; `run_s10_qual_data_01.py`, `pendulumflow_v3.py` and
+`nws_ndfd_history.py` unchanged; the only core change is the additive market-exclusion code
+LABEL_V3_SOURCE_READ_FAILED. The completion operator is the only network owner (https GET/HEAD/Range to the
+four S10-QUAL-DATA-01 hosts; frozen 429/503 backoff; new-network caps 12,288 attempts / 6 GiB). It completes the
+frozen S10-QUAL-DATA-01 corpus from the verified PR #202 run-01 seed: failed seed entries are never admitted,
+only hash-valid successful raw artifacts are used as a cache and the whole corpus is re-derived with the D011
+failed-read rules. PendulumFlow v3 stays THIRD_PARTY_NATIVE_FRAME_ARCHIVE and never canonical PIT;
+b0_contract_compatibility stays EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION. The terminal is
+QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT; the single completion run terminated QUAL_DATA_READY (bundle
+`weatherqualbundle:sha256:a5911ab05cc8c650377447aa46f65f3b2002fc458e3c51a64f8705b1adcc69ae`, logical dataset
+`weatherqualdataset:sha256:a3e98a35ea052e1dfeb5225239a74beaee47d04111ebb34e6d27717490d9ac39`; 783 evidence-complete rows over 32 target dates;
+verify-final VERIFIED with zero network). No QualificationCandidate is created and no qualification gate is
+run; WP170/WP172/WP173 remain not started. Live disabled; Gate C is NOT AUTHORIZED; capital/orders 0; merge NOT
+AUTHORIZED.
+
+## S10-QUAL-DATA-01 Weather Qualification Data Readiness (merged historical predecessor: PR #202)
+
+PR #202 / S10-QUAL-DATA-01 merged at `6f67bac990d8ab338f1b87140ae077e9df4172dd` with head `33c031f41626550294eb6667620b4ce75589d719`; its QUAL_DATA_INSUFFICIENT run-01 is
+the verified seed of S10-QUAL-DATA-02 (D011/D012 dispositioned there). The historical implementation-target record
+follows unchanged.
 
 The canonical contract is `docs/qualification_weather_data_readiness_contract.md`; the operator is
 `tools/qualification/run_s10_qual_data_01.py`; the status fragment is `docs/status_entries/S10-QUAL-DATA-01.md`;

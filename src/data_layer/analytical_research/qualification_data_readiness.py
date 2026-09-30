@@ -122,6 +122,10 @@ MARKET_EXCLUSION_REASONS = (
     "STATION_OFFSET_UNDERIVABLE",
     "LABEL_GAMMA_NOT_FINAL",
     "LABEL_V3_RESOLUTION_MISSING",
+    # S10-QUAL-DATA-02 (D011, additive): a required v3 ``market_resolved`` read failed after the
+    # allowed retries. LABEL_V3_RESOLUTION_MISSING is reserved for a successful relevant-window
+    # read that holds no qualifying resolution.
+    "LABEL_V3_SOURCE_READ_FAILED",
     "LABEL_SOURCE_DISAGREEMENT",
     "BUDGET_EXHAUSTED_BEFORE_EVALUATION",
 )

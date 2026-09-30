@@ -548,3 +548,32 @@ def test_no_qualification_candidate_gate_or_trading_path() -> None:
     flags = _bundle()["dataset"]["no_authority_flags"]
     assert flags["no_qualification_candidate"] is True and flags["no_qualification_gate_run"] is True
     assert flags["no_live_authority"] is True and flags["no_execution_authority"] is True and flags["no_paper_authority"] is True
+
+
+# ── S10-QUAL-DATA-02 (D011) additive label vocabulary ─────────────────────────
+
+DATA_01_MARKET_EXCLUSION_REASONS = (
+    "SLUG_NOT_DAILY_RAIN_FAMILY", "TARGET_DATE_OUTSIDE_CORPUS", "V3_MARKET_IDENTITY_INCONSISTENT", "GAMMA_UNAVAILABLE",
+    "GAMMA_V3_IDENTITY_MISMATCH", "RULE_STATION_MISSING", "RULE_STATION_AMBIGUOUS", "RULE_THRESHOLD_MISSING",
+    "RULE_CLIMATE_DAY_MISSING", "RULE_SEMANTICS_UNSUPPORTED", "STATION_METADATA_UNAVAILABLE", "STATION_METADATA_INVALID",
+    "STATION_OFFSET_UNDERIVABLE", "LABEL_GAMMA_NOT_FINAL", "LABEL_V3_RESOLUTION_MISSING", "LABEL_SOURCE_DISAGREEMENT",
+    "BUDGET_EXHAUSTED_BEFORE_EVALUATION",
+)
+
+
+def test_label_source_read_failed_vocabulary_additive() -> None:
+    # Exactly one market-level code is added; every S10-QUAL-DATA-01 code survives in order.
+    assert tuple(r for r in qd.MARKET_EXCLUSION_REASONS if r != "LABEL_V3_SOURCE_READ_FAILED") == DATA_01_MARKET_EXCLUSION_REASONS
+    assert set(qd.MARKET_EXCLUSION_REASONS) - set(DATA_01_MARKET_EXCLUSION_REASONS) == {"LABEL_V3_SOURCE_READ_FAILED"}
+    assert "LABEL_V3_SOURCE_READ_FAILED" not in qd.ROW_EXCLUSION_REASONS
+    assert qd.RuleExclusion("LABEL_V3_SOURCE_READ_FAILED").code == "LABEL_V3_SOURCE_READ_FAILED"  # never coerced
+    assert qd.exclusion("1", "LABEL_V3_SOURCE_READ_FAILED", target_date="2026-09-03")["reason"] == "LABEL_V3_SOURCE_READ_FAILED"
+    with pytest.raises(qd.ReadinessError):
+        qd.exclusion("1", "LABEL_V3_SOURCE_READ_FAILED", qd.CHECKPOINT_A, "2026-09-03")  # market-level only
+    # resolve_label itself is unchanged: an empty (successfully read) window stays RESOLUTION_MISSING.
+    with pytest.raises(qd.RuleExclusion) as excinfo:
+        qd.resolve_label(qd.normalize_gamma_market(gamma_doc(), candidate()), [])
+    assert excinfo.value.code == "LABEL_V3_RESOLUTION_MISSING"
+    counts = qd.derive_counts(3, [], [qd.exclusion("1", "LABEL_V3_SOURCE_READ_FAILED"), qd.exclusion("2", "LABEL_V3_RESOLUTION_MISSING")],
+                              [], {}, [])
+    assert counts["market_exclusion_reasons"] == {"LABEL_V3_RESOLUTION_MISSING": 1, "LABEL_V3_SOURCE_READ_FAILED": 1}
