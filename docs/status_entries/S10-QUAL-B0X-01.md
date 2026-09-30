@@ -73,18 +73,22 @@ Current S10-QUAL-B0X-01 state: IMPLEMENTED_READY_FOR_REVIEW
 ## Validation
 
 - Focused tests: `python -m pytest -q tests/data_layer/analytical_research/test_qualification.py tests/data_layer/analytical_research/test_qualification_boundaries.py tests/data_layer/analytical_research/test_qualification_gate.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py` -> 541 passed
-- Full suite: `python -m pytest -q` -> see the PR body for the authoritative count on the stable candidate
+- Full suite: `python -m pytest -q` -> 12584 passed, 1 skipped (one authoritative run on candidate commit
+  `f70ed91fd9755edac5b6cae19c26f08d8d68429d`; the only later change is this evidence line). An earlier attempt with the
+  local virtualenv inside the worktree failed only `tests/test_no_secret_placeholders.py` on third-party
+  `.venv/` test vectors; the virtualenv was moved outside the repository before the authoritative run.
 - Readiness: `python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-B0X-01/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-B0X-01/wp_spec.json --repo-root .` -> IMPLEMENTATION_READY (FAST)
 - Generated artifact guard: passed; `git diff --check ebd6f84c95e30451fe1c9ad431e405c57c113074`: clean
 - Local security checks (`tools/security/run_available_security_checks.py`): gitleaks, semgrep and pip-audit
   SKIPPED_NOT_AVAILABLE in this environment (existing WP3-D001/WP3-D002 posture); npm/cargo not applicable. Not
   claimed as passed.
-- Local environment: CPython 3.12 virtualenv (`.venv/`, git-ignored) with the unchanged pinned dependencies.
+- Local environment: CPython 3.12 virtualenv outside the repository with the unchanged pinned dependencies
+  (including the pinned cockpit extra used by hosted CI).
 
 ## Authority
 
 - Network/data acquisition: NONE (workflow network only: git fetch/push, PR publication and installing the
-  existing pinned dependencies into the ignored local virtualenv)
+  existing pinned dependencies into a local virtualenv outside the repository)
 - QualificationCandidate real execution: NO
 - Qualification gate real run: NO
 - WP170/WP172/WP173: NOT STARTED
