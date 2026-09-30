@@ -1,0 +1,360 @@
+Package Identity:
+  WP ID: S10-QUAL-DATA-02
+  Title: Weather Qualification Corpus Completion
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Drafting-time main SHA: 6f67bac990d8ab338f1b87140ae077e9df4172dd
+  Required predecessor: PR #202 / S10-QUAL-DATA-01
+  Required predecessor final head: 33c031f41626550294eb6667620b4ce75589d719
+  Required predecessor merge SHA: 6f67bac990d8ab338f1b87140ae077e9df4172dd
+  Suggested branch: codex/s10-qual-data-02-weather-corpus-completion
+  Package class: WEATHER_QUALIFICATION_CORPUS_COMPLETION
+  Package size class: L
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: one bounded public read-only completion run seeded from the verified PR #202 run-01 evidence, into ignored local evidence, plus deterministic offline re-derivation
+  Product impact: NONE
+  Network impact: bounded public GET/HEAD/Range only against the exact four-host allowlist in this package
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: RUNTIME
+
+# SIDE14 — S10-QUAL-DATA-02 COMPACT ONE-SHOT WP
+## Weather Qualification Corpus Completion
+
+**Send to:** **NEW CLAUDE CODE CHAT / SESSION**
+Repo `toobigtofailbot-maker/polymarket-strategy-lab`
+Main `6f67bac990d8ab338f1b87140ae077e9df4172dd`
+Predecessor PR #202 / head `33c031f41626550294eb6667620b4ce75589d719` / merge `6f67bac990d8ab338f1b87140ae077e9df4172dd`
+Branch `codex/s10-qual-data-02-weather-corpus-completion`
+Class `WEATHER_QUALIFICATION_CORPUS_COMPLETION`; L; RUNTIME; risk 3; merge authority NO.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+## 0. AUTHORITY / EFFICIENCY
+
+Karl already authorized this WP. No second implementation/network/runtime confirmation.
+
+After `IMPLEMENTATION_READY`: implement → one completion run → validate → Ready-for-Review PR → exact-head CI → independent review → Side14.
+
+Not authorized: merge; dependency/lock/workflow change; credentials/private APIs; Hermes/provider/model; scheduler/background runtime; QualificationCandidate/gate; WP170/172/173; strategy/paper/execution/live/Gate C/capital/orders.
+
+Efficiency rules:
+- no repeated broad investigation;
+- inspect only controlling files + mechanically necessary guards/tests;
+- no repetitive progress narration during long commands;
+- for a healthy long-running command, start at most one completion watcher and let it run; do not repeatedly poll CPU/process/progress unless there is evidence of a stall or an explicit timeout is exceeded;
+- do not launch duplicate execution commands or duplicate watchers for the same running phase;
+- focused tests while editing;
+- one authoritative full suite only on final stable candidate;
+- ordinary in-scope code/test/docs/CI defects = same-run repair, no Karl round-trip or follow-up WP.
+
+## 1. WHY / FROZEN PREDECESSOR FACTS
+
+DATA-01 ended `QUAL_DATA_INSUFFICIENT / FROZEN_BUDGET_EXHAUSTED`.
+
+Frozen: 600 discovered / 325 included / 275 excluded; 212 rows / 12 dates (A=160, B=52); B0=`EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION`; 4,031 attempts / 2,147,013,454 bytes; 225 `LAST_BEFORE_1400_ET` unevaluated; 428 HTTP 503 / 228 retries;
+- bundle `weatherqualbundle:sha256:ceca0252b4d41cf9b49591bb3a65ed9e0b79d9321b269ecbab86f5a90ea085e1`;
+- dataset `weatherqualdataset:sha256:9058a05354390ca7e61bcb47871f93b925e99571f7cc48f40b057eb0e8454413`.
+
+D011: failed `best_bid_ask`/footer may count as scanned; failed `market_resolved` may become `LABEL_V3_RESOLUTION_MISSING`; failed `tick_size_change` may silently degrade to current-only.
+
+D011 affected 0 sealed rows. Prior acquisition had no material duplicate digests/ranges and already reused footers, A/B chunks, NDFD objects and stations. DATA-02 changes only failed-read accounting, throttle handling, seed reuse and bounded budget.
+
+## 2. OBJECTIVE / FROZEN SEMANTICS
+
+Must remain unchanged:
+- dates `2026-08-18..2026-09-26`;
+- A=`MARKET_OBSERVABLE_PLUS_60M_V1`;
+- B=`TARGET_CLIMATE_DAY_START_V1`;
+- market-history 24h; NDFD 48h;
+- existing ±30m label window;
+- whole-object historical NDFD PoP12;
+- PendulumFlow=`THIRD_PARTY_NATIVE_FRAME_ARCHIVE`;
+- B0 external-only unless genuine canonical PIT independently bound;
+- finality policies exactly `FIRST_PUBLISHED_FINAL`, `LATEST_BEFORE_2359_ET`, `LAST_BEFORE_1400_ET`.
+
+No date/window/checkpoint/policy change; no outcome-informed tuning, predictive metric, power threshold, Brier/log-loss or feature/model work.
+
+## 3. REQUIRED SEED
+
+Use `local_data/s10_qual_data_01/run-01/`; search only under `git worktree list --porcelain` roots.
+
+Before changing DATA-01 analytical core, verify that workspace with exact predecessor code `33c031f41626550294eb6667620b4ce75589d719`.
+
+Require terminal `QUAL_DATA_INSUFFICIENT`, reason `FROZEN_BUDGET_EXHAUSTED`, exact bundle/dataset IDs above, `verify-final=VERIFIED`, every admitted seed artifact hash-valid, and no failed seed entries.
+
+Failure → `STOP SEED_EVIDENCE_MISSING`; no fallback fresh full run.
+
+Seed only successful immutable raw/source artifacts + truthful source metadata; never seed prior rows, exclusions, bundle, ready manifests, scanned-hour decisions, label classifications or execution-evidence decisions. Re-derive the whole corpus. Seed path/user/host never enters identity.
+
+Report seed artifact count/bytes separately from new network attempts/bytes; seed bytes do not consume DATA-02 caps.
+
+## 4. D011 RULES
+
+Track read state by `(hour,event_family)` for `best_bid_ask`, `last_trade_price`, `tick_size_change`, `market_resolved`, and relevant manifest/tail/footer/chunk stages. Failed read/decode ≠ empty result.
+
+**BBA:** failed required hour between selected event and checkpoint, or no event plus any required failed lookback hour → `MARKET_HISTORY_SOURCE_INVALID`; failed hour is not scanned; stop deeper walk-back once source-invalid.
+
+**LTP:** failed hour not listed as searched; preserve failure; cannot imply absence.
+
+**Labels:** add exactly `LABEL_V3_SOURCE_READ_FAILED` when required `market_resolved` read fails after allowed retries. Keep `LABEL_V3_RESOLUTION_MISSING` only after a successful relevant-window read with no qualifying resolution. Additive vocabulary change authorized only in `src/data_layer/analytical_research/qualification_data_readiness.py`.
+
+**Tick:** failed `tick_size_change` remains explicit/not successfully searched; current-only evidence may remain only if independently supported.
+
+Final source facts report failed-read counts by family/phase.
+
+## 5. NETWORK / RETRY / BUDGET
+
+Only `tools/qualification/run_s10_qual_data_02.py` may perform source traffic.
+
+Hosts:
+`archive.pendulumflow.com`; `noaa-ndfd-pds.s3.amazonaws.com`; `gamma-api.polymarket.com`; `api.weather.gov`.
+
+Methods GET/HEAD/Range GET only; no arbitrary URL/auth/private endpoint/write method/WebSocket/provider/model/scheduler/background service.
+
+429/503: initial + max 3 retries; delays `2s,8s,30s`. If integer `Retry-After` ∈ `[0,60]`, `actual_delay=max(frozen_delay,Retry-After)`; otherwise frozen delay. No jitter/random/adaptive retry.
+
+Existing timeout/reset/`RemoteDisconnected`/truncation failures keep DATA-01's max one immediate retry.
+
+Every attempt/received byte counts. Exhausted retry = closed source failure, never source absence. Tests inject no-sleep seam.
+
+New-network caps:
+
+MAX_NETWORK_ATTEMPTS=12_288
+MAX_RESPONSE_BYTES=6_442_450_944
+MAX_SINGLE_RESPONSE=268_435_456
+MAX_DISTINCT_PENDULUM_HOURS=2_000
+
+Do not raise during run; exhaustion remains `QUAL_DATA_INSUFFICIENT / FROZEN_BUDGET_EXHAUSTED`.
+
+## 6. IMPLEMENTATION / COMMANDS
+
+Create `tools/qualification/run_s10_qual_data_02.py`.
+
+It owns seed admission, D011 accounting, retry/backoff, ledger/workspace/state/final evidence. Workspace `local_data/s10_qual_data_02/run-01/`; never mutate DATA-01 evidence.
+
+Modify only the minimum core surface for `LABEL_V3_SOURCE_READ_FAILED`:
+`src/data_layer/analytical_research/qualification_data_readiness.py`.
+
+Do not modify `run_s10_qual_data_01.py`, `pendulumflow_v3.py`, `nws_ndfd_history.py`, qualification/gate/WP170, public client or provenance core.
+
+Commands:
+- `prepare` — zero network; verify repo/predecessor/seed, create fresh workspace, admit only verified successful seed artifacts, write seed report, freeze plan/code digests/budgets/retry, reject conflicting workspace.
+- `probe-sources` — bounded network; prove seed cache hit, one unseeded fetch, typed D011 failure, Gamma identity, production NDFD decode; require `PROBE_PASS`.
+- `run-completion` — exactly one real run; full re-derivation using seed as cache, fetch missing evidence only, corrected D011/retry rules, no tuning.
+- `verify-final` — zero network; rehash seed+new artifacts and reproduce bundle/dataset IDs, ready manifests, counts/exclusions, seed provenance, network accounting, zero failed seed, no look-ahead/authority laundering.
+
+## 7. EXACT SCOPE — 15 PATHS
+
+1. `docs/qualification_weather_corpus_completion_contract.md`
+2. `docs/status_entries/S10-QUAL-DATA-02.md`
+3. `docs/deferred_items_log.md`
+4. `docs/long_term_bot_completion_roadmap.md`
+5. `docs/project_status.md`
+6. `docs/repo_truth_index.md`
+7. `docs/wp_specs/S10-QUAL-DATA-02/wp_prompt.txt`
+8. `docs/wp_specs/S10-QUAL-DATA-02/wp_spec.json`
+9. `src/data_layer/analytical_research/qualification_data_readiness.py`
+10. `tools/qualification/run_s10_qual_data_02.py`
+11. `tests/data_layer/analytical_research/test_qualification_data_readiness.py`
+12. `tests/tools/qualification/test_run_s10_qual_data_02.py`
+13. `tests/test_qualification_weather_corpus_completion_contract_docs.py`
+14. `tests/test_project_status_docs.py`
+15. `tests/test_repo_truth_docs.py`
+
+No 16th path; no dependency/lock/workflow edits. Spec-derived historical guards run unchanged. 16th path → `STOP SCOPE_EXPANSION_REQUIRED`.
+
+## 8. GOVERNED PACKAGE / READINESS
+
+Materialize `docs/wp_specs/S10-QUAL-DATA-02/wp_prompt.txt` and `wp_spec.json` first.
+
+The spec must mirror this exact authority, 15-path scope, seed rules, D011 behavior, retry policy, budgets, frozen semantics and non-authority boundaries. Required readiness: `IMPLEMENTATION_READY`.
+
+Before real source work, focused tests/readiness must prove:
+- PR #202/current main and exact seed validate; failed seed entries=0;
+- full corpus is re-derived, not inherited as predecessor decisions;
+- D011 BBA/LTP/label/tick and exact retry/Retry-After/accounting rules hold;
+- seed/network byte accounting and caps hold;
+- frozen corpus/B0/source semantics are unchanged;
+- no predictive/qualification/trading authority is reachable.
+
+## 9. HARD STOPS / SAME-RUN REPAIR
+
+Hard stops only:
+- `STATE_DRIFT`: controlling contracts changed materially.
+- `SEED_EVIDENCE_MISSING`: exact PR #202 seed unavailable/unverifiable.
+- `SEED_EVIDENCE_CONFLICT`: valid predecessor stores disagree.
+- `SOURCE_CONTRACT_DRIFT`: source contradicts frozen semantics beyond ordinary exclusion.
+- `DEPENDENCY_EXPANSION_REQUIRED`: package/lock needed.
+- `WORKFLOW_EXPANSION_REQUIRED`: workflow edit needed.
+- `QUALIFICATION_CONTRACT_EXPANSION_REQUIRED`: B0/QUAL/WP170 semantic change needed.
+- `SCOPE_EXPANSION_REQUIRED`: 16th path needed.
+- `AUTHORITY_EXPANSION_REQUIRED`: credentials/private/Hermes/strategy/paper/execution/live/Gate C/capital/orders needed.
+
+Throttling, source-invalid rows, low counts, external-only B0, truthful INSUFFICIENT and ordinary in-scope defects are not hard stops; ordinary defects are same-run repairs.
+
+## 10. VALIDATION / PR FLOW
+
+Sequence: focused tests → affected changed-set guards → stable-candidate readiness `--check-diff` + exact scope + artifact guard + `git diff --check` + security + focused/strict Py3.12-eccodes checks → `prepare` → `probe-sources` → exactly one `run-completion` → zero-network `verify-final` → reconcile docs/status → final focused tests → **one authoritative full suite** → final readiness/scope/security → commit/push → Ready-for-Review PR → exact-head CI → one independent exact-head review → re-fetch PR/check/review evidence → Side14.
+
+No repeated broad suites. Changed final head invalidates prior exact-head CI/review. Do not merge.
+
+## 11. REQUIRED FINAL REPORT
+
+S10-QUAL-DATA-02 FINAL
+Disposition: READY_FOR_SIDE14_REVIEW / BLOCKED
+Base:
+Final head:
+PR:
+Exact changed paths: 15 / 15
+
+PR #202 seed verified:
+Seed artifact count:
+Seed bytes reused:
+Failed seed entries admitted: 0
+
+D011 market-history fix:
+D011 label fix:
+D011 tick-history fix:
+Throttle policy:
+Probe:
+
+Terminal:
+Terminal reason:
+Bundle id:
+Logical dataset id:
+B0 contract compatibility:
+
+Markets discovered / included / excluded:
+Checkpoint A rows:
+Checkpoint B rows:
+Independent target dates:
+Source-invalid market-history rows:
+LABEL_V3_SOURCE_READ_FAILED:
+LABEL_V3_RESOLUTION_MISSING:
+Failed read counts by source family:
+
+New network attempts:
+New network bytes:
+Total evidence bytes including seed:
+Budget exhausted:
+
+Verify-final:
+Focused tests:
+Full suite:
+Readiness --check-diff:
+Exact-head CI:
+Independent implementation review:
+PR evidence re-fetch:
+
+QualificationCandidate created: NO
+Qualification gate run: NO
+WP170/WP172/WP173: NOT STARTED
+Gate C/live/capital/orders: NO / DISABLED / USD 0 / 0
+Merge authorized: NO
+
+## 12. SUCCESSOR
+
+If `QUAL_DATA_READY`: return to Side14; next candidate is the smallest B0 provenance / qualification-contract compatibility package; do not implement automatically. If `QUAL_DATA_INSUFFICIENT`: return actual evidence; no automatic rerun, budget increase, date/window expansion or tuning.
+
+Proceed in a **new Claude Code chat/session** and fresh worktree from current `main`. **Do not merge.**
+
+## 13. GOVERNED PACKAGE ADDENDA (materialized by the executor from sections 0-12; no new authority)
+
+### 13.1 Authority / Non-Authority posture
+
+Authority is exactly the BEGIN_GOVERNANCE_AUTHORITY_V1 block above (RUNTIME, risk 3): local offline tooling,
+canonical evidence policy, docs, tests, source runtime (the additive label code only) and bounded public read-only
+network through `tools/qualification/run_s10_qual_data_02.py`. Non-authority: workflow governance/files,
+dependencies, credentials, scheduler, Hermes runtime, strategy, paper, execution and live stay false. Protected
+boundary groups: `docs/ai/codex/PROTECTED_PATHS.md` (runtime execution, OMS, reconciliation, risk caps, configs,
+live paths) are untouched.
+
+### 13.2 Negative-test matrix
+
+- seed: tampered raw artifact, unverified predecessor, wrong bundle id, wrong terminal reason, non-predecessor code
+  digests, rehash-count mismatch, no worktree roots -> SEED_EVIDENCE_MISSING; two valid disagreeing stores ->
+  SEED_EVIDENCE_CONFLICT; failed predecessor entries never admitted; corrupted seed bytes never served.
+- workspace: dirty tree / wrong branch -> STATE_DRIFT; non-empty workspace -> PREPARE_WORKSPACE_CONFLICT; finalized
+  workspace -> RUN_ALREADY_FINALIZED; missing probe -> PROBE_REQUIRED; archive object changed under the seed ->
+  SOURCE_CONTRACT_DRIFT.
+- retry: persistent 429/503 -> closed HTTP failure after exactly 3 frozen-delay retries; Retry-After above 60,
+  negative, fractional, date or non-numeric -> frozen delay; Retry-After below the frozen delay never shortens it;
+  timeout/reset/truncation -> one immediate retry, no sleep; redirect, POST, foreign host, http -> refused before
+  any attempt.
+- caps: attempt, byte and single-response caps fail closed (pre-checked where the size is known, counted truthfully
+  otherwise); throttle bodies count.
+- D011: failed BBA hour -> MARKET_HISTORY_SOURCE_INVALID and walk stops; failed LTP hour never listed as searched;
+  failed market_resolved read -> LABEL_V3_SOURCE_READ_FAILED (never RESOLUTION_MISSING); failed tick read explicit.
+- verify-final: tampered seed raw, new raw, seed index, report seed usage, report attempts, ledger bytes or bundle
+  counts -> VERIFY_FAILED / PLAN_INVALID; code drift -> CODE_DRIFT.
+
+### 13.3 Evidence plan (requirement mapping)
+
+`wp_spec.json` evidence_plan R001-R035 maps every Section 8 readiness proof and Section 10 validation step to one
+pytest node or validation command; R004 is the predecessor-code verification of the seed before any core edit.
+
+### 13.4 Successor boundary
+
+QUAL_DATA_READY: return to Side14; the next candidate is the smallest B0 provenance / qualification-contract
+compatibility package (separately gated, not implemented automatically). QUAL_DATA_INSUFFICIENT: return the actual
+evidence; no automatic rerun, budget increase, date/window expansion or tuning. Merge is not authorized.
+
+### 13.5 Report-back
+
+Report back with exactly the Section 11 template, filled from the committed status fragment, the sealed bundle,
+RUN_REPORT/VERIFY_FINAL and the live PR/CI/review evidence.
+
+### 13.6 Normative rule matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|seed|discovery|always|REQUIRE|seed_discovered_only_under_git_worktree_roots|seed.discovery|R007
+NR002|seed|discovery|valid_stores_disagree|REJECT|stop_seed_evidence_conflict|seed.discovery|R007
+NR003|seed|verification|always|REQUIRE|exact_pr202_ids_terminal_verify_final_and_predecessor_code_digests|seed.verification|R006
+NR004|seed|verification|unverifiable_or_missing|REJECT|stop_seed_evidence_missing_without_fallback_run|seed.verification|R006
+NR005|seed|predecessor_code|before_core_edit|REQUIRE|seed_verified_with_exact_predecessor_code|seed.verification|R004
+NR006|seed|admission|successful_hash_valid_artifact|ACCEPT|admitted_with_truthful_source_metadata|seed.admission|R005
+NR007|seed|admission|failed_entry|REJECT|never_admitted_fetched_fresh|seed.admission|R005
+NR008|seed|admission|predecessor_decision|FORBID|rows_exclusions_bundle_manifests_and_decisions_never_seeded|seed.admission|R005
+NR009|seed|identity|always|FORBID|seed_path_user_host_never_in_identity|seed.admission|R005
+NR010|seed|use|always|REQUIRE|whole_corpus_rederived_seed_is_cache_only|seed.cache_only|R018
+NR011|d011|best_bid_ask|read_failed|REJECT|hour_not_scanned_pair_source_invalid_walk_stops|d011.best_bid_ask|R013
+NR012|d011|last_trade_price|read_failed|REJECT|hour_not_listed_as_searched_failure_preserved|d011.last_trade_price|R014
+NR013|d011|market_resolved|read_failed|REJECT|label_v3_source_read_failed|d011.market_resolved|R015
+NR014|d011|market_resolved|all_reads_ok_no_resolution|REJECT|label_v3_resolution_missing|d011.market_resolved|R016
+NR015|d011|tick_size_change|read_failed|PRESERVE_EXACT|failure_explicit_current_only_needs_independent_support|d011.tick_size_change|R017
+NR016|d011|vocabulary|always|REQUIRE|exactly_one_additive_market_level_code|d011.vocabulary|R026
+NR017|retry|throttle|status_429_or_503|REQUIRE|max_three_retries_after_2_8_30_seconds|retry.throttle|R009
+NR018|retry|retry_after|integer_0_to_60|ACCEPT|delay_is_max_of_frozen_and_retry_after|retry.throttle|R009
+NR019|retry|retry_after|other_value|REJECT|frozen_delay_used|retry.throttle|R009
+NR020|retry|transport|timeout_reset_truncation|REQUIRE|one_immediate_retry_then_closed_failure|retry.transport|R010
+NR021|network|allowlist|always|REQUIRE|four_public_hosts_get_head_range_only|network.allowlist|R025
+NR022|network|budget|cap_reached|REJECT|qual_data_insufficient_frozen_budget_exhausted|network.budget|R022
+NR023|network|budget|seed_hit|ACCEPT|consumes_no_attempt_or_byte|network.budget|R012
+NR024|corpus|semantics|always|PRESERVE_EXACT|dates_checkpoints_windows_label_window_policies_and_b0_unchanged|corpus.frozen|R023
+NR025|probe|gate|always|REQUIRE|seed_hit_unseeded_fetch_typed_failure_gamma_identity_ndfd_decode|probe.gate|R019
+NR026|operator|finalization|finalized_workspace|REJECT|run_already_finalized|operator.finalization|R020
+NR027|operator|verify_final|always|REQUIRE|zero_network_rehash_and_replay_identities_counts_seed_and_network|operator.finalization|R021
+NR028|authority|boundaries|always|FORBID|no_qualification_gate_strategy_paper_execution_live_capital_or_orders|authority.boundaries|R024
+NR029|successor|boundary|always|REQUIRE|separately_gated_side14_decision_no_automatic_rerun|successor.boundary|R028
+END_NORMATIVE_RULE_MATRIX_V1

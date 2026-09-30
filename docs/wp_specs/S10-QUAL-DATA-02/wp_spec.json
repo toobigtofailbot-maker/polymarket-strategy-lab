@@ -1,0 +1,797 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-QUAL-DATA-02",
+    "title": "Weather Qualification Corpus Completion",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "WEATHER_QUALIFICATION_CORPUS_COMPLETION",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 202,
+      "head_sha": "33c031f41626550294eb6667620b4ce75589d719",
+      "merge_sha": "6f67bac990d8ab338f1b87140ae077e9df4172dd"
+    },
+    "suggested_branch": "codex/s10-qual-data-02-weather-corpus-completion",
+    "objective": "Complete the frozen S10-QUAL-DATA-01 weather qualification corpus in one bounded run: verify the exact PR #202 run-01 seed with the predecessor code, admit only its hash-valid successful raw artifacts as a cache, re-derive the whole corpus with the unchanged DATA-01 semantics plus the D011 failed-read rules (BBA source-invalid, LTP not searched, LABEL_V3_SOURCE_READ_FAILED, explicit tick failures), a frozen 429/503 backoff and bounded new-network caps, and seal a verified content-addressed bundle with terminal QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT. Data formation only: no QualificationCandidate, gate run, predictive metric, dependency/workflow change, credential, paper, execution or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/qualification_weather_corpus_completion_contract.md",
+      "docs/status_entries/S10-QUAL-DATA-02.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/wp_specs/S10-QUAL-DATA-02/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-DATA-02/wp_spec.json",
+      "src/data_layer/analytical_research/qualification_data_readiness.py",
+      "tools/qualification/run_s10_qual_data_02.py",
+      "tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+      "tests/tools/qualification/test_run_s10_qual_data_02.py",
+      "tests/test_qualification_weather_corpus_completion_contract_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/qualification_weather_corpus_completion_contract.md",
+      "docs/status_entries/S10-QUAL-DATA-02.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/wp_specs/S10-QUAL-DATA-02/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-DATA-02/wp_spec.json",
+      "src/data_layer/analytical_research/qualification_data_readiness.py",
+      "tools/qualification/run_s10_qual_data_02.py",
+      "tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+      "tests/tools/qualification/test_run_s10_qual_data_02.py",
+      "tests/test_qualification_weather_corpus_completion_contract_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "local_data/",
+      "secrets/"
+    ],
+    "max_changed_files": 15,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "src/data_layer/analytical_research/qualification_data_readiness.py",
+      "tests/data_layer/analytical_research/test_qualification_data_readiness.py"
+    ],
+    "rollback_surface": "Revert S10-QUAL-DATA-02. The completion operator, its tests, the contract/status/spec docs and the additive LABEL_V3_SOURCE_READ_FAILED code disappear; the S10-QUAL-DATA-01 derivation code returns to its PR #202 bytes. Ignored local_data evidence (DATA-01 seed and DATA-02 workspace) is untouched by revert; dependencies, workflows, qualification contracts and all runtime, order and capital state are unchanged.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "No product or trading API is added; the operator consumes the existing verified PolymarketPublicClient.get_market unchanged and public read-only research endpoints only.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These rules freeze seed discovery/verification/admission, D011 read-state rules, retry policy, network allowlist and caps, the unchanged DATA-01 corpus semantics, probe gate, finalization, authority and successor boundary.",
+    "items": [
+      {
+        "path": "seed.discovery",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "prepare discovers local_data/s10_qual_data_01/run-01 only under git worktree roots; byte-identical valid copies agree; disagreeing valid stores -> SEED_EVIDENCE_CONFLICT; none valid -> SEED_EVIDENCE_MISSING with no fallback fresh run.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_seed_conflict_between_valid_stores",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.verification",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "The seed plan code digests equal the exact 33c031f41626550294eb6667620b4ce75589d719 blobs; terminal QUAL_DATA_INSUFFICIENT / FROZEN_BUDGET_EXHAUSTED; bundle weatherqualbundle:sha256:ceca0252b4d41cf9b49591bb3a65ed9e0b79d9321b269ecbab86f5a90ea085e1 and dataset weatherqualdataset:sha256:9058a05354390ca7e61bcb47871f93b925e99571f7cc48f40b057eb0e8454413; verify-final VERIFIED; every admitted artifact hash-valid.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_seed_missing_or_unverifiable_stops",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.admission",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "Only successful immutable raw artifacts plus truthful source metadata are seeded; failed entries are never admitted (0); rows, exclusions, bundle, manifests, scanned-hour, label and execution decisions are never seeded; seed path/user/host never enter identity.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_prepare_admits_only_verified_successful_seed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.cache_only",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "The whole corpus is re-derived; the seed is a content-addressed cache whose use cannot change the sealed bundle.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_completion_rederives_whole_corpus_not_inherited",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "d011.best_bid_ask",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "A failed required best_bid_ask hour is not scanned; a pair walking through it is MARKET_HISTORY_SOURCE_INVALID and its deeper walk-back stops.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_bba_failed_hour_is_source_invalid_and_stops_walk",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "d011.last_trade_price",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "A failed last_trade_price hour is not listed as searched, is recorded as failed and never implies absence.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_ltp_failed_hour_not_listed_as_searched",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "d011.market_resolved",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "A failed required market_resolved read -> LABEL_V3_SOURCE_READ_FAILED; LABEL_V3_RESOLUTION_MISSING only after a successful relevant-window read without a qualifying resolution.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_label_source_read_failed_vs_resolution_missing",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "d011.tick_size_change",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "A failed tick_size_change hour stays explicit and not successfully searched; CURRENT_ONLY remains only on independent current Gamma metadata.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_tick_failed_read_explicit_current_only_supported",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "d011.vocabulary",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "Exactly LABEL_V3_SOURCE_READ_FAILED is added, only in qualification_data_readiness.py, as a market-level exclusion.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_label_source_read_failed_vocabulary_additive",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "retry.throttle",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "HTTP 429/503: initial + max 3 retries after 2s, 8s, 30s; an integer Retry-After in [0,60] gives max(frozen delay, Retry-After); otherwise frozen; no jitter, random or adaptive retry.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_throttle_backoff_frozen_delays_and_retry_after",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "retry.transport",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "Timeout/reset/RemoteDisconnected/truncation and other retryable statuses keep one immediate retry; an exhausted retry is a closed source failure, never source absence.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_transport_failures_keep_single_immediate_retry",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "network.allowlist",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "Only tools/qualification/run_s10_qual_data_02.py performs source traffic: https GET/HEAD/Range to archive.pendulumflow.com, noaa-ndfd-pds.s3.amazonaws.com, gamma-api.polymarket.com (public client only), api.weather.gov; no redirect, auth or arbitrary URL.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_operator_tests_hermetic_no_real_network",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "network.budget",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "New-network caps 12,288 attempts, 6,442,450,944 bytes, 268,435,456 per response, 2,000 distinct PendulumFlow hours; probe counts, seed bytes do not; never raised during the run; exhaustion -> QUAL_DATA_INSUFFICIENT / FROZEN_BUDGET_EXHAUSTED.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_new_network_caps_and_seed_bytes_uncounted",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "corpus.frozen",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "Dates 2026-08-18..2026-09-26, checkpoints MARKET_OBSERVABLE_PLUS_60M_V1 and TARGET_CLIMATE_DAY_START_V1, 24h market history, 48h NDFD, 30-minute label window, whole-object NDFD PoP12, THIRD_PARTY_NATIVE_FRAME_ARCHIVE, three finality policies and external-only B0 are unchanged.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_frozen_semantics_and_boundaries_unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "probe.gate",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "probe-sources proves a seed cache hit, one live unseeded fetch equal to its seed bytes, a typed D011 failure, Gamma identity and production NDFD decode; PROBE_PASS is required before run-completion.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_probe_proves_seed_hit_unseeded_fetch_typed_failure",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "operator.finalization",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "run-completion runs once; a finalized workspace refuses another run; verify-final is zero network and replays identities, counts, seed and network accounting.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_verify_final_zero_network_rehash_seed_and_new",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.boundaries",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "No QualificationCandidate, qualification gate, WP170/WP172/WP173, credential, scheduler, Hermes, strategy, paper, execution, live, Gate C, capital or order path.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_no_qualification_candidate_gate_or_trading_path",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "successor.boundary",
+        "source": "CONSTANT",
+        "type": "weather_completion_rule",
+        "required_rule": "QUAL_DATA_READY returns to Side14 (next: the smallest B0 provenance / qualification-contract compatibility package, not automatic); QUAL_DATA_INSUFFICIENT returns evidence with no automatic rerun, budget increase, expansion or tuning.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_s10_qual_data_02_is_current_weather_completion_target",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Identities (rule cohort, rows, dataset, bundle) are the unchanged S10-QUAL-DATA-01 derivations; seed-independence is proven by the byte-identical seeded vs unseeded bundle test.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Karl's package authorization plus RUNTIME readiness permits only this bounded completion lifecycle; merge remains separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 15-path scope, rule matrix and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's authorization of this exact S10-QUAL-DATA-02 package is the implementation and bounded public-network authorization",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside the exact 15-path scope, the single completion run terminates truthfully and focused/status/stable-candidate validation passes",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused pytest nodes and the single bounded completion run are the executable oracle; machine-spec examples are unnecessary.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R035 map onto the Section 8 readiness proofs and the Section 10 validation / PR flow.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "remote-main start gate",
+        "command": "git fetch origin --prune; git rev-parse origin/main; gh pr view 202 --json state,isDraft,headRefOid,mergeCommit; gh pr list --state open; python tools/git/preflight_generated_artifact_guard.py",
+        "expected_result": "origin/main 6f67bac990d8ab338f1b87140ae077e9df4172dd; PR #202 MERGED with head 33c031f41626550294eb6667620b4ce75589d719 and merge 6f67bac990d8ab338f1b87140ae077e9df4172dd; artifact guard passed"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "validation",
+        "test": "governed prompt/spec readiness",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-DATA-02/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-DATA-02/wp_spec.json --repo-root .",
+        "expected_result": "IMPLEMENTATION_READY on governance track RUNTIME with 15 scope files and the exact authority mirror"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "validation",
+        "test": "exact 15-path scope",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-DATA-02/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-DATA-02/wp_spec.json --repo-root . --check-diff --base 6f67bac990d8ab338f1b87140ae077e9df4172dd --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY with diff equal to exactly the 15 required paths; no dependency, lock, workflow, DATA-01 operator, pendulumflow_v3, nws_ndfd_history, qualification, gate, provenance or public-client edit"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "validation",
+        "test": "predecessor-code seed verification",
+        "command": "S10-QUAL-DATA-01 verify-final replayed with the exact 33c031f41626550294eb6667620b4ce75589d719 code over a read-only mount of local_data/s10_qual_data_01/run-01 (writes intercepted)",
+        "expected_result": "VERIFIED with the frozen PR #202 bundle and dataset ids, byte-identical VERIFY_FINAL, before any analytical-core edit"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_prepare_admits_only_verified_successful_seed",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "only hash-valid successful predecessor artifacts are admitted with their source metadata; failed entries 0 admitted; no rows/decisions; no seed path in identity; DATA-01 evidence unmutated"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_seed_missing_or_unverifiable_stops",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "tampered raw, unverified, wrong bundle/terminal, non-predecessor code, count mismatch or no roots -> SEED_EVIDENCE_MISSING; no workspace and no fallback fresh run"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_seed_conflict_between_valid_stores",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "byte-identical copies agree; two valid disagreeing stores -> SEED_EVIDENCE_CONFLICT"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_prepare_refuses_state_drift_and_conflicting_workspace",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "dirty tree or wrong branch -> STATE_DRIFT; non-empty workspace -> PREPARE_WORKSPACE_CONFLICT"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_throttle_backoff_frozen_delays_and_retry_after",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "429/503: initial + max 3 retries after 2s/8s/30s; integer Retry-After in [0,60] only lengthens; no jitter; exhausted retry is a closed HTTP failure"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_transport_failures_keep_single_immediate_retry",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "timeout/reset/truncation/other retryable statuses keep one immediate retry and never sleep; refusals make no attempt"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_gamma_throttle_policy_and_failure_retained",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "Gamma-by-id follows the same throttle policy through the unchanged public client; the closed failure replays without another attempt"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_new_network_caps_and_seed_bytes_uncounted",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "12,288 attempts / 6,442,450,944 bytes / 268,435,456 per response / 2,000 hours; probe counts; seed hits consume nothing; corrupted seed never served"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_bba_failed_hour_is_source_invalid_and_stops_walk",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "a failed best_bid_ask hour is not scanned, the pair is MARKET_HISTORY_SOURCE_INVALID and its deeper walk-back stops"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_ltp_failed_hour_not_listed_as_searched",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "a failed last_trade_price hour is excluded from searched hours, recorded as failed and never implies absence"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_label_source_read_failed_vs_resolution_missing",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "a failed required market_resolved read -> LABEL_V3_SOURCE_READ_FAILED, never LABEL_V3_RESOLUTION_MISSING"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_label_resolution_missing_only_after_successful_reads",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "LABEL_V3_RESOLUTION_MISSING only after every relevant-window read succeeded with no qualifying resolution"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_tick_failed_read_explicit_current_only_supported",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "a failed tick_size_change hour stays explicit/not searched; CURRENT_ONLY only on independent current Gamma metadata"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_completion_rederives_whole_corpus_not_inherited",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "the seeded completion bundle is byte-identical to a fresh unseeded derivation; the seed saves requests only"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_probe_proves_seed_hit_unseeded_fetch_typed_failure",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "probe proves a zero-network seed hit, a live unseeded fetch equal to the seed, a typed D011 failure, Gamma identity and NDFD decode; drift -> SOURCE_CONTRACT_DRIFT"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_end_to_end_completion_counts_and_rerun_refused",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "one completion run seals a bundle; failed seed keys are refetched fresh; a second run is RUN_ALREADY_FINALIZED"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "pytest",
+        "test": "test_verify_final_zero_network_rehash_seed_and_new",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "verify-final re-hashes seed and new artifacts, replays bundle/manifests/counts, seed and network accounting with zero network; any tamper fails"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "pytest",
+        "test": "test_budget_exhaustion_terminates_insufficient_and_replays",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "cap exhaustion is QUAL_DATA_INSUFFICIENT / FROZEN_BUDGET_EXHAUSTED at exactly the frozen cap"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "pytest",
+        "test": "test_frozen_semantics_and_boundaries_unchanged",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "dates, checkpoints, 24h/48h windows, 30-minute label window, whole-object NDFD, finality policies, allowlist, source class and B0 rule equal DATA-01"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "pytest",
+        "test": "test_no_qualification_candidate_gate_or_trading_path",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "no qualification/gate/experiment/paper/execution/live/order import or call, no auth header, no randomness in the operator"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "pytest",
+        "test": "test_operator_tests_hermetic_no_real_network",
+        "command": "python -m pytest -q tests/tools/qualification/test_run_s10_qual_data_02.py",
+        "expected_result": "operator tests use fake transports and tmp_path; socket connect is refused and never called"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "pytest",
+        "test": "test_label_source_read_failed_vocabulary_additive",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_data_readiness.py",
+        "expected_result": "exactly LABEL_V3_SOURCE_READ_FAILED is added as a market-level code; every DATA-01 code and resolve_label behaviour is unchanged"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "pytest",
+        "test": "test_corpus_completion_contract_doc_freezes_d011_retry_seed_and_budgets",
+        "command": "python -m pytest -q tests/test_qualification_weather_corpus_completion_contract_docs.py",
+        "expected_result": "the contract doc freezes seed admission, D011 rules, retry policy, caps, frozen semantics and non-authority"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "pytest",
+        "test": "test_s10_qual_data_02_is_current_weather_completion_target",
+        "command": "python -m pytest -q tests/test_project_status_docs.py",
+        "expected_result": "project status marks PR #202 merged historical truth and S10-QUAL-DATA-02 as the current target with actual terminal facts"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "validation",
+        "test": "prepare + probe-sources",
+        "command": "python tools/qualification/run_s10_qual_data_02.py prepare; python tools/qualification/run_s10_qual_data_02.py probe-sources",
+        "expected_result": "PREPARED with the verified seed (0 failed entries admitted) and PROBE_PASS"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "validation",
+        "test": "one real run-completion",
+        "command": "python tools/qualification/run_s10_qual_data_02.py run-completion",
+        "expected_result": "terminal exactly QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT with actual counts, seed reuse, new attempts/bytes and the immutable plan hash"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "validation",
+        "test": "zero-network verify-final",
+        "command": "python tools/qualification/run_s10_qual_data_02.py verify-final",
+        "expected_result": "VERIFIED with zero network and the sealed bundle/dataset ids"
+      },
+      {
+        "requirement_id": "R032",
+        "source": "validation",
+        "test": "stable-candidate full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "one authoritative full-suite run on the stable candidate; any failure reported with evidence"
+      },
+      {
+        "requirement_id": "R033",
+        "source": "github",
+        "test": "exact-head hosted CI",
+        "command": "gh pr checks",
+        "expected_result": "every hosted job green on the exact PR head including the strict ndfd-grib-compat jobs"
+      },
+      {
+        "requirement_id": "R034",
+        "source": "validation",
+        "test": "independent implementation review",
+        "command": "separate reviewer context inspects the exact-head diff",
+        "expected_result": "one independent implementation review returns PASS or PASS_WITH_NOTES"
+      },
+      {
+        "requirement_id": "R035",
+        "source": "github",
+        "test": "re-fetched PR evidence",
+        "command": "gh pr view --json number,state,isDraft,headRefOid,body,files",
+        "expected_result": "PR state, head, body and files re-fetched and consistent with the exact final head before Ready for review YES"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-QUAL-B0-01",
+    "next_title": "If QUAL_DATA_READY: the smallest B0 provenance / qualification-contract compatibility package, only after Side14 review; if QUAL_DATA_INSUFFICIENT: Side14 decision on the actual evidence; not authorized by this WP",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-QUAL-B0-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "any dependency, lock or pyproject change",
+      ".github/workflows change",
+      "run_s10_qual_data_01.py, pendulumflow_v3.py or nws_ndfd_history.py edit",
+      "qualification.py, qualification_gate.py, WP170, research_provenance.py, external_dataset.py or public_client.py edit",
+      "QualificationCandidate construction or qualification gate evaluation",
+      "sample-power thresholds, Brier/log-loss, feature/model work or any predictive metric",
+      "labelling PendulumFlow evidence canonical PIT or binding B0 as canonical",
+      "changing dates, checkpoints, windows, label window, finality policies, allowlist or caps during the run",
+      "seeding predecessor rows, exclusions, bundle, manifests or decisions",
+      "a second real run-completion or an automatic rerun after a terminal",
+      "credentials, private or authenticated endpoints, Hermes/provider/model calls, scheduler or background service",
+      "WP170, WP172, WP173, strategy, paper, execution, live, Gate C, capital or orders"
+    ]
+  }
+}
