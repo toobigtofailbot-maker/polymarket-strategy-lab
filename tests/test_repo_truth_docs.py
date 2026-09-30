@@ -892,7 +892,8 @@ def test_s10_qual_data_01_repo_truth() -> None:
     deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
     section_start = index.index("## S10-QUAL-DATA-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    assert "(merged historical predecessor: PR #202)" in section
+    assert "6f67bac990d8ab338f1b87140ae077e9df4172dd" in section and "33c031f41626550294eb6667620b4ce75589d719" in section
     for text in (
         "docs/qualification_weather_data_readiness_contract.md", "tools/qualification/run_s10_qual_data_01.py",
         "docs/status_entries/S10-QUAL-DATA-01.md", "docs/wp_specs/S10-QUAL-DATA-01/",
@@ -907,7 +908,8 @@ def test_s10_qual_data_01_repo_truth() -> None:
     for claim in ("Gate C is AUTHORIZED", "canonical PIT is available", "qualified: YES", "live ready: YES", "QUAL_PASS"):
         assert claim not in section, claim
     assert index.index("## S10-QUAL-DATA-01 ") < index.index("## S10-NDFD-GRIB-01 ") < index.index("## S10-ALPHA-REAL-01 ")
-    assert "Current bounded implementation target: S10-QUAL-DATA-01 (base 77738717fee422fe83d8bb2b7765c36dfbe6b283" in roadmap
+    assert ("Historical predecessor (PR #202 merged at 6f67bac990d8ab338f1b87140ae077e9df4172dd), formerly the bounded "
+            "implementation target: S10-QUAL-DATA-01 (base 77738717fee422fe83d8bb2b7765c36dfbe6b283") in " ".join(roadmap.split())
     assert "Historical predecessor (PR #201 merged at 77738717fee422fe83d8bb2b7765c36dfbe6b283)" in roadmap
     for item in ("S10-QUAL-DATA-01-D001", "S10-QUAL-DATA-01-D002", "S10-QUAL-DATA-01-D003", "S10-QUAL-DATA-01-D004",
                  "S10-QUAL-DATA-01-D005", "S10-QUAL-DATA-01-D006", "S10-QUAL-DATA-01-D007", "S10-QUAL-DATA-01-D008",
@@ -920,3 +922,36 @@ def test_s10_qual_data_01_repo_truth() -> None:
     for item in ("S10-QUAL-DATA-01-D011", "S10-QUAL-DATA-01-D012"):
         assert f"| {item} |" in deferred, item
     assert "RESOLVED_BY_SIDE14_CORRECTION_A456D2E_REPLACEMENT_RUN_0_UNSUPPORTED" in deferred
+
+
+def test_s10_qual_data_02_repo_truth() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    roadmap = " ".join((ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8").split())
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    section_start = index.index("## S10-QUAL-DATA-02 ")
+    section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    for text in (
+        "docs/qualification_weather_corpus_completion_contract.md", "tools/qualification/run_s10_qual_data_02.py",
+        "docs/status_entries/S10-QUAL-DATA-02.md", "docs/wp_specs/S10-QUAL-DATA-02/",
+        "6f67bac990d8ab338f1b87140ae077e9df4172dd", "33c031f41626550294eb6667620b4ce75589d719",
+        "exact 15-path scope", "only network owner", "LABEL_V3_SOURCE_READ_FAILED",
+        "failed seed entries are never admitted", "never canonical PIT",
+        "EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION", "QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT",
+        "No QualificationCandidate is created and no qualification gate is run",
+        "WP170/WP172/WP173 remain not started", "Gate C is NOT AUTHORIZED", "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    for claim in ("Gate C is AUTHORIZED", "canonical PIT is available", "qualified: YES", "live ready: YES", "QUAL_PASS"):
+        assert claim not in section, claim
+    assert index.index("## S10-QUAL-DATA-02 ") < index.index("## S10-QUAL-DATA-01 ") < index.index("## S10-NDFD-GRIB-01 ")
+    assert "Current bounded implementation target: S10-QUAL-DATA-02 (base 6f67bac990d8ab338f1b87140ae077e9df4172dd" in roadmap
+    for item in ("S10-QUAL-DATA-02-D001", "S10-QUAL-DATA-02-D002", "S10-QUAL-DATA-02-D003"):
+        assert f"| {item} |" in deferred, item
+    # The D011/D012 predecessor items are dispositioned by this completion package, never silently dropped.
+    for item in ("S10-QUAL-DATA-01-D011", "S10-QUAL-DATA-01-D012"):
+        row = next(line for line in deferred.splitlines() if line.startswith(f"| {item} |"))
+        assert "S10_QUAL_DATA_02" in row, item
+    # The NDFD D003 row is whole again (no spliced table inside it).
+    ndfd = next(line for line in deferred.splitlines() if line.startswith("| S10-NDFD-GRIB-01-D003 |"))
+    assert ndfd.endswith("no QualificationCandidate or real gate receipt exists. |")

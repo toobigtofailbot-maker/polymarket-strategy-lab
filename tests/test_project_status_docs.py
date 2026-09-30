@@ -5098,8 +5098,10 @@ def test_s10_qual_data_01_is_current_weather_readiness_target() -> None:
     lines = _read().splitlines()
     current = next(
         line for line in lines
-        if line.startswith("# S10-QUAL-DATA-01 current bounded implementation target")
+        if line.startswith("# S10-QUAL-DATA-01 merged historical truth")
     )
+    assert "PR #202 / S10-QUAL-DATA-01 merged: YES at 6f67bac990d8ab338f1b87140ae077e9df4172dd" in current
+    assert "33c031f41626550294eb6667620b4ce75589d719" in current
     fragment = " ".join(
         (REPO_ROOT / "docs" / "status_entries" / "S10-QUAL-DATA-01.md").read_text(encoding="utf-8").split()
     )
@@ -5146,3 +5148,68 @@ def test_s10_qual_data_01_is_current_weather_readiness_target() -> None:
         assert spec["authority"][key] is False, key
     assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-REAL-01"
     assert spec["successor_boundary"]["separately_gated"] is True
+
+
+S10_QUAL_DATA_02_STATES = ("IMPLEMENTED_RUN_COMPLETION_PENDING", "QUAL_DATA_READY", "QUAL_DATA_INSUFFICIENT")
+
+
+def _s10_qual_data_02_state(text: str) -> str:
+    marker = "Current S10-QUAL-DATA-02 state: "
+    start = text.index(marker) + len(marker)
+    token = text[start:].split(";")[0].split()[0]
+    assert token in S10_QUAL_DATA_02_STATES, token
+    return token
+
+
+def test_s10_qual_data_02_is_current_weather_completion_target() -> None:
+    lines = _read().splitlines()
+    current = next(
+        line for line in lines
+        if line.startswith("# S10-QUAL-DATA-02 current bounded implementation target")
+    )
+    fragment = " ".join(
+        (REPO_ROOT / "docs" / "status_entries" / "S10-QUAL-DATA-02.md").read_text(encoding="utf-8").split()
+    )
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-QUAL-DATA-02" / "wp_spec.json").read_text(encoding="utf-8")
+    )
+    for text in (
+        "Governance track: RUNTIME", "Risk level: 3", "Exact changed-file scope: 15",
+        "Frozen base: 6f67bac990d8ab338f1b87140ae077e9df4172dd",
+        "PR #202 / S10-QUAL-DATA-01 merged: YES", "33c031f41626550294eb6667620b4ce75589d719",
+        "Current branch: codex/s10-qual-data-02-weather-corpus-completion", "readiness: IMPLEMENTATION_READY (RUNTIME)",
+        "S10-QUAL-DATA-02 is data formation/corpus completion only", "failed seed entries admitted: 0",
+        "LABEL_V3_SOURCE_READ_FAILED", "THIRD_PARTY_NATIVE_FRAME_ARCHIVE", "never canonical PIT",
+        "EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION", "dependency/workflow changes: 0",
+        "QualificationCandidate created: NO", "Qualification gate run: NO", "WP170/WP172/WP173: NOT STARTED",
+        "live: DISABLED", "Gate C: NOT AUTHORIZED", "capital at risk: USD 0", "orders: 0", "Merge authorized: NO",
+    ):
+        assert text in current, text
+    state = _s10_qual_data_02_state(current)
+    assert _s10_qual_data_02_state(fragment) == state  # fragment and project status agree
+    if state != "IMPLEMENTED_RUN_COMPLETION_PENDING":
+        for text in (f"Terminal: {state}", "Bundle id: weatherqualbundle:sha256:",
+                     "Logical dataset id: weatherqualdataset:sha256:", "Verify-final: VERIFIED",
+                     "B0 contract compatibility: EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION",
+                     "Failed seed entries admitted: 0", "Probe: PROBE_PASS"):
+            assert text in fragment, text
+    for stale in ("Merge authorized: YES", "Gate C: AUTHORIZED", "QualificationCandidate created: YES", "live: ENABLED",
+                  "QUAL_PASS recorded", "B0 contract compatibility: CANONICAL_PIT_AVAILABLE"):
+        assert stale not in current, stale
+        assert stale not in fragment, stale
+    assert lines.index(current) < next(
+        index for index, line in enumerate(lines)
+        if line.startswith("# S10-QUAL-DATA-01 merged historical truth")
+    )
+    assert spec["identity"]["wp_id"] == "S10-QUAL-DATA-02"
+    assert spec["identity"]["risk_level"] == 3
+    assert spec["identity"]["required_predecessor"]["pr_number"] == 202
+    scope = spec["scope"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 15
+    for key in ("source_runtime", "network"):
+        assert spec["authority"][key] is True, key
+    for key in ("dependencies", "workflow_files", "credentials", "scheduler", "hermes_runtime", "strategy", "paper",
+                "execution", "live"):
+        assert spec["authority"][key] is False, key
+    assert spec["successor_boundary"]["separately_gated"] is True
+    assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
