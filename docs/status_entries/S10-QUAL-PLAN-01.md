@@ -63,8 +63,8 @@ Current S10-QUAL-PLAN-01 state: IMPLEMENTED_READY_FOR_REVIEW
 ## Validation
 
 - Focused tests: `python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py` -> 294 passed
-- Full suite: `python -m pytest -q -p no:cacheprovider` -> 12631 passed, 1 skipped (authoritative run on repaired candidate commit
-  `d7beadc`; the only later change is this evidence section; the pre-review candidate `ac3cb25` also passed 12631 / 1 skipped)
+- Full suite: `python -m pytest -q -p no:cacheprovider` -> 12631 passed, 1 skipped (authoritative run on final candidate commit
+  `d42cdd2`; the only later change is this evidence section; earlier candidates `ac3cb25` and `d7beadc` also passed 12631 / 1 skipped)
 - Readiness: `python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-PLAN-01/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-PLAN-01/wp_spec.json --repo-root .` -> IMPLEMENTATION_READY (FAST)
 - Readiness --check-diff: `python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-PLAN-01/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-PLAN-01/wp_spec.json --repo-root . --check-diff --base e2edb21e25e7841376c3cb51c27a622fbc0cbc83 --head HEAD` -> IMPLEMENTATION_READY (FAST), error_codes [], exact 13 / 13 changed paths
 - Generated artifact guard: passed; `git diff --check e2edb21e25e7841376c3cb51c27a622fbc0cbc83`: clean
