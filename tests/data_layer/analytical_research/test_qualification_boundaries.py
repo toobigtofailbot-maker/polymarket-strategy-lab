@@ -35,6 +35,7 @@ from tests.data_layer.analytical_research.test_qualification import (
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = ROOT / "src" / "data_layer" / "analytical_research" / "qualification.py"
 SPEC = ROOT / "docs" / "wp_specs" / "S10-QUAL-01" / "wp_spec.json"
+B0X_SPEC = ROOT / "docs" / "wp_specs" / "S10-QUAL-B0X-01" / "wp_spec.json"
 
 EXPECTED_EXPORTS = (
     "QUALIFICATION_SCHEMA_VERSION",
@@ -157,7 +158,10 @@ def test_q24_closed_vocabularies_are_frozen():
     assert q.QUALIFICATION_CANDIDATE_SCHEMA_ID == "polymarket-qualification-candidate"
     assert q.QUALIFICATION_MODES == ("BINARY_PROBABILITY", "GENERIC_METRIC")
     assert q.WALLET_DEPENDENCY_MODES == ("NON_WALLET", "WALLET_DEPENDENT")
-    assert q.QUALIFICATION_FEATURE_SOURCE_CLASSES == ("PUBLIC_NON_MARKET", "MARKET_PIT", "TIME_ONLY")
+    # S10-QUAL-B0X-01 appends exactly one external-reconstruction class; the canonical three keep order.
+    assert q.QUALIFICATION_FEATURE_SOURCE_CLASSES == (
+        "PUBLIC_NON_MARKET", "MARKET_PIT", "TIME_ONLY", "MARKET_EXTERNAL_RECONSTRUCTION",
+    )
     assert q.QUALIFICATION_PROPER_SCORE_IDS == ("BRIER_SCORE", "LOG_LOSS")
     assert q.EXECUTION_FEASIBILITY_CLASSES == (
         "FEES", "RESOLUTION_RULES", "TICK_SIZE_MIN_ORDER", "SPREAD_DEPTH", "LATENCY", "PARTIAL_FILL",
@@ -256,3 +260,50 @@ def test_q30_exact_fifteen_path_scope():
         "src/data_layer/analytical_research/__init__.py",
         "src/data_layer/analytical_research/qualification.py",
     ]
+
+
+# ── Q41 S10-QUAL-B0X-01 additive external-B0 boundary ───────────────────────
+def test_q41_external_b0_is_additive_and_not_root_exported():
+    # No new package-root export: neither B0 rule literal is part of the public surface.
+    for name in ("B0_RULE_PIT_MARKET_PROBABILITY_V1", "B0_RULE_EXTERNAL_PIT_MARKET_PROBABILITY_V1",
+                 "_B0_RULE_MARKET_ADDED_SOURCE_CLASS"):
+        assert name not in ar.__all__, name
+        assert not hasattr(ar, name), name
+    # The already-exported vocabulary exposes the additive class automatically.
+    assert ar.QUALIFICATION_FEATURE_SOURCE_CLASSES is q.QUALIFICATION_FEATURE_SOURCE_CLASSES
+    assert "MARKET_EXTERNAL_RECONSTRUCTION" in ar.QUALIFICATION_FEATURE_SOURCE_CLASSES
+    assert q.QUALIFICATION_SCHEMA_VERSION == "1.0.0"
+    # No canonicalization/import bridge: the module imports no dataset-snapshot or PIT source surface.
+    imports = _imports()
+    for module in (".research_dataset", ".pendulumflow_v3", ".qualification_data_readiness", ".qualification_gate"):
+        assert module not in imports, module
+    source = SOURCE.read_text(encoding="utf-8")
+    for token in ("SOURCE_KIND_CANONICAL_PIT", "DatasetSnapshotReference", "local_first_seen",
+                  "public_available_time", "Last-Modified"):
+        assert token not in source, token
+
+
+def test_q41_b0x_exact_fourteen_path_scope():
+    spec = json.loads(B0X_SPEC.read_text(encoding="utf-8"))
+    required = spec["scope"]["required_changed_files"]
+    assert required == spec["scope"]["allowed_changed_files"]
+    assert len(required) == len(set(required)) == spec["scope"]["max_changed_files"] == 14
+    assert spec["scope"]["exact_scope_required"] is True
+    for path in required:
+        assert (ROOT / path).is_file(), path
+    assert [p for p in required if p.startswith("src/")] == [
+        "src/data_layer/analytical_research/qualification.py",
+    ]
+    for forbidden in (
+        "src/data_layer/analytical_research/__init__.py",
+        "src/data_layer/analytical_research/qualification_gate.py",
+        "src/data_layer/analytical_research/qualification_data_readiness.py",
+        "src/data_layer/analytical_research/pendulumflow_v3.py",
+        "src/data_layer/analytical_research/experiment_os.py",
+        "src/data_layer/analytical_research/research_dataset.py",
+        "tools/qualification/run_s10_qual_data_01.py",
+        "tools/qualification/run_s10_qual_data_02.py",
+        "pyproject.toml",
+    ):
+        assert forbidden not in required, forbidden
+    assert not any(p.startswith(".github/") for p in required)

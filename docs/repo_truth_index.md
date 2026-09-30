@@ -1,6 +1,30 @@
 # Repo Truth Index
 
-## S10-QUAL-DATA-02 Weather Qualification Corpus Completion (current bounded implementation target)
+## S10-QUAL-B0X-01 External-Reconstruction B0 Qualification Contract Extension (current bounded implementation target)
+
+The canonical contract is `docs/qualification_candidate_contract.md` (section 8); the source is
+`src/data_layer/analytical_research/qualification.py`; the status fragment is `docs/status_entries/S10-QUAL-B0X-01.md`;
+the frozen package is `docs/wp_specs/S10-QUAL-B0X-01/`. Base `ebd6f84c95e30451fe1c9ad431e405c57c113074` (PR #203 /
+S10-QUAL-DATA-02 merged, head `b9e2e6995ee232720d0516b1fa234dec8bdac5e3`). FAST, risk 2, exact 14-path scope (size
+class L in the machine spec: the draft's S is below the spec-guard 14-file budget). It adds exactly one
+external-reconstruction B0 rule `EXTERNAL_PIT_MARKET_PROBABILITY_V1` and exactly one feature source class
+`MARKET_EXTERNAL_RECONSTRUCTION`; canonical `PIT_MARKET_PROBABILITY_V1` / `MARKET_PIT` are unchanged. B2 market-added
+refs must carry the B0 rule's own class (canonical -> MARKET_PIT, external -> MARKET_EXTERNAL_RECONSTRUCTION; mixed
+rejects); both market classes reject in B1; parameters and fallback mechanics are identical. The external rule is a
+third-party reconstruction observed by capture `timestamp_received`; archive Last-Modified / public_available_time
+never backdates availability, and external evidence is never MARKET_PIT, SOURCE_KIND_CANONICAL_PIT, a
+DatasetSnapshotReference or local-first-seen evidence (no import bridge). QUALIFICATION_SCHEMA_VERSION stays 1.0.0
+and canonical candidate ids are unchanged. `qualification_gate.py`, `__init__.py`, the DATA-02 sources/operators
+and WP170 are unchanged. It resolves S10-QUAL-DATA-01-D001. No network or data acquisition; no real
+QualificationCandidate is created and no qualification gate is run; WP170/WP172/WP173 remain not started.
+S10-QUAL-REAL-01 is the next expected package only after this WP merges (separately gated). Live disabled; Gate C is
+NOT AUTHORIZED; capital/orders 0; merge NOT AUTHORIZED.
+
+## S10-QUAL-DATA-02 Weather Qualification Corpus Completion (merged historical predecessor: PR #203)
+
+PR #203 / S10-QUAL-DATA-02 merged at `ebd6f84c95e30451fe1c9ad431e405c57c113074` with head `b9e2e6995ee232720d0516b1fa234dec8bdac5e3`; its sealed
+QUAL_DATA_READY corpus is unchanged and stays never canonical PIT; its B0 compatibility status is answered by
+S10-QUAL-B0X-01. The historical implementation-target record follows unchanged.
 
 The canonical contract is `docs/qualification_weather_corpus_completion_contract.md`; the operator is
 `tools/qualification/run_s10_qual_data_02.py`; the status fragment is `docs/status_entries/S10-QUAL-DATA-02.md`;

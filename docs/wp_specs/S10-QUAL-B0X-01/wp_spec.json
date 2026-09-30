@@ -1,0 +1,611 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-QUAL-B0X-01",
+    "title": "External-Reconstruction B0 Qualification Contract Extension",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "EXTERNAL_RECONSTRUCTION_B0_QUALIFICATION_CONTRACT",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 203,
+      "head_sha": "b9e2e6995ee232720d0516b1fa234dec8bdac5e3",
+      "merge_sha": "ebd6f84c95e30451fe1c9ad431e405c57c113074"
+    },
+    "suggested_branch": "codex/s10-qual-b0x-01-external-b0-contract",
+    "objective": "Add exactly one external-reconstruction B0 rule literal EXTERNAL_PIT_MARKET_PROBABILITY_V1 and exactly one qualification feature source class MARKET_EXTERNAL_RECONSTRUCTION with rule-specific B2 source-class coupling, so S10-QUAL-DATA-02 third-party reconstruction evidence can be described without relabelling it canonical PIT. Canonical PIT_MARKET_PROBABILITY_V1 / MARKET_PIT semantics, QUALIFICATION_SCHEMA_VERSION 1.0.0 and every existing canonical candidate identity stay unchanged; no gate, WP170, DATA-02, dependency, workflow, network or data authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/qualification_candidate_contract.md",
+      "docs/status_entries/S10-QUAL-B0X-01.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/wp_specs/S10-QUAL-B0X-01/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-B0X-01/wp_spec.json",
+      "src/data_layer/analytical_research/qualification.py",
+      "tests/data_layer/analytical_research/test_qualification.py",
+      "tests/data_layer/analytical_research/test_qualification_boundaries.py",
+      "tests/data_layer/analytical_research/test_qualification_gate.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/qualification_candidate_contract.md",
+      "docs/status_entries/S10-QUAL-B0X-01.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/wp_specs/S10-QUAL-B0X-01/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-B0X-01/wp_spec.json",
+      "src/data_layer/analytical_research/qualification.py",
+      "tests/data_layer/analytical_research/test_qualification.py",
+      "tests/data_layer/analytical_research/test_qualification_boundaries.py",
+      "tests/data_layer/analytical_research/test_qualification_gate.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "src/execution_gateway/",
+      "src/research_runtime/",
+      "tools/qualification/",
+      "local_data/",
+      "src/data_layer/point_in_time_market_research/",
+      "src/data_layer/polymarket/"
+    ],
+    "max_changed_files": 14,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/data_layer/analytical_research/test_qualification_boundaries.py"
+    ],
+    "rollback_surface": "Revert S10-QUAL-B0X-01. The external B0 literal, the MARKET_EXTERNAL_RECONSTRUCTION class and the rule-to-class coupling disappear; canonical packets and ids are unaffected because they never changed.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "No product, venue or trading API is added; the change is additive offline validator vocabulary and coupling in qualification.py.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These rules freeze the two B0 literals, the canonical and external B0 semantics, the additive source class, B1/B2 coupling, canonical identity invariants, the unchanged gate, authority and successor boundary.",
+    "items": [
+      {
+        "path": "b0.rules",
+        "source": "CONSTANT",
+        "type": "qualification_b0_rule",
+        "required_rule": "b0_rule is exactly PIT_MARKET_PROBABILITY_V1 or EXTERNAL_PIT_MARKET_PROBABILITY_V1; any other value rejects FORECAST_PLAN_INVALID.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_q37_unknown_b0_literal_rejects",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "b0.canonical",
+        "source": "CONSTANT",
+        "type": "qualification_b0_rule",
+        "required_rule": "PIT_MARKET_PROBABILITY_V1 semantics, parameters, MARKET_PIT coupling and canonical candidate identities are unchanged.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_q31_canonical_identity_and_serialized_packet_unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "b0.external",
+        "source": "CONSTANT",
+        "type": "qualification_b0_rule",
+        "required_rule": "EXTERNAL_PIT_MARKET_PROBABILITY_V1 uses the same max_midpoint_spread [0,1] and nonnegative integer max_last_trade_age_seconds; midpoint only for an observed two-sided book with recomputed ask-bid <= max_midpoint_spread; else latest observed last trade within age; else unavailable; NOT_OBSERVED_IN_SEARCHED_HOURS never imputed; observability is external capture timestamp_received <= decision_time; Last-Modified/public_available_time never backdates; never MARKET_PIT, SOURCE_KIND_CANONICAL_PIT, DatasetSnapshotReference or local_first_seen_time.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_q38_external_b0_parameters_share_canonical_rejections",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "feature.source_classes",
+        "source": "CONSTANT",
+        "type": "qualification_b0_rule",
+        "required_rule": "QUALIFICATION_FEATURE_SOURCE_CLASSES gains exactly MARKET_EXTERNAL_RECONSTRUCTION appended after the unchanged canonical three.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_q24_closed_vocabularies_are_frozen",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "coupling.b2",
+        "source": "CONSTANT",
+        "type": "qualification_b0_rule",
+        "required_rule": "Every b2_market_added_feature_ref is MARKET_PIT under the canonical rule and MARKET_EXTERNAL_RECONSTRUCTION under the external rule; mixed or other classes reject; B2 is the exact sorted B1 union added.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_q35_mixed_canonical_and_external_b2_rejects",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "coupling.b1",
+        "source": "CONSTANT",
+        "type": "qualification_b0_rule",
+        "required_rule": "B1 refs are only PUBLIC_NON_MARKET or TIME_ONLY under both rules.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_q36_market_classes_rejected_in_b1_under_both_rules",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "identity.canonical",
+        "source": "CONSTANT",
+        "type": "qualification_b0_rule",
+        "required_rule": "QUALIFICATION_SCHEMA_VERSION stays 1.0.0; record fields and identity preimage unchanged; canonical fixture ids and serialized packet unchanged.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_q31_canonical_identity_and_serialized_packet_unchanged",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate.unchanged",
+        "source": "CONSTANT",
+        "type": "qualification_b0_rule",
+        "required_rule": "qualification_gate.py is unchanged and admits an otherwise valid external-B0 candidate under its existing dimensions and aggregation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_q28_valid_external_b0_candidate_is_admitted_without_gate_change",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.boundaries",
+        "source": "CONSTANT",
+        "type": "qualification_b0_rule",
+        "required_rule": "No network, data acquisition, real QualificationCandidate, real gate run, WP170/WP172/WP173, strategy, paper, execution, live, Gate C, capital or orders.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_q41_b0x_exact_fourteen_path_scope",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "successor.boundary",
+        "source": "CONSTANT",
+        "type": "qualification_b0_rule",
+        "required_rule": "On clean merge return to Side14; S10-QUAL-REAL-01 is the next expected package and is separately gated.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_s10_qual_b0x_01_is_current_external_b0_contract_target",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "QualificationCandidate record fields and identity preimage are unchanged; canonical identity stability is proven by the R003/R004 pre-change id binding.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Karl's package authorization plus FAST readiness permits only this bounded additive contract extension; merge remains separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 14-path scope, rule matrix and FAST readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's sending of this exact S10-QUAL-B0X-01 package is the implementation authorization",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside the exact 14-path scope with canonical identities unchanged and focused/status/stable-candidate validation passing",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused pytest nodes are the executable oracle; machine-spec examples are unnecessary.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R024 map onto the Section 7 matrix, Section 8 acceptance and Section 10 validation / PR flow.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "remote-main start gate",
+        "command": "git fetch origin main; git rev-parse HEAD origin/main; git status --short; git log -1 --format=%P origin/main",
+        "expected_result": "local main equals origin/main ebd6f84c95e30451fe1c9ad431e405c57c113074; clean tree; merge commit parents include PR #203 head b9e2e6995ee232720d0516b1fa234dec8bdac5e3"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "validation",
+        "test": "governed prompt/spec readiness",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-B0X-01/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-B0X-01/wp_spec.json --repo-root .",
+        "expected_result": "IMPLEMENTATION_READY on governance track FAST with 14 scope files and the exact authority mirror"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "validation",
+        "test": "pre-change canonical identity capture",
+        "command": "build the canonical binary and generic QualificationCandidate fixtures with the base qualification.py before any source edit",
+        "expected_result": "binary qualificationcandidate:sha256:6f94dec0c556d9a3574349e8696cee6fb128933cf393fb8da212f70adf075f21, generic qualificationcandidate:sha256:cf99f3f902abd8e39278d026c83a0a770126f5fca3478068c6db979a1b4b0cd9, packet sha256 c6ba2d6d4a447f32d1eb42d2ac0de96c4734693e4e6b74fea5d07ef2fe177df5, stable across two runs"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_q31_canonical_identity_and_serialized_packet_unchanged",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py::test_q31_canonical_identity_and_serialized_packet_unchanged",
+        "expected_result": "canonical binary/generic candidate ids and serialized packet digest equal the R003 pre-change values; packet roundtrips valid; schema 1.0.0"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "validation",
+        "test": "exact 14-path scope",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-B0X-01/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-B0X-01/wp_spec.json --repo-root . --check-diff --base ebd6f84c95e30451fe1c9ad431e405c57c113074 --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY with diff equal to exactly the 14 required paths; no __init__, gate, DATA-02, WP170, dependency or workflow edit"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_q32_external_b0_with_external_b2_is_valid",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py::test_q32_external_b0_with_external_b2_is_valid",
+        "expected_result": "external B0 with every added ref MARKET_EXTERNAL_RECONSTRUCTION is VALID, roundtrips and has schema 1.0.0"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_q33_external_b0_rejects_market_pit_b2_addition",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py::test_q33_external_b0_rejects_market_pit_b2_addition",
+        "expected_result": "external B0 with any MARKET_PIT B2 addition rejects FORECAST_PLAN_INVALID"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_q34_canonical_b0_rejects_external_b2_addition",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py::test_q34_canonical_b0_rejects_external_b2_addition",
+        "expected_result": "canonical B0 with any MARKET_EXTERNAL_RECONSTRUCTION B2 addition rejects FORECAST_PLAN_INVALID"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_q35_mixed_canonical_and_external_b2_rejects",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py::test_q35_mixed_canonical_and_external_b2_rejects",
+        "expected_result": "mixed canonical/external B2 additions reject FORECAST_PLAN_INVALID under both rules"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_q36_market_classes_rejected_in_b1_under_both_rules",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py::test_q36_market_classes_rejected_in_b1_under_both_rules",
+        "expected_result": "MARKET_EXTERNAL_RECONSTRUCTION and MARKET_PIT in B1 reject FORECAST_PLAN_INVALID under both rules"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_q37_unknown_b0_literal_rejects",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py::test_q37_unknown_b0_literal_rejects",
+        "expected_result": "unknown, versioned, case-changed, empty or null B0 literal rejects FORECAST_PLAN_INVALID"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_q38_external_b0_parameters_share_canonical_rejections",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py::test_q38_external_b0_parameters_share_canonical_rejections",
+        "expected_result": "every canonical invalid B0 parameter case rejects identically under the external rule"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_q41_external_b0_is_additive_and_not_root_exported",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_boundaries.py::test_q41_external_b0_is_additive_and_not_root_exported",
+        "expected_result": "no new package-root export; exported class vocabulary gains the additive class; schema 1.0.0; no canonical-PIT import bridge"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_q40_external_class_is_distinct_and_never_canonical_authority",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py::test_q40_external_class_is_distinct_and_never_canonical_authority",
+        "expected_result": "external class distinct from canonical authority labels; DATA-02 authority stays third-party reconstruction; external packet carries no canonical, snapshot-reference or local-first-seen token"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_q39_external_b2_must_be_exact_b1_union_added",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification.py::test_q39_external_b2_must_be_exact_b1_union_added",
+        "expected_result": "B2 not equal to exact B1 union added (missing, extra, empty, duplicate, undeclared, non-market) rejects"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_q28_valid_external_b0_candidate_is_admitted_without_gate_change",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py::test_q28_valid_external_b0_candidate_is_admitted_without_gate_change",
+        "expected_result": "otherwise valid external-B0 candidate admitted with dimensions identical to canonical fixture; gate source carries no B0 token"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_q29_external_b0_dimensions_follow_existing_evidence_rules",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_gate.py::test_q29_external_b0_dimensions_follow_existing_evidence_rules",
+        "expected_result": "power, execution and provenance shortfalls give the same INCONCLUSIVE dimensions as the canonical fixture"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_q41_b0x_exact_fourteen_path_scope",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_boundaries.py::test_q41_b0x_exact_fourteen_path_scope",
+        "expected_result": "spec required == allowed == 14 existing paths; only qualification.py under src; forbidden paths absent"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_s10_qual_b0x_01_is_current_external_b0_contract_target",
+        "command": "python -m pytest -q tests/test_project_status_docs.py::test_s10_qual_b0x_01_is_current_external_b0_contract_target",
+        "expected_result": "project status and status fragment agree on FAST/risk 2/14 paths, literals, identity stability and non-authority; S10-QUAL-REAL-01 only after merge"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_s10_qual_b0x_01_repo_truth",
+        "command": "python -m pytest -q tests/test_repo_truth_docs.py::test_s10_qual_b0x_01_repo_truth",
+        "expected_result": "repo truth, roadmap and deferred log record the external B0 rule, DATA-01-D001 disposition and no canonical relabeling"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "validation",
+        "test": "artifact guard and whitespace",
+        "command": "python tools/git/preflight_generated_artifact_guard.py; git diff --check ebd6f84c95e30451fe1c9ad431e405c57c113074",
+        "expected_result": "artifact guard passed; git diff --check clean"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "validation",
+        "test": "security checks",
+        "command": "python tools/security/run_security_checks.py (or the repo's documented local security check set)",
+        "expected_result": "no secret, credential or unsafe pattern introduced; any unavailable tool recorded, not claimed"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "pytest",
+        "test": "authoritative full suite",
+        "command": "python -m pytest -q",
+        "expected_result": "one authoritative full-suite run on the stable candidate with zero failures"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "validation",
+        "test": "exact-head CI, independent review and PR re-fetch",
+        "command": "hosted CI on the final head; one independent exact-head implementation review; re-fetch PR/check/review state",
+        "expected_result": "all required checks green on the exact final head; review recorded; PR state re-fetched after the last push"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-QUAL-REAL-01",
+    "next_title": "After a clean merge and Side14 review: freeze thresholds, missing-data policy, power, splits, metrics and execution-evidence mapping before performance, then materialize the real B0/B1/B2 candidate over the sealed DATA-02 corpus and run the qualification gate once; not authorized by this WP",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-QUAL-REAL-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "any dependency, lock or pyproject change",
+      ".github/workflows change",
+      "__init__.py, qualification_gate.py, qualification_data_readiness.py, pendulumflow_v3.py, research_dataset.py, experiment_os.py or provenance-core edit",
+      "DATA-01 / DATA-02 operator edit or any data acquisition or network run",
+      "labelling external evidence MARKET_PIT, SOURCE_KIND_CANONICAL_PIT, a DatasetSnapshotReference or local-first-seen canonical evidence",
+      "a canonicalization/import bridge or backdating by Last-Modified / public_available_time",
+      "QUALIFICATION_SCHEMA_VERSION change or any canonical candidate identity change",
+      "real QualificationCandidate construction or a real qualification gate run",
+      "choosing spread/age thresholds, missing-data policy, power, splits or any predictive metric",
+      "WP170, WP172, WP173, strategy, paper, execution, live, Gate C, capital or orders"
+    ]
+  }
+}

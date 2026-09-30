@@ -76,7 +76,9 @@ QUALIFICATION_STATUSES = (
 )
 QUALIFICATION_MODES = ("BINARY_PROBABILITY", "GENERIC_METRIC")
 WALLET_DEPENDENCY_MODES = ("NON_WALLET", "WALLET_DEPENDENT")
-QUALIFICATION_FEATURE_SOURCE_CLASSES = ("PUBLIC_NON_MARKET", "MARKET_PIT", "TIME_ONLY")
+QUALIFICATION_FEATURE_SOURCE_CLASSES = (
+    "PUBLIC_NON_MARKET", "MARKET_PIT", "TIME_ONLY", "MARKET_EXTERNAL_RECONSTRUCTION",
+)
 QUALIFICATION_PROPER_SCORE_IDS = ("BRIER_SCORE", "LOG_LOSS")
 EXECUTION_FEASIBILITY_CLASSES = (
     "FEES",
@@ -128,6 +130,14 @@ SPLIT_GROUP_POLICY = "EXCLUSIVE"
 SPLIT_EVENT_GROUPING_KEYS = ("leakage_group_id", "market_id", "related_group_id")
 HYPOTHESIS_REVIEW_STATE = "REVIEWED"
 B0_RULE_PIT_MARKET_PROBABILITY_V1 = "PIT_MARKET_PROBABILITY_V1"
+# S10-QUAL-B0X-01: third-party external-reconstruction B0 (never canonical PIT). Same
+# parameters and fallback mechanics; observability is external capture receipt time.
+B0_RULE_EXTERNAL_PIT_MARKET_PROBABILITY_V1 = "EXTERNAL_PIT_MARKET_PROBABILITY_V1"
+# Each B0 rule admits exactly one B2 market-added feature source class (no mixing).
+_B0_RULE_MARKET_ADDED_SOURCE_CLASS = {
+    B0_RULE_PIT_MARKET_PROBABILITY_V1: "MARKET_PIT",
+    B0_RULE_EXTERNAL_PIT_MARKET_PROBABILITY_V1: "MARKET_EXTERNAL_RECONSTRUCTION",
+}
 FORECAST_APPLICABILITY_REQUIRED = "REQUIRED"
 FORECAST_APPLICABILITY_NOT_APPLICABLE = "NOT_APPLICABLE"
 _THRESHOLD_OPERATOR_FOR_DIRECTION = {"HIGHER_IS_BETTER": "GTE", "LOWER_IS_BETTER": "LTE"}
@@ -686,7 +696,7 @@ def _forecast_plan(
             return dict(_NOT_APPLICABLE_FORECAST)
         plan = _mapping(value, _FORECAST_KEYS)
         _literal(plan["applicability"], FORECAST_APPLICABILITY_REQUIRED)
-        b0_rule = _literal(plan["b0_rule"], B0_RULE_PIT_MARKET_PROBABILITY_V1)
+        b0_rule = _enum(plan["b0_rule"], tuple(_B0_RULE_MARKET_ADDED_SOURCE_CLASS))
         b0 = _mapping(plan["b0_parameters"], _B0_PARAMETER_KEYS)
         spread = b0["max_midpoint_spread"]
         if not Decimal(0) <= _decimal(spread) <= Decimal(1):
@@ -700,8 +710,11 @@ def _forecast_plan(
         # B1 is the independent-information set: never a market-derived input.
         if any(classes.get(ref) not in {"PUBLIC_NON_MARKET", "TIME_ONLY"} for ref in b1):
             raise _Failure("FIELD_VALUE_INVALID")
-        # B2 adds only explicit MARKET_PIT refs on top of the exact B1 set.
-        if any(classes.get(ref) != "MARKET_PIT" for ref in added):
+        # B2 adds only explicit market refs of the B0 rule's own source class on top of
+        # the exact B1 set: MARKET_PIT for canonical B0, MARKET_EXTERNAL_RECONSTRUCTION for
+        # external B0; any other or mixed class rejects.
+        market_class = _B0_RULE_MARKET_ADDED_SOURCE_CLASS[b0_rule]
+        if any(classes.get(ref) != market_class for ref in added):
             raise _Failure("FIELD_VALUE_INVALID")
         if b2 != sorted(set(b1) | set(added)):
             raise _Failure("FIELD_VALUE_INVALID")

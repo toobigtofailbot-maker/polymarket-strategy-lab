@@ -930,7 +930,8 @@ def test_s10_qual_data_02_repo_truth() -> None:
     deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
     section_start = index.index("## S10-QUAL-DATA-02 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    assert "(merged historical predecessor: PR #203)" in section
+    assert "ebd6f84c95e30451fe1c9ad431e405c57c113074" in section and "b9e2e6995ee232720d0516b1fa234dec8bdac5e3" in section
     for text in (
         "docs/qualification_weather_corpus_completion_contract.md", "tools/qualification/run_s10_qual_data_02.py",
         "docs/status_entries/S10-QUAL-DATA-02.md", "docs/wp_specs/S10-QUAL-DATA-02/",
@@ -945,7 +946,8 @@ def test_s10_qual_data_02_repo_truth() -> None:
     for claim in ("Gate C is AUTHORIZED", "canonical PIT is available", "qualified: YES", "live ready: YES", "QUAL_PASS"):
         assert claim not in section, claim
     assert index.index("## S10-QUAL-DATA-02 ") < index.index("## S10-QUAL-DATA-01 ") < index.index("## S10-NDFD-GRIB-01 ")
-    assert "Current bounded implementation target: S10-QUAL-DATA-02 (base 6f67bac990d8ab338f1b87140ae077e9df4172dd" in roadmap
+    assert ("Historical predecessor (PR #203 merged at ebd6f84c95e30451fe1c9ad431e405c57c113074), formerly the bounded "
+            "implementation target: S10-QUAL-DATA-02 (base 6f67bac990d8ab338f1b87140ae077e9df4172dd") in roadmap
     for item in ("S10-QUAL-DATA-02-D001", "S10-QUAL-DATA-02-D002", "S10-QUAL-DATA-02-D003"):
         assert f"| {item} |" in deferred, item
     # The D011/D012 predecessor items are dispositioned by this completion package, never silently dropped.
@@ -955,3 +957,45 @@ def test_s10_qual_data_02_repo_truth() -> None:
     # The NDFD D003 row is whole again (no spliced table inside it).
     ndfd = next(line for line in deferred.splitlines() if line.startswith("| S10-NDFD-GRIB-01-D003 |"))
     assert ndfd.endswith("no QualificationCandidate or real gate receipt exists. |")
+
+
+def test_s10_qual_b0x_01_repo_truth() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    roadmap = " ".join((ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8").split())
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    contract = " ".join((ROOT / "docs" / "qualification_candidate_contract.md").read_text(encoding="utf-8").split())
+    section_start = index.index("## S10-QUAL-B0X-01 ")
+    section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    for text in (
+        "docs/qualification_candidate_contract.md", "src/data_layer/analytical_research/qualification.py",
+        "docs/status_entries/S10-QUAL-B0X-01.md", "docs/wp_specs/S10-QUAL-B0X-01/",
+        "ebd6f84c95e30451fe1c9ad431e405c57c113074", "b9e2e6995ee232720d0516b1fa234dec8bdac5e3",
+        "FAST, risk 2, exact 14-path scope", "EXTERNAL_PIT_MARKET_PROBABILITY_V1", "MARKET_EXTERNAL_RECONSTRUCTION",
+        "QUALIFICATION_SCHEMA_VERSION stays 1.0.0", "canonical candidate ids are unchanged",
+        "never backdates", "no import bridge", "S10-QUAL-DATA-01-D001",
+        "no real QualificationCandidate is created and no qualification gate is run",
+        "WP170/WP172/WP173 remain not started", "Gate C is NOT AUTHORIZED", "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    for claim in ("Gate C is AUTHORIZED", "canonical PIT is available", "qualified: YES", "live ready: YES", "QUAL_PASS"):
+        assert claim not in section, claim
+    assert index.index("## S10-QUAL-B0X-01 ") < index.index("## S10-QUAL-DATA-02 ") < index.index("## S10-QUAL-DATA-01 ")
+    assert "Current bounded implementation target: S10-QUAL-B0X-01 (base ebd6f84c95e30451fe1c9ad431e405c57c113074" in roadmap
+    assert "S10-QUAL-REAL-01 is the next expected package only after this WP merges" in roadmap
+    d001 = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-DATA-01-D001 |"))
+    assert "RESOLVED_BY_S10_QUAL_B0X_01_EXTERNAL_B0_RULE" in d001 and "never canonical PIT" in d001
+    for item in ("S10-QUAL-B0X-01-D001", "S10-QUAL-B0X-01-D002"):
+        assert f"| {item} |" in deferred, item
+    # The contract distinguishes the two B0 authorities and forbids backdating/canonicalization.
+    for text in (
+        "`PIT_MARKET_PROBABILITY_V1` (canonical-PIT B0)",
+        "`EXTERNAL_PIT_MARKET_PROBABILITY_V1` (external-reconstruction B0, added by S10-QUAL-B0X-01)",
+        "| `PIT_MARKET_PROBABILITY_V1` | canonical PIT | `MARKET_PIT` |",
+        "| `EXTERNAL_PIT_MARKET_PROBABILITY_V1` | third-party external reconstruction | `MARKET_EXTERNAL_RECONSTRUCTION` |",
+        "identical parameter keys, bounds and fallback mechanics", "never canonical PIT",
+        "`timestamp_received <= decision_time`", "is never used to backdate canonical availability",
+        "never becomes a `DatasetSnapshotReference`", "there is no import bridge",
+        "`QUALIFICATION_SCHEMA_VERSION` stays `1.0.0`",
+    ):
+        assert text in contract, text

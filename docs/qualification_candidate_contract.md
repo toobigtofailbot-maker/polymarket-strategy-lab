@@ -119,7 +119,7 @@ and never upgraded; the later gate may decide they are insufficient.
   code_version in the WP170 opaque-id grammar. Future WP170 `predecessor_candidate_ids` derive
   from `alpha_candidate_id` and are never a second caller field.
 - Feature plan: qualification LOGICAL feature refs with source classes `PUBLIC_NON_MARKET`,
-  `MARKET_PIT` or `TIME_ONLY`, identical-keyset evidence refs,
+  `MARKET_PIT`, `TIME_ONLY` or (S10-QUAL-B0X-01) `MARKET_EXTERNAL_RECONSTRUCTION`, identical-keyset evidence refs,
   `FEATURE_AVAILABLE_AT_OR_BEFORE_DECISION_TIME` and
   `NO_POST_DECISION_OR_POST_OUTCOME_INFORMATION`. These refs are NOT claimed to be current WP170
   FeatureDefinition ids: current WP170 `SAFE_FEATURE_SOURCE_DEPENDENCIES` are market-observation
@@ -144,12 +144,25 @@ and never upgraded; the later gate may decide they are insufficient.
 ## 8. B0 / B1 / B2 Forecast Evaluation
 
 `GENERIC_METRIC` requires exactly `{"applicability":"NOT_APPLICABLE"}`. `BINARY_PROBABILITY`
-requires `PIT_MARKET_PROBABILITY_V1` B0 with bounded canonical parameters; B1 refs drawn only
-from `PUBLIC_NON_MARKET` / `TIME_ONLY` features; B2 equal to the exact sorted union of B1 and a
-nonempty explicit `MARKET_PIT` addition set; `BRIER_SCORE` or `LOG_LOSS` as the primary proper
-score, equal to the test-family primary metric with `LOWER_IS_BETTER` /
-`CANDIDATE_LTE_BASELINE`; a calibration diagnostic; and mandatory true same-OOS-membership,
-B1-vs-B0, B2-vs-B0 and B2-vs-B1-incrementality requirements.
+requires exactly one of two B0 rules, `PIT_MARKET_PROBABILITY_V1` (canonical-PIT B0) or
+`EXTERNAL_PIT_MARKET_PROBABILITY_V1` (external-reconstruction B0, added by S10-QUAL-B0X-01), with
+bounded canonical parameters; B1 refs drawn only from `PUBLIC_NON_MARKET` / `TIME_ONLY` features
+(`MARKET_PIT` and `MARKET_EXTERNAL_RECONSTRUCTION` both reject in B1); B2 equal to the exact sorted
+union of B1 and a nonempty explicit market-added set whose every ref has the B0 rule's own source
+class; `BRIER_SCORE` or `LOG_LOSS` as the primary proper score, equal to the test-family primary
+metric with `LOWER_IS_BETTER` / `CANDIDATE_LTE_BASELINE`; a calibration diagnostic; and mandatory
+true same-OOS-membership, B1-vs-B0, B2-vs-B0 and B2-vs-B1-incrementality requirements.
+
+Rule-to-class coupling (fail closed, no mixing):
+
+| B0 rule | Source authority | Every `b2_market_added_feature_ref` must be |
+|---|---|---|
+| `PIT_MARKET_PROBABILITY_V1` | canonical PIT | `MARKET_PIT` |
+| `EXTERNAL_PIT_MARKET_PROBABILITY_V1` | third-party external reconstruction | `MARKET_EXTERNAL_RECONSTRUCTION` |
+
+A `MARKET_EXTERNAL_RECONSTRUCTION` addition under the canonical rule, a `MARKET_PIT` addition under
+the external rule, a mixed canonical/external addition set and an unknown B0 literal all reject
+`FORECAST_PLAN_INVALID`.
 
 `PIT_MARKET_PROBABILITY_V1`: at each future decision time use the latest canonical PIT two-sided
 valid book available at or before decision time; B0 is the midpoint when best bid/ask exist and
@@ -158,6 +171,27 @@ at or before decision time only when its age is within `max_last_trade_age_secon
 is unavailable and the preregistered missing-data policy governs. Current or future website
 probability and post-decision market data are never used. S10-QUAL-01 only freezes this
 interface; it materializes no samples, fits no B1/B2 model, calibrates nothing and scores no OOS.
+
+`EXTERNAL_PIT_MARKET_PROBABILITY_V1` has the identical parameter keys, bounds and fallback
+mechanics (`max_midpoint_spread` in `[0, 1]`, `max_last_trade_age_seconds` a nonnegative integer)
+but a distinct source authority: it is a third-party reconstruction, never canonical PIT. At each
+decision time the midpoint is used only when an observed two-sided book exists at or before
+decision time and `ask - bid <= max_midpoint_spread`, with the spread recomputed from best bid/ask
+(a source-provided spread field is never trusted); otherwise the latest observed last trade whose
+age is `<= max_last_trade_age_seconds`; otherwise B0 is unavailable and the preregistered
+missing-data policy governs. `NOT_OBSERVED_IN_SEARCHED_HOURS` is never imputed into a trade.
+Observability is the external capture `timestamp_received <= decision_time`; this is not a claim
+that the archive itself was publicly readable at decision time.
+
+No backdating and no canonicalization: an archive HTTP `Last-Modified` / `public_available_time`
+may be later than the decision checkpoint and is never used to backdate canonical availability.
+External evidence (for example the S10-QUAL-DATA-02 `THIRD_PARTY_NATIVE_FRAME_ARCHIVE` /
+`EXTERNAL_THIRD_PARTY_PIT_RECONSTRUCTION` corpus) is never labelled `MARKET_PIT` or
+`SOURCE_KIND_CANONICAL_PIT`, never becomes a `DatasetSnapshotReference`, and never receives a
+derived or fabricated `local_first_seen_time`; there is no import bridge. The addition is
+additive: `QUALIFICATION_SCHEMA_VERSION` stays `1.0.0`, the record fields and identity preimage are
+unchanged, and existing canonical packets keep byte-identical content and candidate ids. The
+S10-GATE-QUAL-01 gate is unchanged and applies its existing dimensions to either rule.
 
 ## 9. Execution Feasibility And Wallet Boundary
 
