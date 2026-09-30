@@ -6,7 +6,9 @@ The canonical contract is `docs/qualification_candidate_contract.md` (section 8)
 `src/data_layer/analytical_research/qualification.py`; the status fragment is `docs/status_entries/S10-QUAL-B0X-01.md`;
 the frozen package is `docs/wp_specs/S10-QUAL-B0X-01/`. Base `ebd6f84c95e30451fe1c9ad431e405c57c113074` (PR #203 /
 S10-QUAL-DATA-02 merged, head `b9e2e6995ee232720d0516b1fa234dec8bdac5e3`). FAST, risk 2, exact 14-path scope (size
-class L in the machine spec: the draft's S is below the spec-guard 14-file budget). It adds exactly one
+class L in the machine spec: the drafted S class exceeds the guard's S<=5 limit; M<=10 also cannot cover the
+frozen 14-path scope, so L<=20 is the smallest valid size class; scope, FAST track, risk and authority are
+unchanged). It adds exactly one
 external-reconstruction B0 rule `EXTERNAL_PIT_MARKET_PROBABILITY_V1` and exactly one feature source class
 `MARKET_EXTERNAL_RECONSTRUCTION`; canonical `PIT_MARKET_PROBABILITY_V1` / `MARKET_PIT` are unchanged. B2 market-added
 refs must carry the B0 rule's own class (canonical -> MARKET_PIT, external -> MARKET_EXTERNAL_RECONSTRUCTION; mixed

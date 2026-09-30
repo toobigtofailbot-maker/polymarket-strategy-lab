@@ -78,6 +78,7 @@ Current S10-QUAL-B0X-01 state: IMPLEMENTED_READY_FOR_REVIEW
   local virtualenv inside the worktree failed only `tests/test_no_secret_placeholders.py` on third-party
   `.venv/` test vectors; the virtualenv was moved outside the repository before the authoritative run.
 - Readiness: `python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-B0X-01/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-B0X-01/wp_spec.json --repo-root .` -> IMPLEMENTATION_READY (FAST)
+- Final readiness with diff scope: `python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-B0X-01/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-B0X-01/wp_spec.json --repo-root . --check-diff --base ebd6f84c95e30451fe1c9ad431e405c57c113074 --head HEAD` -> IMPLEMENTATION_READY (FAST), error_codes [], exact 14 / 14 changed paths
 - Generated artifact guard: passed; `git diff --check ebd6f84c95e30451fe1c9ad431e405c57c113074`: clean
 - Local security checks (`tools/security/run_available_security_checks.py`): gitleaks, semgrep and pip-audit
   SKIPPED_NOT_AVAILABLE in this environment (existing WP3-D001/WP3-D002 posture); npm/cargo not applicable. Not
