@@ -1,0 +1,889 @@
+Package Identity:
+  WP ID: S10-QUAL-PLAN-01
+  Title: Weather Qualification Prospective Plan Freeze
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Drafting-time main SHA: e2edb21e25e7841376c3cb51c27a622fbc0cbc83
+  Required predecessor: PR #204 / S10-QUAL-B0X-01
+  Required predecessor final head: debcfdf723505b67a1280ac9f303d5abd293c998
+  Required predecessor merge SHA: e2edb21e25e7841376c3cb51c27a622fbc0cbc83
+  Suggested branch: codex/s10-qual-plan-01-weather-plan-freeze
+  Package class: WEATHER_QUALIFICATION_PROSPECTIVE_PLAN_FREEZE
+  Package size class: L
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Objective: commit one content-addressed, externally timestampable analytic-plan freeze for the NWS daily-rain weather qualification before genuinely prospective OOS evidence begins (oos_start 2026-10-15T00:00:00Z, merge deadline 2026-10-14T00:00:00Z, cap 2027-02-12T00:00:00Z), with every data-dependent candidate field reduced to a closed mechanical rule; WP170 remains the sole preregistration/OOS authority
+  Runtime impact: NONE (docs and tests only; no source, tool or workflow change)
+  Product impact: NONE
+  Network impact: NONE (workflow git/PR publication only)
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: FAST
+
+# SIDE14 — S10-QUAL-PLAN-01 ONE-SHOT WP
+## Weather Qualification Prospective Plan Freeze
+
+**Send to:** **A NEW CLAUDE CODE CHAT / SESSION**
+**Repository:** `toobigtofailbot-maker/polymarket-strategy-lab`
+**Frozen base:** `e2edb21e25e7841376c3cb51c27a622fbc0cbc83`
+**Predecessor:** PR #204 / S10-QUAL-B0X-01 merged
+**Suggested branch:** `codex/s10-qual-plan-01-weather-plan-freeze`
+**Class / size / governance / risk:** `WEATHER_QUALIFICATION_PROSPECTIVE_PLAN_FREEZE` / L / FAST / 2
+**Merge authority:** NO
+
+```text
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+```
+
+## 0. AUTHORIZATION / PURPOSE / EFFICIENCY
+
+Karl has authorized this exact bounded WP by sending it for implementation. Do not ask for a second implementation confirmation.
+
+Purpose: commit one content-addressed, externally timestampable analytic-plan freeze **before genuinely prospective OOS evidence begins**.
+
+This is **not** WP170 preregistration authority. It creates no:
+- `PreregisteredExperiment`;
+- lifecycle/OOS-release record;
+- real `QualificationCandidate`;
+- qualification-gate receipt;
+- DATA-03 data;
+- model fit;
+- score;
+- network call.
+
+WP170 remains the sole preregistration/OOS authority.
+
+Efficiency:
+- no broad repo/research repeat;
+- inspect only controlling qualification/WP170/docs/test surfaces;
+- no repeated progress narration during long tests;
+- focused tests while editing;
+- one authoritative full suite only on the stable candidate;
+- ordinary in-scope docs/test/CI defects are same-WP repairs.
+
+---
+
+## 1. FREEZE EVENT / PROSPECTIVE BOUNDARY
+
+Frozen OOS start:
+
+```text
+2026-10-15T00:00:00Z
+```
+
+Freeze-validity rule:
+
+```text
+PLAN-01 GitHub merge time MUST be <= 2026-10-14T00:00:00Z.
+```
+
+The authoritative freeze time is the GitHub server PR merge timestamp on `main`, plus the merge commit SHA. Committer/author timestamps are not authority.
+
+If the PR merges after the deadline:
+
+```text
+STOP OOS_START_FREEZE_WINDOW_MISSED
+```
+
+Do not move `oos_start` inside the same WP after prospective exposure risk begins. Return to Side14 for a later literal.
+
+120-day eligibility cap:
+
+```text
+2027-02-12T00:00:00Z
+```
+
+All DATA-02 dates are permanently:
+
+```text
+HISTORICAL_NON_OOS
+```
+
+---
+
+## 2. CONTENT-ADDRESSED PLAN ARTIFACT
+
+Create canonical JSON:
+
+```text
+docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json
+```
+
+Canonical bytes:
+- UTF-8;
+- object keys sorted;
+- compact separators `(",", ":")`;
+- no binary floats / NaN / Infinity;
+- no trailing newline.
+
+The authoritative plan hash is:
+
+```text
+sha256(exact file bytes)
+```
+
+Do not include the hash inside its own preimage.
+
+The plan must contain closed sections for:
+
+1. `lineage`
+2. `hypothesis_plan`
+3. `feature_plan`
+4. `label_plan`
+5. `dataset_split_plan`
+6. `sample_power_plan`
+7. `test_family_plan`
+8. `forecast_evaluation_plan`
+9. `execution_feasibility_plan`
+10. `forecast_model_spec`
+11. `prospective_data_seal`
+12. `wp170_handoff`
+13. `mechanical_resolution_rules`
+
+Data-dependent candidate fields that cannot exist yet must be represented only by **closed mechanical rules**, never arbitrary placeholders later editable by the operator.
+
+Tests must prove canonicalization/hash stability and closed keysets.
+
+---
+
+## 3. FROZEN LINEAGE / HYPOTHESIS
+
+Bind the existing supportive lineage exactly:
+
+```text
+alpha candidate:
+alphacandidate:sha256:2d1523c8086acf536ad07512e1eaffed9cb9405b65e83c87b89b40ba77ee3add
+
+family:
+alphafamily:sha256:136000bd56f2fc27cf490cf675ddf2715b0acfc1ee934aa5cdf2579925c208d8
+
+episode:
+alphaepisode:sha256:2e4c0f484649930ba2677bc360070f0e9ba6ef0e09ecd23b383a32ff3b69000c
+
+registry head:
+alpharegistryentry:sha256:4b9a20f7f0e931dfea7cced80a64d7a4be7ccc58e265dbb9ebde15edb2d79847
+
+AF1 receipt:
+af1gate:sha256:281c5e05f5e4f8e30687f232e0289b99b0719c87fab61c8b1d1d417dc0b5cbb2
+```
+
+Freeze a real hypothesis plan derived from the existing Alpha research, not a synthetic reinterpretation:
+
+```text
+hypothesis_name:
+nws-public-weather-incrementality
+
+hypothesis_version:
+v1
+
+falsifiable_claim:
+On genuinely prospective NWS-resolved Polymarket daily-rain target dates, the prespecified
+weather-only B1 forecast must improve out-of-sample Brier loss versus contemporaneous market
+probability B0, the combined B2 forecast must improve versus B0, and B2 must add incremental
+predictive information versus B1 under the frozen comparison family.
+
+proposed_mechanism:
+Official NWS precipitation forecasts contain public non-market meteorological information that
+may not be fully incorporated into contemporaneous Polymarket probability; forecast lead time
+captures horizon-dependent calibration, while market probability may contribute complementary
+crowd information.
+
+cohort:
+polymarket-nws-daily-rain-v1
+
+horizon:
+checkpoint-to-final-market-resolution
+
+target:
+binary-rain-ge-0.01in-nws-cli
+
+falsification_condition:
+The hypothesis is not supported if the preregistered prospective-OOS experiment fails its frozen
+absolute Brier criterion or any required fixed-sequence B1-vs-B0, B2-vs-B0 or B2-vs-B1 comparison,
+or if the OOS evidence is invalid/inconclusive.
+
+human_review_state:
+REVIEWED
+
+review_assertion:
+Reviewed and authorized by the project owner before prospective OOS accrual.
+
+code_version:
+s10-qual-plan-01-weather-plan-v1
+```
+
+Also preserve the existing research question and Alpha-family falsifiable theme in the contract as provenance context; do not mutate the Alpha registry.
+
+---
+
+## 4. B0 / FEATURES / LABEL
+
+Freeze:
+
+```text
+b0_rule = EXTERNAL_PIT_MARKET_PROBABILITY_V1
+max_midpoint_spread = "0.1"
+max_last_trade_age_seconds = 86400
+```
+
+B0:
+- recompute `ask - bid`;
+- midpoint only for valid two-sided book with spread <= 0.1;
+- otherwise latest observed trade age <= 86400;
+- otherwise unavailable;
+- B0 missing excludes the same row from B0/B1/B2 before label access;
+- no imputation;
+- no canonical PIT relabeling;
+- B0 itself is scored unclipped.
+
+B1 logical features:
+1. `wx.ndfd_pop12_max_climate_day_v1` / `PUBLIC_NON_MARKET`
+2. `time.ndfd_lead_hours_v1` / `TIME_ONLY`
+
+B2-added:
+1. `mkt.ext_b0_probability_v1` / `MARKET_EXTERNAL_RECONSTRUCTION`
+
+B2 is exact `B1 ∪ added`.
+
+Feature formulas:
+- `q = clip(max overlapping PoP12_percent / 100, 0.01, 0.99)`
+- `L = (climate_day_start - vintage_public_available_time) / 24h`
+- B2 model input `m = clip(B0, 0.001, 0.999)`
+
+Label:
+- ref `label.polymarket_nws_cli_rain_yes_v1`;
+- Yes iff rule-bound NWS CLI precipitation >= 0.01 inch;
+- trace does not count;
+- climate-day rule remains the DATA-02 rule-bound local-standard-time day;
+- final Gamma outcome and v3 `market_resolved` must agree under existing finality policy;
+- DATA-02/03 source-read exclusions remain exclusions;
+- no label value enters B0/features.
+
+---
+
+## 5. EXACT FORECAST MODEL — FROZEN BEFORE OOS
+
+Freeze the mathematical model, not an implementation library.
+
+### B1
+
+```text
+p1 = sigmoid(β0 + β1*logit(q) + β2*L)
+```
+
+### B2
+
+```text
+p2 = sigmoid(γ0 + γ1*logit(q) + γ2*L + γ3*logit(m))
+```
+
+Model family:
+- binary logistic regression;
+- intercept included;
+- no interactions;
+- no feature dropping;
+- no alternate model;
+- Firth/Jeffreys-prior bias reduction;
+- objective is the ordinary Bernoulli logistic log-likelihood plus the standard `0.5*log(det(I(β)))` Firth penalty;
+- no tunable penalty strength;
+- unweighted FORMATION rows only.
+
+Solver semantics:
+- deterministic Newton/IRLS implementation of the frozen Firth objective;
+- all-zero coefficient initialization;
+- convergence when `max(abs(delta_coefficient)) < 1e-10`;
+- maximum 100 iterations;
+- non-finite coefficient or no convergence by iteration 100 => `FIT_FAILED`;
+- no fallback, restart, model substitution or alternate feature set.
+
+Later implementation/library choice may differ only if it is proven by deterministic parity tests to implement these frozen mathematical semantics.
+
+Selection:
+- diagnostics only;
+- calibration intercept/slope, Brier and reliability table may be computed on historical SELECTION;
+- selection causes **no refit, recalibration, feature/model choice or threshold change**;
+- any analytic change after selection invalidates this plan and requires a new family/trial/freeze.
+
+Post-hoc calibration: NONE.
+Hyperparameter search: NONE.
+Search space: `{}`.
+Randomness: NONE.
+
+Future WP170:
+
+```text
+random_seeds = []
+```
+
+Do not use `[0]`; the current WP170 validator permits an empty seed tuple, which truthfully represents a deterministic model.
+
+---
+
+## 6. FORMATION / SELECTION / PROSPECTIVE OOS
+
+Historical DATA-02 may be used only for:
+- FORMATION;
+- SELECTION;
+- derivation/eligibility checks.
+
+It is never prospective OOS.
+
+Leakage/grouping:
+- `group_policy = EXCLUSIVE`
+- `event_grouping_rule = LEAKAGE_MARKET_RELATED_EXCLUSIVE`
+- `leakage_group_id = related_group_id = target_date`
+- all checkpoints/cities for one target date stay in one role.
+
+Embargo:
+
+```text
+172800 seconds
+```
+
+Purge:
+
+```text
+PURGE_LABEL_AVAILABILITY_AT_OR_AFTER_NEXT_BOUNDARY
+```
+
+Inclusion:
+
+```text
+DECISION_TIME_HALF_OPEN
+```
+
+Historical allocation:
+- FORMATION precedes SELECTION chronologically;
+- at least 20 effective formation target dates;
+- SELECTION uses the last 7 eligible historical dates;
+- at least 5 effective selection dates must remain after purge/embargo;
+- role allocation never changes based on outcomes/performance.
+
+Minimum rows per role:
+
+```text
+100
+```
+
+FORMATION additional hard stop:
+
+```text
+>= 385 structurally eligible formation rows
+AND
+>= 20 effective formation target dates
+```
+
+EPV10 is not used.
+
+The dedicated power-analysis doc must document the frozen Riley-style development-sample calculation and clearly separate development sufficiency from OOS comparison power.
+
+---
+
+## 7. PROSPECTIVE OOS POWER / TEST FAMILY
+
+Prospective statistical unit:
+
+```text
+target_date
+```
+
+Per-date loss:
+mean row-level Brier-score differential across all eligible rows/cities/checkpoints for that date.
+
+Prospective OOS target:
+
+```text
+50 effective target dates
+```
+
+Power plan:
+- target power `"0.8"`;
+- one-sided alpha `"0.025"`;
+- planning MDE `dz = "0.5"`;
+- planning lag-1 autocorrelation assumption `rho1 = "0.25"`;
+- VIF = `1 + 2*rho1 = 1.5`;
+- target-date clustered loss-difference design;
+- power-analysis derivation and sensitivity table frozen in the dedicated power-analysis doc;
+- no corpus score/effect estimate may set these values.
+
+Primary proper score:
+
+```text
+BRIER_SCORE
+```
+
+Secondary diagnostic:
+
+```text
+LOG_LOSS
+```
+
+Absolute primary threshold:
+
+```text
+LTE 0.25
+```
+
+Calibration diagnostic:
+- reliability using 10 equal-width probability bins;
+- Murphy-style decomposition;
+- diagnostic only.
+
+Comparison family, fixed sequence:
+
+1. B2 vs B0
+2. B2 vs B1
+3. B1 vs B0
+
+A later comparison is confirmatory only if every preceding comparison in the sequence rejects under the frozen one-sided rule.
+
+Family metadata:
+- `correction_policy = FAMILY_TRIAL_COUNT`
+- `family_size = 3`
+- multiplicity text must encode fixed-sequence one-sided FWER 0.025 over target-date clustered Brier differences.
+
+No predictive score is computed in this WP.
+
+---
+
+## 8. PROSPECTIVE DATA-03 SEAL RULES
+
+Future DATA-03 may:
+- store content-addressed raw market/weather/rule/outcome bytes;
+- internally decode labels only for closed eligibility/source-agreement checks;
+- materialize feature values only inside the sealed store;
+- materialize sealed B0 basis/value because B0 availability determines eligibility.
+
+Before future WP170 OOS release, DATA-03 must NOT expose:
+- label values;
+- prevalence;
+- per-market outcomes;
+- feature distributions;
+- B1/B2 forecasts;
+- Brier/log-loss;
+- model coefficients;
+- comparison statistics;
+- any result-dependent summary.
+
+Permitted visible summaries:
+- discovered/included/excluded counts by closed reason;
+- eligible row/date counts per checkpoint;
+- B0 availability counts and midpoint-vs-trade basis counts;
+- coverage classes;
+- network/seed accounting;
+- ids/hashes;
+- execution-terms evidence states.
+
+Prospective eligibility:
+- target date is OOS-eligible only when **every included row decision time** for that target date is `>= 2026-10-15T00:00:00Z`;
+- only dates through `2027-02-12T00:00:00Z` are considered;
+- OOS membership is the chronologically first 50 eligible target dates `D1..D50`;
+- eligibility depends only on source/data-quality/B0 availability, never outcome value/performance;
+- once a date enters the prefix it cannot be replaced by a later date.
+
+Final membership seal:
+
+```text
+oosmembership:sha256:<64hex>
+```
+
+over canonical JSON containing:
+- PLAN-01 plan SHA-256;
+- oos_start;
+- cap;
+- mechanically derived end_time;
+- D1..D50 target dates;
+- eligible OOS row ids;
+- OOS exclusions + closed reason codes;
+- DATA-03 bundle id.
+
+Future REAL-01 and WP170 split assignment must reproduce this membership exactly.
+
+If fewer than 50 effective dates exist by the cap:
+
+```text
+QUAL_OOS_INSUFFICIENT_AT_CAP
+```
+
+No extension, no REAL-01 and no score. A new attempt requires a new plan/family/trial and a later prospective boundary.
+
+Before the cap, a bounded accrual run with <50 dates is only:
+
+```text
+ACCRUAL_INCOMPLETE
+```
+
+and may expose structural counts only.
+
+---
+
+## 9. EXECUTION-EVIDENCE MEANING
+
+Freeze the forward-looking semantics for future DATA-03/REAL-01:
+
+Critical classes may be `AVAILABLE` when official/current evidence is:
+- captured with an honest availability/capture timestamp at or before candidate cutoff;
+- provenance-bound;
+- sufficient for the future candidate-specific experiment;
+- not falsely represented as historical.
+
+DATA-02 `CURRENT_ONLY` facts remain historical `CURRENT_ONLY`.
+
+Future DATA-03 must capture, at minimum:
+- current open daily-rain Gamma market documents;
+- official fee documentation;
+- current resolution-rule text/cohort semantics;
+- current `orderPriceMinTickSize`;
+- current `orderMinSize`;
+- official tick-change semantics if applicable.
+
+Frozen expected meanings:
+- `FEES`: current forward fee regime for the market family;
+- `RESOLUTION_RULES`: current station/CLI/threshold/climate-day/finality semantics;
+- `TICK_SIZE_MIN_ORDER`: current tick/min-order constraints plus available tick-change history;
+- `SPREAD_DEPTH`: may remain PARTIAL;
+- `LATENCY`: may remain MISSING;
+- `PARTIAL_FILL`: may remain MISSING.
+
+Do not backdate current evidence.
+
+---
+
+## 10. WP170 HANDOFF / NO SECOND PREREGISTRATION AUTHORITY
+
+PLAN-01 is an analytic commitment only.
+
+Future WP170:
+- `preregistered_at` = actual time the `PreregisteredExperiment` is built;
+- NEVER set it to PLAN-01 freeze time;
+- `creation_provenance` must bind:
+  - PLAN-01 plan SHA-256;
+  - PLAN-01 merge commit SHA;
+  - DATA-03 `oosmembership` id;
+  - REAL-01 `QUAL_PASS` receipt id;
+  - statement that experiment inputs equal the frozen plan.
+
+Future WP170:
+- `search_space_json = {}`
+- `parameters_json` contains only frozen model constants, not fitted coefficients;
+- `random_seeds = []`
+- split `oos_start` must equal the PLAN-01 literal.
+
+Current WP170 cannot encode NDFD B1 feature dependencies. That is a known **later** feature-bridge dependency after a real `QUAL_PASS`; it does not block PLAN-01 or prospective accrual.
+
+---
+
+## 11. EXACT CHANGED-FILE SCOPE — 13 PATHS
+
+Exactly:
+
+1. `docs/qualification_weather_plan_freeze_contract.md`
+2. `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json`
+3. `docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`
+4. `docs/status_entries/S10-QUAL-PLAN-01.md`
+5. `docs/deferred_items_log.md`
+6. `docs/long_term_bot_completion_roadmap.md`
+7. `docs/project_status.md`
+8. `docs/repo_truth_index.md`
+9. `docs/wp_specs/S10-QUAL-PLAN-01/wp_prompt.txt`
+10. `docs/wp_specs/S10-QUAL-PLAN-01/wp_spec.json`
+11. `tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py`
+12. `tests/test_project_status_docs.py`
+13. `tests/test_repo_truth_docs.py`
+
+No 14th path.
+
+Byte-unchanged:
+- `src/**`;
+- `tools/**`;
+- `.github/**`;
+- dependency/lock files;
+- `qualification.py`;
+- `qualification_gate.py`;
+- `experiment_os.py`;
+- DATA-02 source/operator files.
+
+14th path required:
+
+```text
+STOP SCOPE_EXPANSION_REQUIRED
+```
+
+---
+
+## 12. GOVERNED PACKAGE / TEST REQUIREMENTS
+
+Materialize first:
+
+```text
+docs/wp_specs/S10-QUAL-PLAN-01/wp_prompt.txt
+docs/wp_specs/S10-QUAL-PLAN-01/wp_spec.json
+```
+
+Machine spec must mirror:
+- exact 13 paths;
+- L / FAST / risk 2;
+- docs/tests only;
+- no source/runtime/network/data access;
+- exact OOS literal/deadline;
+- all frozen analytic/model/power/seal/WP170 rules;
+- no candidate/gate/WP170 record.
+
+Readiness must be:
+
+```text
+IMPLEMENTATION_READY
+```
+
+Tests must prove:
+
+1. canonical plan file has exact closed keysets;
+2. exact bytes are canonical and hash stable;
+3. no binary floats;
+4. `oos_start == 2026-10-15T00:00:00Z`;
+5. cap == `2027-02-12T00:00:00Z`;
+6. DATA-02 is permanently historical non-OOS;
+7. exact B0/feature/label rules;
+8. exact B1/B2 mathematical model and complete solver constants;
+9. no open hyperparameter/search field;
+10. `random_seeds=[]` in WP170 handoff;
+11. formation floor = 385 rows + 20 dates;
+12. selection effective-date floor = 5;
+13. min rows/role = 100;
+14. prospective OOS target = 50 target dates;
+15. fixed-sequence comparison order exact;
+16. Brier primary / log-loss diagnostic / 0.25 threshold;
+17. prospective DATA-03 forbidden exposures exact;
+18. membership-seal preimage exact;
+19. cap terminal exact;
+20. current execution evidence is never backdated;
+21. WP170 remains sole preregistration/OOS authority;
+22. no `PreregisteredExperiment`, lifecycle, candidate or gate object is created;
+23. no source/network/data access occurs;
+24. static plan decisions can be resolved with **synthetic** mechanical values into plan bodies accepted by the existing `build_qualification_candidate`;
+25. existing qualification/B0X/WP170 behavior remains unchanged.
+
+Synthetic compatibility tests must never create a real project candidate or use real OOS data.
+
+---
+
+## 13. HARD STOPS / SAME-WP REPAIR
+
+Hard stops only:
+
+- `STATE_DRIFT` — controlling merged qualification/WP170 contracts materially changed.
+- `OOS_START_FREEZE_WINDOW_MISSED` — merge after `2026-10-14T00:00:00Z`.
+- `PLAN_SEMANTIC_AMBIGUITY` — a future analytic/model/data-dependent choice is still discretionary rather than mechanical.
+- `QUALIFICATION_VALIDATOR_CONFLICT` — frozen plan cannot be mechanically resolved into an existing valid candidate plan without semantic change.
+- `WP170_CHANGE_REQUIRED_NOW` — prospective accrual cannot remain honest without modifying WP170 now.
+- `DEPENDENCY_EXPANSION_REQUIRED`
+- `WORKFLOW_EXPANSION_REQUIRED`
+- `SCOPE_EXPANSION_REQUIRED`
+- `AUTHORITY_EXPANSION_REQUIRED` — data/network/runtime/Hermes/strategy/paper/execution/live/Gate C/capital/orders required.
+
+Ordinary in-scope docs/test/CI defects remain same-WP repairs.
+
+---
+
+## 14. VALIDATION / PR FLOW
+
+Sequence:
+
+focused plan/hash/compatibility tests
+→ status/repo-truth tests
+→ affected guards
+→ readiness `--check-diff`
+→ exact 13-path scope
+→ artifact guard
+→ `git diff --check`
+→ security checks if applicable
+→ **one authoritative full suite**
+→ commit/push
+→ Ready-for-Review PR
+→ exact-head hosted CI
+→ one independent exact-head review
+→ re-fetch PR/check/review evidence
+→ Side14 handoff.
+
+Do not merge.
+
+No local/data/network runtime exists in this WP.
+
+---
+
+## 15. FINAL REPORT
+
+```text
+S10-QUAL-PLAN-01 FINAL
+Disposition: READY_FOR_SIDE14_REVIEW / BLOCKED
+Base:
+Final head:
+PR:
+Exact changed paths: 13 / 13
+
+Plan canonical:
+Plan SHA-256:
+OOS start:
+Freeze deadline:
+120-day cap:
+
+WP170 remains sole preregistration/OOS authority: YES
+PreregisteredExperiment created: NO
+QualificationCandidate created: NO
+Qualification gate run: NO
+Data accessed: NO
+Product/source network: NO
+
+Hypothesis frozen:
+B0 frozen:
+B1/B2 features frozen:
+Forecast model frozen:
+Hyperparameter search: NONE
+Random seeds frozen: []
+Formation floor:
+Selection floor:
+OOS target:
+Power plan frozen:
+Brier/test family frozen:
+Execution-evidence meaning frozen:
+DATA-03 seal/exposure rules frozen:
+WP170 handoff frozen:
+
+Synthetic qualification-plan compatibility:
+Focused tests:
+Full suite:
+Readiness --check-diff:
+Exact-head CI:
+Independent exact-head review:
+PR evidence re-fetch:
+
+WP170/WP172/WP173: NOT STARTED
+Gate C/live/capital/orders: NO / DISABLED / USD 0 / 0
+Merge authorized: NO
+```
+
+## 16. SUCCESSOR
+
+If PLAN-01 merges before the freeze deadline, return to Side14.
+
+Next expected package:
+
+```text
+S10-QUAL-DATA-03 — Prospective Weather Qualification OOS Accrual + Execution-Terms Capture
+```
+
+DATA-03 is separately gated and must preserve the sealed plan without analytic changes.
+
+Only after DATA-03 reaches 50 effective prospective dates and a valid final membership seal may:
+
+```text
+S10-QUAL-REAL-01
+```
+
+build the one real candidate and run the qualification gate.
+
+Only a real `QUAL_PASS` makes the later WP170 feature bridge/candidate-specific experiment work eligible to be drafted.
+
+**Do not merge.**
+
+## 17. GOVERNED PACKAGE ADDENDA (materialized by the executor from sections 0-16; no new authority)
+
+### 17.1 Authority / Non-Authority posture
+
+Authority is exactly the BEGIN_GOVERNANCE_AUTHORITY_V1 block above (FAST, risk 2): local offline tooling (the
+existing readiness/spec guards and pytest only), canonical evidence policy (the content-addressed plan freeze and
+its prospective seal rules), docs and tests. Non-authority: source runtime, workflow governance/files,
+dependencies, network, credentials, scheduler, Hermes runtime, strategy, paper, execution and live stay false.
+`src/**`, `tools/**`, `.github/**`, dependency/lock files, `qualification.py`, `qualification_gate.py`,
+`experiment_os.py` and the DATA-01/DATA-02 sources/operators are byte-unchanged. Protected boundary groups:
+`docs/ai/codex/PROTECTED_PATHS.md` (runtime execution, OMS, reconciliation, risk caps, configs, live paths) are
+untouched. WP170 is the sole preregistration/OOS authority; this package creates no PreregisteredExperiment,
+lifecycle/OOS-release record, QualificationCandidate or qualification-gate receipt.
+
+### 17.2 Negative-test matrix
+
+- canonical bytes: pretty-printed, unsorted, trailing-newline and one-field-mutated encodings are distinguishable
+  from the committed bytes; the committed bytes re-canonicalize to themselves; the plan hash is not in its preimage.
+- floats: binary floats, NaN and Infinity are rejected by the strict loader; duplicate keys are rejected; a binary
+  float injected into a resolved plan body is rejected by the existing builder (FIELD_TYPE_INVALID).
+- keysets: every section and the solver keyset are exactly pinned; static and mechanical candidate fields are
+  disjoint and their union is exactly the existing builder keyset.
+- mechanical values outside their closed rule reject in the existing builder: selection_start at oos_start or
+  end_time before oos_start (DATASET_SPLIT_PLAN_INVALID), uncovered external dataset refs (PROVENANCE_INVALID),
+  AVAILABLE with no refs or MISSING with refs (EXECUTION_FEASIBILITY_INVALID), incomplete feature evidence refs
+  (FEATURE_PLAN_INVALID), empty label evidence (LABEL_PLAN_INVALID), negative counts (POWER_PLAN_INVALID).
+- semantic edits of static decisions reject: canonical B0 rule with the external B2 class, a market ref in B1, a B2
+  set that is not B1 ∪ added, a MARKET_PIT class for the external B0 addition (FORECAST_PLAN_INVALID), LOG_LOSS as
+  primary (TEST_FAMILY_PLAN_INVALID), an unreviewed hypothesis (HYPOTHESIS_PLAN_INVALID), a negative embargo
+  (DATASET_SPLIT_PLAN_INVALID).
+- search/placeholder: no hyperparameter, grid, tuning or seed field beyond the frozen empty ones; no to-be-decided marker or
+  angle-bracket placeholder inside any candidate plan body.
+- authority: no experiment, candidate, gate, split, lifecycle or membership id appears in the committed plan files;
+  the test module imports no network/subprocess/database module; the machine spec forbids src/tools/.github paths.
+
+### 17.3 Evidence plan (requirement mapping)
+
+`wp_spec.json` evidence_plan R001-R034 maps every Section 12 proof (1-25), the status/repo-truth tests and every
+Section 14 validation step to one pytest node or validation command.
+
+### 17.4 Successor boundary
+
+On a clean merge at or before 2026-10-14T00:00:00Z, return to Side14; the next expected package is S10-QUAL-DATA-03
+(separately gated, not implemented or authorized here). A later merge is OOS_START_FREEZE_WINDOW_MISSED. Merge is not
+authorized.
+
+### 17.5 Report-back
+
+Report back with exactly the Section 15 template, filled from the committed status fragment, the focused and full
+test runs, readiness --check-diff and the live PR/CI/review evidence.
+
+### 17.6 Normative rule matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|plan|bytes|always|REQUIRE|sorted_compact_utf8_no_float_no_trailing_newline_sha256_of_exact_bytes|plan.canonical|R004
+NR002|plan|keysets|always|REQUIRE|thirteen_closed_sections_and_exact_builder_keysets|plan.canonical|R003
+NR003|plan|binary_float|present|REJECT|plan_not_canonical|plan.canonical|R005
+NR004|boundary|oos_start|always|PRESERVE_EXACT|oos_start_2026_10_15_cap_2027_02_12_deadline_2026_10_14|boundary.prospective|R006
+NR005|boundary|merge_time|after_deadline|REJECT|oos_start_freeze_window_missed|boundary.prospective|R006
+NR006|boundary|data02|always|REQUIRE|historical_non_oos_permanent|boundary.prospective|R007
+NR007|lineage|alpha|always|PRESERVE_EXACT|supportive_lineage_bound_registry_unmutated|lineage.hypothesis|R026
+NR008|b0|rule|always|PRESERVE_EXACT|external_b0_spread_0_1_trade_age_86400_unclipped|b0.features.label|R008
+NR009|b0|missing|always|REQUIRE|row_excluded_from_b0_b1_b2_before_label_access|b0.features.label|R008
+NR010|feature|b2|always|REQUIRE|exact_b1_union_added|b0.features.label|R009
+NR011|label|value|always|FORBID|label_value_never_in_b0_or_features|b0.features.label|R010
+NR012|model|spec|always|PRESERVE_EXACT|firth_logistic_zero_init_tol_1e_10_max_100_iterations|model.solver|R011
+NR013|model|search|always|FORBID|no_hyperparameter_search_no_post_hoc_calibration_no_randomness|model.solver|R012
+NR014|model|selection|always|FORBID|selection_causes_no_refit_recalibration_or_choice|model.solver|R011
+NR015|split|floors|always|REQUIRE|formation_385_rows_20_dates_selection_5_dates_100_rows_per_role|split.power|R014
+NR016|power|oos_target|always|PRESERVE_EXACT|fifty_effective_target_dates|split.power|R016
+NR017|test_family|sequence|always|PRESERVE_EXACT|b2_b0_then_b2_b1_then_b1_b0_one_sided_fwer_0_025|test.family|R017
+NR018|test_family|metric|always|PRESERVE_EXACT|brier_primary_log_loss_diagnostic_lte_0_25|test.family|R018
+NR019|seal|exposure|before_oos_release|FORBID|no_label_prevalence_outcome_distribution_forecast_score_coefficient_or_statistic|data03.seal|R019
+NR020|seal|membership|always|REQUIRE|oosmembership_preimage_exact_and_reproduced_by_real01_and_wp170|data03.seal|R020
+NR021|seal|cap|fewer_than_fifty_dates|REJECT|qual_oos_insufficient_at_cap_no_extension|data03.seal|R021
+NR022|execution|evidence|always|FORBID|current_evidence_never_backdated|execution.evidence|R022
+NR023|wp170|authority|always|REQUIRE|wp170_sole_preregistration_oos_authority_seeds_empty|wp170.handoff|R023
+NR024|mechanical|resolution|always|REQUIRE|closed_rules_resolve_into_valid_builder_plan_bodies|mechanical.resolution|R026
+NR025|mechanical|value|outside_rule|REJECT|existing_builder_rejects|mechanical.resolution|R027
+NR026|authority|boundaries|always|FORBID|no_source_network_data_candidate_gate_experiment_strategy_paper_execution_live|authority.boundaries|R025
+NR027|successor|boundary|always|REQUIRE|s10_qual_data_03_separately_gated_after_timely_merge|successor.boundary|R029
+END_NORMATIVE_RULE_MATRIX_V1

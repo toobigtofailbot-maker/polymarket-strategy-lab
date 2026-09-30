@@ -1,0 +1,712 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-QUAL-PLAN-01",
+    "title": "Weather Qualification Prospective Plan Freeze",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "WEATHER_QUALIFICATION_PROSPECTIVE_PLAN_FREEZE",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 204,
+      "head_sha": "debcfdf723505b67a1280ac9f303d5abd293c998",
+      "merge_sha": "e2edb21e25e7841376c3cb51c27a622fbc0cbc83"
+    },
+    "suggested_branch": "codex/s10-qual-plan-01-weather-plan-freeze",
+    "objective": "Commit one content-addressed analytic-plan freeze (docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json, sha256 of exact bytes) for the NWS daily-rain weather qualification before prospective OOS begins: oos_start 2026-10-15T00:00:00Z, merge deadline 2026-10-14T00:00:00Z, cap 2027-02-12T00:00:00Z; frozen hypothesis, external B0, B1/B2 features, label, Firth logistic model and solver, splits and floors, power (50 target dates), fixed-sequence Brier family, DATA-03 seal/exposure rules, execution-evidence meaning and WP170 handoff, with every data-dependent candidate field a closed mechanical rule. Docs/tests only; no PreregisteredExperiment, lifecycle, QualificationCandidate, gate receipt, data, fit, score or network; WP170 remains the sole preregistration/OOS authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/qualification_weather_plan_freeze_contract.md",
+      "docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json",
+      "docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md",
+      "docs/status_entries/S10-QUAL-PLAN-01.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/wp_specs/S10-QUAL-PLAN-01/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-PLAN-01/wp_spec.json",
+      "tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/qualification_weather_plan_freeze_contract.md",
+      "docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json",
+      "docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md",
+      "docs/status_entries/S10-QUAL-PLAN-01.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/wp_specs/S10-QUAL-PLAN-01/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-PLAN-01/wp_spec.json",
+      "tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "src/",
+      "tools/",
+      "local_data/"
+    ],
+    "max_changed_files": 13,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert S10-QUAL-PLAN-01 before any prospective exposure. The plan, power doc, contract and tests disappear; no source, data, candidate, gate or WP170 record exists to roll back. After the freeze deadline a revert cannot be replaced by an edited plan with the same oos_start.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "No product, venue, trading or source API is added or changed; the package is docs and tests only.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These rules freeze the plan identity, prospective boundary, lineage/hypothesis, B0/feature/label, model/solver, split/power, test family, DATA-03 seal, execution-evidence meaning, WP170 handoff, mechanical resolution, authority and successor boundary.",
+    "items": [
+      {
+        "path": "plan.canonical",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "weather_plan_v1.json is UTF-8, sorted-key, compact-separator JSON with no binary float/NaN/Infinity and no trailing newline; its identity is sha256(exact bytes) d24cdc8ac75068b3bf7dc62c4fcf585d7cd381dd9203fac889f028620c4e69da, never inside its own preimage; the 13 sections and every nested keyset are closed.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p02_plan_bytes_are_canonical_and_hash_stable",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "boundary.prospective",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "oos_start 2026-10-15T00:00:00Z; freeze deadline 2026-10-14T00:00:00Z judged by the GitHub server merge timestamp plus merge SHA (a later merge is OOS_START_FREEZE_WINDOW_MISSED); cap 2027-02-12T00:00:00Z; DATA-02 dates are permanently HISTORICAL_NON_OOS.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p04_oos_start_deadline_and_cap_literals",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lineage.hypothesis",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "The exact PR #200 supportive Alpha lineage and AF1 receipt are bound, the research question and falsifiable theme are preserved as provenance context, the registry is not mutated, and the hypothesis plan is nws-public-weather-incrementality v1 REVIEWED.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p24_synthetic_resolution_builds_a_valid_candidate",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "b0.features.label",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "B0 EXTERNAL_PIT_MARKET_PROBABILITY_V1 with spread 0.1 / trade age 86400, B0-missing rows excluded from B0/B1/B2 before label access, no imputation, unclipped B0 scoring; B1 = wx PoP12 (PUBLIC_NON_MARKET) + lead (TIME_ONLY); B2 = B1 plus mkt.ext_b0_probability_v1 (MARKET_EXTERNAL_RECONSTRUCTION); label Yes iff NWS CLI >= 0.01 inch, trace excluded.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p06_b0_rule_is_exact",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "model.solver",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "B1/B2 are Firth binary logistic regressions with intercept, no interactions/dropping/alternates, all-zero init, full Firth-modified Newton step, tolerance 1e-10 on max abs delta, at most 100 iterations, FIT_FAILED without fallback; SELECTION is diagnostics only; no hyperparameter search, post-hoc calibration or randomness.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p09_forecast_model_and_solver_are_frozen",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "split.power",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "EXCLUSIVE target-date grouping, embargo 172800, label-availability purge, decision-time half-open inclusion, 100 rows per role; FORMATION >= 385 rows and >= 20 dates; SELECTION last 7 dates with >= 5 effective; OOS target 50 target dates from power 0.8, alpha 0.025, dz 0.5, rho1 0.25, VIF 1.5.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p14_oos_target_and_power_plan_recompute",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "test.family",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "BRIER_SCORE primary, LOG_LOSS diagnostic, absolute B2 LTE 0.25, fixed sequence B2-B0, B2-B1, B1-B0 at one-sided FWER 0.025, FAMILY_TRIAL_COUNT family size 3, Diebold-Mariano Newey-West lag-1 statistic.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p15_fixed_sequence_comparison_order",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "data03.seal",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "DATA-03 exposes no label value, prevalence, outcome, feature distribution, forecast, score, coefficient, statistic or result-dependent summary before WP170 OOS release; oosmembership preimage keys are exact; fewer than 50 dates at the cap is QUAL_OOS_INSUFFICIENT_AT_CAP with no extension.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p17_data03_forbidden_exposures_exact",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "execution.evidence",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "Execution classes are AVAILABLE only for provenance-bound current evidence captured at or before the candidate cutoff and never represented as historical; DATA-02 CURRENT_ONLY facts stay CURRENT_ONLY; state derivation is the closed MR12 rule.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p20_execution_evidence_is_never_backdated",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "wp170.handoff",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "WP170 is the sole preregistration/OOS authority: preregistered_at is the actual build time, creation_provenance binds plan SHA, merge SHA, oosmembership id, QUAL_PASS receipt id and an equality statement; search_space {}, parameters are frozen constants only, random_seeds [], split oos_start equals the literal.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p21_wp170_remains_sole_preregistration_authority",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "mechanical.resolution",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "Every data-dependent candidate field is one closed rule MR01-MR14 without operator discretion; synthetic values resolve the static decisions into plan bodies accepted unchanged by the existing build_qualification_candidate, and values outside a rule are rejected by it.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p24_every_mechanical_rule_is_closed_and_used",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.boundaries",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "Docs/tests only: no src, tools, .github, dependency or lock change; no network, data access, PreregisteredExperiment, lifecycle, QualificationCandidate, gate receipt, strategy, paper, execution, live, Gate C, capital or orders.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_p23_no_source_network_or_data_access",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "successor.boundary",
+        "source": "CONSTANT",
+        "type": "qualification_plan_freeze_rule",
+        "required_rule": "On a clean merge at or before the freeze deadline return to Side14; S10-QUAL-DATA-03 is the next expected package and is separately gated; S10-QUAL-REAL-01 only after 50 sealed prospective dates.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_s10_qual_plan_01_is_current_plan_freeze_target",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "The plan identity is sha256 of exact committed file bytes pinned by test_p02; no record identity preimage is added or changed.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Karl's package authorization plus FAST readiness permits only this bounded docs/tests plan freeze; merge remains separately gated and time-bounded by the freeze deadline.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 13-path scope, rule matrix and FAST readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's sending of this exact S10-QUAL-PLAN-01 package is the implementation authorization",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside the exact 13-path docs/tests scope with the canonical plan hash pinned and focused/status/stable-candidate validation passing",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused pytest nodes are the executable oracle; machine-spec examples are unnecessary.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R034 map onto the Section 12 proofs 1-25, the status/repo-truth tests and the Section 14 validation / PR flow.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "remote-main start gate",
+        "command": "git fetch origin main; git rev-parse HEAD origin/main; git status --short; git log -1 --format=%P origin/main",
+        "expected_result": "local main equals origin/main e2edb21e25e7841376c3cb51c27a622fbc0cbc83; clean tree; merge commit parents include PR #204 head debcfdf723505b67a1280ac9f303d5abd293c998"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "validation",
+        "test": "governed prompt/spec readiness",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-PLAN-01/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-PLAN-01/wp_spec.json --repo-root .",
+        "expected_result": "IMPLEMENTATION_READY on governance track FAST with 13 scope files and the exact authority mirror"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_p01_plan_keysets_are_closed",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p01_plan_keysets_are_closed",
+        "expected_result": "every plan section, nested keyset and the solver keyset equal the pinned closed sets; static and mechanical candidate fields are disjoint and cover the builder keyset exactly"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_p02_plan_bytes_are_canonical_and_hash_stable",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p02_plan_bytes_are_canonical_and_hash_stable",
+        "expected_result": "committed bytes re-canonicalize to themselves, have no trailing newline and hash to the pinned plan SHA-256"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_p03_no_binary_floats_nan_or_infinity",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p03_no_binary_floats_nan_or_infinity",
+        "expected_result": "no float, NaN or Infinity anywhere in the plan and the strict loader rejects them"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_p04_oos_start_deadline_and_cap_literals",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p04_oos_start_deadline_and_cap_literals",
+        "expected_result": "oos_start, deadline, cap and the WP170 embargo bound equal the frozen literals everywhere they appear"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_p05_data02_is_permanently_historical_non_oos",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p05_data02_is_permanently_historical_non_oos",
+        "expected_result": "DATA-02 is bound HISTORICAL_NON_OOS permanently and allowed only FORMATION/SELECTION roles"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_p06_b0_rule_is_exact",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p06_b0_rule_is_exact",
+        "expected_result": "external B0 rule, parameters and midpoint/trade/unavailable mechanics equal the frozen text and flags"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_p07_features_are_exact",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p07_features_are_exact",
+        "expected_result": "three logical features, classes, formulas, clips and B2 = B1 union added are exact"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_p08_label_rule_is_exact",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p08_label_rule_is_exact",
+        "expected_result": "label ref, threshold, trace rule, climate-day rule, source agreement and label isolation are exact"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_p09_forecast_model_and_solver_are_frozen",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p09_forecast_model_and_solver_are_frozen",
+        "expected_result": "B1/B2 formulas, Firth objective and every solver constant and prohibition equal the frozen values"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_p10_no_open_hyperparameter_or_search_field",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p10_no_open_hyperparameter_or_search_field",
+        "expected_result": "only the frozen empty search space, NONE search/calibration/randomness and no placeholder value exist"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_p11_wp170_random_seeds_empty_and_admissible",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p11_wp170_random_seeds_empty_and_admissible",
+        "expected_result": "random_seeds is [] and the current WP170 validators accept the empty seed tuple, empty search space and constants-only parameters"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_p12_formation_and_selection_floors",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p12_formation_and_selection_floors",
+        "expected_result": "formation 385 rows and 20 dates, selection last 7 with 5 effective dates, EPV10 unused"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_p13_min_rows_per_role_and_grouping",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p13_min_rows_per_role_and_grouping",
+        "expected_result": "min rows per role 100 and EXCLUSIVE target-date grouping with the frozen purge/embargo/inclusion literals"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_p14_oos_target_and_power_plan_recompute",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p14_oos_target_and_power_plan_recompute",
+        "expected_result": "power arithmetic recomputes to 50 dates and Riley criterion iii to 385 rows; the power doc hash binding matches"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_p15_fixed_sequence_comparison_order",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p15_fixed_sequence_comparison_order",
+        "expected_result": "comparison order is B2-B0, B2-B1, B1-B0 with the frozen fixed-sequence rule and statistic"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_p16_brier_primary_logloss_diagnostic_threshold",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p16_brier_primary_logloss_diagnostic_threshold",
+        "expected_result": "Brier primary, log-loss diagnostic and the LTE 0.25 absolute B2 criterion are exact"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_p17_data03_forbidden_exposures_exact",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p17_data03_forbidden_exposures_exact",
+        "expected_result": "the forbidden-exposure and permitted-summary lists are exact and disjoint and eligibility never depends on outcomes"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_p18_membership_seal_preimage_exact",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p18_membership_seal_preimage_exact",
+        "expected_result": "oosmembership preimage keys are exact and the synthetic seal id is deterministic and sensitive to every key"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "pytest",
+        "test": "test_p19_cap_terminal_exact",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p19_cap_terminal_exact",
+        "expected_result": "QUAL_OOS_INSUFFICIENT_AT_CAP and ACCRUAL_INCOMPLETE terminals are exact with no extension"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "pytest",
+        "test": "test_p20_execution_evidence_is_never_backdated",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p20_execution_evidence_is_never_backdated",
+        "expected_result": "execution states are mechanical, never backdated, and DATA-02 CURRENT_ONLY facts stay CURRENT_ONLY"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "pytest",
+        "test": "test_p21_wp170_remains_sole_preregistration_authority",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p21_wp170_remains_sole_preregistration_authority",
+        "expected_result": "WP170 is the sole preregistration/OOS authority with the exact preregistered_at and creation_provenance handoff"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "pytest",
+        "test": "test_p22_no_experiment_lifecycle_candidate_or_gate_object_is_created",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p22_no_experiment_lifecycle_candidate_or_gate_object_is_created",
+        "expected_result": "authority flags are false and no experiment, candidate, gate, split or lifecycle id appears in the plan files"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "pytest",
+        "test": "test_p23_no_source_network_or_data_access",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p23_no_source_network_or_data_access",
+        "expected_result": "the test module imports no network/subprocess/database module and the spec scope has 13 docs/tests paths only"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "pytest",
+        "test": "test_p24_synthetic_resolution_builds_a_valid_candidate",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p24_synthetic_resolution_builds_a_valid_candidate",
+        "expected_result": "synthetic mechanical resolution builds a valid candidate whose normalized plan bodies equal the frozen static decisions"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "pytest",
+        "test": "test_p24_mechanical_values_outside_the_rule_reject",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p24_mechanical_values_outside_the_rule_reject",
+        "expected_result": "each out-of-rule synthetic value is rejected by the existing builder with the expected closed code"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "pytest",
+        "test": "test_p25_existing_qualification_behavior_unchanged",
+        "command": "python -m pytest -q tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py::test_p25_existing_qualification_behavior_unchanged",
+        "expected_result": "the canonical fixture candidate id, B0 coupling and WP170 vocabularies are unchanged"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "pytest",
+        "test": "test_s10_qual_plan_01_is_current_plan_freeze_target",
+        "command": "python -m pytest -q tests/test_project_status_docs.py::test_s10_qual_plan_01_is_current_plan_freeze_target",
+        "expected_result": "project status and the status fragment carry the current PLAN-01 truth without stale authority claims"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "test_s10_qual_plan_01_repo_truth",
+        "command": "python -m pytest -q tests/test_repo_truth_docs.py::test_s10_qual_plan_01_repo_truth",
+        "expected_result": "repo truth index, roadmap, deferred log and contract carry the PLAN-01 freeze facts"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "validation",
+        "test": "artifact guard and whitespace",
+        "command": "python tools/git/preflight_generated_artifact_guard.py; git diff --check e2edb21e25e7841376c3cb51c27a622fbc0cbc83",
+        "expected_result": "no generated artifact in scope and no whitespace error"
+      },
+      {
+        "requirement_id": "R032",
+        "source": "validation",
+        "test": "security checks",
+        "command": "python tools/security/run_available_security_checks.py",
+        "expected_result": "no secret, credential or unsafe pattern introduced; any unavailable tool recorded, not claimed"
+      },
+      {
+        "requirement_id": "R033",
+        "source": "pytest",
+        "test": "authoritative full suite",
+        "command": "python -m pytest -q",
+        "expected_result": "one authoritative full-suite run on the stable candidate with zero failures"
+      },
+      {
+        "requirement_id": "R034",
+        "source": "validation",
+        "test": "exact-head CI, independent review and PR re-fetch",
+        "command": "hosted CI on the final head; one independent exact-head implementation review; re-fetch PR/check/review state",
+        "expected_result": "all required checks green on the exact final head; review recorded; PR state re-fetched after the last push"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-QUAL-DATA-03",
+    "next_title": "Prospective Weather Qualification OOS Accrual + Execution-Terms Capture (only if PLAN-01 merges at or before 2026-10-14T00:00:00Z; preserves the sealed plan without analytic changes)",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-QUAL-REAL-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "any src/**, tools/**, .github/** or dependency/lock change",
+      "qualification.py, qualification_gate.py, experiment_os.py or DATA-01/DATA-02 source/operator edit",
+      "any data access, DATA-03 accrual or product/source network call",
+      "constructing a real QualificationCandidate, running the qualification gate or building a PreregisteredExperiment, lifecycle or OOS-release record",
+      "fitting a model or computing any predictive score",
+      "moving oos_start or the cap after prospective exposure risk begins",
+      "an operator-editable placeholder for any data-dependent candidate field",
+      "WP170, WP172, WP173, strategy, paper, execution, live, Gate C, capital or orders"
+    ]
+  }
+}

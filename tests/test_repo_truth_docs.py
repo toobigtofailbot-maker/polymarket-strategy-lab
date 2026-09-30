@@ -966,7 +966,8 @@ def test_s10_qual_b0x_01_repo_truth() -> None:
     contract = " ".join((ROOT / "docs" / "qualification_candidate_contract.md").read_text(encoding="utf-8").split())
     section_start = index.index("## S10-QUAL-B0X-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    assert "(merged historical predecessor: PR #204)" in section
+    assert "e2edb21e25e7841376c3cb51c27a622fbc0cbc83" in section and "debcfdf723505b67a1280ac9f303d5abd293c998" in section
     for text in (
         "docs/qualification_candidate_contract.md", "src/data_layer/analytical_research/qualification.py",
         "docs/status_entries/S10-QUAL-B0X-01.md", "docs/wp_specs/S10-QUAL-B0X-01/",
@@ -981,7 +982,8 @@ def test_s10_qual_b0x_01_repo_truth() -> None:
     for claim in ("Gate C is AUTHORIZED", "canonical PIT is available", "qualified: YES", "live ready: YES", "QUAL_PASS"):
         assert claim not in section, claim
     assert index.index("## S10-QUAL-B0X-01 ") < index.index("## S10-QUAL-DATA-02 ") < index.index("## S10-QUAL-DATA-01 ")
-    assert "Current bounded implementation target: S10-QUAL-B0X-01 (base ebd6f84c95e30451fe1c9ad431e405c57c113074" in roadmap
+    assert ("Historical predecessor (PR #204 merged at e2edb21e25e7841376c3cb51c27a622fbc0cbc83), formerly the bounded "
+            "implementation target: S10-QUAL-B0X-01 (base ebd6f84c95e30451fe1c9ad431e405c57c113074") in roadmap
     assert "S10-QUAL-REAL-01 is the next expected package only after this WP merges" in roadmap
     d001 = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-DATA-01-D001 |"))
     assert "RESOLVED_BY_S10_QUAL_B0X_01_EXTERNAL_B0_RULE" in d001 and "never canonical PIT" in d001
@@ -997,5 +999,49 @@ def test_s10_qual_b0x_01_repo_truth() -> None:
         "`timestamp_received <= decision_time`", "is never used to backdate canonical availability",
         "never becomes a `DatasetSnapshotReference`", "there is no import bridge",
         "`QUALIFICATION_SCHEMA_VERSION` stays `1.0.0`",
+    ):
+        assert text in contract, text
+
+
+def test_s10_qual_plan_01_repo_truth() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    roadmap = " ".join((ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8").split())
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    contract = " ".join((ROOT / "docs" / "qualification_weather_plan_freeze_contract.md").read_text(encoding="utf-8").split())
+    plan_sha = "d24cdc8ac75068b3bf7dc62c4fcf585d7cd381dd9203fac889f028620c4e69da"
+    section_start = index.index("## S10-QUAL-PLAN-01 ")
+    section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    for text in (
+        "docs/qualification_weather_plan_freeze_contract.md",
+        "docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json",
+        "docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md", "docs/status_entries/S10-QUAL-PLAN-01.md",
+        "docs/wp_specs/S10-QUAL-PLAN-01/", plan_sha, "e2edb21e25e7841376c3cb51c27a622fbc0cbc83",
+        "debcfdf723505b67a1280ac9f303d5abd293c998", "FAST, risk 2, exact 13-path docs/tests scope",
+        "`2026-10-15T00:00:00Z`", "`2026-10-14T00:00:00Z`", "`2027-02-12T00:00:00Z`", "OOS_START_FREEZE_WINDOW_MISSED",
+        "permanently HISTORICAL_NON_OOS", "closed mechanical rule (MR01-MR14)",
+        "WP170 remains the sole preregistration/OOS authority", "WP170/WP172/WP173 remain not started",
+        "Gate C is NOT AUTHORIZED", "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    for claim in ("Gate C is AUTHORIZED", "qualified: YES", "live ready: YES", "QUAL_PASS recorded",
+                  "PreregisteredExperiment is created"):
+        assert claim not in section, claim
+    assert index.index("## S10-QUAL-PLAN-01 ") < index.index("## S10-QUAL-B0X-01 ") < index.index("## S10-QUAL-DATA-02 ")
+    assert "Current bounded implementation target: S10-QUAL-PLAN-01 (base e2edb21e25e7841376c3cb51c27a622fbc0cbc83" in roadmap
+    assert "S10-QUAL-DATA-03 (prospective OOS accrual + execution-terms capture) is the next expected package" in roadmap
+    for item in ("S10-QUAL-PLAN-01-D001", "S10-QUAL-PLAN-01-D002", "S10-QUAL-PLAN-01-D003", "S10-QUAL-PLAN-01-D004",
+                 "S10-QUAL-PLAN-01-D005"):
+        assert f"| {item} |" in deferred, item
+    d005 = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-DATA-02-D005 |"))
+    assert "FROZEN_BY_S10_QUAL_PLAN_01_EXCLUSIONS_REMAIN" in d005 and d005.endswith("|")
+    assert deferred.splitlines()[-1].startswith("| S10-QUAL-PLAN-01-D005 |")
+    for text in (
+        f"`{plan_sha}`", "The hash is never inside its own preimage", "`STOP OOS_START_FREEZE_WINDOW_MISSED`",
+        "permanently `HISTORICAL_NON_OOS`", "`EXTERNAL_PIT_MARKET_PROBABILITY_V1`", "`random_seeds = []`",
+        "`preregistered_at` is the actual build time", "`QUAL_OOS_INSUFFICIENT_AT_CAP`",
+        "Current evidence is never backdated", "**WP170 remains the sole preregistration/OOS authority.**",
+        "`OOS_DATE_DECISION_IN_WP170_EMBARGO`", "`QUAL_PROVENANCE_LIMIT_EXCEEDED`",
+        "research question and Alpha-family falsifiable theme are preserved verbatim",
     ):
         assert text in contract, text
