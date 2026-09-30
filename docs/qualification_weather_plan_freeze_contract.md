@@ -12,7 +12,7 @@ Gate C: NOT AUTHORIZED. Live: DISABLED. Capital at risk: USD 0. Orders: 0.
 - Canonical bytes: UTF-8, object keys sorted, compact separators `(",", ":")`, no binary floats / NaN /
   Infinity, ASCII-only content, no trailing newline. Every non-integer number is a canonical decimal string.
 - Authoritative plan hash: `sha256(exact file bytes)` =
-  `d24cdc8ac75068b3bf7dc62c4fcf585d7cd381dd9203fac889f028620c4e69da`. The hash is never inside its own preimage.
+  `9ac5dc954a99a8d806a0ccc925512a92f6692ccc02a442f4f8fa47252c93749c`. The hash is never inside its own preimage.
 - Power analysis: `docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`, bound into the plan by the
   SHA-256 of its LF-normalized UTF-8 bytes (`f20f24a26444c93389b10a34ed1a88530aca0f64bc7efb694dccce826c6ee884`), so
   a Windows CRLF checkout cannot change the binding.
@@ -90,14 +90,17 @@ space `{}`; randomness NONE.
 - Historical allocation (MR14): FORMATION precedes SELECTION; SELECTION = the last 7 eligible historical dates with
   `>= 5` effective SELECTION dates after purge/embargo; FORMATION `>= 385` structurally eligible rows and `>= 20`
   effective dates (Riley criterion iii; EPV10 not used). Allocation never depends on outcomes/performance.
-  Shortfalls are `QUAL_FORMATION_INSUFFICIENT` / `QUAL_SELECTION_INSUFFICIENT`.
+  Shortfalls are `QUAL_FORMATION_INSUFFICIENT` (fewer than 385 rows or 20 dates) / `QUAL_SELECTION_INSUFFICIENT`
+  (fewer than 5 effective dates or 100 rows); `ROLE_BOUNDARY_CROSSING_EXCLUDED` is the closed historical exclusion code.
 - Prospective OOS: statistical unit `target_date`; per-date loss = mean row-level Brier differential; target 50
   effective dates from power `0.8`, one-sided alpha `0.025`, `dz = 0.5`, `rho1 = 0.25`, VIF `1.5`
   (derivation and sensitivity in the power-analysis doc; development sufficiency is kept separate from OOS power).
 
 ## 7. Test family
 
-Primary `BRIER_SCORE`; secondary diagnostic `LOG_LOSS`; absolute criterion B2 `LTE 0.25`; calibration diagnostic =
+Primary `BRIER_SCORE`; secondary diagnostic `LOG_LOSS` (computed on probabilities clipped to [0.001, 0.999] for B0,
+B1 and B2 alike, diagnostic only; B0 stays unclipped for the Brier primary, the absolute criterion and every
+confirmatory comparison); absolute criterion B2 `LTE 0.25`; calibration diagnostic =
 10 equal-width reliability bins with Murphy decomposition. Fixed sequence (one-sided, FWER 0.025): 1. B2 vs B0,
 2. B2 vs B1, 3. B1 vs B0; a later comparison is confirmatory only if every preceding one rejects.
 `correction_policy = FAMILY_TRIAL_COUNT`, `family_size = 3`. Frozen statistic: Diebold-Mariano on `d_1..d_50` with a
@@ -124,7 +127,8 @@ Newey-West Bartlett lag-1 long-run variance `V = gamma_0 + gamma_1`; reject iff 
   `data03_bundle_id`. Future REAL-01 and WP170 split assignment must reproduce it exactly.
 - Before the cap with fewer than 50 dates: `ACCRUAL_INCOMPLETE` (structural counts only). Fewer than 50 at the cap:
   `QUAL_OOS_INSUFFICIENT_AT_CAP`: no extension, no REAL-01, no score; a new attempt needs a new plan/family/trial and
-  a later prospective boundary.
+  a later prospective boundary. A sealed 50-date membership with fewer than 100 OOS rows is
+  `QUAL_OOS_ROWS_INSUFFICIENT` (WP170 would reject the split; no REAL-01, no score).
 
 ## 9. Execution-evidence meaning
 
@@ -147,15 +151,17 @@ plan. `search_space_json = {}`; `parameters_json` holds only frozen model consta
 `random_seeds = []` (the current WP170 validator admits the empty tuple; `[0]` is not used); split `oos_start`
 equals the PLAN-01 literal. The current WP170 cannot encode the NDFD B1 feature dependencies: that later feature
 bridge is eligible only after a real `QUAL_PASS` and blocks neither PLAN-01 nor prospective accrual. WP170 is
-unchanged by this WP.
+unchanged by this WP. The WP170 `ResearchDatasetManifest` samples are exactly the surviving MR14 FORMATION/SELECTION
+rows plus the sealed `oos_row_ids` (MR15): no excluded-date row, no row of a date after D50 and no row before
+`oos_start` ever enters the WP170 split, so WP170's decision-time role assignment reproduces the membership exactly.
 
 ## 11. Mechanical resolution (no operator discretion)
 
-Every data-dependent candidate field is a closed rule `MR01`..`MR14` in `mechanical_resolution_rules`, never an
+Every data-dependent candidate field is a closed rule `MR01`..`MR15` in `mechanical_resolution_rules`, never an
 editable placeholder: information cutoff (MR01), provenance manifests (MR02), creation provenance (MR03), feature
 and label evidence refs (MR04/MR05), external dataset refs (MR06), formation/selection starts (MR07/MR08), end time
 (MR09), OOS row/date counts (MR10/MR11), execution states (MR12), OOS membership (MR13) and historical allocation
-(MR14). An unresolvable rule is `PLAN_MECHANICAL_RESOLUTION_FAILED`. The static decisions resolve with synthetic
+(MR14) and the WP170 sample set (MR15). An unresolvable rule is `PLAN_MECHANICAL_RESOLUTION_FAILED`. The static decisions resolve with synthetic
 values into plan bodies accepted unchanged by the existing `build_qualification_candidate` (tested with the
 synthetic S10-QUAL-01 Alpha fixture only; no real candidate).
 

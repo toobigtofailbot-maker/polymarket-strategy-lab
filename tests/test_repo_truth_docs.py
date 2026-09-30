@@ -1008,7 +1008,7 @@ def test_s10_qual_plan_01_repo_truth() -> None:
     roadmap = " ".join((ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8").split())
     deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
     contract = " ".join((ROOT / "docs" / "qualification_weather_plan_freeze_contract.md").read_text(encoding="utf-8").split())
-    plan_sha = "d24cdc8ac75068b3bf7dc62c4fcf585d7cd381dd9203fac889f028620c4e69da"
+    plan_sha = "9ac5dc954a99a8d806a0ccc925512a92f6692ccc02a442f4f8fa47252c93749c"
     section_start = index.index("## S10-QUAL-PLAN-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
     assert "(current bounded implementation target)" in section
@@ -1019,7 +1019,7 @@ def test_s10_qual_plan_01_repo_truth() -> None:
         "docs/wp_specs/S10-QUAL-PLAN-01/", plan_sha, "e2edb21e25e7841376c3cb51c27a622fbc0cbc83",
         "debcfdf723505b67a1280ac9f303d5abd293c998", "FAST, risk 2, exact 13-path docs/tests scope",
         "`2026-10-15T00:00:00Z`", "`2026-10-14T00:00:00Z`", "`2027-02-12T00:00:00Z`", "OOS_START_FREEZE_WINDOW_MISSED",
-        "permanently HISTORICAL_NON_OOS", "closed mechanical rule (MR01-MR14)",
+        "permanently HISTORICAL_NON_OOS", "closed mechanical rule (MR01-MR15)",
         "WP170 remains the sole preregistration/OOS authority", "WP170/WP172/WP173 remain not started",
         "Gate C is NOT AUTHORIZED", "merge NOT AUTHORIZED",
     ):

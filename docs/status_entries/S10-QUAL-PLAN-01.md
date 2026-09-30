@@ -22,9 +22,9 @@ Current S10-QUAL-PLAN-01 state: IMPLEMENTED_READY_FOR_REVIEW
 
 ## Frozen Plan
 
-- Plan: `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (32148 bytes)
+- Plan: `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (33289 bytes)
 - Plan canonical: YES (UTF-8, sorted keys, compact separators, no binary float/NaN/Infinity, no trailing newline)
-- Plan SHA-256: `d24cdc8ac75068b3bf7dc62c4fcf585d7cd381dd9203fac889f028620c4e69da` (sha256 of exact file bytes; not in its own preimage)
+- Plan SHA-256: `9ac5dc954a99a8d806a0ccc925512a92f6692ccc02a442f4f8fa47252c93749c` (sha256 of exact file bytes; not in its own preimage)
 - Power analysis: `docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`, LF-normalized SHA-256
   `f20f24a26444c93389b10a34ed1a88530aca0f64bc7efb694dccce826c6ee884` (bound inside the plan)
 - OOS start: 2026-10-15T00:00:00Z
@@ -50,7 +50,11 @@ Current S10-QUAL-PLAN-01 state: IMPLEMENTED_READY_FOR_REVIEW
 - Execution-evidence meaning frozen: YES (never backdated; DATA-02 CURRENT_ONLY stays CURRENT_ONLY)
 - DATA-03 seal/exposure rules frozen: YES (`oosmembership:sha256:` preimage exact; `QUAL_OOS_INSUFFICIENT_AT_CAP`)
 - WP170 handoff frozen: YES; WP170 remains sole preregistration/OOS authority: YES
-- Mechanical resolution: MR01-MR14 closed rules; no operator discretion
+- Mechanical resolution: MR01-MR15 closed rules; no operator discretion; WP170 samples are exactly the surviving
+  FORMATION/SELECTION rows plus the sealed OOS rows (MR15)
+- Independent exact-head review of `611e91e`: CHANGES_REQUIRED (1 blocking: WP170 sample set undefined); repaired in
+  this WP by MR15, the `QUAL_OOS_ROWS_INSUFFICIENT` terminal, explicit shortfall rules, the historical exclusion code
+  and the log-loss clip scope; the plan was re-hashed
 - Synthetic qualification-plan compatibility: YES (synthetic mechanical values resolve the static decisions into plan
   bodies accepted unchanged by the existing `build_qualification_candidate`, synthetic S10-QUAL-01 Alpha fixture only)
 

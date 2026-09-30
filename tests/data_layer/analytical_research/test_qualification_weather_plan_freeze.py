@@ -14,6 +14,7 @@ import copy
 import hashlib
 import json
 import math
+import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from statistics import NormalDist
@@ -39,7 +40,7 @@ PLAN_PATH = PLAN_DIR / "weather_plan_v1.json"
 POWER_PATH = PLAN_DIR / "power_analysis_v1.md"
 SPEC_PATH = ROOT / "docs" / "wp_specs" / "S10-QUAL-PLAN-01" / "wp_spec.json"
 
-PLAN_SHA256 = "d24cdc8ac75068b3bf7dc62c4fcf585d7cd381dd9203fac889f028620c4e69da"
+PLAN_SHA256 = "9ac5dc954a99a8d806a0ccc925512a92f6692ccc02a442f4f8fa47252c93749c"
 OOS_START = "2026-10-15T00:00:00Z"
 CAP = "2027-02-12T00:00:00Z"
 FREEZE_DEADLINE = "2026-10-14T00:00:00Z"
@@ -114,7 +115,7 @@ EXPECTED_SECTION_KEYS = {
     },
     "forecast_evaluation_plan": {
         "candidate_plan", "mechanical_fields", "b0_mechanics", "same_row_set_for_b0_b1_b2",
-        "secondary_diagnostic", "log_loss_probability_clip_lower",
+        "secondary_diagnostic", "log_loss_probability_clip_lower", "log_loss_clip_applies_to", "b0_unclipped_scope",
         "log_loss_probability_clip_upper", "log_loss_diagnostic_only", "reliability_bins",
         "reliability_bin_rule", "murphy_decomposition", "calibration_diagnostic_only",
     },
@@ -564,6 +565,9 @@ def test_p12_formation_and_selection_floors():
     assert allocation["outcome_or_performance_dependent"] is False
     assert allocation["formation_shortfall_terminal"] == "QUAL_FORMATION_INSUFFICIENT"
     assert allocation["selection_shortfall_terminal"] == "QUAL_SELECTION_INSUFFICIENT"
+    assert "fewer than 100 effective SELECTION rows" in allocation["selection_shortfall_rule"]
+    assert "fewer than 385 effective FORMATION rows" in allocation["formation_shortfall_rule"]
+    assert allocation["historical_exclusion_reason_codes"] == ["ROLE_BOUNDARY_CROSSING_EXCLUDED"]
 
 
 def test_p13_min_rows_per_role_and_grouping():
@@ -636,6 +640,8 @@ def test_p16_brier_primary_logloss_diagnostic_threshold():
     assert (absolute["forecast"], absolute["operator"], absolute["threshold"]) == ("B2", "LTE", "0.25")
     forecast = plan["forecast_evaluation_plan"]
     assert forecast["secondary_diagnostic"] == "LOG_LOSS" and forecast["log_loss_diagnostic_only"] is True
+    assert forecast["log_loss_clip_applies_to"] == ["B0", "B1", "B2"]
+    assert forecast["b0_unclipped_scope"] == "BRIER_SCORE_PRIMARY_ABSOLUTE_CRITERION_AND_ALL_CONFIRMATORY_COMPARISONS"
     assert forecast["reliability_bins"] == 10 and forecast["murphy_decomposition"] is True
     assert forecast["calibration_diagnostic_only"] is True
 
@@ -686,6 +692,8 @@ def test_p19_cap_terminal_exact():
     assert "no extension" in terminals["insufficient_at_cap_rule"]
     assert "no S10-QUAL-REAL-01" in terminals["insufficient_at_cap_rule"]
     assert "structural counts only" in terminals["accrual_incomplete_rule"]
+    assert terminals["oos_rows_insufficient"] == "QUAL_OOS_ROWS_INSUFFICIENT"
+    assert "fewer than 100 oos_row_ids" in terminals["oos_rows_insufficient_rule"]
 
 
 def test_p20_execution_evidence_is_never_backdated():
@@ -718,6 +726,9 @@ def test_p21_wp170_remains_sole_preregistration_authority():
         "PLAN_01_MERGE_COMMIT_SHA", "PLAN_01_PLAN_SHA256", "DATA03_OOSMEMBERSHIP_ID",
         "REAL01_QUAL_PASS_RECEIPT_ID", "STATEMENT_EXPERIMENT_INPUTS_EQUAL_FROZEN_PLAN",
     ]
+    assert handoff["split"]["research_dataset_sample_rule"] == "MR15_WP170_SAMPLE_SET_V1"
+    sample_rule = plan["mechanical_resolution_rules"]["rules"]["MR15_WP170_SAMPLE_SET_V1"]["rule"]
+    assert "plus the sealed oos_row_ids" in sample_rule and "no other DATA-02 or DATA-03 row" in sample_rule
     later = handoff["known_later_dependency"]
     assert later["blocks_plan_01"] is False and later["blocks_prospective_accrual"] is False
     assert later["eligible_only_after"] == "REAL_QUAL_PASS"
@@ -733,9 +744,9 @@ def test_p22_no_experiment_lifecycle_candidate_or_gate_object_is_created():
     assert authority["capital_at_risk_usd"] == 0 and authority["orders"] == 0
     for path in PLAN_DIR.iterdir():
         text = path.read_text(encoding="utf-8")
-        for prefix in ("experiment:sha256:", "qualificationcandidate:sha256:", "qualificationgate:sha256:",
-                       "oosmembership:sha256:0", "split:sha256:", "lifecycle:sha256:"):
-            assert prefix not in text, (path.name, prefix)
+        for prefix in ("experiment", "qualificationcandidate", "qualificationgate", "oosmembership", "split",
+                       "lifecycle"):
+            assert re.search(prefix + r":sha256:[0-9a-f]{64}", text) is None, (path.name, prefix)
 
 
 def test_p23_no_source_network_or_data_access():
@@ -772,13 +783,14 @@ def test_p24_every_mechanical_rule_is_closed_and_used():
         used |= set(plan[name]["mechanical_fields"].values())
     used |= {rules["builder_inputs"]["provenance_manifests"],
              plan["prospective_data_seal"]["eligibility"]["rule"],
-             plan["dataset_split_plan"]["historical_allocation"]["eligible_historical_date_rule"]}
+             plan["dataset_split_plan"]["historical_allocation"]["eligible_historical_date_rule"],
+             plan["wp170_handoff"]["split"]["research_dataset_sample_rule"]}
     assert used == set(rules["rules"])
     for rule_id, rule in rules["rules"].items():
         assert set(rule) == {"target", "value_type", "rule"}, rule_id
         assert rule["value_type"] in {
             "UTC_SECOND", "MANIFEST_SEQUENCE", "TEXT", "EVIDENCE_ID_LIST_PER_FEATURE_REF", "EVIDENCE_ID_LIST",
-            "COUNT", "EXECUTION_ENTRY", "OOS_MEMBERSHIP", "DATE_ROLE_ALLOCATION",
+            "COUNT", "EXECUTION_ENTRY", "OOS_MEMBERSHIP", "DATE_ROLE_ALLOCATION", "SAMPLE_ID_SET",
         }, rule_id
     static = rules["candidate_static_fields"]
     lineage_fields = rules["candidate_lineage_fields"]

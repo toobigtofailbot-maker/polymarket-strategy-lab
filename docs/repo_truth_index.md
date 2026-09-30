@@ -4,7 +4,7 @@
 
 The canonical contract is `docs/qualification_weather_plan_freeze_contract.md`; the frozen plan is
 `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (plan SHA-256
-`d24cdc8ac75068b3bf7dc62c4fcf585d7cd381dd9203fac889f028620c4e69da`, sha256 of the exact bytes); the power analysis is
+`9ac5dc954a99a8d806a0ccc925512a92f6692ccc02a442f4f8fa47252c93749c`, sha256 of the exact bytes); the power analysis is
 `docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`; the status fragment is
 `docs/status_entries/S10-QUAL-PLAN-01.md`; the frozen package is `docs/wp_specs/S10-QUAL-PLAN-01/`. Base
 `e2edb21e25e7841376c3cb51c27a622fbc0cbc83` (PR #204 / S10-QUAL-B0X-01 merged, head
@@ -14,7 +14,7 @@ merge timestamp plus merge SHA (a later merge is OOS_START_FREEZE_WINDOW_MISSED)
 DATA-02 dates are permanently HISTORICAL_NON_OOS. It freezes the hypothesis, the external B0, the B1/B2 features, the
 label, the Firth logistic model and solver, the splits and floors, the power plan (50 target dates), the fixed-sequence
 Brier family, the DATA-03 seal/exposure rules, the execution-evidence meaning and the WP170 handoff; every
-data-dependent candidate field is a closed mechanical rule (MR01-MR14). WP170 remains the sole preregistration/OOS
+data-dependent candidate field is a closed mechanical rule (MR01-MR15). WP170 remains the sole preregistration/OOS
 authority: no PreregisteredExperiment, lifecycle record, QualificationCandidate or qualification-gate receipt is
 created, no data is accessed and no model is fitted or scored. `src/**`, `tools/**`, `.github/**` and dependencies are
 unchanged; WP170/WP172/WP173 remain not started. S10-QUAL-DATA-03 is the next expected package only after this WP
