@@ -12,7 +12,7 @@ Gate C: NOT AUTHORIZED. Live: DISABLED. Capital at risk: USD 0. Orders: 0.
 - Canonical bytes: UTF-8, object keys sorted, compact separators `(",", ":")`, no binary floats / NaN /
   Infinity, ASCII-only content, no trailing newline. Every non-integer number is a canonical decimal string.
 - Authoritative plan hash: `sha256(exact file bytes)` =
-  `9ac5dc954a99a8d806a0ccc925512a92f6692ccc02a442f4f8fa47252c93749c`. The hash is never inside its own preimage.
+  `1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e`. The hash is never inside its own preimage.
 - Power analysis: `docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`, bound into the plan by the
   SHA-256 of its LF-normalized UTF-8 bytes (`f20f24a26444c93389b10a34ed1a88530aca0f64bc7efb694dccce826c6ee884`), so
   a Windows CRLF checkout cannot change the binding.
@@ -90,7 +90,7 @@ space `{}`; randomness NONE.
 - Historical allocation (MR14): FORMATION precedes SELECTION; SELECTION = the last 7 eligible historical dates with
   `>= 5` effective SELECTION dates after purge/embargo; FORMATION `>= 385` structurally eligible rows and `>= 20`
   effective dates (Riley criterion iii; EPV10 not used). Allocation never depends on outcomes/performance.
-  Shortfalls are `QUAL_FORMATION_INSUFFICIENT` (fewer than 385 rows or 20 dates) / `QUAL_SELECTION_INSUFFICIENT`
+  Shortfalls are `QUAL_FORMATION_INSUFFICIENT` (fewer than 385 structurally eligible rows or 20 effective dates) / `QUAL_SELECTION_INSUFFICIENT`
   (fewer than 5 effective dates or 100 rows); `ROLE_BOUNDARY_CROSSING_EXCLUDED` is the closed historical exclusion code.
 - Prospective OOS: statistical unit `target_date`; per-date loss = mean row-level Brier differential; target 50
   effective dates from power `0.8`, one-sided alpha `0.025`, `dz = 0.5`, `rho1 = 0.25`, VIF `1.5`

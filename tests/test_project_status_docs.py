@@ -5284,7 +5284,7 @@ def test_s10_qual_b0x_01_is_current_external_b0_contract_target() -> None:
 
 
 S10_QUAL_PLAN_01_STATES = ("IMPLEMENTED_READY_FOR_REVIEW",)
-S10_QUAL_PLAN_01_SHA256 = "9ac5dc954a99a8d806a0ccc925512a92f6692ccc02a442f4f8fa47252c93749c"
+S10_QUAL_PLAN_01_SHA256 = "1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e"
 
 
 def test_s10_qual_plan_01_is_current_plan_freeze_target() -> None:

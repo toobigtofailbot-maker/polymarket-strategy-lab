@@ -22,9 +22,9 @@ Current S10-QUAL-PLAN-01 state: IMPLEMENTED_READY_FOR_REVIEW
 
 ## Frozen Plan
 
-- Plan: `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (33289 bytes)
+- Plan: `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (33301 bytes)
 - Plan canonical: YES (UTF-8, sorted keys, compact separators, no binary float/NaN/Infinity, no trailing newline)
-- Plan SHA-256: `9ac5dc954a99a8d806a0ccc925512a92f6692ccc02a442f4f8fa47252c93749c` (sha256 of exact file bytes; not in its own preimage)
+- Plan SHA-256: `1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e` (sha256 of exact file bytes; not in its own preimage)
 - Power analysis: `docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`, LF-normalized SHA-256
   `f20f24a26444c93389b10a34ed1a88530aca0f64bc7efb694dccce826c6ee884` (bound inside the plan)
 - OOS start: 2026-10-15T00:00:00Z
@@ -52,7 +52,9 @@ Current S10-QUAL-PLAN-01 state: IMPLEMENTED_READY_FOR_REVIEW
 - WP170 handoff frozen: YES; WP170 remains sole preregistration/OOS authority: YES
 - Mechanical resolution: MR01-MR15 closed rules; no operator discretion; WP170 samples are exactly the surviving
   FORMATION/SELECTION rows plus the sealed OOS rows (MR15)
-- Independent exact-head review of `611e91e`: CHANGES_REQUIRED (1 blocking: WP170 sample set undefined); repaired in
+- Independent exact-head review of `611e91e`: CHANGES_REQUIRED (1 blocking: WP170 sample set undefined); re-review
+  of `8a13415`: CHANGES_REQUIRED (1 blocking: formation shortfall wording said "effective" instead of "structurally
+  eligible" rows); both repaired in
   this WP by MR15, the `QUAL_OOS_ROWS_INSUFFICIENT` terminal, explicit shortfall rules, the historical exclusion code
   and the log-loss clip scope; the plan was re-hashed
 - Synthetic qualification-plan compatibility: YES (synthetic mechanical values resolve the static decisions into plan

@@ -40,7 +40,7 @@ PLAN_PATH = PLAN_DIR / "weather_plan_v1.json"
 POWER_PATH = PLAN_DIR / "power_analysis_v1.md"
 SPEC_PATH = ROOT / "docs" / "wp_specs" / "S10-QUAL-PLAN-01" / "wp_spec.json"
 
-PLAN_SHA256 = "9ac5dc954a99a8d806a0ccc925512a92f6692ccc02a442f4f8fa47252c93749c"
+PLAN_SHA256 = "1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e"
 OOS_START = "2026-10-15T00:00:00Z"
 CAP = "2027-02-12T00:00:00Z"
 FREEZE_DEADLINE = "2026-10-14T00:00:00Z"
@@ -566,7 +566,7 @@ def test_p12_formation_and_selection_floors():
     assert allocation["formation_shortfall_terminal"] == "QUAL_FORMATION_INSUFFICIENT"
     assert allocation["selection_shortfall_terminal"] == "QUAL_SELECTION_INSUFFICIENT"
     assert "fewer than 100 effective SELECTION rows" in allocation["selection_shortfall_rule"]
-    assert "fewer than 385 effective FORMATION rows" in allocation["formation_shortfall_rule"]
+    assert "fewer than 385 structurally eligible FORMATION rows" in allocation["formation_shortfall_rule"]
     assert allocation["historical_exclusion_reason_codes"] == ["ROLE_BOUNDARY_CROSSING_EXCLUDED"]
 
 
