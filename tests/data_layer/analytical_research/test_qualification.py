@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import copy
 import dataclasses
+import hashlib
 import json
 from pathlib import Path
 
@@ -862,7 +863,7 @@ def test_q20_proper_score_and_metric_binding(lineage):
         primary_metric_name="hit-rate"))), "FORECAST_PLAN_INVALID")
 
 
-@pytest.mark.parametrize("params", [
+INVALID_B0_PARAMETERS = [
     {"max_midpoint_spread": "1.01", "max_last_trade_age_seconds": 900},
     {"max_midpoint_spread": "-0.1", "max_last_trade_age_seconds": 900},
     {"max_midpoint_spread": "0.050", "max_last_trade_age_seconds": 900},
@@ -870,15 +871,19 @@ def test_q20_proper_score_and_metric_binding(lineage):
     {"max_midpoint_spread": "0.05", "max_last_trade_age_seconds": "900"},
     {"max_midpoint_spread": "0.05"},
     {"max_midpoint_spread": "0.05", "max_last_trade_age_seconds": 900, "use_website_price": True},
-])
+]
+BOUNDARY_B0_PARAMETERS = [
+    {"max_midpoint_spread": "0", "max_last_trade_age_seconds": 0},
+    {"max_midpoint_spread": "1", "max_last_trade_age_seconds": 86400},
+]
+
+
+@pytest.mark.parametrize("params", INVALID_B0_PARAMETERS)
 def test_q21_b0_parameters_canonical_and_bounded(lineage, params):
     forecast_rejects(lineage, b0_parameters=params)
 
 
-@pytest.mark.parametrize("params", [
-    {"max_midpoint_spread": "0", "max_last_trade_age_seconds": 0},
-    {"max_midpoint_spread": "1", "max_last_trade_age_seconds": 86400},
-])
+@pytest.mark.parametrize("params", BOUNDARY_B0_PARAMETERS)
 def test_q21_b0_parameter_bounds_inclusive(lineage, params):
     ok(build(lineage, binary_input(lineage, forecast_evaluation_plan=forecast_plan(b0_parameters=params))))
 
@@ -953,3 +958,222 @@ def test_q24_input_is_not_mutated(lineage):
     before = copy.deepcopy(value)
     ok(build(lineage, value))
     assert value == before
+
+
+# ── Q31 – Q40 S10-QUAL-B0X-01 external-reconstruction B0 ────────────────────
+# Canonical identities bound BEFORE S10-QUAL-B0X-01 changed qualification.py (base
+# ebd6f84c95e30451fe1c9ad431e405c57c113074); the additive external rule must not move them.
+CANONICAL_BINARY_CANDIDATE_ID = (
+    "qualificationcandidate:sha256:6f94dec0c556d9a3574349e8696cee6fb128933cf393fb8da212f70adf075f21"
+)
+CANONICAL_GENERIC_CANDIDATE_ID = (
+    "qualificationcandidate:sha256:cf99f3f902abd8e39278d026c83a0a770126f5fca3478068c6db979a1b4b0cd9"
+)
+CANONICAL_BINARY_PACKET_SHA256 = "c6ba2d6d4a447f32d1eb42d2ac0de96c4734693e4e6b74fea5d07ef2fe177df5"
+EXTERNAL_B0_RULE = "EXTERNAL_PIT_MARKET_PROBABILITY_V1"
+EXTERNAL_CLASS = "MARKET_EXTERNAL_RECONSTRUCTION"
+EXTERNAL_REF = "feat.market.external-reconstruction-midpoint"
+EXTERNAL_DATASET_REF = "weatherqualdataset:external-reconstruction-fixture"
+EXTERNAL_EVIDENCE = ("evidence:external-archive-book", "evidence:external-archive-trades")
+CANONICAL_AUTHORITY_LABELS = (
+    "MARKET_PIT", "SOURCE_KIND_CANONICAL_PIT", "CANONICAL_PIT", "CANONICAL_PIT_DATASET_SNAPSHOT_REFERENCE",
+)
+
+
+def external_feature_plan(**over):
+    plan = feature_plan(
+        feature_refs=[PUBLIC_REF, TIME_REF, EXTERNAL_REF],
+        feature_source_classes={
+            PUBLIC_REF: "PUBLIC_NON_MARKET", TIME_REF: "TIME_ONLY", EXTERNAL_REF: EXTERNAL_CLASS,
+        },
+        feature_evidence_refs={
+            PUBLIC_REF: ["evidence:weather-archive"], TIME_REF: ["evidence:schedule"],
+            EXTERNAL_REF: list(EXTERNAL_EVIDENCE),
+        },
+    )
+    plan.update(over)
+    return plan
+
+
+def external_forecast_plan(**over):
+    values = dict(
+        b0_rule=EXTERNAL_B0_RULE, b2_feature_refs=[EXTERNAL_REF, PUBLIC_REF, TIME_REF],
+        b2_market_added_feature_refs=[EXTERNAL_REF],
+    )
+    values.update(over)
+    return forecast_plan(**values)
+
+
+def external_input(lin, **over):
+    values = dict(
+        feature_plan=external_feature_plan(), forecast_evaluation_plan=external_forecast_plan(),
+        dataset_split_plan=split_plan(dataset_snapshot_reference_ids=[EXTERNAL_DATASET_REF]),
+    )
+    values.update(over)
+    return binary_input(lin, **values)
+
+
+def external_manifest(**over):
+    return manifest(dataset_refs=(EXTERNAL_DATASET_REF,), **over)
+
+
+def build_external(lin, value=None):
+    return build(lin, external_input(lin) if value is None else value, manifests=[external_manifest()])
+
+
+def external_rejects(lin, value):
+    rejected(build_external(lin, value), "FORECAST_PLAN_INVALID")
+
+
+# A feature plan declaring canonical, external and public refs together (mixing probes).
+MIXED_CLASSES = {
+    PUBLIC_REF: "PUBLIC_NON_MARKET", TIME_REF: "TIME_ONLY", MARKET_REF: "MARKET_PIT", EXTERNAL_REF: EXTERNAL_CLASS,
+}
+
+
+def mixed_feature_plan():
+    return external_feature_plan(
+        feature_refs=[PUBLIC_REF, TIME_REF, MARKET_REF, EXTERNAL_REF], feature_source_classes=MIXED_CLASSES,
+        feature_evidence_refs={
+            PUBLIC_REF: ["evidence:weather-archive"], TIME_REF: ["evidence:schedule"],
+            MARKET_REF: ["evidence:pit-book"], EXTERNAL_REF: list(EXTERNAL_EVIDENCE),
+        },
+    )
+
+
+def test_q31_canonical_identity_and_serialized_packet_unchanged(lineage):
+    binary, generic = ok(build(lineage)), ok(build(lineage, generic_input(lineage)))
+    assert binary.qualification_candidate_id == CANONICAL_BINARY_CANDIDATE_ID
+    assert generic.qualification_candidate_id == CANONICAL_GENERIC_CANDIDATE_ID
+    mapping = q.qualification_candidate_to_mapping(binary)
+    packet = json.dumps(mapping, sort_keys=True)
+    assert hashlib.sha256(packet.encode()).hexdigest() == CANONICAL_BINARY_PACKET_SHA256
+    assert ok(q.qualification_candidate_from_mapping(json.loads(packet))) == binary
+    assert json.loads(binary.forecast_evaluation_plan_json)["b0_rule"] == "PIT_MARKET_PROBABILITY_V1"
+    assert q.QUALIFICATION_SCHEMA_VERSION == "1.0.0"
+    assert binary.schema_version == "1.0.0"
+
+
+def test_q32_external_b0_with_external_b2_is_valid(lineage):
+    record = ok(build_external(lineage))
+    plan = json.loads(record.forecast_evaluation_plan_json)
+    assert plan["b0_rule"] == EXTERNAL_B0_RULE
+    assert plan["b2_market_added_feature_refs"] == [EXTERNAL_REF]
+    assert plan["b2_feature_refs"] == sorted([PUBLIC_REF, TIME_REF, EXTERNAL_REF])
+    assert plan["b1_feature_refs"] == sorted([PUBLIC_REF, TIME_REF])
+    assert json.loads(record.feature_plan_json)["feature_source_classes"][EXTERNAL_REF] == EXTERNAL_CLASS
+    assert record.qualification_candidate_id != CANONICAL_BINARY_CANDIDATE_ID
+    assert record.schema_version == "1.0.0"
+    assert ok(q.validate_qualification_candidate(record)) is record
+    mapping = json.loads(json.dumps(q.qualification_candidate_to_mapping(record)))
+    assert ok(q.qualification_candidate_from_mapping(mapping)) == record
+
+
+def test_q33_external_b0_rejects_market_pit_b2_addition(lineage):
+    # The canonical fixture's MARKET_PIT addition under the external rule.
+    rejected(build(lineage, binary_input(lineage, forecast_evaluation_plan=forecast_plan(
+        b0_rule=EXTERNAL_B0_RULE))), "FORECAST_PLAN_INVALID")
+    external_rejects(lineage, external_input(
+        lineage, feature_plan=mixed_feature_plan(), forecast_evaluation_plan=external_forecast_plan(
+            b2_feature_refs=[MARKET_REF, PUBLIC_REF, TIME_REF], b2_market_added_feature_refs=[MARKET_REF]),
+    ))
+
+
+def test_q34_canonical_b0_rejects_external_b2_addition(lineage):
+    external_rejects(lineage, external_input(
+        lineage, forecast_evaluation_plan=external_forecast_plan(b0_rule="PIT_MARKET_PROBABILITY_V1"),
+    ))
+    rejected(build(lineage, binary_input(
+        lineage, feature_plan=mixed_feature_plan(), forecast_evaluation_plan=forecast_plan(
+            b2_feature_refs=[EXTERNAL_REF, PUBLIC_REF, TIME_REF], b2_market_added_feature_refs=[EXTERNAL_REF]),
+    )), "FORECAST_PLAN_INVALID")
+
+
+@pytest.mark.parametrize("b0_rule", ["PIT_MARKET_PROBABILITY_V1", EXTERNAL_B0_RULE])
+def test_q35_mixed_canonical_and_external_b2_rejects(lineage, b0_rule):
+    both = [EXTERNAL_REF, MARKET_REF]
+    external_rejects(lineage, external_input(
+        lineage, feature_plan=mixed_feature_plan(), forecast_evaluation_plan=external_forecast_plan(
+            b0_rule=b0_rule, b2_feature_refs=sorted(both + [PUBLIC_REF, TIME_REF]),
+            b2_market_added_feature_refs=both),
+    ))
+
+
+@pytest.mark.parametrize("b0_rule", ["PIT_MARKET_PROBABILITY_V1", EXTERNAL_B0_RULE])
+@pytest.mark.parametrize("market_ref", [EXTERNAL_REF, MARKET_REF])
+def test_q36_market_classes_rejected_in_b1_under_both_rules(lineage, b0_rule, market_ref):
+    added = EXTERNAL_REF if b0_rule == EXTERNAL_B0_RULE else MARKET_REF
+    external_rejects(lineage, external_input(
+        lineage, feature_plan=mixed_feature_plan(), forecast_evaluation_plan=external_forecast_plan(
+            b0_rule=b0_rule, b1_feature_refs=sorted({market_ref, PUBLIC_REF}),
+            b2_feature_refs=sorted({market_ref, PUBLIC_REF, added}), b2_market_added_feature_refs=[added]),
+    ))
+
+
+@pytest.mark.parametrize("b0_rule", [
+    "EXTERNAL_PIT_MARKET_PROBABILITY_V2", "external_pit_market_probability_v1", "PIT_MARKET_PROBABILITY_V2",
+    "MARKET_EXTERNAL_RECONSTRUCTION", "WEBSITE_DISPLAYED_PROBABILITY", "",
+])
+def test_q37_unknown_b0_literal_rejects(lineage, b0_rule):
+    external_rejects(lineage, external_input(lineage, forecast_evaluation_plan=external_forecast_plan(b0_rule=b0_rule)))
+    forecast_rejects(lineage, b0_rule=b0_rule)
+    rejected(build_external(lineage, external_input(
+        lineage, forecast_evaluation_plan=external_forecast_plan(b0_rule=None))), "FORECAST_PLAN_INVALID")
+
+
+@pytest.mark.parametrize("params", INVALID_B0_PARAMETERS)
+def test_q38_external_b0_parameters_share_canonical_rejections(lineage, params):
+    external_rejects(lineage, external_input(
+        lineage, forecast_evaluation_plan=external_forecast_plan(b0_parameters=params)))
+
+
+@pytest.mark.parametrize("params", BOUNDARY_B0_PARAMETERS)
+def test_q38_external_b0_parameter_bounds_match_canonical(lineage, params):
+    record = ok(build_external(lineage, external_input(
+        lineage, forecast_evaluation_plan=external_forecast_plan(b0_parameters=params))))
+    canonical = ok(build(lineage, binary_input(lineage, forecast_evaluation_plan=forecast_plan(b0_parameters=params))))
+    external_params = json.loads(record.forecast_evaluation_plan_json)["b0_parameters"]
+    assert external_params == json.loads(canonical.forecast_evaluation_plan_json)["b0_parameters"]
+
+
+def test_q39_external_b2_must_be_exact_b1_union_added(lineage):
+    for over in (
+        {"b2_feature_refs": [EXTERNAL_REF, PUBLIC_REF]},
+        {"b2_feature_refs": [EXTERNAL_REF, PUBLIC_REF, TIME_REF, "feat.extra"]},
+        {"b2_feature_refs": [PUBLIC_REF, TIME_REF]},
+        {"b2_market_added_feature_refs": []},
+        {"b2_market_added_feature_refs": [EXTERNAL_REF, EXTERNAL_REF]},
+        {"b2_market_added_feature_refs": [PUBLIC_REF], "b2_feature_refs": [PUBLIC_REF, TIME_REF]},
+        {"b2_market_added_feature_refs": ["feat.market.undeclared"],
+         "b2_feature_refs": ["feat.market.undeclared", PUBLIC_REF, TIME_REF]},
+    ):
+        external_rejects(lineage, external_input(lineage, forecast_evaluation_plan=external_forecast_plan(**over)))
+
+
+def test_q40_external_class_is_distinct_and_never_canonical_authority(lineage):
+    from src.data_layer.analytical_research import pendulumflow_v3 as v3
+    from src.data_layer.analytical_research import qualification_data_readiness as qdr
+    from src.data_layer.analytical_research import research_dataset as rd
+
+    assert EXTERNAL_CLASS in q.QUALIFICATION_FEATURE_SOURCE_CLASSES
+    assert "MARKET_PIT" in q.QUALIFICATION_FEATURE_SOURCE_CLASSES
+    assert EXTERNAL_CLASS not in CANONICAL_AUTHORITY_LABELS
+    assert EXTERNAL_CLASS not in qdr.FORBIDDEN_AUTHORITY_LABELS
+    assert rd.SOURCE_KIND_CANONICAL_PIT in CANONICAL_AUTHORITY_LABELS
+    assert "PIT" not in EXTERNAL_CLASS.split("_")
+    assert q.B0_RULE_EXTERNAL_PIT_MARKET_PROBABILITY_V1 == EXTERNAL_B0_RULE
+    assert q.B0_RULE_PIT_MARKET_PROBABILITY_V1 == "PIT_MARKET_PROBABILITY_V1"
+    assert q._B0_RULE_MARKET_ADDED_SOURCE_CLASS == {
+        "PIT_MARKET_PROBABILITY_V1": "MARKET_PIT", EXTERNAL_B0_RULE: EXTERNAL_CLASS,
+    }
+    # DATA-02 external evidence authority stays third-party reconstruction, never canonical PIT.
+    assert v3.SOURCE_CLASS == "THIRD_PARTY_NATIVE_FRAME_ARCHIVE"
+    assert v3.B0_SOURCE_AUTHORITY == "EXTERNAL_THIRD_PARTY_PIT_RECONSTRUCTION"
+    assert qdr.B0_EXTERNAL_ONLY == "EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION"
+    for authority in (v3.SOURCE_CLASS, v3.B0_SOURCE_AUTHORITY):
+        assert authority not in CANONICAL_AUTHORITY_LABELS
+    # The valid external packet carries no canonical-PIT, snapshot-reference or local-first-seen claim.
+    packet = json.dumps(q.qualification_candidate_to_mapping(ok(build_external(lineage))), sort_keys=True)
+    for token in (*CANONICAL_AUTHORITY_LABELS, "datasetsnapshot", "local_first_seen", "public_available_time"):
+        assert token not in packet, token
+    assert EXTERNAL_CLASS in packet and EXTERNAL_B0_RULE in packet

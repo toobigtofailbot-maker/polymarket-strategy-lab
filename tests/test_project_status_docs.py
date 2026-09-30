@@ -5165,8 +5165,10 @@ def test_s10_qual_data_02_is_current_weather_completion_target() -> None:
     lines = _read().splitlines()
     current = next(
         line for line in lines
-        if line.startswith("# S10-QUAL-DATA-02 current bounded implementation target")
+        if line.startswith("# S10-QUAL-DATA-02 merged historical truth")
     )
+    assert "PR #203 / S10-QUAL-DATA-02 merged: YES at ebd6f84c95e30451fe1c9ad431e405c57c113074" in current
+    assert "b9e2e6995ee232720d0516b1fa234dec8bdac5e3" in current
     fragment = " ".join(
         (REPO_ROOT / "docs" / "status_entries" / "S10-QUAL-DATA-02.md").read_text(encoding="utf-8").split()
     )
@@ -5211,5 +5213,69 @@ def test_s10_qual_data_02_is_current_weather_completion_target() -> None:
     for key in ("dependencies", "workflow_files", "credentials", "scheduler", "hermes_runtime", "strategy", "paper",
                 "execution", "live"):
         assert spec["authority"][key] is False, key
+    assert spec["successor_boundary"]["separately_gated"] is True
+    assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
+
+
+S10_QUAL_B0X_01_STATES = ("IMPLEMENTED_READY_FOR_REVIEW",)
+
+
+def test_s10_qual_b0x_01_is_current_external_b0_contract_target() -> None:
+    lines = _read().splitlines()
+    current = next(
+        line for line in lines
+        if line.startswith("# S10-QUAL-B0X-01 current bounded implementation target")
+    )
+    fragment_text = (REPO_ROOT / "docs" / "status_entries" / "S10-QUAL-B0X-01.md").read_text(encoding="utf-8")
+    fragment = " ".join(fragment_text.split())
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-QUAL-B0X-01" / "wp_spec.json").read_text(encoding="utf-8")
+    )
+    for text in (
+        "Governance track: FAST", "Risk level: 2", "Exact changed-file scope: 14",
+        "Frozen base: ebd6f84c95e30451fe1c9ad431e405c57c113074",
+        "PR #203 / S10-QUAL-DATA-02 merged: YES", "b9e2e6995ee232720d0516b1fa234dec8bdac5e3",
+        "readiness: IMPLEMENTATION_READY (FAST)", "EXTERNAL_PIT_MARKET_PROBABILITY_V1", "MARKET_EXTERNAL_RECONSTRUCTION",
+        "canonical PIT_MARKET_PROBABILITY_V1 / MARKET_PIT unchanged", "QUALIFICATION_SCHEMA_VERSION 1.0.0",
+        "canonical candidate ids unchanged",
+        "qualificationcandidate:sha256:6f94dec0c556d9a3574349e8696cee6fb128933cf393fb8da212f70adf075f21",
+        "no backdating", "dependency/workflow changes: 0", "network/data acquisition: NONE",
+        "QualificationCandidate real execution: NO", "Qualification gate real run: NO",
+        "WP170/WP172/WP173: NOT STARTED", "live: DISABLED", "Gate C: NOT AUTHORIZED", "capital at risk: USD 0",
+        "orders: 0", "S10-QUAL-REAL-01 only after this WP merges", "Merge authorized: NO",
+    ):
+        assert text in current, text
+    marker = "Current S10-QUAL-B0X-01 state: "
+    for text in (current, fragment):
+        assert text[text.index(marker) + len(marker):].split(";")[0].split()[0] in S10_QUAL_B0X_01_STATES
+    for text in (
+        "Canonical fixture candidate ID before: qualificationcandidate:sha256:6f94dec0c556d9a3574349e8696cee6fb128933cf393fb8da212f70adf075f21",
+        "Canonical fixture candidate ID after: qualificationcandidate:sha256:6f94dec0c556d9a3574349e8696cee6fb128933cf393fb8da212f70adf075f21",
+        "Canonical packet identity stable: YES", "Qualification schema version: 1.0.0",
+        "Qualification gate source changed: NO", "WP170 source changed: NO", "DATA-02 source/operator changed: NO",
+        "Network/data acquisition: NONE", "Merge authorized: NO",
+    ):
+        assert text in fragment, text
+    for stale in ("Merge authorized: YES", "Gate C: AUTHORIZED", "QualificationCandidate real execution: YES",
+                  "live: ENABLED", "QUAL_PASS recorded", "Canonical packet identity stable: NO"):
+        assert stale not in current, stale
+        assert stale not in fragment, stale
+    assert lines.index(current) < next(
+        index for index, line in enumerate(lines)
+        if line.startswith("# S10-QUAL-DATA-02 merged historical truth")
+    )
+    assert spec["identity"]["wp_id"] == "S10-QUAL-B0X-01"
+    assert spec["identity"]["risk_level"] == 2
+    assert spec["identity"]["required_predecessor"] == {
+        "pr_number": 203, "head_sha": "b9e2e6995ee232720d0516b1fa234dec8bdac5e3",
+        "merge_sha": "ebd6f84c95e30451fe1c9ad431e405c57c113074",
+    }
+    scope = spec["scope"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 14
+    assert spec["authority"]["source_runtime"] is True
+    for key in ("network", "dependencies", "workflow_files", "credentials", "scheduler", "hermes_runtime", "strategy",
+                "paper", "execution", "live"):
+        assert spec["authority"][key] is False, key
+    assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-REAL-01"
     assert spec["successor_boundary"]["separately_gated"] is True
     assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]

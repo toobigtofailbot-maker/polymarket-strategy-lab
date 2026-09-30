@@ -1,0 +1,517 @@
+Package Identity:
+  WP ID: S10-QUAL-B0X-01
+  Title: External-Reconstruction B0 Qualification Contract Extension
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Drafting-time main SHA: ebd6f84c95e30451fe1c9ad431e405c57c113074
+  Required predecessor: PR #203 / S10-QUAL-DATA-02
+  Required predecessor final head: b9e2e6995ee232720d0516b1fa234dec8bdac5e3
+  Required predecessor merge SHA: ebd6f84c95e30451fe1c9ad431e405c57c113074
+  Suggested branch: codex/s10-qual-b0x-01-external-b0-contract
+  Package class: EXTERNAL_RECONSTRUCTION_B0_QUALIFICATION_CONTRACT
+  Package size class: L (drafted S; reconciled because the repo spec guard budget is S<=5 / M<=10 / L<=20 files and the frozen exact scope is 14 paths; no scope, risk or authority change)
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Objective: add exactly one external-reconstruction B0 rule literal (EXTERNAL_PIT_MARKET_PROBABILITY_V1) and exactly one qualification feature source class (MARKET_EXTERNAL_RECONSTRUCTION) with rule-specific B2 source-class coupling, keeping the canonical PIT_MARKET_PROBABILITY_V1 / MARKET_PIT semantics, schema version 1.0.0 and every existing canonical candidate identity unchanged
+  Runtime impact: additive offline validator semantics in qualification.py only; no run, no data acquisition
+  Product impact: NONE
+  Network impact: NONE (workflow git/PR publication only)
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: FAST
+
+# SIDE14 — S10-QUAL-B0X-01 COMPACT ONE-SHOT WP
+## External-Reconstruction B0 Qualification Contract Extension
+
+**Send to:** **A NEW CLAUDE CODE CHAT / SESSION**
+**Repo:** `toobigtofailbot-maker/polymarket-strategy-lab`
+**Drafting-time main:** `ebd6f84c95e30451fe1c9ad431e405c57c113074`
+**Predecessor:** PR #203 / S10-QUAL-DATA-02
+**Predecessor final head:** `b9e2e6995ee232720d0516b1fa234dec8bdac5e3`
+**Predecessor merge:** `ebd6f84c95e30451fe1c9ad431e405c57c113074`
+**Suggested branch:** `codex/s10-qual-b0x-01-external-b0-contract`
+**Class / size / governance / risk:** `EXTERNAL_RECONSTRUCTION_B0_QUALIFICATION_CONTRACT` / S / FAST / 2
+**Merge authority:** NO
+**Draft status:** DRAFTED / NOT YET AUTHORIZED. If Karl sends this exact WP to Claude Code as the next implementation package, that act is implementation authorization; do not ask for a second confirmation.
+
+```text
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+```
+
+## 0. PURPOSE / EFFICIENCY
+
+DATA-02 is now `QUAL_DATA_READY` but its B0 evidence is explicitly:
+
+```text
+EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION
+```
+
+Current qualification semantics only accept:
+- B0 rule `PIT_MARKET_PROBABILITY_V1`, whose contract text requires canonical PIT;
+- B2 market-added features with source class `MARKET_PIT`.
+
+PendulumFlow DATA-02 evidence is instead:
+- `THIRD_PARTY_NATIVE_FRAME_ARCHIVE`;
+- `EXTERNAL_THIRD_PARTY_PIT_RECONSTRUCTION`;
+- ordered by capture `timestamp_received`;
+- never canonical PIT.
+
+The current validator does not enforce the textual canonical-PIT claim, so a packet could be made to validate today only by semantically mislabelling external evidence. This WP closes that mismatch explicitly.
+
+Efficiency:
+- do not repeat DATA-02/B0 research;
+- inspect only controlling qualification surfaces and mechanical guards;
+- no network/data acquisition;
+- focused tests while editing;
+- one authoritative full suite only on the stable candidate;
+- ordinary in-scope defects are same-run repairs;
+- no repetitive progress narration during long commands.
+
+---
+
+## 1. FROZEN COMPATIBILITY DECISION
+
+Add exactly one external-reconstruction B0 rule literal:
+
+```text
+EXTERNAL_PIT_MARKET_PROBABILITY_V1
+```
+
+Add exactly one qualification feature source class:
+
+```text
+MARKET_EXTERNAL_RECONSTRUCTION
+```
+
+Keep unchanged:
+
+```text
+PIT_MARKET_PROBABILITY_V1
+MARKET_PIT
+QUALIFICATION_SCHEMA_VERSION = "1.0.0"
+```
+
+The schema stays `1.0.0` because this is additive and existing canonical packets must remain byte-for-byte valid with unchanged candidate identities.
+
+No canonicalization/import bridge.
+No DatasetSnapshotReference.
+No external evidence is relabelled canonical PIT.
+
+---
+
+## 2. EXTERNAL B0 SEMANTICS
+
+`EXTERNAL_PIT_MARKET_PROBABILITY_V1` uses the **same parameter keys and bounds** as the canonical B0:
+
+```text
+max_midpoint_spread
+max_last_trade_age_seconds
+```
+
+Selection rule at each decision time:
+
+1. use midpoint only when an observed two-sided book exists at/before decision time and:
+   `ask - bid <= max_midpoint_spread`;
+2. recompute spread from best bid/ask; do not trust a source-provided spread field;
+3. otherwise use the latest observed last trade whose age is:
+   `<= max_last_trade_age_seconds`;
+4. if no eligible book/trade exists, B0 is unavailable and the future preregistered missing-data policy applies;
+5. `NOT_OBSERVED_IN_SEARCHED_HOURS` is never imputed into a trade;
+6. source observability is based on external capture `timestamp_received <= decision_time`.
+
+This rule is explicitly a **third-party reconstruction**, not a claim that the archive itself was publicly readable at decision time.
+
+The archive HTTP `Last-Modified` / `public_available_time` may be later than the decision checkpoint and must not be used to backdate canonical availability.
+
+Forbidden for this external path:
+- `SOURCE_KIND_CANONICAL_PIT`;
+- `MARKET_PIT`;
+- `DatasetSnapshotReference`;
+- derived/fabricated `local_first_seen_time`;
+- any canonical-PIT claim.
+
+---
+
+## 3. FORECAST / FEATURE COUPLING
+
+For `BINARY_PROBABILITY`:
+
+### B1
+Unchanged for both rules:
+- only `PUBLIC_NON_MARKET` or `TIME_ONLY`;
+- `MARKET_PIT` and `MARKET_EXTERNAL_RECONSTRUCTION` both reject in B1.
+
+### Canonical rule
+If:
+
+```text
+b0_rule = PIT_MARKET_PROBABILITY_V1
+```
+
+then every `b2_market_added_feature_ref` must remain exactly:
+
+```text
+MARKET_PIT
+```
+
+Any external-class B2 addition rejects.
+
+### External rule
+If:
+
+```text
+b0_rule = EXTERNAL_PIT_MARKET_PROBABILITY_V1
+```
+
+then every `b2_market_added_feature_ref` must be exactly:
+
+```text
+MARKET_EXTERNAL_RECONSTRUCTION
+```
+
+Any `MARKET_PIT` B2 addition rejects.
+
+### Both
+- B2 must remain exact `B1 ∪ added`;
+- mixed canonical/external market-added classes reject;
+- proper-score, calibration and B1-vs-B0/B2-vs-B0/B2-vs-B1 requirements remain unchanged;
+- generic-metric behavior remains unchanged.
+
+---
+
+## 4. BACKWARD-COMPATIBILITY INVARIANTS
+
+Mandatory:
+
+1. existing canonical `PIT_MARKET_PROBABILITY_V1` behavior is unchanged;
+2. existing `MARKET_PIT` semantics are unchanged;
+3. existing canonical QualificationCandidate fixture(s) produce the **same exact candidate IDs** as before this WP;
+4. existing serialized canonical packets remain valid;
+5. `QUALIFICATION_SCHEMA_VERSION` remains `"1.0.0"`;
+6. no change to QualificationCandidate record fields or identity preimage;
+7. no change to qualification-gate policy/dimensions/dispositions;
+8. no change to WP170 semantics or `SOURCE_KIND_CANONICAL_PIT`.
+
+Before modifying code, record the exact current candidate ID(s) used for canonical regression fixtures and bind them in the new regression assertion.
+
+---
+
+## 5. IMPLEMENTATION SURFACE
+
+Change `qualification.py` only as needed to:
+
+- add `MARKET_EXTERNAL_RECONSTRUCTION` to `QUALIFICATION_FEATURE_SOURCE_CLASSES`;
+- add internal constant/literal support for `EXTERNAL_PIT_MARKET_PROBABILITY_V1`;
+- allow the two B0 literals;
+- enforce rule-specific B2 source-class coupling;
+- preserve existing B1 restrictions and all other forecast semantics.
+
+**Do not modify `src/data_layer/analytical_research/__init__.py`.**
+
+Reason: the existing B0 rule constant is not package-root exported; no new root export is required. `QUALIFICATION_FEATURE_SOURCE_CLASSES` is already exported and automatically exposes the additive class.
+
+Update `docs/qualification_candidate_contract.md` §8 to distinguish:
+- canonical-PIT B0;
+- external-reconstruction B0;
+- identical parameter/fallback mechanics;
+- distinct source authority;
+- explicit no-backdating/no-canonicalization rule.
+
+`qualification_gate.py` remains unchanged. Its tests must prove an otherwise valid external-B0 candidate is structurally admitted and the gate does not rewrite or reinterpret B0 semantics.
+
+Do not touch:
+- DATA-01 / DATA-02 operators;
+- `qualification_data_readiness.py`;
+- `pendulumflow_v3.py`;
+- provenance core;
+- `experiment_os.py`;
+- WP170/172/173;
+- data acquisition.
+
+---
+
+## 6. EXACT CHANGED-FILE SCOPE — 14 PATHS
+
+Exactly:
+
+1. `docs/qualification_candidate_contract.md`
+2. `docs/status_entries/S10-QUAL-B0X-01.md`
+3. `docs/deferred_items_log.md`
+4. `docs/long_term_bot_completion_roadmap.md`
+5. `docs/project_status.md`
+6. `docs/repo_truth_index.md`
+7. `docs/wp_specs/S10-QUAL-B0X-01/wp_prompt.txt`
+8. `docs/wp_specs/S10-QUAL-B0X-01/wp_spec.json`
+9. `src/data_layer/analytical_research/qualification.py`
+10. `tests/data_layer/analytical_research/test_qualification.py`
+11. `tests/data_layer/analytical_research/test_qualification_boundaries.py`
+12. `tests/data_layer/analytical_research/test_qualification_gate.py`
+13. `tests/test_project_status_docs.py`
+14. `tests/test_repo_truth_docs.py`
+
+No 15th path.
+
+No:
+- `__init__.py`;
+- `qualification_gate.py`;
+- DATA-02 source/operator files;
+- experiment/WP170 source;
+- dependency/lock/workflow edits.
+
+If a 15th path is mechanically required:
+
+```text
+STOP SCOPE_EXPANSION_REQUIRED
+```
+
+---
+
+## 7. REQUIRED NEGATIVE / REGRESSION TEST MATRIX
+
+Must prove:
+
+1. external B0 + all added features `MARKET_EXTERNAL_RECONSTRUCTION` → valid;
+2. external B0 + any `MARKET_PIT` B2 addition → reject;
+3. canonical B0 + any external-class B2 addition → reject;
+4. mixed external/canonical B2 additions → reject;
+5. external class in B1 → reject;
+6. canonical `MARKET_PIT` in B1 → still reject;
+7. unknown B0 literal → reject;
+8. external B0 parameter bounds/types are identical to canonical B0 bounds/types;
+9. B2 != exact B1 ∪ added → reject;
+10. existing canonical fixture candidate ID exactly unchanged;
+11. existing canonical serialized packet remains valid;
+12. `QUALIFICATION_SCHEMA_VERSION == "1.0.0"`;
+13. new source class is distinct from all canonical authority labels;
+14. qualification gate accepts an otherwise valid external-B0 candidate without code/policy change;
+15. gate outcome dimensions are driven by the same existing evidence rules and not by a new B0-specific gate policy;
+16. DATA-02 external evidence is never asserted to be `MARKET_PIT`, `SOURCE_KIND_CANONICAL_PIT`, a DatasetSnapshotReference or locally-first-seen canonical evidence.
+
+No performance metrics or thresholds are chosen/tested in this WP beyond structural parameter-bound validation.
+
+---
+
+## 8. GOVERNED PACKAGE / ACCEPTANCE
+
+Materialize first:
+
+```text
+docs/wp_specs/S10-QUAL-B0X-01/wp_prompt.txt
+docs/wp_specs/S10-QUAL-B0X-01/wp_spec.json
+```
+
+Spec must mirror:
+- FAST / risk 2;
+- exact 14 paths;
+- no network/runtime/data authority;
+- frozen literals/classes/coupling;
+- schema-version and identity-compatibility invariants;
+- no gate/WP170 semantic changes.
+
+Readiness must return:
+
+```text
+IMPLEMENTATION_READY
+```
+
+Acceptance:
+- current main contains merged PR #203;
+- exact 14-path scope;
+- canonical packet identity regression passes;
+- external/canonical coupling matrix passes;
+- canonical semantics remain unchanged;
+- gate source unchanged;
+- DATA-02 and WP170 sources unchanged;
+- no canonical backdating/relabeling path introduced;
+- docs/status/repo truth accurately make S10-QUAL-REAL-01 the next candidate only after this WP merges.
+
+---
+
+## 9. HARD STOPS / SAME-RUN REPAIR
+
+Hard stops only:
+
+- `STATE_DRIFT` — controlling qualification contracts changed materially.
+- `CANONICAL_IDENTITY_DRIFT` — any existing canonical candidate ID/serialized packet changes.
+- `CANONICAL_AUTHORITY_EXPANSION` — external evidence would need canonical PIT/MARKET_PIT/DatasetSnapshotReference/local-first-seen status.
+- `QUALIFICATION_GATE_CHANGE_REQUIRED` — gate code/policy must change.
+- `WP170_CHANGE_REQUIRED` — experiment OS / canonical WP170 semantics must change.
+- `DEPENDENCY_EXPANSION_REQUIRED` — dependency/lock change needed.
+- `WORKFLOW_EXPANSION_REQUIRED` — workflow edit needed.
+- `SCOPE_EXPANSION_REQUIRED` — 15th path needed.
+- `AUTHORITY_EXPANSION_REQUIRED` — network/data acquisition/Hermes/paper/execution/live/Gate C/capital/orders required.
+
+Ordinary in-scope code/test/docs/CI defects are same-run repairs.
+
+---
+
+## 10. VALIDATION / PR FLOW
+
+Efficient sequence:
+
+focused qualification tests → boundary tests → gate tests → docs/status tests → affected guards → stable-candidate readiness `--check-diff` + exact scope + artifact guard + `git diff --check` + security checks → **one authoritative full suite** → commit/push → Ready-for-Review PR → exact-head hosted CI → one independent exact-head implementation review → re-fetch PR/check/review evidence → Side14 handoff.
+
+No network/provider/data run.
+No repeated broad suites.
+Changed final head invalidates prior exact-head CI/review.
+Do not merge.
+
+## 11. REQUIRED FINAL REPORT
+
+```text
+S10-QUAL-B0X-01 FINAL
+Disposition: READY_FOR_SIDE14_REVIEW / BLOCKED
+Base:
+Final head:
+PR:
+Exact changed paths: 14 / 14
+
+Qualification schema version:
+Canonical B0 rule unchanged:
+External B0 rule:
+External market feature class:
+Canonical fixture candidate ID before:
+Canonical fixture candidate ID after:
+Canonical packet identity stable: YES / NO
+
+External B0 + external B2:
+External B0 + MARKET_PIT B2 rejection:
+Canonical B0 + external B2 rejection:
+Mixed B2 rejection:
+External class in B1 rejection:
+Parameter-bound parity:
+No canonical backdating/relabeling:
+Qualification gate source changed: NO
+WP170 source changed: NO
+DATA-02 source/operator changed: NO
+
+Focused tests:
+Full suite:
+Readiness --check-diff:
+Exact-head CI:
+Independent implementation review:
+PR evidence re-fetch:
+
+Network/data acquisition: NONE
+QualificationCandidate real execution: NO
+Qualification gate real run: NO
+WP170/WP172/WP173: NOT STARTED
+Gate C/live/capital/orders: NO / DISABLED / USD 0 / 0
+Merge authorized: NO
+```
+
+## 12. SUCCESSOR
+
+If this WP merges cleanly, return to Side14.
+
+Next expected package:
+
+```text
+S10-QUAL-REAL-01
+```
+
+It may then freeze, before performance:
+- spread/last-trade-age thresholds;
+- missing-data policy;
+- sample/power requirements;
+- grouping/splits;
+- proper score/metrics;
+- execution-evidence mapping;
+
+then materialize the real B0/B1/B2 candidate over the sealed DATA-02 corpus and run the qualification gate once.
+
+This WP does **not** authorize that successor.
+
+**Do not merge.**
+
+## 13. GOVERNED PACKAGE ADDENDA (materialized by the executor from sections 0-12; no new authority)
+
+### 13.1 Authority / Non-Authority posture
+
+Authority is exactly the BEGIN_GOVERNANCE_AUTHORITY_V1 block above (FAST, risk 2): local offline tooling, canonical
+evidence policy (the frozen canonical-vs-external B0 source-authority distinction), docs, tests and source runtime
+limited to the additive validator semantics in `src/data_layer/analytical_research/qualification.py`.
+Non-authority: workflow governance/files, dependencies, network, credentials, scheduler, Hermes runtime, strategy,
+paper, execution and live stay false. `__init__.py`, `qualification_gate.py`, `qualification_data_readiness.py`,
+`pendulumflow_v3.py`, `research_dataset.py`, `experiment_os.py`, the provenance core and the DATA-01/DATA-02 operators
+are untouched. Protected boundary groups: `docs/ai/codex/PROTECTED_PATHS.md` (runtime execution, OMS,
+reconciliation, risk caps, configs, live paths) are untouched.
+
+### 13.1a Size-class reconciliation
+
+The draft names size S, but `tools/wp/wp_spec_guard.py` caps S at 5 and M at 10 changed files while Section 6
+freezes exactly 14 paths. The machine spec therefore records the smallest admissible class, L. This is a mechanical
+package-metadata reconciliation only: the 14-path scope, FAST track, risk 2 and the authority block are unchanged.
+
+### 13.2 Negative-test matrix
+
+- coupling: external B0 + `MARKET_PIT` addition, canonical B0 + `MARKET_EXTERNAL_RECONSTRUCTION` addition, mixed
+  canonical/external additions under either rule -> FORECAST_PLAN_INVALID.
+- B1: `MARKET_EXTERNAL_RECONSTRUCTION` or `MARKET_PIT` in B1 under either rule -> FORECAST_PLAN_INVALID.
+- literal: unknown, case-changed, versioned, empty or non-string B0 rule -> FORECAST_PLAN_INVALID.
+- parameters: every canonical invalid B0 parameter case rejects identically under the external rule; inclusive
+  boundary cases accept with identical normalized parameters.
+- union: B2 missing/extra refs, empty/duplicate/undeclared/non-market additions -> FORECAST_PLAN_INVALID.
+- identity: canonical binary/generic candidate ids and the canonical serialized packet digest are bound to their
+  pre-change values; schema version stays 1.0.0.
+- authority: the external class is not a canonical authority label nor a DATA-02 forbidden label; the external
+  packet carries no MARKET_PIT, SOURCE_KIND_CANONICAL_PIT, snapshot-reference, local-first-seen or
+  public-available-time token; qualification.py imports no dataset-snapshot/PIT/gate module.
+- gate: an otherwise valid external-B0 candidate is admitted with dimensions identical to the canonical fixture;
+  shortfalls and unbound evidence follow the existing dimension rules; the gate source carries no B0 token.
+
+### 13.3 Evidence plan (requirement mapping)
+
+`wp_spec.json` evidence_plan R001-R024 maps every Section 7 matrix item, Section 8 acceptance proof and Section 10
+validation step to one pytest node or validation command; R003 is the pre-change canonical identity capture.
+
+### 13.4 Successor boundary
+
+On a clean merge, return to Side14; the next expected package is S10-QUAL-REAL-01 (separately gated, not
+implemented or authorized here). Merge is not authorized.
+
+### 13.5 Report-back
+
+Report back with exactly the Section 11 template, filled from the committed status fragment, the focused and full
+test runs, readiness --check-diff and the live PR/CI/review evidence.
+
+### 13.6 Normative rule matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|b0|rule_literal|always|REQUIRE|exactly_canonical_and_external_b0_literals|b0.rules|R011
+NR002|b0|rule_literal|unknown_literal|REJECT|forecast_plan_invalid|b0.rules|R011
+NR003|b0|canonical_rule|always|PRESERVE_EXACT|pit_market_probability_v1_semantics_unchanged|b0.canonical|R004
+NR004|b0|external_rule|always|REQUIRE|same_parameter_keys_bounds_and_fallback_as_canonical|b0.external|R012
+NR005|b0|external_authority|always|FORBID|no_backdating_no_canonicalization_no_snapshot_reference|b0.external|R014
+NR006|feature|source_class|always|REQUIRE|exactly_one_additive_market_external_reconstruction_class|feature.source_classes|R013
+NR007|coupling|b2_added|external_b0_external_class|ACCEPT|valid_external_b0_candidate|coupling.b2|R006
+NR008|coupling|b2_added|external_b0_market_pit|REJECT|forecast_plan_invalid|coupling.b2|R007
+NR009|coupling|b2_added|canonical_b0_external_class|REJECT|forecast_plan_invalid|coupling.b2|R008
+NR010|coupling|b2_added|mixed_classes|REJECT|forecast_plan_invalid|coupling.b2|R009
+NR011|coupling|b1|market_class_under_either_rule|REJECT|forecast_plan_invalid|coupling.b1|R010
+NR012|coupling|b2_union|not_exact_b1_union_added|REJECT|forecast_plan_invalid|coupling.b2|R015
+NR013|identity|canonical_candidate|always|PRESERVE_EXACT|candidate_ids_and_serialized_packet_unchanged|identity.canonical|R004
+NR014|identity|schema_version|always|PRESERVE_EXACT|qualification_schema_version_1_0_0|identity.canonical|R004
+NR015|gate|policy|external_b0_candidate|PRESERVE_EXACT|admitted_with_existing_dimensions_no_gate_change|gate.unchanged|R016
+NR016|authority|boundaries|always|FORBID|no_network_data_gate_run_wp170_strategy_paper_execution_live_capital_or_orders|authority.boundaries|R018
+NR017|successor|boundary|always|REQUIRE|s10_qual_real_01_separately_gated_after_merge|successor.boundary|R019
+END_NORMATIVE_RULE_MATRIX_V1

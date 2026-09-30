@@ -19,6 +19,7 @@ from src.data_layer.analytical_research import alpha_factory_registry as afr
 from src.data_layer.analytical_research import experiment_os as eo
 from src.data_layer.analytical_research import qualification as q
 from src.data_layer.analytical_research import qualification_gate as g
+from tests.data_layer.analytical_research import test_qualification as tq
 from tests.data_layer.analytical_research.test_qualification import (
     CANONICAL_AF1_RECEIPT_ID,
     MARKET_REF,
@@ -650,3 +651,62 @@ def test_q27_receipt_and_control_result_authority_flags_are_exact(lineage):
         assert getattr(receipt, flag) is True, flag
     # The gate receipt deliberately does not carry S10-QUAL-01's no_qualification_authority.
     assert not hasattr(receipt, "no_qualification_authority")
+
+
+# ── Q28 / Q29 S10-QUAL-B0X-01 external-reconstruction B0 admission ──────────
+EXTERNAL_ALL_EVIDENCE = tuple(
+    ref for ref in ALL_EVIDENCE if ref not in {"evidence:pit-book", "evidence:pit-trades"}
+) + tq.EXTERNAL_EVIDENCE
+
+
+def external_ready(lin, **over):
+    return ready_input(lin, factory=tq.external_input, **over)
+
+
+def external_manifests():
+    return [ready_manifest(refs=EXTERNAL_ALL_EVIDENCE, dataset_refs=(tq.EXTERNAL_DATASET_REF,))]
+
+
+def external_gate(lin, value=None):
+    record = candidate_for(lin, external_ready(lin) if value is None else value, manifests=external_manifests())
+    return record, gate(lin, record, manifests=external_manifests())
+
+
+def test_q28_valid_external_b0_candidate_is_admitted_without_gate_change(lineage):
+    record, result = external_gate(lineage)
+    receipt = admitted(result)
+    assert json.loads(record.forecast_evaluation_plan_json)["b0_rule"] == tq.EXTERNAL_B0_RULE
+    assert receipt.qualification_candidate_id == record.qualification_candidate_id
+    # Same dimensions, same aggregation, same outcome as the canonical ready fixture.
+    canonical = admitted(gate(lineage))
+    assert [name for name, _status in receipt.dimension_statuses] == list(g.QUALIFICATION_GATE_DIMENSIONS)
+    assert dims(receipt) == dims(canonical)
+    assert receipt.overall_disposition == canonical.overall_disposition == "QUAL_PASS"
+    # The gate never rewrites or reinterprets B0 semantics.
+    assert q.validate_qualification_candidate(record).record is record
+    assert json.loads(record.forecast_evaluation_plan_json) == json.loads(
+        candidate_for(lineage, external_ready(lineage), manifests=external_manifests()).forecast_evaluation_plan_json
+    )
+    source = (tq.ROOT / "src" / "data_layer" / "analytical_research" / "qualification_gate.py").read_text(
+        encoding="utf-8")
+    for token in ("b0_rule", "PIT_MARKET_PROBABILITY_V1", "MARKET_PIT", "MARKET_EXTERNAL_RECONSTRUCTION",
+                  "EXTERNAL_PIT"):
+        assert token not in source, token
+
+
+@pytest.mark.parametrize("over,dimension", [
+    ({"sample_power_plan": ready_power(available_sample_count=199)}, "SAMPLE_POWER_READINESS"),
+    ({"execution_feasibility_plan": ready_feasibility(
+        FEES={"state": "MISSING", "evidence_reference_ids": []})}, "EXECUTION_EVIDENCE_READINESS"),
+])
+def test_q29_external_b0_dimensions_follow_existing_evidence_rules(lineage, over, dimension):
+    _record, result = external_gate(lineage, external_ready(lineage, **over))
+    external = admitted(result)
+    canonical = admitted(gate(lineage, candidate_for(lineage, ready_input(lineage, **over))))
+    assert dims(external) == dims(canonical)
+    assert dims(external)[dimension] == "INCONCLUSIVE"
+    assert external.overall_disposition == canonical.overall_disposition == "QUAL_INCONCLUSIVE"
+    # An unbound external evidence ref is judged by the same provenance-binding rule.
+    unbound = [ready_manifest(refs=ALL_EVIDENCE, dataset_refs=(tq.EXTERNAL_DATASET_REF,))]
+    record = candidate_for(lineage, external_ready(lineage), manifests=unbound)
+    assert dims(admitted(gate(lineage, record, manifests=unbound)))["PIT_PROVENANCE_READINESS"] == "INCONCLUSIVE"
