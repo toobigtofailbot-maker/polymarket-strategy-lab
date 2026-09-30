@@ -14,7 +14,10 @@ frozen S10-QUAL-DATA-01 corpus from the verified PR #202 run-01 seed: failed see
 only hash-valid successful raw artifacts are used as a cache and the whole corpus is re-derived with the D011
 failed-read rules. PendulumFlow v3 stays THIRD_PARTY_NATIVE_FRAME_ARCHIVE and never canonical PIT;
 b0_contract_compatibility stays EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION. The terminal is
-QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT. No QualificationCandidate is created and no qualification gate is
+QUAL_DATA_READY or QUAL_DATA_INSUFFICIENT; the single completion run terminated QUAL_DATA_READY (bundle
+`weatherqualbundle:sha256:a5911ab05cc8c650377447aa46f65f3b2002fc458e3c51a64f8705b1adcc69ae`, logical dataset
+`weatherqualdataset:sha256:a3e98a35ea052e1dfeb5225239a74beaee47d04111ebb34e6d27717490d9ac39`; 783 evidence-complete rows over 32 target dates;
+verify-final VERIFIED with zero network). No QualificationCandidate is created and no qualification gate is
 run; WP170/WP172/WP173 remain not started. Live disabled; Gate C is NOT AUTHORIZED; capital/orders 0; merge NOT
 AUTHORIZED.
 

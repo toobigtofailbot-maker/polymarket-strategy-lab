@@ -26,7 +26,8 @@
   S10-QUAL-DATA-01 weather qualification corpus in one bounded run seeded from the verified PR #202 run-01 raw
   artifacts (cache only; whole corpus re-derived), with the D011 failed-read rules, a frozen 429/503 backoff and
   bounded new-network caps; dates, checkpoints, windows and policies unchanged; terminal QUAL_DATA_READY or
-  QUAL_DATA_INSUFFICIENT. Data formation only: B0 compatibility stays
+  QUAL_DATA_INSUFFICIENT. The single completion run terminated QUAL_DATA_READY (783 evidence-complete rows over
+  32 target dates; budget not exhausted; verify-final VERIFIED). Data formation only: B0 compatibility stays
   EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION; no QualificationCandidate, no qualification gate run; the
   B0 compatibility package or any rerun is separately gated; WP170/WP172/WP173, Gate C and live remain NOT
   AUTHORIZED; capital/orders 0.
