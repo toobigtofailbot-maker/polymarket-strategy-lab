@@ -40,7 +40,7 @@ PLAN_PATH = PLAN_DIR / "weather_plan_v1.json"
 POWER_PATH = PLAN_DIR / "power_analysis_v1.md"
 SPEC_PATH = ROOT / "docs" / "wp_specs" / "S10-QUAL-PLAN-01" / "wp_spec.json"
 
-PLAN_SHA256 = "1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e"
+PLAN_SHA256 = "519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316"
 OOS_START = "2026-10-15T00:00:00Z"
 CAP = "2027-02-12T00:00:00Z"
 FREEZE_DEADLINE = "2026-10-14T00:00:00Z"
@@ -93,7 +93,7 @@ EXPECTED_SECTION_KEYS = {
     "label_plan": {
         "candidate_plan", "mechanical_fields", "yes_threshold_inches", "trace_counts_as_yes",
         "climate_day_rule", "finality_policies", "sources_must_agree",
-        "label_finality_deadline_seconds", "label_finality_deadline_exclusion_reason",
+        "label_pending_state", "label_pending_rule", "label_resolution_timeout",
         "source_read_exclusions_remain_exclusions", "label_value_enters_b0_or_features",
     },
     "dataset_split_plan": {
@@ -470,10 +470,10 @@ def test_p08_label_rule_is_exact():
     assert label["finality_policies"] == sorted(["FIRST_PUBLISHED_FINAL", "LATEST_BEFORE_2359_ET", "LAST_BEFORE_1400_ET"])
     assert label["source_read_exclusions_remain_exclusions"] is True
     assert label["label_value_enters_b0_or_features"] is False
-    assert label["label_finality_deadline_seconds"] == 604800
-    assert label["label_finality_deadline_exclusion_reason"] in (
-        plan["prospective_data_seal"]["exclusion_reason_codes"]["market"]
-    )
+    assert label["label_pending_state"] == "PENDING_LABEL_FINALITY"
+    assert label["label_resolution_timeout"] is False
+    assert "never becomes LABEL_GAMMA_NOT_FINAL merely because time has passed" in label["label_pending_rule"]
+    assert "PENDING_LABEL_FINALITY" in body["censoring_rule"] and "no elapsed-time timeout" in body["censoring_rule"]
 
 
 # ── 9-10: model, solver, no search ───────────────────────────────────────────
@@ -658,6 +658,15 @@ def test_p17_data03_forbidden_exposures_exact():
     assert eligibility["membership"] == "CHRONOLOGICALLY_FIRST_50_ELIGIBLE_TARGET_DATES"
     assert eligibility["replacement_after_entry"] is False
     assert "never skipped" in eligibility["pending_date_rule"]
+    assert eligibility["pending_state"] == "PENDING_LABEL_FINALITY"
+    assert eligibility["date_eligibility_conditions"] == [
+        "EVERY_INCLUDED_ROW_DECISION_TIME_SURVIVES_OOS_START_PLUS_172800_S_EMBARGO",
+        "EVERY_REQUIRED_MARKET_RULE_WEATHER_B0_CONDITION_STRUCTURALLY_CLASSIFIED",
+        "EVERY_MARKET_THAT_COULD_AFFECT_THE_DATE_HAS_A_TERMINAL_LABEL_ELIGIBILITY_CLASSIFICATION",
+        "NO_EARLIER_PENDING_TARGET_DATE_CAN_STILL_ALTER_THE_CHRONOLOGICAL_PREFIX",
+    ]
+    assert "only when no earlier in-window target date at or before D50 remains PENDING_LABEL_FINALITY" in eligibility["prefix_stability_rule"]
+    assert "not a label-resolution timeout" in eligibility["cap_rule"]
 
 
 def test_p18_membership_seal_preimage_exact():
@@ -692,8 +701,21 @@ def test_p19_cap_terminal_exact():
     assert "no extension" in terminals["insufficient_at_cap_rule"]
     assert "no S10-QUAL-REAL-01" in terminals["insufficient_at_cap_rule"]
     assert "structural counts only" in terminals["accrual_incomplete_rule"]
+    assert "never issued while an earlier in-window pending date" in terminals["insufficient_at_cap_rule"]
+    assert terminals["seal_rewrite_permitted"] is False
+    assert "PENDING_LABEL_FINALITY" in terminals["seal_rule"]
     assert terminals["oos_rows_insufficient"] == "QUAL_OOS_ROWS_INSUFFICIENT"
     assert "fewer than 100 oos_row_ids" in terminals["oos_rows_insufficient_rule"]
+
+
+def test_p19_no_elapsed_time_label_deadline():
+    plan = load_plan()
+    raw = raw_plan().decode("utf-8")
+    assert "604800" not in raw and "label_finality_deadline" not in raw
+    assert "LABEL_GAMMA_NOT_FINAL" not in plan["prospective_data_seal"]["exclusion_reason_codes"]["market"]
+    for path, value in walk(plan):
+        if isinstance(path[-1] if path else None, str):
+            assert "deadline" not in path[-1] or path[-1] in {"freeze_deadline", "freeze_deadline_rule"}, path
 
 
 def test_p20_execution_evidence_is_never_backdated():

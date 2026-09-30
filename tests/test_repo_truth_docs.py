@@ -1008,7 +1008,7 @@ def test_s10_qual_plan_01_repo_truth() -> None:
     roadmap = " ".join((ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8").split())
     deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
     contract = " ".join((ROOT / "docs" / "qualification_weather_plan_freeze_contract.md").read_text(encoding="utf-8").split())
-    plan_sha = "1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e"
+    plan_sha = "519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316"
     section_start = index.index("## S10-QUAL-PLAN-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
     assert "(current bounded implementation target)" in section
@@ -1034,14 +1034,17 @@ def test_s10_qual_plan_01_repo_truth() -> None:
                  "S10-QUAL-PLAN-01-D005"):
         assert f"| {item} |" in deferred, item
     d005 = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-DATA-02-D005 |"))
-    assert "FROZEN_BY_S10_QUAL_PLAN_01_EXCLUSIONS_REMAIN" in d005 and d005.endswith("|")
+    assert "FROZEN_FOR_S10_QUAL_PLAN_01" in d005 and "not globally resolved" in d005 and d005.endswith("|")
+    assert "EXCLUSIONS_REMAIN" not in d005
     assert deferred.splitlines()[-1].startswith("| S10-QUAL-PLAN-01-D005 |")
+    assert "604800" not in contract
     for text in (
         f"`{plan_sha}`", "The hash is never inside its own preimage", "`STOP OOS_START_FREEZE_WINDOW_MISSED`",
         "permanently `HISTORICAL_NON_OOS`", "`EXTERNAL_PIT_MARKET_PROBABILITY_V1`", "`random_seeds = []`",
         "`preregistered_at` is the actual build time", "`QUAL_OOS_INSUFFICIENT_AT_CAP`",
         "Current evidence is never backdated", "**WP170 remains the sole preregistration/OOS authority.**",
-        "`OOS_DATE_DECISION_IN_WP170_EMBARGO`", "`QUAL_PROVENANCE_LIMIT_EXCEEDED`",
+        "`OOS_DATE_DECISION_IN_WP170_EMBARGO`", "`QUAL_PROVENANCE_LIMIT_EXCEEDED`", "`PENDING_LABEL_FINALITY`",
+        "there is no label-resolution timeout", "it is not a label-resolution timeout",
         "research question and Alpha-family falsifiable theme are preserved verbatim",
     ):
         assert text in contract, text

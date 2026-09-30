@@ -22,9 +22,9 @@ Current S10-QUAL-PLAN-01 state: IMPLEMENTED_READY_FOR_REVIEW
 
 ## Frozen Plan
 
-- Plan: `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (33301 bytes)
+- Plan: `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (35291 bytes)
 - Plan canonical: YES (UTF-8, sorted keys, compact separators, no binary float/NaN/Infinity, no trailing newline)
-- Plan SHA-256: `1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e` (sha256 of exact file bytes; not in its own preimage)
+- Plan SHA-256: `519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316` (sha256 of exact file bytes; not in its own preimage)
 - Power analysis: `docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`, LF-normalized SHA-256
   `f20f24a26444c93389b10a34ed1a88530aca0f64bc7efb694dccce826c6ee884` (bound inside the plan)
 - OOS start: 2026-10-15T00:00:00Z
@@ -50,13 +50,20 @@ Current S10-QUAL-PLAN-01 state: IMPLEMENTED_READY_FOR_REVIEW
 - Execution-evidence meaning frozen: YES (never backdated; DATA-02 CURRENT_ONLY stays CURRENT_ONLY)
 - DATA-03 seal/exposure rules frozen: YES (`oosmembership:sha256:` preimage exact; `QUAL_OOS_INSUFFICIENT_AT_CAP`)
 - WP170 handoff frozen: YES; WP170 remains sole preregistration/OOS authority: YES
+- Label finality: prospective markets without terminal agreeing final-label evidence are `PENDING_LABEL_FINALITY`
+  (no elapsed-time label deadline); D1..D50 sealed only on a stable chronological prefix; the cap is not a
+  label-resolution timeout
 - Mechanical resolution: MR01-MR15 closed rules; no operator discretion; WP170 samples are exactly the surviving
   FORMATION/SELECTION rows plus the sealed OOS rows (MR15)
 - Independent exact-head review of `611e91e`: CHANGES_REQUIRED (1 blocking: WP170 sample set undefined); re-review
   of `8a13415`: CHANGES_REQUIRED (1 blocking: formation shortfall wording said "effective" instead of "structurally
   eligible" rows); both repaired in
   this WP by MR15, the `QUAL_OOS_ROWS_INSUFFICIENT` terminal, explicit shortfall rules, the historical exclusion code
-  and the log-loss clip scope; the plan was re-hashed
+  and the log-loss clip scope; the plan was re-hashed. Re-review of `9a1cfc4` (superseded plan hash
+  `1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e`): APPROVE. Side14 same-WP correction v2 then
+  removed the unauthorized 7-day label deadline, froze `PENDING_LABEL_FINALITY` and the stable-prefix rule, and set
+  S10-QUAL-DATA-02-D005 to `FROZEN_FOR_S10_QUAL_PLAN_01`; the earlier approvals and CI are historical and superseded
+  by the corrected head's own review and CI (see the PR body)
 - Synthetic qualification-plan compatibility: YES (synthetic mechanical values resolve the static decisions into plan
   bodies accepted unchanged by the existing `build_qualification_candidate`, synthetic S10-QUAL-01 Alpha fixture only)
 

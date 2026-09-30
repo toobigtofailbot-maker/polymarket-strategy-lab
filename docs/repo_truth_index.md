@@ -4,7 +4,7 @@
 
 The canonical contract is `docs/qualification_weather_plan_freeze_contract.md`; the frozen plan is
 `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (plan SHA-256
-`1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e`, sha256 of the exact bytes); the power analysis is
+`519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316`, sha256 of the exact bytes); the power analysis is
 `docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`; the status fragment is
 `docs/status_entries/S10-QUAL-PLAN-01.md`; the frozen package is `docs/wp_specs/S10-QUAL-PLAN-01/`. Base
 `e2edb21e25e7841376c3cb51c27a622fbc0cbc83` (PR #204 / S10-QUAL-B0X-01 merged, head

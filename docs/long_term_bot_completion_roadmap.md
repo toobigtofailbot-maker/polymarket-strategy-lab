@@ -24,7 +24,7 @@
 - Current bounded implementation target: S10-QUAL-PLAN-01 (base e2edb21e25e7841376c3cb51c27a622fbc0cbc83,
   after PR #204 / S10-QUAL-B0X-01 merged with head debcfdf723505b67a1280ac9f303d5abd293c998) commits one
   content-addressed weather qualification analytic-plan freeze (plan SHA-256
-  1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e) before genuinely prospective OOS evidence begins:
+  519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316) before genuinely prospective OOS evidence begins:
   oos_start 2026-10-15T00:00:00Z, merge deadline 2026-10-14T00:00:00Z, cap 2027-02-12T00:00:00Z; DATA-02 stays
   permanently HISTORICAL_NON_OOS; hypothesis, B0, features, label, Firth logistic model, splits, power (50 target
   dates), fixed-sequence Brier family, DATA-03 seal rules, execution-evidence meaning and WP170 handoff frozen, with

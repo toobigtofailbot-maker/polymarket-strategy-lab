@@ -12,7 +12,7 @@ Gate C: NOT AUTHORIZED. Live: DISABLED. Capital at risk: USD 0. Orders: 0.
 - Canonical bytes: UTF-8, object keys sorted, compact separators `(",", ":")`, no binary floats / NaN /
   Infinity, ASCII-only content, no trailing newline. Every non-integer number is a canonical decimal string.
 - Authoritative plan hash: `sha256(exact file bytes)` =
-  `1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e`. The hash is never inside its own preimage.
+  `519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316`. The hash is never inside its own preimage.
 - Power analysis: `docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`, bound into the plan by the
   SHA-256 of its LF-normalized UTF-8 bytes (`f20f24a26444c93389b10a34ed1a88530aca0f64bc7efb694dccce826c6ee884`), so
   a Windows CRLF checkout cannot change the binding.
@@ -62,7 +62,7 @@ fixed-sequence comparison fails, or the OOS evidence is invalid/inconclusive.
   `q = clip(max overlapping PoP12_percent / 100, 0.01, 0.99)`) and `time.ndfd_lead_hours_v1` (`TIME_ONLY`,
   `L = (climate_day_start - vintage_public_available_time) / 24h`). B2 adds exactly `mkt.ext_b0_probability_v1`
   (`MARKET_EXTERNAL_RECONSTRUCTION`, model input `m = clip(B0, 0.001, 0.999)`); B2 is exact `B1 ∪ added`.
-- Label `label.polymarket_nws_cli_rain_yes_v1`: Yes iff rule-bound NWS CLI precipitation `>= 0.01` inch; trace does
+- Label (prospective finality is the pending state of section 8, never an elapsed-time exclusion) `label.polymarket_nws_cli_rain_yes_v1`: Yes iff rule-bound NWS CLI precipitation `>= 0.01` inch; trace does
   not count; DATA-02 rule-bound local-standard-time climate day; final Gamma outcome and v3 `market_resolved` must
   agree under the existing finality policy; DATA-02/03 source-read exclusions remain exclusions; no label value
   enters B0 or any feature.
@@ -120,13 +120,23 @@ Newey-West Bartlett lag-1 long-run variance `V = gamma_0 + gamma_1`; reject iff 
   it is OOS-eligible only when it has an eligible row and every included row decision time is
   `>= 2026-10-15T00:00:00Z` and also `>= 2026-10-17T00:00:00Z` (see section 11). Eligibility depends only on source,
   data-quality, feature, B0 and label-source-agreement availability, never on an outcome value or performance.
-  `D1..D50` are the chronologically first 50 eligible dates; a pending date is never skipped and an entered date is
-  never replaced.
+  A prospective market without terminal agreeing Gamma/v3 final-label evidence is `PENDING_LABEL_FINALITY`: an
+  accrual state, not an exclusion, never an eligible OOS row, never counted toward D1..D50, exposing no label or
+  outcome value, and never `LABEL_GAMMA_NOT_FINAL` merely because time has passed (there is no label-resolution
+  timeout). A date is OOS-eligible only when its rows survive the embargo, every required condition is structurally
+  classified, every market that could affect it is terminally classified and no earlier pending date can still alter
+  the prefix. `D1..D50` are the chronologically first 50 terminally eligible dates; the seal is created only when no
+  earlier in-window date at or before D50 remains pending; a pending date is never skipped and an entered date is
+  never replaced; a final seal is never rewritten.
+- Cap: `2027-02-12T00:00:00Z` limits which target dates may enter this plan; it is not a label-resolution timeout.
+  After the cap no new date enters, already considered in-window dates may remain pending, DATA-03 may keep checking
+  only the evidence needed to classify them, and nothing result-dependent is exposed while waiting.
 - Seal: `oosmembership:sha256:<64hex>` over the canonical JSON of exactly `plan_01_plan_sha256`, `oos_start`, `cap`,
   `end_time` (MR09), `oos_target_dates`, `oos_row_ids`, `oos_exclusions` (with closed reason codes) and
   `data03_bundle_id`. Future REAL-01 and WP170 split assignment must reproduce it exactly.
-- Before the cap with fewer than 50 dates: `ACCRUAL_INCOMPLETE` (structural counts only). Fewer than 50 at the cap:
-  `QUAL_OOS_INSUFFICIENT_AT_CAP`: no extension, no REAL-01, no score; a new attempt needs a new plan/family/trial and
+- While the first-50 prefix is not yet stable: `ACCRUAL_INCOMPLETE` (structural counts only). Fewer than 50 stable
+  eligible dates once every in-window date is terminally classified (never while an earlier in-window pending date
+  could still change the prefix): `QUAL_OOS_INSUFFICIENT_AT_CAP`: no extension, no REAL-01, no score; a new attempt needs a new plan/family/trial and
   a later prospective boundary. A sealed 50-date membership with fewer than 100 OOS rows is
   `QUAL_OOS_ROWS_INSUFFICIENT` (WP170 would reject the split; no REAL-01, no score).
 
@@ -165,15 +175,13 @@ and label evidence refs (MR04/MR05), external dataset refs (MR06), formation/sel
 values into plan bodies accepted unchanged by the existing `build_qualification_candidate` (tested with the
 synthetic S10-QUAL-01 Alpha fixture only; no real candidate).
 
-Four closed rules follow mechanically from the existing validators rather than from any new analytic choice:
+Three closed rules follow mechanically from the existing validators rather than from any new analytic choice:
 
 - WP170 embargoes every OOS row with `decision_time < oos_start + 172800` s, so a date with an included row before
   `2026-10-17T00:00:00Z` is excluded (`OOS_DATE_DECISION_IN_WP170_EMBARGO`) to keep the membership exactly
   reproducible by WP170.
 - A FORMATION-date row at or after `selection_start` is excluded (`ROLE_BOUNDARY_CROSSING_EXCLUDED`) so no target
   date straddles two roles under the exclusive leakage grouping.
-- A market without an agreeing final label 604800 s after its climate day ends is excluded
-  (`LABEL_GAMMA_NOT_FINAL`) so every considered date's eligibility becomes decidable.
 - More than 256 provenance manifests is `QUAL_PROVENANCE_LIMIT_EXCEEDED` (the existing
   `MAX_QUALIFICATION_PROVENANCE_MANIFESTS`); there is no aggregation, substitution or omission.
 

@@ -166,7 +166,7 @@
         "path": "plan.canonical",
         "source": "CONSTANT",
         "type": "qualification_plan_freeze_rule",
-        "required_rule": "weather_plan_v1.json is UTF-8, sorted-key, compact-separator JSON with no binary float/NaN/Infinity and no trailing newline; its identity is sha256(exact bytes) 1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e, never inside its own preimage; the 13 sections and every nested keyset are closed.",
+        "required_rule": "weather_plan_v1.json is UTF-8, sorted-key, compact-separator JSON with no binary float/NaN/Infinity and no trailing newline; its identity is sha256(exact bytes) 519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316, never inside its own preimage; the 13 sections and every nested keyset are closed.",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
