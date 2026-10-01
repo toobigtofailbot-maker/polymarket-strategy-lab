@@ -21,7 +21,20 @@
   attempt is authorized. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
   separately gated scopes.
 
-- Current bounded implementation target: S10-QUAL-PLAN-01 (base e2edb21e25e7841376c3cb51c27a622fbc0cbc83,
+- Current bounded implementation target: S10-QUAL-DATA-03 (base 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9,
+  after PR #205 / S10-QUAL-PLAN-01 merged with head 11244eed9686b01e29ede83ea6578bb0a781db6f at 2026-10-01T02:39:26Z,
+  before the freeze deadline) implements the mechanical prospective OOS accrual path and execution-terms capture frozen
+  by the PLAN-01 plan without analytic change: a pure accrual module plus one manual operator (prepare, probe-sources,
+  accrue, seal, verify-final) with the frozen 11/12 UTC census, pending/terminal classification, a hash-chained
+  multi-run ledger, the stable chronological 50-date prefix, the one-way oosmembership seal, the closed visible-report
+  firewall, MR12 execution evidence from the frozen official fee page and the N2 + 150 <= 256 provenance pre-gate.
+  Code-merge state DATA03_IMPLEMENTED_NOT_STARTED; one bounded pre-OOS probe (PROBE_PASS on the Attempt 03
+  full-network recovery probe; Attempts 01/02 were environment egress denials); no real accrue run before
+  2026-10-15T00:00:00Z; no forecast, fit, score, candidate, gate run or WP170 object; no scheduler. After merge only
+  manual bounded accrue runs; S10-QUAL-REAL-01 only after a final membership seal and the Side14 evidence/status
+  closure (separately gated); WP170/WP172/WP173, Gate C and live remain NOT AUTHORIZED; capital/orders 0.
+
+- Historical predecessor (PR #205 merged at 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9), formerly the bounded implementation target: S10-QUAL-PLAN-01 (base e2edb21e25e7841376c3cb51c27a622fbc0cbc83,
   after PR #204 / S10-QUAL-B0X-01 merged with head debcfdf723505b67a1280ac9f303d5abd293c998) commits one
   content-addressed weather qualification analytic-plan freeze (plan SHA-256
   3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463) before genuinely prospective OOS evidence begins:

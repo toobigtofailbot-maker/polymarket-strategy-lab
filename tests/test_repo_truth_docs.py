@@ -1011,7 +1011,8 @@ def test_s10_qual_plan_01_repo_truth() -> None:
     plan_sha = "3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463"
     section_start = index.index("## S10-QUAL-PLAN-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    assert "(merged historical predecessor: PR #205)" in section
+    assert "75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9" in section and "11244eed9686b01e29ede83ea6578bb0a781db6f" in section
     for text in (
         "docs/qualification_weather_plan_freeze_contract.md",
         "docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json",
@@ -1028,7 +1029,8 @@ def test_s10_qual_plan_01_repo_truth() -> None:
                   "PreregisteredExperiment is created"):
         assert claim not in section, claim
     assert index.index("## S10-QUAL-PLAN-01 ") < index.index("## S10-QUAL-B0X-01 ") < index.index("## S10-QUAL-DATA-02 ")
-    assert "Current bounded implementation target: S10-QUAL-PLAN-01 (base e2edb21e25e7841376c3cb51c27a622fbc0cbc83" in roadmap
+    assert ("Historical predecessor (PR #205 merged at 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9), formerly the bounded "
+            "implementation target: S10-QUAL-PLAN-01 (base e2edb21e25e7841376c3cb51c27a622fbc0cbc83") in roadmap
     assert "S10-QUAL-DATA-03 (prospective OOS accrual + execution-terms capture) is the next expected package" in roadmap
     for item in ("S10-QUAL-PLAN-01-D001", "S10-QUAL-PLAN-01-D002", "S10-QUAL-PLAN-01-D003", "S10-QUAL-PLAN-01-D004",
                  "S10-QUAL-PLAN-01-D005"):
@@ -1036,7 +1038,8 @@ def test_s10_qual_plan_01_repo_truth() -> None:
     d005 = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-DATA-02-D005 |"))
     assert "FROZEN_FOR_S10_QUAL_PLAN_01" in d005 and "not globally resolved" in d005 and d005.endswith("|")
     assert "EXCLUSIONS_REMAIN" not in d005
-    assert deferred.splitlines()[-1].startswith("| S10-QUAL-PLAN-01-D005 |")
+    d005_plan = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-PLAN-01-D005 |"))
+    assert "RESOLVED_MERGED_BEFORE_DEADLINE" in d005_plan and "2026-10-01T02:39:26Z" in d005_plan
     assert "604800" not in contract
     for text in (
         f"`{plan_sha}`", "The hash is never inside its own preimage", "`STOP OOS_START_FREEZE_WINDOW_MISSED`",
@@ -1048,3 +1051,43 @@ def test_s10_qual_plan_01_repo_truth() -> None:
         "research question and Alpha-family falsifiable theme are preserved verbatim",
     ):
         assert text in contract, text
+
+
+def test_s10_qual_data_03_repo_truth() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    roadmap = " ".join((ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8").split())
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    plan_sha = "3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463"
+    section_start = index.index("## S10-QUAL-DATA-03 ")
+    section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    for text in (
+        "docs/qualification_weather_oos_accrual_contract.md", "src/data_layer/analytical_research/qualification_oos_accrual.py",
+        "tools/qualification/run_s10_qual_data_03.py", "docs/status_entries/S10-QUAL-DATA-03.md", "docs/wp_specs/S10-QUAL-DATA-03/",
+        plan_sha, "75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9", "11244eed9686b01e29ede83ea6578bb0a781db6f",
+        "RUNTIME, risk 3, exact 15-path scope", "a failed discovery read never closes the census", "PENDING_LABEL_FINALITY",
+        "`oosmembership`", "DATA03_IMPLEMENTED_NOT_STARTED", "no real accrue run before `2026-10-15T00:00:00Z`",
+        "no scheduler or background watcher", "WP170/WP172/WP173 remain not started", "Gate C is NOT AUTHORIZED",
+        "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    for claim in ("Gate C is AUTHORIZED", "qualified: YES", "live ready: YES", "QUAL_PASS recorded", "OOS_MEMBERSHIP_SEALED recorded"):
+        assert claim not in section, claim
+    assert index.index("## S10-QUAL-DATA-03 ") < index.index("## S10-QUAL-PLAN-01 ") < index.index("## S10-QUAL-B0X-01 ")
+    assert "Current bounded implementation target: S10-QUAL-DATA-03 (base 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9" in roadmap
+    assert "S10-QUAL-REAL-01 only after a final membership seal" in roadmap
+    for item in ("S10-QUAL-DATA-03-D001", "S10-QUAL-DATA-03-D002", "S10-QUAL-DATA-03-D003", "S10-QUAL-DATA-03-D004",
+                 "S10-QUAL-DATA-03-D005", "S10-QUAL-DATA-03-D006", "S10-QUAL-DATA-03-D007",
+                 "S10-QUAL-DATA-03-D008"):
+        assert f"| {item} |" in deferred, item
+    d001 = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-DATA-03-D001 |"))
+    assert "PROVENANCE_CEILING_UNREACHABLE" in d001 and "114 ready manifests" in d001
+    d007 = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-DATA-03-D007 |"))
+    assert "RESOLVED_PROBE_PASS_AFTER_ENVIRONMENT_RECOVERY" in d007 and "OPEN_SIDE14_DECISION" not in d007
+    for text in ("help.polymarket.com", "Attempt 01", "Attempt 02", "STOP BLOCKED_ENVIRONMENT_EGRESS", "0 source bytes",
+                 "PROBE_PASS: 15 attempts / 6,446,842 bytes",
+                 "5ecff06f65af61f4c0675de021e39a1af2a2b09fc5a52aeaad6b5f6eb20eb4da",
+                 "800d673835dbe0731feb854dd7e631ea4447cab656d1844090a0affda7524791",
+                 "did not broaden the WP-authorized five-host source scope"):
+        assert text in d007, text
+    assert deferred.splitlines()[-1].startswith("| S10-QUAL-DATA-03-D008 |")
