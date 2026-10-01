@@ -587,10 +587,12 @@ to the current merged/review sequence:
 - WP172 — Alpha + Executable Edge MVP (merged via PR #174; final head
   `39363e5a081b6737104260725b1b0c8fcffe9196`; merge commit
   `418bae72f24b0694eccc657ed5dc3f90a3f38f2a`).
-- WP173 — Serious Paper Trading System + Paper Cockpit (merged via PR #175; final
-  implementation head `79e2953dee8754dc8d09781edd647202dee834aa`; merge commit
-  `e0202750c1e6f2a3a885aa6efa04bbd8d0b2291a`; formerly the review target when this section was
-  written). It adds no OS scheduler/service, daemon or deployment authority.
+- WP173 — Serious Paper Trading System + Paper Cockpit (current review target).
+  Superseded status (S10-DEPLOY-PLAN-01): the "current review target" label above is the
+  historical snapshot from when this section was written; WP173 has since merged via PR #175
+  (final implementation head `79e2953dee8754dc8d09781edd647202dee834aa`; merge commit
+  `e0202750c1e6f2a3a885aa6efa04bbd8d0b2291a`) and adds no OS scheduler/service, daemon or
+  deployment authority.
 - WP174 — Auth / Signing / Execution Gateway.
 - WP175 — Restricted Live Canary (merged dormant via PR #178; first live activation
   blocked by `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`).

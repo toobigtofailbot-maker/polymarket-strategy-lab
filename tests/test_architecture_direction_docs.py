@@ -93,8 +93,9 @@ def test_hosting_direction_migration_point_and_wp173_truth():
     assert "merged via PR #174" in hosting and "merged via PR #175" in hosting
     assert "WP173 code is not reimplemented" in hosting
     assert "not folded into WP173 or WP174" in hosting
-    assert "WP173 — Serious Paper Trading System + Paper Cockpit (merged via PR #175" in roadmap
-    assert "WP173 — Serious Paper Trading System + Paper Cockpit (current review target)" not in roadmap
+    assert ("WP173 — Serious Paper Trading System + Paper Cockpit (current review target). Superseded status "
+            "(S10-DEPLOY-PLAN-01): the \"current review target\" label above is the historical snapshot") in roadmap
+    assert "WP173 has since merged via PR #175" in roadmap
     assert 'The old shorthand "after WP172 and before WP173" is superseded' in roadmap
     for claim in ("WP173 is unimplemented", "WP173 is not implemented", "reimplement WP173"):
         assert claim not in hosting and claim not in roadmap, claim
