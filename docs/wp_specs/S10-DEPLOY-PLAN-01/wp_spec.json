@@ -1,0 +1,495 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-DEPLOY-PLAN-01",
+    "title": "Production VPS Hosting Direction Lock",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "DOCS_ONLY_ARCHITECTURE_ROADMAP",
+    "package_size_class": "L",
+    "risk_level": 1,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 206,
+      "head_sha": "b7d77f95df093b259a2a2b809ffe20308539e397",
+      "merge_sha": "d45d9587401faddd2ba92f33cb84f2988b6cfe70"
+    },
+    "suggested_branch": "codex/s10-deploy-plan-01-production-vps-hosting-direction",
+    "objective": "Record Karl's final production-hosting decision as planning truth only: AlphaVPS, Sofia, Bulgaria, initial tier C8G (4 vCPU / 8 GB ECC RAM / 75 GB NVMe RAID-10), Ubuntu 24.04 LTS / x86-64, ONE_CONSOLIDATED_POLYMARKET_VPS with no default research/live split, telemetry-gated upgrades C8G -> C12G -> C16G/P-series -> larger, the production migration point after a real strategy-specific WP172 EXECUTABLE_EDGE_PASS and before the first serious production-hosted WP173 paper runtime, and the future NOT AUTHORIZED S10-DEPLOY-01 Production VPS Runtime Baseline package; supersede the WP61 cheap-VPS-later shorthand and the open VPS/cloud choice; reconcile PR #206 / S10-QUAL-DATA-03 as merged truth with the zero-network prepare as next runtime action and DATA-03 not moved to the VPS. Docs/tests only; no provisioning, purchase, deployment, credential, scheduler, paper, live or capital authority. Side14 drafted the package as size M; the repo spec guard caps M at 10 changed files, so the exact 13-path scope is classified L without any scope change.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/architecture_decision_record.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/production_vps_hosting_direction.md",
+      "docs/project_charter.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-DEPLOY-PLAN-01.md",
+      "docs/wp_specs/S10-DEPLOY-PLAN-01/wp_prompt.txt",
+      "docs/wp_specs/S10-DEPLOY-PLAN-01/wp_spec.json",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/architecture_decision_record.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/production_vps_hosting_direction.md",
+      "docs/project_charter.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-DEPLOY-PLAN-01.md",
+      "docs/wp_specs/S10-DEPLOY-PLAN-01/wp_prompt.txt",
+      "docs/wp_specs/S10-DEPLOY-PLAN-01/wp_spec.json",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/",
+      "tools/"
+    ],
+    "max_changed_files": 13,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/architecture_decision_record.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_charter.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert S10-DEPLOY-PLAN-01. The hosting-direction contract, status fragment and package artifacts disappear and the ADR, charter, roadmap, status, repo-truth and deferred-log planning statements return to the prior wording. No source, runtime, data, host, credential, order or capital state exists to roll back.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "Docs/tests planning package; no product, venue, provider or hosting API is added, changed or called.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These rules freeze the hosting target, consolidated architecture, upgrade policy, migration point, future package boundary, DATA-03 chain truth, no-authority delta and exact scope.",
+    "items": [
+      {
+        "path": "hosting.target",
+        "source": "CONSTANT",
+        "type": "hosting_direction_planning_rule",
+        "required_rule": "Provider AlphaVPS; location Sofia, Bulgaria; initial tier C8G with 4 vCPU / 8 GB ECC RAM / 75 GB NVMe RAID-10; OS Ubuntu 24.04 LTS / x86-64; decision status APPROVED_PLANNING_DIRECTION; deployment status NOT_PROVISIONED / NOT_DEPLOYED.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The focused contract, ADR and status surfaces state every target fact; nothing claims the host is purchased, provisioned, benchmarked or deployed.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "docs pytest pass or clear docs pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hosting.architecture",
+        "source": "CONSTANT",
+        "type": "hosting_direction_planning_rule",
+        "required_rule": "ONE_CONSOLIDATED_POLYMARKET_VPS; default separate research/live VPS: NO; a second VPS requires a future explicit evidence-backed architecture decision.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No surface makes a research/live split the default roadmap architecture.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "docs pytest pass or clear docs pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hosting.upgrade_policy",
+        "source": "CONSTANT",
+        "type": "hosting_direction_planning_rule",
+        "required_rule": "C8G is initial; C8G -> C12G -> C16G/P-series -> larger only by telemetry evidence; eligibility criteria are review triggers, never automatic upgrades or purchases; Karl decides.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The seven eligibility criteria are recorded and S10-DEPLOY-01 must freeze exact metric definitions before use.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "docs pytest pass or clear docs pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hosting.migration_point",
+        "source": "CONSTANT",
+        "type": "hosting_direction_planning_rule",
+        "required_rule": "After a real strategy-specific WP172 EXECUTABLE_EDGE_PASS exists and before the first serious production-hosted paper runtime using the existing WP173 system; generic WP172 (PR #174) and WP173 (PR #175) are merged and WP173 is not reimplemented.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The old after-WP172-before-WP173 shorthand is superseded and WP173 is not described as unimplemented.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "docs pytest pass or clear docs pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hosting.future_package",
+        "source": "CONSTANT",
+        "type": "hosting_direction_planning_rule",
+        "required_rule": "S10-DEPLOY-01 Production VPS Runtime Baseline is a dedicated bounded package, DRAFT-ELIGIBLE LATER / NOT AUTHORIZED NOW, owning the minimum production-host proof, single-host coexistence proof and C8G_SUFFICIENT or UPGRADE_ELIGIBLE disposition.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No surface authorizes or drafts S10-DEPLOY-01 implementation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "docs pytest pass or clear docs pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "chain.data03",
+        "source": "CONSTANT",
+        "type": "hosting_direction_planning_rule",
+        "required_rule": "PR #206 / S10-QUAL-DATA-03 is merged truth; DATA03_IMPLEMENTED_NOT_STARTED; Attempt 03 PROBE_PASS; next immediate runtime action is the zero-network DATA-03 prepare; no real accrue before 2026-10-15T00:00:00Z; DATA-03 remains on the current operator environment and is not moved to the VPS.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No DATA-03 code, contract or WP artifact is edited; the post-merge prepare closure stays unchanged.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "docs pytest pass or clear docs pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.no_delta",
+        "source": "CONSTANT",
+        "type": "hosting_direction_planning_rule",
+        "required_rule": "No VPS purchase, provisioning, deployment, credential, scheduler/service, paper, execution, signing, Gate C, live, capital or order authority; live authorization unchanged.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Status surfaces keep live DISABLED, Gate C NOT AUTHORIZED, capital USD 0 and orders 0.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "docs pytest pass or clear docs pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope.exact",
+        "source": "CONSTANT",
+        "type": "hosting_direction_planning_rule",
+        "required_rule": "Exactly the 13 frozen docs/tests paths change; no src/, tools/, .github/, dependency or lock file changes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "git diff --name-only against the frozen base equals the 13 required paths.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "docs pytest pass or clear docs pytest failure",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No content-addressed identity is introduced or changed.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Karl/Side14 authorization of this exact docs-only planning package plus FAST readiness permits only this bounded planning-truth reconciliation; merge remains separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 13-path scope, rule matrix and FAST readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl/Side14 sends this exact S10-DEPLOY-PLAN-01 package",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside the exact 13-path docs/tests scope with zero src/tools/workflow/dependency change and required local validation passes",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused docs pytest nodes are the executable oracle; machine-spec examples are unnecessary.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R011 map the Section 12 docs assertions, status/repo-truth transition, readiness/exact scope, hygiene/broad validation and exact-head publication/review.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_production_vps_hosting_direction_contract",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "focused contract records AlphaVPS, Sofia Bulgaria, C8G 4 vCPU / 8 GB ECC / 75 GB NVMe RAID-10, Ubuntu 24.04 LTS x86-64, one consolidated VPS, no default split, telemetry-gated upgrades, S10-DEPLOY-01 NOT AUTHORIZED and no authority delta"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_hosting_direction_migration_point_and_wp173_truth",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "migration point is after a real WP172 EXECUTABLE_EDGE_PASS and before serious production-hosted WP173 paper runtime; WP173 recorded as merged via PR #175 and not unimplemented"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_hosting_direction_supersedes_stale_vps_wording",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "charter no longer says VPS and cloud choices remain open; cheap VPS later survives only as superseded WP61 history in ADR, roadmap and index"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_architecture_direction_lockin_contains_required_decisions",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "historical WP61 direction lock-in decisions remain recorded unchanged alongside the superseded marker"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_s10_deploy_plan_01_is_current_planning_target",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_project_status_docs.py",
+        "expected_result": "S10-DEPLOY-PLAN-01 is the current planning target with hosting facts, PR #206 merged truth, zero-network prepare next, DATA-03 not moved, exact 13 docs/tests paths and all authority false except docs/tests/evidence"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_s10_qual_data_03_is_merged_historical_truth",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_project_status_docs.py",
+        "expected_result": "S10-QUAL-DATA-03 line is merged historical truth at d45d958 with head b7d77f9, DATA03_IMPLEMENTED_NOT_STARTED, PROBE_PASS and the unchanged historical record"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_s10_deploy_plan_01_repo_truth",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_repo_truth_docs.py",
+        "expected_result": "repo truth index, roadmap and deferred log register S10-DEPLOY-PLAN-01, its five deferred items and DATA-03 as merged predecessor"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_s10_qual_data_03_repo_truth",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_repo_truth_docs.py",
+        "expected_result": "DATA-03 repo-truth section is the merged historical predecessor PR #206 with prepare as next runtime action and no real accrue"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "validation",
+        "test": "readiness and exact scope",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-DEPLOY-PLAN-01/wp_prompt.txt --spec docs/wp_specs/S10-DEPLOY-PLAN-01/wp_spec.json --repo-root . --check-diff --base d45d9587401faddd2ba92f33cb84f2988b6cfe70 --head HEAD; git diff --name-only d45d9587401faddd2ba92f33cb84f2988b6cfe70 HEAD",
+        "expected_result": "IMPLEMENTATION_READY (FAST) with empty error codes and exactly 13 changed docs/tests paths, zero src/tools/.github/dependency paths"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "validation",
+        "test": "artifact guard, diff hygiene and broad validation",
+        "command": "python tools/git/preflight_generated_artifact_guard.py; git diff --check d45d9587401faddd2ba92f33cb84f2988b6cfe70 HEAD; python -m pytest -q -p no:cacheprovider",
+        "expected_result": "artifact guard passes, committed diff is whitespace-clean and one full suite passes with zero failures"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "github",
+        "test": "Ready-for-Review publication, exact-head hosted CI and independent review",
+        "command": "GitHub connector PR re-fetch of state, isDraft, head, files and check runs",
+        "expected_result": "one OPEN non-draft PR on the tested head with all hosted CI jobs green and an independent exact-head review recorded; merge not performed"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-QUAL-DATA-03",
+    "next_title": "S10-QUAL-DATA-03_POST_MERGE_PREPARE_CLOSURE: the already-drafted S10-QUAL-DATA-03 post-merge zero-network prepare closure proceeds unchanged after this docs-only package merges; S10-DEPLOY-01 Production VPS Runtime Baseline stays DRAFT-ELIGIBLE LATER / NOT AUTHORIZED until the migration point",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-DEPLOY-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "VPS purchase, provisioning, benchmark or AlphaVPS probe",
+      "deployment, host configuration or service/scheduler activation",
+      "credential or secret creation",
+      "running DATA-03 prepare, probe-sources, accrue, seal or verify-final",
+      "editing DATA-03 code, contract, status fragment or WP artifacts",
+      "any src/, tools/, .github/, dependency or lock change",
+      "drafting the full S10-DEPLOY-01 implementation package",
+      "altering WP170/WP172/WP173 semantics",
+      "paper, execution, signing, Gate C, live, capital or orders",
+      "any 14th changed path"
+    ]
+  }
+}

@@ -21,7 +21,22 @@
   attempt is authorized. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
   separately gated scopes.
 
-- Current bounded implementation target: S10-QUAL-DATA-03 (base 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9,
+- Current bounded planning package: S10-DEPLOY-PLAN-01 — Production VPS Hosting Direction Lock (base
+  d45d9587401faddd2ba92f33cb84f2988b6cfe70, after PR #206 / S10-QUAL-DATA-03 merged with head
+  b7d77f95df093b259a2a2b809ffe20308539e397 at 2026-10-01T15:08:12Z). Docs/tests planning truth only
+  (docs/production_vps_hosting_direction.md): AlphaVPS, Sofia, Bulgaria; initial tier C8G (4 vCPU / 8 GB ECC RAM /
+  75 GB NVMe RAID-10); Ubuntu 24.04 LTS / x86-64; ONE_CONSOLIDATED_POLYMARKET_VPS with no default separate
+  research/live VPS; upgrades C8G -> C12G -> C16G/P-series -> larger only by telemetry evidence. Production migration
+  point: after a real strategy-specific WP172 EXECUTABLE_EDGE_PASS exists and before the first serious
+  production-hosted paper runtime using the existing WP173 system; future package S10-DEPLOY-01 (Production VPS
+  Runtime Baseline) is DRAFT-ELIGIBLE LATER / NOT AUTHORIZED. Deployment status NOT_PROVISIONED / NOT_DEPLOYED. DATA-03
+  remains on the current operator environment (not moved to the VPS); the next immediate DATA-03 runtime action
+  remains the zero-network prepare, with no real accrue before 2026-10-15T00:00:00Z. This package does not
+  interrupt the qualification chain and grants no purchase, provisioning, deployment, credential, scheduler, paper,
+  live, Gate C or capital authority; capital/orders 0.
+
+- Historical predecessor (PR #206 merged at d45d9587401faddd2ba92f33cb84f2988b6cfe70 with head
+  b7d77f95df093b259a2a2b809ffe20308539e397 at 2026-10-01T15:08:12Z), formerly the bounded implementation target: S10-QUAL-DATA-03 (base 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9,
   after PR #205 / S10-QUAL-PLAN-01 merged with head 11244eed9686b01e29ede83ea6578bb0a781db6f at 2026-10-01T02:39:26Z,
   before the freeze deadline) implements the mechanical prospective OOS accrual path and execution-terms capture frozen
   by the PLAN-01 plan without analytic change: a pure accrual module plus one manual operator (prepare, probe-sources,
@@ -246,6 +261,9 @@ The following capabilities are built and merged into repo truth as of WP52:
     only if productizing; local development first/cheap VPS later; rules-based
     plus research-score-driven first; LLM read-only analyst/proposal layer only;
     research-only -> paper -> dry-run -> manual live approval -> restricted live.
+    Its "cheap VPS later" hosting shorthand is historical context only, superseded
+    by the S10-DEPLOY-PLAN-01 production VPS hosting direction
+    (`docs/production_vps_hosting_direction.md`).
 
 14. **Microstructure Quality V1 metadata** — WP61 adds advisory-only
     `microstructure_quality` metadata to prepared market contexts from local
@@ -436,6 +454,11 @@ monitoring, operational dashboards, alerting, and deployment infrastructure.
 Includes: scheduler design, bot loop, health monitoring, alerting,
 operational dashboard, deployment infrastructure, incident response.
 
+Hosting direction (S10-DEPLOY-PLAN-01, planning only): deployment infrastructure
+targets ONE consolidated AlphaVPS C8G host in Sofia, Bulgaria, through the
+separately gated S10-DEPLOY-01 Production VPS Runtime Baseline package at the
+migration point recorded in `docs/production_vps_hosting_direction.md`.
+
 ## H. Total Estimate
 
 | Scope | Estimated WPs from WP51/WP52 baseline |
@@ -565,6 +588,11 @@ to the current merged/review sequence:
   `39363e5a081b6737104260725b1b0c8fcffe9196`; merge commit
   `418bae72f24b0694eccc657ed5dc3f90a3f38f2a`).
 - WP173 — Serious Paper Trading System + Paper Cockpit (current review target).
+  Superseded status (S10-DEPLOY-PLAN-01): the "current review target" label above is the
+  historical snapshot from when this section was written; WP173 has since merged via PR #175
+  (final implementation head `79e2953dee8754dc8d09781edd647202dee834aa`; merge commit
+  `e0202750c1e6f2a3a885aa6efa04bbd8d0b2291a`) and adds no OS scheduler/service, daemon or
+  deployment authority.
 - WP174 — Auth / Signing / Execution Gateway.
 - WP175 — Restricted Live Canary (merged dormant via PR #178; first live activation
   blocked by `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`).
@@ -656,3 +684,34 @@ merge, or Gate-C activation. It records the current post-H1 sequencing truth aft
   QUAL-01, and WP170 own real profiling, copyability, incrementality, the wallet gate,
   qualification, and preregistered/OOS experiments. Immediate separately gated successor:
   S10-HERMES-CTX-01. Gate C remains human-only and NOT AUTHORIZED.
+
+## S10-DEPLOY-PLAN-01 Production VPS Hosting Direction (current, PLANNING_GUIDANCE_ONLY)
+
+This section is PLANNING_GUIDANCE_ONLY / NOT_AUTHORIZATION. The focused contract is
+`docs/production_vps_hosting_direction.md` (decision status APPROVED_PLANNING_DIRECTION;
+deployment status NOT_PROVISIONED / NOT_DEPLOYED).
+
+- Hosting target: AlphaVPS, Sofia, Bulgaria; initial tier C8G (4 vCPU / 8 GB ECC RAM / 75 GB
+  NVMe RAID-10); Ubuntu 24.04 LTS / x86-64.
+- Architecture: ONE_CONSOLIDATED_POLYMARKET_VPS. Separate research and live VPS machines are not
+  the default; a second VPS needs a future explicit architecture decision backed by evidence that
+  same-host isolation is insufficient.
+- Capacity: C8G -> C12G -> C16G/P-series -> larger only by telemetry evidence. Upgrade eligibility
+  criteria are review triggers, never automatic upgrades or purchases.
+- Migration point: the generic WP172 executable-edge substrate (PR #174) and the WP173 Serious
+  Paper Trading System (PR #175) already exist and are not reimplemented. The old shorthand
+  "after WP172 and before WP173" is superseded by: after a real strategy-specific WP172
+  EXECUTABLE_EDGE_PASS exists and before the first serious production-hosted paper runtime using
+  the existing WP173 system.
+- Sequence: DATA-03 prepare/accrual/seal -> S10-QUAL-REAL-01 -> candidate-specific WP170 -> real
+  WP172 executable-edge evidence / PASS -> S10-DEPLOY-01 Production VPS Runtime Baseline ->
+  serious production-hosted WP173 paper runtime -> later separately authorized auth/signing/live
+  gates.
+- S10-DEPLOY-01 is a dedicated bounded package (not folded into WP173 or WP174),
+  DRAFT-ELIGIBLE LATER / NOT AUTHORIZED NOW. It must prove host identity/reproducibility,
+  persistence, process/service supervision, recovery, clock, secrets, firewall/network,
+  backup/restore, health/monitoring, logs/evidence, the single-host coexistence proof and a
+  telemetry-backed C8G_SUFFICIENT or UPGRADE_ELIGIBLE:<reason> disposition.
+- DATA-03 remains on the current operator environment and is not moved to the VPS.
+- No VPS purchase, provisioning, deployment, credentials, scheduler/service activation, paper,
+  execution, signing, Gate C, live, capital or orders are authorized.

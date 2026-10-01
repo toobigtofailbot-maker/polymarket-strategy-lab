@@ -1,0 +1,269 @@
+SIDE14 — S10-DEPLOY-PLAN-01
+ROADMAP / HOSTING DIRECTION RECONCILIATION
+PRODUCTION VPS HOSTING DIRECTION LOCK — PLANNING ONLY
+
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Authority owner: Karl / Side14
+Drafting date: 2026-10-01
+Draft status: FINAL — AUTHORIZED BY SIDE14 (docs-only roadmap/truth reconciliation)
+This exact package authorizes implementation of S10-DEPLOY-PLAN-01 only. It does NOT authorize merge,
+VPS purchase/provisioning, deployment, credentials, any DATA-03 runtime command, any
+source/runtime/workflow/dependency change, or any successor.
+
+===============================================================================
+0. FROZEN LIVE STATE / PACKAGE IDENTITY
+===============================================================================
+
+WP ID:
+S10-DEPLOY-PLAN-01
+
+Title:
+Production VPS Hosting Direction Lock
+
+Repository:
+toobigtofailbot-maker/polymarket-strategy-lab
+
+Base branch:
+main
+
+Frozen base / required current main (post-PR-206 merge):
+d45d9587401faddd2ba92f33cb84f2988b6cfe70
+
+Required predecessor:
+PR #206 / S10-QUAL-DATA-03
+
+Required predecessor final implementation head:
+b7d77f95df093b259a2a2b809ffe20308539e397
+
+Required predecessor merge SHA:
+d45d9587401faddd2ba92f33cb84f2988b6cfe70
+
+Required predecessor PR state:
+MERGED (GitHub server merge time 2026-10-01T15:08:12Z; nothing in this WP reopens or modifies it)
+
+Suggested branch:
+codex/s10-deploy-plan-01-production-vps-hosting-direction
+
+Package class:
+DOCS_ONLY_ARCHITECTURE_ROADMAP
+
+Package size class:
+L (Side14 drafted M; the repo WP spec guard caps M at 10 changed files, so the exact 13-path scope
+is classified L. Classification only: no path is added, removed or widened.)
+
+Exact changed-file budget:
+13
+
+Evidence mode expected:
+PRIVATE_REPO_MANUAL_VERIFIED
+
+Governance track expected: FAST
+Risk level: 1
+Capital at risk: USD 0
+Deployment authority: NO
+Paper / live / capital authority: NO / NO / NO
+Merge authority: NO
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 1
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+===============================================================================
+1. OBJECTIVE
+===============================================================================
+
+Update planning truth to reflect Karl's final production-hosting decision. Planning only.
+
+Frozen planning decision:
+
+  Provider:          AlphaVPS
+  Location:          Sofia, Bulgaria
+  Initial tier:      C8G
+  Initial resources: 4 vCPU / 8 GB ECC RAM / 75 GB NVMe RAID-10
+  Target OS:         Ubuntu 24.04 LTS / x86-64
+  Architecture:      ONE consolidated Polymarket VPS (ONE_CONSOLIDATED_POLYMARKET_VPS)
+
+This is the initial production-host target, not evidence that the host has been purchased,
+provisioned, benchmarked or approved for live execution. The same host is intended eventually to
+run, as separately authorized: Hermes; Alpha Factory / research components; research agents and
+supporting services; data acquisition and processing; databases/persistent state; orchestration;
+monitoring/logging; market-data/runtime services; strategy execution; hard-risk controls; order
+placement/cancellation; reconciliation; paper trading; eventual restricted live execution.
+Separate research and live VPS machines are not the default roadmap architecture. A second VPS
+requires a future explicit architecture decision supported by evidence that software/process
+isolation on one host is insufficient.
+
+Capacity / cost policy: C8G -> C12G -> C16G / P-series -> larger only when measured evidence
+requires it. Upgrade eligibility criteria (memory, CPU, disk capacity, disk I/O,
+execution-path interference, recovery, resource-isolation failure) are review triggers, never
+automatic upgrades. S10-DEPLOY-01 freezes exact metric definitions, observation windows and
+baseline methodology. Karl decides after reviewing telemetry.
+
+Software isolation: research workloads must not starve execution-critical components. This
+package does not freeze Docker/systemd/Kubernetes; Kubernetes is not required.
+
+Roadmap placement: generic WP172 (PR #174) and WP173 (PR #175) are already merged. The old
+shorthand "after WP172 and before WP173" is superseded by: after a real strategy-specific WP172
+EXECUTABLE_EDGE_PASS exists and before the first serious production-hosted paper runtime using the
+existing WP173 system. WP173 code is not reimplemented.
+
+Future dedicated package: S10-DEPLOY-01 — Production VPS Runtime Baseline, DRAFT-ELIGIBLE LATER /
+NOT AUTHORIZED NOW, not folded into WP173 or WP174, owning the minimum production-host proof
+(host identity/reproducibility, persistence, process/service supervision, recovery, clock,
+secrets, firewall/network, backup/restore, health/monitoring, logs/evidence), the single-host
+coexistence proof and a telemetry-backed C8G_SUFFICIENT or UPGRADE_ELIGIBLE:<reason> disposition.
+
+DATA-03 is not moved to the VPS and remains on the current operator environment. The
+already-drafted S10-QUAL-DATA-03 POST-MERGE PREPARE CLOSURE remains substantively unchanged.
+
+Current-status reconciliation: PR #206 / S10-QUAL-DATA-03: MERGED; DATA03 implementation state
+DATA03_IMPLEMENTED_NOT_STARTED; Attempt 03 source probe PROBE_PASS; next immediate runtime action
+zero-network DATA-03 prepare; no real accrue before 2026-10-15T00:00:00Z. S10-DEPLOY-PLAN-01
+changes planning truth only and does not interrupt the qualification chain.
+
+===============================================================================
+2. STARTUP / STATE GATE
+===============================================================================
+
+1. read the mandatory startup files per WP_EXECUTION_STATE_MACHINE;
+2. git fetch origin main; verify origin/main == local HEAD == d45d9587401faddd2ba92f33cb84f2988b6cfe70
+   and a clean tree;
+3. verify PR #206 MERGED at that SHA with head b7d77f95df093b259a2a2b809ffe20308539e397;
+4. stop on any drift.
+
+===============================================================================
+3. EXACT CHANGED-FILE SCOPE — 13 PATHS
+===============================================================================
+
+- docs/architecture_decision_record.md
+- docs/project_charter.md
+- docs/long_term_bot_completion_roadmap.md
+- docs/project_status.md
+- docs/repo_truth_index.md
+- docs/deferred_items_log.md
+- docs/production_vps_hosting_direction.md
+- docs/status_entries/S10-DEPLOY-PLAN-01.md
+- docs/wp_specs/S10-DEPLOY-PLAN-01/wp_prompt.txt
+- docs/wp_specs/S10-DEPLOY-PLAN-01/wp_spec.json
+- tests/test_architecture_direction_docs.py
+- tests/test_project_status_docs.py
+- tests/test_repo_truth_docs.py
+
+No 14th path. If another path is genuinely necessary: STOP SCOPE_EXPANSION_REQUIRED and return to
+Side14.
+
+===============================================================================
+4. AUTHORITY / NON-AUTHORITY
+===============================================================================
+
+Authority: docs/tests planning-truth edits inside the 13-path scope only.
+
+Non-authority: per docs/ai/codex/PROTECTED_PATHS.md (Centralized Boundary Group Reference), this
+package crosses none of: credentials/secrets; authenticated clients; wallet/account behavior;
+order placement/cancel; execution gateway; paper engine; scheduler/bot loop; runtime/daemon;
+dashboard/deployment; dependency/lock changes; external code copying; generated artifacts. No VPS
+purchase, provisioning, deployment, AlphaVPS probe, credentials, DATA-03 runtime command
+(prepare, probe-sources, accrue, seal, verify-final), runtime/source/workflow/dependency change,
+WP170/WP172/WP173 semantic change, paper, execution, signing, Gate C, live, capital or orders.
+Workflow network only: Remote Main Sync Gate, git fetch/push, PR publication and hosted-CI /
+GitHub connector reads.
+
+===============================================================================
+5. HARD STOPS
+===============================================================================
+
+Stop and report (do not widen this WP) if:
+- any change outside the 13 paths is required (STOP SCOPE_EXPANSION_REQUIRED);
+- implementation requires editing DATA-03 code, contract, status fragment or WP artifacts;
+- any src/, tools/, .github/, dependency or lock change would be needed;
+- the readiness gate is not IMPLEMENTATION_READY (FAST) on the committed head;
+- local main is stale/diverged/dirty or generated artifacts appear;
+- the validation environment cannot run the required checks.
+
+===============================================================================
+6. NEGATIVE-TEST MATRIX
+===============================================================================
+
+NOT_APPLICABLE: no validator, scorer, parser, schema validator, boundary guard, evidence guard or
+semantic wording filter is added or modified; only docs assertions change. The docs tests carry
+stale-wording negatives: the charter must not say "VPS and cloud choices remain open"; no status
+surface may claim the VPS is provisioned/deployed, S10-DEPLOY-01 authorized, DATA-03 moved, Gate C
+authorized or live enabled; WP173 must not be described as the current review target or
+unimplemented.
+
+===============================================================================
+7. VALIDATION PLAN
+===============================================================================
+
+focused docs tests -> project-status/repo-truth tests -> architecture-direction tests -> readiness
+--check-diff -> exact 13-path scope -> artifact guard -> git diff --check -> one broad full suite ->
+Ready-for-Review PR -> exact-head hosted CI -> independent exact-head review -> PR evidence
+reconciliation -> Side14 review. No background watcher or delayed trigger after the final
+response.
+
+===============================================================================
+8. REPORT-BACK TO SIDE14
+===============================================================================
+
+Report back with the S10-DEPLOY-PLAN-01 FINAL block: disposition, base, final head, PR, exact
+changed paths 13 / 13, PR #206 merged truth, DATA-03 prepare next, DATA-03 moved to VPS NO,
+hosting facts, architecture, upgrade path and criteria, migration point, WP172/WP173 generic
+substrates existing, future package and its NOT AUTHORIZED state, minimum host proof,
+coexistence proof, C8G telemetry disposition, no purchase/provisioning/deployment, unchanged
+paper/live authority, capital/orders USD 0 / 0, focused/broad/readiness/CI/review results, Ready
+for review, background tasks alive NO, Merge authorized NO. Do not merge.
+
+===============================================================================
+9. SUCCESSOR BOUNDARY
+===============================================================================
+
+After this docs-only package merges, the already-drafted S10-QUAL-DATA-03_POST_MERGE_PREPARE_CLOSURE
+may proceed unchanged (separately gated). S10-DEPLOY-01 must not be executed now. Expected
+sequence: DATA-03 prepare/accrual/seal -> S10-QUAL-REAL-01 -> candidate-specific WP170 -> real
+WP172 executable-edge evidence / PASS -> S10-DEPLOY-01 Production VPS Runtime Baseline -> serious
+production-hosted WP173 paper runtime -> later separately authorized auth/signing/live gates.
+
+===============================================================================
+10. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|hosting|target|initial|PRESERVE_EXACT|alphavps_sofia_c8g_ubuntu_2404_x86_64|hosting.target|R001
+NR002|hosting|state|planning_only|REQUIRE|not_provisioned_not_deployed|hosting.target|R001
+NR003|hosting|architecture|default|REQUIRE|one_consolidated_polymarket_vps|hosting.architecture|R001
+NR004|hosting|research_live_split|default|FORBID|no_default_second_vps|hosting.architecture|R001
+NR005|hosting|upgrade|eligibility_trigger|REQUIRE|telemetry_review_karl_decides_never_automatic|hosting.upgrade_policy|R001
+NR006|roadmap|migration_point|serious_paper|REQUIRE|after_real_wp172_edge_pass_before_hosted_wp173_paper|hosting.migration_point|R002
+NR007|roadmap|wp173|generic_system|PRESERVE_EXACT|merged_pr_175_not_reimplemented|hosting.migration_point|R002
+NR008|docs|stale_vps_wording|current_truth|REJECT|superseded_historical_context_only|NONE|R003
+NR009|roadmap|s10_deploy_01|now|FORBID|not_authorized_draft_eligible_later|hosting.future_package|R001
+NR010|chain|data03|post_merge|REQUIRE|merged_prepare_next_not_moved_to_vps|chain.data03|R006
+NR011|authority|paper_live_capital|always|FORBID|no_authority_delta|authority.no_delta|R005
+NR012|scope|changed_files|always|REQUIRE|exact_13_docs_tests_paths|scope.exact|R009
+END_NORMATIVE_RULE_MATRIX_V1
+
+Evidence Plan (requirement mapping):
+R001-R004 -> tests/test_architecture_direction_docs.py (hosting contract, migration point / WP173
+truth, stale-wording supersession, historical WP61 decisions);
+R005-R006 -> tests/test_project_status_docs.py (current planning target; DATA-03 merged truth);
+R007-R008 -> tests/test_repo_truth_docs.py (S10-DEPLOY-PLAN-01 repo truth; DATA-03 merged predecessor);
+R009 -> readiness --check-diff and exact 13-path scope;
+R010 -> artifact guard, git diff --check and one broad full suite;
+R011 -> Ready-for-Review publication, exact-head hosted CI and independent exact-head review.

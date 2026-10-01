@@ -1060,8 +1060,12 @@ def test_s10_qual_data_03_repo_truth() -> None:
     plan_sha = "3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463"
     section_start = index.index("## S10-QUAL-DATA-03 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    assert "(merged historical predecessor: PR #206)" in section
+    assert "(current bounded implementation target)" not in section
     for text in (
+        "d45d9587401faddd2ba92f33cb84f2988b6cfe70", "b7d77f95df093b259a2a2b809ffe20308539e397", "`2026-10-01T15:08:12Z`",
+        "the next immediate runtime action is the zero-network DATA-03 prepare",
+        "DATA-03 remains on the current operator environment",
         "docs/qualification_weather_oos_accrual_contract.md", "src/data_layer/analytical_research/qualification_oos_accrual.py",
         "tools/qualification/run_s10_qual_data_03.py", "docs/status_entries/S10-QUAL-DATA-03.md", "docs/wp_specs/S10-QUAL-DATA-03/",
         plan_sha, "75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9", "11244eed9686b01e29ede83ea6578bb0a781db6f",
@@ -1074,7 +1078,10 @@ def test_s10_qual_data_03_repo_truth() -> None:
     for claim in ("Gate C is AUTHORIZED", "qualified: YES", "live ready: YES", "QUAL_PASS recorded", "OOS_MEMBERSHIP_SEALED recorded"):
         assert claim not in section, claim
     assert index.index("## S10-QUAL-DATA-03 ") < index.index("## S10-QUAL-PLAN-01 ") < index.index("## S10-QUAL-B0X-01 ")
-    assert "Current bounded implementation target: S10-QUAL-DATA-03 (base 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9" in roadmap
+    assert ("Historical predecessor (PR #206 merged at d45d9587401faddd2ba92f33cb84f2988b6cfe70 with head "
+            "b7d77f95df093b259a2a2b809ffe20308539e397 at 2026-10-01T15:08:12Z), formerly the bounded implementation "
+            "target: S10-QUAL-DATA-03 (base 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9") in roadmap
+    assert "Current bounded implementation target: S10-QUAL-DATA-03" not in roadmap
     assert "S10-QUAL-REAL-01 only after a final membership seal" in roadmap
     for item in ("S10-QUAL-DATA-03-D001", "S10-QUAL-DATA-03-D002", "S10-QUAL-DATA-03-D003", "S10-QUAL-DATA-03-D004",
                  "S10-QUAL-DATA-03-D005", "S10-QUAL-DATA-03-D006", "S10-QUAL-DATA-03-D007",
@@ -1090,4 +1097,46 @@ def test_s10_qual_data_03_repo_truth() -> None:
                  "800d673835dbe0731feb854dd7e631ea4447cab656d1844090a0affda7524791",
                  "did not broaden the WP-authorized five-host source scope"):
         assert text in d007, text
-    assert deferred.splitlines()[-1].startswith("| S10-QUAL-DATA-03-D008 |")
+    d008_index = next(i for i, line in enumerate(deferred.splitlines()) if line.startswith("| S10-QUAL-DATA-03-D008 |"))
+    assert deferred.splitlines()[d008_index + 1].startswith("| S10-DEPLOY-PLAN-01-D001 |")
+
+
+def test_s10_deploy_plan_01_repo_truth() -> None:
+    index = (ROOT / "docs" / "repo_truth_index.md").read_text(encoding="utf-8")
+    roadmap = " ".join((ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8").split())
+    deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
+    section_start = index.index("## S10-DEPLOY-PLAN-01 ")
+    section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
+    assert "(current bounded planning target)" in section
+    for text in (
+        "docs/production_vps_hosting_direction.md", "docs/status_entries/S10-DEPLOY-PLAN-01.md",
+        "docs/wp_specs/S10-DEPLOY-PLAN-01/", "d45d9587401faddd2ba92f33cb84f2988b6cfe70",
+        "b7d77f95df093b259a2a2b809ffe20308539e397", "FAST, risk 1, exact 13-path docs/tests scope",
+        "APPROVED_PLANNING_DIRECTION", "NOT_PROVISIONED / NOT_DEPLOYED", "Provider AlphaVPS",
+        "location Sofia, Bulgaria", "initial tier C8G (4 vCPU / 8 GB ECC RAM / 75 GB NVMe RAID-10)",
+        "Ubuntu 24.04 LTS / x86-64", "ONE_CONSOLIDATED_POLYMARKET_VPS with no default separate research/live VPS",
+        "C8G -> C12G -> C16G/P-series -> larger only by telemetry evidence",
+        "after a real strategy-specific WP172 EXECUTABLE_EDGE_PASS exists and before the first serious "
+        "production-hosted paper runtime using the existing WP173 system",
+        "S10-DEPLOY-01 (Production VPS Runtime Baseline) is NOT AUTHORIZED", "DATA-03 is not moved to the VPS",
+        "the next immediate DATA-03 runtime action remains the zero-network prepare", "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    for claim in ("Gate C is AUTHORIZED", "live ready: YES", "S10-DEPLOY-01 is AUTHORIZED", "NOT_PROVISIONED / DEPLOYED",
+                  "DATA-03 is moved to the VPS"):
+        assert claim not in section, claim
+    assert index.index("## S10-DEPLOY-PLAN-01 ") < index.index("## S10-QUAL-DATA-03 ") < index.index("## S10-QUAL-PLAN-01 ")
+    assert index.index("## S10-DEPLOY-PLAN-01 ") == index.index("\n## ") + 1
+    assert "Current bounded planning package: S10-DEPLOY-PLAN-01 — Production VPS Hosting Direction Lock" in roadmap
+    assert roadmap.index("Current bounded planning package: S10-DEPLOY-PLAN-01") < roadmap.index(
+        "Historical predecessor (PR #206 merged at d45d9587401faddd2ba92f33cb84f2988b6cfe70")
+    assert "## S10-DEPLOY-PLAN-01 Production VPS Hosting Direction (current, PLANNING_GUIDANCE_ONLY)" in roadmap
+    rows = {line.split(" | ")[0][2:]: line for line in deferred.splitlines() if line.startswith("| S10-DEPLOY-PLAN-01-D")}
+    assert sorted(rows) == [f"S10-DEPLOY-PLAN-01-D00{n}" for n in range(1, 6)]
+    assert "DEFERRED_NOT_AUTHORIZED" in rows["S10-DEPLOY-PLAN-01-D001"]
+    assert "EXECUTABLE_EDGE_PASS" in rows["S10-DEPLOY-PLAN-01-D001"]
+    assert "WP61-D003" in rows["S10-DEPLOY-PLAN-01-D002"] and "SUPERSEDED_DIRECTION" in rows["S10-DEPLOY-PLAN-01-D002"]
+    assert "DEFERRED_TO_S10_DEPLOY_01" in rows["S10-DEPLOY-PLAN-01-D003"]
+    assert "geoblocking" in rows["S10-DEPLOY-PLAN-01-D004"] and "P1" in rows["S10-DEPLOY-PLAN-01-D004"]
+    assert "caps M at 10 changed files" in rows["S10-DEPLOY-PLAN-01-D005"]
+    assert deferred.splitlines()[-1].startswith("| S10-DEPLOY-PLAN-01-D005 |")

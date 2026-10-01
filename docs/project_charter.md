@@ -41,5 +41,7 @@ AI-assisted tools may support research, monitoring, reporting, summaries, and co
 
 ## Dashboard And Deployment Preferences
 
-Streamlit is preferred first for dashboards. The user is currently in Mexico. VPS and cloud choices remain open and must consider jurisdiction, geoblocking, latency, reliability, and operational fit.
+Streamlit is preferred first for dashboards. The user is currently in Mexico.
+
+Production hosting direction (S10-DEPLOY-PLAN-01, APPROVED_PLANNING_DIRECTION, NOT_PROVISIONED / NOT_DEPLOYED): AlphaVPS, Sofia, Bulgaria; initial tier C8G (4 vCPU / 8 GB ECC RAM / 75 GB NVMe RAID-10); Ubuntu 24.04 LTS / x86-64; ONE consolidated Polymarket VPS with no default separate research/live VPS; upgrades C8G -> C12G -> C16G/P-series -> larger only by telemetry evidence. The future implementation package S10-DEPLOY-01 (Production VPS Runtime Baseline) is NOT AUTHORIZED. See `docs/production_vps_hosting_direction.md`. This supersedes the earlier charter statement that VPS and cloud choices remained open; jurisdiction, geoblocking, latency, reliability, and operational fit remain verification concerns for S10-DEPLOY-01. No purchase, provisioning, deployment, paper, live, or capital authority is granted.
 
