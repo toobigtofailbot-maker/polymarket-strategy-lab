@@ -794,8 +794,10 @@ def historical_n2(bundle: Mapping[str, object], *, bundle_id: str = DATA02_BUNDL
             weather = row["feature_evidence"]["weather"]
             materialize_q(weather)
             materialize_l(weather)
-        except (qd.RuleExclusion, AccrualError):
-            continue
+        except qd.RuleExclusion:
+            continue  # a closed source-invalid row is genuinely ineligible
+        except (AccrualError, KeyError, TypeError):
+            raise AccrualError("PLAN_FREEZE_INVALID") from None  # never undercount N2 on an unreadable row
         if b0.available:
             eligible.add(day)
     dates = tuple(sorted(eligible))

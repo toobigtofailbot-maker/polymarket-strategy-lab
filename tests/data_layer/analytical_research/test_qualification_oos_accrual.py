@@ -543,3 +543,11 @@ def test_pure_module_has_no_forecast_fit_score_candidate_or_network_surface() ->
     for banned in ("urlopen", "socket", "requests", "build_qualification_candidate", "evaluate_qualification", "sigmoid",
                    "brier", "logit", "open"):
         assert banned not in names, banned
+
+
+def test_historical_n2_fails_closed_on_unreadable_rows() -> None:
+    bad = {"best_bid_ask": {"best_bid": "0.4", "best_ask": "x", "timestamp_received": "2026-10-17T11:00:00Z"}}
+    with pytest.raises(oa.AccrualError):
+        oa.materialize_b0(bad, CP)
+    with pytest.raises(oa.AccrualError, match="PLAN_FREEZE_INVALID"):
+        oa.historical_n2({"bundle_id": "x"})

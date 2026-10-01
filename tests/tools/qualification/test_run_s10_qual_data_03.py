@@ -975,3 +975,38 @@ def test_no_candidate_gate_wp170_score_scheduler_or_mutation_surface() -> None:
     assert op.ALLOWED_HOSTS == {"archive.pendulumflow.com", "noaa-ndfd-pds.s3.amazonaws.com", "gamma-api.polymarket.com",
                                 "api.weather.gov", "help.polymarket.com"}
     assert op.FEE_URL == "https://help.polymarket.com/en/articles/13364478-trading-fees"
+
+
+def test_malformed_trade_price_is_source_invalid_not_a_wedge(tmp_path, monkeypatch) -> None:
+    world = World()
+    market = world.markets["4100180"]
+    market.bid_ask = ("0.10", "0.60")  # spread too wide: the trade path is required
+    trade_time = market.created + timedelta(minutes=55)  # inside the scanned checkpoint hour
+    world.extra_rows[v3.hour_key(trade_time)] = {"last_trade_price": [{
+        "timestamp_received": trade_time, "sequence": 4, "timestamp": trade_time, "market": cid(market.byte),
+        "asset_id": tok(market.yes), "price": None, "size": Decimal("1"), "side": "BUY", "fee_rate_bps": 0,
+        "transaction_hash": b""}]}
+    ctx = build_env(tmp_path, monkeypatch, world)
+    op.command_prepare(ctx.env)
+    op.command_accrue(ctx.env)
+    entry = next(e for e in ledger(ctx) if e["subject_id"] == "4100180")
+    assert {r["checkpoint_id"]: r["reason"] for r in entry["rows"]}[A] == "MARKET_HISTORY_SOURCE_INVALID"
+    assert op.command_verify(ctx.env)["status"] == "VERIFIED"
+
+
+def test_identity_inconsistent_market_recorded_once_across_runs(tmp_path, monkeypatch) -> None:
+    world = World()
+    market = world.markets["4100190"]
+    clone = market.new_market_row(market.created + timedelta(seconds=3))
+    clone["market"] = cid(0x77)
+    world.extra_rows["2026-10-18/11"] = {"new_market": [clone]}
+    ctx = build_env(tmp_path, monkeypatch, world)
+    op.command_prepare(ctx.env)
+    ctx.world.clock = datetime(2026, 10, 20, 12, 0, tzinfo=timezone.utc)  # 10-19 stays pending (label finality)
+    op.command_accrue(ctx.env)
+    op.command_accrue(ctx.env)
+    ctx.world.clock = NOW
+    op.command_accrue(ctx.env)
+    entries = [e for e in ledger(ctx) if e["subject_id"] == "4100190"]
+    assert len(entries) == 1 and entries[0]["market_exclusion"] == "V3_MARKET_IDENTITY_INCONSISTENT"
+    assert op.command_verify(ctx.env)["runs_replayed"] == 3

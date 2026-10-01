@@ -74,6 +74,16 @@ Current S10-QUAL-DATA-03 state: DATA03_IMPLEMENTED_NOT_STARTED
   64 runs / 120 dates / 4,096 / 128
 - Seal/verify-final: zero network, one-way seal reproduced twice; verify-final socket-forbidden replay of every run
 
+## Review
+
+- Independent exact-head review (separate reviewer context, on `c6e1e3f`): PASS_WITH_NOTES, no blocking finding.
+  Repaired in this WP before any prospective accrual: identity-inconsistent markets are no longer re-recorded on later
+  runs; a malformed source bid/ask/price is `MARKET_HISTORY_SOURCE_INVALID` instead of an uncaught error that would wedge
+  accrual; N2 fails closed (`PLAN_FREEZE_INVALID`) on an unreadable DATA-02 row instead of undercounting. Recorded:
+  S10-QUAL-DATA-03-D008 (no frozen source-unavailability stop; CRLF checkout fails closed). Accepted as frozen DATA-02
+  semantics: a later Gamma identity mismatch excludes the market; a date without ready shards in all three families
+  excludes its rows as `MARKET_HISTORY_SOURCE_INVALID`.
+
 ## Boundaries
 
 - Background watcher/reviewer/scheduled tasks alive after final response: NO

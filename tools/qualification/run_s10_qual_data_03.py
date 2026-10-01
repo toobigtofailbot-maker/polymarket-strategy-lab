@@ -776,6 +776,9 @@ class AccrualPipeline:
             outcomes: list[dict[str, object]] = []
             pending = False
             for market_id in census.inconsistent_market_ids:
+                if market_id in self.prior_markets:
+                    outcomes.append(dict(self.prior_markets[market_id]))
+                    continue
                 outcomes.append(self._market_entry(day, market_id, None, "V3_MARKET_IDENTITY_INCONSISTENT"))
             for candidate in census.candidates:
                 if candidate.market_id in self.prior_markets:
@@ -1003,6 +1006,9 @@ class AccrualPipeline:
             b0 = oa.materialize_b0(history, checkpoint)
         except qd.RuleExclusion as exclusion:
             row.state, row.reason = "EXCLUDED", exclusion.code
+            return
+        except oa.AccrualError:  # a malformed source bid/ask/price is a source defect, never a wedge
+            row.state, row.reason = "EXCLUDED", "MARKET_HISTORY_SOURCE_INVALID"
             return
         if not b0.available:
             row.state, row.reason = "EXCLUDED", "B0_UNAVAILABLE"
