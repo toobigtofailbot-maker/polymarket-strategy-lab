@@ -1008,7 +1008,7 @@ def test_s10_qual_plan_01_repo_truth() -> None:
     roadmap = " ".join((ROOT / "docs" / "long_term_bot_completion_roadmap.md").read_text(encoding="utf-8").split())
     deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
     contract = " ".join((ROOT / "docs" / "qualification_weather_plan_freeze_contract.md").read_text(encoding="utf-8").split())
-    plan_sha = "519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316"
+    plan_sha = "3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463"
     section_start = index.index("## S10-QUAL-PLAN-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
     assert "(current bounded implementation target)" in section

@@ -855,7 +855,19 @@ authorized.
 Report back with exactly the Section 15 template, filled from the committed status fragment, the focused and full
 test runs, readiness --check-diff and the live PR/CI/review evidence.
 
-### 17.6 Normative rule matrix
+### 17.6 Side14 same-WP correction v2 (recorded; no new authority)
+
+Side14 correction v2 removes the executor-introduced 604800-second label-finality deadline and freezes instead:
+a prospective market without terminal agreeing Gamma/v3 final-label evidence is PENDING_LABEL_FINALITY (an accrual
+state, never an exclusion for elapsed time); a target date is OOS-eligible only when its rows survive the
+oos_start + 172800 s embargo, every condition is structurally classified, every affecting market is terminally
+classified and no earlier pending date can alter the prefix; D1..D50 seal only on a stable chronological prefix.
+The cap 2027-02-12T00:00:00Z limits which target dates may enter and is not a label-resolution timeout; Sections 8
+"by the cap" / "before the cap" are read accordingly: QUAL_OOS_INSUFFICIENT_AT_CAP is issued only once every
+in-window target date is terminally classified, and ACCRUAL_INCOMPLETE applies while the prefix is not yet stable.
+S10-QUAL-DATA-02-D005 is FROZEN_FOR_S10_QUAL_PLAN_01. All earlier reviewer repairs are preserved.
+
+### 17.7 Normative rule matrix
 
 BEGIN_NORMATIVE_RULE_MATRIX_V1
 RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID

@@ -40,7 +40,7 @@ PLAN_PATH = PLAN_DIR / "weather_plan_v1.json"
 POWER_PATH = PLAN_DIR / "power_analysis_v1.md"
 SPEC_PATH = ROOT / "docs" / "wp_specs" / "S10-QUAL-PLAN-01" / "wp_spec.json"
 
-PLAN_SHA256 = "519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316"
+PLAN_SHA256 = "3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463"
 OOS_START = "2026-10-15T00:00:00Z"
 CAP = "2027-02-12T00:00:00Z"
 FREEZE_DEADLINE = "2026-10-14T00:00:00Z"
@@ -474,6 +474,10 @@ def test_p08_label_rule_is_exact():
     assert label["label_resolution_timeout"] is False
     assert "never becomes LABEL_GAMMA_NOT_FINAL merely because time has passed" in label["label_pending_rule"]
     assert "PENDING_LABEL_FINALITY" in body["censoring_rule"] and "no elapsed-time timeout" in body["censoring_rule"]
+    outcome = body["outcome_source_rule"]
+    assert "disagreement or absence" not in outcome
+    assert "LABEL_SOURCE_DISAGREEMENT" in outcome and "LABEL_V3_RESOLUTION_MISSING" in outcome
+    assert "PENDING_LABEL_FINALITY, never excluded for elapsed time" in outcome
 
 
 # ── 9-10: model, solver, no search ───────────────────────────────────────────

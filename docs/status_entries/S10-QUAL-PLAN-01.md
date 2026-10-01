@@ -22,9 +22,9 @@ Current S10-QUAL-PLAN-01 state: IMPLEMENTED_READY_FOR_REVIEW
 
 ## Frozen Plan
 
-- Plan: `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (35291 bytes)
+- Plan: `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (35583 bytes)
 - Plan canonical: YES (UTF-8, sorted keys, compact separators, no binary float/NaN/Infinity, no trailing newline)
-- Plan SHA-256: `519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316` (sha256 of exact file bytes; not in its own preimage)
+- Plan SHA-256: `3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463` (sha256 of exact file bytes; not in its own preimage)
 - Power analysis: `docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`, LF-normalized SHA-256
   `f20f24a26444c93389b10a34ed1a88530aca0f64bc7efb694dccce826c6ee884` (bound inside the plan)
 - OOS start: 2026-10-15T00:00:00Z
@@ -63,7 +63,10 @@ Current S10-QUAL-PLAN-01 state: IMPLEMENTED_READY_FOR_REVIEW
   `1124ecfb528e5055e4193a885e89a5d9bde74df501b48a0ca4ebded8df89c46e`): APPROVE. Side14 same-WP correction v2 then
   removed the unauthorized 7-day label deadline, froze `PENDING_LABEL_FINALITY` and the stable-prefix rule, and set
   S10-QUAL-DATA-02-D005 to `FROZEN_FOR_S10_QUAL_PLAN_01`; the earlier approvals and CI are historical and superseded
-  by the corrected head's own review and CI (see the PR body)
+  by the corrected head's own review and CI (see the PR body). Review of `8e10491` (superseded plan hash
+  `519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316`): APPROVE with one non-blocking finding (the
+  outcome rule still said "absence excludes"), repaired by aligning `outcome_source_rule` with the pending state;
+  the governed prompt records correction v2 in section 17.6
 - Synthetic qualification-plan compatibility: YES (synthetic mechanical values resolve the static decisions into plan
   bodies accepted unchanged by the existing `build_qualification_candidate`, synthetic S10-QUAL-01 Alpha fixture only)
 

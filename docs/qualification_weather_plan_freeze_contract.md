@@ -12,7 +12,7 @@ Gate C: NOT AUTHORIZED. Live: DISABLED. Capital at risk: USD 0. Orders: 0.
 - Canonical bytes: UTF-8, object keys sorted, compact separators `(",", ":")`, no binary floats / NaN /
   Infinity, ASCII-only content, no trailing newline. Every non-integer number is a canonical decimal string.
 - Authoritative plan hash: `sha256(exact file bytes)` =
-  `519f2b010b7523a02ea08ad451ff9f322fa2b6ea0557ed1aef815525a66f1316`. The hash is never inside its own preimage.
+  `3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463`. The hash is never inside its own preimage.
 - Power analysis: `docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`, bound into the plan by the
   SHA-256 of its LF-normalized UTF-8 bytes (`f20f24a26444c93389b10a34ed1a88530aca0f64bc7efb694dccce826c6ee884`), so
   a Windows CRLF checkout cannot change the binding.
