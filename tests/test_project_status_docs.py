@@ -5373,9 +5373,10 @@ def test_s10_qual_data_03_is_current_oos_accrual_target() -> None:
         "https://help.polymarket.com/en/articles/13364478-trading-fees", "N2 + 150 <= 256", "Real accrue run executed: NO",
         "QualificationCandidate created: NO", "Qualification gate run: NO", "WP170 object created: NO", "Scores computed: NO",
         "scheduler/background watcher: NONE", "WP170/WP172/WP173: NOT STARTED", "live: DISABLED", "Gate C: NOT AUTHORIZED",
-        "capital at risk: USD 0", "orders: 0", "Merge authorized: NO",
+        "capital at risk: USD 0", "orders: 0", "Merge authorized: NO", "Source probe: NOT PASSED",
     ):
         assert text in current, text
+    assert "Source probe: NOT PASSED" in fragment and "PROBE_PASS is recorded" not in fragment
     marker = "Current S10-QUAL-DATA-03 state: "
     for text in (current, fragment):
         assert text[text.index(marker) + len(marker):].split(";")[0].split()[0] in S10_QUAL_DATA_03_STATES

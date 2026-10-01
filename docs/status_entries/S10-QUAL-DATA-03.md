@@ -39,13 +39,22 @@ Current S10-QUAL-DATA-03 state: DATA03_IMPLEMENTED_NOT_STARTED
 
 ## Source Probe
 
-- Source probe: PROBE_RECORD_PENDING
+- Source probe: NOT PASSED — the single authorized `probe-sources` invocation (2026-10-01T04:45Z, pre-OOS, on implementation
+  candidate `84c517d`) stopped at its first step with `STOP EXECUTION_TERMS_SOURCE_UNAVAILABLE`: this cloud session's egress
+  gateway answered HTTP 403 to CONNECT for `help.polymarket.com:443` (environment network-policy denial; transport code
+  `TRANSPORT_UNREACHABLE`, one immediate retry). Not a Polymarket source-contract finding.
+- Probe network: 2 attempts / 0 bytes, both to `help.polymarket.com`; no PendulumFlow, NDFD, Gamma or NWS request was made;
+  PendulumFlow hours touched: 0
+- Probe OOS/prospective data created: NO (no OOS member, label, score or prospective dataset; the probe workspace holds
+  only the failed fee-page index entry and the probe result)
+- The probe was not re-run: it is one-shot by authorization and by the operator guard, and policy denials are not
+  retried. A passing probe needs the fee host reachable (environment network access or an operator machine) and a
+  Side14 re-authorization of the probe (S10-QUAL-DATA-03-D007).
 
 ## Implementation
 
 - Implementation state: DATA03_IMPLEMENTED_NOT_STARTED
 - Real accrue run executed: NO
-- Probe OOS/prospective data created: NO
 - QualificationCandidate created: NO
 - Qualification gate run: NO
 - WP170 object created: NO

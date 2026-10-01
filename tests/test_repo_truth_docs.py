@@ -1077,8 +1077,9 @@ def test_s10_qual_data_03_repo_truth() -> None:
     assert "Current bounded implementation target: S10-QUAL-DATA-03 (base 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9" in roadmap
     assert "S10-QUAL-REAL-01 only after a final membership seal" in roadmap
     for item in ("S10-QUAL-DATA-03-D001", "S10-QUAL-DATA-03-D002", "S10-QUAL-DATA-03-D003", "S10-QUAL-DATA-03-D004",
-                 "S10-QUAL-DATA-03-D005", "S10-QUAL-DATA-03-D006"):
+                 "S10-QUAL-DATA-03-D005", "S10-QUAL-DATA-03-D006", "S10-QUAL-DATA-03-D007"):
         assert f"| {item} |" in deferred, item
     d001 = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-DATA-03-D001 |"))
     assert "PROVENANCE_CEILING_UNREACHABLE" in d001 and "114 ready manifests" in d001
-    assert deferred.splitlines()[-1].startswith("| S10-QUAL-DATA-03-D006 |")
+    d007 = deferred.splitlines()[-1]
+    assert d007.startswith("| S10-QUAL-DATA-03-D007 |") and "OPEN_SIDE14_DECISION" in d007 and "help.polymarket.com" in d007
