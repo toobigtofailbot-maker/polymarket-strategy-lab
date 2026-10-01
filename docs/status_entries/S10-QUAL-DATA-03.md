@@ -39,17 +39,31 @@ Current S10-QUAL-DATA-03 state: DATA03_IMPLEMENTED_NOT_STARTED
 
 ## Source Probe
 
-- Source probe: NOT PASSED — the single authorized `probe-sources` invocation (2026-10-01T04:45Z, pre-OOS, on implementation
-  candidate `84c517d`) stopped at its first step with `STOP EXECUTION_TERMS_SOURCE_UNAVAILABLE`: this cloud session's egress
-  gateway answered HTTP 403 to CONNECT for `help.polymarket.com:443` (environment network-policy denial; transport code
-  `TRANSPORT_UNREACHABLE`, one immediate retry). Not a Polymarket source-contract finding.
-- Probe network: 2 attempts / 0 bytes, both to `help.polymarket.com`; no PendulumFlow, NDFD, Gamma or NWS request was made;
-  PendulumFlow hours touched: 0
-- Probe OOS/prospective data created: NO (no OOS member, label, score or prospective dataset; the probe workspace holds
-  only the failed fee-page index entry and the probe result)
-- The probe was not re-run: it is one-shot by authorization and by the operator guard, and policy denials are not
-  retried. A passing probe needs the fee host reachable (environment network access or an operator machine) and a
-  Side14 re-authorization of the probe (S10-QUAL-DATA-03-D007).
+- Source probe: PROBE_PASS — Attempt 03 (Side14-authorized full-network recovery probe, 2026-10-01T14:06:56Z-14:07:07Z,
+  pre-OOS, on the unchanged implementation `1ef1f842d7baf425addc0f1d7891e819bbffdd78`); the bounded source probe no
+  longer blocks review (S10-QUAL-DATA-03-D007 resolved)
+- Attempt 03 checks: fee_document, pendulumflow_audit, pendulumflow_discovery, gamma_identity, nws_station,
+  ndfd_listing_object and pendulumflow_targeted_read all PASS; rule_semantics `LAST_BEFORE_1400_ET`; plan SHA-256
+  `3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463`
+- Attempt 03 network: 15 attempts / 6,446,842 bytes / largest single response 1,918,385 / PendulumFlow hours 2 /
+  retries 0 / refusals 0, within the frozen probe caps (32 / 16,777,216 / 8,388,608 / 4); hosts reached:
+  `help.polymarket.com` 1, `archive.pendulumflow.com` 10, `noaa-ndfd-pds.s3.amazonaws.com` 2,
+  `gamma-api.polymarket.com` 1, `api.weather.gov` 1; unauthorized source hosts: NONE
+- Attempt 03 retained evidence (ignored local data, not committed): `PROBE_RESULT.json` SHA-256
+  `5ecff06f65af61f4c0675de021e39a1af2a2b09fc5a52aeaad6b5f6eb20eb4da`, `INDEX.jsonl` SHA-256
+  `800d673835dbe0731feb854dd7e631ea4447cab656d1844090a0affda7524791`; 15 content-addressed raw objects totalling
+  6,446,842 bytes
+- Environment network capability FULL is infrastructure only: the WP-authorized source scope stayed the frozen
+  five-host contract (exact fee URL; HTTPS GET / Range GET; no redirect, credential, POST, WebSocket or CLOB/order endpoint)
+- Historical Attempt 01 (environment denial, 2026-10-01T04:45Z, implementation candidate `84c517d`):
+  `STOP EXECUTION_TERMS_SOURCE_UNAVAILABLE`; the session egress gateway answered HTTP 403 to CONNECT for
+  `help.polymarket.com:443` before any source response; 2 attempts / 0 source bytes; no other host contacted. Not a
+  Polymarket source-contract finding.
+- Historical Attempt 02 (environment denial, `STOP BLOCKED_ENVIRONMENT_EGRESS`): the same gateway HTTP 403 to CONNECT for
+  `help.polymarket.com:443`; 2 attempts / 0 source bytes; no other host contacted; no tracked change. Not a Polymarket
+  source-contract finding.
+- Probe OOS/prospective data created: NO (no OOS member, label, score or prospective dataset in any attempt)
+- No further probe is authorized; the operator guard refuses a second probe in the same workspace.
 
 ## Implementation
 

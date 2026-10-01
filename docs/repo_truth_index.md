@@ -13,7 +13,8 @@ discovery read never closes the census), PENDING_LABEL_FINALITY without timeout,
 and q/L sealed as canonical decimal strings, the hash-chained multi-run ledger, the stable chronological 50-date
 prefix, the one-way `oosmembership` seal, the closed visible-report firewall, MR12 execution-terms capture from the frozen
 fee page and the N2 + 150 <= 256 provenance pre-gate. Code-merge state DATA03_IMPLEMENTED_NOT_STARTED: one bounded
-pre-OOS probe only; no real accrue run before `2026-10-15T00:00:00Z`; no forecast, fit, score, QualificationCandidate,
+pre-OOS probe only (Source probe: PROBE_PASS on the Attempt 03 full-network recovery probe within the five-host
+contract; historical Attempts 01/02 were environment egress denials; S10-QUAL-DATA-03-D007 resolved); no real accrue run before `2026-10-15T00:00:00Z`; no forecast, fit, score, QualificationCandidate,
 qualification-gate run or WP170 object; no scheduler or background watcher. PLAN-01, DATA-01/02 code, qualification
 contracts, `.github/**` and dependencies are unchanged; WP170/WP172/WP173 remain not started. Live disabled; Gate C is
 NOT AUTHORIZED; capital/orders 0; merge NOT AUTHORIZED.

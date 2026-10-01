@@ -1083,5 +1083,11 @@ def test_s10_qual_data_03_repo_truth() -> None:
     d001 = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-DATA-03-D001 |"))
     assert "PROVENANCE_CEILING_UNREACHABLE" in d001 and "114 ready manifests" in d001
     d007 = next(line for line in deferred.splitlines() if line.startswith("| S10-QUAL-DATA-03-D007 |"))
-    assert "OPEN_SIDE14_DECISION" in d007 and "help.polymarket.com" in d007
+    assert "RESOLVED_PROBE_PASS_AFTER_ENVIRONMENT_RECOVERY" in d007 and "OPEN_SIDE14_DECISION" not in d007
+    for text in ("help.polymarket.com", "Attempt 01", "Attempt 02", "STOP BLOCKED_ENVIRONMENT_EGRESS", "0 source bytes",
+                 "PROBE_PASS: 15 attempts / 6,446,842 bytes",
+                 "5ecff06f65af61f4c0675de021e39a1af2a2b09fc5a52aeaad6b5f6eb20eb4da",
+                 "800d673835dbe0731feb854dd7e631ea4447cab656d1844090a0affda7524791",
+                 "did not broaden the WP-authorized five-host source scope"):
+        assert text in d007, text
     assert deferred.splitlines()[-1].startswith("| S10-QUAL-DATA-03-D008 |")

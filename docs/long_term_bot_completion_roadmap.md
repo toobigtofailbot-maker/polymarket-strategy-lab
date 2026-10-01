@@ -28,7 +28,8 @@
   accrue, seal, verify-final) with the frozen 11/12 UTC census, pending/terminal classification, a hash-chained
   multi-run ledger, the stable chronological 50-date prefix, the one-way oosmembership seal, the closed visible-report
   firewall, MR12 execution evidence from the frozen official fee page and the N2 + 150 <= 256 provenance pre-gate.
-  Code-merge state DATA03_IMPLEMENTED_NOT_STARTED; one bounded pre-OOS probe; no real accrue run before
+  Code-merge state DATA03_IMPLEMENTED_NOT_STARTED; one bounded pre-OOS probe (PROBE_PASS on the Attempt 03
+  full-network recovery probe; Attempts 01/02 were environment egress denials); no real accrue run before
   2026-10-15T00:00:00Z; no forecast, fit, score, candidate, gate run or WP170 object; no scheduler. After merge only
   manual bounded accrue runs; S10-QUAL-REAL-01 only after a final membership seal and the Side14 evidence/status
   closure (separately gated); WP170/WP172/WP173, Gate C and live remain NOT AUTHORIZED; capital/orders 0.

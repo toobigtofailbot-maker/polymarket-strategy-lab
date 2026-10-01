@@ -5373,10 +5373,23 @@ def test_s10_qual_data_03_is_current_oos_accrual_target() -> None:
         "https://help.polymarket.com/en/articles/13364478-trading-fees", "N2 + 150 <= 256", "Real accrue run executed: NO",
         "QualificationCandidate created: NO", "Qualification gate run: NO", "WP170 object created: NO", "Scores computed: NO",
         "scheduler/background watcher: NONE", "WP170/WP172/WP173: NOT STARTED", "live: DISABLED", "Gate C: NOT AUTHORIZED",
-        "capital at risk: USD 0", "orders: 0", "Merge authorized: NO", "Source probe: NOT PASSED",
+        "capital at risk: USD 0", "orders: 0", "Merge authorized: NO", "Source probe: PROBE_PASS",
+        "RESOLVED_PROBE_PASS_AFTER_ENVIRONMENT_RECOVERY",
     ):
         assert text in current, text
-    assert "Source probe: NOT PASSED" in fragment and "PROBE_PASS is recorded" not in fragment
+    assert "Source probe: PROBE_PASS" in fragment
+    for stale in ("Source probe: NOT PASSED", "PROBE_PASS is not recorded"):
+        assert stale not in current, stale
+        assert stale not in fragment, stale
+    for text in (
+        "15 attempts / 6,446,842 bytes / largest single response 1,918,385 / PendulumFlow hours 2",
+        "5ecff06f65af61f4c0675de021e39a1af2a2b09fc5a52aeaad6b5f6eb20eb4da",
+        "800d673835dbe0731feb854dd7e631ea4447cab656d1844090a0affda7524791",
+        "rule_semantics `LAST_BEFORE_1400_ET`", "unauthorized source hosts: NONE",
+        "Historical Attempt 01 (environment denial", "Historical Attempt 02 (environment denial",
+        "`STOP BLOCKED_ENVIRONMENT_EGRESS`", "Environment network capability FULL is infrastructure only",
+    ):
+        assert text in fragment, text
     marker = "Current S10-QUAL-DATA-03 state: "
     for text in (current, fragment):
         assert text[text.index(marker) + len(marker):].split(";")[0].split()[0] in S10_QUAL_DATA_03_STATES
