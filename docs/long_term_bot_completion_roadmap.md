@@ -21,7 +21,20 @@
   attempt is authorized. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
   separately gated scopes.
 
-- Current bounded implementation target: S10-QUAL-B0X-01 (base ebd6f84c95e30451fe1c9ad431e405c57c113074,
+- Current bounded implementation target: S10-QUAL-PLAN-01 (base e2edb21e25e7841376c3cb51c27a622fbc0cbc83,
+  after PR #204 / S10-QUAL-B0X-01 merged with head debcfdf723505b67a1280ac9f303d5abd293c998) commits one
+  content-addressed weather qualification analytic-plan freeze (plan SHA-256
+  3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463) before genuinely prospective OOS evidence begins:
+  oos_start 2026-10-15T00:00:00Z, merge deadline 2026-10-14T00:00:00Z, cap 2027-02-12T00:00:00Z; DATA-02 stays
+  permanently HISTORICAL_NON_OOS; hypothesis, B0, features, label, Firth logistic model, splits, power (50 target
+  dates), fixed-sequence Brier family, DATA-03 seal rules, execution-evidence meaning and WP170 handoff frozen, with
+  every data-dependent candidate field a closed mechanical rule. Docs/tests only; no data, network, fit, score,
+  candidate, gate run or WP170 record; WP170 remains the sole preregistration/OOS authority. S10-QUAL-DATA-03
+  (prospective OOS accrual + execution-terms capture) is the next expected package only after this WP merges before
+  the deadline (separately gated); S10-QUAL-REAL-01 only after 50 sealed prospective dates; WP170/WP172/WP173, Gate C
+  and live remain NOT AUTHORIZED; capital/orders 0.
+
+- Historical predecessor (PR #204 merged at e2edb21e25e7841376c3cb51c27a622fbc0cbc83), formerly the bounded implementation target: S10-QUAL-B0X-01 (base ebd6f84c95e30451fe1c9ad431e405c57c113074,
   after PR #203 / S10-QUAL-DATA-02 merged with head b9e2e6995ee232720d0516b1fa234dec8bdac5e3) answers the DATA-02
   EXTERNAL_ONLY_REQUIRES_SEPARATE_COMPATIBILITY_DECISION B0 status with an additive qualification-contract extension:
   one external-reconstruction B0 rule EXTERNAL_PIT_MARKET_PROBABILITY_V1 and one feature source class

@@ -1,6 +1,31 @@
 # Repo Truth Index
 
-## S10-QUAL-B0X-01 External-Reconstruction B0 Qualification Contract Extension (current bounded implementation target)
+## S10-QUAL-PLAN-01 Weather Qualification Prospective Plan Freeze (current bounded implementation target)
+
+The canonical contract is `docs/qualification_weather_plan_freeze_contract.md`; the frozen plan is
+`docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (plan SHA-256
+`3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463`, sha256 of the exact bytes); the power analysis is
+`docs/qualification_plans/S10-QUAL-PLAN-01/power_analysis_v1.md`; the status fragment is
+`docs/status_entries/S10-QUAL-PLAN-01.md`; the frozen package is `docs/wp_specs/S10-QUAL-PLAN-01/`. Base
+`e2edb21e25e7841376c3cb51c27a622fbc0cbc83` (PR #204 / S10-QUAL-B0X-01 merged, head
+`debcfdf723505b67a1280ac9f303d5abd293c998`). FAST, risk 2, exact 13-path docs/tests scope. It is an analytic-plan
+freeze only: oos_start `2026-10-15T00:00:00Z`, freeze deadline `2026-10-14T00:00:00Z` judged by the GitHub server
+merge timestamp plus merge SHA (a later merge is OOS_START_FREEZE_WINDOW_MISSED), cap `2027-02-12T00:00:00Z`;
+DATA-02 dates are permanently HISTORICAL_NON_OOS. It freezes the hypothesis, the external B0, the B1/B2 features, the
+label, the Firth logistic model and solver, the splits and floors, the power plan (50 target dates), the fixed-sequence
+Brier family, the DATA-03 seal/exposure rules, the execution-evidence meaning and the WP170 handoff; every
+data-dependent candidate field is a closed mechanical rule (MR01-MR15). WP170 remains the sole preregistration/OOS
+authority: no PreregisteredExperiment, lifecycle record, QualificationCandidate or qualification-gate receipt is
+created, no data is accessed and no model is fitted or scored. `src/**`, `tools/**`, `.github/**` and dependencies are
+unchanged; WP170/WP172/WP173 remain not started. S10-QUAL-DATA-03 is the next expected package only after this WP
+merges at or before the freeze deadline (separately gated). Live disabled; Gate C is NOT AUTHORIZED; capital/orders 0;
+merge NOT AUTHORIZED.
+
+## S10-QUAL-B0X-01 External-Reconstruction B0 Qualification Contract Extension (merged historical predecessor: PR #204)
+
+PR #204 / S10-QUAL-B0X-01 merged at `e2edb21e25e7841376c3cb51c27a622fbc0cbc83` with head
+`debcfdf723505b67a1280ac9f303d5abd293c998`; its external B0 rule is bound unchanged by the S10-QUAL-PLAN-01 plan.
+The historical implementation-target record follows unchanged.
 
 The canonical contract is `docs/qualification_candidate_contract.md` (section 8); the source is
 `src/data_layer/analytical_research/qualification.py`; the status fragment is `docs/status_entries/S10-QUAL-B0X-01.md`;
