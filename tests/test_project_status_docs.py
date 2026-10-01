@@ -5353,12 +5353,23 @@ def test_s10_qual_plan_01_is_current_plan_freeze_target() -> None:
 S10_QUAL_DATA_03_STATES = ("DATA03_IMPLEMENTED_NOT_STARTED",)
 
 
-def test_s10_qual_data_03_is_current_oos_accrual_target() -> None:
+def test_s10_qual_data_03_is_merged_historical_truth() -> None:
     lines = _read().splitlines()
     current = next(
         line for line in lines
-        if line.startswith("# S10-QUAL-DATA-03 current bounded implementation target")
+        if line.startswith("# S10-QUAL-DATA-03 merged historical truth")
     )
+    assert not any(line.startswith("# S10-QUAL-DATA-03 current bounded implementation target") for line in lines)
+    for text in (
+        "PR #206 / S10-QUAL-DATA-03 merged: YES at d45d9587401faddd2ba92f33cb84f2988b6cfe70",
+        "with head b7d77f95df093b259a2a2b809ffe20308539e397 (isDraft=false)",
+        "GitHub server merge time 2026-10-01T15:08:12Z",
+        "DATA03 implementation state: DATA03_IMPLEMENTED_NOT_STARTED", "Attempt 03 source probe: PROBE_PASS",
+        "next immediate runtime action: zero-network DATA-03 prepare", "no real accrue before 2026-10-15T00:00:00Z",
+        "DATA-03 remains on the current operator environment and is not moved to the VPS",
+        "historical implementation-WP record follows: Prospective Weather Qualification OOS Accrual",
+    ):
+        assert text in current, text
     fragment_text = (REPO_ROOT / "docs" / "status_entries" / "S10-QUAL-DATA-03.md").read_text(encoding="utf-8")
     fragment = " ".join(fragment_text.split())
     spec = json.loads(
@@ -5426,3 +5437,94 @@ def test_s10_qual_data_03_is_current_oos_accrual_target() -> None:
     assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-REAL-01"
     assert spec["successor_boundary"]["separately_gated"] is True
     assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
+
+
+S10_DEPLOY_PLAN_01_STATES = ("IMPLEMENTED_READY_FOR_REVIEW",)
+S10_DEPLOY_PLAN_01_SCOPE = (
+    "docs/architecture_decision_record.md", "docs/deferred_items_log.md", "docs/long_term_bot_completion_roadmap.md",
+    "docs/production_vps_hosting_direction.md", "docs/project_charter.md", "docs/project_status.md",
+    "docs/repo_truth_index.md", "docs/status_entries/S10-DEPLOY-PLAN-01.md",
+    "docs/wp_specs/S10-DEPLOY-PLAN-01/wp_prompt.txt", "docs/wp_specs/S10-DEPLOY-PLAN-01/wp_spec.json",
+    "tests/test_architecture_direction_docs.py", "tests/test_project_status_docs.py", "tests/test_repo_truth_docs.py",
+)
+
+
+def test_s10_deploy_plan_01_is_current_planning_target() -> None:
+    lines = _read().splitlines()
+    current = next(
+        line for line in lines
+        if line.startswith("# S10-DEPLOY-PLAN-01 current bounded planning target")
+    )
+    fragment_text = (REPO_ROOT / "docs" / "status_entries" / "S10-DEPLOY-PLAN-01.md").read_text(encoding="utf-8")
+    fragment = " ".join(fragment_text.split())
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-DEPLOY-PLAN-01" / "wp_spec.json").read_text(encoding="utf-8")
+    )
+    hosting_facts = (
+        "APPROVED_PLANNING_DIRECTION", "NOT_PROVISIONED / NOT_DEPLOYED", "AlphaVPS", "Sofia, Bulgaria", "C8G",
+        "4 vCPU / 8 GB ECC RAM / 75 GB NVMe RAID-10", "Ubuntu 24.04 LTS / x86-64", "ONE_CONSOLIDATED_POLYMARKET_VPS",
+        "C8G -> C12G -> C16G/P-series -> larger only by telemetry evidence", "S10-DEPLOY-01",
+        "after a real strategy-specific WP172 EXECUTABLE_EDGE_PASS exists and before the first serious "
+        "production-hosted paper runtime using the existing WP173 system",
+        "PR #206 / S10-QUAL-DATA-03: MERGED", "DATA03_IMPLEMENTED_NOT_STARTED", "PROBE_PASS",
+        "zero-network DATA-03 prepare", "no real accrue before 2026-10-15T00:00:00Z",
+    )
+    for text in hosting_facts + (
+        "Package class: DOCS_ONLY_ARCHITECTURE_ROADMAP", "Governance track: FAST", "Risk level: 1",
+        "Exact changed-file scope: 13", "Frozen base: d45d9587401faddd2ba92f33cb84f2988b6cfe70",
+        "PR #206 / S10-QUAL-DATA-03 merged: YES", "b7d77f95df093b259a2a2b809ffe20308539e397",
+        "readiness: IMPLEMENTATION_READY (FAST)", "default separate research/live VPS: NO",
+        "future implementation package: S10-DEPLOY-01 Production VPS Runtime Baseline, DRAFT-ELIGIBLE LATER / NOT AUTHORIZED",
+        "WP173 merged via PR #175 already exist; WP173 is not reimplemented", "DATA-03 moved to VPS: NO",
+        "does not interrupt the qualification chain", "src/tools/workflow/dependency changes: 0",
+        "VPS purchased/provisioned: NO", "deployment performed: NO", "paper authority changed: NO",
+        "live authority changed: NO", "live: DISABLED", "Gate C: NOT AUTHORIZED", "capital at risk: USD 0", "orders: 0",
+        "S10-DEPLOY-01 must not be executed now", "Merge authorized: NO",
+    ):
+        assert text in current, text
+    for text in hosting_facts + (
+        "Exact changed-file scope: 13 / 13", "DATA-03 moved to VPS: NO", "VPS purchased/provisioned: NO",
+        "Deployment performed: NO", "Paper authority changed: NO", "Live authority changed: NO",
+        "Capital/orders: USD 0 / 0", "Future deployment package authorized: NO",
+        "WP172 generic substrate already exists: YES", "WP173 generic serious-paper system already exists: YES",
+        "Background tasks alive after final response: NO", "Merge authorized: NO",
+    ):
+        assert text in fragment, text
+    marker = "Current S10-DEPLOY-PLAN-01 state: "
+    for text in (current, fragment):
+        assert text[text.index(marker) + len(marker):].split(";")[0].split()[0] in S10_DEPLOY_PLAN_01_STATES
+    for stale in ("Merge authorized: YES", "Gate C: AUTHORIZED", "live: ENABLED", "VPS purchased/provisioned: YES",
+                  "Deployment performed: YES", "deployment performed: YES", "DATA-03 moved to VPS: YES",
+                  "Future deployment package authorized: YES", "S10-DEPLOY-01 is AUTHORIZED",
+                  "VPS and cloud choices remain open"):
+        assert stale not in current, stale
+        assert stale not in fragment, stale
+    data03 = next(index for index, line in enumerate(lines) if line.startswith("# S10-QUAL-DATA-03 merged historical truth"))
+    assert lines.index(current) < data03
+    assert lines.index(current) == next(index for index, line in enumerate(lines) if line.startswith("# S10-"))
+    assert spec["identity"]["wp_id"] == "S10-DEPLOY-PLAN-01"
+    assert spec["identity"]["package_class"] == "DOCS_ONLY_ARCHITECTURE_ROADMAP"
+    assert spec["identity"]["risk_level"] == 1
+    assert spec["identity"]["package_size_class"] == "L"
+    assert spec["identity"]["capital_at_risk_usd"] == 0
+    assert spec["identity"]["required_predecessor"] == {
+        "pr_number": 206, "head_sha": "b7d77f95df093b259a2a2b809ffe20308539e397",
+        "merge_sha": "d45d9587401faddd2ba92f33cb84f2988b6cfe70",
+    }
+    scope = spec["scope"]
+    assert sorted(scope["required_changed_files"]) == sorted(scope["allowed_changed_files"]) == sorted(S10_DEPLOY_PLAN_01_SCOPE)
+    assert scope["max_changed_files"] == 13 and scope["exact_scope_required"] is True
+    assert not [p for p in scope["required_changed_files"] if not p.startswith(("docs/", "tests/"))]
+    for prefix in ("src/", "tools/", ".github/", "local_data/"):
+        assert prefix in scope["forbidden_prefixes"], prefix
+    for key in ("canonical_evidence_policy", "docs", "tests"):
+        assert spec["authority"][key] is True, key
+    for key in ("workflow_governance", "local_offline_tooling", "source_runtime", "workflow_files", "dependencies",
+                "network", "credentials", "scheduler", "hermes_runtime", "strategy", "paper", "execution", "live"):
+        assert spec["authority"][key] is False, key
+    assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-DATA-03"
+    assert "S10-QUAL-DATA-03_POST_MERGE_PREPARE_CLOSURE" in spec["successor_boundary"]["next_title"]
+    assert spec["successor_boundary"]["separately_gated"] is True
+    forbidden = " ".join(spec["successor_boundary"]["forbidden_in_this_wp"])
+    for text in ("merge", "VPS purchase, provisioning", "running DATA-03 prepare", "any 14th changed path"):
+        assert text in forbidden, text
