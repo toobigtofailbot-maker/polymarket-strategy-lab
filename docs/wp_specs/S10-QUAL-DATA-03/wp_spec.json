@@ -1,0 +1,954 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-QUAL-DATA-03",
+    "title": "Prospective Weather Qualification OOS Accrual + Execution-Terms Capture",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "WEATHER_QUALIFICATION_PROSPECTIVE_OOS_ACCRUAL",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 205,
+      "head_sha": "11244eed9686b01e29ede83ea6578bb0a781db6f",
+      "merge_sha": "75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9"
+    },
+    "suggested_branch": "codex/s10-qual-data-03-prospective-oos-accrual",
+    "objective": "Implement the mechanical prospective OOS evidence-accrual path and execution-terms capture frozen by S10-QUAL-PLAN-01 (plan SHA-256 3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463): a pure accrual module and one manual network-owning operator (prepare, probe-sources, accrue, seal, verify-final) with the frozen 11/12 UTC census, pending/terminal classification, a hash-chained multi-run ledger, the stable 50-date prefix, the oosmembership seal, the exposure firewall, MR12 execution evidence and the provenance ceiling. Code-merge state DATA03_IMPLEMENTED_NOT_STARTED; no forecast, fit, score, QualificationCandidate, gate run, WP170 object, scheduler, dependency/workflow change, credential, paper, execution or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/qualification_weather_oos_accrual_contract.md",
+      "src/data_layer/analytical_research/qualification_oos_accrual.py",
+      "tools/qualification/run_s10_qual_data_03.py",
+      "tests/data_layer/analytical_research/test_qualification_oos_accrual.py",
+      "tests/tools/qualification/test_run_s10_qual_data_03.py",
+      "tests/test_qualification_weather_oos_accrual_contract_docs.py",
+      "docs/status_entries/S10-QUAL-DATA-03.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/wp_specs/S10-QUAL-DATA-03/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-DATA-03/wp_spec.json",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/qualification_weather_oos_accrual_contract.md",
+      "src/data_layer/analytical_research/qualification_oos_accrual.py",
+      "tools/qualification/run_s10_qual_data_03.py",
+      "tests/data_layer/analytical_research/test_qualification_oos_accrual.py",
+      "tests/tools/qualification/test_run_s10_qual_data_03.py",
+      "tests/test_qualification_weather_oos_accrual_contract_docs.py",
+      "docs/status_entries/S10-QUAL-DATA-03.md",
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/wp_specs/S10-QUAL-DATA-03/wp_prompt.txt",
+      "docs/wp_specs/S10-QUAL-DATA-03/wp_spec.json",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "local_data/",
+      "secrets/"
+    ],
+    "max_changed_files": 15,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert S10-QUAL-DATA-03. The accrual module, operator, tests and contract/status/spec docs disappear; PLAN-01, DATA-01/02 code and evidence, qualification contracts, dependencies, workflows and all runtime, order and capital state are unchanged. Ignored local_data evidence (DATA-02 run-01, the DATA-03 probe and any accrual workspace) is untouched by revert.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "No product or trading API is added; the operator consumes the existing verified PolymarketPublicClient.get_market unchanged and public read-only research endpoints only.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These rules freeze the PLAN-01 binding, census, pending/terminal classification, prefix, seal, firewall, execution evidence, store/run lifecycle, budgets, provenance ceiling and authority.",
+    "items": [
+      {
+        "path": "plan.binding",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "prepare verifies the PLAN-01 plan bytes (working tree and merge commit 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9) hash to 3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463, the power-doc LF hash, the GitHub server merge at 2026-10-01T02:39:26Z <= 2026-10-14T00:00:00Z, every plan literal used and the DATA-02 ids; any mismatch is STOP PLAN_FREEZE_INVALID.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_exact_plan_binding_and_freeze_event",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "accrue.start",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "accrue is manual only and refused before 2026-10-15T00:00:00Z with zero network.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_no_accrue_before_oos_start",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "census.hours",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "Discovery is exactly the PendulumFlow v3 new_market 11:00 and 12:00 UTC hours of scan days 2026-10-15..2027-02-11; Gamma only via get_market(id); no list/keyset or outcome-dependent discovery.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_census_uses_exactly_the_11_12_utc_new_market_hours",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "census.discovery_failure",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "A required discovery hour failing after the frozen retries never closes the census: the date stays STRUCTURAL_CLASSIFICATION_PENDING and the hour is retried on a later manual run.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_failed_discovery_hour_stays_structural_pending_then_resolves",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "census.collapse",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "Witness copies collapse by Gamma market id with the earliest receive over census hours up to the target date.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_census_collapses_witness_copies_deterministically_and_assigns_by_slug_date",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "row.identity",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "weatherqualoosrow:sha256 over exactly target_date, market_id, condition_id, checkpoint_id, decision_time, yes_token_id.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_row_id_is_exactly_the_six_label_free_fields",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "b0.rule",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "EXTERNAL_PIT_MARKET_PROBABILITY_V1: recomputed spread <= 0.1 midpoint, else trade aged <= 86400 s by timestamp_received, incomplete search MARKET_HISTORY_SOURCE_INVALID, else B0_UNAVAILABLE.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_b0_midpoint_trade_unavailable_and_source_invalid_distinctions",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "feature.values",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "q and L are canonical decimal strings materialized only in the sealed store; no B1/B2 forecast.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_q_and_l_are_canonical_decimal_strings",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "label.pending",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "PENDING_LABEL_FINALITY is a pending state without timeout; a Gamma re-poll failure stays pending; LABEL_GAMMA_NOT_FINAL is never emitted.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_gamma_finality_repoll_failure_stays_pending_never_label_gamma_not_final",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "label.terminal",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "Complete label-window reads without resolution are LABEL_V3_RESOLUTION_MISSING; a failed published read is LABEL_V3_SOURCE_READ_FAILED; initial Gamma failure GAMMA_UNAVAILABLE.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_label_window_without_resolution_and_failed_label_read_are_closed_codes",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "prefix.walk",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "Ascending walk: pending stops, excluded skipped, eligible counted; no leapfrog; dates after D50 never matter.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_pending_earlier_date_blocks_and_never_leapfrogged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seal.membership",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "oosmembership:sha256 over exactly the PLAN-01 preimage keys and ordering; one-way, reproduced twice, never rewritten.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_membership_preimage_keys_order_and_id_exact",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seal.terminals",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "QUAL_OOS_ROWS_INSUFFICIENT below 100 rows; QUAL_OOS_INSUFFICIENT_AT_CAP only once the in-window population is terminal.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_rows_insufficient_and_cap_insufficiency_waits_for_pending",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "visible.firewall",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "Closed allowlisted visible schemas with closed string shapes; extra key VISIBLE_SCHEMA_VIOLATION; console only report or STOP codes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_visible_schema_rejects_extra_keys_and_open_text",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "execution.terms",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "MR12 at family/cohort level over D1..D50; captures after the cutoff never count.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_execution_terms_family_cohort_sufficiency_and_expected_states",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "execution.fee_source",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "Only https://help.polymarket.com/en/articles/13364478-trading-fees; probe contract failure STOP EXECUTION_TERMS_SOURCE_UNAVAILABLE.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_fee_page_redirect_and_throttle_follow_frozen_policy",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "store.versions",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "Immutable content-addressed raw blobs and an append-only index; successful immutable bytes reused; mutable captures versioned per run.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_immutable_reuse_mutable_versioning_and_terminal_immutability",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "budget.caps",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "Per-run 12,288 / 6,442,450,944 / 268,435,456 / 2,000 hours ends ACCRUAL_INCOMPLETE without exclusions; cumulative 65,536 / 34,359,738,368 / 6,000 / 64 runs / 120 dates / 4,096 / 128 is STOP ACCRUAL_BUDGET_EXHAUSTED.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_per_run_budget_ends_incomplete_without_minting_exclusions",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "run.lifecycle",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "Sequential runs; a crashed run resumes with the same number and commits nothing; committed entries hash-chained and immutable; raw re-hashed before network.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_crashed_run_commits_nothing_and_resumes_same_run",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "verify.replay",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "verify-final forbids sockets and replays every committed run reproducing ledger, sealed store, reports, manifests, membership and accounting.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_verify_final_is_socket_forbidden",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "provenance.ceiling",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "N2 + 150 > 256 is STOP PROVENANCE_CEILING_UNREACHABLE before acquisition; projected final count above 256 is STOP QUAL_PROVENANCE_LIMIT_EXCEEDED_UNAVOIDABLE.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_n2_plus_reserve_pre_gate_stops_before_workspace",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.boundary",
+        "source": "CONSTANT",
+        "type": "weather_oos_accrual_rule",
+        "required_rule": "No QualificationCandidate, qualification gate, WP170, forecast/score, scheduler, watcher, trigger, credential or mutation surface.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "test_no_candidate_gate_wp170_score_scheduler_or_mutation_surface",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "bounded pytest pass or clear pytest failure",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Identities (row, ledger entry, bundle, membership, feature-column, label-store) are pure SHA-256 over canonical JSON in qualification_oos_accrual.py and are proven by focused tests.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Karl's sending of this exact package plus RUNTIME readiness permits only this bounded software lifecycle (one pre-OOS probe; manual post-merge runtime actions); merge remains separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 15-path scope, rule matrix and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's sending of this exact S10-QUAL-DATA-03 package is the implementation, bounded pre-OOS probe and manual read-only accrual authorization",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside the exact 15-path scope, one bounded probe returns PROBE_PASS, no real accrue runs, and focused/status/full-suite validation passes",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused pytest nodes are the executable oracle; machine-spec examples are unnecessary.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R040 map one-to-one onto the section 17 adversarial matrix; R041-R050 onto the section 19 validation / PR flow.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_exact_plan_binding_and_freeze_event",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_exact_plan_binding_and_freeze_event -q",
+        "expected_result": "plan bytes, power doc, merge event and DATA-02 ids bind exactly"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_invalid_or_late_freeze_event_rejects",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_invalid_or_late_freeze_event_rejects -q",
+        "expected_result": "late, non-server or wrong-parent freeze events are PLAN_FREEZE_INVALID"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_no_accrue_before_oos_start",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_no_accrue_before_oos_start -q",
+        "expected_result": "accrue before 2026-10-15T00:00:00Z stops with zero network and no run"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_census_uses_exactly_the_11_12_utc_new_market_hours",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_census_uses_exactly_the_11_12_utc_new_market_hours -q",
+        "expected_result": "only the 11/12 UTC new_market hours enter the census"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_failed_discovery_hour_stays_structural_pending_then_resolves",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_failed_discovery_hour_stays_structural_pending_then_resolves -q",
+        "expected_result": "a failed discovery hour leaves later censuses open and pending"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_failed_discovery_hour_never_closes_the_census_until_read",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_failed_discovery_hour_never_closes_the_census_until_read -q",
+        "expected_result": "the census closes only once every required hour was read"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_census_collapses_witness_copies_deterministically_and_assigns_by_slug_date",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_census_collapses_witness_copies_deterministically_and_assigns_by_slug_date -q",
+        "expected_result": "witness copies collapse deterministically by earliest receive"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_no_alternative_discovery_source",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_no_alternative_discovery_source -q",
+        "expected_result": "no Gamma list, keyset, events or CLOB discovery path exists"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_row_id_is_exactly_the_six_label_free_fields",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_row_id_is_exactly_the_six_label_free_fields -q",
+        "expected_result": "row id preimage is exactly the six label-free fields"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_b0_midpoint_trade_unavailable_and_source_invalid_distinctions",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_b0_midpoint_trade_unavailable_and_source_invalid_distinctions -q",
+        "expected_result": "B0 midpoint, trade, unavailable and source-invalid stay distinct"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_q_and_l_are_canonical_decimal_strings",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_q_and_l_are_canonical_decimal_strings -q",
+        "expected_result": "q and L materialize as canonical decimal strings"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_gamma_finality_repoll_failure_stays_pending_never_label_gamma_not_final",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_gamma_finality_repoll_failure_stays_pending_never_label_gamma_not_final -q",
+        "expected_result": "a Gamma re-poll failure keeps the market pending"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_plan_exclusion_vocabulary_is_exact_and_never_minted_codes_rejected",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_plan_exclusion_vocabulary_is_exact_and_never_minted_codes_rejected -q",
+        "expected_result": "LABEL_GAMMA_NOT_FINAL and budget codes are never minted"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_label_window_without_resolution_and_failed_label_read_are_closed_codes",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_label_window_without_resolution_and_failed_label_read_are_closed_codes -q",
+        "expected_result": "complete reads without resolution give LABEL_V3_RESOLUTION_MISSING"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_pending_earlier_date_blocks_and_never_leapfrogged",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_pending_earlier_date_blocks_and_never_leapfrogged -q",
+        "expected_result": "an earlier pending date blocks the 50-date seal"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_pending_after_d50_does_not_block_the_stable_prefix",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_pending_after_d50_does_not_block_the_stable_prefix -q",
+        "expected_result": "a pending date after D50 leaves the prefix stable"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_excluded_former_pending_date_shifts_prefix_before_seal",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_excluded_former_pending_date_shifts_prefix_before_seal -q",
+        "expected_result": "an excluded former-pending date shifts the prefix"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_rows_insufficient_and_seal_is_one_way",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_rows_insufficient_and_seal_is_one_way -q",
+        "expected_result": "a second seal and post-seal accrue are refused"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_rows_insufficient_and_cap_insufficiency_waits_for_pending",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_rows_insufficient_and_cap_insufficiency_waits_for_pending -q",
+        "expected_result": "fewer than 100 rows is QUAL_OOS_ROWS_INSUFFICIENT"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_seal_refused_while_prefix_unstable_and_cap_insufficiency_waits",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_seal_refused_while_prefix_unstable_and_cap_insufficiency_waits -q",
+        "expected_result": "cap insufficiency waits for pending in-window dates"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "pytest",
+        "test": "test_visible_reports_invariant_under_label_permutation_and_value_perturbation",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_visible_reports_invariant_under_label_permutation_and_value_perturbation -q",
+        "expected_result": "visible reports are invariant under label permutation"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "pytest",
+        "test": "test_structural_counts_invariant_under_sealed_value_and_label_permutation",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_structural_counts_invariant_under_sealed_value_and_label_permutation -q",
+        "expected_result": "visible counts are invariant under q/L/B0 value perturbation"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "pytest",
+        "test": "test_exception_and_outcome_canaries_never_leak",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_exception_and_outcome_canaries_never_leak -q",
+        "expected_result": "exception and outcome canaries never reach stdout or reports"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "pytest",
+        "test": "test_mr15_prospective_sample_universe_exact",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_mr15_prospective_sample_universe_exact -q",
+        "expected_result": "MR15 prospective samples equal exactly the sealed row ids"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "pytest",
+        "test": "test_execution_terms_family_cohort_sufficiency_and_expected_states",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_execution_terms_family_cohort_sufficiency_and_expected_states -q",
+        "expected_result": "MR12 execution states follow family/cohort sufficiency"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "pytest",
+        "test": "test_execution_evidence_never_backdated_and_fee_url_exact",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_execution_evidence_never_backdated_and_fee_url_exact -q",
+        "expected_result": "captures after the cutoff never count"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "pytest",
+        "test": "test_fee_page_redirect_and_throttle_follow_frozen_policy",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_fee_page_redirect_and_throttle_follow_frozen_policy -q",
+        "expected_result": "only the exact frozen fee URL is fetched; redirects refused"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "pytest",
+        "test": "test_immutable_reuse_mutable_versioning_and_terminal_immutability",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_immutable_reuse_mutable_versioning_and_terminal_immutability -q",
+        "expected_result": "mutable captures add versions and never overwrite"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "pytest",
+        "test": "test_cumulative_budget_is_a_hard_stop",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_cumulative_budget_is_a_hard_stop -q",
+        "expected_result": "cumulative exhaustion is STOP ACCRUAL_BUDGET_EXHAUSTED"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "test_per_run_budget_ends_incomplete_without_minting_exclusions",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_per_run_budget_ends_incomplete_without_minting_exclusions -q",
+        "expected_result": "per-run exhaustion mints no exclusion and continues later"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "pytest",
+        "test": "test_successful_immutable_sources_are_reused_across_runs",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_successful_immutable_sources_are_reused_across_runs -q",
+        "expected_result": "successful immutable bytes are never redownloaded"
+      },
+      {
+        "requirement_id": "R032",
+        "source": "pytest",
+        "test": "test_crashed_run_commits_nothing_and_resumes_same_run",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_crashed_run_commits_nothing_and_resumes_same_run -q",
+        "expected_result": "a crashed run commits nothing and resumes the same run"
+      },
+      {
+        "requirement_id": "R033",
+        "source": "pytest",
+        "test": "test_terminal_ledger_entries_are_hash_chained_and_immutable",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_terminal_ledger_entries_are_hash_chained_and_immutable -q",
+        "expected_result": "terminal ledger entries are hash-chained and immutable"
+      },
+      {
+        "requirement_id": "R034",
+        "source": "pytest",
+        "test": "test_verify_final_is_socket_forbidden",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_verify_final_is_socket_forbidden -q",
+        "expected_result": "verify-final runs with sockets forbidden and replays offline"
+      },
+      {
+        "requirement_id": "R035",
+        "source": "pytest",
+        "test": "test_membership_preimage_keys_order_and_id_exact",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_membership_preimage_keys_order_and_id_exact -q",
+        "expected_result": "membership preimage keys, ordering and id are exact"
+      },
+      {
+        "requirement_id": "R036",
+        "source": "pytest",
+        "test": "test_membership_negative_matrix_rejects",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_membership_negative_matrix_rejects -q",
+        "expected_result": "wrong plan, bundle, date, row, reason or mutation rejects"
+      },
+      {
+        "requirement_id": "R037",
+        "source": "pytest",
+        "test": "test_n2_plus_reserve_pre_gate_stops_before_workspace",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_n2_plus_reserve_pre_gate_stops_before_workspace -q",
+        "expected_result": "N2 + 150 > 256 stops before any workspace or network"
+      },
+      {
+        "requirement_id": "R038",
+        "source": "pytest",
+        "test": "test_unavoidable_provenance_overflow_stops",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_unavoidable_provenance_overflow_stops -q",
+        "expected_result": "an unavoidable >256 projection stops accrual"
+      },
+      {
+        "requirement_id": "R039",
+        "source": "pytest",
+        "test": "test_pure_module_has_no_forecast_fit_score_candidate_or_network_surface",
+        "command": "python -m pytest tests/data_layer/analytical_research/test_qualification_oos_accrual.py::test_pure_module_has_no_forecast_fit_score_candidate_or_network_surface -q",
+        "expected_result": "no candidate, gate, WP170, forecast or score surface"
+      },
+      {
+        "requirement_id": "R040",
+        "source": "pytest",
+        "test": "test_no_candidate_gate_wp170_score_scheduler_or_mutation_surface",
+        "command": "python -m pytest tests/tools/qualification/test_run_s10_qual_data_03.py::test_no_candidate_gate_wp170_score_scheduler_or_mutation_surface -q",
+        "expected_result": "no scheduler, watcher, trigger or mutation surface exists"
+      },
+      {
+        "requirement_id": "R041",
+        "source": "validation",
+        "test": "readiness",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-DATA-03/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-DATA-03/wp_spec.json --repo-root .",
+        "expected_result": "IMPLEMENTATION_READY on governance track RUNTIME with 15 scope files and the exact authority mirror"
+      },
+      {
+        "requirement_id": "R042",
+        "source": "validation",
+        "test": "exact 15-path scope",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-QUAL-DATA-03/wp_prompt.txt --spec docs/wp_specs/S10-QUAL-DATA-03/wp_spec.json --repo-root . --check-diff --base 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9 --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY with the diff equal to exactly the 15 required paths"
+      },
+      {
+        "requirement_id": "R043",
+        "source": "validation",
+        "test": "generated-artifact guard and whitespace",
+        "command": "python tools/git/preflight_generated_artifact_guard.py; git diff --check",
+        "expected_result": "artifact guard passed and git diff --check clean"
+      },
+      {
+        "requirement_id": "R044",
+        "source": "validation",
+        "test": "contract, status and truth docs",
+        "command": "python -m pytest tests/test_qualification_weather_oos_accrual_contract_docs.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py -q",
+        "expected_result": "contract/status/truth doc tests pass with S10-QUAL-DATA-03 current and PLAN-01 historical"
+      },
+      {
+        "requirement_id": "R045",
+        "source": "validation",
+        "test": "affected historical guards",
+        "command": "python -m pytest tests/tools/qualification tests/data_layer/analytical_research/test_qualification_weather_plan_freeze.py tests/data_layer/analytical_research/test_qualification_data_readiness.py -q",
+        "expected_result": "DATA-01/02 operator and PLAN-01 freeze guards pass unchanged"
+      },
+      {
+        "requirement_id": "R046",
+        "source": "validation",
+        "test": "bounded pre-OOS probe",
+        "command": "python tools/qualification/run_s10_qual_data_03.py probe-sources",
+        "expected_result": "PROBE_PASS within 32 attempts / 16 MiB / 8 MiB / 4 hours; no OOS or prospective data created"
+      },
+      {
+        "requirement_id": "R047",
+        "source": "validation",
+        "test": "authoritative full suite",
+        "command": "python -m pytest -q",
+        "expected_result": "one full suite on the final stable implementation candidate passes"
+      },
+      {
+        "requirement_id": "R048",
+        "source": "github",
+        "test": "exact-head hosted CI",
+        "command": "GitHub Actions on the PR head",
+        "expected_result": "every required hosted check succeeds on the exact PR head"
+      },
+      {
+        "requirement_id": "R049",
+        "source": "github",
+        "test": "independent implementation review",
+        "command": "separate reviewer context inspects the exact-head diff",
+        "expected_result": "one independent exact-head review returns PASS or PASS_WITH_NOTES"
+      },
+      {
+        "requirement_id": "R050",
+        "source": "github",
+        "test": "re-fetched PR evidence",
+        "command": "GitHub PR re-fetch of state, head, body and files",
+        "expected_result": "PR state, head, body and files re-fetched and consistent with the exact final head before Ready for review YES"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-QUAL-REAL-01",
+    "next_title": "After merge: prepare, manual bounded accrue runs from 2026-10-15T00:00:00Z, seal and verify-final; after a final membership seal, Side14 evidence/status closure; S10-QUAL-REAL-01 only after that; none authorized by this WP",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-QUAL-REAL-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "any dependency, lock or pyproject change",
+      ".github/workflows change",
+      "editing PLAN-01 plan, power document, contract or tests",
+      "qualification_data_readiness.py, DATA-01/02 operator, pendulumflow_v3.py or nws_ndfd_history.py edit",
+      "qualification.py, qualification_gate.py, experiment_os.py, WP170, WP172 or WP173 edit",
+      "B1/B2 forecasts, model fit, Brier/log-loss or any comparison statistic",
+      "QualificationCandidate construction, qualification gate evaluation or a WP170 object",
+      "exposing labels, prevalence, outcomes, B0/q/L values or result-dependent aggregates",
+      "a real accrue run before 2026-10-15T00:00:00Z or during implementation",
+      "a second probe-sources run or any probe beyond the frozen caps",
+      "Gamma list/keyset or any alternative discovery source",
+      "credentials, private or authenticated endpoints, POST/mutation, WebSocket or CLOB/order endpoints",
+      "scheduler, cron, delayed trigger, PR watcher, polling agent or background service",
+      "strategy, paper, execution, live, Gate C, capital or orders"
+    ]
+  }
+}

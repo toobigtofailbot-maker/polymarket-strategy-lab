@@ -1,0 +1,1086 @@
+# SIDE14 — S10-QUAL-DATA-03 ONE-SHOT WP
+## Prospective Weather Qualification OOS Accrual + Execution-Terms Capture
+
+**Send to:** **A NEW CLAUDE CODE CHAT / SESSION**
+**Repository:** `toobigtofailbot-maker/polymarket-strategy-lab`
+**Frozen base:** `75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9`
+**Predecessor:** PR #205 / S10-QUAL-PLAN-01 merged
+**Frozen PLAN-01 SHA-256:** `3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463`
+**PLAN-01 merge time:** `2026-10-01T02:39:26Z`
+**Suggested branch:** `codex/s10-qual-data-03-prospective-oos-accrual`
+**Class / size / governance / risk:** `WEATHER_QUALIFICATION_PROSPECTIVE_OOS_ACCRUAL` / L / RUNTIME / 3
+**Merge authority:** NO
+**Draft status:** DRAFTED / NOT YET AUTHORIZED. If Karl sends this exact WP to Claude Code as the next implementation package, that act authorizes this bounded software lifecycle, including the one bounded pre-OOS probe and the future manual read-only accrual actions expressly defined below. No second implementation/runtime confirmation is required. Merge remains separately gated.
+
+```text
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+```
+
+## 0. PURPOSE / AUTHORITY / EFFICIENCY
+
+Implement the mechanical prospective evidence-accrual path frozen by S10-QUAL-PLAN-01.
+
+This WP does **not**:
+- alter PLAN-01;
+- compute B1/B2 forecasts;
+- fit the frozen model;
+- expose labels/outcomes;
+- compute Brier/log-loss/comparison statistics;
+- construct a real QualificationCandidate;
+- run the qualification gate;
+- construct a WP170 object;
+- authorize scheduler, paper, execution, Gate C, live, capital or orders.
+
+The software PR may merge before OOS accrual starts. Code-merge state is:
+
+```text
+DATA03_IMPLEMENTED_NOT_STARTED
+```
+
+Do **not** claim `ACCRUAL_INCOMPLETE` until a real post-start accrual run has actually committed a provisional runtime state.
+
+Authorized runtime lifecycle:
+1. during implementation: zero-network preparation checks + **one bounded pre-OOS source probe**;
+2. after merge: zero-network `prepare`;
+3. from `2026-10-15T00:00:00Z` onward: repeatable **manual** bounded `accrue` runs;
+4. after a stable terminal prefix exists: one zero-network `seal`;
+5. one or more zero-network `verify-final` runs.
+
+No background scheduler, cron, delayed trigger, PR watcher, polling agent or autonomous future task.
+
+Efficiency:
+- reuse DATA-01/02 pure helpers and source adapters;
+- do not redownload successful immutable artifacts;
+- no repeated broad repo investigation;
+- focused tests while editing;
+- one authoritative full suite on the final stable implementation candidate;
+- ordinary in-scope defects before prospective accrual starts are same-WP repairs.
+
+---
+
+## 1. IMMUTABLE PLAN BINDING
+
+At `prepare`, verify exact merged truth:
+
+```text
+main predecessor merge SHA:
+75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9
+
+PLAN-01 plan SHA-256:
+3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463
+
+PLAN-01 merge time:
+2026-10-01T02:39:26Z
+
+freeze deadline:
+2026-10-14T00:00:00Z
+
+oos_start:
+2026-10-15T00:00:00Z
+
+effective embargo-surviving lower bound:
+2026-10-17T00:00:00Z
+
+target-date cap:
+2027-02-12T00:00:00Z
+```
+
+Also bind:
+- DATA-02 bundle `weatherqualbundle:sha256:a5911ab05cc8c650377447aa46f65f3b2002fc458e3c51a64f8705b1adcc69ae`;
+- DATA-02 dataset `weatherqualdataset:sha256:a3e98a35ea052e1dfeb5225239a74beaee47d04111ebb34e6d27717490d9ac39`;
+- DATA-02 remains permanently `HISTORICAL_NON_OOS`;
+- PLAN-01 power-doc LF hash from the merged plan.
+
+Any mismatch:
+
+```text
+STOP PLAN_FREEZE_INVALID
+```
+
+`weather_plan_v1.json`, its power document and PLAN-01 contract/tests are immutable in this WP.
+
+---
+
+## 2. ARCHITECTURE / REUSE
+
+Add one pure module:
+
+```text
+src/data_layer/analytical_research/qualification_oos_accrual.py
+```
+
+It owns only:
+- pending/terminal classification types;
+- label-free prospective row identity;
+- stable-prefix logic;
+- B0 materialization under the frozen external rule;
+- q/L feature materialization as canonical decimal strings;
+- feature-column and internal label-store identities;
+- OOS-membership preimage/id;
+- execution-evidence classification;
+- visible-report closed-schema validation.
+
+Add one network-owning operator:
+
+```text
+tools/qualification/run_s10_qual_data_03.py
+```
+
+Reuse by composition, not subclassing `CompletionPipeline`.
+
+Reuse unchanged where compatible:
+- `pendulumflow_v3`;
+- `nws_ndfd_history`;
+- DATA-01/02 pure weather/rule/checkpoint/provenance helpers;
+- DATA-02 bounded transport, retry logic and typed-read semantics.
+
+Remain byte-unchanged:
+- `qualification_data_readiness.py`;
+- DATA-01/02 operators;
+- `pendulumflow_v3.py`;
+- `nws_ndfd_history.py`;
+- `qualification.py`;
+- `qualification_gate.py`;
+- `experiment_os.py`;
+- WP170/172/173;
+- PLAN-01 files.
+
+No dependency, lock or workflow change.
+
+---
+
+## 3. FROZEN PROSPECTIVE CENSUS
+
+Use the historical DATA-01/02 family census mechanically:
+
+```text
+scan days:
+2026-10-15 through 2027-02-11 inclusive
+
+discovery UTC hours:
+11:00 and 12:00
+
+source product:
+PendulumFlow v3 new_market
+```
+
+Family admission:
+- exact frozen rain slug regex or frozen question regex;
+- target date comes from the slug;
+- duplicate witness copies collapse by Gamma market id using earliest receive;
+- enrich only via existing `PolymarketPublicClient.get_market(id)`;
+- v3/Gamma identity equality remains mandatory;
+- no Gamma list/keyset discovery;
+- no outcome-dependent discovery.
+
+Markets first appearing outside the frozen 11/12 UTC discovery census are outside this plan's population and are recorded as a limitation, not backfilled from another discovery method.
+
+### Critical discovery-read rule
+
+A required `new_market` discovery hour that is published/audit-measured but fails after the frozen retries **does not close the census**.
+
+It becomes:
+
+```text
+STRUCTURAL_CLASSIFICATION_PENDING
+```
+
+and may be retried on a later manual accrual run.
+
+Reason: a failed discovery read leaves the market population unknown; treating it as a terminal empty census could silently omit eligible markets.
+
+The target-date census closes only when every required discovery hour through that date is:
+- successfully read, or
+- covered by a separately frozen source-unavailability hard stop returned to Side14.
+
+Do not mint an empty/complete census from a failed discovery read.
+
+For already-known market-specific evidence, retain the frozen DATA-02 closed failure semantics where applicable.
+
+---
+
+## 4. TARGET-DATE / ROW RULES
+
+Checkpoints, windows and rule semantics remain those frozen by PLAN-01 / DATA-01:
+
+```text
+market-history lookback: 24 h
+NDFD lookback: 48 h
+label window: ±30 min around Gamma closedTime
+checkpoint A: MARKET_OBSERVABLE_PLUS_60M_V1
+checkpoint B: TARGET_CLIMATE_DAY_START_V1
+```
+
+All cities and both checkpoints of a target date share one leakage role.
+
+Decision-time bounds:
+- no row before PLAN-01 `oos_start`;
+- effective OOS membership requires every included row to survive the 48h embargo;
+- no included row decision time may be at/after `2027-02-12T00:00:00Z`.
+
+Expected mechanical consequence:
+- first possibly eligible target date is approximately 2026-10-18;
+- do not hard-code eligibility from calendar expectation; compute from row decision times.
+
+Prospective row id:
+
+```text
+weatherqualoosrow:sha256:<64hex>
+```
+
+over exactly:
+
+```text
+{
+  target_date,
+  market_id,
+  condition_id,
+  checkpoint_id,
+  decision_time,
+  yes_token_id
+}
+```
+
+No label, B0, q/L value or outcome enters row identity.
+
+Exclusion subject ids:
+- MARKET = Gamma market id;
+- ROW = `<gamma_market_id>:<checkpoint_id>`;
+- DATE = ISO target date;
+- one closed reason per subject.
+
+---
+
+## 5. FROZEN B0 / FEATURE MATERIALIZATION
+
+Implement PLAN-01 exactly.
+
+B0:
+
+```text
+EXTERNAL_PIT_MARKET_PROBABILITY_V1
+max_midpoint_spread = 0.1
+max_last_trade_age_seconds = 86400
+```
+
+Rules:
+- recompute spread from bid/ask;
+- valid two-sided Yes book + spread <= 0.1 -> midpoint;
+- otherwise latest successfully searched Yes-token trade with age <=86400 by `timestamp_received`;
+- incomplete required LTP search after a source-read failure -> `MARKET_HISTORY_SOURCE_INVALID`, not `B0_UNAVAILABLE`;
+- genuine no eligible book/trade after complete search -> `B0_UNAVAILABLE`;
+- all missing-data decisions occur before label access;
+- no canonical PIT relabeling.
+
+Feature values:
+- q and L exactly follow PLAN-01;
+- store canonical decimal strings;
+- internally materialized only inside sealed evidence;
+- B1/B2 forecasts are forbidden in DATA-03.
+
+---
+
+## 6. WORKSPACE / MULTI-RUN STATE
+
+Workspace:
+
+```text
+local_data/s10_qual_data_03/accrual-01/
+```
+
+Ignored, never committed.
+
+Required surfaces:
+
+```text
+PLAN.json
+PLAN.sha256
+raw/
+INDEX.jsonl
+runs/run-NNN/
+CLASSIFICATION_LEDGER.jsonl
+STATE.json
+sealed/
+```
+
+`PLAN.json` binds:
+- PLAN-01 hash + merge SHA;
+- DATA-03 merged code identity once available;
+- source/budget/census contract;
+- DATA-02 ids;
+- exact N2 provenance count from zero-network `prepare`.
+
+Raw store:
+- content-addressed;
+- immutable successful raw blobs;
+- append-only index;
+- mutable-source captures are versioned, never overwritten.
+
+Run semantics:
+- sequential run numbers;
+- crash restart resumes the same incomplete run number;
+- partial/crashed run commits no classification-ledger state;
+- successful run re-derives from captures available through that run;
+- every terminal ledger entry is hash-chained and immutable;
+- before network acquisition, each run re-hashes raw blobs referenced by already terminal entries.
+
+State progression:
+
+```text
+DATA03_IMPLEMENTED_NOT_STARTED
+  -> ACCRUAL_INCOMPLETE
+  -> OOS_MEMBERSHIP_SEALED
+     OR QUAL_OOS_ROWS_INSUFFICIENT
+     OR QUAL_OOS_INSUFFICIENT_AT_CAP
+```
+
+Final states are one-way.
+
+No post-seal `accrue` or second `seal`.
+
+---
+
+## 7. PENDING / TERMINAL CLASSIFICATION
+
+### PENDING_LABEL_FINALITY
+
+Prospective market state only; never a permanent exclusion.
+
+Use when required final-label evidence is not yet terminal.
+
+It:
+- never enters the terminal classification ledger;
+- never counts toward D1..D50;
+- exposes no outcome/label value;
+- may be revisited in later runs;
+- has no elapsed-time timeout.
+
+Internal pending subreason may exist but must not be visible.
+
+Terminal label classifications:
+- Gamma final + agreeing v3 resolution -> internally label-known;
+- disagreement -> `LABEL_SOURCE_DISAGREEMENT`;
+- Gamma final + successful complete required v3 label-window reads + no resolution -> `LABEL_V3_RESOLUTION_MISSING`;
+- published required label-window read fails after frozen retries -> `LABEL_V3_SOURCE_READ_FAILED`;
+- Gamma finality re-poll transport/source failure -> remain pending, do not falsely mint absence;
+- initial Gamma enrichment failure after frozen retries retains the frozen `GAMMA_UNAVAILABLE` exclusion.
+
+Never emit prospective `LABEL_GAMMA_NOT_FINAL`.
+
+### Structural pending
+
+Use:
+
+```text
+STRUCTURAL_CLASSIFICATION_PENDING
+```
+
+when classification is not yet knowable, including:
+- required discovery hour not yet successfully read;
+- required archive hour not yet published/audit-measured;
+- NDFD listing captured before the relevant checkpoint and therefore not yet final for selection.
+
+Pending is not an exclusion.
+
+---
+
+## 8. STABLE CHRONOLOGICAL PREFIX
+
+Walk considered target dates ascending.
+
+For each date:
+- PENDING -> stop; `ACCRUAL_INCOMPLETE`;
+- terminally EXCLUDED -> skip;
+- terminally ELIGIBLE -> count.
+
+When the count reaches 50:
+- seal may proceed only if no earlier date that could alter the prefix remains pending;
+- dates after D50 do not affect the prefix.
+
+A later date can never leapfrog an earlier pending date.
+
+If a pending earlier date later becomes excluded before seal, the prefix may mechanically shift.
+
+At/after the target-date cap:
+- no post-cap target date may enter;
+- in-window pending dates may continue to receive only evidence needed for terminal classification;
+- do not issue final insufficiency while an earlier in-window pending date could change the prefix.
+
+Once the relevant in-window population is terminal:
+- >=50 eligible dates -> prefix stable;
+- <50 -> `QUAL_OOS_INSUFFICIENT_AT_CAP`.
+
+If stable 50 dates contain <100 OOS rows:
+
+```text
+QUAL_OOS_ROWS_INSUFFICIENT
+```
+
+No extension.
+
+---
+
+## 9. OOS MEMBERSHIP SEAL
+
+One zero-network command:
+
+```text
+seal
+```
+
+Build:
+
+```text
+oosmembership:sha256:<64hex>
+```
+
+using **exactly** the PLAN-01 preimage keys and ordering.
+
+Canonical JSON:
+- UTF-8;
+- sorted keys;
+- compact separators;
+- no floats / NaN / Infinity.
+
+Bind:
+- PLAN-01 SHA;
+- DATA-03 bundle id;
+- cap;
+- oos_start;
+- mechanical end_time;
+- D1..D50;
+- exact sorted OOS row ids;
+- exact sorted closed exclusions.
+
+One-way:
+- no replacement after seal;
+- no later membership rewrite;
+- second seal/refinalization refused.
+
+Negative tests must include:
+- date reorder;
+- skipped earlier pending date;
+- later-date substitution;
+- extra/missing/duplicate row;
+- changed reason;
+- wrong plan hash;
+- wrong bundle id;
+- post-seal mutation;
+- label/value mutation does not change a row id.
+
+---
+
+## 10. PRE-RELEASE EXPOSURE FIREWALL
+
+Visible files/stdout may contain only:
+- counts by closed reason;
+- eligible row/date counts per checkpoint;
+- B0 available/unavailable counts;
+- midpoint-vs-trade basis counts;
+- coverage classes;
+- network/reuse accounting;
+- aggregate ids/hashes;
+- execution-evidence states;
+- prefix length;
+- total pending market/date counts;
+- earliest pending date.
+
+Never expose:
+- label values;
+- prevalence;
+- per-market outcomes;
+- Gamma outcomePrices/winningOutcome;
+- B0 numeric values;
+- q/L numeric values;
+- per-row evidence hashes;
+- per-market pending flags;
+- feature distributions;
+- B1/B2 forecasts;
+- model coefficients;
+- Brier/log-loss;
+- comparison statistics;
+- result-dependent aggregates.
+
+Enforce:
+- allowlisted visible schemas;
+- extra visible key -> hard failure;
+- no traceback/repr/log echo from runtime exceptions;
+- `main()` returns only closed `STOP <CODE>` or `STOP INTERNAL_ERROR:<ExceptionClass>`;
+- canary tests prove injected outcome/token/label text never reaches stdout/visible reports;
+- visible-report invariance tests under label permutation and numeric q/L/B0 perturbation with structure held fixed.
+
+The executor/reviewer must not inspect real `raw/`, `sealed/` or label-ledger contents to summarize runtime results.
+
+---
+
+## 11. EXECUTION-TERMS CAPTURE
+
+Freeze the official fee-document source as:
+
+```text
+https://help.polymarket.com/en/articles/13364478-trading-fees
+```
+
+Host:
+
+```text
+help.polymarket.com
+```
+
+This is Polymarket's current official Trading Fees page and explicitly covers weather-market fee treatment. Do not use an unfrozen arbitrary docs URL.
+
+Critical evidence:
+
+### FEES
+- versioned capture of the exact official fee page above;
+- versioned current open daily-rain Gamma docs;
+- Gamma fee fields (`feesEnabled` / fee category/type where present);
+- no historical backdating.
+
+### RESOLUTION_RULES
+- pre-close Gamma description/rule text for current open family markets;
+- parsed frozen `RuleSemantics`;
+- `rule_cohort_id`.
+
+### TICK_SIZE_MIN_ORDER
+- current Gamma `orderPriceMinTickSize`;
+- current Gamma `orderMinSize`;
+- v3 `tick_size_change` from scanned OOS hours;
+- official tick-change semantics supplementary only if available from an already authorized exact source.
+
+MR12 sufficiency is frozen at family/cohort level:
+- every D1..D50 market's rule cohort is represented by captured current/open rule evidence;
+- every D1..D50 market has a relevant Gamma capture supporting its fee/tick/min-order regime;
+- captures are honestly timestamped and selected as-of the final candidate evidence cutoff;
+- changed bytes create a new version, never overwrite/backdate.
+
+Expected final states:
+- FEES -> AVAILABLE when the frozen fee-page + market evidence conditions pass;
+- RESOLUTION_RULES -> AVAILABLE when all D1..D50 cohorts are covered;
+- TICK_SIZE_MIN_ORDER -> AVAILABLE when all D1..D50 markets are covered and required tick-change history is complete;
+- SPREAD_DEPTH -> may remain PARTIAL;
+- LATENCY -> MISSING allowed;
+- PARTIAL_FILL -> MISSING allowed.
+
+A fee-page source-contract probe failure is:
+
+```text
+STOP EXECUTION_TERMS_SOURCE_UNAVAILABLE
+```
+
+not a reason to relabel partial evidence as AVAILABLE.
+
+---
+
+## 12. NETWORK CONTRACT
+
+Only:
+
+```text
+archive.pendulumflow.com
+noaa-ndfd-pds.s3.amazonaws.com
+gamma-api.polymarket.com
+api.weather.gov
+help.polymarket.com
+```
+
+Only HTTPS GET / HEAD / Range required by existing source adapters or the exact frozen fee URL.
+
+No:
+- arbitrary URL;
+- redirect to a new host;
+- authentication;
+- credentials;
+- WebSocket;
+- POST/mutation;
+- CLOB/order endpoint;
+- browser automation.
+
+Retry policy:
+- 429/503: initial + max 3 retries, delays 2/8/30 s;
+- valid integer Retry-After [0,60] may only lengthen;
+- timeout/reset/truncation/408/other 5xx: max one immediate retry;
+- exhausted read is typed evidence failure/pending as specified, never false absence.
+
+### One implementation-time probe
+
+Authorize one bounded `probe-sources` invocation before OOS start.
+
+It may use only:
+- pre-OOS PendulumFlow hours;
+- bounded Gamma identity/rule examples;
+- NDFD/NWS source-contract checks;
+- exact official fee URL.
+
+Probe caps:
+
+```text
+attempts <= 32
+bytes <= 16 MiB
+single response <= 8 MiB
+PendulumFlow hours <= 4
+```
+
+Required:
+
+```text
+PROBE_PASS
+```
+
+No OOS member, label, score or prospective dataset is created.
+
+---
+
+## 13. ACCRUAL BUDGET
+
+Each manual `accrue` run:
+
+```text
+attempts <= 12,288
+new bytes <= 6,442,450,944
+single response <= 268,435,456
+distinct PendulumFlow hours <= 2,000
+```
+
+Cumulative `accrual-01` caps:
+
+```text
+network attempts <= 65,536
+new bytes <= 34,359,738,368
+distinct PendulumFlow hours <= 6,000
+successful accrue runs <= 64
+considered target dates <= 120
+candidates <= 4,096
+stations <= 128
+```
+
+Per-run budget exhaustion:
+- end that run truthfully as `ACCRUAL_INCOMPLETE`;
+- do not mint budget-exhaustion market/date exclusions;
+- next manual run may continue.
+
+Cumulative exhaustion:
+
+```text
+STOP ACCRUAL_BUDGET_EXHAUSTED
+```
+
+Return to Side14; do not auto-raise.
+
+Successful immutable source bytes are reused across runs; mutable source snapshots are versioned.
+
+---
+
+## 14. PROVENANCE CEILING
+
+Qualification cap remains:
+
+```text
+MAX_QUALIFICATION_PROVENANCE_MANIFESTS = 256
+```
+
+No omission, substitution or post-hoc evidence laundering.
+
+Reuse existing manifest sharding:
+- max 256 manifest items;
+- ready-subset only;
+- per-date/family provenance remains traceable to underlying raw evidence.
+
+At zero-network `prepare`, compute exact historical:
+
+```text
+N2 = DATA-02 ready manifests required by the frozen FORMATION/SELECTION rows
+```
+
+Before any prospective network acquisition:
+
+```text
+if N2 + 150 > 256:
+    STOP PROVENANCE_CEILING_UNREACHABLE
+```
+
+During accrual:
+- visibly report projected final manifest count without exposing per-row evidence;
+- if the actual frozen provenance rules make `>256` unavoidable:
+
+```text
+STOP QUAL_PROVENANCE_LIMIT_EXCEEDED_UNAVOIDABLE
+```
+
+Do not invent a new aggregation/container architecture to evade the frozen cap. PLAN-01 explicitly accepts the provenance-ceiling terminal.
+
+---
+
+## 15. OPERATOR COMMANDS / ONE-WAY ACTIONS
+
+Exactly:
+
+```text
+prepare
+probe-sources
+accrue
+seal
+verify-final
+```
+
+### `prepare`
+- zero network;
+- verify plan/main/DATA-02 identities;
+- compute N2;
+- enforce provenance pre-gate;
+- initialize workspace only when all checks pass.
+
+### `probe-sources`
+- one bounded pre-OOS probe;
+- no prospective corpus;
+- terminal `PROBE_PASS` required.
+
+### `accrue`
+- manual only;
+- hard-refuse before `2026-10-15T00:00:00Z`;
+- repeatable within cumulative caps until final state;
+- never autonomous.
+
+### `seal`
+- zero network;
+- one-way;
+- only stable prefix / terminal insufficiency;
+- second seal refused.
+
+### `verify-final`
+- zero network/socket-forbidden;
+- replay all committed runs;
+- re-hash raw evidence;
+- reproduce ledger heads, bundle, manifests, membership and visible reports;
+- verify network/reuse accounting;
+- may run repeatedly.
+
+---
+
+## 16. EXACT CHANGED-FILE SCOPE — 15 PATHS
+
+Exactly:
+
+1. `docs/qualification_weather_oos_accrual_contract.md`
+2. `src/data_layer/analytical_research/qualification_oos_accrual.py`
+3. `tools/qualification/run_s10_qual_data_03.py`
+4. `tests/data_layer/analytical_research/test_qualification_oos_accrual.py`
+5. `tests/tools/qualification/test_run_s10_qual_data_03.py`
+6. `tests/test_qualification_weather_oos_accrual_contract_docs.py`
+7. `docs/status_entries/S10-QUAL-DATA-03.md`
+8. `docs/deferred_items_log.md`
+9. `docs/long_term_bot_completion_roadmap.md`
+10. `docs/project_status.md`
+11. `docs/repo_truth_index.md`
+12. `docs/wp_specs/S10-QUAL-DATA-03/wp_prompt.txt`
+13. `docs/wp_specs/S10-QUAL-DATA-03/wp_spec.json`
+14. `tests/test_project_status_docs.py`
+15. `tests/test_repo_truth_docs.py`
+
+No 16th path.
+
+Must stay unchanged:
+- PLAN-01 canonical plan/power/contract/tests;
+- `qualification.py`;
+- `qualification_gate.py`;
+- `qualification_data_readiness.py`;
+- DATA-01/02 operators;
+- v3/NDFD source modules;
+- `experiment_os.py`;
+- WP170/172/173;
+- Gate C/live/config;
+- `.github/**`;
+- dependency/lock files.
+
+16th path required:
+
+```text
+STOP SCOPE_EXPANSION_REQUIRED
+```
+
+---
+
+## 17. REQUIRED TEST / ADVERSARIAL MATRIX
+
+Must prove at least:
+
+1. exact PLAN/main/DATA-02 identity binding;
+2. invalid/late PLAN freeze rejects;
+3. no pre-start `accrue`;
+4. exact 11/12 UTC census;
+5. failed required discovery read remains structural pending and does not close census;
+6. later successful discovery read can resolve that pending census;
+7. duplicate market witness collapse deterministic;
+8. no alternative discovery source;
+9. row ids label/value-free;
+10. B0 midpoint/trade/unavailable/source-invalid distinctions;
+11. q/L canonical decimal materialization;
+12. Gamma finality re-poll failure remains pending;
+13. no prospective `LABEL_GAMMA_NOT_FINAL`;
+14. successful complete label-window/no resolution -> inherited missing code;
+15. pending earlier date blocks later 50-date seal;
+16. pending after D50 does not block stable prefix;
+17. excluded former-pending date mechanically shifts prefix pre-seal;
+18. seal immutable after creation;
+19. <100 OOS rows -> `QUAL_OOS_ROWS_INSUFFICIENT`;
+20. cap insufficiency waits for relevant in-window pending dates;
+21. visible-report label permutation invariance;
+22. visible-report q/L/B0-value perturbation invariance when structural states unchanged;
+23. exception/outcome canary never leaks;
+24. MR15 sample universe exact;
+25. execution-term family/cohort sufficiency;
+26. current execution evidence never backdated;
+27. fee source is the exact frozen official URL;
+28. mutable execution captures version, never overwrite;
+29. per-run and cumulative budget enforcement;
+30. per-run cap does not mint exclusions;
+31. successful immutable source reuse;
+32. partial crashed run commits no ledger state;
+33. terminal ledger entries cannot change;
+34. verify-final is socket-forbidden;
+35. membership preimage/order exact;
+36. wrong plan/bundle/date/row/reason/post-seal mutation rejects;
+37. N2+150 pre-gate;
+38. unavoidable >256 provenance stops;
+39. no candidate/gate/WP170/score API is called;
+40. no scheduler/background watcher/trigger is created.
+
+---
+
+## 18. HARD STOPS / OPERATIONAL OUTCOMES
+
+Hard stops:
+
+```text
+PLAN_FREEZE_INVALID
+STATE_DRIFT
+SOURCE_CONTRACT_DRIFT
+EXECUTION_TERMS_SOURCE_UNAVAILABLE
+PROVENANCE_CEILING_UNREACHABLE
+QUAL_PROVENANCE_LIMIT_EXCEEDED_UNAVOIDABLE
+MEMBERSHIP_REPRODUCTION_FAILED
+DEPENDENCY_EXPANSION_REQUIRED
+WORKFLOW_EXPANSION_REQUIRED
+SCOPE_EXPANSION_REQUIRED
+AUTHORITY_EXPANSION_REQUIRED
+ACCRUAL_BUDGET_EXHAUSTED
+CODE_DRIFT_AFTER_PROSPECTIVE_ACCRUAL
+```
+
+A source-contract change that requires an analytic-plan change returns to Side14; do not silently adapt.
+
+Normal runtime/nonblocking outcomes:
+- 429/503 within frozen retry policy;
+- typed market/label/history source failures;
+- structural pending;
+- `PENDING_LABEL_FINALITY`;
+- per-run budget exhaustion -> `ACCRUAL_INCOMPLETE`;
+- fewer than 50 stable dates while accrual remains open;
+- final `QUAL_OOS_ROWS_INSUFFICIENT`;
+- final `QUAL_OOS_INSUFFICIENT_AT_CAP`.
+
+During implementation before prospective accrual begins, ordinary in-scope parser/test/docs defects remain same-WP repairs.
+
+After prospective accrual begins, any code change that could affect evidence/classification/sealing is **not** an ordinary same-WP repair:
+
+```text
+STOP CODE_DRIFT_AFTER_PROSPECTIVE_ACCRUAL
+```
+
+Return to Side14.
+
+---
+
+## 19. VALIDATION / PR FLOW
+
+Implementation sequence:
+
+focused pure-module/operator tests
+→ docs/status/truth tests
+→ affected historical guards
+→ readiness `--check-diff`
+→ exact 15-path scope
+→ generated-artifact guard
+→ `git diff --check`
+→ available security checks
+→ stable implementation candidate
+→ one bounded `probe-sources`
+→ record `PROBE_PASS` without OOS data
+→ final focused checks if probe changes only evidence docs within scope
+→ **one authoritative full suite**
+→ push Ready-for-Review PR
+→ exact-head hosted CI
+→ one independent exact-head review
+→ reconcile PR body
+→ re-fetch exact-head evidence
+→ Side14 review.
+
+Do not run real `accrue` during implementation before the frozen start.
+
+Do not merge.
+
+No background PR watcher, scheduler, delayed trigger or reviewer agent may remain alive after Claude Code sends its final response.
+
+---
+
+## 20. FINAL REPORT
+
+```text
+S10-QUAL-DATA-03 IMPLEMENTATION FINAL
+Disposition: READY_FOR_SIDE14_MERGE_REVIEW / BLOCKED
+Base:
+Final head:
+PR:
+Exact changed paths: 15 / 15
+
+PLAN-01 SHA verified:
+PLAN-01 merge/freeze verified:
+DATA-02 ids verified:
+N2:
+N2 + 150 <= 256:
+Provenance prepare gate:
+Fee source URL frozen:
+Source probe:
+Probe network:
+Probe OOS/prospective data created: NO
+
+Implementation state: DATA03_IMPLEMENTED_NOT_STARTED
+Real accrue run executed: NO
+QualificationCandidate created: NO
+Qualification gate run: NO
+WP170 object created: NO
+Scores computed: NO
+
+Census rule frozen:
+Discovery failure remains pending:
+Pending-label semantics:
+Stable-prefix semantics:
+MR15 universe:
+Exposure firewall:
+Execution-term sufficiency:
+Budgets:
+Seal/verify-final:
+
+Focused tests:
+Full suite:
+Readiness --check-diff:
+Exact-head CI:
+Independent exact-head review:
+PR evidence re-fetch:
+Ready for review: YES / NO
+
+Background watcher/reviewer/scheduled tasks alive after final response: NO
+
+WP170/WP172/WP173: NOT STARTED
+Gate C/live/capital/orders: NO / DISABLED / USD 0 / 0
+Merge authorized: NO
+```
+
+## 21. POST-MERGE RUNTIME
+
+If this implementation WP merges cleanly:
+
+- run `prepare` on the merged main/code identity;
+- do not run `accrue` before `2026-10-15T00:00:00Z`;
+- thereafter use only manual bounded `accrue` runs;
+- do not expose raw/sealed evidence;
+- return to Side14 immediately on a hard stop;
+- after a final membership seal, return to Side14 for the minimal evidence/status closure before S10-QUAL-REAL-01.
+
+This WP does not authorize REAL-01, WP170, Gate C, paper or live execution.
+
+**Do not merge.**
+
+---
+
+## 22. EXECUTION-PACKAGE APPENDIX (READINESS MIRROR; NO NEW AUTHORITY)
+
+Governance track expected: RUNTIME
+
+- WP ID: S10-QUAL-DATA-03; Package class: WEATHER_QUALIFICATION_PROSPECTIVE_OOS_ACCRUAL; size L; risk 3.
+- Required predecessor: PR #205 / S10-QUAL-PLAN-01, head `11244eed9686b01e29ede83ea6578bb0a781db6f`, merged at
+  `75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9`; base branch `main`.
+- Objective: implement the mechanical prospective OOS accrual path and execution-terms capture frozen by
+  S10-QUAL-PLAN-01 (sections 0-21 above) without any analytic change; code-merge state DATA03_IMPLEMENTED_NOT_STARTED.
+- Authority / Non-Authority Posture: authority exactly the mirror above (source runtime, docs, tests, local offline
+  tooling, canonical evidence policy, bounded public read-only network). Non-authority: no dependency, workflow,
+  credential, scheduler, Hermes, strategy, paper, execution or live authority; protected boundary groups per
+  `docs/ai/codex/PROTECTED_PATHS.md` stay closed (runtime execution, OMS, reconciliation, risk caps, overlay, safe mode,
+  configs, live paths). No QualificationCandidate, qualification gate run, WP170 object, forecast, fit or score.
+- Hard merge gate: merge is not authorized by this WP; Side14 decides after exact-head CI and one independent review.
+- Context budget: reuse DATA-01/02 adapters by composition; focused tests while editing; one authoritative full suite.
+- Compatibility / impossibility check: the DATA-02 local run-01 workspace is required by `prepare` (zero network) and
+  exists only on the operator's machine; N2 can only be computed there. The committed DATA-02 status records 114
+  ready manifests over 32 dates, so the N2 + 150 <= 256 pre-gate may fail at post-merge `prepare`
+  (`STOP PROVENANCE_CEILING_UNREACHABLE`), which PLAN-01 explicitly accepts as a terminal.
+- Hard stops: section 18. Concrete stop conditions are risk-class RUNTIME stops; any 16th path is
+  `STOP SCOPE_EXPANSION_REQUIRED`.
+- Negative-test matrix: section 17 items 1-40 (membership negative matrix, visible-schema rejection matrix, plan /
+  freeze tamper matrix, ledger mutation matrix) per `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`.
+- Evidence plan / requirement mapping: `wp_spec.json` `evidence_plan` R001-R040 map one-to-one onto section 17;
+  R041-R050 map onto section 19.
+- Successor boundary: next expected package after a final membership seal is the Side14 evidence/status closure, then
+  S10-QUAL-REAL-01 (separately gated); this WP authorizes no successor.
+- Report-back: section 20 final report.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|plan|binding|always|REQUIRE|exact_plan_01_bytes_power_doc_merge_freeze_and_data02_ids|plan.binding|R001
+NR002|plan|binding|mismatch_or_late_merge|REJECT|stop_plan_freeze_invalid|plan.binding|R002
+NR003|accrue|start|before_oos_start|REJECT|stop_accrual_before_oos_start_without_network|accrue.start|R003
+NR004|census|hours|always|REQUIRE|exactly_11_12_utc_new_market_hours_of_scan_days|census.hours|R004
+NR005|census|discovery_read|failed_after_retries|REJECT|census_stays_structural_pending_never_closed_empty|census.discovery_failure|R005
+NR006|census|discovery_read|later_success|ACCEPT|pending_census_resolves_on_later_manual_run|census.discovery_failure|R006
+NR007|census|witness_copies|duplicate|REQUIRE|collapse_by_market_id_earliest_receive|census.collapse|R007
+NR008|census|source|alternative_discovery|FORBID|no_gamma_list_keyset_or_outcome_dependent_discovery|census.hours|R008
+NR009|row|identity|always|PRESERVE_EXACT|six_label_free_fields_only|row.identity|R009
+NR010|b0|materialization|always|REQUIRE|midpoint_trade_unavailable_source_invalid_distinct|b0.rule|R010
+NR011|feature|q_l|always|PRESERVE_EXACT|canonical_decimal_strings_in_sealed_store_only|feature.values|R011
+NR012|label|finality_repoll|failed|PRESERVE_EXPLICIT_NULL|market_stays_pending_label_finality|label.pending|R012
+NR013|label|gamma_not_final|prospective|FORBID|label_gamma_not_final_never_emitted|label.pending|R013
+NR014|label|window_reads|complete_without_resolution|REJECT|label_v3_resolution_missing|label.terminal|R014
+NR015|prefix|pending_date|earlier_than_d50|REJECT|seal_blocked_never_leapfrogged|prefix.walk|R015
+NR016|prefix|pending_date|after_d50|ACCEPT|prefix_stable_unaffected|prefix.walk|R016
+NR017|prefix|former_pending|excluded_before_seal|ACCEPT|prefix_shifts_mechanically|prefix.walk|R017
+NR018|seal|membership|after_creation|FORBID|no_second_seal_rewrite_or_post_seal_accrue|seal.membership|R018
+NR019|seal|rows|fewer_than_100|REJECT|qual_oos_rows_insufficient|seal.terminals|R019
+NR020|seal|cap|pending_in_window|REJECT|insufficiency_waits_for_terminal_population|seal.terminals|R020
+NR021|visible|report|label_permutation|PRESERVE_EXACT|visible_reports_invariant|visible.firewall|R021
+NR022|visible|report|value_perturbation|PRESERVE_EXACT|visible_reports_invariant|visible.firewall|R022
+NR023|visible|report|exception_or_canary|FORBID|closed_stop_codes_only_no_echo|visible.firewall|R023
+NR024|mr15|samples|always|REQUIRE|exactly_sealed_oos_row_ids|seal.membership|R024
+NR025|execution|sufficiency|always|REQUIRE|family_cohort_level_mr12_states|execution.terms|R025
+NR026|execution|capture|after_cutoff|REJECT|never_backdated|execution.terms|R026
+NR027|execution|fee_source|not_exact_url|REJECT|only_frozen_official_fee_url|execution.fee_source|R027
+NR028|store|mutable_capture|changed_bytes|PRESERVE_EXACT|new_version_never_overwrite|store.versions|R028
+NR029|budget|caps|exceeded|REJECT|per_run_incomplete_cumulative_hard_stop|budget.caps|R029
+NR030|budget|per_run|exhausted|FORBID|no_budget_exclusion_minted|budget.caps|R030
+NR031|store|immutable_bytes|successful|ACCEPT|reused_never_redownloaded|store.versions|R031
+NR032|run|crash|partial|REJECT|no_ledger_commit_resume_same_run|run.lifecycle|R032
+NR033|ledger|terminal_entry|mutation|REJECT|hash_chain_invalid_state_drift|run.lifecycle|R033
+NR034|verify|network|always|FORBID|sockets_forbidden_replay_only|verify.replay|R034
+NR035|seal|preimage|always|PRESERVE_EXACT|plan_01_keys_and_ordering|seal.membership|R035
+NR036|seal|preimage|tampered|REJECT|membership_reproduction_failed|seal.membership|R036
+NR037|provenance|pre_gate|n2_plus_150_above_256|REJECT|stop_provenance_ceiling_unreachable|provenance.ceiling|R037
+NR038|provenance|projection|above_256|REJECT|stop_qual_provenance_limit_exceeded_unavoidable|provenance.ceiling|R038
+NR039|authority|qualification_api|always|FORBID|no_candidate_gate_wp170_or_score|authority.boundary|R039
+NR040|authority|scheduler|always|FORBID|no_scheduler_watcher_or_trigger|authority.boundary|R040
+END_NORMATIVE_RULE_MATRIX_V1

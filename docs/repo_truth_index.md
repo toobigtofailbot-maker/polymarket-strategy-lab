@@ -1,6 +1,28 @@
 # Repo Truth Index
 
-## S10-QUAL-PLAN-01 Weather Qualification Prospective Plan Freeze (current bounded implementation target)
+## S10-QUAL-DATA-03 Prospective Weather Qualification OOS Accrual + Execution-Terms Capture (current bounded implementation target)
+
+The canonical contract is `docs/qualification_weather_oos_accrual_contract.md`; the pure module is
+`src/data_layer/analytical_research/qualification_oos_accrual.py`; the only network owner is the manual operator
+`tools/qualification/run_s10_qual_data_03.py` (`prepare`, `probe-sources`, `accrue`, `seal`, `verify-final`); the status
+fragment is `docs/status_entries/S10-QUAL-DATA-03.md`; the frozen package is `docs/wp_specs/S10-QUAL-DATA-03/`. Base
+`75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9` (PR #205 / S10-QUAL-PLAN-01 merged, head `11244eed9686b01e29ede83ea6578bb0a781db6f`). RUNTIME, risk 3, exact
+15-path scope. It implements the DATA-03 seal frozen by S10-QUAL-PLAN-01 (plan SHA-256
+`3b2a99abea8bbd18794c8117d6c1ab696ac817217cd5713367b2ee9a76aa9463`) without analytic change: the frozen 11/12 UTC census (a failed
+discovery read never closes the census), PENDING_LABEL_FINALITY without timeout, label-free row ids, the external B0
+and q/L sealed as canonical decimal strings, the hash-chained multi-run ledger, the stable chronological 50-date
+prefix, the one-way `oosmembership` seal, the closed visible-report firewall, MR12 execution-terms capture from the frozen
+fee page and the N2 + 150 <= 256 provenance pre-gate. Code-merge state DATA03_IMPLEMENTED_NOT_STARTED: one bounded
+pre-OOS probe only; no real accrue run before `2026-10-15T00:00:00Z`; no forecast, fit, score, QualificationCandidate,
+qualification-gate run or WP170 object; no scheduler or background watcher. PLAN-01, DATA-01/02 code, qualification
+contracts, `.github/**` and dependencies are unchanged; WP170/WP172/WP173 remain not started. Live disabled; Gate C is
+NOT AUTHORIZED; capital/orders 0; merge NOT AUTHORIZED.
+
+## S10-QUAL-PLAN-01 Weather Qualification Prospective Plan Freeze (merged historical predecessor: PR #205)
+
+PR #205 / S10-QUAL-PLAN-01 merged at `75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9` with head `11244eed9686b01e29ede83ea6578bb0a781db6f` at GitHub server
+merge time `2026-10-01T02:39:26Z`, before the freeze deadline (freeze valid); its frozen plan is bound unchanged by
+S10-QUAL-DATA-03. The historical implementation-target record follows unchanged.
 
 The canonical contract is `docs/qualification_weather_plan_freeze_contract.md`; the frozen plan is
 `docs/qualification_plans/S10-QUAL-PLAN-01/weather_plan_v1.json` (plan SHA-256

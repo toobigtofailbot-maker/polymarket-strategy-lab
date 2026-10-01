@@ -5291,8 +5291,10 @@ def test_s10_qual_plan_01_is_current_plan_freeze_target() -> None:
     lines = _read().splitlines()
     current = next(
         line for line in lines
-        if line.startswith("# S10-QUAL-PLAN-01 current bounded implementation target")
+        if line.startswith("# S10-QUAL-PLAN-01 merged historical truth")
     )
+    assert "PR #205 / S10-QUAL-PLAN-01 merged: YES at 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9" in current
+    assert "11244eed9686b01e29ede83ea6578bb0a781db6f" in current and "2026-10-01T02:39:26Z" in current
     fragment_text = (REPO_ROOT / "docs" / "status_entries" / "S10-QUAL-PLAN-01.md").read_text(encoding="utf-8")
     fragment = " ".join(fragment_text.split())
     spec = json.loads(
@@ -5344,5 +5346,69 @@ def test_s10_qual_plan_01_is_current_plan_freeze_target() -> None:
                 "hermes_runtime", "strategy", "paper", "execution", "live"):
         assert spec["authority"][key] is False, key
     assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-DATA-03"
+    assert spec["successor_boundary"]["separately_gated"] is True
+    assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
+
+
+S10_QUAL_DATA_03_STATES = ("DATA03_IMPLEMENTED_NOT_STARTED",)
+
+
+def test_s10_qual_data_03_is_current_oos_accrual_target() -> None:
+    lines = _read().splitlines()
+    current = next(
+        line for line in lines
+        if line.startswith("# S10-QUAL-DATA-03 current bounded implementation target")
+    )
+    fragment_text = (REPO_ROOT / "docs" / "status_entries" / "S10-QUAL-DATA-03.md").read_text(encoding="utf-8")
+    fragment = " ".join(fragment_text.split())
+    spec = json.loads(
+        (REPO_ROOT / "docs" / "wp_specs" / "S10-QUAL-DATA-03" / "wp_spec.json").read_text(encoding="utf-8")
+    )
+    for text in (
+        "Governance track: RUNTIME", "Risk level: 3", "Exact changed-file scope: 15",
+        "Frozen base: 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9", "PR #205 / S10-QUAL-PLAN-01 merged: YES",
+        "11244eed9686b01e29ede83ea6578bb0a781db6f", "readiness: IMPLEMENTATION_READY (RUNTIME)", S10_QUAL_PLAN_01_SHA256,
+        "oos_start 2026-10-15T00:00:00Z", "cap 2027-02-12T00:00:00Z", "HISTORICAL_NON_OOS", "STRUCTURAL_CLASSIFICATION_PENDING",
+        "PENDING_LABEL_FINALITY", "LABEL_GAMMA_NOT_FINAL never emitted", "EXTERNAL_PIT_MARKET_PROBABILITY_V1",
+        "https://help.polymarket.com/en/articles/13364478-trading-fees", "N2 + 150 <= 256", "Real accrue run executed: NO",
+        "QualificationCandidate created: NO", "Qualification gate run: NO", "WP170 object created: NO", "Scores computed: NO",
+        "scheduler/background watcher: NONE", "WP170/WP172/WP173: NOT STARTED", "live: DISABLED", "Gate C: NOT AUTHORIZED",
+        "capital at risk: USD 0", "orders: 0", "Merge authorized: NO",
+    ):
+        assert text in current, text
+    marker = "Current S10-QUAL-DATA-03 state: "
+    for text in (current, fragment):
+        assert text[text.index(marker) + len(marker):].split(";")[0].split()[0] in S10_QUAL_DATA_03_STATES
+    for text in (
+        f"PLAN-01 SHA verified: YES (`{S10_QUAL_PLAN_01_SHA256}`;", "Implementation state: DATA03_IMPLEMENTED_NOT_STARTED",
+        "Real accrue run executed: NO", "Probe OOS/prospective data created: NO", "QualificationCandidate created: NO",
+        "Qualification gate run: NO", "WP170 object created: NO", "Scores computed: NO",
+        "Fee source URL frozen: https://help.polymarket.com/en/articles/13364478-trading-fees", "Merge authorized: NO",
+        "Background watcher/reviewer/scheduled tasks alive after final response: NO",
+    ):
+        assert text in fragment, text
+    for stale in ("Merge authorized: YES", "Gate C: AUTHORIZED", "QualificationCandidate created: YES", "live: ENABLED",
+                  "Real accrue run executed: YES", "QUAL_PASS recorded", "OOS_MEMBERSHIP_SEALED recorded"):
+        assert stale not in current, stale
+        assert stale not in fragment, stale
+    assert lines.index(current) < next(
+        index for index, line in enumerate(lines)
+        if line.startswith("# S10-QUAL-PLAN-01 merged historical truth")
+    )
+    assert spec["identity"]["wp_id"] == "S10-QUAL-DATA-03"
+    assert spec["identity"]["risk_level"] == 3
+    assert spec["identity"]["package_size_class"] == "L"
+    assert spec["identity"]["required_predecessor"] == {
+        "pr_number": 205, "head_sha": "11244eed9686b01e29ede83ea6578bb0a781db6f",
+        "merge_sha": "75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9",
+    }
+    scope = spec["scope"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 15
+    for key in ("source_runtime", "network"):
+        assert spec["authority"][key] is True, key
+    for key in ("dependencies", "workflow_files", "credentials", "scheduler", "hermes_runtime", "strategy", "paper",
+                "execution", "live"):
+        assert spec["authority"][key] is False, key
+    assert spec["successor_boundary"]["next_wp"] == "S10-QUAL-REAL-01"
     assert spec["successor_boundary"]["separately_gated"] is True
     assert "merge" in spec["successor_boundary"]["forbidden_in_this_wp"]
