@@ -58,7 +58,7 @@
 - Security: gitleaks PASS; semgrep PASS; local environment pip-audit reported 16 advisories in
   `pyjwt` and `urllib3`, neither added or changed by this dependency-free WP; authoritative
   project dependency-closure audit remains the exact-head hosted CI surface
-- Exact-head hosted CI: pending PR publication
+- Exact-head hosted CI: see the current GitHub PR body and check metadata for the live head
 
 ## Negative Test Matrix
 
@@ -76,5 +76,5 @@
 
 ## Ready for Review
 
-- Ready for review: NO until validation, PR publication, live manual evidence verification and exact-head CI complete
+- Ready for review: governed by the current GitHub PR body after live manual verification and exact-head CI
 - Merge authorized: NO
