@@ -10,7 +10,8 @@
 - Validated implementation commit: recorded in the PR body after final validation
 - Current live PR head: see GitHub PR metadata and PR body. This status fragment is stable and non-self-referential; it does not attempt to encode dynamic PR metadata or the SHA of the commit containing itself.
 - Merge commit: not merged
-- Evidence mode: BLOCKED_NOT_READY until live PR publication and manual verification complete
+- Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED selected; live verification fields are recorded in
+  the PR body after publication because this stable fragment is intentionally non-self-referential
 
 ## Authority Posture
 
@@ -51,7 +52,7 @@
 - Focused tests: PASS, 91 passed in 7.40s
 - Docs tests: PASS, 256 passed in 4.94s
 - Full pytest: PASS, 12758 passed / 6 skipped / 124 warnings in 580.91s
-- Readiness/check-diff: pending final stable-candidate run
+- Readiness/check-diff: PASS, IMPLEMENTATION_READY (RUNTIME), exact 21 paths / 27 evidence items / 16 rules
 - Generated artifact guard: PASS
 - Diff hygiene: `git diff --check` PASS; exact changed-file scope 21/21
 - Security: gitleaks PASS; semgrep PASS; local environment pip-audit reported 16 advisories in
