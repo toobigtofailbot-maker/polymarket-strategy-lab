@@ -1,5 +1,26 @@
 # Repo Truth Index
 
+## S10-PAPER-RESEARCH-01 Generic Research-Paper + Evidence Loop Bridge (current bounded implementation target)
+
+The contract is `docs/serious_paper_trading_contract.md`; the implementation is the additive
+`ResearchPaperStrategyBinding`, `PaperEngine.create_research`, research intent scope enforcement,
+`src/research_runtime/paper_performance_bridge.py`, and the finite local `research-init` /
+`research-snapshot` CLI commands. The frozen package is
+`docs/wp_specs/S10-PAPER-RESEARCH-01/`; the stable evidence record is
+`docs/status_entries/S10-PAPER-RESEARCH-01.md`. Base
+`d7166f947d764c4fbda65a7d8092d3984a37c7a7` (PR #207 / S10-DEPLOY-PLAN-01 merged,
+head `48a4e69e4083b04d88e4e16457e03e713314834d`). RUNTIME, risk 3, exact 21-path XL
+scope. Research paper is a non-qualifying learning tier: it reuses WP173 deterministic
+simulation machinery but cannot create WP170/WP172 evidence, satisfy Gate C, authorize execution,
+or promote live. Legacy qualified WP173 bindings/stores remain compatible without migration.
+Snapshots bind the exact verified store event head and state hash, are advisory-only, and may be
+adapted through the existing Hermes deterministic-project-evidence builder or referenced opaquely
+by existing Alpha `deterministic_evidence_refs`; no provider/model invocation or Alpha registry
+mutation occurs. DATA-03 is untouched and remains the separate confirmatory weather lane; the
+weather first-look cohort beginning `2026-10-15T00:00:00Z` is not exposed. No candidate-specific
+strategy, weather paper, scheduler, dependency/workflow, credential, product network, production
+Gate-C, execution or live change; capital/orders 0; merge NOT AUTHORIZED.
+
 ## S10-DEPLOY-PLAN-01 Production VPS Hosting Direction Lock (current bounded planning target)
 
 The focused planning contract is `docs/production_vps_hosting_direction.md`; the status fragment is

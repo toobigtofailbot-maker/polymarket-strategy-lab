@@ -1126,7 +1126,8 @@ def test_s10_deploy_plan_01_repo_truth() -> None:
                   "DATA-03 is moved to the VPS"):
         assert claim not in section, claim
     assert index.index("## S10-DEPLOY-PLAN-01 ") < index.index("## S10-QUAL-DATA-03 ") < index.index("## S10-QUAL-PLAN-01 ")
-    assert index.index("## S10-DEPLOY-PLAN-01 ") == index.index("\n## ") + 1
+    assert index.index("## S10-PAPER-RESEARCH-01 ") == index.index("\n## ") + 1
+    assert index.index("## S10-PAPER-RESEARCH-01 ") < index.index("## S10-DEPLOY-PLAN-01 ")
     assert "Current bounded planning package: S10-DEPLOY-PLAN-01 — Production VPS Hosting Direction Lock" in roadmap
     assert roadmap.index("Current bounded planning package: S10-DEPLOY-PLAN-01") < roadmap.index(
         "Historical predecessor (PR #206 merged at d45d9587401faddd2ba92f33cb84f2988b6cfe70")
@@ -1140,3 +1141,13 @@ def test_s10_deploy_plan_01_repo_truth() -> None:
     assert "geoblocking" in rows["S10-DEPLOY-PLAN-01-D004"] and "P1" in rows["S10-DEPLOY-PLAN-01-D004"]
     assert "caps M at 10 changed files" in rows["S10-DEPLOY-PLAN-01-D005"]
     assert deferred.splitlines()[-1].startswith("| S10-DEPLOY-PLAN-01-D005 |")
+def test_s10_paper_research_repo_truth() -> None:
+    index = Path("docs/repo_truth_index.md").read_text(encoding="utf-8")
+    section = index.split("## S10-DEPLOY-PLAN-01", 1)[0]
+    assert "S10-PAPER-RESEARCH-01 Generic Research-Paper + Evidence Loop Bridge" in section
+    assert "RUNTIME, risk 3, exact 21-path XL" in section
+    assert "non-qualifying learning tier" in section
+    assert "Legacy qualified WP173 bindings/stores remain compatible without migration" in section
+    assert "DATA-03 is untouched" in section
+    assert "weather first-look cohort beginning `2026-10-15T00:00:00Z` is not exposed" in section
+    assert "capital/orders 0" in section

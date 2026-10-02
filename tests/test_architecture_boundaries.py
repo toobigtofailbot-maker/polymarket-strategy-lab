@@ -153,6 +153,8 @@ APPROVED_SRC_SCOPES = (
     "src/research_runtime/executable_edge",
     "src/research_runtime/hermes_controlled_runtime",
     "src/research_runtime/README.md",
+    # S10-PAPER-RESEARCH-01 permits this research-paper evidence bridge only; it has no live authority.
+    "src/research_runtime/paper_performance_bridge.py",
     "src/paper_trading",
     "src/execution_gateway",
     # WP171 approves one local, read-only cockpit and its browser source. It reads

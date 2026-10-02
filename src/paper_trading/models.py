@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 import hashlib
 import json
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from src.research_runtime.executable_edge import (
     ExecutableEdgeAssessment,
@@ -135,6 +135,48 @@ class PaperStrategyBinding:
     simulated_paper_only: bool
 
 
+@dataclass(frozen=True)
+class ResearchPaperStrategyBinding:
+    schema_version: str
+    binding_id: str
+    binding_kind: str
+    candidate_id: str
+    hypothesis_family_id: str | None
+    research_episode_id: str | None
+    strategy_spec_id: str
+    strategy_version: str
+    strategy_code_identity: str
+    subject_refs: tuple[str, ...]
+    scope_id: str
+    allowed_market_ids: tuple[str, ...]
+    market_data_lineage_id: str
+    decision_time_start_ns: int
+    decision_time_end_ns: int
+    execution_mode: str
+    fee_rate_bps: str
+    maker_rebate_bps: str
+    latency_ns: int
+    order_ttl_ns: int | None
+    queue_ahead_multiplier: str
+    markout_horizon_ns: int
+    max_data_age_ns: int
+    reserved_evidence_policy: str
+    reserved_evidence_refs: tuple[str, ...]
+    admitted_scope_refs: tuple[str, ...]
+    created_time_ns: int
+    research_paper_only: bool
+    simulated_paper_only: bool
+    qualification_claim: bool
+    executable_edge_claim: bool
+    wp173_qualified_evaluation_eligible: bool
+    gate_c_eligible: bool
+    live_promotion_eligible: bool
+    real_capital_usd: str
+
+
+PaperBinding = PaperStrategyBinding | ResearchPaperStrategyBinding
+
+
 def _binding_preimage(binding: PaperStrategyBinding) -> dict[str, object]:
     value = asdict(binding)
     value.pop("binding_id")
@@ -229,6 +271,203 @@ def validate_strategy_binding(binding: object) -> None:
         raise PaperTradingError("WP172_BINDING_INVALID")
 
 
+def _research_binding_preimage(
+    binding: ResearchPaperStrategyBinding,
+) -> dict[str, object]:
+    value = asdict(binding)
+    value.pop("binding_id")
+    for key in (
+        "research_paper_only",
+        "simulated_paper_only",
+        "qualification_claim",
+        "executable_edge_claim",
+        "wp173_qualified_evaluation_eligible",
+        "gate_c_eligible",
+        "live_promotion_eligible",
+        "real_capital_usd",
+    ):
+        value.pop(key)
+    return value
+
+
+def _ordered_unique_text(values: object, *, allow_empty: bool = False) -> tuple[str, ...]:
+    if not isinstance(values, (tuple, list)):
+        raise PaperTradingError("RESEARCH_BINDING_INVALID")
+    try:
+        result = tuple(_text(value) for value in values)
+    except PaperTradingError:
+        raise PaperTradingError("RESEARCH_BINDING_INVALID") from None
+    if (not allow_empty and not result) or len(result) != len(set(result)):
+        raise PaperTradingError("RESEARCH_BINDING_INVALID")
+    return tuple(sorted(result))
+
+
+def build_research_strategy_binding(
+    *,
+    candidate_id: str,
+    hypothesis_family_id: str | None,
+    research_episode_id: str | None,
+    strategy_spec_id: str,
+    strategy_version: str,
+    strategy_code_identity: str,
+    subject_refs: Sequence[str],
+    scope_id: str,
+    allowed_market_ids: Sequence[str],
+    market_data_lineage_id: str,
+    decision_time_start_ns: int,
+    decision_time_end_ns: int,
+    execution_mode: str,
+    fee_rate_bps: str,
+    maker_rebate_bps: str,
+    latency_ns: int,
+    order_ttl_ns: int | None,
+    queue_ahead_multiplier: str,
+    markout_horizon_ns: int,
+    max_data_age_ns: int,
+    reserved_evidence_policy: str,
+    reserved_evidence_refs: Sequence[str],
+    admitted_scope_refs: Sequence[str],
+    created_time_ns: int,
+) -> ResearchPaperStrategyBinding:
+    provisional = ResearchPaperStrategyBinding(
+        SCHEMA_VERSION,
+        "",
+        "RESEARCH_PAPER",
+        candidate_id,
+        hypothesis_family_id,
+        research_episode_id,
+        strategy_spec_id,
+        strategy_version,
+        strategy_code_identity,
+        tuple(subject_refs),
+        scope_id,
+        tuple(allowed_market_ids),
+        market_data_lineage_id,
+        decision_time_start_ns,
+        decision_time_end_ns,
+        execution_mode,
+        fee_rate_bps,
+        maker_rebate_bps,
+        latency_ns,
+        order_ttl_ns,
+        queue_ahead_multiplier,
+        markout_horizon_ns,
+        max_data_age_ns,
+        reserved_evidence_policy,
+        tuple(reserved_evidence_refs),
+        tuple(admitted_scope_refs),
+        created_time_ns,
+        True,
+        True,
+        False,
+        False,
+        False,
+        False,
+        False,
+        "0",
+    )
+    provisional = replace(
+        provisional,
+        subject_refs=_ordered_unique_text(provisional.subject_refs),
+        allowed_market_ids=_ordered_unique_text(provisional.allowed_market_ids),
+        reserved_evidence_refs=_ordered_unique_text(
+            provisional.reserved_evidence_refs, allow_empty=True
+        ),
+        admitted_scope_refs=_ordered_unique_text(
+            provisional.admitted_scope_refs, allow_empty=True
+        ),
+    )
+    provisional = replace(
+        provisional,
+        binding_id=content_id(
+            "researchpaperbinding:sha256:", _research_binding_preimage(provisional)
+        ),
+    )
+    validate_research_strategy_binding(provisional)
+    return provisional
+
+
+def validate_research_strategy_binding(binding: object) -> None:
+    if type(binding) is not ResearchPaperStrategyBinding:
+        raise PaperTradingError("RESEARCH_BINDING_INVALID")
+    identities = (
+        binding.candidate_id,
+        binding.strategy_spec_id,
+        binding.strategy_code_identity,
+        binding.scope_id,
+        binding.market_data_lineage_id,
+    )
+    if any(_ID_RE.fullmatch(identity) is None for identity in identities):
+        raise PaperTradingError("RESEARCH_BINDING_INVALID")
+    for optional in (binding.hypothesis_family_id, binding.research_episode_id):
+        if optional is not None and _ID_RE.fullmatch(optional) is None:
+            raise PaperTradingError("RESEARCH_BINDING_INVALID")
+    _text(binding.strategy_version, label=True)
+    subjects = _ordered_unique_text(binding.subject_refs)
+    markets = _ordered_unique_text(binding.allowed_market_ids)
+    reserved = _ordered_unique_text(binding.reserved_evidence_refs, allow_empty=True)
+    admitted = _ordered_unique_text(binding.admitted_scope_refs, allow_empty=True)
+    if any(_ID_RE.fullmatch(item) is None for item in reserved + admitted):
+        raise PaperTradingError("RESEARCH_BINDING_INVALID")
+    for value in (
+        binding.created_time_ns,
+        binding.decision_time_start_ns,
+        binding.decision_time_end_ns,
+    ):
+        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+            raise PaperTradingError("RESEARCH_BINDING_INVALID")
+    if (
+        binding.schema_version != SCHEMA_VERSION
+        or binding.binding_kind != "RESEARCH_PAPER"
+        or binding.subject_refs != subjects
+        or binding.allowed_market_ids != markets
+        or binding.reserved_evidence_refs != reserved
+        or binding.admitted_scope_refs != admitted
+        or binding.reserved_evidence_policy != "NON_CONFIRMATORY_RESEARCH_PAPER"
+        or bool(reserved)
+        or bool(admitted)
+        or binding.decision_time_start_ns >= binding.decision_time_end_ns
+        or binding.execution_mode not in ORDER_STYLES
+        or binding.order_ttl_ns is not None
+        and (not isinstance(binding.order_ttl_ns, int) or binding.order_ttl_ns <= 0)
+        or binding.execution_mode == "PASSIVE_MAKER" and binding.order_ttl_ns is None
+        or not isinstance(binding.latency_ns, int)
+        or isinstance(binding.latency_ns, bool)
+        or binding.latency_ns < 0
+        or not isinstance(binding.max_data_age_ns, int)
+        or isinstance(binding.max_data_age_ns, bool)
+        or binding.max_data_age_ns < 0
+        or not isinstance(binding.markout_horizon_ns, int)
+        or isinstance(binding.markout_horizon_ns, bool)
+        or binding.markout_horizon_ns < 0
+        or decimal_value(binding.fee_rate_bps, nonnegative=True) < 0
+        or decimal_value(binding.maker_rebate_bps, nonnegative=True) < 0
+        or decimal_value(binding.queue_ahead_multiplier, nonnegative=True) < 1
+        or not binding.research_paper_only
+        or not binding.simulated_paper_only
+        or binding.qualification_claim
+        or binding.executable_edge_claim
+        or binding.wp173_qualified_evaluation_eligible
+        or binding.gate_c_eligible
+        or binding.live_promotion_eligible
+        or binding.real_capital_usd != "0"
+        or binding.binding_id
+        != content_id(
+            "researchpaperbinding:sha256:", _research_binding_preimage(binding)
+        )
+    ):
+        raise PaperTradingError("RESEARCH_BINDING_INVALID")
+
+
+def validate_paper_binding(binding: object) -> None:
+    if type(binding) is PaperStrategyBinding:
+        validate_strategy_binding(binding)
+    elif type(binding) is ResearchPaperStrategyBinding:
+        validate_research_strategy_binding(binding)
+    else:
+        raise PaperTradingError("BINDING_KIND_INVALID")
+
+
 @dataclass(frozen=True)
 class PaperIntent:
     schema_version: str
@@ -253,7 +492,7 @@ def _intent_preimage(intent: PaperIntent) -> dict[str, object]:
 
 
 def build_paper_intent(
-    binding: PaperStrategyBinding,
+    binding: PaperBinding,
     *,
     market_id: str,
     asset_id: str,
@@ -263,7 +502,7 @@ def build_paper_intent(
     reference_price: str,
     decision_time_ns: int,
 ) -> PaperIntent:
-    validate_strategy_binding(binding)
+    validate_paper_binding(binding)
     _text(market_id)
     _text(asset_id)
     if side not in SIDES or order_style != binding.execution_mode:
@@ -274,6 +513,13 @@ def build_paper_intent(
     if price > 1:
         raise PaperTradingError("INTENT_INVALID")
     _time(decision_time_ns)
+    if type(binding) is ResearchPaperStrategyBinding and (
+        market_id not in binding.allowed_market_ids
+        or not binding.decision_time_start_ns
+        <= decision_time_ns
+        < binding.decision_time_end_ns
+    ):
+        raise PaperTradingError("INTENT_INVALID")
     provisional = PaperIntent(
         SCHEMA_VERSION,
         "",
@@ -294,10 +540,10 @@ def build_paper_intent(
     )
 
 
-def validate_paper_intent(intent: object, binding: PaperStrategyBinding) -> None:
+def validate_paper_intent(intent: object, binding: PaperBinding) -> None:
     if type(intent) is not PaperIntent:
         raise PaperTradingError("INTENT_INVALID")
-    validate_strategy_binding(binding)
+    validate_paper_binding(binding)
     if (
         intent.schema_version != SCHEMA_VERSION
         or intent.binding_id != binding.binding_id
@@ -313,6 +559,13 @@ def validate_paper_intent(intent: object, binding: PaperStrategyBinding) -> None
     _text(intent.market_id)
     _text(intent.asset_id)
     _time(intent.decision_time_ns)
+    if type(binding) is ResearchPaperStrategyBinding and (
+        intent.market_id not in binding.allowed_market_ids
+        or not binding.decision_time_start_ns
+        <= intent.decision_time_ns
+        < binding.decision_time_end_ns
+    ):
+        raise PaperTradingError("INTENT_INVALID")
     if decimal_value(intent.quantity, nonnegative=True) <= 0:
         raise PaperTradingError("INTENT_INVALID")
     if decimal_value(intent.reference_price, nonnegative=True) > 1:
@@ -666,6 +919,14 @@ def dataclass_from_mapping(cls: type, value: Mapping[str, object]):
         elif cls is PaperMarketEvent:
             data["bids"] = tuple(tuple(level) for level in data.get("bids", ()))
             data["asks"] = tuple(tuple(level) for level in data.get("asks", ()))
+        elif cls is ResearchPaperStrategyBinding:
+            for name in (
+                "subject_refs",
+                "allowed_market_ids",
+                "reserved_evidence_refs",
+                "admitted_scope_refs",
+            ):
+                data[name] = tuple(data[name])
         return cls(**data)
     except (KeyError, TypeError, ValueError):
         raise PaperTradingError("SERIALIZATION_INVALID") from None

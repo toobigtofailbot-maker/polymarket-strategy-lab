@@ -2,6 +2,20 @@
 
 ## A. Status
 
+- Current bounded implementation package: S10-PAPER-RESEARCH-01 on frozen base
+  `d7166f947d764c4fbda65a7d8092d3984a37c7a7` after PR #207 / S10-DEPLOY-PLAN-01.
+  WP173 now has two strictly separated admission modes: its existing qualified serious-paper path
+  backed by WP172 `EXECUTABLE_EDGE_PASS`, and an additive non-qualifying research-paper learning
+  tier backed by a `ResearchPaperStrategyBinding`. Both reuse the same deterministic journal,
+  accounting, risk, fill, control and recovery machinery; legacy stores require no migration.
+  Research-paper performance snapshots are verified-store-derived, content-addressed,
+  advisory-only and carry no qualification, execution or live authority. They reuse existing
+  Hermes deterministic-project-evidence and Alpha deterministic-evidence-ref semantics without
+  provider calls or registry mutation. DATA-03 remains a parallel confirmatory weather lane and
+  is untouched; the first-look cohort starting `2026-10-15T00:00:00Z` remains protected. This WP
+  does not implement a weather strategy, candidate-specific strategy logic, ALPHA-03,
+  S10-DEPLOY-01, Gate C, credentials, scheduling, execution or live trading; capital/orders 0.
+
 - Current bounded implementation: S10-ALPHA-02 on exact base
   `a2fba4d770cd6fac1cfb551419d040d65768a8e9`; S10-WALLET-02 / PR #190,
   S10-HERMES-CTX-01, S10-WALLET-01, and S10-ALPHA-01 are COMPLETE. The package adds only

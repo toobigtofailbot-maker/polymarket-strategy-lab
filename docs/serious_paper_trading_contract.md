@@ -15,6 +15,26 @@ a daemon, a service, or a new external product-network client. It does not
 write WP169, WP170, or WP172 evidence. WP174 Auth / Signing / Execution Gateway
 is separately gated.
 
+WP173 has two closed admission modes. The original `PaperStrategyBinding` / `PaperEngine.create`
+mode remains the qualified serious-paper path and still requires exact WP172 evidence. The
+additive `ResearchPaperStrategyBinding` / `PaperEngine.create_research` mode is a non-qualifying
+learning tier. It requires no fabricated WP170/WP172 object and cannot claim qualification,
+executable edge, WP173 qualified-evaluation eligibility, Gate-C eligibility, live promotion or
+real capital. Both modes use the same deterministic store, journal, risk, fill, accounting,
+control, checkpoint and recovery implementation. Persistence accepts exactly this closed binding
+union; legacy qualified stores remain readable without a database migration.
+
+Research bindings freeze candidate/research/strategy lineage, explicit subject and allowed-market
+scope, a half-open decision-time window, execution assumptions, and the closed
+`NON_CONFIRMATORY_RESEARCH_PAPER` evidence-isolation posture. Research intents must use the exact
+binding, allowed market, time window and execution style in addition to the ordinary WP173
+quantity, price and TTL rules. This package has no in-scope reserved-evidence overlap oracle, so
+any non-empty reserved-evidence or admitted-scope proof set fails closed; candidates with no
+reserved confirmatory evidence remain available for non-confirmatory research paper.
+DATA-03 is not read or mutated by this path. In particular, the weather prospective first-look
+cohort beginning `2026-10-15T00:00:00Z` may not be exposed through same-cohort research paper or
+performance evidence before formal WP170 OOS release.
+
 ## Eligibility and immutable records
 
 A `PaperStrategyBinding` is valid only when both the complete WP172
@@ -156,3 +176,14 @@ change controls or limits, write evidence, or start execution.
 Paper results are forward-simulation evidence, not proof of future profitability
 and never rewrite WP170/WP172 research evidence. Negative results and rejected
 orders remain in the journal.
+
+`ResearchPaperPerformanceSnapshot` is an immutable content-addressed projection of a successfully
+verified and replayed paper store. It binds the exact event sequence/head and checkpoint state
+hash; records deterministic order, risk, fill, cost, markout, account, PnL, gap and resolution
+facts; excludes the local path from identity/output; and is always research-only, advisory-only,
+and without qualification, execution or live authority. Qualified stores may also be projected
+for research analysis without promoting the snapshot. The adapter uses the existing Hermes
+`ContextEvidenceItem` builder as `DETERMINISTIC_DERIVED` /
+`DETERMINISTIC_PROJECT_EVIDENCE`; it does not invoke Hermes, a provider or a model and does not
+make a research conclusion. The snapshot ID is an opaque existing Alpha deterministic evidence
+reference and causes no automatic registry mutation.

@@ -5501,7 +5501,8 @@ def test_s10_deploy_plan_01_is_current_planning_target() -> None:
         assert stale not in fragment, stale
     data03 = next(index for index, line in enumerate(lines) if line.startswith("# S10-QUAL-DATA-03 merged historical truth"))
     assert lines.index(current) < data03
-    assert lines.index(current) == next(index for index, line in enumerate(lines) if line.startswith("# S10-"))
+    research = next(index for index, line in enumerate(lines) if line.startswith("# S10-PAPER-RESEARCH-01"))
+    assert research < lines.index(current) < data03
     assert spec["identity"]["wp_id"] == "S10-DEPLOY-PLAN-01"
     assert spec["identity"]["package_class"] == "DOCS_ONLY_ARCHITECTURE_ROADMAP"
     assert spec["identity"]["risk_level"] == 1
@@ -5528,3 +5529,40 @@ def test_s10_deploy_plan_01_is_current_planning_target() -> None:
     forbidden = " ".join(spec["successor_boundary"]["forbidden_in_this_wp"])
     for text in ("merge", "VPS purchase, provisioning", "running DATA-03 prepare", "any 14th changed path"):
         assert text in forbidden, text
+def test_s10_paper_research_docs_preserve_weather_first_look() -> None:
+    status = pathlib.Path("docs/project_status.md").read_text(encoding="utf-8")
+    contract = pathlib.Path("docs/serious_paper_trading_contract.md").read_text(encoding="utf-8")
+    roadmap = pathlib.Path("docs/long_term_bot_completion_roadmap.md").read_text(encoding="utf-8")
+    current = status.split("# S10-DEPLOY-PLAN-01", 1)[0]
+    assert "S10-PAPER-RESEARCH-01 current bounded implementation target" in current
+    assert "DATA-03 is a parallel weather confirmatory lane" in current
+    assert "2026-10-15T00:00:00Z remains protected" in current
+    assert "product/provider/Hermes calls: 0" in current
+    assert "Package size class: XL" in current
+    assert "Exact changed-file scope: 21" in current
+    assert "Merge authorized: NO" in current
+    assert "NON_CONFIRMATORY_RESEARCH_PAPER" in contract
+    assert "DATA-03 is not read or mutated" in contract
+    assert "non-qualifying research-paper learning" in roadmap
+    assert "S10-DEPLOY-01" in roadmap and "does not implement" in roadmap
+
+
+def test_s10_paper_research_status_fragment_has_stable_boundaries() -> None:
+    text = pathlib.Path("docs/status_entries/S10-PAPER-RESEARCH-01.md").read_text(encoding="utf-8")
+    spec = json.loads(
+        pathlib.Path("docs/wp_specs/S10-PAPER-RESEARCH-01/wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert "PR: see GitHub PR metadata and PR body." in text
+    assert "Current live PR head: see GitHub PR metadata and PR body." in text
+    assert "Production Gate C" in text and "unchanged" in text
+    assert "exact 21-path package only" in text
+    assert "paper_performance_bridge.py" in text
+    assert "Merge authorized: NO" in text
+    scope = spec["scope"]
+    assert spec["identity"]["package_size_class"] == "XL"
+    assert spec["identity"]["xl_explicit_authorization"] is True
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 21
+    assert "tests/test_architecture_boundaries.py" in scope["required_changed_files"]

@@ -15,3 +15,10 @@ exact persistent checkpoint head it opened, and every mutation verifies that
 head inside its SQLite write transaction. If a CLI process changes the same
 store, a long-lived runtime fails closed on its next poll (even without a new
 market event) and must be restarted to reconstruct the committed state.
+
+The additive research-paper lane uses `ResearchPaperStrategyBinding` and
+`PaperEngine.create_research`. It is a non-qualifying, simulated learning tier: no WP170/WP172
+object is fabricated, and its fixed flags deny qualification, Gate C, execution and live
+promotion. Research intents are bound to the declared market set and half-open decision-time
+window. The finite local CLI commands are `research-init` and `research-snapshot`; the latter
+verifies/replays without mutating the store and emits a content-addressed advisory-only snapshot.
