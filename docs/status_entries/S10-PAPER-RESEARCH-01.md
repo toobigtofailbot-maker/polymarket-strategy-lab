@@ -43,15 +43,18 @@
 - Intent admission: exact binding, market set, half-open time window and execution style
 - Snapshot: exact verified store event-head/state-bound, deterministic and advisory-only
 - Hermes/Alpha: existing evidence semantics reused without provider or registry invocation
+- Exact-head Fix 01: Hermes evidence scope is bound to the snapshot `scope_id` digest; cutoff is
+  bound to snapshot nanoseconds and fractional values emit the conservative next whole UTC second
+  so caller rebinding, backdating and lexical sub-second historical admissibility fail closed
 - Gate C: production source unchanged; research binding/store rejected by test
 - DATA-03/weather first-look: untouched and protected
 
 ## Validation Summary
 
 - Pre-implementation readiness: IMPLEMENTATION_READY (RUNTIME), 21 scope paths / 27 evidence items / 16 rules
-- Focused tests: PASS, 91 passed in 7.40s
-- Docs tests: PASS, 256 passed in 4.94s
-- Full pytest: PASS, 12758 passed / 6 skipped / 124 warnings in 580.91s
+- Focused tests: PASS, 93 passed in 7.41s
+- Docs tests: PASS, 256 passed in 1.60s
+- Full pytest: PASS, 12760 passed / 6 skipped / 124 warnings in 578.08s
 - Readiness/check-diff: PASS, IMPLEMENTATION_READY (RUNTIME), exact 21 paths / 27 evidence items / 16 rules
 - Generated artifact guard: PASS
 - Diff hygiene: `git diff --check` PASS; exact changed-file scope 21/21

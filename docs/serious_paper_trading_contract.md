@@ -186,4 +186,9 @@ for research analysis without promoting the snapshot. The adapter uses the exist
 `ContextEvidenceItem` builder as `DETERMINISTIC_DERIVED` /
 `DETERMINISTIC_PROJECT_EVIDENCE`; it does not invoke Hermes, a provider or a model and does not
 make a research conclusion. The snapshot ID is an opaque existing Alpha deterministic evidence
-reference and causes no automatic registry mutation.
+reference and causes no automatic registry mutation. The adapter cannot rebind a snapshot to
+another scope or backdate its information cutoff: it derives the evidence scope digest from the
+snapshot `scope_id` and accepts only the exact snapshot cutoff or its conservative equivalent.
+Because Hermes compares cutoff strings lexically, a fractional snapshot cutoff is emitted as the
+next whole UTC second. This deterministic, fail-closed representation may reject otherwise-valid
+same-second evidence but cannot make later evidence appear historically admissible.

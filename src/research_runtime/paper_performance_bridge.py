@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, replace
-from decimal import Decimal
 from collections.abc import Sequence
+from dataclasses import asdict, dataclass, replace
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 import re
 
+from src.data_layer.point_in_time_market_research.research_provenance import (
+    canonicalize_utc_timestamp,
+)
 from src.paper_trading.accounting import mark_account
 from src.paper_trading.engine import _replay_journal, state_to_mapping, valid_marks
 from src.paper_trading.models import (
@@ -26,6 +30,8 @@ from src.research_runtime.hermes_controlled_runtime.context_reconciliation impor
 
 
 SNAPSHOT_SCHEMA_VERSION = "1.0.0"
+_SCOPE_ID_RE = re.compile(r"^[a-z][a-z0-9_]*:sha256:([0-9a-f]{64})$")
+_UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 
 @dataclass(frozen=True)
@@ -236,6 +242,38 @@ def snapshot_to_mapping(snapshot: ResearchPaperPerformanceSnapshot) -> dict[str,
     return asdict(snapshot)
 
 
+def _snapshot_scope_sha256(snapshot: ResearchPaperPerformanceSnapshot) -> str:
+    match = _SCOPE_ID_RE.fullmatch(snapshot.scope_id)
+    if match is None:
+        raise ReconciliationError("EVIDENCE_INVALID")
+    return match.group(1)
+
+
+def _snapshot_information_cutoffs(
+    snapshot: ResearchPaperPerformanceSnapshot,
+) -> tuple[str, str]:
+    if type(snapshot.information_cutoff_ns) is not int:
+        raise ReconciliationError("EVIDENCE_INVALID")
+    seconds, nanoseconds = divmod(snapshot.information_cutoff_ns, 1_000_000_000)
+    try:
+        whole_second = _UNIX_EPOCH + timedelta(seconds=seconds)
+    except (OverflowError, ValueError):
+        raise ReconciliationError("EVIDENCE_INVALID") from None
+    base = whole_second.strftime("%Y-%m-%dT%H:%M:%S")
+    exact = base + (
+        f".{nanoseconds:09d}".rstrip("0") if nanoseconds else ""
+    ) + "Z"
+    conservative = exact
+    if nanoseconds:
+        try:
+            conservative = (whole_second + timedelta(seconds=1)).strftime(
+                "%Y-%m-%dT%H:%M:%SZ"
+            )
+        except (OverflowError, ValueError):
+            raise ReconciliationError("EVIDENCE_INVALID") from None
+    return exact, conservative
+
+
 def build_snapshot_context_evidence(
     snapshot: ResearchPaperPerformanceSnapshot,
     *,
@@ -246,11 +284,16 @@ def build_snapshot_context_evidence(
     direction: str,
 ) -> ContextEvidenceItem:
     snapshot_to_mapping(snapshot)
+    expected_scope_sha256 = _snapshot_scope_sha256(snapshot)
+    exact_cutoff, conservative_cutoff = _snapshot_information_cutoffs(snapshot)
+    try:
+        canonical_cutoff = canonicalize_utc_timestamp(information_cutoff)
+    except (TypeError, ValueError):
+        raise ReconciliationError("EVIDENCE_INVALID") from None
     if (
         tuple(sorted(set(subject_refs))) != snapshot.subject_refs
-        or re.fullmatch(r"[0-9a-f]{64}", scope_sha256) is None
-        or not isinstance(information_cutoff, str)
-        or not information_cutoff
+        or scope_sha256 != expected_scope_sha256
+        or canonical_cutoff not in {exact_cutoff, conservative_cutoff}
         or admissibility_status not in {"ADMISSIBLE", "INADMISSIBLE"}
     ):
         raise ReconciliationError("EVIDENCE_INVALID")
@@ -258,8 +301,8 @@ def build_snapshot_context_evidence(
         content_sha256=snapshot.snapshot_id.rsplit(":", 1)[-1],
         evidence_class="DETERMINISTIC_DERIVED",
         subject_refs=subject_refs,
-        scope_sha256=scope_sha256,
-        information_cutoff=information_cutoff,
+        scope_sha256=expected_scope_sha256,
+        information_cutoff=conservative_cutoff,
         admissibility_status=admissibility_status,
         origin="DETERMINISTIC_PROJECT_EVIDENCE",
         direction=direction,

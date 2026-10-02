@@ -148,10 +148,13 @@ no_execution_authority and no_live_authority are true. No path participates in i
 output. Corrupt, blocked and unknown-binding stores fail with sanitized closed errors.
 
 The adapter calls the existing ContextEvidenceItem builder with evidence_class
-DETERMINISTIC_DERIVED and origin DETERMINISTIC_PROJECT_EVIDENCE, explicit subject refs, scope
-hash, cutoff, admissibility and SUPPORTING/CONTRADICTING direction. It performs no provider
-invocation and makes no research conclusion. Snapshot IDs are valid opaque existing
-ResearchEpisode.deterministic_evidence_refs. No Alpha registry mutation.
+DETERMINISTIC_DERIVED and origin DETERMINISTIC_PROJECT_EVIDENCE, exact subject refs,
+snapshot-bound scope hash and cutoff, admissibility and SUPPORTING/CONTRADICTING direction. It
+cannot rebind a snapshot to another scope or backdate its information cutoff. A fractional
+snapshot cutoff is emitted conservatively as the next whole UTC second because Hermes compares
+cutoff strings lexically; this can reject same-second evidence but cannot create false historical
+admissibility. It performs no provider invocation and makes no research conclusion. Snapshot IDs
+are valid opaque existing ResearchEpisode.deterministic_evidence_refs. No Alpha registry mutation.
 
 7. CLI AND GATE-C BOUNDARY
 
@@ -218,7 +221,7 @@ NR005|paper|engine|research_admission|ACCEPT|reuse_existing_wp173_engine|researc
 NR006|paper|legacy_qualified|existing_store|PRESERVE_EXACT|backward_compatible|research.binding|R006
 NR007|evidence|snapshot|store_not_verified|FORBID|reject|evidence.snapshot|R017
 NR008|evidence|snapshot|valid_store|REQUIRE|bind_exact_store_head|evidence.snapshot|R015
-NR009|hermes|adapter|valid_snapshot|ACCEPT|deterministic_project_evidence|evidence.snapshot|R019
+NR009|hermes|adapter|valid_snapshot_and_snapshot_bound_scope_cutoff|ACCEPT|deterministic_project_evidence_without_scope_rebinding_or_cutoff_backdating|evidence.snapshot|R019
 NR010|alpha|evidence_ref|snapshot_id|ACCEPT|opaque_deterministic_evidence_ref|evidence.snapshot|R020
 NR011|gate_c|research_binding|qualification_attempt|FORBID|reject|research.binding|R021
 NR012|weather|reserved_oos|overlap_or_unproven_isolation|FORBID|reject_or_do_not_run|research.scope|R022

@@ -5,6 +5,9 @@ import pytest
 
 from src.data_layer.analytical_research import alpha_factory as af
 from src.paper_trading import PaperEngine, PaperStore, PaperTradingError
+from src.research_runtime.hermes_controlled_runtime.context_reconciliation import (
+    ReconciliationError,
+)
 from src.research_runtime.paper_performance_bridge import (
     ResearchPaperPerformanceSnapshot,
     build_research_paper_performance_snapshot,
@@ -82,14 +85,65 @@ def test_snapshot_builds_deterministic_project_evidence(tmp_path) -> None:
         item = build_snapshot_context_evidence(
             snapshot,
             subject_refs=snapshot.subject_refs,
-            scope_sha256="a" * 64,
-            information_cutoff="2026-10-01T00:00:00Z",
+            scope_sha256="6" * 64,
+            information_cutoff="1970-01-01T00:00:00.000000111Z",
             admissibility_status="ADMISSIBLE",
             direction="SUPPORTING",
         )
+        repeated = build_snapshot_context_evidence(
+            snapshot,
+            subject_refs=snapshot.subject_refs,
+            scope_sha256="6" * 64,
+            information_cutoff="1970-01-01T00:00:01+00:00",
+            admissibility_status="ADMISSIBLE",
+            direction="SUPPORTING",
+        )
+        assert repeated == item
         assert item.evidence_class == "DETERMINISTIC_DERIVED"
         assert item.origin == "DETERMINISTIC_PROJECT_EVIDENCE"
         assert item.direction == "SUPPORTING"
+        assert item.scope_sha256 == "6" * 64
+        assert item.information_cutoff == "1970-01-01T00:00:01Z"
+
+
+def test_snapshot_evidence_rejects_provenance_rebinding(tmp_path) -> None:
+    with _filled_store(tmp_path / "paper.sqlite3")[0] as store:
+        snapshot = build_research_paper_performance_snapshot(store)
+        valid = {
+            "subject_refs": snapshot.subject_refs,
+            "scope_sha256": "6" * 64,
+            "information_cutoff": "1970-01-01T00:00:00.000000111Z",
+            "admissibility_status": "ADMISSIBLE",
+            "direction": "SUPPORTING",
+        }
+        invalid_changes = (
+            {"information_cutoff": "1970-01-01T00:00:00Z"},
+            {"information_cutoff": "1970-01-01T00:00:00"},
+            {"information_cutoff": "1970-01-01T01:00:00+01:00"},
+            {"scope_sha256": "7" * 64},
+            {"subject_refs": ("market:other",)},
+        )
+        for changes in invalid_changes:
+            with pytest.raises(ReconciliationError, match="EVIDENCE_INVALID"):
+                build_snapshot_context_evidence(snapshot, **(valid | changes))
+
+
+def test_snapshot_fractional_cutoff_cannot_sort_as_earlier_evidence(tmp_path) -> None:
+    with _filled_store(tmp_path / "paper.sqlite3")[0] as store:
+        snapshot = build_research_paper_performance_snapshot(store)
+        actual_cutoff = "1970-01-01T00:00:00.000000111Z"
+        earlier_campaign_cutoff = "1970-01-01T00:00:00.0000001Z"
+        assert actual_cutoff < earlier_campaign_cutoff  # Hermes compares these strings.
+        item = build_snapshot_context_evidence(
+            snapshot,
+            subject_refs=snapshot.subject_refs,
+            scope_sha256="6" * 64,
+            information_cutoff=actual_cutoff,
+            admissibility_status="ADMISSIBLE",
+            direction="SUPPORTING",
+        )
+        assert item.information_cutoff == "1970-01-01T00:00:01Z"
+        assert item.information_cutoff > earlier_campaign_cutoff
 
 
 def test_snapshot_id_is_valid_alpha_deterministic_evidence_ref(tmp_path) -> None:
