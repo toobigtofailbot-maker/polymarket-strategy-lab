@@ -1,5 +1,24 @@
 # Repo Truth Index
 
+## S10-DEPLOY-01 Research Platform Runtime Baseline (current bounded implementation target)
+
+The contract is `docs/research_platform_runtime_baseline_contract.md`; the implementation is
+under `tools/deployment/`; the frozen package is `docs/wp_specs/S10-DEPLOY-01/`; and the stable
+record is `docs/status_entries/S10-DEPLOY-01.md`. Base
+`0b14c951c4546ebc28e0d129643da4ad4615ce2e` (PR #208 / S10-PAPER-RESEARCH-01 merged,
+head `d5f61c086cbef74010856be88134e04c0e81a06d`). RUNTIME, risk 3, exact 19-path L scope.
+The package implements a credential-free tracked-file release builder/verifier, Ubuntu 24.04
+x86-64 systemd bootstrap, persistent `/var/lib/polymarket` state, exact research/critical slices,
+sanitized once-per-minute host telemetry, SQLite-aware hashed backup, isolated integrity-checked
+restore drills, an explicit SSH-port deny-inbound firewall contract, and one bounded post-merge
+public WP169 smoke. It adds no dependency, workflow or `src/` change. Provider purchase,
+provisioning, remote login and activation are deferred to a separately authorized post-merge
+human closure. This zero-capital research baseline may precede DATA-03 and candidate-specific
+WP172; a later execution coexistence/hardening proof still requires a real WP172 PASS before
+production-hosted serious paper/live. DATA-03 stays unchanged on its current operator environment.
+No credentials, authenticated clients, product recurring scheduler, paper session, execution,
+Gate C, live trading, capital or orders; merge NOT AUTHORIZED.
+
 ## S10-PAPER-RESEARCH-01 Generic Research-Paper + Evidence Loop Bridge (current bounded implementation target)
 
 The contract is `docs/serious_paper_trading_contract.md`; the implementation is the additive
@@ -21,23 +40,19 @@ weather first-look cohort beginning `2026-10-15T00:00:00Z` is not exposed. No ca
 strategy, weather paper, scheduler, dependency/workflow, credential, product network, production
 Gate-C, execution or live change; capital/orders 0; merge NOT AUTHORIZED.
 
-## S10-DEPLOY-PLAN-01 Production VPS Hosting Direction Lock (current bounded planning target)
+## S10-DEPLOY-PLAN-01 Production VPS Hosting Direction Lock (historical planning predecessor)
 
-The focused planning contract is `docs/production_vps_hosting_direction.md`; the status fragment is
-`docs/status_entries/S10-DEPLOY-PLAN-01.md`; the frozen package is `docs/wp_specs/S10-DEPLOY-PLAN-01/`. Base
-`d45d9587401faddd2ba92f33cb84f2988b6cfe70` (PR #206 / S10-QUAL-DATA-03 merged, head
-`b7d77f95df093b259a2a2b809ffe20308539e397`). FAST, risk 1, exact 13-path docs/tests scope (classified L by the repo
-size-budget policy; Side14 draft label M). Decision status APPROVED_PLANNING_DIRECTION; deployment status
-NOT_PROVISIONED / NOT_DEPLOYED. Provider AlphaVPS; location Sofia, Bulgaria; initial tier C8G (4 vCPU / 8 GB ECC RAM /
-75 GB NVMe RAID-10); Ubuntu 24.04 LTS / x86-64; ONE_CONSOLIDATED_POLYMARKET_VPS with no default separate research/live
-VPS; upgrade path C8G -> C12G -> C16G/P-series -> larger only by telemetry evidence. Migration point: after a real
-strategy-specific WP172 EXECUTABLE_EDGE_PASS exists and before the first serious production-hosted paper runtime using
-the existing WP173 system (generic WP172 via PR #174 and WP173 via PR #175 are already merged and are not
-reimplemented). Future implementation package S10-DEPLOY-01 (Production VPS Runtime Baseline) is NOT AUTHORIZED. It
-supersedes the WP61 "cheap VPS later" shorthand and the charter's open VPS/cloud choice as current planning truth.
-DATA-03 is not moved to the VPS; the next immediate DATA-03 runtime action remains the zero-network prepare. No
-src/tools/workflow/dependency change; no VPS purchase, provisioning, deployment, credential, scheduler, paper, live,
-Gate C, capital or order authority; merge NOT AUTHORIZED.
+PR #207 merged this FAST, risk-1, exact 13-path planning package at
+`d7166f947d764c4fbda65a7d8092d3984a37c7a7` from base
+`d45d9587401faddd2ba92f33cb84f2988b6cfe70` after PR #206. Its frozen package is
+`docs/wp_specs/S10-DEPLOY-PLAN-01/` and its stable record is
+`docs/status_entries/S10-DEPLOY-PLAN-01.md`. It selected AlphaVPS, Sofia, C8G (4 vCPU / 8 GB
+ECC RAM / 75 GB NVMe RAID-10), Ubuntu 24.04 LTS x86-64, and one consolidated future VPS,
+superseding the WP61 cheap-VPS shorthand and the open provider decision. Its old serial
+WP172-before-deployment timing is superseded by S10-DEPLOY-01: research hosting may begin as a
+zero-capital baseline now, while real WP172 PASS still gates later execution coexistence proof.
+DATA-03 remains unmoved. The historical package granted no purchase, provisioning, deployment,
+credential, scheduler, paper, execution, live, Gate C, capital, or order authority.
 
 ## S10-QUAL-DATA-03 Prospective Weather Qualification OOS Accrual + Execution-Terms Capture (merged historical predecessor: PR #206)
 

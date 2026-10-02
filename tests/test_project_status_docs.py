@@ -5566,3 +5566,35 @@ def test_s10_paper_research_status_fragment_has_stable_boundaries() -> None:
     assert scope["required_changed_files"] == scope["allowed_changed_files"]
     assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 21
     assert "tests/test_architecture_boundaries.py" in scope["required_changed_files"]
+
+
+def test_s10_deploy_exact_scope_and_authority() -> None:
+    spec = json.loads(
+        (REPO_ROOT / "docs/wp_specs/S10-DEPLOY-01/wp_spec.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    status = _read()
+    fragment = (REPO_ROOT / "docs/status_entries/S10-DEPLOY-01.md").read_text(
+        encoding="utf-8"
+    )
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 19
+    assert all(
+        path.startswith(("docs/", "tests/", "tools/deployment/"))
+        for path in scope["required_changed_files"]
+    )
+    assert not any(
+        path.startswith(("src/", ".github/"))
+        for path in scope["required_changed_files"]
+    )
+    assert spec["authority"]["local_offline_tooling"] is True
+    assert spec["authority"]["source_runtime"] is False
+    assert spec["authority"]["network"] is True
+    assert spec["authority"]["scheduler"] is True
+    for key in ("credentials", "paper", "execution", "live"):
+        assert spec["authority"][key] is False
+    assert "S10-DEPLOY-01 current bounded implementation target" in status
+    assert "Merge authorized: NO" in status
+    assert "Local offline tooling: YES" in fragment

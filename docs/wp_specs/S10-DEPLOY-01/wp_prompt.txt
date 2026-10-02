@@ -1,0 +1,185 @@
+SIDE15 — S10-DEPLOY-01
+RESEARCH PLATFORM RUNTIME BASELINE — AMENDMENT 01 CONSOLIDATED
+
+Package Identity:
+  WP ID: S10-DEPLOY-01
+  Title: Research Platform Runtime Baseline
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base: 0b14c951c4546ebc28e0d129643da4ad4615ce2e
+  Required predecessor: PR 208, head d5f61c086cbef74010856be88134e04c0e81a06d, merge 0b14c951c4546ebc28e0d129643da4ad4615ce2e
+  Suggested branch: codex/s10-deploy-01-research-runtime-baseline
+  Package class: RESEARCH_PLATFORM_RUNTIME_BASELINE
+  Package size class: L
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Governance track expected: RUNTIME
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: true
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+1. AUTHORIZATION AND OBJECTIVE
+
+Karl authorizes only this exact 19-file implementation and its validation, branch, commit,
+push, Ready-for-Review PR, and exact-head hosted CI. Merge and host activation are not
+authorized. Implement an Ubuntu 24.04 x86-64, native-systemd, zero-capital research-host
+baseline with credential-free exact releases, persistent /var/lib state, sanitized telemetry,
+operator-controlled backup/restore, and one bounded post-merge public research smoke contract.
+
+2. AUTHORITY / NON-AUTHORITY POSTURE
+
+Per the Centralized Boundary Group Reference in docs/ai/codex/PROTECTED_PATHS.md, this RUNTIME
+package crosses only the explicitly authorized local offline tooling, dashboard/deployment,
+runtime/daemon (telemetry oneshot), scheduler/bot-loop (the telemetry timer only), public
+network, docs, tests, and canonical-evidence boundaries. It does not cross credentials/secrets,
+authenticated clients, wallet/account behavior, order placement/cancel, execution gateway,
+paper engine, dependency/lock changes, external-code copying, source runtime, or generated-
+artifact authority. Research artifacts have no execution authority. LIVE is disabled, Gate C
+is not authorized, capital at risk is USD 0, and orders are 0.
+
+3. HARD STARTUP AND MERGE GATE
+
+Before resuming require clean existing package branch, origin/main at the frozen base, PR 208
+merged with exact head/merge SHAs, and no open package PR. Any drift is STOP REPO_STATE_DRIFT.
+Before implementation, this prompt/spec must return IMPLEMENTATION_READY (RUNTIME), tools/
+deployment authority classification must pass, and bounded historical full-changed-set guard
+discovery must find no required 20th path. Review readiness requires the exact 19 paths, green
+focused/docs/full validation, clean diff, security truth, exact-head hosted CI, and completely
+posted PRIVATE_REPO_MANUAL_VERIFIED evidence.
+
+4. CONTEXT BUDGET AND COMPATIBILITY / IMPOSSIBILITY CHECK
+
+Read startup truth, workflow governance, the exact scope, hosting direction, live authority,
+pyproject/.gitignore, and the existing public market-truth runner. Do not inspect DATA-03
+evidence, secrets, accounts, execution/live implementation, or unrelated history. Existing
+stdlib, systemd, venv, SQLite backup API, UFW, and WP169 public smoke mechanisms are sufficient.
+A dependency, workflow, credential, product daemon, 20th path, DATA-03 move, or execution/live
+change is impossible inside this package and requires the matching hard stop.
+
+5. EXACT CHANGED-FILE SCOPE
+
+Exactly these 19 paths must change:
+docs/long_term_bot_completion_roadmap.md
+docs/production_vps_hosting_direction.md
+docs/research_platform_runtime_baseline_contract.md
+docs/project_status.md
+docs/repo_truth_index.md
+docs/status_entries/S10-DEPLOY-01.md
+docs/wp_specs/S10-DEPLOY-01/wp_prompt.txt
+docs/wp_specs/S10-DEPLOY-01/wp_spec.json
+tools/deployment/README.md
+tools/deployment/runtime_baseline.py
+tools/deployment/bootstrap_ubuntu_24_04.sh
+tools/deployment/systemd/polymarket-research.slice
+tools/deployment/systemd/polymarket-critical.slice
+tools/deployment/systemd/polymarket-host-telemetry.service
+tools/deployment/systemd/polymarket-host-telemetry.timer
+tools/deployment/systemd/polymarket-research.target
+tests/deployment/test_runtime_baseline.py
+tests/test_project_status_docs.py
+tests/test_repo_truth_docs.py
+
+Forbidden prefixes are .github/, src/, agent_memory/, agent_runtime/, credentials/, local_data/,
+secrets/, tools/wp/, tools/git/, tools/security/, tools/hermes/, tools/polymarket/,
+tools/advisory/, and tools/agent/. Dependency and lock files, .env files, execution/live paths,
+and DATA-03 are forbidden. No 20th path is authorized.
+
+6. IMPLEMENTATION CONTRACT
+
+tools/deployment/runtime_baseline.py is stdlib-only and exposes closed build-release,
+verify-release, host-manifest, telemetry, backup, restore-verify, and research-smoke-evaluate
+subcommands. Release identity is exact-HEAD, tracked-files-only, deterministic canonical hash
+inventory, no absolute local identity, no credential-like payload, and no added/missing/
+tampered/symlink-escape content. Host/telemetry output excludes IP, hostname, username,
+environment, command lines, provider account IDs, and credentials. Telemetry rotates at 10 MiB
+with seven retained files. Backups reject secret, DATA-03 and symlink paths; use SQLite online
+backup for *.sqlite3. Restore writes only to an isolated restore drill, checks every hash and
+SQLite integrity, and never promotes active state.
+
+Bootstrap is strict, idempotent and fail-closed and requires root plus explicit --release-dir,
+--expected-sha and --ssh-port. It admits Ubuntu 24.04 x86-64 only, requires 4 CPUs, 7.5 GiB RAM,
+70 GiB disk, NTP, exact release verification, the polymarket no-login user, frozen directory
+layout, a per-release venv installed only from existing metadata, pip check, exact unit install
+and systemd-analyze verify. It permits the supplied SSH TCP port before enabling UFW deny-inbound
+and allow-outbound, never changes sshd, atomically updates /opt/polymarket/current, starts only
+the research target and telemetry timer, writes a host manifest, and emits sanitized JSON.
+
+The research slice is CPUWeight=25, CPUQuota=250%, MemoryHigh=4G, MemoryMax=5G, IOWeight=25.
+The critical slice is CPUWeight=100, MemoryLow=2G, IOWeight=100. The telemetry timer is persistent,
+first runs within 60 seconds, and repeats exactly every 60 seconds. No product service exists.
+
+The post-merge public smoke is exactly one finite, unauthenticated, read-only WP169 invocation
+under polymarket-research.slice: --allow-network --discover-active --duration-seconds 60,
+--max-pages 1, --output-db local_data/polymarket/deploy_smoke.sqlite3. Unavailability maps to
+BASELINE_INCONCLUSIVE. Capacity output is closed to C8G_RESEARCH_BASELINE_SUFFICIENT,
+UPGRADE_ELIGIBLE:MEMORY, UPGRADE_ELIGIBLE:CPU, UPGRADE_ELIGIBLE:DISK,
+UPGRADE_ELIGIBLE:IO, or BASELINE_INCONCLUSIVE and grants no execution capacity.
+
+7. PLANNING TRUTH
+
+S10-PAPER-RESEARCH-01 may now lead to this research-only baseline without DATA-03 or WP172.
+A real candidate still requires qualification, WP170, WP172, and later execution coexistence /
+hardening proof before production-hosted serious paper or live consideration. DATA-03 remains on
+its current operator environment and is not read, moved, scheduled, or mutated.
+
+8. REQUIREMENT MAPPING / EVIDENCE PLAN AND NEGATIVE TEST MATRIX
+
+R001-R004 release exactness, exclusion, determinism, and tamper rejection; R005-R007 host floor
+and sanitization; R008-R009 telemetry schema/rotation; R010-R013 safe SQLite backup and isolated
+tamper-detecting restore; R014 closed capacity outputs; R015-R018 exact slices/timer/target;
+R019-R021 bootstrap syntax, explicit firewall port ordering, and no sshd mutation; R022-R025 no
+container/second host, dependency/workflow/source scope, planning conflation, or DATA-03 mutation;
+R026 docs truth. Negative tests cover dirty/wrong HEAD, secret-like path, added/missing/tampered
+release content, symlink, wrong OS/arch/resources, unsafe backup paths, existing restore target,
+corrupt hash/SQLite, empty telemetry, and unauthorized target/service strings.
+
+9. HARD STOPS
+
+STOP REPO_STATE_DRIFT; STOP HOST_DIRECTION_DRIFT; STOP SPEC_NOT_IMPLEMENTATION_READY;
+STOP PATH_AUTHORITY_CONTRADICTION; STOP SCOPE_AMENDMENT_REQUIRED;
+STOP CREDENTIAL_AUTHORITY_REQUIRED; STOP DEPENDENCY_CHANGE_REQUIRED;
+STOP WORKFLOW_CHANGE_REQUIRED; STOP DATA03_BOUNDARY_VIOLATION;
+STOP EXECUTION_AUTHORITY_REQUIRED; STOP LIVE_AUTHORITY_REQUIRED;
+STOP SYSTEMD_BASELINE_INSUFFICIENT; STOP TESTS_NOT_GREEN; STOP HOSTED_CI_NOT_GREEN.
+
+10. SUCCESSOR BOUNDARY AND REPORT BACK
+
+After merge, Side15 must separately authorize the human-operator activation closure for this
+same package; no provider purchase, SSH login, smoke, backup/restore drill, or reboot proof occurs
+here. Report back using the original Section-25 implementation result with Amendment 01 fields.
+Do not merge, provision a VPS, start DATA-03, or start ALPHA-03.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|release|source_tree|clean_exact_head|REQUIRE|reject_dirty_or_sha_mismatch|NONE|R001
+NR002|release|inventory|tracked_files_only|REQUIRE|reject_added_missing_tampered|NONE|R002
+NR003|release|credentials|credential_like_payload|FORBID|reject_before_bundle|NONE|R002
+NR004|host|platform|ubuntu_24_04_x86_64_floor|REQUIRE|fail_closed|NONE|R005
+NR005|telemetry|schema|sanitized_bounded_rotation|REQUIRE|ten_mib_seven_retained|NONE|R008
+NR006|backup|sqlite|online_backup_hash_manifest|REQUIRE|safe_snapshot|NONE|R010
+NR007|restore|active_state|overwrite_or_promotion|FORBID|restore_drill_only|NONE|R012
+NR008|systemd|research_slice|exact_controls|REQUIRE|bounded_research|NONE|R015
+NR009|systemd|critical_slice|exact_controls|REQUIRE|reserved_capacity|NONE|R016
+NR010|scheduler|recurring|telemetry_timer_only|REQUIRE|sixty_seconds|NONE|R017
+NR011|network|public_smoke|bounded_unauthenticated_once|REQUIRE|post_merge_only|NONE|R014
+NR012|credentials|agent_or_repo|secret_access|FORBID|human_only|NONE|R023
+NR013|data03|workspace_or_evidence|move_read_mutate|FORBID|unchanged|NONE|R025
+NR014|execution|coexistence|research_baseline_claim|FORBID|later_real_candidate_proof|NONE|R024
+NR015|orchestration|platform|docker_kubernetes_second_vps|FORBID|systemd_only|NONE|R022
+END_NORMATIVE_RULE_MATRIX_V1

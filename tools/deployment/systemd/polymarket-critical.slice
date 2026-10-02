@@ -1,0 +1,7 @@
+[Unit]
+Description=Polymarket reserved critical workloads
+
+[Slice]
+CPUWeight=100
+MemoryLow=2G
+IOWeight=100

@@ -1,0 +1,12 @@
+[Unit]
+Description=Run sanitized Polymarket host telemetry once per minute
+
+[Timer]
+OnBootSec=60s
+OnUnitActiveSec=60s
+AccuracySec=1s
+Persistent=true
+Unit=polymarket-host-telemetry.service
+
+[Install]
+WantedBy=polymarket-research.target

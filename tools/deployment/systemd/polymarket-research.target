@@ -1,0 +1,7 @@
+[Unit]
+Description=Polymarket research-host baseline infrastructure
+Wants=polymarket-host-telemetry.timer
+After=polymarket-host-telemetry.timer
+
+[Install]
+WantedBy=multi-user.target

@@ -1107,31 +1107,22 @@ def test_s10_deploy_plan_01_repo_truth() -> None:
     deferred = (ROOT / "docs" / "deferred_items_log.md").read_text(encoding="utf-8")
     section_start = index.index("## S10-DEPLOY-PLAN-01 ")
     section = " ".join(index[section_start : index.index("\n## ", section_start + 1)].split())
-    assert "(current bounded planning target)" in section
+    assert "(historical planning predecessor)" in section
     for text in (
-        "docs/production_vps_hosting_direction.md", "docs/status_entries/S10-DEPLOY-PLAN-01.md",
-        "docs/wp_specs/S10-DEPLOY-PLAN-01/", "d45d9587401faddd2ba92f33cb84f2988b6cfe70",
-        "b7d77f95df093b259a2a2b809ffe20308539e397", "FAST, risk 1, exact 13-path docs/tests scope",
-        "APPROVED_PLANNING_DIRECTION", "NOT_PROVISIONED / NOT_DEPLOYED", "Provider AlphaVPS",
-        "location Sofia, Bulgaria", "initial tier C8G (4 vCPU / 8 GB ECC RAM / 75 GB NVMe RAID-10)",
-        "Ubuntu 24.04 LTS / x86-64", "ONE_CONSOLIDATED_POLYMARKET_VPS with no default separate research/live VPS",
-        "C8G -> C12G -> C16G/P-series -> larger only by telemetry evidence",
-        "after a real strategy-specific WP172 EXECUTABLE_EDGE_PASS exists and before the first serious "
-        "production-hosted paper runtime using the existing WP173 system",
-        "S10-DEPLOY-01 (Production VPS Runtime Baseline) is NOT AUTHORIZED", "DATA-03 is not moved to the VPS",
-        "the next immediate DATA-03 runtime action remains the zero-network prepare", "merge NOT AUTHORIZED",
+        "docs/status_entries/S10-DEPLOY-PLAN-01.md", "docs/wp_specs/S10-DEPLOY-PLAN-01/",
+        "d45d9587401faddd2ba92f33cb84f2988b6cfe70", "d7166f947d764c4fbda65a7d8092d3984a37c7a7",
+        "AlphaVPS", "Sofia", "C8G", "Ubuntu 24.04 LTS x86-64",
+        "old serial WP172-before-deployment timing is superseded by S10-DEPLOY-01",
+        "DATA-03 remains unmoved",
     ):
         assert text in section, text
-    for claim in ("Gate C is AUTHORIZED", "live ready: YES", "S10-DEPLOY-01 is AUTHORIZED", "NOT_PROVISIONED / DEPLOYED",
-                  "DATA-03 is moved to the VPS"):
+    for claim in ("Gate C is AUTHORIZED", "live ready: YES", "DATA-03 is moved to the VPS"):
         assert claim not in section, claim
     assert index.index("## S10-DEPLOY-PLAN-01 ") < index.index("## S10-QUAL-DATA-03 ") < index.index("## S10-QUAL-PLAN-01 ")
-    assert index.index("## S10-PAPER-RESEARCH-01 ") == index.index("\n## ") + 1
-    assert index.index("## S10-PAPER-RESEARCH-01 ") < index.index("## S10-DEPLOY-PLAN-01 ")
-    assert "Current bounded planning package: S10-DEPLOY-PLAN-01 — Production VPS Hosting Direction Lock" in roadmap
-    assert roadmap.index("Current bounded planning package: S10-DEPLOY-PLAN-01") < roadmap.index(
-        "Historical predecessor (PR #206 merged at d45d9587401faddd2ba92f33cb84f2988b6cfe70")
-    assert "## S10-DEPLOY-PLAN-01 Production VPS Hosting Direction (current, PLANNING_GUIDANCE_ONLY)" in roadmap
+    assert index.index("## S10-DEPLOY-01 ") == index.index("\n## ") + 1
+    assert index.index("## S10-DEPLOY-01 ") < index.index("## S10-PAPER-RESEARCH-01 ") < index.index("## S10-DEPLOY-PLAN-01 ")
+    assert "Current bounded implementation package: S10-DEPLOY-01 Research Platform Runtime Baseline" in roadmap
+    assert "## S10-DEPLOY-01 Research Platform Runtime Baseline (current implementation)" in roadmap
     rows = {line.split(" | ")[0][2:]: line for line in deferred.splitlines() if line.startswith("| S10-DEPLOY-PLAN-01-D")}
     assert sorted(rows) == [f"S10-DEPLOY-PLAN-01-D00{n}" for n in range(1, 6)]
     assert "DEFERRED_NOT_AUTHORIZED" in rows["S10-DEPLOY-PLAN-01-D001"]
@@ -1141,6 +1132,54 @@ def test_s10_deploy_plan_01_repo_truth() -> None:
     assert "geoblocking" in rows["S10-DEPLOY-PLAN-01-D004"] and "P1" in rows["S10-DEPLOY-PLAN-01-D004"]
     assert "caps M at 10 changed files" in rows["S10-DEPLOY-PLAN-01-D005"]
     assert deferred.splitlines()[-1].startswith("| S10-DEPLOY-PLAN-01-D005 |")
+
+
+def test_s10_deploy_docs_split_research_and_execution_host_proof() -> None:
+    hosting = (ROOT / "docs/production_vps_hosting_direction.md").read_text(encoding="utf-8")
+    contract = (ROOT / "docs/research_platform_runtime_baseline_contract.md").read_text(encoding="utf-8")
+    roadmap = (ROOT / "docs/long_term_bot_completion_roadmap.md").read_text(encoding="utf-8")
+    for text in (hosting, contract, roadmap):
+        assert "research" in text.lower()
+        assert "execution coexistence" in text.lower()
+        assert "WP172" in text
+    assert "Research hosting may now precede" in contract
+    assert "cannot prove future execution/live capacity" in " ".join(contract.split())
+
+
+def test_s10_deploy_docs_preserve_data03_boundary() -> None:
+    combined = " ".join(" ".join(
+        (ROOT / path).read_text(encoding="utf-8")
+        .split()
+    )
+        for path in (
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/research_platform_runtime_baseline_contract.md",
+            "docs/production_vps_hosting_direction.md",
+        )
+    )
+    assert "DATA-03 remains" in combined
+    assert "current operator" in combined
+    assert "DATA-03 workspace or evidence" in combined
+    assert "DATA-03 moved to VPS: YES" not in combined
+
+
+def test_s10_deploy_repo_truth_is_consistent() -> None:
+    index = (ROOT / "docs/repo_truth_index.md").read_text(encoding="utf-8")
+    status = (ROOT / "docs/project_status.md").read_text(encoding="utf-8")
+    fragment = (ROOT / "docs/status_entries/S10-DEPLOY-01.md").read_text(encoding="utf-8")
+    for text in (
+        "0b14c951c4546ebc28e0d129643da4ad4615ce2e",
+        "d5f61c086cbef74010856be88134e04c0e81a06d",
+        "tools/deployment/",
+        "Exact changed-file scope: 19",
+        "Merge authorized: NO",
+    ):
+        assert text in status or text in fragment
+    assert "exact 19-path L scope" in index
+    assert "source runtime: no" in fragment.lower()
+    assert "Credentials, Hermes, strategy, paper, execution, live: NO" in fragment
+
 def test_s10_paper_research_repo_truth() -> None:
     index = Path("docs/repo_truth_index.md").read_text(encoding="utf-8")
     section = index.split("## S10-DEPLOY-PLAN-01", 1)[0]
