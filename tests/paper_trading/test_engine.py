@@ -9,9 +9,11 @@ from src.paper_trading import (
     PaperTradingError,
     build_paper_intent,
 )
+from src.paper_trading.engine import state_from_mapping, state_to_mapping
 from src.research_runtime.executable_edge.evaluator import _aggressive, _passive
 
 from tests.paper_trading.conftest import edge_stack, generous_limits, make_engine, paper_book
+from tests.paper_trading.test_models import _research_binding, _research_intent
 
 
 def _intent(binding, *, decision=100, quantity="4", side="BUY", reference=None):
@@ -291,3 +293,62 @@ def test_resolution_pending_and_deterministic_settlement(tmp_path) -> None:
     assert engine.state.account.positions == ()
     assert engine.state.account.cash == "100.9698"
     store.close()
+
+
+def test_create_research_reuses_wp173_machinery(tmp_path) -> None:
+    with PaperStore(tmp_path / "research.sqlite3", create=True) as store:
+        engine = PaperEngine.create_research(
+            store,
+            _research_binding(),
+            generous_limits(),
+            session_label="research-session",
+            created_time_ns=100,
+        )
+        assert engine.summary()["binding_kind"] == "RESEARCH_PAPER"
+        assert store.events()[0].data["research_paper_only"] is True
+        assert store.events()[0].data["gate_c_eligible"] is False
+
+
+def test_research_engine_uses_risk_fill_accounting(tmp_path) -> None:
+    with PaperStore(tmp_path / "research.sqlite3", create=True) as store:
+        binding = _research_binding()
+        engine = PaperEngine.create_research(
+            store, binding, generous_limits(), session_label="research", created_time_ns=100
+        )
+        engine.process_market_event(paper_book(100))
+        order = engine.submit(_research_intent(binding, decision_time_ns=101))
+        assert order.status == "OPEN"
+        engine.process_market_event(paper_book(111))
+        assert engine.state.orders[0].status == "FILLED"
+        assert engine.state.fills and engine.state.account.cash != "100"
+        assert engine.state.risk_decisions[0].result == "ALLOW"
+
+
+def test_research_store_restart_replay_equivalent(tmp_path) -> None:
+    path = tmp_path / "research.sqlite3"
+    store = PaperStore(path, create=True)
+    binding = _research_binding()
+    engine = PaperEngine.create_research(
+        store, binding, generous_limits(), session_label="research", created_time_ns=100
+    )
+    engine.process_market_event(paper_book(100))
+    engine.submit(_research_intent(binding, decision_time_ns=101))
+    engine.process_market_event(paper_book(111))
+    expected = engine.state
+    store.close()
+    with PaperStore(path) as reopened_store:
+        reopened = PaperEngine.open(reopened_store)
+        assert reopened.state == expected
+        malformed = state_to_mapping(reopened.state)
+        malformed["binding"]["binding_kind"] = "UNKNOWN"
+        with pytest.raises(PaperTradingError, match="BINDING_KIND_INVALID"):
+            state_from_mapping(malformed)
+
+
+def test_qualified_store_restart_replay_remains_green(tmp_path) -> None:
+    path = tmp_path / "qualified.sqlite3"
+    store, engine = make_engine(path)
+    expected = engine.state
+    store.close()
+    with PaperStore(path) as reopened_store:
+        assert PaperEngine.open(reopened_store).state == expected

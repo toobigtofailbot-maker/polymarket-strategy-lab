@@ -1,0 +1,232 @@
+SIDE15 — S10-PAPER-RESEARCH-01
+GENERIC RESEARCH-PAPER + EVIDENCE LOOP BRIDGE
+
+Package Identity:
+  WP ID: S10-PAPER-RESEARCH-01
+  Title: Generic Research-Paper + Evidence Loop Bridge
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/s10-paper-research-01-evidence-loop
+  Package class: GENERIC_RESEARCH_PAPER_EVIDENCE_LOOP_BRIDGE
+  Package size class: XL
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: local deterministic simulated research-paper only
+  Product impact: additive research-paper admission and deterministic evidence snapshot
+  Network impact: NONE in product/runtime behavior; workflow git/GitHub publication only
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: simulated paper only; real capital USD 0; orders 0
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: highest practical repository reasoning
+  Reason: preserve legacy WP173 persistence while adding a closed research-only lane
+  Escalate to higher reasoning or STOP if: Gate-C separation, DATA-03 isolation, legacy compatibility, or exact scope cannot be preserved
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: true
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+1. AUTHORIZATION AND OBJECTIVE
+
+Karl/Side15 authorizes this exact implementation, branch/push, Ready-for-Review PR,
+validation, and exact-head CI observation. Merge is not authorized. Add one separate
+research-only path:
+
+canonical research candidate + frozen strategy specification
+-> ResearchPaperStrategyBinding -> PaperEngine.create_research(...)
+-> existing WP173 journal/accounting/risk/fill/recovery machinery
+-> ResearchPaperPerformanceSnapshot -> existing deterministic Hermes evidence semantics
+-> optional later advisory Alpha/Hermes review.
+
+The existing qualified path remains unchanged. Never fabricate WP170 first-look evidence,
+ExecutableEdgeAssessment, ExecutionCostModel, EXECUTABLE_EDGE_PASS, or Gate-C eligibility.
+
+2. AUTHORITY / NON-AUTHORITY POSTURE
+
+Implementation authority: YES, only the amended exact 21 paths below. Karl explicitly
+authorizes this XL scope solely because the authoritative full suite proved the historical
+architecture allowlist must recognize the already-authorized bridge file; capability and
+authority are unchanged.
+Report/export authority: deterministic sanitized snapshot JSON only.
+Paper authority: local simulated research-paper only.
+Execution/live/credential/network/scheduler/dependency authority: NO.
+Canonical evidence authority: prompt/spec, status fragment, snapshot, tests and PR evidence.
+
+Per docs/ai/codex/PROTECTED_PATHS.md, this package crosses only the explicitly authorized
+paper-engine and Hermes-runtime compatibility boundaries. It does not cross
+credentials/secrets, authenticated clients, wallet/account behavior, order placement/cancel,
+execution gateway production, scheduler/bot loop, runtime/daemon, dashboard/deployment,
+dependency/lock changes, external code copying, or generated artifacts. It does not touch
+DATA-03, production Gate C, WP170/WP172 source, Hermes core, Alpha Factory source, workflows,
+or live paths.
+
+3. HARD MERGE / STARTUP GATE
+
+Require origin/main and local main exactly d7166f947d764c4fbda65a7d8092d3984a37c7a7,
+PR #207 merged with final head 48a4e69e4083b04d88e4e16457e03e713314834d,
+a clean tree, generated-artifact guard PASS, and no existing branch/PR for this WP.
+Otherwise STOP REPO_STATE_DRIFT. Do not rebase this frozen package.
+
+4. EXACT CHANGED-FILE SCOPE
+
+Exactly these 21 paths must change:
+- docs/long_term_bot_completion_roadmap.md
+- docs/project_status.md
+- docs/repo_truth_index.md
+- docs/serious_paper_trading_contract.md
+- docs/status_entries/S10-PAPER-RESEARCH-01.md
+- docs/wp_specs/S10-PAPER-RESEARCH-01/wp_prompt.txt
+- docs/wp_specs/S10-PAPER-RESEARCH-01/wp_spec.json
+- src/paper_trading/README.md
+- src/paper_trading/__init__.py
+- src/paper_trading/cli.py
+- src/paper_trading/engine.py
+- src/paper_trading/models.py
+- src/research_runtime/paper_performance_bridge.py
+- tests/execution_gateway/test_gate_c.py
+- tests/paper_trading/test_cli.py
+- tests/paper_trading/test_engine.py
+- tests/paper_trading/test_models.py
+- tests/research_runtime/test_paper_performance_bridge.py
+- tests/test_architecture_boundaries.py
+- tests/test_project_status_docs.py
+- tests/test_repo_truth_docs.py
+
+No 22nd path. STOP SCOPE_AMENDMENT_REQUIRED if another path is materially required.
+
+5. FROZEN CONTRACT
+
+Add immutable content-addressed ResearchPaperStrategyBinding with prefix
+researchpaperbinding:sha256: and the exact ordered fields frozen in the machine spec.
+It freezes research/candidate/strategy lineage, subject and market scope, half-open decision
+time window, WP173 execution assumptions, an explicit reserved-evidence policy and refs, and
+fixed research-only/non-authority fields. Canonical decimal strings only; no binary floats;
+non-empty duplicate-free tuples; no credentials/account data; no expected-return field.
+
+Research intents use the existing PaperIntent and must bind the exact research binding ID,
+allowed market, half-open decision window and execution mode while retaining ordinary WP173
+quantity, price and TTL rules.
+
+PaperEngine.create_research accepts only a valid research binding, PaperRiskLimits, explicit
+session label/time and an empty PaperStore. It does not require WP170/WP172 objects and reuses
+the existing state, journal, accounting, risk, fills, controls, checkpoint and recovery.
+PaperEngine.open/replay accepts exactly PaperStrategyBinding or ResearchPaperStrategyBinding,
+rejects malformed/unknown binding kinds, and preserves legacy qualified stores without schema
+migration.
+
+Reserved evidence policy is closed to NON_CONFIRMATORY_RESEARCH_PAPER. Empty reserved refs are
+allowed. This package has no in-scope reserved-evidence overlap oracle, so every non-empty
+reserved-evidence or admitted-scope proof set rejects; no caller assertion is accepted as proof. For the weather
+cohort, no same-cohort prospective paper/performance exposure is authorized before formal WP170
+OOS release at 2026-10-15T00:00:00Z. DATA-03 is untouched and weather paper is not run.
+
+6. PERFORMANCE / HERMES / ALPHA BRIDGE
+
+Add immutable content-addressed ResearchPaperPerformanceSnapshot derived only from a verified,
+successfully replayed store. Bind exact session, binding kind/lineage, event head, state hash,
+observation window, cutoff, control/reconciliation state, counts, quantities, cost totals,
+markout/gap/resolution state, cash/reserved/equity and valid realized/unrealized paper PnL.
+Fixed flags: research_paper_only, advisory_only, no_qualification_authority,
+no_execution_authority and no_live_authority are true. No path participates in identity or
+output. Corrupt, blocked and unknown-binding stores fail with sanitized closed errors.
+
+The adapter calls the existing ContextEvidenceItem builder with evidence_class
+DETERMINISTIC_DERIVED and origin DETERMINISTIC_PROJECT_EVIDENCE, exact subject refs,
+snapshot-bound scope hash and cutoff, admissibility and SUPPORTING/CONTRADICTING direction. It
+cannot rebind a snapshot to another scope or backdate its information cutoff. A fractional
+snapshot cutoff is emitted conservatively as the next whole UTC second because Hermes compares
+cutoff strings lexically; this can reject same-second evidence but cannot create false historical
+admissibility. It performs no provider invocation and makes no research conclusion. Snapshot IDs
+are valid opaque existing ResearchEpisode.deterministic_evidence_refs. No Alpha registry mutation.
+
+7. CLI AND GATE-C BOUNDARY
+
+Extend the existing CLI with finite local/offline research-init and research-snapshot commands.
+research-init accepts explicit JSON inputs and calls create_research. research-snapshot opens,
+verifies/replays and emits deterministic sanitized JSON without store mutation or Hermes/Alpha
+invocation. Existing CLI commands remain compatible.
+
+Production src/execution_gateway/gate_c.py must not change. Add only a test proving a research
+binding/store cannot satisfy GateCStrategyQualification while the qualified positive path remains
+green. If production Gate C must change, STOP GATE_C_BOUNDARY_CONTRADICTION.
+
+8. COMPATIBILITY / IMPOSSIBILITY CHECK
+
+Separate research admission: compatible via additive binding/create path.
+Legacy qualified binding/store: compatible via closed union deserialization; no DB migration.
+Snapshot: compatible through verified recovery snapshot; no store mutation.
+Hermes: compatible through existing build_evidence_item; no core edit.
+Alpha: compatible because deterministic evidence refs accept opaque evidence IDs; test only.
+Gate C: compatible because it type-validates PaperStrategyBinding; test only.
+Weather/DATA-03: compatible only with non-overlap isolation and no DATA-03 access.
+Any incompatible row is a hard stop; do not broaden.
+
+9. NEGATIVE TEST MATRIX AND EVIDENCE PLAN
+
+R001-R027 in the machine spec are mandatory. Applicable negative categories include missing,
+null, wrong type, empty, invalid time, forbidden authority promotion, malformed/canonicalization,
+duplicate/conflicting scope, unknown binding kind, out-of-market, out-of-window, style mismatch,
+reserved-evidence overlap/unproven isolation, corrupt/blocked store, and safe valid cases.
+Credential/trade-like wording filters are not introduced; those wording categories are N/A.
+
+Validation order: pre-implementation readiness; focused paper/Gate-C/bridge tests; docs tests;
+final readiness --check-diff; exact scope; artifact guard; git diff --check; honest security
+availability; one authoritative full suite; commit/push/Ready-for-Review PR; exact-head hosted CI;
+PRIVATE_REPO_MANUAL_VERIFIED live evidence; independent Side review. Do not merge.
+
+10. HARD STOPS
+
+STOP REPO_STATE_DRIFT; STOP SPEC_NOT_IMPLEMENTATION_READY; STOP SCOPE_AMENDMENT_REQUIRED;
+STOP LEGACY_WP173_COMPATIBILITY_BROKEN; STOP GATE_C_BOUNDARY_CONTRADICTION;
+STOP RESERVED_EVIDENCE_ISOLATION_UNPROVABLE; STOP DATA03_BOUNDARY_VIOLATION;
+STOP DEPENDENCY_CHANGE_REQUIRED; STOP NETWORK_AUTHORITY_REQUIRED; STOP TESTS_NOT_GREEN;
+STOP HOSTED_CI_NOT_GREEN.
+
+11. REPORT BACK
+
+Return the exact Section-22 implementation-result structure from the Side15 authorization,
+including verdict, repo/PR identity, exact scope, capability, authority, validation, known limits,
+merge performed NO and successor started NO.
+
+12. SUCCESSOR BOUNDARY
+
+After Side15 exact-head assessment and Karl's separate merge authorization, merge only this WP,
+refresh main, and only then separately draft S10-DEPLOY-01. This package neither creates nor
+implements S10-DEPLOY-01, a weather strategy, ALPHA-03, Gate C, or live execution.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|binding|research_type|valid_fields|REQUIRE|content_addressed_research_binding|research.binding|R001
+NR002|binding|authority_flags|caller_promotion|FORBID|reject|research.binding|R003
+NR003|intent|market_scope|outside_allowed_set|FORBID|reject|research.scope|R008
+NR004|intent|decision_time|outside_half_open_window|FORBID|reject|research.scope|R009
+NR005|paper|engine|research_admission|ACCEPT|reuse_existing_wp173_engine|research.binding|R011
+NR006|paper|legacy_qualified|existing_store|PRESERVE_EXACT|backward_compatible|research.binding|R006
+NR007|evidence|snapshot|store_not_verified|FORBID|reject|evidence.snapshot|R017
+NR008|evidence|snapshot|valid_store|REQUIRE|bind_exact_store_head|evidence.snapshot|R015
+NR009|hermes|adapter|valid_snapshot_and_snapshot_bound_scope_cutoff|ACCEPT|deterministic_project_evidence_without_scope_rebinding_or_cutoff_backdating|evidence.snapshot|R019
+NR010|alpha|evidence_ref|snapshot_id|ACCEPT|opaque_deterministic_evidence_ref|evidence.snapshot|R020
+NR011|gate_c|research_binding|qualification_attempt|FORBID|reject|research.binding|R021
+NR012|weather|reserved_oos|overlap_or_unproven_isolation|FORBID|reject_or_do_not_run|research.scope|R022
+NR013|data03|workspace|any_mutation|FORBID|unchanged|scope.exact|R023
+NR014|runtime|network|product_or_provider_call|FORBID|zero_network|scope.exact|R024
+NR015|automation|scheduler_loop|background_or_recurring|FORBID|manual_finite_only|scope.exact|R024
+NR016|authority|live_execution|any_route|FORBID|no_live_authority|research.binding|R021
+END_NORMATIVE_RULE_MATRIX_V1

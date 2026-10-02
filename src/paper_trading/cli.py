@@ -20,6 +20,7 @@ from .models import (
     PaperRiskLimits,
     PaperTradingError,
     build_paper_intent,
+    build_research_strategy_binding,
     build_strategy_binding,
     canonical_json_bytes,
     dataclass_from_mapping,
@@ -95,6 +96,14 @@ def _parser() -> argparse.ArgumentParser:
     init.add_argument("--limits", required=True, type=Path)
     init.add_argument("--strategy-label", required=True)
     init.add_argument("--event-time-ns", required=True, type=int)
+    research_init = sub.add_parser("research-init")
+    research_init.add_argument("--paper-store", required=True, type=Path)
+    research_init.add_argument("--binding", required=True, type=Path)
+    research_init.add_argument("--limits", required=True, type=Path)
+    research_init.add_argument("--session-label", required=True)
+    research_init.add_argument("--event-time-ns", required=True, type=int)
+    research_snapshot = sub.add_parser("research-snapshot")
+    research_snapshot.add_argument("--paper-store", required=True, type=Path)
     for name in ("status", "pause", "resume", "kill"):
         command = sub.add_parser(name)
         command.add_argument("--paper-store", required=True, type=Path)
@@ -142,6 +151,30 @@ def main(argv: list[str] | None = None) -> int:
                     created_time_ns=args.event_time_ns,
                 )
                 output = engine.summary()
+        elif args.command == "research-init":
+            value = _json_file(args.binding)
+            if not isinstance(value, dict):
+                raise PaperTradingError("INPUT_INVALID")
+            binding = build_research_strategy_binding(**value)
+            with PaperStore(args.paper_store, create=True) as store:
+                engine = PaperEngine.create_research(
+                    store,
+                    binding,
+                    _limits(args.limits),
+                    session_label=args.session_label,
+                    created_time_ns=args.event_time_ns,
+                )
+                output = engine.summary()
+        elif args.command == "research-snapshot":
+            from src.research_runtime.paper_performance_bridge import (
+                build_research_paper_performance_snapshot,
+                snapshot_to_mapping,
+            )
+
+            with PaperStore(args.paper_store) as store:
+                output = snapshot_to_mapping(
+                    build_research_paper_performance_snapshot(store)
+                )
         else:
             store, engine = _open_engine(args.paper_store)
             try:

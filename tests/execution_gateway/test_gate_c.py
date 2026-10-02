@@ -46,6 +46,9 @@ from src.execution_gateway.gate_c import (
 from src.execution_gateway.gate_c_operator import GateCOperator
 from src.execution_gateway.gateway import _GATE_C_EVENT_ISSUER
 from tests.execution_gateway.test_gateway import _prepare, _ready_gateway
+from src.paper_trading import PaperEngine, PaperStore
+from tests.paper_trading.conftest import edge_stack, generous_limits
+from tests.paper_trading.test_models import _research_binding
 
 
 def test_dormant_merge_needs_zero_real_creates_but_one_post_merge_canary() -> None:
@@ -163,6 +166,68 @@ def test_arm_is_single_use_head_bound_and_restart_disabled(tmp_path: Path) -> No
             issued_at_ns=1,
             operator_is_tty=False,
         )
+
+
+def test_gate_c_rejects_research_paper_binding_and_store(tmp_path: Path, monkeypatch) -> None:
+    from src.execution_gateway.gate_c import (
+        QUALIFICATION_VALIDITY_MINUTES,
+        GateCStrategyQualification,
+    )
+
+    model, _experiment, _evidence, _trace, _window, assessment, qualified = edge_stack()
+    repository_head = "a" * 40
+    monkeypatch.setattr(gate_c_mod, "runtime_repository_identity", lambda: (Path.cwd(), repository_head))
+    issued_at_ns = 1
+    valid_until_ns = issued_at_ns + QUALIFICATION_VALIDITY_MINUTES * 60_000_000_000
+    paper_store_head = "paperhead:sha256:" + "b" * 64
+    paper_session_id = "papersession:sha256:" + "c" * 64
+    preimage = {
+        "repository_head": repository_head,
+        "binding_id": qualified.binding_id,
+        "assessment_id": assessment.assessment_id,
+        "cost_model_id": model.cost_model_id,
+        "paper_store_head": paper_store_head,
+        "paper_session_id": paper_session_id,
+        "paper_reconciliation_state": "HEALTHY",
+        "operator_nonce": "synthetic-test-nonce",
+        "issued_at_ns": issued_at_ns,
+        "valid_until_ns": valid_until_ns,
+        "issued_interactively": True,
+    }
+    qualification = GateCStrategyQualification(
+        _id("gatecqualification:sha256:", preimage), repository_head, qualified,
+        assessment, model, paper_store_head, paper_session_id, "HEALTHY",
+        "synthetic-test-nonce", issued_at_ns, valid_until_ns, True,
+    )
+    qualification.validate(now_ns=1)
+
+    research_path = tmp_path / "research.sqlite3"
+    with PaperStore(research_path, create=True) as store:
+        research_engine = PaperEngine.create_research(
+            store,
+            _research_binding(),
+            generous_limits(),
+            session_label="research",
+            created_time_ns=100,
+        )
+        research_head = store.current_head()
+        assert research_head is not None
+        research_session_id = research_engine.state.session_id
+    research = _research_binding()
+    research_preimage = dict(preimage)
+    research_preimage.update({
+        "binding_id": research.binding_id,
+        "paper_store_head": research_head.last_event_hash,
+        "paper_session_id": research_session_id,
+    })
+    research_qualification = GateCStrategyQualification(
+        _id("gatecqualification:sha256:", research_preimage), repository_head,
+        research,  # type: ignore[arg-type]
+        assessment, model, research_head.last_event_hash, research_session_id,
+        "HEALTHY", "synthetic-test-nonce", issued_at_ns, valid_until_ns, True,
+    )
+    with pytest.raises(GatewayError, match="QUALIFICATION_INVALID"):
+        research_qualification.validate(now_ns=1)
 
 
 def test_access_identity_binding_and_market_fail_closed() -> None:

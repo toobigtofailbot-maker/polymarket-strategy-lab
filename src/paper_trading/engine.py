@@ -32,7 +32,9 @@ from .models import (
     PaperOrder,
     PaperRiskDecision,
     PaperRiskLimits,
+    PaperBinding,
     PaperStrategyBinding,
+    ResearchPaperStrategyBinding,
     PaperTradingError,
     build_strategy_binding,
     content_id,
@@ -45,6 +47,8 @@ from .models import (
     validate_paper_intent,
     validate_risk_decision,
     validate_risk_limits,
+    validate_paper_binding,
+    validate_research_strategy_binding,
     validate_strategy_binding,
 )
 from .risk import evaluate_risk, limits_hash
@@ -68,7 +72,7 @@ class BookSnapshot:
 @dataclass(frozen=True)
 class PaperState:
     session_id: str
-    binding: PaperStrategyBinding
+    binding: PaperBinding
     limits: PaperRiskLimits
     control_state: str
     account: PaperAccount
@@ -85,9 +89,18 @@ class PaperState:
 
 
 def state_to_mapping(state: PaperState) -> dict[str, object]:
+    binding = asdict(state.binding)
+    if type(state.binding) is ResearchPaperStrategyBinding:
+        for name in (
+            "subject_refs",
+            "allowed_market_ids",
+            "reserved_evidence_refs",
+            "admitted_scope_refs",
+        ):
+            binding[name] = list(binding[name])
     return {
         "session_id": state.session_id,
-        "binding": asdict(state.binding),
+        "binding": binding,
         "limits": asdict(state.limits),
         "control_state": state.control_state,
         "account": account_to_mapping(state.account),
@@ -116,7 +129,22 @@ def state_to_mapping(state: PaperState) -> dict[str, object]:
 
 def state_from_mapping(value: Mapping[str, object]) -> PaperState:
     try:
-        binding = dataclass_from_mapping(PaperStrategyBinding, value["binding"])
+        raw_binding = value["binding"]
+    except (KeyError, TypeError):
+        raise PaperTradingError("SERIALIZATION_INVALID") from None
+    if (
+        isinstance(raw_binding, Mapping)
+        and "binding_kind" in raw_binding
+        and raw_binding.get("binding_kind") != "RESEARCH_PAPER"
+    ):
+        raise PaperTradingError("BINDING_KIND_INVALID")
+    try:
+        if not isinstance(raw_binding, Mapping):
+            raise PaperTradingError("SERIALIZATION_INVALID")
+        if "binding_kind" not in raw_binding:
+            binding = dataclass_from_mapping(PaperStrategyBinding, raw_binding)
+        elif raw_binding.get("binding_kind") == "RESEARCH_PAPER":
+            binding = dataclass_from_mapping(ResearchPaperStrategyBinding, raw_binding)
         limits = dataclass_from_mapping(PaperRiskLimits, value["limits"])
         account = account_from_mapping(value["account"])
         orders = tuple(
@@ -163,7 +191,7 @@ def state_from_mapping(value: Mapping[str, object]) -> PaperState:
         )
     except (KeyError, TypeError, ValueError):
         raise PaperTradingError("SERIALIZATION_INVALID") from None
-    validate_strategy_binding(state.binding)
+    validate_paper_binding(state.binding)
     validate_risk_limits(state.limits)
     if state.control_state not in CONTROL_STATES:
         raise PaperTradingError("SERIALIZATION_INVALID")
@@ -630,6 +658,73 @@ class PaperEngine:
                 "binding_id": binding.binding_id,
                 "limits": asdict(limits),
                 "simulated_paper_only": True,
+            },
+            state,
+        )
+        head = store.commit((event,), state_to_mapping(state), expected_head=None)
+        return cls(store, state, head)
+
+    @classmethod
+    def create_research(
+        cls,
+        store: PaperStore,
+        binding: ResearchPaperStrategyBinding,
+        limits: PaperRiskLimits,
+        *,
+        session_label: str,
+        created_time_ns: int,
+    ) -> "PaperEngine":
+        validate_research_strategy_binding(binding)
+        validate_risk_limits(limits)
+        if not isinstance(session_label, str) or not session_label:
+            raise PaperTradingError("FIELD_VALUE_INVALID")
+        if (
+            not isinstance(created_time_ns, int)
+            or isinstance(created_time_ns, bool)
+            or created_time_ns < 0
+        ):
+            raise PaperTradingError("FIELD_VALUE_INVALID")
+        if store.load_state() is not None:
+            raise PaperTradingError("SESSION_ALREADY_EXISTS")
+        session_id = content_id(
+            "papersession:sha256:",
+            {
+                "binding_id": binding.binding_id,
+                "binding_kind": binding.binding_kind,
+                "limits": asdict(limits),
+                "session_label": session_label,
+                "created_time_ns": created_time_ns,
+            },
+        )
+        state = PaperState(
+            session_id,
+            binding,
+            limits,
+            "RUNNING",
+            new_account(limits.initial_cash),
+            (),
+            (),
+            (),
+            (),
+            (),
+            (),
+            (),
+            (),
+            (),
+            None,
+        )
+        event = _event(
+            "SESSION_INITIALIZED",
+            created_time_ns,
+            {
+                "session_id": session_id,
+                "binding_id": binding.binding_id,
+                "binding_kind": "RESEARCH_PAPER",
+                "research_paper_only": True,
+                "simulated_paper_only": True,
+                "qualification_claim": False,
+                "gate_c_eligible": False,
+                "limits": asdict(limits),
             },
             state,
         )
@@ -1523,5 +1618,11 @@ class PaperEngine:
             "fill_count": len(self.state.fills),
             "markout_count": len(self.state.markouts),
             "last_market_receive_ns": self.state.last_market_receive_ns,
+            "binding_kind": (
+                "RESEARCH_PAPER"
+                if type(self.state.binding) is ResearchPaperStrategyBinding
+                else "QUALIFIED_PAPER"
+            ),
+            "research_paper_only": type(self.state.binding) is ResearchPaperStrategyBinding,
             "simulated_paper_only": True,
         }
