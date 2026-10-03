@@ -137,6 +137,17 @@ WP61 locks these future planning constraints without implementing them:
 These constraints do not authorize database, dashboard, runtime, scheduler,
 credentials, paper/live, or execution work.
 
+Superseded by V2.1 as future target architecture (historical context only): the
+WP61 "LLM read-only analyst/proposal layer only" strategy constraint and the
+universal research -> paper -> dry-run -> manual live approval -> restricted live
+ladder above are superseded by the accepted V2.1 Strategy Lifecycle + Portfolio
+Authority architecture (`docs/architecture_decision_record.md` (V2.1 Strategy Lifecycle + Portfolio Authority Architecture)): a human-authorized global
+PortfolioAuthorityPolicy replaces per-strategy manual live approval, Hermes will later
+make soft strategy judgments inside it, and the formal QUAL/WP170/WP172 lane remains
+the strongest evidence lane rather than the universal path. Current runtime truth is
+unchanged: Hermes remains research-only until S10-HERMES-STRAT-01 and live trading
+remains DISABLED.
+
 ## E. Locked Research Conclusions
 
 1. **Market Research Priority Scoring remains non-signal.** The layer produces

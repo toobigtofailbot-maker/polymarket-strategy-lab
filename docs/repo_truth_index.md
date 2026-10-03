@@ -1,6 +1,33 @@
 # Repo Truth Index
 
-## S10-DEPLOY-01 Research Platform Runtime Baseline (current bounded implementation target)
+## S10-STRAT-LIFE-01 Strategy Lifecycle + Global Portfolio Authority Core (current bounded implementation target)
+
+V2.1 target architecture: ACCEPTED; the canonical record is the V2.1 section of
+`docs/architecture_decision_record.md`. The contract is
+`docs/strategy_lifecycle_portfolio_authority_contract.md`; the implementation is the stdlib-only
+`src/strategy_lifecycle/` package; the frozen package is `docs/wp_specs/S10-STRAT-LIFE-01/`; and the
+stable record is `docs/status_entries/S10-STRAT-LIFE-01.md`. Base
+`02eeed13dc0b9552e5685f48198d060e78c797e1` (PR #209 / S10-DEPLOY-01 merged: YES, head
+`3e9d595e014275662e90b5f22809f66b3e82cb39`). RUNTIME, risk 3, exact 20-path L scope. It adds
+immutable content-addressed strategy family/version identity and lineage, mechanical
+bounded-vs-material adaptation classification, advisory evidence posture, strategy health,
+strategy-local restrictions, risk allocations, one human-authorized global
+PortfolioAuthorityPolicy with activation/revocation receipts, deterministic portfolio
+budget/capacity accounting and one append-only hash-chained SQLite lifecycle store (application id
+1398033457) derived by verified replay. WP61/WP95/WP154 universal target assumptions are
+superseded as future target architecture with history retained. Current runtime is unchanged:
+controlled Hermes research mode stays research-only until S10-HERMES-STRAT-01; Gate C,
+qualification, WP170, formal WP172 and both WP173 paper modes are unchanged. S10-DEPLOY-01 repo
+implementation: MERGED; host activation: NOT YET PERFORMED / separately gated. DATA-03 is unchanged
+and non-blocking. ALPHA-03 is separate and parallel, not a known-candidate prerequisite. No network,
+credentials, scheduler, Hermes runtime, paper, execution, live, capital or orders (USD 0 / 0);
+merge NOT AUTHORIZED.
+
+## S10-DEPLOY-01 Research Platform Runtime Baseline (merged historical predecessor: PR #209)
+
+PR #209 merged this package at `02eeed13dc0b9552e5685f48198d060e78c797e1` (head
+`3e9d595e014275662e90b5f22809f66b3e82cb39`); host activation is NOT YET PERFORMED and remains a
+separately gated human operator closure. The original package record follows.
 
 The contract is `docs/research_platform_runtime_baseline_contract.md`; the implementation is
 under `tools/deployment/`; the frozen package is `docs/wp_specs/S10-DEPLOY-01/`; and the stable

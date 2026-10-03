@@ -2,8 +2,24 @@
 
 ## A. Status
 
-- Current bounded implementation package: S10-DEPLOY-01 Research Platform Runtime Baseline on
-  frozen base `0b14c951c4546ebc28e0d129643da4ad4615ce2e` after PR #208 /
+- Current bounded implementation package: S10-STRAT-LIFE-01 Strategy Lifecycle + Global
+  Portfolio Authority Core on frozen base `02eeed13dc0b9552e5685f48198d060e78c797e1` after
+  PR #209 / S10-DEPLOY-01 (merged: YES; head `3e9d595e014275662e90b5f22809f66b3e82cb39`).
+  V2.1 target architecture: ACCEPTED (see `docs/architecture_decision_record.md`). The package
+  adds only the stdlib-only `src/strategy_lifecycle/` substrate: immutable strategy
+  family/version identity and lineage, mechanical bounded-vs-material adaptation
+  classification, advisory evidence posture, strategy health, strategy-local restrictions,
+  risk allocations, one human-authorized global PortfolioAuthorityPolicy, deterministic
+  portfolio budget/capacity accounting, and an append-only hash-chained SQLite lifecycle
+  store derived by verified replay (`docs/strategy_lifecycle_portfolio_authority_contract.md`).
+  It wires into no existing runtime; Hermes strategy manager, ALPHA-03, execution feasibility,
+  Gate C, paper, execution, credentials and live remain unimplemented/unchanged. S10-DEPLOY-01
+  host activation is NOT YET PERFORMED and separately gated; DATA-03 is unchanged and
+  non-blocking; ALPHA-03 is a separate parallel feeder. Capital/orders USD 0 / 0.
+
+- Immediate merged predecessor: S10-DEPLOY-01 Research Platform Runtime Baseline (PR #209
+  merged at `02eeed13dc0b9552e5685f48198d060e78c797e1`; formerly the current bounded
+  implementation package) on frozen base `0b14c951c4546ebc28e0d129643da4ad4615ce2e` after PR #208 /
   S10-PAPER-RESEARCH-01. It adds only the credential-free `tools/deployment/` baseline: exact
   release build/verification, Ubuntu 24.04 x86-64 bootstrap, native systemd research/critical
   slices, once-per-minute sanitized host telemetry, persistent `/var/lib` state, SQLite-aware
@@ -14,7 +30,7 @@
   but execution coexistence/hardening still follows a real WP172 PASS. No credentials, paper
   session, product scheduler, execution, Gate C, live trading, capital, or orders are authorized.
 
-- Immediate merged predecessor: S10-PAPER-RESEARCH-01 on frozen base
+- Earlier merged predecessor: S10-PAPER-RESEARCH-01 on frozen base
   `d7166f947d764c4fbda65a7d8092d3984a37c7a7` after PR #207 / S10-DEPLOY-PLAN-01.
   WP173 now has two strictly separated admission modes: its existing qualified serious-paper path
   backed by WP172 `EXECUTABLE_EDGE_PASS`, and an additive non-qualifying research-paper learning
@@ -295,6 +311,10 @@ The following capabilities are built and merged into repo truth as of WP52:
     only if productizing; local development first/cheap VPS later; rules-based
     plus research-score-driven first; LLM read-only analyst/proposal layer only;
     research-only -> paper -> dry-run -> manual live approval -> restricted live.
+    Superseded by V2.1 (historical context only): the LLM read-only-only assumption and
+    the universal manual-live-approval ladder are superseded as future target
+    architecture by the accepted V2.1 architecture (global PortfolioAuthorityPolicy,
+    later Hermes strategy judgment inside it).
     Its "cheap VPS later" hosting shorthand is historical context only, superseded
     by the S10-DEPLOY-PLAN-01 production VPS hosting direction
     (`docs/production_vps_hosting_direction.md`).
@@ -719,11 +739,14 @@ merge, or Gate-C activation. It records the current post-H1 sequencing truth aft
   qualification, and preregistered/OOS experiments. Immediate separately gated successor:
   S10-HERMES-CTX-01. Gate C remains human-only and NOT AUTHORIZED.
 
-## S10-DEPLOY-01 Research Platform Runtime Baseline (current implementation)
+## S10-DEPLOY-01 Research Platform Runtime Baseline (merged implementation; host activation separately gated)
 
 The implementation contract is `docs/research_platform_runtime_baseline_contract.md`; the hosting
 direction is `docs/production_vps_hosting_direction.md`. Repository implementation authority is
 limited to the exact package. Host status remains NOT_PROVISIONED / NOT_DEPLOYED.
+PR #209 merged this repository implementation at `02eeed13dc0b9552e5685f48198d060e78c797e1`
+(head `3e9d595e014275662e90b5f22809f66b3e82cb39`); host activation is NOT YET PERFORMED and
+remains a separately gated human operator closure.
 
 - Hosting target: AlphaVPS, Sofia, Bulgaria; initial tier C8G (4 vCPU / 8 GB ECC RAM / 75 GB
   NVMe RAID-10); Ubuntu 24.04 LTS / x86-64.
@@ -743,3 +766,28 @@ limited to the exact package. Host status remains NOT_PROVISIONED / NOT_DEPLOYED
 - DATA-03 remains on the current operator environment and is not moved to the VPS.
 - No VPS purchase, provisioning, host activation, credentials, product scheduler, paper session,
   execution, signing, Gate C, live, capital or orders are authorized by this implementation PR.
+
+## S10-STRAT-LIFE-01 V2.1 Strategy Lifecycle + Portfolio Authority Sequence (current)
+
+V2.1 target architecture: ACCEPTED; canonical record in `docs/architecture_decision_record.md`.
+This section is PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
+
+- Known-candidate path (no ALPHA-03 prerequisite): KNOWN CANDIDATE -> lifecycle -> Hermes
+  strategy manager -> execution feasibility -> exploratory Gate C -> execution host -> live
+  orchestrator -> tiny exploratory live.
+- Parallel discovery lane: ALPHA-03 -> recurring autonomous discovery/research -> new
+  candidate -> same lifecycle. ALPHA-03 is a parallel feeder, not a prerequisite.
+- Strong formal lane (unchanged): candidate needing durable/larger evidence -> qualification
+  -> WP170 -> formal WP172 -> qualified paper -> larger validated risk band.
+- Implementation sequence: S10-STRAT-LIFE-01 -> S10-HERMES-STRAT-01 -> S10-EXEC-FEAS-01 ->
+  S10-GATE-C-EXPLORE-01 -> S10-DEPLOY-EXEC-01 -> S10-LIVE-ORCH-01.
+- Parallel lanes: S10-DEPLOY-01 host activation, DATA-03 weather evidence, S10-ALPHA-03
+  discovery. None blocks the known-candidate path and none starts automatically.
+- Global portfolio envelope: a human-authorized global PortfolioAuthorityPolicy replaces
+  per-strategy manual live approval as target architecture. Strategy-local failure is
+  strategy-local by default (QUARANTINED/RETIRED or PAUSE/PAPER_ONLY blocks only that
+  strategy's active budget). Bounded child adaptations may inherit the exact parent band;
+  material children are capped at EXPLORATORY_LIVE for automatic inheritance.
+- Current runtime is unchanged: controlled Hermes research mode, current Gate C, qualification,
+  WP170, formal WP172, WP173 qualified and research-paper modes, DATA-03 and S10-DEPLOY-01
+  tooling. Live trading remains DISABLED; capital/orders USD 0 / 0.

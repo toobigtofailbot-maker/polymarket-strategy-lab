@@ -1,0 +1,1568 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-STRAT-LIFE-01",
+    "title": "Strategy Lifecycle + Global Portfolio Authority Core",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "STRATEGY_LIFECYCLE_PORTFOLIO_AUTHORITY_CORE",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 209,
+      "head_sha": "3e9d595e014275662e90b5f22809f66b3e82cb39",
+      "merge_sha": "02eeed13dc0b9552e5685f48198d060e78c797e1"
+    },
+    "suggested_branch": "codex/s10-strat-life-01-strategy-lifecycle-core",
+    "objective": "Implement the first V2.1 foundation only: immutable content-addressed strategy family/version identity and parent lineage, deterministic mechanical bounded-vs-material adaptation classification, advisory evidence-posture metadata, strategy health, strategy-local restrictions, active risk allocations, one human-authorized global PortfolioAuthorityPolicy with activation/revocation receipts, deterministic portfolio budget/capacity accounting, and one append-only hash-chained local SQLite lifecycle store derived by verified replay; reconcile canonical V2.1 architecture/roadmap/status truth while preserving current runtime boundaries. No trading, paper, execution, credential, network, scheduler, Hermes-runtime or live path; capital/orders USD 0 / 0.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
+      "docs/architecture_decision_record.md",
+      "docs/research_data_foundation_direction.md",
+      "docs/hermes_research_brain_execution_plan.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/strategy_lifecycle_portfolio_authority_contract.md",
+      "docs/status_entries/S10-STRAT-LIFE-01.md",
+      "docs/wp_specs/S10-STRAT-LIFE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-STRAT-LIFE-01/wp_spec.json",
+      "src/strategy_lifecycle/__init__.py",
+      "src/strategy_lifecycle/models.py",
+      "src/strategy_lifecycle/policy.py",
+      "src/strategy_lifecycle/store.py",
+      "tests/strategy_lifecycle/test_strategy_lifecycle.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
+      "docs/architecture_decision_record.md",
+      "docs/research_data_foundation_direction.md",
+      "docs/hermes_research_brain_execution_plan.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/strategy_lifecycle_portfolio_authority_contract.md",
+      "docs/status_entries/S10-STRAT-LIFE-01.md",
+      "docs/wp_specs/S10-STRAT-LIFE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-STRAT-LIFE-01/wp_spec.json",
+      "src/strategy_lifecycle/__init__.py",
+      "src/strategy_lifecycle/models.py",
+      "src/strategy_lifecycle/policy.py",
+      "src/strategy_lifecycle/store.py",
+      "tests/strategy_lifecycle/test_strategy_lifecycle.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "tools/",
+      "src/data_layer/",
+      "src/research_runtime/",
+      "src/paper_trading/",
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/strategy_modules/"
+    ],
+    "max_changed_files": 20,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
+      "docs/architecture_decision_record.md",
+      "docs/research_data_foundation_direction.md",
+      "docs/hermes_research_brain_execution_plan.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert the exact S10-STRAT-LIFE-01 diff. The additive src/strategy_lifecycle package, its tests, the contract, the status fragment, the package artifacts and the V2.1 truth reconciliation disappear; no existing store, schema, API or runtime state changes, and no external runtime, data, order or capital state exists to roll back.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": true,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Four new additive stdlib-only public Python surfaces; no existing product API changes.",
+    "items": [
+      {
+        "surface": "src.strategy_lifecycle",
+        "before": "absent",
+        "after": "package exporting the lifecycle records, policy helpers, evaluator and store API",
+        "change_authorized": true,
+        "compatibility_requirement": "no existing package imports or behavior change",
+        "authority": "LOCAL_OFFLINE_LIFECYCLE_STATE_ONLY"
+      },
+      {
+        "surface": "src.strategy_lifecycle.models",
+        "before": "absent",
+        "after": "immutable content-addressed records, canonicalization, builders, validators and derived adaptation classification",
+        "change_authorized": true,
+        "compatibility_requirement": "stdlib-only; no import of paper, execution, Gate C, Hermes or data-layer code",
+        "authority": "NO_ORDER_OR_LIVE_AUTHORITY"
+      },
+      {
+        "surface": "src.strategy_lifecycle.policy",
+        "before": "absent",
+        "after": "risk-band inheritance helper, verified replay projection and pure portfolio capacity evaluator",
+        "change_authorized": true,
+        "compatibility_requirement": "pure deterministic; reserves budget only",
+        "authority": "NO_ORDER_OR_LIVE_AUTHORITY"
+      },
+      {
+        "surface": "src.strategy_lifecycle.store",
+        "before": "absent",
+        "after": "explicit-path append-only hash-chained SQLite lifecycle store with verified load",
+        "change_authorized": true,
+        "compatibility_requirement": "unique application id 1398033457; no migration of any existing store",
+        "authority": "LOCAL_OFFLINE_LIFECYCLE_STATE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Freeze record fields, content ids, derived adaptation class, transitions, capacity, store identity, exact scope and V2.1 truth.",
+    "items": [
+      {
+        "path": "lifecycle.content_ids",
+        "source": "CONSTANT",
+        "type": "content_address_rule",
+        "required_rule": "Each record id = exact prefix (strategyfamily:sha256:, strategyversion:sha256:, portfolioauthoritypolicy:sha256:, portfoliopolicyreceipt:sha256:, strategyhealth:sha256:, strategyriskallocation:sha256:, strategyrestriction:sha256:) + sha256 of UTF-8 canonical JSON (sort_keys, compact separators, ensure_ascii false, allow_nan false) of the record public mapping minus its own id field; opaque refs reject path-like and secret-like text",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R001-R006, R019, R072 and the seven spec identity derivations",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT or FIELD_VALUE_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.family",
+        "source": "CONSTANT",
+        "type": "closed_immutable_record",
+        "required_rule": "Fields schema_id,schema_version,strategy_family_id,family_key,family_label,created_time_ns,creation_provenance; family is lineage grouping only",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R001-R002",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "FIELD_VALUE_INVALID or IDENTITY_CONFLICT",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.version",
+        "source": "CONSTANT",
+        "type": "closed_immutable_record",
+        "required_rule": "Fields schema_id,schema_version,strategy_version_id,strategy_family_id,parent_strategy_version_id,strategy_label,evidence_posture,strategy_code_identity,strategy_spec_json,adaptive_bounds_json,evidence_refs,created_time_ns,creation_provenance,adaptation_class; evidence posture is advisory metadata; canonical spec json bounded to 65536 bytes, depth 8, 4096 nodes, 256 parameters, 256 refs",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R003-R005, R015-R016, R044",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "FIELD_VALUE_INVALID, LIMIT_EXCEEDED, LINEAGE_INVALID, REFERENCE_INVALID or ADAPTATION_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.adaptation",
+        "source": "DERIVED",
+        "type": "derived_closed_classification",
+        "required_rule": "ROOT iff no parent; BOUNDED_ADAPTATION iff same family, posture, code identity, five rule objects, adaptive bounds and parameter key set, and at least one changed parameter with every change adaptive and inside the parent bound; otherwise MATERIAL_ADAPTATION; declared class must equal derived class; no quality judgment",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R007-R015",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ADAPTATION_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.risk_band_inheritance",
+        "source": "CONSTANT",
+        "type": "pure_helper",
+        "required_rule": "Band order PAPER<EXPLORATORY_LIVE<VALIDATED_LIVE<MATURE_LIVE; bounded child ceiling equals parent band; material child ceiling min(parent band, EXPLORATORY_LIVE); ROOT has no inherited band; ceiling grants no authority",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R017-R018, R043",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ceiling band or FIELD_VALUE_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.policy",
+        "source": "CONSTANT",
+        "type": "closed_immutable_record",
+        "required_rule": "Global PortfolioAuthorityPolicy outer envelope; venue scope POLYMARKET only; canonical non-negative decimal money; integer counts; pool sum <= global capital; per-strategy <= pool; per-market <= gross exposure; order notional <= per-market; created <= effective < expiry; styles non-empty unique canonical order; proposed until activated",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R019-R024",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "POLICY_INVALID, FIELD_TYPE_INVALID or FIELD_VALUE_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.policy_receipt",
+        "source": "CONSTANT",
+        "type": "store_replay_transition",
+        "required_rule": "ACTIVATE requires existing policy and previous equal current active and not already active; REVOKE requires policy and previous equal current active; non-secret human_authorization_ref required",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R034-R035",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "POLICY_TRANSITION_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.health",
+        "source": "CONSTANT",
+        "type": "store_replay_transition",
+        "required_rule": "Initial NEW; previous equals derived current; no self-transition; NEW never re-entered; RETIRED terminal; otherwise free among non-NEW states; independent of risk band",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R036-R038",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "HEALTH_TRANSITION_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.allocation",
+        "source": "CONSTANT",
+        "type": "store_replay_transition",
+        "required_rule": "Version exists; policy exists and is current active; validity inside policy window; PAPER budget exactly 0; PARENT_INHERITANCE needs parent current allocation and band <= derived ceiling; DIRECT_DECISION has no evidence gate; capacity applies; supersedes only current allocation; no per-strategy human approval field",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R041-R048",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ALLOCATION_INVALID or CAPACITY_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.restriction",
+        "source": "CONSTANT",
+        "type": "store_replay_transition",
+        "required_rule": "APPLY needs key inactive; CLEAR needs exact active key with same kind and cap; ACTIVE_BUDGET_CAP needs canonical cap; other kinds need null cap; strategy-local only",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R039-R040",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESTRICTION_TRANSITION_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.snapshot",
+        "source": "CONSTANT",
+        "type": "verified_replay_projection",
+        "required_rule": "StrategyLifecycleSnapshot derived only by verified replay with fixed no credential, paper execution, order, execution and live authority flags; not independently writable",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R033-R036",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STORE_LOADED_VERIFIED or STORE_REJECTED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.capacity",
+        "source": "CONSTANT",
+        "type": "pure_evaluator",
+        "required_rule": "Evaluate at explicit at_time_ns only active allocations: health and restriction blocks, smallest cap, per-strategy band maximum, band pools, global capital, max active strategies; reserves budget only and measures no orders, exposure, fills or PnL",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R044-R053",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PORTFOLIO_CAPACITY_VALID or PORTFOLIO_CAPACITY_REJECTED with closed reasons",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lifecycle.store",
+        "source": "CONSTANT",
+        "type": "append_only_sqlite",
+        "required_rule": "format s10-strategy-lifecycle-store, schema 1, application_id 1398033457, user_version 1, journal DELETE, synchronous FULL, foreign_keys ON proven on every initialize, append and verified-load connection (persistent journal drift fails closed, never converted); exact DDL and no-update/no-delete triggers; hash chain from null genesis; single-record append; idempotent exact retry; 100000 rows, 262144 bytes per payload, 536870912 aggregate; explicit .sqlite3 path, no symlink, single hard link, no migration",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R025-R033, R071",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed store statuses and error codes",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope.exact",
+        "source": "CONSTANT",
+        "type": "scope_rule",
+        "required_rule": "Exactly the 20 frozen paths; no dependency, workflow, tools, DATA-03, paper, execution, Gate C, Hermes runtime, qualification, WP170 or WP172 change; only src/strategy_lifecycle is newly approved",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R054-R058, R069",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "IMPLEMENTATION_READY or exact scope failure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "docs.v21_truth",
+        "source": "CONSTANT",
+        "type": "canonical_repo_truth",
+        "required_rule": "V2.1 accepted as current target architecture; WP61/WP95/WP154 universal assumptions superseded but retained as history; current runtime boundaries unchanged; ALPHA-03 parallel; S10-DEPLOY-01 merged with host activation separately gated; DATA-03 unchanged and non-blocking",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R059-R068",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "docs tests pass",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "strategy_family_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "strategy_family_id = strategyfamily:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-strategy-family record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "strategyfamily_content_id"
+      },
+      {
+        "path": "strategy_version_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "strategy_version_id = strategyversion:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-strategy-version record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "strategyversion_content_id"
+      },
+      {
+        "path": "policy_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "policy_id = portfolioauthoritypolicy:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-portfolio-authority-policy record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "portfolioauthoritypolicy_content_id"
+      },
+      {
+        "path": "policy_receipt_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "policy_receipt_id = portfoliopolicyreceipt:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-portfolio-policy-receipt record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "portfoliopolicyreceipt_content_id"
+      },
+      {
+        "path": "health_receipt_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "health_receipt_id = strategyhealth:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-strategy-health-receipt record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "strategyhealth_content_id"
+      },
+      {
+        "path": "allocation_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "allocation_id = strategyriskallocation:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-strategy-risk-allocation record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "strategyriskallocation_content_id"
+      },
+      {
+        "path": "restriction_receipt_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "restriction_receipt_id = strategyrestriction:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-strategy-restriction-receipt record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "strategyrestriction_content_id"
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": true,
+    "reason": "The seven content ids are SHA256_CANONICAL_JSON over every top-level record field except the id, keyed by field name (the record mapping minus its id), with the exact prefix; one valid example per rule is the real product record mapping.",
+    "items": [
+      {
+        "rule_id": "strategyfamily_content_id",
+        "target_path": "strategy_family_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "created_time_ns",
+          "creation_provenance",
+          "family_key",
+          "family_label",
+          "schema_id",
+          "schema_version"
+        ],
+        "excluded_paths": [],
+        "prefix": "strategyfamily:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "strategyversion_content_id",
+        "target_path": "strategy_version_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "adaptation_class",
+          "adaptive_bounds_json",
+          "created_time_ns",
+          "creation_provenance",
+          "evidence_posture",
+          "evidence_refs",
+          "parent_strategy_version_id",
+          "schema_id",
+          "schema_version",
+          "strategy_code_identity",
+          "strategy_family_id",
+          "strategy_label",
+          "strategy_spec_json"
+        ],
+        "excluded_paths": [],
+        "prefix": "strategyversion:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "portfolioauthoritypolicy_content_id",
+        "target_path": "policy_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "account_scope_ref",
+          "allowed_order_styles",
+          "created_time_ns",
+          "effective_from_ns",
+          "expires_at_ns",
+          "exploratory_pool_max_usd",
+          "global_capital_at_risk_max_usd",
+          "global_cumulative_loss_max_usd",
+          "global_daily_loss_max_usd",
+          "global_drawdown_max_usd",
+          "global_gross_exposure_max_usd",
+          "mature_pool_max_usd",
+          "max_active_markets",
+          "max_active_strategies",
+          "max_exploratory_per_strategy_usd",
+          "max_mature_per_strategy_usd",
+          "max_mutations_per_minute",
+          "max_order_notional_usd",
+          "max_per_market_usd",
+          "max_simultaneous_open_orders",
+          "max_validated_per_strategy_usd",
+          "policy_label",
+          "predecessor_policy_id",
+          "schema_id",
+          "schema_version",
+          "validated_pool_max_usd",
+          "venue_scope"
+        ],
+        "excluded_paths": [],
+        "prefix": "portfolioauthoritypolicy:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "portfoliopolicyreceipt_content_id",
+        "target_path": "policy_receipt_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "action",
+          "created_time_ns",
+          "human_authorization_ref",
+          "policy_id",
+          "previous_active_policy_id",
+          "schema_id",
+          "schema_version"
+        ],
+        "excluded_paths": [],
+        "prefix": "portfoliopolicyreceipt:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "strategyhealth_content_id",
+        "target_path": "health_receipt_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "created_time_ns",
+          "decision_ref",
+          "evidence_refs",
+          "new_health_state",
+          "previous_health_state",
+          "schema_id",
+          "schema_version",
+          "strategy_version_id"
+        ],
+        "excluded_paths": [],
+        "prefix": "strategyhealth:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "strategyriskallocation_content_id",
+        "target_path": "allocation_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "active_budget_usd",
+          "allocation_basis",
+          "created_time_ns",
+          "decision_ref",
+          "evidence_refs",
+          "policy_id",
+          "risk_band",
+          "schema_id",
+          "schema_version",
+          "strategy_version_id",
+          "valid_from_ns",
+          "valid_until_ns"
+        ],
+        "excluded_paths": [],
+        "prefix": "strategyriskallocation:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "strategyrestriction_content_id",
+        "target_path": "restriction_receipt_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "action",
+          "created_time_ns",
+          "decision_ref",
+          "evidence_refs",
+          "max_active_budget_usd",
+          "restriction_key",
+          "restriction_kind",
+          "schema_id",
+          "schema_version",
+          "strategy_version_id"
+        ],
+        "excluded_paths": [],
+        "prefix": "strategyrestriction:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      }
+    ]
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Deterministic RUNTIME readiness plus explicit Side15 authorization permits bounded implementation only.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "prompt/spec mirror and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl/Side15 supplied the exact implementation-authorizing package",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "exact 20-path L implementation and required validation pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "One valid example per content-id derivation, generated from real product records, proves the derivation grammar against the implementation.",
+    "items": [
+      {
+        "example_id": "strategyfamily_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "strategyfamily_content_id"
+        ],
+        "input": {
+          "strategy_family_id": "strategyfamily:sha256:0db26cf1ed917bf6c084ba5fe6fb36983f78b24b1b503f8c8bd146b956a8d74d",
+          "family_key": "spec.example",
+          "family_label": "Spec example family",
+          "created_time_ns": 1,
+          "creation_provenance": "spec:example",
+          "schema_id": "polymarket-strategy-family",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "strategyversion_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "strategyversion_content_id"
+        ],
+        "input": {
+          "strategy_version_id": "strategyversion:sha256:b8714ad177f1d31bb80ed6777cafe06dafa3eb38ac48c107d81532d0d488df96",
+          "strategy_family_id": "strategyfamily:sha256:0db26cf1ed917bf6c084ba5fe6fb36983f78b24b1b503f8c8bd146b956a8d74d",
+          "parent_strategy_version_id": null,
+          "strategy_label": "Spec example version",
+          "evidence_posture": "NOVEL_EXPLORATORY",
+          "strategy_code_identity": "strategy_code:spec-example",
+          "strategy_spec_json": "{\"entry_rule\":{},\"execution_rule\":{},\"exit_rule\":{},\"parameters\":{\"lookback\":5},\"thesis\":{},\"universe\":{}}",
+          "adaptive_bounds_json": "{\"lookback\":{\"kind\":\"INTEGER_RANGE\",\"max\":10,\"min\":0}}",
+          "evidence_refs": [
+            "event:polymarket:0x0000000000000000000000000000000000000000000000000000000000000000"
+          ],
+          "created_time_ns": 2,
+          "creation_provenance": "spec:example",
+          "adaptation_class": "ROOT",
+          "schema_id": "polymarket-strategy-version",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "portfolioauthoritypolicy_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "portfolioauthoritypolicy_content_id"
+        ],
+        "input": {
+          "policy_id": "portfolioauthoritypolicy:sha256:4160320079ab857e546120ccef8a7199d27875e8308634bd00142fa15100993b",
+          "predecessor_policy_id": null,
+          "policy_label": "Spec example envelope",
+          "venue_scope": [
+            "POLYMARKET"
+          ],
+          "account_scope_ref": "account:spec-example",
+          "effective_from_ns": 10,
+          "expires_at_ns": null,
+          "global_capital_at_risk_max_usd": "1000",
+          "global_gross_exposure_max_usd": "1000",
+          "global_daily_loss_max_usd": "100",
+          "global_drawdown_max_usd": "200",
+          "global_cumulative_loss_max_usd": "300",
+          "exploratory_pool_max_usd": "300",
+          "validated_pool_max_usd": "300",
+          "mature_pool_max_usd": "300",
+          "max_exploratory_per_strategy_usd": "100",
+          "max_validated_per_strategy_usd": "200",
+          "max_mature_per_strategy_usd": "300",
+          "max_per_market_usd": "50",
+          "max_active_strategies": 3,
+          "max_active_markets": 10,
+          "max_simultaneous_open_orders": 20,
+          "max_order_notional_usd": "10",
+          "max_mutations_per_minute": 60,
+          "allowed_order_styles": [
+            "PASSIVE_MAKER"
+          ],
+          "created_time_ns": 10,
+          "schema_id": "polymarket-portfolio-authority-policy",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "portfoliopolicyreceipt_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "portfoliopolicyreceipt_content_id"
+        ],
+        "input": {
+          "policy_receipt_id": "portfoliopolicyreceipt:sha256:06f82424ba11cbd40a0b939d9299c629f649af654c9b89a3547d67976e45ec82",
+          "action": "ACTIVATE",
+          "policy_id": "portfolioauthoritypolicy:sha256:4160320079ab857e546120ccef8a7199d27875e8308634bd00142fa15100993b",
+          "previous_active_policy_id": null,
+          "human_authorization_ref": "human:spec-example",
+          "created_time_ns": 20,
+          "schema_id": "polymarket-portfolio-policy-receipt",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "strategyhealth_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "strategyhealth_content_id"
+        ],
+        "input": {
+          "health_receipt_id": "strategyhealth:sha256:7726e657f8292846c792f9b1eb789df4840c412011d82da15713c92ac3f58190",
+          "strategy_version_id": "strategyversion:sha256:b8714ad177f1d31bb80ed6777cafe06dafa3eb38ac48c107d81532d0d488df96",
+          "previous_health_state": "NEW",
+          "new_health_state": "HEALTHY",
+          "decision_ref": "decision:spec-example",
+          "evidence_refs": [],
+          "created_time_ns": 30,
+          "schema_id": "polymarket-strategy-health-receipt",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "strategyriskallocation_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "strategyriskallocation_content_id"
+        ],
+        "input": {
+          "allocation_id": "strategyriskallocation:sha256:2f530afbcafad520e37e5f7dd82d655216a08b26fbcdca689e74b95f1c349609",
+          "strategy_version_id": "strategyversion:sha256:b8714ad177f1d31bb80ed6777cafe06dafa3eb38ac48c107d81532d0d488df96",
+          "policy_id": "portfolioauthoritypolicy:sha256:4160320079ab857e546120ccef8a7199d27875e8308634bd00142fa15100993b",
+          "risk_band": "EXPLORATORY_LIVE",
+          "active_budget_usd": "50",
+          "allocation_basis": "DIRECT_DECISION",
+          "decision_ref": "decision:spec-example",
+          "evidence_refs": [],
+          "valid_from_ns": 100,
+          "valid_until_ns": null,
+          "created_time_ns": 100,
+          "schema_id": "polymarket-strategy-risk-allocation",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "strategyrestriction_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "strategyrestriction_content_id"
+        ],
+        "input": {
+          "restriction_receipt_id": "strategyrestriction:sha256:cfc214e4b7ddeba11f57d1ed2cb1bc1da4b718bed619968aa197cde7dcebedf3",
+          "strategy_version_id": "strategyversion:sha256:b8714ad177f1d31bb80ed6777cafe06dafa3eb38ac48c107d81532d0d488df96",
+          "restriction_key": "cap.example",
+          "action": "APPLY",
+          "restriction_kind": "ACTIVE_BUDGET_CAP",
+          "max_active_budget_usd": "60",
+          "decision_ref": "decision:spec-example",
+          "evidence_refs": [],
+          "created_time_ns": 40,
+          "schema_id": "polymarket-strategy-restriction-receipt",
+          "schema_version": "1.0.0"
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R068 are the frozen minimum test matrix; R069-R070 are the bounded repository guards; R071-R072 close exact-head micro-closure 01.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_family_identity_is_deterministic",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "same family inputs yield the identical strategyfamily content id"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_family_forged_id_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "a family whose id differs from its content hash raises IDENTITY_CONFLICT"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_strategy_version_identity_is_deterministic",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "same version inputs yield the identical strategyversion content id"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_float_nan_and_unknown_fields_reject",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "binary float, NaN, duplicate key and unknown or approval field all reject"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_strategy_spec_json_must_be_canonical",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "non-canonical, wrong-key, oversized or too-deep spec json rejects"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_unsafe_refs_and_secret_like_refs_reject",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "path-like and secret-like refs reject while safe opaque refs are accepted"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_root_classification",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "parentless version derives ROOT and a non-root declaration rejects"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_bounded_integer_change_is_bounded",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "in-range adaptive integer change derives BOUNDED_ADAPTATION"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_bounded_decimal_change_is_bounded",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "in-range adaptive decimal change derives BOUNDED_ADAPTATION"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_bounded_enum_change_is_bounded",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "allowed adaptive enum change derives BOUNDED_ADAPTATION"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_out_of_range_adaptive_change_is_material",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "out-of-range adaptive change derives MATERIAL_ADAPTATION"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_non_adaptive_parameter_change_is_material",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "change to a non-adaptive parameter derives MATERIAL_ADAPTATION"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_rule_posture_and_code_identity_changes_are_material",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "each rule, posture or code identity change derives MATERIAL_ADAPTATION"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_adaptive_bound_change_is_material",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "widened, added or removed adaptive bound derives MATERIAL_ADAPTATION"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_noop_child_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "semantically identical child rejects with ADAPTATION_INVALID"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_missing_parent_and_cross_family_child_reject",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "missing parent rejects REFERENCE_INVALID and cross-family child rejects LINEAGE_INVALID"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_bounded_child_inherits_parent_band_ceiling",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "bounded child ceiling equals the exact parent band"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_material_child_inheritance_capped_at_exploratory",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "material child ceiling is min(parent band, EXPLORATORY_LIVE)"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_policy_identity_is_deterministic",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "valid policy yields a deterministic portfolioauthoritypolicy content id"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_policy_malformed_numbers_reject",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "malformed decimal, float money and boolean count all reject"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "pytest",
+        "test": "test_policy_pool_sum_over_global_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "pool sum above global capital rejects POLICY_INVALID"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "pytest",
+        "test": "test_policy_per_strategy_over_pool_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "per-strategy maximum above its pool rejects POLICY_INVALID"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "pytest",
+        "test": "test_policy_order_over_market_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "order notional above per-market maximum rejects POLICY_INVALID"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "pytest",
+        "test": "test_policy_time_style_account_venue_reject",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "bad time window, order styles, account ref or venue scope rejects"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "pytest",
+        "test": "test_store_initialize_and_already_initialized",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "first call returns STORE_INITIALIZED and second STORE_ALREADY_INITIALIZED"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "pytest",
+        "test": "test_store_schema_identity_enforced",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "application id, user version, meta row and DDL drift reject SCHEMA_CONFLICT or INTEGRITY_TAMPER"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "pytest",
+        "test": "test_store_update_delete_blocked",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "raw UPDATE and DELETE are aborted by append-only triggers"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "pytest",
+        "test": "test_store_hash_chain_correct",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "entry hashes bind sequence, kind, id, payload hash and prior hash from null genesis"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "pytest",
+        "test": "test_store_exact_retry_idempotent",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "identical retry returns STORE_APPEND_IDEMPOTENT and does not append"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "test_store_failed_append_leaves_bytes_unchanged",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "rejected append leaves database bytes identical"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "pytest",
+        "test": "test_store_payload_and_chain_tamper_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "payload, payload hash and entry chain tamper all load as INTEGRITY_TAMPER"
+      },
+      {
+        "requirement_id": "R032",
+        "source": "pytest",
+        "test": "test_store_unsafe_path_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "wrong suffix, missing parent, symlink, hardlink and directory paths reject"
+      },
+      {
+        "requirement_id": "R033",
+        "source": "pytest",
+        "test": "test_store_cross_record_reference_tamper_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "hash-consistent inserted row with missing predecessor fails verified replay"
+      },
+      {
+        "requirement_id": "R034",
+        "source": "pytest",
+        "test": "test_policy_activate_revoke_derives_single_active_policy",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "activate then revoke derives exactly one then zero active policy"
+      },
+      {
+        "requirement_id": "R035",
+        "source": "pytest",
+        "test": "test_policy_activation_predecessor_mismatch_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "wrong previous active policy rejects POLICY_TRANSITION_INVALID"
+      },
+      {
+        "requirement_id": "R036",
+        "source": "pytest",
+        "test": "test_new_version_health_is_new",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "registered version current health is NEW"
+      },
+      {
+        "requirement_id": "R037",
+        "source": "pytest",
+        "test": "test_valid_health_transitions",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "non-retired state moves to any other non-NEW state"
+      },
+      {
+        "requirement_id": "R038",
+        "source": "pytest",
+        "test": "test_invalid_health_transitions_reject",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "self-transition, NEW re-entry, stale predecessor and retired reactivation reject"
+      },
+      {
+        "requirement_id": "R039",
+        "source": "pytest",
+        "test": "test_restriction_apply_clear_exactness",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "duplicate apply, clear of missing key and mismatched clear reject"
+      },
+      {
+        "requirement_id": "R040",
+        "source": "pytest",
+        "test": "test_restriction_is_strategy_local",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "restricting one strategy leaves another strategy state unchanged"
+      },
+      {
+        "requirement_id": "R041",
+        "source": "pytest",
+        "test": "test_allocation_requires_active_policy",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "allocation under inactive or revoked policy rejects ALLOCATION_INVALID"
+      },
+      {
+        "requirement_id": "R042",
+        "source": "pytest",
+        "test": "test_paper_allocation_nonzero_budget_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "PAPER band with nonzero budget rejects"
+      },
+      {
+        "requirement_id": "R043",
+        "source": "pytest",
+        "test": "test_parent_inheritance_ceiling_enforced",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "inherited band above derived ceiling rejects ALLOCATION_INVALID"
+      },
+      {
+        "requirement_id": "R044",
+        "source": "pytest",
+        "test": "test_direct_decision_obeys_capacity_without_evidence_gate",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "direct decision needs no evidence gate but over-capacity rejects CAPACITY_INVALID"
+      },
+      {
+        "requirement_id": "R045",
+        "source": "pytest",
+        "test": "test_per_strategy_limit_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "budget above per-strategy band maximum rejects CAPACITY_INVALID"
+      },
+      {
+        "requirement_id": "R046",
+        "source": "pytest",
+        "test": "test_band_pool_overflow_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "each band pool overflow rejects CAPACITY_INVALID"
+      },
+      {
+        "requirement_id": "R047",
+        "source": "pytest",
+        "test": "test_global_capital_overflow_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "sum above global capital rejects CAPACITY_INVALID"
+      },
+      {
+        "requirement_id": "R048",
+        "source": "pytest",
+        "test": "test_max_active_strategies_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "too many positive-budget strategies rejects CAPACITY_INVALID"
+      },
+      {
+        "requirement_id": "R049",
+        "source": "pytest",
+        "test": "test_quarantined_or_retired_positive_budget_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "quarantined or retired positive budget is HEALTH_BLOCKS_ACTIVE_RISK"
+      },
+      {
+        "requirement_id": "R050",
+        "source": "pytest",
+        "test": "test_pause_or_paper_only_positive_budget_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "pause or paper-only positive budget is RESTRICTION_BLOCKS_ACTIVE_RISK"
+      },
+      {
+        "requirement_id": "R051",
+        "source": "pytest",
+        "test": "test_active_budget_cap_enforced",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "budget above smallest active cap is ACTIVE_BUDGET_CAP_EXCEEDED"
+      },
+      {
+        "requirement_id": "R052",
+        "source": "pytest",
+        "test": "test_expired_and_future_allocations_excluded",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "allocations outside their window contribute zero active budget"
+      },
+      {
+        "requirement_id": "R053",
+        "source": "pytest",
+        "test": "test_quarantine_isolated_from_unrelated_strategy",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "unrelated healthy strategy stays VALID when another is quarantined"
+      },
+      {
+        "requirement_id": "R054",
+        "source": "pytest",
+        "test": "test_lifecycle_source_imports_are_stdlib_only",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "lifecycle source imports only the frozen stdlib allowlist"
+      },
+      {
+        "requirement_id": "R055",
+        "source": "pytest",
+        "test": "test_package_scope_excludes_dependency_and_workflow_paths",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "frozen scope contains no dependency, lock or workflow path"
+      },
+      {
+        "requirement_id": "R056",
+        "source": "pytest",
+        "test": "test_adjacent_formal_lane_imports_remain_available",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "paper, qualification, WP170, WP172 and Gate C public symbols still import"
+      },
+      {
+        "requirement_id": "R057",
+        "source": "pytest",
+        "test": "test_package_scope_excludes_data03_paths",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "frozen scope and lifecycle source reference no DATA-03 path"
+      },
+      {
+        "requirement_id": "R058",
+        "source": "pytest",
+        "test": "test_strategy_lifecycle_is_only_new_approved_source_family",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_boundaries.py",
+        "expected_result": "allowlist contains exactly src/strategy_lifecycle and no src wildcard"
+      },
+      {
+        "requirement_id": "R059",
+        "source": "pytest",
+        "test": "test_v21_is_accepted_current_target_architecture",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "canonical docs mark V2.1 ACCEPTED as current target architecture"
+      },
+      {
+        "requirement_id": "R060",
+        "source": "pytest",
+        "test": "test_wp61_wp95_wp154_assumptions_marked_superseded",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "WP61 WP95 WP154 universal assumptions labeled superseded by V2.1"
+      },
+      {
+        "requirement_id": "R061",
+        "source": "pytest",
+        "test": "test_current_hermes_research_mode_unchanged",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "Hermes controlled research mode recorded unchanged until S10-HERMES-STRAT-01"
+      },
+      {
+        "requirement_id": "R062",
+        "source": "pytest",
+        "test": "test_formal_qual_wp170_wp172_lane_preserved",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "formal qualification WP170 WP172 lane recorded unchanged"
+      },
+      {
+        "requirement_id": "R063",
+        "source": "pytest",
+        "test": "test_known_candidate_path_does_not_require_alpha03",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "known-candidate path recorded without ALPHA-03 prerequisite"
+      },
+      {
+        "requirement_id": "R064",
+        "source": "pytest",
+        "test": "test_alpha03_is_parallel_feeder",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "ALPHA-03 recorded as parallel feeder into the same lifecycle"
+      },
+      {
+        "requirement_id": "R065",
+        "source": "pytest",
+        "test": "test_global_portfolio_envelope_replaces_per_strategy_approval",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "global portfolio envelope replaces per-strategy manual approval"
+      },
+      {
+        "requirement_id": "R066",
+        "source": "pytest",
+        "test": "test_strategy_local_quarantine_and_bounded_adaptation_recorded",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "strategy-local quarantine and bounded adaptation semantics recorded"
+      },
+      {
+        "requirement_id": "R067",
+        "source": "pytest",
+        "test": "test_s10_strat_life_status_records_deploy_merge_and_separate_activation",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_project_status_docs.py",
+        "expected_result": "status records PR 209 merged and host activation separately gated"
+      },
+      {
+        "requirement_id": "R068",
+        "source": "pytest",
+        "test": "test_s10_strat_life_repo_truth_data03_unchanged_non_blocking",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_repo_truth_docs.py",
+        "expected_result": "repo truth records DATA-03 unchanged and non-blocking"
+      },
+      {
+        "requirement_id": "R071",
+        "source": "pytest",
+        "test": "test_store_connection_pragma_contract_is_exact",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "every initialize, append and verified-load connection proves journal DELETE, synchronous FULL, foreign_keys ON; weakened PRAGMA state or WAL drift never verifies"
+      },
+      {
+        "requirement_id": "R072",
+        "source": "pytest",
+        "test": "test_canonical_public_polymarket_event_ref_is_accepted_exactly",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "only the exact event:polymarket:0x + 64 lowercase hex ref is admitted; bare, uppercase, wrong-namespace, wrong-length and padded long hex reject"
+      },
+      {
+        "requirement_id": "R069",
+        "source": "repo_guard",
+        "test": "readiness check-diff",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-STRAT-LIFE-01/wp_prompt.txt --spec docs/wp_specs/S10-STRAT-LIFE-01/wp_spec.json --repo-root . --check-diff --base 02eeed13dc0b9552e5685f48198d060e78c797e1 --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY (RUNTIME) with exact 20/20 changed-file equality"
+      },
+      {
+        "requirement_id": "R070",
+        "source": "pytest",
+        "test": "authoritative full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "entire repository suite green with zero failures after the candidate is stable"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-STRAT-01",
+    "next_title": "Hermes Strategy Manager, separately draftable together with S10-EXEC-FEAS-01 only after this WP is reviewed and merged",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-STRAT-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "Hermes strategy-manager runtime",
+      "ALPHA-03 recurring campaigns",
+      "generic execution feasibility",
+      "Gate-C exploratory permits or any Gate C change",
+      "execution-host hardening",
+      "multi-strategy live orchestration",
+      "credentials, signing or authenticated account access",
+      "order placement or cancel",
+      "paper engine or paper execution change",
+      "live trading or capital deployment",
+      "DATA-03 access or mutation",
+      "qualification, WP170 or WP172 change",
+      "dependency, workflow or tools change",
+      "S10-DEPLOY-01 host activation",
+      "any 21st changed path"
+    ]
+  }
+}
