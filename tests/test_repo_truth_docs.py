@@ -1119,10 +1119,12 @@ def test_s10_deploy_plan_01_repo_truth() -> None:
     for claim in ("Gate C is AUTHORIZED", "live ready: YES", "DATA-03 is moved to the VPS"):
         assert claim not in section, claim
     assert index.index("## S10-DEPLOY-PLAN-01 ") < index.index("## S10-QUAL-DATA-03 ") < index.index("## S10-QUAL-PLAN-01 ")
-    assert index.index("## S10-DEPLOY-01 ") == index.index("\n## ") + 1
+    assert index.index("## S10-STRAT-LIFE-01 ") == index.index("\n## ") + 1
+    assert index.index("## S10-STRAT-LIFE-01 ") < index.index("## S10-DEPLOY-01 ")
     assert index.index("## S10-DEPLOY-01 ") < index.index("## S10-PAPER-RESEARCH-01 ") < index.index("## S10-DEPLOY-PLAN-01 ")
-    assert "Current bounded implementation package: S10-DEPLOY-01 Research Platform Runtime Baseline" in roadmap
-    assert "## S10-DEPLOY-01 Research Platform Runtime Baseline (current implementation)" in roadmap
+    assert "## S10-DEPLOY-01 Research Platform Runtime Baseline (merged historical predecessor: PR #209)" in index
+    assert "Immediate merged predecessor: S10-DEPLOY-01 Research Platform Runtime Baseline (PR #209" in roadmap
+    assert "## S10-DEPLOY-01 Research Platform Runtime Baseline (merged implementation; host activation separately gated)" in roadmap
     rows = {line.split(" | ")[0][2:]: line for line in deferred.splitlines() if line.startswith("| S10-DEPLOY-PLAN-01-D")}
     assert sorted(rows) == [f"S10-DEPLOY-PLAN-01-D00{n}" for n in range(1, 6)]
     assert "DEFERRED_NOT_AUTHORIZED" in rows["S10-DEPLOY-PLAN-01-D001"]
@@ -1190,3 +1192,33 @@ def test_s10_paper_research_repo_truth() -> None:
     assert "DATA-03 is untouched" in section
     assert "weather first-look cohort beginning `2026-10-15T00:00:00Z` is not exposed" in section
     assert "capital/orders 0" in section
+
+
+def test_s10_strat_life_repo_truth_data03_unchanged_non_blocking() -> None:
+    index = (ROOT / "docs/repo_truth_index.md").read_text(encoding="utf-8")
+    start = index.index("## S10-STRAT-LIFE-01 ")
+    section = " ".join(index[start : index.index("\n## ", start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    for text in (
+        "docs/strategy_lifecycle_portfolio_authority_contract.md", "src/strategy_lifecycle/",
+        "docs/wp_specs/S10-STRAT-LIFE-01/", "docs/status_entries/S10-STRAT-LIFE-01.md",
+        "02eeed13dc0b9552e5685f48198d060e78c797e1", "3e9d595e014275662e90b5f22809f66b3e82cb39",
+        "RUNTIME, risk 3, exact 20-path L scope", "V2.1 target architecture: ACCEPTED",
+        "DATA-03 is unchanged and non-blocking", "ALPHA-03 is separate and parallel",
+        "host activation: NOT YET PERFORMED / separately gated", "(USD 0 / 0)", "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    for claim in ("DATA-03 is blocking", "DATA-03 moved", "host activation: PERFORMED", "Gate C is AUTHORIZED"):
+        assert claim not in section, claim
+    combined = " ".join(
+        " ".join((ROOT / path).read_text(encoding="utf-8").split())
+        for path in (
+            "docs/project_status.md",
+            "docs/long_term_bot_completion_roadmap.md",
+            "docs/architecture_decision_record.md",
+            "docs/status_entries/S10-STRAT-LIFE-01.md",
+        )
+    )
+    assert "DATA-03 remains unchanged and non-blocking." in combined
+    assert "DATA-03: unchanged and non-blocking" in combined
+    assert "DATA-03 weather evidence lane (parallel)" in combined

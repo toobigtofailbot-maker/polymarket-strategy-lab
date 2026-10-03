@@ -59,6 +59,14 @@ Implementation constraints:
 - Live execution remains forbidden unless a future explicit authorization updates
   repo truth.
 
+Superseded by V2.1 (historical context only): the permanent "LLM read-only
+analyst/proposal layer only" assumption above is superseded as future target
+architecture by the accepted V2.1 Strategy Lifecycle + Portfolio Authority
+architecture below, under which Hermes will later make soft strategy/lifecycle
+judgments inside a human-defined outer envelope. Current runtime truth is
+unchanged: Hermes remains research-only until S10-HERMES-STRAT-01, and no LLM
+has execution authority today.
+
 ### Execution Ladder
 
 Decision: lock this phased ladder:
@@ -70,6 +78,14 @@ research-only → paper → dry-run → manual live approval → restricted live
 
 Skipping phases requires explicit future approval. Live trading authorization is
 still absent. Credentials remain forbidden until an approved future work package.
+
+Superseded by V2.1 (historical context only): this universal research -> paper ->
+dry-run -> manual live approval -> restricted live ladder, including manual live
+approval per strategy, is superseded as future target architecture by V2.1: a
+human-authorized global PortfolioAuthorityPolicy replaces per-strategy manual live
+approval, and a known candidate may later reach tiny exploratory live through
+lifecycle -> Hermes strategy manager -> execution feasibility -> exploratory Gate C
+-> execution host -> live orchestrator. Live trading remains DISABLED today.
 
 ### Remaining Research Before Live
 
@@ -124,6 +140,12 @@ not reimplemented).
 Future package: S10-DEPLOY-01 — Production VPS Runtime Baseline, a dedicated
 bounded package, DRAFT-ELIGIBLE LATER / NOT AUTHORIZED NOW.
 
+Superseded status (historical context only): S10-DEPLOY-01 has since merged as a
+research runtime baseline (PR #209, head 3e9d595e014275662e90b5f22809f66b3e82cb39,
+merge 02eeed13dc0b9552e5685f48198d060e78c797e1); host provisioning/activation
+remains separately gated. The serial "after WP172 -> deploy -> WP173" migration
+point above is not current universal architecture.
+
 DATA-03 remains on the current operator environment and is not moved to the
 VPS.
 
@@ -132,3 +154,105 @@ Implementation constraints:
   activation, paper trading, execution, signing, Gate C, live trading, capital
   or orders are authorized by this decision.
 - Live trading authorization is unchanged (`docs/live_trading_authorization.md`).
+
+## V2.1 Strategy Lifecycle + Portfolio Authority Architecture (S10-STRAT-LIFE-01)
+
+Status: V2.1 target architecture: ACCEPTED (Karl approved the V2.1 target
+architecture and product direction). This is the current target architecture; the
+first implementation foundation is S10-STRAT-LIFE-01 (strategy lifecycle + global
+portfolio authority core, `docs/strategy_lifecycle_portfolio_authority_contract.md`).
+It does not change any current runtime boundary.
+
+Accepted principles:
+
+- Humans define the outer blast radius.
+- Hermes will later make soft strategy/lifecycle judgments inside it.
+- Deterministic code enforces the outer envelope and account/execution safety.
+- Formal QUAL/WP170/WP172 remains the strongest evidence lane, not the universal path.
+- ALPHA-03 is a parallel recurring-discovery feeder, not a prerequisite for a known candidate.
+- Strategy-local failure is strategy-local by default.
+- Bounded child adaptations may inherit bounded freedom.
+- Material children lose automatic higher-band inheritance but remain eligible for
+  exploratory treatment.
+- A human-authorized global PortfolioAuthorityPolicy replaces per-strategy manual live
+  approval as target architecture; no per-strategy human approval field exists.
+
+Current V2.1 target graph:
+
+```text
+MARKET / PUBLIC DATA / EVENTS
+-> ALPHA / EXISTING RESEARCH INPUT
+-> STRATEGY FAMILY / VERSION
+-> HERMES STRATEGY JUDGMENT
+-> PORTFOLIO AUTHORITY / ACTIVE BUDGET
+-> HARD EXECUTION SAFETY
+-> PAPER OR BOUNDED LIVE
+-> PERFORMANCE
+-> HERMES REASSESSMENT
+-> CONTINUE / SCALE / REDUCE / ADAPT / QUARANTINE
+```
+
+Known-candidate path (does not require ALPHA-03):
+
+```text
+KNOWN CANDIDATE -> lifecycle -> Hermes strategy manager -> execution feasibility
+-> exploratory Gate C -> execution host -> live orchestrator -> tiny exploratory live
+```
+
+Parallel discovery lane: ALPHA-03 -> recurring autonomous discovery/research -> new
+candidate -> same lifecycle. Strong formal lane: candidate needing durable/larger
+evidence -> qualification -> WP170 -> formal WP172 -> qualified paper -> larger
+validated risk band.
+
+Hard deterministic protection remains focused on credentials/signing, venue/access
+validity, durable mutation semantics, reconciliation/account truth, global
+capital/exposure/loss ceilings, kill state, and corrupt/stale shared-state integrity.
+Soft strategy judgment is planned for Hermes but is not implemented by S10-STRAT-LIFE-01.
+
+Supersession (future target architecture only; historical text is retained above and
+in the referenced documents):
+
+- WP61's permanent "LLM read-only analyst/proposal layer only" assumption: superseded.
+- WP61's universal research -> paper -> dry-run -> manual live approval -> restricted
+  live ladder: superseded.
+- WP95's permanent Hermes-advisory-only / never-final-decision-maker assumption
+  (`docs/hermes_research_brain_execution_plan.md`): superseded.
+- WP154 Section 5 universal claim that Hermes can never transition/promote/approve
+  lifecycle actions, Section 6 universal non-skippable single Alpha lineage, and
+  Section 7 universal serial adoption sequence
+  (`docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md`):
+  superseded.
+
+Current implemented boundaries are unchanged:
+
+- Existing controlled Hermes research mode remains research-only and unchanged until
+  S10-HERMES-STRAT-01.
+- Current Gate C remains its existing strict qualified/canary implementation until a
+  later Gate-C V2.1 WP.
+- Existing qualification/WP170/formal-WP172 mechanics remain unchanged.
+- Existing WP173 qualified and research-paper modes remain unchanged.
+- S10-DEPLOY-01 is merged at main 02eeed13dc0b9552e5685f48198d060e78c797e1, but host
+  provisioning/activation remains separately gated.
+- DATA-03 remains unchanged and non-blocking.
+- ALPHA-03 remains separately gated and off the first-known-candidate critical path.
+- Live trading remains DISABLED (`docs/live_trading_authorization.md`).
+
+Non-blocking sequence:
+
+```text
+S10-DEPLOY-01 host activation lane       (parallel)
+DATA-03 weather evidence lane            (parallel)
+S10-ALPHA-03 discovery lane              (parallel)
+
+S10-STRAT-LIFE-01
+-> S10-HERMES-STRAT-01
+-> S10-EXEC-FEAS-01
+-> S10-GATE-C-EXPLORE-01
+-> S10-DEPLOY-EXEC-01
+-> S10-LIVE-ORCH-01
+```
+
+S10-ALPHA-03 feeds future new opportunities into the same lifecycle but is not a hard
+prerequisite for first exploratory live from an already-known candidate. No successor
+starts automatically; S10-STRAT-LIFE-01 grants no credential, order, paper, execution,
+live, capital or merge authority (capital/orders USD 0 / 0).

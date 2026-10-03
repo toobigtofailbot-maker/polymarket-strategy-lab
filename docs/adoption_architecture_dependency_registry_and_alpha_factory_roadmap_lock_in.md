@@ -140,6 +140,14 @@ MEASURABLE_ALPHA_FACTORY_PLUS_DETERMINISTIC_TRADING_KERNEL
 
 It has two authority-separated planes.
 
+Superseded by V2.1 as future target architecture (historical context only): the
+universal claim in Section 5.1 that AI/Hermes can never transition, promote, or
+approve lifecycle actions is superseded by the accepted V2.1 architecture recorded in
+`docs/architecture_decision_record.md` (V2.1 Strategy Lifecycle + Portfolio Authority Architecture): Hermes will later make soft
+strategy/lifecycle judgments inside a human-defined global envelope, while
+deterministic code keeps hard execution/account safety. Current runtime truth is
+unchanged until S10-HERMES-STRAT-01.
+
 ### 5.1 Research / Alpha-Factory Plane
 
 Its purpose is to discover markets worth investigating, reject weak candidates
@@ -185,6 +193,13 @@ orchestrator may weaken or bypass this boundary.
 
 ## 6. Locked Alpha-Factory Lineage
 
+Superseded by V2.1 as future target architecture (historical context only): this
+single universal non-skippable Alpha lineage no longer gates every candidate. Under
+V2.1 a known candidate enters the strategy lifecycle directly; the formal lineage
+(qualification -> WP170 -> formal WP172 -> qualified paper) remains the strongest
+evidence lane for durable/larger risk, not the universal path. The text below is
+retained as WP154 history.
+
 The canonical lineage is exact, ordered, and non-skippable:
 
 1. `MARKET_OBSERVATION`
@@ -223,6 +238,13 @@ cost-adjusted evidence.
 ## 7. Locked Adoption Sequence
 
 Later phases may not leapfrog unresolved earlier prerequisites.
+
+Superseded by V2.1 as future target architecture (historical context only): this
+universal serial adoption sequence is replaced by the V2.1 non-blocking sequence
+(S10-STRAT-LIFE-01 -> S10-HERMES-STRAT-01 -> S10-EXEC-FEAS-01 ->
+S10-GATE-C-EXPLORE-01 -> S10-DEPLOY-EXEC-01 -> S10-LIVE-ORCH-01, with S10-DEPLOY-01
+host activation, DATA-03 and S10-ALPHA-03 in parallel). The phases below are WP154
+history.
 
 ### PHASE A — POINT-IN-TIME DATA FOUNDATION
 
@@ -631,3 +653,21 @@ leaves WP170 (application id 1464877424), the nine-stage lineage, and the author
 unchanged; it grants no provider/model/Hermes runtime, network, scheduler, prioritization,
 qualification, economic, strategy, paper, live, credential, signing, order, or Gate-C
 authority.
+
+## Supersession — V2.1 Strategy Lifecycle + Portfolio Authority (S10-STRAT-LIFE-01)
+
+V2.1 target architecture: ACCEPTED. It is the current target architecture and is
+recorded in `docs/architecture_decision_record.md` (V2.1 Strategy Lifecycle + Portfolio Authority Architecture). It supersedes, as future target architecture only, WP154
+Section 5's universal claim that Hermes can never transition/promote/approve lifecycle
+actions, Section 6's universal non-skippable single Alpha lineage, and Section 7's
+universal serial adoption sequence. The WP154 text above is retained as history.
+
+Unchanged current truth: the deterministic kernel still owns credentials, signing,
+venue/access validity, durable mutation, reconciliation/account truth, global
+capital/exposure/loss ceilings and kill state; the Alpha Factory registry
+(application id 1464877425), WP170 (1464877424), qualification, formal WP172, WP173
+and the current Gate C are unchanged; the existing controlled Hermes research mode
+remains research-only and unchanged until S10-HERMES-STRAT-01. ALPHA-03 is a parallel
+recurring-discovery feeder, not a prerequisite for a known candidate. S10-STRAT-LIFE-01
+adds the separate stdlib-only strategy lifecycle store (application id 1398033457)
+and grants no paper, execution, credential, live, capital or order authority.

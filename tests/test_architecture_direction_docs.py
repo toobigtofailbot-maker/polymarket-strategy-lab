@@ -1,4 +1,4 @@
-"""Focused docs tests for WP61 architecture direction lock-in."""
+"""Docs tests for WP61 history and the current V2.1 architecture authority."""
 
 from __future__ import annotations
 
@@ -26,9 +26,16 @@ def test_architecture_direction_lockin_contains_required_decisions():
     assert "local development first" in lower
     assert "cheap vps later" in lower
     assert "rules-based + research-score-driven strategy first" in lower
+    # WP61 text is retained as history only; V2.1 supersedes it as target architecture.
     assert "llm may be used only as read-only analyst/proposal layer" in lower
     assert "no autonomous llm execution authority" in lower
     assert "research-only -> paper -> dry-run -> manual live approval -> restricted live" in lower
+    assert lower.index("llm may be used only as read-only analyst/proposal layer") < lower.index(
+        'superseded by v2.1 (historical context only): the permanent "llm read-only'
+    )
+    assert lower.index("manual live approval -> restricted live") < lower.index(
+        "superseded by v2.1 (historical context only): this universal research"
+    )
     assert "no database, dashboard, runtime, deployment, scheduler, or execution implementation in wp61" in lower
     assert "agent mode / deep research" in lower
 
@@ -99,6 +106,13 @@ def test_hosting_direction_migration_point_and_wp173_truth():
     assert 'The old shorthand "after WP172 and before WP173" is superseded' in roadmap
     for claim in ("WP173 is unimplemented", "WP173 is not implemented", "reimplement WP173"):
         assert claim not in hosting and claim not in roadmap, claim
+    # The serial deployment wording above is history; S10-DEPLOY-01 merged as a research
+    # baseline and the serial migration point is not current universal architecture.
+    adr = _flat(ADR)
+    assert "S10-DEPLOY-01 has since merged as a research runtime baseline (PR #209" in adr
+    assert 'The serial "after WP172 -> deploy -> WP173" migration point above is not current universal architecture.' in adr
+    assert "That quotation does not override the current split research-baseline" in roadmap
+    assert "host activation is NOT YET PERFORMED" in roadmap
 
 
 def test_hosting_direction_supersedes_stale_vps_wording():
@@ -117,3 +131,129 @@ def test_hosting_direction_supersedes_stale_vps_wording():
     hosting = _flat(HOSTING)
     assert "## 2. Superseded Planning Statements" in hosting
     assert "the `docs/project_charter.md` statement that VPS and cloud choices remain open" in hosting
+
+
+# -- S10-STRAT-LIFE-01: V2.1 is current target architecture (R059-R066) --------
+
+ADOPTION = ROOT / "docs" / "adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md"
+HERMES_PLAN = ROOT / "docs" / "hermes_research_brain_execution_plan.md"
+DATA_DIRECTION = ROOT / "docs" / "research_data_foundation_direction.md"
+CONTRACT = ROOT / "docs" / "strategy_lifecycle_portfolio_authority_contract.md"
+CANONICAL = (ADR, ADOPTION, HERMES_PLAN, DATA_DIRECTION, ROADMAP)
+
+
+def _v21_section() -> str:
+    adr = ADR.read_text(encoding="utf-8")
+    return " ".join(adr.split("## V2.1 Strategy Lifecycle + Portfolio Authority Architecture", 1)[1].split())
+
+
+def test_v21_is_accepted_current_target_architecture():
+    section = _v21_section()
+    assert "V2.1 target architecture: ACCEPTED" in section
+    assert "This is the current target architecture" in section
+    for doc in CANONICAL:
+        assert "V2.1" in _flat(doc), doc.name
+    for step in (
+        "MARKET / PUBLIC DATA / EVENTS", "-> STRATEGY FAMILY / VERSION", "-> HERMES STRATEGY JUDGMENT",
+        "-> PORTFOLIO AUTHORITY / ACTIVE BUDGET", "-> HARD EXECUTION SAFETY", "-> PAPER OR BOUNDED LIVE",
+        "-> HERMES REASSESSMENT", "-> CONTINUE / SCALE / REDUCE / ADAPT / QUARANTINE",
+    ):
+        assert step in section, step
+    assert "Soft strategy judgment is planned for Hermes but is not implemented by S10-STRAT-LIFE-01" in section
+    assert "V2.1 target architecture: ACCEPTED" in _flat(ROADMAP)
+
+
+def test_wp61_wp95_wp154_assumptions_marked_superseded():
+    section = _v21_section()
+    for text in (
+        "WP61's permanent \"LLM read-only analyst/proposal layer only\" assumption: superseded",
+        "WP61's universal research -> paper -> dry-run -> manual live approval -> restricted live ladder: superseded",
+        "WP95's permanent Hermes-advisory-only / never-final-decision-maker assumption",
+        "WP154 Section 5 universal claim", "Section 6 universal non-skippable single Alpha lineage",
+        "Section 7 universal serial adoption sequence",
+    ):
+        assert text in section, text
+    adoption = _flat(ADOPTION)
+    assert adoption.count("Superseded by V2.1 as future target architecture (historical context only)") == 3
+    assert "The WP154 text above is retained as history" in adoption
+    assert "exact, ordered, and non-skippable" in adoption
+    hermes = _flat(HERMES_PLAN)
+    assert "WP95's permanent Hermes-advisory-only / never-final-decision-maker assumption is superseded" in hermes
+    assert "act as the final decision-maker for trade, risk, or live actions" in hermes
+    data = _flat(DATA_DIRECTION)
+    assert "Strategy: rules-based plus research-score-driven first; LLM read-only analyst/proposal layer only." in data
+    assert "Superseded by V2.1 as future target architecture (historical context only)" in data
+    roadmap = _flat(ROADMAP)
+    assert "Superseded by V2.1 (historical context only): the LLM read-only-only assumption" in roadmap
+
+
+def test_current_hermes_research_mode_unchanged():
+    for doc in (ADR, ADOPTION, HERMES_PLAN):
+        text = _flat(doc)
+        assert "research-only and unchanged until S10-HERMES-STRAT-01" in text, doc.name
+    hermes = _flat(HERMES_PLAN)
+    assert "implements no Hermes strategy-manager runtime" in hermes
+    assert "Runtime authority: NONE" in hermes
+    for claim in ("Hermes strategy manager implemented: YES", "Hermes may place orders", "Hermes may sign"):
+        for doc in CANONICAL + (CONTRACT,):
+            assert claim not in _flat(doc), (doc.name, claim)
+
+
+def test_formal_qual_wp170_wp172_lane_preserved():
+    section = _v21_section()
+    assert "Formal QUAL/WP170/WP172 remains the strongest evidence lane, not the universal path." in section
+    assert "Existing qualification/WP170/formal-WP172 mechanics remain unchanged." in section
+    assert ("candidate needing durable/larger evidence -> qualification -> WP170 -> formal WP172 -> "
+            "qualified paper -> larger validated risk band") in section
+    assert "Current Gate C remains its existing strict qualified/canary implementation" in section
+    assert "Existing WP173 qualified and research-paper modes remain unchanged." in section
+    assert "Strong formal lane (unchanged)" in _flat(ROADMAP)
+
+
+def test_known_candidate_path_does_not_require_alpha03():
+    section = _v21_section()
+    path = ("KNOWN CANDIDATE -> lifecycle -> Hermes strategy manager -> execution feasibility -> "
+            "exploratory Gate C -> execution host -> live orchestrator -> tiny exploratory live")
+    assert path in section and path in _flat(ROADMAP)
+    assert "ALPHA-03" not in path
+    assert "Known-candidate path (does not require ALPHA-03)" in section
+    assert ("S10-STRAT-LIFE-01 -> S10-HERMES-STRAT-01 -> S10-EXEC-FEAS-01 -> S10-GATE-C-EXPLORE-01 -> "
+            "S10-DEPLOY-EXEC-01 -> S10-LIVE-ORCH-01") in section
+    assert "is not a hard prerequisite for first exploratory live from an already-known candidate" in section
+
+
+def test_alpha03_is_parallel_feeder():
+    section = _v21_section()
+    assert "ALPHA-03 is a parallel recurring-discovery feeder, not a prerequisite for a known candidate." in section
+    assert "S10-ALPHA-03 discovery lane (parallel)" in section
+    assert "ALPHA-03 -> recurring autonomous discovery/research -> new candidate -> same lifecycle" in section
+    assert "ALPHA-03 remains separately gated and off the first-known-candidate critical path." in section
+    assert "ALPHA-03 is a parallel feeder, not a prerequisite" in _flat(ROADMAP)
+
+
+def test_global_portfolio_envelope_replaces_per_strategy_approval():
+    section = _v21_section()
+    assert "Humans define the outer blast radius." in section
+    assert ("A human-authorized global PortfolioAuthorityPolicy replaces per-strategy manual live "
+            "approval as target architecture; no per-strategy human approval field exists.") in section
+    adr = _flat(ADR)
+    assert "including manual live approval per strategy, is superseded as future target architecture" in adr
+    contract = _flat(CONTRACT)
+    assert "One global `PortfolioAuthorityPolicy` is the human-defined outer envelope" in contract
+    assert "No per-child or per-strategy human approval field exists." in contract
+    assert "LIVE TRADING STATUS: DISABLED" in (ROOT / "docs" / "live_trading_authorization.md").read_text(encoding="utf-8")
+
+
+def test_strategy_local_quarantine_and_bounded_adaptation_recorded():
+    section = _v21_section()
+    for text in (
+        "Strategy-local failure is strategy-local by default.",
+        "Bounded child adaptations may inherit bounded freedom.",
+        "Material children lose automatic higher-band inheritance but remain eligible for exploratory treatment.",
+    ):
+        assert text in section, text
+    contract = _flat(CONTRACT)
+    assert "Strategy-local failure stays strategy-local" in contract
+    assert "material children are capped at min(parent band, EXPLORATORY_LIVE)" in contract
+    assert "Only mechanical boundedness is classified" in contract
+    assert "A strategy-local event never creates a global restriction." in contract

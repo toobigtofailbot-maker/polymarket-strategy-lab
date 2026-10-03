@@ -5595,6 +5595,44 @@ def test_s10_deploy_exact_scope_and_authority() -> None:
     assert spec["authority"]["scheduler"] is True
     for key in ("credentials", "paper", "execution", "live"):
         assert spec["authority"][key] is False
-    assert "S10-DEPLOY-01 current bounded implementation target" in status
+    assert "# S10-DEPLOY-01 merged historical predecessor (PR #209 merged: YES" in status
+    assert "formerly the current bounded implementation target): Research Platform Runtime Baseline" in status
     assert "Merge authorized: NO" in status
     assert "Local offline tooling: YES" in fragment
+
+
+def test_s10_strat_life_status_records_deploy_merge_and_separate_activation() -> None:
+    status = _read()
+    lines = status.splitlines()
+    current = next(line for line in lines if line.startswith("# S10-STRAT-LIFE-01 current bounded implementation target"))
+    assert lines.index(current) == 2
+    for text in (
+        "PR #209 merged: YES",
+        "PR #209 head: 3e9d595e014275662e90b5f22809f66b3e82cb39",
+        "PR #209 merge: 02eeed13dc0b9552e5685f48198d060e78c797e1",
+        "S10-DEPLOY-01 repo implementation: MERGED",
+        "host activation: NOT YET PERFORMED / separately gated",
+        "V2.1 target architecture: ACCEPTED",
+        "current bounded implementation target: S10-STRAT-LIFE-01",
+        "S10-STRAT-LIFE-01 capital/orders: USD 0 / 0",
+        "DATA-03: unchanged and non-blocking",
+        "ALPHA-03: separate / parallel",
+        "Exact changed-file scope: 20",
+        "Governance track: RUNTIME",
+        "Merge authorized: NO",
+    ):
+        assert text in current, text
+    for claim in ("host activation: PERFORMED", "Gate C: AUTHORIZED", "live: ENABLED", "Hermes strategy manager implemented: YES"):
+        assert claim not in current, claim
+    assert not any(line.startswith("# S10-DEPLOY-01 current bounded implementation target") for line in lines)
+    fragment = (REPO_ROOT / "docs/status_entries/S10-STRAT-LIFE-01.md").read_text(encoding="utf-8")
+    assert "S10-DEPLOY-01 repo implementation: MERGED; host activation: NOT YET PERFORMED / separately gated" in fragment
+    assert "Merge commit: not merged" in fragment
+    assert "PR and current live head: see GitHub metadata and the PR body" in fragment
+    assert re.search(r"(?i)current live PR head:\s*`?[0-9a-f]{40}", fragment) is None
+    spec = json.loads((REPO_ROOT / "docs/wp_specs/S10-STRAT-LIFE-01/wp_spec.json").read_text(encoding="utf-8"))
+    assert spec["identity"]["required_predecessor"] == {
+        "pr_number": 209,
+        "head_sha": "3e9d595e014275662e90b5f22809f66b3e82cb39",
+        "merge_sha": "02eeed13dc0b9552e5685f48198d060e78c797e1",
+    }

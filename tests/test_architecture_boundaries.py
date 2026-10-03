@@ -161,6 +161,11 @@ APPROVED_SRC_SCOPES = (
     # caller-selected WP169/WP170 SQLite evidence and has no trading authority.
     "src/operator_cockpit.py",
     "src/operator_cockpit_frontend",
+    # S10-STRAT-LIFE-01 approves exactly the stdlib-only src/strategy_lifecycle family:
+    # local/offline strategy lifecycle and global portfolio-policy state only. It has no
+    # network, credential, scheduler, Hermes-runtime, paper, order, execution or live
+    # authority, and it is not a parent src/ wildcard approval.
+    "src/strategy_lifecycle",
 )
 
 
@@ -233,6 +238,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
         explicit-caller-content-only in-memory manual research response validation.
     WP145 permits hermes_candidate_review_assisted_research_local_dry_run_harness.py
     for the one-case local/offline test-oriented deterministic no-network harness.
+    S10-STRAT-LIFE-01 permits src/strategy_lifecycle/ for local/offline strategy
+    lifecycle and global portfolio-policy state only (no order/execution/live authority).
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
@@ -562,3 +569,20 @@ def test_wp175_boundary_has_no_scheduler_hermes_paper_or_wallet_ops():
     assert "Hermes" not in source
     assert "schedule(" not in source
     assert "wallet_ops" not in source
+
+
+def test_strategy_lifecycle_is_only_new_approved_source_family() -> None:
+    """S10-STRAT-LIFE-01 approves exactly src/strategy_lifecycle, never a src/ wildcard."""
+    assert "src/strategy_lifecycle" in APPROVED_SRC_SCOPES
+    assert APPROVED_SRC_SCOPES.count("src/strategy_lifecycle") == 1
+    assert APPROVED_SRC_SCOPES[-1] == "src/strategy_lifecycle"
+    for scope in APPROVED_SRC_SCOPES:
+        assert scope not in {"src", "src/", "src/*"}
+        assert scope.startswith("src/") and not scope.endswith("/")
+    lifecycle = ROOT / "src" / "strategy_lifecycle"
+    assert sorted(path.name for path in lifecycle.iterdir() if path.is_file()) == [
+        "__init__.py", "models.py", "policy.py", "store.py",
+    ]
+    assert not any(path.is_dir() and path.name != "__pycache__" for path in lifecycle.iterdir())
+    for drifted in ("src/strategy_lifecycle_extra.py", "src/strategy_lifecycle2/x.py"):
+        assert not any(drifted.startswith(scope + "/") or drifted == scope for scope in APPROVED_SRC_SCOPES)

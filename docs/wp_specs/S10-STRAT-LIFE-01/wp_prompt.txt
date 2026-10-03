@@ -1,0 +1,791 @@
+SIDE15 — S10-STRAT-LIFE-01
+STRATEGY LIFECYCLE + GLOBAL PORTFOLIO AUTHORITY CORE — V2.1 FOUNDATION
+
+Package Identity:
+  WP ID: S10-STRAT-LIFE-01
+  Title: Strategy Lifecycle + Global Portfolio Authority Core
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base / current merged main: 02eeed13dc0b9552e5685f48198d060e78c797e1
+  Required predecessor: PR #209 / S10-DEPLOY-01
+  Required predecessor head: 3e9d595e014275662e90b5f22809f66b3e82cb39
+  Required predecessor merge SHA: 02eeed13dc0b9552e5685f48198d060e78c797e1
+  Suggested branch: codex/s10-strat-life-01-strategy-lifecycle-core
+  Package class: STRATEGY_LIFECYCLE_PORTFOLIO_AUTHORITY_CORE
+  Package size class: L
+  Risk level: 3
+  Capital at risk: USD 0
+  Orders: 0
+  Merge authority: NO
+  Runtime activation authority: NO
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: local/offline lifecycle and portfolio-policy state library only; no daemon, CLI, loop or network
+  Network impact: NONE in product/runtime behavior; workflow git/GitHub publication only
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: none; real capital USD 0; orders 0
+
+Governance track expected: RUNTIME
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: true
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+This is intentionally RUNTIME, although no daemon/network/runtime loop is added, because this
+package creates durable strategy lifecycle state and future authority-envelope primitives.
+
+The machine-readable specification is docs/wp_specs/S10-STRAT-LIFE-01/wp_spec.json. The
+authority mirror above equals its authority block exactly.
+
+1. AUTHORIZATION AND OBJECTIVE
+
+Karl has approved the V2.1 target architecture and product direction.
+
+Objective: this WP implements only the first V2.1 foundation:
+
+1. immutable strategy-family and strategy-version identity;
+2. parent/child lineage;
+3. deterministic bounded-vs-material adaptation classification;
+4. non-authoritative evidence-posture metadata;
+5. strategy health state;
+6. append-only strategy-local restriction records;
+7. active strategy risk-allocation records;
+8. one human-authorized global PortfolioAuthorityPolicy substrate;
+9. deterministic portfolio-budget/capacity accounting;
+10. one append-only, hash-chained local SQLite lifecycle store;
+11. canonical V2.1 architecture/roadmap/status reconciliation.
+
+This WP creates no trading path.
+
+It must not implement: Hermes strategy-manager runtime; ALPHA-03 recurring campaigns; generic
+execution-feasibility; Gate-C exploratory permits; execution-host hardening; multi-strategy
+live orchestration; credentials; signing; authenticated account access; order placement/cancel;
+paper execution changes; live trading; capital deployment; DATA-03 changes.
+
+The package is the canonical substrate future WPs consume. It must not pre-implement those
+successor WPs.
+
+2. ACCEPTED V2.1 ARCHITECTURE — DO NOT REOPEN
+
+The following is already decided and is not a design question:
+
+  Humans define the outer blast radius.
+  Hermes will later make soft strategy/lifecycle judgments inside it.
+  Deterministic code enforces the outer envelope and account/execution safety.
+  Formal QUAL/WP170/WP172 remains the strongest evidence lane, not the universal path.
+  ALPHA-03 is a parallel recurring-discovery feeder, not a prerequisite for a known candidate.
+  Strategy-local failure is strategy-local by default.
+  Bounded child adaptations may inherit bounded freedom.
+  Material children lose automatic higher-band inheritance but remain eligible for exploratory treatment.
+
+Target known-candidate path:
+
+  KNOWN CANDIDATE -> lifecycle -> Hermes strategy manager -> execution feasibility
+  -> exploratory Gate C -> execution host -> live orchestrator -> tiny exploratory live
+
+Parallel discovery lane:
+
+  ALPHA-03 -> recurring autonomous discovery/research -> new candidate -> same lifecycle
+
+Strong formal lane remains:
+
+  candidate needing durable / larger evidence -> qualification -> WP170 -> formal WP172
+  -> qualified paper -> larger validated risk band
+
+This WP does not alter any of those existing formal implementations.
+
+3. LIVE START / REPO-DRIFT GATE (HARD MERGE / STARTUP GATE)
+
+Before any edit run:
+
+  git fetch origin --prune
+  git rev-parse origin/main
+  git status --short --branch
+  gh pr list --state open
+  gh pr view 209 --json state,mergedAt,headRefOid,mergeCommit
+
+Require origin/main = 02eeed13dc0b9552e5685f48198d060e78c797e1; PR #209 = MERGED; PR #209
+head = 3e9d595e014275662e90b5f22809f66b3e82cb39; PR #209 merge =
+02eeed13dc0b9552e5685f48198d060e78c797e1; open PRs = NONE; working tree = CLEAN.
+If any value differs before implementation: STOP REPO_STATE_DRIFT. Do not silently rebase onto
+a later main.
+
+4. AUTHORITY / NON-AUTHORITY POSTURE (GOVERNANCE AUTHORITY)
+
+The authority mirror above is exact. Per docs/ai/codex/PROTECTED_PATHS.md, this package does
+not cross: credentials/secrets; authenticated clients; wallet/account behavior; order
+placement/cancel; execution gateway; paper engine; scheduler/bot loop; runtime/daemon;
+dashboard/deployment; dependency/lock changes; external code copying; generated artifacts.
+
+strategy=true authorizes only the exact local/offline lifecycle substrate below. It grants no
+order, execution, paper or live authority. Non-authority: no network, credential, scheduler,
+Hermes runtime, paper, execution or live authority exists in this package.
+
+5. EXACT CHANGED-FILE SCOPE
+
+required_changed_files == allowed_changed_files == exactly these 20 paths. No 21st path is
+authorized.
+
+Canonical architecture / status reconciliation:
+1. docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md
+2. docs/architecture_decision_record.md
+3. docs/research_data_foundation_direction.md
+4. docs/hermes_research_brain_execution_plan.md
+5. docs/long_term_bot_completion_roadmap.md
+6. docs/project_status.md
+7. docs/repo_truth_index.md
+
+New lifecycle contract/status/governance artifacts:
+8. docs/strategy_lifecycle_portfolio_authority_contract.md
+9. docs/status_entries/S10-STRAT-LIFE-01.md
+10. docs/wp_specs/S10-STRAT-LIFE-01/wp_prompt.txt
+11. docs/wp_specs/S10-STRAT-LIFE-01/wp_spec.json
+
+Source:
+12. src/strategy_lifecycle/__init__.py
+13. src/strategy_lifecycle/models.py
+14. src/strategy_lifecycle/policy.py
+15. src/strategy_lifecycle/store.py
+
+Tests / architecture guards:
+16. tests/strategy_lifecycle/test_strategy_lifecycle.py
+17. tests/test_architecture_boundaries.py
+18. tests/test_architecture_direction_docs.py
+19. tests/test_project_status_docs.py
+20. tests/test_repo_truth_docs.py
+
+Package budget: max_changed_files = 20; exact_scope_required = true; package_size_class = L.
+
+6. FORBIDDEN CHANGE SURFACES
+
+No change is authorized under: .github/**, agent_memory/**, agent_runtime/**, credentials/**,
+local_data/**, secrets/**, tools/**, src/data_layer/**, src/research_runtime/**,
+src/paper_trading/**, src/execution_gateway/**, src/risk_engine/**, src/strategy_modules/**,
+pyproject.toml, requirements.txt, package.json, lock files, .env*.
+
+Do not modify: DATA-03 code, prepared workspace or evidence; qualification code/gate; WP170;
+WP172; WP173 paper engine/store/risk; current Hermes controlled research runtime; Gate B/C;
+live authorization; S10-DEPLOY-01 tooling; workflows; dependencies.
+
+If a 21st path is mechanically necessary: STOP SCOPE_AMENDMENT_REQUIRED before implementation.
+
+7. PRE-IMPLEMENTATION PACKAGE READINESS
+
+Before implementing source: materialize wp_prompt.txt and wp_spec.json; mirror this WP exactly;
+include a BEGIN_NORMATIVE_RULE_MATRIX_V1 block; run:
+
+  python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-STRAT-LIFE-01/wp_prompt.txt --spec docs/wp_specs/S10-STRAT-LIFE-01/wp_spec.json --repo-root .
+
+Required terminal: IMPLEMENTATION_READY (RUNTIME). Do not implement source until readiness
+passes. If readiness cannot pass inside the exact 20-file scope: STOP
+SPEC_NOT_IMPLEMENTATION_READY. Do not change workflow-governance tooling to make this package pass.
+
+8. CANONICAL V2.1 REPO-TRUTH RECONCILIATION
+
+This package must make the accepted V2.1 direction current repo truth without falsifying
+historical records.
+
+8.1 Supersede, do not erase history. Historical WP61/WP95/WP154 text may remain when explicitly
+labeled historical/superseded. Current architectural authority must be unambiguous. The
+canonical architecture documents must state that V2.1 supersedes as future target architecture:
+- WP61's permanent "LLM read-only analyst/proposal layer only" assumption;
+- WP61's universal research -> paper -> dry-run -> manual live approval -> restricted live ladder;
+- WP95's permanent Hermes-advisory-only / never-final-decision-maker assumption;
+- WP154 Section 5 universal claim that Hermes can never transition/promote/approve lifecycle actions;
+- WP154 Section 6 universal non-skippable single Alpha lineage;
+- WP154 Section 7 universal serial adoption sequence.
+
+8.2 Preserve current implemented boundaries. Do not rewrite current runtime truth. Explicitly
+record:
+- existing controlled Hermes research mode remains research-only and unchanged until S10-HERMES-STRAT-01;
+- current Gate C remains its existing strict qualified/canary implementation until a later Gate-C V2.1 WP;
+- existing qualification/WP170/formal-WP172 mechanics remain unchanged;
+- existing WP173 qualified and research-paper modes remain unchanged;
+- S10-DEPLOY-01 is merged at main 02eeed13dc0b9552e5685f48198d060e78c797e1, but host provisioning/activation remains separately gated;
+- DATA-03 remains unchanged and non-blocking;
+- ALPHA-03 remains separately gated and off the first-known-candidate critical path.
+
+8.3 Current V2.1 target graph. Canonical docs must carry:
+
+  MARKET / PUBLIC DATA / EVENTS -> ALPHA / EXISTING RESEARCH INPUT -> STRATEGY FAMILY / VERSION
+  -> HERMES STRATEGY JUDGMENT -> PORTFOLIO AUTHORITY / ACTIVE BUDGET -> HARD EXECUTION SAFETY
+  -> PAPER OR BOUNDED LIVE -> PERFORMANCE -> HERMES REASSESSMENT
+  -> CONTINUE / SCALE / REDUCE / ADAPT / QUARANTINE
+
+Hard deterministic protection remains focused on: credentials/signing; venue/access validity;
+durable mutation semantics; reconciliation/account truth; global capital/exposure/loss ceilings;
+kill state; corrupt/stale shared-state integrity. Soft strategy judgment is planned for Hermes,
+but not implemented in this WP.
+
+8.4 Non-blocking sequence. Repo truth must show:
+
+  S10-DEPLOY-01 host activation lane       (parallel)
+  DATA-03 weather evidence lane            (parallel)
+  S10-ALPHA-03 discovery lane              (parallel)
+
+  S10-STRAT-LIFE-01 -> S10-HERMES-STRAT-01 -> S10-EXEC-FEAS-01 -> S10-GATE-C-EXPLORE-01
+  -> S10-DEPLOY-EXEC-01 -> S10-LIVE-ORCH-01
+
+S10-ALPHA-03 feeds future new opportunities into the same lifecycle but is not a hard
+prerequisite for first exploratory live from an already-known candidate.
+
+9. NEW SOURCE BOUNDARY
+
+Create exactly src/strategy_lifecycle/__init__.py, models.py, policy.py, store.py.
+tests/test_architecture_boundaries.py must add exactly this source family to the approved
+executable scope and explain that S10-STRAT-LIFE-01 authorizes local/offline lifecycle/
+portfolio-policy state only. No parent src/ wildcard approval. The new package must be
+stdlib-only. No external dependency/import is required.
+
+10. COMMON MODEL RULES
+
+models.py owns immutable records, canonicalization, builders and validators.
+
+10.1 Canonical serialization: UTF-8; json.dumps(sort_keys=True, separators=(",", ":"),
+ensure_ascii=False, allow_nan=False). Rules: no binary float is accepted in canonical domain
+records; no NaN/Infinity; booleans never satisfy integers; no unknown fields when loading a
+public record mapping; exact field sets; deterministic tuple/list normalization; no path-like
+evidence refs; bounded text, depth, sequence count and canonical byte size; errors are closed
+stable codes and never echo caller payload.
+
+10.2 Content IDs. Exact prefixes: strategyfamily:sha256:, strategyversion:sha256:,
+portfolioauthoritypolicy:sha256:, portfoliopolicyreceipt:sha256:, strategyhealth:sha256:,
+strategyriskallocation:sha256:, strategyrestriction:sha256:. Every record ID is prefix +
+sha256(canonical JSON of exact committed preimage). The ID field itself is excluded from its
+preimage. No timestamp/environment/randomness is generated internally. All time values are
+explicit caller inputs and validated as non-negative integer nanoseconds.
+
+11. STRATEGY FAMILY
+
+Frozen StrategyFamily with exact semantic fields: schema_id = "polymarket-strategy-family";
+schema_version = "1.0.0"; strategy_family_id; family_key; family_label; created_time_ns;
+creation_provenance. family_key: lower-case stable token, max 128 chars. family_label: bounded
+display label. creation_provenance: bounded non-path opaque text/ref. No trading/evidence/risk
+meaning is inferred from family membership. A family is a lineage grouping only.
+
+12. STRATEGY VERSION
+
+Frozen StrategyVersion with exact semantic fields: schema_id = "polymarket-strategy-version";
+schema_version = "1.0.0"; strategy_version_id; strategy_family_id; parent_strategy_version_id;
+strategy_label; evidence_posture; strategy_code_identity; strategy_spec_json;
+adaptive_bounds_json; evidence_refs; created_time_ns; creation_provenance; adaptation_class.
+
+12.1 Evidence posture closed advisory metadata vocabulary: REPEATABLE_STATISTICAL,
+EVENT_INFORMATION, RELATIVE_VALUE_STRUCTURAL, MICROSTRUCTURE_MAKER, WALLET_DEPENDENT,
+NOVEL_EXPLORATORY. This field guides later Hermes/evidence selection; is not a PASS/FAIL gate;
+grants no paper/live eligibility; changing it in a child is a material adaptation.
+
+12.2 strategy_spec_json must be canonical JSON text with exactly the keys thesis, universe,
+entry_rule, exit_rule, execution_rule, parameters. The first five values must be JSON objects.
+parameters must be a JSON object keyed by bounded lower-case parameter names. Domain JSON may
+contain object, array, string, integer, boolean, null. Binary floats are forbidden. Decimal
+quantities must be canonical decimal strings. Frozen practical bounds: max canonical strategy
+spec bytes 65,536; max JSON depth 8; max aggregate nodes 4,096; max parameters 256; max
+evidence refs 256.
+
+12.3 adaptive_bounds_json is a canonical JSON object. It may be {}. Each key must exist in
+strategy_spec_json.parameters. Each bound is exactly one of
+{"kind":"INTEGER_RANGE","min":0,"max":10}, {"kind":"DECIMAL_RANGE","min":"0.1","max":"0.9"},
+{"kind":"ENUM","values":["A","B"]}. Rules: integer min <= max; decimal values use canonical
+finite decimal grammar and min <= max; enum values are unique bounded strings in explicit
+order; bounds themselves are immutable across a bounded child; adding/removing/widening/
+changing an adaptive bound is material.
+
+13. ADAPTATION CLASSIFICATION
+
+Closed vocabulary: ROOT, BOUNDED_ADAPTATION, MATERIAL_ADAPTATION.
+Root: required when parent_strategy_version_id is null.
+Child baseline: a child must reference an existing exact parent; use the same
+strategy_family_id; not be byte/semantic identical to the parent. No-op child versions reject.
+Bounded adaptation: a child is BOUNDED_ADAPTATION only if all are true: 1 same family; 2 same
+evidence posture; 3 same strategy code identity; 4 identical thesis; 5 identical universe;
+6 identical entry_rule; 7 identical exit_rule; 8 identical execution_rule; 9 identical
+adaptive-bound declaration; 10 parameter key set is unchanged; 11 every changed parameter is
+explicitly adaptive; 12 every changed value falls inside its frozen parent bound; 13 at least
+one parameter actually changes. Anything else is MATERIAL_ADAPTATION.
+The repository validator derives this classification; caller-provided adaptation_class must
+equal the derived value. Do not introduce a deterministic judgment about whether the
+adaptation is good. Only mechanical boundedness is classified.
+
+14. RISK-BAND INHERITANCE HELPER
+
+policy.py exposes a pure deterministic helper
+derive_inherited_risk_band_ceiling(parent_band, adaptation_class).
+Closed risk-band order: PAPER, EXPLORATORY_LIVE, VALIDATED_LIVE, MATURE_LIVE.
+BOUNDED_ADAPTATION -> may inherit at most the exact parent band. MATERIAL_ADAPTATION ->
+automatic inheritance ceiling is min(parent_band, EXPLORATORY_LIVE). ROOT -> no inherited
+parent band. This is an inheritance ceiling only. It does not grant live authority. A material
+child may later earn a stronger band through another valid future decision/evidence path. No
+per-child human approval field exists in this model.
+
+15. GLOBAL PORTFOLIO AUTHORITY POLICY
+
+Frozen PortfolioAuthorityPolicy with exact semantic fields: schema_id =
+"polymarket-portfolio-authority-policy"; schema_version = "1.0.0"; policy_id;
+predecessor_policy_id; policy_label; venue_scope; account_scope_ref; effective_from_ns;
+expires_at_ns; global_capital_at_risk_max_usd; global_gross_exposure_max_usd;
+global_daily_loss_max_usd; global_drawdown_max_usd; global_cumulative_loss_max_usd;
+exploratory_pool_max_usd; validated_pool_max_usd; mature_pool_max_usd;
+max_exploratory_per_strategy_usd; max_validated_per_strategy_usd; max_mature_per_strategy_usd;
+max_per_market_usd; max_active_strategies; max_active_markets; max_simultaneous_open_orders;
+max_order_notional_usd; max_mutations_per_minute; allowed_order_styles; created_time_ns.
+
+15.1 Scope: venue_scope = ("POLYMARKET",). account_scope_ref is a sanitized opaque
+public/account-scope identity only; it is not a credential and must not contain secret material.
+15.2 Monetary values: all money values are canonical non-negative decimal strings. No floats.
+Policy construction must fail closed on malformed decimals. Enforce
+exploratory_pool_max_usd + validated_pool_max_usd + mature_pool_max_usd <=
+global_capital_at_risk_max_usd; max_exploratory_per_strategy_usd <= exploratory_pool_max_usd;
+max_validated_per_strategy_usd <= validated_pool_max_usd; max_mature_per_strategy_usd <=
+mature_pool_max_usd; max_per_market_usd <= global_gross_exposure_max_usd;
+max_order_notional_usd <= max_per_market_usd. Do not invent leverage/correlation assumptions.
+15.3 Counts: count limits are explicit non-negative integers. No boolean-as-int.
+15.4 Order-style vocabulary reuses AGGRESSIVE_TAKER, PASSIVE_MAKER. allowed_order_styles is a
+non-empty unique tuple in canonical vocabulary order. No order is created by this package.
+15.5 Policy time: created_time_ns <= effective_from_ns; expires_at_ns is null OR expires_at_ns >
+effective_from_ns. A policy object is only a proposed envelope until an activation receipt
+exists in the lifecycle store.
+
+16. POLICY ACTIVATION / REVOCATION RECEIPT
+
+Frozen PortfolioPolicyReceipt with exact fields: schema_id =
+"polymarket-portfolio-policy-receipt"; schema_version = "1.0.0"; policy_receipt_id; action;
+policy_id; previous_active_policy_id; human_authorization_ref; created_time_ns.
+Actions: ACTIVATE, REVOKE. Rules enforced by store replay:
+ACTIVATE: referenced policy exists; previous_active_policy_id equals current active policy or
+null when none; activating the same already-active policy as a new event is rejected;
+successful activation replaces the derived current active policy.
+REVOKE: referenced policy is exactly current active policy; previous_active_policy_id equals it;
+derived current active policy becomes null.
+human_authorization_ref is required, bounded and non-secret. This package does not pretend to
+cryptographically prove who typed that reference. Later operator/live packages own actual human
+activation procedure. No policy is committed/activated as production data by this WP.
+
+17. STRATEGY HEALTH
+
+Frozen StrategyHealthReceipt with fields: schema_id = "polymarket-strategy-health-receipt";
+schema_version = "1.0.0"; health_receipt_id; strategy_version_id; previous_health_state;
+new_health_state; decision_ref; evidence_refs; created_time_ns.
+Health vocabulary: NEW, HEALTHY, WATCH, DEGRADED, QUARANTINED, RETIRED. Derived initial state of
+every newly registered strategy version: NEW. Receipt rules: previous state must equal
+store-derived current state; no self-transition; new state may not be NEW; RETIRED is terminal
+for that strategy version; any non-retired state may move to any other non-NEW state. Do not add
+unnecessary fixed degradation ladders. Future Hermes may decide the appropriate transition.
+
+18. STRATEGY RISK ALLOCATION
+
+Frozen StrategyRiskAllocation with fields: schema_id = "polymarket-strategy-risk-allocation";
+schema_version = "1.0.0"; allocation_id; strategy_version_id; policy_id; risk_band;
+active_budget_usd; allocation_basis; decision_ref; evidence_refs; valid_from_ns; valid_until_ns;
+created_time_ns.
+Risk bands: PAPER, EXPLORATORY_LIVE, VALIDATED_LIVE, MATURE_LIVE. Allocation basis:
+DIRECT_DECISION, PARENT_INHERITANCE.
+Rules: referenced strategy version exists; referenced policy exists and is the current active
+policy at append time; valid_until_ns is null or greater than valid_from_ns; validity must fit
+within the policy validity window; PAPER requires active_budget_usd == "0"; live-band budgets
+are non-negative canonical decimals; decision_ref is required but is not interpreted as
+human/Hermes authority by this WP.
+PARENT_INHERITANCE: strategy must have a parent; parent must have a current allocation;
+requested band must not exceed derive_inherited_risk_band_ceiling(...).
+DIRECT_DECISION: this package performs no evidence-quality gate; later callers must own whatever
+evidence/authority validates the decision; hard portfolio capacity still applies.
+A new allocation supersedes only the store-derived current allocation for that strategy version;
+history remains append-only.
+
+19. STRATEGY-LOCAL RESTRICTION RECEIPT
+
+Frozen StrategyRestrictionReceipt with fields: schema_id =
+"polymarket-strategy-restriction-receipt"; schema_version = "1.0.0"; restriction_receipt_id;
+strategy_version_id; restriction_key; action; restriction_kind; max_active_budget_usd;
+decision_ref; evidence_refs; created_time_ns.
+Actions: APPLY, CLEAR. Kinds: PAUSE_NEW_EXPOSURE, PAPER_ONLY, ACTIVE_BUDGET_CAP.
+Rules: restriction_key is strategy-local; APPLY requires that key not already be active; CLEAR
+requires that exact key already be active; CLEAR must bind the same restriction kind and cap
+semantics; ACTIVE_BUDGET_CAP requires a canonical non-negative cap; other kinds require
+max_active_budget_usd = null; clearing one strategy restriction cannot affect another strategy.
+Do not create a global restriction from a strategy-local event. Global hard safety belongs to
+later execution/portfolio packages.
+
+20. LIFECYCLE STATE PROJECTION
+
+Define a frozen StrategyLifecycleSnapshot public projection containing at least schema_id,
+schema_version, store_head_entry_hash, total_rows, total_payload_bytes, active_policy_id,
+families, strategy_versions, current_health_by_strategy_version,
+current_allocation_by_strategy_version, active_restrictions_by_strategy_version, plus fixed
+authority truths no_credential_authority = true, no_paper_execution_authority = true,
+no_order_authority = true, no_execution_authority = true, no_live_authority = true.
+The projection is derived by verified replay only. It is not independently writable.
+
+21. PORTFOLIO CAPACITY EVALUATION
+
+policy.py exposes one pure deterministic evaluator over a verified snapshot and explicit
+at_time_ns. Closed result: PORTFOLIO_CAPACITY_VALID, PORTFOLIO_CAPACITY_REJECTED.
+Closed reason codes cover at minimum: POLICY_NOT_ACTIVE, POLICY_NOT_EFFECTIVE, POLICY_EXPIRED,
+ALLOCATION_POLICY_MISMATCH, ALLOCATION_INVALID, PER_STRATEGY_LIMIT_EXCEEDED,
+EXPLORATORY_POOL_EXCEEDED, VALIDATED_POOL_EXCEEDED, MATURE_POOL_EXCEEDED,
+GLOBAL_CAPITAL_LIMIT_EXCEEDED, MAX_ACTIVE_STRATEGIES_EXCEEDED, HEALTH_BLOCKS_ACTIVE_RISK,
+RESTRICTION_BLOCKS_ACTIVE_RISK, ACTIVE_BUDGET_CAP_EXCEEDED, INTERNAL_VALIDATION_FAILED.
+Evaluation semantics: 1 use only allocations active at at_time_ns; 2 an expired/future
+allocation is inactive, not silently reused; 3 QUARANTINED or RETIRED strategy => active
+real-risk budget must be zero; 4 PAUSE_NEW_EXPOSURE or PAPER_ONLY => active real-risk budget
+must be zero; 5 ACTIVE_BUDGET_CAP => active budget <= smallest active cap; 6 per-strategy band
+maximum applies; 7 sum by band <= corresponding pool; 8 sum of all real-risk active budgets <=
+global capital-at-risk maximum; 9 number of strategies with positive active real-risk budget <=
+max active strategies.
+This evaluator reserves/allocates budget only. It does not model actual orders, market
+exposure, fills, PnL or reconciliation. Downstream limits (per-market, gross exposure, order
+notional, active markets/open orders, mutation rate) are persisted now for later hard-kernel
+enforcement, but this package must not pretend to measure runtime values it does not possess.
+
+22. APPEND-ONLY SQLITE STORE
+
+store.py creates one explicit caller-selected SQLite store. No implicit path discovery. No
+directory creation. No default local_data path.
+Exact SQLite identity: format_id = "s10-strategy-lifecycle-store"; schema_version = 1;
+application_id = 0x53544C31 (decimal 1398033457); user_version = 1; journal_mode = DELETE;
+synchronous = FULL; foreign_keys = ON. This application id was checked against current repo
+source and is unused at the frozen base.
+Bounds: max records 100,000; max canonical payload per record 262,144 bytes; max aggregate
+canonical payload 536,870,912 bytes.
+Schema: one metadata singleton table and one append-only records table with at least
+sequence_number, record_kind, record_id, payload_json, payload_sha256, previous_entry_hash,
+entry_hash. Record kinds exactly: STRATEGY_FAMILY, STRATEGY_VERSION, PORTFOLIO_AUTHORITY_POLICY,
+PORTFOLIO_POLICY_RECEIPT, STRATEGY_HEALTH_RECEIPT, STRATEGY_RISK_ALLOCATION,
+STRATEGY_RESTRICTION_RECEIPT. Add exact no-UPDATE and no-DELETE triggers. No hidden
+materialized-current-state table is necessary. Current state is derived by replay.
+Entry hash binds sequence_number, record_kind, record_id, payload_sha256, previous_entry_hash
+using canonical JSON + SHA-256. Sequence starts at 0. First previous_entry_hash = null. Later
+entries bind exact prior entry hash.
+Write API: a single-record append API. Lifecycle event order is semantically meaningful; do not
+canonical-sort independent transition events. Append procedure: 1 verify complete existing
+store/schema/hash chain; 2 validate record identity; 3 validate all referenced predecessor
+records/state; 4 derive current lifecycle state; 5 apply record-specific transition validation;
+6 check size/count bounds; 7 transactionally append exactly one entry; 8 verify resulting
+snapshot before returning success. Identical retry of an already-existing exact record_id +
+payload is idempotent and does not append. Same record ID with different payload rejects.
+Rejected append leaves the database unchanged.
+
+23. STORE PATH / TAMPER SAFETY
+
+Follow the established repo SQLite safety pattern. Require: explicit path; .sqlite3 suffix;
+parent already exists; no symlink database; no symlink parent; regular file only; single hard
+link; schema exact; application/user version exact; exact DDL/triggers;
+PRAGMA integrity_check == ok; no update/delete; complete chain and payload hash verification;
+strict JSON decode with duplicate-key rejection; record content-ID revalidation; all
+cross-record references revalidated on load. Tamper or schema drift must fail closed. Never
+auto-migrate an unknown/old schema in this WP.
+
+24. PUBLIC STORE RESULT CONTRACT
+
+Closed statuses: STORE_INITIALIZED, STORE_ALREADY_INITIALIZED, STORE_APPEND_COMMITTED,
+STORE_APPEND_IDEMPOTENT, STORE_LOADED_VERIFIED, STORE_REJECTED. Closed error vocabulary:
+FIELD_TYPE_INVALID, FIELD_VALUE_INVALID, SCHEMA_CONFLICT, INTEGRITY_TAMPER, IDENTITY_CONFLICT,
+REFERENCE_INVALID, LINEAGE_INVALID, ADAPTATION_INVALID, POLICY_INVALID,
+POLICY_TRANSITION_INVALID, HEALTH_TRANSITION_INVALID, ALLOCATION_INVALID,
+RESTRICTION_TRANSITION_INVALID, CAPACITY_INVALID, LIMIT_EXCEEDED, INTERNAL_VALIDATION_FAILED.
+Do not leak raw SQLite/Python exception strings.
+
+25. CURRENT-RUNTIME NON-INTEGRATION
+
+This first package deliberately does not wire the lifecycle store into Alpha Factory, Hermes
+controlled runtime, ResearchPaperStrategyBinding, PaperEngine, qualification, WP170, WP172,
+Gate C, execution gateway, deployment service, or operator cockpit. Those integrations belong to
+successor packages. Tests may use synthetic IDs/records only. No existing store schema is
+migrated. No new runtime daemon or CLI is added.
+
+26. COMPATIBILITY / IMPOSSIBILITY CHECK
+
+Must preserve unchanged: Alpha Factory registry and discovery registry; existing research-paper
+bridge; WP173 store and both binding types; existing current Gate C; qualification
+candidate/gate; WP170 registry; formal WP172; Hermes controlled research runtime; DATA-03;
+S10-DEPLOY-01 tooling/runtime baseline. No import from src/execution_gateway or
+src/paper_trading is necessary. The new lifecycle package may remain independent and stdlib-only.
+Compatibility rows: new package is additive and stdlib-only (compatible); architecture
+allowlist adds exactly src/strategy_lifecycle (compatible); docs supersede only future target
+assumptions while preserving current runtime truth (compatible); no existing store/schema/API
+changes (compatible). Any incompatible row is a hard stop; do not broaden.
+
+27. TEST REQUIREMENTS
+
+Implement all lifecycle tests in exactly tests/strategy_lifecycle/test_strategy_lifecycle.py.
+Do not create additional test files. Minimum required coverage R001-R068 is mapped one-to-one to
+pytest nodes in the machine spec evidence plan:
+
+Identity / canonicalization: R001 family identity deterministic; R002 family ID tamper rejects;
+R003 strategy version identity deterministic; R004 binary float / NaN / unknown schema content
+rejects; R005 canonical strategy JSON byte/string rules hold; R006 evidence ref/path-like unsafe
+input rejects.
+Adaptation: R007 root classification correct; R008 bounded integer change inside range =>
+bounded; R009 bounded decimal change inside range => bounded; R010 bounded enum change =>
+bounded; R011 out-of-range adaptive change => material; R012 non-adaptive parameter change =>
+material; R013 thesis/universe/entry/exit/execution/evidence-posture/code-identity change =>
+material; R014 adaptive-bound widening/change => material; R015 no-op child rejects; R016
+wrong/missing parent or family mismatch rejects; R017 bounded child inheritance ceiling equals
+parent band; R018 material child automatic inheritance ceiling is at most exploratory.
+Portfolio policy: R019 valid policy canonical identity; R020 malformed decimals/floats/counts
+reject; R021 pool sum > global capital rejects; R022 per-strategy > pool rejects; R023 order max
+> market max rejects; R024 invalid time/order-style/account/venue fields reject.
+Store: R025 initialize / already-initialized behavior; R026 exact schema/application/
+user-version enforcement; R027 update/delete blocked; R028 append hash chain correct; R029 exact
+retry idempotent; R030 failed append leaves bytes/state unchanged; R031 payload/hash/entry-chain
+tamper rejects; R032 unsafe path/symlink/hardlink/schema drift rejects; R033 cross-record
+reference tamper/missing predecessor rejects.
+Lifecycle transitions: R034 policy activate/revoke derives one current active policy; R035
+activation previous-policy mismatch rejects; R036 strategy initial health = NEW; R037 valid
+health changes work; R038 same-state / NEW re-entry / retired reactivation rejects; R039
+apply/clear restriction exactness; R040 one strategy restriction does not mutate unrelated
+strategy state.
+Risk allocations / capacity: R041 allocation requires active referenced policy; R042 PAPER
+nonzero budget rejects; R043 parent-inheritance band ceiling enforced; R044 direct decision does
+not fabricate evidence gate but still obeys capacity; R045 per-strategy limit rejects; R046 each
+band pool overflow rejects; R047 global capital allocation overflow rejects; R048 max active
+strategy count rejects; R049 quarantined/retired positive active budget rejects; R050
+paper-only/pause restriction positive active budget rejects; R051 active budget cap enforced;
+R052 expired/future allocation excluded at explicit evaluation time; R053 healthy unrelated
+strategy remains valid when another is quarantined.
+Authority / integration negative tests: R054 lifecycle source has no network/credential/order/
+Gate-C imports; R055 no dependency/workflow changes; R056 existing paper/qualification/WP170/
+WP172/Gate-C focused compatibility imports/tests remain green; R057 DATA-03 paths unchanged;
+R058 architecture allowlist approves only src/strategy_lifecycle new family.
+V2.1 docs truth: R059 V2.1 marked accepted/current target architecture; R060 WP61/WP95/WP154
+conflicting assumptions explicitly historical/superseded; R061 current Hermes research mode
+remains unchanged; R062 strong formal QUAL/WP170/WP172 lane preserved; R063 known-candidate path
+does not require ALPHA-03; R064 ALPHA-03 is parallel feeder; R065 global portfolio envelope
+replaces per-strategy human approval as target architecture; R066 strategy-local quarantine /
+bounded adaptation semantics recorded; R067 S10-DEPLOY-01 merge recorded; host activation still
+separate; R068 DATA-03 remains unchanged and non-blocking.
+Do not add tests that merely assert giant copied prose blobs when a smaller semantic assertion
+is enough.
+
+28. FOCUSED COMPATIBILITY CHECKS
+
+During implementation, inspect and run only the minimum adjacent tests necessary to prove
+non-regression, at minimum tests/paper_trading/test_models.py and
+tests/execution_gateway/test_gate_c.py, and the relevant qualification/WP170/WP172 focused tests
+already present in the repo if fast enough. Do not edit those existing product test files. If a
+compatibility failure requires production changes outside the exact scope: STOP
+SCOPE_AMENDMENT_REQUIRED.
+
+29. ARCHITECTURE DOC TEST UPDATE
+
+tests/test_architecture_direction_docs.py currently contains historical assertions that treat
+WP61/manual-live and old serial deployment wording as current. Update it so that: 1 historical
+text may remain as history; 2 current authority is V2.1; 3 S10-DEPLOY-01 merged research
+baseline truth is current; 4 old "after WP172 -> deploy -> WP173" serial wording cannot be
+treated as current universal architecture; 5 old "LLM read-only only" / "manual live approval
+per strategy" statements are marked superseded where retained; 6 current runtime boundaries are
+still honestly unchanged. Do not delete valuable historical provenance just to make string tests
+easier.
+
+30. STATUS / REPO-TRUTH UPDATE
+
+docs/project_status.md and docs/repo_truth_index.md must record: PR #209 merged: YES; PR #209
+head: 3e9d595e014275662e90b5f22809f66b3e82cb39; PR #209 merge:
+02eeed13dc0b9552e5685f48198d060e78c797e1; S10-DEPLOY-01 repo implementation: MERGED; host
+activation: NOT YET PERFORMED / separately gated; V2.1 target architecture: ACCEPTED; current
+bounded implementation target: S10-STRAT-LIFE-01; S10-STRAT-LIFE-01 capital/orders: USD 0 / 0;
+DATA-03: unchanged; ALPHA-03: separate / parallel. The new stable status fragment must not
+self-reference dynamic future PR head/merge values. Use the PR body for dynamic exact-head
+implementation evidence.
+
+31. NEGATIVE TEST MATRIX
+
+Negative-test coverage is mandatory. At minimum include explicit tests for: forged content ID;
+duplicate/unknown JSON field; float/NaN; malformed decimal; path-like evidence ref; missing
+parent; cross-family child; no-op child; bounded parameter outside range; changed non-adaptive
+field; widened adaptive bounds; pool/global oversubscription; inactive policy allocation;
+revoked policy allocation; invalid policy time window; invalid health predecessor; retired
+version reactivation; clear nonexistent restriction; duplicated active restriction key;
+allocation over active restriction cap; strategy-local quarantine isolation; store file
+symlink/hardlink; schema/application-id drift; payload tamper; entry-chain tamper; UPDATE/DELETE
+attempt; record limit/payload bound; attempted authority expansion by imports/path drift.
+Applicable generic categories: missing, null, wrong type, empty, invalid time, forbidden field,
+credential-like token, malformed input, duplicate/conflicting input, case-insensitive variant
+and safe allowed value. Trade-like/strategy-like wording filters are not introduced; those
+wording categories are not applicable (not_applicable) beyond the non-secret opaque-reference
+rule, which carries credential-like, case-insensitive and safe-allowed cases.
+
+32. HARD STOPS
+
+STOP REPO_STATE_DRIFT; STOP SPEC_NOT_IMPLEMENTATION_READY; STOP SCOPE_AMENDMENT_REQUIRED;
+STOP ARCHITECTURE_CONTRADICTION; STOP STRATEGY_LIFECYCLE_SEMANTIC_CONTRADICTION;
+STOP DEPENDENCY_CHANGE_REQUIRED; STOP NETWORK_AUTHORITY_REQUIRED;
+STOP HERMES_RUNTIME_AUTHORITY_REQUIRED; STOP PAPER_AUTHORITY_REQUIRED;
+STOP EXECUTION_AUTHORITY_REQUIRED; STOP LIVE_AUTHORITY_REQUIRED;
+STOP CREDENTIAL_AUTHORITY_REQUIRED; STOP DATA03_BOUNDARY_VIOLATION; STOP TESTS_NOT_GREEN;
+STOP HOSTED_CI_NOT_GREEN.
+Ordinary bugs inside the exact 20 paths are same-run repairs. Do not stop for a normal
+unit-test defect; typing/serialization bug; SQLite DDL bug; docs wording inconsistency; test
+fixture issue; architecture allowlist update already included in the 20 files.
+
+33. IMPLEMENTATION ORDER
+
+1 startup/drift gate; 2 materialize prompt/spec; 3 readiness PASS; 4 update V2.1 canonical
+architecture docs sufficiently to establish current target semantics; 5 implement models.py;
+6 implement policy.py; 7 implement store.py; 8 implement package exports; 9 update
+architecture-boundary allowlist; 10 implement focused lifecycle tests; 11 reconcile
+status/repo-truth/docs tests; 12 run focused tests repeatedly while editing; 13 when stable, run
+final validation family once; 14 commit/push; 15 open one Ready-for-Review PR; 16 obtain fresh
+exact-head hosted CI; 17 return final report; 18 do not merge. No runtime/data/operator action
+is part of this WP.
+
+34. REQUIRED FINAL VALIDATION / EVIDENCE PLAN (REQUIREMENT MAPPING)
+
+Lifecycle focused:
+  python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py
+Architecture / status docs:
+  python -m pytest -q -p no:cacheprovider tests/test_architecture_boundaries.py tests/test_architecture_direction_docs.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py
+Adjacent compatibility:
+  python -m pytest -q -p no:cacheprovider tests/paper_trading/test_models.py tests/execution_gateway/test_gate_c.py
+  plus the smallest existing qualification/WP170/WP172 focused test command chosen after live
+  inspection (tests/data_layer/analytical_research/test_qualification_gate.py,
+  tests/data_layer/analytical_research/test_experiment_registry.py and
+  tests/research_runtime/executable_edge/); do not edit their files.
+Readiness against exact frozen base:
+  python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-STRAT-LIFE-01/wp_prompt.txt --spec docs/wp_specs/S10-STRAT-LIFE-01/wp_spec.json --repo-root . --check-diff --base 02eeed13dc0b9552e5685f48198d060e78c797e1 --head HEAD
+  Required: IMPLEMENTATION_READY (RUNTIME); exact changed-file set = 20/20.
+Generated artifact guard:
+  python tools/git/preflight_generated_artifact_guard.py
+Diff hygiene:
+  git diff --check 02eeed13dc0b9552e5685f48198d060e78c797e1..HEAD
+  git diff --name-only 02eeed13dc0b9552e5685f48198d060e78c797e1..HEAD
+  The second command must return exactly the frozen 20 paths.
+Security:
+  python tools/security/run_available_security_checks.py
+  Existing dependency advisories are not caused by this WP if no dependency/lock file changes.
+  Report them truthfully.
+Full suite, only after the candidate is stable:
+  python -m pytest -q -p no:cacheprovider
+Then push and obtain fresh exact-head hosted CI. No old CI run may be reused after the final
+commit. The machine spec evidence plan maps every normative requirement R001-R070 to a concrete
+pytest node or bounded repository guard command.
+
+35. WP SPEC REQUIREMENTS
+
+wp_spec.json uses schema_id polymarket-work-package-spec, schema_version 1.0.0, wp_id
+S10-STRAT-LIFE-01, package_class STRATEGY_LIFECYCLE_PORTFOLIO_AUTHORITY_CORE,
+package_size_class L, risk_level 3, base_branch main, suggested_branch
+codex/s10-strat-life-01-strategy-lifecycle-core, required predecessor PR 209 head
+3e9d595e014275662e90b5f22809f66b3e82cb39 merge 02eeed13dc0b9552e5685f48198d060e78c797e1,
+capital_at_risk_usd 0, xl_explicit_authorization false, xl_authorization_basis null.
+required_changed_files and allowed_changed_files are the exact 20 paths in Section 5;
+max_changed_files = 20; exact_scope_required = true. historical_compatibility_edits identifies
+only the pre-existing paths being intentionally reconciled. The API matrix declares the four new
+public source surfaces src.strategy_lifecycle, src.strategy_lifecycle.models,
+src.strategy_lifecycle.policy, src.strategy_lifecycle.store. No existing product API is changed.
+The semantic-field section mechanically describes the new canonical IDs and the fixed derived
+adaptation classification; the identity-derivation section is declared not applicable because
+the spec-guard path-keyed projection grammar cannot express the record preimage byte-exactly
+(the ID rule is frozen in semantic_fields lifecycle.content_ids and proven by pytest).
+
+36. NORMATIVE RULE MATRIX
+
+The machine-readable matrix is below. Every SPEC_PATH is a semantic_fields path in the spec and
+every EVIDENCE_ID is an evidence_plan requirement.
+
+37. PR / EVIDENCE REQUIREMENTS
+
+Create one PR only after final local validation. PR body must state: exact frozen base; exact
+current final head; 20/20 changed-file set; focused lifecycle test result; architecture/status
+test result; adjacent compatibility result; full-suite result; readiness result; artifact guard;
+diff hygiene; security truth; hosted CI run; V2.1 canonical repo truth reconciled: YES; Hermes
+strategy manager implemented: NO; ALPHA-03 implemented: NO; Gate C changed: NO; paper engine
+changed: NO; DATA-03 touched: NO; credentials/execution/live: NO; capital/orders: USD 0 / 0;
+merge authorized: NO. Status fragment stays stable/non-self-referential. Dynamic PR head/CI
+truth belongs in the PR body.
+
+38. SUCCESSOR BOUNDARY
+
+Successful merge of this package establishes only STRATEGY_LIFECYCLE_CORE_MERGED and
+V2_1_REPO_TRUTH_RECONCILED. It makes S10-HERMES-STRAT-01 and S10-EXEC-FEAS-01 separately
+draftable, subject to fresh live repo truth, and leaves S10-ALPHA-03, S10-DEPLOY-01 host
+activation closure and DATA-03 parallel. No successor starts automatically. First exploratory
+live remains impossible from this package alone.
+
+39. FINAL REPORT BACK
+
+If and only if implementation is complete, exact scope is 20/20, tests are green, readiness is
+green, security truth is reported, and fresh exact-head CI is green, report back:
+
+  READY_FOR_SIDE15_EXACT_HEAD_REVIEW
+  WP: S10-STRAT-LIFE-01
+  PR: (PR number)
+  base: 02eeed13dc0b9552e5685f48198d060e78c797e1
+  exact head: (final head sha)
+  changed files: 20/20
+  V2.1 repo-truth reconciliation / strategy family/version identity / bounded/material
+  adaptation classification / portfolio authority policy / policy activation/revocation /
+  health lifecycle / strategy-local restrictions / risk allocations / portfolio capacity /
+  append-only store / tamper verification / architecture boundary guard: PASS each
+  focused tests / architecture/status tests / adjacent compatibility / full suite / readiness /
+  artifact guard / diff hygiene / security / hosted CI: exact truth
+  Hermes runtime changed: NO; ALPHA-03 implemented: NO; qualification/WP170/WP172 changed: NO;
+  paper engine changed: NO; Gate C/execution changed: NO; credentials/live changed: NO;
+  DATA-03 touched: NO; S10-DEPLOY host activated: NO; capital/orders: USD 0 / 0;
+  merge performed: NO
+
+Do not merge. Side15 will independently assess the exact PR head and provide the next step.
+
+40. FINAL EXECUTION PRINCIPLE
+
+Keep this package minimum-complete. Do not add: generic plugin architecture; abstract event bus;
+extra databases; new CLIs; dashboards; schedulers; provider integrations; future Hermes schemas;
+future Gate-C permit models; actual order/exposure accounting; portfolio correlation inference;
+duplicated paper/risk engines; speculative extensibility. Implement only the canonical lifecycle
+and global-envelope substrate needed by the accepted V2.1 architecture.
+
+Package readiness note: this repo-native prompt mirrors the Side15 authorization. Only
+readiness-tool structural signals were normalized (plain-text governance-track line, explicit
+"Authority / Non-Authority Posture", "Evidence Plan (requirement mapping)", "Report Back" and
+"Successor Boundary" headings, and the normative matrix). Scope, authority and semantics are
+unchanged.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|family|identity|valid_fields|REQUIRE|deterministic_content_id|lifecycle.family|R001
+NR002|version|identity|valid_fields|REQUIRE|deterministic_content_id|lifecycle.version|R003
+NR003|version|parent_lineage|missing_parent_or_cross_family|FORBID|reject_lineage|lifecycle.version|R016
+NR004|adaptation|bounded_class|all_bounded_conditions_hold|ACCEPT|bounded_adaptation_mechanical_only|lifecycle.adaptation|R008
+NR005|adaptation|material_class|any_non_bounded_change|REQUIRE|material_adaptation|lifecycle.adaptation|R013
+NR006|version|evidence_posture|any_value|ACCEPT|advisory_metadata_not_permission|lifecycle.version|R044
+NR007|inheritance|bounded_child|parent_band_present|ACCEPT|ceiling_equals_parent_band|lifecycle.risk_band_inheritance|R017
+NR008|inheritance|material_child|parent_band_present|REQUIRE|ceiling_capped_at_exploratory_live|lifecycle.risk_band_inheritance|R018
+NR009|policy|global_envelope|construction|REQUIRE|outer_envelope_only|lifecycle.policy|R019
+NR010|allocation|per_strategy_human_approval|field_present|FORBID|unknown_field_rejects|lifecycle.allocation|R004
+NR011|policy_receipt|activation|missing_human_authorization_ref|FORBID|reject|lifecycle.policy_receipt|R034
+NR012|health|state|any_transition|PRESERVE_EXACT|independent_of_risk_band|lifecycle.health|R037
+NR013|health|retired|any_transition|FORBID|terminal|lifecycle.health|R038
+NR014|restriction|scope|apply_or_clear|REQUIRE|strategy_local_only|lifecycle.restriction|R040
+NR015|allocation|policy|not_current_active|FORBID|reject|lifecycle.allocation|R041
+NR016|allocation|paper_band|nonzero_budget|FORBID|reject|lifecycle.allocation|R042
+NR017|capacity|budget|over_strategy_pool_or_global_limit|FORBID|reject|lifecycle.capacity|R047
+NR018|capacity|quarantined_or_retired|positive_active_budget|FORBID|reject|lifecycle.capacity|R049
+NR019|capacity|pause_or_paper_only|positive_active_budget|FORBID|reject|lifecycle.capacity|R050
+NR020|store|records|update_delete_or_tamper|FORBID|reject_fail_closed|lifecycle.store|R031
+NR021|snapshot|current_state|derivation|REQUIRE|verified_replay_only|lifecycle.snapshot|R033
+NR022|authority|runtime|network_credential_scheduler_hermes_paper_execution_live|FORBID|zero_authority|scope.exact|R054
+NR023|formal_lane|qual_wp170_wp172|any_change|FORBID|unchanged|scope.exact|R062
+NR024|alpha03|known_candidate_path|prerequisite_claim|FORBID|parallel_feeder_only|docs.v21_truth|R063
+NR025|data03|paths|any_mutation|FORBID|untouched_non_blocking|scope.exact|R057
+NR026|deploy|host_activation|implied_by_merge|FORBID|separately_gated|docs.v21_truth|R067
+NR027|docs|wp61_wp95_wp154|universal_target_assumptions|REQUIRE|superseded_by_v21|docs.v21_truth|R060
+NR028|version|noop_child|semantic_identical_to_parent|FORBID|reject|lifecycle.version|R015
+NR029|store|exact_retry|same_id_same_payload|ACCEPT|idempotent_no_append|lifecycle.store|R029
+NR030|refs|path_or_secret_like|any_reference_field|FORBID|reject|lifecycle.content_ids|R006
+END_NORMATIVE_RULE_MATRIX_V1

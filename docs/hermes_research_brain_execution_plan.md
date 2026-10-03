@@ -33,6 +33,16 @@ Hermes remains advisory. Its research can inform a human decision or a future
 approved work package, but it cannot promote its own output into runtime or
 trading authority.
 
+Superseded by V2.1 as future target architecture (historical context only): WP95's
+permanent Hermes-advisory-only / never-final-decision-maker assumption is
+superseded. Under the accepted V2.1 architecture (`docs/architecture_decision_record.md` (V2.1 Strategy Lifecycle + Portfolio Authority Architecture)), humans define the
+outer blast radius through a global PortfolioAuthorityPolicy, Hermes will later make
+soft strategy/lifecycle judgments (continue / scale / reduce / adapt / quarantine)
+inside it, and deterministic code enforces the outer envelope and account/execution
+safety. Current runtime truth is unchanged: the existing controlled Hermes research
+mode remains research-only and unchanged until S10-HERMES-STRAT-01, and Hermes still
+cannot hold credentials, sign, place or cancel orders.
+
 ## Broad Research Freedoms
 
 The architecture should support Hermes performing:
@@ -178,3 +188,13 @@ prompt packs, runbooks, exporters, context packets, runtime artifacts,
 provider/model configuration, credentials, network behavior, paper/live
 behavior, execution behavior, risk behavior, scheduler behavior, dashboard
 behavior, or bot-loop behavior.
+
+## V2.1 Status (S10-STRAT-LIFE-01)
+
+V2.1 target architecture: ACCEPTED (see `docs/architecture_decision_record.md` (V2.1 Strategy Lifecycle + Portfolio Authority Architecture)). S10-STRAT-LIFE-01
+implements only the deterministic strategy lifecycle and global portfolio-authority
+substrate that a future Hermes strategy manager will consume; it implements no Hermes
+strategy-manager runtime. The existing controlled Hermes research mode remains
+research-only and unchanged until S10-HERMES-STRAT-01. The "Forbidden Hermes
+Authority" list above remains current runtime truth until a separately authorized
+successor changes it.
