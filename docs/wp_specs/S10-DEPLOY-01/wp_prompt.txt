@@ -118,10 +118,12 @@ Bootstrap is strict, idempotent and fail-closed and requires root plus explicit 
 --expected-sha and --ssh-port. It admits Ubuntu 24.04 x86-64 only, requires 4 CPUs, 7.5 GiB RAM,
 70 GiB disk, NTP, exact release verification, the polymarket no-login user, frozen directory
 layout, a per-release venv with the base project installed from existing metadata (no cockpit
-extra), pip check, exact unit install and systemd-analyze verify. Expected operational failures
+extra), installed-project metadata verification, partial-venv repair without redundant complete-environment
+reinstallation, pip check, exact unit install and systemd-analyze verify. Expected operational failures
 emit sanitized terminal JSON with stable closed codes. It rejects pre-existing conflicting inbound
-UFW allows, permits the supplied SSH TCP port before enabling UFW deny-inbound and allow-outbound,
-then proves the effective inbound allow set is that exact TCP port only (IPv4/IPv6 equivalent),
+UFW ALLOW or LIMIT permissions and all routed/FWD permissions, permits the supplied SSH TCP port
+before enabling UFW deny-inbound and allow-outbound, then proves the effective inbound permitting
+set is that exact TCP port only (IPv4/IPv6 equivalent),
 never changes sshd, atomically updates /opt/polymarket/current, starts only
 the research target and telemetry timer, writes a host manifest, and emits sanitized JSON.
 

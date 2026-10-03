@@ -128,6 +128,10 @@ fi
 
 if [[ ! -x $target_release/.venv/bin/python ]]; then
   run_or_fail PYTHON_ENV_SETUP_FAILED python3 -m venv "$target_release/.venv"
+fi
+if ! "$target_release/.venv/bin/python" -c \
+  'import importlib.metadata as metadata; metadata.version("polymarket-strategy-lab")' \
+  >/dev/null 2>&1; then
   run_or_fail PACKAGE_INSTALL_FAILED "$target_release/.venv/bin/python" -m pip install \
     --disable-pip-version-check "$target_release"
 fi

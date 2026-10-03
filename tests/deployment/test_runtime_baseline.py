@@ -527,7 +527,24 @@ def test_firewall_verifier_accepts_clean_exact_and_ipv6_equivalent_rules() -> No
     assert baseline.verify_ufw_ssh_only(configured, 2222, allow_empty=True)["allow_count"] == 1
 
 
-@pytest.mark.parametrize("conflict", ["80/tcp ALLOW IN Anywhere", "53/udp ALLOW IN Anywhere"])
+def test_firewall_verifier_accepts_exact_ssh_limit_rule() -> None:
+    status = "Status: active\n2222/tcp LIMIT IN Anywhere\n2222/tcp (v6) LIMIT IN Anywhere (v6)\n"
+    assert baseline.verify_ufw_ssh_only(status, 2222, allow_empty=False)["allow_count"] == 2
+    configured = "Added user rules:\nufw limit 2222/tcp\n"
+    assert baseline.verify_ufw_ssh_only(configured, 2222, allow_empty=True)["allow_count"] == 1
+
+
+@pytest.mark.parametrize(
+    "conflict",
+    [
+        "80/tcp ALLOW IN Anywhere",
+        "53/udp ALLOW IN Anywhere",
+        "80/tcp LIMIT IN Anywhere",
+        "53/udp LIMIT IN Anywhere",
+        "Anywhere LIMIT FWD Anywhere",
+        "ufw route limit 80/tcp",
+    ],
+)
 def test_firewall_verifier_rejects_any_other_inbound_allow(conflict: str) -> None:
     status = f"Status: active\n2222/tcp ALLOW IN Anywhere\n{conflict}\n"
     with pytest.raises(baseline.BaselineError, match="FIREWALL_NOT_SSH_ONLY"):
@@ -549,6 +566,31 @@ def test_bootstrap_installs_base_project_without_cockpit_extra() -> None:
     base_dependencies = metadata["project"]["dependencies"]
     assert any(item.startswith("polymarket-client==") for item in base_dependencies)
     assert any(item.startswith("websockets==") for item in base_dependencies)
+
+
+def test_bootstrap_repairs_partial_venv_without_reinstalling_complete_environment() -> None:
+    text = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
+    create_guard = "if [[ ! -x $target_release/.venv/bin/python ]]; then"
+    metadata_probe = 'metadata.version("polymarket-strategy-lab")'
+    install_command = 'run_or_fail PACKAGE_INSTALL_FAILED "$target_release/.venv/bin/python" -m pip install'
+    dependency_check = 'run_or_fail PACKAGE_CHECK_FAILED "$target_release/.venv/bin/python" -m pip check'
+    assert create_guard in text
+    assert metadata_probe in text
+    assert text.index(create_guard) < text.index("python3 -m venv") < text.index(metadata_probe)
+    assert text.index(metadata_probe) < text.index(install_command) < text.index(dependency_check)
+    metadata_block = text[text.index("if ! \"$target_release/.venv/bin/python\" -c") :]
+    assert metadata_block.index(install_command) < metadata_block.index("\nfi\n")
+    assert ">/dev/null 2>&1; then" in metadata_block
+    assert "[cockpit]" not in install_command
+
+
+def test_bootstrap_broken_environment_cannot_bypass_closed_dependency_check() -> None:
+    text = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
+    dependency_check = 'run_or_fail PACKAGE_CHECK_FAILED "$target_release/.venv/bin/python" -m pip check'
+    success = "BOOTSTRAP_COMPLETE"
+    assert dependency_check in text
+    assert text.index(dependency_check) < text.index(success)
+    assert '"$@" >/dev/null 2>&1 || fail "$error_code"' in text
 
 
 def test_bootstrap_routes_operational_failures_to_sanitized_codes() -> None:
@@ -588,6 +630,8 @@ def test_corrected_contract_prompt_and_spec_are_consistent() -> None:
         "base project",
         "cockpit extra",
         "sanitized",
+        "LIMIT",
+        "partial venv",
     ):
         assert truth.lower() in combined.lower()
 

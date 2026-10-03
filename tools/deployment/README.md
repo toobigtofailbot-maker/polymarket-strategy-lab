@@ -29,6 +29,9 @@ candidate failure. PASS requires a duration-expired receipt with empty errors an
 positive actual raw, normalized, and stored-byte counts; capacity remains
 inconclusive unless that smoke passes and required interval telemetry is complete.
 
-Bootstrap installs the base project only (no cockpit extra), verifies that UFW's
-effective inbound allow set is only the supplied SSH TCP port, and routes expected
-operational failures through sanitized closed JSON codes.
+Bootstrap creates or reuses the venv, repairs a partial environment when installed
+project metadata is missing, requires dependency consistency, and avoids a
+redundant install for a complete environment. It installs the base project only
+(no cockpit extra), verifies that UFW's effective inbound `ALLOW`/`LIMIT`
+permission set is only the supplied SSH TCP port with no routed/FWD permission,
+and routes expected operational failures through sanitized closed JSON codes.

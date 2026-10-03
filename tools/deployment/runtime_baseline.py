@@ -711,14 +711,15 @@ def verify_ufw_ssh_only(status_text: str, ssh_port: int, *, allow_empty: bool) -
             continue
         tokens = line.split()
         upper = [token.upper() for token in tokens]
-        if "ALLOW" not in upper:
+        permitting_actions = [action for action in ("ALLOW", "LIMIT") if action in upper]
+        if not permitting_actions:
             continue
-        action_index = upper.index("ALLOW")
+        action_index = min(upper.index(action) for action in permitting_actions)
+        if "ROUTE" in upper[:action_index] or "FWD" in upper:
+            raise BaselineError("FIREWALL_NOT_SSH_ONLY")
         if action_index + 1 < len(upper) and upper[action_index + 1] == "OUT":
             continue
         if tokens[0].lower() == "ufw":
-            if "ROUTE" in upper[:action_index]:
-                raise BaselineError("FIREWALL_NOT_SSH_ONLY")
             target_index = action_index + 1
             if target_index < len(tokens) and upper[target_index] == "IN":
                 target_index += 1

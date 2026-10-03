@@ -85,9 +85,11 @@ hardening and explicit telemetry write path.
 
 The strict idempotent bootstrap requires root and explicit `--release-dir`,
 `--expected-sha`, and `--ssh-port`. It fails closed on platform/resource/NTP/
-release/tooling validation, creates the frozen user and directories, installs
-the base project from existing metadata without the optional cockpit extra, runs
-`pip check`, installs and verifies the exact
+release/tooling validation, creates the frozen user and directories, creates or
+reuses the per-release venv, and independently verifies installed
+`polymarket-strategy-lab` metadata. A partial venv is repaired by retrying the
+base-project install without the optional cockpit extra; a complete venv is not
+redundantly reinstalled. The bootstrap then requires `pip check`, installs and verifies the exact
 units, and activates only the timer and research target.
 
 Expected operational failures are wrapped and emit one sanitized terminal JSON
@@ -95,10 +97,11 @@ object with a stable closed error code. Raw Python, pip, UFW, systemd, copy, lin
 ownership, or host-manifest diagnostics are not the canonical evidence stream.
 
 UFW operations are dry-run validated before firewall mutation. Configured rules
-are checked before activation and conflicting inbound allows fail closed without
-being deleted. The explicit operator SSH TCP port is allowed before inbound
-deny-by-default is enabled; after enablement the effective inbound allow set is
-verified as only that exact TCP port (equivalent IPv4/IPv6 forms are accepted).
+are checked before activation and conflicting inbound `ALLOW` or `LIMIT`
+permissions fail closed without being deleted. Routed/FWD permissions also fail
+closed. The explicit operator SSH TCP port is allowed before inbound
+deny-by-default is enabled; after enablement the effective inbound permitting set
+is verified as only that exact TCP port (equivalent IPv4/IPv6 forms are accepted).
 Outbound remains allowed for bootstrap and separately authorized public research.
 No public cockpit/API port or sshd configuration change is permitted.
 

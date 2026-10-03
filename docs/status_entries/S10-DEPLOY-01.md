@@ -33,8 +33,8 @@
 - Exact bounded research slice and reserved critical slice
 - Sanitized once-per-minute telemetry with bounded rotation and interval-delta CPU/I/O sampling
 - SQLite-aware hashed backup and isolated integrity-checked restore drills
-- Exact SSH-only inbound UFW proof with conflicting-rule rejection
-- Base project install only; no optional cockpit extra
+- Exact SSH-only inbound UFW proof with conflicting ALLOW/LIMIT and routed-rule rejection
+- Recoverably idempotent venv metadata/dependency verification and base-project install only; no optional cockpit extra
 - Closed sanitized bootstrap operational failures
 - Human-only provider/SSH boundary and credential-free host release
 - One frozen bounded public WP169 smoke after merge only
@@ -58,8 +58,8 @@
   wrong host facts, sanitized manifests/telemetry, bounded rotation, symlink/secret
   backup rejection, restore overwrite/tamper/SQLite corruption, closed capacity
   outputs, exact smoke-success receipts, missing telemetry, interval CPU/I/O,
-  exact systemd controls, scheduler isolation, SSH-only firewall proof, closed
-  bootstrap failures, base-only installation, no sshd mutation, and no
+  exact systemd controls, scheduler isolation, SSH-only ALLOW/LIMIT firewall proof,
+  partial-venv recovery, closed bootstrap failures, base-only installation, no sshd mutation, and no
   container/second-host mechanism.
 
 ## Deferred Post-Merge Activation
