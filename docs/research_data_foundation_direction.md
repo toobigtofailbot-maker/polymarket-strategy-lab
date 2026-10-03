@@ -320,3 +320,12 @@ confirmed the previous merge commit using the Remote Main Sync Gate.
 execution.** The next implementation track is feature extraction from existing
 local/offline artifacts, not strategy, paper trading, live trading, execution,
 wallet-copying, or autonomous agent runtime.
+
+## V2.1 Hermes Strategy Manager (S10-HERMES-STRAT-01)
+
+S10-HERMES-STRAT-01 is the current bounded implementation target: canonical soft Hermes strategy
+decisions inside the human-authorized global PortfolioAuthorityPolicy, built from verified
+STRAT-LIFE state and bounded admissible evidence. Evidence posture guides the research approach
+and is not a universal evidence gate; the formal QUAL/WP170/WP172 lane is preserved as the
+strongest evidence lane. Raw generic Hermes research stays research-only, live trading remains
+DISABLED and capital/orders remain USD 0 / 0.

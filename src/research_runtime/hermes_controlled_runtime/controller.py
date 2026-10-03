@@ -38,6 +38,7 @@ from .models import (
     SanitizedSourceReference,
     RECEIPT_SCHEMA_VERSION,
     ValidatedResearchDraft,
+    ValidatedStrategyResearchProjection,
     build_research_run_request,
     derive_receipt_id,
     inspect_research_draft_structure,
@@ -140,6 +141,9 @@ class HermesControlledRunResult:
     request_id: str
     policy_id: str
     session_evidence: HermesSessionEvidence | None = None
+    # S10-HERMES-STRAT-01: the dedicated validated strategy projection; present only for
+    # a successful strategy-mode run (None for generic/context runs and every failure).
+    strategy_projection: ValidatedStrategyResearchProjection | None = None
 
 
 def _utc_iso(moment: datetime) -> str:
@@ -159,8 +163,19 @@ def run_controlled_hermes_research(
     hermes_home: str | None = None,
     context_mode: bool = False,
     allowed_subject_refs: tuple[str, ...] | None = None,
+    strategy_mode: bool = False,
+    strategy_parameter_names: tuple[str, ...] | None = None,
 ) -> HermesControlledRunResult:
-    """Execute one controlled research run and return a sanitized result."""
+    """Execute one controlled research run and return a sanitized result.
+
+    ``strategy_mode`` (S10-HERMES-STRAT-01, default off) selects the strategy-assessment
+    output contract; it requires ``strategy_parameter_names`` and is mutually exclusive
+    with ``context_mode``. Both conditions fail closed before any probe or invocation.
+    """
+    if context_mode and strategy_mode:
+        raise HermesResearchError("STRATEGY_MODE_INVALID")
+    if strategy_mode and strategy_parameter_names is None:
+        raise HermesResearchError("STRATEGY_MODE_INVALID")
     if isinstance(request, Mapping):
         request = build_research_run_request(request)
     elif not isinstance(request, HermesResearchRunRequest):
@@ -230,8 +245,14 @@ def run_controlled_hermes_research(
 
     if context_mode and not allowed_subject_refs:
         raise HermesResearchError("CONTEXT_CLAIM_INVALID")
+    strategy_kwargs: dict[str, object] = {}
+    if strategy_mode:
+        strategy_kwargs = {
+            "strategy_mode": True, "strategy_parameter_names": strategy_parameter_names,
+        }
     envelope = build_research_envelope(
         request, context_mode=context_mode, allowed_subject_refs=allowed_subject_refs,
+        **strategy_kwargs,  # type: ignore[arg-type]
     )
     prompt_text = envelope.to_prompt_string()
     argv = build_hermes_argv(executable_path, request, prompt_text, policy, USAGE_FILE_NAME)
@@ -354,6 +375,7 @@ def run_controlled_hermes_research(
             max_sources=request.max_sources,
             context_mode=context_mode,
             allowed_subject_refs=allowed_subject_refs,
+            **strategy_kwargs,  # type: ignore[arg-type]
         )
     except HermesResearchError as exc:
         if exc.code == "DRAFT_UNSAFE_CONTENT":
@@ -405,6 +427,7 @@ def run_controlled_hermes_research(
         request_id=request.request_id,
         policy_id=policy.policy_id,
         session_evidence=builder.session_evidence,
+        strategy_projection=draft.strategy_projection if strategy_mode else None,
     )
 
 

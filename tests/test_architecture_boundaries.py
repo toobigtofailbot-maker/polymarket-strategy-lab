@@ -88,6 +88,11 @@ def test_required_src_readmes_exist():
 # bounded external one-shot web-only research session and has no trading, paper,
 # execution, live, credential, scheduler, or merge authority; the real provider
 # call count is zero and remote activation is separately gated (S10-GATE-H1).
+# S10-HERMES-STRAT-01 adds strategy_manager.py INSIDE that same already-approved exact
+# family as the separately authorized V2.1 soft-strategy layer (canonical soft strategy
+# decisions only; no credential, order, paper, execution, live, policy or scheduler
+# authority). The raw research modules keep their no-execution/no-live posture and no
+# other source family or wildcard is opened.
 APPROVED_SRC_SCOPES = (
     "src/data_layer/polymarket",
     "src/data_layer/agent_context",
@@ -586,3 +591,23 @@ def test_strategy_lifecycle_is_only_new_approved_source_family() -> None:
     assert not any(path.is_dir() and path.name != "__pycache__" for path in lifecycle.iterdir())
     for drifted in ("src/strategy_lifecycle_extra.py", "src/strategy_lifecycle2/x.py"):
         assert not any(drifted.startswith(scope + "/") or drifted == scope for scope in APPROVED_SRC_SCOPES)
+
+
+def test_hermes_strategy_manager_is_registered_in_existing_hermes_family() -> None:
+    """S10-HERMES-STRAT-01 opens no new source family: strategy_manager.py lives in the
+    pre-existing exact Hermes family, and the raw research modules keep no authority."""
+    family = "src/research_runtime/hermes_controlled_runtime"
+    assert APPROVED_SRC_SCOPES.count(family) == 1
+    assert "src/research_runtime" not in APPROVED_SRC_SCOPES
+    assert not any(scope in {"src", "src/", "src/*", "src/research_runtime/"} for scope in APPROVED_SRC_SCOPES)
+    manager = ROOT / family / "strategy_manager.py"
+    assert manager.is_file()
+    assert not any(scope.endswith("strategy_manager.py") or "strategy_manager" in scope for scope in APPROVED_SRC_SCOPES)
+    source = manager.read_text(encoding="utf-8")
+    for forbidden in ("execution_gateway", "paper_trading", "risk_engine", "operator_cockpit",
+                      "append_strategy_lifecycle_record", "initialize_strategy_lifecycle_store"):
+        assert forbidden not in source, forbidden
+    for raw_module in ("models.py", "policy.py", "controller.py", "runner.py", "response_capture.py"):
+        raw = (ROOT / family / raw_module).read_text(encoding="utf-8")
+        assert "execution_gateway" not in raw and "paper_trading" not in raw
+        assert "strategy_lifecycle" not in raw, raw_module

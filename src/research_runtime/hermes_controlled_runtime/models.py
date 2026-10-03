@@ -194,6 +194,65 @@ CONTEXT_CLAIM_ASSUMPTION_MAX_ITEMS = 32
 CONTEXT_REQUIRED_TOP_LEVEL_FIELDS = (*DRAFT_REQUIRED_TOP_LEVEL_FIELDS, CONTEXT_CLAIMS_FIELD)
 CONTEXT_CLAIM_ID_PREFIX = "hermescontextclaim:sha256:"
 
+# S10-HERMES-STRAT-01 strategy-mode extension (default OFF). These constants are the
+# single source of truth for the strategy-mode output contract, the authoritative
+# structural validator and the deterministic action/risk consistency rules. The raw
+# model output stays untrusted: only the separately authorized strategy manager may
+# convert a validated strategy-mode draft into a canonical soft strategy decision.
+STRATEGY_DRAFT_OUTPUT_CONTRACT_ID = "hermes-strategy-assessment-draft-output-contract/1.0.0"
+STRATEGY_ASSESSMENT_FIELD = "strategy_assessment"
+STRATEGY_ASSESSMENT_FIELDS = (
+    "lifecycle_action",
+    "recommended_health_state",
+    "risk_direction",
+    "target_risk_band",
+    "adaptation_recommendation",
+)
+STRATEGY_LIFECYCLE_ACTIONS = (
+    "CONTINUE", "SCALE", "REDUCE", "ADAPT", "PAPER", "QUARANTINE", "RETIRE",
+)
+# STRAT-LIFE health vocabulary minus the derived-only ``NEW`` state.
+STRATEGY_RECOMMENDED_HEALTH_STATES = ("HEALTHY", "WATCH", "DEGRADED", "QUARANTINED", "RETIRED")
+STRATEGY_RISK_DIRECTIONS = ("UNCHANGED", "INCREASE", "DECREASE", "PAPER_ONLY", "ZERO")
+# STRAT-LIFE risk-band vocabulary (``target_risk_band`` may also be null).
+STRATEGY_TARGET_RISK_BANDS = ("PAPER", "EXPLORATORY_LIVE", "VALIDATED_LIVE", "MATURE_LIVE")
+STRATEGY_ADAPTATION_FIELDS = ("kind", "summary", "parameter_updates")
+STRATEGY_ADAPTATION_KINDS = ("PARAMETER_UPDATE", "MATERIAL_REDESIGN")
+STRATEGY_ADAPTATION_SUMMARY_MAX_LEN = 1024
+STRATEGY_PARAMETER_UPDATES_MAX_ITEMS = 64
+STRATEGY_PARAMETER_VALUE_MAX_DEPTH = 8
+STRATEGY_PARAMETER_NAME_PATTERN = r"^[a-z][a-z0-9_]{0,63}$"
+STRATEGY_REQUIRED_TOP_LEVEL_FIELDS = (*DRAFT_REQUIRED_TOP_LEVEL_FIELDS, STRATEGY_ASSESSMENT_FIELD)
+
+# Obvious action/risk consistency rules (section 11.4). ``health`` None means any
+# recommended health state; ``target_risk_band`` is ANY, NULL or an exact band;
+# ``adaptation`` is REQUIRED (ADAPT) or NULL (every other action). The rules are
+# embedded verbatim in the strategy-mode output contract and enforced by
+# :func:`check_strategy_assessment_consistency`; no scoring/ranking rule exists.
+STRATEGY_ACTION_CONSISTENCY_RULES: Mapping[str, Mapping[str, object]] = {
+    "CONTINUE": {"risk_directions": ("UNCHANGED",), "health": None,
+                 "target_risk_band": "ANY", "adaptation": "NULL"},
+    "SCALE": {"risk_directions": ("INCREASE",), "health": ("HEALTHY", "WATCH", "DEGRADED"),
+              "target_risk_band": "ANY", "adaptation": "NULL"},
+    "REDUCE": {"risk_directions": ("DECREASE",), "health": None,
+               "target_risk_band": "ANY", "adaptation": "NULL"},
+    "ADAPT": {"risk_directions": ("UNCHANGED", "DECREASE", "PAPER_ONLY", "ZERO"), "health": None,
+              "target_risk_band": "ANY", "adaptation": "REQUIRED"},
+    "PAPER": {"risk_directions": ("PAPER_ONLY",), "health": None,
+              "target_risk_band": "PAPER", "adaptation": "NULL"},
+    "QUARANTINE": {"risk_directions": ("ZERO",), "health": ("QUARANTINED",),
+                   "target_risk_band": "NULL", "adaptation": "NULL"},
+    "RETIRE": {"risk_directions": ("ZERO",), "health": ("RETIRED",),
+               "target_risk_band": "NULL", "adaptation": "NULL"},
+}
+# Adaptation-kind rules: PARAMETER_UPDATE needs a non-empty update map; a
+# MATERIAL_REDESIGN carries an empty map (no child StrategyVersion is created here).
+STRATEGY_ADAPTATION_KIND_RULES: Mapping[str, str] = {
+    "PARAMETER_UPDATE": "NON_EMPTY_PARAMETER_UPDATES",
+    "MATERIAL_REDESIGN": "EMPTY_PARAMETER_UPDATES",
+}
+_STRATEGY_PARAMETER_NAME_RE = re.compile(STRATEGY_PARAMETER_NAME_PATTERN)
+
 # Deterministic sorted closed vocabularies for the generated output schema enums.
 CONFIDENCE_LABELS_SORTED = tuple(sorted(CONFIDENCE_LABELS))
 SOURCE_CLASSES_SORTED = tuple(sorted(SOURCE_CLASSES))
@@ -229,6 +288,8 @@ _ERROR_CODES = frozenset(
         "DRAFT_SOURCE_INVALID",
         "DRAFT_UNSAFE_CONTENT",
         "CONTEXT_CLAIM_INVALID",
+        "STRATEGY_ASSESSMENT_INVALID",
+        "STRATEGY_MODE_INVALID",
         "RECEIPT_IDENTITY_INVALID",
     }
 )
@@ -807,6 +868,57 @@ class ValidatedResearchDraft:
     source_urls: tuple[str, ...]
     falsification_checks_performed: tuple[str, ...] = ()
     context_claims: tuple["ValidatedContextClaim", ...] = ()
+    # S10-HERMES-STRAT-01: the dedicated validated strategy projection, populated only
+    # in strategy mode (default None, so generic/context drafts are unchanged).
+    strategy_projection: "ValidatedStrategyResearchProjection | None" = None
+
+
+@dataclasses.dataclass(frozen=True)
+class ValidatedStrategyAssessmentDraft:
+    """The validated five-field ``strategy_assessment`` object (S10-HERMES-STRAT-01).
+
+    Structural validation only; it grants no authority. Action/risk consistency is
+    checked separately by :func:`check_strategy_assessment_consistency`.
+    ``adaptation_parameter_updates_json`` is the repository-canonical JSON text of the
+    validated update map (sorted keys, compact, no floats) and
+    ``adaptation_parameter_update_keys`` its sorted key set.
+    """
+
+    lifecycle_action: str
+    recommended_health_state: str
+    risk_direction: str
+    target_risk_band: str | None
+    adaptation_kind: str | None
+    adaptation_summary: str | None
+    adaptation_parameter_updates_json: str | None
+    adaptation_parameter_update_keys: tuple[str, ...] = ()
+
+
+@dataclasses.dataclass(frozen=True)
+class ValidatedStrategyResearchProjection:
+    """Dedicated immutable strategy-mode projection (S10-HERMES-STRAT-01).
+
+    Produced only by the authoritative validator after every raw authority flag,
+    source reference and strategy field has passed validation. It preserves exactly
+    what the strategy manager needs -- request id, summary, confidence, the eight
+    research-quality lists, the sanitized source references and the validated
+    ``strategy_assessment`` -- so no consumer ever reparses raw Hermes output. It
+    carries no raw URL, provider payload or model text beyond the validated fields.
+    """
+
+    request_id: str
+    research_summary: str
+    confidence_label: str
+    evidence_for: tuple[str, ...]
+    evidence_against: tuple[str, ...]
+    uncertainties: tuple[str, ...]
+    known_missing_data: tuple[str, ...]
+    falsification_checks_performed: tuple[str, ...]
+    limitations: tuple[str, ...]
+    what_would_change_the_conclusion: tuple[str, ...]
+    suggested_next_research_steps: tuple[str, ...]
+    source_references: tuple[SanitizedSourceReference, ...]
+    strategy_assessment: ValidatedStrategyAssessmentDraft
 
 
 @dataclasses.dataclass(frozen=True)
@@ -851,6 +963,7 @@ def _draft_str(value: object, *, max_len: int) -> str:
 def validate_research_draft(
     raw: str | bytes, *, expected_request_id: str, max_sources: int,
     context_mode: bool = False, allowed_subject_refs: Sequence[str] | None = None,
+    strategy_mode: bool = False, strategy_parameter_names: Sequence[str] | None = None,
 ) -> ValidatedResearchDraft:
     """Parse and validate the untrusted Hermes final research draft.
 
@@ -871,8 +984,17 @@ def validate_research_draft(
         raise _fail("DRAFT_SCHEMA_INVALID")
     if not isinstance(document, dict):
         raise _fail("DRAFT_SCHEMA_INVALID")
+    if context_mode and strategy_mode:
+        raise _fail("STRATEGY_MODE_INVALID")
     if context_mode and set(document) != set(CONTEXT_REQUIRED_TOP_LEVEL_FIELDS):
         raise _fail("CONTEXT_CLAIM_INVALID")
+    parameter_names: frozenset[str] = frozenset()
+    if strategy_mode:
+        parameter_names = _strategy_parameter_name_set(strategy_parameter_names)
+        if set(document) - set(STRATEGY_REQUIRED_TOP_LEVEL_FIELDS) or (
+            STRATEGY_ASSESSMENT_FIELD not in document
+        ):
+            raise _fail("STRATEGY_ASSESSMENT_INVALID")
 
     if document.get("schema_version") != DRAFT_SCHEMA_VERSION:
         raise _fail("DRAFT_SCHEMA_INVALID")
@@ -919,6 +1041,18 @@ def validate_research_draft(
             source_count=len(refs),
             allowed_subject_refs=allowed_subject_refs,
         )
+    projection: ValidatedStrategyResearchProjection | None = None
+    if strategy_mode:
+        projection = ValidatedStrategyResearchProjection(
+            request_id=expected_request_id,
+            research_summary=research_summary,
+            confidence_label=confidence_label,
+            **{name: tuple(document[name]) for name in DRAFT_LIST_FIELDS},  # type: ignore[arg-type]
+            source_references=refs,
+            strategy_assessment=_validate_strategy_assessment(
+                document[STRATEGY_ASSESSMENT_FIELD], parameter_names=parameter_names,
+            ),
+        )
 
     return ValidatedResearchDraft(
         request_id=expected_request_id,
@@ -928,7 +1062,148 @@ def validate_research_draft(
         source_urls=urls,
         falsification_checks_performed=tuple(document[DRAFT_NON_EMPTY_LIST_FIELD]),
         context_claims=claims,
+        strategy_projection=projection,
     )
+
+
+def validate_strategy_research_draft(
+    raw: str | bytes, *, expected_request_id: str, max_sources: int,
+    strategy_parameter_names: Sequence[str],
+) -> ValidatedResearchDraft:
+    """Validate the explicit strategy-mode contract without changing ordinary H1."""
+    return validate_research_draft(
+        raw,
+        expected_request_id=expected_request_id,
+        max_sources=max_sources,
+        strategy_mode=True,
+        strategy_parameter_names=strategy_parameter_names,
+    )
+
+
+def _strategy_parameter_name_set(names: Sequence[str] | None) -> frozenset[str]:
+    if names is None or isinstance(names, (str, bytes)) or not isinstance(names, Sequence):
+        raise _fail("STRATEGY_MODE_INVALID")
+    if any(not isinstance(name, str) or not _STRATEGY_PARAMETER_NAME_RE.match(name) for name in names):
+        raise _fail("STRATEGY_MODE_INVALID")
+    out = frozenset(names)
+    if len(out) != len(names):
+        raise _fail("STRATEGY_MODE_INVALID")
+    return out
+
+
+def _strategy_json_value(value: object, depth: int) -> None:
+    """Canonical JSON value domain: object/array/string/integer/boolean/null only.
+
+    Binary floats (including NaN/Infinity, which ``json.loads`` yields as floats) and
+    non-JSON types reject; depth is bounded.
+    """
+    if depth > STRATEGY_PARAMETER_VALUE_MAX_DEPTH:
+        raise _fail("STRATEGY_ASSESSMENT_INVALID")
+    if value is None or isinstance(value, (bool, str)):
+        return
+    if isinstance(value, int):
+        if abs(value) > 2**63 - 1:
+            raise _fail("STRATEGY_ASSESSMENT_INVALID")
+        return
+    if isinstance(value, list):
+        for item in value:
+            _strategy_json_value(item, depth + 1)
+        return
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise _fail("STRATEGY_ASSESSMENT_INVALID")
+            _strategy_json_value(item, depth + 1)
+        return
+    raise _fail("STRATEGY_ASSESSMENT_INVALID")
+
+
+def _validate_strategy_assessment(
+    value: object, *, parameter_names: frozenset[str],
+) -> ValidatedStrategyAssessmentDraft:
+    """Exact-shape structural validation of the untrusted ``strategy_assessment``."""
+    if not isinstance(value, dict) or set(value) != set(STRATEGY_ASSESSMENT_FIELDS):
+        raise _fail("STRATEGY_ASSESSMENT_INVALID")
+    action = value["lifecycle_action"]
+    health = value["recommended_health_state"]
+    direction = value["risk_direction"]
+    band = value["target_risk_band"]
+    if (
+        not isinstance(action, str) or action not in STRATEGY_LIFECYCLE_ACTIONS
+        or not isinstance(health, str) or health not in STRATEGY_RECOMMENDED_HEALTH_STATES
+        or not isinstance(direction, str) or direction not in STRATEGY_RISK_DIRECTIONS
+        or (band is not None and (not isinstance(band, str) or band not in STRATEGY_TARGET_RISK_BANDS))
+    ):
+        raise _fail("STRATEGY_ASSESSMENT_INVALID")
+    adaptation = value["adaptation_recommendation"]
+    kind = summary = updates_json = None
+    update_keys: tuple[str, ...] = ()
+    if adaptation is not None:
+        if not isinstance(adaptation, dict) or set(adaptation) != set(STRATEGY_ADAPTATION_FIELDS):
+            raise _fail("STRATEGY_ASSESSMENT_INVALID")
+        kind = adaptation["kind"]
+        if not isinstance(kind, str) or kind not in STRATEGY_ADAPTATION_KINDS:
+            raise _fail("STRATEGY_ASSESSMENT_INVALID")
+        summary = adaptation["summary"]
+        if (
+            not isinstance(summary, str)
+            or not _DRAFT_NON_WHITESPACE_RE.search(summary)
+            or len(summary) > STRATEGY_ADAPTATION_SUMMARY_MAX_LEN
+        ):
+            raise _fail("STRATEGY_ASSESSMENT_INVALID")
+        try:
+            _scan_unsafe_draft(summary)
+        except HermesResearchError:
+            raise _fail("STRATEGY_ASSESSMENT_INVALID") from None
+        updates = adaptation["parameter_updates"]
+        if not isinstance(updates, dict) or len(updates) > STRATEGY_PARAMETER_UPDATES_MAX_ITEMS:
+            raise _fail("STRATEGY_ASSESSMENT_INVALID")
+        for key, item in updates.items():
+            if key not in parameter_names:
+                raise _fail("STRATEGY_ASSESSMENT_INVALID")
+            _strategy_json_value(item, 1)
+        updates_json = json.dumps(
+            updates, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
+        )
+        update_keys = tuple(sorted(updates))
+    return ValidatedStrategyAssessmentDraft(
+        lifecycle_action=action,
+        recommended_health_state=health,
+        risk_direction=direction,
+        target_risk_band=band,
+        adaptation_kind=kind,
+        adaptation_summary=summary,
+        adaptation_parameter_updates_json=updates_json,
+        adaptation_parameter_update_keys=update_keys,
+    )
+
+
+def check_strategy_assessment_consistency(draft: ValidatedStrategyAssessmentDraft) -> bool:
+    """Deterministic obvious action/risk consistency (section 11.4) -- no scoring.
+
+    Returns True iff the structurally valid draft satisfies
+    :data:`STRATEGY_ACTION_CONSISTENCY_RULES` and :data:`STRATEGY_ADAPTATION_KIND_RULES`.
+    """
+    if not isinstance(draft, ValidatedStrategyAssessmentDraft):
+        return False
+    rule = STRATEGY_ACTION_CONSISTENCY_RULES.get(draft.lifecycle_action)
+    if rule is None or draft.risk_direction not in rule["risk_directions"]:  # type: ignore[operator]
+        return False
+    allowed_health = rule["health"]
+    if allowed_health is not None and draft.recommended_health_state not in allowed_health:  # type: ignore[operator]
+        return False
+    band_rule = rule["target_risk_band"]
+    if band_rule == "NULL" and draft.target_risk_band is not None:
+        return False
+    if band_rule not in ("ANY", "NULL") and draft.target_risk_band != band_rule:
+        return False
+    if rule["adaptation"] == "NULL":
+        return draft.adaptation_kind is None
+    if draft.adaptation_kind is None or draft.adaptation_parameter_updates_json is None:
+        return False
+    empty = draft.adaptation_parameter_updates_json == "{}"
+    kind_rule = STRATEGY_ADAPTATION_KIND_RULES[draft.adaptation_kind]
+    return empty if kind_rule == "EMPTY_PARAMETER_UPDATES" else not empty
 
 
 def validate_context_research_draft(
@@ -1078,6 +1353,7 @@ def _validate_source_references(
 def build_research_draft_output_schema(
     *, expected_request_id: str, max_sources: int, context_mode: bool = False,
     allowed_subject_refs: Sequence[str] | None = None,
+    strategy_mode: bool = False, strategy_parameter_names: Sequence[str] | None = None,
 ) -> dict[str, object]:
     """Deterministic JSON-schema-like draft output contract for the prompt envelope.
 
@@ -1095,6 +1371,8 @@ def build_research_draft_output_schema(
     if isinstance(max_sources, bool) or not isinstance(max_sources, int) or max_sources < 1:
         raise _fail("DRAFT_SCHEMA_INVALID")
     source_cap = min(max_sources, MAX_SOURCES_ABSOLUTE)
+    if context_mode and strategy_mode:
+        raise _fail("STRATEGY_MODE_INVALID")
 
     properties: dict[str, object] = {
         "schema_version": {"type": "string", "const": DRAFT_SCHEMA_VERSION},
@@ -1177,6 +1455,11 @@ def build_research_draft_output_schema(
                 },
             },
         }
+    if strategy_mode:
+        parameter_names = sorted(_strategy_parameter_name_set(strategy_parameter_names))
+        schema_id = STRATEGY_DRAFT_OUTPUT_CONTRACT_ID
+        required = STRATEGY_REQUIRED_TOP_LEVEL_FIELDS
+        properties[STRATEGY_ASSESSMENT_FIELD] = _strategy_assessment_schema(parameter_names)
     schema = {
         "type": "object",
         "schema_id": schema_id,
@@ -1184,9 +1467,73 @@ def build_research_draft_output_schema(
         "required": list(required),
         "properties": properties,
     }
-    if context_mode:
+    if context_mode or strategy_mode:
         schema["additionalProperties"] = False
+    if strategy_mode:
+        schema["strategy_consistency_rules"] = {
+            "lifecycle_actions": {
+                action: {
+                    "risk_directions": list(rule["risk_directions"]),  # type: ignore[arg-type]
+                    "recommended_health_states": (
+                        None if rule["health"] is None else list(rule["health"])  # type: ignore[arg-type]
+                    ),
+                    "target_risk_band": rule["target_risk_band"],
+                    "adaptation_recommendation": rule["adaptation"],
+                }
+                for action, rule in STRATEGY_ACTION_CONSISTENCY_RULES.items()
+            },
+            "adaptation_kinds": dict(STRATEGY_ADAPTATION_KIND_RULES),
+        }
     return schema
+
+
+def _strategy_assessment_schema(parameter_names: Sequence[str]) -> dict[str, object]:
+    """The ``strategy_assessment`` sub-contract, derived from the validator constants."""
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": list(STRATEGY_ASSESSMENT_FIELDS),
+        "properties": {
+            "lifecycle_action": {"type": "string", "enum": list(STRATEGY_LIFECYCLE_ACTIONS)},
+            "recommended_health_state": {
+                "type": "string", "enum": list(STRATEGY_RECOMMENDED_HEALTH_STATES),
+            },
+            "risk_direction": {"type": "string", "enum": list(STRATEGY_RISK_DIRECTIONS)},
+            "target_risk_band": {
+                "type": ["string", "null"], "enum": [*STRATEGY_TARGET_RISK_BANDS, None],
+            },
+            "adaptation_recommendation": {
+                "type": ["object", "null"],
+                "additionalProperties": False,
+                "required": list(STRATEGY_ADAPTATION_FIELDS),
+                "properties": {
+                    "kind": {"type": "string", "enum": list(STRATEGY_ADAPTATION_KINDS)},
+                    "summary": {
+                        "type": "string", "minLength": 1,
+                        "pattern": DRAFT_NON_WHITESPACE_PATTERN,
+                        "maxLength": STRATEGY_ADAPTATION_SUMMARY_MAX_LEN,
+                    },
+                    "parameter_updates": {
+                        "type": "object",
+                        "maxProperties": STRATEGY_PARAMETER_UPDATES_MAX_ITEMS,
+                        "propertyNames": {"enum": list(parameter_names)},
+                        "additionalProperties": {
+                            "type": ["object", "array", "string", "integer", "boolean", "null"],
+                        },
+                    },
+                },
+            },
+        },
+    }
+
+
+def build_strategy_research_draft_output_schema(
+    *, expected_request_id: str, max_sources: int, strategy_parameter_names: Sequence[str]
+) -> dict[str, object]:
+    return build_research_draft_output_schema(
+        expected_request_id=expected_request_id, max_sources=max_sources, strategy_mode=True,
+        strategy_parameter_names=strategy_parameter_names,
+    )
 
 
 def build_context_research_draft_output_schema(

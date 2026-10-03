@@ -1,0 +1,660 @@
+SIDE15 — S10-HERMES-STRAT-01
+HERMES STRATEGY MANAGER CORE — V2.1 SOFT STRATEGY JUDGMENT
+
+Package Identity:
+  WP ID: S10-HERMES-STRAT-01
+  Title: Hermes Strategy Manager Core — V2.1 Soft Strategy Judgment
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base / refreshed merged main: dab28ee45c1f8267248d52601c90d3f3509034f9
+  Required predecessor: PR #210 / S10-STRAT-LIFE-01
+  Required predecessor implementation head: d3c98d7530c8cec6b65e5d76492f1d7da8edf783
+  Required predecessor merge SHA: dab28ee45c1f8267248d52601c90d3f3509034f9
+  Suggested branch: codex/s10-hermes-strat-01-strategy-manager-core
+  Package class: HERMES_STRATEGY_MANAGER_CORE
+  Package size class: XL (XL_FOR_SCOPE_ONLY, Scope Amendment 01)
+  Exact changed-file scope: 22
+  Risk level: 3
+  Capital at risk: USD 0
+  Orders: 0
+  Merge authority: NO
+  Live authority: NO
+  Control Center implementation authority: NO
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: additive default-off strategy mode in the existing controlled Hermes runtime plus one foreground strategy-manager module and one caller-selected append-only SQLite history store; no daemon, CLI, scheduler or loop
+  Network impact: the existing controlled Hermes runtime is network-capable; implementation and tests use the deterministic fake backend only and perform zero real provider/model calls; workflow git/GitHub publication only
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: none; real capital USD 0; orders 0
+
+Governance track expected: RUNTIME
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: true
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+network=true only because the existing controlled Hermes runtime is network-capable. This WP
+performs zero real provider/model calls, activates no provider, buys no capacity, exposes no
+credential and authorizes no paid remote use. strategy=true authorizes canonical soft strategy
+judgment only; it does not authorize execution, live or outer-policy mutation.
+
+The machine-readable specification is docs/wp_specs/S10-HERMES-STRAT-01/wp_spec.json. The
+authority mirror above equals its authority block exactly.
+
+1. AUTHORIZATION AND OBJECTIVE
+
+Karl has approved the V2.1 architecture: humans define the outer blast radius; Hermes makes soft
+strategy/lifecycle judgments inside that envelope; deterministic code owns hard account/execution
+safety. S10-STRAT-LIFE-01 is merged and supplies the canonical immutable strategy/version,
+health/restriction/allocation and global PortfolioAuthorityPolicy substrate.
+
+Objective: implement the next V2.1 capability only — a deterministic, auditable Hermes
+strategy-manager layer that evaluates one exact StrategyVersion against a verified STRAT-LIFE
+snapshot and bounded admissible evidence, invokes the existing controlled Hermes research runtime
+under a strategy-assessment output contract, validates the untrusted model output, and persists a
+canonical soft strategy decision with exact predecessor/runtime/evidence/state lineage.
+
+Hermes gains no credentials, account access, signing, order placement/cancellation, paper
+execution, hard-risk override, PortfolioAuthorityPolicy mutation, Gate-C, execution, live,
+scheduler/daemon or merge authority. HERMES-STRAT does not mutate the STRAT-LIFE store.
+
+  Hermes says what a strategy appears to deserve.
+  STRAT-LIFE defines valid strategy/lifecycle objects.
+  EXEC-FEAS / Gate C / hard risk determine what is physically eligible.
+  LIVE-ORCH later applies eligible lifecycle/runtime actions.
+
+This WP must not pre-implement S10-EXEC-FEAS-01, S10-GATE-C-EXPLORE-01, S10-DEPLOY-EXEC-01,
+S10-LIVE-ORCH-01, S10-ALPHA-03 or any Control Center package.
+
+2. LIVE START / REPO-DRIFT GATE (HARD STARTUP GATE)
+
+Before any edit run: git fetch origin --prune; git rev-parse origin/main; git status
+--short --branch; gh pr list --state open; gh pr view 210 --json
+state,mergedAt,headRefOid,mergeCommit. Require origin/main =
+dab28ee45c1f8267248d52601c90d3f3509034f9; PR #210 = MERGED; PR #210 implementation head =
+d3c98d7530c8cec6b65e5d76492f1d7da8edf783; PR #210 merge =
+dab28ee45c1f8267248d52601c90d3f3509034f9; open PRs = NONE; working tree = CLEAN. Otherwise STOP
+REPO_STATE_DRIFT. Do not silently rebase onto a later main.
+
+3. ACCEPTED V2.1 BOUNDARIES — DO NOT REOPEN
+
+Known candidate: lifecycle -> Hermes strategy manager -> execution feasibility -> exploratory
+Gate C -> execution host -> live orchestrator -> bounded exploratory live. Parallel discovery:
+ALPHA-03 -> recurring discovery/research -> candidate -> same lifecycle. The formal evidence lane
+(qualification -> WP170 -> formal WP172 -> qualified paper -> validated/larger risk band) is not
+made universal and is not weakened. The global human-authorized PortfolioAuthorityPolicy remains
+the outer envelope. No per-strategy Karl approval field is introduced. A Hermes strategy decision
+may recommend CONTINUE, SCALE, REDUCE, ADAPT, PAPER, QUARANTINE or RETIRE but cannot itself create
+real exposure or exceed the human outer envelope.
+
+4. AUTHORITY / NON-AUTHORITY POSTURE (GOVERNANCE AUTHORITY)
+
+The authority mirror above is exact. Per docs/ai/codex/PROTECTED_PATHS.md this package does not
+cross: credentials/secrets; authenticated clients; wallet/account behavior; order
+placement/cancel; execution gateway; paper engine; scheduler/bot loop; daemon; dashboard /
+Control Center / deployment; dependency/lock changes; external code copying; generated
+artifacts. hermes_runtime=true authorizes only the additive default-off strategy mode in the
+existing controlled runtime and the foreground strategy manager. Non-authority: no credential,
+scheduler, paper, execution or live authority exists in this package; no real provider/model call
+is made.
+
+5. EXACT CHANGED-FILE SCOPE (SCOPE AMENDMENT 01 CONTROLLING)
+
+required_changed_files == allowed_changed_files == exactly these 22 paths. No 23rd path is
+authorized.
+
+Canonical architecture / roadmap / status:
+1. docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md
+2. docs/architecture_decision_record.md
+3. docs/hermes_research_brain_execution_plan.md
+4. docs/long_term_bot_completion_roadmap.md
+5. docs/project_status.md
+6. docs/repo_truth_index.md
+7. docs/research_data_foundation_direction.md
+HERMES-STRAT contract / package evidence:
+8. docs/hermes_strategy_manager_contract.md
+9. docs/status_entries/S10-HERMES-STRAT-01.md
+10. docs/wp_specs/S10-HERMES-STRAT-01/wp_prompt.txt
+11. docs/wp_specs/S10-HERMES-STRAT-01/wp_spec.json
+Source:
+12. src/research_runtime/hermes_controlled_runtime/models.py
+13. src/research_runtime/hermes_controlled_runtime/policy.py
+14. src/research_runtime/hermes_controlled_runtime/controller.py
+15. src/research_runtime/hermes_controlled_runtime/strategy_manager.py
+HERMES-STRAT focused test:
+16. tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py
+Architecture / status / historical-compatibility guards:
+17. tests/test_architecture_boundaries.py
+18. tests/test_architecture_direction_docs.py
+19. tests/test_project_status_docs.py
+20. tests/test_repo_truth_docs.py
+21. tests/test_hermes_advisory_foundation_architecture_docs.py
+22. tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py
+
+Package budget: max_changed_files = 22; exact_scope_required = true; package_size_class = XL;
+xl_explicit_authorization = true; xl_authorization_basis = explicit Side15/Karl authorization
+(Scope Amendment 01) for exactly two additional historical Hermes compatibility-guard test paths
+mechanically required by the pre-existing tracked-file allowlists. XL is XL_FOR_SCOPE_ONLY: the
+added paths only register the already-authorized S10-HERMES-STRAT-01 source/test artifacts. No
+capability, runtime, dependency, network, credential, scheduler, strategy, paper, execution, live,
+Control Center, DATA-03 or merge authority is broadened.
+
+5.1 Historical compatibility guard edits (Amendment 01). In
+tests/test_hermes_advisory_foundation_architecture_docs.py, test
+test_no_actual_hermes_implementation_artifacts_added gains exactly the allowed entry
+src/research_runtime/hermes_controlled_runtime/strategy_manager.py. In
+tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py, the same-named test
+gains exactly src/research_runtime/hermes_controlled_runtime/strategy_manager.py and
+tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py. Each under an explicit
+S10-HERMES-STRAT-01 comment. No forbidden regex is removed or weakened, no wildcard/prefix
+authorization is introduced, and no historical WP96/WP97 assertion is weakened. If either guard
+requires anything broader: STOP SCOPE_AMENDMENT_REQUIRED.
+
+6. FORBIDDEN CHANGE SURFACES
+
+No change under: .github/**, agent_memory/**, agent_runtime/**, credentials/**, local_data/**,
+secrets/**, tools/**, src/data_layer/**, src/strategy_lifecycle/**, tests/strategy_lifecycle/**,
+src/paper_trading/**, src/execution_gateway/**, src/risk_engine/**, src/strategy_modules/**,
+src/operator_cockpit.py, src/operator_cockpit_frontend/**, src/research_runtime/executable_edge/**,
+src/research_runtime/nautilus_offline/**, pyproject.toml, requirements.txt, package.json,
+package-lock.json, other lock files, .env*. Do not modify STRAT-LIFE code or schema, Alpha
+Factory, qualification, WP170, WP172, WP173, Gate C, execution gateway, deployment runtime, Control
+Center frontend/backend, DATA-03, workflows or dependencies. Existing Hermes runtime-family tests
+under tests/research_runtime/hermes_controlled_runtime/ remain unchanged except the new
+test_strategy_manager.py. A production change outside the 22 paths is STOP
+SCOPE_AMENDMENT_REQUIRED before making it.
+
+7. PRE-IMPLEMENTATION READINESS
+
+Materialize wp_prompt.txt and wp_spec.json, mirror this WP exactly, include one
+BEGIN_NORMATIVE_RULE_MATRIX_V1 block and run:
+
+  python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-HERMES-STRAT-01/wp_prompt.txt --spec docs/wp_specs/S10-HERMES-STRAT-01/wp_spec.json --repo-root .
+
+Required: IMPLEMENTATION_READY (RUNTIME). No independent draftability certificate is required
+merely because size is XL. Do not edit governance tooling to make the package pass. If readiness
+cannot pass inside the frozen 22-path scope: STOP SPEC_NOT_IMPLEMENTATION_READY.
+
+8. EXISTING HERMES CORE — PRESERVE BY DEFAULT
+
+The controlled Hermes runtime remains the raw research transport and safety boundary. Preserved
+unchanged: pinned Hermes Agent v0.21.3 external contract; exact one-shot argv; web-only toolset;
+safe-mode/profile isolation; provider/model binding; zero automatic paid retries;
+timeout/output/usage bounds; sanitized stderr; no repository mount; no credential handling in
+project code; no terminal/file/code-execution/browser/plugin/MCP/delegation tools; generic
+research mode; context mode; public-Polymarket-identifier compatibility; receipt/cost/session
+evidence semantics. The strategy-manager extension is additive: calls with strategy_mode = false
+or no strategy-mode argument remain byte/semantically compatible, and no generic research/context
+output schema changes when strategy mode is off.
+
+9. RAW HERMES OUTPUT REMAINS UNTRUSTED
+
+The raw draft safety flags (advisory_only, human_review_required, no_execution_authority,
+no_risk_override, no_credential_request, no_order_or_cancel_or_sign_or_submit,
+no_paper_live_decision, no_strategy_promotion_approval, ...) stay required and true: raw model
+bytes never directly acquire repository strategy authority. The separately authorized HERMES-STRAT
+deterministic validator converts a successful, strictly validated strategy-mode draft into a new
+canonical HermesStrategyAssessment. The canonical assessment has no per-strategy human-approval
+field. This is the explicit V2.1 repository boundary, not a bypass of the raw-output model.
+
+10. STRATEGY MODE IN THE EXISTING CONTROLLED RUNTIME
+
+10.0 Dedicated validated strategy projection (Final Semantic Micro-Closure 01). For
+strategy_mode=true the authoritative validation/controller path produces one explicit immutable
+projection (ValidatedStrategyResearchProjection, exposed as the additive nullable
+strategy_projection on ValidatedResearchDraft and HermesControlledRunResult) preserving exactly:
+request_id; research_summary; confidence_label; evidence_for; evidence_against; uncertainties;
+known_missing_data; falsification_checks_performed; limitations; what_would_change_the_conclusion;
+suggested_next_research_steps; the sanitized SanitizedSourceReference source references (no raw
+URL); and the validated strategy_assessment. It exists only after every raw authority flag has
+passed the existing authoritative validation. Raw Hermes JSON is parsed only by that validator;
+strategy_manager.py never parses or reparses captured raw output and builds HermesStrategyAssessment
+from this projection alone. No raw provider/model payload enters it. Generic and context behavior
+and the generic ValidatedResearchDraft public behavior are unchanged when strategy_mode=false
+(strategy_projection stays null).
+
+Add one optional default-off strategy_mode: bool = False to the relevant existing APIs plus the
+minimum context argument the output-contract builder needs (the current StrategyVersion parameter
+names). context_mode and strategy_mode may never both be true. No third-party dependency. The
+machine-generated strategy-mode output contract uses the distinct identifier
+hermes-strategy-assessment-draft-output-contract/1.0.0; the generic draft fields remain required
+and strategy mode adds exactly one required top-level field strategy_assessment. The generated
+schema and the authoritative validator share one source of truth; no prompt/schema drift.
+
+11. STRATEGY-ASSESSMENT OUTPUT OBJECT
+
+strategy_assessment is an exact object with lifecycle_action, recommended_health_state,
+risk_direction, target_risk_band, adaptation_recommendation; no unknown fields. Lifecycle actions
+(closed): CONTINUE, SCALE, REDUCE, ADAPT, PAPER, QUARANTINE, RETIRE. Recommended health: HEALTHY,
+WATCH, DEGRADED, QUARANTINED, RETIRED (never the derived-only NEW). Risk direction: UNCHANGED,
+INCREASE, DECREASE, PAPER_ONLY, ZERO. target_risk_band: null or exactly PAPER, EXPLORATORY_LIVE,
+VALIDATED_LIVE, MATURE_LIVE. Consistency (fail closed): CONTINUE -> UNCHANGED; SCALE -> INCREASE
+and health not QUARANTINED/RETIRED; REDUCE -> DECREASE; PAPER -> PAPER_ONLY and band PAPER;
+QUARANTINE -> health QUARANTINED, ZERO, band null; RETIRE -> health RETIRED, ZERO, band null;
+ADAPT -> risk direction in UNCHANGED/DECREASE/PAPER_ONLY/ZERO, never INCREASE. No speculative
+scoring/ranking rules.
+
+12. ADAPTATION RECOMMENDATION
+
+adaptation_recommendation is null unless lifecycle_action = ADAPT; for ADAPT it is an exact object
+kind, summary, parameter_updates. PARAMETER_UPDATE: non-empty parameter_updates; every key already
+exists in the current StrategyVersion parameters; no new parameter name; STRAT-LIFE canonical JSON
+value domain; no binary floats / NaN / Infinity; the model does not declare the final adaptation
+class (only a future child StrategyVersion passed through the existing STRAT-LIFE builder may
+receive BOUNDED_ADAPTATION or MATERIAL_ADAPTATION). MATERIAL_REDESIGN: parameter_updates = {} and a
+non-empty bounded summary. No child StrategyVersion is created; no code identity, thesis, universe,
+entry/exit or execution rule is mutated.
+
+13. CANONICAL MODEL-FACING STRATEGY CONTEXT
+
+Never dump an arbitrary repository object or filesystem path into the prompt. Build a
+deterministic bounded context from the exact verified StrategyLifecycleSnapshot binding:
+strategy_version_id, strategy_family_id, parent_strategy_version_id, strategy_label,
+evidence_posture, adaptation_class, strategy_code_identity, thesis, universe, entry_rule,
+exit_rule, parameters, execution_rule_sha256, adaptive_bounds_sha256, current_health_state,
+current_allocation_id, current_allocation_risk_band, current_allocation_budget_usd,
+current_allocation_valid_from_ns, current_allocation_valid_until_ns (all five null when no current
+allocation record exists, otherwise copied exactly from the snapshot allocation record),
+active_restriction_receipt_ids, active_policy_id, strategy_lifecycle_context_sha256, trigger,
+trigger_ref, information_cutoff, subject_refs and bounded evidence summaries. The allocation is
+described as a record with its exact validity window only: the old model-facing names
+current_risk_band / current_active_budget_usd are not used, and no derived allocation_is_active,
+capacity_available, live_authority or executable claim is created. Do not pass account_scope_ref, credentials/private account material, raw local paths or
+raw execution_rule content (bind it by SHA-256 only; execution economics belong to
+S10-EXEC-FEAS-01). Use the existing Hermes request text fields without changing their hard bounds.
+No truncation: if the exact context cannot fit, fail STRATEGY_CONTEXT_LIMIT_EXCEEDED before any
+Hermes spawn.
+
+14. STRATEGY-LOCAL LIFECYCLE CONTEXT FINGERPRINT
+
+Derive strategy_lifecycle_context_sha256 over the strategy-local/current-authority context:
+strategy_version_id; current health state; current allocation identity with exact
+band/budget/validity, or null; sorted active restriction receipt identities; active
+PortfolioAuthorityPolicy id, or null. Retain lifecycle_store_head_entry_hash for provenance. The
+fingerprint is the semantic currentness key; the store head is audit provenance; an unrelated
+strategy-only mutation does not change it; future consumers can recompute it. This package does
+not apply a stale decision.
+
+15. ASSESSMENT TRIGGER
+
+Closed: INITIAL_ASSESSMENT, PERFORMANCE_UPDATE, EVIDENCE_UPDATE, REGIME_CHANGE, ADAPTATION_REVIEW,
+RESTRICTION_REVIEW, OPERATOR_REASSESSMENT. trigger_ref is null or one bounded non-secret,
+non-path opaque reference. No scheduler; no trigger autonomously launches Hermes; a caller
+explicitly invokes the foreground manager function.
+
+16. SUBJECTS AND EVIDENCE
+
+subject_refs is sorted, unique, bounded, contains strategy_version_id and strategy_family_id, and
+may add valid canonical public market/event/token or evidence subjects; no wallet/private-account
+/credential material. StrategyAssessmentEvidence (in strategy_manager.py) is built from an existing
+validated ContextEvidenceItem plus one bounded summary and binds evidence_id, content_sha256,
+evidence_class, subject_refs, scope_sha256, information_cutoff, admissibility_status,
+provenance_manifest_id, dq_flags, origin, direction and summary; it reuses the existing evidence_id.
+Canonical evidence-object revalidation: before a supplied ContextEvidenceItem is used it is
+reconstructed with the existing canonical builder; the reconstructed evidence_id and every
+reconstructed canonical field must equal the supplied ones, otherwise EVIDENCE_INVALID (no second
+evidence identity is created). Rules: at most 12 items; unique evidence ids; ADMISSIBLE only; evidence cutoff <= assessment
+cutoff; subject overlap required; direction SUPPORTING or CONTRADICTING; summary non-empty,
+max 160 characters, non-secret, non-path; no binary floats. The assessment carries the sorted input
+evidence ids. Evidence posture guides the research approach; it is not a deterministic PASS gate.
+
+17. INFORMATION CUTOFF
+
+Whole-second UTC YYYY-MM-DDTHH:MM:SSZ only. The request states the assessment is current only
+through the stated information cutoff. Do not claim stronger point-in-time proof than the supplied
+evidence provides. Evidence newer than the cutoff is rejected. Existing canonical evidence
+timestamps may carry fractional seconds and remain valid; ordering compares the represented UTC
+instants, never raw lexical strings (assessment cutoff 2026-10-03T12:00:00Z with evidence cutoff
+2026-10-03T12:00:00.500Z is EVIDENCE_INVALID; 2026-10-03T11:59:59.500Z is admissible).
+
+18. HERMES STRATEGY RUN RECORD
+
+Frozen HermesStrategyRunRecord: schema_id hermes-strategy-run; schema_version 1.0.0;
+run_record_id; strategy_version_id; strategy_family_id; strategy_lifecycle_context_sha256;
+lifecycle_store_head_entry_hash; trigger; trigger_ref; information_cutoff; runtime_request_id;
+runtime_receipt_id; runtime_policy_id; provider_label; model_label; hermes_version;
+terminal_status; start_utc; end_utc; estimated_cost_usd; cost_status; cost_source;
+decision_time_ns; no_credential_authority, no_order_authority, no_execution_authority,
+no_live_authority = true. ID = hermesstrategyrun:sha256: + sha256(canonical JSON of every field
+except run_record_id). The referenced HermesResearchRunReceipt identity is revalidated before the
+run record is constructed. Successful and failed controlled runs both get durable lineage.
+
+19. CANONICAL HERMES STRATEGY ASSESSMENT
+
+Frozen HermesStrategyAssessment: schema_id hermes-strategy-assessment; schema_version 1.0.0;
+assessment_id; strategy_version_id; strategy_family_id; predecessor_assessment_id; run_record_id;
+runtime_request_id; runtime_receipt_id; trigger; trigger_ref; strategy_lifecycle_context_sha256;
+lifecycle_store_head_entry_hash; active_policy_id; information_cutoff; subject_refs;
+input_evidence_refs; assessment_summary; confidence_label; evidence_for; evidence_against;
+uncertainties; known_missing_data; falsification_checks_performed; limitations;
+what_would_change_the_conclusion; suggested_next_research_steps; lifecycle_action;
+recommended_health_state; risk_direction; target_risk_band; adaptation_recommendation_json;
+decision_time_ns; canonical_soft_strategy_decision = true; no_credential_authority,
+no_portfolio_policy_authority, no_hard_risk_override, no_paper_execution_authority,
+no_order_authority, no_execution_authority, no_live_authority = true. ID =
+hermesstrategyassessment:sha256: + sha256(canonical JSON of every field except assessment_id).
+assessment_summary is the validated research_summary; research lists come from the authoritatively
+validated generic draft; the five strategy fields come only from the validated strategy_assessment.
+No hidden reasoning / chain-of-thought field.
+
+20. DECISION SEMANTICS
+
+The assessment is the V2.1 soft strategy decision, not a hard authorization. CONTINUE implies no
+allocation increase. SCALE remains downstream gated: no allocation increase, band move, policy
+change, EXEC-FEAS satisfaction or Gate-C authority. REDUCE/PAPER/RETIRE are recorded only; later
+orchestration applies valid STRAT-LIFE changes; no paper session is created. QUARANTINE is
+strategy-local, never a global kill. ADAPT proposes only; no child StrategyVersion is created.
+
+21. NO DIRECT STRAT-LIFE MUTATION
+
+strategy_manager.py may read StrategyLifecycleSnapshot, StrategyVersion, RISK_BANDS, HEALTH_STATES
+and pure validation helpers. It never calls append_strategy_lifecycle_record or
+initialize_strategy_lifecycle_store and never opens the STRAT-LIFE SQLite file; it accepts an
+already verified snapshot.
+
+22. HERMES STRATEGY MANAGER STORE
+
+Inside strategy_manager.py only: one explicit caller-selected SQLite store; no implicit default
+path; no directory creation. format_id s10-hermes-strategy-manager-store; schema_version 1;
+application_id 0x48534D31 (1213418801, unused at the frozen base); journal_mode DELETE;
+synchronous FULL; foreign_keys ON. Bounds: 100,000 records; 262,144 canonical payload bytes per
+record; 536,870,912 aggregate. Record kinds exactly HERMES_STRATEGY_RUN and
+HERMES_STRATEGY_ASSESSMENT. One metadata singleton table and one append-only record table with
+sequence_number, record_kind, record_id, strategy_version_id, payload_json, payload_sha256,
+previous_entry_hash, entry_hash; exact no-UPDATE/no-DELETE triggers; entry hash binds
+sequence_number, record_kind, record_id, strategy_version_id, payload_sha256, previous_entry_hash
+via canonical JSON + SHA-256; current state by replay only. Path safety: explicit .sqlite3 path;
+existing non-symlink parent; non-symlink regular single-hard-link database; exact
+application/user version; exact DDL/triggers; integrity_check ok; exact connection PRAGMAs;
+strict canonical JSON; full payload/content-ID/hash-chain verification; no migration.
+
+23. PREDECESSOR RULE
+
+The store derives the latest assessment per strategy_version_id. A new assessment's
+predecessor_assessment_id equals that latest assessment or null; the caller cannot invent it. If
+another same-strategy assessment lands before commit: ASSESSMENT_PREDECESSOR_STALE; never overwrite
+or rebase history. Unrelated strategies do not block one another.
+
+24. STORE COMMIT SEMANTICS
+
+Before any provider/model invocation: open and fully verify the store and derive the predecessor.
+Failed controlled run: persist one HERMES_STRATEGY_RUN record only. Successful run + invalid
+strategy assessment: persist the run record only and return a sanitized failure. Successful run +
+valid assessment: one SQLite transaction appends the run record, re-checks the same-strategy
+predecessor, appends the assessment, verifies replay, commits; any failure rolls back (a stale
+predecessor then durably records the run alone). No automatic second Hermes invocation.
+
+25. MANAGER RESULT CONTRACT
+
+Frozen HermesStrategyManagerResult with statuses STRATEGY_ASSESSMENT_RECORDED,
+STRATEGY_RUN_RECORDED_NO_ASSESSMENT, STRATEGY_MANAGER_REJECTED and compact closed errors
+STRATEGY_NOT_FOUND, STRATEGY_RETIRED, STRATEGY_CONTEXT_INVALID, STRATEGY_CONTEXT_LIMIT_EXCEEDED,
+EVIDENCE_INVALID, INFORMATION_CUTOFF_INVALID, TRIGGER_INVALID, RUNTIME_FAILURE,
+STRATEGY_OUTPUT_INVALID, STRATEGY_OUTPUT_INCONSISTENT, ASSESSMENT_PREDECESSOR_STALE,
+STORE_PATH_INVALID, STORE_SCHEMA_CONFLICT, STORE_TAMPERED, STORE_LIMIT_EXCEEDED,
+INTERNAL_VALIDATION_FAILED. Never echo model output, rejected prompt/context, paths, secrets or raw
+exception text.
+
+26. FOREGROUND MANAGER API AND REQUEST CONSTRUCTION
+
+One public foreground entrypoint run_hermes_strategy_assessment(*, lifecycle_snapshot,
+strategy_version_id, trigger, trigger_ref, subject_refs, evidence, information_cutoff,
+decision_time_ns, provider_label, model_label, backend, store_path, executable_path="hermes",
+policy=DEFAULT_HERMES_INVOCATION_POLICY, hermes_home=None) -> HermesStrategyManagerResult (an
+optional injectable clock is a style normalization). No background loop, scheduler, polling,
+operator CLI or Control Center route. It builds exactly one HermesResearchRunRequest and uses the
+existing controlled runtime exactly once; no second invocation stack; conservative existing run
+maxima; no global cap increase; no fallback model/provider; no automatic retry.
+
+27. NO UNIVERSAL EVIDENCE GATE / RISK BOUNDARY / STRATEGY-LOCAL FAILURE
+
+Evidence posture guides framing only; weak/contradictory evidence may yield any defensible soft
+judgment; uncertainty is valid; formal QUAL/WP170/WP172 is not required for every assessment; no
+trade-count/Sharpe/sample-size/WP172 gate. risk_direction and target_risk_band are soft
+implications only: no absolute budget, policy activation/revocation/limit change, capacity,
+exposure, feasibility or Gate-C claim. Poor assessments are strategy-local; no global stop is
+implemented.
+
+28. CONTROL CENTER COMPATIBILITY — DOMAIN SEMANTICS ONLY
+
+Records naturally preserve StrategyVersion context, trigger, evidence refs, cutoff, structured
+assessment, uncertainty/missing data, predecessor relationship, lifecycle/adaptation decision,
+risk implication, decision time and runtime request/receipt relationship. No UI labels, view/queue
+fields, routes, SSE, WebSocket, React, Storybook, TanStack, Zustand, dashboard dependencies or
+mocks. The Control Center remains NOT STARTED.
+
+29. REPO TRUTH AFTER THIS WP
+
+Distinguish the existing generic controlled research primitive (research-only raw Hermes run,
+untrusted output, no direct strategy/execution/live authority) from the new HERMES-STRAT layer
+(verified STRAT-LIFE context + bounded evidence + existing controlled Hermes run + strategy-mode
+output schema + deterministic repository validation = canonical soft Hermes strategy decision). Do
+not rewrite historical WP95/WP175H text; mark universal "Hermes can never make strategy lifecycle
+decisions" target wording superseded. Record: S10-STRAT-LIFE-01 = MERGED; S10-HERMES-STRAT-01 =
+current bounded implementation target / implemented candidate; S10-EXEC-FEAS-01 = next core
+package after HERMES-STRAT review+merge; S10-CC-FOUND-01 = NOT AUTHORIZED / NOT STARTED until
+HERMES-STRAT merges; ALPHA-03 parallel/non-blocking; DATA-03 unchanged/non-blocking; S10-DEPLOY-01
+host activation separate; Gate C unchanged; live DISABLED; capital/orders USD 0 / 0. Stable status
+text must not claim HERMES-STRAT merged; dynamic PR/head/CI evidence belongs in the PR body.
+
+30. ARCHITECTURE-BOUNDARY UPDATE
+
+src/research_runtime/hermes_controlled_runtime is already approved. Add no parent src/ or
+src/research_runtime/ wildcard. tests/test_architecture_boundaries.py records that the Hermes
+family remains approved, raw research modules keep their no-execution/no-live posture, the new
+strategy_manager.py is the separately authorized V2.1 soft-strategy layer, and no other source
+family is opened.
+
+31. COMPATIBILITY / IMPOSSIBILITY CHECK
+
+Compatible: additive default-off strategy mode (generic and context modes byte-identical);
+strategy_manager.py consumes STRAT-LIFE public APIs read-only; the manager store uses a new unused
+application id; the evidence wrapper reuses ContextEvidenceItem without change; the historical
+Hermes guards gain exact path exceptions only (Amendment 01). Any incompatible row is a hard stop.
+
+32. TEST REQUIREMENTS AND NEGATIVE TEST MATRIX
+
+All HERMES-STRAT tests live in tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py
+(R001-R069 and the micro-closure evidence R082-R086); repo-truth tests R070-R076 live in the architecture/status/repo-truth doc tests;
+R077 is the architecture-boundary guard; R078-R079 are the two historical compatibility guards.
+Negative-test coverage is mandatory: missing/retired strategy; non-admissible, future, unrelated,
+duplicate, excess and unsafe evidence; invalid cutoff/trigger; over-bound context; mode conflict;
+unknown/missing/invalid strategy fields; inconsistent action/risk; non-ADAPT adaptation; unknown
+parameter key; binary float/NaN/Infinity; non-empty material redesign; runtime failure; invalid
+strategy output; forged receipt; tampered run/assessment ids; stale predecessor; store symlink,
+hardlink, schema/application-id drift, payload/chain tamper, UPDATE/DELETE, bounds; forbidden
+imports. Applicable generic categories: missing, null, wrong type, empty, invalid time, forbidden
+field, credential-like token, malformed input, duplicate/conflicting input, case-insensitive
+variant and safe allowed value. Trade-like wording filters are reused from the existing Hermes
+validator and are not newly introduced; new wording categories are not_applicable. Avoid tests
+that merely assert copied giant prose.
+
+33. FOCUSED VALIDATION
+
+  python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime
+  python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py
+  python -m pytest -q -p no:cacheprovider tests/test_architecture_boundaries.py tests/test_architecture_direction_docs.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py
+  python -m pytest -q -p no:cacheprovider tests/test_hermes_advisory_foundation_architecture_docs.py tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py
+
+No existing Hermes runtime-family test file is edited; existing behavior breaks are repaired within
+the three authorized shared source files; old tests are not weakened. STRAT-LIFE public APIs are
+consumed, never changed.
+
+34. HARD STOPS
+
+STOP REPO_STATE_DRIFT; STOP SPEC_NOT_IMPLEMENTATION_READY; STOP SCOPE_AMENDMENT_REQUIRED;
+STOP HERMES_CORE_CONTRACT_CONTRADICTION; STOP STRAT_LIFE_CONTRACT_CONTRADICTION;
+STOP DEPENDENCY_CHANGE_REQUIRED; STOP CREDENTIAL_AUTHORITY_REQUIRED; STOP PAPER_AUTHORITY_REQUIRED;
+STOP EXECUTION_AUTHORITY_REQUIRED; STOP LIVE_AUTHORITY_REQUIRED; STOP CONTROL_CENTER_SCOPE_VIOLATION;
+STOP DATA03_BOUNDARY_VIOLATION; STOP TESTS_NOT_GREEN; STOP HOSTED_CI_NOT_GREEN. Ordinary defects
+inside the 22 paths (serializer/validator bugs, fixtures, SQLite DDL, docs wording, additive
+compatibility bugs, strategy_manager.py mistakes) are same-run repairs.
+
+35. IMPLEMENTATION ORDER
+
+1 drift gate; 2 materialize prompt/spec; 3 readiness PASS; 4 models.py strategy-mode primitives;
+5 policy.py envelope; 6 controller.py default-off plumbing; 7 strategy_manager.py (context, evidence
+wrapper, run record, assessment, store, entrypoint); 8 focused tests; 9 Hermes regression;
+10 STRAT-LIFE compatibility; 11 docs/status/roadmap; 12 architecture/status/compatibility guard
+tests; 13 focused validation while editing; 14 full suite once stable; 15 readiness --check-diff;
+16 artifact/security/diff checks; 17 commit/push; 18 one Ready-for-Review PR; 19 fresh exact-head
+hosted CI; 20 PR evidence/body; 21 do not merge. No real Hermes/provider run is part of this WP.
+
+36. REQUIRED FINAL VALIDATION / EVIDENCE PLAN (REQUIREMENT MAPPING)
+
+The focused commands in Section 33, then:
+  python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-HERMES-STRAT-01/wp_prompt.txt --spec docs/wp_specs/S10-HERMES-STRAT-01/wp_spec.json --repo-root . --check-diff --base dab28ee45c1f8267248d52601c90d3f3509034f9 --head HEAD
+  Required: IMPLEMENTATION_READY (RUNTIME); exact changed-file set = 22/22.
+  python tools/git/preflight_generated_artifact_guard.py
+  git diff --check dab28ee45c1f8267248d52601c90d3f3509034f9..HEAD
+  git diff --name-only dab28ee45c1f8267248d52601c90d3f3509034f9..HEAD (exactly the 22 paths)
+  python tools/security/run_available_security_checks.py (report unavailable checks and
+  pre-existing dependency advisories truthfully; no dependency/lock change is authorized)
+  python -m pytest -q -p no:cacheprovider (only on the stable candidate)
+Then push and obtain fresh exact-head hosted CI; no earlier-head CI counts. The machine spec
+evidence plan maps every normative requirement R001-R086 to a concrete pytest node or bounded
+repository guard.
+
+37. WP SPEC REQUIREMENTS
+
+wp_spec.json: schema_id polymarket-work-package-spec; schema_version 1.0.0; wp_id
+S10-HERMES-STRAT-01; package_class HERMES_STRATEGY_MANAGER_CORE; package_size_class XL;
+risk_level 3; base_branch main; suggested_branch codex/s10-hermes-strat-01-strategy-manager-core;
+required predecessor PR 210 head d3c98d7530c8cec6b65e5d76492f1d7da8edf783 merge
+dab28ee45c1f8267248d52601c90d3f3509034f9; capital_at_risk_usd 0; max_changed_files 22;
+exact_scope_required true; xl_explicit_authorization true; xl_authorization_basis = the Scope
+Amendment 01 basis. The API matrix declares the default-off strategy_mode extensions of the models
+validator/output schema, the policy envelope and the controller invocation, plus the new public
+module src.research_runtime.hermes_controlled_runtime.strategy_manager; no existing product API is
+removed. The identity derivations mechanically describe the hermesstrategyrun:sha256: and
+hermesstrategyassessment:sha256: content ids and the unprefixed strategy_lifecycle_context_sha256
+digest with the SHA256_CANONICAL_JSON grammar (source paths = every top-level field except the
+target); one valid example per rule is the mapping of a real product-built record/preimage.
+
+38. NORMATIVE RULE MATRIX
+
+The machine-readable matrix is below. Every SPEC_PATH is a semantic_fields path in the spec and
+every EVIDENCE_ID is an evidence_plan requirement.
+
+39. PR / EVIDENCE REQUIREMENTS
+
+One PR after final local validation. PR body states: frozen base; exact final head; exact
+changed-file set 22/22; package size XL_FOR_SCOPE_ONLY; historical Hermes compatibility guard
+edits: 2; authority expansion from amendment: NONE; HERMES-STRAT tests; Hermes regression;
+STRAT-LIFE compatibility; architecture/status; compatibility guards; full suite; readiness;
+artifact guard; diff hygiene; security truth; fresh hosted CI run; real provider/model calls 0;
+canonical soft Hermes strategy decision implemented: YES; direct STRAT-LIFE mutation by
+HERMES-STRAT: NO; PortfolioAuthorityPolicy mutation: NO; EXEC-FEAS implemented: NO; Gate C
+changed: NO; paper/execution/live changed: NO; Control Center implemented: NO; DATA-03 touched:
+NO; capital/orders: USD 0 / 0; merge performed: NO. Run the current PR evidence/body consistency
+verifier when applicable. Do not merge.
+
+40. SUCCESSOR BOUNDARY
+
+A merge establishes only HERMES_STRATEGY_MANAGER_CORE_MERGED (StrategyVersion / lifecycle substrate
++ canonical Hermes soft strategy judgment). It establishes no executable feasibility or live
+permission. S10-EXEC-FEAS-01 remains the next core V2.1 package; per the locked Control Center
+baseline S10-CC-FOUND-01 becomes eligible to draft/start in parallel only after HERMES-STRAT
+actually merges. This WP does not draft or start CC-FOUND.
+
+41. FINAL REPORT BACK
+
+Only when implementation is complete, scope is 22/22, tests/readiness are green and fresh
+exact-head hosted CI is green, report back READY_FOR_SIDE15_EXACT_HEAD_REVIEW with: WP; scope
+amendment 01; PR; base dab28ee45c1f8267248d52601c90d3f3509034f9; exact head; changed files 22/22;
+package size XL_FOR_SCOPE_ONLY; historical Hermes compatibility guards PASS; authority expansion
+from amendment NONE; strategy-mode output contract / verified STRAT-LIFE context binding /
+strategy-local lifecycle fingerprint / bounded evidence/cutoff binding / canonical run record /
+canonical soft strategy assessment / predecessor/history store / raw-Hermes no-authority
+preservation / no direct STRAT-LIFE mutation / no execution/live/policy authority: PASS each;
+focused tests, Hermes regression, STRAT-LIFE compatibility, architecture/status, full suite,
+readiness, artifact guard, diff hygiene, security, fresh exact-head hosted CI and PR evidence/body
+verification: exact truth; real provider/model calls 0; scheduler/background loop NO; EXEC-FEAS
+implemented NO; Gate C changed NO; paper/execution/live changed NO; Control Center implemented NO;
+DATA-03 touched NO; capital/orders USD 0 / 0; merge performed NO.
+
+42. FINAL EXECUTION PRINCIPLE
+
+Minimum-complete: no dashboard/API/UI fields, task queues, schedulers, general agent
+orchestration, provider adapters, external dependencies, execution feasibility, Alpha discovery,
+child materialization, sizing algorithms, Gate-C permits, order execution, live orchestration,
+deployment work, event bus or speculative extensibility. Implement only: verified strategy state +
+bounded evidence -> controlled Hermes strategy assessment -> deterministic validation -> canonical
+append-only soft strategy decision history.
+
+Package readiness note: this repo-native prompt mirrors the Side15 authorization as amended by
+Scope Amendment 01 (controlling scope override: 22 paths, XL_FOR_SCOPE_ONLY, authority unchanged).
+Only readiness-tool structural signals were normalized (plain-text governance-track line, explicit
+"Authority / Non-Authority Posture", "Evidence Plan (requirement mapping)", "Report Back" and
+"Successor Boundary" headings, and the normative matrix). Scope, authority and semantics are
+otherwise unchanged.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|context|strategy_version|absent_from_verified_snapshot|FORBID|strategy_not_found|hermes_strat.context|R002
+NR002|fingerprint|strategy_local_context|same_inputs|REQUIRE|deterministic_digest|strategy_lifecycle_context_sha256|R004
+NR003|fingerprint|unrelated_strategy|mutation|PRESERVE_EXACT|target_fingerprint_unchanged|hermes_strat.fingerprint|R005
+NR004|fingerprint|active_policy|change|REQUIRE|fingerprint_changes|hermes_strat.fingerprint|R007
+NR005|evidence|items|not_admissible_future_unrelated_duplicate_or_excess|FORBID|evidence_invalid|hermes_strat.evidence|R010
+NR006|runtime|generic_mode|strategy_mode_false|PRESERVE_EXACT|byte_identical_behavior|hermes_strat.strategy_mode|R023
+NR007|runtime|modes|context_and_strategy_both_true|FORBID|strategy_mode_invalid|hermes_strat.strategy_mode|R025
+NR008|raw_output|authority_flags|any_mode|REQUIRE|untrusted_no_authority|hermes_strat.authority|R032
+NR009|output_contract|schema|generation|REQUIRE|equals_validator_semantics|hermes_strat.output_contract|R026
+NR010|assessment|canonical_record|valid_strategy_draft|ACCEPT|canonical_soft_strategy_decision|hermes_strat.assessment|R064
+NR011|assessment|human_approval_field|field_present|FORBID|no_per_strategy_approval|hermes_strat.assessment|R046
+NR012|output_contract|lifecycle_action|outside_closed_vocabulary|FORBID|strategy_output_invalid|hermes_strat.output_contract|R029
+NR013|consistency|action_risk|obvious_rule_violated|FORBID|strategy_output_inconsistent|hermes_strat.consistency|R031
+NR014|adaptation|child_version|any_adapt|FORBID|recommendation_only|hermes_strat.adaptation|R038
+NR015|context|execution_rule|model_forwarding|FORBID|sha256_bound_only|hermes_strat.context|R019
+NR016|context|private_material|account_scope_credential_or_path|FORBID|excluded|hermes_strat.context|R020
+NR017|context|size|over_request_bounds|FORBID|limit_exceeded_before_spawn|hermes_strat.request|R022
+NR018|runtime|invocation|manager_call|REQUIRE|exactly_one_controlled_run|hermes_strat.runtime_binding|R039
+NR019|runtime|retry_or_fallback|any_failure|FORBID|no_second_invocation|hermes_strat.runtime_binding|R041
+NR020|run_record|failed_run|runtime_failure|REQUIRE|durable_run_record|hermes_strat.run_record|R041
+NR021|store|success_pair|commit|REQUIRE|atomic_run_and_assessment|hermes_strat.store|R057
+NR022|history|predecessor|same_strategy|REQUIRE|append_only_strategy_local_chain|hermes_strat.history|R048
+NR023|assessment|authority|any_action|REQUIRE|soft_judgment_not_hard_authorization|hermes_strat.authority|R064
+NR024|assessment|scale|recorded|FORBID|no_policy_allocation_or_feasibility_change|hermes_strat.authority|R065
+NR025|strat_life|store|any_write_or_open|FORBID|read_snapshot_only|hermes_strat.authority|R060
+NR026|authority|runtime|credential_order_paper_execution_live|FORBID|zero_authority|hermes_strat.authority|R062
+NR027|authority|scheduler|background_loop|FORBID|foreground_only|hermes_strat.authority|R063
+NR028|formal_lane|qual_wp170_wp172|universal_gate|FORBID|non_universal_preserved|docs.v21_truth|R072
+NR029|alpha03|known_candidate_path|prerequisite_claim|FORBID|parallel_only|docs.v21_truth|R076
+NR030|data03|paths|any_mutation|FORBID|untouched|scope.exact|R068
+NR031|control_center|implementation|any_change|FORBID|not_implemented|scope.exact|R069
+NR032|successor|next_core_package|after_merge|REQUIRE|exec_feas_next|docs.v21_truth|R074
+NR033|identity|run_record_id|valid_fields|REQUIRE|sha256_canonical_json_minus_id_with_prefix|run_record_id|R045
+NR034|identity|assessment_id|valid_fields|REQUIRE|sha256_canonical_json_minus_id_with_prefix|assessment_id|R046
+NR035|scope|historical_hermes_guards|new_authorized_paths|REQUIRE|exact_path_exceptions_only|scope.exact|R079
+NR036|projection|strategy_mode_validation|successful_validation|REQUIRE|dedicated_complete_validated_projection|hermes_strat.projection|R082
+NR037|projection|raw_hermes_json|manager_consumption|FORBID|no_raw_parse_or_reparse|hermes_strat.projection|R083
+NR038|context|allocation_record|model_facing|REQUIRE|neutral_record_fields_with_validity_window|hermes_strat.context|R084
+NR039|evidence|supplied_context_item|rederived_identity_or_fields_differ|FORBID|evidence_invalid|hermes_strat.evidence|R085
+NR040|evidence|cutoff_ordering|fractional_after_whole_second_cutoff|FORBID|chronological_utc_comparison|hermes_strat.evidence|R086
+END_NORMATIVE_RULE_MATRIX_V1
+
+Final Semantic Micro-Closure 01 (Side15, same PR #211, same 22 paths, authority unchanged):
+B1 neutral model-facing allocation record semantics (current_allocation_id,
+current_allocation_risk_band, current_allocation_budget_usd, current_allocation_valid_from_ns,
+current_allocation_valid_until_ns; all null without a record; no current_risk_band /
+current_active_budget_usd and no derived active/capacity/executable/live claim); B2 the dedicated
+validated strategy projection of Section 10.0 consumed by the manager without raw reparse; B3
+repo-native prompt/spec fidelity for B1/B2, explicit canonical evidence-object revalidation and
+chronological fractional evidence-cutoff comparison. Evidence R082-R086 and rules NR036-NR040 are
+added; no earlier requirement is removed.

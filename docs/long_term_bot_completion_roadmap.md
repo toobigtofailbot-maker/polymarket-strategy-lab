@@ -2,8 +2,21 @@
 
 ## A. Status
 
-- Current bounded implementation package: S10-STRAT-LIFE-01 Strategy Lifecycle + Global
-  Portfolio Authority Core on frozen base `02eeed13dc0b9552e5685f48198d060e78c797e1` after
+- Current bounded implementation package: S10-HERMES-STRAT-01 Hermes Strategy Manager Core on
+  frozen base `dab28ee45c1f8267248d52601c90d3f3509034f9` after PR #210 / S10-STRAT-LIFE-01 (merged: YES; head
+  `d3c98d7530c8cec6b65e5d76492f1d7da8edf783`). It adds an additive default-off strategy mode to the existing controlled Hermes
+  runtime and `strategy_manager.py`, which records canonical soft Hermes strategy decisions
+  (CONTINUE / SCALE / REDUCE / ADAPT / PAPER / QUARANTINE / RETIRE) for one exact StrategyVersion
+  from a verified STRAT-LIFE snapshot and bounded evidence in an append-only history store
+  (`docs/hermes_strategy_manager_contract.md`). Soft judgments only: no STRAT-LIFE write,
+  PortfolioAuthorityPolicy change, execution feasibility, Gate C, paper, execution, credential or
+  live authority; zero real provider/model calls. Next core package after review and merge:
+  S10-EXEC-FEAS-01. S10-CC-FOUND-01 is NOT AUTHORIZED / NOT STARTED until HERMES-STRAT merges.
+  ALPHA-03 parallel; DATA-03 unchanged and non-blocking. Capital/orders USD 0 / 0.
+
+- Immediate merged predecessor: S10-STRAT-LIFE-01 Strategy Lifecycle + Global
+  Portfolio Authority Core (PR #210 merged at `dab28ee45c1f8267248d52601c90d3f3509034f9`; formerly the current bounded
+  implementation package) on frozen base `02eeed13dc0b9552e5685f48198d060e78c797e1` after
   PR #209 / S10-DEPLOY-01 (merged: YES; head `3e9d595e014275662e90b5f22809f66b3e82cb39`).
   V2.1 target architecture: ACCEPTED (see `docs/architecture_decision_record.md`). The package
   adds only the stdlib-only `src/strategy_lifecycle/` substrate: immutable strategy
@@ -17,7 +30,7 @@
   host activation is NOT YET PERFORMED and separately gated; DATA-03 is unchanged and
   non-blocking; ALPHA-03 is a separate parallel feeder. Capital/orders USD 0 / 0.
 
-- Immediate merged predecessor: S10-DEPLOY-01 Research Platform Runtime Baseline (PR #209
+- Earlier merged predecessor: S10-DEPLOY-01 Research Platform Runtime Baseline (PR #209
   merged at `02eeed13dc0b9552e5685f48198d060e78c797e1`; formerly the current bounded
   implementation package) on frozen base `0b14c951c4546ebc28e0d129643da4ad4615ce2e` after PR #208 /
   S10-PAPER-RESEARCH-01. It adds only the credential-free `tools/deployment/` baseline: exact
@@ -791,3 +804,19 @@ This section is PLANNING_GUIDANCE_ONLY for successors; it authorizes no successo
 - Current runtime is unchanged: controlled Hermes research mode, current Gate C, qualification,
   WP170, formal WP172, WP173 qualified and research-paper modes, DATA-03 and S10-DEPLOY-01
   tooling. Live trading remains DISABLED; capital/orders USD 0 / 0.
+
+## S10-HERMES-STRAT-01 Hermes Strategy Manager Core (current)
+
+PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
+
+- Known-candidate path capability status: lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes
+  strategy manager (S10-HERMES-STRAT-01: implemented capability, current candidate) -> execution
+  feasibility (S10-EXEC-FEAS-01: next core package) -> exploratory Gate C -> execution host ->
+  live orchestrator -> tiny exploratory live.
+- Raw generic Hermes research remains research-only and untrusted; HERMES-STRAT records the
+  canonical soft strategy decision, which is not a hard authorization (SCALE stays downstream
+  gated).
+- S10-CC-FOUND-01 becomes eligible to draft/start in parallel only after HERMES-STRAT actually
+  merges; until then it is NOT AUTHORIZED / NOT STARTED.
+- ALPHA-03 remains a parallel feeder; DATA-03 unchanged and non-blocking; S10-DEPLOY-01 host
+  activation separate; Gate C unchanged; live DISABLED; capital/orders USD 0 / 0.

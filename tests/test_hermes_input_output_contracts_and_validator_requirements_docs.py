@@ -412,6 +412,10 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
                 "tests/research_runtime/hermes_controlled_runtime/test_context_broker_reconciliation.py",
                 "tests/research_runtime/hermes_controlled_runtime/test_context_controller.py",
                 "tests/research_runtime/hermes_controlled_runtime/test_context_protocol.py",
+                # S10-HERMES-STRAT-01: exact authorized V2.1 Hermes strategy-manager
+                # source and focused test paths only (no wildcard, no regex change).
+                "src/research_runtime/hermes_controlled_runtime/strategy_manager.py",
+                "tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
             }
     findings = []
     for path in tracked:

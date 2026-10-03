@@ -1119,11 +1119,12 @@ def test_s10_deploy_plan_01_repo_truth() -> None:
     for claim in ("Gate C is AUTHORIZED", "live ready: YES", "DATA-03 is moved to the VPS"):
         assert claim not in section, claim
     assert index.index("## S10-DEPLOY-PLAN-01 ") < index.index("## S10-QUAL-DATA-03 ") < index.index("## S10-QUAL-PLAN-01 ")
-    assert index.index("## S10-STRAT-LIFE-01 ") == index.index("\n## ") + 1
-    assert index.index("## S10-STRAT-LIFE-01 ") < index.index("## S10-DEPLOY-01 ")
+    assert index.index("## S10-HERMES-STRAT-01 ") == index.index("\n## ") + 1
+    assert index.index("## S10-HERMES-STRAT-01 ") < index.index("## S10-STRAT-LIFE-01 ") < index.index("## S10-DEPLOY-01 ")
     assert index.index("## S10-DEPLOY-01 ") < index.index("## S10-PAPER-RESEARCH-01 ") < index.index("## S10-DEPLOY-PLAN-01 ")
     assert "## S10-DEPLOY-01 Research Platform Runtime Baseline (merged historical predecessor: PR #209)" in index
-    assert "Immediate merged predecessor: S10-DEPLOY-01 Research Platform Runtime Baseline (PR #209" in roadmap
+    assert "Earlier merged predecessor: S10-DEPLOY-01 Research Platform Runtime Baseline (PR #209" in roadmap
+    assert "Immediate merged predecessor: S10-STRAT-LIFE-01 Strategy Lifecycle + Global" in roadmap
     assert "## S10-DEPLOY-01 Research Platform Runtime Baseline (merged implementation; host activation separately gated)" in roadmap
     rows = {line.split(" | ")[0][2:]: line for line in deferred.splitlines() if line.startswith("| S10-DEPLOY-PLAN-01-D")}
     assert sorted(rows) == [f"S10-DEPLOY-PLAN-01-D00{n}" for n in range(1, 6)]
@@ -1198,7 +1199,8 @@ def test_s10_strat_life_repo_truth_data03_unchanged_non_blocking() -> None:
     index = (ROOT / "docs/repo_truth_index.md").read_text(encoding="utf-8")
     start = index.index("## S10-STRAT-LIFE-01 ")
     section = " ".join(index[start : index.index("\n## ", start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    assert "(merged historical predecessor: PR #210)" in section
+    assert "(current bounded implementation target)" not in section
     for text in (
         "docs/strategy_lifecycle_portfolio_authority_contract.md", "src/strategy_lifecycle/",
         "docs/wp_specs/S10-STRAT-LIFE-01/", "docs/status_entries/S10-STRAT-LIFE-01.md",
@@ -1222,3 +1224,26 @@ def test_s10_strat_life_repo_truth_data03_unchanged_non_blocking() -> None:
     assert "DATA-03 remains unchanged and non-blocking." in combined
     assert "DATA-03: unchanged and non-blocking" in combined
     assert "DATA-03 weather evidence lane (parallel)" in combined
+
+
+def test_s10_hermes_strat_repo_truth_cc_found_not_started() -> None:
+    """Repo truth keeps S10-CC-FOUND-01 not authorized / not started until merge (R075)."""
+    index = (ROOT / "docs/repo_truth_index.md").read_text(encoding="utf-8")
+    start = index.index("## S10-HERMES-STRAT-01 ")
+    section = " ".join(index[start : index.index("\n## ", start + 1)].split())
+    assert "(current bounded implementation target)" in section
+    for text in (
+        "docs/hermes_strategy_manager_contract.md", "strategy_manager.py", "docs/wp_specs/S10-HERMES-STRAT-01/",
+        "docs/status_entries/S10-HERMES-STRAT-01.md", "dab28ee45c1f8267248d52601c90d3f3509034f9", "d3c98d7530c8cec6b65e5d76492f1d7da8edf783",
+        "exact 22-path scope (XL_FOR_SCOPE_ONLY", "authority expansion NONE",
+        "S10-CC-FOUND-01 is NOT AUTHORIZED / NOT STARTED until HERMES-STRAT merges",
+        "the Control Center remains NOT STARTED", "S10-EXEC-FEAS-01 is the next core package",
+        "S10-STRAT-LIFE-01: MERGED", "(USD 0 / 0)", "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    for claim in ("S10-CC-FOUND-01 is AUTHORIZED", "Control Center is STARTED", "S10-HERMES-STRAT-01: MERGED"):
+        assert claim not in section, claim
+    adr = " ".join((ROOT / "docs/architecture_decision_record.md").read_text(encoding="utf-8").split())
+    contract = " ".join((ROOT / "docs/hermes_strategy_manager_contract.md").read_text(encoding="utf-8").split())
+    for text in (adr, contract):
+        assert "S10-CC-FOUND-01 is NOT AUTHORIZED / NOT STARTED until S10-HERMES-STRAT-01 actually merges" in text

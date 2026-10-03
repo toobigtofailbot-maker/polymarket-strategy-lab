@@ -198,3 +198,16 @@ strategy-manager runtime. The existing controlled Hermes research mode remains
 research-only and unchanged until S10-HERMES-STRAT-01. The "Forbidden Hermes
 Authority" list above remains current runtime truth until a separately authorized
 successor changes it.
+
+## V2.1 Status (S10-HERMES-STRAT-01)
+
+S10-HERMES-STRAT-01 is the current bounded implementation target (contract
+`docs/hermes_strategy_manager_contract.md`). The generic controlled research primitive is
+unchanged: research-only raw Hermes output stays untrusted with no direct strategy, execution or
+live authority. The separately authorized HERMES-STRAT layer converts a strictly validated
+strategy-mode draft for one exact StrategyVersion into a canonical soft Hermes strategy decision
+(CONTINUE / SCALE / REDUCE / ADAPT / PAPER / QUARANTINE / RETIRE). The permanent
+advisory-only target above is historical/superseded for this soft strategy judgment only; the
+"Forbidden Hermes Authority" list remains current for credentials, signing, orders, paper/live
+decisions, risk override, PortfolioAuthorityPolicy mutation and scheduler/bot-loop behavior.
+Deterministic code still owns hard account/execution safety.
