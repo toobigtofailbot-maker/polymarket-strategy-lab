@@ -1,0 +1,21 @@
+[Unit]
+Description=Collect sanitized Polymarket research-host telemetry
+After=local-fs.target
+
+[Service]
+Type=oneshot
+User=polymarket
+Group=polymarket
+Slice=polymarket-research.slice
+ExecStart=/opt/polymarket/current/.venv/bin/python /opt/polymarket/current/tools/deployment/runtime_baseline.py telemetry --disk-path /var/lib/polymarket --output /var/lib/polymarket/telemetry/host.jsonl
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/polymarket/telemetry
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true

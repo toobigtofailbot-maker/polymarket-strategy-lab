@@ -1,0 +1,9 @@
+[Unit]
+Description=Polymarket bounded research workloads
+
+[Slice]
+CPUWeight=25
+CPUQuota=250%
+MemoryHigh=4G
+MemoryMax=5G
+IOWeight=25

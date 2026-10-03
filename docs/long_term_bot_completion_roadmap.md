@@ -2,7 +2,19 @@
 
 ## A. Status
 
-- Current bounded implementation package: S10-PAPER-RESEARCH-01 on frozen base
+- Current bounded implementation package: S10-DEPLOY-01 Research Platform Runtime Baseline on
+  frozen base `0b14c951c4546ebc28e0d129643da4ad4615ce2e` after PR #208 /
+  S10-PAPER-RESEARCH-01. It adds only the credential-free `tools/deployment/` baseline: exact
+  release build/verification, Ubuntu 24.04 x86-64 bootstrap, native systemd research/critical
+  slices, once-per-minute sanitized host telemetry, persistent `/var/lib` state, SQLite-aware
+  backup and isolated restore verification, SSH-only inbound firewall contract, and a frozen
+  post-merge bounded public smoke. Repository implementation is authorized; provider purchase,
+  provisioning, remote login and activation remain deferred to a human post-merge closure.
+  DATA-03 stays on its current operator environment. This baseline may precede candidate WP172,
+  but execution coexistence/hardening still follows a real WP172 PASS. No credentials, paper
+  session, product scheduler, execution, Gate C, live trading, capital, or orders are authorized.
+
+- Immediate merged predecessor: S10-PAPER-RESEARCH-01 on frozen base
   `d7166f947d764c4fbda65a7d8092d3984a37c7a7` after PR #207 / S10-DEPLOY-PLAN-01.
   WP173 now has two strictly separated admission modes: its existing qualified serious-paper path
   backed by WP172 `EXECUTABLE_EDGE_PASS`, and an additive non-qualifying research-paper learning
@@ -13,8 +25,8 @@
   Hermes deterministic-project-evidence and Alpha deterministic-evidence-ref semantics without
   provider calls or registry mutation. DATA-03 remains a parallel confirmatory weather lane and
   is untouched; the first-look cohort starting `2026-10-15T00:00:00Z` remains protected. This WP
-  does not implement a weather strategy, candidate-specific strategy logic, ALPHA-03,
-  S10-DEPLOY-01, Gate C, credentials, scheduling, execution or live trading; capital/orders 0.
+  does not implement a weather strategy, candidate-specific strategy logic, ALPHA-03, Gate C,
+  credentials, scheduling, execution or live trading; capital/orders 0.
 
 - Current bounded implementation: S10-ALPHA-02 on exact base
   `a2fba4d770cd6fac1cfb551419d040d65768a8e9`; S10-WALLET-02 / PR #190,
@@ -35,19 +47,27 @@
   attempt is authorized. WALLET-03/WALLET-04 and ALPHA-03/ALPHA-04 retain their
   separately gated scopes.
 
-- Current bounded planning package: S10-DEPLOY-PLAN-01 — Production VPS Hosting Direction Lock (base
+- Historical planning predecessor: S10-DEPLOY-PLAN-01 — Production VPS Hosting Direction Lock (base
   d45d9587401faddd2ba92f33cb84f2988b6cfe70, after PR #206 / S10-QUAL-DATA-03 merged with head
   b7d77f95df093b259a2a2b809ffe20308539e397 at 2026-10-01T15:08:12Z). Docs/tests planning truth only
   (docs/production_vps_hosting_direction.md): AlphaVPS, Sofia, Bulgaria; initial tier C8G (4 vCPU / 8 GB ECC RAM /
   75 GB NVMe RAID-10); Ubuntu 24.04 LTS / x86-64; ONE_CONSOLIDATED_POLYMARKET_VPS with no default separate
-  research/live VPS; upgrades C8G -> C12G -> C16G/P-series -> larger only by telemetry evidence. Production migration
-  point: after a real strategy-specific WP172 EXECUTABLE_EDGE_PASS exists and before the first serious
-  production-hosted paper runtime using the existing WP173 system; future package S10-DEPLOY-01 (Production VPS
-  Runtime Baseline) is DRAFT-ELIGIBLE LATER / NOT AUTHORIZED. Deployment status NOT_PROVISIONED / NOT_DEPLOYED. DATA-03
+  research/live VPS; upgrades C8G -> C12G -> C16G/P-series -> larger only by telemetry evidence.
+  S10-DEPLOY-01 supersedes the old serial migration wording: the research baseline may be
+  implemented now, while a real strategy-specific WP172 PASS remains required before later
+  execution coexistence proof and serious production-hosted paper. Deployment status remains
+  NOT_PROVISIONED / NOT_DEPLOYED. DATA-03
   remains on the current operator environment (not moved to the VPS); the next immediate DATA-03 runtime action
   remains the zero-network prepare, with no real accrue before 2026-10-15T00:00:00Z. This package does not
   interrupt the qualification chain and grants no purchase, provisioning, deployment, credential, scheduler, paper,
   live, Gate C or capital authority; capital/orders 0.
+  Historical S10-DEPLOY-PLAN-01 compatibility wording placed deployment "after a real
+  strategy-specific WP172 EXECUTABLE_EDGE_PASS exists and before the first serious
+  production-hosted paper runtime using the existing WP173 system" and recorded the superseded
+  serial sequence `-> real WP172 executable-edge evidence / EXECUTABLE_EDGE_PASS -> S10-DEPLOY-01
+  Production VPS Runtime Baseline -> serious production-hosted WP173 paper runtime`. That quotation
+  does not override the current split research-baseline and later execution-migration lanes. The
+  old shorthand "after WP172 and before WP173" is superseded.
 
 - Historical predecessor (PR #206 merged at d45d9587401faddd2ba92f33cb84f2988b6cfe70 with head
   b7d77f95df093b259a2a2b809ffe20308539e397 at 2026-10-01T15:08:12Z), formerly the bounded implementation target: S10-QUAL-DATA-03 (base 75e17927155dc7ffb5aebfba2f1d97ddd5c2f8b9,
@@ -699,33 +719,27 @@ merge, or Gate-C activation. It records the current post-H1 sequencing truth aft
   qualification, and preregistered/OOS experiments. Immediate separately gated successor:
   S10-HERMES-CTX-01. Gate C remains human-only and NOT AUTHORIZED.
 
-## S10-DEPLOY-PLAN-01 Production VPS Hosting Direction (current, PLANNING_GUIDANCE_ONLY)
+## S10-DEPLOY-01 Research Platform Runtime Baseline (current implementation)
 
-This section is PLANNING_GUIDANCE_ONLY / NOT_AUTHORIZATION. The focused contract is
-`docs/production_vps_hosting_direction.md` (decision status APPROVED_PLANNING_DIRECTION;
-deployment status NOT_PROVISIONED / NOT_DEPLOYED).
+The implementation contract is `docs/research_platform_runtime_baseline_contract.md`; the hosting
+direction is `docs/production_vps_hosting_direction.md`. Repository implementation authority is
+limited to the exact package. Host status remains NOT_PROVISIONED / NOT_DEPLOYED.
 
 - Hosting target: AlphaVPS, Sofia, Bulgaria; initial tier C8G (4 vCPU / 8 GB ECC RAM / 75 GB
   NVMe RAID-10); Ubuntu 24.04 LTS / x86-64.
-- Architecture: ONE_CONSOLIDATED_POLYMARKET_VPS. Separate research and live VPS machines are not
-  the default; a second VPS needs a future explicit architecture decision backed by evidence that
-  same-host isolation is insufficient.
-- Capacity: C8G -> C12G -> C16G/P-series -> larger only by telemetry evidence. Upgrade eligibility
-  criteria are review triggers, never automatic upgrades or purchases.
-- Migration point: the generic WP172 executable-edge substrate (PR #174) and the WP173 Serious
-  Paper Trading System (PR #175) already exist and are not reimplemented. The old shorthand
-  "after WP172 and before WP173" is superseded by: after a real strategy-specific WP172
-  EXECUTABLE_EDGE_PASS exists and before the first serious production-hosted paper runtime using
-  the existing WP173 system.
-- Sequence: DATA-03 prepare/accrual/seal -> S10-QUAL-REAL-01 -> candidate-specific WP170 -> real
-  WP172 executable-edge evidence / PASS -> S10-DEPLOY-01 Production VPS Runtime Baseline ->
-  serious production-hosted WP173 paper runtime -> later separately authorized auth/signing/live
-  gates.
-- S10-DEPLOY-01 is a dedicated bounded package (not folded into WP173 or WP174),
-  DRAFT-ELIGIBLE LATER / NOT AUTHORIZED NOW. It must prove host identity/reproducibility,
-  persistence, process/service supervision, recovery, clock, secrets, firewall/network,
-  backup/restore, health/monitoring, logs/evidence, the single-host coexistence proof and a
-  telemetry-backed C8G_SUFFICIENT or UPGRADE_ELIGIBLE:<reason> disposition.
+- Architecture: ONE_CONSOLIDATED_POLYMARKET_VPS. A second VPS needs a future explicit decision
+  supported by evidence that same-host isolation is insufficient.
+- Research sequence: S10-PAPER-RESEARCH-01 -> S10-DEPLOY-01 research baseline -> later separately
+  authorized research services. This lane does not wait for DATA-03 or candidate-specific WP172.
+- Promotion sequence: candidate qualification -> WP170 -> real WP172 PASS -> later execution
+  coexistence/hardening proof -> serious production-hosted WP173 paper -> separately authorized
+  auth/signing/live gates.
+- Mechanism: credential-free exact release + Python venv + persistent `/var/lib/polymarket` +
+  native systemd. The research slice is bounded; the critical slice reserves future capacity;
+  telemetry is the only recurring scheduler. No product daemon is installed.
+- Capacity output is research-only: C8G_RESEARCH_BASELINE_SUFFICIENT,
+  UPGRADE_ELIGIBLE:MEMORY/CPU/DISK/IO, or BASELINE_INCONCLUSIVE. It never proves execution/live
+  capacity and never auto-purchases or auto-upgrades.
 - DATA-03 remains on the current operator environment and is not moved to the VPS.
-- No VPS purchase, provisioning, deployment, credentials, scheduler/service activation, paper,
-  execution, signing, Gate C, live, capital or orders are authorized.
+- No VPS purchase, provisioning, host activation, credentials, product scheduler, paper session,
+  execution, signing, Gate C, live, capital or orders are authorized by this implementation PR.
