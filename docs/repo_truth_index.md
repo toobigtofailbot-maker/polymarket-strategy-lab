@@ -1,6 +1,30 @@
 # Repo Truth Index
 
-## S10-STRAT-LIFE-01 Strategy Lifecycle + Global Portfolio Authority Core (current bounded implementation target)
+## S10-HERMES-STRAT-01 Hermes Strategy Manager Core (current bounded implementation target)
+
+The contract is `docs/hermes_strategy_manager_contract.md`; the implementation is
+`src/research_runtime/hermes_controlled_runtime/strategy_manager.py` plus an additive default-off
+strategy mode in the existing `models.py`, `policy.py` and `controller.py`; the frozen package is
+`docs/wp_specs/S10-HERMES-STRAT-01/`; and the stable record is
+`docs/status_entries/S10-HERMES-STRAT-01.md`. Base `dab28ee45c1f8267248d52601c90d3f3509034f9` (PR #210 / S10-STRAT-LIFE-01 merged:
+YES, head `d3c98d7530c8cec6b65e5d76492f1d7da8edf783`). RUNTIME, risk 3, exact 22-path scope (XL_FOR_SCOPE_ONLY under Scope Amendment
+01: two historical Hermes compatibility guards gain exact path exceptions only; authority expansion
+NONE). The raw generic controlled Hermes research primitive stays research-only and untrusted; the
+new HERMES-STRAT layer turns verified STRAT-LIFE context + bounded evidence + one existing
+controlled Hermes run + the strategy-mode output contract + deterministic repository validation
+into a canonical soft Hermes strategy decision with strategy-local fingerprint, run-record lineage
+and an append-only predecessor chain (manager store application id 1213418801). It never writes the
+STRAT-LIFE store, mutates no PortfolioAuthorityPolicy, creates no child StrategyVersion and makes
+zero real provider/model calls. S10-STRAT-LIFE-01: MERGED. S10-EXEC-FEAS-01 is the next core package
+after HERMES-STRAT review and merge. S10-CC-FOUND-01 is NOT AUTHORIZED / NOT STARTED until
+HERMES-STRAT merges; the Control Center remains NOT STARTED. ALPHA-03 is parallel and non-blocking;
+DATA-03 is unchanged and non-blocking; S10-DEPLOY-01 host activation is separate; Gate C is
+unchanged; live DISABLED; no credentials, scheduler, paper, execution, live, capital or orders
+(USD 0 / 0); merge NOT AUTHORIZED.
+
+## S10-STRAT-LIFE-01 Strategy Lifecycle + Global Portfolio Authority Core (merged historical predecessor: PR #210)
+
+PR #210 merged this package at `dab28ee45c1f8267248d52601c90d3f3509034f9` (head `d3c98d7530c8cec6b65e5d76492f1d7da8edf783`). The original package record follows.
 
 V2.1 target architecture: ACCEPTED; the canonical record is the V2.1 section of
 `docs/architecture_decision_record.md`. The contract is

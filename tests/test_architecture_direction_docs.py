@@ -257,3 +257,72 @@ def test_strategy_local_quarantine_and_bounded_adaptation_recorded():
     assert "material children are capped at min(parent band, EXPLORATORY_LIVE)" in contract
     assert "Only mechanical boundedness is classified" in contract
     assert "A strategy-local event never creates a global restriction." in contract
+
+
+# -- S10-HERMES-STRAT-01: canonical soft Hermes strategy judgment (R070-R073, R076) --
+
+HERMES_STRAT_CONTRACT = ROOT / "docs" / "hermes_strategy_manager_contract.md"
+
+
+def _hermes_strat_adr() -> str:
+    adr = ADR.read_text(encoding="utf-8")
+    return " ".join(adr.split("## V2.1 Hermes Strategy Manager Core (S10-HERMES-STRAT-01)", 1)[1].split())
+
+
+def test_hermes_strat_raw_research_vs_canonical_decision():
+    section = _hermes_strat_adr()
+    assert ("Existing generic controlled research primitive: a research-only raw Hermes run with untrusted "
+            "output and no direct strategy/execution/live authority.") in section
+    assert ("HERMES-STRAT layer: verified STRAT-LIFE context + bounded evidence + existing controlled Hermes "
+            "run + strategy-mode output schema + deterministic repository validation = canonical soft Hermes "
+            "strategy decision.") in section
+    contract = _flat(HERMES_STRAT_CONTRACT)
+    assert "Raw model bytes never acquire repository authority" in contract
+    assert "no per-strategy human-approval field" in contract
+    assert "research-only raw Hermes output stays untrusted" in _flat(HERMES_PLAN)
+
+
+def test_hermes_strat_permanent_advisory_target_superseded():
+    section = _hermes_strat_adr()
+    assert "Superseded as a current target statement (historical text retained)" in section
+    assert "Hermes can never make strategy lifecycle decisions" in section
+    hermes = _flat(HERMES_PLAN)
+    assert "The permanent advisory-only target above is historical/superseded for this soft strategy judgment only" in hermes
+    # Historical text is retained, not rewritten.
+    assert "WP95's permanent Hermes-advisory-only / never-final-decision-maker assumption is superseded" in hermes
+    assert "act as the final decision-maker for trade, risk, or live actions" in hermes
+    assert "Supersession — V2.1 Hermes Strategy Manager (S10-HERMES-STRAT-01)" in _flat(ADOPTION)
+
+
+def test_hermes_strat_hard_risk_execution_ownership_explicit():
+    section = _hermes_strat_adr()
+    assert "Hard deterministic ownership is unchanged and explicit" in section
+    assert "Hermes cannot override them" in section
+    assert "it is not a hard authorization" in section
+    assert "Formal QUAL/WP170/WP172 remains the strongest evidence lane but is not made a universal gate" in section
+    contract = _flat(HERMES_STRAT_CONTRACT)
+    assert "never writes or opens the STRAT-LIFE store" in contract
+    assert "SCALE stays downstream gated" in contract
+    assert "is not a universal evidence gate" in _flat(DATA_DIRECTION)
+    for claim in ("Hermes may place orders", "Hermes may sign", "Hermes strategy manager implemented: YES"):
+        for doc in CANONICAL + (HERMES_STRAT_CONTRACT,):
+            assert claim not in _flat(doc), (doc.name, claim)
+
+
+def test_hermes_strat_known_candidate_path_records_capability():
+    section = _hermes_strat_adr()
+    path = ("lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes strategy manager (S10-HERMES-STRAT-01: "
+            "implemented capability)")
+    assert path in section
+    assert "S10-EXEC-FEAS-01: next core package after HERMES-STRAT review and merge" in section
+    roadmap = _flat(ROADMAP)
+    assert "## S10-HERMES-STRAT-01 Hermes Strategy Manager Core (current)" in ROADMAP.read_text(encoding="utf-8")
+    assert "Hermes strategy manager (S10-HERMES-STRAT-01: implemented capability, current candidate)" in roadmap
+
+
+def test_hermes_strat_alpha03_parallel():
+    section = _hermes_strat_adr()
+    assert "ALPHA-03 remains a parallel, non-blocking feeder." in section
+    assert "ALPHA-03" not in section.split("Known-candidate path capability status:", 1)[1].split("ALPHA-03 remains", 1)[0]
+    assert "ALPHA-03 remains a parallel feeder" in _flat(ROADMAP)
+    assert "ALPHA-03 stays parallel" in _flat(ADOPTION)

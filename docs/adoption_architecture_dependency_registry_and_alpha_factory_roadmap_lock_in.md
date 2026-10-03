@@ -671,3 +671,15 @@ remains research-only and unchanged until S10-HERMES-STRAT-01. ALPHA-03 is a par
 recurring-discovery feeder, not a prerequisite for a known candidate. S10-STRAT-LIFE-01
 adds the separate stdlib-only strategy lifecycle store (application id 1398033457)
 and grants no paper, execution, credential, live, capital or order authority.
+
+## Supersession — V2.1 Hermes Strategy Manager (S10-HERMES-STRAT-01)
+
+The Section 5.1 universal claim that AI/Hermes can never transition, promote or approve
+lifecycle actions remains superseded (historical WP154 text retained). S10-HERMES-STRAT-01 is the
+current bounded implementation target: the raw generic controlled Hermes research primitive stays
+research-only and untrusted, while the new HERMES-STRAT layer records canonical soft Hermes
+strategy decisions after deterministic repository validation. Those decisions are soft judgments,
+not hard authorizations: the deterministic kernel still owns credentials, signing, venue/access
+validity, durable mutation, reconciliation/account truth, global capital/exposure/loss ceilings
+and kill state, and HERMES-STRAT never writes the STRAT-LIFE store or the PortfolioAuthorityPolicy.
+S10-EXEC-FEAS-01 is the next core package after review and merge; ALPHA-03 stays parallel.

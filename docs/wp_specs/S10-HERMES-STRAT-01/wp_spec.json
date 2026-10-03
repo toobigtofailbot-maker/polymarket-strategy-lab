@@ -1,0 +1,1466 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-STRAT-01",
+    "title": "Hermes Strategy Manager Core — V2.1 Soft Strategy Judgment",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "HERMES_STRATEGY_MANAGER_CORE",
+    "package_size_class": "XL",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 210,
+      "head_sha": "d3c98d7530c8cec6b65e5d76492f1d7da8edf783",
+      "merge_sha": "dab28ee45c1f8267248d52601c90d3f3509034f9"
+    },
+    "suggested_branch": "codex/s10-hermes-strat-01-strategy-manager-core",
+    "objective": "Implement a deterministic, auditable Hermes strategy-manager layer that evaluates one exact StrategyVersion against a verified STRAT-LIFE snapshot and bounded admissible evidence, invokes the existing controlled Hermes research runtime once under a default-off strategy-assessment output contract, validates the untrusted output, and persists a canonical soft strategy decision with exact predecessor/runtime/evidence/state lineage in an append-only caller-selected SQLite history store; no STRAT-LIFE mutation, no credential/order/paper/execution/live/policy authority, zero real provider calls.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Explicit Side15/Karl authorization (Scope Amendment 01) for exactly two additional historical Hermes compatibility-guard test paths mechanically required by the pre-existing tracked-file allowlists. The added paths only register the already-authorized S10-HERMES-STRAT-01 source/test artifacts. No capability, runtime, dependency, network, credential, scheduler, strategy, paper, execution, live, Control Center, DATA-03, or merge authority is broadened."
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
+      "docs/architecture_decision_record.md",
+      "docs/hermes_research_brain_execution_plan.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/research_data_foundation_direction.md",
+      "docs/hermes_strategy_manager_contract.md",
+      "docs/status_entries/S10-HERMES-STRAT-01.md",
+      "docs/wp_specs/S10-HERMES-STRAT-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-STRAT-01/wp_spec.json",
+      "src/research_runtime/hermes_controlled_runtime/models.py",
+      "src/research_runtime/hermes_controlled_runtime/policy.py",
+      "src/research_runtime/hermes_controlled_runtime/controller.py",
+      "src/research_runtime/hermes_controlled_runtime/strategy_manager.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
+      "docs/architecture_decision_record.md",
+      "docs/hermes_research_brain_execution_plan.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/research_data_foundation_direction.md",
+      "docs/hermes_strategy_manager_contract.md",
+      "docs/status_entries/S10-HERMES-STRAT-01.md",
+      "docs/wp_specs/S10-HERMES-STRAT-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-STRAT-01/wp_spec.json",
+      "src/research_runtime/hermes_controlled_runtime/models.py",
+      "src/research_runtime/hermes_controlled_runtime/policy.py",
+      "src/research_runtime/hermes_controlled_runtime/controller.py",
+      "src/research_runtime/hermes_controlled_runtime/strategy_manager.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "tools/",
+      "src/data_layer/",
+      "src/strategy_lifecycle/",
+      "tests/strategy_lifecycle/",
+      "src/paper_trading/",
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/strategy_modules/",
+      "src/operator_cockpit_frontend/",
+      "src/research_runtime/executable_edge/",
+      "src/research_runtime/nautilus_offline/"
+    ],
+    "max_changed_files": 22,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in.md",
+      "docs/architecture_decision_record.md",
+      "docs/hermes_research_brain_execution_plan.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/research_data_foundation_direction.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+    ],
+    "rollback_surface": "Revert the exact S10-HERMES-STRAT-01 diff. The default-off strategy mode, strategy_manager.py, its tests, the contract, status fragment, package artifacts, docs reconciliation and the two exact historical guard path exceptions disappear; generic and context Hermes modes are unchanged; no existing store, schema or runtime state changes and no external runtime, provider, order or capital state exists to roll back.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Additive default-off strategy_mode extensions of three existing Hermes surfaces plus one new public module; no existing product API removed.",
+    "items": [
+      {
+        "surface": "src.research_runtime.hermes_controlled_runtime.models",
+        "before": "generic and context draft validator/output schema",
+        "after": "adds default-off strategy_mode/strategy_parameter_names to validate_research_draft and build_research_draft_output_schema, strategy vocabularies, consistency rules and check_strategy_assessment_consistency",
+        "change_authorized": true,
+        "compatibility_requirement": "strategy_mode=false is byte/semantically identical to pre-WP generic and context behavior",
+        "authority": "RAW_OUTPUT_UNTRUSTED_NO_AUTHORITY"
+      },
+      {
+        "surface": "src.research_runtime.hermes_controlled_runtime.policy",
+        "before": "research envelope builder",
+        "after": "build_research_envelope accepts default-off strategy_mode adding a strategy instruction and strategy output contract",
+        "change_authorized": true,
+        "compatibility_requirement": "envelope mapping/digest unchanged when strategy_mode=false; policy caps unchanged",
+        "authority": "RAW_OUTPUT_UNTRUSTED_NO_AUTHORITY"
+      },
+      {
+        "surface": "src.research_runtime.hermes_controlled_runtime.controller",
+        "before": "run_controlled_hermes_research",
+        "after": "accepts default-off strategy_mode/strategy_parameter_names; context_mode and strategy_mode together reject before any probe",
+        "change_authorized": true,
+        "compatibility_requirement": "one invocation, zero automatic retries, receipts unchanged when strategy_mode=false",
+        "authority": "RAW_OUTPUT_UNTRUSTED_NO_AUTHORITY"
+      },
+      {
+        "surface": "src.research_runtime.hermes_controlled_runtime.strategy_manager",
+        "before": "absent",
+        "after": "foreground run_hermes_strategy_assessment, strategy context/fingerprint, StrategyAssessmentEvidence, HermesStrategyRunRecord, HermesStrategyAssessment and the append-only manager store",
+        "change_authorized": true,
+        "compatibility_requirement": "reads STRAT-LIFE snapshots only; unique application id 1213418801; no import of execution, paper or cockpit code",
+        "authority": "CANONICAL_SOFT_STRATEGY_DECISION_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Freeze the strategy-mode contract, context, evidence, record identities, store, history, authority, exact scope and V2.1 truth.",
+    "items": [
+      {
+        "path": "hermes_strat.strategy_mode",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Optional strategy_mode defaults false; strategy_mode=false preserves generic/context behavior byte-identically; context_mode and strategy_mode together raise STRATEGY_MODE_INVALID before any probe",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R023-R025",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STRATEGY_MODE_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.output_contract",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Strategy-mode output contract hermes-strategy-assessment-draft-output-contract/1.0.0 = generic required fields + exactly one required strategy_assessment object with closed vocabularies; schema and validator derive from the same constants",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R026-R030",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STRATEGY_OUTPUT_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.consistency",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "CONTINUE->UNCHANGED; SCALE->INCREASE and health not QUARANTINED/RETIRED; REDUCE->DECREASE; PAPER->PAPER_ONLY and band PAPER; QUARANTINE->QUARANTINED, ZERO, null band; RETIRE->RETIRED, ZERO, null band; ADAPT->never INCREASE",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R031",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STRATEGY_OUTPUT_INCONSISTENT",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.adaptation",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Adaptation null unless ADAPT; ADAPT needs exact kind/summary/parameter_updates; PARAMETER_UPDATE non-empty existing keys only, canonical JSON values, no float/NaN/Infinity; MATERIAL_REDESIGN empty map; no child StrategyVersion created",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R033-R038",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STRATEGY_OUTPUT_INVALID or STRATEGY_OUTPUT_INCONSISTENT",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.context",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Exact StrategyVersion from the verified snapshot; RETIRED rejects; context binds identity, rules, parameters, execution_rule_sha256, adaptive_bounds_sha256 and current lifecycle state; never account_scope_ref, credentials, paths or raw execution_rule",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R001-R003, R018-R020",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STRATEGY_NOT_FOUND, STRATEGY_RETIRED or STRATEGY_CONTEXT_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.fingerprint",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "strategy_lifecycle_context_sha256 covers only the target strategy health, allocation, active restrictions and the active policy id; store head retained as provenance only",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R004-R008",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "INTERNAL_VALIDATION_FAILED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.evidence",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "StrategyAssessmentEvidence binds an existing ContextEvidenceItem and a <=160 char non-secret non-path summary; <=12 unique ADMISSIBLE items, cutoff <= assessment cutoff, subject overlap required",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R009-R016",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "EVIDENCE_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.request",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Exactly one HermesResearchRunRequest built from bounded canonical text fields within existing hard bounds; over-bound context fails STRATEGY_CONTEXT_LIMIT_EXCEEDED before any backend probe or invocation; no truncation",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R017, R021, R022",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STRATEGY_CONTEXT_LIMIT_EXCEEDED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.runtime_binding",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "The manager calls run_controlled_hermes_research exactly once with strategy_mode=true; zero automatic retries or fallback; receipt identity revalidated; request/receipt/policy ids bound",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R039-R044",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "RUNTIME_FAILURE or INTERNAL_VALIDATION_FAILED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.run_record",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "HermesStrategyRunRecord persists for successful and failed runs with fixed no-credential/order/execution/live flags",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R041, R042, R045",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STORE_TAMPERED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.assessment",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "HermesStrategyAssessment carries canonical_soft_strategy_decision=true, research-quality lists from the validated draft, the five strategy fields from the validated strategy_assessment, and no per-strategy human approval or hidden reasoning field",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R043, R046, R064",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STRATEGY_OUTPUT_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.store",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Append-only s10-hermes-strategy-manager-store, application id 1213418801, DELETE/FULL/foreign_keys ON, no UPDATE/DELETE, hash chain over sequence/kind/id/strategy/payload hash/previous, verified replay, bounds 100000/262144/536870912, atomic run+assessment commit",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R051-R059",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STORE_PATH_INVALID, STORE_SCHEMA_CONFLICT, STORE_TAMPERED or STORE_LIMIT_EXCEEDED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.history",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "predecessor_assessment_id equals the replay-derived latest same-strategy assessment or null; stale predecessor rejects; unrelated strategies never block",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R047-R050",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ASSESSMENT_PREDECESSOR_STALE",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.authority",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Raw Hermes flags stay true; the manager never writes/opens the STRAT-LIFE store, imports no execution/paper/cockpit code, exposes no credential/order/live API, runs no scheduler; SCALE changes no policy/allocation; decisions are strategy-local",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R032, R060-R066",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "zero_authority",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope.exact",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Exactly the 22 amended paths; XL_FOR_SCOPE_ONLY; the two historical Hermes guards gain exact path exceptions only; STRAT-LIFE, DATA-03 and Control Center untouched",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R067-R069, R077-R081",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "SCOPE_AMENDMENT_REQUIRED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "docs.v21_truth",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Docs distinguish raw Hermes research from canonical HERMES-STRAT decisions, mark the permanent advisory-only target superseded, keep hard risk/execution deterministic, record EXEC-FEAS next, CC-FOUND not started, ALPHA-03 parallel",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R070-R076",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "DOC_TRUTH_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "run_record_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "run_record_id = hermesstrategyrun:sha256: + sha256(canonical JSON of every other top-level field of the hermes-strategy-run record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R045",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "STORE_TAMPERED",
+        "derivation_rule_id": "hermesstrategyrun_content_id"
+      },
+      {
+        "path": "assessment_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "assessment_id = hermesstrategyassessment:sha256: + sha256(canonical JSON of every other top-level field of the hermes-strategy-assessment record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R046",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "STORE_TAMPERED",
+        "derivation_rule_id": "hermesstrategyassessment_content_id"
+      },
+      {
+        "path": "strategy_lifecycle_context_sha256",
+        "source": "DERIVED",
+        "type": "sha256_digest",
+        "required_rule": "strategy_lifecycle_context_sha256 = sha256(canonical JSON of the hermes-strategy-lifecycle-context preimage: schema_id, schema_version, strategy_version_id, current_health_state, current_allocation, active_restriction_receipt_ids, active_policy_id), no prefix",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R004-R007",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "INTERNAL_VALIDATION_FAILED",
+        "derivation_rule_id": "strategy_lifecycle_context_digest"
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": true,
+    "reason": "The two record content ids are SHA256_CANONICAL_JSON over every top-level record field except the id with the exact prefix; the strategy-local lifecycle context digest is the same grammar with an empty prefix over its preimage. One valid example per rule.",
+    "items": [
+      {
+        "rule_id": "hermesstrategyrun_content_id",
+        "target_path": "run_record_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "cost_source",
+          "cost_status",
+          "decision_time_ns",
+          "end_utc",
+          "estimated_cost_usd",
+          "hermes_version",
+          "information_cutoff",
+          "lifecycle_store_head_entry_hash",
+          "model_label",
+          "no_credential_authority",
+          "no_execution_authority",
+          "no_live_authority",
+          "no_order_authority",
+          "provider_label",
+          "runtime_policy_id",
+          "runtime_receipt_id",
+          "runtime_request_id",
+          "schema_id",
+          "schema_version",
+          "start_utc",
+          "strategy_family_id",
+          "strategy_lifecycle_context_sha256",
+          "strategy_version_id",
+          "terminal_status",
+          "trigger",
+          "trigger_ref"
+        ],
+        "excluded_paths": [],
+        "prefix": "hermesstrategyrun:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "hermesstrategyassessment_content_id",
+        "target_path": "assessment_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "active_policy_id",
+          "adaptation_recommendation_json",
+          "assessment_summary",
+          "canonical_soft_strategy_decision",
+          "confidence_label",
+          "decision_time_ns",
+          "evidence_against",
+          "evidence_for",
+          "falsification_checks_performed",
+          "information_cutoff",
+          "input_evidence_refs",
+          "known_missing_data",
+          "lifecycle_action",
+          "lifecycle_store_head_entry_hash",
+          "limitations",
+          "no_credential_authority",
+          "no_execution_authority",
+          "no_hard_risk_override",
+          "no_live_authority",
+          "no_order_authority",
+          "no_paper_execution_authority",
+          "no_portfolio_policy_authority",
+          "predecessor_assessment_id",
+          "recommended_health_state",
+          "risk_direction",
+          "run_record_id",
+          "runtime_receipt_id",
+          "runtime_request_id",
+          "schema_id",
+          "schema_version",
+          "strategy_family_id",
+          "strategy_lifecycle_context_sha256",
+          "strategy_version_id",
+          "subject_refs",
+          "suggested_next_research_steps",
+          "target_risk_band",
+          "trigger",
+          "trigger_ref",
+          "uncertainties",
+          "what_would_change_the_conclusion"
+        ],
+        "excluded_paths": [],
+        "prefix": "hermesstrategyassessment:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "strategy_lifecycle_context_digest",
+        "target_path": "strategy_lifecycle_context_sha256",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "active_policy_id",
+          "active_restriction_receipt_ids",
+          "current_allocation",
+          "current_health_state",
+          "schema_id",
+          "schema_version",
+          "strategy_version_id"
+        ],
+        "excluded_paths": [],
+        "prefix": "",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      }
+    ]
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Deterministic RUNTIME readiness plus explicit Side15 authorization permits bounded implementation only.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "prompt/spec mirror and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl/Side15 supplied the exact implementation-authorizing package and Scope Amendment 01",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "exact 22-path XL_FOR_SCOPE_ONLY implementation and required validation pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "One valid example per derivation, generated from real product records/preimages, proves the grammar against the implementation.",
+    "items": [
+      {
+        "example_id": "strategy_lifecycle_context_digest_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "strategy_lifecycle_context_digest"
+        ],
+        "input": {
+          "schema_id": "hermes-strategy-lifecycle-context",
+          "schema_version": "1.0.0",
+          "strategy_version_id": "strategyversion:sha256:588d337915bac233dea96c337dc7195a739fffb82e02b066e1cf0f0243f289d9",
+          "current_health_state": "NEW",
+          "current_allocation": null,
+          "active_restriction_receipt_ids": [],
+          "active_policy_id": "portfolioauthoritypolicy:sha256:9765468a9b2af705e922798f5ba9ebc85a537fb5e269112b886c1593ea51ac07",
+          "strategy_lifecycle_context_sha256": "d897db15837432c306f79092dfaf91d5acdcd75c80645ae578bb951a07c2d0c3"
+        }
+      },
+      {
+        "example_id": "hermesstrategyrun_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "hermesstrategyrun_content_id"
+        ],
+        "input": {
+          "schema_id": "hermes-strategy-run",
+          "schema_version": "1.0.0",
+          "run_record_id": "hermesstrategyrun:sha256:5241a8124c77e99d6113adb153f371401f3a8cc0ca20574ac0bde2dcdb2e3b62",
+          "strategy_version_id": "strategyversion:sha256:588d337915bac233dea96c337dc7195a739fffb82e02b066e1cf0f0243f289d9",
+          "strategy_family_id": "strategyfamily:sha256:3b1a5116970f3a00f064ff65d720fc82640dbd471c3ee8f71f9ec250f1a30cb1",
+          "strategy_lifecycle_context_sha256": "d897db15837432c306f79092dfaf91d5acdcd75c80645ae578bb951a07c2d0c3",
+          "lifecycle_store_head_entry_hash": "6cb13b9afd05da2a6f88275efa99b1d85d9dc75573cacb25beec80bfd3725d28",
+          "trigger": "INITIAL_ASSESSMENT",
+          "trigger_ref": null,
+          "information_cutoff": "2026-10-01T00:00:00Z",
+          "runtime_request_id": "hermesresearchrequest:sha256:f63df5a62f33ba26e1ffef61338b040febd905764792c73fb3896c48e05e0770",
+          "runtime_receipt_id": "hermesresearchreceipt:sha256:d0ee661b75ec332a6a2382384d5f555a0267eda04ba7fb95a7a315068c039964",
+          "runtime_policy_id": "hermesinvocationpolicy:sha256:18b8f788fa436712b377c81b10bdbd594cdb7afb3844fcc8559fde3b28c25e81",
+          "provider_label": "example-provider",
+          "model_label": "example-model",
+          "hermes_version": "0.21.3",
+          "terminal_status": "RESEARCH_DRAFT_VALIDATED",
+          "start_utc": "2026-10-01T12:00:00Z",
+          "end_utc": "2026-10-01T12:00:00Z",
+          "estimated_cost_usd": "0.04",
+          "cost_status": "estimated",
+          "cost_source": "official_docs_snapshot",
+          "decision_time_ns": 1000,
+          "no_credential_authority": true,
+          "no_order_authority": true,
+          "no_execution_authority": true,
+          "no_live_authority": true
+        }
+      },
+      {
+        "example_id": "hermesstrategyassessment_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "hermesstrategyassessment_content_id"
+        ],
+        "input": {
+          "schema_id": "hermes-strategy-assessment",
+          "schema_version": "1.0.0",
+          "assessment_id": "hermesstrategyassessment:sha256:6906ddb3a2c9a0140b9427da21fce511eed346a93d92542b8899b635d0692c24",
+          "strategy_version_id": "strategyversion:sha256:588d337915bac233dea96c337dc7195a739fffb82e02b066e1cf0f0243f289d9",
+          "strategy_family_id": "strategyfamily:sha256:3b1a5116970f3a00f064ff65d720fc82640dbd471c3ee8f71f9ec250f1a30cb1",
+          "predecessor_assessment_id": null,
+          "run_record_id": "hermesstrategyrun:sha256:5241a8124c77e99d6113adb153f371401f3a8cc0ca20574ac0bde2dcdb2e3b62",
+          "runtime_request_id": "hermesresearchrequest:sha256:f63df5a62f33ba26e1ffef61338b040febd905764792c73fb3896c48e05e0770",
+          "runtime_receipt_id": "hermesresearchreceipt:sha256:d0ee661b75ec332a6a2382384d5f555a0267eda04ba7fb95a7a315068c039964",
+          "trigger": "INITIAL_ASSESSMENT",
+          "trigger_ref": null,
+          "strategy_lifecycle_context_sha256": "d897db15837432c306f79092dfaf91d5acdcd75c80645ae578bb951a07c2d0c3",
+          "lifecycle_store_head_entry_hash": "6cb13b9afd05da2a6f88275efa99b1d85d9dc75573cacb25beec80bfd3725d28",
+          "active_policy_id": "portfolioauthoritypolicy:sha256:9765468a9b2af705e922798f5ba9ebc85a537fb5e269112b886c1593ea51ac07",
+          "information_cutoff": "2026-10-01T00:00:00Z",
+          "subject_refs": [
+            "strategyfamily:sha256:3b1a5116970f3a00f064ff65d720fc82640dbd471c3ee8f71f9ec250f1a30cb1",
+            "strategyversion:sha256:588d337915bac233dea96c337dc7195a739fffb82e02b066e1cf0f0243f289d9"
+          ],
+          "input_evidence_refs": [],
+          "assessment_summary": "Balanced public evidence; the edge looks intact but thin.",
+          "confidence_label": "moderate",
+          "evidence_for": [
+            "forecast skill persists"
+          ],
+          "evidence_against": [
+            "liquidity is thin"
+          ],
+          "uncertainties": [
+            "seasonality"
+          ],
+          "known_missing_data": [
+            "no fill history"
+          ],
+          "falsification_checks_performed": [
+            "searched for contrary forecast-skill studies"
+          ],
+          "limitations": [
+            "public web only"
+          ],
+          "what_would_change_the_conclusion": [
+            "forecast skill collapse"
+          ],
+          "suggested_next_research_steps": [
+            "collect fill evidence"
+          ],
+          "lifecycle_action": "CONTINUE",
+          "recommended_health_state": "HEALTHY",
+          "risk_direction": "UNCHANGED",
+          "target_risk_band": null,
+          "adaptation_recommendation_json": null,
+          "decision_time_ns": 1000,
+          "canonical_soft_strategy_decision": true,
+          "no_credential_authority": true,
+          "no_portfolio_policy_authority": true,
+          "no_hard_risk_override": true,
+          "no_paper_execution_authority": true,
+          "no_order_authority": true,
+          "no_execution_authority": true,
+          "no_live_authority": true
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R069 are the HERMES-STRAT focused matrix; R070-R076 repo truth; R077 architecture boundary; R078-R079 historical Hermes compatibility guards; R080-R081 bounded repository guards.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_r001_strategy_version_resolves_from_verified_snapshot",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the exact StrategyVersion is read from a verified replay snapshot and bound into the request context"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_r002_missing_strategy_version_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "an unknown strategy_version_id rejects STRATEGY_NOT_FOUND with zero backend probes or invocations"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_r003_retired_strategy_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a RETIRED strategy rejects STRATEGY_RETIRED before any backend call"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_r004_context_fingerprint_is_deterministic",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the same snapshot and strategy yield an identical 64-hex strategy_lifecycle_context_sha256 matching its canonical preimage"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_r005_unrelated_strategy_change_keeps_target_fingerprint",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "health/restriction changes on another strategy change the store head but not the target fingerprint"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_r006_target_health_allocation_restriction_change_alters_fingerprint",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "target health, allocation and restriction changes each produce a different fingerprint"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_r007_active_policy_change_alters_fingerprint",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "activating or revoking the PortfolioAuthorityPolicy changes the fingerprint"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_r008_store_head_is_provenance_not_currentness_key",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "records retain lifecycle_store_head_entry_hash separately from the fingerprint; the fingerprint preimage excludes the head"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_r009_evidence_wrapper_binds_canonical_item",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "StrategyAssessmentEvidence reuses the item's evidence_id and canonical fields and rejects a forged evidence id"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_r010_non_admissible_evidence_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "evidence whose admissibility_status is not ADMISSIBLE rejects EVIDENCE_INVALID"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_r011_evidence_newer_than_cutoff_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "evidence with a cutoff later than the assessment cutoff rejects EVIDENCE_INVALID before any backend call"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_r012_evidence_without_subject_overlap_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "evidence sharing no subject with the assessment subject_refs rejects EVIDENCE_INVALID"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_r013_duplicate_evidence_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "two items with the same evidence_id reject EVIDENCE_INVALID"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_r014_more_than_twelve_evidence_items_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "thirteen evidence items reject EVIDENCE_INVALID"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_r015_unsafe_evidence_summary_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "empty, over-160, secret-like, path-like and authority-escalating summaries reject EVIDENCE_INVALID"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_r016_bounded_evidence_and_public_polymarket_subjects_succeed",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "bounded summaries with canonical public Polymarket market/event subjects record an assessment"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_r017_strategy_request_uses_existing_research_request",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the manager builds exactly one HermesResearchRunRequest within the existing request bounds"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_r018_prompt_binds_strategy_identity_and_semantics",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the -z prompt carries strategy ids, rules, parameters, fingerprint, trigger, cutoff statement and the strategy output contract"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_r019_execution_rule_content_excluded_hash_bound",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "raw execution_rule content never reaches the prompt while its exact sha256 does"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_r020_account_scope_ref_excluded",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the policy account_scope_ref and hermes_home path never reach the prompt"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "pytest",
+        "test": "test_r021_over_bound_context_fails_before_backend",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "an over-bound strategy context rejects STRATEGY_CONTEXT_LIMIT_EXCEEDED with zero probes and zero invocations"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "pytest",
+        "test": "test_r022_no_silent_truncation",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a context exceeding prompt/command bounds rejects instead of truncating and an admitted prompt contains the full thesis"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "pytest",
+        "test": "test_r023_generic_mode_unchanged",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "generic schema, envelope digest, validator result and receipt are identical with and without strategy_mode=False"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "pytest",
+        "test": "test_r024_context_mode_unchanged",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "context-mode schema and validation are identical with explicit strategy_mode=False"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "pytest",
+        "test": "test_r025_context_and_strategy_mode_together_reject",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "context_mode with strategy_mode raises STRATEGY_MODE_INVALID before any probe"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "pytest",
+        "test": "test_r026_strategy_schema_and_validator_share_required_fields",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the strategy schema required lists and enums equal the validator constants and accept/reject the same documents"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "pytest",
+        "test": "test_r027_unknown_strategy_assessment_field_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "an extra strategy_assessment or top-level field rejects STRATEGY_ASSESSMENT_INVALID"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "pytest",
+        "test": "test_r028_missing_strategy_assessment_field_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "each missing strategy_assessment field and a missing strategy_assessment reject STRATEGY_ASSESSMENT_INVALID"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "pytest",
+        "test": "test_r029_invalid_lifecycle_action_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a lifecycle action outside the closed vocabulary, including lower-case variants, rejects"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "test_r030_invalid_health_band_direction_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "NEW health, unknown band and unknown risk direction reject STRATEGY_ASSESSMENT_INVALID"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "pytest",
+        "test": "test_r031_action_risk_consistency_enforced",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "every obvious action/risk/health/band rule fails closed and a manager run records STRATEGY_OUTPUT_INCONSISTENT"
+      },
+      {
+        "requirement_id": "R032",
+        "source": "pytest",
+        "test": "test_r032_raw_hermes_authority_flags_unchanged",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "strategy mode still requires every raw draft authority flag to be exactly true"
+      },
+      {
+        "requirement_id": "R033",
+        "source": "pytest",
+        "test": "test_r033_non_adapt_requires_null_adaptation",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a non-ADAPT action with an adaptation object is inconsistent"
+      },
+      {
+        "requirement_id": "R034",
+        "source": "pytest",
+        "test": "test_r034_adapt_requires_recommendation",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "ADAPT with a null adaptation recommendation is inconsistent"
+      },
+      {
+        "requirement_id": "R035",
+        "source": "pytest",
+        "test": "test_r035_parameter_update_keys_must_exist",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a parameter update naming a parameter absent from the StrategyVersion rejects"
+      },
+      {
+        "requirement_id": "R036",
+        "source": "pytest",
+        "test": "test_r036_binary_float_nan_infinity_proposal_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "float, NaN and Infinity parameter values reject STRATEGY_ASSESSMENT_INVALID"
+      },
+      {
+        "requirement_id": "R037",
+        "source": "pytest",
+        "test": "test_r037_material_redesign_requires_empty_updates",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "MATERIAL_REDESIGN with a non-empty map and PARAMETER_UPDATE with an empty map are inconsistent"
+      },
+      {
+        "requirement_id": "R038",
+        "source": "pytest",
+        "test": "test_r038_no_child_strategy_version_constructed",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a valid ADAPT assessment is recorded while the lifecycle snapshot and STRAT-LIFE store bytes are unchanged"
+      },
+      {
+        "requirement_id": "R039",
+        "source": "pytest",
+        "test": "test_r039_manager_calls_controlled_runtime_once",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "one manager call produces exactly one version probe, one startup probe and one invocation"
+      },
+      {
+        "requirement_id": "R040",
+        "source": "pytest",
+        "test": "test_r040_fake_backend_only_zero_network",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "tests drive only FakeHermesBackend subclasses and the strategy manager imports no network client"
+      },
+      {
+        "requirement_id": "R041",
+        "source": "pytest",
+        "test": "test_r041_runtime_failure_records_run_only",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a failed controlled run persists one run record, no assessment, and is never retried"
+      },
+      {
+        "requirement_id": "R042",
+        "source": "pytest",
+        "test": "test_r042_invalid_strategy_output_records_run_only",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "invalid strategy output persists the run record only with STRATEGY_OUTPUT_INVALID"
+      },
+      {
+        "requirement_id": "R043",
+        "source": "pytest",
+        "test": "test_r043_success_binds_runtime_request_receipt_policy",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the recorded run/assessment bind the exact runtime request, receipt and policy ids"
+      },
+      {
+        "requirement_id": "R044",
+        "source": "pytest",
+        "test": "test_r044_receipt_identity_revalidated_before_run_record",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a receipt whose id does not match its content rejects INTERNAL_VALIDATION_FAILED with nothing persisted"
+      },
+      {
+        "requirement_id": "R045",
+        "source": "pytest",
+        "test": "test_r045_run_record_id_deterministic_and_tamper_evident",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the run record id re-derives exactly and any field change or forged id rejects"
+      },
+      {
+        "requirement_id": "R046",
+        "source": "pytest",
+        "test": "test_r046_assessment_id_deterministic_and_tamper_evident",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the assessment id re-derives exactly, forged ids reject, and no approval field exists"
+      },
+      {
+        "requirement_id": "R047",
+        "source": "pytest",
+        "test": "test_r047_first_assessment_predecessor_null",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the first assessment of a strategy has predecessor_assessment_id null"
+      },
+      {
+        "requirement_id": "R048",
+        "source": "pytest",
+        "test": "test_r048_next_assessment_predecessor_is_prior",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the second assessment's predecessor equals the first assessment id"
+      },
+      {
+        "requirement_id": "R049",
+        "source": "pytest",
+        "test": "test_r049_stale_same_strategy_predecessor_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a same-strategy assessment landing mid-run makes the commit reject ASSESSMENT_PREDECESSOR_STALE and records the run alone"
+      },
+      {
+        "requirement_id": "R050",
+        "source": "pytest",
+        "test": "test_r050_unrelated_strategy_does_not_block_chain",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "an unrelated strategy assessment landing mid-run does not block the target commit"
+      },
+      {
+        "requirement_id": "R051",
+        "source": "pytest",
+        "test": "test_r051_store_initialize_and_verified_load_identity",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "initialize creates the exact identity and load verifies it; re-initialize is idempotent"
+      },
+      {
+        "requirement_id": "R052",
+        "source": "pytest",
+        "test": "test_r052_connection_pragma_contract",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "connections use DELETE/FULL/foreign_keys ON and a WAL-drifted file rejects"
+      },
+      {
+        "requirement_id": "R053",
+        "source": "pytest",
+        "test": "test_r053_update_delete_blocked",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "UPDATE and DELETE on both tables abort"
+      },
+      {
+        "requirement_id": "R054",
+        "source": "pytest",
+        "test": "test_r054_append_chain_verified",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "entry hashes chain from null through every appended record"
+      },
+      {
+        "requirement_id": "R055",
+        "source": "pytest",
+        "test": "test_r055_payload_record_id_entry_chain_tamper_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "payload, record-id, strategy column and entry-hash tampering reject STORE_TAMPERED"
+      },
+      {
+        "requirement_id": "R056",
+        "source": "pytest",
+        "test": "test_r056_unsafe_path_symlink_hardlink_schema_drift_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "bad suffix, missing parent, symlink, hardlink, application-id and DDL drift reject"
+      },
+      {
+        "requirement_id": "R057",
+        "source": "pytest",
+        "test": "test_r057_success_persists_run_and_assessment_atomically",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a success appends exactly the run record then the assessment"
+      },
+      {
+        "requirement_id": "R058",
+        "source": "pytest",
+        "test": "test_r058_failed_transaction_leaves_no_partial_pair",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a failure during the pair commit leaves the store byte-identical"
+      },
+      {
+        "requirement_id": "R059",
+        "source": "pytest",
+        "test": "test_r059_store_bounds_enforced",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "per-record payload and record-count bounds reject STORE_LIMIT_EXCEEDED"
+      },
+      {
+        "requirement_id": "R060",
+        "source": "pytest",
+        "test": "test_r060_no_direct_strat_life_store_append_or_open",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "strategy_manager.py references no STRAT-LIFE store mutation/open API"
+      },
+      {
+        "requirement_id": "R061",
+        "source": "pytest",
+        "test": "test_r061_no_execution_paper_cockpit_imports",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "strategy_manager.py imports no execution gateway, paper, risk engine or cockpit module"
+      },
+      {
+        "requirement_id": "R062",
+        "source": "pytest",
+        "test": "test_r062_no_credential_sign_order_live_api",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the strategy manager exposes no credential, sign, order or live function"
+      },
+      {
+        "requirement_id": "R063",
+        "source": "pytest",
+        "test": "test_r063_no_scheduler_or_background_loop",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "strategy_manager.py uses no threading, scheduler, asyncio or unbounded loop"
+      },
+      {
+        "requirement_id": "R064",
+        "source": "pytest",
+        "test": "test_r064_assessment_soft_decision_and_no_authority_flags",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "assessments carry canonical_soft_strategy_decision true and every no-authority flag true; false flags reject"
+      },
+      {
+        "requirement_id": "R065",
+        "source": "pytest",
+        "test": "test_r065_scale_does_not_mutate_allocation_or_policy",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "a recorded SCALE leaves the lifecycle allocation and active policy unchanged"
+      },
+      {
+        "requirement_id": "R066",
+        "source": "pytest",
+        "test": "test_r066_quarantine_retire_are_strategy_local",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "QUARANTINE/RETIRE for one strategy leave another strategy's assessment chain and runs unaffected"
+      },
+      {
+        "requirement_id": "R067",
+        "source": "pytest",
+        "test": "test_r067_strat_life_source_and_tests_outside_scope",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the WP scope contains no STRAT-LIFE path and forbids src/strategy_lifecycle/"
+      },
+      {
+        "requirement_id": "R068",
+        "source": "pytest",
+        "test": "test_r068_data03_untouched",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the WP scope contains no DATA-03 path and the manager imports no DATA-03 module"
+      },
+      {
+        "requirement_id": "R069",
+        "source": "pytest",
+        "test": "test_r069_control_center_untouched",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the WP scope contains no Control Center or dependency path"
+      },
+      {
+        "requirement_id": "R070",
+        "source": "pytest",
+        "test": "test_hermes_strat_raw_research_vs_canonical_decision",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "docs distinguish the raw generic research primitive from the canonical HERMES-STRAT soft decision layer"
+      },
+      {
+        "requirement_id": "R071",
+        "source": "pytest",
+        "test": "test_hermes_strat_permanent_advisory_target_superseded",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "the permanent advisory-only Hermes target is marked historical/superseded while history is retained"
+      },
+      {
+        "requirement_id": "R072",
+        "source": "pytest",
+        "test": "test_hermes_strat_hard_risk_execution_ownership_explicit",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "deterministic hard risk/execution ownership and the non-universal formal lane remain explicit"
+      },
+      {
+        "requirement_id": "R073",
+        "source": "pytest",
+        "test": "test_hermes_strat_known_candidate_path_records_capability",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "the known-candidate path records HERMES-STRAT as an implemented capability"
+      },
+      {
+        "requirement_id": "R074",
+        "source": "pytest",
+        "test": "test_s10_hermes_strat_status_exec_feas_next",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_project_status_docs.py",
+        "expected_result": "project status makes HERMES-STRAT current and S10-EXEC-FEAS-01 the next core package"
+      },
+      {
+        "requirement_id": "R075",
+        "source": "pytest",
+        "test": "test_s10_hermes_strat_repo_truth_cc_found_not_started",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_repo_truth_docs.py",
+        "expected_result": "repo truth keeps S10-CC-FOUND-01 not authorized / not started until HERMES-STRAT merges"
+      },
+      {
+        "requirement_id": "R076",
+        "source": "pytest",
+        "test": "test_hermes_strat_alpha03_parallel",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "ALPHA-03 stays parallel and non-blocking for the known-candidate path"
+      },
+      {
+        "requirement_id": "R077",
+        "source": "pytest",
+        "test": "test_hermes_strategy_manager_is_registered_in_existing_hermes_family",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_boundaries.py",
+        "expected_result": "strategy_manager.py is approved only through the existing exact Hermes family; no wildcard opened"
+      },
+      {
+        "requirement_id": "R078",
+        "source": "pytest",
+        "test": "test_no_actual_hermes_implementation_artifacts_added",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_hermes_advisory_foundation_architecture_docs.py",
+        "expected_result": "the WP96 guard passes with only the exact strategy_manager.py exception added"
+      },
+      {
+        "requirement_id": "R079",
+        "source": "pytest",
+        "test": "test_no_actual_hermes_implementation_artifacts_added",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+        "expected_result": "the WP97 guard passes with only the exact strategy_manager.py and test_strategy_manager.py exceptions added"
+      },
+      {
+        "requirement_id": "R080",
+        "source": "repo_guard",
+        "test": "readiness check-diff",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-HERMES-STRAT-01/wp_prompt.txt --spec docs/wp_specs/S10-HERMES-STRAT-01/wp_spec.json --repo-root . --check-diff --base dab28ee45c1f8267248d52601c90d3f3509034f9 --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY (RUNTIME) with exact 22/22 changed-file equality against the frozen base"
+      },
+      {
+        "requirement_id": "R081",
+        "source": "pytest",
+        "test": "authoritative full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "entire repository suite green with zero failures after the candidate is stable"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-EXEC-FEAS-01",
+    "next_title": "Execution Feasibility core, the next V2.1 core package after HERMES-STRAT review and merge; S10-CC-FOUND-01 becomes eligible in parallel only after merge",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-EXEC-FEAS-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "execution feasibility / S10-EXEC-FEAS-01",
+      "Gate-C exploratory permits or any Gate C change",
+      "S10-DEPLOY-EXEC-01 execution host",
+      "S10-LIVE-ORCH-01 live orchestration",
+      "S10-ALPHA-03 recurring discovery",
+      "Control Center / S10-CC-FOUND-01",
+      "direct STRAT-LIFE store mutation",
+      "PortfolioAuthorityPolicy mutation",
+      "child StrategyVersion materialization",
+      "credentials, signing or authenticated account access",
+      "order placement or cancel",
+      "paper engine or paper execution change",
+      "live trading or capital deployment",
+      "scheduler or background loop",
+      "real provider/model call",
+      "DATA-03 access or mutation",
+      "dependency, workflow or tools change",
+      "any 23rd changed path"
+    ]
+  }
+}

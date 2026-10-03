@@ -256,3 +256,43 @@ S10-ALPHA-03 feeds future new opportunities into the same lifecycle but is not a
 prerequisite for first exploratory live from an already-known candidate. No successor
 starts automatically; S10-STRAT-LIFE-01 grants no credential, order, paper, execution,
 live, capital or merge authority (capital/orders USD 0 / 0).
+
+## V2.1 Hermes Strategy Manager Core (S10-HERMES-STRAT-01)
+
+Status: current bounded implementation target / implemented candidate (base `dab28ee45c1f8267248d52601c90d3f3509034f9`, after
+PR #210 / S10-STRAT-LIFE-01 merged). Contract: `docs/hermes_strategy_manager_contract.md`.
+
+Two Hermes surfaces are distinct:
+
+- Existing generic controlled research primitive: a research-only raw Hermes run with untrusted
+  output and no direct strategy/execution/live authority. Its generic and context modes are
+  unchanged when strategy mode is off.
+- HERMES-STRAT layer: verified STRAT-LIFE context + bounded evidence + existing controlled Hermes
+  run + strategy-mode output schema + deterministic repository validation = canonical soft Hermes
+  strategy decision.
+
+Raw Hermes output remains untrusted and every raw authority flag is still required. The validated
+repository record (`HermesStrategyAssessment`) is the V2.1 soft strategy decision; it is not a hard
+authorization. It allocates no budget, moves no risk band, changes no PortfolioAuthorityPolicy,
+claims no execution feasibility or Gate-C permission, creates no paper session or exposure, and
+never writes the STRAT-LIFE store.
+
+Superseded as a current target statement (historical text retained): the universal wording that
+Hermes can never make strategy lifecycle decisions. Hermes now makes canonical soft strategy
+judgments (CONTINUE / SCALE / REDUCE / ADAPT / PAPER / QUARANTINE / RETIRE) inside the human outer
+envelope.
+
+Hard deterministic ownership is unchanged and explicit: credentials/signing, venue/access
+validity, durable mutation semantics, reconciliation/account truth, global capital/exposure/loss
+ceilings, kill state, corrupt/stale shared-state integrity, the PortfolioAuthorityPolicy,
+lifecycle state transitions and execution remain deterministic or human-owned; Hermes cannot
+override them. Formal QUAL/WP170/WP172 remains the strongest evidence lane but is not made a
+universal gate for Hermes assessments.
+
+Known-candidate path capability status: lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes strategy
+manager (S10-HERMES-STRAT-01: implemented capability) -> execution feasibility (S10-EXEC-FEAS-01:
+next core package after HERMES-STRAT review and merge) -> exploratory Gate C -> execution host ->
+live orchestrator -> tiny exploratory live. ALPHA-03 remains a parallel, non-blocking feeder.
+S10-CC-FOUND-01 is NOT AUTHORIZED / NOT STARTED until S10-HERMES-STRAT-01 actually merges; the
+Control Center remains NOT STARTED. DATA-03 remains unchanged and non-blocking; S10-DEPLOY-01 host
+activation is separate; Gate C is unchanged; live trading remains DISABLED; capital/orders USD 0 / 0.

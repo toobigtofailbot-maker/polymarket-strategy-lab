@@ -68,6 +68,7 @@ import subprocess
 from typing import Mapping
 
 from .models import (
+    HermesResearchError,
     HermesResearchRunRequest,
     ITERATION_CAP_STATUS,
     MAX_TRANSPORT_RETRIES_ABSOLUTE,
@@ -591,6 +592,27 @@ PERMANENT_SYSTEM_INSTRUCTION = (
 )
 
 
+# S10-HERMES-STRAT-01: additive strategy-mode instruction, present in the envelope ONLY
+# when strategy_mode=True (generic/context envelopes are byte-identical to before). The
+# raw output stays untrusted; the permanent instruction above is unchanged.
+STRATEGY_SYSTEM_INSTRUCTION_VERSION = "hermes-strategy-assessment-instruction/1.0.0"
+
+STRATEGY_SYSTEM_INSTRUCTION = (
+    "Strategy-assessment mode. Assess the exact StrategyVersion described in "
+    "`research_question` and `public_market_context` and include the required "
+    "`strategy_assessment` object exactly as specified by `draft_output_schema`, "
+    "respecting its `strategy_consistency_rules`. Your output is an untrusted soft "
+    "strategy judgment draft: a deterministic repository validator decides whether it "
+    "is recorded, and it never allocates budget, changes the portfolio policy, claims "
+    "execution feasibility, or creates exposure. The assessment is current only through "
+    "the stated information cutoff; do not claim knowledge after it or stronger "
+    "point-in-time proof than the supplied evidence provides. Evidence posture guides "
+    "your research approach and is not a pass/fail gate; uncertainty and missing data "
+    "are valid findings. An adaptation is a recommendation only and may only update "
+    "existing parameter names."
+)
+
+
 @dataclasses.dataclass(frozen=True)
 class HermesResearchEnvelope:
     """Deterministic compact prompt envelope passed as the one-shot ``-z`` prompt."""
@@ -611,6 +633,9 @@ class HermesResearchEnvelope:
     # H1 #3 prompt only referenced by version string. Included in the canonical query
     # bytes, prompt string, and envelope digest.
     draft_output_schema: Mapping[str, object]
+    # S10-HERMES-STRAT-01: None outside strategy mode and then omitted from the mapping.
+    strategy_instruction_version: str | None = None
+    strategy_instruction: str | None = None
 
     def to_query_bytes(self) -> bytes:
         return canonical_json_bytes(self.as_mapping())
@@ -619,7 +644,7 @@ class HermesResearchEnvelope:
         return self.to_query_bytes().decode("utf-8")
 
     def as_mapping(self) -> dict[str, object]:
-        return {
+        mapping: dict[str, object] = {
             "system_instruction_version": self.system_instruction_version,
             "system_instruction": self.system_instruction,
             "request_id": self.request_id,
@@ -633,6 +658,10 @@ class HermesResearchEnvelope:
             "draft_schema_version": self.draft_schema_version,
             "draft_output_schema": dict(self.draft_output_schema),
         }
+        if self.strategy_instruction is not None:
+            mapping["strategy_instruction_version"] = self.strategy_instruction_version
+            mapping["strategy_instruction"] = self.strategy_instruction
+        return mapping
 
     @property
     def envelope_digest(self) -> str:
@@ -647,17 +676,36 @@ class HermesResearchEnvelope:
 def build_research_envelope(
     request: HermesResearchRunRequest, *, context_mode: bool = False,
     allowed_subject_refs: Sequence[str] | None = None,
+    strategy_mode: bool = False, strategy_parameter_names: Sequence[str] | None = None,
 ) -> HermesResearchEnvelope:
     """Build the compact envelope. It never includes a repo mount, AGENTS.md, full
-    project history, project memory, or the Alpha Factory database."""
+    project history, project memory, or the Alpha Factory database.
+
+    ``strategy_mode`` (S10-HERMES-STRAT-01, default off) adds the strategy-assessment
+    output contract and instruction; it is mutually exclusive with ``context_mode``.
+    """
     from .models import DRAFT_SCHEMA_VERSION
 
+    if context_mode and strategy_mode:
+        raise HermesResearchError("STRATEGY_MODE_INVALID")
+    schema_kwargs: dict[str, object] = {}
+    if strategy_mode:
+        schema_kwargs = {
+            "strategy_mode": True, "strategy_parameter_names": strategy_parameter_names,
+        }
     draft_output_schema = build_research_draft_output_schema(
         expected_request_id=request.request_id,
         max_sources=request.max_sources,
         context_mode=context_mode,
         allowed_subject_refs=allowed_subject_refs,
+        **schema_kwargs,  # type: ignore[arg-type]
     )
+    strategy_fields: dict[str, object] = {}
+    if strategy_mode:
+        strategy_fields = {
+            "strategy_instruction_version": STRATEGY_SYSTEM_INSTRUCTION_VERSION,
+            "strategy_instruction": STRATEGY_SYSTEM_INSTRUCTION,
+        }
     return HermesResearchEnvelope(
         system_instruction_version=PERMANENT_SYSTEM_INSTRUCTION_VERSION,
         system_instruction=PERMANENT_SYSTEM_INSTRUCTION,
@@ -671,6 +719,7 @@ def build_research_envelope(
         max_sources=request.max_sources,
         draft_schema_version=DRAFT_SCHEMA_VERSION,
         draft_output_schema=draft_output_schema,
+        **strategy_fields,  # type: ignore[arg-type]
     )
 
 
