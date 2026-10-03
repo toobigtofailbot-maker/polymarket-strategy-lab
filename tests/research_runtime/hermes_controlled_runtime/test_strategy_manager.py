@@ -347,7 +347,7 @@ def _sd(**fields) -> ValidatedStrategyAssessmentDraft:
     base = dict(
         lifecycle_action="CONTINUE", recommended_health_state="HEALTHY", risk_direction="UNCHANGED",
         target_risk_band=None, adaptation_kind=None, adaptation_summary=None,
-        adaptation_parameter_updates_json=None, research_lists=(),
+        adaptation_parameter_updates_json=None,
     )
     base.update(fields)
     return ValidatedStrategyAssessmentDraft(**base)
@@ -620,8 +620,11 @@ def test_r020_account_scope_ref_excluded(tmp_path):
     assert "account:public-scope-1" not in prompt and "account_scope_ref" not in prompt
     assert str(tmp_path) not in prompt and str(tmp_path).replace("\\", "\\\\") not in prompt
     assert "human:karl-approval-1" not in prompt
-    question = json.loads(_prompt(backend)["research_question"])
-    assert question["lifecycle_state"]["current_active_budget_usd"] == "50"
+    state = json.loads(_prompt(backend)["research_question"])["lifecycle_state"]
+    assert state["current_allocation_budget_usd"] == "50"
+    for forbidden in ("current_risk_band", "current_active_budget_usd", "allocation_is_active",
+                      "capacity_available", "live_authority", "executable"):
+        assert forbidden not in state and f'"{forbidden}"' not in prompt
 
 
 def test_r021_over_bound_context_fails_before_backend(tmp_path):
@@ -685,7 +688,7 @@ def test_r023_generic_mode_unchanged():
     raw = json.dumps(generic)
     default = validate_research_draft(raw, expected_request_id=rid, max_sources=8)
     assert default == validate_research_draft(raw, expected_request_id=rid, max_sources=8, strategy_mode=False)
-    assert default.strategy_assessment is None
+    assert default.strategy_projection is None
     receipts = []
     for kwargs in ({}, {"strategy_mode": False}):
         backend = FakeHermesBackend.from_transcript(raw.encode("utf-8"), usage_file_bytes=_usage())
@@ -748,7 +751,7 @@ def test_r026_strategy_schema_and_validator_share_required_fields():
     assert list(rules) == list(STRATEGY_LIFECYCLE_ACTIONS)
     assert rules["ADAPT"]["risk_directions"] == list(HM.STRATEGY_ACTION_CONSISTENCY_RULES["ADAPT"]["risk_directions"])
     accepted = _validate(_strategy_doc())
-    assert accepted.strategy_assessment.lifecycle_action == "CONTINUE"
+    assert accepted.strategy_projection.strategy_assessment.lifecycle_action == "CONTINUE"
     assert set(json.loads(_strategy_doc())) == set(schema["required"])
     # The schema forbids additional properties; so does the validator.
     assert _code(_validate, json.dumps(dict(json.loads(_strategy_doc()), extra=1))) == "STRATEGY_ASSESSMENT_INVALID"
@@ -786,7 +789,7 @@ def test_r030_invalid_health_band_direction_rejects():
                          ("target_risk_band", "LIVE"), ("target_risk_band", ""),
                          ("risk_direction", "UP"), ("risk_direction", None)):
         assert _code(_validate, _strategy_doc(**{field: value})) == "STRATEGY_ASSESSMENT_INVALID", (field, value)
-    assert _validate(_strategy_doc(target_risk_band="VALIDATED_LIVE")).strategy_assessment.target_risk_band == "VALIDATED_LIVE"
+    assert _validate(_strategy_doc(target_risk_band="VALIDATED_LIVE")).strategy_projection.strategy_assessment.target_risk_band == "VALIDATED_LIVE"
 
 
 def test_r031_action_risk_consistency_enforced(tmp_path):
@@ -853,7 +856,7 @@ def _adapt(kind="PARAMETER_UPDATE", updates=None, summary="Shorten the lookback 
 
 def test_r033_non_adapt_requires_null_adaptation(tmp_path):
     for action, direction in (("CONTINUE", "UNCHANGED"), ("REDUCE", "DECREASE")):
-        draft = _validate(_strategy_doc(lifecycle_action=action, risk_direction=direction, adaptation_recommendation=_adapt())).strategy_assessment
+        draft = _validate(_strategy_doc(lifecycle_action=action, risk_direction=direction, adaptation_recommendation=_adapt())).strategy_projection.strategy_assessment
         assert not check_strategy_assessment_consistency(draft)
     world = make_world(tmp_path)
     backend = StrategyBackend(lambda rid, _e: _draft(rid, strategy=_assessment(adaptation_recommendation=_adapt())))
@@ -861,9 +864,9 @@ def test_r033_non_adapt_requires_null_adaptation(tmp_path):
 
 
 def test_r034_adapt_requires_recommendation():
-    draft = _validate(_strategy_doc(lifecycle_action="ADAPT", risk_direction="DECREASE")).strategy_assessment
+    draft = _validate(_strategy_doc(lifecycle_action="ADAPT", risk_direction="DECREASE")).strategy_projection.strategy_assessment
     assert draft.adaptation_kind is None and not check_strategy_assessment_consistency(draft)
-    ok = _validate(_strategy_doc(lifecycle_action="ADAPT", risk_direction="DECREASE", adaptation_recommendation=_adapt())).strategy_assessment
+    ok = _validate(_strategy_doc(lifecycle_action="ADAPT", risk_direction="DECREASE", adaptation_recommendation=_adapt())).strategy_projection.strategy_assessment
     assert check_strategy_assessment_consistency(ok)
 
 
@@ -886,14 +889,14 @@ def test_r036_binary_float_nan_infinity_proposal_rejects():
         raw = raw.replace('"__V__"', literal)
         assert _code(_validate, raw) == "STRATEGY_ASSESSMENT_INVALID", literal
     ok = _validate(_strategy_doc(lifecycle_action="ADAPT", adaptation_recommendation=_adapt(updates={"edge": "0.4", "lookback": 6})))
-    assert ok.strategy_assessment.adaptation_parameter_updates_json == '{"edge":"0.4","lookback":6}'
+    assert ok.strategy_projection.strategy_assessment.adaptation_parameter_updates_json == '{"edge":"0.4","lookback":6}'
 
 
 def test_r037_material_redesign_requires_empty_updates():
-    redesign = _validate(_strategy_doc(lifecycle_action="ADAPT", risk_direction="PAPER_ONLY", adaptation_recommendation=_adapt("MATERIAL_REDESIGN", {}))).strategy_assessment
+    redesign = _validate(_strategy_doc(lifecycle_action="ADAPT", risk_direction="PAPER_ONLY", adaptation_recommendation=_adapt("MATERIAL_REDESIGN", {}))).strategy_projection.strategy_assessment
     assert check_strategy_assessment_consistency(redesign)
-    bad_redesign = _validate(_strategy_doc(lifecycle_action="ADAPT", adaptation_recommendation=_adapt("MATERIAL_REDESIGN"))).strategy_assessment
-    empty_update = _validate(_strategy_doc(lifecycle_action="ADAPT", adaptation_recommendation=_adapt("PARAMETER_UPDATE", {}))).strategy_assessment
+    bad_redesign = _validate(_strategy_doc(lifecycle_action="ADAPT", adaptation_recommendation=_adapt("MATERIAL_REDESIGN"))).strategy_projection.strategy_assessment
+    empty_update = _validate(_strategy_doc(lifecycle_action="ADAPT", adaptation_recommendation=_adapt("PARAMETER_UPDATE", {}))).strategy_projection.strategy_assessment
     assert not check_strategy_assessment_consistency(bad_redesign)
     assert not check_strategy_assessment_consistency(empty_update)
     for summary in ("", "   ", "y" * 1025, "go live immediately"):
@@ -1393,3 +1396,178 @@ def test_r069_control_center_untouched():
         assert not path.startswith(("src/operator_cockpit", ".github/", "tools/"))
         assert Path(path).name not in {"package.json", "package-lock.json", "pyproject.toml", "requirements.txt"}
     assert len(scope) == 22 and _spec()["identity"]["package_size_class"] == "XL"
+
+
+# ---------------------------------------------------------------------------
+# Final Semantic Micro-Closure 01 (R082-R086)
+# ---------------------------------------------------------------------------
+
+ALLOCATION_KEYS = (
+    "current_allocation_id", "current_allocation_risk_band", "current_allocation_budget_usd",
+    "current_allocation_valid_from_ns", "current_allocation_valid_until_ns",
+)
+
+
+def test_r082_dedicated_strategy_projection_preserves_validated_semantics():
+    request = _generic_request()
+    rid = request.request_id
+    names = ("edge", "lookback", "mode")
+    doc = _draft(rid, strategy=_assessment(lifecycle_action="ADAPT", risk_direction="DECREASE",
+                                           adaptation_recommendation=_adapt(updates={"lookback": 6})))
+    doc["source_references"].append({"url": "https://example.org/b", "title": "B", "source_class": "official"})
+    raw = json.dumps(doc)
+    draft = validate_research_draft(raw, expected_request_id=rid, max_sources=8, strategy_mode=True,
+                                    strategy_parameter_names=names)
+    projection = draft.strategy_projection
+    assert isinstance(projection, HM.ValidatedStrategyResearchProjection)
+    assert (projection.request_id, projection.research_summary, projection.confidence_label) == (
+        rid, doc["research_summary"], doc["confidence_label"])
+    for name in HM.DRAFT_LIST_FIELDS:
+        assert getattr(projection, name) == tuple(doc[name]), name
+    assert projection.source_references == draft.source_references
+    assert [ref.url_digest for ref in projection.source_references] == [
+        hashlib.sha256(item["url"].encode("utf-8")).hexdigest() for item in doc["source_references"]]
+    fields = {field.name for field in dataclasses.fields(projection)}
+    assert fields == {"request_id", "research_summary", "confidence_label", *HM.DRAFT_LIST_FIELDS,
+                      "source_references", "strategy_assessment"}
+    assessment = projection.strategy_assessment
+    assert (assessment.lifecycle_action, assessment.recommended_health_state, assessment.risk_direction,
+            assessment.target_risk_band, assessment.adaptation_kind) == ("ADAPT", "HEALTHY", "DECREASE", None, "PARAMETER_UPDATE")
+    assert assessment.adaptation_parameter_updates_json == '{"lookback":6}'
+    assert assessment.adaptation_parameter_update_keys == ("lookback",)
+    flat = repr(projection)
+    assert "https://" not in flat and "example-provider" not in flat
+    # Generic and context modes produce no projection; generic drafts are unchanged.
+    generic_raw = json.dumps(_draft(rid, drop=("strategy_assessment",)))
+    assert validate_research_draft(generic_raw, expected_request_id=rid, max_sources=8).strategy_projection is None
+    backend = FakeHermesBackend.from_transcript(generic_raw.encode("utf-8"), usage_file_bytes=_usage())
+    generic = run_controlled_hermes_research(request, backend, clock=lambda: FIXED)
+    assert generic.strategy_projection is None and generic.validated_draft.strategy_projection is None
+    context_doc = dict(json.loads(generic_raw), context_claims=[{
+        "claim_statement": "Forecast skill persists.", "claim_kind": "OBSERVATION", "subject_refs": [MARKET],
+        "direction": "SUPPORTING", "source_reference_indices": [0], "assumptions": [], "uncertainty_note": "thin data",
+    }])
+    context = validate_research_draft(json.dumps(context_doc), expected_request_id=rid, max_sources=8,
+                                      context_mode=True, allowed_subject_refs=(MARKET,))
+    assert context.strategy_projection is None and len(context.context_claims) == 1
+
+
+def test_r083_manager_consumes_projection_without_raw_reparse(tmp_path, monkeypatch):
+    source = MODULE.read_text(encoding="utf-8")
+    tree = _source_tree()
+    attributes = {node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)}
+    assert "strategy_projection" in attributes
+    for forbidden in ("validated_draft", "final_text", "stdout", "usage_file_bytes", "source_urls"):
+        assert forbidden not in attributes, forbidden
+    assert "validate_research_draft" not in source and "json.loads" not in source
+    assert "json" not in _imports()
+    world = make_world(tmp_path)
+    store = _manager_store(tmp_path)
+    validations = []
+    real_validate = HM.validate_research_draft
+    controller_module = __import__(
+        "src.research_runtime.hermes_controlled_runtime.controller", fromlist=["validate_research_draft"])
+
+    def counting(*args, **kwargs):
+        validations.append(kwargs.get("strategy_mode"))
+        return real_validate(*args, **kwargs)
+
+    monkeypatch.setattr(controller_module, "validate_research_draft", counting)
+
+    def projection_only(*args, **kwargs):
+        result = run_controlled_hermes_research(*args, **kwargs)
+        # The raw-draft surface is withheld: the manager must rely on the projection alone.
+        return dataclasses.replace(result, validated_draft=None)
+
+    monkeypatch.setattr(sm, "run_controlled_hermes_research", projection_only)
+    result = run(world, store)
+    assert result.status == sm.STATUS_ASSESSMENT_RECORDED, result.error_code
+    assert validations == [True]
+    assert result.assessment.evidence_for == ("forecast skill persists",)
+    assert result.assessment.assessment_summary.startswith("Balanced public evidence")
+
+    def no_projection(*args, **kwargs):
+        return dataclasses.replace(run_controlled_hermes_research(*args, **kwargs), strategy_projection=None)
+
+    monkeypatch.setattr(sm, "run_controlled_hermes_research", no_projection)
+    missing = run(world, store, decision_time_ns=2_000)
+    assert (missing.status, missing.error_code) == (sm.STATUS_RUN_RECORDED_NO_ASSESSMENT, "STRATEGY_OUTPUT_INVALID")
+
+
+def test_r084_neutral_allocation_model_context(tmp_path):
+    world = make_world(tmp_path)
+    backend = StrategyBackend()
+    run(world, _manager_store(tmp_path), backend)
+    unallocated = json.loads(_prompt(backend)["research_question"])["lifecycle_state"]
+    assert {key: unallocated[key] for key in ALLOCATION_KEYS} == dict.fromkeys(ALLOCATION_KEYS)
+    allocation = build_strategy_risk_allocation(
+        strategy_version_id=world.v1.strategy_version_id, policy_id=world.pol.policy_id,
+        risk_band="EXPLORATORY_LIVE", active_budget_usd="40", allocation_basis="DIRECT_DECISION",
+        decision_ref="decision:unit-2", evidence_refs=(), valid_from_ns=123_456_789,
+        valid_until_ns=987_654_321, created_time_ns=100,
+    )
+    allocated = world.append(allocation)
+    backend = StrategyBackend()
+    run(world, _manager_store(tmp_path / "a" if (tmp_path / "a").mkdir() is None else tmp_path), backend,
+        lifecycle_snapshot=allocated)
+    prompt = backend.prompts[-1]
+    state = json.loads(_prompt(backend)["research_question"])["lifecycle_state"]
+    assert {key: state[key] for key in ALLOCATION_KEYS} == {
+        "current_allocation_id": allocation.allocation_id,
+        "current_allocation_risk_band": "EXPLORATORY_LIVE",
+        "current_allocation_budget_usd": "40",
+        "current_allocation_valid_from_ns": 123_456_789,
+        "current_allocation_valid_until_ns": 987_654_321,
+    }
+    assert set(state) == {"current_health_state", *ALLOCATION_KEYS, "active_restriction_receipt_ids",
+                          "active_policy_id", "strategy_lifecycle_context_sha256"}
+    for forbidden in ("current_risk_band", "current_active_budget_usd", "account_scope_ref", "account:public-scope-1",
+                      "allocation_is_active", "capacity_available", "live_authority", "executable"):
+        assert forbidden not in prompt, forbidden
+
+
+def test_r085_manual_context_evidence_item_rederivation_rejects(tmp_path):
+    from src.research_runtime.hermes_controlled_runtime.context_reconciliation import ContextEvidenceItem
+
+    world = make_world(tmp_path)
+    sid = world.v1.strategy_version_id
+    good = build_evidence_item(
+        content_sha256="b" * 64, evidence_class="DETERMINISTIC_DERIVED", subject_refs=(sid,),
+        scope_sha256="c" * 64, information_cutoff="2026-09-30T00:00:00Z", admissibility_status="ADMISSIBLE",
+        origin="DETERMINISTIC_PROJECT_EVIDENCE", direction="SUPPORTING",
+    )
+    manual_ok = ContextEvidenceItem(*[getattr(good, f.name) for f in dataclasses.fields(good)])
+    assert sm.build_strategy_assessment_evidence(manual_ok, "Rederived exactly.").evidence_id == good.evidence_id
+    tampered = (
+        dataclasses.replace(good, direction="CONTRADICTING"),
+        dataclasses.replace(good, content_sha256="e" * 64),
+        dataclasses.replace(good, evidence_class="RAW_DIRECT"),
+        dataclasses.replace(good, information_cutoff="2026-09-29T00:00:00Z"),
+        dataclasses.replace(good, dq_flags=("late",)),
+        ContextEvidenceItem("contextevidence:sha256:" + "f" * 64, *[getattr(good, f.name) for f in dataclasses.fields(good)][1:]),
+    )
+    for item in tampered:
+        assert _code(sm.build_strategy_assessment_evidence, item, "Tampered item.") == "EVIDENCE_INVALID"
+    wrapped = sm.build_strategy_assessment_evidence(good, "Rederived exactly.")
+    forged_wrapper = dataclasses.replace(wrapped, direction="CONTRADICTING")
+    result = run(world, _manager_store(tmp_path), evidence=(forged_wrapper,))
+    assert (result.status, result.error_code) == (sm.STATUS_REJECTED, "EVIDENCE_INVALID")
+
+
+def test_r086_fractional_evidence_cutoff_compared_chronologically(tmp_path):
+    world = make_world(tmp_path)
+    cutoff = "2026-10-03T12:00:00Z"
+    late = _evidence(world, cutoff="2026-10-03T12:00:00.500Z")
+    backend = StrategyBackend()
+    result = run(world, _manager_store(tmp_path), backend, evidence=(late,), information_cutoff=cutoff)
+    assert (result.status, result.error_code) == (sm.STATUS_REJECTED, "EVIDENCE_INVALID")
+    assert backend.call_count == backend.version_probe_count == 0
+    # Lexically "2026-10-03T12:00:00.500Z" > "2026-10-03T12:00:00Z" only by accident of
+    # characters; ordering is by UTC instant, and fractional timestamps are valid.
+    early = _evidence(world, cutoff="2026-10-03T11:59:59.500Z", content="d" * 64)
+    exact = _evidence(world, cutoff="2026-10-03T12:00:00.000Z", content="e" * 64)
+    ok = run(world, _manager_store(tmp_path), evidence=(early, exact), information_cutoff=cutoff)
+    assert ok.status == sm.STATUS_ASSESSMENT_RECORDED, ok.error_code
+    assert set(ok.assessment.input_evidence_refs) == {early.evidence_id, exact.evidence_id}
+    for bad in ("2026-10-03T12:00:00.5Z", "2026-10-03 12:00:00Z", "2026-10-03T12:00:00+00:00", "2026-13-03T12:00:00Z"):
+        assert run(world, _manager_store(tmp_path), information_cutoff=bad).error_code == "INFORMATION_CUTOFF_INVALID"

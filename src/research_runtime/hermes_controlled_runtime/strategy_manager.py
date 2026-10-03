@@ -27,7 +27,6 @@ from __future__ import annotations
 import dataclasses
 from datetime import datetime, timezone
 import hashlib
-import json
 import os
 from pathlib import Path
 import re
@@ -72,6 +71,7 @@ from .models import (
     HermesResearchRunReceipt,
     HermesResearchRunRequest,
     ValidatedStrategyAssessmentDraft,
+    ValidatedStrategyResearchProjection,
     build_research_run_request,
     check_strategy_assessment_consistency,
     derive_receipt_id,
@@ -792,12 +792,14 @@ class HermesStrategyAssessment(_Record):
     def strategy_draft(self) -> ValidatedStrategyAssessmentDraft:
         adaptation = self.adaptation_recommendation()
         kind = summary = updates = None
+        keys: tuple[str, ...] = ()
         if adaptation is not None:
             kind = adaptation["kind"]
             summary = adaptation["summary"]
             _check(kind in STRATEGY_ADAPTATION_KINDS and isinstance(summary, str) and summary.strip() != "")
             _check(isinstance(adaptation["parameter_updates"], dict))
             updates = _lc_canonical_text(adaptation["parameter_updates"])
+            keys = tuple(sorted(adaptation["parameter_updates"]))  # type: ignore[arg-type]
         return ValidatedStrategyAssessmentDraft(
             lifecycle_action=self.lifecycle_action,
             recommended_health_state=self.recommended_health_state,
@@ -806,7 +808,7 @@ class HermesStrategyAssessment(_Record):
             adaptation_kind=kind,  # type: ignore[arg-type]
             adaptation_summary=summary,  # type: ignore[arg-type]
             adaptation_parameter_updates_json=updates,
-            research_lists=tuple((name, getattr(self, name)) for name in _ASSESSMENT_LIST_FIELDS),
+            adaptation_parameter_update_keys=keys,
         )
 
 
@@ -1270,9 +1272,13 @@ def _strategy_request_fields(
         },
         "lifecycle_state": {
             "current_health_state": snapshot.health_of(sid),
+            # Neutral allocation RECORD semantics with its exact validity window; no
+            # claim that the record is active, executable or has capacity.
             "current_allocation_id": None if allocation is None else allocation.allocation_id,
-            "current_risk_band": None if allocation is None else allocation.risk_band,
-            "current_active_budget_usd": None if allocation is None else allocation.active_budget_usd,
+            "current_allocation_risk_band": None if allocation is None else allocation.risk_band,
+            "current_allocation_budget_usd": None if allocation is None else allocation.active_budget_usd,
+            "current_allocation_valid_from_ns": None if allocation is None else allocation.valid_from_ns,
+            "current_allocation_valid_until_ns": None if allocation is None else allocation.valid_until_ns,
             "active_restriction_receipt_ids": sorted(
                 receipt.restriction_receipt_id for receipt in snapshot.restrictions_of(sid)
             ),
@@ -1423,23 +1429,34 @@ def _build_run_record(
 
 
 def _build_assessment(
-    prepared: _Prepared, run: HermesStrategyRunRecord, *, research_summary: str,
-    confidence_label: str, draft: ValidatedStrategyAssessmentDraft,
+    prepared: _Prepared, run: HermesStrategyRunRecord,
+    projection: ValidatedStrategyResearchProjection,
 ) -> HermesStrategyAssessment:
+    """Build the canonical record from the dedicated validated projection only.
+
+    No raw Hermes output is parsed here: every field comes from the projection the
+    authoritative validator produced. The adaptation JSON is composed from the
+    projection's already-canonical update text in canonical key order
+    (kind, parameter_updates, summary); the record constructor re-verifies it.
+    """
+    draft = projection.strategy_assessment
+    if projection.request_id != run.runtime_request_id:
+        raise _fail("STRATEGY_OUTPUT_INVALID")
     adaptation_json = None
     if draft.adaptation_kind is not None:
+        if (
+            draft.adaptation_parameter_updates_json is None
+            or not set(draft.adaptation_parameter_update_keys).issubset(prepared.parameter_names)
+        ):
+            raise _fail("STRATEGY_OUTPUT_INVALID")
         try:
-            updates = _lc_strict_json_loads(draft.adaptation_parameter_updates_json)
-            adaptation_json = _lc_canonical_text({
-                "kind": draft.adaptation_kind,
-                "summary": draft.adaptation_summary,
-                "parameter_updates": updates,
-            })
+            adaptation_json = (
+                '{"kind":' + _lc_canonical_text(draft.adaptation_kind)
+                + ',"parameter_updates":' + draft.adaptation_parameter_updates_json
+                + ',"summary":' + _lc_canonical_text(draft.adaptation_summary) + "}"
+            )
         except StrategyLifecycleError:
             raise _fail("STRATEGY_OUTPUT_INVALID") from None
-        if not isinstance(updates, dict) or not set(updates).issubset(prepared.parameter_names):
-            raise _fail("STRATEGY_OUTPUT_INVALID")
-    lists = dict(draft.research_lists)
     try:
         return HermesStrategyAssessment(
             schema_id=ASSESSMENT_SCHEMA_ID,
@@ -1459,16 +1476,16 @@ def _build_assessment(
             information_cutoff=run.information_cutoff,
             subject_refs=prepared.subject_refs,
             input_evidence_refs=tuple(item.evidence_id for item in prepared.evidence),
-            assessment_summary=research_summary,
-            confidence_label=confidence_label,
-            evidence_for=tuple(lists["evidence_for"]),
-            evidence_against=tuple(lists["evidence_against"]),
-            uncertainties=tuple(lists["uncertainties"]),
-            known_missing_data=tuple(lists["known_missing_data"]),
-            falsification_checks_performed=tuple(lists["falsification_checks_performed"]),
-            limitations=tuple(lists["limitations"]),
-            what_would_change_the_conclusion=tuple(lists["what_would_change_the_conclusion"]),
-            suggested_next_research_steps=tuple(lists["suggested_next_research_steps"]),
+            assessment_summary=projection.research_summary,
+            confidence_label=projection.confidence_label,
+            evidence_for=projection.evidence_for,
+            evidence_against=projection.evidence_against,
+            uncertainties=projection.uncertainties,
+            known_missing_data=projection.known_missing_data,
+            falsification_checks_performed=projection.falsification_checks_performed,
+            limitations=projection.limitations,
+            what_would_change_the_conclusion=projection.what_would_change_the_conclusion,
+            suggested_next_research_steps=projection.suggested_next_research_steps,
             lifecycle_action=draft.lifecycle_action,
             recommended_health_state=draft.recommended_health_state,
             risk_direction=draft.risk_direction,
@@ -1573,20 +1590,17 @@ def run_hermes_strategy_assessment(
     except StrategyManagerError:
         return _rejected("INTERNAL_VALIDATION_FAILED")
 
-    draft = result.validated_draft
-    if result.error_code is not None or draft is None:
+    # Consume ONLY the dedicated validated strategy projection; never the raw output.
+    projection = result.strategy_projection
+    if result.error_code is not None:
         code = "STRATEGY_OUTPUT_INVALID" if result.error_code == "STRATEGY_ASSESSMENT_INVALID" else "RUNTIME_FAILURE"
         return _record_run_only(store_path, run, code)
-    strategy = draft.strategy_assessment
-    if strategy is None:
+    if not isinstance(projection, ValidatedStrategyResearchProjection):
         return _record_run_only(store_path, run, "STRATEGY_OUTPUT_INVALID")
-    if not check_strategy_assessment_consistency(strategy):
+    if not check_strategy_assessment_consistency(projection.strategy_assessment):
         return _record_run_only(store_path, run, "STRATEGY_OUTPUT_INCONSISTENT")
     try:
-        assessment = _build_assessment(
-            prepared, run, research_summary=draft.research_summary,
-            confidence_label=draft.confidence_label, draft=strategy,
-        )
+        assessment = _build_assessment(prepared, run, projection)
     except StrategyManagerError as exc:
         return _record_run_only(store_path, run, exc.code)
 

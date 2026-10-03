@@ -215,6 +215,20 @@ field. This is the explicit V2.1 repository boundary, not a bypass of the raw-ou
 
 10. STRATEGY MODE IN THE EXISTING CONTROLLED RUNTIME
 
+10.0 Dedicated validated strategy projection (Final Semantic Micro-Closure 01). For
+strategy_mode=true the authoritative validation/controller path produces one explicit immutable
+projection (ValidatedStrategyResearchProjection, exposed as the additive nullable
+strategy_projection on ValidatedResearchDraft and HermesControlledRunResult) preserving exactly:
+request_id; research_summary; confidence_label; evidence_for; evidence_against; uncertainties;
+known_missing_data; falsification_checks_performed; limitations; what_would_change_the_conclusion;
+suggested_next_research_steps; the sanitized SanitizedSourceReference source references (no raw
+URL); and the validated strategy_assessment. It exists only after every raw authority flag has
+passed the existing authoritative validation. Raw Hermes JSON is parsed only by that validator;
+strategy_manager.py never parses or reparses captured raw output and builds HermesStrategyAssessment
+from this projection alone. No raw provider/model payload enters it. Generic and context behavior
+and the generic ValidatedResearchDraft public behavior are unchanged when strategy_mode=false
+(strategy_projection stays null).
+
 Add one optional default-off strategy_mode: bool = False to the relevant existing APIs plus the
 minimum context argument the output-contract builder needs (the current StrategyVersion parameter
 names). context_mode and strategy_mode may never both be true. No third-party dependency. The
@@ -254,9 +268,14 @@ deterministic bounded context from the exact verified StrategyLifecycleSnapshot 
 strategy_version_id, strategy_family_id, parent_strategy_version_id, strategy_label,
 evidence_posture, adaptation_class, strategy_code_identity, thesis, universe, entry_rule,
 exit_rule, parameters, execution_rule_sha256, adaptive_bounds_sha256, current_health_state,
-current_allocation_id, current_risk_band, current_active_budget_usd, active_restriction_receipt_ids,
-active_policy_id, trigger, trigger_ref, information_cutoff, subject_refs and bounded evidence
-summaries. Do not pass account_scope_ref, credentials/private account material, raw local paths or
+current_allocation_id, current_allocation_risk_band, current_allocation_budget_usd,
+current_allocation_valid_from_ns, current_allocation_valid_until_ns (all five null when no current
+allocation record exists, otherwise copied exactly from the snapshot allocation record),
+active_restriction_receipt_ids, active_policy_id, strategy_lifecycle_context_sha256, trigger,
+trigger_ref, information_cutoff, subject_refs and bounded evidence summaries. The allocation is
+described as a record with its exact validity window only: the old model-facing names
+current_risk_band / current_active_budget_usd are not used, and no derived allocation_is_active,
+capacity_available, live_authority or executable claim is created. Do not pass account_scope_ref, credentials/private account material, raw local paths or
 raw execution_rule content (bind it by SHA-256 only; execution economics belong to
 S10-EXEC-FEAS-01). Use the existing Hermes request text fields without changing their hard bounds.
 No truncation: if the exact context cannot fit, fail STRATEGY_CONTEXT_LIMIT_EXCEEDED before any
@@ -287,7 +306,10 @@ may add valid canonical public market/event/token or evidence subjects; no walle
 validated ContextEvidenceItem plus one bounded summary and binds evidence_id, content_sha256,
 evidence_class, subject_refs, scope_sha256, information_cutoff, admissibility_status,
 provenance_manifest_id, dq_flags, origin, direction and summary; it reuses the existing evidence_id.
-Rules: at most 12 items; unique evidence ids; ADMISSIBLE only; evidence cutoff <= assessment
+Canonical evidence-object revalidation: before a supplied ContextEvidenceItem is used it is
+reconstructed with the existing canonical builder; the reconstructed evidence_id and every
+reconstructed canonical field must equal the supplied ones, otherwise EVIDENCE_INVALID (no second
+evidence identity is created). Rules: at most 12 items; unique evidence ids; ADMISSIBLE only; evidence cutoff <= assessment
 cutoff; subject overlap required; direction SUPPORTING or CONTRADICTING; summary non-empty,
 max 160 characters, non-secret, non-path; no binary floats. The assessment carries the sorted input
 evidence ids. Evidence posture guides the research approach; it is not a deterministic PASS gate.
@@ -296,7 +318,10 @@ evidence ids. Evidence posture guides the research approach; it is not a determi
 
 Whole-second UTC YYYY-MM-DDTHH:MM:SSZ only. The request states the assessment is current only
 through the stated information cutoff. Do not claim stronger point-in-time proof than the supplied
-evidence provides. Evidence newer than the cutoff is rejected.
+evidence provides. Evidence newer than the cutoff is rejected. Existing canonical evidence
+timestamps may carry fractional seconds and remain valid; ordering compares the represented UTC
+instants, never raw lexical strings (assessment cutoff 2026-10-03T12:00:00Z with evidence cutoff
+2026-10-03T12:00:00.500Z is EVIDENCE_INVALID; 2026-10-03T11:59:59.500Z is admissible).
 
 18. HERMES STRATEGY RUN RECORD
 
@@ -446,7 +471,7 @@ Hermes guards gain exact path exceptions only (Amendment 01). Any incompatible r
 32. TEST REQUIREMENTS AND NEGATIVE TEST MATRIX
 
 All HERMES-STRAT tests live in tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py
-(R001-R069); repo-truth tests R070-R076 live in the architecture/status/repo-truth doc tests;
+(R001-R069 and the micro-closure evidence R082-R086); repo-truth tests R070-R076 live in the architecture/status/repo-truth doc tests;
 R077 is the architecture-boundary guard; R078-R079 are the two historical compatibility guards.
 Negative-test coverage is mandatory: missing/retired strategy; non-admissible, future, unrelated,
 duplicate, excess and unsafe evidence; invalid cutoff/trigger; over-bound context; mode conflict;
@@ -503,7 +528,7 @@ The focused commands in Section 33, then:
   pre-existing dependency advisories truthfully; no dependency/lock change is authorized)
   python -m pytest -q -p no:cacheprovider (only on the stable candidate)
 Then push and obtain fresh exact-head hosted CI; no earlier-head CI counts. The machine spec
-evidence plan maps every normative requirement R001-R081 to a concrete pytest node or bounded
+evidence plan maps every normative requirement R001-R086 to a concrete pytest node or bounded
 repository guard.
 
 37. WP SPEC REQUIREMENTS
@@ -617,4 +642,19 @@ NR032|successor|next_core_package|after_merge|REQUIRE|exec_feas_next|docs.v21_tr
 NR033|identity|run_record_id|valid_fields|REQUIRE|sha256_canonical_json_minus_id_with_prefix|run_record_id|R045
 NR034|identity|assessment_id|valid_fields|REQUIRE|sha256_canonical_json_minus_id_with_prefix|assessment_id|R046
 NR035|scope|historical_hermes_guards|new_authorized_paths|REQUIRE|exact_path_exceptions_only|scope.exact|R079
+NR036|projection|strategy_mode_validation|successful_validation|REQUIRE|dedicated_complete_validated_projection|hermes_strat.projection|R082
+NR037|projection|raw_hermes_json|manager_consumption|FORBID|no_raw_parse_or_reparse|hermes_strat.projection|R083
+NR038|context|allocation_record|model_facing|REQUIRE|neutral_record_fields_with_validity_window|hermes_strat.context|R084
+NR039|evidence|supplied_context_item|rederived_identity_or_fields_differ|FORBID|evidence_invalid|hermes_strat.evidence|R085
+NR040|evidence|cutoff_ordering|fractional_after_whole_second_cutoff|FORBID|chronological_utc_comparison|hermes_strat.evidence|R086
 END_NORMATIVE_RULE_MATRIX_V1
+
+Final Semantic Micro-Closure 01 (Side15, same PR #211, same 22 paths, authority unchanged):
+B1 neutral model-facing allocation record semantics (current_allocation_id,
+current_allocation_risk_band, current_allocation_budget_usd, current_allocation_valid_from_ns,
+current_allocation_valid_until_ns; all null without a record; no current_risk_band /
+current_active_budget_usd and no derived active/capacity/executable/live claim); B2 the dedicated
+validated strategy projection of Section 10.0 consumed by the manager without raw reparse; B3
+repo-native prompt/spec fidelity for B1/B2, explicit canonical evidence-object revalidation and
+chronological fractional evidence-cutoff comparison. Evidence R082-R086 and rules NR036-NR040 are
+added; no earlier requirement is removed.

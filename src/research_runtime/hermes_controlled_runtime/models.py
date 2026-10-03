@@ -868,20 +868,20 @@ class ValidatedResearchDraft:
     source_urls: tuple[str, ...]
     falsification_checks_performed: tuple[str, ...] = ()
     context_claims: tuple["ValidatedContextClaim", ...] = ()
-    # S10-HERMES-STRAT-01: populated only in strategy mode (default None). The raw
-    # draft remains untrusted; this is structural validation only.
-    strategy_assessment: "ValidatedStrategyAssessmentDraft | None" = None
+    # S10-HERMES-STRAT-01: the dedicated validated strategy projection, populated only
+    # in strategy mode (default None, so generic/context drafts are unchanged).
+    strategy_projection: "ValidatedStrategyResearchProjection | None" = None
 
 
 @dataclasses.dataclass(frozen=True)
 class ValidatedStrategyAssessmentDraft:
-    """Structurally validated strategy-mode output (S10-HERMES-STRAT-01).
+    """The validated five-field ``strategy_assessment`` object (S10-HERMES-STRAT-01).
 
-    Carries the five strategy fields plus the eight research-quality lists of the
-    authoritatively validated generic draft, in canonical field order. It grants no
-    authority: action/risk consistency is checked separately by
-    :func:`check_strategy_assessment_consistency`, and only the strategy manager may
-    turn it into a canonical soft strategy decision.
+    Structural validation only; it grants no authority. Action/risk consistency is
+    checked separately by :func:`check_strategy_assessment_consistency`.
+    ``adaptation_parameter_updates_json`` is the repository-canonical JSON text of the
+    validated update map (sorted keys, compact, no floats) and
+    ``adaptation_parameter_update_keys`` its sorted key set.
     """
 
     lifecycle_action: str
@@ -891,10 +891,34 @@ class ValidatedStrategyAssessmentDraft:
     adaptation_kind: str | None
     adaptation_summary: str | None
     adaptation_parameter_updates_json: str | None
-    research_lists: tuple[tuple[str, tuple[str, ...]], ...]
+    adaptation_parameter_update_keys: tuple[str, ...] = ()
 
-    def research_list(self, name: str) -> tuple[str, ...]:
-        return dict(self.research_lists)[name]
+
+@dataclasses.dataclass(frozen=True)
+class ValidatedStrategyResearchProjection:
+    """Dedicated immutable strategy-mode projection (S10-HERMES-STRAT-01).
+
+    Produced only by the authoritative validator after every raw authority flag,
+    source reference and strategy field has passed validation. It preserves exactly
+    what the strategy manager needs -- request id, summary, confidence, the eight
+    research-quality lists, the sanitized source references and the validated
+    ``strategy_assessment`` -- so no consumer ever reparses raw Hermes output. It
+    carries no raw URL, provider payload or model text beyond the validated fields.
+    """
+
+    request_id: str
+    research_summary: str
+    confidence_label: str
+    evidence_for: tuple[str, ...]
+    evidence_against: tuple[str, ...]
+    uncertainties: tuple[str, ...]
+    known_missing_data: tuple[str, ...]
+    falsification_checks_performed: tuple[str, ...]
+    limitations: tuple[str, ...]
+    what_would_change_the_conclusion: tuple[str, ...]
+    suggested_next_research_steps: tuple[str, ...]
+    source_references: tuple[SanitizedSourceReference, ...]
+    strategy_assessment: ValidatedStrategyAssessmentDraft
 
 
 @dataclasses.dataclass(frozen=True)
@@ -1017,13 +1041,16 @@ def validate_research_draft(
             source_count=len(refs),
             allowed_subject_refs=allowed_subject_refs,
         )
-    strategy: ValidatedStrategyAssessmentDraft | None = None
+    projection: ValidatedStrategyResearchProjection | None = None
     if strategy_mode:
-        strategy = _validate_strategy_assessment(
-            document[STRATEGY_ASSESSMENT_FIELD],
-            parameter_names=parameter_names,
-            research_lists=tuple(
-                (name, tuple(document[name])) for name in DRAFT_LIST_FIELDS
+        projection = ValidatedStrategyResearchProjection(
+            request_id=expected_request_id,
+            research_summary=research_summary,
+            confidence_label=confidence_label,
+            **{name: tuple(document[name]) for name in DRAFT_LIST_FIELDS},  # type: ignore[arg-type]
+            source_references=refs,
+            strategy_assessment=_validate_strategy_assessment(
+                document[STRATEGY_ASSESSMENT_FIELD], parameter_names=parameter_names,
             ),
         )
 
@@ -1035,7 +1062,7 @@ def validate_research_draft(
         source_urls=urls,
         falsification_checks_performed=tuple(document[DRAFT_NON_EMPTY_LIST_FIELD]),
         context_claims=claims,
-        strategy_assessment=strategy,
+        strategy_projection=projection,
     )
 
 
@@ -1093,7 +1120,6 @@ def _strategy_json_value(value: object, depth: int) -> None:
 
 def _validate_strategy_assessment(
     value: object, *, parameter_names: frozenset[str],
-    research_lists: tuple[tuple[str, tuple[str, ...]], ...],
 ) -> ValidatedStrategyAssessmentDraft:
     """Exact-shape structural validation of the untrusted ``strategy_assessment``."""
     if not isinstance(value, dict) or set(value) != set(STRATEGY_ASSESSMENT_FIELDS):
@@ -1111,6 +1137,7 @@ def _validate_strategy_assessment(
         raise _fail("STRATEGY_ASSESSMENT_INVALID")
     adaptation = value["adaptation_recommendation"]
     kind = summary = updates_json = None
+    update_keys: tuple[str, ...] = ()
     if adaptation is not None:
         if not isinstance(adaptation, dict) or set(adaptation) != set(STRATEGY_ADAPTATION_FIELDS):
             raise _fail("STRATEGY_ASSESSMENT_INVALID")
@@ -1138,6 +1165,7 @@ def _validate_strategy_assessment(
         updates_json = json.dumps(
             updates, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
         )
+        update_keys = tuple(sorted(updates))
     return ValidatedStrategyAssessmentDraft(
         lifecycle_action=action,
         recommended_health_state=health,
@@ -1146,7 +1174,7 @@ def _validate_strategy_assessment(
         adaptation_kind=kind,
         adaptation_summary=summary,
         adaptation_parameter_updates_json=updates_json,
-        research_lists=research_lists,
+        adaptation_parameter_update_keys=update_keys,
     )
 
 

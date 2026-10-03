@@ -53,6 +53,17 @@ PARAMETER_UPDATE needs a non-empty map of existing parameter names with canonica
 created; only a future child passed through the STRAT-LIFE builder may receive a canonical
 adaptation class.
 
+## 2a. Dedicated validated strategy projection
+
+For `strategy_mode=true` the authoritative validator produces one immutable
+`ValidatedStrategyResearchProjection` (nullable `strategy_projection` on `ValidatedResearchDraft`
+and `HermesControlledRunResult`; null in generic/context mode). It preserves exactly the request
+id, research summary, confidence label, the eight research-quality lists, the sanitized source
+references (URL digests and classes; no raw URL) and the validated `strategy_assessment`, and only
+exists after every raw authority flag passed validation. Raw Hermes JSON is parsed only by that
+validator; `strategy_manager.py` never parses or reparses captured raw output and builds the
+canonical assessment from the projection alone.
+
 ## 3. Model-facing context
 
 Built deterministically from the exact verified `StrategyLifecycleSnapshot` in the existing
@@ -60,8 +71,13 @@ request text fields (existing 4096-character hard bounds unchanged):
 
 - `research_question`: strategy identity (version/family/parent ids, label, evidence posture,
   adaptation class, code identity, `execution_rule_sha256`, `adaptive_bounds_sha256`), current
-  lifecycle state (health, allocation id/band/budget, active restriction ids, active policy id,
-  `strategy_lifecycle_context_sha256`), trigger and information cutoff.
+  lifecycle state (`current_health_state`; the allocation RECORD as `current_allocation_id`,
+  `current_allocation_risk_band`, `current_allocation_budget_usd`,
+  `current_allocation_valid_from_ns`, `current_allocation_valid_until_ns` — all five null without
+  a record; active restriction ids; active policy id; `strategy_lifecycle_context_sha256`), trigger
+  and information cutoff. The allocation is described with its exact validity window only: no
+  `current_risk_band` / `current_active_budget_usd` names and no derived active, capacity,
+  executable or live-authority claim.
 - `research_objective`: the assessment objective ("current only through the stated information
   cutoff") and the compact bounded evidence block; `evidence_index` i is
   `input_evidence_refs[i - 1]` of the record.
@@ -88,8 +104,12 @@ a stale decision.
   ADAPTATION_REVIEW, RESTRICTION_REVIEW, OPERATOR_REASSESSMENT; `trigger_ref` null or one
   bounded non-secret non-path opaque reference. No trigger launches Hermes by itself.
 - Cutoff: whole-second UTC `YYYY-MM-DDTHH:MM:SSZ`; evidence newer than the cutoff rejects.
-- Evidence: `StrategyAssessmentEvidence` re-derives and reuses the existing
-  `ContextEvidenceItem.evidence_id`; at most 12 unique ADMISSIBLE items intersecting the sorted
+  Evidence timestamps may carry fractional seconds; ordering compares UTC instants, never raw
+  strings (cutoff `2026-10-03T12:00:00Z` vs evidence `2026-10-03T12:00:00.500Z` -> EVIDENCE_INVALID).
+- Evidence: before use, every supplied `ContextEvidenceItem` is rebuilt with the existing canonical
+  builder; the rebuilt `evidence_id` and canonical fields must equal the supplied ones or the item
+  is EVIDENCE_INVALID. `StrategyAssessmentEvidence` reuses the existing
+  `ContextEvidenceItem.evidence_id` (no second identity); at most 12 unique ADMISSIBLE items intersecting the sorted
   subject refs, each with a non-empty <=160-character non-secret non-path summary.
 - Subject refs contain the strategy version and family ids plus optional canonical public
   market/event/token or evidence subjects; never wallet/account/credential material.

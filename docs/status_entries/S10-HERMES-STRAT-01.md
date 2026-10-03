@@ -50,6 +50,10 @@
 - Foreground `run_hermes_strategy_assessment`: exactly one controlled Hermes run, no retry,
   fallback, scheduler, child StrategyVersion or STRAT-LIFE write
 
+- Final Semantic Micro-Closure 01: neutral model-facing allocation record fields with exact
+  validity window; dedicated ValidatedStrategyResearchProjection consumed without raw reparse;
+  explicit canonical evidence-object revalidation and chronological fractional-cutoff evidence
+
 ## Repo-Truth Reconciliation
 
 - S10-STRAT-LIFE-01: MERGED (PR #210)
@@ -67,6 +71,8 @@
 
 - Pre-implementation readiness: PASS, IMPLEMENTATION_READY (RUNTIME), 22 paths,
   81 evidence items, 35 normative rules
+- After Final Semantic Micro-Closure 01: IMPLEMENTATION_READY (RUNTIME), 22 paths,
+  86 evidence items, 40 normative rules
 - Historical Hermes compatibility guards: additions-only exact path exceptions
 - Focused HERMES-STRAT tests, Hermes regression, STRAT-LIFE compatibility,
   architecture/status docs, compatibility guards, readiness/check-diff, artifact guard, diff

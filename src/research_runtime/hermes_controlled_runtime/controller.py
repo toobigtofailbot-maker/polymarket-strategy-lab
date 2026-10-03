@@ -38,6 +38,7 @@ from .models import (
     SanitizedSourceReference,
     RECEIPT_SCHEMA_VERSION,
     ValidatedResearchDraft,
+    ValidatedStrategyResearchProjection,
     build_research_run_request,
     derive_receipt_id,
     inspect_research_draft_structure,
@@ -140,6 +141,9 @@ class HermesControlledRunResult:
     request_id: str
     policy_id: str
     session_evidence: HermesSessionEvidence | None = None
+    # S10-HERMES-STRAT-01: the dedicated validated strategy projection; present only for
+    # a successful strategy-mode run (None for generic/context runs and every failure).
+    strategy_projection: ValidatedStrategyResearchProjection | None = None
 
 
 def _utc_iso(moment: datetime) -> str:
@@ -423,6 +427,7 @@ def run_controlled_hermes_research(
         request_id=request.request_id,
         policy_id=policy.policy_id,
         session_evidence=builder.session_evidence,
+        strategy_projection=draft.strategy_projection if strategy_mode else None,
     )
 
 

@@ -289,11 +289,11 @@
         "path": "hermes_strat.context",
         "source": "CONSTANT",
         "type": "closed_rule",
-        "required_rule": "Exact StrategyVersion from the verified snapshot; RETIRED rejects; context binds identity, rules, parameters, execution_rule_sha256, adaptive_bounds_sha256 and current lifecycle state; never account_scope_ref, credentials, paths or raw execution_rule",
+        "required_rule": "Exact StrategyVersion from the verified snapshot; RETIRED rejects; context binds identity, rules, parameters, execution_rule_sha256, adaptive_bounds_sha256 and current lifecycle state with neutral allocation record fields current_allocation_id, current_allocation_risk_band, current_allocation_budget_usd, current_allocation_valid_from_ns, current_allocation_valid_until_ns (all null without a record; no current_risk_band/current_active_budget_usd; no active/capacity/executable/live claim); never account_scope_ref, credentials, paths or raw execution_rule",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "R001-R003, R018-R020",
+        "validation_rule": "R001-R003, R018-R020, R084",
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "STRATEGY_NOT_FOUND, STRATEGY_RETIRED or STRATEGY_CONTEXT_INVALID",
         "derivation_rule_id": null
@@ -312,14 +312,27 @@
         "derivation_rule_id": null
       },
       {
-        "path": "hermes_strat.evidence",
+        "path": "hermes_strat.projection",
         "source": "CONSTANT",
         "type": "closed_rule",
-        "required_rule": "StrategyAssessmentEvidence binds an existing ContextEvidenceItem and a <=160 char non-secret non-path summary; <=12 unique ADMISSIBLE items, cutoff <= assessment cutoff, subject overlap required",
+        "required_rule": "strategy_mode validation yields one immutable ValidatedStrategyResearchProjection preserving request_id, research_summary, confidence_label, all eight research-quality lists, sanitized source references and the validated strategy_assessment; null in generic/context mode; the manager builds the assessment from it alone and never parses raw Hermes JSON",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "R009-R016",
+        "validation_rule": "R082, R083",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STRATEGY_OUTPUT_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes_strat.evidence",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "StrategyAssessmentEvidence binds an existing ContextEvidenceItem (rebuilt by the canonical builder; rebuilt evidence_id and canonical fields must equal the supplied ones) and a <=160 char non-secret non-path summary; <=12 unique ADMISSIBLE items, evidence cutoff <= assessment cutoff compared as UTC instants (fractional evidence timestamps valid), subject overlap required",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R009-R016, R085, R086",
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "EVIDENCE_INVALID",
         "derivation_rule_id": null
@@ -763,7 +776,7 @@
         "input": {
           "schema_id": "hermes-strategy-run",
           "schema_version": "1.0.0",
-          "run_record_id": "hermesstrategyrun:sha256:5241a8124c77e99d6113adb153f371401f3a8cc0ca20574ac0bde2dcdb2e3b62",
+          "run_record_id": "hermesstrategyrun:sha256:3f29d7c9b7c803aa05e8990a505f47790e9b1071be9d26ffff2b692fd57701d5",
           "strategy_version_id": "strategyversion:sha256:588d337915bac233dea96c337dc7195a739fffb82e02b066e1cf0f0243f289d9",
           "strategy_family_id": "strategyfamily:sha256:3b1a5116970f3a00f064ff65d720fc82640dbd471c3ee8f71f9ec250f1a30cb1",
           "strategy_lifecycle_context_sha256": "d897db15837432c306f79092dfaf91d5acdcd75c80645ae578bb951a07c2d0c3",
@@ -771,8 +784,8 @@
           "trigger": "INITIAL_ASSESSMENT",
           "trigger_ref": null,
           "information_cutoff": "2026-10-01T00:00:00Z",
-          "runtime_request_id": "hermesresearchrequest:sha256:f63df5a62f33ba26e1ffef61338b040febd905764792c73fb3896c48e05e0770",
-          "runtime_receipt_id": "hermesresearchreceipt:sha256:d0ee661b75ec332a6a2382384d5f555a0267eda04ba7fb95a7a315068c039964",
+          "runtime_request_id": "hermesresearchrequest:sha256:342e0597fd04ce9188478be6ec5b26f57fdd35d114b54b606ee4e19143513403",
+          "runtime_receipt_id": "hermesresearchreceipt:sha256:05a389c4a1d51256010a6364ecfba690e8382246520cb28172bc2a1ba6165053",
           "runtime_policy_id": "hermesinvocationpolicy:sha256:18b8f788fa436712b377c81b10bdbd594cdb7afb3844fcc8559fde3b28c25e81",
           "provider_label": "example-provider",
           "model_label": "example-model",
@@ -801,13 +814,13 @@
         "input": {
           "schema_id": "hermes-strategy-assessment",
           "schema_version": "1.0.0",
-          "assessment_id": "hermesstrategyassessment:sha256:6906ddb3a2c9a0140b9427da21fce511eed346a93d92542b8899b635d0692c24",
+          "assessment_id": "hermesstrategyassessment:sha256:d46a6060c436ab625c69d6357530b9219838172626410266788ec58a4adb856e",
           "strategy_version_id": "strategyversion:sha256:588d337915bac233dea96c337dc7195a739fffb82e02b066e1cf0f0243f289d9",
           "strategy_family_id": "strategyfamily:sha256:3b1a5116970f3a00f064ff65d720fc82640dbd471c3ee8f71f9ec250f1a30cb1",
           "predecessor_assessment_id": null,
-          "run_record_id": "hermesstrategyrun:sha256:5241a8124c77e99d6113adb153f371401f3a8cc0ca20574ac0bde2dcdb2e3b62",
-          "runtime_request_id": "hermesresearchrequest:sha256:f63df5a62f33ba26e1ffef61338b040febd905764792c73fb3896c48e05e0770",
-          "runtime_receipt_id": "hermesresearchreceipt:sha256:d0ee661b75ec332a6a2382384d5f555a0267eda04ba7fb95a7a315068c039964",
+          "run_record_id": "hermesstrategyrun:sha256:3f29d7c9b7c803aa05e8990a505f47790e9b1071be9d26ffff2b692fd57701d5",
+          "runtime_request_id": "hermesresearchrequest:sha256:342e0597fd04ce9188478be6ec5b26f57fdd35d114b54b606ee4e19143513403",
+          "runtime_receipt_id": "hermesresearchreceipt:sha256:05a389c4a1d51256010a6364ecfba690e8382246520cb28172bc2a1ba6165053",
           "trigger": "INITIAL_ASSESSMENT",
           "trigger_ref": null,
           "strategy_lifecycle_context_sha256": "d897db15837432c306f79092dfaf91d5acdcd75c80645ae578bb951a07c2d0c3",
@@ -865,7 +878,7 @@
   },
   "evidence_plan": {
     "applicable": true,
-    "reason": "R001-R069 are the HERMES-STRAT focused matrix; R070-R076 repo truth; R077 architecture boundary; R078-R079 historical Hermes compatibility guards; R080-R081 bounded repository guards.",
+    "reason": "R001-R069 and R082-R086 (Final Semantic Micro-Closure 01) are the HERMES-STRAT focused matrix; R070-R076 repo truth; R077 architecture boundary; R078-R079 historical Hermes compatibility guards; R080-R081 bounded repository guards.",
     "items": [
       {
         "requirement_id": "R001",
@@ -1426,6 +1439,41 @@
         "test": "readiness check-diff",
         "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-HERMES-STRAT-01/wp_prompt.txt --spec docs/wp_specs/S10-HERMES-STRAT-01/wp_spec.json --repo-root . --check-diff --base dab28ee45c1f8267248d52601c90d3f3509034f9 --head HEAD",
         "expected_result": "IMPLEMENTATION_READY (RUNTIME) with exact 22/22 changed-file equality against the frozen base"
+      },
+      {
+        "requirement_id": "R082",
+        "source": "pytest",
+        "test": "test_r082_dedicated_strategy_projection_preserves_validated_semantics",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the strategy projection preserves request_id, summary, confidence, all eight research lists, sanitized source references and the five-field assessment; generic and context modes return no projection"
+      },
+      {
+        "requirement_id": "R083",
+        "source": "pytest",
+        "test": "test_r083_manager_consumes_projection_without_raw_reparse",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "the manager records an assessment from the projection with the raw draft withheld, never parses raw JSON, and a missing projection records the run only"
+      },
+      {
+        "requirement_id": "R084",
+        "source": "pytest",
+        "test": "test_r084_neutral_allocation_model_context",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "model context carries five neutral current_allocation_* fields with the exact validity window, all null without a record, and no old or derived authority keys"
+      },
+      {
+        "requirement_id": "R085",
+        "source": "pytest",
+        "test": "test_r085_manual_context_evidence_item_rederivation_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "manually constructed or tampered ContextEvidenceItems whose rebuilt id or canonical fields differ reject EVIDENCE_INVALID"
+      },
+      {
+        "requirement_id": "R086",
+        "source": "pytest",
+        "test": "test_r086_fractional_evidence_cutoff_compared_chronologically",
+        "command": "python -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+        "expected_result": "evidence at 12:00:00.500Z after a 12:00:00Z cutoff rejects EVIDENCE_INVALID while earlier fractional evidence is admitted"
       },
       {
         "requirement_id": "R081",
