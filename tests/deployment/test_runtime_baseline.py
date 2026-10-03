@@ -7,6 +7,7 @@ import pathlib
 import shutil
 import sqlite3
 import subprocess
+import tomllib
 
 import pytest
 
@@ -210,6 +211,50 @@ def test_telemetry_schema_is_sanitized(tmp_path: pathlib.Path) -> None:
     assert not any(key in result for key in ("hostname", "ip", "environment", "command_line"))
 
 
+def test_cpu_and_iowait_are_computed_from_interval_delta() -> None:
+    first = (1000, 200, 300, 4000, 500, 60, 70, 80)
+    second = (1040, 210, 310, 4020, 510, 60, 70, 80)
+    cpu, io_wait = baseline._cpu_delta_percentages(first, second)
+    assert cpu == 77.778
+    assert io_wait == 11.111
+
+
+def test_cpu_percentages_ignore_cumulative_since_boot_magnitude() -> None:
+    small = baseline._cpu_delta_percentages(
+        (10, 20, 30, 40, 50), (20, 20, 30, 50, 50)
+    )
+    large = baseline._cpu_delta_percentages(
+        (1_000_010, 2_000_020, 3_000_030, 4_000_040, 5_000_050),
+        (1_000_020, 2_000_020, 3_000_030, 4_000_050, 5_000_050),
+    )
+    assert small == large == (50.0, 0.0)
+
+
+def test_collect_telemetry_uses_two_bounded_samples(tmp_path: pathlib.Path) -> None:
+    samples = iter(((100, 0, 0, 900, 0), (150, 0, 0, 950, 10)))
+    sleeps: list[float] = []
+    result = baseline.collect_telemetry(
+        disk_path=tmp_path,
+        stat_reader=lambda: next(samples),
+        sleeper=sleeps.append,
+        sample_interval_seconds=0.25,
+    )
+    assert sleeps == [0.25]
+    assert result["cpu_utilization_percent"] == 54.545
+    assert result["io_wait_percent"] == 9.091
+
+
+def test_nonpositive_cpu_delta_is_unavailable(tmp_path: pathlib.Path) -> None:
+    samples = iter(((100, 0, 0, 900, 0), (100, 0, 0, 900, 0)))
+    result = baseline.collect_telemetry(
+        disk_path=tmp_path,
+        stat_reader=lambda: next(samples),
+        sleeper=lambda _: None,
+    )
+    assert result["cpu_utilization_percent"] is None
+    assert result["io_wait_percent"] is None
+
+
 def test_telemetry_rotation_is_bounded(
     tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -324,14 +369,89 @@ def test_restore_detects_tamper_and_sqlite_corruption(tmp_path: pathlib.Path) ->
         baseline.restore_verify(clean, restore_root, "corrupt")
 
 
+def _successful_smoke() -> dict[str, object]:
+    return {
+        "status": "STOPPED",
+        "stop_reason": "DURATION_EXPIRED",
+        "error_codes": [],
+        "raw_count": 2,
+        "normalized_count": 2,
+        "store_bytes": 128,
+    }
+
+
+def _complete_telemetry(**overrides: float) -> dict[str, float]:
+    result = {
+        "memory_utilization_percent": 20.0,
+        "cpu_utilization_percent": 20.0,
+        "disk_utilization_percent": 20.0,
+        "io_wait_percent": 1.0,
+    }
+    result.update(overrides)
+    return result
+
+
+def test_smoke_requires_duration_expiry_and_positive_actual_evidence() -> None:
+    passed = baseline.evaluate_research_smoke(_successful_smoke(), [_complete_telemetry()])
+    assert passed["smoke_disposition"] == "PUBLIC_RESEARCH_SMOKE_PASS"
+    assert passed["capacity_disposition"] == "C8G_RESEARCH_BASELINE_SUFFICIENT"
+
+    for stop_reason in (
+        "NETWORK_CALL_LIMIT",
+        "RECONNECT_LIMIT",
+        "QUEUE_LIMIT",
+        "STORE_LIMIT",
+        "CALLER_STOP",
+    ):
+        receipt = {**_successful_smoke(), "stop_reason": stop_reason}
+        result = baseline.evaluate_research_smoke(receipt, [_complete_telemetry()])
+        assert result["smoke_disposition"] == "BASELINE_INCONCLUSIVE"
+        assert result["capacity_disposition"] == "BASELINE_INCONCLUSIVE"
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("raw_count", 0),
+        ("normalized_count", 0),
+        ("store_bytes", 0),
+        ("raw_count", "1"),
+        ("normalized_count", None),
+        ("store_bytes", 1.5),
+        ("error_codes", ["SOURCE_UNAVAILABLE"]),
+    ],
+)
+def test_smoke_rejects_zero_missing_or_malformed_actual_evidence(field: str, value: object) -> None:
+    receipt = {**_successful_smoke(), field: value}
+    result = baseline.evaluate_research_smoke(receipt, [_complete_telemetry()])
+    assert result["smoke_disposition"] == "BASELINE_INCONCLUSIVE"
+    assert result["capacity_disposition"] == "BASELINE_INCONCLUSIVE"
+
+    missing = _successful_smoke()
+    missing.pop(field)
+    assert baseline.evaluate_research_smoke(missing, [_complete_telemetry()])[
+        "smoke_disposition"
+    ] == "BASELINE_INCONCLUSIVE"
+
+
+def test_failed_smoke_and_incomplete_telemetry_are_inconclusive() -> None:
+    failed = {**_successful_smoke(), "status": "FAILED"}
+    assert baseline.evaluate_research_smoke(failed, [_complete_telemetry()])[
+        "capacity_disposition"
+    ] == "BASELINE_INCONCLUSIVE"
+    for telemetry in ([], [{"memory_utilization_percent": 20}], [_complete_telemetry(cpu_utilization_percent=float("nan"))]):
+        result = baseline.evaluate_research_smoke(_successful_smoke(), telemetry)
+        assert result["capacity_disposition"] == "BASELINE_INCONCLUSIVE"
+
+
 def test_capacity_evaluator_has_only_closed_dispositions() -> None:
     cases = [
         ({}, [], "BASELINE_INCONCLUSIVE"),
-        ({"status": "STOPPED"}, [{"memory_utilization_percent": 90}], "UPGRADE_ELIGIBLE:MEMORY"),
-        ({"status": "STOPPED"}, [{"memory_utilization_percent": 20, "cpu_utilization_percent": 90}], "UPGRADE_ELIGIBLE:CPU"),
-        ({"status": "STOPPED"}, [{"memory_utilization_percent": 20, "cpu_utilization_percent": 20, "disk_utilization_percent": 90}], "UPGRADE_ELIGIBLE:DISK"),
-        ({"status": "STOPPED"}, [{"memory_utilization_percent": 20, "cpu_utilization_percent": 20, "disk_utilization_percent": 20, "io_wait_percent": 20}], "UPGRADE_ELIGIBLE:IO"),
-        ({"status": "STOPPED"}, [{"memory_utilization_percent": 20, "cpu_utilization_percent": 20, "disk_utilization_percent": 20, "io_wait_percent": 1}], "C8G_RESEARCH_BASELINE_SUFFICIENT"),
+        (_successful_smoke(), [_complete_telemetry(memory_utilization_percent=90)], "UPGRADE_ELIGIBLE:MEMORY"),
+        (_successful_smoke(), [_complete_telemetry(cpu_utilization_percent=90)], "UPGRADE_ELIGIBLE:CPU"),
+        (_successful_smoke(), [_complete_telemetry(disk_utilization_percent=90)], "UPGRADE_ELIGIBLE:DISK"),
+        (_successful_smoke(), [_complete_telemetry(io_wait_percent=20)], "UPGRADE_ELIGIBLE:IO"),
+        (_successful_smoke(), [_complete_telemetry()], "C8G_RESEARCH_BASELINE_SUFFICIENT"),
     ]
     for smoke, telemetry, expected in cases:
         result = baseline.evaluate_research_smoke(smoke, telemetry)
@@ -395,6 +515,81 @@ def test_firewall_requires_explicit_ssh_port_before_enable() -> None:
     assert "((ssh_port >= 1 && ssh_port <= 65535))" in text
     assert "ufw --dry-run allow" in text
     assert text.index('ufw allow "${ssh_port}/tcp"') < text.index("ufw --force enable")
+
+
+def test_firewall_verifier_accepts_clean_exact_and_ipv6_equivalent_rules() -> None:
+    assert baseline.verify_ufw_ssh_only("Status: inactive\n", 2222, allow_empty=True)[
+        "allow_count"
+    ] == 0
+    active = "Status: active\n2222/tcp ALLOW IN Anywhere\n2222/tcp (v6) ALLOW IN Anywhere (v6)\n"
+    assert baseline.verify_ufw_ssh_only(active, 2222, allow_empty=False)["allow_count"] == 2
+    configured = "Added user rules:\nufw allow 2222/tcp\n"
+    assert baseline.verify_ufw_ssh_only(configured, 2222, allow_empty=True)["allow_count"] == 1
+
+
+@pytest.mark.parametrize("conflict", ["80/tcp ALLOW IN Anywhere", "53/udp ALLOW IN Anywhere"])
+def test_firewall_verifier_rejects_any_other_inbound_allow(conflict: str) -> None:
+    status = f"Status: active\n2222/tcp ALLOW IN Anywhere\n{conflict}\n"
+    with pytest.raises(baseline.BaselineError, match="FIREWALL_NOT_SSH_ONLY"):
+        baseline.verify_ufw_ssh_only(status, 2222, allow_empty=False)
+
+
+def test_firewall_success_requires_effective_exact_rule() -> None:
+    with pytest.raises(baseline.BaselineError, match="FIREWALL_NOT_SSH_ONLY"):
+        baseline.verify_ufw_ssh_only("Status: active\n", 2222, allow_empty=False)
+
+
+def test_bootstrap_installs_base_project_without_cockpit_extra() -> None:
+    text = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
+    assert '--disable-pip-version-check "$target_release"' in text
+    assert "[cockpit]" not in text
+    assert "fastapi" not in text.lower()
+    assert "uvicorn" not in text.lower()
+    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    base_dependencies = metadata["project"]["dependencies"]
+    assert any(item.startswith("polymarket-client==") for item in base_dependencies)
+    assert any(item.startswith("websockets==") for item in base_dependencies)
+
+
+def test_bootstrap_routes_operational_failures_to_sanitized_codes() -> None:
+    text = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
+    assert '"$@" >/dev/null 2>&1 || fail "$error_code"' in text
+    assert '"$@" >"$output_path" 2>/dev/null || fail "$error_code"' in text
+    assert "trap 'fail UNEXPECTED_OPERATION_FAILED' ERR" in text
+    for code in (
+        "RELEASE_VERIFY_FAILED",
+        "HOST_SETUP_FAILED",
+        "PYTHON_ENV_SETUP_FAILED",
+        "PACKAGE_INSTALL_FAILED",
+        "PACKAGE_CHECK_FAILED",
+        "SYSTEMD_INSTALL_FAILED",
+        "SYSTEMD_VERIFY_FAILED",
+        "FIREWALL_APPLY_FAILED",
+        "SERVICE_ACTIVATION_FAILED",
+        "HOST_MANIFEST_FAILED",
+    ):
+        assert code in text
+
+
+def test_corrected_contract_prompt_and_spec_are_consistent() -> None:
+    paths = (
+        ROOT / "docs/research_platform_runtime_baseline_contract.md",
+        ROOT / "docs/wp_specs/S10-DEPLOY-01/wp_prompt.txt",
+        ROOT / "docs/wp_specs/S10-DEPLOY-01/wp_spec.json",
+    )
+    combined = " ".join(path.read_text(encoding="utf-8") for path in paths)
+    for truth in (
+        "DURATION_EXPIRED",
+        "raw_count",
+        "normalized_count",
+        "store_bytes",
+        "interval",
+        "SSH-only",
+        "base project",
+        "cockpit extra",
+        "sanitized",
+    ):
+        assert truth.lower() in combined.lower()
 
 
 def test_bootstrap_never_modifies_sshd_or_reads_secrets() -> None:

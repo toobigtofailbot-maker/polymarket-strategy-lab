@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import pathlib
 import platform
@@ -19,8 +20,9 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+import time
 from datetime import datetime, timezone
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 
 MANIFEST_NAME = "DEPLOYMENT_MANIFEST.json"
@@ -403,7 +405,38 @@ def _rotate(path: pathlib.Path) -> None:
     path.replace(path.with_name(f"{path.name}.1"))
 
 
-def collect_telemetry(*, disk_path: pathlib.Path) -> dict[str, Any]:
+def _read_cpu_times(stat_path: pathlib.Path = pathlib.Path("/proc/stat")) -> tuple[int, ...]:
+    fields = stat_path.read_text(encoding="utf-8").splitlines()[0].split()
+    if not fields or fields[0] != "cpu" or len(fields) < 6:
+        raise ValueError("CPU_STAT_INVALID")
+    # guest and guest_nice are already included in user and nice on Linux.
+    return tuple(int(value) for value in fields[1:9])
+
+
+def _cpu_delta_percentages(
+    first: tuple[int, ...], second: tuple[int, ...]
+) -> tuple[float | None, float | None]:
+    if len(first) < 5 or len(first) != len(second):
+        return None, None
+    deltas = tuple(after - before for before, after in zip(first, second))
+    total_delta = sum(deltas)
+    if total_delta <= 0 or any(value < 0 for value in deltas):
+        return None, None
+    idle_delta = deltas[3]
+    io_wait_delta = deltas[4]
+    return (
+        round(((total_delta - idle_delta) / total_delta) * 100, 3),
+        round((io_wait_delta / total_delta) * 100, 3),
+    )
+
+
+def collect_telemetry(
+    *,
+    disk_path: pathlib.Path,
+    stat_reader: Callable[[], tuple[int, ...]] | None = None,
+    sleeper: Callable[[float], None] = time.sleep,
+    sample_interval_seconds: float = 0.1,
+) -> dict[str, Any]:
     meminfo = _read_key_values(pathlib.Path("/proc/meminfo"))
     total = int(meminfo.get("MemTotal", "0 kB").split()[0])
     available = int(meminfo.get("MemAvailable", "0 kB").split()[0])
@@ -415,13 +448,14 @@ def collect_telemetry(*, disk_path: pathlib.Path) -> dict[str, Any]:
     cpu_percent: float | None = None
     io_wait_percent: float | None = None
     try:
-        fields = pathlib.Path("/proc/stat").read_text(encoding="utf-8").splitlines()[0].split()[1:]
-        ticks = [int(value) for value in fields]
-        total_ticks = sum(ticks)
-        idle_ticks = ticks[3] + (ticks[4] if len(ticks) > 4 else 0)
-        cpu_percent = round(((total_ticks - idle_ticks) / total_ticks) * 100, 3) if total_ticks else None
-        io_wait_percent = round((ticks[4] / total_ticks) * 100, 3) if total_ticks and len(ticks) > 4 else None
-    except (OSError, ValueError, IndexError):
+        if sample_interval_seconds <= 0 or sample_interval_seconds > 1:
+            raise ValueError("CPU_SAMPLE_INTERVAL_INVALID")
+        reader = stat_reader or _read_cpu_times
+        first = reader()
+        sleeper(sample_interval_seconds)
+        second = reader()
+        cpu_percent, io_wait_percent = _cpu_delta_percentages(first, second)
+    except (OSError, ValueError, IndexError, StopIteration):
         pass
     return {
         "schema_id": "polymarket-research-host-telemetry",
@@ -606,11 +640,41 @@ def restore_verify(
 def evaluate_research_smoke(
     smoke_result: dict[str, Any], telemetry: list[dict[str, Any]]
 ) -> dict[str, Any]:
-    status = smoke_result.get("status")
-    smoke_disposition = (
-        "PUBLIC_RESEARCH_SMOKE_PASS" if status == "STOPPED" else "BASELINE_INCONCLUSIVE"
+    def positive_integer(value: Any) -> bool:
+        return isinstance(value, int) and not isinstance(value, bool) and value > 0
+
+    smoke_passed = (
+        smoke_result.get("status") == "STOPPED"
+        and smoke_result.get("stop_reason") == "DURATION_EXPIRED"
+        and smoke_result.get("error_codes") == []
+        and positive_integer(smoke_result.get("raw_count"))
+        and positive_integer(smoke_result.get("normalized_count"))
+        and positive_integer(smoke_result.get("store_bytes"))
     )
-    if not telemetry:
+    smoke_disposition = (
+        "PUBLIC_RESEARCH_SMOKE_PASS" if smoke_passed else "BASELINE_INCONCLUSIVE"
+    )
+    required_metrics = (
+        "memory_utilization_percent",
+        "cpu_utilization_percent",
+        "disk_utilization_percent",
+        "io_wait_percent",
+    )
+
+    def usable_metric(value: Any) -> bool:
+        return (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and math.isfinite(value)
+            and 0 <= value <= 100
+        )
+
+    telemetry_complete = bool(telemetry) and all(
+        isinstance(row, dict)
+        and all(usable_metric(row.get(metric)) for metric in required_metrics)
+        for row in telemetry
+    )
+    if not smoke_passed or not telemetry_complete:
         capacity = "BASELINE_INCONCLUSIVE"
     else:
         memory = [row.get("memory_utilization_percent") for row in telemetry]
@@ -635,6 +699,40 @@ def evaluate_research_smoke(
         "capacity_disposition": capacity,
         "sample_count": len(telemetry),
     }
+
+
+def verify_ufw_ssh_only(status_text: str, ssh_port: int, *, allow_empty: bool) -> dict[str, Any]:
+    if not isinstance(ssh_port, int) or isinstance(ssh_port, bool) or not 1 <= ssh_port <= 65535:
+        raise BaselineError("SSH_PORT_INVALID")
+    allowed: list[str] = []
+    for raw_line in status_text.splitlines():
+        line = re.sub(r"^\s*\[\s*\d+\]\s*", "", raw_line.strip())
+        if not line or line.lower().startswith(("status:", "to ", "--", "added user rules")):
+            continue
+        tokens = line.split()
+        upper = [token.upper() for token in tokens]
+        if "ALLOW" not in upper:
+            continue
+        action_index = upper.index("ALLOW")
+        if action_index + 1 < len(upper) and upper[action_index + 1] == "OUT":
+            continue
+        if tokens[0].lower() == "ufw":
+            if "ROUTE" in upper[:action_index]:
+                raise BaselineError("FIREWALL_NOT_SSH_ONLY")
+            target_index = action_index + 1
+            if target_index < len(tokens) and upper[target_index] == "IN":
+                target_index += 1
+            if target_index >= len(tokens):
+                raise BaselineError("FIREWALL_NOT_SSH_ONLY")
+            target = tokens[target_index].lower()
+        else:
+            target = tokens[0].lower()
+        if target != f"{ssh_port}/tcp":
+            raise BaselineError("FIREWALL_NOT_SSH_ONLY")
+        allowed.append(target)
+    if not allowed and not allow_empty:
+        raise BaselineError("FIREWALL_NOT_SSH_ONLY")
+    return {"status": "FIREWALL_VERIFIED", "ssh_port": ssh_port, "allow_count": len(allowed)}
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -665,6 +763,10 @@ def _parser() -> argparse.ArgumentParser:
     smoke = commands.add_parser("research-smoke-evaluate")
     smoke.add_argument("--smoke-result", type=pathlib.Path, required=True)
     smoke.add_argument("--telemetry-jsonl", type=pathlib.Path, required=True)
+    firewall = commands.add_parser("verify-firewall")
+    firewall.add_argument("--status-file", type=pathlib.Path, required=True)
+    firewall.add_argument("--ssh-port", type=int, required=True)
+    firewall.add_argument("--allow-empty", action="store_true")
     return parser
 
 
@@ -696,7 +798,7 @@ def main(argv: list[str] | None = None) -> int:
             result = create_backup(STATE_ROOT, BACKUP_ROOT, args.backup_id)
         elif args.command == "restore-verify":
             result = restore_verify(args.backup_dir, RESTORE_ROOT, args.drill_id)
-        else:
+        elif args.command == "research-smoke-evaluate":
             smoke_result = json.loads(args.smoke_result.read_text(encoding="utf-8"))
             telemetry_rows = [
                 json.loads(line)
@@ -704,6 +806,12 @@ def main(argv: list[str] | None = None) -> int:
                 if line.strip()
             ]
             result = evaluate_research_smoke(smoke_result, telemetry_rows)
+        else:
+            result = verify_ufw_ssh_only(
+                args.status_file.read_text(encoding="utf-8"),
+                args.ssh_port,
+                allow_empty=args.allow_empty,
+            )
     except (BaselineError, OSError, ValueError, json.JSONDecodeError) as error:
         code = error.code if isinstance(error, BaselineError) else "CLOSED_FAILURE"
         sys.stdout.write(

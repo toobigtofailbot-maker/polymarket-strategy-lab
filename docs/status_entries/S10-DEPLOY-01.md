@@ -31,9 +31,11 @@
 - Deterministic tracked-file release builder and strict verifier
 - Persistent `/var/lib/polymarket` layout and atomic current-release link
 - Exact bounded research slice and reserved critical slice
-- Sanitized once-per-minute telemetry with bounded rotation
+- Sanitized once-per-minute telemetry with bounded rotation and interval-delta CPU/I/O sampling
 - SQLite-aware hashed backup and isolated integrity-checked restore drills
-- Explicit SSH-port, deny-inbound/allow-outbound UFW bootstrap contract
+- Exact SSH-only inbound UFW proof with conflicting-rule rejection
+- Base project install only; no optional cockpit extra
+- Closed sanitized bootstrap operational failures
 - Human-only provider/SSH boundary and credential-free host release
 - One frozen bounded public WP169 smoke after merge only
 - Closed research-only capacity dispositions
@@ -55,8 +57,10 @@
 - Covers dirty/wrong HEAD, unsafe/secret release content, file-set/hash tamper,
   wrong host facts, sanitized manifests/telemetry, bounded rotation, symlink/secret
   backup rejection, restore overwrite/tamper/SQLite corruption, closed capacity
-  outputs, exact systemd controls, scheduler isolation, firewall ordering, no sshd
-  mutation, and no container/second-host mechanism.
+  outputs, exact smoke-success receipts, missing telemetry, interval CPU/I/O,
+  exact systemd controls, scheduler isolation, SSH-only firewall proof, closed
+  bootstrap failures, base-only installation, no sshd mutation, and no
+  container/second-host mechanism.
 
 ## Deferred Post-Merge Activation
 

@@ -25,4 +25,10 @@ The frozen public smoke is a post-merge foreground bounded unauthenticated read
 using `tools/polymarket/run_public_market_truth.py`. It must run via finite
 `systemd-run --wait --collect --slice=polymarket-research.slice`. Network or
 source unavailability produces `BASELINE_INCONCLUSIVE`, never a source or
-candidate failure.
+candidate failure. PASS requires a duration-expired receipt with empty errors and
+positive actual raw, normalized, and stored-byte counts; capacity remains
+inconclusive unless that smoke passes and required interval telemetry is complete.
+
+Bootstrap installs the base project only (no cockpit extra), verifies that UFW's
+effective inbound allow set is only the supplied SSH TCP port, and routes expected
+operational failures through sanitized closed JSON codes.

@@ -61,8 +61,11 @@ environment variables, command lines, or credentials.
 The only recurring scheduler is `polymarket-host-telemetry.timer`: first run no
 later than 60 seconds after activation, exactly 60-second cadence, persistent.
 Telemetry is sanitized JSONL containing UTC time, CPU/load, memory, swap, disk,
-I/O wait, research target state, and timer state. The active file is limited to
-10 MiB and exactly seven rotations are retained.
+I/O wait, research target state, and timer state. CPU utilization and I/O wait
+are computed from a bounded delta between two `/proc/stat` snapshots, never from
+cumulative-since-boot values. Invalid or non-positive deltas are recorded as
+unavailable rather than zero. The active file is limited to 10 MiB and exactly
+seven rotations are retained.
 
 ## Systemd Isolation
 
@@ -83,12 +86,20 @@ hardening and explicit telemetry write path.
 The strict idempotent bootstrap requires root and explicit `--release-dir`,
 `--expected-sha`, and `--ssh-port`. It fails closed on platform/resource/NTP/
 release/tooling validation, creates the frozen user and directories, installs
-from existing project metadata, runs `pip check`, installs and verifies the exact
+the base project from existing metadata without the optional cockpit extra, runs
+`pip check`, installs and verifies the exact
 units, and activates only the timer and research target.
 
-UFW operations are dry-run validated before firewall mutation. The explicit
-operator SSH TCP port is allowed before inbound deny-by-default is enabled;
-outbound remains allowed for bootstrap and separately authorized public research.
+Expected operational failures are wrapped and emit one sanitized terminal JSON
+object with a stable closed error code. Raw Python, pip, UFW, systemd, copy, link,
+ownership, or host-manifest diagnostics are not the canonical evidence stream.
+
+UFW operations are dry-run validated before firewall mutation. Configured rules
+are checked before activation and conflicting inbound allows fail closed without
+being deleted. The explicit operator SSH TCP port is allowed before inbound
+deny-by-default is enabled; after enablement the effective inbound allow set is
+verified as only that exact TCP port (equivalent IPv4/IPv6 forms are accepted).
+Outbound remains allowed for bootstrap and separately authorized public research.
 No public cockpit/API port or sshd configuration change is permitted.
 
 ## Backup And Restore
@@ -114,8 +125,13 @@ python tools/polymarket/run_public_market_truth.py \
   --output-db local_data/polymarket/deploy_smoke.sqlite3
 ```
 
-It is unauthenticated, read-only, finite, and not a service. Network/source
-unavailability maps to `BASELINE_INCONCLUSIVE`. Capacity output is closed to
+It is unauthenticated, read-only, finite, and not a service. A smoke passes only
+when its actual WP169 receipt is `STOPPED` for `DURATION_EXPIRED`, has an empty
+`error_codes` list, and reports positive integer raw, normalized, and stored-byte
+counts. Every other terminal reason and missing, malformed, or zero actual
+evidence maps to `BASELINE_INCONCLUSIVE`, never source/candidate failure. Capacity
+is also inconclusive unless the smoke passed and every evaluated sample has
+usable numeric CPU, memory, disk, and I/O telemetry. Capacity output is closed to
 `C8G_RESEARCH_BASELINE_SUFFICIENT`, `UPGRADE_ELIGIBLE:MEMORY`,
 `UPGRADE_ELIGIBLE:CPU`, `UPGRADE_ELIGIBLE:DISK`, `UPGRADE_ELIGIBLE:IO`, or
 `BASELINE_INCONCLUSIVE`. It applies only to this research baseline and cannot
