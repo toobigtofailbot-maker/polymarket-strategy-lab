@@ -110,7 +110,7 @@ _SECRET_MARKERS = (
     "password",
     "passwd",
     "passphrase",
-    "mnemonic",
+    "mnemon",
     "privatekey",
     "apikey",
     "seedphrase",
