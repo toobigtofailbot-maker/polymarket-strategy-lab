@@ -231,7 +231,7 @@
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "R001-R006 and R019",
+        "validation_rule": "R001-R006, R019, R072 and the seven spec identity derivations",
         "failure_category": "IDENTITY_DERIVATION_INVALID",
         "safe_output": "IDENTITY_CONFLICT or FIELD_VALUE_INVALID",
         "derivation_rule_id": null
@@ -383,11 +383,11 @@
         "path": "lifecycle.store",
         "source": "CONSTANT",
         "type": "append_only_sqlite",
-        "required_rule": "format s10-strategy-lifecycle-store, schema 1, application_id 1398033457, user_version 1, journal DELETE, synchronous FULL, foreign_keys ON; exact DDL and no-update/no-delete triggers; hash chain from null genesis; single-record append; idempotent exact retry; 100000 rows, 262144 bytes per payload, 536870912 aggregate; explicit .sqlite3 path, no symlink, single hard link, no migration",
+        "required_rule": "format s10-strategy-lifecycle-store, schema 1, application_id 1398033457, user_version 1, journal DELETE, synchronous FULL, foreign_keys ON proven on every initialize, append and verified-load connection (persistent journal drift fails closed, never converted); exact DDL and no-update/no-delete triggers; hash chain from null genesis; single-record append; idempotent exact retry; 100000 rows, 262144 bytes per payload, 536870912 aggregate; explicit .sqlite3 path, no symlink, single hard link, no migration",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "R025-R033",
+        "validation_rule": "R025-R033, R071",
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "closed store statuses and error codes",
         "derivation_rule_id": null
@@ -417,13 +417,335 @@
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "docs tests pass",
         "derivation_rule_id": null
+      },
+      {
+        "path": "strategy_family_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "strategy_family_id = strategyfamily:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-strategy-family record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "strategyfamily_content_id"
+      },
+      {
+        "path": "strategy_version_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "strategy_version_id = strategyversion:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-strategy-version record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "strategyversion_content_id"
+      },
+      {
+        "path": "policy_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "policy_id = portfolioauthoritypolicy:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-portfolio-authority-policy record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "portfolioauthoritypolicy_content_id"
+      },
+      {
+        "path": "policy_receipt_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "policy_receipt_id = portfoliopolicyreceipt:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-portfolio-policy-receipt record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "portfoliopolicyreceipt_content_id"
+      },
+      {
+        "path": "health_receipt_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "health_receipt_id = strategyhealth:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-strategy-health-receipt record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "strategyhealth_content_id"
+      },
+      {
+        "path": "allocation_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "allocation_id = strategyriskallocation:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-strategy-risk-allocation record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "strategyriskallocation_content_id"
+      },
+      {
+        "path": "restriction_receipt_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "restriction_receipt_id = strategyrestriction:sha256: + sha256(canonical JSON of every other top-level field of the polymarket-strategy-restriction-receipt record)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R001/R002/R003/R019",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_CONFLICT",
+        "derivation_rule_id": "strategyrestriction_content_id"
       }
     ]
   },
   "identity_derivations": {
-    "applicable": false,
-    "reason": "Product content ids hash the record public mapping minus its own id field; the spec-guard path-keyed projection grammar cannot express that preimage byte-exactly, so the rule is frozen in semantic_fields lifecycle.content_ids and proven by pytest R001, R003 and R019.",
-    "items": []
+    "applicable": true,
+    "reason": "The seven content ids are SHA256_CANONICAL_JSON over every top-level record field except the id, keyed by field name (the record mapping minus its id), with the exact prefix; one valid example per rule is the real product record mapping.",
+    "items": [
+      {
+        "rule_id": "strategyfamily_content_id",
+        "target_path": "strategy_family_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "created_time_ns",
+          "creation_provenance",
+          "family_key",
+          "family_label",
+          "schema_id",
+          "schema_version"
+        ],
+        "excluded_paths": [],
+        "prefix": "strategyfamily:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "strategyversion_content_id",
+        "target_path": "strategy_version_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "adaptation_class",
+          "adaptive_bounds_json",
+          "created_time_ns",
+          "creation_provenance",
+          "evidence_posture",
+          "evidence_refs",
+          "parent_strategy_version_id",
+          "schema_id",
+          "schema_version",
+          "strategy_code_identity",
+          "strategy_family_id",
+          "strategy_label",
+          "strategy_spec_json"
+        ],
+        "excluded_paths": [],
+        "prefix": "strategyversion:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "portfolioauthoritypolicy_content_id",
+        "target_path": "policy_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "account_scope_ref",
+          "allowed_order_styles",
+          "created_time_ns",
+          "effective_from_ns",
+          "expires_at_ns",
+          "exploratory_pool_max_usd",
+          "global_capital_at_risk_max_usd",
+          "global_cumulative_loss_max_usd",
+          "global_daily_loss_max_usd",
+          "global_drawdown_max_usd",
+          "global_gross_exposure_max_usd",
+          "mature_pool_max_usd",
+          "max_active_markets",
+          "max_active_strategies",
+          "max_exploratory_per_strategy_usd",
+          "max_mature_per_strategy_usd",
+          "max_mutations_per_minute",
+          "max_order_notional_usd",
+          "max_per_market_usd",
+          "max_simultaneous_open_orders",
+          "max_validated_per_strategy_usd",
+          "policy_label",
+          "predecessor_policy_id",
+          "schema_id",
+          "schema_version",
+          "validated_pool_max_usd",
+          "venue_scope"
+        ],
+        "excluded_paths": [],
+        "prefix": "portfolioauthoritypolicy:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "portfoliopolicyreceipt_content_id",
+        "target_path": "policy_receipt_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "action",
+          "created_time_ns",
+          "human_authorization_ref",
+          "policy_id",
+          "previous_active_policy_id",
+          "schema_id",
+          "schema_version"
+        ],
+        "excluded_paths": [],
+        "prefix": "portfoliopolicyreceipt:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "strategyhealth_content_id",
+        "target_path": "health_receipt_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "created_time_ns",
+          "decision_ref",
+          "evidence_refs",
+          "new_health_state",
+          "previous_health_state",
+          "schema_id",
+          "schema_version",
+          "strategy_version_id"
+        ],
+        "excluded_paths": [],
+        "prefix": "strategyhealth:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "strategyriskallocation_content_id",
+        "target_path": "allocation_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "active_budget_usd",
+          "allocation_basis",
+          "created_time_ns",
+          "decision_ref",
+          "evidence_refs",
+          "policy_id",
+          "risk_band",
+          "schema_id",
+          "schema_version",
+          "strategy_version_id",
+          "valid_from_ns",
+          "valid_until_ns"
+        ],
+        "excluded_paths": [],
+        "prefix": "strategyriskallocation:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "strategyrestriction_content_id",
+        "target_path": "restriction_receipt_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "action",
+          "created_time_ns",
+          "decision_ref",
+          "evidence_refs",
+          "max_active_budget_usd",
+          "restriction_key",
+          "restriction_kind",
+          "schema_id",
+          "schema_version",
+          "strategy_version_id"
+        ],
+        "excluded_paths": [],
+        "prefix": "strategyrestriction:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      }
+    ]
   },
   "state_transitions": {
     "applicable": true,
@@ -531,13 +853,187 @@
     ]
   },
   "examples": {
-    "applicable": false,
-    "reason": "Executable pytest evidence is the oracle for the additive lifecycle contracts.",
-    "items": []
+    "applicable": true,
+    "reason": "One valid example per content-id derivation, generated from real product records, proves the derivation grammar against the implementation.",
+    "items": [
+      {
+        "example_id": "strategyfamily_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "strategyfamily_content_id"
+        ],
+        "input": {
+          "strategy_family_id": "strategyfamily:sha256:0db26cf1ed917bf6c084ba5fe6fb36983f78b24b1b503f8c8bd146b956a8d74d",
+          "family_key": "spec.example",
+          "family_label": "Spec example family",
+          "created_time_ns": 1,
+          "creation_provenance": "spec:example",
+          "schema_id": "polymarket-strategy-family",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "strategyversion_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "strategyversion_content_id"
+        ],
+        "input": {
+          "strategy_version_id": "strategyversion:sha256:b8714ad177f1d31bb80ed6777cafe06dafa3eb38ac48c107d81532d0d488df96",
+          "strategy_family_id": "strategyfamily:sha256:0db26cf1ed917bf6c084ba5fe6fb36983f78b24b1b503f8c8bd146b956a8d74d",
+          "parent_strategy_version_id": null,
+          "strategy_label": "Spec example version",
+          "evidence_posture": "NOVEL_EXPLORATORY",
+          "strategy_code_identity": "strategy_code:spec-example",
+          "strategy_spec_json": "{\"entry_rule\":{},\"execution_rule\":{},\"exit_rule\":{},\"parameters\":{\"lookback\":5},\"thesis\":{},\"universe\":{}}",
+          "adaptive_bounds_json": "{\"lookback\":{\"kind\":\"INTEGER_RANGE\",\"max\":10,\"min\":0}}",
+          "evidence_refs": [
+            "event:polymarket:0x0000000000000000000000000000000000000000000000000000000000000000"
+          ],
+          "created_time_ns": 2,
+          "creation_provenance": "spec:example",
+          "adaptation_class": "ROOT",
+          "schema_id": "polymarket-strategy-version",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "portfolioauthoritypolicy_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "portfolioauthoritypolicy_content_id"
+        ],
+        "input": {
+          "policy_id": "portfolioauthoritypolicy:sha256:4160320079ab857e546120ccef8a7199d27875e8308634bd00142fa15100993b",
+          "predecessor_policy_id": null,
+          "policy_label": "Spec example envelope",
+          "venue_scope": [
+            "POLYMARKET"
+          ],
+          "account_scope_ref": "account:spec-example",
+          "effective_from_ns": 10,
+          "expires_at_ns": null,
+          "global_capital_at_risk_max_usd": "1000",
+          "global_gross_exposure_max_usd": "1000",
+          "global_daily_loss_max_usd": "100",
+          "global_drawdown_max_usd": "200",
+          "global_cumulative_loss_max_usd": "300",
+          "exploratory_pool_max_usd": "300",
+          "validated_pool_max_usd": "300",
+          "mature_pool_max_usd": "300",
+          "max_exploratory_per_strategy_usd": "100",
+          "max_validated_per_strategy_usd": "200",
+          "max_mature_per_strategy_usd": "300",
+          "max_per_market_usd": "50",
+          "max_active_strategies": 3,
+          "max_active_markets": 10,
+          "max_simultaneous_open_orders": 20,
+          "max_order_notional_usd": "10",
+          "max_mutations_per_minute": 60,
+          "allowed_order_styles": [
+            "PASSIVE_MAKER"
+          ],
+          "created_time_ns": 10,
+          "schema_id": "polymarket-portfolio-authority-policy",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "portfoliopolicyreceipt_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "portfoliopolicyreceipt_content_id"
+        ],
+        "input": {
+          "policy_receipt_id": "portfoliopolicyreceipt:sha256:06f82424ba11cbd40a0b939d9299c629f649af654c9b89a3547d67976e45ec82",
+          "action": "ACTIVATE",
+          "policy_id": "portfolioauthoritypolicy:sha256:4160320079ab857e546120ccef8a7199d27875e8308634bd00142fa15100993b",
+          "previous_active_policy_id": null,
+          "human_authorization_ref": "human:spec-example",
+          "created_time_ns": 20,
+          "schema_id": "polymarket-portfolio-policy-receipt",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "strategyhealth_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "strategyhealth_content_id"
+        ],
+        "input": {
+          "health_receipt_id": "strategyhealth:sha256:7726e657f8292846c792f9b1eb789df4840c412011d82da15713c92ac3f58190",
+          "strategy_version_id": "strategyversion:sha256:b8714ad177f1d31bb80ed6777cafe06dafa3eb38ac48c107d81532d0d488df96",
+          "previous_health_state": "NEW",
+          "new_health_state": "HEALTHY",
+          "decision_ref": "decision:spec-example",
+          "evidence_refs": [],
+          "created_time_ns": 30,
+          "schema_id": "polymarket-strategy-health-receipt",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "strategyriskallocation_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "strategyriskallocation_content_id"
+        ],
+        "input": {
+          "allocation_id": "strategyriskallocation:sha256:2f530afbcafad520e37e5f7dd82d655216a08b26fbcdca689e74b95f1c349609",
+          "strategy_version_id": "strategyversion:sha256:b8714ad177f1d31bb80ed6777cafe06dafa3eb38ac48c107d81532d0d488df96",
+          "policy_id": "portfolioauthoritypolicy:sha256:4160320079ab857e546120ccef8a7199d27875e8308634bd00142fa15100993b",
+          "risk_band": "EXPLORATORY_LIVE",
+          "active_budget_usd": "50",
+          "allocation_basis": "DIRECT_DECISION",
+          "decision_ref": "decision:spec-example",
+          "evidence_refs": [],
+          "valid_from_ns": 100,
+          "valid_until_ns": null,
+          "created_time_ns": 100,
+          "schema_id": "polymarket-strategy-risk-allocation",
+          "schema_version": "1.0.0"
+        }
+      },
+      {
+        "example_id": "strategyrestriction_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "strategyrestriction_content_id"
+        ],
+        "input": {
+          "restriction_receipt_id": "strategyrestriction:sha256:cfc214e4b7ddeba11f57d1ed2cb1bc1da4b718bed619968aa197cde7dcebedf3",
+          "strategy_version_id": "strategyversion:sha256:b8714ad177f1d31bb80ed6777cafe06dafa3eb38ac48c107d81532d0d488df96",
+          "restriction_key": "cap.example",
+          "action": "APPLY",
+          "restriction_kind": "ACTIVE_BUDGET_CAP",
+          "max_active_budget_usd": "60",
+          "decision_ref": "decision:spec-example",
+          "evidence_refs": [],
+          "created_time_ns": 40,
+          "schema_id": "polymarket-strategy-restriction-receipt",
+          "schema_version": "1.0.0"
+        }
+      }
+    ]
   },
   "evidence_plan": {
     "applicable": true,
-    "reason": "R001-R068 are the frozen minimum test matrix; R069-R070 are the bounded repository guards.",
+    "reason": "R001-R068 are the frozen minimum test matrix; R069-R070 are the bounded repository guards; R071-R072 close exact-head micro-closure 01.",
     "items": [
       {
         "requirement_id": "R001",
@@ -1014,6 +1510,20 @@
         "test": "test_s10_strat_life_repo_truth_data03_unchanged_non_blocking",
         "command": "python -m pytest -q -p no:cacheprovider tests/test_repo_truth_docs.py",
         "expected_result": "repo truth records DATA-03 unchanged and non-blocking"
+      },
+      {
+        "requirement_id": "R071",
+        "source": "pytest",
+        "test": "test_store_connection_pragma_contract_is_exact",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "every initialize, append and verified-load connection proves journal DELETE, synchronous FULL, foreign_keys ON; weakened PRAGMA state or WAL drift never verifies"
+      },
+      {
+        "requirement_id": "R072",
+        "source": "pytest",
+        "test": "test_canonical_public_polymarket_event_ref_is_accepted_exactly",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "only the exact event:polymarket:0x + 64 lowercase hex ref is admitted; bare, uppercase, wrong-namespace, wrong-length and padded long hex reject"
       },
       {
         "requirement_id": "R069",

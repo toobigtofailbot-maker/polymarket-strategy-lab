@@ -33,6 +33,8 @@ STORE_FORMAT_ID = "s10-strategy-lifecycle-store"
 STORE_SCHEMA_VERSION = 1
 STORE_APPLICATION_ID = 0x53544C31  # 1398033457 ("STL1")
 STORE_USER_VERSION = 1
+STORE_JOURNAL_MODE = "delete"
+STORE_SYNCHRONOUS_FULL = 2
 MAX_STORE_RECORDS = 100_000
 MAX_RECORD_PAYLOAD_BYTES = 262_144
 MAX_AGGREGATE_PAYLOAD_BYTES = 536_870_912
@@ -167,21 +169,50 @@ def _validated_path(path: object, *, must_exist: bool) -> Path:
     return target
 
 
+def _configure_connection(connection: sqlite3.Connection) -> None:
+    """Establish the frozen connection contract (also valid on read-only connections).
+
+    The persistent journal mode is never converted: a file not already in DELETE mode
+    (for example WAL drift) fails closed instead of being silently migrated.
+    """
+
+    journal = connection.execute("PRAGMA journal_mode").fetchone()
+    if journal is None or str(journal[0]).lower() != STORE_JOURNAL_MODE:
+        raise _fail("SCHEMA_CONFLICT")
+    connection.execute("PRAGMA journal_mode=DELETE")
+    connection.execute("PRAGMA synchronous=FULL")
+    connection.execute("PRAGMA foreign_keys=ON")
+
+
+def _verify_connection_contract(connection: sqlite3.Connection) -> None:
+    """Accept a connection only if journal_mode/synchronous/foreign_keys are exact."""
+
+    journal = connection.execute("PRAGMA journal_mode").fetchone()
+    if (
+        journal is None
+        or str(journal[0]).lower() != STORE_JOURNAL_MODE
+        or connection.execute("PRAGMA synchronous").fetchone() != (STORE_SYNCHRONOUS_FULL,)
+        or connection.execute("PRAGMA foreign_keys").fetchone() != (1,)
+    ):
+        raise _fail("SCHEMA_CONFLICT")
+
+
 def _connect(path: Path, mode: str) -> sqlite3.Connection:
+    """Open one store connection that satisfies the exact PRAGMA contract, or fail closed."""
+
     try:
-        return sqlite3.connect(
+        connection = sqlite3.connect(
             f"{path.as_uri()}?mode={mode}", uri=True, isolation_level=None, timeout=0.0
         )
     except sqlite3.Error:
         raise _fail("SCHEMA_CONFLICT") from None
-
-
-def _configure_writable(connection: sqlite3.Connection) -> None:
-    mode = connection.execute("PRAGMA journal_mode=DELETE").fetchone()
-    if mode is None or str(mode[0]).lower() != "delete":
-        raise _fail("INTERNAL_VALIDATION_FAILED")
-    connection.execute("PRAGMA synchronous=FULL")
-    connection.execute("PRAGMA foreign_keys=ON")
+    try:
+        _configure_connection(connection)
+        _verify_connection_contract(connection)
+    except (StrategyLifecycleError, sqlite3.Error):
+        connection.close()
+        raise _fail("SCHEMA_CONFLICT") from None
+    return connection
 
 
 # ---------------------------------------------------------------------------
@@ -226,6 +257,7 @@ class _Loaded:
 
 
 def _load(connection: sqlite3.Connection) -> _Loaded:
+    _verify_connection_contract(connection)
     _verify_schema(connection)
     count = connection.execute("SELECT COUNT(*) FROM lifecycle_records").fetchone()[0]
     if count > MAX_STORE_RECORDS:
@@ -320,7 +352,6 @@ def initialize_strategy_lifecycle_store(path: object) -> StrategyLifecycleStoreR
     committed = False
     try:
         connection = _connect(target, "rw")
-        _configure_writable(connection)
         connection.execute("BEGIN IMMEDIATE")
         for sql in _EXPECTED_OBJECTS.values():
             connection.execute(sql)
@@ -390,7 +421,6 @@ def append_strategy_lifecycle_record(
     connection = None
     try:
         connection = _connect(target, "rw")
-        _configure_writable(connection)
         connection.execute("BEGIN IMMEDIATE")
         try:
             loaded = _load(connection)

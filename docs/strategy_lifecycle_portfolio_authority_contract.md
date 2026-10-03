@@ -37,12 +37,19 @@ canonical JSON = UTF-8, sort_keys, separators (",", ":"), ensure_ascii False, al
 | StrategyRiskAllocation | `polymarket-strategy-risk-allocation` | `strategyriskallocation:sha256:` |
 | StrategyRestrictionReceipt | `polymarket-strategy-restriction-receipt` | `strategyrestriction:sha256:` |
 
+The machine spec (`docs/wp_specs/S10-STRAT-LIFE-01/wp_spec.json`) records each ID as a
+`SHA256_CANONICAL_JSON` derivation over every other top-level field, with a valid example built
+from a real product record, so the spec guard re-derives every product ID independently.
+
 Every schema version is `1.0.0`. Binary floats, NaN/Infinity, booleans-as-integers, unknown or
 missing fields, duplicate JSON keys, non-canonical text and unsorted/duplicate evidence refs
 reject. Opaque references (provenance, code identity, decision, human authorization, account
 scope, evidence refs) are bounded tokens that reject path-like text (`/`, `\`, `..`, drive
 prefixes, leading `.`/`~`) and secret-like text (secret/password/passphrase/mnemonic/private
-key/API key/bearer/credential markers in any case or separator spelling, or `0x` + 64 hex).
+key/API key/bearer/credential markers in any case or separator spelling, or `0x` followed by 64 or
+more hex digits). The single exception is a reference that is entirely the canonical public
+Polymarket event identity `event:polymarket:0x` + exactly 64 lowercase hex; uppercase,
+wrong-namespace, wrong-length and padded forms still reject and no caller allowlist exists.
 Errors are closed codes that never echo payload. No time, environment or randomness is
 generated; all times are caller-supplied non-negative integer nanoseconds.
 
@@ -146,7 +153,9 @@ refused for capacity reasons.
 
 One explicit caller-selected `.sqlite3` file: format `s10-strategy-lifecycle-store`, schema 1,
 application id `0x53544C31` (1398033457), user_version 1, journal DELETE, synchronous FULL,
-foreign_keys ON. Tables `lifecycle_meta` (singleton) and `lifecycle_records` with exact
+foreign_keys ON, established and verified on every initialize, append and verified-load
+connection (a file whose persistent journal mode is not DELETE, such as WAL drift, fails closed
+and is never converted). Tables `lifecycle_meta` (singleton) and `lifecycle_records` with exact
 no-UPDATE/no-DELETE triggers; no materialized current-state table. Entry hash =
 SHA-256(canonical JSON of sequence_number, record_kind, record_id, payload_sha256,
 previous_entry_hash), sequence from 0, first previous hash null. Bounds: 100,000 records,

@@ -1316,3 +1316,84 @@ def test_package_scope_excludes_data03_paths() -> None:
     for path in PACKAGE.glob("*.py"):
         source = path.read_text(encoding="utf-8").lower()
         assert "data-03" not in source and "data_03" not in source, path.name
+
+
+# ---------------------------------------------------------------------------
+# Exact-head micro-closure 01: connection contract and canonical event refs.
+# ---------------------------------------------------------------------------
+
+
+def _pragmas(connection: sqlite3.Connection) -> tuple:
+    return (
+        str(connection.execute("PRAGMA journal_mode").fetchone()[0]).lower(),
+        connection.execute("PRAGMA synchronous").fetchone()[0],
+        connection.execute("PRAGMA foreign_keys").fetchone()[0],
+    )
+
+
+def test_store_connection_pragma_contract_is_exact(store: Path, tmp_path: Path, monkeypatch) -> None:
+    seen: list[tuple] = []
+    original = S._load
+
+    def recording_load(connection):
+        seen.append(_pragmas(connection))
+        return original(connection)
+
+    monkeypatch.setattr(S, "_load", recording_load)
+    fam = family()
+    assert initialize_strategy_lifecycle_store(tmp_path / "second.sqlite3").status == "STORE_INITIALIZED"
+    assert load_strategy_lifecycle_store(store).status == "STORE_LOADED_VERIFIED"
+    assert append_strategy_lifecycle_record(store, fam).status == "STORE_APPEND_COMMITTED"
+    assert seen and set(seen) == {("delete", 2, 1)}
+    monkeypatch.setattr(S, "_load", original)
+
+    # A connection whose PRAGMA state cannot satisfy the contract never verifies.
+    def weakened(connection):
+        connection.execute("PRAGMA synchronous=OFF")
+        connection.execute("PRAGMA foreign_keys=OFF")
+
+    monkeypatch.setattr(S, "_configure_connection", weakened)
+    assert load_strategy_lifecycle_store(store).error_codes == ("SCHEMA_CONFLICT",)
+    assert append_strategy_lifecycle_record(store, family(key="other.family")).error_codes == ("SCHEMA_CONFLICT",)
+    assert initialize_strategy_lifecycle_store(store).error_codes == ("SCHEMA_CONFLICT",)
+    monkeypatch.undo()
+    assert snap(store).total_rows == 1
+
+    # Persistent journal-mode drift (WAL) fails closed for load, append and init.
+    wal = tmp_path / "wal.sqlite3"
+    wal.write_bytes(store.read_bytes())
+    connection = sqlite3.connect(wal)
+    assert connection.execute("PRAGMA journal_mode=WAL").fetchone()[0].lower() == "wal"
+    connection.close()
+    for result in (
+        load_strategy_lifecycle_store(wal),
+        append_strategy_lifecycle_record(wal, family(key="wal.family")),
+        initialize_strategy_lifecycle_store(wal),
+    ):
+        assert result.status == "STORE_REJECTED" and result.snapshot is None
+
+
+def test_canonical_public_polymarket_event_ref_is_accepted_exactly() -> None:
+    canonical = "event:polymarket:0x" + "0123456789abcdef" * 4
+    assert M.opaque_ref(canonical) == canonical
+    assert version(family(), refs=(canonical,)).evidence_refs == (canonical,)
+    for bad in (
+        "0x" + "a" * 64,
+        "event:polymarket:0x" + "A" * 64,
+        "event:polymarket:0X" + "a" * 64,
+        "event:kalshi:0x" + "a" * 64,
+        "market:polymarket:0x" + "a" * 64,
+        "event:polymarket:0x" + "a" * 63,
+        "event:polymarket:0x" + "a" * 65,
+        "xevent:polymarket:0x" + "a" * 64,
+        "event:polymarket:0x" + "a" * 64 + ":extra",
+        "event:polymarket:0x" + "a" * 64 + "g",
+        "wallet:0x" + "a" * 64,
+        "event:polymarket:0x" + "a" * 64 + "-secret",
+    ):
+        assert code_of(M.opaque_ref, bad) == "FIELD_VALUE_INVALID", bad
+    for safe in (
+        "market:polymarket:123456", "token:polymarket:98765432109876543210",
+        "strategyversion:sha256:" + HEX, "researchepisode:sha256:" + HEX, "wallet:0x" + "b" * 40,
+    ):
+        assert M.opaque_ref(safe) == safe

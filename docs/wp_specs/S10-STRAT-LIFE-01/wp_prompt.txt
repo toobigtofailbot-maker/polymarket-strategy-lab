@@ -673,7 +673,7 @@ Security:
 Full suite, only after the candidate is stable:
   python -m pytest -q -p no:cacheprovider
 Then push and obtain fresh exact-head hosted CI. No old CI run may be reused after the final
-commit. The machine spec evidence plan maps every normative requirement R001-R070 to a concrete
+commit. The machine spec evidence plan maps every normative requirement R001-R072 to a concrete
 pytest node or bounded repository guard command.
 
 35. WP SPEC REQUIREMENTS
@@ -689,10 +689,16 @@ max_changed_files = 20; exact_scope_required = true. historical_compatibility_ed
 only the pre-existing paths being intentionally reconciled. The API matrix declares the four new
 public source surfaces src.strategy_lifecycle, src.strategy_lifecycle.models,
 src.strategy_lifecycle.policy, src.strategy_lifecycle.store. No existing product API is changed.
-The semantic-field section mechanically describes the new canonical IDs and the fixed derived
-adaptation classification; the identity-derivation section is declared not applicable because
-the spec-guard path-keyed projection grammar cannot express the record preimage byte-exactly
-(the ID rule is frozen in semantic_fields lifecycle.content_ids and proven by pytest).
+The identity-derivation section mechanically describes all seven canonical content IDs
+(strategyfamily:, strategyversion:, portfolioauthoritypolicy:, portfoliopolicyreceipt:,
+strategyhealth:, strategyriskallocation:, strategyrestriction: sha256: prefixes) with the
+polymarket-work-package-spec 1.0.0 SHA256_CANONICAL_JSON grammar: the source paths are every
+top-level record field except the record's own ID field, so the field-keyed projection equals the
+canonical record mapping minus its ID, and the target is the ID field with its exact prefix. One
+valid example per rule is the mapping of a real product-built record, so the spec guard
+independently re-derives each product ID. Each ID field is a DERIVED / COMMITTED semantic field
+bound to its derivation rule. The adaptation classifier is not a SHA-256 identity: it remains the
+deterministic DERIVED semantic field lifecycle.adaptation with its explicit validation rule.
 
 36. NORMATIVE RULE MATRIX
 
@@ -756,6 +762,18 @@ readiness-tool structural signals were normalized (plain-text governance-track l
 "Successor Boundary" headings, and the normative matrix). Scope, authority and semantics are
 unchanged.
 
+Exact-Head Micro-Closure 01 (Side15, same PR #210, same 20 paths, authority unchanged):
+B1 every initialize, append and verified-load SQLite connection must establish and verify
+journal_mode = DELETE, synchronous = FULL and foreign_keys = ON before it is accepted; a file whose
+persistent journal mode is not DELETE (for example WAL drift) fails closed and is never converted.
+B2 the generic 0x + 64-or-more hex secret-like rejection stays, except that an opaque reference
+that is entirely the canonical public Polymarket event identity event:polymarket:0x followed by
+exactly 64 lowercase hex characters is accepted; bare, uppercase, wrong-namespace, wrong-length and
+padded forms reject, and no caller-defined allowlist exists. B3 an earlier draft of this prompt
+declared the content-ID derivations not applicable; that weakening is withdrawn and the seven
+derivations are restored as described in Section 35. Evidence R071 (B1) and R072 (B2) are added
+to the machine evidence plan.
+
 BEGIN_NORMATIVE_RULE_MATRIX_V1
 RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
 NR001|family|identity|valid_fields|REQUIRE|deterministic_content_id|lifecycle.family|R001
@@ -788,4 +806,7 @@ NR027|docs|wp61_wp95_wp154|universal_target_assumptions|REQUIRE|superseded_by_v2
 NR028|version|noop_child|semantic_identical_to_parent|FORBID|reject|lifecycle.version|R015
 NR029|store|exact_retry|same_id_same_payload|ACCEPT|idempotent_no_append|lifecycle.store|R029
 NR030|refs|path_or_secret_like|any_reference_field|FORBID|reject|lifecycle.content_ids|R006
+NR031|store|connection_pragmas|any_initialize_append_or_load_connection|REQUIRE|journal_delete_synchronous_full_foreign_keys_on|lifecycle.store|R071
+NR032|refs|canonical_polymarket_event_id|exact_lowercase_64_hex_form|ACCEPT|public_event_ref_admitted|lifecycle.content_ids|R072
+NR033|identity|content_ids|seven_record_kinds|REQUIRE|sha256_canonical_json_minus_id_with_prefix|strategy_version_id|R003
 END_NORMATIVE_RULE_MATRIX_V1

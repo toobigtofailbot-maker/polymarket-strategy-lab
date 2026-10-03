@@ -104,7 +104,11 @@ _PARAMETER_RE = re.compile(r"[a-z][a-z0-9_]{0,63}")
 _RESTRICTION_KEY_RE = re.compile(r"[a-z][a-z0-9_.-]{0,127}")
 _REF_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:@+=#-]{0,255}")
 _DRIVE_PREFIX_RE = re.compile(r"[A-Za-z]:")
-_PRIVATE_KEY_HEX_RE = re.compile(r"0x[0-9a-f]{64}(?![0-9a-f])", re.IGNORECASE)
+# Any 0x-prefixed run of 64+ hex digits is indistinguishable from key material and
+# rejects, except the exact canonical public Polymarket event identity below.
+_LONG_HEX_RE = re.compile(r"0x[0-9a-f]{64,}", re.IGNORECASE)
+_CANONICAL_EVENT_REF_RE = re.compile(r"event:polymarket:0x[0-9a-f]{64}")
+_EVENT_REF_PREFIX = "event:polymarket:0x"
 _SECRET_MARKERS = (
     "secret",
     "password",
@@ -289,7 +293,11 @@ def _is_secret_like(text: str) -> bool:
     normalized = re.sub(r"[_.:@+=#-]", "", text.lower())
     if any(marker in normalized for marker in _SECRET_MARKERS):
         return True
-    return _PRIVATE_KEY_HEX_RE.search(text) is not None
+    if _CANONICAL_EVENT_REF_RE.fullmatch(text) is not None:
+        return False
+    if text.lower().startswith(_EVENT_REF_PREFIX):
+        return True
+    return _LONG_HEX_RE.search(text) is not None
 
 
 def opaque_ref(value: object) -> str:

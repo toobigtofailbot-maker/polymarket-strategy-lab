@@ -55,6 +55,10 @@
 
 - Pre-implementation readiness: PASS, IMPLEMENTATION_READY (RUNTIME), 20 paths,
   70 evidence items, 30 normative rules
+- Exact-Head Micro-Closure 01 (same 20 paths): B1 exact SQLite connection PRAGMA contract on
+  every connection, B2 exact canonical public Polymarket event reference admitted, B3 seven
+  content-ID SHA256_CANONICAL_JSON derivations restored in the machine spec with product-built
+  examples; readiness IMPLEMENTATION_READY (RUNTIME), 72 evidence items, 33 normative rules
 - Focused lifecycle, architecture/status docs, adjacent compatibility, readiness/check-diff,
   artifact guard, diff hygiene, security, authoritative full suite and exact-head hosted CI:
   recorded with exact commands/results in the PR body after final validation
