@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import ast
 import hashlib
+import inspect
+import math
 import json
 import os
 import pathlib
@@ -654,3 +657,949 @@ def test_deployment_has_no_container_or_second_host_mechanism() -> None:
     combined = "\n".join(path.read_text(encoding="utf-8").lower() for path in files)
     for forbidden in ("docker compose", "dockerfile", "kubectl", "kubernetes manifest", "second vps"):
         assert forbidden not in combined
+
+
+# ---------------------------------------------------------------------------
+# S10-DEPLOY-EXEC-01 execution-host substrate (repository mechanism only; no
+# test here claims a real host restart, reboot or capacity observation happened)
+# ---------------------------------------------------------------------------
+
+MACHINE_ID = "0123456789abcdef0123456789abcdef"
+OTHER_MACHINE_ID = "fedcba9876543210fedcba9876543210"
+BOOT_ID = "8f1c2d3e-4a5b-4c6d-8e7f-90a1b2c3d4e5"
+OTHER_BOOT_ID = "1b2c3d4e-5f60-4718-a9b0-c1d2e3f4a5b6"
+PROBE_UNIT = "polymarket-execution-critical-probe.service"
+
+
+def _write_bytes(path: pathlib.Path, data: bytes) -> pathlib.Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+    return path
+
+
+class _ExecutionHost:
+    """Synthetic local fixture: one exact release, installed units and identity sources."""
+
+    def __init__(self, tmp_path: pathlib.Path) -> None:
+        repo, head = _repo(tmp_path / "source", {"a.txt": "alpha", "tools/x.py": "print(1)\n"})
+        self.releases = tmp_path / "releases"
+        baseline.build_release(repo, head, self.releases)
+        self.head = head
+        self.release = self.releases / head
+        self.units = tmp_path / "units"
+        self.units.mkdir()
+        shutil.copyfile(ROOT / "tools/deployment/systemd" / PROBE_UNIT, self.units / PROBE_UNIT)
+        self.machine = _write_bytes(tmp_path / "machine-id", (MACHINE_ID + "\n").encode())
+        self.boot = _write_bytes(tmp_path / "boot_id", (BOOT_ID + "\n").encode())
+        self.state = tmp_path / "state"
+        for name in baseline.PERSISTENT_STATE_DIRS:
+            (self.state / name).mkdir(parents=True)
+
+    def bind(self) -> dict[str, object]:
+        return baseline.build_execution_host_binding(
+            active_release=self.release,
+            expected_sha=self.head,
+            unit_dir=self.units,
+            releases_root=self.releases,
+            machine_id_path=self.machine,
+        )
+
+    def current(self, binding: object, **overrides: object) -> dict[str, object]:
+        arguments: dict[str, object] = {
+            "binding": binding,
+            "active_release": self.release,
+            "expected_sha": self.head,
+            "unit_dir": self.units,
+            "releases_root": self.releases,
+            "state_root": self.state,
+            "machine_id_path": self.machine,
+            "boot_id_path": self.boot,
+        }
+        arguments.update(overrides)
+        return baseline.evaluate_execution_host_currentness(**arguments)  # type: ignore[arg-type]
+
+
+def _host_commands(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    ntp: str = "yes",
+    ufw: str = "Status: active\n2222/tcp ALLOW IN Anywhere\n",
+) -> None:
+    real_run = _REAL_RUN
+
+    def fake_run(command: list[str], cwd: pathlib.Path | None = None) -> str:
+        if command[:2] == ["systemctl", "is-active"]:
+            return "active"
+        if command[0] == "timedatectl":
+            return ntp
+        if command[:2] == ["ufw", "status"]:
+            return ufw
+        return real_run(command, cwd=cwd)
+
+    monkeypatch.setattr(baseline, "_run", fake_run)
+
+
+_REAL_RUN = baseline._run
+
+
+def test_host_instance_id_is_domain_separated_and_never_emits_raw_machine_id(tmp_path: pathlib.Path) -> None:
+    first = baseline.derive_host_instance_id(MACHINE_ID.encode())
+    assert first == baseline.derive_host_instance_id(f"  {MACHINE_ID}\n".encode())
+    assert first == "pmhost-v1:" + hashlib.sha256(
+        b"polymarket-execution-host-v1\0" + MACHINE_ID.encode()
+    ).hexdigest()
+    assert first != "pmhost-v1:" + hashlib.sha256(MACHINE_ID.encode()).hexdigest()
+    assert baseline.derive_host_instance_id(OTHER_MACHINE_ID.encode()) != first
+    assert MACHINE_ID not in first
+    host = _ExecutionHost(tmp_path)
+    assert MACHINE_ID not in json.dumps(host.bind())
+    for malformed in (
+        b"",
+        b"   \n",
+        MACHINE_ID.upper().encode(),
+        MACHINE_ID[:-1].encode(),
+        (MACHINE_ID[:-1] + "g").encode(),
+        b"uninitialized",
+        b"0123456789abcdef 0123456789abcdef",
+    ):
+        with pytest.raises(baseline.BaselineError) as error:
+            baseline.derive_host_instance_id(malformed)
+        assert str(error.value) == "HOST_IDENTITY_INVALID"
+    with pytest.raises(baseline.BaselineError, match="HOST_IDENTITY_INVALID"):
+        baseline.derive_host_instance_id(MACHINE_ID)  # type: ignore[arg-type]
+    with pytest.raises(baseline.BaselineError, match="HOST_IDENTITY_INVALID"):
+        baseline.read_host_instance_id(tmp_path / "missing-machine-id")
+
+
+def test_boot_instance_id_changes_while_host_id_stays_stable(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    boot = baseline.derive_boot_instance_id(BOOT_ID.encode())
+    assert boot == baseline.derive_boot_instance_id(f"{BOOT_ID}\n".encode())
+    assert boot == "pmboot-v1:" + hashlib.sha256(b"polymarket-execution-boot-v1\0" + BOOT_ID.encode()).hexdigest()
+    assert boot.split(":", 1)[1] != hashlib.sha256(b"polymarket-execution-host-v1\0" + BOOT_ID.encode()).hexdigest()
+    assert baseline.derive_boot_instance_id(OTHER_BOOT_ID.encode()) != boot
+    assert BOOT_ID not in boot
+    for malformed in (
+        b"",
+        BOOT_ID.upper().encode(),
+        BOOT_ID.replace("-", "").encode(),
+        f"{{{BOOT_ID}}}".encode(),
+        BOOT_ID[:-1].encode(),
+        b"not-a-uuid",
+    ):
+        with pytest.raises(baseline.BaselineError) as error:
+            baseline.derive_boot_instance_id(malformed)
+        assert str(error.value) == "BOOT_IDENTITY_INVALID"
+    # Simulated reboot of the same host: only the kernel boot id source changes.
+    _host_commands(monkeypatch)
+    host = _ExecutionHost(tmp_path)
+    binding = host.bind()
+    before = host.current(binding)
+    host.boot.write_bytes((OTHER_BOOT_ID + "\n").encode())
+    after = host.current(binding)
+    assert before["host_instance_id"] == after["host_instance_id"] == binding["host_instance_id"]
+    assert before["boot_instance_id"] != after["boot_instance_id"]
+    encoded = json.dumps([before, after])
+    assert BOOT_ID not in encoded and OTHER_BOOT_ID not in encoded and MACHINE_ID not in encoded
+
+
+def test_execution_host_binding_is_canonical_atomic_and_timestamp_free(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    host = _ExecutionHost(tmp_path)
+    monkeypatch.setattr(baseline, "RELEASES_ROOT", host.releases)
+    monkeypatch.setattr(baseline, "MACHINE_ID_PATH", host.machine)
+    output = tmp_path / "etc" / "EXECUTION_HOST_BINDING.json"
+    command = [
+        "execution-host-bind", "--active-release", str(host.release), "--expected-sha", host.head,
+        "--unit-dir", str(host.units), "--output",
+    ]
+    assert baseline.main([*command, str(output)]) == 0
+    binding = json.loads(output.read_text(encoding="utf-8"))
+    assert output.read_bytes() == baseline._canonical_bytes(binding) + b"\n"
+    assert set(binding) == {
+        "schema_id", "schema_version", "host_instance_id", "bound_release_sha",
+        "release_manifest_sha256", "critical_probe_unit_sha256",
+    }
+    assert binding["schema_id"] == "polymarket-execution-host-binding"
+    assert binding["bound_release_sha"] == host.head
+    assert not any("time" in key for key in binding)
+    assert str(tmp_path) not in output.read_text(encoding="utf-8")
+    assert not list(output.parent.glob(".EXECUTION_HOST_BINDING.json.*"))
+    if os.name != "nt":
+        assert output.stat().st_mode & 0o777 == 0o644
+    assert binding == host.bind()
+    # A tampered release is rejected before any binding is written.
+    (host.release / "a.txt").write_text("changed", encoding="utf-8")
+    second = tmp_path / "etc" / "SECOND.json"
+    assert baseline.main([*command, str(second)]) == 1
+    assert not second.exists()
+
+
+def test_execution_host_currentness_rejects_host_and_release_binding_mismatch(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    host = _ExecutionHost(tmp_path)
+    _host_commands(monkeypatch)
+    binding = host.bind()
+    result = host.current(binding)
+    assert result["status"] == "EXECUTION_HOST_CURRENT"
+    assert result["active_release_sha"] == result["bound_release_sha"] == host.head
+    other_host = {**binding, "host_instance_id": baseline.derive_host_instance_id(OTHER_MACHINE_ID.encode())}
+    with pytest.raises(baseline.BaselineError, match="HOST_BINDING_MISMATCH"):
+        host.current(other_host)
+    with pytest.raises(baseline.BaselineError, match="RELEASE_BINDING_MISMATCH"):
+        host.current({**binding, "bound_release_sha": "f" * 40})
+    with pytest.raises(baseline.BaselineError, match="RELEASE_MANIFEST_MISMATCH"):
+        host.current({**binding, "release_manifest_sha256": "0" * 64})
+    for invalid in (
+        None,
+        {},
+        {**binding, "extra": 1},
+        {**binding, "schema_id": "other"},
+        {**binding, "host_instance_id": MACHINE_ID},
+        {**binding, "bound_release_sha": "F" * 40},
+    ):
+        with pytest.raises(baseline.BaselineError, match="BINDING_INVALID"):
+            host.current(invalid)
+    # The active path resolves to a different root than releases/<expected sha>.
+    elsewhere = tmp_path / "elsewhere"
+    shutil.copytree(host.release, elsewhere)
+    with pytest.raises(baseline.BaselineError, match="CURRENT_RELEASE_MISMATCH"):
+        host.current(binding, active_release=elsewhere)
+    current_link = tmp_path / "current"
+    try:
+        current_link.symlink_to(elsewhere, target_is_directory=True)
+    except OSError:
+        pass
+    else:
+        with pytest.raises(baseline.BaselineError, match="CURRENT_RELEASE_MISMATCH"):
+            host.current(binding, active_release=current_link)
+    # A release root named for another SHA whose manifest records a different repo SHA.
+    wrong_sha = "e" * 40
+    shutil.copytree(host.release, host.releases / wrong_sha)
+    with pytest.raises(baseline.BaselineError, match="ACTIVE_RELEASE_MISMATCH"):
+        host.current(
+            {**binding, "bound_release_sha": wrong_sha},
+            active_release=host.releases / wrong_sha,
+            expected_sha=wrong_sha,
+        )
+    (host.release / "a.txt").write_text("tampered", encoding="utf-8")
+    with pytest.raises(baseline.BaselineError, match="RELEASE_FILE_TAMPERED"):
+        host.current(binding)
+
+
+def test_execution_host_currentness_rejects_missing_or_tampered_critical_unit(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    host = _ExecutionHost(tmp_path)
+    _host_commands(monkeypatch)
+    binding = host.bind()
+    assert PROBE_UNIT in baseline._unit_hashes(host.units)
+    unit = host.units / PROBE_UNIT
+    unit.write_text(unit.read_text(encoding="utf-8") + "Nice=5\n", encoding="utf-8")
+    with pytest.raises(baseline.BaselineError, match="CRITICAL_PROBE_UNIT_MISMATCH"):
+        host.current(binding)
+    unit.unlink()
+    with pytest.raises(baseline.BaselineError, match="CRITICAL_PROBE_UNIT_MISSING"):
+        host.current(binding)
+    with pytest.raises(baseline.BaselineError, match="CRITICAL_PROBE_UNIT_MISSING"):
+        host.bind()
+    try:
+        unit.symlink_to(ROOT / "tools/deployment/systemd" / PROBE_UNIT)
+    except OSError:
+        return
+    with pytest.raises(baseline.BaselineError, match="CRITICAL_PROBE_UNIT_MISSING"):
+        host.current(binding)
+    assert PROBE_UNIT not in baseline._unit_hashes(host.units)
+
+
+def test_execution_host_currentness_strict_requires_ntp_and_ssh_only_firewall(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    host = _ExecutionHost(tmp_path)
+    binding = host.bind()
+    _host_commands(monkeypatch)
+    strict = host.current(binding, strict=True, ssh_port=2222)
+    assert strict["verification_mode"] == "strict"
+    assert (strict["ntp_state"], strict["firewall_state"], strict["persistent_state"]) == (
+        "synchronized", "ssh_only_inbound", "present")
+    assert set(strict) == {
+        "schema_id", "schema_version", "status", "verification_mode", "host_instance_id", "boot_instance_id",
+        "bound_release_sha", "active_release_sha", "release_manifest_sha256", "critical_probe_unit_sha256",
+        "critical_probe_state", "telemetry_timer_state", "research_target_state", "ntp_state",
+        "firewall_state", "persistent_state",
+    }
+    encoded = json.dumps(strict)
+    for raw in (MACHINE_ID, BOOT_ID, str(tmp_path), "2222"):
+        assert raw not in encoded
+    with pytest.raises(baseline.BaselineError, match="STRICT_SSH_PORT_REQUIRED"):
+        host.current(binding, strict=True)
+    _host_commands(monkeypatch, ntp="no")
+    assert host.current(binding)["ntp_state"] == "not_synchronized"
+    with pytest.raises(baseline.BaselineError, match="HOST_NTP_NOT_SYNCHRONIZED"):
+        host.current(binding, strict=True, ssh_port=2222)
+    for ufw in (
+        "Status: active\n2222/tcp ALLOW IN Anywhere\n80/tcp ALLOW IN Anywhere\n",
+        "Status: inactive\n",
+        "Status: active\n",
+    ):
+        _host_commands(monkeypatch, ufw=ufw)
+        with pytest.raises(baseline.BaselineError, match="HOST_FIREWALL_NOT_SSH_ONLY"):
+            host.current(binding, strict=True, ssh_port=2222)
+    _host_commands(monkeypatch)
+    shutil.rmtree(host.state / "execution_host")
+    with pytest.raises(baseline.BaselineError, match="PERSISTENT_STATE_MISSING"):
+        host.current(binding, strict=True, ssh_port=2222)
+
+
+class _FakeClock:
+    def __init__(self, start: int) -> None:
+        self.now = start
+
+    def clock(self) -> int:
+        return self.now
+
+    def sleep(self, seconds: float) -> None:
+        self.now += round(seconds * 1_000_000_000)
+
+
+def _run_probe(
+    host: _ExecutionHost,
+    tmp_path: pathlib.Path,
+    *,
+    start: int = 5_000_000_000,
+    duration: int | None = 60,
+    samples: str | None = "samples.jsonl",
+    **extra: object,
+) -> dict[str, object]:
+    clock = _FakeClock(start)
+    return baseline.run_critical_probe(
+        active_release=host.release,
+        heartbeat_output=host.state / "execution_host" / "critical_probe_heartbeat.json",
+        samples_output=None if samples is None else tmp_path / samples,
+        duration_seconds=duration,
+        boot_id_path=host.boot,
+        clock=clock.clock,
+        sleeper=clock.sleep,
+        **extra,  # type: ignore[arg-type]
+    )
+
+
+def test_finite_critical_probe_produces_contiguous_monotonic_sanitized_samples(tmp_path: pathlib.Path) -> None:
+    host = _ExecutionHost(tmp_path)
+    result = _run_probe(host, tmp_path)
+    assert result["status"] == "CRITICAL_PROBE_STOPPED" and result["sample_count"] == 240
+    lines = (tmp_path / "samples.jsonl").read_text(encoding="utf-8").splitlines()
+    rows = [json.loads(line) for line in lines]
+    assert [row["sequence"] for row in rows] == list(range(1, 241))
+    assert all(later["monotonic_ns"] > earlier["monotonic_ns"] for earlier, later in zip(rows, rows[1:]))
+    assert {row["interval_ms"] for row in rows} == {250.0}
+    heartbeat_path = host.state / "execution_host" / "critical_probe_heartbeat.json"
+    heartbeat = json.loads(heartbeat_path.read_text(encoding="utf-8"))
+    keys = {"schema_id", "schema_version", "release_sha", "process_instance_id", "sequence", "monotonic_ns", "interval_ms"}
+    assert set(heartbeat) == set(rows[0]) == keys
+    assert heartbeat["schema_id"] == "polymarket-execution-critical-probe-heartbeat"
+    assert rows[0]["schema_id"] == "polymarket-execution-critical-probe-sample"
+    assert heartbeat["sequence"] == 240 and heartbeat["release_sha"] == host.head
+    remaining = sorted(path.name for path in heartbeat_path.parent.iterdir())
+    assert remaining == ["critical_probe_heartbeat.json", "critical_probe_heartbeat.json.lock"]
+    assert BOOT_ID not in heartbeat_path.read_text(encoding="utf-8")
+    coexistence = baseline.evaluate_execution_host_coexistence(
+        rows, rows, _telemetry_rows(), _successful_smoke(), expected_release_sha=host.head
+    )
+    assert coexistence["evidence_failure"] is None
+    for kwargs, code in (
+        ({"period_ms": 100}, "PROBE_PERIOD_INVALID"),
+        ({"duration": 0}, "PROBE_DURATION_INVALID"),
+        ({"duration": 601}, "PROBE_DURATION_INVALID"),
+        ({"duration": None}, "PROBE_SAMPLES_REQUIRE_DURATION"),
+        ({}, "PROBE_OUTPUT_EXISTS"),
+    ):
+        with pytest.raises(baseline.BaselineError, match=code):
+            _run_probe(host, tmp_path, **kwargs)  # type: ignore[arg-type]
+
+
+def test_critical_probe_process_instance_id_changes_per_process_start(tmp_path: pathlib.Path) -> None:
+    host = _ExecutionHost(tmp_path)
+    boot = baseline.derive_boot_instance_id(BOOT_ID.encode())
+    other_boot = baseline.derive_boot_instance_id(OTHER_BOOT_ID.encode())
+    first = baseline.derive_process_instance_id(boot, 10, host.head)
+    assert first == baseline.derive_process_instance_id(boot, 10, host.head)
+    assert first != baseline.derive_process_instance_id(boot, 11, host.head)
+    assert first != baseline.derive_process_instance_id(other_boot, 10, host.head)
+    assert first != baseline.derive_process_instance_id(boot, 10, "f" * 40)
+    assert first.startswith("pmproc-v1:") and BOOT_ID not in first
+    for bad in ((BOOT_ID, 10, host.head), (boot, -1, host.head), (boot, True, host.head), (boot, 10, "short")):
+        with pytest.raises(baseline.BaselineError, match="PROCESS_IDENTITY_INVALID"):
+            baseline.derive_process_instance_id(*bad)  # type: ignore[arg-type]
+    one = _run_probe(host, tmp_path, start=1_000_000_000, duration=None, samples=None, should_stop=lambda: True)
+    two = _run_probe(host, tmp_path, start=2_000_000_000, duration=None, samples=None, should_stop=lambda: True)
+    assert one["process_instance_id"] != two["process_instance_id"]
+    heartbeat_path = host.state / "execution_host" / "critical_probe_heartbeat.json"
+    heartbeat = json.loads(heartbeat_path.read_text(encoding="utf-8"))
+    assert heartbeat["process_instance_id"] == two["process_instance_id"]
+    assert "pid" not in heartbeat and "boot_id" not in heartbeat
+
+
+def test_critical_probe_rejects_duplicate_writer(tmp_path: pathlib.Path) -> None:
+    host = _ExecutionHost(tmp_path)
+    heartbeat = host.state / "execution_host" / "critical_probe_heartbeat.json"
+    holder = baseline._acquire_writer_lock(heartbeat.with_name(heartbeat.name + ".lock"))
+    try:
+        with pytest.raises(baseline.BaselineError, match="PROBE_WRITER_ACTIVE"):
+            _run_probe(host, tmp_path, duration=None, samples=None, should_stop=lambda: True)
+        assert not heartbeat.exists()
+    finally:
+        holder.close()
+    # Once the previous writer is gone (lock released by the kernel), a recovered writer proceeds.
+    recovered = _run_probe(host, tmp_path, duration=None, samples=None, should_stop=lambda: True)
+    assert recovered["sample_count"] == 1
+
+
+def test_critical_probe_has_no_network_credential_or_trading_surface(tmp_path: pathlib.Path) -> None:
+    source = inspect.getsource(baseline.run_critical_probe) + inspect.getsource(baseline._acquire_writer_lock)
+    lowered = source.lower()
+    for forbidden in (
+        "environ", "getenv", "socket", "urlopen", "http", "wallet", "credential", "order", "account",
+        "execution_gateway", "subprocess", "_run(",
+    ):
+        assert forbidden not in lowered, forbidden
+    module = ast.parse((ROOT / "tools/deployment/runtime_baseline.py").read_text(encoding="utf-8"))
+    imported: set[str] = set()
+    for node in ast.walk(module):
+        if isinstance(node, ast.Import):
+            imported.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            imported.add((node.module or "").split(".")[0])
+    assert imported <= {
+        "__future__", "argparse", "hashlib", "json", "math", "os", "pathlib", "platform", "re", "shutil",
+        "sqlite3", "subprocess", "sys", "tempfile", "time", "datetime", "fractions", "typing", "fcntl", "msvcrt",
+    }
+    unit = (ROOT / "tools/deployment/systemd" / PROBE_UNIT).read_text(encoding="utf-8")
+    assert "PrivateNetwork=true" in unit and "RestrictAddressFamilies=AF_UNIX" in unit
+    for forbidden in (
+        "environment", "loadcredential", "setcredential", "secret", "token", "wallet", "order",
+        "account", "trading", "http", "network-online", "wants=network",
+    ):
+        assert forbidden not in unit.lower(), forbidden
+    host = _ExecutionHost(tmp_path)
+    _run_probe(host, tmp_path, duration=1, samples="one.jsonl")
+    written = {path.name for path in (host.state / "execution_host").iterdir()}
+    assert written == {"critical_probe_heartbeat.json", "critical_probe_heartbeat.json.lock"}
+    assert (tmp_path / "one.jsonl").is_file()
+
+
+def _unit_lines(name: str) -> list[str]:
+    return [line.strip() for line in _unit(name).splitlines() if line.strip()]
+
+
+def test_critical_probe_unit_runs_in_critical_slice_with_restart_policy() -> None:
+    lines = _unit_lines(PROBE_UNIT)
+    for directive in (
+        "User=polymarket", "Group=polymarket", "Slice=polymarket-critical.slice", "Restart=on-failure",
+        "RestartSec=1s", "Type=simple", "NoNewPrivileges=true", "ProtectSystem=strict", "ProtectHome=true",
+        "PrivateTmp=true",
+    ):
+        assert directive in lines, directive
+    assert sum(line.startswith("Slice=") for line in lines) == 1
+    assert sum(line.startswith("Restart=") for line in lines) == 1
+    exec_start = next(line for line in lines if line.startswith("ExecStart="))
+    assert exec_start.startswith(
+        "ExecStart=/opt/polymarket/current/.venv/bin/python "
+        "/opt/polymarket/current/tools/deployment/runtime_baseline.py critical-probe "
+    )
+    assert "--period-ms 250" in exec_start and "--duration-seconds" not in exec_start
+    assert "--heartbeat-output /var/lib/polymarket/execution_host/critical_probe_heartbeat.json" in exec_start
+    # The reused critical slice reservation is unchanged.
+    assert _unit_lines("polymarket-critical.slice")[-3:] == ["CPUWeight=100", "MemoryLow=2G", "IOWeight=100"]
+
+
+def test_execution_host_layout_is_reboot_safe() -> None:
+    lines = _unit_lines(PROBE_UNIT)
+    assert lines[lines.index("[Install]") + 1] == "WantedBy=multi-user.target"
+    assert "After=local-fs.target" in lines
+    assert "ReadWritePaths=/var/lib/polymarket/execution_host" in lines
+    assert any(line.startswith("StartLimitBurst=") for line in lines)
+    exec_start = next(line for line in lines if line.startswith("ExecStart="))
+    paths = [token for token in exec_start.split("=", 1)[1].split() if token.startswith("/")]
+    assert paths and all(
+        path == "/opt/polymarket/current"
+        or path.startswith(("/opt/polymarket/current/", "/var/lib/polymarket/execution_host/"))
+        for path in paths
+    )
+    text = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
+    assert '"/etc/systemd/system/$unit"' in text
+    assert "mv -Tf /opt/polymarket/.current-new /opt/polymarket/current" in text
+    assert "Persistent=true" in _unit("polymarket-host-telemetry.timer")
+
+
+def test_bootstrap_creates_execution_host_state_directory() -> None:
+    text = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
+    start = text.index("install -d -o polymarket -g polymarket -m 0750")
+    block = text[start : text.index("/var/log/polymarket", start)]
+    assert "/var/lib/polymarket/execution_host" in block
+    assert baseline.EXECUTION_HOST_STATE.as_posix() == "/var/lib/polymarket/execution_host"
+    assert "execution_host" in baseline.PERSISTENT_STATE_DIRS
+
+
+def test_bootstrap_installs_critical_probe_but_leaves_it_inactive() -> None:
+    text = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
+    loop_start = text.index("for unit in")
+    install_loop = text[loop_start : text.index("done", loop_start)]
+    verify_start = text.index("systemd-analyze verify")
+    verify = text[verify_start : text.index("polymarket-research.target", verify_start)]
+    assert PROBE_UNIT in install_loop and "-m 0644" in text[loop_start:]
+    assert f"/etc/systemd/system/{PROBE_UNIT}" in verify
+    enable_line = next(line for line in text.splitlines() if "systemctl enable --now" in line)
+    assert PROBE_UNIT not in enable_line
+    disable = f"systemctl disable --now {PROBE_UNIT}"
+    assert text.index(enable_line) < text.index(disable) < text.index("BOOTSTRAP_COMPLETE")
+    assert "CRITICAL_PROBE_UNEXPECTEDLY_ENABLED" in text and "CRITICAL_PROBE_UNEXPECTEDLY_ACTIVE" in text
+    for line in text.splitlines():
+        if PROBE_UNIT in line and "systemctl" in line:
+            assert "disable --now" in line or "is-enabled" in line or "is-active" in line, line
+    assert '"research_only":true' in text and '"critical_probe":"installed_inactive"' in text
+    assert "execution-host-bind" not in text
+    assert "git clone" not in text and "git pull" not in text
+
+
+def test_backup_covers_execution_host_state_without_secret_regression(tmp_path: pathlib.Path) -> None:
+    state = tmp_path / "state"
+    (state / "execution_host").mkdir(parents=True)
+    (state / "execution_host" / "critical_probe_heartbeat.json").write_text('{"sequence":1}\n', encoding="utf-8")
+    with sqlite3.connect(state / "research.sqlite3") as connection:
+        connection.execute("CREATE TABLE evidence (value TEXT)")
+    backups = tmp_path / "backups"
+    backups.mkdir()
+    baseline.create_backup(state, backups, "exec-1")
+    manifest = json.loads((backups / "exec-1" / baseline.BACKUP_MANIFEST_NAME).read_text(encoding="utf-8"))
+    entries = {item["path"]: item for item in manifest["files"]}
+    heartbeat = entries["execution_host/critical_probe_heartbeat.json"]
+    assert heartbeat["sqlite"] is False and len(heartbeat["sha256"]) == 64
+    assert entries["research.sqlite3"]["sqlite"] is True
+    restore_root = tmp_path / "restore_drills"
+    restore_root.mkdir()
+    assert baseline.restore_verify(backups / "exec-1", restore_root, "drill-1")["file_count"] == 2
+    (state / "execution_host" / "wallets").mkdir()
+    (state / "execution_host" / "wallets" / "value.txt").write_text("placeholder", encoding="utf-8")
+    with pytest.raises(baseline.BaselineError, match="BACKUP_SECRET_PATH_REJECTED"):
+        baseline.create_backup(state, backups, "exec-2")
+    shutil.rmtree(state / "execution_host" / "wallets")
+    (state / "data_03").mkdir()
+    with pytest.raises(baseline.BaselineError, match="BACKUP_DATA03_PATH_REJECTED"):
+        baseline.create_backup(state, backups, "exec-3")
+
+
+SHA = "a" * 40
+
+
+def _probe_rows(
+    intervals: list[float],
+    *,
+    release: str = SHA,
+    start_sequence: int = 1,
+    process: str = "pmproc-v1:" + "b" * 64,
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    monotonic = 1_000_000_000
+    for index, interval in enumerate(intervals):
+        monotonic += int(round(interval * 1_000_000)) if math.isfinite(interval) else 250_000_000
+        rows.append(
+            {
+                "schema_id": "polymarket-execution-critical-probe-sample",
+                "schema_version": "1.0.0",
+                "release_sha": release,
+                "process_instance_id": process,
+                "sequence": start_sequence + index,
+                "monotonic_ns": monotonic,
+                "interval_ms": interval,
+            }
+        )
+    return rows
+
+
+def _steady(value: float = 250.0, count: int = 240) -> list[dict[str, object]]:
+    return _probe_rows([value] * count)
+
+
+def _telemetry_rows(**overrides: object) -> list[dict[str, object]]:
+    base: dict[str, object] = {
+        "memory_utilization_percent": 40.0,
+        "cpu_utilization_percent": 30.0,
+        "disk_utilization_percent": 20.0,
+        "io_wait_percent": 1.0,
+        "swap_used_kib": 0,
+        "swap_in_pages": 5,
+        "swap_out_pages": 7,
+    }
+    return [dict(base), {**base, **overrides}]
+
+
+_DEFAULT = object()
+
+
+def _coexist(
+    isolated: object = _DEFAULT,
+    mixed: object = _DEFAULT,
+    telemetry: object = _DEFAULT,
+    smoke: object = _DEFAULT,
+    **kwargs: object,
+) -> dict[str, object]:
+    return baseline.evaluate_execution_host_coexistence(
+        _steady() if isolated is _DEFAULT else isolated,
+        _steady() if mixed is _DEFAULT else mixed,
+        _telemetry_rows() if telemetry is _DEFAULT else telemetry,
+        _successful_smoke() if smoke is _DEFAULT else smoke,
+        **kwargs,  # type: ignore[arg-type]
+    )
+
+
+def test_low_load_synthetic_fixture_maps_to_sufficient_evaluator_semantics_not_host_capacity_evidence() -> None:
+    result = _coexist(expected_release_sha=SHA)
+    assert result["coexistence_disposition"] == "C8G_EXECUTION_HOST_SUFFICIENT"
+    assert result["isolated_p95_interval_ms"] == result["mixed_p95_interval_ms"] == 250.0
+    assert result["critical_deadline_miss"] is False and result["critical_degradation_percent"] == 0.0
+    assert result["research_smoke_raw_count"] == 2 and result["release_sha"] == SHA
+    # Evaluator semantics only: the terminal outcome still needs every real Phase-B proof.
+    terminal = baseline.evaluate_execution_host_terminal({"coexistence": result})
+    assert terminal["terminal_outcome"] == "EXECUTION_HOST_INCONCLUSIVE"
+
+
+def _broken_streams() -> list[object]:
+    gap = _steady()
+    gap[5] = {**gap[5], "sequence": 99}
+    regression = _steady()
+    regression[3] = {**regression[3], "sequence": 1}
+    monotonic = _steady()
+    monotonic[10] = {**monotonic[10], "monotonic_ns": monotonic[9]["monotonic_ns"]}
+    mixed_release = _steady()
+    mixed_release[7] = {**mixed_release[7], "release_sha": "c" * 40}
+    two_processes = _steady()
+    two_processes[8] = {**two_processes[8], "process_instance_id": "pmproc-v1:" + "d" * 64}
+    extra_key = _steady()
+    extra_key[0] = {**extra_key[0], "pid": 42}
+    missing_key = _steady()
+    missing_key[0] = {key: value for key, value in missing_key[0].items() if key != "interval_ms"}
+
+    def replace(index: int, **fields: object) -> list[dict[str, object]]:
+        rows = _steady()
+        rows[index] = {**rows[index], **fields}
+        return rows
+
+    return [
+        None, [], "not rows", _steady(count=219), gap, regression, monotonic, mixed_release, two_processes,
+        extra_key, missing_key,
+        _probe_rows([250.0] * 239 + [float("nan")]),
+        _probe_rows([250.0] * 239 + [float("inf")]),
+        replace(4, interval_ms=-1.0), replace(4, interval_ms="250"), replace(0, sequence=True),
+        replace(0, schema_id="polymarket-execution-critical-probe-heartbeat"),
+        _probe_rows([250.0] * 240, start_sequence=0),
+    ]
+
+
+def test_coexistence_rejects_invalid_isolated_probe_evidence() -> None:
+    assert _coexist(isolated=_steady(count=220))["coexistence_disposition"] == "C8G_EXECUTION_HOST_SUFFICIENT"
+    for broken in _broken_streams():
+        result = _coexist(isolated=broken)
+        assert result["coexistence_disposition"] == "EXECUTION_HOST_INCONCLUSIVE"
+        assert result["evidence_failure"] == "ISOLATED_PROBE_EVIDENCE_INVALID"
+        assert result["isolated_p95_interval_ms"] is None
+
+
+def test_coexistence_requires_valid_mixed_probe_and_telemetry() -> None:
+    for broken in _broken_streams():
+        result = _coexist(mixed=broken)
+        assert (result["coexistence_disposition"], result["evidence_failure"]) == (
+            "EXECUTION_HOST_INCONCLUSIVE", "MIXED_PROBE_EVIDENCE_INVALID")
+    mismatched = _coexist(mixed=_probe_rows([250.0] * 240, release="c" * 40))
+    assert mismatched["evidence_failure"] == "RELEASE_BINDING_MISMATCH"
+    assert _coexist(expected_release_sha="c" * 40)["evidence_failure"] == "RELEASE_BINDING_MISMATCH"
+    first = _telemetry_rows()[0]
+    for telemetry in (
+        None, "rows", [], [first],
+        [first, {**first, "cpu_utilization_percent": None}],
+        [first, {key: value for key, value in first.items() if key != "io_wait_percent"}],
+        [first, {**first, "memory_utilization_percent": 100.5}],
+        [first, {**first, "disk_utilization_percent": float("nan")}],
+        [first, {**first, "swap_used_kib": -1}],
+        [first, {**first, "swap_in_pages": True}],
+        [first, {**first, "swap_out_pages": 1.5}],
+        [first, "row"],
+    ):
+        result = _coexist(telemetry=telemetry)
+        assert (result["coexistence_disposition"], result["evidence_failure"]) == (
+            "EXECUTION_HOST_INCONCLUSIVE", "MIXED_TELEMETRY_INCOMPLETE"), telemetry
+
+
+def test_coexistence_requires_actual_research_smoke_counts() -> None:
+    passed = _coexist()
+    assert (
+        passed["research_smoke_raw_count"],
+        passed["research_smoke_normalized_count"],
+        passed["research_smoke_store_bytes"],
+    ) == (2, 2, 128)
+    requested_limits_only = {
+        "status": "STOPPED", "stop_reason": "DURATION_EXPIRED", "error_codes": [],
+        "max_pages": 1, "duration_seconds": 60,
+    }
+    failures: list[object] = [
+        None, "not a receipt", {}, requested_limits_only,
+        {**_successful_smoke(), "status": "FAILED"},
+        {**_successful_smoke(), "stop_reason": "NETWORK_CALL_LIMIT"},
+        {**_successful_smoke(), "error_codes": ["SOURCE_UNAVAILABLE"]},
+    ]
+    for field in ("raw_count", "normalized_count", "store_bytes"):
+        for value in (0, None, "1", 1.5, True):
+            failures.append({**_successful_smoke(), field: value})
+    for smoke in failures:
+        result = _coexist(smoke=smoke)
+        assert (result["coexistence_disposition"], result["evidence_failure"]) == (
+            "EXECUTION_HOST_INCONCLUSIVE", "RESEARCH_SMOKE_NOT_PASSED"), smoke
+        assert result["research_smoke_raw_count"] is None
+
+
+def test_coexistence_degradation_boundary_is_strictly_more_than_twenty_percent() -> None:
+    exact = _coexist(mixed=_steady(300.0, 200))
+    assert exact["mixed_p95_interval_ms"] == 300.0 and exact["critical_degradation_percent"] == 20.0
+    assert exact["coexistence_disposition"] == "C8G_EXECUTION_HOST_SUFFICIENT"
+    over = _coexist(mixed=_steady(300.001, 200))
+    assert over["coexistence_disposition"] == "UPGRADE_ELIGIBLE:CRITICAL_DEGRADATION"
+    # Nearest-rank p95 uses the ceil(0.95 * n)-th smallest sample.
+    assert baseline.nearest_rank_p95([float(value) for value in range(1, 21)]) == 19.0
+    assert baseline.nearest_rank_p95([5.0]) == 5.0
+    assert baseline.nearest_rank_p95([float(value) for value in range(100, 0, -1)]) == 95.0
+    with pytest.raises(baseline.BaselineError, match="P95_REQUIRES_SAMPLES"):
+        baseline.nearest_rank_p95([])
+
+
+def test_coexistence_deadline_boundary_is_strictly_more_than_500_ms() -> None:
+    boundary = _probe_rows([250.0] * 239 + [500.0])
+    assert _coexist(mixed=boundary)["coexistence_disposition"] == "C8G_EXECUTION_HOST_SUFFICIENT"
+    assert _coexist(isolated=boundary)["critical_deadline_miss"] is False
+    for stream in ("isolated", "mixed"):
+        result = _coexist(**{stream: _probe_rows([250.0] * 239 + [500.001])})
+        assert result["coexistence_disposition"] == "UPGRADE_ELIGIBLE:CRITICAL_DEADLINE"
+        assert result["critical_deadline_miss"] is True
+
+
+def test_coexistence_resource_triggers_have_closed_precedence() -> None:
+    cases = [
+        ({"memory_utilization_percent": 84.999}, "C8G_EXECUTION_HOST_SUFFICIENT"),
+        ({"memory_utilization_percent": 85.0}, "UPGRADE_ELIGIBLE:MEMORY"),
+        ({"swap_used_kib": 1}, "UPGRADE_ELIGIBLE:MEMORY"),
+        ({"swap_in_pages": 6}, "UPGRADE_ELIGIBLE:MEMORY"),
+        ({"swap_out_pages": 8}, "UPGRADE_ELIGIBLE:MEMORY"),
+        ({"cpu_utilization_percent": 84.999}, "C8G_EXECUTION_HOST_SUFFICIENT"),
+        ({"cpu_utilization_percent": 85.0}, "UPGRADE_ELIGIBLE:CPU"),
+        ({"disk_utilization_percent": 79.999}, "C8G_EXECUTION_HOST_SUFFICIENT"),
+        ({"disk_utilization_percent": 80.0}, "UPGRADE_ELIGIBLE:DISK"),
+        ({"io_wait_percent": 9.999}, "C8G_EXECUTION_HOST_SUFFICIENT"),
+        ({"io_wait_percent": 10.0}, "UPGRADE_ELIGIBLE:IO"),
+        ({"cpu_utilization_percent": 90.0, "memory_utilization_percent": 90.0}, "UPGRADE_ELIGIBLE:MEMORY"),
+        ({"cpu_utilization_percent": 90.0, "disk_utilization_percent": 90.0}, "UPGRADE_ELIGIBLE:CPU"),
+        ({"disk_utilization_percent": 90.0, "io_wait_percent": 50.0}, "UPGRADE_ELIGIBLE:DISK"),
+    ]
+    for overrides, expected in cases:
+        result = _coexist(telemetry=_telemetry_rows(**overrides))
+        assert result["coexistence_disposition"] == expected, overrides
+        assert result["coexistence_disposition"] in baseline.COEXISTENCE_DISPOSITIONS
+    everything = _telemetry_rows(
+        memory_utilization_percent=99.0, cpu_utilization_percent=99.0,
+        disk_utilization_percent=99.0, io_wait_percent=99.0,
+    )
+    degraded = _steady(400.0, 200)
+    assert _coexist(mixed=degraded, telemetry=everything)["coexistence_disposition"] == (
+        "UPGRADE_ELIGIBLE:CRITICAL_DEGRADATION")
+    deadline = _probe_rows([400.0] * 199 + [600.0])
+    assert _coexist(mixed=deadline, telemetry=everything)["coexistence_disposition"] == (
+        "UPGRADE_ELIGIBLE:CRITICAL_DEADLINE")
+    # Invalid evidence outranks every upgrade label.
+    assert _coexist(mixed=degraded, telemetry=everything, smoke={})["coexistence_disposition"] == (
+        "EXECUTION_HOST_INCONCLUSIVE")
+    assert baseline.COEXISTENCE_DISPOSITIONS == {
+        "C8G_EXECUTION_HOST_SUFFICIENT", "UPGRADE_ELIGIBLE:CRITICAL_DEADLINE",
+        "UPGRADE_ELIGIBLE:CRITICAL_DEGRADATION", "UPGRADE_ELIGIBLE:MEMORY", "UPGRADE_ELIGIBLE:CPU",
+        "UPGRADE_ELIGIBLE:DISK", "UPGRADE_ELIGIBLE:IO", "EXECUTION_HOST_INCONCLUSIVE",
+    }
+
+
+def test_coexistence_cli_reads_bounded_evidence_and_never_defaults_green(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    files = {
+        "iso.jsonl": "\n".join(json.dumps(row) for row in _steady()),
+        "mixed.jsonl": "\n".join(json.dumps(row) for row in _steady()),
+        "telemetry.jsonl": "\n".join(json.dumps(row) for row in _telemetry_rows()),
+        "smoke.json": json.dumps(_successful_smoke()),
+    }
+    for name, content in files.items():
+        (tmp_path / name).write_text(content, encoding="utf-8")
+    arguments = [
+        "execution-host-coexistence-evaluate",
+        "--isolated-probe-jsonl", str(tmp_path / "iso.jsonl"),
+        "--mixed-probe-jsonl", str(tmp_path / "mixed.jsonl"),
+        "--mixed-telemetry-jsonl", str(tmp_path / "telemetry.jsonl"),
+        "--research-smoke-result", str(tmp_path / "smoke.json"),
+    ]
+    assert baseline.main(arguments) == 0
+    assert json.loads(capsys.readouterr().out)["coexistence_disposition"] == "C8G_EXECUTION_HOST_SUFFICIENT"
+    (tmp_path / "mixed.jsonl").write_text('{"truncated": ', encoding="utf-8")
+    assert baseline.main(arguments) == 0
+    output = capsys.readouterr().out
+    assert json.loads(output)["coexistence_disposition"] == "EXECUTION_HOST_INCONCLUSIVE"
+    assert "truncated" not in output
+    (tmp_path / "smoke.json").unlink()
+    assert baseline.main(arguments) == 0
+    assert json.loads(capsys.readouterr().out)["coexistence_disposition"] == "EXECUTION_HOST_INCONCLUSIVE"
+
+
+def _currentness(boot: str, **overrides: object) -> dict[str, object]:
+    value: dict[str, object] = {
+        "schema_id": "polymarket-execution-host-currentness",
+        "schema_version": "1.0.0",
+        "status": "EXECUTION_HOST_CURRENT",
+        "verification_mode": "strict",
+        "host_instance_id": baseline.derive_host_instance_id(MACHINE_ID.encode()),
+        "boot_instance_id": baseline.derive_boot_instance_id(boot.encode()),
+        "bound_release_sha": SHA,
+        "active_release_sha": SHA,
+        "release_manifest_sha256": "1" * 64,
+        "critical_probe_unit_sha256": "2" * 64,
+        "critical_probe_state": "active",
+        "telemetry_timer_state": "active",
+        "research_target_state": "active",
+        "ntp_state": "synchronized",
+        "firewall_state": "ssh_only_inbound",
+        "persistent_state": "present",
+    }
+    value.update(overrides)
+    return value
+
+
+def _heartbeat(process: str, sequence: int) -> dict[str, object]:
+    return {
+        "schema_id": "polymarket-execution-critical-probe-heartbeat",
+        "schema_version": "1.0.0",
+        "release_sha": SHA,
+        "process_instance_id": process,
+        "sequence": sequence,
+        "monotonic_ns": 10 + sequence,
+        "interval_ms": 250.0,
+    }
+
+
+def _phase_b_evidence(**overrides: object) -> dict[str, object]:
+    evidence: dict[str, object] = {
+        "schema_id": "polymarket-execution-host-phase-b-evidence",
+        "schema_version": "1.0.0",
+        "merge_sha": SHA,
+        "currentness_pre_reboot": _currentness(BOOT_ID),
+        "currentness_post_reboot": _currentness(OTHER_BOOT_ID),
+        "process_restart": {
+            "pre_heartbeat": _heartbeat("pmproc-v1:" + "3" * 64, 40),
+            "post_heartbeat": _heartbeat("pmproc-v1:" + "4" * 64, 8),
+            "service_state_after": "active",
+            "active_writer_count": 1,
+            "observed_slice": "polymarket-critical.slice",
+        },
+        "backup": {
+            "status": "BACKUP_COMPLETE", "backup_id": "phase-b-1", "file_count": 3,
+            "backup_manifest_sha256": "5" * 64,
+        },
+        "restore": {
+            "status": "RESTORE_VERIFIED", "drill_id": "drill-pre", "file_count": 3,
+            "source_backup_id": "phase-b-1",
+        },
+        "post_reboot_restore": {
+            "status": "RESTORE_VERIFIED", "drill_id": "drill-post", "file_count": 3,
+            "source_backup_id": "phase-b-1",
+        },
+        "coexistence": _coexist(expected_release_sha=SHA),
+        "authority": {"trading_credentials_used": False, "orders": 0, "capital_usd": 0, "live": "DISABLED"},
+    }
+    evidence.update(overrides)
+    return evidence
+
+
+def test_terminal_host_outcome_requires_every_real_phase_b_proof() -> None:
+    proven = baseline.evaluate_execution_host_terminal(_phase_b_evidence())
+    assert proven["terminal_outcome"] == "EXECUTION_HOST_PROVEN_C8G"
+    assert set(proven["proofs"].values()) == {"PASS"}
+    assert proven["live_readiness"] == "NOT_IMPLIED" and proven["required_successor"] == "S10-LIVE-ORCH-01"
+    upgrade = baseline.evaluate_execution_host_terminal(
+        _phase_b_evidence(coexistence=_coexist(telemetry=_telemetry_rows(cpu_utilization_percent=95.0)))
+    )
+    assert upgrade["terminal_outcome"] == "EXECUTION_HOST_EVIDENCE_COMPLETE_UPGRADE_ELIGIBLE:CPU"
+    base = _phase_b_evidence()
+    for key in base:
+        missing = {name: value for name, value in base.items() if name != key}
+        result = baseline.evaluate_execution_host_terminal(missing)
+        assert result["terminal_outcome"] == "EXECUTION_HOST_INCONCLUSIVE", key
+    restart = dict(base["process_restart"])  # type: ignore[arg-type]
+    other_host = baseline.derive_host_instance_id(OTHER_MACHINE_ID.encode())
+    failing: dict[str, dict[str, object]] = {
+        "reboot_recovery": {"currentness_post_reboot": _currentness(BOOT_ID)},
+        "host_binding": {"currentness_post_reboot": _currentness(OTHER_BOOT_ID, host_instance_id=other_host)},
+        "currentness": {"currentness_pre_reboot": _currentness(BOOT_ID, verification_mode="observe")},
+        "host_controls": {"process_restart": {**restart, "observed_slice": "polymarket-research.slice"}},
+        "process_restart": {"process_restart": {**restart, "active_writer_count": 2}},
+        "backup_restore": {"restore": {
+            "status": "RESTORE_VERIFIED", "drill_id": "drill-pre", "file_count": 2, "source_backup_id": "phase-b-1"}},
+        "persistent_state": {"post_reboot_restore": {
+            "status": "RESTORE_VERIFIED", "drill_id": "drill-pre", "file_count": 3, "source_backup_id": "phase-b-1"}},
+        "coexistence": {"coexistence": _coexist(smoke={})},
+        "authority": {"authority": {
+            "trading_credentials_used": False, "orders": 1, "capital_usd": 0, "live": "DISABLED"}},
+    }
+    for proof, override in failing.items():
+        result = baseline.evaluate_execution_host_terminal(_phase_b_evidence(**override))
+        assert result["terminal_outcome"] == "EXECUTION_HOST_INCONCLUSIVE", proof
+        assert result["proofs"][proof] == "FAIL", (proof, result["proofs"])
+    same_process = {**restart, "post_heartbeat": restart["pre_heartbeat"]}
+    result = baseline.evaluate_execution_host_terminal(_phase_b_evidence(process_restart=same_process))
+    assert result["proofs"]["process_restart"] == "FAIL"
+    for authority in (
+        {"trading_credentials_used": 0, "orders": False, "capital_usd": 0, "live": "DISABLED"},
+        {"trading_credentials_used": False, "orders": 0, "capital_usd": 0, "live": "ENABLED"},
+    ):
+        result = baseline.evaluate_execution_host_terminal(_phase_b_evidence(authority=authority))
+        assert result["proofs"]["authority"] == "FAIL"
+    wrong_release = _phase_b_evidence(
+        currentness_post_reboot=_currentness(OTHER_BOOT_ID, active_release_sha="f" * 40)
+    )
+    assert baseline.evaluate_execution_host_terminal(wrong_release)["terminal_outcome"] == (
+        "EXECUTION_HOST_INCONCLUSIVE")
+    for document in (None, [], "text", {**base, "merge_sha": "short"}, {**base, "schema_id": "other"}):
+        result = baseline.evaluate_execution_host_terminal(document)
+        assert result["terminal_outcome"] == "EXECUTION_HOST_INCONCLUSIVE"
+    assert baseline.TERMINAL_OUTCOMES == {"EXECUTION_HOST_PROVEN_C8G", "EXECUTION_HOST_INCONCLUSIVE"} | {
+        f"EXECUTION_HOST_EVIDENCE_COMPLETE_UPGRADE_ELIGIBLE:{reason}"
+        for reason in ("CRITICAL_DEADLINE", "CRITICAL_DEGRADATION", "MEMORY", "CPU", "DISK", "IO")
+    }
+
+
+def test_execution_host_authority_regression_no_credentials_orders_or_live() -> None:
+    spec = json.loads((ROOT / "docs/wp_specs/S10-DEPLOY-EXEC-01/wp_spec.json").read_text(encoding="utf-8"))
+    for key in (
+        "credentials", "execution", "live", "source_runtime", "paper", "strategy", "dependencies",
+        "workflow_files", "hermes_runtime",
+    ):
+        assert spec["authority"][key] is False, key
+    for key in ("network", "scheduler", "local_offline_tooling"):
+        assert spec["authority"][key] is True, key
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"]
+    assert len(scope["required_changed_files"]) == scope["max_changed_files"] == 18
+    assert not any(path.startswith(("src/", ".github/", "tools/wp/")) for path in scope["required_changed_files"])
+    assert spec["identity"]["risk_level"] == 3 and spec["identity"]["capital_at_risk_usd"] == 0
+    assert spec["successor_boundary"]["next_wp"] == "S10-LIVE-ORCH-01"
+    live = (ROOT / "docs/live_trading_authorization.md").read_text(encoding="utf-8")
+    assert live.splitlines()[2] == "LIVE TRADING STATUS: DISABLED"
+    source = (ROOT / "tools/deployment/runtime_baseline.py").read_text(encoding="utf-8")
+    for forbidden in (
+        "GateCLivePermit", "GateCSession", "A3_RESTRICTED_LIVE", "execution_gateway", "py_clob_client",
+        "polymarket_client", "mnemonic", "os.environ", "getenv",
+    ):
+        assert forbidden not in source, forbidden

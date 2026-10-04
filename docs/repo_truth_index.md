@@ -1,8 +1,35 @@
 # Repo Truth Index
 
-## S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (current protected implementation target)
+## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (current bounded implementation target)
 
-The contract is `docs/exploratory_gate_c_contract.md`; the implementation is the new three-file
+The contract is `docs/execution_host_runtime_contract.md`; the implementation extends the merged
+S10-DEPLOY-01 `tools/deployment/` baseline in place (`runtime_baseline.py`,
+`bootstrap_ubuntu_24_04.sh`, `README.md`) and adds one unit,
+`tools/deployment/systemd/polymarket-execution-critical-probe.service`; the focused tests are
+`tests/deployment/test_runtime_baseline.py`; the frozen package is
+`docs/wp_specs/S10-DEPLOY-EXEC-01/` (prompt and spec); and the stable record is
+`docs/status_entries/S10-DEPLOY-EXEC-01.md`. Base `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2` (PR #213 /
+S10-GATE-C-EXPLORE-01 merged: YES, head `342dfeb24652eccb1b6bdf237039b268115b1fb7`). RUNTIME, risk 3, exact 18-path scope.
+S10-GATE-C-EXPLORE-01: MERGED. The package adds a sanitized execution-host binding and currentness
+contract (pseudonymous pmhost-v1 host id and pmboot-v1 boot id, exact release SHA, release manifest
+hash, critical-probe unit hash), one non-economic critical-probe service in the existing
+`polymarket-critical.slice` with Restart=on-failure / RestartSec=1s that bootstrap installs but
+leaves disabled and inactive, a closed research-versus-critical coexistence evaluator and closed
+terminal Phase-B evidence semantics. Execution-capable host substrate only; no `src/` change,
+credential, authenticated client, account state, GateCLivePermit, A3 state, signing, order, OMS,
+reconciliation, capital or live authority. `docs/research_platform_runtime_baseline_contract.md` and
+the research/critical slice values are unchanged. Phase A proves the repository mechanism only; the
+real AlphaVPS host proof is a separately authorized Phase B after merge and is NOT PERFORMED. The
+AlphaVPS host is purchased/provisioned per Karl (operator-reported, not repository-observed);
+project deployment on it is not performed. No automatic upgrade or second host: Karl decides.
+S10-LIVE-ORCH-01 is the next core successor after execution-host substrate proof and is NOT
+STARTED; ALPHA-03 and DATA-03 remain separate and non-blocking; the Control Center remains separate
+and non-canonical; live DISABLED; capital/orders USD 0 / 0; merge NOT AUTHORIZED.
+
+## S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (merged historical predecessor: PR #213)
+
+PR #213 merged: YES at `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2` (head `342dfeb24652eccb1b6bdf237039b268115b1fb7`); formerly the current
+protected implementation target. The contract is `docs/exploratory_gate_c_contract.md`; the implementation is the new three-file
 stdlib-only source package `src/exploratory_gate_c/` (`__init__.py`, `models.py`, `evaluator.py`);
 the focused tests are `tests/exploratory_gate_c/test_exploratory_gate_c.py`; the frozen certified
 package is `docs/wp_specs/S10-GATE-C-EXPLORE-01/` (prompt, spec and independent draftability

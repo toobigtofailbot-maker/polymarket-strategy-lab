@@ -25,6 +25,11 @@ repository implementation state:    IMPLEMENTED_ON_BRANCH / ACTIVATION_DEFERRED
 C8G is the initial production-host target. Recording it is not evidence that the host has been
 purchased, provisioned, benchmarked or approved for paper or live execution.
 
+Later operator truth (S10-DEPLOY-EXEC-01): the `deployment status` line above is the historical
+pre-purchase planning snapshot. Karl has since reported the AlphaVPS host purchased and
+provisioned; project deployment on it has not been performed and its technical facts remain
+unverified. Section 11 records that current state without rewriting this planning record.
+
 ## 2. Superseded Planning Statements
 
 This decision supersedes, as current planning truth:
@@ -221,6 +226,10 @@ The implementation freezes mechanisms for:
 
 ### Single-host coexistence proof (deferred)
 
+S10-DEPLOY-EXEC-01 implements the repository mechanism for this proof
+(`docs/execution_host_runtime_contract.md`); the real host proof stays a separately authorized
+Phase B. The original deferred requirements below are retained:
+
 After a real candidate reaches WP172 PASS and before production-hosted serious paper/live, a later
 separately authorized proof must show:
 
@@ -276,3 +285,49 @@ credentials, host activation, product scheduling, paper trading, execution, sign
 live trading, capital, or orders. Current live authority remains unchanged
 (`docs/live_trading_authorization.md`). Live remains DISABLED; Gate C is NOT AUTHORIZED; capital
 at risk USD 0; orders 0.
+
+## 11. Current Operator-Reported Provisioning State (S10-DEPLOY-EXEC-01)
+
+This block is later, superseding current truth for the provisioning state only. The planning
+statements above (including `deployment status: NOT_PROVISIONED / NOT_DEPLOYED`) are retained as
+the historical pre-purchase record; they were true when written.
+
+```text
+VPS purchased: YES (operator-reported by Karl; not observed by the repository)
+VPS provisioned: YES (operator-reported by Karl; not observed by the repository)
+project deployment/configuration on that VPS: NOT PERFORMED
+host activation / bootstrap / binding / reboot proof: NOT PERFORMED
+actual host technical facts: UNKNOWN until a separately authorized Phase B verifies them
+initial intended tier/direction: AlphaVPS / Sofia / C8G / one consolidated host
+```
+
+The repository has not observed this VPS. No provider, OS, architecture, resource, NTP, firewall or
+capacity fact about it is claimed until Phase B records sanitized evidence. A material mismatch
+between the actual host and this direction is `STOP HOST_DIRECTION_DRIFT`.
+
+## 12. Execution-Host Substrate (S10-DEPLOY-EXEC-01)
+
+S10-DEPLOY-EXEC-01 extends, and does not replace, the S10-DEPLOY-01 native-systemd baseline. Its
+contract is `docs/execution_host_runtime_contract.md`. Phase A (repository mechanism) adds:
+
+- a sanitized execution-host binding and currentness contract (pseudonymous `pmhost-v1` host id,
+  `pmboot-v1` boot id, exact release SHA, release manifest hash, critical-probe unit hash);
+- `polymarket-execution-critical-probe.service`, a non-economic heartbeat diagnostic in the
+  existing `polymarket-critical.slice` with deterministic `Restart=on-failure` / `RestartSec=1s`
+  semantics, installed but disabled/inactive after bootstrap;
+- a closed research-versus-critical coexistence evaluator (60-second isolated and mixed windows,
+  250 ms probe period, `> 500.0` ms deadline, `> 20%` nearest-rank p95 degradation, and the
+  memory/CPU/disk/I/O review triggers) with dispositions `C8G_EXECUTION_HOST_SUFFICIENT`,
+  `UPGRADE_ELIGIBLE:CRITICAL_DEADLINE|CRITICAL_DEGRADATION|MEMORY|CPU|DISK|IO` or
+  `EXECUTION_HOST_INCONCLUSIVE`;
+- closed terminal Phase-B evidence semantics: `EXECUTION_HOST_PROVEN_C8G`,
+  `EXECUTION_HOST_EVIDENCE_COMPLETE_UPGRADE_ELIGIBLE:<reason>` or `EXECUTION_HOST_INCONCLUSIVE`.
+
+The research and critical slice values in Section 5 are unchanged. An upgrade-eligible or
+inconclusive result is a review trigger only: nothing is auto-purchased or auto-upgraded, Karl
+decides, and a second VPS remains a separate material architecture decision rather than a scaling
+step. `EXECUTION_HOST_PROVEN_C8G` would mean only that the host/runtime substrate was proven on the
+tested C8G instance; it never implies account access, reconciliation, order permission or live
+enablement, and S10-LIVE-ORCH-01 remains the separately gated successor. Phase B (real AlphaVPS
+proof) is not authorized by the Phase-A implementation. Live remains DISABLED; capital/orders
+USD 0 / 0.

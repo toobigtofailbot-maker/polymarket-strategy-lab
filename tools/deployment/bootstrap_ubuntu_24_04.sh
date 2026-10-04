@@ -102,6 +102,7 @@ run_or_fail HOST_SETUP_FAILED install -d -o polymarket -g polymarket -m 0750 \
   /var/lib/polymarket/telemetry \
   /var/lib/polymarket/backups \
   /var/lib/polymarket/restore_drills \
+  /var/lib/polymarket/execution_host \
   /var/log/polymarket
 run_or_fail HOST_SETUP_FAILED install -d -o root -g root -m 0755 /etc/polymarket /etc/polymarket/deployment
 
@@ -141,6 +142,7 @@ run_or_fail HOST_SETUP_FAILED chmod -R a-w "$target_release"
 for unit in \
   polymarket-research.slice \
   polymarket-critical.slice \
+  polymarket-execution-critical-probe.service \
   polymarket-host-telemetry.service \
   polymarket-host-telemetry.timer \
   polymarket-research.target; do
@@ -152,6 +154,7 @@ done
 run_or_fail SYSTEMD_VERIFY_FAILED systemd-analyze verify \
   /etc/systemd/system/polymarket-research.slice \
   /etc/systemd/system/polymarket-critical.slice \
+  /etc/systemd/system/polymarket-execution-critical-probe.service \
   /etc/systemd/system/polymarket-host-telemetry.service \
   /etc/systemd/system/polymarket-host-telemetry.timer \
   /etc/systemd/system/polymarket-research.target
@@ -171,6 +174,15 @@ run_or_fail SERVICE_ACTIVATION_FAILED systemctl daemon-reload
 run_or_fail SERVICE_ACTIVATION_FAILED systemctl enable --now polymarket-host-telemetry.timer polymarket-research.target
 run_or_fail SERVICE_ACTIVATION_FAILED systemctl is-active --quiet polymarket-host-telemetry.timer
 run_or_fail SERVICE_ACTIVATION_FAILED systemctl is-active --quiet polymarket-research.target
+# S10-DEPLOY-EXEC-01: the non-economic critical probe is installed and verified but never
+# enabled or started by bootstrap. Only a separately authorized host proof may start it.
+run_or_fail SERVICE_ACTIVATION_FAILED systemctl disable --now polymarket-execution-critical-probe.service
+if systemctl is-enabled --quiet polymarket-execution-critical-probe.service; then
+  fail CRITICAL_PROBE_UNEXPECTEDLY_ENABLED
+fi
+if systemctl is-active --quiet polymarket-execution-critical-probe.service; then
+  fail CRITICAL_PROBE_UNEXPECTEDLY_ACTIVE
+fi
 
 run_capture_or_fail HOST_MANIFEST_FAILED /tmp/polymarket-host-manifest.json \
   /opt/polymarket/current/.venv/bin/python \
@@ -178,4 +190,4 @@ run_capture_or_fail HOST_MANIFEST_FAILED /tmp/polymarket-host-manifest.json \
   --active-release /opt/polymarket/current \
   --output /etc/polymarket/deployment/HOST_MANIFEST.json
 
-printf '{"status":"BOOTSTRAP_COMPLETE","repo_sha":"%s","research_only":true,"telemetry_timer":"active","firewall":"ssh_only_inbound"}\n' "$expected_sha"
+printf '{"status":"BOOTSTRAP_COMPLETE","repo_sha":"%s","research_only":true,"telemetry_timer":"active","critical_probe":"installed_inactive","firewall":"ssh_only_inbound"}\n' "$expected_sha"

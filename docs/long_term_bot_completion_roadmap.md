@@ -2,8 +2,26 @@
 
 ## A. Status
 
-- Current protected implementation package: S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy
-  Permit Core on frozen base `35db4f05347b8b27f7bd0296cf9b1b0627e58d12` after PR #212 / S10-EXEC-FEAS-01 (merged: YES;
+- Current bounded implementation package: S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate &
+  Coexistence Proof on frozen base `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2` after PR #213 / S10-GATE-C-EXPLORE-01
+  (merged: YES; head `342dfeb24652eccb1b6bdf237039b268115b1fb7`). RUNTIME, risk 3, exact 18-path scope. It extends the merged
+  S10-DEPLOY-01 `tools/deployment/` baseline (`docs/execution_host_runtime_contract.md`): a
+  sanitized execution-host binding/currentness contract, a non-economic critical-probe service in
+  the existing critical slice (installed but inactive after bootstrap), a closed
+  research-versus-critical coexistence evaluator and closed terminal Phase-B evidence semantics.
+  Execution-capable host substrate only: no `src/` change, credential, account, Gate-C permit
+  consumption, signing, order, OMS, reconciliation, capital or live authority.
+  Status: S10-GATE-C-EXPLORE-01: MERGED (PR #213); S10-DEPLOY-EXEC-01: current implemented review
+  target (repository mechanism; real AlphaVPS host proof is a separately authorized Phase B after
+  merge, NOT PERFORMED); S10-LIVE-ORCH-01: next core successor after execution-host substrate proof,
+  NOT STARTED. AlphaVPS purchased/provisioned per Karl (operator-reported; not repository-observed);
+  project deployment on it NOT PERFORMED. No automatic upgrade or second host. ALPHA-03 and DATA-03
+  separate/non-blocking; Control Center separate and non-canonical. Live DISABLED; capital/orders
+  USD 0 / 0.
+
+- Immediate merged predecessor: S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core
+  (PR #213 merged at `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2`; head `342dfeb24652eccb1b6bdf237039b268115b1fb7`; formerly the current protected
+  implementation package) on frozen base `35db4f05347b8b27f7bd0296cf9b1b0627e58d12` after PR #212 / S10-EXEC-FEAS-01 (merged: YES;
   head `99f3c3c8acc09ae3b5646f785446d69a7b8b2290`). PROTECTED, risk 4, exact 18-path scope, independent certificate.
   It adds only the stdlib-only `src/exploratory_gate_c/` package
   (`docs/exploratory_gate_c_contract.md`): verified read-only STRAT-LIFE and Hermes manager store
@@ -13,14 +31,15 @@
   Eligibility authority only: necessary-but-not-sufficient future evidence, not live activation;
   no network, account, geoblock, credential, signing, order, persistence, legacy WP175 Gate-C live
   permit, A3 or live authority; WP175 unchanged.
-  Status: S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01: MERGED; S10-EXEC-FEAS-01: MERGED;
-  S10-GATE-C-EXPLORE-01: current protected implemented review target; S10-DEPLOY-EXEC-01: next
-  core successor after review+merge, NOT STARTED; S10-LIVE-ORCH-01: later; S10-CC-OPS-01: separate,
-  may begin only after GATE-C-EXPLORE merges. S10-CC-FOUND-01 parallel/independent; ALPHA-03
+  Status at GATE-C-EXPLORE implementation time: S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01:
+  MERGED; S10-EXEC-FEAS-01: MERGED; S10-GATE-C-EXPLORE-01: then the current protected implemented
+  review target (now MERGED in PR #213); S10-DEPLOY-EXEC-01: then the next core successor after
+  review+merge; S10-LIVE-ORCH-01: later; S10-CC-OPS-01: separate, may begin only after
+  GATE-C-EXPLORE merges. S10-CC-FOUND-01 parallel/independent; ALPHA-03
   parallel/non-blocking; DATA-03 unchanged and non-blocking; S10-DEPLOY-01 host activation
   separate. Live DISABLED; capital/orders USD 0 / 0.
 
-- Immediate merged predecessor: S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (PR #212
+- Earlier merged predecessor: S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (PR #212
   merged at `35db4f05347b8b27f7bd0296cf9b1b0627e58d12`; head `99f3c3c8acc09ae3b5646f785446d69a7b8b2290`; formerly the current bounded implementation package)
   on frozen base `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8` after PR #211 / S10-HERMES-STRAT-01 (merged: YES;
   head `9439283768b78b7302290ba6b8611e3477aa3c6a`). It adds only the stdlib-only `src/execution_feasibility/` package
@@ -871,17 +890,17 @@ PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
   non-blocking; the Control Center (S10-CC-FOUND-01) stays a parallel lane; S10-DEPLOY-01 host
   activation separate; Gate C unchanged; live DISABLED; capital/orders USD 0 / 0.
 
-## S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (current)
+## S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (merged)
 
 PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
 
 - S10-STRAT-LIFE-01: MERGED. S10-HERMES-STRAT-01: MERGED. S10-EXEC-FEAS-01: MERGED.
-  S10-GATE-C-EXPLORE-01: current protected implemented review target.
+  S10-GATE-C-EXPLORE-01: MERGED (PR #213 merged at `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2`; head
+  `342dfeb24652eccb1b6bdf237039b268115b1fb7`).
 - Known-candidate path capability status: lifecycle (MERGED) -> Hermes strategy manager (MERGED)
   -> execution feasibility (MERGED) -> exploratory Gate C (S10-GATE-C-EXPLORE-01: implemented
-  capability, current candidate) -> execution host (S10-DEPLOY-EXEC-01: next core successor after
-  review+merge, NOT STARTED) -> live orchestrator (S10-LIVE-ORCH-01: later) -> tiny exploratory
-  live.
+  capability, MERGED in PR #213) -> execution host (S10-DEPLOY-EXEC-01: see the current section
+  below) -> live orchestrator (S10-LIVE-ORCH-01: later) -> tiny exploratory live.
 - The exploratory permit is hard eligibility evidence for one exact intent, necessary but not
   sufficient: execution-host identity, restart/recovery, authenticated account/access checks,
   reconciliation and order mutation remain future protected runtime work (S10-DEPLOY-EXEC-01,
@@ -890,3 +909,24 @@ PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
   baseline, as a separate package; S10-CC-FOUND-01 stays parallel/independent; ALPHA-03 remains a
   parallel feeder and is not a prerequisite; DATA-03 unchanged and non-blocking; S10-DEPLOY-01
   host activation separate; live DISABLED; capital/orders USD 0 / 0.
+
+## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (current)
+
+PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
+
+- S10-GATE-C-EXPLORE-01: MERGED (PR #213). S10-DEPLOY-EXEC-01: current implemented review target
+  (repository mechanism, `docs/execution_host_runtime_contract.md`). After merge the mechanism is
+  merged, but the actual AlphaVPS host proof stays separately gated until an authorized Phase B
+  completes.
+- Known-candidate path capability status: lifecycle (MERGED) -> Hermes strategy manager (MERGED)
+  -> execution feasibility (MERGED) -> exploratory Gate C (MERGED) -> execution host
+  (S10-DEPLOY-EXEC-01: implemented repository mechanism, current review target; Phase-B host proof
+  separately gated) -> live orchestrator (S10-LIVE-ORCH-01: next core successor after
+  execution-host substrate proof, NOT STARTED) -> tiny exploratory live.
+- Gate-C eligibility and DEPLOY-EXEC host proof are each necessary but not sufficient. Account /
+  access / reconciliation, trading credentials and order mutation remain future protected
+  S10-LIVE-ORCH-01 work.
+- Capacity outcomes are review triggers only: no automatic upgrade or purchase; Karl decides; a
+  second VPS remains a separate material architecture decision.
+- ALPHA-03 and DATA-03 remain separate, non-blocking lanes; the Control Center remains separate and
+  non-canonical; live DISABLED; capital/orders USD 0 / 0.

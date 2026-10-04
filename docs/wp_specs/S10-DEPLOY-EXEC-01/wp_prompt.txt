@@ -1,0 +1,1643 @@
+SIDE16 — S10-DEPLOY-EXEC-01
+EXECUTION-HOST RUNTIME SUBSTRATE & COEXISTENCE PROOF — CANONICAL PROMPT
+
+Package Identity:
+  WP ID: S10-DEPLOY-EXEC-01
+  Title: Execution-Host Runtime Substrate & Coexistence Proof
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base: 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2
+  Required predecessor: PR 213, head 342dfeb24652eccb1b6bdf237039b268115b1fb7, merge 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2
+  Suggested branch: claude/s10-deploy-exec-01-execution-host-substrate
+  Package class: EXECUTION_HOST_RUNTIME_SUBSTRATE
+  Package size class: L
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+Governance track expected: RUNTIME
+  Report-back: Section 26 (Phase A implementation report) and Section 27 (separately authorized Phase B host-proof report).
+
+Implementation authorization: Karl explicitly authorized Phase A implementation of this exact frozen
+package in a new Claude Code implementation session (branch, exact 18-path scope, validation,
+commit, push, PR, exact-head hosted CI, PR evidence). Phase B host activation/proof, merge,
+trading credentials, account access, orders, capital and live trading are NOT authorized.
+
+Canonicalization note: the complete normative WP specification follows verbatim. The only
+mechanical normalization is in Section 29: the readiness gate requires the frozen
+NORMATIVE_RULE_MATRIX_V1 header to include the SPEC_PATH column, so every Section 29 row carries
+SPEC_PATH=NONE (no rule references a semantic-field spec path), and because CANONICAL_EFFECT
+tokens must be lowercase, NR030's effect is spelled s10_live_orch_01_remains_separate (same
+meaning as the frozen S10_LIVE_ORCH_01_remains_separate). No rule identifier, domain, subject,
+condition, action, evidence identifier or rule meaning is changed.
+
+==================================================================================================
+
+# KARL / SIDE 16 — S10-DEPLOY-EXEC-01
+## Execution-Host Runtime Substrate & Coexistence Proof — Final One-Shot Work Package
+
+**Repository:** `toobigtofailbot-maker/polymarket-strategy-lab`
+**WP ID:** `S10-DEPLOY-EXEC-01`
+**Frozen base / `main`:** `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2`
+**Required predecessor:** PR #213 — `S10-GATE-C-EXPLORE-01`
+**Predecessor final implementation head:** `342dfeb24652eccb1b6bdf237039b268115b1fb7`
+**Predecessor merge SHA:** `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2`
+**Suggested branch after implementation authorization:** `claude/s10-deploy-exec-01-execution-host-substrate`
+**Package class:** `EXECUTION_HOST_RUNTIME_SUBSTRATE`
+**Package size class:** `L`
+**Exact changed-file scope:** `18`
+**Risk level:** `3`
+**Governance track expected:** `RUNTIME`
+**Evidence mode expected:** `PRIVATE_REPO_MANUAL_VERIFIED`
+**Capital at risk:** `USD 0`
+**Orders:** `0`
+**Live trading:** `DISABLED`
+**Merge authority:** `NO`
+**Phase-B host activation authority in this file:** `NO — separately authorized by Karl only after Phase-A merge`
+
+---
+
+# 0. AUTHORIZATION STATE — READ THIS FIRST
+
+This file is the **frozen implementation specification**, but Karl's current authorization is **drafting only**.
+
+**DO NOT IMPLEMENT THIS WP merely because this file was supplied.**
+
+Claude Code may implement only when Karl explicitly instructs a NEW Claude Code implementation session to implement `S10-DEPLOY-EXEC-01` against the exact frozen base above.
+
+Until that later implementation authorization:
+
+- do not create a branch;
+- do not modify the repository;
+- do not create a PR;
+- do not log into or configure AlphaVPS;
+- do not request or use host/trading secrets;
+- do not enable trading credentials;
+- do not place, cancel, sign, simulate, or submit orders;
+- do not activate live trading or capital.
+
+Even after Phase-A implementation is authorized, **Phase B is still NOT authorized**. Phase B requires:
+
+1. Phase A merged to `main`;
+2. refresh of the actual merge SHA;
+3. separate explicit Karl authorization for host activation/proof;
+4. Karl-controlled host access.
+
+The VPS must never receive GitHub credentials or trading credentials from this WP.
+
+---
+
+# 1. GOVERNANCE AUTHORITY MIRROR
+
+The following block is normative and must be copied exactly into the canonical repo prompt.
+
+```text
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: true
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+```
+
+Interpretation:
+
+- `network: true` exists only for already-approved Git/GitHub workflow traffic and the bounded public research-host proof inherited from DEPLOY-01/Phase B;
+- `scheduler: true` covers systemd supervision/timer/service mechanics only;
+- `execution: false` is intentional: this WP creates an **execution-capable host substrate**, not economic execution authority;
+- `credentials: false` means no trading credential, private key, wallet, token, authenticated client or credential-loading path;
+- `live: false` means no live activation;
+- `source_runtime: false` means no `src/**` change;
+- RUNTIME / Risk 3 is valid only while these exact booleans remain true.
+
+If safe implementation would require `credentials=true`, `execution=true`, `live=true`, Risk 4, or another protected semantic expansion, **STOP**. Do not silently reclassify or broaden this WP.
+
+---
+
+# 2. CLAUDE CODE MANDATORY STARTUP
+
+When Karl later authorizes implementation, Claude Code must begin with the repository's mandatory sequence:
+
+1. read `AGENTS.md`;
+2. read `AI_CODING_AGENT_START_HERE.md`;
+3. read `CLAUDE_START_HERE.md`;
+4. read current repo truth:
+   - `docs/project_status.md`;
+   - `docs/repo_truth_index.md`;
+   - `docs/deferred_items_log.md`;
+   - `docs/ai/codex/README.md`;
+   - `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`;
+   - `docs/ai/codex/WP_SPEC_STANDARD.md`;
+   - `docs/ai/codex/VALIDATION_MATRIX.md`;
+   - `docs/ai/codex/PROTECTED_PATHS.md`;
+   - `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`;
+   - `docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md`;
+5. then read only the task-relevant files listed in Section 5.
+
+Repo truth wins over this handoff if a material contradiction appeared after the frozen base.
+
+---
+
+# 3. HARD START / REMOTE-MAIN SYNC GATE
+
+Before branch creation or implementation, prove all of the following:
+
+```text
+origin/main == 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2
+local main   == 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2
+working tree == clean
+PR #213      == merged
+PR #213 final implementation head == 342dfeb24652eccb1b6bdf237039b268115b1fb7
+PR #213 merge SHA == 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2
+no open S10-DEPLOY-EXEC-01 PR exists
+no S10-DEPLOY-EXEC-01 branch already exists unless Karl explicitly tells you to resume that exact branch
+```
+
+Also run the repository-required generated-artifact checks before branch creation.
+
+If any material base or predecessor fact differs, stop before implementation and return:
+
+```text
+STOP REPO_STATE_DRIFT
+expected_base: 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2
+actual_base: <sha>
+material_delta: <concise exact explanation>
+```
+
+Do not silently rebase a frozen package.
+
+---
+
+# 4. OBJECTIVE / END STATE
+
+Implement the minimum execution-host substrate required between merged exploratory Gate-C eligibility and future live orchestration.
+
+The completed capability must prove, without creating economic execution authority, that one consolidated production host can deterministically bind and recover the exact repository release and preserve a protected critical lane while bounded research work runs beside it.
+
+The capability chain is:
+
+```text
+S10-STRAT-LIFE-01            MERGED
+→ S10-HERMES-STRAT-01        MERGED
+→ S10-EXEC-FEAS-01           MERGED
+→ S10-GATE-C-EXPLORE-01      MERGED
+→ S10-DEPLOY-EXEC-01         THIS WP
+→ S10-LIVE-ORCH-01           SUCCESSOR / NOT IMPLEMENTED HERE
+→ separately authorized tiny exploratory live
+```
+
+This WP must establish four things:
+
+1. **exact host/release identity** — sanitized stable host binding + current boot/release evidence;
+2. **critical-runtime supervision/recovery** — a non-economic critical probe under the existing critical slice, with deterministic restart semantics;
+3. **host durability** — exact release, persistent state, real process restart, real reboot, real backup/isolated restore evidence in Phase B;
+4. **C8G coexistence truth** — bounded research-vs-critical mixed-load evidence and a closed capacity disposition, without automatic upgrade.
+
+A successful Phase-A merge proves the **mechanism**.
+
+Only a separately authorized real Phase-B run can prove the **actual AlphaVPS host**.
+
+Neither phase authorizes orders or live trading.
+
+---
+
+# 5. CONTEXT BUDGET / REQUIRED READ SET
+
+Do not redo broad architecture research. Read the minimum current surfaces needed to implement this WP.
+
+## Required before coding
+
+```text
+AGENTS.md
+AI_CODING_AGENT_START_HERE.md
+CLAUDE_START_HERE.md
+
+docs/architecture_decision_record.md
+docs/long_term_bot_completion_roadmap.md
+docs/live_trading_authorization.md
+docs/production_vps_hosting_direction.md
+docs/research_platform_runtime_baseline_contract.md
+docs/project_status.md
+docs/repo_truth_index.md
+docs/status_entries/S10-DEPLOY-01.md
+docs/status_entries/S10-GATE-C-EXPLORE-01.md
+docs/exploratory_gate_c_contract.md
+
+docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md
+docs/ai/codex/WP_SPEC_STANDARD.md
+docs/ai/codex/VALIDATION_MATRIX.md
+docs/ai/codex/PROTECTED_PATHS.md
+docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md
+docs/ai/codex/PR_EVIDENCE_REPORTING_DISCIPLINE.md
+
+docs/wp_specs/S10-DEPLOY-01/wp_prompt.txt
+docs/wp_specs/S10-DEPLOY-01/wp_spec.json
+docs/wp_specs/S10-GATE-C-EXPLORE-01/wp_prompt.txt
+docs/wp_specs/S10-GATE-C-EXPLORE-01/wp_spec.json
+
+tools/deployment/README.md
+tools/deployment/runtime_baseline.py
+tools/deployment/bootstrap_ubuntu_24_04.sh
+tools/deployment/systemd/polymarket-research.slice
+tools/deployment/systemd/polymarket-critical.slice
+tools/deployment/systemd/polymarket-host-telemetry.service
+tools/deployment/systemd/polymarket-host-telemetry.timer
+tools/deployment/systemd/polymarket-research.target
+
+tests/deployment/test_runtime_baseline.py
+tests/test_architecture_direction_docs.py
+tests/test_project_status_docs.py
+tests/test_repo_truth_docs.py
+```
+
+## Read only if a focused implementation blocker requires it
+
+- the exact existing public research-smoke runner already referenced by DEPLOY-01;
+- narrowly relevant WP169 code/contract needed only to preserve the existing smoke invocation;
+- narrowly relevant workflow/governance helper implementation when readiness output itself is unclear.
+
+## Do not inspect or modify merely for context
+
+- trading credentials/private keys/wallets;
+- authenticated account clients;
+- unrelated strategy code;
+- Hermes internals;
+- DATA-03 evidence;
+- ALPHA-03 work;
+- Control Center frontend implementation;
+- historical branches unrelated to this capability.
+
+---
+
+# 6. NON-AUTHORITY / HARD BOUNDARY
+
+This WP MUST NOT:
+
+- modify `src/**`;
+- modify `src/execution_gateway/**`;
+- issue or consume `GateCLivePermit`;
+- call `GateCSession.arm`;
+- enter `A3_RESTRICTED_LIVE`;
+- instantiate authenticated Polymarket clients;
+- read or request L2 credentials, API tokens, wallet keys, private keys or mnemonics;
+- query private balance, allowance, position, private trade or open-order state;
+- sign, create, post, amend or cancel an order;
+- create an OMS or live orchestrator;
+- mutate `PortfolioAuthorityPolicy`, `StrategyRiskAllocation`, strategy lifecycle or Hermes state;
+- implement account/access/reconciliation logic reserved for `S10-LIVE-ORCH-01`;
+- move or schedule DATA-03;
+- implement ALPHA-03;
+- add Docker, Docker Compose, Kubernetes or another orchestrator;
+- add a second VPS;
+- auto-purchase or auto-upgrade any VPS tier;
+- change dependencies or lockfiles;
+- change GitHub Actions/workflow files;
+- change the existing research and critical slice resource values without a new material decision;
+- expose hostname, IP, SSH username, operator identity, provider account ID, raw machine ID, raw boot ID, environment or credentials in evidence.
+
+`LIVE TRADING STATUS: DISABLED` remains true.
+
+Capital/orders remain `USD 0 / 0`.
+
+---
+
+# 7. EXACT 18-PATH CHANGED-FILE SCOPE
+
+Exactly these 18 repository paths are authorized:
+
+```text
+1.  docs/architecture_decision_record.md
+2.  docs/long_term_bot_completion_roadmap.md
+3.  docs/live_trading_authorization.md
+4.  docs/production_vps_hosting_direction.md
+5.  docs/execution_host_runtime_contract.md
+6.  docs/project_status.md
+7.  docs/repo_truth_index.md
+8.  docs/status_entries/S10-DEPLOY-EXEC-01.md
+9.  docs/wp_specs/S10-DEPLOY-EXEC-01/wp_prompt.txt
+10. docs/wp_specs/S10-DEPLOY-EXEC-01/wp_spec.json
+11. tools/deployment/README.md
+12. tools/deployment/runtime_baseline.py
+13. tools/deployment/bootstrap_ubuntu_24_04.sh
+14. tools/deployment/systemd/polymarket-execution-critical-probe.service
+15. tests/deployment/test_runtime_baseline.py
+16. tests/test_architecture_direction_docs.py
+17. tests/test_project_status_docs.py
+18. tests/test_repo_truth_docs.py
+```
+
+`required_changed_files == allowed_changed_files`.
+
+`max_changed_files == 18`.
+
+`exact_scope_required == true`.
+
+The canonical spec must use these forbidden prefixes unless the current WP standard mechanically requires a narrower equivalent:
+
+```text
+.github/
+src/
+agent_memory/
+agent_runtime/
+credentials/
+local_data/
+secrets/
+tools/wp/
+tools/git/
+tools/security/
+tools/hermes/
+tools/polymarket/
+tools/advisory/
+tools/agent/
+```
+
+Dependency/lock files and `.env`/credential-like paths remain forbidden through the authority/scope policy even when they are not expressible as a directory prefix.
+
+No certificate file is required because the package is RUNTIME, not PROTECTED.
+
+Do **not** edit `docs/research_platform_runtime_baseline_contract.md`: that document remains the historical/canonical DEPLOY-01 research-baseline contract. DEPLOY-EXEC extends it through the new `docs/execution_host_runtime_contract.md`.
+
+Do **not** edit the existing research/critical slice files or research target unless a genuine contradiction makes this WP impossible as written. Their frozen resource settings are to be reused.
+
+If a mechanically necessary 19th repository path appears, STOP with:
+
+```text
+STOP SCOPE_AMENDMENT_REQUIRED
+required_additional_path: <path>
+reason: <exact mechanical reason>
+```
+
+Do not ad-lib a 19th path.
+
+---
+
+# 8. CANONICAL WP ARTIFACT CREATION
+
+At the beginning of the authorized implementation run, before product/deployment code edits:
+
+1. create `docs/wp_specs/S10-DEPLOY-EXEC-01/wp_prompt.txt` containing this complete normative WP specification;
+2. create `docs/wp_specs/S10-DEPLOY-EXEC-01/wp_spec.json` conforming exactly to `polymarket-work-package-spec@1.0.0`;
+3. mirror the exact authority block from Section 1;
+4. set the identity and exact scope exactly as frozen here;
+5. set successor to `S10-LIVE-ORCH-01`;
+6. include the R001–R030 evidence nodes from Section 19 in the spec;
+7. run the RUNTIME readiness gate **before** further implementation.
+
+The spec identity must freeze:
+
+```text
+wp_id: S10-DEPLOY-EXEC-01
+title: Execution-Host Runtime Substrate & Coexistence Proof
+repository: toobigtofailbot-maker/polymarket-strategy-lab
+package_class: EXECUTION_HOST_RUNTIME_SUBSTRATE
+package_size_class: L
+risk_level: 3
+base_branch: main
+suggested_branch: claude/s10-deploy-exec-01-execution-host-substrate
+required_predecessor.pr_number: 213
+required_predecessor.head_sha: 342dfeb24652eccb1b6bdf237039b268115b1fb7
+required_predecessor.merge_sha: 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2
+capital_at_risk_usd: 0
+xl_explicit_authorization: false
+xl_authorization_basis: null
+```
+
+Required initial command:
+
+```bash
+python tools/wp/wp_readiness_gate.py \
+  --wp docs/wp_specs/S10-DEPLOY-EXEC-01/wp_prompt.txt \
+  --spec docs/wp_specs/S10-DEPLOY-EXEC-01/wp_spec.json \
+  --repo-root .
+```
+
+Expected: `IMPLEMENTATION_READY` with minimum track `RUNTIME`.
+
+If the gate derives PROTECTED or reports an authority contradiction, STOP. Do not weaken the mirror to force RUNTIME.
+
+---
+
+# 9. REUSE DEPLOY-01 — DO NOT REPLACE IT
+
+The following existing behavior is the substrate and must remain compatible:
+
+- clean exact-HEAD tracked-files-only release builder;
+- `DEPLOYMENT_MANIFEST.json` deterministic file/hash inventory;
+- exact release verification and tamper rejection;
+- `/opt/polymarket/releases/<sha>` immutable root-owned release roots;
+- atomic `/opt/polymarket/current` symlink;
+- persistent `/var/lib/polymarket` state;
+- non-login `polymarket` runtime user;
+- per-release venv using existing project metadata;
+- Ubuntu 24.04 / x86-64 resource-floor validation;
+- NTP required before activation;
+- SSH-only inbound UFW with no sshd mutation;
+- sanitized host telemetry;
+- 60-second telemetry timer;
+- SQLite-aware hashed backup;
+- isolated restore drill;
+- public read-only research-smoke mechanism;
+- research and critical systemd slices.
+
+Do not rename the DEPLOY-01 release schema or rewrite the baseline merely because it is named “research”. Extend it minimally.
+
+The existing slice values remain:
+
+```text
+polymarket-research.slice
+  CPUWeight=25
+  CPUQuota=250%
+  MemoryHigh=4G
+  MemoryMax=5G
+  IOWeight=25
+
+polymarket-critical.slice
+  CPUWeight=100
+  MemoryLow=2G
+  IOWeight=100
+```
+
+---
+
+# 10. EXECUTION-HOST IDENTITY / CURRENTNESS CONTRACT
+
+The current DEPLOY-01 host manifest deliberately sanitizes host identity and is not sufficient by itself to prove that later evidence belongs to the same physical/virtual host instance across a reboot.
+
+Add a **separate additive execution-host binding/currentness contract** in `tools/deployment/runtime_baseline.py`. Do not weaken the existing research-host manifest sanitization.
+
+## 10.1 Stable host identity
+
+Derive a stable pseudonymous `host_instance_id` from the host's local `/etc/machine-id` bytes without ever emitting the raw value.
+
+Normative derivation:
+
+```text
+host_instance_id =
+  "pmhost-v1:" + sha256(
+      b"polymarket-execution-host-v1\0" + normalized_machine_id_bytes
+  ).hexdigest()
+```
+
+Rules:
+
+- read locally only;
+- normalize by stripping surrounding ASCII whitespace only;
+- require a non-empty sane machine-id token containing only lowercase hexadecimal characters;
+- reject malformed/empty input with a stable closed error;
+- never persist or emit the raw machine ID;
+- never use provider account ID, IP, hostname, SSH user or operator identity as the host key.
+
+## 10.2 Boot identity
+
+Derive an ephemeral pseudonymous `boot_instance_id` from `/proc/sys/kernel/random/boot_id` without emitting the raw UUID.
+
+Normative derivation:
+
+```text
+boot_instance_id =
+  "pmboot-v1:" + sha256(
+      b"polymarket-execution-boot-v1\0" + normalized_boot_id_bytes
+  ).hexdigest()
+```
+
+Rules:
+
+- strip surrounding ASCII whitespace;
+- require canonical UUID text or equivalently strict validated UUID input;
+- never emit the raw boot ID;
+- same host / same boot => same derived boot ID;
+- real reboot => host ID unchanged and boot ID changed.
+
+## 10.3 Execution-host binding artifact
+
+Add a sanitized binding schema with exact identifier:
+
+```text
+schema_id: polymarket-execution-host-binding
+schema_version: 1.0.0
+```
+
+It must bind at minimum:
+
+```text
+host_instance_id
+bound_release_sha
+release_manifest_sha256
+critical_probe_unit_sha256
+```
+
+The binding is written by the exact explicit CLI command family:
+
+```text
+execution-host-bind
+```
+
+Required arguments:
+
+```text
+--active-release <path>
+--expected-sha <40-hex>
+--unit-dir <path>
+--output <path>
+```
+
+The command must verify the exact release before writing the binding and write atomically. It is not implicitly invoked on import.
+
+Recommended host path for Phase B:
+
+```text
+/etc/polymarket/deployment/EXECUTION_HOST_BINDING.json
+```
+
+The file is root-owned/read-only to the runtime user after creation.
+
+The binding must be canonical JSON and contain no timestamp. It is durable identity, not an observation event.
+
+## 10.4 Currentness evidence
+
+Add a separate currentness-evidence function and exact CLI command:
+
+```text
+execution-host-currentness
+```
+
+Required arguments:
+
+```text
+--binding-file <path>
+--active-release <path>
+--expected-sha <40-hex>
+--unit-dir <path>
+```
+
+The command returns the currentness-evidence result and performs no mutation.
+
+It combines:
+
+```text
+schema_id: polymarket-execution-host-currentness
+schema_version: 1.0.0
+host_instance_id
+boot_instance_id
+bound_release_sha
+active_release_sha
+release_manifest_sha256
+critical_probe_unit_sha256
+critical_probe_state
+telemetry_timer_state
+ntp_state
+firewall_state
+```
+
+Currentness must fail closed if:
+
+- binding schema is invalid;
+- stable host ID does not match current local derivation;
+- active release SHA differs from bound/expected SHA;
+- `/opt/polymarket/current` does not resolve to the exact expected `/opt/polymarket/releases/<sha>` release;
+- release manifest hash differs;
+- critical probe unit hash differs;
+- required unit is missing/symlinked;
+- NTP/firewall state required by the host contract is not safe when a strict verification mode is requested.
+
+Do not include raw paths outside the already-frozen `/opt/polymarket` and `/etc/polymarket/deployment` layout in emitted evidence.
+
+## 10.5 Existing host manifest compatibility
+
+Preserve the existing `polymarket-research-host-manifest` top-level contract unless a strictly additive compatible field is necessary.
+
+The predictable required change is `_unit_hashes`: its fixed inventory must include the new `polymarket-execution-critical-probe.service` so the installed-unit evidence is no longer incomplete.
+
+Do not leak host identity into the research manifest merely to avoid creating the dedicated binding/currentness contract.
+
+---
+
+# 11. NON-ECONOMIC CRITICAL PROBE
+
+Add exactly one new systemd unit:
+
+```text
+tools/deployment/systemd/polymarket-execution-critical-probe.service
+```
+
+The service is a host/runtime diagnostic only. It is **not** an execution gateway and has no trading semantics.
+
+## 11.1 Service requirements
+
+At minimum:
+
+```text
+User=polymarket
+Group=polymarket
+Slice=polymarket-critical.slice
+Restart=on-failure
+RestartSec=1s
+```
+
+It must execute the current release's stdlib deployment helper through the current release venv.
+
+It must use normal systemd hardening consistent with the existing telemetry service where compatible.
+
+It must have no network dependency, no credential environment, no secret file and no account/trading configuration.
+
+## 11.2 Probe behavior
+
+Add the exact `critical-probe` command to `runtime_baseline.py`.
+
+Supported arguments are:
+
+```text
+--active-release <path>                 required
+--period-ms 250                         canonical proof value
+--heartbeat-output <path>               required
+--samples-output <path>                 optional; bounded finite-proof JSONL
+--duration-seconds <positive integer>   optional; omitted means service mode
+```
+
+For the canonical finite proof, `--duration-seconds` must equal `60`. Reject non-positive or unreasonably unbounded durations rather than accepting an accidental endless proof run.
+
+The probe performs only local deterministic heartbeat/timing work.
+
+Default/proof cadence:
+
+```text
+period_ms = 250
+```
+
+It must support:
+
+- service mode: runs until stopped and atomically replaces one bounded heartbeat JSON file;
+- finite evidence mode: explicit duration plus optional JSONL samples for coexistence measurement.
+
+The service-mode heartbeat path is:
+
+```text
+/var/lib/polymarket/execution_host/critical_probe_heartbeat.json
+```
+
+Bootstrap creates `/var/lib/polymarket/execution_host` owned by `polymarket:polymarket` mode `0750`.
+
+The heartbeat/sample schema must be sanitized and include enough to prove process continuity without PID exposure, including:
+
+```text
+schema_id
+schema_version
+release_sha
+process_instance_id
+sequence
+monotonic_ns
+interval_ms
+```
+
+`process_instance_id` must be a pseudonymous domain-separated hash derived from current boot identity + process-start monotonic value + exact release SHA. Do not emit PID or raw boot ID.
+
+The probe must not:
+
+- import execution gateway code;
+- import strategy/Hermes/Gate-C code;
+- open network sockets;
+- access account state;
+- load environment secrets;
+- read wallet files;
+- simulate fills/orders;
+- write outside the explicit execution-host state/evidence destinations.
+
+## 11.3 Activation posture
+
+The bootstrap installs and verifies the probe unit but **does not enable or start it by default**.
+
+The normal post-bootstrap steady state remains non-economic and research-safe:
+
+```text
+telemetry timer: active
+research target: active
+critical probe: installed, disabled/inactive unless explicitly invoked for the authorized host proof
+```
+
+Phase B may explicitly start/enable the probe only for the separately authorized process/reboot proof and must stop/disable it after evidence collection unless a later package explicitly authorizes persistent operation.
+
+This prevents DEPLOY-EXEC from accidentally becoming LIVE-ORCH.
+
+---
+
+# 12. BOOTSTRAP EXTENSION
+
+Extend `tools/deployment/bootstrap_ubuntu_24_04.sh` minimally.
+
+It must continue to satisfy all DEPLOY-01 behavior and additionally:
+
+1. create `/var/lib/polymarket/execution_host` with `polymarket:polymarket`, mode `0750`;
+2. install the new critical-probe unit root-owned mode `0644`;
+3. include the new unit in `systemd-analyze verify`;
+4. include it in unit-hash evidence;
+5. leave it disabled/inactive after normal bootstrap;
+6. create/refresh the sanitized execution-host binding only when explicitly requested by the governed host procedure, not by an unaudited hidden side effect;
+7. preserve telemetry/research target activation exactly;
+8. preserve UFW/NTP/release verification and no-sshd-mutation behavior;
+9. preserve `research_only:true` semantics for the default bootstrap success surface or replace it only with a strictly clearer non-economic-host status that still cannot imply trading/live readiness.
+
+No Git clone/pull is added to the VPS bootstrap.
+
+The VPS receives a verified release bundle, not repository credentials.
+
+---
+
+# 13. RESTART / RECOVERY CONTRACT
+
+Repository tests prove the mechanism. Only Phase B proves the observation on the real host.
+
+## 13.1 Process restart semantics
+
+The service contract must make a main-process failure recover deterministically via systemd.
+
+Phase-B proof must:
+
+1. start the critical probe under its service;
+2. record pre-failure currentness + heartbeat/process instance;
+3. terminate only the service's main process through systemd;
+4. require the service to recover to `active` in a bounded observation window;
+5. require a new `process_instance_id`;
+6. require heartbeat sequence/output to resume;
+7. require the same host binding and exact release SHA;
+8. prove no duplicate surviving writer/process is present.
+
+Do not encode a repository unit test that claims this real event happened.
+
+## 13.2 Reboot semantics
+
+The repository contract must ensure required installation/enabling/state layout is reboot-safe.
+
+The **real** Phase-B reboot is the only acceptance evidence for reboot recovery.
+
+Before reboot capture:
+
+- execution-host currentness;
+- stable host ID;
+- boot ID hash;
+- exact release SHA + manifest hash;
+- unit hashes;
+- firewall/NTP states;
+- persistent-state evidence;
+- service state.
+
+After reboot require:
+
+```text
+host_instance_id: unchanged
+boot_instance_id: changed
+active_release_sha: unchanged exact Phase-B merge SHA
+current symlink: exact expected release
+release manifest: unchanged/valid
+persistent /var/lib state: present
+critical probe: recovers only if explicitly enabled for this proof
+telemetry timer: active
+research target: active
+UFW: exact SSH-only inbound
+NTP: synchronized
+unit hashes: expected
+```
+
+If any required observation is missing or ambiguous, Phase B is not green.
+
+---
+
+# 14. BACKUP / RESTORE / PERSISTENCE
+
+Reuse the existing DEPLOY-01 backup/restore machinery.
+
+Do not create a second backup framework.
+
+Requirements:
+
+- continue to use SQLite online backup for `*.sqlite3`;
+- continue to hash every included file;
+- continue to reject secret-like paths, DATA-03 and symlinks;
+- continue to restore only under `/var/lib/polymarket/restore_drills`;
+- never promote a restore drill into active state;
+- verify SQLite integrity where applicable;
+- explicitly document which execution-host files are authoritative/persistent versus ephemeral.
+
+The critical probe heartbeat/samples are **ephemeral operational evidence**, not economic/canonical trading state. Do not invent execution state merely to make backup tests interesting.
+
+Phase B must run a real host backup and isolated restore against actual non-secret state generated by the deployment/research proof and record the manifest/hash/integrity result.
+
+---
+
+# 15. C8G RESEARCH-vs-CRITICAL COEXISTENCE EVALUATOR
+
+Do not overload `evaluate_research_smoke()` or reinterpret `C8G_RESEARCH_BASELINE_SUFFICIENT` as execution-host proof.
+
+Add a **separate execution-host coexistence evaluator**.
+
+Exact CLI name:
+
+```text
+execution-host-coexistence-evaluate
+```
+
+Required arguments:
+
+```text
+--isolated-probe-jsonl <path>
+--mixed-probe-jsonl <path>
+--mixed-telemetry-jsonl <path>
+--research-smoke-result <path>
+```
+
+It consumes only bounded sanitized evidence produced by:
+
+- one isolated finite critical-probe run;
+- one mixed finite critical-probe run;
+- host telemetry covering the mixed window;
+- the existing bounded public read-only research smoke result for the mixed window.
+
+## 15.1 Proof windows
+
+For the canonical Phase-B capacity proof:
+
+```text
+isolated critical window: 60 seconds
+mixed window:             60 seconds
+critical probe period:    250 ms
+```
+
+The mixed window runs:
+
+```text
+critical probe → polymarket-critical.slice
+existing public research smoke → polymarket-research.slice
+```
+
+Do not invent a new market client or strategy workload.
+
+Reuse the existing DEPLOY-01 public research-smoke invocation/mechanism exactly where possible.
+
+## 15.2 Evidence validity
+
+Each critical probe evidence stream must:
+
+- parse cleanly;
+- have contiguous increasing sequence values;
+- have strictly increasing monotonic values;
+- cover at least 55 seconds of the requested 60-second window;
+- contain finite non-negative intervals;
+- bind the same exact release SHA used by host currentness.
+
+Telemetry must contain usable finite values for the metrics required by the evaluator throughout the mixed window.
+
+Research smoke must satisfy the existing DEPLOY-01 truthful success contract:
+
+```text
+status == STOPPED
+stop_reason == DURATION_EXPIRED
+error_codes == []
+raw_count > 0
+normalized_count > 0
+store_bytes > 0
+```
+
+No requested-limit value may be substituted for an actual returned count.
+
+Any missing/malformed/incompatible evidence returns `EXECUTION_HOST_INCONCLUSIVE`; it must never default green.
+
+## 15.3 Critical timing oracle
+
+Compute deterministic p95 interval from the validated interval samples using one explicitly documented nearest-rank algorithm.
+
+Critical timing rules:
+
+```text
+critical deadline miss:
+  any isolated or mixed interval_ms > 500.0
+
+critical mixed-load degradation:
+  mixed_p95_interval_ms > isolated_p95_interval_ms * 1.20
+```
+
+The `>=20%` threshold is the frozen hosting-direction review trigger. The comparison here must use `>` for more than 20% degradation; document that exact choice and test the boundary.
+
+## 15.4 Resource review triggers
+
+On otherwise valid real evidence, return upgrade-eligible when any mixed-window sample establishes:
+
+```text
+memory_utilization_percent >= 85
+or swap_used_kib > 0
+or swap_in_pages/out_pages increase during the mixed window
+
+cpu_utilization_percent >= 85
+
+disk_utilization_percent >= 80
+
+io_wait_percent >= 10
+```
+
+These bounded proof thresholds are review triggers, not automatic commercial actions and not claims about 15-minute production saturation.
+
+## 15.5 Closed dispositions
+
+The evaluator may return only:
+
+```text
+C8G_EXECUTION_HOST_SUFFICIENT
+UPGRADE_ELIGIBLE:CRITICAL_DEADLINE
+UPGRADE_ELIGIBLE:CRITICAL_DEGRADATION
+UPGRADE_ELIGIBLE:MEMORY
+UPGRADE_ELIGIBLE:CPU
+UPGRADE_ELIGIBLE:DISK
+UPGRADE_ELIGIBLE:IO
+EXECUTION_HOST_INCONCLUSIVE
+```
+
+Deterministic precedence after evidence validity:
+
+```text
+1. CRITICAL_DEADLINE
+2. CRITICAL_DEGRADATION
+3. MEMORY
+4. CPU
+5. DISK
+6. IO
+7. C8G_EXECUTION_HOST_SUFFICIENT
+```
+
+Malformed/incomplete evidence takes precedence over all success/upgrade labels and returns `EXECUTION_HOST_INCONCLUSIVE`.
+
+A synthetic unit-test fixture may prove the evaluator maps a valid low-load sample to the sufficient enum; it must be named/documented as **evaluator semantics only**, never evidence that the actual C8G host is sufficient.
+
+## 15.6 No automatic scale action
+
+The evaluator grants no purchase/resize authority.
+
+If Phase B returns `UPGRADE_ELIGIBLE:<reason>` or `EXECUTION_HOST_INCONCLUSIVE`:
+
+- record the truthful result;
+- stop before any commercial or architecture change;
+- return to Karl;
+- Karl decides whether the same single-host architecture should be retried on an approved larger tier.
+
+A second VPS is not an allowed same-package scaling action.
+
+---
+
+# 16. PHASE A — REPOSITORY IMPLEMENTATION
+
+After Karl separately authorizes implementation, Phase A is the only immediately executable phase.
+
+## 16.1 Phase-A sequence
+
+```text
+remote-main sync / clean-tree gate
+→ create one WP branch
+→ create canonical wp_prompt.txt + wp_spec.json
+→ RUNTIME readiness PASS
+→ implement exact 18-path scope
+→ focused tests during editing
+→ ordinary same-scope repairs in the same run
+→ focused suite green
+→ final docs/status reconciliation
+→ stable candidate
+→ readiness --check-diff
+→ one authoritative broad/full suite
+→ commit/push
+→ PR creation
+→ hosted exact-head CI
+→ truthful PRIVATE_REPO_MANUAL_VERIFIED PR evidence
+→ Ready for review only if all evidence is complete
+→ return to Side 16 / Karl
+```
+
+Phase A MUST NOT:
+
+- SSH to AlphaVPS;
+- request host credentials;
+- run real host activation;
+- run a real reboot;
+- claim actual C8G sufficiency;
+- merge its own PR.
+
+## 16.2 Stable-candidate rule
+
+Do not run the full suite repeatedly during ordinary editing churn.
+
+Use focused tests while changing code. Fix normal defects in the same run.
+
+Once the implementation is a stable candidate, run readiness/security/scope checks and **one authoritative full/broad suite**.
+
+If a later material change invalidates that evidence, rerun what that change actually invalidated; do not use ritual repetition.
+
+---
+
+# 17. PHASE B — REAL ALPHAVPS PROOF
+
+Phase B is part of this coherent capability but is **not authorized by Phase-A implementation authorization**.
+
+It starts only after:
+
+```text
+Phase A PR merged
++ current main refreshed
++ exact merge SHA recorded
++ Karl explicitly authorizes Phase B host proof
++ Karl supplies/controls host access
+```
+
+The actual host must be verified rather than assumed to match planning.
+
+## 17.1 Phase-B exact release rule
+
+Phase B binds the **actual Phase-A merge commit SHA on `main`**.
+
+Do not deploy the reviewed PR head merely because its CI was green.
+
+Build the deterministic release from a clean checkout at the merge SHA using the existing release builder, verify it, and transfer that release to the VPS through the human-controlled host channel.
+
+Do not put Git credentials on the VPS.
+
+## 17.2 Actual-host verification before activation
+
+Verify and record at minimum:
+
+- actual provider/host is the intended AlphaVPS instance;
+- actual OS is Ubuntu 24.04;
+- actual architecture is x86-64;
+- logical CPU, memory and filesystem capacity satisfy the frozen floor;
+- Python/systemd/cgroup behavior required by the package exists;
+- NTP is synchronized;
+- existing services/filesystem do not reveal an unsafe conflict;
+- SSH port is known to Karl/operator;
+- UFW can satisfy exact SSH-only inbound without changing sshd;
+- there is no unexpected existing project deployment that would be overwritten.
+
+Do not emit provider account identifiers or login material into evidence.
+
+A material host-direction mismatch is a hard stop.
+
+## 17.3 Phase-B run sequence
+
+Use the minimum sequence below; do not add unrelated host work.
+
+```text
+1. verify exact merge release before transfer
+2. transfer exact release without Git credentials
+3. run governed bootstrap using exact release + merge SHA + actual SSH port
+4. verify active release/current symlink/manifest/unit hashes/UFW/NTP/ownership
+5. create execution-host binding
+6. verify currentness against the binding
+7. run real critical-probe process-kill/restart proof
+8. run isolated 60-second critical probe
+9. run mixed 60-second critical probe + existing public research smoke + telemetry
+10. evaluate execution-host coexistence
+11. run real backup + isolated restore/integrity proof
+12. enable critical probe only for the reboot proof
+13. capture pre-reboot currentness/persistent-state evidence
+14. perform one real VPS reboot
+15. reconnect and verify same host ID / changed boot ID / same merge release / state / units / UFW / NTP / service recovery
+16. stop + disable the critical probe after proof
+17. emit sanitized terminal Phase-B evidence
+18. return evidence/disposition to Side 16 / Karl
+```
+
+If the provider requires an irreversible resize/rebuild, do not perform it inside this sequence without Karl's explicit additional decision.
+
+---
+
+# 18. TERMINAL PHASE-B EVIDENCE
+
+Add deterministic sanitized terminal evidence semantics in the new contract/helper.
+
+The terminal evidence must distinguish proof completion from live readiness.
+
+Allowed high-level outcomes:
+
+```text
+EXECUTION_HOST_PROVEN_C8G
+EXECUTION_HOST_EVIDENCE_COMPLETE_UPGRADE_ELIGIBLE:<reason>
+EXECUTION_HOST_INCONCLUSIVE
+```
+
+`EXECUTION_HOST_PROVEN_C8G` requires all of:
+
+- exact merged release/currentness PASS;
+- stable host binding PASS;
+- real process restart PASS;
+- real reboot recovery PASS;
+- backup/isolated restore PASS;
+- persistent state PASS;
+- firewall/NTP/unit/slice checks PASS;
+- coexistence disposition `C8G_EXECUTION_HOST_SUFFICIENT`;
+- zero trading credentials;
+- zero orders;
+- zero capital;
+- live remains disabled.
+
+`EXECUTION_HOST_PROVEN_C8G` means only:
+
+> the host/runtime substrate required by the current architecture has been proven on the tested C8G instance.
+
+It MUST NOT mean:
+
+- account access is valid;
+- geoblock/account checks passed;
+- balances/allowances are reconciled;
+- an order may be submitted;
+- live is enabled;
+- `S10-LIVE-ORCH-01` may be skipped.
+
+If capacity returns `UPGRADE_ELIGIBLE:<reason>` but all other host proofs are valid, emit the corresponding evidence-complete outcome and return to Karl rather than pretending the host is sufficient.
+
+Any missing/ambiguous required proof returns `EXECUTION_HOST_INCONCLUSIVE`.
+
+---
+
+# 19. REQUIREMENT → CODE → TEST → EVIDENCE PLAN
+
+The canonical `wp_spec.json` must include these unique evidence IDs and preserve their semantics.
+
+| ID | Requirement | Repo mechanism / proof | Phase-B truth where applicable |
+|---|---|---|---|
+| R001 | exact clean release source | existing `build_release` | release built from actual merge SHA |
+| R002 | exact release file/hash verification | existing `verify_release` | installed release manifest verified |
+| R003 | secret/symlink/tamper rejection | existing release guards | no secret material transferred |
+| R004 | supported host floor | existing validator/bootstrap | actual OS/arch/CPU/RAM/disk facts |
+| R005 | NTP requirement | bootstrap/currentness | actual synchronized NTP |
+| R006 | SSH-only firewall | existing verifier/bootstrap | actual effective UFW |
+| R007 | sanitized stable host ID | new host binding | same ID across reboot |
+| R008 | sanitized boot ID | new currentness evidence | changed ID after reboot |
+| R009 | binding ↔ exact release | new binding/currentness | active merge SHA exact |
+| R010 | critical unit hash/currentness | `_unit_hashes` + binding | installed unit exact |
+| R011 | persistent state directory/ownership | bootstrap | actual ownership + state survival |
+| R012 | critical probe non-economic boundary | new probe | no credentials/account/order behavior |
+| R013 | probe exact critical slice/service policy | unit tests | effective critical-slice placement |
+| R014 | probe installed but default inactive | bootstrap/unit tests | post-bootstrap inactive until proof |
+| R015 | process restart mechanism | service semantics | real kill/restart recovery |
+| R016 | no duplicate writer after recovery | probe/process evidence | one recovered writer/process |
+| R017 | reboot-safe installation/current release | static contract | real reboot recovery |
+| R018 | backup hashing/SQLite snapshot | existing backup | actual backup manifest |
+| R019 | isolated restore/integrity | existing restore | real isolated restore PASS |
+| R020 | isolated critical timing evidence validation | new evaluator | real 60-second isolated probe |
+| R021 | mixed critical timing evidence validation | new evaluator | real mixed probe |
+| R022 | public research smoke truthful actuals | existing smoke evaluator | actual 60-second public smoke |
+| R023 | >=20% critical degradation trigger | new evaluator | measured p95 comparison |
+| R024 | critical deadline trigger | new evaluator | measured interval deadline result |
+| R025 | memory/CPU/disk/I/O closed triggers | new evaluator | actual mixed telemetry |
+| R026 | no automatic upgrade/second host | docs + negative contract test | Karl retains decision |
+| R027 | authority regression: no creds/order/live/account | focused tests/docs | zero creds/orders/capital; live disabled |
+| R028 | current roadmap/status truth | docs tests | DEPLOY-EXEC state truthful |
+| R029 | terminal evidence closed semantics | evaluator/evidence tests | truthful real-host outcome |
+| R030 | successor boundary | docs/spec | `S10-LIVE-ORCH-01` remains mandatory later |
+
+Do not create multiple tests for superficial formatting when one test protects the semantic boundary.
+
+---
+
+# 20. MINIMUM FOCUSED TEST PLAN
+
+Extend `tests/deployment/test_runtime_baseline.py` and only the three listed docs/architecture test files as needed.
+
+At minimum, cover distinct failure boundaries:
+
+## Release / host binding
+
+- existing exact-release/tamper tests remain green;
+- stable host ID derivation deterministic;
+- stable host ID differs under different machine ID;
+- raw machine ID never appears in result;
+- boot ID derivation deterministic within one input and domain-separated from host ID;
+- raw boot ID never appears;
+- malformed/empty machine/boot ID fails closed;
+- host ID stable when only boot ID changes;
+- currentness rejects host-binding mismatch;
+- currentness rejects release mismatch;
+- currentness rejects manifest/unit-hash mismatch;
+- exact current symlink/release mismatch rejected.
+
+## Critical probe / systemd
+
+- new unit is in `polymarket-critical.slice`;
+- exact restart policy is present;
+- unit contains no credential/account/order/network/trading configuration;
+- bootstrap installs/verifies/hashes the unit;
+- bootstrap does not enable/start it by default;
+- bounded heartbeat is atomic/sanitized;
+- process-instance ID changes across process-start inputs without exposing PID/boot ID;
+- finite probe produces monotonic contiguous samples.
+
+## Backup / restore
+
+- existing backup/restore tests remain green;
+- execution-host ephemeral probe evidence is documented/handled consistently;
+- no secret/data03/symlink regression.
+
+## Coexistence evaluator
+
+Use synthetic fixtures only to prove semantics:
+
+- malformed/incomplete evidence => `EXECUTION_HOST_INCONCLUSIVE`;
+- less than 55 seconds coverage => inconclusive;
+- noncontiguous/nonmonotonic critical samples => inconclusive;
+- exact 500.0 ms boundary is not `>500`; >500 triggers `CRITICAL_DEADLINE`;
+- exact 20% p95 increase is not `>20%`; >20% triggers `CRITICAL_DEGRADATION`;
+- resource thresholds trigger their exact closed dispositions;
+- precedence is deterministic;
+- low-load synthetic fixture maps to `C8G_EXECUTION_HOST_SUFFICIENT` and test name explicitly states this is evaluator semantics, **not actual host capacity evidence**;
+- actual returned smoke counts are required; request limits are never treated as results.
+
+## Docs / authority / scope
+
+- update historical/current hosting-direction assertions without rewriting history;
+- preserve live DISABLED and capital/orders 0/0;
+- update “DEPLOY-EXEC next/not started” assertions to current-package truth while keeping `LIVE-ORCH` later;
+- exact 18-path scope and RUNTIME authority mirror remain consistent;
+- no credential/execution/live authority appears.
+
+Focused command after implementation reaches local stability:
+
+```bash
+python -m pytest -q -p no:cacheprovider \
+  tests/deployment/test_runtime_baseline.py \
+  tests/test_architecture_direction_docs.py \
+  tests/test_project_status_docs.py \
+  tests/test_repo_truth_docs.py
+```
+
+Do not add meaningless per-line unit-file tests or whitespace permutation tests.
+
+---
+
+# 21. NEGATIVE-TEST MATRIX
+
+Because this WP extends validators/evaluators, preserve a compact negative matrix before Ready for Review.
+
+Minimum faults:
+
+| Fault | Expected closed result |
+|---|---|
+| wrong/dirty release SHA | existing release failure |
+| raw/malformed machine ID input | host identity failure |
+| malformed boot UUID | boot identity failure |
+| wrong host binding | currentness failure |
+| wrong active release | currentness failure |
+| current symlink points elsewhere | currentness failure |
+| missing/tampered critical unit | currentness failure |
+| probe evidence <55s | `EXECUTION_HOST_INCONCLUSIVE` |
+| sequence gap/regression | `EXECUTION_HOST_INCONCLUSIVE` |
+| monotonic regression | `EXECUTION_HOST_INCONCLUSIVE` |
+| malformed/non-finite interval | `EXECUTION_HOST_INCONCLUSIVE` |
+| failed/incomplete public research smoke | `EXECUTION_HOST_INCONCLUSIVE` |
+| critical interval >500 ms | `UPGRADE_ELIGIBLE:CRITICAL_DEADLINE` |
+| mixed p95 >120% isolated p95 | `UPGRADE_ELIGIBLE:CRITICAL_DEGRADATION` |
+| memory >=85% / swap activity | `UPGRADE_ELIGIBLE:MEMORY` |
+| CPU >=85% | `UPGRADE_ELIGIBLE:CPU` |
+| disk >=80% | `UPGRADE_ELIGIBLE:DISK` |
+| I/O wait >=10% | `UPGRADE_ELIGIBLE:IO` |
+| missing real Phase-B proof | never `EXECUTION_HOST_PROVEN_C8G` |
+
+Do not echo unsafe raw input in diagnostics.
+
+---
+
+# 22. CURRENT HOSTING-DIRECTION RECONCILIATION
+
+`docs/production_vps_hosting_direction.md` contains historical planning statements from before purchase/provisioning. Preserve them as historical context, but add a clearly later/current superseding block rather than pretending the old statement was always false.
+
+Current operator truth for this WP:
+
+```text
+AlphaVPS: purchased/provisioned by Karl
+project deployment/configuration on that VPS: not yet performed
+actual host technical facts: UNKNOWN until separately authorized Phase B verifies them
+initial intended tier/direction: Sofia / C8G / one consolidated host
+```
+
+Do not claim the repository has already observed the VPS merely because Karl reports it purchased/provisioned.
+
+Update `tests/test_architecture_direction_docs.py` so it distinguishes:
+
+- historical pre-purchase planning text;
+- current operator-reported provisioning state;
+- still-unknown technical host truth;
+- no deployment/activation yet.
+
+The test must no longer globally forbid the phrase `VPS purchased: YES` if the current superseding section records that operator fact truthfully.
+
+---
+
+# 23. SAME-RUN FIXES VS HARD STOPS
+
+## Fix in the same authorized Phase-A executor run
+
+Do not create follow-up WPs for ordinary in-scope defects such as:
+
+- service directive mistake;
+- deployment fixture mismatch;
+- `_unit_hashes` omission;
+- manifest/currentness validation bug;
+- probe output bug;
+- coexistence evaluator bug;
+- backup inclusion/exclusion bug;
+- focused test defect caused by this implementation;
+- status/docs inconsistency within the exact 18 paths;
+- pre-discovered old allowlist/guard already represented by the exact scope.
+
+## Stop / return for amendment or human decision
+
+Stop for:
+
+```text
+STOP REPO_STATE_DRIFT
+STOP SPEC_NOT_IMPLEMENTATION_READY
+STOP SCOPE_AMENDMENT_REQUIRED
+STOP AUTHORITY_RECLASSIFICATION_REQUIRED
+STOP CREDENTIAL_AUTHORITY_REQUIRED
+STOP EXECUTION_AUTHORITY_REQUIRED
+STOP LIVE_AUTHORITY_REQUIRED
+STOP DEPENDENCY_CHANGE_REQUIRED
+STOP WORKFLOW_CHANGE_REQUIRED
+STOP SOURCE_RUNTIME_CHANGE_REQUIRED
+STOP LIVE_ORCH_BOUNDARY_VIOLATION
+STOP DATA03_BOUNDARY_VIOLATION
+STOP HOST_DIRECTION_DRIFT
+STOP HOST_OS_ARCH_UNSUPPORTED
+STOP SYSTEMD_CGROUP_SAFETY_INSUFFICIENT
+STOP FIREWALL_SAFETY_INSUFFICIENT
+STOP EXACT_RELEASE_IDENTITY_UNPROVABLE
+STOP PHASE_B_EVIDENCE_UNAVAILABLE
+STOP SECOND_HOST_ARCHITECTURE_REQUIRED
+STOP TESTS_NOT_GREEN
+STOP HOSTED_CI_NOT_GREEN
+STOP FALSE_OR_AMBIGUOUS_EVIDENCE
+```
+
+A required second VPS is a material architecture decision, not an ordinary repair.
+
+Trading credentials/account access/order authority are later protected runtime concerns, not “small fixes”.
+
+---
+
+# 24. VALIDATION / REVIEW-READINESS DISCIPLINE
+
+## 24.1 During implementation
+
+Use focused tests only while iterating.
+
+Do not repeatedly run the whole suite after every edit.
+
+## 24.2 Before stable-candidate commit
+
+Run:
+
+```bash
+python tools/wp/wp_readiness_gate.py \
+  --wp docs/wp_specs/S10-DEPLOY-EXEC-01/wp_prompt.txt \
+  --spec docs/wp_specs/S10-DEPLOY-EXEC-01/wp_spec.json \
+  --repo-root . \
+  --check-diff
+```
+
+Expected:
+
+```text
+IMPLEMENTATION_READY
+minimum track: RUNTIME
+exact changed-file set: PASS
+```
+
+Then run the focused suite from Section 20.
+
+Run any repository-mandated secret/security/scope checks required by the current workflow docs.
+
+## 24.3 One authoritative full suite
+
+Once the candidate is stable:
+
+```bash
+python -m pytest -q -p no:cacheprovider
+```
+
+Record exact pass/fail/skip counts from the actual output.
+
+Do not invent or copy old counts.
+
+If the suite exposes an ordinary same-scope defect, fix it and rerun only the invalidated focused proof first. A material code change after the full suite invalidates the broad evidence and requires one new full run on the new stable candidate.
+
+## 24.4 PR / hosted evidence
+
+After local green evidence:
+
+- commit exact authorized files;
+- push the one WP branch;
+- open one PR to `main`;
+- wait for/inspect hosted CI on the exact PR head;
+- ensure the PR body contains exact commands, exact results/counts and truthful network wording;
+- use `PRIVATE_REPO_MANUAL_VERIFIED` unless the live repository genuinely supports another valid evidence mode;
+- mark Ready for Review only when current exact-head evidence is complete.
+
+Any new commit after review/readiness invalidates prior exact-head approval until rechecked.
+
+Claude Code must not merge the PR.
+
+---
+
+# 25. PHASE-A STATUS / DOC TRUTH
+
+Reconcile current documents so they say, truthfully:
+
+- PR #213 / Gate-C-Explore is merged;
+- `S10-DEPLOY-EXEC-01` is the current package during implementation/review;
+- after merge, its repository mechanism is merged but actual host proof remains separately gated until Phase B completes;
+- Gate-C eligibility remains necessary-but-not-sufficient;
+- `S10-LIVE-ORCH-01` remains the next core successor after execution-host substrate proof;
+- account/access/reconciliation/trading credentials/order mutation remain future work;
+- live remains disabled;
+- capital/orders remain USD 0 / 0;
+- ALPHA-03 and DATA-03 remain separate/non-blocking lanes;
+- Control Center remains separate and non-canonical.
+
+Do not erase historical status entries. Add current superseding truth where needed.
+
+---
+
+# 26. PHASE-A COMPLETION REPORT TO SIDE 16 / KARL
+
+Claude Code's final implementation report must be concise but complete and include:
+
+```text
+WP: S10-DEPLOY-EXEC-01
+base SHA: <exact>
+branch: <exact>
+final implementation head: <exact>
+PR: <number + URL>
+changed files: 18 / exact set PASS
+readiness: <exact result / track>
+focused validation: <commands + exact counts/results>
+full validation: <command + exact counts/results>
+hosted CI: <exact head + result>
+evidence mode: PRIVATE_REPO_MANUAL_VERIFIED or truthful alternative
+secrets/trading credentials used: NO
+orders placed/cancelled: 0
+capital at risk: USD 0
+live trading: DISABLED
+AlphaVPS accessed/configured in Phase A: NO
+Phase B executed: NO
+Ready for review: YES/NO
+ordinary defects fixed same run: <summary>
+material deferred/blockers: <none or exact list>
+```
+
+Do not call Phase A “host activated”.
+
+Return the PR to the current Side owner for independent exact-head review. Karl retains merge authority.
+
+---
+
+# 27. PHASE-B COMPLETION REPORT
+
+Only after separate Karl Phase-B authorization, the host-proof report must record at minimum:
+
+```text
+Phase-A merge SHA deployed: <40 hex>
+release manifest SHA-256: <64 hex>
+host_instance_id: <pseudonymous pmhost-v1 value>
+pre-reboot boot_instance_id: <pseudonymous pmboot-v1 value>
+post-reboot boot_instance_id: <pseudonymous pmboot-v1 value>
+host ID stable across reboot: YES/NO
+boot ID changed across reboot: YES/NO
+active release exact after reboot: YES/NO
+NTP synchronized: YES/NO
+UFW SSH-only inbound: YES/NO
+unit hashes exact: YES/NO
+critical slice placement observed: YES/NO
+process restart proof: PASS/FAIL/INCONCLUSIVE
+real reboot proof: PASS/FAIL/INCONCLUSIVE
+backup proof: PASS/FAIL/INCONCLUSIVE
+isolated restore/integrity: PASS/FAIL/INCONCLUSIVE
+persistent state survival: PASS/FAIL/INCONCLUSIVE
+isolated critical p95 ms: <actual>
+mixed critical p95 ms: <actual>
+critical degradation %: <actual>
+critical deadline miss: YES/NO
+mixed resource metrics: <sanitized actual summary>
+public research smoke actual raw_count: <actual>
+public research smoke actual normalized_count: <actual>
+public research smoke actual store_bytes: <actual>
+coexistence disposition: <closed enum>
+terminal host outcome: <closed enum>
+trading credentials used: NO
+orders: 0
+capital: USD 0
+live: DISABLED
+```
+
+Never include:
+
+- host IP;
+- hostname;
+- SSH username;
+- SSH password/private key;
+- provider account ID;
+- raw machine ID;
+- raw boot ID;
+- environment dump;
+- trading credentials;
+- wallet material.
+
+---
+
+# 28. SUCCESSOR BOUNDARY
+
+The next core package is:
+
+```text
+S10-LIVE-ORCH-01
+```
+
+DEPLOY-EXEC may provide sanitized, canonical host-substrate facts for later consumption, but it must not pre-implement successor semantics.
+
+`S10-LIVE-ORCH-01` remains responsible for later protected runtime concerns such as:
+
+- runtime consumption/revalidation of the exact exploratory Gate-C permit;
+- current account/access checks;
+- authenticated credential handling under explicit authority;
+- private account truth;
+- reconciliation;
+- hard runtime admission immediately before economic mutation;
+- bounded order/action orchestration;
+- safe failure behavior around actual execution;
+- any separately authorized tiny exploratory live transition.
+
+DEPLOY-EXEC success is **necessary but not sufficient** for live execution.
+
+---
+
+# 29. NORMATIVE RULE MATRIX
+
+```text
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|release|source_tree|clean_exact_head|REQUIRE|reject_dirty_or_sha_mismatch|NONE|R001
+NR002|release|inventory|tracked_files_only_exact_manifest|REQUIRE|reject_added_missing_tampered_or_symlinked|NONE|R002
+NR003|credentials|release_or_host_evidence|credential_like_material|FORBID|fail_closed_no_echo|NONE|R003
+NR004|host|platform|ubuntu_24_04_x86_64_resource_floor|REQUIRE|fail_closed|NONE|R004
+NR005|host|clock|ntp_not_synchronized|FORBID|no_activation|NONE|R005
+NR006|firewall|inbound|anything_other_than_exact_ssh|FORBID|fail_closed_without_sshd_mutation|NONE|R006
+NR007|identity|host_instance|local_machine_id|REQUIRE|domain_separated_hash_only_raw_never_emitted|NONE|R007
+NR008|identity|boot_instance|kernel_boot_id|REQUIRE|domain_separated_hash_only_raw_never_emitted|NONE|R008
+NR009|identity|currentness|host_or_release_binding_mismatch|FORBID|closed_currentness_failure|NONE|R009
+NR010|systemd|unit_inventory|critical_probe_missing_or_tampered|FORBID|closed_currentness_failure|NONE|R010
+NR011|state|persistent_root|runtime_mutable_state|REQUIRE|var_lib_polymarket_owned_by_runtime_user|NONE|R011
+NR012|probe|economic_behavior|network_account_order_or_credentials|FORBID|diagnostic_only|NONE|R012
+NR013|probe|resource_isolation|critical_probe_running|REQUIRE|polymarket_critical_slice|NONE|R013
+NR014|probe|default_activation|normal_bootstrap|FORBID|installed_but_inactive|NONE|R014
+NR015|recovery|process_failure|probe_main_process_killed|REQUIRE|systemd_restart_and_new_process_identity|NONE|R015
+NR016|recovery|duplicate_writer|after_restart|FORBID|single_active_writer_only|NONE|R016
+NR017|recovery|real_reboot|phase_b_authorized|REQUIRE|same_host_changed_boot_same_release_and_state|NONE|R017
+NR018|backup|snapshot|persistent_nonsecret_state|REQUIRE|hashed_sqlite_aware_backup|NONE|R018
+NR019|restore|promotion|restore_drill|FORBID|isolated_integrity_verification_only|NONE|R019
+NR020|coexistence|isolated_probe|canonical_phase_b_window|REQUIRE|sixty_seconds_period_250ms|NONE|R020
+NR021|coexistence|mixed_probe|canonical_phase_b_window|REQUIRE|critical_plus_existing_research_smoke|NONE|R021
+NR022|research_smoke|success|requested_limits_only|FORBID|actual_returned_positive_counts_required|NONE|R022
+NR023|coexistence|critical_degradation|mixed_p95_gt_isolated_p95_times_1_20|REQUIRE|upgrade_eligible_critical_degradation|NONE|R023
+NR024|coexistence|critical_deadline|any_interval_gt_500ms|REQUIRE|upgrade_eligible_critical_deadline|NONE|R024
+NR025|capacity|resource_threshold|threshold_crossed|REQUIRE|closed_upgrade_eligible_reason|NONE|R025
+NR026|capacity|commercial_action|upgrade_or_second_host|FORBID|karl_decides|NONE|R026
+NR027|authority|live_execution|credentials_orders_capital_live|FORBID|zero_zero_disabled|NONE|R027
+NR028|docs|current_truth|package_state_changes|REQUIRE|reconcile_without_rewriting_history|NONE|R028
+NR029|evidence|terminal_host_outcome|required_real_proof_missing|REQUIRE|execution_host_inconclusive|NONE|R029
+NR030|successor|live_orchestration|deploy_exec_complete|REQUIRE|s10_live_orch_01_remains_separate|NONE|R030
+END_NORMATIVE_RULE_MATRIX_V1
+```
+
+---
+
+# 30. FINAL EXECUTOR INSTRUCTION
+
+Implement exactly the capability above, no more and no less.
+
+Prefer the smallest compatible extension of the merged DEPLOY-01 substrate.
+
+Do not harden unrelated code merely because you notice it.
+
+Do not add new abstractions without a requirement in this WP.
+
+Do not add redundant tests for the same failure boundary.
+
+Fix ordinary in-scope defects in the same run.
+
+Stop on genuine capability/authority/scope/architecture expansion.
+
+Phase A ends at a review-ready PR and independent Side review.
+
+Phase B occurs only after merge and separate Karl host authorization.
+
+At no point does this WP authorize trading credentials, account actions, orders, capital or live trading.

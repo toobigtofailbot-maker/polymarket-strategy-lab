@@ -335,8 +335,11 @@ unchanged; live trading remains DISABLED; capital/orders USD 0 / 0.
 
 ## V2.1 Exploratory Gate C Policy Permit Core (S10-GATE-C-EXPLORE-01)
 
-Status: current protected implementation target / implemented review target (base
-`35db4f05347b8b27f7bd0296cf9b1b0627e58d12`, after PR #212 / S10-EXEC-FEAS-01 merged). Governance track PROTECTED,
+Status: MERGED (PR #213 merged at `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2`, head `342dfeb24652eccb1b6bdf237039b268115b1fb7`; formerly the
+current protected implementation target / implemented review target on base
+`35db4f05347b8b27f7bd0296cf9b1b0627e58d12`, after PR #212 / S10-EXEC-FEAS-01 merged). The known-candidate path paragraph
+below is the GATE-C-EXPLORE implementation-time record; see the S10-DEPLOY-EXEC-01 section for
+current status. Governance track PROTECTED,
 risk 4, independent draftability certificate hash-bound to the exact prompt/spec. Contract:
 `docs/exploratory_gate_c_contract.md`.
 
@@ -372,3 +375,36 @@ only after GATE-C-EXPLORE merges, as a separate package; S10-CC-FOUND-01 is para
 independent; ALPHA-03 remains a parallel, non-blocking feeder; DATA-03 remains unchanged and
 non-blocking; S10-DEPLOY-01 host activation is separate; live trading remains DISABLED;
 capital/orders USD 0 / 0.
+
+## V2.1 Execution-Host Runtime Substrate (S10-DEPLOY-EXEC-01)
+
+Status: current bounded implementation target / implemented review target (base
+`0392c2d2080a656d8ffd69f42abf8ad91d1f90e2`, after PR #213 / S10-GATE-C-EXPLORE-01 merged). Governance track RUNTIME,
+risk 3, exact 18-path scope. Contract: `docs/execution_host_runtime_contract.md`.
+
+S10-GATE-C-EXPLORE-01: MERGED. S10-DEPLOY-EXEC-01 implements the minimum execution-host substrate
+between merged exploratory Gate-C eligibility and future live orchestration, as an additive
+extension of the merged S10-DEPLOY-01 native-systemd baseline (whose research-baseline contract is
+unchanged). It adds a sanitized execution-host binding and currentness contract (pseudonymous
+stable host id and per-boot id, exact release SHA, release manifest hash, critical-probe unit
+hash), one non-economic critical-probe service in the existing critical slice with deterministic
+restart semantics (installed but inactive after bootstrap), a closed research-versus-critical
+coexistence evaluator and closed terminal Phase-B evidence semantics.
+
+This is an execution-capable host substrate, not economic execution authority: no credential,
+authenticated client, account state, GateCLivePermit, GateCSession arm, A3 state, signing, order,
+OMS, reconciliation, capital or live authority; `src/` is unchanged. A merged Phase A proves the
+mechanism only; the actual AlphaVPS host proof (bootstrap, binding, process restart, real reboot,
+backup/restore, 60-second coexistence windows) is a separately authorized Phase B after merge.
+Coexistence and terminal outcomes are review triggers: nothing is auto-purchased or auto-upgraded,
+Karl decides, and a second VPS remains a separate material architecture decision.
+
+Known-candidate path capability status (current): lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes
+strategy manager (S10-HERMES-STRAT-01: MERGED) -> execution feasibility (S10-EXEC-FEAS-01: MERGED)
+-> exploratory Gate C (S10-GATE-C-EXPLORE-01: MERGED) -> execution host (S10-DEPLOY-EXEC-01:
+implemented repository mechanism, current review target; real host proof separately gated as
+Phase B) -> live orchestrator (S10-LIVE-ORCH-01: next core successor, NOT STARTED) -> tiny
+exploratory live. Gate-C eligibility and DEPLOY-EXEC host proof are each necessary but not
+sufficient for live execution. ALPHA-03 and DATA-03 remain separate, non-blocking lanes; the
+Control Center remains separate and non-canonical; live trading remains DISABLED; capital/orders
+USD 0 / 0.

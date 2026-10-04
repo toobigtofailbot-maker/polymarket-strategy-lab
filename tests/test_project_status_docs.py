@@ -5606,9 +5606,9 @@ def test_s10_strat_life_status_records_deploy_merge_and_separate_activation() ->
     lines = status.splitlines()
     # S10-HERMES-STRAT-01 is now current; the S10-STRAT-LIFE-01 line is retained as history.
     current = next(line for line in lines if line.startswith("# S10-STRAT-LIFE-01 merged historical predecessor (PR #210 merged: YES"))
-    # S10-GATE-C-EXPLORE-01 (line 2), the merged S10-EXEC-FEAS-01 record (line 4) and the merged
-    # S10-HERMES-STRAT-01 record (line 6) precede it.
-    assert lines.index(current) == 8
+    # S10-DEPLOY-EXEC-01 (line 2), the merged S10-GATE-C-EXPLORE-01 record (line 4), the merged
+    # S10-EXEC-FEAS-01 record (line 6) and the merged S10-HERMES-STRAT-01 record (line 8) precede it.
+    assert lines.index(current) == 10
     assert not any(line.startswith("# S10-STRAT-LIFE-01 current bounded implementation target") for line in lines)
     for text in (
         "PR #209 merged: YES",
@@ -5649,7 +5649,7 @@ def test_s10_hermes_strat_status_merged_exec_feas_current() -> None:
     merged = next(line for line in lines if line.startswith(
         "# S10-HERMES-STRAT-01 merged historical predecessor (PR #211 merged: YES at "
         "4519aab3d7f8424fc74c59104cc4e7afe0ff11b8 with head 9439283768b78b7302290ba6b8611e3477aa3c6a"))
-    assert lines.index(merged) == 6  # S10-GATE-C-EXPLORE-01 and merged S10-EXEC-FEAS-01 precede it.
+    assert lines.index(merged) == 8  # S10-DEPLOY-EXEC-01, merged GATE-C-EXPLORE and merged EXEC-FEAS precede it.
     for text in ("PR #210 merged: YES", "Exact changed-file scope: 22", "XL_FOR_SCOPE_ONLY",
                  "direct STRAT-LIFE mutation: NO", "real provider/model calls: 0"):
         assert text in merged, text
@@ -5667,7 +5667,7 @@ def test_s10_exec_feas_status_gate_c_explore_next() -> None:
     current = next(line for line in lines if line.startswith(
         "# S10-EXEC-FEAS-01 merged historical predecessor (PR #212 merged: YES at "
         "35db4f05347b8b27f7bd0296cf9b1b0627e58d12 with head 99f3c3c8acc09ae3b5646f785446d69a7b8b2290; formerly the current bounded implementation target)"))
-    assert lines.index(current) == 4
+    assert lines.index(current) == 6  # S10-DEPLOY-EXEC-01 and the merged GATE-C-EXPLORE record precede it.
     for text in (
         "Package class: CURRENT_PUBLIC_EXECUTION_FEASIBILITY_CORE",
         "Exact changed-file scope: 17",
@@ -5703,10 +5703,14 @@ def test_s10_exec_feas_status_gate_c_explore_next() -> None:
 
 
 def test_status_docs() -> None:
-    """EXEC-FEAS merged / GATE-C-EXPLORE current protected review target / DEPLOY-EXEC next (R044)."""
+    """GATE-C-EXPLORE record retained as merged history (R044); PR #213 merged it (S10-DEPLOY-EXEC-01)."""
     lines = _read().splitlines()
-    current = next(line for line in lines if line.startswith("# S10-GATE-C-EXPLORE-01 current protected implementation target"))
-    assert lines.index(current) == 2
+    assert not any(line.startswith("# S10-GATE-C-EXPLORE-01 current protected implementation target") for line in lines)
+    current = next(line for line in lines if line.startswith(
+        "# S10-GATE-C-EXPLORE-01 merged historical predecessor (PR #213 merged: YES at "
+        "0392c2d2080a656d8ffd69f42abf8ad91d1f90e2 with head 342dfeb24652eccb1b6bdf237039b268115b1fb7; "
+        "formerly the current protected implementation target)"))
+    assert lines.index(current) == 4
     for text in (
         "Package class: EXPLORATORY_GATE_C_POLICY_PERMIT_CORE", "Governance track: PROTECTED", "Risk level: 4",
         "Exact changed-file scope: 18", "Frozen base: 35db4f05347b8b27f7bd0296cf9b1b0627e58d12",
@@ -5743,3 +5747,50 @@ def test_status_docs() -> None:
         raw = (REPO_ROOT / "docs/wp_specs/S10-GATE-C-EXPLORE-01" / name).read_bytes()
         assert hashlib.sha256(raw).hexdigest() == certificate[key], name
     assert certificate["result"] == "PASS" and certificate["reviewed_base_merge_sha"] == "35db4f05347b8b27f7bd0296cf9b1b0627e58d12"
+
+
+def test_s10_deploy_exec_status_current_and_gate_c_merged() -> None:
+    """GATE-C-EXPLORE merged / DEPLOY-EXEC current RUNTIME review target / LIVE-ORCH next (R028)."""
+    lines = _read().splitlines()
+    current = next(line for line in lines if line.startswith("# S10-DEPLOY-EXEC-01 current bounded implementation target"))
+    assert lines.index(current) == 2
+    for text in (
+        "Package class: EXECUTION_HOST_RUNTIME_SUBSTRATE", "Governance track: RUNTIME", "Risk level: 3",
+        "Exact changed-file scope: 18", "Frozen base: 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2",
+        "PR #213 merged: YES", "PR #213 head: 342dfeb24652eccb1b6bdf237039b268115b1fb7",
+        "PR #213 merge: 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2", "S10-GATE-C-EXPLORE-01: MERGED",
+        "current bounded implementation target: S10-DEPLOY-EXEC-01 (implemented review target)",
+        "readiness: IMPLEMENTATION_READY (RUNTIME)", "contract: docs/execution_host_runtime_contract.md",
+        "Phase B (real AlphaVPS proof): NOT AUTHORIZED / NOT PERFORMED",
+        "AlphaVPS purchased/provisioned: operator-reported by Karl, not repository-observed",
+        "project deployment on AlphaVPS: NOT PERFORMED", "automatic upgrade / second host: NO (Karl decides)",
+        "Gate-C eligibility: necessary-but-not-sufficient", "src changed: NO", "credentials: NONE",
+        "GateCLivePermit / A3: NOT ISSUED / NOT ENTERED",
+        "S10-LIVE-ORCH-01: next core successor after execution-host substrate proof (NOT STARTED)",
+        "ALPHA-03: separate / non-blocking", "DATA-03: unchanged and non-blocking",
+        "Control Center: separate / non-canonical", "live: DISABLED",
+        "S10-DEPLOY-EXEC-01 capital/orders: USD 0 / 0", "Merge authorized: NO",
+    ):
+        assert text in current, text
+    for claim in ("S10-DEPLOY-EXEC-01: MERGED", "Phase B: PERFORMED", "S10-LIVE-ORCH-01: STARTED",
+                  "live: ENABLED", "Merge authorized: YES", "credentials: YES", "EXECUTION_HOST_PROVEN_C8G: ACHIEVED"):
+        assert claim not in current, claim
+    fragment = (REPO_ROOT / "docs/status_entries/S10-DEPLOY-EXEC-01.md").read_text(encoding="utf-8")
+    for text in ("Merge commit: not merged", "Merge authorized: NO", "Exact implementation scope: 18 paths",
+                 "Governance track: RUNTIME", "PR and current live head: see GitHub metadata and the PR body",
+                 "S10-GATE-C-EXPLORE-01: MERGED (PR #213)", "Phase B executed: NO",
+                 "AlphaVPS accessed/configured in Phase A: NO",
+                 "S10-LIVE-ORCH-01: next core successor after execution-host substrate proof, NOT STARTED",
+                 "Live: DISABLED; capital/orders USD 0 / 0"):
+        assert text in fragment, text
+    assert re.search(r"(?i)current live PR head:\s*`?[0-9a-f]{40}", fragment) is None
+    index = (REPO_ROOT / "docs/repo_truth_index.md").read_text(encoding="utf-8")
+    assert index.index("## S10-DEPLOY-EXEC-01 ") == index.index("\n## ") + 1
+    assert "## S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (merged historical predecessor: PR #213)" in index
+    roadmap = " ".join((REPO_ROOT / "docs/long_term_bot_completion_roadmap.md").read_text(encoding="utf-8").split())
+    assert "Current bounded implementation package: S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate &" in roadmap
+    spec = json.loads((REPO_ROOT / "docs/wp_specs/S10-DEPLOY-EXEC-01/wp_spec.json").read_text(encoding="utf-8"))
+    assert spec["identity"]["required_predecessor"] == {"pr_number": 213, "head_sha": "342dfeb24652eccb1b6bdf237039b268115b1fb7", "merge_sha": "0392c2d2080a656d8ffd69f42abf8ad91d1f90e2"}
+    assert spec["successor_boundary"]["next_wp"] == "S10-LIVE-ORCH-01"
+    assert spec["scope"]["max_changed_files"] == 18 and spec["identity"]["package_size_class"] == "L"
+    assert not (REPO_ROOT / "docs/wp_specs/S10-DEPLOY-EXEC-01/draftability_certificate.json").exists()
