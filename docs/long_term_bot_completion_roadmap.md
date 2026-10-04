@@ -2,7 +2,21 @@
 
 ## A. Status
 
-- Current bounded implementation package: S10-HERMES-STRAT-01 Hermes Strategy Manager Core on
+- Current bounded implementation package: S10-EXEC-FEAS-01 Current Public Execution Feasibility
+  Core on frozen base `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8` after PR #211 / S10-HERMES-STRAT-01 (merged: YES;
+  head `9439283768b78b7302290ba6b8611e3477aa3c6a`). It adds only the stdlib-only `src/execution_feasibility/` package
+  (`docs/execution_feasibility_contract.md`): one exact StrategyVersion bound read-only, a
+  content-addressed ExecutionIntent, a bounded two-GET public Gamma/CLOB
+  PublicExecutionVenueSnapshot and a deterministic ExecutionFeasibilityAssessment (FEASIBLE /
+  LIMITED / INCONCLUSIVE / NOT_FEASIBLE). Public current mechanics only: no persistence, account
+  state, Gate C, order, execution, credential or live authority; not WP172 executable edge.
+  Status: S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01: MERGED; S10-EXEC-FEAS-01: current
+  implemented review target; S10-GATE-C-EXPLORE-01: next after review+merge, not started.
+  ALPHA-03, DATA-03 and the Control Center (S10-CC-FOUND-01) stay parallel; DATA-03 unchanged
+  and non-blocking. Capital/orders USD 0 / 0.
+
+- Immediate merged predecessor: S10-HERMES-STRAT-01 Hermes Strategy Manager Core (PR #211 merged
+  at `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8`; formerly the current bounded implementation package) on
   frozen base `dab28ee45c1f8267248d52601c90d3f3509034f9` after PR #210 / S10-STRAT-LIFE-01 (merged: YES; head
   `d3c98d7530c8cec6b65e5d76492f1d7da8edf783`). It adds an additive default-off strategy mode to the existing controlled Hermes
   runtime and `strategy_manager.py`, which records canonical soft Hermes strategy decisions
@@ -14,7 +28,7 @@
   S10-EXEC-FEAS-01. S10-CC-FOUND-01 is NOT AUTHORIZED / NOT STARTED until HERMES-STRAT merges.
   ALPHA-03 parallel; DATA-03 unchanged and non-blocking. Capital/orders USD 0 / 0.
 
-- Immediate merged predecessor: S10-STRAT-LIFE-01 Strategy Lifecycle + Global
+- Earlier merged predecessor: S10-STRAT-LIFE-01 Strategy Lifecycle + Global
   Portfolio Authority Core (PR #210 merged at `dab28ee45c1f8267248d52601c90d3f3509034f9`; formerly the current bounded
   implementation package) on frozen base `02eeed13dc0b9552e5685f48198d060e78c797e1` after
   PR #209 / S10-DEPLOY-01 (merged: YES; head `3e9d595e014275662e90b5f22809f66b3e82cb39`).
@@ -805,12 +819,12 @@ This section is PLANNING_GUIDANCE_ONLY for successors; it authorizes no successo
   WP170, formal WP172, WP173 qualified and research-paper modes, DATA-03 and S10-DEPLOY-01
   tooling. Live trading remains DISABLED; capital/orders USD 0 / 0.
 
-## S10-HERMES-STRAT-01 Hermes Strategy Manager Core (current)
+## S10-HERMES-STRAT-01 Hermes Strategy Manager Core (merged)
 
 PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
 
 - Known-candidate path capability status: lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes
-  strategy manager (S10-HERMES-STRAT-01: implemented capability, current candidate) -> execution
+  strategy manager (S10-HERMES-STRAT-01: implemented capability, MERGED in PR #211) -> execution
   feasibility (S10-EXEC-FEAS-01: next core package) -> exploratory Gate C -> execution host ->
   live orchestrator -> tiny exploratory live.
 - Raw generic Hermes research remains research-only and untrusted; HERMES-STRAT records the
@@ -819,4 +833,20 @@ PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
 - S10-CC-FOUND-01 becomes eligible to draft/start in parallel only after HERMES-STRAT actually
   merges; until then it is NOT AUTHORIZED / NOT STARTED.
 - ALPHA-03 remains a parallel feeder; DATA-03 unchanged and non-blocking; S10-DEPLOY-01 host
+  activation separate; Gate C unchanged; live DISABLED; capital/orders USD 0 / 0.
+
+## S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (current)
+
+PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
+
+- S10-STRAT-LIFE-01: MERGED. S10-HERMES-STRAT-01: MERGED. S10-EXEC-FEAS-01: current implemented
+  review target. S10-GATE-C-EXPLORE-01: next after review+merge, not started.
+- Known-candidate path capability status: lifecycle (MERGED) -> Hermes strategy manager (MERGED)
+  -> execution feasibility (S10-EXEC-FEAS-01: implemented capability, current candidate) ->
+  exploratory Gate C (S10-GATE-C-EXPLORE-01: next, NOT AUTHORIZED / NOT STARTED) -> execution host
+  -> live orchestrator -> tiny exploratory live.
+- Current public execution feasibility (public mechanics of one exact intent) is not WP172 formal
+  executable edge; WP172 remains the formal durable executable-edge evidence lane.
+- ALPHA-03 remains a parallel feeder and is not a prerequisite; DATA-03 unchanged and
+  non-blocking; the Control Center (S10-CC-FOUND-01) stays a parallel lane; S10-DEPLOY-01 host
   activation separate; Gate C unchanged; live DISABLED; capital/orders USD 0 / 0.

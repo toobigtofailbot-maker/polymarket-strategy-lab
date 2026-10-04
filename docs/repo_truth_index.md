@@ -1,6 +1,33 @@
 # Repo Truth Index
 
-## S10-HERMES-STRAT-01 Hermes Strategy Manager Core (current bounded implementation target)
+## S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (current bounded implementation target)
+
+The contract is `docs/execution_feasibility_contract.md`; the implementation is the new four-file
+stdlib-only source package `src/execution_feasibility/` (`__init__.py`, `models.py`,
+`public_market.py`, `evaluator.py`); the focused tests are
+`tests/execution_feasibility/test_execution_feasibility.py`; the frozen package is
+`docs/wp_specs/S10-EXEC-FEAS-01/`; and the stable record is
+`docs/status_entries/S10-EXEC-FEAS-01.md`. Base `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8` (PR #211 / S10-HERMES-STRAT-01 merged:
+YES, head `9439283768b78b7302290ba6b8611e3477aa3c6a`). RUNTIME, risk 3, exact 17-path scope. The package answers one narrow question:
+can this exact proposed execution intent be mechanically supported by currently observable public
+Polymarket venue state? It binds one exact StrategyVersion read-only (execution_rule_sha256 derived
+from its canonical execution_rule), and produces three immutable content-addressed records:
+ExecutionIntent, PublicExecutionVenueSnapshot and ExecutionFeasibilityAssessment (FEASIBLE /
+LIMITED / INCONCLUSIVE / NOT_FEASIBLE). Public acquisition is exactly two fixed-host unauthenticated
+HTTPS GETs (Gamma `/markets/<id>` and CLOB `/book?token_id=<id>`) with no redirects, no retries and
+capped bodies; tests use a fake transport and real external calls during implementation/CI are 0.
+Public current mechanics only; no persistence; no account state; no order authority; no Gate-C
+authority; no live authority. It is not WP172 executable edge (EXECUTABLE_EDGE_PASS is unchanged)
+and makes no profitability claim. S10-STRAT-LIFE-01: MERGED. S10-HERMES-STRAT-01: MERGED.
+S10-GATE-C-EXPLORE-01 is the next core package after EXEC-FEAS review and merge and is NOT
+AUTHORIZED / NOT STARTED. ALPHA-03 is parallel and non-blocking; DATA-03 is unchanged and
+non-blocking; S10-CC-FOUND-01 is a parallel lane not started by this package; S10-DEPLOY-01 host
+activation is separate; Gate C is unchanged; live DISABLED; no credentials, scheduler, paper,
+execution, live, capital or orders (USD 0 / 0); merge NOT AUTHORIZED.
+
+## S10-HERMES-STRAT-01 Hermes Strategy Manager Core (merged historical predecessor: PR #211)
+
+PR #211 merged this package at `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8` (head `9439283768b78b7302290ba6b8611e3477aa3c6a`). The original package record follows.
 
 The contract is `docs/hermes_strategy_manager_contract.md`; the implementation is
 `src/research_runtime/hermes_controlled_runtime/strategy_manager.py` plus an additive default-off

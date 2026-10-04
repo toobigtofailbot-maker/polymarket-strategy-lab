@@ -1,0 +1,1514 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-EXEC-FEAS-01",
+    "title": "Current Public Execution Feasibility Core",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "CURRENT_PUBLIC_EXECUTION_FEASIBILITY_CORE",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 211,
+      "head_sha": "9439283768b78b7302290ba6b8611e3477aa3c6a",
+      "merge_sha": "4519aab3d7f8424fc74c59104cc4e7afe0ff11b8"
+    },
+    "suggested_branch": "codex/s10-exec-feas-01-current-public-feasibility-core",
+    "objective": "Implement the V2.1 generic current public execution-feasibility capability: bind one exact StrategyVersion read-only, build a content-addressed ExecutionIntent, acquire bounded current public Gamma market and CLOB book evidence through exactly two fixed-host unauthenticated GETs into a content-addressed PublicExecutionVenueSnapshot, and deterministically evaluate venue mechanics into a content-addressed ExecutionFeasibilityAssessment (FEASIBLE / LIMITED / INCONCLUSIVE / NOT_FEASIBLE); no persistence, account state, Gate-C, order, execution or live authority; not WP172 executable edge.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/execution_feasibility_contract.md",
+      "docs/status_entries/S10-EXEC-FEAS-01.md",
+      "docs/wp_specs/S10-EXEC-FEAS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-EXEC-FEAS-01/wp_spec.json",
+      "src/execution_feasibility/__init__.py",
+      "src/execution_feasibility/models.py",
+      "src/execution_feasibility/public_market.py",
+      "src/execution_feasibility/evaluator.py",
+      "tests/execution_feasibility/test_execution_feasibility.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/execution_feasibility_contract.md",
+      "docs/status_entries/S10-EXEC-FEAS-01.md",
+      "docs/wp_specs/S10-EXEC-FEAS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-EXEC-FEAS-01/wp_spec.json",
+      "src/execution_feasibility/__init__.py",
+      "src/execution_feasibility/models.py",
+      "src/execution_feasibility/public_market.py",
+      "src/execution_feasibility/evaluator.py",
+      "tests/execution_feasibility/test_execution_feasibility.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "tools/",
+      "src/data_layer/",
+      "src/strategy_lifecycle/",
+      "src/research_runtime/",
+      "src/paper_trading/",
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/strategy_modules/",
+      "src/monitoring/",
+      "src/operator_cockpit_frontend/",
+      "tests/strategy_lifecycle/",
+      "tests/research_runtime/",
+      "tests/paper_trading/",
+      "tests/execution_gateway/"
+    ],
+    "max_changed_files": 17,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert the exact S10-EXEC-FEAS-01 diff. The src/execution_feasibility package, its focused test, the contract, status fragment, package artifacts, the single architecture-boundary family approval and the doc reconciliation disappear; no store, schema, runtime state, dependency, workflow, account, order or capital state exists to roll back.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": true,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One new public package with three internal modules; no existing product API changes.",
+    "items": [
+      {
+        "surface": "src.execution_feasibility",
+        "before": "absent",
+        "after": "exports ExecutionIntent, PublicExecutionVenueSnapshot, ExecutionFeasibilityAssessment, ExecutionFeasibilityError, closed vocabularies, build/validate intent, fetch/validate snapshot, assess/validate assessment and record_from_mapping",
+        "change_authorized": true,
+        "compatibility_requirement": "import has no side effects; no raw urllib transport internals exported; no persistence, account, order or live API",
+        "authority": "PUBLIC_MECHANICS_ASSESSMENT_ONLY"
+      },
+      {
+        "surface": "src.execution_feasibility.models",
+        "before": "absent",
+        "after": "canonical JSON/decimal helpers, three content-addressed records, closed vocabularies/diagnostics/errors, StrategyVersion binding and structural validators",
+        "change_authorized": true,
+        "compatibility_requirement": "pure; no network, filesystem, clock or environment access; consumes STRAT-LIFE public APIs read-only",
+        "authority": "PUBLIC_MECHANICS_ASSESSMENT_ONLY"
+      },
+      {
+        "surface": "src.execution_feasibility.public_market",
+        "before": "absent",
+        "after": "fixed-host GET-only no-redirect capped transport, Decimal-preserving decode, Gamma/CLOB normalization and exact two-call foreground snapshot acquisition",
+        "change_authorized": true,
+        "compatibility_requirement": "exactly two unauthenticated HTTPS GETs to gamma-api.polymarket.com and clob.polymarket.com; no retry, sleep, scheduler, credential or account endpoint",
+        "authority": "PUBLIC_READ_ONLY_NO_ACCOUNT"
+      },
+      {
+        "surface": "src.execution_feasibility.evaluator",
+        "before": "absent",
+        "after": "pure deterministic assess_execution_feasibility and full re-evaluation validator",
+        "change_authorized": true,
+        "compatibility_requirement": "no network, filesystem or wall clock; caller-supplied evaluated_at_ns >= acquisition completion",
+        "authority": "PUBLIC_MECHANICS_ASSESSMENT_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Freeze the binding, intent, acquisition, normalization, evaluation, fee, status, record identity, authority, scope and V2.1 truth contracts.",
+    "items": [
+      {
+        "path": "exec_feas.strategy_binding",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Builder input is an exact StrategyVersion revalidated by record_from_mapping(RECORD_KIND, to_mapping()) == record, never mutated or written; execution_rule_sha256 = executionrule:sha256: + sha256(canonical_json({execution_rule})) always derived",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R004-R007",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STRATEGY_VERSION_INVALID, STRATEGY_SPEC_INVALID or EXECUTION_RULE_BINDING_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.intent",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Closed sides/styles/order types; AGGRESSIVE_TAKER uses FOK/FAK with post_only false and no expiration; PASSIVE_MAKER uses GTC/GTD with post_only true; GTD expiration >= floor(cutoff_ns/1e9)+180; shares > 0; 0 < price_limit < 1; 0 < max age <= 60 s; canonical decimal strings only; venue ids digits/0x-hex bounded",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R008-R015",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "FIELD_TYPE_INVALID, FIELD_VALUE_INVALID or FIELD_MISSING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.acquisition",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "At most two HTTPS GETs per acquisition (Gamma market then CLOB book) to exactly two fixed endpoint shapes (/markets/<digits>; /book?token_id=<digits> only), port 443/default, no redirects, no retries, no sleep, no cookies or credential headers, no proxy discovery, 5 s timeout, capped reads (cap+1 sentinel, Content-Length pre-rejection)",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R016-R021, R069",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "NETWORK_SCHEME_FORBIDDEN, NETWORK_HOST_FORBIDDEN or NETWORK_METHOD_FORBIDDEN",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.source_states",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Transport/HTTP failure -> UNAVAILABLE; body/shape/schema/size/identity violation -> INVALID; unavailable or invalid facts stay null; no upstream text echoed",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R022-R024",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed source diagnostics",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.identity_reconciliation",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Gamma id/condition/token membership and CLOB market/asset must match exactly or the source is INVALID with SOURCE_IDENTITY_MISMATCH; tick, minimum-order and negRisk cross-source conflicts are UNKNOWN (INCONCLUSIVE)",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R025-R029",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "SOURCE_IDENTITY_MISMATCH, TICK_SOURCE_CONFLICT, MIN_ORDER_SOURCE_CONFLICT or NEG_RISK_SOURCE_CONFLICT",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.book",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Bids normalized descending and asks ascending regardless of wire order; 0 < price < 1, size > 0, unique prices, <= 5,000 levels per side, no crossed book; one-sided books valid",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R030-R034",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "BOOK_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.freshness",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "book_timestamp_ns (ms -> ns) must be <= acquisition completion and within max_public_data_age_ns; HTTP duration is never market latency evidence",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R035",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "BOOK_TIMESTAMP_INVALID or BOOK_STALE",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.market",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Known active false, closed true, acceptingOrders false or enableOrderBook false is FAIL/NOT_FEASIBLE; missing state UNKNOWN; restricted recorded only",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R036, R037",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "MARKET_INACTIVE, MARKET_CLOSED, MARKET_NOT_ACCEPTING_ORDERS or ORDER_BOOK_DISABLED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.tick",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Exact Decimal price_limit % reconciled tick == 0; off-grid FAIL PRICE_OFF_TICK; never by decimal-place count",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R038",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PRICE_OFF_TICK",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.minimum_order",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "requested_shares * price_limit compared with Gamma orderMinSize as minimum USDC notional; CLOB min_order_size never relabelled as shares",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R039",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "MINIMUM_ORDER_NOTIONAL_NOT_MET",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.aggressive_fill",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Visible opposing levels within the price bound only; FOK short -> NOT_FEASIBLE; FAK zero -> NOT_FEASIBLE; FAK partial -> LIMITED; slippage vs best ask/bid; depth metrics are market depth only; division-derived values quantized conservatively at 18 dp",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R040-R042",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "FOK_INSUFFICIENT_VISIBLE_DEPTH, NO_VISIBLE_OPPOSING_LIQUIDITY or FAK_PARTIAL_VISIBLE_FILL",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.passive",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Post-only BUY >= best ask or SELL <= best bid would cross -> NOT_FEASIBLE; empty opposite side may rest; passive fill UNKNOWN/null",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R043",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "POST_ONLY_WOULD_CROSS",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.fees",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Fees disabled -> EXACT_ZERO_NO_FEES; passive + takerOnly -> EXACT_ZERO_MAKER; aggressive taker with usable fills -> per-level exact sum of shares*rate*(p(1-p))**e for integer e in 0..8 with five-decimal ceiling CONSERVATIVE_5DP_UPPER_BOUND; no usable fill path or incomplete schedule -> UNKNOWN; expected maker rebate always null",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R044-R047, R070",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "FEE_CONFIG_UNKNOWN or FEE_EXPONENT_UNSUPPORTED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.delay_latency",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Aggressive secondsDelay 0 PASS, >0 LIMITED MARKETABLE_ORDER_DELAY, missing UNKNOWN; passive NOT_APPLICABLE; client latency always UNKNOWN/null",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R048, R049",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "MARKETABLE_ORDER_DELAY or CLIENT_LATENCY_UNKNOWN",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.unknowns",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "adverse_selection_state UNKNOWN with null cost and passive fill UNKNOWN/null are visible limitations, never zero, and do not alone change status",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R050",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ADVERSE_SELECTION_UNKNOWN or PASSIVE_FILL_UNKNOWN",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.status",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Every dimension populated; any FAIL -> NOT_FEASIBLE; else any UNKNOWN -> INCONCLUSIVE; else V1 limitation -> LIMITED; else FEASIBLE",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R051",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "status recomputed by validator",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.records",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Three records validated by exact type, schema, closed loader, bounds and re-derived content id; evaluated_at_ns >= acquisition completion; full re-evaluation validator",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R052-R057",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_DERIVATION_MISMATCH",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.authority",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "No credential, account, order, signing, Gate-C, execution-gateway, paper, persistence, scheduler or live path; import has zero side effects; authority booleans invariant true",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R001-R003",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "zero_authority",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.non_claims",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "No profitability, edge, PnL or account capacity; not WP172; EXECUTABLE_EDGE_PASS untouched",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R060",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "no_profitability_claim",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope.exact",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Exactly the 17 frozen paths; tools/wp unchanged; no dependency, workflow, STRAT-LIFE, execution, paper or DATA-03 path",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R059, R061, R066",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "S10_EXEC_FEAS_AMENDMENT_REQUIRED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "docs.v21_truth",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Docs record HERMES-STRAT merged, EXEC-FEAS current implemented review target, WP172 formal lane distinct, GATE-C-EXPLORE next not started, ALPHA-03/DATA-03/Control Center parallel",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R062-R065",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "DOC_TRUTH_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "execution_intent_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "execution_intent_id = executionintent:sha256: + sha256(canonical JSON of every ExecutionIntent field except the id and the four invariant authority booleans)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R052",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_DERIVATION_MISMATCH",
+        "derivation_rule_id": "executionintent_content_id"
+      },
+      {
+        "path": "venue_snapshot_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "venue_snapshot_id = executionsnapshot:sha256: + sha256(canonical JSON of every snapshot field except the id and the five invariant authority booleans)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R053",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_DERIVATION_MISMATCH",
+        "derivation_rule_id": "executionsnapshot_content_id"
+      },
+      {
+        "path": "execution_feasibility_assessment_id",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "execution_feasibility_assessment_id = executionfeasibility:sha256: + sha256(canonical JSON of every assessment field except the id and the seven invariant authority/non-claim booleans)",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "spec-guard derivation example plus pytest R054",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_DERIVATION_MISMATCH",
+        "derivation_rule_id": "executionfeasibility_content_id"
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": true,
+    "reason": "Each content id is SHA256_CANONICAL_JSON over the exact identity-preimage fields (every top-level field except the id and the invariant authority/non-claim booleans) with the exact prefix; one product-built example per rule.",
+    "items": [
+      {
+        "rule_id": "executionintent_content_id",
+        "target_path": "execution_intent_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "condition_id",
+          "execution_rule_sha256",
+          "execution_style",
+          "gamma_market_id",
+          "gtd_expiration_unix_s",
+          "information_cutoff_ns",
+          "max_public_data_age_ns",
+          "order_type",
+          "post_only",
+          "price_limit",
+          "requested_shares",
+          "schema_id",
+          "schema_version",
+          "side",
+          "strategy_version_id",
+          "token_id"
+        ],
+        "excluded_paths": [],
+        "prefix": "executionintent:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "executionsnapshot_content_id",
+        "target_path": "venue_snapshot_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "accepting_orders",
+          "acquisition_completed_ns",
+          "acquisition_started_ns",
+          "active",
+          "asks",
+          "bids",
+          "book_condition_id",
+          "book_hash",
+          "book_min_order_size_raw",
+          "book_neg_risk",
+          "book_tick_size",
+          "book_timestamp_ns",
+          "book_token_id",
+          "clob_payload_sha256",
+          "clob_source_state",
+          "closed",
+          "condition_id",
+          "diagnostic_codes",
+          "enable_order_book",
+          "fee_exponent",
+          "fee_rate",
+          "fee_rebate_rate",
+          "fee_taker_only",
+          "fees_enabled",
+          "gamma_market_id",
+          "gamma_min_order_notional_usd",
+          "gamma_neg_risk",
+          "gamma_payload_sha256",
+          "gamma_source_state",
+          "gamma_tick_size",
+          "last_trade_price",
+          "restricted",
+          "schema_id",
+          "schema_version",
+          "seconds_delay",
+          "token_id"
+        ],
+        "excluded_paths": [],
+        "prefix": "executionsnapshot:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "executionfeasibility_content_id",
+        "target_path": "execution_feasibility_assessment_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "adverse_selection_cost",
+          "adverse_selection_state",
+          "best_ask",
+          "best_bid",
+          "book_dimension",
+          "client_latency_ns",
+          "client_latency_state",
+          "delay_dimension",
+          "diagnostic_codes",
+          "evaluated_at_ns",
+          "execution_intent_id",
+          "execution_rule_sha256",
+          "expected_maker_rebate_usd",
+          "fee_dimension",
+          "fee_exactness",
+          "fee_upper_bound_usd",
+          "fill_dimension",
+          "fill_ratio",
+          "freshness_dimension",
+          "identity_dimension",
+          "information_cutoff_ns",
+          "intent_notional_at_price_limit_usd",
+          "maker_rebate_rate",
+          "market_dimension",
+          "minimum_order_dimension",
+          "minimum_order_notional_usd",
+          "passive_fill_probability",
+          "passive_fill_state",
+          "price_bound_capacity_shares",
+          "requested_shares",
+          "schema_id",
+          "schema_version",
+          "seconds_delay",
+          "slippage_cost_usd",
+          "slippage_per_share",
+          "spread",
+          "status",
+          "strategy_version_id",
+          "theoretical_fee_unrounded_usd",
+          "tick_dimension",
+          "venue_snapshot_id",
+          "visible_depth_capacity_shares",
+          "visible_fill_shares",
+          "weighted_execution_price"
+        ],
+        "excluded_paths": [],
+        "prefix": "executionfeasibility:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      }
+    ]
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Deterministic RUNTIME readiness plus explicit Side15 authorization permits bounded implementation only.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "prompt/spec mirror and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl supplied the exact implementation-authorizing S10-EXEC-FEAS-01 package",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "exact 17-path implementation and required validation pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "One valid example per derivation, each the to_mapping() of a real builder-produced record.",
+    "items": [
+      {
+        "example_id": "executionintent_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "executionintent_content_id"
+        ],
+        "input": {
+          "execution_intent_id": "executionintent:sha256:d5d43c337e1b83f6404c8fd3fb8a3e43ed37cdb5f145f4734da022ae1d9d5e1d",
+          "strategy_version_id": "strategyversion:sha256:34310331cc2fa208e6938f4c935fe1fdd8697103801cf09cd2e5f516bf1ce8bc",
+          "execution_rule_sha256": "executionrule:sha256:2d3ebd4bbfd1ed3adaa5061cb08886fd7da21c2a8de203712083a54de3ccdee1",
+          "gamma_market_id": "516710",
+          "condition_id": "0xabababababababababababababababababababababababababababababababab",
+          "token_id": "71321045679252212594626385532706912750332728571942532289631379312455583992563",
+          "side": "BUY",
+          "execution_style": "AGGRESSIVE_TAKER",
+          "order_type": "FOK",
+          "requested_shares": "25",
+          "price_limit": "0.55",
+          "post_only": false,
+          "gtd_expiration_unix_s": null,
+          "information_cutoff_ns": 1799999970000000000,
+          "max_public_data_age_ns": 5000000000,
+          "schema_id": "polymarket-execution-intent",
+          "schema_version": "1.0.0",
+          "advisory_only": true,
+          "no_order_authority": true,
+          "no_execution_authority": true,
+          "no_live_authority": true
+        }
+      },
+      {
+        "example_id": "executionsnapshot_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "executionsnapshot_content_id"
+        ],
+        "input": {
+          "venue_snapshot_id": "executionsnapshot:sha256:2193285212b271fc295162fb7f0db40d66971cd5f31166c88ecb071083571dca",
+          "gamma_market_id": "516710",
+          "condition_id": "0xabababababababababababababababababababababababababababababababab",
+          "token_id": "71321045679252212594626385532706912750332728571942532289631379312455583992563",
+          "acquisition_started_ns": 1799999999990000000,
+          "acquisition_completed_ns": 1800000000000000000,
+          "gamma_source_state": "AVAILABLE",
+          "gamma_payload_sha256": "04131fc7232abef8a244694db9e5d36295e82caeb7f9fab136e4b841ea6a531b",
+          "clob_source_state": "AVAILABLE",
+          "clob_payload_sha256": "18d8912e18248bee726c7b8b5529e01ad0276b92fc1231a2b9c1e3bb7533732a",
+          "active": true,
+          "closed": false,
+          "accepting_orders": true,
+          "enable_order_book": true,
+          "restricted": false,
+          "gamma_neg_risk": false,
+          "gamma_tick_size": "0.01",
+          "gamma_min_order_notional_usd": "5",
+          "fees_enabled": true,
+          "fee_rate": "0.0333",
+          "fee_exponent": "1",
+          "fee_taker_only": true,
+          "fee_rebate_rate": "0.2",
+          "seconds_delay": 0,
+          "book_condition_id": "0xabababababababababababababababababababababababababababababababab",
+          "book_token_id": "71321045679252212594626385532706912750332728571942532289631379312455583992563",
+          "book_timestamp_ns": 1799999999000000000,
+          "book_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "book_neg_risk": false,
+          "book_tick_size": "0.01",
+          "book_min_order_size_raw": "5",
+          "last_trade_price": "0.51",
+          "bids": [
+            {
+              "price": "0.5",
+              "size": "100"
+            },
+            {
+              "price": "0.49",
+              "size": "200"
+            }
+          ],
+          "asks": [
+            {
+              "price": "0.52",
+              "size": "10"
+            },
+            {
+              "price": "0.53",
+              "size": "20"
+            },
+            {
+              "price": "0.55",
+              "size": "30"
+            },
+            {
+              "price": "0.6",
+              "size": "40"
+            }
+          ],
+          "diagnostic_codes": [],
+          "schema_id": "polymarket-public-execution-venue-snapshot",
+          "schema_version": "1.0.0",
+          "public_only": true,
+          "no_account_state": true,
+          "no_order_authority": true,
+          "no_execution_authority": true,
+          "no_live_authority": true
+        }
+      },
+      {
+        "example_id": "executionfeasibility_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "executionfeasibility_content_id"
+        ],
+        "input": {
+          "execution_feasibility_assessment_id": "executionfeasibility:sha256:e2b3efea3bb688c635dcf3a6603dd872d0af8da2c379d02fce6fb0a572a9353a",
+          "strategy_version_id": "strategyversion:sha256:34310331cc2fa208e6938f4c935fe1fdd8697103801cf09cd2e5f516bf1ce8bc",
+          "execution_rule_sha256": "executionrule:sha256:2d3ebd4bbfd1ed3adaa5061cb08886fd7da21c2a8de203712083a54de3ccdee1",
+          "execution_intent_id": "executionintent:sha256:d5d43c337e1b83f6404c8fd3fb8a3e43ed37cdb5f145f4734da022ae1d9d5e1d",
+          "venue_snapshot_id": "executionsnapshot:sha256:2193285212b271fc295162fb7f0db40d66971cd5f31166c88ecb071083571dca",
+          "information_cutoff_ns": 1799999970000000000,
+          "evaluated_at_ns": 1800000000000000000,
+          "status": "FEASIBLE",
+          "market_dimension": "PASS",
+          "identity_dimension": "PASS",
+          "freshness_dimension": "PASS",
+          "tick_dimension": "PASS",
+          "minimum_order_dimension": "PASS",
+          "book_dimension": "PASS",
+          "fill_dimension": "PASS",
+          "fee_dimension": "PASS",
+          "delay_dimension": "PASS",
+          "best_bid": "0.5",
+          "best_ask": "0.52",
+          "spread": "0.02",
+          "requested_shares": "25",
+          "visible_fill_shares": "25",
+          "fill_ratio": "1",
+          "weighted_execution_price": "0.526",
+          "slippage_per_share": "0.006",
+          "slippage_cost_usd": "0.15",
+          "visible_depth_capacity_shares": "100",
+          "price_bound_capacity_shares": "60",
+          "minimum_order_notional_usd": "5",
+          "intent_notional_at_price_limit_usd": "13.75",
+          "fee_exactness": "CONSERVATIVE_5DP_UPPER_BOUND",
+          "theoretical_fee_unrounded_usd": "0.20754225",
+          "fee_upper_bound_usd": "0.20755",
+          "maker_rebate_rate": "0.2",
+          "expected_maker_rebate_usd": null,
+          "seconds_delay": 0,
+          "client_latency_state": "UNKNOWN",
+          "client_latency_ns": null,
+          "passive_fill_state": "NOT_APPLICABLE",
+          "passive_fill_probability": null,
+          "adverse_selection_state": "UNKNOWN",
+          "adverse_selection_cost": null,
+          "diagnostic_codes": [
+            "CLIENT_LATENCY_UNKNOWN",
+            "ADVERSE_SELECTION_UNKNOWN"
+          ],
+          "schema_id": "polymarket-execution-feasibility-assessment",
+          "schema_version": "1.0.0",
+          "public_mechanics_only": true,
+          "no_profitability_claim": true,
+          "no_account_capacity_claim": true,
+          "no_gate_c_authority": true,
+          "no_order_authority": true,
+          "no_execution_authority": true,
+          "no_live_authority": true
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R060 are the focused EXEC-FEAS matrix (families A-Q) and R069-R070 the Final Contract Micro-Closure 01 evidence; R061 architecture boundary; R062-R065 repo truth; R066-R068 bounded repository guards and the full suite.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_r001_import_has_no_side_effects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "importing src.execution_feasibility in a fresh interpreter records zero socket, subprocess, sqlite, file-write or environment-write audit events and starts no thread"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_r002_no_forbidden_imports_or_terms",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the four source files contain no SecureClient, credential, environment, order, signing, execution-gateway, paper, sqlite, threading, asyncio, sleep or WP172 term and import only the frozen stdlib/STRAT-LIFE set; only public_market.py reads the clock"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_r003_public_api_is_small_and_has_no_mutation_or_persistence",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the package exports exactly the frozen small API with no order, sign, cancel, store, persist, write, cache or raw transport name"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_r004_valid_strategy_version_binds",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "a valid StrategyVersion binds its id into the intent, validates with the binding check and is never mutated"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_r005_tampered_strategy_version_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "a tampered, mapping-typed or missing StrategyVersion rejects STRATEGY_VERSION_INVALID"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_r006_execution_rule_digest_derives_from_exact_canonical_spec",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "execution_rule_sha256 equals executionrule:sha256: + sha256(canonical {execution_rule}) and changes only with the execution rule"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_r007_caller_cannot_substitute_execution_rule_digest",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the builder accepts no digest argument and a substituted or mismatched digest rejects EXECUTION_RULE_BINDING_INVALID"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_r008_valid_aggressive_intents",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "FOK and FAK aggressive intents for BUY and SELL build with post_only false, no expiration and invariant authority flags"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_r009_valid_passive_intents",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "post-only GTC and GTD passive intents build; GTD at exactly cutoff + 180 s is accepted"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_r010_invalid_style_order_pair_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "aggressive GTC/GTD, passive FOK/FAK and out-of-vocabulary side/style/order values reject FIELD_VALUE_INVALID"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_r011_post_only_mismatch_rejects",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "aggressive post_only true and passive post_only false reject; a non-bool post_only rejects FIELD_TYPE_INVALID"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_r012_gtc_gtd_expiration_rules",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "GTC with expiration, GTD missing or under 180 s, boolean expiration and aggressive expiration reject"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_r013_float_nan_and_noncanonical_numbers_reject",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "float, NaN, exponent, signed, padded and over-precision decimal text reject for price and shares"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_r014_invalid_venue_ids_reject",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "signed, whitespace, overlong, non-digit, uppercase, truncated and URL-like venue ids reject"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_r015_intent_numeric_bounds",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "zero/negative shares, price outside (0,1), age outside (0, 60 s] and negative cutoff reject while the 60 s age bound is accepted"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_r016_two_fixed_host_get_requests_only",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "one acquisition performs exactly two GETs, Gamma then CLOB, to the exact fixed URLs with 5 s timeout and only an Accept header"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_r017_forbidden_scheme_host_method_and_port_reject_before_open",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "http, foreign host, non-default port, userinfo, suffix-spoofed host and non-GET methods raise the closed network codes with zero opener calls"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_r018_redirects_are_rejected_not_followed",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the no-redirect handler raises on every redirect, the default opener installs it, and redirect responses become UNAVAILABLE without a follow-up request or body read"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_r019_no_retry_or_backoff_after_failure",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "transport errors and HTTP 404/429/500/503 produce exactly two requests and UNAVAILABLE states with no retry"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_r020_body_caps_and_oversize_sentinel",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "an oversize Content-Length is rejected before any read, the body is read with cap + 1 and a sentinel byte yields OVERSIZE -> INVALID with null payload hash"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "pytest",
+        "test": "test_r021_errors_are_sanitized_and_never_echo_upstream_values",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "upstream exception text and response values never appear in records or exception strings, which are closed codes only"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "pytest",
+        "test": "test_r022_gamma_unavailable_preserved_as_null_facts",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "Gamma UNAVAILABLE keeps every Gamma fact null and the assessment INCONCLUSIVE with SOURCE_GAMMA_UNAVAILABLE"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "pytest",
+        "test": "test_r023_clob_unavailable_preserved_as_null_facts",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "CLOB UNAVAILABLE keeps book facts null/empty and book/fill dimensions UNKNOWN"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "pytest",
+        "test": "test_r024_malformed_json_and_shapes_are_invalid_sources",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "truncated, non-UTF-8, duplicate-key, NaN, too-deep and wrongly typed bodies become INVALID with the raw-body hash recorded"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "pytest",
+        "test": "test_r025_gamma_identity_and_token_membership",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "Gamma identity matches and the token is accepted whether clobTokenIds is a JSON string or a list"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "pytest",
+        "test": "test_r026_identity_mismatch_is_invalid_source_with_diagnostic",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "Gamma id/condition/token and CLOB market/asset mismatches become INVALID with SOURCE_IDENTITY_MISMATCH and the evaluator refuses a cross-token intent"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "pytest",
+        "test": "test_r027_tick_source_conflict_inconclusive",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "a Gamma/CLOB tick conflict or a missing tick source makes the tick dimension UNKNOWN and the status INCONCLUSIVE"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "pytest",
+        "test": "test_r028_min_order_source_conflict_inconclusive",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "a Gamma/CLOB minimum-order conflict makes the minimum-order dimension UNKNOWN and records MIN_ORDER_SOURCE_CONFLICT"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "pytest",
+        "test": "test_r029_neg_risk_source_conflict_inconclusive",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "a negRisk conflict is INCONCLUSIVE while agreeing negRisk true stays FEASIBLE"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "test_r030_wire_order_normalized_bids_descending_asks_ascending",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "raw ascending bids and descending asks normalize to best-first order regardless of wire order"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "pytest",
+        "test": "test_r031_invalid_book_levels_reject",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "duplicate prices, prices outside (0,1), non-positive or non-numeric sizes and extra level keys make the CLOB source INVALID with BOOK_INVALID"
+      },
+      {
+        "requirement_id": "R032",
+        "source": "pytest",
+        "test": "test_r032_crossed_book_invalid",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "a crossed or locked book is INVALID at acquisition and rejected by the snapshot validator"
+      },
+      {
+        "requirement_id": "R033",
+        "source": "pytest",
+        "test": "test_r033_one_sided_book_is_valid_state",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "empty-bid, empty-ask and empty books are AVAILABLE and yield null best prices"
+      },
+      {
+        "requirement_id": "R034",
+        "source": "pytest",
+        "test": "test_r034_level_cap_enforced",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "5,000 levels per side normalize, 5,001 reject, and a book too large for the bounded record becomes INVALID"
+      },
+      {
+        "requirement_id": "R035",
+        "source": "pytest",
+        "test": "test_r035_book_timestamp_normalization_and_freshness",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "millisecond timestamps normalize to ns, future timestamps are BOOK_TIMESTAMP_INVALID and age over the bound is BOOK_STALE, both INCONCLUSIVE"
+      },
+      {
+        "requirement_id": "R036",
+        "source": "pytest",
+        "test": "test_r036_market_hard_facts_not_feasible",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "inactive, closed, not-accepting and order-book-disabled markets are NOT_FEASIBLE with closed diagnostics; restricted alone is recorded only"
+      },
+      {
+        "requirement_id": "R037",
+        "source": "pytest",
+        "test": "test_r037_missing_market_state_inconclusive",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "each missing or null required market state makes the market dimension UNKNOWN and the status INCONCLUSIVE"
+      },
+      {
+        "requirement_id": "R038",
+        "source": "pytest",
+        "test": "test_r038_tick_grid_uses_exact_decimal_modulo",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "ticks 0.01, 0.005, 0.0025, 0.001 and 0.0001 accept on-grid and reject off-grid prices by exact modulo with PRICE_OFF_TICK"
+      },
+      {
+        "requirement_id": "R039",
+        "source": "pytest",
+        "test": "test_r039_minimum_order_notional",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "exact USDC-notional equality passes, below-minimum is NOT_FEASIBLE and a missing Gamma minimum is never inferred from CLOB"
+      },
+      {
+        "requirement_id": "R040",
+        "source": "pytest",
+        "test": "test_r040_aggressive_buy_sweep_metrics",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "a BUY ask sweep reports exact best prices, spread, fill, ratio, VWAP, slippage and visible/price-bound depth"
+      },
+      {
+        "requirement_id": "R041",
+        "source": "pytest",
+        "test": "test_r041_aggressive_buy_fok_fak_outcomes",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "FOK insufficient depth is NOT_FEASIBLE, FAK partial is LIMITED with floored ratio and no reachable asks is NOT_FEASIBLE"
+      },
+      {
+        "requirement_id": "R042",
+        "source": "pytest",
+        "test": "test_r042_aggressive_sell_mirrors_over_bids",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "SELL sweeps bids descending with conservative floored VWAP, slippage and FAK/FOK outcomes"
+      },
+      {
+        "requirement_id": "R043",
+        "source": "pytest",
+        "test": "test_r043_passive_maker_rest_and_cross",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "non-crossing post-only orders rest FEASIBLE with passive fill UNKNOWN/null, crossing ones are NOT_FEASIBLE and an empty opposite side can rest"
+      },
+      {
+        "requirement_id": "R044",
+        "source": "pytest",
+        "test": "test_r044_fee_disabled_and_passive_maker_exact_zero",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "disabled fees are EXACT_ZERO_NO_FEES and taker-only passive makers EXACT_ZERO_MAKER with the rebate rate informational"
+      },
+      {
+        "requirement_id": "R045",
+        "source": "pytest",
+        "test": "test_r045_taker_fee_per_level_with_conservative_ceiling",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "taker fees are summed per fill level (not from VWAP) for exponents 0, 1 and 2 with a five-decimal ceiling upper bound"
+      },
+      {
+        "requirement_id": "R046",
+        "source": "pytest",
+        "test": "test_r046_unknown_fee_configuration_is_inconclusive",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "unsupported/fractional exponents, non-taker-only, malformed or missing schedules and unknown feesEnabled are UNKNOWN and INCONCLUSIVE"
+      },
+      {
+        "requirement_id": "R047",
+        "source": "pytest",
+        "test": "test_r047_maker_rebate_never_becomes_expected_proceeds",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "expected_maker_rebate_usd is always null and a populated value rejects"
+      },
+      {
+        "requirement_id": "R048",
+        "source": "pytest",
+        "test": "test_r048_marketable_order_delay",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "aggressive zero delay is PASS, positive delay LIMITED, missing delay INCONCLUSIVE and passive delay NOT_APPLICABLE"
+      },
+      {
+        "requirement_id": "R049",
+        "source": "pytest",
+        "test": "test_r049_client_latency_unknown_and_http_duration_not_promoted",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "client latency is UNKNOWN/null regardless of HTTP duration"
+      },
+      {
+        "requirement_id": "R050",
+        "source": "pytest",
+        "test": "test_r050_adverse_selection_unknown_never_zero",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "adverse selection is UNKNOWN with null cost in every assessment and a zero cost rejects"
+      },
+      {
+        "requirement_id": "R051",
+        "source": "pytest",
+        "test": "test_r051_status_precedence",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "hard FAIL beats required UNKNOWN beats LIMITED beats FEASIBLE across closed+missing-fee, partial+missing-fee and partial+known-fee cases"
+      },
+      {
+        "requirement_id": "R052",
+        "source": "pytest",
+        "test": "test_r052_execution_intent_identity_tamper_matrix",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the intent round-trips and forged ids, wrong prefixes, changed or dropped fields, extra fields and false authority flags reject"
+      },
+      {
+        "requirement_id": "R053",
+        "source": "pytest",
+        "test": "test_r053_venue_snapshot_identity_tamper_matrix",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the snapshot round-trips and forged ids, wrong prefixes, changed or dropped fields, extra fields and false authority flags reject"
+      },
+      {
+        "requirement_id": "R054",
+        "source": "pytest",
+        "test": "test_r054_assessment_identity_tamper_matrix",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the assessment round-trips and forged ids, prefixes, fields, statuses and schema versions reject"
+      },
+      {
+        "requirement_id": "R055",
+        "source": "pytest",
+        "test": "test_r055_evaluation_time_and_type_binding",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "evaluation before acquisition completion, boolean time and mapping-typed inputs reject"
+      },
+      {
+        "requirement_id": "R056",
+        "source": "pytest",
+        "test": "test_r056_assessment_revalidates_against_exact_inputs",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the assessment is deterministic and revalidates only against its exact intent and snapshot"
+      },
+      {
+        "requirement_id": "R057",
+        "source": "pytest",
+        "test": "test_r057_canonical_serialization_and_bounds",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "canonical JSON sorts keys with UTF-8, rejects floats/NaN/non-string keys/over-depth values and canonical decimals drop exponents and redundant zeros"
+      },
+      {
+        "requirement_id": "R058",
+        "source": "pytest",
+        "test": "test_r058_spec_identity_derivation_examples_are_product_records",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "every spec example is a product-built record whose id the unchanged guard derivation reproduces and whose modified or dropped identity field is detected"
+      },
+      {
+        "requirement_id": "R059",
+        "source": "pytest",
+        "test": "test_r059_scope_is_exact_and_excludes_forbidden_surfaces",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the spec scope is exactly 17 paths outside STRAT-LIFE, execution, paper, data-layer, tools, workflow, local data and dependency surfaces with the frozen authority booleans"
+      },
+      {
+        "requirement_id": "R069",
+        "source": "pytest",
+        "test": "test_r069_only_two_exact_endpoint_shapes_pass_transport_guard",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the low-level transport rejects every path, query, fragment, userinfo, port and id-shape deviation from the two authorized endpoints before any request while both exact URLs (and explicit :443) pass"
+      },
+      {
+        "requirement_id": "R070",
+        "source": "pytest",
+        "test": "test_r070_taker_fee_unknown_without_usable_fills",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "an enabled taker fee with an unavailable, invalid or stale book is fee UNKNOWN with null amounts; usable fills keep PASS with the conservative bound; disabled fees stay exact zero; a usable zero fill records a zero fee"
+      },
+      {
+        "requirement_id": "R060",
+        "source": "pytest",
+        "test": "test_r060_no_wp172_semantics_reused_or_weakened",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the package references no EXECUTABLE_EDGE_PASS, executable_edge, queue multiplier or profitability field"
+      },
+      {
+        "requirement_id": "R061",
+        "source": "pytest",
+        "test": "test_execution_feasibility_is_exact_new_source_family",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_boundaries.py",
+        "expected_result": "src/execution_feasibility is the single new approved family with exactly four files and no wildcard"
+      },
+      {
+        "requirement_id": "R062",
+        "source": "pytest",
+        "test": "test_exec_feas_current_public_mechanics_not_wp172",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "docs record HERMES-STRAT merged and EXEC-FEAS as current public mechanics distinct from WP172"
+      },
+      {
+        "requirement_id": "R063",
+        "source": "pytest",
+        "test": "test_exec_feas_known_candidate_path_gate_c_next",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "the known-candidate path records EXEC-FEAS current and GATE-C-EXPLORE next not started with ALPHA-03 parallel"
+      },
+      {
+        "requirement_id": "R064",
+        "source": "pytest",
+        "test": "test_s10_exec_feas_status_gate_c_explore_next",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_project_status_docs.py",
+        "expected_result": "project status makes EXEC-FEAS the current implemented review target with GATE-C-EXPLORE next not started"
+      },
+      {
+        "requirement_id": "R065",
+        "source": "pytest",
+        "test": "test_s10_exec_feas_repo_truth_authority_separation",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_repo_truth_docs.py",
+        "expected_result": "repo truth records the four-file package with no persistence, account, order or live authority"
+      },
+      {
+        "requirement_id": "R066",
+        "source": "repo_guard",
+        "test": "readiness check-diff",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-EXEC-FEAS-01/wp_prompt.txt --spec docs/wp_specs/S10-EXEC-FEAS-01/wp_spec.json --repo-root . --check-diff --base 4519aab3d7f8424fc74c59104cc4e7afe0ff11b8 --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY (RUNTIME) with exact 17/17 changed-file equality against the frozen base"
+      },
+      {
+        "requirement_id": "R067",
+        "source": "repo_guard",
+        "test": "wp spec guard document validation",
+        "command": "python -c \"import json,sys; sys.path.insert(0,'.'); from tools.wp import wp_spec_guard as g; s,e=g.validate_spec_document(json.load(open('docs/wp_specs/S10-EXEC-FEAS-01/wp_spec.json',encoding='utf-8'))); print('PASS' if not e else e); sys.exit(1 if e else 0)\"",
+        "expected_result": "the unchanged polymarket-work-package-spec 1.0.0 guard validator returns zero errors for the exact spec (the guard CLI itself requires a PROTECTED-track certificate)"
+      },
+      {
+        "requirement_id": "R068",
+        "source": "pytest",
+        "test": "authoritative full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "entire repository suite green with zero failures after the candidate is stable"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-GATE-C-EXPLORE-01",
+    "next_title": "Exploratory Gate-C permit core, separately draftable only after S10-EXEC-FEAS-01 review and merge; not started automatically",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-GATE-C-EXPLORE-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "Gate-C exploratory permits or any Gate C change",
+      "S10-DEPLOY-EXEC-01 execution host",
+      "S10-LIVE-ORCH-01 live orchestration",
+      "S10-ALPHA-03 recurring discovery",
+      "Control Center / S10-CC-FOUND-01",
+      "credentials, signing or authenticated account access",
+      "balance, allowance, position or open-order reads",
+      "order placement or cancel",
+      "paper engine or paper execution change",
+      "live trading or capital deployment",
+      "scheduler or background loop",
+      "persistence store, journal or cache",
+      "WP172 semantic change",
+      "STRAT-LIFE or HERMES-STRAT change",
+      "DATA-03 access or mutation",
+      "dependency, workflow or tools change",
+      "real public network probe as CI evidence",
+      "any 18th changed path"
+    ]
+  }
+}
