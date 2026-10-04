@@ -1624,9 +1624,6 @@ for release in "$target" "$old"; do
   printf '#!/bin/sh\n' > "$release/.venv/bin/python"
   chmod +x "$release/.venv/bin/python"
 done
-ln -s "$target" "$root/probe-link" 2>/dev/null || exit 99
-[[ -L "$root/probe-link" ]] || exit 99
-rm -f "$root/probe-link"
 # 1. First deployment, verification PASS: current resolves for verify, then the staged link is removed.
 stage_current_for_verify "$target"
 [[ -x "$current_link/.venv/bin/python" ]] || exit 11
@@ -1672,21 +1669,17 @@ def test_bootstrap_first_deploy_verify_stages_and_always_cleans_current(tmp_path
     assert block.index("cleanup_staged_current\n  printf") > block.index("fail() {")
     # Probe default-inactive semantics are unchanged.
     assert f"systemctl disable --now {PROBE_UNIT}" in text and '"critical_probe":"installed_inactive"' in text
+    # The bootstrap targets Ubuntu 24.04 only; MSYS bash on Windows rewrites symlink path forms, so
+    # the real-symlink execution proof runs on POSIX hosts (the Linux CI jobs) and never on Windows.
+    if os.name == "nt":
+        pytest.skip("the first-deploy staging execution proof runs only on POSIX hosts")
     bash = shutil.which("bash")
-    git_bash = pathlib.Path(r"C:\Program Files\Git\bin\bash.exe")
-    if os.name == "nt" and git_bash.is_file():
-        bash = str(git_bash)
-    if bash is None:
-        pytest.skip("bash is unavailable")
+    assert bash is not None, "bash is required on POSIX hosts for the staging execution proof"
     (tmp_path / "staging.sh").write_text(block, encoding="utf-8", newline="\n")
     (tmp_path / "harness.sh").write_text(_STAGING_HARNESS, encoding="utf-8", newline="\n")
-    environment = {**os.environ, "MSYS": "winsymlinks:nativestrict"}
     result = subprocess.run(
-        [bash, (tmp_path / "harness.sh").as_posix(), (tmp_path / "staging.sh").as_posix(),
-         (tmp_path / "root").as_posix()],
-        capture_output=True, text=True, env=environment,
+        [bash, str(tmp_path / "harness.sh"), str(tmp_path / "staging.sh"), str(tmp_path / "root")],
+        capture_output=True, text=True,
     )
-    if os.name == "nt" and (result.returncode == 99 or "execvpe(/bin/bash) failed" in result.stderr):
-        pytest.skip("this Windows host cannot create real symbolic links from bash")
     assert result.returncode == 0, (result.returncode, result.stderr)
     assert result.stdout.strip() == "STAGING_HARNESS_OK"
