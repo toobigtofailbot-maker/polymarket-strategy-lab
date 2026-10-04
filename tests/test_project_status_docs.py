@@ -5606,7 +5606,8 @@ def test_s10_strat_life_status_records_deploy_merge_and_separate_activation() ->
     lines = status.splitlines()
     # S10-HERMES-STRAT-01 is now current; the S10-STRAT-LIFE-01 line is retained as history.
     current = next(line for line in lines if line.startswith("# S10-STRAT-LIFE-01 merged historical predecessor (PR #210 merged: YES"))
-    assert lines.index(current) == 4
+    # S10-EXEC-FEAS-01 (line 2) and the merged S10-HERMES-STRAT-01 record (line 4) precede it.
+    assert lines.index(current) == 6
     assert not any(line.startswith("# S10-STRAT-LIFE-01 current bounded implementation target") for line in lines)
     for text in (
         "PR #209 merged: YES",
@@ -5640,39 +5641,58 @@ def test_s10_strat_life_status_records_deploy_merge_and_separate_activation() ->
     }
 
 
-def test_s10_hermes_strat_status_exec_feas_next() -> None:
-    """S10-HERMES-STRAT-01 is current; S10-EXEC-FEAS-01 is the next core package (R074)."""
+def test_s10_hermes_strat_status_merged_exec_feas_current() -> None:
+    """S10-HERMES-STRAT-01 is merged history; S10-EXEC-FEAS-01 is current (R064 compatibility)."""
     lines = _read().splitlines()
-    current = next(line for line in lines if line.startswith("# S10-HERMES-STRAT-01 current bounded implementation target"))
-    assert lines.index(current) == 2
-    for text in (
-        "PR #210 merged: YES",
-        "PR #210 head: d3c98d7530c8cec6b65e5d76492f1d7da8edf783",
-        "PR #210 merge: dab28ee45c1f8267248d52601c90d3f3509034f9",
-        "S10-STRAT-LIFE-01: MERGED",
-        "current bounded implementation target: S10-HERMES-STRAT-01",
-        "S10-EXEC-FEAS-01: next core package after HERMES-STRAT review and merge (not implemented)",
-        "S10-CC-FOUND-01: NOT AUTHORIZED / NOT STARTED until HERMES-STRAT merges",
-        "Exact changed-file scope: 22",
-        "XL_FOR_SCOPE_ONLY",
-        "authority expansion from amendment: NONE",
-        "direct STRAT-LIFE mutation: NO",
-        "real provider/model calls: 0",
-        "ALPHA-03: parallel / non-blocking",
-        "DATA-03: unchanged and non-blocking",
-        "S10-HERMES-STRAT-01 capital/orders: USD 0 / 0",
-        "Merge authorized: NO",
-    ):
-        assert text in current, text
-    for claim in ("S10-HERMES-STRAT-01: MERGED", "EXEC-FEAS implemented: YES", "Control Center: STARTED",
-                  "Gate C: AUTHORIZED", "live: ENABLED", "S10-CC-FOUND-01: AUTHORIZED"):
-        assert claim not in current, claim
+    assert not any(line.startswith("# S10-HERMES-STRAT-01 current bounded implementation target") for line in lines)
+    merged = next(line for line in lines if line.startswith(
+        "# S10-HERMES-STRAT-01 merged historical predecessor (PR #211 merged: YES at "
+        "4519aab3d7f8424fc74c59104cc4e7afe0ff11b8 with head 9439283768b78b7302290ba6b8611e3477aa3c6a"))
+    assert lines.index(merged) == 4
+    for text in ("PR #210 merged: YES", "Exact changed-file scope: 22", "XL_FOR_SCOPE_ONLY",
+                 "direct STRAT-LIFE mutation: NO", "real provider/model calls: 0"):
+        assert text in merged, text
     fragment = (REPO_ROOT / "docs/status_entries/S10-HERMES-STRAT-01.md").read_text(encoding="utf-8")
-    assert "Merge commit: not merged" in fragment
     assert "S10-EXEC-FEAS-01: next core package after HERMES-STRAT review and merge" in fragment
-    assert "PR and current live head: see GitHub metadata and the PR body" in fragment
-    assert re.search(r"(?i)current live PR head:\s*`?[0-9a-f]{40}", fragment) is None
     spec = json.loads((REPO_ROOT / "docs/wp_specs/S10-HERMES-STRAT-01/wp_spec.json").read_text(encoding="utf-8"))
     assert spec["identity"]["required_predecessor"] == {"pr_number": 210, "head_sha": "d3c98d7530c8cec6b65e5d76492f1d7da8edf783", "merge_sha": "dab28ee45c1f8267248d52601c90d3f3509034f9"}
     assert spec["successor_boundary"]["next_wp"] == "S10-EXEC-FEAS-01"
-    assert spec["scope"]["max_changed_files"] == 22 and spec["identity"]["xl_explicit_authorization"] is True
+
+
+def test_s10_exec_feas_status_gate_c_explore_next() -> None:
+    """HERMES merged / EXEC-FEAS current implemented review target / GATE-C-EXPLORE next not started (R064)."""
+    lines = _read().splitlines()
+    current = next(line for line in lines if line.startswith("# S10-EXEC-FEAS-01 current bounded implementation target"))
+    assert lines.index(current) == 2
+    for text in (
+        "Package class: CURRENT_PUBLIC_EXECUTION_FEASIBILITY_CORE",
+        "Exact changed-file scope: 17",
+        "Frozen base: 4519aab3d7f8424fc74c59104cc4e7afe0ff11b8",
+        "PR #211 merged: YES",
+        "PR #211 head: 9439283768b78b7302290ba6b8611e3477aa3c6a",
+        "PR #211 merge: 4519aab3d7f8424fc74c59104cc4e7afe0ff11b8",
+        "S10-STRAT-LIFE-01: MERGED", "S10-HERMES-STRAT-01: MERGED",
+        "current bounded implementation target: S10-EXEC-FEAS-01 (implemented review target)",
+        "public current mechanics only", "persistence: NONE", "account state: NONE",
+        "execution feasibility is not WP172 executable edge (EXECUTABLE_EDGE_PASS unchanged)",
+        "real external calls during implementation/CI: 0",
+        "S10-GATE-C-EXPLORE-01: next core package after EXEC-FEAS review and merge (NOT AUTHORIZED / NOT STARTED)",
+        "Gate C changed: NO (NOT AUTHORIZED)",
+        "ALPHA-03: parallel / non-blocking", "DATA-03: unchanged and non-blocking",
+        "live: DISABLED", "S10-EXEC-FEAS-01 capital/orders: USD 0 / 0", "Merge authorized: NO",
+    ):
+        assert text in current, text
+    for claim in ("S10-EXEC-FEAS-01: MERGED", "S10-GATE-C-EXPLORE-01: STARTED", "Gate C: AUTHORIZED",
+                  "live: ENABLED", "Merge authorized: YES", "account reads: YES"):
+        assert claim not in current, claim
+    fragment = (REPO_ROOT / "docs/status_entries/S10-EXEC-FEAS-01.md").read_text(encoding="utf-8")
+    for text in ("Merge commit: not merged", "Merge authorized: NO", "Exact implementation scope: 17 paths",
+                 "PR and current live head: see GitHub metadata and the PR body", "Persistence: NONE",
+                 "S10-HERMES-STRAT-01: MERGED (PR #211)", "DATA-03: unchanged and non-blocking",
+                 "Next successor after review and merge: S10-GATE-C-EXPLORE-01"):
+        assert text in fragment, text
+    assert re.search(r"(?i)current live PR head:\s*`?[0-9a-f]{40}", fragment) is None
+    spec = json.loads((REPO_ROOT / "docs/wp_specs/S10-EXEC-FEAS-01/wp_spec.json").read_text(encoding="utf-8"))
+    assert spec["identity"]["required_predecessor"] == {"pr_number": 211, "head_sha": "9439283768b78b7302290ba6b8611e3477aa3c6a", "merge_sha": "4519aab3d7f8424fc74c59104cc4e7afe0ff11b8"}
+    assert spec["successor_boundary"]["next_wp"] == "S10-GATE-C-EXPLORE-01"
+    assert spec["scope"]["max_changed_files"] == 17 and spec["identity"]["package_size_class"] == "L"

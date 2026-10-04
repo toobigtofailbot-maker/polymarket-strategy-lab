@@ -1,0 +1,3566 @@
+KARL / SIDE15 — S10-EXEC-FEAS-01
+CURRENT PUBLIC EXECUTION FEASIBILITY CORE — FINAL EXECUTION-READY WORK PACKAGE
+
+Package Identity:
+  WP ID: S10-EXEC-FEAS-01
+  Title: Current Public Execution Feasibility Core
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base / main SHA: 4519aab3d7f8424fc74c59104cc4e7afe0ff11b8
+  Required predecessor: PR #211 / S10-HERMES-STRAT-01
+  Required predecessor implementation head: 9439283768b78b7302290ba6b8611e3477aa3c6a
+  Required predecessor merge SHA: 4519aab3d7f8424fc74c59104cc4e7afe0ff11b8
+  Suggested branch: codex/s10-exec-feas-01-current-public-feasibility-core
+  Package class: CURRENT_PUBLIC_EXECUTION_FEASIBILITY_CORE
+  Package size class: L
+  Exact changed-file scope: 17
+  Risk level: 3
+  Capital at risk: USD 0
+  Orders: 0
+  Merge authority: NO
+  Runtime/live activation authority: NO
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Network impact: bounded unauthenticated public GET reads only (gamma-api.polymarket.com market,
+  clob.polymarket.com book) on an explicit foreground call; implementation and tests use a fake
+  transport only and perform zero real external calls; workflow git/GitHub publication only
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: none; real capital USD 0; orders 0
+
+Governance track expected: RUNTIME
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: true
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+The machine-readable specification is docs/wp_specs/S10-EXEC-FEAS-01/wp_spec.json. The authority
+mirror above equals its authority block exactly. The full authorized work package text follows
+unchanged; a repo-native readiness appendix (structural headings, Evidence Plan (requirement
+mapping) and the normative rule matrix) is appended after Section 80.
+
+# S10-EXEC-FEAS-01 — FINAL EXECUTION-READY WORK PACKAGE
+## Current Public Execution Feasibility Core
+
+**Repository:** `toobigtofailbot-maker/polymarket-strategy-lab`
+**Base branch:** `main`
+**Frozen base / main SHA:** `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8`
+**Immediate predecessor:** PR `#211` / `S10-HERMES-STRAT-01`
+**Predecessor implementation head:** `9439283768b78b7302290ba6b8611e3477aa3c6a`
+**Predecessor merge SHA:** `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8`
+**Suggested branch:** `codex/s10-exec-feas-01-current-public-feasibility-core`
+**WP ID:** `S10-EXEC-FEAS-01`
+**Title:** `Current Public Execution Feasibility Core`
+**Package class:** `CURRENT_PUBLIC_EXECUTION_FEASIBILITY_CORE`
+**Package size class:** `L`
+**Governance track:** `RUNTIME`
+**Risk level:** `3`
+**Exact changed-file scope:** `17`
+**Capital at risk:** `USD 0`
+**Orders:** `0`
+**Merge authority:** `NO`
+**Runtime/live activation authority:** `NO`
+
+---
+
+# 0. ROUTING / HUMAN AUTHORITY
+
+Karl has authorized implementation of this exact work package.
+
+Use a **NEW Codex / Claude Code implementation session** for this WP.
+
+Do not continue implementation in the prior HERMES-STRAT execution session.
+
+When implementation is complete:
+
+1. open/update the implementation PR;
+2. do **not** merge it;
+3. return the exact-head completion report to the **CURRENT Side15 chat** for independent review.
+
+Karl retains merge authority.
+
+No wording in this WP grants:
+
+- Gate C authorization;
+- live-trading authorization;
+- credential or private-key authority;
+- authenticated account access;
+- capital deployment;
+- order placement/cancellation;
+- deployment/runtime activation;
+- merge authority.
+
+---
+
+# 1. PRE-EXECUTION REPO TRUTH CHECK
+
+Before changing anything:
+
+```text
+git status --short
+git rev-parse HEAD
+git rev-parse main
+git log -1 --oneline main
+```
+
+Then verify GitHub live truth:
+
+```text
+main == 4519aab3d7f8424fc74c59104cc4e7afe0ff11b8
+PR #211 == merged
+PR #211 final implementation head == 9439283768b78b7302290ba6b8611e3477aa3c6a
+open PRs == none, unless an unrelated new PR appeared after freeze
+```
+
+If `main` is not the frozen SHA:
+
+**STOP before source edits.**
+
+Return:
+
+```text
+BASE_DRIFT
+expected:
+4519aab3d7f8424fc74c59104cc4e7afe0ff11b8
+actual:
+<sha>
+```
+
+Do not silently rebase this frozen WP onto a different base.
+
+An unrelated open PR discovered after freeze is not itself a blocker unless it changes one of this WP's 17 files or materially changes the frozen contract.
+
+---
+
+# 2. OBJECTIVE
+
+Implement the V2.1 **generic current public execution-feasibility capability**.
+
+The package answers one narrow question:
+
+> Can this exact proposed execution intent be mechanically supported by currently observable public Polymarket venue state, and what current execution frictions or unknowns are visible?
+
+It must produce deterministic, content-addressed evidence for:
+
+```text
+exact StrategyVersion binding
++
+exact prospective execution intent
++
+bounded current public Gamma/CLOB evidence
++
+deterministic venue-mechanics evaluation
+```
+
+The result is an execution-feasibility assessment only.
+
+It does **not** decide:
+
+- whether the strategy thesis is good;
+- whether Hermes wants the strategy;
+- whether the strategy is profitable;
+- whether formal WP172 executable edge has passed;
+- whether the account has enough balance or allowance;
+- whether portfolio risk permits exposure;
+- whether Gate C authorizes an order;
+- whether an order may be signed or submitted.
+
+---
+
+# 3. V2.1 POSITION
+
+The accepted known-candidate path remains:
+
+```text
+S10-STRAT-LIFE-01        MERGED
+        |
+        v
+S10-HERMES-STRAT-01      MERGED
+        |
+        v
+S10-EXEC-FEAS-01         THIS PACKAGE
+        |
+        v
+S10-GATE-C-EXPLORE-01    NOT AUTHORIZED / NOT STARTED
+        |
+        v
+S10-DEPLOY-EXEC-01
+        |
+        v
+S10-LIVE-ORCH-01
+```
+
+Parallel and unchanged:
+
+```text
+S10-ALPHA-03
+DATA-03
+S10-CC-FOUND-01
+S10-DEPLOY-01 host activation
+```
+
+`S10-ALPHA-03` is not a prerequisite for this package or the known-candidate exploratory path.
+
+DATA-03 remains untouched.
+
+---
+
+# 4. THREE EXECUTION CONCEPTS MUST REMAIN DISTINCT
+
+Do not collapse these existing/new capabilities.
+
+## 4.1 Qualification evidence availability
+
+Existing qualification objects answer:
+
+```text
+Do we have evidence about:
+fees
+resolution rules
+tick/min-order
+spread/depth
+latency
+partial fill?
+```
+
+This remains evidence-availability metadata only.
+
+Do not modify it.
+
+## 4.2 S10-EXEC-FEAS-01
+
+This package answers:
+
+```text
+Can this exact proposed intent mechanically operate
+under current public venue state?
+```
+
+This is current public mechanics.
+
+## 4.3 WP172
+
+Existing WP172 answers:
+
+```text
+Does a formally preregistered/OOS strategy retain executable edge
+after execution frictions?
+```
+
+It remains the formal durable executable-edge evidence lane.
+
+Do not weaken, rename, bypass, or reuse `EXECUTABLE_EDGE_PASS`.
+
+---
+
+# 5. EXACT CHANGED-FILE SCOPE — 17 FILES
+
+`required_changed_files == allowed_changed_files == exactly these paths:`
+
+```text
+1.  docs/architecture_decision_record.md
+2.  docs/long_term_bot_completion_roadmap.md
+3.  docs/project_status.md
+4.  docs/repo_truth_index.md
+5.  docs/execution_feasibility_contract.md
+6.  docs/status_entries/S10-EXEC-FEAS-01.md
+7.  docs/wp_specs/S10-EXEC-FEAS-01/wp_prompt.txt
+8.  docs/wp_specs/S10-EXEC-FEAS-01/wp_spec.json
+9.  src/execution_feasibility/__init__.py
+10. src/execution_feasibility/models.py
+11. src/execution_feasibility/public_market.py
+12. src/execution_feasibility/evaluator.py
+13. tests/execution_feasibility/test_execution_feasibility.py
+14. tests/test_architecture_boundaries.py
+15. tests/test_architecture_direction_docs.py
+16. tests/test_project_status_docs.py
+17. tests/test_repo_truth_docs.py
+```
+
+No 18th path is authorized.
+
+Do not add:
+
+- `tests/execution_feasibility/__init__.py`;
+- CLI/operator files;
+- fixtures in separate files;
+- a persistence/store module;
+- a network helper elsewhere;
+- dependency files;
+- workflow files.
+
+Keep the implementation compact.
+
+---
+
+# 6. FORBIDDEN MODIFICATION SURFACES
+
+The following remain read-only / forbidden for this WP:
+
+```text
+.github/**
+agent_memory/**
+agent_runtime/**
+credentials/**
+local_data/**
+secrets/**
+tools/**
+
+pyproject.toml
+package.json
+package-lock.json
+requirements*
+lock files
+
+src/data_layer/**
+src/strategy_lifecycle/**
+src/research_runtime/**
+src/paper_trading/**
+src/execution_gateway/**
+src/risk_engine/**
+src/strategy_modules/**
+src/monitoring/**
+src/operator_cockpit.py
+src/operator_cockpit_frontend/**
+
+tests/strategy_lifecycle/**
+tests/research_runtime/**
+tests/paper_trading/**
+tests/execution_gateway/**
+```
+
+No modification of DATA-03 prepared state or local workspace is permitted.
+
+---
+
+# 7. AUTHORITY POSTURE
+
+Machine-readable authority must encode:
+
+```text
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: true
+paper: false
+execution: false
+live: false
+```
+
+Explanation:
+
+- `source_runtime=true` because new source code is added.
+- `network=true` only for bounded unauthenticated public GET reads.
+- `strategy=true` only because one exact `StrategyVersion` is validated and bound read-only.
+- `execution=false` because this package cannot sign, submit, cancel, route, reconcile, or otherwise execute an order.
+- `canonical_evidence_policy=true` because it creates deterministic content-addressed feasibility evidence.
+
+The central protected-boundary groups remain uncrossed for:
+
+```text
+credentials/secrets
+authenticated clients
+wallet/account behavior
+order placement/cancel
+execution gateway
+paper engine
+scheduler/bot loop
+runtime/daemon
+dashboard/deployment
+dependency/lock changes
+external code copying
+generated artifacts
+```
+
+---
+
+# 8. NEW SOURCE-FAMILY GOVERNANCE CLOSURE
+
+The pre-draft guard audit established:
+
+```text
+tools/wp/wp_spec_guard.py:
+any src/** path -> requires source_runtime=true
+```
+
+There is no separate `src/execution_feasibility/**` allowlist inside `wp_spec_guard.py`.
+
+Therefore:
+
+- `tools/wp/wp_spec_guard.py` stays byte-unchanged;
+- `tests/tools/wp/test_wp_spec_guard.py` stays byte-unchanged;
+- no governance-tool amendment is required.
+
+However `tests/test_architecture_boundaries.py` maintains the explicit executable-source architecture allowlist.
+
+This WP must add exactly:
+
+```text
+src/execution_feasibility
+```
+
+to `APPROVED_SRC_SCOPES`, with a comment that this is the S10-EXEC-FEAS-01 current-public, read-only feasibility evaluator and that it has no credential/order/execution/live authority.
+
+Do not open `src/` as a wildcard.
+
+---
+
+# 9. EXTERNAL CONTRACT FREEZE — 2026-10-03
+
+Implementation semantics must be based on current official Polymarket documentation as checked on 2026-10-03.
+
+Primary official references:
+
+```text
+https://docs.polymarket.com/market-data/market-details
+https://docs.polymarket.com/market-data/prices-order-books
+https://docs.polymarket.com/trading/place-orders
+https://docs.polymarket.com/trading/fees
+https://docs.polymarket.com/migrate/clob-sdk-to-unified-sdk
+```
+
+Relevant frozen facts:
+
+## 9.1 Market details
+
+Gamma market state exposes current facts including:
+
+```text
+active
+closed
+acceptingOrders
+enableOrderBook
+negRisk
+restricted
+```
+
+Trading configuration includes:
+
+```text
+orderPriceMinTickSize
+orderMinSize
+feesEnabled
+feeSchedule
+secondsDelay
+```
+
+`orderMinSize` is documented as minimum **USDC notional per order**.
+
+Do not describe it as shares.
+
+## 9.2 Order book
+
+Public CLOB:
+
+```text
+GET https://clob.polymarket.com/book?token_id=<TOKEN_ID>
+```
+
+returns:
+
+```text
+market / condition id
+asset_id / token id
+timestamp
+hash
+bids
+asks
+min_order_size
+tick_size
+neg_risk
+last_trade_price
+```
+
+The current official API presentation orders:
+
+```text
+bids ascending by price
+asks descending by price
+```
+
+so the best bid and ask are the last entries in the raw arrays.
+
+The package must normalize internally to:
+
+```text
+bids: descending price, best first
+asks: ascending price, best first
+```
+
+before evaluation.
+
+Never import WP172's ordering assumptions blindly.
+
+## 9.3 Order types
+
+Current relevant types:
+
+```text
+GTC
+GTD
+FOK
+FAK
+```
+
+GTD:
+
+- expiration is Unix seconds;
+- must be at least three minutes in the future;
+- venue applies a one-minute security threshold before stated expiration.
+
+Post-only:
+
+- applies to GTC/GTD resting orders;
+- if it would immediately match, it is rejected.
+
+## 9.4 Fees
+
+Current official public market configuration contains:
+
+```text
+feesEnabled
+feeSchedule.rate
+feeSchedule.exponent
+feeSchedule.takerOnly
+feeSchedule.rebateRate
+```
+
+Official fee docs state makers pay no platform fee and takers pay on fee-enabled markets.
+
+Current documented formula for exponent `1` is:
+
+```text
+fee_usdc = shares * fee_rate * price * (1 - price)
+```
+
+Official V2 SDK source also models the generalized platform fee rate as:
+
+```text
+fee_rate * (price * (1 - price)) ** fee_exponent
+```
+
+Use exact Decimal arithmetic.
+
+Current fee documentation says venue fee amounts are rounded to five decimal places, but it does not freeze a rounding mode for this WP.
+
+Therefore this package must **not claim an exact server-rounded fee**.
+
+See Section 24.
+
+---
+
+# 10. PUBLIC ACQUISITION IMPLEMENTATION DECISION
+
+Do **not** import `polymarket.AsyncPublicClient`, `polymarket.PublicClient`, `SecureClient`, or private SDK internals in the new package.
+
+Reason:
+
+- no dependency change is needed;
+- the repo's protected boundary still treats new official-client runtime integration under `src/` as separately sensitive;
+- the two required public reads are simple, stable GET contracts;
+- fixed-host stdlib GETs make request count, redirect rejection, byte caps, and no-auth posture explicit.
+
+`src/execution_feasibility/public_market.py` owns a tiny dedicated GET-only adapter using Python stdlib.
+
+Exact public endpoints:
+
+```text
+GET https://gamma-api.polymarket.com/markets/<GAMMA_MARKET_ID>
+
+GET https://clob.polymarket.com/book?token_id=<TOKEN_ID>
+```
+
+No other production endpoint is authorized.
+
+Do not use:
+
+```text
+/order
+/auth/**
+balances
+allowances
+positions
+private trades
+open orders
+account
+wallet
+geoblock
+RPC
+websocket
+Data API
+```
+
+No query-discovery endpoint is needed.
+
+The caller must already know the exact Gamma market ID, condition ID, and token ID.
+
+---
+
+# 11. NETWORK HARDENING
+
+One explicit foreground acquisition may perform at most:
+
+```text
+2 HTTP requests
+```
+
+Exactly one Gamma GET and one CLOB book GET.
+
+Rules:
+
+```text
+methods: GET only
+schemes: https only
+hosts:
+  gamma-api.polymarket.com
+  clob.polymarket.com
+
+port: 443/default only
+redirects: reject all
+automatic retries: 0
+sleep/backoff: none
+scheduler/background loop: none
+cookies: none
+authorization headers: none
+credential headers: none
+```
+
+Frozen request bounds:
+
+```text
+timeout per request: 5 seconds
+Gamma body max: 1,048,576 bytes
+CLOB book body max: 4,194,304 bytes
+book levels max per side: 5,000
+max JSON nesting depth after normalization: 12
+max normalized nodes: 20,000
+max string length: 262,144
+```
+
+Use capped reads:
+
+```text
+Content-Length > cap -> reject before body read where trustworthy
+otherwise read at most cap + 1
+sentinel byte above cap -> reject
+do not drain an oversized response
+```
+
+Tests inject a deterministic fake transport/opener seam.
+
+No test may use real network.
+
+Implementation/review external call count must remain:
+
+```text
+0
+```
+
+---
+
+# 12. CANONICAL SERIALIZATION
+
+All three content-addressed records use the same canonical JSON rules:
+
+```text
+UTF-8
+sort_keys=True
+separators=(",", ":")
+ensure_ascii=False
+allow_nan=False
+```
+
+Allowed canonical scalar/container types:
+
+```text
+null
+bool
+int (but bool is not int)
+str
+list
+object with string keys
+```
+
+No Python floats in canonical records.
+
+Every external JSON numeric decimal is parsed with exact Decimal semantics and normalized to canonical decimal string before entering a record.
+
+Canonical decimal text:
+
+```text
+no exponent
+no leading +
+no unnecessary leading zero
+no trailing fractional zero
+-0 -> 0
+finite only
+```
+
+IDs use lowercase SHA-256 hex.
+
+---
+
+# 13. CONTENT-ADDRESSED RECORD 1 — ExecutionIntent
+
+Schema:
+
+```text
+schema_id = "polymarket-execution-intent"
+schema_version = "1.0.0"
+execution_intent_id
+strategy_version_id
+execution_rule_sha256
+
+gamma_market_id
+condition_id
+token_id
+
+side
+execution_style
+order_type
+
+requested_shares
+price_limit
+
+post_only
+gtd_expiration_unix_s
+
+information_cutoff_ns
+max_public_data_age_ns
+
+advisory_only
+no_order_authority
+no_execution_authority
+no_live_authority
+```
+
+ID prefix:
+
+```text
+executionintent:sha256:
+```
+
+Identity preimage:
+
+all fields except:
+
+```text
+execution_intent_id
+advisory_only
+no_order_authority
+no_execution_authority
+no_live_authority
+```
+
+The four authority booleans are invariant `true`.
+
+---
+
+# 14. STRATEGYVERSION BINDING
+
+Builder input must include an actual `src.strategy_lifecycle.StrategyVersion`.
+
+Validate it using the existing canonical record round-trip pattern:
+
+```text
+record_from_mapping(record.RECORD_KIND, record.to_mapping()) == record
+```
+
+Do not reopen or write the STRAT-LIFE store.
+
+Do not mutate the StrategyVersion.
+
+Parse its already-canonical `strategy_spec_json`.
+
+Derive:
+
+```text
+execution_rule_sha256 =
+"executionrule:sha256:" +
+sha256(
+    canonical_json_bytes({
+        "execution_rule": parsed_strategy_spec["execution_rule"]
+    })
+).hexdigest()
+```
+
+The execution intent binds:
+
+```text
+strategy_version.strategy_version_id
+execution_rule_sha256
+```
+
+No caller-supplied hash may override this derivation.
+
+This package does not decide whether the proposed price/size itself is semantically allowed by every possible custom strategy rule. It binds the exact governing rule so future Gate C can prove that relationship.
+
+---
+
+# 15. VENUE ID VALIDATION
+
+Freeze:
+
+```text
+gamma_market_id:
+  ASCII decimal digits only
+  length 1..32
+  no sign
+  no whitespace
+
+condition_id:
+  ^0x[0-9a-f]{64}$
+
+token_id:
+  ASCII decimal digits only
+  length 1..100
+  no sign
+  no whitespace
+```
+
+No arbitrary URL or slug is accepted by the acquisition API.
+
+---
+
+# 16. EXECUTION INTENT CLOSED VOCABULARIES
+
+```text
+SIDES:
+  BUY
+  SELL
+
+EXECUTION_STYLES:
+  AGGRESSIVE_TAKER
+  PASSIVE_MAKER
+
+ORDER_TYPES:
+  FOK
+  FAK
+  GTC
+  GTD
+```
+
+Allowed pairs:
+
+```text
+AGGRESSIVE_TAKER:
+  FOK
+  FAK
+
+PASSIVE_MAKER:
+  GTC
+  GTD
+```
+
+No hybrid mode in V1.
+
+---
+
+# 17. INTENT SEMANTICS
+
+## 17.1 Common
+
+```text
+requested_shares > 0
+0 < price_limit < 1
+information_cutoff_ns >= 0
+0 < max_public_data_age_ns <= 60_000_000_000
+```
+
+`price_limit` means:
+
+```text
+BUY:
+  maximum acceptable execution/resting price
+
+SELL:
+  minimum acceptable execution/resting price
+```
+
+## 17.2 Aggressive taker
+
+Require:
+
+```text
+order_type in {FOK, FAK}
+post_only == false
+gtd_expiration_unix_s == null
+```
+
+## 17.3 Passive maker
+
+Require:
+
+```text
+order_type in {GTC, GTD}
+post_only == true
+```
+
+For GTC:
+
+```text
+gtd_expiration_unix_s == null
+```
+
+For GTD:
+
+```text
+gtd_expiration_unix_s is int
+gtd_expiration_unix_s >= floor(information_cutoff_ns / 1e9) + 180
+```
+
+Do not model non-post-only GTC/GTD in this package.
+
+---
+
+# 18. CONTENT-ADDRESSED RECORD 2 — PublicExecutionVenueSnapshot
+
+Schema:
+
+```text
+schema_id = "polymarket-public-execution-venue-snapshot"
+schema_version = "1.0.0"
+venue_snapshot_id
+
+gamma_market_id
+condition_id
+token_id
+
+acquisition_started_ns
+acquisition_completed_ns
+
+gamma_source_state
+gamma_payload_sha256
+clob_source_state
+clob_payload_sha256
+
+active
+closed
+accepting_orders
+enable_order_book
+restricted
+gamma_neg_risk
+
+gamma_tick_size
+gamma_min_order_notional_usd
+
+fees_enabled
+fee_rate
+fee_exponent
+fee_taker_only
+fee_rebate_rate
+
+seconds_delay
+
+book_condition_id
+book_token_id
+book_timestamp_ns
+book_hash
+book_neg_risk
+book_tick_size
+book_min_order_size_raw
+last_trade_price
+
+bids
+asks
+
+diagnostic_codes
+
+public_only
+no_account_state
+no_order_authority
+no_execution_authority
+no_live_authority
+```
+
+ID prefix:
+
+```text
+executionsnapshot:sha256:
+```
+
+Authority booleans are invariant true and excluded from identity.
+
+`bids` / `asks` are ordered tuples/lists of exact:
+
+```text
+{"price": "<canonical decimal>", "size": "<canonical decimal>"}
+```
+
+with canonical internal ordering:
+
+```text
+bids -> descending price
+asks -> ascending price
+```
+
+---
+
+# 19. SOURCE STATES
+
+Closed vocabulary:
+
+```text
+AVAILABLE
+UNAVAILABLE
+INVALID
+```
+
+Acquisition should attempt the two independent public reads in fixed order:
+
+```text
+Gamma
+CLOB
+```
+
+unless caller input is structurally invalid before network.
+
+A source transport/HTTP failure becomes:
+
+```text
+UNAVAILABLE
+```
+
+with a closed diagnostic.
+
+A body/shape/schema/identity violation becomes:
+
+```text
+INVALID
+```
+
+with a closed diagnostic.
+
+Do not echo:
+
+- URLs containing caller data;
+- response bodies;
+- exception messages;
+- headers;
+- arbitrary upstream values.
+
+A source failure does **not** invent zero/default market facts.
+
+Unavailable facts remain `null`.
+
+This lets the evaluator truthfully produce `INCONCLUSIVE`.
+
+---
+
+# 20. GAMMA NORMALIZATION
+
+From the exact market response, extract only facts needed by this contract.
+
+Required identity/trading facts when Gamma state is AVAILABLE:
+
+```text
+id
+conditionId
+clobTokenIds
+active
+closed
+acceptingOrders
+enableOrderBook
+restricted
+negRisk
+orderPriceMinTickSize
+orderMinSize
+feesEnabled
+feeSchedule
+secondsDelay
+```
+
+The requested `gamma_market_id` must equal the returned `id`.
+
+The requested `condition_id` must equal returned `conditionId`.
+
+Parse `clobTokenIds` whether returned as:
+
+```text
+JSON-encoded array string
+or
+already-parsed list
+```
+
+The requested `token_id` must be one of the market's CLOB token IDs.
+
+If identity does not match:
+
+```text
+gamma_source_state = INVALID
+SOURCE_IDENTITY_MISMATCH
+```
+
+No assessment may silently cross a market/token mismatch.
+
+---
+
+# 21. CLOB BOOK NORMALIZATION
+
+Required book fields:
+
+```text
+market
+asset_id
+timestamp
+hash
+bids
+asks
+min_order_size
+tick_size
+neg_risk
+last_trade_price (nullable)
+```
+
+Verify:
+
+```text
+book market == requested condition_id
+book asset_id == requested token_id
+```
+
+A mismatch is:
+
+```text
+clob_source_state = INVALID
+SOURCE_IDENTITY_MISMATCH
+```
+
+Book level rules:
+
+```text
+0 < price < 1
+size > 0
+unique price within each side
+max 5,000 levels per side
+no crossed canonical book:
+  if both sides nonempty -> best_bid < best_ask
+```
+
+Normalize order:
+
+```text
+bids descending
+asks ascending
+```
+
+Do not trust wire array order as an internal invariant.
+
+---
+
+# 22. CROSS-SOURCE CONSTRAINT RECONCILIATION
+
+## 22.1 Tick
+
+When both sources are AVAILABLE:
+
+```text
+gamma_tick_size == book_tick_size
+```
+
+If not:
+
+```text
+TICK_SOURCE_CONFLICT
+```
+
+and the required tick dimension is UNKNOWN.
+
+No source silently wins.
+
+## 22.2 Minimum order
+
+Current official docs define Gamma:
+
+```text
+orderMinSize = minimum USDC notional per order
+```
+
+The CLOB book also returns `min_order_size`.
+
+Do not relabel the CLOB field as shares.
+
+Freeze:
+
+```text
+gamma_min_order_notional_usd
+book_min_order_size_raw
+```
+
+If both are present and numerically equal, the canonical enforced minimum is:
+
+```text
+minimum_order_notional_usd = gamma_min_order_notional_usd
+```
+
+If they disagree:
+
+```text
+MIN_ORDER_SOURCE_CONFLICT
+```
+
+and the minimum-order dimension is UNKNOWN.
+
+If Gamma does not provide the documented notional unit, do not infer units from the CLOB field alone.
+
+## 22.3 Negative risk
+
+If both sources provide `negRisk`, require equality.
+
+Conflict:
+
+```text
+NEG_RISK_SOURCE_CONFLICT
+```
+
+This conflict makes source reconciliation INCONCLUSIVE.
+
+`negRisk == true` itself is not automatically NOT_FEASIBLE in this package.
+
+---
+
+# 23. MARKET / BOOK FRESHNESS
+
+Use CLOB's book timestamp as the public book observation time.
+
+Normalize epoch milliseconds to integer nanoseconds.
+
+Required:
+
+```text
+book_timestamp_ns <= acquisition_completed_ns
+```
+
+If book timestamp is in the future relative to the acquisition completion:
+
+```text
+BOOK_TIMESTAMP_INVALID
+```
+
+Required freshness:
+
+```text
+acquisition_completed_ns - book_timestamp_ns <= intent.max_public_data_age_ns
+```
+
+Otherwise:
+
+```text
+BOOK_STALE
+```
+
+Do not use HTTP request duration as market latency evidence.
+
+---
+
+# 24. FEE CONTRACT
+
+Closed fee exactness vocabulary:
+
+```text
+EXACT_ZERO_NO_FEES
+EXACT_ZERO_MAKER
+CONSERVATIVE_5DP_UPPER_BOUND
+UNKNOWN
+```
+
+Assessment fee outputs:
+
+```text
+fee_exactness
+theoretical_fee_unrounded_usd
+fee_upper_bound_usd
+maker_rebate_rate
+expected_maker_rebate_usd
+```
+
+`expected_maker_rebate_usd` must always be:
+
+```text
+null
+```
+
+in V1.
+
+Do not treat a future daily maker rebate as guaranteed per-order proceeds.
+
+## 24.1 No-fee market
+
+If:
+
+```text
+fees_enabled == false
+```
+
+then:
+
+```text
+fee_exactness = EXACT_ZERO_NO_FEES
+theoretical_fee_unrounded_usd = "0"
+fee_upper_bound_usd = "0"
+```
+
+## 24.2 Passive maker
+
+If:
+
+```text
+fees_enabled == true
+fee_taker_only == true
+execution_style == PASSIVE_MAKER
+```
+
+then platform trading fee:
+
+```text
+0
+```
+
+and:
+
+```text
+fee_exactness = EXACT_ZERO_MAKER
+```
+
+The rebate rate may be recorded but is informational only.
+
+## 24.3 Taker fee
+
+If:
+
+```text
+fees_enabled == true
+execution_style == AGGRESSIVE_TAKER
+```
+
+require a complete fee schedule.
+
+For nonnegative integer exponent `e` in `0..8`:
+
+```text
+theoretical_fee_unrounded_usd
+=
+filled_shares
+* fee_rate
+* (execution_price * (1 - execution_price)) ** e
+```
+
+For a multi-level fill, compute the fee **per fill level** using that level's price and sum exact Decimal results.
+
+Do not calculate the entire fee from only the VWAP.
+
+Current fee docs say the actual venue amount is rounded to five decimal places but do not freeze the rounding mode here.
+
+Therefore:
+
+```text
+fee_upper_bound_usd =
+ceil(theoretical_fee_unrounded_usd, 5 decimal places)
+```
+
+and:
+
+```text
+fee_exactness = CONSERVATIVE_5DP_UPPER_BOUND
+```
+
+Do not label the ceiling as the actual server fee.
+
+If the enabled fee schedule is missing, malformed, taker semantics are not understood, or exponent is unsupported:
+
+```text
+fee_exactness = UNKNOWN
+```
+
+For an aggressive taker this is a required-unknown condition -> overall `INCONCLUSIVE` unless a harder NOT_FEASIBLE condition already applies.
+
+---
+
+# 25. CONTENT-ADDRESSED RECORD 3 — ExecutionFeasibilityAssessment
+
+Schema:
+
+```text
+schema_id = "polymarket-execution-feasibility-assessment"
+schema_version = "1.0.0"
+execution_feasibility_assessment_id
+
+strategy_version_id
+execution_rule_sha256
+execution_intent_id
+venue_snapshot_id
+
+information_cutoff_ns
+evaluated_at_ns
+
+status
+
+market_dimension
+identity_dimension
+freshness_dimension
+tick_dimension
+minimum_order_dimension
+book_dimension
+fill_dimension
+fee_dimension
+delay_dimension
+
+best_bid
+best_ask
+spread
+
+requested_shares
+visible_fill_shares
+fill_ratio
+weighted_execution_price
+slippage_per_share
+slippage_cost_usd
+
+visible_depth_capacity_shares
+price_bound_capacity_shares
+
+minimum_order_notional_usd
+intent_notional_at_price_limit_usd
+
+fee_exactness
+theoretical_fee_unrounded_usd
+fee_upper_bound_usd
+maker_rebate_rate
+expected_maker_rebate_usd
+
+seconds_delay
+
+client_latency_state
+client_latency_ns
+
+passive_fill_state
+passive_fill_probability
+
+adverse_selection_state
+adverse_selection_cost
+
+diagnostic_codes
+
+public_mechanics_only
+no_profitability_claim
+no_account_capacity_claim
+no_gate_c_authority
+no_order_authority
+no_execution_authority
+no_live_authority
+```
+
+ID prefix:
+
+```text
+executionfeasibility:sha256:
+```
+
+Authority/non-claim booleans are invariant true and excluded from identity.
+
+---
+
+# 26. TOP-LEVEL ASSESSMENT STATUSES
+
+Closed:
+
+```text
+FEASIBLE
+LIMITED
+INCONCLUSIVE
+NOT_FEASIBLE
+```
+
+Meaning:
+
+## FEASIBLE
+
+All required current-public hard mechanics for this exact intent are known and pass.
+
+For passive maker, `FEASIBLE` means:
+
+```text
+the order is mechanically compatible with the currently observed public venue state
+and can rest without intentionally crossing
+```
+
+It does **not** mean it will fill.
+
+## LIMITED
+
+Mechanically possible, but the exact intent has a known non-fatal execution limitation.
+
+V1 limitations are exactly:
+
+```text
+FAK_PARTIAL_VISIBLE_FILL
+MARKETABLE_ORDER_DELAY
+```
+
+## INCONCLUSIVE
+
+No hard failure is established, but one or more required public facts are:
+
+```text
+missing
+unavailable
+invalid
+stale
+conflicting
+unsupported
+```
+
+## NOT_FEASIBLE
+
+A current public hard fact makes the exact intent mechanically incompatible.
+
+---
+
+# 27. OVERALL STATUS PRECEDENCE
+
+Deterministic precedence:
+
+```text
+1. any hard NOT_FEASIBLE condition -> NOT_FEASIBLE
+2. else any required UNKNOWN/INCONCLUSIVE dimension -> INCONCLUSIVE
+3. else any V1 limitation -> LIMITED
+4. else -> FEASIBLE
+```
+
+Do not allow a missing fact to override a known hard failure.
+
+Do not infer PASS from absence of evidence.
+
+---
+
+# 28. DIMENSION STATES
+
+Use one small closed vocabulary:
+
+```text
+PASS
+LIMITED
+FAIL
+UNKNOWN
+NOT_APPLICABLE
+```
+
+The evaluator must populate every dimension.
+
+No omitted dimensions.
+
+---
+
+# 29. MARKET DIMENSION
+
+`FAIL` if any known current Gamma hard fact says:
+
+```text
+active != true
+closed != false
+accepting_orders != true
+enable_order_book != true
+```
+
+A false/closed/not-accepting/not-enabled fact yields:
+
+```text
+NOT_FEASIBLE
+```
+
+If Gamma is unavailable/invalid or a required market field is missing:
+
+```text
+UNKNOWN
+```
+
+`restricted` is recorded but is not used as an account/location authorization.
+
+Actual host/user geoblock/access proof belongs to later Gate C.
+
+---
+
+# 30. TICK DIMENSION
+
+After reconciled tick is known:
+
+```text
+price_limit % tick_size == 0
+```
+
+using exact Decimal arithmetic.
+
+Also require:
+
+```text
+tick_size > 0
+0 < price_limit < 1
+```
+
+Off-grid intent:
+
+```text
+FAIL
+PRICE_OFF_TICK
+NOT_FEASIBLE
+```
+
+Conflicting/missing tick source:
+
+```text
+UNKNOWN
+INCONCLUSIVE
+```
+
+Never validate only by decimal-place count.
+
+---
+
+# 31. MINIMUM ORDER DIMENSION
+
+Canonical intent notional at limit:
+
+```text
+requested_shares * price_limit
+```
+
+Compare to documented Gamma minimum USDC notional after cross-source reconciliation.
+
+If:
+
+```text
+intent_notional_at_price_limit_usd
+<
+minimum_order_notional_usd
+```
+
+then:
+
+```text
+FAIL
+MINIMUM_ORDER_NOTIONAL_NOT_MET
+NOT_FEASIBLE
+```
+
+If minimum constraint is missing or conflicting:
+
+```text
+UNKNOWN
+INCONCLUSIVE
+```
+
+---
+
+# 32. ORDER-BOOK / BEST PRICE METRICS
+
+Canonical:
+
+```text
+best_bid = first normalized bid price or null
+best_ask = first normalized ask price or null
+
+spread =
+  best_ask - best_bid
+  only when both sides exist
+```
+
+No midpoint is required for feasibility.
+
+Empty one-sided books are valid market states; they are not structurally invalid.
+
+They may still make an aggressive intent NOT_FEASIBLE due to no opposing liquidity.
+
+---
+
+# 33. AGGRESSIVE TAKER EVALUATION
+
+Use only currently visible opposing book levels within the exact price bound.
+
+## BUY
+
+Consume asks in ascending price where:
+
+```text
+ask_price <= price_limit
+```
+
+## SELL
+
+Consume bids in descending price where:
+
+```text
+bid_price >= price_limit
+```
+
+For each level:
+
+```text
+take = min(remaining_shares, level_size)
+```
+
+Calculate exact:
+
+```text
+visible_fill_shares
+weighted_execution_price
+fill_ratio
+price_bound_capacity_shares
+visible_depth_capacity_shares
+```
+
+`visible_depth_capacity_shares` is the total valid opposing visible depth without the caller's tighter price filter.
+
+`price_bound_capacity_shares` is depth satisfying the exact price limit.
+
+These are market-depth metrics only.
+
+They are **not account capacity**.
+
+---
+
+# 34. AGGRESSIVE FOK
+
+If:
+
+```text
+visible_fill_shares < requested_shares
+```
+
+then:
+
+```text
+fill_dimension = FAIL
+FOK_INSUFFICIENT_VISIBLE_DEPTH
+status = NOT_FEASIBLE
+```
+
+Otherwise:
+
+```text
+fill_dimension = PASS
+```
+
+No probabilistic fill model.
+
+---
+
+# 35. AGGRESSIVE FAK
+
+If:
+
+```text
+visible_fill_shares == 0
+```
+
+then:
+
+```text
+fill_dimension = FAIL
+NO_VISIBLE_OPPOSING_LIQUIDITY
+status = NOT_FEASIBLE
+```
+
+If:
+
+```text
+0 < visible_fill_shares < requested_shares
+```
+
+then:
+
+```text
+fill_dimension = LIMITED
+FAK_PARTIAL_VISIBLE_FILL
+```
+
+If full visible fill:
+
+```text
+fill_dimension = PASS
+```
+
+---
+
+# 36. SLIPPAGE
+
+For aggressive visible fills:
+
+```text
+BUY reference = best_ask
+SELL reference = best_bid
+```
+
+If fill exists:
+
+```text
+BUY:
+  slippage_per_share = weighted_execution_price - best_ask
+
+SELL:
+  slippage_per_share = best_bid - weighted_execution_price
+```
+
+Require nonnegative result.
+
+Then:
+
+```text
+slippage_cost_usd =
+slippage_per_share * visible_fill_shares
+```
+
+If no fill:
+
+```text
+weighted_execution_price = null
+slippage_per_share = null
+slippage_cost_usd = null
+```
+
+Do not call this expected slippage beyond the visible book.
+
+---
+
+# 37. PASSIVE MAKER EVALUATION
+
+V1 passive mode is explicitly post-only.
+
+## BUY
+
+If best ask exists and:
+
+```text
+price_limit >= best_ask
+```
+
+then the post-only order would cross.
+
+Result:
+
+```text
+fill_dimension = FAIL
+POST_ONLY_WOULD_CROSS
+NOT_FEASIBLE
+```
+
+## SELL
+
+If best bid exists and:
+
+```text
+price_limit <= best_bid
+```
+
+same result.
+
+If the opposite side is empty, the order does not currently cross and may mechanically rest.
+
+Do not reject simply because there is no opposite liquidity.
+
+---
+
+# 38. PASSIVE FILL / QUEUE
+
+This package does not have enough evidence to truthfully estimate passive fill probability.
+
+Freeze:
+
+```text
+passive_fill_state = UNKNOWN
+passive_fill_probability = null
+```
+
+for PASSIVE_MAKER V1.
+
+For aggressive intents:
+
+```text
+passive_fill_state = NOT_APPLICABLE
+passive_fill_probability = null
+```
+
+Do not:
+
+- copy WP172's queue multiplier;
+- infer fill probability from one book;
+- invent a heuristic PASS.
+
+Unknown passive fill does **not** make a mechanically valid passive order overall INCONCLUSIVE, because passive fill probability is explicitly non-required for this V1 question.
+
+---
+
+# 39. ADVERSE SELECTION
+
+No historical current-candidate markout evidence is acquired by this package.
+
+Freeze for every assessment:
+
+```text
+adverse_selection_state = UNKNOWN
+adverse_selection_cost = null
+```
+
+This is a visible limitation, not a fabricated zero.
+
+It does not alone force top-level INCONCLUSIVE because adverse-selection economics are outside this V1 mechanical-feasibility question.
+
+Formal WP172 retains the durable adverse-selection evidence role.
+
+---
+
+# 40. CLIENT LATENCY
+
+HTTP request duration is transport telemetry, not execution-latency evidence.
+
+Freeze V1:
+
+```text
+client_latency_state = UNKNOWN
+client_latency_ns = null
+```
+
+Do not promote:
+
+```text
+urllib duration
+Gamma response time
+CLOB response time
+```
+
+into execution latency.
+
+Unknown client latency does not alone block mechanical feasibility.
+
+A later evidence extension may add a proper latency object.
+
+---
+
+# 41. MARKETABLE ORDER DELAY
+
+Gamma `secondsDelay` is a real venue-mechanics fact.
+
+For:
+
+```text
+execution_style = AGGRESSIVE_TAKER
+```
+
+if:
+
+```text
+seconds_delay > 0
+```
+
+then:
+
+```text
+delay_dimension = LIMITED
+MARKETABLE_ORDER_DELAY
+```
+
+unless a harder FAIL/required UNKNOWN determines top-level precedence.
+
+If:
+
+```text
+seconds_delay == 0
+```
+
+then:
+
+```text
+delay_dimension = PASS
+```
+
+If required delay data is missing for aggressive mode:
+
+```text
+delay_dimension = UNKNOWN
+INCONCLUSIVE
+```
+
+For PASSIVE_MAKER:
+
+```text
+delay_dimension = NOT_APPLICABLE
+```
+
+because this V1 intent is post-only and not intentionally marketable.
+
+---
+
+# 42. GTD SEMANTICS
+
+For PASSIVE_MAKER + GTD:
+
+Require at build time:
+
+```text
+expiration >= information_cutoff + 180 seconds
+```
+
+The contract must explicitly record current venue semantics:
+
+```text
+effective venue lifetime ends approximately one minute before stated expiration
+```
+
+but this package does not simulate a running order or later expiration.
+
+Invalid expiration is a structurally invalid intent, not an assessment result.
+
+---
+
+# 43. FEE DIMENSION
+
+## PASS
+
+Use when:
+
+```text
+fees disabled
+or
+passive maker + taker_only true
+or
+aggressive taker with complete supported schedule and conservative fee bound calculated
+```
+
+## UNKNOWN
+
+Use when a required taker fee configuration is:
+
+```text
+missing
+malformed
+unsupported
+conflicting
+```
+
+For AGGRESSIVE_TAKER:
+
+```text
+fee_dimension UNKNOWN -> top-level INCONCLUSIVE
+```
+
+For PASSIVE_MAKER where `fees_enabled=true` but `taker_only` is not exactly true:
+
+```text
+fee_dimension UNKNOWN
+top-level INCONCLUSIVE
+```
+
+Do not assume makers pay zero if the current market configuration contradicts the frozen documented taker-only model.
+
+---
+
+# 44. NO PROFITABILITY / EDGE RESULT
+
+Do not calculate:
+
+```text
+expected value
+gross edge
+net edge
+PnL
+alpha score
+profitability
+Sharpe
+ROI
+risk-adjusted return
+```
+
+Do not compare a strategy's estimated value to execution price.
+
+Do not create a PASS equivalent to WP172.
+
+Assessment invariant:
+
+```text
+public_mechanics_only = true
+no_profitability_claim = true
+```
+
+---
+
+# 45. NO ACCOUNT CAPACITY
+
+Do not read or infer:
+
+```text
+wallet balance
+allowance
+positions
+open orders
+reserved funds
+account exposure
+daily account loss
+portfolio capacity
+```
+
+Assessment invariant:
+
+```text
+no_account_capacity_claim = true
+```
+
+Use terminology:
+
+```text
+visible_depth_capacity_shares
+price_bound_capacity_shares
+```
+
+Never generic `capacity` without the market-depth qualifier.
+
+---
+
+# 46. NO GATE C / ORDER AUTHORITY
+
+Assessment invariant:
+
+```text
+no_gate_c_authority = true
+no_order_authority = true
+no_execution_authority = true
+no_live_authority = true
+```
+
+No code path may import:
+
+```text
+src.execution_gateway
+src.paper_trading
+```
+
+No order payload/signature is created.
+
+No authenticated client is instantiated.
+
+No Gate-C permit is created.
+
+---
+
+# 47. CLOSED DIAGNOSTIC CODES
+
+Freeze this closed set, in this precedence/order:
+
+```text
+SOURCE_GAMMA_UNAVAILABLE
+SOURCE_CLOB_UNAVAILABLE
+SOURCE_GAMMA_INVALID
+SOURCE_CLOB_INVALID
+SOURCE_IDENTITY_MISMATCH
+MARKET_INACTIVE
+MARKET_CLOSED
+MARKET_NOT_ACCEPTING_ORDERS
+ORDER_BOOK_DISABLED
+TICK_SOURCE_CONFLICT
+MIN_ORDER_SOURCE_CONFLICT
+NEG_RISK_SOURCE_CONFLICT
+BOOK_TIMESTAMP_INVALID
+BOOK_STALE
+BOOK_INVALID
+PRICE_OFF_TICK
+MINIMUM_ORDER_NOTIONAL_NOT_MET
+NO_VISIBLE_OPPOSING_LIQUIDITY
+FOK_INSUFFICIENT_VISIBLE_DEPTH
+FAK_PARTIAL_VISIBLE_FILL
+POST_ONLY_WOULD_CROSS
+FEE_CONFIG_UNKNOWN
+FEE_EXPONENT_UNSUPPORTED
+MARKETABLE_ORDER_DELAY
+CLIENT_LATENCY_UNKNOWN
+PASSIVE_FILL_UNKNOWN
+ADVERSE_SELECTION_UNKNOWN
+```
+
+Assessment diagnostics are ordered and deduplicated by this frozen precedence.
+
+Do not place raw external text into diagnostic codes.
+
+---
+
+# 48. CLOSED EXCEPTION CODES
+
+`ExecutionFeasibilityError` string must be one closed code only.
+
+Freeze:
+
+```text
+SCHEMA_UNSUPPORTED
+FIELD_MISSING
+FIELD_TYPE_INVALID
+FIELD_VALUE_INVALID
+LIMIT_EXCEEDED
+IDENTITY_DERIVATION_MISMATCH
+STRATEGY_VERSION_INVALID
+STRATEGY_SPEC_INVALID
+EXECUTION_RULE_BINDING_INVALID
+NETWORK_SCHEME_FORBIDDEN
+NETWORK_HOST_FORBIDDEN
+NETWORK_METHOD_FORBIDDEN
+SOURCE_RESPONSE_TOO_LARGE
+SOURCE_RESPONSE_INVALID
+INTERNAL_VALIDATION_FAILED
+```
+
+Raw upstream/network exception text must never escape from public package APIs.
+
+Transport availability belongs in source state/diagnostics when acquisition can truthfully return a snapshot.
+
+Structural programmer/input errors use exceptions.
+
+---
+
+# 49. RECORD VALIDATION
+
+Every record validator must:
+
+1. require exact dataclass/type;
+2. require exact schema id/version;
+3. reject unknown fields on mapping load;
+4. revalidate all scalar/container bounds;
+5. rederive nested canonical structures;
+6. rederive content ID;
+7. reject tampered ID;
+8. reject self-inconsistent authority flags;
+9. never repair noncanonical caller input silently.
+
+Round-trip rule:
+
+```text
+record_from_mapping(record_kind, record.to_mapping()) == record
+```
+
+or package-equivalent exact closed loader.
+
+---
+
+# 50. RECORD BOUNDS
+
+Freeze conservative bounds:
+
+```text
+max canonical record bytes: 262,144
+max canonical depth: 12
+max canonical nodes: 20,000
+max string chars: 262,144
+max diagnostics: 64
+max book levels per side: 5,000
+max token id chars: 100
+max gamma market id chars: 32
+max condition id chars: 66
+```
+
+No arbitrary unbounded sequence.
+
+---
+
+# 51. IDENTITY DERIVATIONS — MACHINE SPEC
+
+`wp_spec.json` must include applicable machine-readable identity derivations for exactly:
+
+```text
+ExecutionIntent.execution_intent_id
+PublicExecutionVenueSnapshot.venue_snapshot_id
+ExecutionFeasibilityAssessment.execution_feasibility_assessment_id
+```
+
+Use:
+
+```text
+SHA256_CANONICAL_JSON
+```
+
+Each derivation must list the exact identity-preimage fields.
+
+No `applicable:false`.
+
+No prose-only identity claim.
+
+Machine examples must be actual builder-produced records.
+
+The guard/example validation must detect:
+
+```text
+tampered id
+wrong prefix
+dropped identity field
+modified identity field
+```
+
+Do not create digest/slot circularity.
+
+---
+
+# 52. PUBLIC ACQUISITION RESULT DETERMINISM
+
+Network occurrence timing is evidence, so repeated real acquisitions need not produce the same snapshot ID.
+
+Given identical normalized source facts and identical explicit timestamps, record construction must be deterministic.
+
+Tests must use explicit clocks/transport data.
+
+No hidden wall clock in pure builders/evaluator.
+
+Only the explicit network acquisition wrapper may call:
+
+```text
+time.time_ns()
+```
+
+and tests inject/patch it through a seam.
+
+---
+
+# 53. IMPORT / SIDE-EFFECT POSTURE
+
+Importing:
+
+```text
+src.execution_feasibility
+```
+
+must perform:
+
+```text
+0 network calls
+0 file writes
+0 database opens
+0 threads
+0 processes
+0 tasks
+0 sleeps
+0 environment reads
+0 credential reads
+```
+
+No module-level client/session.
+
+---
+
+# 54. NO PERSISTENCE IN V1
+
+Do not add:
+
+```text
+SQLite
+JSON writer
+JSONL writer
+local_data writer
+registry
+store
+journal
+cache
+checkpoint
+```
+
+The three immutable content-addressed records are sufficient for this package.
+
+Future Gate C can bind:
+
+```text
+execution_feasibility_assessment_id
++
+freshness
+```
+
+directly.
+
+If a later consumer proves durable history is needed, that is a future same-capability extension.
+
+---
+
+# 55. `src/execution_feasibility/models.py`
+
+Own:
+
+- canonical JSON/decimal helpers;
+- record dataclasses;
+- closed vocabularies;
+- exact builders/loaders/validators;
+- ID derivations;
+- StrategyVersion validation/binding;
+- intent semantics;
+- snapshot structural validation;
+- assessment structural validation;
+- closed errors/diagnostics.
+
+Do not put network in `models.py`.
+
+---
+
+# 56. `src/execution_feasibility/public_market.py`
+
+Own only:
+
+- fixed-host GET transport;
+- no-redirect handler;
+- capped response reads;
+- Decimal-preserving JSON decode;
+- Gamma normalization;
+- CLOB book normalization;
+- source-state classification;
+- exact two-call foreground snapshot acquisition.
+
+It must not:
+
+- evaluate feasibility status;
+- calculate fills;
+- calculate fees;
+- access accounts;
+- use credentials;
+- retry;
+- loop indefinitely.
+
+---
+
+# 57. `src/execution_feasibility/evaluator.py`
+
+Own pure deterministic evaluation:
+
+```text
+intent + venue snapshot -> assessment
+```
+
+No network.
+
+No filesystem.
+
+No wall clock lookup.
+
+Caller supplies:
+
+```text
+evaluated_at_ns
+```
+
+and it must satisfy:
+
+```text
+evaluated_at_ns >= snapshot.acquisition_completed_ns
+```
+
+Do not allow evaluation before evidence acquisition.
+
+---
+
+# 58. `src/execution_feasibility/__init__.py`
+
+Export only the intended stable public API.
+
+At minimum export:
+
+```text
+ExecutionFeasibilityError
+ExecutionIntent
+PublicExecutionVenueSnapshot
+ExecutionFeasibilityAssessment
+
+EXECUTION_FEASIBILITY_STATUSES
+EXECUTION_DIMENSION_STATES
+EXECUTION_STYLES
+ORDER_TYPES
+SIDES
+DIAGNOSTIC_CODES
+
+build_execution_intent
+validate_execution_intent
+
+fetch_public_venue_snapshot
+validate_public_venue_snapshot
+
+assess_execution_feasibility
+validate_execution_feasibility_assessment
+```
+
+Exact helper names may vary only if necessary to fit repo naming conventions, but public capability must remain this small.
+
+Do not export raw urllib transport internals.
+
+---
+
+# 59. TEST FILE — SINGLE FOCUSED TEST MODULE
+
+All new capability tests live in:
+
+```text
+tests/execution_feasibility/test_execution_feasibility.py
+```
+
+Do not split them merely for organization.
+
+Use deterministic fixtures/helpers inside that file.
+
+No real network.
+
+---
+
+# 60. REQUIRED TEST FAMILIES
+
+## A. Import / authority
+
+Prove:
+
+- import has no side effects;
+- no authenticated client imports;
+- no execution gateway import;
+- no paper import;
+- no credential/env access;
+- no scheduler/sleep/background loop;
+- no persistence;
+- no order mutation.
+
+## B. Strategy binding
+
+Prove:
+
+- valid StrategyVersion binds;
+- tampered StrategyVersion rejects;
+- execution-rule digest derives from exact canonical strategy spec;
+- caller cannot substitute another digest.
+
+## C. Intent semantics
+
+Prove:
+
+- valid aggressive FOK;
+- valid aggressive FAK;
+- valid passive GTC post-only;
+- valid passive GTD post-only;
+- invalid style/order pair rejects;
+- aggressive `post_only=true` rejects;
+- passive `post_only=false` rejects;
+- GTC expiration rejects;
+- GTD missing/too-soon expiration rejects;
+- float/NaN/noncanonical decimal rejects;
+- invalid venue IDs reject.
+
+## D. Acquisition hardening
+
+Prove:
+
+- only two fixed hosts;
+- GET only;
+- redirect rejected;
+- no auth/cookies;
+- exactly max two requests;
+- no retry;
+- body caps;
+- oversize sentinel behavior;
+- sanitized errors;
+- Gamma unavailable preserved;
+- CLOB unavailable preserved;
+- malformed JSON -> INVALID source state;
+- response values never echoed into exception text.
+
+## E. Identity reconciliation
+
+Prove:
+
+- Gamma market id match;
+- condition id match;
+- token belongs to market;
+- CLOB condition/token match;
+- mismatch -> source invalid/diagnostic;
+- Gamma/CLOB tick conflict -> INCONCLUSIVE;
+- min-order conflict -> INCONCLUSIVE;
+- neg-risk conflict -> INCONCLUSIVE.
+
+## F. Book normalization
+
+Prove:
+
+- raw ascending bids normalize descending;
+- raw descending asks normalize ascending;
+- duplicate price rejects;
+- invalid price/size rejects;
+- crossed book invalid;
+- empty one side allowed;
+- 5,000-level cap;
+- book timestamp normalization/freshness.
+
+## G. Market hard facts
+
+Prove NOT_FEASIBLE for:
+
+- inactive;
+- closed;
+- not accepting;
+- order book disabled.
+
+Missing required state -> INCONCLUSIVE.
+
+## H. Tick
+
+Test exact values including:
+
+```text
+0.01
+0.005
+0.0025
+0.001
+0.0001
+```
+
+Prove exact modulo logic and off-grid failure.
+
+## I. Minimum order
+
+Prove:
+
+- documented Gamma USDC notional;
+- exact equality boundary passes;
+- below minimum fails;
+- missing/contradictory source does not guess.
+
+## J. Aggressive BUY
+
+Prove:
+
+- ask sweep;
+- price limit;
+- VWAP;
+- fill ratio;
+- visible capacity;
+- slippage;
+- FOK full PASS;
+- FOK insufficient NOT_FEASIBLE;
+- FAK partial LIMITED;
+- no asks NOT_FEASIBLE.
+
+## K. Aggressive SELL
+
+Mirror the relevant BUY mechanics over bids.
+
+Do not duplicate every trivial test case.
+
+## L. Passive maker
+
+Prove:
+
+- BUY below best ask can rest;
+- BUY crossing best ask fails;
+- SELL above best bid can rest;
+- SELL crossing best bid fails;
+- no opposite side can still rest;
+- passive fill probability remains UNKNOWN/null.
+
+## M. Fees
+
+Prove:
+
+- fee-disabled exact zero;
+- passive maker exact zero when taker-only;
+- taker fee per level, not from VWAP only;
+- exponent `1`;
+- supported integer exponent;
+- conservative five-decimal ceiling;
+- unsupported exponent -> UNKNOWN -> INCONCLUSIVE;
+- missing enabled fee schedule -> INCONCLUSIVE;
+- maker rebate never becomes expected order proceeds.
+
+## N. Delay / latency
+
+Prove:
+
+- aggressive zero delay PASS;
+- aggressive positive delay LIMITED;
+- aggressive missing delay INCONCLUSIVE;
+- passive delay N/A;
+- client latency always UNKNOWN/null;
+- HTTP duration not promoted.
+
+## O. Adverse selection
+
+Prove:
+
+```text
+UNKNOWN / null
+```
+
+and never zero.
+
+## P. Status precedence
+
+Explicitly test:
+
+```text
+hard FAIL > required UNKNOWN > LIMITED > FEASIBLE
+```
+
+Examples:
+
+- closed market + missing fee -> NOT_FEASIBLE;
+- valid FAK partial + missing required fee -> INCONCLUSIVE;
+- valid FAK partial + known fee -> LIMITED;
+- all required pass -> FEASIBLE.
+
+## Q. Identity tampering
+
+For all three records:
+
+- exact builder round-trip;
+- tampered ID rejects;
+- wrong prefix rejects;
+- changed field with old ID rejects.
+
+---
+
+# 61. ARCHITECTURE DOCUMENT RECONCILIATION
+
+Only update the four canonical docs already in exact scope.
+
+## `docs/architecture_decision_record.md`
+
+Record:
+
+- HERMES-STRAT merged;
+- EXEC-FEAS implemented as the current public mechanical feasibility sibling;
+- WP172 remains formal evidence;
+- known-candidate path unchanged;
+- no execution/live authority;
+- next future core package after review+merge is `S10-GATE-C-EXPLORE-01`.
+
+Do not rewrite V2.1 architecture.
+
+## `docs/long_term_bot_completion_roadmap.md`
+
+Record:
+
+```text
+S10-STRAT-LIFE-01: MERGED
+S10-HERMES-STRAT-01: MERGED
+S10-EXEC-FEAS-01: current implemented review target
+S10-GATE-C-EXPLORE-01: next after review+merge, not started
+```
+
+Keep ALPHA-03/DATA-03/Control Center parallel.
+
+## `docs/project_status.md`
+
+Make this WP the current bounded implementation target.
+
+Correct stale post-#211 wording.
+
+Do not claim this PR merged before Karl merges it.
+
+## `docs/repo_truth_index.md`
+
+Add the new four-file source package and contract truth.
+
+State clearly:
+
+```text
+public current mechanics only
+no persistence
+no account state
+no order authority
+no live authority
+```
+
+---
+
+# 62. DOC REGRESSION TESTS
+
+## `tests/test_architecture_boundaries.py`
+
+Add only the exact new source family approval.
+
+## `tests/test_architecture_direction_docs.py`
+
+Update/add focused assertions proving:
+
+- HERMES-STRAT is merged capability;
+- EXEC-FEAS is current implemented capability;
+- current feasibility is not WP172;
+- Gate-C exploratory remains next/not started;
+- ALPHA-03 is not inserted as prerequisite.
+
+## `tests/test_project_status_docs.py`
+
+Replace the stale:
+
+```text
+HERMES current / EXEC-FEAS next
+```
+
+assertion with:
+
+```text
+HERMES merged / EXEC-FEAS current implemented review target /
+GATE-C-EXPLORE next not started
+```
+
+Do not disturb unrelated historical tests.
+
+## `tests/test_repo_truth_docs.py`
+
+Add focused truth-index assertions for the new package and authority separation.
+
+---
+
+# 63. CONTRACT DOC
+
+Create:
+
+```text
+docs/execution_feasibility_contract.md
+```
+
+It must be concise but complete and include:
+
+1. purpose;
+2. architecture position;
+3. current public source contracts;
+4. intent contract;
+5. venue snapshot contract;
+6. evaluator/status semantics;
+7. fee handling;
+8. unknowns/nonclaims;
+9. network and authority boundaries;
+10. relationship to WP172;
+11. relationship to future exploratory Gate C;
+12. test/evidence posture.
+
+Do not paste the entire WP into the contract.
+
+---
+
+# 64. STATUS ENTRY
+
+Create:
+
+```text
+docs/status_entries/S10-EXEC-FEAS-01.md
+```
+
+It must record implementation candidate truth only:
+
+```text
+WP ID
+package class
+frozen base
+predecessor
+exact scope 17
+current capability
+network posture
+public endpoints
+three content-addressed records
+no persistence
+no account/order/Gate-C/live authority
+DATA-03 unchanged
+ALPHA-03 parallel
+next successor after review/merge
+merge authorized: NO
+```
+
+---
+
+# 65. WP ARTIFACTS
+
+Create:
+
+```text
+docs/wp_specs/S10-EXEC-FEAS-01/wp_prompt.txt
+docs/wp_specs/S10-EXEC-FEAS-01/wp_spec.json
+```
+
+The prompt must faithfully encode this final WP.
+
+The machine spec must pass the current `polymarket-work-package-spec@1.0.0` guard.
+
+Do not weaken machine-readable requirements because a field is inconvenient.
+
+In particular:
+
+```text
+identity derivations are applicable
+source_runtime = true
+network = true
+strategy = true
+execution = false
+credentials = false
+scheduler = false
+paper = false
+live = false
+dependencies = false
+workflow_files = false
+```
+
+---
+
+# 66. NO UNNECESSARY HARDENING
+
+This WP must be minimum-complete.
+
+Do not add:
+
+- SQLite;
+- retries;
+- generalized HTTP framework;
+- CLI;
+- service;
+- caching;
+- WebSocket;
+- historical market window;
+- configurable hosts;
+- plugin system;
+- abstract repository layer;
+- broad generic serialization framework;
+- speculative Gate-C adapters;
+- dashboard fields;
+- metrics server;
+- tracing system.
+
+Do not rewrite existing public market data modules.
+
+Do not migrate WP172 code.
+
+---
+
+# 67. IMPLEMENTATION WORKFLOW
+
+Use this sequence.
+
+## Phase A — exact preflight
+
+- verify base;
+- create branch;
+- inspect exact touched docs/tests;
+- confirm no generated artifacts;
+- confirm exact scope.
+
+## Phase B — records/pure evaluator first
+
+Implement:
+
+```text
+models.py
+evaluator.py
+focused tests
+```
+
+No network initially.
+
+Run focused tests repeatedly while editing.
+
+## Phase C — bounded public acquisition
+
+Implement:
+
+```text
+public_market.py
+```
+
+with fake-transport tests only.
+
+No real public probe is needed or authorized during implementation.
+
+## Phase D — docs/spec reconciliation
+
+Update only exact scoped docs/tests/artifacts.
+
+## Phase E — stable candidate validation
+
+Once implementation is stable:
+
+1. focused new tests;
+2. architecture/status/repo-truth tests;
+3. WP spec guard;
+4. readiness gate if applicable;
+5. generated-artifact/preflight guards;
+6. full suite once.
+
+Do not run the full suite after every edit.
+
+If full suite reveals an ordinary same-capability defect or historical assertion directly broken by the exact authorized capability, fix it in the same run **only if the required file is already in the 17-file scope**.
+
+If fixing requires an 18th file:
+
+**STOP and report exact blocker.**
+
+Do not silently edit it.
+
+---
+
+# 68. REQUIRED VALIDATION COMMANDS
+
+At minimum:
+
+```text
+python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py
+
+python -m pytest -q -p no:cacheprovider \
+  tests/test_architecture_boundaries.py \
+  tests/test_architecture_direction_docs.py \
+  tests/test_project_status_docs.py \
+  tests/test_repo_truth_docs.py
+
+python tools/wp/wp_spec_guard.py \
+  --prompt docs/wp_specs/S10-EXEC-FEAS-01/wp_prompt.txt \
+  --spec docs/wp_specs/S10-EXEC-FEAS-01/wp_spec.json
+```
+
+Use the live repository's actual current guard CLI syntax if it differs.
+
+Also run the repo's normal generated-artifact / diff-scope / readiness checks appropriate to a RUNTIME WP.
+
+Then run the normal full pytest suite once on the stable candidate.
+
+Record actual counts.
+
+Do not prestate expected full-suite counts.
+
+---
+
+# 69. STATIC AUTHORITY CHECKS
+
+The focused tests or review must prove the new source family does not contain/import:
+
+```text
+SecureClient
+AsyncSecureClient
+private key
+API key loading
+.env
+os.environ
+getenv
+wallet balance
+allowance
+place_order
+place_limit_order
+place_market_order
+cancel_order
+sign_order
+src.execution_gateway
+src.paper_trading
+sqlite3
+threading
+multiprocessing
+asyncio.create_task
+while True
+time.sleep
+```
+
+Defensive string checks may use credential/order terms in tests/docs without implying authority.
+
+Avoid brittle whole-repo grep expansion.
+
+---
+
+# 70. PUBLIC REAL-NETWORK TESTING
+
+Do not use real public network as a CI success criterion.
+
+No production probe is needed for merge-readiness because:
+
+- the official contracts were pre-draft verified;
+- source normalization is deterministic;
+- transport is bounded and fake-testable;
+- a live probe would make CI environment-dependent.
+
+Future runtime consumer may invoke the public acquisition in an explicitly authorized operational context.
+
+This WP's merge evidence is deterministic/no-real-network.
+
+---
+
+# 71. SUCCESSOR BOUNDARY
+
+Successful review and merge of this package establishes only:
+
+```text
+CURRENT_PUBLIC_EXECUTION_FEASIBILITY_CORE_MERGED
+```
+
+It makes the following separately draftable:
+
+```text
+S10-GATE-C-EXPLORE-01
+```
+
+It does not start it automatically.
+
+The future Gate-C exploratory permit is expected to bind:
+
+```text
+active PortfolioAuthorityPolicy
+StrategyVersion
+current Hermes strategy decision
+StrategyRiskAllocation
+current ExecutionFeasibilityAssessment
+market/order scope
+expiry
+runtime identity
+account/access/reconciliation state
+```
+
+but none of that Gate-C implementation belongs here.
+
+---
+
+# 72. DATA-03 / PARALLEL-LANE INVARIANT
+
+Do not touch:
+
+```text
+DATA-03 prepared workspace
+DATA-03 plan hashes
+DATA-03 accrual
+weather qualification
+S10-QUAL-REAL-01
+candidate-specific WP170/WP172
+```
+
+Earliest DATA-03 accrual boundary remains independent.
+
+This package is not blocked by DATA-03.
+
+DATA-03 is not blocked by this package.
+
+---
+
+# 73. STOP / AMENDMENT CONDITIONS
+
+Stop rather than improvise if any of these occur:
+
+1. frozen base drift;
+2. a required implementation needs an 18th changed file;
+3. current official public API shape materially contradicts Section 9;
+4. a required fact can only be obtained through authenticated/account endpoints;
+5. source implementation would need credential material;
+6. live/order mutation becomes necessary;
+7. a dependency change becomes necessary;
+8. workflow change becomes necessary;
+9. Gate-C/execution-gateway edit becomes necessary;
+10. the new source path unexpectedly requires a wp-spec-guard code edit;
+11. the fee contract cannot be represented without claiming unsupported exactness.
+
+Return:
+
+```text
+S10_EXEC_FEAS_AMENDMENT_REQUIRED
+```
+
+with:
+
+```text
+exact blocker
+why it is material
+smallest proposed scope/capability amendment
+```
+
+Do not broaden autonomously.
+
+---
+
+# 74. ORDINARY DEFECT RULE
+
+Do not ask Karl for follow-up authorization for ordinary bugs **within the exact 17-file envelope and exact capability**.
+
+Examples:
+
+- typo;
+- validator bug;
+- fee Decimal arithmetic bug;
+- test fixture bug;
+- documentation inconsistency;
+- source normalization bug;
+- missing exact assertion.
+
+Fix those in the same implementation run.
+
+Only stop for the material amendment conditions above.
+
+---
+
+# 75. PR BODY REQUIREMENTS
+
+PR body must truthfully record:
+
+```text
+WP: S10-EXEC-FEAS-01
+frozen base
+exact head
+17/17 changed files
+
+capability:
+current public execution feasibility
+
+network:
+public GET-only capability implemented
+real external calls during implementation/CI: 0
+
+content-addressed records:
+ExecutionIntent
+PublicExecutionVenueSnapshot
+ExecutionFeasibilityAssessment
+
+status vocabulary:
+FEASIBLE
+LIMITED
+INCONCLUSIVE
+NOT_FEASIBLE
+
+authority:
+credentials: NO
+account reads: NO
+orders: NO
+signing: NO
+Gate C: NO CHANGE
+live: DISABLED
+capital/orders: 0/0
+
+DATA-03:
+untouched
+
+full-suite result:
+actual counts
+
+Ready for review:
+YES only after exact-head CI/evidence closure
+```
+
+Never claim a requested network-call limit proves an actual return count.
+
+Never claim CI passed before it has.
+
+---
+
+# 76. PR / COMMIT RULES
+
+Implementation agent may:
+
+- create branch;
+- commit;
+- push;
+- open/update PR;
+- update PR body.
+
+Implementation agent may **not merge**.
+
+No force push after review begins unless required and explicitly reported.
+
+Final exact head must be returned.
+
+---
+
+# 77. COMPLETION REPORT — REQUIRED FORMAT
+
+Return exactly enough for Side15 to review.
+
+```text
+READY_FOR_SIDE15_EXACT_HEAD_REVIEW
+or
+BLOCKED
+
+WP:
+S10-EXEC-FEAS-01
+
+base:
+4519aab3d7f8424fc74c59104cc4e7afe0ff11b8
+
+branch:
+<branch>
+
+PR:
+<#>
+
+exact head:
+<40-char sha>
+
+changed files:
+17/17
+<exact list>
+
+implementation summary:
+<concise>
+
+public network implementation:
+GET-only / fixed-host / bounded
+real external calls during implementation:
+0
+
+focused tests:
+<actual>
+
+architecture/status tests:
+<actual>
+
+wp_spec_guard:
+<actual>
+
+other required guards:
+<actual>
+
+full suite:
+<actual passed/skipped/warnings>
+
+hosted CI:
+<run id/status if available>
+
+PR evidence/body guard:
+<actual if available>
+
+Ready for review:
+YES/NO
+
+merge performed:
+NO
+
+authority:
+credentials NO
+account reads NO
+order placement/cancel NO
+Gate C unchanged
+live DISABLED
+capital/orders USD 0 / 0
+
+DATA-03:
+UNTOUCHED
+
+residual issues:
+NONE
+or exact blockers
+```
+
+Do not attach an essay.
+
+---
+
+# 78. REVIEW STANDARD
+
+Side15 will independently verify:
+
+- live PR/base/head;
+- exact 17-file scope;
+- source path-family containment;
+- current `main`;
+- exact-head CI;
+- no unauthorized network/account/order path;
+- content-ID derivations;
+- public-source identity reconciliation;
+- fee semantics;
+- status precedence;
+- no WP172 semantic weakening;
+- no Gate-C change;
+- no DATA-03 change;
+- PR body/evidence closure.
+
+Approval will be exact-head only.
+
+Any head change after approval expires the approval.
+
+---
+
+# 79. FINAL IMPLEMENTATION INTENT
+
+Implement exactly this:
+
+```text
+StrategyVersion
+    +
+exact prospective intent
+    +
+current bounded public Gamma/CLOB evidence
+    ↓
+deterministic mechanical feasibility
+    ↓
+FEASIBLE / LIMITED / INCONCLUSIVE / NOT_FEASIBLE
+```
+
+Do **not** turn it into:
+
+```text
+strategy merit
+profitability
+WP172-lite
+account risk
+Gate C
+order execution
+paper trading
+historical backtest
+Hermes decision
+live orchestration
+```
+
+The governing invariant is:
+
+> **Execution feasibility says whether the current public venue mechanics support an exact intent. It does not say whether the strategy is good, whether the account is allowed to act, or whether the system may trade.**
+
+---
+
+# 80. TERMINAL INSTRUCTION
+
+If the frozen base is intact and no amendment condition is hit:
+
+**implement autonomously through a stable PR candidate, validate it, and return the exact-head completion report to the CURRENT Side15 chat.**
+
+Do not ask for intermediate approval.
+
+Do not merge.
+
+---
+
+# REPO-NATIVE READINESS APPENDIX
+
+This appendix only normalizes readiness-tool structural signals for the authorized package above
+(plain-text governance-track line, explicit headings and the normative matrix). Scope, authority
+and semantics are unchanged. Section 68's `--prompt` flag maps to the live guard CLI flag `--wp`; the live guard CLI also
+requires a PROTECTED-track `--certificate`, so this RUNTIME package records the guard through
+validate_spec_document and the readiness gate.
+
+## Authority / Non-Authority Posture
+
+The authority mirror at the top equals the spec authority block. Per
+docs/ai/codex/PROTECTED_PATHS.md this package crosses none of: credentials/secrets;
+authenticated clients; wallet/account behavior; order placement/cancel; execution gateway; paper
+engine; scheduler/bot loop; runtime/daemon; dashboard/deployment; dependency/lock changes;
+external code copying; generated artifacts. Non-authority: no credential, account, order, signing,
+Gate-C, paper, execution, scheduler, Hermes-runtime or live authority; network=true covers only the
+two bounded public GET reads; real external calls during implementation/CI are 0.
+
+## Hard Stops
+
+STOP BASE_DRIFT (Section 1); STOP S10_EXEC_FEAS_AMENDMENT_REQUIRED for any Section 73 condition
+(18th path, contradicted public API shape, authenticated/account-only fact, credential material,
+live/order mutation, dependency/workflow change, Gate-C/execution-gateway edit, spec-guard code
+edit, unsupported fee exactness); STOP TESTS_NOT_GREEN; STOP HOSTED_CI_NOT_GREEN. Ordinary defects
+inside the 17 paths are same-run repairs (Section 74).
+
+## Negative Test Matrix
+
+Negative-test coverage is mandatory and lives in
+tests/execution_feasibility/test_execution_feasibility.py: missing/tampered/wrong-type
+StrategyVersion; substituted execution-rule digest; invalid side/style/order pair; post_only
+mismatch; GTC expiration; GTD missing/too-soon/boolean expiration; float, NaN, exponent, signed,
+padded and over-precision decimals; signed/whitespace/overlong/uppercase/URL venue ids;
+forbidden scheme/host/port/userinfo/method; redirect; retry attempt; oversize Content-Length and
+sentinel body; transport exceptions and HTTP error statuses; malformed, duplicate-key, NaN,
+too-deep and wrongly typed JSON; identity mismatch on every identity field; tick, minimum-order and
+negRisk conflicts; duplicate, out-of-range, zero/negative and non-numeric book levels; extra level
+keys; crossed book; level-cap overflow; future and stale book timestamps; each failing market fact;
+missing market state; off-grid prices for five ticks; below-minimum notional; insufficient FOK
+depth; zero FAK fill; post-only crossing; unsupported/fractional fee exponent, non-taker-only,
+malformed and missing fee schedules; populated rebate/adverse-selection values; evaluation before
+acquisition; forged ids, wrong prefixes, changed/dropped/extra fields, false authority flags and
+unsupported schema versions for all three records. Applicable generic categories: missing, null,
+wrong type, empty, invalid time, forbidden field, malformed input, duplicate/conflicting input,
+case-variant (uppercase hex, lowercase vocabulary) and safe allowed boundary values (60 s age,
+exact minimum notional, GTD +180 s, 5,000 levels). Semantic wording filters are not_applicable:
+this package adds no free-text wording filter.
+
+## Implementation Notes (within the frozen contract)
+
+- Division-derived values (fill_ratio, weighted_execution_price) are quantized to 18 decimal
+  places in the conservative direction (ratio down, BUY VWAP up, SELL VWAP down); all other
+  arithmetic is exact Decimal with inexact operations trapped.
+- Tick and minimum-order reconciliation require both sources to provide the value and agree; a
+  missing source is UNKNOWN (no source silently wins; Gamma notional units are never inferred from
+  CLOB alone).
+- Book-derived dimensions (book, fill) are UNKNOWN unless the CLOB source is AVAILABLE and fresh,
+  so stale or invalid books never establish a hard failure.
+- A malformed Gamma feeSchedule leaves fee facts null with FEE_CONFIG_UNKNOWN; an oversize body or
+  a book too large for the bounded record is an INVALID source.
+
+## Evidence Plan (requirement mapping)
+
+The machine spec evidence plan maps R001-R060 to named nodes in
+tests/execution_feasibility/test_execution_feasibility.py (families A-Q), R061 to
+tests/test_architecture_boundaries.py, R062-R063 to tests/test_architecture_direction_docs.py,
+R064 to tests/test_project_status_docs.py, R065 to tests/test_repo_truth_docs.py, and R066-R068 to
+the bounded repository guards:
+
+  python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-EXEC-FEAS-01/wp_prompt.txt --spec docs/wp_specs/S10-EXEC-FEAS-01/wp_spec.json --repo-root . --check-diff --base 4519aab3d7f8424fc74c59104cc4e7afe0ff11b8 --head HEAD
+  the unchanged guard validator tools.wp.wp_spec_guard.validate_spec_document on the exact spec
+  (the live wp_spec_guard.py CLI requires --certificate, which applies to PROTECTED-track packages
+  only; the RUNTIME readiness gate runs the same spec validation deterministically)
+  python -m pytest -q -p no:cacheprovider (only on the stable candidate)
+
+plus python tools/git/preflight_generated_artifact_guard.py, git diff --check and git diff
+--name-only against the frozen base (exactly the 17 paths). Then push and obtain fresh exact-head
+hosted CI; no earlier-head CI counts.
+
+## Successor Boundary
+
+See Section 71: a merge establishes only CURRENT_PUBLIC_EXECUTION_FEASIBILITY_CORE_MERGED and makes
+S10-GATE-C-EXPLORE-01 separately draftable; nothing starts automatically.
+
+## Report Back
+
+Report back to the current Side15 chat in exactly the Section 77 format; do not merge.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|binding|strategy_version|tampered_or_wrong_type|FORBID|strategy_version_invalid|exec_feas.strategy_binding|R005
+NR002|binding|execution_rule_sha256|any_intent|REQUIRE|derived_from_canonical_execution_rule|exec_feas.strategy_binding|R006
+NR003|binding|execution_rule_sha256|caller_substitution|FORBID|execution_rule_binding_invalid|exec_feas.strategy_binding|R007
+NR004|intent|style_order_pair|outside_allowed_pairs|FORBID|field_value_invalid|exec_feas.intent|R010
+NR005|intent|post_only|style_mismatch|FORBID|field_value_invalid|exec_feas.intent|R011
+NR006|intent|gtd_expiration|under_180_seconds|FORBID|field_value_invalid|exec_feas.intent|R012
+NR007|intent|decimals|float_nan_or_noncanonical|FORBID|no_silent_repair|exec_feas.intent|R013
+NR008|acquisition|requests|one_acquisition|REQUIRE|exactly_two_fixed_host_gets|exec_feas.acquisition|R016
+NR009|acquisition|request|non_get_non_https_or_foreign_host|FORBID|closed_network_error_before_open|exec_feas.acquisition|R017
+NR010|acquisition|redirect|any_redirect|REJECT|source_unavailable_no_follow|exec_feas.acquisition|R018
+NR011|acquisition|retry|any_failure|FORBID|no_second_request|exec_feas.acquisition|R019
+NR012|acquisition|body|over_cap|REJECT|source_invalid_no_drain|exec_feas.acquisition|R020
+NR013|acquisition|upstream_text|any_error|FORBID|closed_codes_only|exec_feas.source_states|R021
+NR014|source|unavailable_facts|transport_failure|PRESERVE_EXPLICIT_NULL|no_invented_facts|exec_feas.source_states|R022
+NR015|source|identity|mismatch|REJECT|source_invalid_identity_mismatch|exec_feas.identity_reconciliation|R026
+NR016|reconciliation|tick|source_conflict|REQUIRE|tick_dimension_unknown|exec_feas.identity_reconciliation|R027
+NR017|reconciliation|minimum_order|source_conflict|REQUIRE|minimum_order_dimension_unknown|exec_feas.identity_reconciliation|R028
+NR018|reconciliation|neg_risk|source_conflict|REQUIRE|identity_dimension_unknown|exec_feas.identity_reconciliation|R029
+NR019|book|level_order|any_wire_order|REQUIRE|bids_descending_asks_ascending|exec_feas.book|R030
+NR020|book|levels|crossed_duplicate_or_out_of_range|REJECT|source_invalid_book_invalid|exec_feas.book|R031
+NR021|book|one_sided|empty_side|ACCEPT|valid_market_state|exec_feas.book|R033
+NR022|freshness|book_timestamp|future_or_stale|REQUIRE|freshness_unknown_inconclusive|exec_feas.freshness|R035
+NR023|market|hard_fact|known_failing|REQUIRE|not_feasible|exec_feas.market|R036
+NR024|tick|price_limit|off_grid_exact_modulo|REJECT|price_off_tick_not_feasible|exec_feas.tick|R038
+NR025|minimum_order|notional|below_gamma_usdc_minimum|REJECT|minimum_notional_not_met|exec_feas.minimum_order|R039
+NR026|fill|fok|insufficient_visible_depth|REJECT|not_feasible|exec_feas.aggressive_fill|R041
+NR027|fill|fak|partial_visible_fill|ACCEPT|limited|exec_feas.aggressive_fill|R041
+NR028|passive|post_only|would_cross|REJECT|post_only_would_cross|exec_feas.passive|R043
+NR029|fees|taker_fee|multi_level_fill|REQUIRE|per_level_exact_sum_with_5dp_ceiling|exec_feas.fees|R045
+NR030|fees|schedule|missing_malformed_or_unsupported|REQUIRE|fee_unknown_inconclusive|exec_feas.fees|R046
+NR031|fees|maker_rebate|any_assessment|FORBID|no_expected_proceeds|exec_feas.fees|R047
+NR032|delay|seconds_delay|aggressive_positive|REQUIRE|limited_marketable_order_delay|exec_feas.delay_latency|R048
+NR033|latency|http_duration|any_acquisition|FORBID|client_latency_unknown|exec_feas.delay_latency|R049
+NR034|unknowns|adverse_selection|any_assessment|PRESERVE_EXPLICIT_NULL|unknown_never_zero|exec_feas.unknowns|R050
+NR035|status|precedence|mixed_dimensions|REQUIRE|fail_unknown_limited_feasible_order|exec_feas.status|R051
+NR036|identity|execution_intent_id|valid_fields|REQUIRE|sha256_canonical_json_preimage_with_prefix|execution_intent_id|R052
+NR037|identity|venue_snapshot_id|valid_fields|REQUIRE|sha256_canonical_json_preimage_with_prefix|venue_snapshot_id|R053
+NR038|identity|execution_feasibility_assessment_id|valid_fields|REQUIRE|sha256_canonical_json_preimage_with_prefix|execution_feasibility_assessment_id|R054
+NR039|authority|runtime|credential_account_order_execution_live|FORBID|zero_authority|exec_feas.authority|R002
+NR040|authority|import|any_import|FORBID|zero_side_effects|exec_feas.authority|R001
+NR041|authority|persistence|any_write|FORBID|no_persistence|exec_feas.authority|R003
+NR042|wp172|executable_edge_pass|reuse_or_weakening|FORBID|formal_lane_unchanged|exec_feas.non_claims|R060
+NR043|scope|changed_files|eighteenth_path|FORBID|amendment_required|scope.exact|R059
+NR044|scope|src_family|new_source_family|REQUIRE|exact_single_family_approval|scope.exact|R061
+NR045|docs|known_candidate_path|after_merge|REQUIRE|gate_c_explore_next_not_started|docs.v21_truth|R063
+NR046|docs|exec_feas_vs_wp172|any_doc|REQUIRE|distinct_concepts|docs.v21_truth|R062
+END_NORMATIVE_RULE_MATRIX_V1

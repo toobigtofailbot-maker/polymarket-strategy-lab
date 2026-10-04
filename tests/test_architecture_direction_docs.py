@@ -316,8 +316,9 @@ def test_hermes_strat_known_candidate_path_records_capability():
     assert path in section
     assert "S10-EXEC-FEAS-01: next core package after HERMES-STRAT review and merge" in section
     roadmap = _flat(ROADMAP)
-    assert "## S10-HERMES-STRAT-01 Hermes Strategy Manager Core (current)" in ROADMAP.read_text(encoding="utf-8")
-    assert "Hermes strategy manager (S10-HERMES-STRAT-01: implemented capability, current candidate)" in roadmap
+    # S10-EXEC-FEAS-01: HERMES-STRAT is now a merged capability (PR #211).
+    assert "## S10-HERMES-STRAT-01 Hermes Strategy Manager Core (merged)" in ROADMAP.read_text(encoding="utf-8")
+    assert "Hermes strategy manager (S10-HERMES-STRAT-01: implemented capability, MERGED in PR #211)" in roadmap
 
 
 def test_hermes_strat_alpha03_parallel():
@@ -326,3 +327,49 @@ def test_hermes_strat_alpha03_parallel():
     assert "ALPHA-03" not in section.split("Known-candidate path capability status:", 1)[1].split("ALPHA-03 remains", 1)[0]
     assert "ALPHA-03 remains a parallel feeder" in _flat(ROADMAP)
     assert "ALPHA-03 stays parallel" in _flat(ADOPTION)
+
+
+# -- S10-EXEC-FEAS-01: current public execution feasibility (R062-R063) --
+
+EXEC_FEAS_CONTRACT = ROOT / "docs" / "execution_feasibility_contract.md"
+
+
+def _exec_feas_adr() -> str:
+    adr = ADR.read_text(encoding="utf-8")
+    return " ".join(adr.split("## V2.1 Current Public Execution Feasibility Core (S10-EXEC-FEAS-01)", 1)[1].split())
+
+
+def test_exec_feas_current_public_mechanics_not_wp172():
+    section = _exec_feas_adr()
+    assert "S10-HERMES-STRAT-01: MERGED." in section
+    assert "S10-EXEC-FEAS-01 is implemented as the current public mechanical feasibility sibling" in section
+    assert "Current public execution feasibility is not WP172 executable edge" in section
+    assert "WP172 remains the formal durable executable-edge evidence lane" in section
+    assert "EXECUTABLE_EDGE_PASS is not reused, renamed, bypassed or weakened" in section
+    hermes_adr = _hermes_strat_adr()
+    assert "Status: MERGED (PR #211 merged at" in hermes_adr
+    contract = _flat(EXEC_FEAS_CONTRACT)
+    assert "WP172 remains the formal durable executable-edge evidence lane" in contract
+    assert "no EXEC-FEAS status is equivalent to a WP172 PASS" in contract
+    assert "never claims the server-rounded fee" in contract
+    for claim in ("EXEC-FEAS authorizes orders", "Gate C: AUTHORIZED", "live: ENABLED",
+                  "S10-EXEC-FEAS-01: MERGED", "S10-GATE-C-EXPLORE-01: STARTED"):
+        for doc in CANONICAL + (EXEC_FEAS_CONTRACT,):
+            assert claim not in _flat(doc), (doc.name, claim)
+
+
+def test_exec_feas_known_candidate_path_gate_c_next():
+    section = _exec_feas_adr()
+    path = ("lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes strategy manager (S10-HERMES-STRAT-01: MERGED) -> "
+            "execution feasibility (S10-EXEC-FEAS-01: implemented capability, current review target) -> "
+            "exploratory Gate C (S10-GATE-C-EXPLORE-01: next core package after EXEC-FEAS review and merge; "
+            "NOT AUTHORIZED / NOT STARTED)")
+    assert path in section
+    assert "ALPHA-03 remains a parallel, non-blocking feeder and is not a prerequisite." in section
+    assert "ALPHA-03" not in section.split("Known-candidate path capability status:", 1)[1].split("ALPHA-03 remains", 1)[0]
+    roadmap = _flat(ROADMAP)
+    assert "## S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (current)" in ROADMAP.read_text(encoding="utf-8")
+    for text in ("S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01: MERGED; S10-EXEC-FEAS-01: current implemented review target; "
+                 "S10-GATE-C-EXPLORE-01: next after review+merge, not started.",
+                 "ALPHA-03, DATA-03 and the Control Center (S10-CC-FOUND-01) stay parallel"):
+        assert text in roadmap, text

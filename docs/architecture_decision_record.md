@@ -259,8 +259,9 @@ live, capital or merge authority (capital/orders USD 0 / 0).
 
 ## V2.1 Hermes Strategy Manager Core (S10-HERMES-STRAT-01)
 
-Status: current bounded implementation target / implemented candidate (base `dab28ee45c1f8267248d52601c90d3f3509034f9`, after
-PR #210 / S10-STRAT-LIFE-01 merged). Contract: `docs/hermes_strategy_manager_contract.md`.
+Status: MERGED (PR #211 merged at `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8`, head `9439283768b78b7302290ba6b8611e3477aa3c6a`; formerly the current
+bounded implementation target / implemented candidate on base `dab28ee45c1f8267248d52601c90d3f3509034f9`, after PR #210 /
+S10-STRAT-LIFE-01 merged). Contract: `docs/hermes_strategy_manager_contract.md`.
 
 Two Hermes surfaces are distinct:
 
@@ -296,3 +297,36 @@ live orchestrator -> tiny exploratory live. ALPHA-03 remains a parallel, non-blo
 S10-CC-FOUND-01 is NOT AUTHORIZED / NOT STARTED until S10-HERMES-STRAT-01 actually merges; the
 Control Center remains NOT STARTED. DATA-03 remains unchanged and non-blocking; S10-DEPLOY-01 host
 activation is separate; Gate C is unchanged; live trading remains DISABLED; capital/orders USD 0 / 0.
+
+## V2.1 Current Public Execution Feasibility Core (S10-EXEC-FEAS-01)
+
+Status: current bounded implementation target / implemented review target (base
+`4519aab3d7f8424fc74c59104cc4e7afe0ff11b8`, after PR #211 / S10-HERMES-STRAT-01 merged). Contract:
+`docs/execution_feasibility_contract.md`.
+
+S10-HERMES-STRAT-01: MERGED. S10-EXEC-FEAS-01 is implemented as the current public mechanical
+feasibility sibling of the formal evidence lane. Three execution concepts stay distinct:
+
+- Qualification evidence availability: metadata saying whether evidence exists about fees,
+  resolution rules, tick/min-order, spread/depth, latency and partial fill. Unchanged.
+- S10-EXEC-FEAS-01 current public execution feasibility: can this exact proposed intent
+  mechanically operate under current public venue state? It binds one exact StrategyVersion and
+  its execution-rule digest, bounded current public Gamma/CLOB evidence and a deterministic
+  venue-mechanics evaluation into content-addressed records with the closed status vocabulary
+  FEASIBLE / LIMITED / INCONCLUSIVE / NOT_FEASIBLE.
+- WP172 formal executable edge: does a preregistered/OOS strategy retain executable edge after
+  execution frictions? WP172 remains the formal durable executable-edge evidence lane;
+  EXECUTABLE_EDGE_PASS is not reused, renamed, bypassed or weakened.
+
+Current public execution feasibility is not WP172 executable edge, not strategy merit, not
+profitability, not account capacity and not a Gate-C or order decision. It has no persistence,
+reads no account state and has no credential, order, execution or live authority.
+
+Known-candidate path capability status: lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes strategy
+manager (S10-HERMES-STRAT-01: MERGED) -> execution feasibility (S10-EXEC-FEAS-01: implemented
+capability, current review target) -> exploratory Gate C (S10-GATE-C-EXPLORE-01: next core package
+after EXEC-FEAS review and merge; NOT AUTHORIZED / NOT STARTED) -> execution host -> live
+orchestrator -> tiny exploratory live. The path is unchanged. ALPHA-03 remains a parallel,
+non-blocking feeder and is not a prerequisite. DATA-03 remains unchanged and non-blocking;
+S10-CC-FOUND-01 remains a parallel lane; S10-DEPLOY-01 host activation is separate; Gate C is
+unchanged; live trading remains DISABLED; capital/orders USD 0 / 0.
