@@ -13,25 +13,16 @@ persistence, scheduler or live authority, and it is separate from the legacy WP1
 manual restricted-live canary path. Capital/orders remain USD 0 / 0.
 """
 
-from .evaluator import (
-    EXPLORATORY_RISK_BAND,
-    PERMIT_COMPATIBLE_HERMES_ACTIONS,
-    build_exploratory_gate_c_permit,
-    evaluate_exploratory_gate_c,
-)
-from .models import (
-    DECISION_STATUSES,
-    ERROR_CODES,
-    PERMIT_COMPATIBLE_FEASIBILITY_STATUSES,
-    PERMIT_ELIGIBLE,
-    PERMIT_REJECTED,
-    REASON_CODES,
-    ExploratoryGateCDecision,
-    ExploratoryGateCError,
-    ExploratoryGateCPermit,
-    record_from_mapping,
-    validate_exploratory_gate_c_decision,
-    validate_exploratory_gate_c_permit,
+# Import-safe lazy facade: importing this package loads neither its submodules nor their
+# consumed dependency chains (STRAT-LIFE, Hermes manager, EXEC-FEAS). A public name is
+# resolved from its submodule only on first attribute access (PEP 562).
+_EVALUATOR_NAMES = frozenset(
+    {
+        "EXPLORATORY_RISK_BAND",
+        "PERMIT_COMPATIBLE_HERMES_ACTIONS",
+        "build_exploratory_gate_c_permit",
+        "evaluate_exploratory_gate_c",
+    }
 )
 
 __all__ = [
@@ -52,3 +43,19 @@ __all__ = [
     "validate_exploratory_gate_c_decision",
     "validate_exploratory_gate_c_permit",
 ]
+
+
+def __getattr__(name: str) -> object:
+    if name not in __all__:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    if name in _EVALUATOR_NAMES:
+        from . import evaluator as module
+    else:
+        from . import models as module
+    value = getattr(module, name)
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    return sorted(set(globals()) | set(__all__))

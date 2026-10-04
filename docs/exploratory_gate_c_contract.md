@@ -24,7 +24,9 @@ capital/orders USD 0 / 0.
 
 Source: `src/exploratory_gate_c/` — `models.py` (closed vocabularies, canonical helpers, the two
 content-addressed records and strict validators), `evaluator.py` (verified-store loading,
-deterministic evaluation, exact permit derivation), `__init__.py` (small public API). The package
+deterministic evaluation, exact permit derivation), `__init__.py` (small import-safe lazy public API:
+a fresh `import src.exploratory_gate_c` loads neither submodule nor any consumed dependency chain;
+each public name resolves from its submodule on first use). The package
 is stdlib-only plus read-only use of the existing public APIs of `src.strategy_lifecycle`,
 `src.research_runtime.hermes_controlled_runtime.strategy_manager` and `src.execution_feasibility`,
 none of which is modified.

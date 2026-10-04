@@ -417,46 +417,51 @@ def _imports() -> set[str]:
 # A. Import / API / forbidden authority (R001-R003).
 # ---------------------------------------------------------------------------
 
+FROZEN_API = frozenset({
+    "DECISION_STATUSES", "ERROR_CODES", "EXPLORATORY_RISK_BAND",
+    "PERMIT_COMPATIBLE_FEASIBILITY_STATUSES", "PERMIT_COMPATIBLE_HERMES_ACTIONS",
+    "PERMIT_ELIGIBLE", "PERMIT_REJECTED", "REASON_CODES", "ExploratoryGateCDecision",
+    "ExploratoryGateCError", "ExploratoryGateCPermit", "build_exploratory_gate_c_permit",
+    "evaluate_exploratory_gate_c", "record_from_mapping",
+    "validate_exploratory_gate_c_decision", "validate_exploratory_gate_c_permit",
+})
+
+# Genuinely fresh interpreter: the audit hook is installed before anything else is imported
+# and the only statement under audit is the package import itself (no dependency preload).
 _AUDIT_SCRIPT = r"""
 import sys, threading
-STRICT = sys.argv[1] == "strict"
-if STRICT:
-    # Pre-load the consumed read-only dependencies (and their third-party imports) so the
-    # audit isolates the import side effects of src.exploratory_gate_c itself.
-    import src.strategy_lifecycle, src.execution_feasibility
-    import src.research_runtime.hermes_controlled_runtime.strategy_manager
 events = []
-WATCH = ("socket.connect", "socket.getaddrinfo", "socket.bind", "sqlite3.connect",
-         "subprocess.", "os.system", "os.posix_spawn", "os.startfile",
-         "_winapi.CreateProcess", "urllib.Request", "http.client.connect")
-if STRICT:
-    WATCH += ("socket.", "os.putenv", "os.unsetenv")
+WATCH = ("socket.", "subprocess.", "os.system", "os.exec", "os.spawn", "os.posix_spawn",
+         "os.fork", "os.startfile", "_winapi.CreateProcess", "sqlite3.connect",
+         "urllib.Request", "http.client.connect", "os.putenv", "os.unsetenv")
 def hook(name, args):
     if name.startswith(WATCH):
         events.append(name)
     elif name == "open" and len(args) > 1 and isinstance(args[1], str) and any(c in args[1] for c in "wax+"):
         events.append("open-write")
-sys.addaudithook(hook)
+    elif name == "open" and len(args) > 2 and isinstance(args[2], int) and args[2] & 0o3:
+        events.append("open-write")
 before = threading.active_count()
+sys.addaudithook(hook)
 import src.exploratory_gate_c as pkg
-assert pkg.__all__
-gateway = sorted(name for name in sys.modules if name.startswith("src.execution_gateway"))
-print(repr((events, threading.active_count() - before, gateway)))
+threads = threading.active_count() - before
+loaded = sorted(name for name in sys.modules if name.startswith((
+    "src.execution_gateway", "src.exploratory_gate_c.", "src.execution_feasibility",
+    "src.strategy_lifecycle", "src.research_runtime")))
+print(repr((events, threads, loaded, sorted(pkg.__all__))))
 """
 
 
 def test_import_is_side_effect_free() -> None:
-    """R001: fresh import has no network/subprocess/env-write/thread/sqlite/store creation.
-
-    "strict" isolates this package's own import (every socket/env event is forbidden);
-    "chain" also covers the pre-existing consumed import chain, whose third-party
-    numerical libraries may read the hostname or set allocator env vars at import, but
-    which must still open no connection, process, database or writable file.
-    """
-    for mode in ("strict", "chain"):
-        result = subprocess.run([sys.executable, "-B", "-c", _AUDIT_SCRIPT, mode], cwd=ROOT,
-                                capture_output=True, text=True, check=True, timeout=120)
-        assert result.stdout.strip() == "([], 0, [])", mode
+    """R001: a true fresh import has no network/process/sqlite/write/env-write/thread effect."""
+    result = subprocess.run([sys.executable, "-B", "-c", _AUDIT_SCRIPT], cwd=ROOT,
+                            capture_output=True, text=True, check=True, timeout=120)
+    events, threads, loaded, api = ast.literal_eval(result.stdout.strip())
+    assert events == []
+    assert threads == 0
+    # No submodule, consumed dependency chain or legacy execution gateway is imported.
+    assert loaded == []
+    assert set(api) == FROZEN_API and len(api) == len(FROZEN_API)
     for path in SOURCES:
         for node in ast.parse(path.read_text(encoding="utf-8")).body:
             assert not isinstance(node, (ast.Expr, ast.For, ast.While, ast.With, ast.Try)) or (
@@ -464,16 +469,46 @@ def test_import_is_side_effect_free() -> None:
             ), path.name
 
 
+_LAZY_SCRIPT = r"""
+import sys
+import src.exploratory_gate_c as pkg
+before = "src.exploratory_gate_c.evaluator" in sys.modules
+from src.exploratory_gate_c import ExploratoryGateCDecision
+from src.exploratory_gate_c import evaluate_exploratory_gate_c
+from src.exploratory_gate_c import build_exploratory_gate_c_permit
+from src.exploratory_gate_c import models, evaluator
+ok = (ExploratoryGateCDecision is models.ExploratoryGateCDecision
+      and evaluate_exploratory_gate_c is evaluator.evaluate_exploratory_gate_c
+      and build_exploratory_gate_c_permit is evaluator.build_exploratory_gate_c_permit
+      and all(getattr(pkg, name) is getattr(
+              evaluator if name in pkg._EVALUATOR_NAMES else models, name) for name in pkg.__all__))
+try:
+    pkg.not_a_public_name
+    missing = False
+except AttributeError:
+    missing = True
+print(repr((before, ok, missing, set(pkg.__all__) <= set(dir(pkg)))))
+"""
+
+
+def test_lazy_public_api_resolves_exact_objects() -> None:
+    """Lazy facade compatibility (not the R001 audit): public names resolve to the exact
+    model/evaluator objects on first use; this proof may load consumed dependencies."""
+    result = subprocess.run([sys.executable, "-B", "-c", _LAZY_SCRIPT], cwd=ROOT,
+                            capture_output=True, text=True, check=True, timeout=120)
+    assert result.stdout.strip() == "(False, True, True, True)"
+    assert G.ExploratoryGateCDecision is M.ExploratoryGateCDecision
+    assert G.ExploratoryGateCPermit is M.ExploratoryGateCPermit
+    assert G.evaluate_exploratory_gate_c is E.evaluate_exploratory_gate_c
+    assert G.build_exploratory_gate_c_permit is E.build_exploratory_gate_c_permit
+    assert G.REASON_CODES is M.REASON_CODES and G.ERROR_CODES is M.ERROR_CODES
+    with pytest.raises(AttributeError):
+        getattr(G, "sign_order")
+
+
 def test_public_api_is_small() -> None:
     """R002: only frozen records/error/evaluator/validators/vocabularies are exported."""
-    assert set(G.__all__) == {
-        "DECISION_STATUSES", "ERROR_CODES", "EXPLORATORY_RISK_BAND",
-        "PERMIT_COMPATIBLE_FEASIBILITY_STATUSES", "PERMIT_COMPATIBLE_HERMES_ACTIONS",
-        "PERMIT_ELIGIBLE", "PERMIT_REJECTED", "REASON_CODES", "ExploratoryGateCDecision",
-        "ExploratoryGateCError", "ExploratoryGateCPermit", "build_exploratory_gate_c_permit",
-        "evaluate_exploratory_gate_c", "record_from_mapping",
-        "validate_exploratory_gate_c_decision", "validate_exploratory_gate_c_permit",
-    }
+    assert set(G.__all__) == FROZEN_API
     for name in (n for n in G.__all__ if not n.isupper()):
         lowered = name.lower()
         for verb in ("sign", "submit", "cancel", "order", "live", "arm", "store", "persist",
