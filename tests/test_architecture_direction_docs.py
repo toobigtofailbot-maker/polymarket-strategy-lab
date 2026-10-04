@@ -352,8 +352,9 @@ def test_exec_feas_current_public_mechanics_not_wp172():
     assert "WP172 remains the formal durable executable-edge evidence lane" in contract
     assert "no EXEC-FEAS status is equivalent to a WP172 PASS" in contract
     assert "never claims the server-rounded fee" in contract
+    # S10-GATE-C-EXPLORE-01: EXEC-FEAS is now MERGED (PR #212); that claim is no longer forbidden.
     for claim in ("EXEC-FEAS authorizes orders", "Gate C: AUTHORIZED", "live: ENABLED",
-                  "S10-EXEC-FEAS-01: MERGED", "S10-GATE-C-EXPLORE-01: STARTED"):
+                  "S10-GATE-C-EXPLORE-01: STARTED"):
         for doc in CANONICAL + (EXEC_FEAS_CONTRACT,):
             assert claim not in _flat(doc), (doc.name, claim)
 
@@ -368,8 +369,67 @@ def test_exec_feas_known_candidate_path_gate_c_next():
     assert "ALPHA-03 remains a parallel, non-blocking feeder and is not a prerequisite." in section
     assert "ALPHA-03" not in section.split("Known-candidate path capability status:", 1)[1].split("ALPHA-03 remains", 1)[0]
     roadmap = _flat(ROADMAP)
-    assert "## S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (current)" in ROADMAP.read_text(encoding="utf-8")
-    for text in ("S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01: MERGED; S10-EXEC-FEAS-01: current implemented review target; "
-                 "S10-GATE-C-EXPLORE-01: next after review+merge, not started.",
+    # S10-GATE-C-EXPLORE-01: EXEC-FEAS is now a merged capability (PR #212); its status line is history.
+    assert "## S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (merged)" in ROADMAP.read_text(encoding="utf-8")
+    for text in ("Status at EXEC-FEAS implementation time: S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01: MERGED; "
+                 "S10-EXEC-FEAS-01: then the implemented review target (now MERGED in PR #212);",
+                 "execution feasibility (S10-EXEC-FEAS-01: implemented capability, MERGED in PR #212)",
                  "ALPHA-03, DATA-03 and the Control Center (S10-CC-FOUND-01) stay parallel"):
         assert text in roadmap, text
+
+
+# -- S10-GATE-C-EXPLORE-01: exploratory Gate C policy permit core (R043) --
+
+GATE_C_CONTRACT = ROOT / "docs" / "exploratory_gate_c_contract.md"
+LIVE_AUTH = ROOT / "docs" / "live_trading_authorization.md"
+
+
+def _gate_c_adr() -> str:
+    adr = ADR.read_text(encoding="utf-8")
+    return " ".join(adr.split("## V2.1 Exploratory Gate C Policy Permit Core (S10-GATE-C-EXPLORE-01)", 1)[1].split())
+
+
+def test_gate_c_explore_known_candidate_path_deploy_exec_next():
+    section = _gate_c_adr()
+    path = ("lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes strategy manager (S10-HERMES-STRAT-01: MERGED) -> "
+            "execution feasibility (S10-EXEC-FEAS-01: MERGED) -> exploratory Gate C (S10-GATE-C-EXPLORE-01: "
+            "implemented capability, current review target) -> execution host (S10-DEPLOY-EXEC-01: next core "
+            "successor after GATE-C-EXPLORE review and merge; NOT STARTED) -> live orchestrator "
+            "(S10-LIVE-ORCH-01: later) -> tiny exploratory live")
+    assert path in section
+    for text in ("S10-EXEC-FEAS-01: MERGED.", "Governance track PROTECTED",
+                 "necessary-but-not-sufficient future evidence",
+                 "A SCALE judgment never widens the current EXPLORATORY_LIVE allocation",
+                 "WP175 remains the historical/manual real restricted-live canary",
+                 "S10-CC-OPS-01 may begin only after GATE-C-EXPLORE merges, as a separate package",
+                 "ALPHA-03 remains a parallel, non-blocking feeder", "DATA-03 remains unchanged and non-blocking"):
+        assert text in section, text
+    exec_feas = _exec_feas_adr()
+    assert "Status: MERGED (PR #212 merged at `35db4f05347b8b27f7bd0296cf9b1b0627e58d12`, head `99f3c3c8acc09ae3b5646f785446d69a7b8b2290`" in exec_feas
+    roadmap = _flat(ROADMAP)
+    assert "## S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (current)" in ROADMAP.read_text(encoding="utf-8")
+    for text in ("S10-GATE-C-EXPLORE-01: current protected implemented review target; S10-DEPLOY-EXEC-01: next "
+                 "core successor after review+merge, NOT STARTED; S10-LIVE-ORCH-01: later;",
+                 "exploratory Gate C (S10-GATE-C-EXPLORE-01: implemented capability, current candidate) -> execution "
+                 "host (S10-DEPLOY-EXEC-01: next core successor after review+merge, NOT STARTED)",
+                 "Immediate merged predecessor: S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (PR #212"):
+        assert text in roadmap, text
+
+
+def test_gate_c_explore_is_not_live_or_legacy_gate_c():
+    contract = _flat(GATE_C_CONTRACT)
+    for text in ("necessary-but-not-sufficient future evidence", "WP175 remains the historical/manual real restricted-live canary",
+                 "issues or consumes no legacy WP175 Gate-C live permit, arms no session and enters no A3 state",
+                 "No arbitrary TTL", "Capital/orders USD 0 / 0", "`LIVE TRADING STATUS: DISABLED`"):
+        assert text in contract, text
+    live = LIVE_AUTH.read_text(encoding="utf-8")
+    assert live.splitlines()[2] == "LIVE TRADING STATUS: DISABLED"
+    live_flat = " ".join(live.split())
+    for text in ("S10-GATE-C-EXPLORE-01 (V2.1 exploratory Gate C policy permit core) is separate from WP175.",
+                 "An exploratory permit is necessary-but-not-sufficient future evidence for one exact intent, not live activation;",
+                 "enters no A3 state"):
+        assert text in live_flat, text
+    for claim in ("Gate C: AUTHORIZED", "live: ENABLED", "LIVE TRADING STATUS: ENABLED", "S10-DEPLOY-EXEC-01: STARTED",
+                  "S10-GATE-C-EXPLORE-01: MERGED", "A3_RESTRICTED_LIVE: ENTERED"):
+        for doc in CANONICAL + (GATE_C_CONTRACT, LIVE_AUTH):
+            assert claim not in _flat(doc), (doc.name, claim)

@@ -1,0 +1,1057 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-GATE-C-EXPLORE-01",
+    "title": "Exploratory Gate C Policy Permit Core",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "EXPLORATORY_GATE_C_POLICY_PERMIT_CORE",
+    "package_size_class": "L",
+    "risk_level": 4,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 212,
+      "head_sha": "99f3c3c8acc09ae3b5646f785446d69a7b8b2290",
+      "merge_sha": "35db4f05347b8b27f7bd0296cf9b1b0627e58d12"
+    },
+    "suggested_branch": "codex/s10-gate-c-explore-01-policy-permit-core",
+    "objective": "Implement the V2.1 credential-free exploratory Gate-C policy-permit core: read the existing STRAT-LIFE and Hermes strategy-manager stores through their verified read-only loaders, bind the current exact StrategyVersion/active global PortfolioAuthorityPolicy/current EXPLORATORY_LIVE allocation/latest compatible Hermes assessment and an exact fresh FEASIBLE or LIMITED EXEC-FEAS intent/snapshot/assessment into a canonical hard eligibility decision and, only on success, a short-lived exact-intent exploratory permit. The permit creates execution-eligibility authority only; it performs no network/account/geoblock read, loads no credential, issues no legacy GateCLivePermit, enters no A3 state, signs/submits/cancels no order, creates no new store/scheduler/live authority and risks USD 0.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/live_trading_authorization.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/exploratory_gate_c_contract.md",
+      "docs/status_entries/S10-GATE-C-EXPLORE-01.md",
+      "docs/wp_specs/S10-GATE-C-EXPLORE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-GATE-C-EXPLORE-01/wp_spec.json",
+      "docs/wp_specs/S10-GATE-C-EXPLORE-01/draftability_certificate.json",
+      "src/exploratory_gate_c/__init__.py",
+      "src/exploratory_gate_c/models.py",
+      "src/exploratory_gate_c/evaluator.py",
+      "tests/exploratory_gate_c/test_exploratory_gate_c.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/live_trading_authorization.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/exploratory_gate_c_contract.md",
+      "docs/status_entries/S10-GATE-C-EXPLORE-01.md",
+      "docs/wp_specs/S10-GATE-C-EXPLORE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-GATE-C-EXPLORE-01/wp_spec.json",
+      "docs/wp_specs/S10-GATE-C-EXPLORE-01/draftability_certificate.json",
+      "src/exploratory_gate_c/__init__.py",
+      "src/exploratory_gate_c/models.py",
+      "src/exploratory_gate_c/evaluator.py",
+      "tests/exploratory_gate_c/test_exploratory_gate_c.py",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "tools/",
+      "src/data_layer/",
+      "src/strategy_lifecycle/",
+      "src/research_runtime/",
+      "src/paper_trading/",
+      "src/execution_gateway/",
+      "src/execution_feasibility/",
+      "src/risk_engine/",
+      "src/strategy_modules/",
+      "src/monitoring/",
+      "src/operator_cockpit_frontend/",
+      "tests/strategy_lifecycle/",
+      "tests/research_runtime/",
+      "tests/paper_trading/",
+      "tests/execution_gateway/",
+      "tests/execution_feasibility/"
+    ],
+    "max_changed_files": 18,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/live_trading_authorization.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert the exact S10-GATE-C-EXPLORE-01 diff. The credential-free exploratory Gate-C decision/permit package, focused tests, contract/status/spec/certificate and V2.1/live-authorization doc reconciliation disappear. STRAT-LIFE, HERMES-STRAT, EXEC-FEAS and legacy WP175 execution-gateway bytes remain unchanged; there is no new database, credential, order, account, live, deployment or capital state to migrate or roll back.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": true
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": true,
+    "paper": false,
+    "execution": true,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Adds one new credential-free local source package that reads existing canonical stores through verified loaders and emits hard eligibility records only; no existing runtime API is changed.",
+    "items": [
+      {
+        "surface": "src.exploratory_gate_c",
+        "before": "absent",
+        "after": "exports closed Gate-C reason/status vocabularies, ExploratoryGateCDecision, ExploratoryGateCPermit, ExploratoryGateCError, evaluate_exploratory_gate_c, build_exploratory_gate_c_permit and strict record validators",
+        "change_authorized": true,
+        "compatibility_requirement": "import has no network/file-write/store creation/credential/order/live side effect; existing STRAT-LIFE, Hermes, EXEC-FEAS and execution_gateway APIs are unchanged",
+        "authority": "EXPLORATORY_EXECUTION_ELIGIBILITY_ONLY"
+      },
+      {
+        "surface": "src.exploratory_gate_c.models",
+        "before": "absent",
+        "after": "defines two immutable content-addressed closed-schema records, canonical helpers, bounded closed reasons and invariant revalidation/non-authority flags",
+        "change_authorized": true,
+        "compatibility_requirement": "pure model layer; no filesystem/network/environment/SDK import; content ids include every non-id field",
+        "authority": "CANONICAL_HARD_ELIGIBILITY_RECORDS_ONLY"
+      },
+      {
+        "surface": "src.exploratory_gate_c.evaluator",
+        "before": "absent",
+        "after": "read-only verified-store loading plus deterministic lifecycle/policy/capacity/Hermes/EXEC-FEAS/intent-limit evaluation and exact permit derivation",
+        "change_authorized": true,
+        "compatibility_requirement": "no store mutation/new store, no Hermes run, no public/private network, no GateCLivePermit/A3, no account/geoblock/credential/order/sign/cancel path",
+        "authority": "EXPLORATORY_EXECUTION_ELIGIBILITY_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Freeze current-store loading, portfolio/Hermes/feasibility binding, exact-intent ceilings, freshness, record identity, revalidation requirements, WP175 separation and no-live boundaries.",
+    "items": [
+      {
+        "path": "gate_c.store_currentness",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Public evaluator accepts explicit lifecycle_store_path and hermes_manager_store_path, loads both through existing verified read-only loaders at evaluation time, persists neither path, and never accepts a caller-fabricated lifecycle/Hermes snapshot as authority.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R004-R006",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "LIFECYCLE_STORE_INVALID or HERMES_STORE_INVALID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate_c.strategy_policy_capacity",
+        "source": "DERIVED",
+        "type": "closed_rule",
+        "required_rule": "Target StrategyVersion must exist in verified lifecycle state; exactly the current active EXPLORATORY_LIVE allocation with positive budget must be active at evaluated_at_ns under the active policy; evaluate_portfolio_capacity must be globally valid and target strategy valid; Gate C never mutates policy, allocation, health or restrictions.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R007-R011",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PERMIT_REJECTED plus closed Gate-C and inherited capacity reasons",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate_c.hermes_currentness",
+        "source": "DERIVED",
+        "type": "closed_rule",
+        "required_rule": "Gate C selects the latest same-StrategyVersion HermesStrategyAssessment from the verified manager store itself; supplied historical assessments are not accepted; assessment active_policy_id and strategy_lifecycle_context_sha256 must match current target-strategy state. New exposure permits only CONTINUE or SCALE with risk direction UNCHANGED/INCREASE, recommended health not QUARANTINED/RETIRED, and target_risk_band null or not PAPER.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R012-R016",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "HERMES_ASSESSMENT_REQUIRED, HERMES_CONTEXT_STALE, HERMES_POLICY_MISMATCH or HERMES_ACTION_BLOCKS_NEW_EXPOSURE",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate_c.execution_binding",
+        "source": "DERIVED",
+        "type": "closed_rule",
+        "required_rule": "Exact ExecutionIntent validates against the current StrategyVersion; exact PublicExecutionVenueSnapshot validates; supplied ExecutionFeasibilityAssessment must round-trip and equal assess_execution_feasibility(intent,snapshot,assessment.evaluated_at_ns). Only FEASIBLE or LIMITED can be permit-eligible; INCONCLUSIVE/NOT_FEASIBLE reject.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R017-R020",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "EXECUTION_BINDING_INVALID or EXECUTION_STATUS_BLOCKS_NEW_EXPOSURE",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate_c.intent_policy_limits",
+        "source": "DERIVED",
+        "type": "closed_rule",
+        "required_rule": "intent execution_style must be in active policy allowed_order_styles; exact Decimal intent notional requested_shares*price_limit must equal assessment.intent_notional_at_price_limit_usd and be <= allocation active_budget_usd, policy max_order_notional_usd, and policy max_per_market_usd. This is static exact-intent bounding only and makes no account-capacity claim.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R021-R024",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ORDER_STYLE_NOT_ALLOWED or closed order-notional rejection reasons",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate_c.permit_window",
+        "source": "DERIVED",
+        "type": "closed_rule",
+        "required_rule": "evaluated_at_ns is explicit caller-supplied deterministic evidence time and must be >= feasibility evaluated_at_ns; public_mechanics_deadline_ns = book_timestamp_ns + intent.max_public_data_age_ns. GTD additionally uses effective deadline expiration_unix_s*1e9-60s. permit_valid_until_ns is min(public deadline, policy expiry if any, allocation expiry if any, GTD effective deadline if any); eligibility requires evaluated_at_ns < valid_until.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R025-R028",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "EXECUTION_PUBLIC_DATA_STALE, GTD_EFFECTIVE_WINDOW_EXPIRED or PERMIT_WINDOW_EMPTY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate_c.decision_record",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "ExploratoryGateCDecision is immutable, closed-schema, bounded and content-addressed over every field except decision_id; it records eligibility/rejection, compact Gate-C reasons, inherited capacity reasons, exact upstream identities and deadlines; no raw store path, secret, account data or upstream exception text.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "R029-R031",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_DERIVATION_MISMATCH",
+        "derivation_rule_id": "exploratory_gate_c_decision_content_id"
+      },
+      {
+        "path": "gate_c.permit_record",
+        "source": "DERIVED",
+        "type": "content_address",
+        "required_rule": "ExploratoryGateCPermit can be built only from an exact PERMIT_ELIGIBLE decision and exact validated inputs; it authorizes only the exact intent parameters and exact authorized_order_notional_usd, is immutable/content-addressed over every field except permit_id, and cannot be widened by caller values.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "R032-R034",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "IDENTITY_DERIVATION_MISMATCH",
+        "derivation_rule_id": "exploratory_gate_c_permit_content_id"
+      },
+      {
+        "path": "gate_c.runtime_revalidation",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Decision and permit invariants require later runtime revalidation of account, access/geoblock, reconciliation and runtime identity. No balance/allowance/positions/open-orders/loss/drawdown/geoblock/credential/host truth is claimed here.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R035-R037",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "fixed no-authority/revalidation booleans",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate_c.legacy_wp175_separation",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "No src/execution_gateway edit/import; no GateCLivePermit, GateCSession, _GATE_C_ISSUER, _GATE_C_EVENT_ISSUER or A3 transition; WP175 remains the separate historical manual real-canary path.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R038-R040",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "legacy gateway unchanged",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate_c.non_authority",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Zero network, credentials, authenticated clients, signing, order submission/cancel, execution transport, paper, scheduler, daemon, new persistence or live authority; reads only existing canonical local stores through verified loaders and evaluates caller-supplied canonical EXEC-FEAS objects.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R001-R003,R035-R040",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "capital/orders USD 0 / 0 and LIVE TRADING STATUS: DISABLED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope.exact",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "Exactly 18 frozen paths; no tools, workflows, dependencies, DATA-03, consumed STRAT-LIFE/Hermes/EXEC-FEAS source edits, execution-gateway edits, cockpit implementation or deployment.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R041-R045",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "S10_GATE_C_EXPLORE_AMENDMENT_REQUIRED",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": true,
+    "reason": "Both canonical records use SHA256_CANONICAL_JSON over every top-level field except their own content id, including fixed authority/revalidation truths.",
+    "items": [
+      {
+        "rule_id": "exploratory_gate_c_decision_content_id",
+        "target_path": "decision_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "strategy_version_id",
+          "strategy_family_id",
+          "lifecycle_store_head_entry_hash",
+          "active_policy_id",
+          "allocation_id",
+          "hermes_manager_store_head_entry_hash",
+          "hermes_assessment_id",
+          "execution_intent_id",
+          "venue_snapshot_id",
+          "execution_feasibility_assessment_id",
+          "evaluated_at_ns",
+          "portfolio_capacity_status",
+          "portfolio_capacity_reason_codes",
+          "target_strategy_capacity_status",
+          "target_strategy_capacity_reason_codes",
+          "execution_feasibility_status",
+          "execution_feasibility_diagnostic_codes",
+          "intent_order_notional_usd",
+          "public_mechanics_deadline_ns",
+          "gtd_effective_deadline_ns",
+          "permit_valid_until_ns",
+          "status",
+          "reason_codes",
+          "schema_id",
+          "schema_version",
+          "canonical_hard_eligibility_decision",
+          "requires_runtime_account_revalidation",
+          "requires_access_revalidation",
+          "requires_reconciliation_revalidation",
+          "requires_runtime_identity_revalidation",
+          "no_credential_authority",
+          "no_signing_authority",
+          "no_order_authority",
+          "no_execution_transport_authority",
+          "no_live_authority"
+        ],
+        "excluded_paths": [],
+        "prefix": "exploratorygatecdecision:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "exploratory_gate_c_permit_content_id",
+        "target_path": "permit_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "decision_id",
+          "strategy_version_id",
+          "strategy_family_id",
+          "lifecycle_store_head_entry_hash",
+          "active_policy_id",
+          "allocation_id",
+          "hermes_assessment_id",
+          "execution_intent_id",
+          "venue_snapshot_id",
+          "execution_feasibility_assessment_id",
+          "gamma_market_id",
+          "condition_id",
+          "token_id",
+          "side",
+          "execution_style",
+          "order_type",
+          "requested_shares",
+          "price_limit",
+          "post_only",
+          "gtd_expiration_unix_s",
+          "authorized_order_notional_usd",
+          "feasibility_status",
+          "feasibility_diagnostic_codes",
+          "issued_at_ns",
+          "valid_until_ns",
+          "schema_id",
+          "schema_version",
+          "exact_intent_only",
+          "requires_runtime_account_revalidation",
+          "requires_access_revalidation",
+          "requires_reconciliation_revalidation",
+          "requires_runtime_identity_revalidation",
+          "no_credential_authority",
+          "no_signing_authority",
+          "no_order_authority",
+          "no_execution_transport_authority",
+          "no_live_authority"
+        ],
+        "excluded_paths": [],
+        "prefix": "exploratorygatecpermit:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      }
+    ]
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "PROTECTED package: independent exact-hash certificate is required before Karl can authorize implementation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "a genuinely independent reviewer issues PASS draftability_certificate.json bound to the exact prompt/spec raw-byte SHA-256 values, all twelve lenses covered, no unresolved decisions and implementability simulation PASS",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly authorizes implementation of the exact certified S10-GATE-C-EXPLORE-01 bytes after certificate/readiness verification",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "exact 18-path implementation and all required focused/repository validation pass without semantic prompt/spec edits",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "One deterministic valid example per content-address derivation.",
+    "items": [
+      {
+        "example_id": "exploratory_gate_c_decision_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "exploratory_gate_c_decision_content_id"
+        ],
+        "input": {
+          "decision_id": "exploratorygatecdecision:sha256:e22b0259f9a63199bac53fbf2e2b191f11fff547503e4e340d26444920980a23",
+          "strategy_version_id": "strategyversion:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "strategy_family_id": "strategyfamily:sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "lifecycle_store_head_entry_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+          "active_policy_id": "portfolioauthoritypolicy:sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "allocation_id": "strategyriskallocation:sha256:5555555555555555555555555555555555555555555555555555555555555555",
+          "hermes_manager_store_head_entry_hash": "6666666666666666666666666666666666666666666666666666666666666666",
+          "hermes_assessment_id": "hermesstrategyassessment:sha256:7777777777777777777777777777777777777777777777777777777777777777",
+          "execution_intent_id": "executionintent:sha256:8888888888888888888888888888888888888888888888888888888888888888",
+          "venue_snapshot_id": "executionsnapshot:sha256:9999999999999999999999999999999999999999999999999999999999999999",
+          "execution_feasibility_assessment_id": "executionfeasibility:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "evaluated_at_ns": 1800000001000000000,
+          "portfolio_capacity_status": "PORTFOLIO_CAPACITY_VALID",
+          "portfolio_capacity_reason_codes": [],
+          "target_strategy_capacity_status": "PORTFOLIO_CAPACITY_VALID",
+          "target_strategy_capacity_reason_codes": [],
+          "execution_feasibility_status": "FEASIBLE",
+          "execution_feasibility_diagnostic_codes": [
+            "CLIENT_LATENCY_UNKNOWN",
+            "ADVERSE_SELECTION_UNKNOWN"
+          ],
+          "intent_order_notional_usd": "5.5",
+          "public_mechanics_deadline_ns": 1800000050000000000,
+          "gtd_effective_deadline_ns": null,
+          "permit_valid_until_ns": 1800000050000000000,
+          "status": "PERMIT_ELIGIBLE",
+          "reason_codes": [],
+          "schema_id": "polymarket-exploratory-gate-c-decision",
+          "schema_version": "1.0.0",
+          "canonical_hard_eligibility_decision": true,
+          "requires_runtime_account_revalidation": true,
+          "requires_access_revalidation": true,
+          "requires_reconciliation_revalidation": true,
+          "requires_runtime_identity_revalidation": true,
+          "no_credential_authority": true,
+          "no_signing_authority": true,
+          "no_order_authority": true,
+          "no_execution_transport_authority": true,
+          "no_live_authority": true
+        }
+      },
+      {
+        "example_id": "exploratory_gate_c_permit_content_id_valid",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "exploratory_gate_c_permit_content_id"
+        ],
+        "input": {
+          "permit_id": "exploratorygatecpermit:sha256:28d988ff95c3f2175e4a33138acbfdf7e25090387937fe43de2ee844d4620498",
+          "decision_id": "exploratorygatecdecision:sha256:e22b0259f9a63199bac53fbf2e2b191f11fff547503e4e340d26444920980a23",
+          "strategy_version_id": "strategyversion:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "strategy_family_id": "strategyfamily:sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "lifecycle_store_head_entry_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+          "active_policy_id": "portfolioauthoritypolicy:sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "allocation_id": "strategyriskallocation:sha256:5555555555555555555555555555555555555555555555555555555555555555",
+          "hermes_assessment_id": "hermesstrategyassessment:sha256:7777777777777777777777777777777777777777777777777777777777777777",
+          "execution_intent_id": "executionintent:sha256:8888888888888888888888888888888888888888888888888888888888888888",
+          "venue_snapshot_id": "executionsnapshot:sha256:9999999999999999999999999999999999999999999999999999999999999999",
+          "execution_feasibility_assessment_id": "executionfeasibility:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "gamma_market_id": "516710",
+          "condition_id": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "token_id": "71321045679252212594626385532706912750332728571942532289631379312455583992563",
+          "side": "BUY",
+          "execution_style": "AGGRESSIVE_TAKER",
+          "order_type": "FOK",
+          "requested_shares": "10",
+          "price_limit": "0.55",
+          "post_only": false,
+          "gtd_expiration_unix_s": null,
+          "authorized_order_notional_usd": "5.5",
+          "feasibility_status": "FEASIBLE",
+          "feasibility_diagnostic_codes": [
+            "CLIENT_LATENCY_UNKNOWN",
+            "ADVERSE_SELECTION_UNKNOWN"
+          ],
+          "issued_at_ns": 1800000001000000000,
+          "valid_until_ns": 1800000050000000000,
+          "schema_id": "polymarket-exploratory-gate-c-permit",
+          "schema_version": "1.0.0",
+          "exact_intent_only": true,
+          "requires_runtime_account_revalidation": true,
+          "requires_access_revalidation": true,
+          "requires_reconciliation_revalidation": true,
+          "requires_runtime_identity_revalidation": true,
+          "no_credential_authority": true,
+          "no_signing_authority": true,
+          "no_order_authority": true,
+          "no_execution_transport_authority": true,
+          "no_live_authority": true
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Focused Gate-C matrix plus exact-scope, architecture/docs, protected-readiness and one stable full-suite pass.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_import_is_side_effect_free",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "fresh import performs no network, subprocess, environment write, thread start or new sqlite/store creation"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_public_api_is_small",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "package exports only frozen decision/permit/error/evaluator/validators/vocabularies; no sign/order/cancel/live API"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_forbidden_imports_absent",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "new package contains no src.execution_gateway, polymarket SecureClient, urllib/requests/httpx/websocket, paper, cockpit, scheduler or persistence implementation"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_lifecycle_store_loaded_verified",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "evaluator loads lifecycle path only through load_strategy_lifecycle_store and rejects invalid/tampered store with closed code"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_hermes_store_loaded_verified",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "evaluator loads Hermes manager path only through load_hermes_strategy_manager_store and never accepts caller-fabricated manager snapshot authority"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_store_paths_never_persist_or_echo",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "decision/permit/errors contain no local path or raw store error"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_target_strategy_and_policy_resolve",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "exact StrategyVersion, active policy and current allocation are derived from verified lifecycle replay"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_exploratory_allocation_required",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "missing, PAPER, VALIDATED_LIVE, MATURE_LIVE, inactive or zero-budget allocation is rejected"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_portfolio_capacity_required",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "evaluate_portfolio_capacity must be globally valid and target strategy result valid"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_capacity_reasons_preserved",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "canonical portfolio and target-strategy capacity reason codes are preserved without a second risk engine"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_policy_is_never_mutated",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "evaluation makes no lifecycle append and does not alter policy/allocation/health/restriction state"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_latest_hermes_assessment_selected_from_store",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "latest same-strategy assessment is resolved from verified store; older assessment replay cannot be selected"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_hermes_context_and_policy_must_match",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "assessment active policy and strategy lifecycle fingerprint must match current lifecycle state"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_continue_and_scale_only",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "CONTINUE/UNCHANGED and SCALE/INCREASE may qualify inside current allocation; REDUCE/ADAPT/PAPER/QUARANTINE/RETIRE reject"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_hermes_health_blocks",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "recommended QUARANTINED or RETIRED blocks new exposure even if action otherwise appears permissive"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_hermes_target_paper_blocks",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "target_risk_band PAPER blocks; null/EXPLORATORY/VALIDATED/MATURE never widens current allocation"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_exec_records_validate_and_bind",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "intent validates against current StrategyVersion, venue snapshot validates, assessment exact-round-trips"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_exec_assessment_must_recompute_exactly",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "supplied assessment must equal deterministic re-evaluation at its recorded evaluated_at_ns"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_feasible_and_limited_can_qualify",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "FEASIBLE and LIMITED remain eligible subject to all other gates and LIMITED diagnostics are preserved"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_inconclusive_and_not_feasible_reject",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "INCONCLUSIVE and NOT_FEASIBLE cannot create a permit"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "pytest",
+        "test": "test_order_style_policy_gate",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "execution_style must be allowed by active PortfolioAuthorityPolicy"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "pytest",
+        "test": "test_notional_matches_exec_assessment",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "requested_shares*price_limit exact Decimal equals assessment intent_notional_at_price_limit_usd"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "pytest",
+        "test": "test_notional_never_exceeds_allocation",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "exact intent notional above current active strategy budget rejects"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "pytest",
+        "test": "test_notional_never_exceeds_policy_order_or_market_caps",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "exact intent notional above max_order_notional_usd or max_per_market_usd rejects"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "pytest",
+        "test": "test_public_mechanics_deadline",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "deadline equals book_timestamp_ns + max_public_data_age_ns and evaluation at/after expiry rejects"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "pytest",
+        "test": "test_permit_uses_earliest_policy_allocation_public_deadline",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "valid_until is exact minimum of available public/policy/allocation deadlines"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "pytest",
+        "test": "test_gtd_effective_deadline_included",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "GTD adds expiration*1e9-60s to deadline minimum and expired effective window rejects"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "pytest",
+        "test": "test_no_arbitrary_ttl",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "no 10-minute WP175 arm/qualification TTL or other synthetic TTL is used"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "pytest",
+        "test": "test_decision_content_id_roundtrip",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "decision id re-derives over every non-id field and exact loader rejects tampering"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "test_decision_rejected_is_still_canonical",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "valid but ineligible states create content-addressed PERMIT_REJECTED decisions with ordered closed reasons"
+      },
+      {
+        "requirement_id": "R031",
+        "source": "pytest",
+        "test": "test_decision_bounds_and_no_echo",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "decision reason arrays/strings bounded; invalid raw values never echo"
+      },
+      {
+        "requirement_id": "R032",
+        "source": "pytest",
+        "test": "test_permit_only_from_eligible_decision",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "permit builder rejects any PERMIT_REJECTED/tampered decision"
+      },
+      {
+        "requirement_id": "R033",
+        "source": "pytest",
+        "test": "test_permit_is_exact_intent_only",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "permit duplicates exact market/order scope from validated intent and authorized_order_notional_usd equals exact intent notional"
+      },
+      {
+        "requirement_id": "R034",
+        "source": "pytest",
+        "test": "test_permit_content_id_roundtrip",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "permit id re-derives over every non-id field and exact loader rejects tampering"
+      },
+      {
+        "requirement_id": "R035",
+        "source": "pytest",
+        "test": "test_runtime_revalidation_flags_are_fixed_true",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "account/access/reconciliation/runtime-identity revalidation flags cannot be false"
+      },
+      {
+        "requirement_id": "R036",
+        "source": "pytest",
+        "test": "test_no_account_or_access_claims",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "records contain no balance, allowance, positions, open-order, loss, drawdown, geoblock country/IP or credential material"
+      },
+      {
+        "requirement_id": "R037",
+        "source": "pytest",
+        "test": "test_no_live_order_authority_flags_fixed_true",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "no credential/signing/order/execution-transport/live authority booleans are fixed true"
+      },
+      {
+        "requirement_id": "R038",
+        "source": "pytest",
+        "test": "test_legacy_gate_c_not_imported",
+        "command": "python -m pytest -q -p no:cacheprovider tests/exploratory_gate_c/test_exploratory_gate_c.py",
+        "expected_result": "new package never imports src.execution_gateway or GateCLivePermit/GateCSession/A3 internals"
+      },
+      {
+        "requirement_id": "R039",
+        "source": "git",
+        "test": "test_legacy_gateway_tree_unchanged",
+        "command": "git diff --exit-code 35db4f05347b8b27f7bd0296cf9b1b0627e58d12 -- src/execution_gateway",
+        "expected_result": "git diff frozen-base -- src/execution_gateway is empty"
+      },
+      {
+        "requirement_id": "R040",
+        "source": "git",
+        "test": "test_consumed_core_trees_unchanged",
+        "command": "git diff --exit-code 35db4f05347b8b27f7bd0296cf9b1b0627e58d12 -- src/strategy_lifecycle src/research_runtime/hermes_controlled_runtime src/execution_feasibility",
+        "expected_result": "git diff frozen-base -- src/strategy_lifecycle src/research_runtime/hermes_controlled_runtime src/execution_feasibility is empty"
+      },
+      {
+        "requirement_id": "R041",
+        "source": "git",
+        "test": "test_exact_scope",
+        "command": "git diff --name-only 35db4f05347b8b27f7bd0296cf9b1b0627e58d12...HEAD",
+        "expected_result": "changed files equal the frozen 18-path scope"
+      },
+      {
+        "requirement_id": "R042",
+        "source": "pytest",
+        "test": "test_architecture_boundary_family_approval",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_boundaries.py",
+        "expected_result": "new src/exploratory_gate_c family is the only new executable src family and architecture test documents its no-live boundary"
+      },
+      {
+        "requirement_id": "R043",
+        "source": "pytest",
+        "test": "test_direction_docs",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "V2.1 known-candidate path records Gate-C-Explore implemented/current while DEPLOY-EXEC remains successor"
+      },
+      {
+        "requirement_id": "R044",
+        "source": "pytest",
+        "test": "test_status_docs",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
+        "expected_result": "project status and repo truth agree on exact base, scope, PROTECTED posture, live disabled and successor"
+      },
+      {
+        "requirement_id": "R045",
+        "source": "pytest",
+        "test": "full-suite aggregate",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "full repository pytest passes once on stable candidate"
+      },
+      {
+        "requirement_id": "R046",
+        "source": "tool",
+        "test": "test_readiness_gate",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-GATE-C-EXPLORE-01/wp_prompt.txt --spec docs/wp_specs/S10-GATE-C-EXPLORE-01/wp_spec.json --certificate docs/wp_specs/S10-GATE-C-EXPLORE-01/draftability_certificate.json --repo-root .",
+        "expected_result": "exact prompt/spec/certificate returns IMPLEMENTATION_READY with minimum/selected track PROTECTED and hash binding true"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-DEPLOY-EXEC-01",
+    "next_title": "Execution Host Hardening / execution-runtime identity and restart-recovery substrate, separately gated after S10-GATE-C-EXPLORE-01 review and merge",
+    "separately_gated": true,
+    "forbidden_in_this_wp": [
+      "execution host activation, provisioning, service/systemd changes or production deployment",
+      "authenticated account/balance/allowance/position/open-order/trade reads",
+      "geoblock/access network calls or country/IP inference",
+      "credential loading, signer/private key handling or L2 authentication",
+      "GateCLivePermit issuance/consumption, GateCSession arm or A3_RESTRICTED_LIVE transition",
+      "order signing, create/post/cancel, OMS or mutation idempotency",
+      "live strategy orchestration, multi-strategy execution loop or scheduler/daemon",
+      "new Gate-C database or browser/Control Center API/UI implementation",
+      "WP172/WP173 qualification requirement, DATA-03 change, ALPHA-03 implementation"
+    ],
+    "feature_validator_moved_to": "S10-DEPLOY-EXEC-01"
+  }
+}

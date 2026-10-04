@@ -2,20 +2,40 @@
 
 ## A. Status
 
-- Current bounded implementation package: S10-EXEC-FEAS-01 Current Public Execution Feasibility
-  Core on frozen base `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8` after PR #211 / S10-HERMES-STRAT-01 (merged: YES;
+- Current protected implementation package: S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy
+  Permit Core on frozen base `35db4f05347b8b27f7bd0296cf9b1b0627e58d12` after PR #212 / S10-EXEC-FEAS-01 (merged: YES;
+  head `99f3c3c8acc09ae3b5646f785446d69a7b8b2290`). PROTECTED, risk 4, exact 18-path scope, independent certificate.
+  It adds only the stdlib-only `src/exploratory_gate_c/` package
+  (`docs/exploratory_gate_c_contract.md`): verified read-only STRAT-LIFE and Hermes manager store
+  loading, exact StrategyVersion / active policy / EXPLORATORY_LIVE allocation / portfolio capacity
+  / latest compatible Hermes assessment / exactly re-derived FEASIBLE-or-LIMITED EXEC-FEAS binding,
+  a content-addressed ExploratoryGateCDecision and an exact-intent ExploratoryGateCPermit.
+  Eligibility authority only: necessary-but-not-sufficient future evidence, not live activation;
+  no network, account, geoblock, credential, signing, order, persistence, legacy WP175 Gate-C live
+  permit, A3 or live authority; WP175 unchanged.
+  Status: S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01: MERGED; S10-EXEC-FEAS-01: MERGED;
+  S10-GATE-C-EXPLORE-01: current protected implemented review target; S10-DEPLOY-EXEC-01: next
+  core successor after review+merge, NOT STARTED; S10-LIVE-ORCH-01: later; S10-CC-OPS-01: separate,
+  may begin only after GATE-C-EXPLORE merges. S10-CC-FOUND-01 parallel/independent; ALPHA-03
+  parallel/non-blocking; DATA-03 unchanged and non-blocking; S10-DEPLOY-01 host activation
+  separate. Live DISABLED; capital/orders USD 0 / 0.
+
+- Immediate merged predecessor: S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (PR #212
+  merged at `35db4f05347b8b27f7bd0296cf9b1b0627e58d12`; head `99f3c3c8acc09ae3b5646f785446d69a7b8b2290`; formerly the current bounded implementation package)
+  on frozen base `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8` after PR #211 / S10-HERMES-STRAT-01 (merged: YES;
   head `9439283768b78b7302290ba6b8611e3477aa3c6a`). It adds only the stdlib-only `src/execution_feasibility/` package
   (`docs/execution_feasibility_contract.md`): one exact StrategyVersion bound read-only, a
   content-addressed ExecutionIntent, a bounded two-GET public Gamma/CLOB
   PublicExecutionVenueSnapshot and a deterministic ExecutionFeasibilityAssessment (FEASIBLE /
   LIMITED / INCONCLUSIVE / NOT_FEASIBLE). Public current mechanics only: no persistence, account
   state, Gate C, order, execution, credential or live authority; not WP172 executable edge.
-  Status: S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01: MERGED; S10-EXEC-FEAS-01: current
-  implemented review target; S10-GATE-C-EXPLORE-01: next after review+merge, not started.
+  Status at EXEC-FEAS implementation time: S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01: MERGED;
+  S10-EXEC-FEAS-01: then the implemented review target (now MERGED in PR #212);
+  S10-GATE-C-EXPLORE-01: then next after review+merge.
   ALPHA-03, DATA-03 and the Control Center (S10-CC-FOUND-01) stay parallel; DATA-03 unchanged
   and non-blocking. Capital/orders USD 0 / 0.
 
-- Immediate merged predecessor: S10-HERMES-STRAT-01 Hermes Strategy Manager Core (PR #211 merged
+- Earlier merged predecessor: S10-HERMES-STRAT-01 Hermes Strategy Manager Core (PR #211 merged
   at `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8`; formerly the current bounded implementation package) on
   frozen base `dab28ee45c1f8267248d52601c90d3f3509034f9` after PR #210 / S10-STRAT-LIFE-01 (merged: YES; head
   `d3c98d7530c8cec6b65e5d76492f1d7da8edf783`). It adds an additive default-off strategy mode to the existing controlled Hermes
@@ -835,18 +855,38 @@ PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
 - ALPHA-03 remains a parallel feeder; DATA-03 unchanged and non-blocking; S10-DEPLOY-01 host
   activation separate; Gate C unchanged; live DISABLED; capital/orders USD 0 / 0.
 
-## S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (current)
+## S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (merged)
 
 PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
 
-- S10-STRAT-LIFE-01: MERGED. S10-HERMES-STRAT-01: MERGED. S10-EXEC-FEAS-01: current implemented
-  review target. S10-GATE-C-EXPLORE-01: next after review+merge, not started.
+- S10-STRAT-LIFE-01: MERGED. S10-HERMES-STRAT-01: MERGED. S10-EXEC-FEAS-01: MERGED (PR #212 merged
+  at `35db4f05347b8b27f7bd0296cf9b1b0627e58d12`; head `99f3c3c8acc09ae3b5646f785446d69a7b8b2290`).
 - Known-candidate path capability status: lifecycle (MERGED) -> Hermes strategy manager (MERGED)
-  -> execution feasibility (S10-EXEC-FEAS-01: implemented capability, current candidate) ->
-  exploratory Gate C (S10-GATE-C-EXPLORE-01: next, NOT AUTHORIZED / NOT STARTED) -> execution host
+  -> execution feasibility (S10-EXEC-FEAS-01: implemented capability, MERGED in PR #212) ->
+  exploratory Gate C (S10-GATE-C-EXPLORE-01: see the current section below) -> execution host
   -> live orchestrator -> tiny exploratory live.
 - Current public execution feasibility (public mechanics of one exact intent) is not WP172 formal
   executable edge; WP172 remains the formal durable executable-edge evidence lane.
 - ALPHA-03 remains a parallel feeder and is not a prerequisite; DATA-03 unchanged and
   non-blocking; the Control Center (S10-CC-FOUND-01) stays a parallel lane; S10-DEPLOY-01 host
   activation separate; Gate C unchanged; live DISABLED; capital/orders USD 0 / 0.
+
+## S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (current)
+
+PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
+
+- S10-STRAT-LIFE-01: MERGED. S10-HERMES-STRAT-01: MERGED. S10-EXEC-FEAS-01: MERGED.
+  S10-GATE-C-EXPLORE-01: current protected implemented review target.
+- Known-candidate path capability status: lifecycle (MERGED) -> Hermes strategy manager (MERGED)
+  -> execution feasibility (MERGED) -> exploratory Gate C (S10-GATE-C-EXPLORE-01: implemented
+  capability, current candidate) -> execution host (S10-DEPLOY-EXEC-01: next core successor after
+  review+merge, NOT STARTED) -> live orchestrator (S10-LIVE-ORCH-01: later) -> tiny exploratory
+  live.
+- The exploratory permit is hard eligibility evidence for one exact intent, necessary but not
+  sufficient: execution-host identity, restart/recovery, authenticated account/access checks,
+  reconciliation and order mutation remain future protected runtime work (S10-DEPLOY-EXEC-01,
+  S10-LIVE-ORCH-01). WP175 remains the separate historical/manual restricted-live canary.
+- S10-CC-OPS-01 may begin only after GATE-C-EXPLORE merges, under the locked Control Center
+  baseline, as a separate package; S10-CC-FOUND-01 stays parallel/independent; ALPHA-03 remains a
+  parallel feeder and is not a prerequisite; DATA-03 unchanged and non-blocking; S10-DEPLOY-01
+  host activation separate; live DISABLED; capital/orders USD 0 / 0.
