@@ -3,10 +3,39 @@ set -Eeuo pipefail
 IFS=$'\n\t'
 umask 027
 
+# BEGIN_FIRST_DEPLOY_VERIFY_STAGING
+# S10-DEPLOY-EXEC-01: installed units use ExecStart=/opt/polymarket/current/.venv/bin/python, which
+# systemd-analyze verify requires to resolve. On a first deployment (no current link yet) the link
+# is staged to the already-verified target release only for unit verification and is always removed
+# again on PASS or FAIL; the governed atomic current switch later remains the only activation. An
+# existing current link is never replaced for verification.
+current_link=/opt/polymarket/current
+staged_current_target=""
+
+cleanup_staged_current() {
+  if [[ -n $staged_current_target ]]; then
+    if [[ -L $current_link && "$(readlink "$current_link")" == "$staged_current_target" ]]; then
+      rm -f "$current_link"
+    fi
+    staged_current_target=""
+  fi
+}
+
 fail() {
+  cleanup_staged_current
   printf '{"status":"FAILED","error_code":"%s"}\n' "$1"
   exit 1
 }
+
+stage_current_for_verify() {
+  local release=$1
+  if [[ -e $current_link || -L $current_link ]]; then
+    return 0
+  fi
+  ln -s "$release" "$current_link" || fail HOST_SETUP_FAILED
+  staged_current_target=$release
+}
+# END_FIRST_DEPLOY_VERIFY_STAGING
 
 run_or_fail() {
   local error_code=$1
@@ -22,6 +51,7 @@ run_capture_or_fail() {
 }
 
 trap 'fail UNEXPECTED_OPERATION_FAILED' ERR
+trap cleanup_staged_current EXIT
 
 release_dir=""
 expected_sha=""
@@ -102,6 +132,7 @@ run_or_fail HOST_SETUP_FAILED install -d -o polymarket -g polymarket -m 0750 \
   /var/lib/polymarket/telemetry \
   /var/lib/polymarket/backups \
   /var/lib/polymarket/restore_drills \
+  /var/lib/polymarket/execution_host \
   /var/log/polymarket
 run_or_fail HOST_SETUP_FAILED install -d -o root -g root -m 0755 /etc/polymarket /etc/polymarket/deployment
 
@@ -141,6 +172,7 @@ run_or_fail HOST_SETUP_FAILED chmod -R a-w "$target_release"
 for unit in \
   polymarket-research.slice \
   polymarket-critical.slice \
+  polymarket-execution-critical-probe.service \
   polymarket-host-telemetry.service \
   polymarket-host-telemetry.timer \
   polymarket-research.target; do
@@ -149,12 +181,15 @@ for unit in \
     "/etc/systemd/system/$unit"
 done
 
+stage_current_for_verify "$target_release"
 run_or_fail SYSTEMD_VERIFY_FAILED systemd-analyze verify \
   /etc/systemd/system/polymarket-research.slice \
   /etc/systemd/system/polymarket-critical.slice \
+  /etc/systemd/system/polymarket-execution-critical-probe.service \
   /etc/systemd/system/polymarket-host-telemetry.service \
   /etc/systemd/system/polymarket-host-telemetry.timer \
   /etc/systemd/system/polymarket-research.target
+cleanup_staged_current
 
 run_or_fail FIREWALL_APPLY_FAILED ufw allow "${ssh_port}/tcp"
 run_or_fail FIREWALL_APPLY_FAILED ufw default deny incoming
@@ -171,6 +206,15 @@ run_or_fail SERVICE_ACTIVATION_FAILED systemctl daemon-reload
 run_or_fail SERVICE_ACTIVATION_FAILED systemctl enable --now polymarket-host-telemetry.timer polymarket-research.target
 run_or_fail SERVICE_ACTIVATION_FAILED systemctl is-active --quiet polymarket-host-telemetry.timer
 run_or_fail SERVICE_ACTIVATION_FAILED systemctl is-active --quiet polymarket-research.target
+# S10-DEPLOY-EXEC-01: the non-economic critical probe is installed and verified but never
+# enabled or started by bootstrap. Only a separately authorized host proof may start it.
+run_or_fail SERVICE_ACTIVATION_FAILED systemctl disable --now polymarket-execution-critical-probe.service
+if systemctl is-enabled --quiet polymarket-execution-critical-probe.service; then
+  fail CRITICAL_PROBE_UNEXPECTEDLY_ENABLED
+fi
+if systemctl is-active --quiet polymarket-execution-critical-probe.service; then
+  fail CRITICAL_PROBE_UNEXPECTEDLY_ACTIVE
+fi
 
 run_capture_or_fail HOST_MANIFEST_FAILED /tmp/polymarket-host-manifest.json \
   /opt/polymarket/current/.venv/bin/python \
@@ -178,4 +222,4 @@ run_capture_or_fail HOST_MANIFEST_FAILED /tmp/polymarket-host-manifest.json \
   --active-release /opt/polymarket/current \
   --output /etc/polymarket/deployment/HOST_MANIFEST.json
 
-printf '{"status":"BOOTSTRAP_COMPLETE","repo_sha":"%s","research_only":true,"telemetry_timer":"active","firewall":"ssh_only_inbound"}\n' "$expected_sha"
+printf '{"status":"BOOTSTRAP_COMPLETE","repo_sha":"%s","research_only":true,"telemetry_timer":"active","critical_probe":"installed_inactive","firewall":"ssh_only_inbound"}\n' "$expected_sha"

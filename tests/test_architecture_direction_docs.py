@@ -82,9 +82,27 @@ def test_production_vps_hosting_direction_contract():
         assert text in adr, text
     for claim in ("deployment status: DEPLOYED", "S10-DEPLOY-01 is AUTHORIZED", "future package state: AUTHORIZED",
                   "default separate research/live VPS: YES", "Gate C is AUTHORIZED", "live: ENABLED",
-                  "DATA-03 is moved to the VPS", "VPS purchased: YES"):
+                  "DATA-03 is moved to the VPS"):
         assert claim not in hosting, claim
         assert claim not in adr, claim
+    # S10-DEPLOY-EXEC-01: the pre-purchase planning record is history; Karl's later purchase/provisioning
+    # report is recorded only in the superseding current section, while host technical truth stays
+    # unknown and no deployment or activation has happened.
+    historical, current = hosting.split("## 11. Current Operator-Reported Provisioning State (S10-DEPLOY-EXEC-01)", 1)
+    assert "deployment status: NOT_PROVISIONED / NOT_DEPLOYED" in historical
+    assert "VPS purchased: YES" not in historical and "VPS purchased: YES" not in adr
+    for text in ("VPS purchased: YES (operator-reported by Karl; not observed by the repository)",
+                 "VPS provisioned: YES (operator-reported by Karl; not observed by the repository)",
+                 "project deployment/configuration on that VPS: NOT PERFORMED",
+                 "host activation / bootstrap / binding / reboot proof: NOT PERFORMED",
+                 "actual host technical facts: UNKNOWN until a separately authorized Phase B verifies them",
+                 "initial intended tier/direction: AlphaVPS / Sofia / C8G / one consolidated host",
+                 "The repository has not observed this VPS."):
+        assert text in current, text
+    assert "Section 11 records that current state without rewriting this planning record." in historical
+    for claim in ("project deployment/configuration on that VPS: PERFORMED", "actual host technical facts: VERIFIED",
+                  "host activation: PERFORMED", "deployment status: DEPLOYED"):
+        assert claim not in hosting, claim
 
 
 def test_hosting_direction_migration_point_and_wp173_truth():
@@ -406,13 +424,19 @@ def test_direction_docs():
         assert text in section, text
     exec_feas = _exec_feas_adr()
     assert "Status: MERGED (PR #212 merged at `35db4f05347b8b27f7bd0296cf9b1b0627e58d12`, head `99f3c3c8acc09ae3b5646f785446d69a7b8b2290`" in exec_feas
+    # S10-DEPLOY-EXEC-01: GATE-C-EXPLORE is now merged (PR #213); its implementation-time record is history.
+    assert ("Status: MERGED (PR #213 merged at `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2`, head "
+            "`342dfeb24652eccb1b6bdf237039b268115b1fb7`") in section
     roadmap = _flat(ROADMAP)
-    assert "## S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (current)" in ROADMAP.read_text(encoding="utf-8")
-    for text in ("S10-GATE-C-EXPLORE-01: current protected implemented review target; S10-DEPLOY-EXEC-01: next "
-                 "core successor after review+merge, NOT STARTED; S10-LIVE-ORCH-01: later;",
-                 "exploratory Gate C (S10-GATE-C-EXPLORE-01: implemented capability, current candidate) -> execution "
-                 "host (S10-DEPLOY-EXEC-01: next core successor after review+merge, NOT STARTED)",
-                 "Immediate merged predecessor: S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (PR #212"):
+    assert "## S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (merged)" in ROADMAP.read_text(encoding="utf-8")
+    for text in ("Status at GATE-C-EXPLORE implementation time: S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01: "
+                 "MERGED; S10-EXEC-FEAS-01: MERGED; S10-GATE-C-EXPLORE-01: then the current protected implemented "
+                 "review target (now MERGED in PR #213); S10-DEPLOY-EXEC-01: then the next core successor after "
+                 "review+merge; S10-LIVE-ORCH-01: later;",
+                 "exploratory Gate C (S10-GATE-C-EXPLORE-01: implemented capability, MERGED in PR #213) -> execution "
+                 "host (S10-DEPLOY-EXEC-01: see the current section below)",
+                 "Earlier merged predecessor: S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (PR #212",
+                 "Immediate merged predecessor: S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (PR #213"):
         assert text in roadmap, text
 
 
@@ -429,7 +453,81 @@ def test_gate_c_explore_is_not_live_or_legacy_gate_c():
                  "An exploratory permit is necessary-but-not-sufficient future evidence for one exact intent, not live activation;",
                  "enters no A3 state"):
         assert text in live_flat, text
+    # S10-DEPLOY-EXEC-01: GATE-C-EXPLORE is now MERGED (PR #213); that claim is no longer forbidden.
     for claim in ("Gate C: AUTHORIZED", "live: ENABLED", "LIVE TRADING STATUS: ENABLED", "S10-DEPLOY-EXEC-01: STARTED",
-                  "S10-GATE-C-EXPLORE-01: MERGED", "A3_RESTRICTED_LIVE: ENTERED"):
+                  "A3_RESTRICTED_LIVE: ENTERED"):
         for doc in CANONICAL + (GATE_C_CONTRACT, LIVE_AUTH):
+            assert claim not in _flat(doc), (doc.name, claim)
+
+
+# -- S10-DEPLOY-EXEC-01: execution-host runtime substrate (R026, R030) --
+
+EXEC_HOST_CONTRACT = ROOT / "docs" / "execution_host_runtime_contract.md"
+DEPLOY_BASELINE_CONTRACT = ROOT / "docs" / "research_platform_runtime_baseline_contract.md"
+
+
+def _deploy_exec_adr() -> str:
+    adr = ADR.read_text(encoding="utf-8")
+    return " ".join(adr.split("## V2.1 Execution-Host Runtime Substrate (S10-DEPLOY-EXEC-01)", 1)[1].split())
+
+
+def _deploy_exec_roadmap() -> str:
+    roadmap = ROADMAP.read_text(encoding="utf-8")
+    section = roadmap.split("## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (current)", 1)[1]
+    return " ".join(section.split())
+
+
+def test_execution_host_docs_forbid_automatic_upgrade_and_second_host():
+    contract = _flat(EXEC_HOST_CONTRACT)
+    for text in ("the evaluator grants no purchase, resize or second-host authority",
+                 "Karl, who decides whether the same single-host architecture is retried on an approved larger tier",
+                 "A second host is a separate material architecture decision, never a same-package scaling action",
+                 "proves evaluator semantics only, never actual host capacity",
+                 "`EXECUTION_HOST_INCONCLUSIVE` outranks all of them"):
+        assert text in contract, text
+    hosting = _flat(HOSTING)
+    for text in ("nothing is auto-purchased or auto-upgraded, Karl decides, and a second VPS remains a separate "
+                 "material architecture decision rather than a scaling step",
+                 "The research and critical slice values in Section 5 are unchanged."):
+        assert text in hosting, text
+    assert "nothing is auto-purchased or auto-upgraded" in _deploy_exec_adr()
+    assert "no automatic upgrade or purchase; Karl decides" in _deploy_exec_roadmap()
+    # The DEPLOY-01 research-baseline contract and its closed research dispositions remain unchanged history.
+    baseline = _flat(DEPLOY_BASELINE_CONTRACT)
+    assert "S10-DEPLOY-EXEC-01" not in baseline and "C8G_RESEARCH_BASELINE_SUFFICIENT" in baseline
+    for claim in ("auto-upgrade: YES", "automatic upgrade: YES", "second VPS: AUTHORIZED", "auto-purchase: YES"):
+        for doc in (EXEC_HOST_CONTRACT, HOSTING, ADR, ROADMAP):
+            assert claim not in _flat(doc), (doc.name, claim)
+
+
+def test_execution_host_successor_boundary_live_orch_remains_separate():
+    section = _deploy_exec_adr()
+    path = ("lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes strategy manager (S10-HERMES-STRAT-01: MERGED) -> "
+            "execution feasibility (S10-EXEC-FEAS-01: MERGED) -> exploratory Gate C (S10-GATE-C-EXPLORE-01: MERGED) "
+            "-> execution host (S10-DEPLOY-EXEC-01: implemented repository mechanism, current review target; real "
+            "host proof separately gated as Phase B) -> live orchestrator (S10-LIVE-ORCH-01: next core successor, "
+            "NOT STARTED) -> tiny exploratory live")
+    assert path in section
+    for text in ("S10-GATE-C-EXPLORE-01: MERGED.", "Governance track RUNTIME",
+                 "This is an execution-capable host substrate, not economic execution authority",
+                 "Gate-C eligibility and DEPLOY-EXEC host proof are each necessary but not sufficient for live execution",
+                 "the actual AlphaVPS host proof", "is a separately authorized Phase B after merge"):
+        assert text in section, text
+    contract = _flat(EXEC_HOST_CONTRACT)
+    for text in ("S10-LIVE-ORCH-01 remains the next core package",
+                 "DEPLOY-EXEC success is necessary but not sufficient for live execution",
+                 "`live_readiness: NOT_IMPLIED` and `required_successor: S10-LIVE-ORCH-01`",
+                 "Phase B (real AlphaVPS proof): NOT AUTHORIZED by Phase A",
+                 "`LIVE TRADING STATUS: DISABLED` remains true; capital/orders USD 0 / 0."):
+        assert text in contract, text
+    roadmap = _deploy_exec_roadmap()
+    assert ("live orchestrator (S10-LIVE-ORCH-01: next core successor after execution-host substrate proof, "
+            "NOT STARTED)") in roadmap
+    live = " ".join(LIVE_AUTH.read_text(encoding="utf-8").split())
+    assert LIVE_AUTH.read_text(encoding="utf-8").splitlines()[2] == "LIVE TRADING STATUS: DISABLED"
+    assert "S10-DEPLOY-EXEC-01 (execution-host runtime substrate) grants no live authority." in live
+    assert "is necessary but not sufficient for live execution: S10-LIVE-ORCH-01 must still revalidate" in live
+    for claim in ("S10-LIVE-ORCH-01: STARTED", "S10-LIVE-ORCH-01: MERGED", "Phase B: PERFORMED", "EXECUTION_HOST_PROVEN_C8G: ACHIEVED",
+                  "live: ENABLED", "LIVE TRADING STATUS: ENABLED"):
+        for doc in CANONICAL + (EXEC_HOST_CONTRACT, LIVE_AUTH, HOSTING):
             assert claim not in _flat(doc), (doc.name, claim)

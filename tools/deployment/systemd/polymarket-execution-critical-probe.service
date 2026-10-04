@@ -1,0 +1,30 @@
+[Unit]
+Description=Polymarket non-economic execution-host critical probe (diagnostic heartbeat only)
+After=local-fs.target
+StartLimitIntervalSec=60s
+StartLimitBurst=10
+
+[Service]
+Type=simple
+User=polymarket
+Group=polymarket
+Slice=polymarket-critical.slice
+ExecStart=/opt/polymarket/current/.venv/bin/python /opt/polymarket/current/tools/deployment/runtime_baseline.py critical-probe --active-release /opt/polymarket/current --period-ms 250 --heartbeat-output /var/lib/polymarket/execution_host/critical_probe_heartbeat.json
+Restart=on-failure
+RestartSec=1s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/polymarket/execution_host
+PrivateDevices=true
+PrivateNetwork=true
+RestrictAddressFamilies=AF_UNIX
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

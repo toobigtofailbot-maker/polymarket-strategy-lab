@@ -1,0 +1,558 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-DEPLOY-EXEC-01",
+    "title": "Execution-Host Runtime Substrate & Coexistence Proof",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "EXECUTION_HOST_RUNTIME_SUBSTRATE",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 213,
+      "head_sha": "342dfeb24652eccb1b6bdf237039b268115b1fb7",
+      "merge_sha": "0392c2d2080a656d8ffd69f42abf8ad91d1f90e2"
+    },
+    "suggested_branch": "claude/s10-deploy-exec-01-execution-host-substrate",
+    "objective": "Extend the merged S10-DEPLOY-01 native-systemd substrate with a sanitized execution-host binding and currentness contract, a non-economic critical-slice probe service with deterministic restart semantics, a closed research-versus-critical coexistence evaluator and closed terminal Phase-B evidence semantics, proving the mechanism in the repository while actual AlphaVPS host proof stays separately authorized and no credential, order, capital or live authority is created.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/live_trading_authorization.md",
+      "docs/production_vps_hosting_direction.md",
+      "docs/execution_host_runtime_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-DEPLOY-EXEC-01.md",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01/wp_prompt.txt",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01/wp_spec.json",
+      "tools/deployment/README.md",
+      "tools/deployment/runtime_baseline.py",
+      "tools/deployment/bootstrap_ubuntu_24_04.sh",
+      "tools/deployment/systemd/polymarket-execution-critical-probe.service",
+      "tests/deployment/test_runtime_baseline.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/live_trading_authorization.md",
+      "docs/production_vps_hosting_direction.md",
+      "docs/execution_host_runtime_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-DEPLOY-EXEC-01.md",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01/wp_prompt.txt",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01/wp_spec.json",
+      "tools/deployment/README.md",
+      "tools/deployment/runtime_baseline.py",
+      "tools/deployment/bootstrap_ubuntu_24_04.sh",
+      "tools/deployment/systemd/polymarket-execution-critical-probe.service",
+      "tests/deployment/test_runtime_baseline.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/",
+      "tools/advisory/",
+      "tools/agent/",
+      "tools/git/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/security/",
+      "tools/wp/"
+    ],
+    "max_changed_files": 18,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/live_trading_authorization.md",
+      "docs/production_vps_hosting_direction.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert the exact 18-path S10-DEPLOY-EXEC-01 diff. The repository returns to the merged S10-DEPLOY-01 research baseline; no host activation, binding file, enabled probe service, credential, order, capital or live state exists to roll back because Phase B is separately authorized.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": true
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": true,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "The deployment helper exposes a closed operator CLI and the bootstrap keeps its closed arguments.",
+    "items": [
+      {
+        "surface": "tools.deployment.runtime_baseline.cli",
+        "before": "eight closed stdlib-only subcommands",
+        "after": "thirteen closed stdlib-only subcommands adding execution-host-bind, execution-host-currentness, critical-probe, execution-host-coexistence-evaluate and execution-host-terminal-evaluate",
+        "change_authorized": true,
+        "compatibility_requirement": "existing eight subcommands, release schema and research host manifest top-level contract unchanged",
+        "authority": "EXECUTION_HOST_SUBSTRATE_DIAGNOSTIC_ONLY"
+      },
+      {
+        "surface": "tools.deployment.bootstrap.cli",
+        "before": "three required explicit arguments",
+        "after": "same three required explicit arguments; installs the critical probe unit inactive",
+        "change_authorized": true,
+        "compatibility_requirement": "Ubuntu 24.04 x86-64 only; research target and telemetry activation unchanged",
+        "authority": "POST_MERGE_HUMAN_OPERATOR_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": false,
+    "reason": "Executable tests define the bounded binding currentness probe coexistence and terminal evidence field contracts without adding a repository product schema.",
+    "items": []
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "The pmhost-v1 pmboot-v1 and pmproc-v1 pseudonyms are local deployment evidence identifiers tested directly and are not repo-domain identity objects.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Canonical work-package authorization state remains explicit.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "deterministic RUNTIME readiness passes",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl exact Phase-A package authorization is present",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "exact scope implementation and required local validation complete",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Executable pytest evidence is the oracle for the deployment contracts.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Each frozen R001-R030 requirement maps to focused deterministic evidence; Phase-B host truth is separately authorized.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_release_requires_clean_exact_head",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "dirty source or mismatched commit rejects before release output"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_release_verifier_rejects_file_set_and_hash_changes",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "added missing and tampered release files all reject"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_release_excludes_untracked_and_secret_like_paths",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "secret-like tracked path and private-key payload reject before bundling"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_host_floor_rejects_wrong_facts",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "wrong platform or insufficient resources reject closed"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_execution_host_currentness_strict_requires_ntp_and_ssh_only_firewall",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "strict currentness fails closed on unsynchronized NTP or non-SSH-only firewall"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_firewall_verifier_rejects_any_other_inbound_allow",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "any non-SSH inbound TCP or UDP ALLOW or LIMIT permission rejects"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_host_instance_id_is_domain_separated_and_never_emits_raw_machine_id",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "pmhost-v1 identity is deterministic, input-sensitive, malformed input fails closed and the raw machine id never appears"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_boot_instance_id_changes_while_host_id_stays_stable",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "pmboot-v1 identity changes with boot id while host id stays stable and raw boot id never appears"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_execution_host_currentness_rejects_host_and_release_binding_mismatch",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "wrong host binding, release, manifest or current symlink target fails closed"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_execution_host_currentness_rejects_missing_or_tampered_critical_unit",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "missing symlinked or tampered critical probe unit fails closed and the unit is in the hash inventory"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_bootstrap_creates_execution_host_state_directory",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "bootstrap creates the execution_host state directory owned by polymarket with mode 0750"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_critical_probe_has_no_network_credential_or_trading_surface",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "probe code and unit have no network, credential, environment, account or order surface"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_critical_probe_unit_runs_in_critical_slice_with_restart_policy",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "unit runs as polymarket in the critical slice with Restart=on-failure and RestartSec=1s"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_bootstrap_installs_critical_probe_but_leaves_it_inactive",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "bootstrap installs verifies and hashes the probe unit but never enables or starts it"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_critical_probe_process_instance_id_changes_per_process_start",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "process identity changes per process start without exposing pid or raw boot id"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_critical_probe_rejects_duplicate_writer",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "a second concurrent probe writer fails closed while the first holds the writer lock"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_execution_host_layout_is_reboot_safe",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "probe unit is installable for boot and binds only current release and persistent state paths"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "test_backup_covers_execution_host_state_without_secret_regression",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "execution-host evidence is hashed in backup while secret DATA-03 and symlink rejection stay intact"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "test_restore_is_isolated_and_never_overwrites",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "restore writes a new drill directory and never active state"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_coexistence_rejects_invalid_isolated_probe_evidence",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "short gapped regressing or non-finite isolated evidence is EXECUTION_HOST_INCONCLUSIVE"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "pytest",
+        "test": "test_coexistence_requires_valid_mixed_probe_and_telemetry",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "invalid mixed probe evidence or incomplete telemetry is EXECUTION_HOST_INCONCLUSIVE"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "pytest",
+        "test": "test_coexistence_requires_actual_research_smoke_counts",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "failed smoke or missing zero or requested-limit-only counts are EXECUTION_HOST_INCONCLUSIVE"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "pytest",
+        "test": "test_coexistence_degradation_boundary_is_strictly_more_than_twenty_percent",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "exactly twenty percent p95 increase is not degradation while more than twenty percent is"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "pytest",
+        "test": "test_coexistence_deadline_boundary_is_strictly_more_than_500_ms",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "exactly 500.0 ms is not a deadline miss while any larger interval is"
+      },
+      {
+        "requirement_id": "R025",
+        "source": "pytest",
+        "test": "test_coexistence_resource_triggers_have_closed_precedence",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "memory swap cpu disk and io thresholds map to closed labels in frozen precedence"
+      },
+      {
+        "requirement_id": "R026",
+        "source": "pytest",
+        "test": "test_execution_host_docs_forbid_automatic_upgrade_and_second_host",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "docs keep upgrades as Karl review triggers with no automatic purchase or second host"
+      },
+      {
+        "requirement_id": "R027",
+        "source": "pytest",
+        "test": "test_execution_host_authority_regression_no_credentials_orders_or_live",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "spec scope and helper keep credentials execution live and source runtime false with live DISABLED"
+      },
+      {
+        "requirement_id": "R028",
+        "source": "pytest",
+        "test": "test_s10_deploy_exec_status_current_and_gate_c_merged",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
+        "expected_result": "status and repo truth record Gate-C merged and DEPLOY-EXEC as the current package"
+      },
+      {
+        "requirement_id": "R029",
+        "source": "pytest",
+        "test": "test_terminal_host_outcome_requires_every_real_phase_b_proof",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "only complete real proofs reach EXECUTION_HOST_PROVEN_C8G and any missing proof is inconclusive"
+      },
+      {
+        "requirement_id": "R030",
+        "source": "pytest",
+        "test": "test_execution_host_successor_boundary_live_orch_remains_separate",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py",
+        "expected_result": "S10-LIVE-ORCH-01 remains the separately gated successor and DEPLOY-EXEC grants no live authority"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-LIVE-ORCH-01",
+    "next_title": "Live orchestration: permit revalidation, account/access checks, reconciliation and bounded order orchestration under separate protected authority",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-LIVE-ORCH-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "Phase-B AlphaVPS login, bootstrap, reboot or benchmark",
+      "trading credential or secret access",
+      "authenticated account state",
+      "GateCLivePermit or GateCSession.arm or A3_RESTRICTED_LIVE",
+      "order sign create post amend or cancel",
+      "OMS or live orchestrator",
+      "src change",
+      "dependency or workflow change",
+      "DATA-03 move or scheduling",
+      "ALPHA-03",
+      "automatic tier upgrade or second host",
+      "any nineteenth changed path"
+    ]
+  }
+}

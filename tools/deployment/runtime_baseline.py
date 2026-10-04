@@ -3,6 +3,11 @@
 The helper is credential-free and zero-capital. It packages tracked repository
 files, verifies releases, records sanitized host telemetry, and performs
 operator-controlled backup/restore drills. It cannot place or simulate orders.
+
+S10-DEPLOY-EXEC-01 adds the execution-host substrate: a sanitized host/release
+binding, currentness evidence, a non-economic critical-slice heartbeat probe, a
+closed research-versus-critical coexistence evaluator and closed terminal
+Phase-B evidence semantics. None of it grants credential, order or live authority.
 """
 
 from __future__ import annotations
@@ -22,7 +27,17 @@ import sys
 import tempfile
 import time
 from datetime import datetime, timezone
-from typing import Any, Callable, Iterable
+from fractions import Fraction
+from typing import IO, Any, Callable, Iterable
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - non-POSIX development hosts
+    fcntl = None  # type: ignore[assignment]
+try:
+    import msvcrt
+except ImportError:  # pragma: no cover - POSIX hosts
+    msvcrt = None  # type: ignore[assignment]
 
 
 MANIFEST_NAME = "DEPLOYMENT_MANIFEST.json"
@@ -50,6 +65,43 @@ _STATE_EXCLUSIONS = frozenset({"backups", "restore_drills"})
 _DATA03_PARTS = frozenset({"data-03", "data03", "data_03"})
 _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+# S10-DEPLOY-EXEC-01 execution-host substrate (non-economic; no credential/order/live authority).
+MACHINE_ID_PATH = pathlib.Path("/etc/machine-id")
+BOOT_ID_PATH = pathlib.Path("/proc/sys/kernel/random/boot_id")
+RELEASES_ROOT = pathlib.Path("/opt/polymarket/releases")
+EXECUTION_HOST_STATE = STATE_ROOT / "execution_host"
+CRITICAL_PROBE_UNIT = "polymarket-execution-critical-probe.service"
+CRITICAL_PROBE_PERIOD_MS = 250
+CRITICAL_PROBE_MAX_DURATION_SECONDS = 600
+BINDING_SCHEMA_ID = "polymarket-execution-host-binding"
+CURRENTNESS_SCHEMA_ID = "polymarket-execution-host-currentness"
+PROBE_HEARTBEAT_SCHEMA_ID = "polymarket-execution-critical-probe-heartbeat"
+PROBE_SAMPLE_SCHEMA_ID = "polymarket-execution-critical-probe-sample"
+TERMINAL_EVIDENCE_SCHEMA_ID = "polymarket-execution-host-phase-b-evidence"
+EXECUTION_SCHEMA_VERSION = "1.0.0"
+PERSISTENT_STATE_DIRS = ("local_data", "telemetry", "backups", "restore_drills", "execution_host")
+COEXISTENCE_MIN_COVERAGE_NS = 55 * 1_000_000_000
+CRITICAL_DEADLINE_MS = 500.0
+CRITICAL_DEGRADATION_RATIO = Fraction(6, 5)
+COEXISTENCE_MAX_SAMPLES = 100_000
+EVIDENCE_MAX_BYTES = 16 * 1024 * 1024
+UPGRADE_REASONS = ("CRITICAL_DEADLINE", "CRITICAL_DEGRADATION", "MEMORY", "CPU", "DISK", "IO")
+COEXISTENCE_DISPOSITIONS = frozenset(
+    {"C8G_EXECUTION_HOST_SUFFICIENT", "EXECUTION_HOST_INCONCLUSIVE"}
+    | {f"UPGRADE_ELIGIBLE:{reason}" for reason in UPGRADE_REASONS}
+)
+TERMINAL_OUTCOMES = frozenset(
+    {"EXECUTION_HOST_PROVEN_C8G", "EXECUTION_HOST_INCONCLUSIVE"}
+    | {f"EXECUTION_HOST_EVIDENCE_COMPLETE_UPGRADE_ELIGIBLE:{reason}" for reason in UPGRADE_REASONS}
+)
+_ASCII_WHITESPACE = b" \t\n\r\x0b\x0c"
+_MACHINE_ID = re.compile(rb"[0-9a-f]{32}")
+_BOOT_UUID = re.compile(rb"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+_HOST_INSTANCE_ID = re.compile(r"^pmhost-v1:[0-9a-f]{64}$")
+_BOOT_INSTANCE_ID = re.compile(r"^pmboot-v1:[0-9a-f]{64}$")
+_PROCESS_INSTANCE_ID = re.compile(r"^pmproc-v1:[0-9a-f]{64}$")
 
 
 class BaselineError(RuntimeError):
@@ -328,9 +380,20 @@ def _systemctl_state(unit: str) -> str:
     return value if value in allowed else "unknown"
 
 
+def _ntp_state() -> str:
+    try:
+        ntp_value = _run(
+            ["timedatectl", "show", "--property=NTPSynchronized", "--value"]
+        )
+    except BaselineError:
+        return "unknown"
+    return "synchronized" if ntp_value.lower() == "yes" else "not_synchronized"
+
+
 def _unit_hashes(unit_dir: pathlib.Path) -> dict[str, str]:
     names = (
         "polymarket-critical.slice",
+        CRITICAL_PROBE_UNIT,
         "polymarket-host-telemetry.service",
         "polymarket-host-telemetry.timer",
         "polymarket-research.slice",
@@ -359,13 +422,7 @@ def collect_host_manifest(
         systemd_version = _run(["systemctl", "--version"]).splitlines()[0]
     except BaselineError:
         systemd_version = "unavailable"
-    try:
-        ntp_value = _run(
-            ["timedatectl", "show", "--property=NTPSynchronized", "--value"]
-        )
-        ntp_state = "synchronized" if ntp_value.lower() == "yes" else "not_synchronized"
-    except BaselineError:
-        ntp_state = "unknown"
+    ntp_state = _ntp_state()
     try:
         firewall_line = _run(["ufw", "status"]).splitlines()[0].lower()
         firewall_state = "active" if firewall_line == "status: active" else "inactive"
@@ -637,20 +694,27 @@ def restore_verify(
     }
 
 
+def _positive_integer(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value > 0
+
+
+def _research_smoke_passed(smoke_result: Any) -> bool:
+    """The frozen DEPLOY-01 truthful smoke success contract (actual counts only)."""
+    return (
+        isinstance(smoke_result, dict)
+        and smoke_result.get("status") == "STOPPED"
+        and smoke_result.get("stop_reason") == "DURATION_EXPIRED"
+        and smoke_result.get("error_codes") == []
+        and _positive_integer(smoke_result.get("raw_count"))
+        and _positive_integer(smoke_result.get("normalized_count"))
+        and _positive_integer(smoke_result.get("store_bytes"))
+    )
+
+
 def evaluate_research_smoke(
     smoke_result: dict[str, Any], telemetry: list[dict[str, Any]]
 ) -> dict[str, Any]:
-    def positive_integer(value: Any) -> bool:
-        return isinstance(value, int) and not isinstance(value, bool) and value > 0
-
-    smoke_passed = (
-        smoke_result.get("status") == "STOPPED"
-        and smoke_result.get("stop_reason") == "DURATION_EXPIRED"
-        and smoke_result.get("error_codes") == []
-        and positive_integer(smoke_result.get("raw_count"))
-        and positive_integer(smoke_result.get("normalized_count"))
-        and positive_integer(smoke_result.get("store_bytes"))
-    )
+    smoke_passed = _research_smoke_passed(smoke_result)
     smoke_disposition = (
         "PUBLIC_RESEARCH_SMOKE_PASS" if smoke_passed else "BASELINE_INCONCLUSIVE"
     )
@@ -736,6 +800,788 @@ def verify_ufw_ssh_only(status_text: str, ssh_port: int, *, allow_empty: bool) -
     return {"status": "FIREWALL_VERIFIED", "ssh_port": ssh_port, "allow_count": len(allowed)}
 
 
+# ---------------------------------------------------------------------------
+# S10-DEPLOY-EXEC-01 execution-host identity, binding and currentness
+# ---------------------------------------------------------------------------
+
+
+def _domain_hash(domain: bytes, *parts: bytes) -> str:
+    return hashlib.sha256(domain + b"\0".join(parts)).hexdigest()
+
+
+def derive_host_instance_id(machine_id: bytes) -> str:
+    """Stable pseudonymous host key; the raw machine id is never returned or stored."""
+    if not isinstance(machine_id, (bytes, bytearray)):
+        raise BaselineError("HOST_IDENTITY_INVALID")
+    normalized = bytes(machine_id).strip(_ASCII_WHITESPACE)
+    if not _MACHINE_ID.fullmatch(normalized):
+        raise BaselineError("HOST_IDENTITY_INVALID")
+    return "pmhost-v1:" + _domain_hash(b"polymarket-execution-host-v1\0", normalized)
+
+
+def derive_boot_instance_id(boot_id: bytes) -> str:
+    """Ephemeral pseudonymous boot key; the raw kernel boot UUID is never returned."""
+    if not isinstance(boot_id, (bytes, bytearray)):
+        raise BaselineError("BOOT_IDENTITY_INVALID")
+    normalized = bytes(boot_id).strip(_ASCII_WHITESPACE)
+    if not _BOOT_UUID.fullmatch(normalized):
+        raise BaselineError("BOOT_IDENTITY_INVALID")
+    return "pmboot-v1:" + _domain_hash(b"polymarket-execution-boot-v1\0", normalized)
+
+
+def _read_identity_source(path: pathlib.Path, code: str) -> bytes:
+    try:
+        with path.open("rb") as handle:
+            return handle.read(256)
+    except OSError as error:
+        raise BaselineError(code) from error
+
+
+def read_host_instance_id(path: pathlib.Path = MACHINE_ID_PATH) -> str:
+    return derive_host_instance_id(_read_identity_source(path, "HOST_IDENTITY_INVALID"))
+
+
+def read_boot_instance_id(path: pathlib.Path = BOOT_ID_PATH) -> str:
+    return derive_boot_instance_id(_read_identity_source(path, "BOOT_IDENTITY_INVALID"))
+
+
+def derive_process_instance_id(
+    boot_instance_id: str, start_monotonic_ns: int, release_sha: str
+) -> str:
+    """Pseudonymous per-process identity: boot identity + process-start clock + exact release."""
+    if (
+        not isinstance(boot_instance_id, str)
+        or not _BOOT_INSTANCE_ID.fullmatch(boot_instance_id)
+        or not isinstance(start_monotonic_ns, int)
+        or isinstance(start_monotonic_ns, bool)
+        or start_monotonic_ns < 0
+        or not isinstance(release_sha, str)
+        or not _HEX40.fullmatch(release_sha)
+    ):
+        raise BaselineError("PROCESS_IDENTITY_INVALID")
+    return "pmproc-v1:" + _domain_hash(
+        b"polymarket-execution-probe-process-v1\0",
+        boot_instance_id.encode("ascii"),
+        str(start_monotonic_ns).encode("ascii"),
+        release_sha.encode("ascii"),
+    )
+
+
+def _atomic_write_json(path: pathlib.Path, value: dict[str, Any], *, mode: int | None = None) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(_canonical_bytes(value) + b"\n")
+        if mode is not None:
+            os.chmod(temporary, mode)
+        os.replace(temporary, path)
+    except BaseException:
+        pathlib.Path(temporary).unlink(missing_ok=True)
+        raise
+
+
+def _release_sha_from_manifest(active_release: pathlib.Path) -> str:
+    try:
+        manifest = json.loads((active_release / MANIFEST_NAME).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise BaselineError("ACTIVE_RELEASE_INVALID") from error
+    repo_sha = manifest.get("repo_sha") if isinstance(manifest, dict) else None
+    if (
+        not isinstance(manifest, dict)
+        or manifest.get("schema_id") != "polymarket-research-release-manifest"
+        or not isinstance(repo_sha, str)
+        or not _HEX40.fullmatch(repo_sha)
+    ):
+        raise BaselineError("ACTIVE_RELEASE_INVALID")
+    return repo_sha
+
+
+def _require_exact_release_root(
+    active_release: pathlib.Path, releases_root: pathlib.Path, expected_sha: str
+) -> None:
+    try:
+        resolved = active_release.resolve(strict=True)
+        expected = (releases_root / expected_sha).resolve(strict=True)
+    except OSError as error:
+        raise BaselineError("CURRENT_RELEASE_MISMATCH") from error
+    if resolved != expected:
+        raise BaselineError("CURRENT_RELEASE_MISMATCH")
+
+
+def _critical_probe_unit_sha256(unit_dir: pathlib.Path) -> str:
+    unit = unit_dir / CRITICAL_PROBE_UNIT
+    if unit.is_symlink() or not unit.is_file():
+        raise BaselineError("CRITICAL_PROBE_UNIT_MISSING")
+    return _sha256(unit)
+
+
+def build_execution_host_binding(
+    *,
+    active_release: pathlib.Path,
+    expected_sha: str,
+    unit_dir: pathlib.Path,
+    releases_root: pathlib.Path = RELEASES_ROOT,
+    machine_id_path: pathlib.Path = MACHINE_ID_PATH,
+) -> dict[str, Any]:
+    """Verify the exact active release, then bind it to the stable host identity.
+
+    The binding is durable identity, not an observation: it carries no timestamp.
+    """
+    if not isinstance(expected_sha, str) or not _HEX40.fullmatch(expected_sha):
+        raise BaselineError("EXPECTED_SHA_INVALID")
+    _require_exact_release_root(active_release, releases_root, expected_sha)
+    verified = verify_release(active_release, expected_sha, allow_activation_artifacts=True)
+    return {
+        "schema_id": BINDING_SCHEMA_ID,
+        "schema_version": EXECUTION_SCHEMA_VERSION,
+        "host_instance_id": read_host_instance_id(machine_id_path),
+        "bound_release_sha": expected_sha,
+        "release_manifest_sha256": verified["release_manifest_sha256"],
+        "critical_probe_unit_sha256": _critical_probe_unit_sha256(unit_dir),
+    }
+
+
+def write_execution_host_binding(output: pathlib.Path, binding: dict[str, Any]) -> None:
+    """Atomically write canonical binding JSON readable but not writable by the runtime user."""
+    _atomic_write_json(output, validate_execution_host_binding(binding), mode=0o644)
+
+
+def validate_execution_host_binding(binding: Any) -> dict[str, Any]:
+    keys = {
+        "schema_id",
+        "schema_version",
+        "host_instance_id",
+        "bound_release_sha",
+        "release_manifest_sha256",
+        "critical_probe_unit_sha256",
+    }
+    if (
+        not isinstance(binding, dict)
+        or set(binding) != keys
+        or binding["schema_id"] != BINDING_SCHEMA_ID
+        or binding["schema_version"] != EXECUTION_SCHEMA_VERSION
+        or not isinstance(binding["host_instance_id"], str)
+        or not _HOST_INSTANCE_ID.fullmatch(binding["host_instance_id"])
+        or not isinstance(binding["bound_release_sha"], str)
+        or not _HEX40.fullmatch(binding["bound_release_sha"])
+        or not all(
+            isinstance(binding[key], str) and _HEX64.fullmatch(binding[key])
+            for key in ("release_manifest_sha256", "critical_probe_unit_sha256")
+        )
+    ):
+        raise BaselineError("BINDING_INVALID")
+    return dict(binding)
+
+
+def _firewall_state(ssh_port: int | None) -> str:
+    try:
+        status_text = _run(["ufw", "status"])
+    except BaselineError:
+        return "unknown"
+    lines = status_text.splitlines()
+    if not lines or lines[0].strip().lower() != "status: active":
+        return "inactive"
+    if ssh_port is None:
+        return "active"
+    try:
+        verify_ufw_ssh_only(status_text, ssh_port, allow_empty=False)
+    except BaselineError:
+        return "not_ssh_only"
+    return "ssh_only_inbound"
+
+
+def _persistent_state(state_root: pathlib.Path) -> str:
+    for name in PERSISTENT_STATE_DIRS:
+        path = state_root / name
+        if path.is_symlink() or not path.is_dir():
+            return "missing"
+    return "present"
+
+
+def evaluate_execution_host_currentness(
+    *,
+    binding: Any,
+    active_release: pathlib.Path,
+    expected_sha: str,
+    unit_dir: pathlib.Path,
+    releases_root: pathlib.Path = RELEASES_ROOT,
+    state_root: pathlib.Path = STATE_ROOT,
+    machine_id_path: pathlib.Path = MACHINE_ID_PATH,
+    boot_id_path: pathlib.Path = BOOT_ID_PATH,
+    strict: bool = False,
+    ssh_port: int | None = None,
+) -> dict[str, Any]:
+    """Read-only currentness evidence. Every mismatch fails closed with a stable code."""
+    if strict and ssh_port is None:
+        raise BaselineError("STRICT_SSH_PORT_REQUIRED")
+    bound = validate_execution_host_binding(binding)
+    if not isinstance(expected_sha, str) or not _HEX40.fullmatch(expected_sha):
+        raise BaselineError("EXPECTED_SHA_INVALID")
+    host_instance_id = read_host_instance_id(machine_id_path)
+    if host_instance_id != bound["host_instance_id"]:
+        raise BaselineError("HOST_BINDING_MISMATCH")
+    if bound["bound_release_sha"] != expected_sha:
+        raise BaselineError("RELEASE_BINDING_MISMATCH")
+    _require_exact_release_root(active_release, releases_root, expected_sha)
+    active_sha = _release_sha_from_manifest(active_release)
+    if active_sha != expected_sha:
+        raise BaselineError("ACTIVE_RELEASE_MISMATCH")
+    verified = verify_release(active_release, expected_sha, allow_activation_artifacts=True)
+    if verified["release_manifest_sha256"] != bound["release_manifest_sha256"]:
+        raise BaselineError("RELEASE_MANIFEST_MISMATCH")
+    unit_sha = _critical_probe_unit_sha256(unit_dir)
+    if unit_sha != bound["critical_probe_unit_sha256"]:
+        raise BaselineError("CRITICAL_PROBE_UNIT_MISMATCH")
+    boot_instance_id = read_boot_instance_id(boot_id_path)
+    ntp_state = _ntp_state()
+    firewall_state = _firewall_state(ssh_port)
+    persistent_state = _persistent_state(state_root)
+    if strict:
+        if ntp_state != "synchronized":
+            raise BaselineError("HOST_NTP_NOT_SYNCHRONIZED")
+        if firewall_state != "ssh_only_inbound":
+            raise BaselineError("HOST_FIREWALL_NOT_SSH_ONLY")
+        if persistent_state != "present":
+            raise BaselineError("PERSISTENT_STATE_MISSING")
+    return {
+        "schema_id": CURRENTNESS_SCHEMA_ID,
+        "schema_version": EXECUTION_SCHEMA_VERSION,
+        "status": "EXECUTION_HOST_CURRENT",
+        "verification_mode": "strict" if strict else "observe",
+        "host_instance_id": host_instance_id,
+        "boot_instance_id": boot_instance_id,
+        "bound_release_sha": bound["bound_release_sha"],
+        "active_release_sha": active_sha,
+        "release_manifest_sha256": verified["release_manifest_sha256"],
+        "critical_probe_unit_sha256": unit_sha,
+        "critical_probe_state": _systemctl_state(CRITICAL_PROBE_UNIT),
+        "telemetry_timer_state": _systemctl_state("polymarket-host-telemetry.timer"),
+        "research_target_state": _systemctl_state("polymarket-research.target"),
+        "ntp_state": ntp_state,
+        "firewall_state": firewall_state,
+        "persistent_state": persistent_state,
+    }
+
+
+# ---------------------------------------------------------------------------
+# S10-DEPLOY-EXEC-01 non-economic critical probe
+# ---------------------------------------------------------------------------
+
+
+def _acquire_writer_lock(lock_path: pathlib.Path) -> IO[bytes]:
+    """Single-writer guard released by the kernel when the holding process dies."""
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    handle = lock_path.open("a+b")
+    try:
+        if fcntl is not None:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        elif msvcrt is not None:  # pragma: no cover - Windows development hosts
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+        else:  # pragma: no cover - unsupported platform
+            raise OSError("no advisory lock primitive")
+    except OSError as error:
+        handle.close()
+        raise BaselineError("PROBE_WRITER_ACTIVE") from error
+    return handle
+
+
+def run_critical_probe(
+    *,
+    active_release: pathlib.Path,
+    heartbeat_output: pathlib.Path,
+    period_ms: int = CRITICAL_PROBE_PERIOD_MS,
+    samples_output: pathlib.Path | None = None,
+    duration_seconds: int | None = None,
+    boot_id_path: pathlib.Path = BOOT_ID_PATH,
+    clock: Callable[[], int] = time.monotonic_ns,
+    sleeper: Callable[[float], None] = time.sleep,
+    should_stop: Callable[[], bool] | None = None,
+) -> dict[str, Any]:
+    """Local deterministic heartbeat/timing work only.
+
+    Service mode (no duration) runs until stopped and atomically replaces one
+    heartbeat file. Finite mode additionally writes bounded JSONL samples.
+    """
+    if not isinstance(period_ms, int) or isinstance(period_ms, bool) or period_ms != CRITICAL_PROBE_PERIOD_MS:
+        raise BaselineError("PROBE_PERIOD_INVALID")
+    if duration_seconds is not None and (
+        not isinstance(duration_seconds, int)
+        or isinstance(duration_seconds, bool)
+        or not 1 <= duration_seconds <= CRITICAL_PROBE_MAX_DURATION_SECONDS
+    ):
+        raise BaselineError("PROBE_DURATION_INVALID")
+    if samples_output is not None and duration_seconds is None:
+        raise BaselineError("PROBE_SAMPLES_REQUIRE_DURATION")
+    release_sha = _release_sha_from_manifest(active_release)
+    boot_instance_id = read_boot_instance_id(boot_id_path)
+    lock = _acquire_writer_lock(heartbeat_output.with_name(heartbeat_output.name + ".lock"))
+    samples: IO[bytes] | None = None
+    sequence = 0
+    try:
+        if samples_output is not None:
+            samples_output.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                samples = samples_output.open("xb")
+            except FileExistsError as error:
+                raise BaselineError("PROBE_OUTPUT_EXISTS") from error
+        start = clock()
+        process_instance_id = derive_process_instance_id(boot_instance_id, start, release_sha)
+        period_ns = period_ms * 1_000_000
+        deadline = None if duration_seconds is None else start + duration_seconds * 1_000_000_000
+        max_samples = None if duration_seconds is None else duration_seconds * 1000 // period_ms + 8
+        previous = start
+        target = start + period_ns
+        while True:
+            now = clock()
+            if target > now:
+                sleeper((target - now) / 1_000_000_000)
+                now = clock()
+            if now <= previous:
+                raise BaselineError("PROBE_CLOCK_INVALID")
+            sequence += 1
+            sample = {
+                "schema_version": EXECUTION_SCHEMA_VERSION,
+                "release_sha": release_sha,
+                "process_instance_id": process_instance_id,
+                "sequence": sequence,
+                "monotonic_ns": now,
+                "interval_ms": round((now - previous) / 1_000_000, 3),
+            }
+            _atomic_write_json(heartbeat_output, {"schema_id": PROBE_HEARTBEAT_SCHEMA_ID, **sample})
+            if samples is not None:
+                samples.write(_canonical_bytes({"schema_id": PROBE_SAMPLE_SCHEMA_ID, **sample}) + b"\n")
+                samples.flush()
+            previous = now
+            if deadline is not None and (now >= deadline or sequence >= max_samples):  # type: ignore[operator]
+                break
+            if should_stop is not None and should_stop():
+                break
+            target += period_ns
+            if target <= now:
+                target = now + period_ns
+    finally:
+        if samples is not None:
+            samples.close()
+        lock.close()
+    return {
+        "status": "CRITICAL_PROBE_STOPPED",
+        "release_sha": release_sha,
+        "process_instance_id": process_instance_id,
+        "period_ms": period_ms,
+        "sample_count": sequence,
+    }
+
+
+# ---------------------------------------------------------------------------
+# S10-DEPLOY-EXEC-01 research-versus-critical coexistence evaluator
+# ---------------------------------------------------------------------------
+
+
+def _finite_non_negative(value: Any) -> bool:
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(value)
+        and value >= 0
+    )
+
+
+def _non_negative_integer(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _validated_probe_stream(rows: Any) -> tuple[str, list[float]] | None:
+    """Return (release_sha, intervals) for one valid finite probe stream, else None."""
+    keys = {
+        "schema_id",
+        "schema_version",
+        "release_sha",
+        "process_instance_id",
+        "sequence",
+        "monotonic_ns",
+        "interval_ms",
+    }
+    if not isinstance(rows, list) or not rows or len(rows) > COEXISTENCE_MAX_SAMPLES:
+        return None
+    for row in rows:
+        if (
+            not isinstance(row, dict)
+            or set(row) != keys
+            or row["schema_id"] != PROBE_SAMPLE_SCHEMA_ID
+            or row["schema_version"] != EXECUTION_SCHEMA_VERSION
+            or not isinstance(row["release_sha"], str)
+            or not _HEX40.fullmatch(row["release_sha"])
+            or not isinstance(row["process_instance_id"], str)
+            or not _PROCESS_INSTANCE_ID.fullmatch(row["process_instance_id"])
+            or not _positive_integer(row["sequence"])
+            or not _non_negative_integer(row["monotonic_ns"])
+            or not _finite_non_negative(row["interval_ms"])
+        ):
+            return None
+    first = rows[0]
+    for index, row in enumerate(rows):
+        if (
+            row["release_sha"] != first["release_sha"]
+            or row["process_instance_id"] != first["process_instance_id"]
+            or row["sequence"] != first["sequence"] + index
+        ):
+            return None
+        if index and row["monotonic_ns"] <= rows[index - 1]["monotonic_ns"]:
+            return None
+    coverage_ns = rows[-1]["monotonic_ns"] - first["monotonic_ns"] + first["interval_ms"] * 1_000_000
+    if coverage_ns < COEXISTENCE_MIN_COVERAGE_NS:
+        return None
+    return first["release_sha"], [float(row["interval_ms"]) for row in rows]
+
+
+def _validated_mixed_telemetry(rows: Any) -> list[dict[str, Any]] | None:
+    percent_metrics = (
+        "memory_utilization_percent",
+        "cpu_utilization_percent",
+        "disk_utilization_percent",
+        "io_wait_percent",
+    )
+    counters = ("swap_used_kib", "swap_in_pages", "swap_out_pages")
+    if not isinstance(rows, list) or len(rows) < 2 or len(rows) > COEXISTENCE_MAX_SAMPLES:
+        return None
+    for row in rows:
+        if not isinstance(row, dict):
+            return None
+        if not all(
+            _finite_non_negative(row.get(metric)) and row.get(metric) <= 100
+            for metric in percent_metrics
+        ):
+            return None
+        if not all(_non_negative_integer(row.get(counter)) for counter in counters):
+            return None
+    return rows
+
+
+def nearest_rank_p95(values: list[float]) -> float:
+    """Nearest-rank p95: the ceil(0.95 * n)-th smallest value (1-based), exact integer rank."""
+    if not values:
+        raise BaselineError("P95_REQUIRES_SAMPLES")
+    ordered = sorted(values)
+    rank = (95 * len(ordered) + 99) // 100
+    return ordered[rank - 1]
+
+
+def evaluate_execution_host_coexistence(
+    isolated_probe: Any,
+    mixed_probe: Any,
+    mixed_telemetry: Any,
+    research_smoke: Any,
+    *,
+    expected_release_sha: str | None = None,
+) -> dict[str, Any]:
+    """Closed research-versus-critical coexistence disposition.
+
+    Invalid or incomplete evidence is always EXECUTION_HOST_INCONCLUSIVE and takes
+    precedence over every upgrade or sufficiency label. The output grants no
+    purchase, resize, second-host, execution or live authority.
+    """
+    result: dict[str, Any] = {
+        "status": "EXECUTION_HOST_COEXISTENCE_EVALUATED",
+        "coexistence_disposition": "EXECUTION_HOST_INCONCLUSIVE",
+        "evidence_failure": None,
+        "release_sha": None,
+        "isolated_sample_count": None,
+        "mixed_sample_count": None,
+        "telemetry_sample_count": None,
+        "isolated_p95_interval_ms": None,
+        "mixed_p95_interval_ms": None,
+        "critical_degradation_percent": None,
+        "critical_deadline_miss": None,
+        "research_smoke_raw_count": None,
+        "research_smoke_normalized_count": None,
+        "research_smoke_store_bytes": None,
+    }
+
+    def inconclusive(failure: str) -> dict[str, Any]:
+        result["evidence_failure"] = failure
+        return result
+
+    isolated = _validated_probe_stream(isolated_probe)
+    if isolated is None:
+        return inconclusive("ISOLATED_PROBE_EVIDENCE_INVALID")
+    mixed = _validated_probe_stream(mixed_probe)
+    if mixed is None:
+        return inconclusive("MIXED_PROBE_EVIDENCE_INVALID")
+    if isolated[0] != mixed[0] or (
+        expected_release_sha is not None and isolated[0] != expected_release_sha
+    ):
+        return inconclusive("RELEASE_BINDING_MISMATCH")
+    telemetry = _validated_mixed_telemetry(mixed_telemetry)
+    if telemetry is None:
+        return inconclusive("MIXED_TELEMETRY_INCOMPLETE")
+    if not _research_smoke_passed(research_smoke):
+        return inconclusive("RESEARCH_SMOKE_NOT_PASSED")
+    isolated_p95 = nearest_rank_p95(isolated[1])
+    mixed_p95 = nearest_rank_p95(mixed[1])
+    deadline_miss = any(value > CRITICAL_DEADLINE_MS for value in isolated[1] + mixed[1])
+    # Exact rational comparison of the observable decimal evidence (shortest round-trip text, not
+    # the binary float approximation): strictly more than 20% degradation; the boundary is not a trigger.
+    degraded = Fraction(str(mixed_p95)) > Fraction(str(isolated_p95)) * CRITICAL_DEGRADATION_RATIO
+    first = telemetry[0]
+    memory = (
+        any(row["memory_utilization_percent"] >= 85 for row in telemetry)
+        or any(row["swap_used_kib"] > 0 for row in telemetry)
+        or any(row["swap_in_pages"] > first["swap_in_pages"] for row in telemetry)
+        or any(row["swap_out_pages"] > first["swap_out_pages"] for row in telemetry)
+    )
+    triggers = (
+        ("CRITICAL_DEADLINE", deadline_miss),
+        ("CRITICAL_DEGRADATION", degraded),
+        ("MEMORY", memory),
+        ("CPU", any(row["cpu_utilization_percent"] >= 85 for row in telemetry)),
+        ("DISK", any(row["disk_utilization_percent"] >= 80 for row in telemetry)),
+        ("IO", any(row["io_wait_percent"] >= 10 for row in telemetry)),
+    )
+    disposition = next(
+        (f"UPGRADE_ELIGIBLE:{reason}" for reason, fired in triggers if fired),
+        "C8G_EXECUTION_HOST_SUFFICIENT",
+    )
+    if disposition not in COEXISTENCE_DISPOSITIONS:  # pragma: no cover - defensive
+        raise BaselineError("COEXISTENCE_DISPOSITION_INVALID")
+    result.update(
+        {
+            "coexistence_disposition": disposition,
+            "release_sha": isolated[0],
+            "isolated_sample_count": len(isolated[1]),
+            "mixed_sample_count": len(mixed[1]),
+            "telemetry_sample_count": len(telemetry),
+            "isolated_p95_interval_ms": isolated_p95,
+            "mixed_p95_interval_ms": mixed_p95,
+            "critical_degradation_percent": (
+                round((mixed_p95 - isolated_p95) / isolated_p95 * 100, 3) if isolated_p95 > 0 else None
+            ),
+            "critical_deadline_miss": deadline_miss,
+            "research_smoke_raw_count": research_smoke["raw_count"],
+            "research_smoke_normalized_count": research_smoke["normalized_count"],
+            "research_smoke_store_bytes": research_smoke["store_bytes"],
+        }
+    )
+    return result
+
+
+# ---------------------------------------------------------------------------
+# S10-DEPLOY-EXEC-01 terminal Phase-B evidence semantics
+# ---------------------------------------------------------------------------
+
+
+def _strict_current(currentness: Any, merge_sha: str) -> bool:
+    return (
+        isinstance(currentness, dict)
+        and currentness.get("schema_id") == CURRENTNESS_SCHEMA_ID
+        and currentness.get("schema_version") == EXECUTION_SCHEMA_VERSION
+        and currentness.get("status") == "EXECUTION_HOST_CURRENT"
+        and currentness.get("verification_mode") == "strict"
+        and isinstance(currentness.get("host_instance_id"), str)
+        and bool(_HOST_INSTANCE_ID.fullmatch(currentness["host_instance_id"]))
+        and isinstance(currentness.get("boot_instance_id"), str)
+        and bool(_BOOT_INSTANCE_ID.fullmatch(currentness["boot_instance_id"]))
+        and currentness.get("bound_release_sha") == merge_sha
+        and currentness.get("active_release_sha") == merge_sha
+        and isinstance(currentness.get("release_manifest_sha256"), str)
+        and bool(_HEX64.fullmatch(currentness["release_manifest_sha256"]))
+        and isinstance(currentness.get("critical_probe_unit_sha256"), str)
+        and bool(_HEX64.fullmatch(currentness["critical_probe_unit_sha256"]))
+        and currentness.get("telemetry_timer_state") == "active"
+        and currentness.get("research_target_state") == "active"
+        and currentness.get("ntp_state") == "synchronized"
+        and currentness.get("firewall_state") == "ssh_only_inbound"
+        and currentness.get("persistent_state") == "present"
+    )
+
+
+def _valid_heartbeat(heartbeat: Any, merge_sha: str) -> bool:
+    return (
+        isinstance(heartbeat, dict)
+        and heartbeat.get("schema_id") == PROBE_HEARTBEAT_SCHEMA_ID
+        and heartbeat.get("schema_version") == EXECUTION_SCHEMA_VERSION
+        and heartbeat.get("release_sha") == merge_sha
+        and isinstance(heartbeat.get("process_instance_id"), str)
+        and bool(_PROCESS_INSTANCE_ID.fullmatch(heartbeat["process_instance_id"]))
+        and _positive_integer(heartbeat.get("sequence"))
+        and _non_negative_integer(heartbeat.get("monotonic_ns"))
+        and _finite_non_negative(heartbeat.get("interval_ms"))
+    )
+
+
+def _proof(present: bool, passed: bool) -> str:
+    if not present:
+        return "INCONCLUSIVE"
+    return "PASS" if passed else "FAIL"
+
+
+def evaluate_execution_host_terminal(evidence: Any) -> dict[str, Any]:
+    """Closed terminal outcome for one real Phase-B run.
+
+    EXECUTION_HOST_PROVEN_C8G means only that the host/runtime substrate was proven on
+    the tested instance. It never implies account access, reconciliation, order
+    permission, live enablement or that S10-LIVE-ORCH-01 may be skipped.
+    """
+    document = evidence if isinstance(evidence, dict) else {}
+    valid_document = (
+        document.get("schema_id") == TERMINAL_EVIDENCE_SCHEMA_ID
+        and document.get("schema_version") == EXECUTION_SCHEMA_VERSION
+        and isinstance(document.get("merge_sha"), str)
+        and bool(_HEX40.fullmatch(document["merge_sha"]))
+    )
+    merge_sha = document.get("merge_sha") if valid_document else ""
+
+    pre = document.get("currentness_pre_reboot")
+    post = document.get("currentness_post_reboot")
+    pre_ok = valid_document and _strict_current(pre, merge_sha)
+    post_ok = valid_document and _strict_current(post, merge_sha)
+
+    restart = document.get("process_restart")
+    restart_ok = (
+        valid_document
+        and isinstance(restart, dict)
+        and _valid_heartbeat(restart.get("pre_heartbeat"), merge_sha)
+        and _valid_heartbeat(restart.get("post_heartbeat"), merge_sha)
+        and restart["pre_heartbeat"]["process_instance_id"] != restart["post_heartbeat"]["process_instance_id"]
+        and restart["post_heartbeat"]["sequence"] >= 2
+        and restart.get("service_state_after") == "active"
+        and restart.get("active_writer_count") == 1
+        and not isinstance(restart.get("active_writer_count"), bool)
+    )
+
+    backup = document.get("backup")
+    restore = document.get("restore")
+    post_restore = document.get("post_reboot_restore")
+    backup_ok = (
+        isinstance(backup, dict)
+        and backup.get("status") == "BACKUP_COMPLETE"
+        and _positive_integer(backup.get("file_count"))
+        and isinstance(backup.get("backup_manifest_sha256"), str)
+        and bool(_HEX64.fullmatch(backup["backup_manifest_sha256"]))
+        and isinstance(backup.get("backup_id"), str)
+        and bool(_SAFE_ID.fullmatch(backup["backup_id"]))
+    )
+
+    def restored(drill: Any) -> bool:
+        return (
+            backup_ok
+            and isinstance(drill, dict)
+            and drill.get("status") == "RESTORE_VERIFIED"
+            and drill.get("source_backup_id") == backup["backup_id"]
+            and _positive_integer(drill.get("file_count"))
+            and drill["file_count"] == backup["file_count"]
+        )
+
+    restore_ok = restored(restore)
+    persistent_ok = (
+        restored(post_restore)
+        and restore_ok
+        and post_restore.get("drill_id") != restore.get("drill_id")
+        and post_ok
+    )
+
+    reboot_ok = (
+        pre_ok
+        and post_ok
+        and pre["host_instance_id"] == post["host_instance_id"]
+        and pre["boot_instance_id"] != post["boot_instance_id"]
+        and pre["release_manifest_sha256"] == post["release_manifest_sha256"]
+        and pre["critical_probe_unit_sha256"] == post["critical_probe_unit_sha256"]
+        and post.get("critical_probe_state") == "active"
+    )
+    host_controls_ok = (
+        pre_ok
+        and post_ok
+        and isinstance(restart, dict)
+        and restart.get("observed_slice") == "polymarket-critical.slice"
+    )
+
+    coexistence = document.get("coexistence")
+    disposition = coexistence.get("coexistence_disposition") if isinstance(coexistence, dict) else None
+    coexistence_ok = (
+        valid_document
+        and isinstance(coexistence, dict)
+        and coexistence.get("status") == "EXECUTION_HOST_COEXISTENCE_EVALUATED"
+        and disposition in COEXISTENCE_DISPOSITIONS
+        and disposition != "EXECUTION_HOST_INCONCLUSIVE"
+        and coexistence.get("release_sha") == merge_sha
+    )
+
+    authority = document.get("authority")
+    authority_ok = (
+        isinstance(authority, dict)
+        and set(authority) == {"trading_credentials_used", "orders", "capital_usd", "live"}
+        and authority["trading_credentials_used"] is False
+        and _non_negative_integer(authority["orders"])
+        and authority["orders"] == 0
+        and _non_negative_integer(authority["capital_usd"])
+        and authority["capital_usd"] == 0
+        and authority["live"] == "DISABLED"
+    )
+
+    proofs = {
+        "currentness": _proof(isinstance(pre, dict), pre_ok),
+        "host_binding": _proof(
+            isinstance(pre, dict) and isinstance(post, dict),
+            pre_ok and post_ok and pre["host_instance_id"] == post["host_instance_id"],
+        ),
+        "process_restart": _proof(isinstance(restart, dict), restart_ok),
+        "reboot_recovery": _proof(isinstance(pre, dict) and isinstance(post, dict), reboot_ok),
+        "backup_restore": _proof(isinstance(backup, dict) and isinstance(restore, dict), restore_ok),
+        "persistent_state": _proof(isinstance(post_restore, dict), persistent_ok),
+        "host_controls": _proof(isinstance(pre, dict) and isinstance(post, dict), host_controls_ok),
+        "coexistence": _proof(isinstance(coexistence, dict), coexistence_ok),
+        "authority": _proof(isinstance(authority, dict), authority_ok),
+    }
+    if valid_document and all(value == "PASS" for value in proofs.values()):
+        if disposition == "C8G_EXECUTION_HOST_SUFFICIENT":
+            outcome = "EXECUTION_HOST_PROVEN_C8G"
+        else:
+            outcome = "EXECUTION_HOST_EVIDENCE_COMPLETE_" + str(disposition)
+    else:
+        outcome = "EXECUTION_HOST_INCONCLUSIVE"
+    if outcome not in TERMINAL_OUTCOMES:  # pragma: no cover - defensive
+        raise BaselineError("TERMINAL_OUTCOME_INVALID")
+    return {
+        "status": "EXECUTION_HOST_TERMINAL_EVALUATED",
+        "terminal_outcome": outcome,
+        "proofs": proofs,
+        "coexistence_disposition": disposition if coexistence_ok else "EXECUTION_HOST_INCONCLUSIVE",
+        "live_readiness": "NOT_IMPLIED",
+        "required_successor": "S10-LIVE-ORCH-01",
+    }
+
+
+def _load_evidence_bytes(path: pathlib.Path) -> bytes | None:
+    try:
+        if path.is_symlink() or not path.is_file() or path.stat().st_size > EVIDENCE_MAX_BYTES:
+            return None
+        return path.read_bytes()
+    except OSError:
+        return None
+
+
+def _load_jsonl_evidence(path: pathlib.Path) -> list[Any] | None:
+    raw = _load_evidence_bytes(path)
+    if raw is None:
+        return None
+    try:
+        return [json.loads(line) for line in raw.decode("utf-8").splitlines() if line.strip()]
+    except (UnicodeError, ValueError):
+        return None
+
+
+def _load_json_evidence(path: pathlib.Path) -> Any:
+    raw = _load_evidence_bytes(path)
+    if raw is None:
+        return None
+    try:
+        return json.loads(raw.decode("utf-8"))
+    except (UnicodeError, ValueError):
+        return None
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Research-only deployment baseline")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -768,6 +1614,32 @@ def _parser() -> argparse.ArgumentParser:
     firewall.add_argument("--status-file", type=pathlib.Path, required=True)
     firewall.add_argument("--ssh-port", type=int, required=True)
     firewall.add_argument("--allow-empty", action="store_true")
+    bind = commands.add_parser("execution-host-bind")
+    bind.add_argument("--active-release", type=pathlib.Path, required=True)
+    bind.add_argument("--expected-sha", required=True)
+    bind.add_argument("--unit-dir", type=pathlib.Path, required=True)
+    bind.add_argument("--output", type=pathlib.Path, required=True)
+    current = commands.add_parser("execution-host-currentness")
+    current.add_argument("--binding-file", type=pathlib.Path, required=True)
+    current.add_argument("--active-release", type=pathlib.Path, required=True)
+    current.add_argument("--expected-sha", required=True)
+    current.add_argument("--unit-dir", type=pathlib.Path, required=True)
+    current.add_argument("--strict", action="store_true")
+    current.add_argument("--ssh-port", type=int)
+    probe = commands.add_parser("critical-probe")
+    probe.add_argument("--active-release", type=pathlib.Path, required=True)
+    probe.add_argument("--period-ms", type=int, default=CRITICAL_PROBE_PERIOD_MS)
+    probe.add_argument("--heartbeat-output", type=pathlib.Path, required=True)
+    probe.add_argument("--samples-output", type=pathlib.Path)
+    probe.add_argument("--duration-seconds", type=int)
+    coexist = commands.add_parser("execution-host-coexistence-evaluate")
+    coexist.add_argument("--isolated-probe-jsonl", type=pathlib.Path, required=True)
+    coexist.add_argument("--mixed-probe-jsonl", type=pathlib.Path, required=True)
+    coexist.add_argument("--mixed-telemetry-jsonl", type=pathlib.Path, required=True)
+    coexist.add_argument("--research-smoke-result", type=pathlib.Path, required=True)
+    coexist.add_argument("--expected-sha")
+    terminal = commands.add_parser("execution-host-terminal-evaluate")
+    terminal.add_argument("--evidence", type=pathlib.Path, required=True)
     return parser
 
 
@@ -807,6 +1679,47 @@ def main(argv: list[str] | None = None) -> int:
                 if line.strip()
             ]
             result = evaluate_research_smoke(smoke_result, telemetry_rows)
+        elif args.command == "execution-host-bind":
+            result = build_execution_host_binding(
+                active_release=args.active_release,
+                expected_sha=args.expected_sha,
+                unit_dir=args.unit_dir,
+                releases_root=RELEASES_ROOT,
+                machine_id_path=MACHINE_ID_PATH,
+            )
+            write_execution_host_binding(args.output, result)
+        elif args.command == "execution-host-currentness":
+            result = evaluate_execution_host_currentness(
+                binding=_load_json_evidence(args.binding_file),
+                active_release=args.active_release,
+                expected_sha=args.expected_sha,
+                unit_dir=args.unit_dir,
+                releases_root=RELEASES_ROOT,
+                state_root=STATE_ROOT,
+                machine_id_path=MACHINE_ID_PATH,
+                boot_id_path=BOOT_ID_PATH,
+                strict=args.strict,
+                ssh_port=args.ssh_port,
+            )
+        elif args.command == "critical-probe":
+            result = run_critical_probe(
+                active_release=args.active_release,
+                heartbeat_output=args.heartbeat_output,
+                period_ms=args.period_ms,
+                samples_output=args.samples_output,
+                duration_seconds=args.duration_seconds,
+                boot_id_path=BOOT_ID_PATH,
+            )
+        elif args.command == "execution-host-coexistence-evaluate":
+            result = evaluate_execution_host_coexistence(
+                _load_jsonl_evidence(args.isolated_probe_jsonl),
+                _load_jsonl_evidence(args.mixed_probe_jsonl),
+                _load_jsonl_evidence(args.mixed_telemetry_jsonl),
+                _load_json_evidence(args.research_smoke_result),
+                expected_release_sha=args.expected_sha,
+            )
+        elif args.command == "execution-host-terminal-evaluate":
+            result = evaluate_execution_host_terminal(_load_json_evidence(args.evidence))
         else:
             result = verify_ufw_ssh_only(
                 args.status_file.read_text(encoding="utf-8"),

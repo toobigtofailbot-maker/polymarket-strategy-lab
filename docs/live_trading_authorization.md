@@ -28,6 +28,16 @@ identity before any economic mutation. WP175 remains the historical/manual real
 restricted-live canary path (Gate-B credential/session, A3 and real CREATE transport),
 unchanged. Capital/orders remain USD 0 / 0.
 
+S10-DEPLOY-EXEC-01 (execution-host runtime substrate) grants no live authority. It adds a
+sanitized host/release binding, currentness evidence, a non-economic critical-probe service
+(installed but inactive) and closed coexistence/terminal host-evidence semantics. It loads no
+trading credential, instantiates no authenticated client, reads no account state, issues or
+consumes no GateCLivePermit, arms no GateCSession, enters no A3 state and signs, submits or
+cancels no order. Even a future real-host EXECUTION_HOST_PROVEN_C8G outcome is necessary but not
+sufficient for live execution: S10-LIVE-ORCH-01 must still revalidate the exact exploratory
+permit, account, access and reconciliation under separate protected authority. Capital/orders
+remain USD 0 / 0.
+
 No live trading code exists in WP1. No strategy is live-authorized. No wallet or API credentials are configured. No external repo code is authorized for live execution.
 
 Live mode requires a future WP, explicit human approval, active risk gateway, kill-switch tests, dashboard visibility, and an updated authorization table.

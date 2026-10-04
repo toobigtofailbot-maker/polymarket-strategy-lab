@@ -35,3 +35,37 @@ redundant install for a complete environment. It installs the base project only
 (no cockpit extra), verifies that UFW's effective inbound `ALLOW`/`LIMIT`
 permission set is only the supplied SSH TCP port with no routed/FWD permission,
 and routes expected operational failures through sanitized closed JSON codes.
+
+## Execution-Host Substrate (S10-DEPLOY-EXEC-01)
+
+S10-DEPLOY-EXEC-01 extends this baseline without replacing it; its contract is
+`docs/execution_host_runtime_contract.md`. It adds five closed, credential-free
+subcommands to `runtime_baseline.py`:
+
+- `execution-host-bind` verifies the exact active release and atomically writes the
+  canonical, timestamp-free `polymarket-execution-host-binding` (pseudonymous
+  `pmhost-v1` host id, release SHA, release manifest hash, critical-probe unit hash).
+- `execution-host-currentness` re-derives host and boot identity (`pmboot-v1`) and
+  fails closed on any host, release, current-symlink, manifest or unit mismatch;
+  `--strict --ssh-port` also requires synchronized NTP, exact SSH-only UFW and the
+  persistent state layout. It never mutates the host.
+- `critical-probe` is the non-economic heartbeat run by
+  `polymarket-execution-critical-probe.service` in `polymarket-critical.slice`
+  (`Restart=on-failure`, `RestartSec=1s`, no network, no environment, no credentials).
+  Its heartbeat and finite 60-second proof samples are ephemeral evidence under
+  `/var/lib/polymarket/execution_host`; a second concurrent writer fails closed.
+- `execution-host-coexistence-evaluate` returns one closed research-versus-critical
+  disposition (`C8G_EXECUTION_HOST_SUFFICIENT`, `UPGRADE_ELIGIBLE:CRITICAL_DEADLINE`,
+  `UPGRADE_ELIGIBLE:CRITICAL_DEGRADATION`, `UPGRADE_ELIGIBLE:MEMORY|CPU|DISK|IO` or
+  `EXECUTION_HOST_INCONCLUSIVE`); malformed evidence is always inconclusive.
+- `execution-host-terminal-evaluate` maps one sanitized real Phase-B evidence document
+  to `EXECUTION_HOST_PROVEN_C8G`,
+  `EXECUTION_HOST_EVIDENCE_COMPLETE_UPGRADE_ELIGIBLE:<reason>` or
+  `EXECUTION_HOST_INCONCLUSIVE`; none of these implies live readiness.
+
+Bootstrap installs, verifies and hashes the probe unit, creates
+`/var/lib/polymarket/execution_host` (`polymarket:polymarket`, 0750), and leaves the
+probe disabled and inactive. It never writes the execution-host binding; that is an
+explicit step of the separately authorized Phase-B host proof. No upgrade, purchase or
+extra host is ever automatic, and nothing here grants account, order, capital or live
+authority.
