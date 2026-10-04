@@ -300,9 +300,11 @@ activation is separate; Gate C is unchanged; live trading remains DISABLED; capi
 
 ## V2.1 Current Public Execution Feasibility Core (S10-EXEC-FEAS-01)
 
-Status: current bounded implementation target / implemented review target (base
+Status: MERGED (PR #212 merged at `35db4f05347b8b27f7bd0296cf9b1b0627e58d12`, head `99f3c3c8acc09ae3b5646f785446d69a7b8b2290`; formerly the
+current bounded implementation target / implemented review target on base
 `4519aab3d7f8424fc74c59104cc4e7afe0ff11b8`, after PR #211 / S10-HERMES-STRAT-01 merged). Contract:
-`docs/execution_feasibility_contract.md`.
+`docs/execution_feasibility_contract.md`. The known-candidate path paragraph below is the
+EXEC-FEAS implementation-time record; see the S10-GATE-C-EXPLORE-01 section for current status.
 
 S10-HERMES-STRAT-01: MERGED. S10-EXEC-FEAS-01 is implemented as the current public mechanical
 feasibility sibling of the formal evidence lane. Three execution concepts stay distinct:
@@ -330,3 +332,43 @@ orchestrator -> tiny exploratory live. The path is unchanged. ALPHA-03 remains a
 non-blocking feeder and is not a prerequisite. DATA-03 remains unchanged and non-blocking;
 S10-CC-FOUND-01 remains a parallel lane; S10-DEPLOY-01 host activation is separate; Gate C is
 unchanged; live trading remains DISABLED; capital/orders USD 0 / 0.
+
+## V2.1 Exploratory Gate C Policy Permit Core (S10-GATE-C-EXPLORE-01)
+
+Status: current protected implementation target / implemented review target (base
+`35db4f05347b8b27f7bd0296cf9b1b0627e58d12`, after PR #212 / S10-EXEC-FEAS-01 merged). Governance track PROTECTED,
+risk 4, independent draftability certificate hash-bound to the exact prompt/spec. Contract:
+`docs/exploratory_gate_c_contract.md`.
+
+S10-EXEC-FEAS-01: MERGED. S10-GATE-C-EXPLORE-01 is implemented as the first V2.1 deterministic
+exploratory execution-eligibility Gate C. Given the current verified STRAT-LIFE lifecycle/policy
+state, the latest canonical Hermes strategy judgment and the exact current-public EXEC-FEAS
+evidence for one execution intent, it decides whether that exact intent may proceed to later
+runtime/account/access/reconciliation checks inside the current human-authorized exploratory
+envelope. Both canonical stores are read only through their verified loaders; no caller snapshot
+is authority and no store is written or created.
+
+The output is an immutable content-addressed ExploratoryGateCDecision (PERMIT_ELIGIBLE /
+PERMIT_REJECTED with closed ordered reasons and the inherited STRAT-LIFE capacity reasons) and,
+only when eligible, an ExploratoryGateCPermit scoped to the exact intent. This is hard
+eligibility authority, not live or order authority: the exploratory permit is
+necessary-but-not-sufficient future evidence and fixes runtime account, access, reconciliation
+and identity revalidation as required. A SCALE judgment never widens the current
+EXPLORATORY_LIVE allocation, and the static exact-intent ceilings make no account-capacity claim.
+
+Legacy separation: WP175 remains the historical/manual real restricted-live canary (Gate-B
+credential/session, A3 and real CREATE transport), unchanged. S10-GATE-C-EXPLORE-01 is the V2.1
+credential-free exploratory policy permit: it neither edits nor imports `src/execution_gateway/`,
+issues no legacy WP175 Gate-C live permit, enters no A3 state and has no account, geoblock,
+credential, signing, order or live authority.
+
+Known-candidate path capability status (current): lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes
+strategy manager (S10-HERMES-STRAT-01: MERGED) -> execution feasibility (S10-EXEC-FEAS-01: MERGED)
+-> exploratory Gate C (S10-GATE-C-EXPLORE-01: implemented capability, current review target) ->
+execution host (S10-DEPLOY-EXEC-01: next core successor after GATE-C-EXPLORE review and merge;
+NOT STARTED) -> live orchestrator (S10-LIVE-ORCH-01: later) -> tiny exploratory live. The accepted
+V2.1 architecture and the locked Control Center baseline are unchanged. S10-CC-OPS-01 may begin
+only after GATE-C-EXPLORE merges, as a separate package; S10-CC-FOUND-01 is parallel and
+independent; ALPHA-03 remains a parallel, non-blocking feeder; DATA-03 remains unchanged and
+non-blocking; S10-DEPLOY-01 host activation is separate; live trading remains DISABLED;
+capital/orders USD 0 / 0.

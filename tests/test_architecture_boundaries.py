@@ -176,6 +176,13 @@ APPROVED_SRC_SCOPES = (
     # public GETs, deterministic evaluation, no persistence). It has no credential, account,
     # order, Gate-C, execution or live authority and is not a parent src/ wildcard approval.
     "src/execution_feasibility",
+    # S10-GATE-C-EXPLORE-01 approves exactly the stdlib-only src/exploratory_gate_c family:
+    # the credential-free exploratory Gate-C policy-permit core. It reads the existing
+    # STRAT-LIFE and Hermes strategy-manager stores only through their verified read-only
+    # loaders and emits content-addressed eligibility records. It has no network, credential,
+    # account, geoblock, signing, order, GateCLivePermit/A3, execution-transport, persistence
+    # or live authority and is not a parent src/ wildcard approval.
+    "src/exploratory_gate_c",
 )
 
 
@@ -252,6 +259,8 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     lifecycle and global portfolio-policy state only (no order/execution/live authority).
     S10-EXEC-FEAS-01 permits src/execution_feasibility/ for the current-public read-only
     execution-feasibility evaluator only (no credential/order/execution/live authority).
+    S10-GATE-C-EXPLORE-01 permits src/exploratory_gate_c/ for the credential-free exploratory
+    Gate-C policy-permit core only (no network/credential/order/A3/live authority).
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
@@ -587,8 +596,10 @@ def test_strategy_lifecycle_is_only_new_approved_source_family() -> None:
     """S10-STRAT-LIFE-01 approves exactly src/strategy_lifecycle, never a src/ wildcard."""
     assert "src/strategy_lifecycle" in APPROVED_SRC_SCOPES
     assert APPROVED_SRC_SCOPES.count("src/strategy_lifecycle") == 1
-    # S10-EXEC-FEAS-01 appends exactly one later family after it.
-    assert APPROVED_SRC_SCOPES[-2:] == ("src/strategy_lifecycle", "src/execution_feasibility")
+    # S10-EXEC-FEAS-01 and S10-GATE-C-EXPLORE-01 each append exactly one later family.
+    assert APPROVED_SRC_SCOPES[-3:] == (
+        "src/strategy_lifecycle", "src/execution_feasibility", "src/exploratory_gate_c",
+    )
     for scope in APPROVED_SRC_SCOPES:
         assert scope not in {"src", "src/", "src/*"}
         assert scope.startswith("src/") and not scope.endswith("/")
@@ -626,7 +637,8 @@ def test_execution_feasibility_is_exact_new_source_family() -> None:
     feasibility evaluation with no credential, order, execution or live authority (R061)."""
     family = "src/execution_feasibility"
     assert APPROVED_SRC_SCOPES.count(family) == 1
-    assert APPROVED_SRC_SCOPES[-1] == family
+    # S10-GATE-C-EXPLORE-01 appends exactly one later family after it.
+    assert APPROVED_SRC_SCOPES[-2:] == (family, "src/exploratory_gate_c")
     assert not any(scope in {"src", "src/", "src/*"} for scope in APPROVED_SRC_SCOPES)
     package = ROOT / family
     assert sorted(path.name for path in package.iterdir() if path.is_file()) == [
@@ -640,4 +652,32 @@ def test_execution_feasibility_is_exact_new_source_family() -> None:
         for forbidden in ("execution_gateway", "paper_trading", "risk_engine", "operator_cockpit",
                           "SecureClient", "sqlite3", "os.environ", "getenv", "threading",
                           "append_strategy_lifecycle_record", "initialize_strategy_lifecycle_store"):
+            assert forbidden not in source, (path.name, forbidden)
+
+
+def test_architecture_boundary_family_approval() -> None:
+    """S10-GATE-C-EXPLORE-01 approves exactly src/exploratory_gate_c: the credential-free
+    exploratory Gate-C policy-permit core. It is the only new executable src family, reads
+    canonical stores only through verified loaders and holds no network, credential,
+    account, geoblock, signing, order, GateCLivePermit/A3, persistence or live authority
+    (R042)."""
+    family = "src/exploratory_gate_c"
+    assert APPROVED_SRC_SCOPES.count(family) == 1
+    assert APPROVED_SRC_SCOPES[-1] == family
+    assert not any(scope in {"src", "src/", "src/*"} for scope in APPROVED_SRC_SCOPES)
+    package = ROOT / family
+    assert sorted(path.name for path in package.iterdir() if path.is_file()) == [
+        "__init__.py", "evaluator.py", "models.py",
+    ]
+    assert not any(path.is_dir() and path.name != "__pycache__" for path in package.iterdir())
+    for drifted in ("src/exploratory_gate_c_extra.py", "src/exploratory_gate_c2/x.py"):
+        assert not any(drifted.startswith(scope + "/") or drifted == scope for scope in APPROVED_SRC_SCOPES)
+    for path in package.glob("*.py"):
+        source = path.read_text(encoding="utf-8")
+        for forbidden in ("execution_gateway", "GateCLivePermit", "GateCSession",
+                          "A3_RESTRICTED_LIVE", "paper_trading", "risk_engine",
+                          "operator_cockpit", "SecureClient", "sqlite3", "os.environ", "getenv",
+                          "threading", "urllib", "http.client", "socket",
+                          "append_strategy_lifecycle_record", "initialize_strategy_lifecycle_store",
+                          "run_hermes_strategy_assessment", "fetch_public_venue_snapshot"):
             assert forbidden not in source, (path.name, forbidden)

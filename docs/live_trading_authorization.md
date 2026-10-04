@@ -18,6 +18,16 @@ stays DISABLED and startup stays A0_DISABLED. The single real CREATE
 authorized post-merge first live activation canary; `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`
 remains a hard activation blocker only, not a dormant-merge blocker.
 
+S10-GATE-C-EXPLORE-01 (V2.1 exploratory Gate C policy permit core) is separate from
+WP175. It is a credential-free deterministic eligibility decision: it issues no legacy WP175
+Gate-C live permit, arms no session, enters no A3 state, reads no account or geoblock
+state, loads no credential and signs, submits or cancels no order. An exploratory permit is
+necessary-but-not-sufficient future evidence for one exact intent, not live activation;
+later protected runtime must still revalidate account, access, reconciliation and runtime
+identity before any economic mutation. WP175 remains the historical/manual real
+restricted-live canary path (Gate-B credential/session, A3 and real CREATE transport),
+unchanged. Capital/orders remain USD 0 / 0.
+
 No live trading code exists in WP1. No strategy is live-authorized. No wallet or API credentials are configured. No external repo code is authorized for live execution.
 
 Live mode requires a future WP, explicit human approval, active risk gateway, kill-switch tests, dashboard visibility, and an updated authorization table.

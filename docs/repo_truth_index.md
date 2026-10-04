@@ -1,8 +1,35 @@
 # Repo Truth Index
 
-## S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (current bounded implementation target)
+## S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (current protected implementation target)
 
-The contract is `docs/execution_feasibility_contract.md`; the implementation is the new four-file
+The contract is `docs/exploratory_gate_c_contract.md`; the implementation is the new three-file
+stdlib-only source package `src/exploratory_gate_c/` (`__init__.py`, `models.py`, `evaluator.py`);
+the focused tests are `tests/exploratory_gate_c/test_exploratory_gate_c.py`; the frozen certified
+package is `docs/wp_specs/S10-GATE-C-EXPLORE-01/` (prompt, spec and independent draftability
+certificate); and the stable record is `docs/status_entries/S10-GATE-C-EXPLORE-01.md`. Base
+`35db4f05347b8b27f7bd0296cf9b1b0627e58d12` (PR #212 / S10-EXEC-FEAS-01 merged: YES, head
+`99f3c3c8acc09ae3b5646f785446d69a7b8b2290`). PROTECTED, risk 4, exact 18-path scope. S10-EXEC-FEAS-01: MERGED.
+The package is the first V2.1 deterministic exploratory execution-eligibility Gate C: it loads the
+existing STRAT-LIFE and Hermes strategy-manager stores only through their verified read-only
+loaders and binds the exact StrategyVersion, active global PortfolioAuthorityPolicy, current
+EXPLORATORY_LIVE allocation, STRAT-LIFE portfolio capacity, the latest compatible Hermes assessment
+and an exactly re-derived FEASIBLE/LIMITED EXEC-FEAS intent/snapshot/assessment into an
+ExploratoryGateCDecision and, only when PERMIT_ELIGIBLE, an exact-intent ExploratoryGateCPermit.
+Eligibility authority only; no network, account, geoblock, credential, signing, order, persistence
+or live authority. The exploratory permit is necessary-but-not-sufficient future evidence, not
+live activation; later protected runtime must revalidate account, access, reconciliation and
+runtime identity. WP175 remains the separate historical/manual real restricted-live canary and
+`src/execution_gateway/` is unchanged; no legacy WP175 Gate-C live permit is issued and no A3
+state is entered. S10-DEPLOY-EXEC-01 is the next core successor after review and merge and is NOT
+STARTED; S10-LIVE-ORCH-01 is later; S10-CC-OPS-01 may begin only after this package merges, as a
+separate package; S10-CC-FOUND-01 is parallel/independent; ALPHA-03 is parallel and non-blocking;
+DATA-03 is unchanged and non-blocking; S10-DEPLOY-01 host activation is separate; live DISABLED;
+capital/orders USD 0 / 0; merge NOT AUTHORIZED.
+
+## S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (merged historical predecessor: PR #212)
+
+PR #212 merged: YES at `35db4f05347b8b27f7bd0296cf9b1b0627e58d12` (head `99f3c3c8acc09ae3b5646f785446d69a7b8b2290`); formerly the current bounded
+implementation target. The contract is `docs/execution_feasibility_contract.md`; the implementation is the new four-file
 stdlib-only source package `src/execution_feasibility/` (`__init__.py`, `models.py`,
 `public_market.py`, `evaluator.py`); the focused tests are
 `tests/execution_feasibility/test_execution_feasibility.py`; the frozen package is
