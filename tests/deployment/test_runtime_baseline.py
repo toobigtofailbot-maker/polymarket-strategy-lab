@@ -1148,7 +1148,7 @@ def test_bootstrap_installs_critical_probe_but_leaves_it_inactive() -> None:
     text = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
     loop_start = text.index("for unit in")
     install_loop = text[loop_start : text.index("done", loop_start)]
-    verify_start = text.index("systemd-analyze verify")
+    verify_start = text.index("run_or_fail SYSTEMD_VERIFY_FAILED systemd-analyze verify")
     verify = text[verify_start : text.index("polymarket-research.target", verify_start)]
     assert PROBE_UNIT in install_loop and "-m 0644" in text[loop_start:]
     assert f"/etc/systemd/system/{PROBE_UNIT}" in verify
@@ -1366,6 +1366,13 @@ def test_coexistence_degradation_boundary_is_strictly_more_than_twenty_percent()
     assert exact["coexistence_disposition"] == "C8G_EXECUTION_HOST_SUFFICIENT"
     over = _coexist(mixed=_steady(300.001, 200))
     assert over["coexistence_disposition"] == "UPGRADE_ELIGIBLE:CRITICAL_DEGRADATION"
+    # Non-binary-exact decimal boundary: 120.12 == 100.1 * 1.20 exactly, so it is not degradation,
+    # even though the binary float approximations of these decimals compare greater-than.
+    decimal_isolated = _steady(100.1, 600)
+    assert _coexist(isolated=decimal_isolated, mixed=_steady(120.12, 500))["coexistence_disposition"] == (
+        "C8G_EXECUTION_HOST_SUFFICIENT")
+    assert _coexist(isolated=decimal_isolated, mixed=_steady(120.121, 500))["coexistence_disposition"] == (
+        "UPGRADE_ELIGIBLE:CRITICAL_DEGRADATION")
     # Nearest-rank p95 uses the ceil(0.95 * n)-th smallest sample.
     assert baseline.nearest_rank_p95([float(value) for value in range(1, 21)]) == 19.0
     assert baseline.nearest_rank_p95([5.0]) == 5.0
@@ -1603,3 +1610,83 @@ def test_execution_host_authority_regression_no_credentials_orders_or_live() -> 
         "polymarket_client", "mnemonic", "os.environ", "getenv",
     ):
         assert forbidden not in source, forbidden
+
+
+_STAGING_HARNESS = r"""
+set -Eeuo pipefail
+source "$1"
+root=$2
+current_link="$root/current"
+target="$root/releases/target"
+old="$root/releases/old"
+mkdir -p "$target/.venv/bin" "$old/.venv/bin"
+for release in "$target" "$old"; do
+  printf '#!/bin/sh\n' > "$release/.venv/bin/python"
+  chmod +x "$release/.venv/bin/python"
+done
+ln -s "$target" "$root/probe-link" 2>/dev/null || exit 99
+[[ -L "$root/probe-link" ]] || exit 99
+rm -f "$root/probe-link"
+# 1. First deployment, verification PASS: current resolves for verify, then the staged link is removed.
+stage_current_for_verify "$target"
+[[ -x "$current_link/.venv/bin/python" ]] || exit 11
+[[ "$(readlink "$current_link")" == "$target" ]] || exit 12
+cleanup_staged_current
+[[ ! -e "$current_link" && ! -L "$current_link" ]] || exit 13
+# 2. First deployment, verification FAIL: fail() removes the staged link before exiting.
+set +e
+( stage_current_for_verify "$target"; [[ -x "$current_link/.venv/bin/python" ]] || exit 21
+  fail SYSTEMD_VERIFY_FAILED ) > "$root/fail.out"
+status=$?
+set -e
+[[ $status -eq 1 ]] || exit 22
+grep -q '"error_code":"SYSTEMD_VERIFY_FAILED"' "$root/fail.out" || exit 23
+[[ ! -e "$current_link" && ! -L "$current_link" ]] || exit 24
+# 3. Existing current release: never replaced for verification, kept on PASS and FAIL.
+ln -s "$old" "$current_link"
+stage_current_for_verify "$target"
+[[ "$(readlink "$current_link")" == "$old" ]] || exit 31
+set +e
+( stage_current_for_verify "$target"; fail SYSTEMD_VERIFY_FAILED ) > /dev/null
+set -e
+[[ "$(readlink "$current_link")" == "$old" ]] || exit 32
+cleanup_staged_current
+[[ "$(readlink "$current_link")" == "$old" ]] || exit 33
+echo STAGING_HARNESS_OK
+"""
+
+
+def test_bootstrap_first_deploy_verify_stages_and_always_cleans_current(tmp_path: pathlib.Path) -> None:
+    text = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
+    stage = 'stage_current_for_verify "$target_release"'
+    verify = "run_or_fail SYSTEMD_VERIFY_FAILED systemd-analyze verify"
+    cleanup = "/etc/systemd/system/polymarket-research.target\ncleanup_staged_current\n"
+    activate = "mv -Tf /opt/polymarket/.current-new /opt/polymarket/current"
+    # Ordering: stage -> verify -> cleanup -> firewall apply -> governed atomic switch -> enable.
+    assert text.index(stage) < text.index(verify) < text.index(cleanup) < text.index('ufw allow "${ssh_port}/tcp"')
+    assert text.index(cleanup) < text.index(activate) < text.index("systemctl enable --now")
+    assert text.count(stage) == 1 and text.index(stage) > text.index("for unit in")
+    assert "trap cleanup_staged_current EXIT" in text
+    block = text[text.index("# BEGIN_FIRST_DEPLOY_VERIFY_STAGING") : text.index("# END_FIRST_DEPLOY_VERIFY_STAGING")]
+    assert "current_link=/opt/polymarket/current" in block
+    assert block.index("cleanup_staged_current\n  printf") > block.index("fail() {")
+    # Probe default-inactive semantics are unchanged.
+    assert f"systemctl disable --now {PROBE_UNIT}" in text and '"critical_probe":"installed_inactive"' in text
+    bash = shutil.which("bash")
+    git_bash = pathlib.Path(r"C:\Program Files\Git\bin\bash.exe")
+    if os.name == "nt" and git_bash.is_file():
+        bash = str(git_bash)
+    if bash is None:
+        pytest.skip("bash is unavailable")
+    (tmp_path / "staging.sh").write_text(block, encoding="utf-8", newline="\n")
+    (tmp_path / "harness.sh").write_text(_STAGING_HARNESS, encoding="utf-8", newline="\n")
+    environment = {**os.environ, "MSYS": "winsymlinks:nativestrict"}
+    result = subprocess.run(
+        [bash, (tmp_path / "harness.sh").as_posix(), (tmp_path / "staging.sh").as_posix(),
+         (tmp_path / "root").as_posix()],
+        capture_output=True, text=True, env=environment,
+    )
+    if os.name == "nt" and (result.returncode == 99 or "execvpe(/bin/bash) failed" in result.stderr):
+        pytest.skip("this Windows host cannot create real symbolic links from bash")
+    assert result.returncode == 0, (result.returncode, result.stderr)
+    assert result.stdout.strip() == "STAGING_HARNESS_OK"

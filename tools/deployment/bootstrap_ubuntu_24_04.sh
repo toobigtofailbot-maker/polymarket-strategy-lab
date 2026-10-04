@@ -3,10 +3,39 @@ set -Eeuo pipefail
 IFS=$'\n\t'
 umask 027
 
+# BEGIN_FIRST_DEPLOY_VERIFY_STAGING
+# S10-DEPLOY-EXEC-01: installed units use ExecStart=/opt/polymarket/current/.venv/bin/python, which
+# systemd-analyze verify requires to resolve. On a first deployment (no current link yet) the link
+# is staged to the already-verified target release only for unit verification and is always removed
+# again on PASS or FAIL; the governed atomic current switch later remains the only activation. An
+# existing current link is never replaced for verification.
+current_link=/opt/polymarket/current
+staged_current_target=""
+
+cleanup_staged_current() {
+  if [[ -n $staged_current_target ]]; then
+    if [[ -L $current_link && "$(readlink "$current_link")" == "$staged_current_target" ]]; then
+      rm -f "$current_link"
+    fi
+    staged_current_target=""
+  fi
+}
+
 fail() {
+  cleanup_staged_current
   printf '{"status":"FAILED","error_code":"%s"}\n' "$1"
   exit 1
 }
+
+stage_current_for_verify() {
+  local release=$1
+  if [[ -e $current_link || -L $current_link ]]; then
+    return 0
+  fi
+  ln -s "$release" "$current_link" || fail HOST_SETUP_FAILED
+  staged_current_target=$release
+}
+# END_FIRST_DEPLOY_VERIFY_STAGING
 
 run_or_fail() {
   local error_code=$1
@@ -22,6 +51,7 @@ run_capture_or_fail() {
 }
 
 trap 'fail UNEXPECTED_OPERATION_FAILED' ERR
+trap cleanup_staged_current EXIT
 
 release_dir=""
 expected_sha=""
@@ -151,6 +181,7 @@ for unit in \
     "/etc/systemd/system/$unit"
 done
 
+stage_current_for_verify "$target_release"
 run_or_fail SYSTEMD_VERIFY_FAILED systemd-analyze verify \
   /etc/systemd/system/polymarket-research.slice \
   /etc/systemd/system/polymarket-critical.slice \
@@ -158,6 +189,7 @@ run_or_fail SYSTEMD_VERIFY_FAILED systemd-analyze verify \
   /etc/systemd/system/polymarket-host-telemetry.service \
   /etc/systemd/system/polymarket-host-telemetry.timer \
   /etc/systemd/system/polymarket-research.target
+cleanup_staged_current
 
 run_or_fail FIREWALL_APPLY_FAILED ufw allow "${ssh_port}/tcp"
 run_or_fail FIREWALL_APPLY_FAILED ufw default deny incoming

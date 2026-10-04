@@ -128,7 +128,11 @@ execution-host state/evidence destinations.
 Activation posture: bootstrap installs (root:root 0644), `systemd-analyze verify`s and hashes the
 unit, then runs `systemctl disable --now` on it and fails closed if it is still enabled or active.
 Normal steady state: telemetry timer active, research target active, critical probe installed and
-inactive. Phase B may start/enable it only for the authorized restart/reboot proof and must stop
+inactive. Because installed units execute `/opt/polymarket/current/.venv/bin/python`, a first
+deployment (no `current` link yet) stages `current` to the already-verified target release only
+for `systemd-analyze verify` and always removes that staged link again on PASS or FAIL (also via
+an EXIT trap); an existing `current` link is never replaced for verification, and the governed
+atomic current switch after the firewall gates remains the only activation. Phase B may start/enable it only for the authorized restart/reboot proof and must stop
 and disable it afterwards unless a later package authorizes persistent operation.
 
 ## Restart, Reboot And Persistence
@@ -171,7 +175,10 @@ every row; the smoke satisfies the DEPLOY-01 truthful success contract (`STOPPED
 Timing oracle: p95 is nearest-rank, the `ceil(0.95 * n)`-th smallest interval computed with an exact
 integer rank. A critical deadline miss is any isolated or mixed interval `> 500.0` ms (exactly 500.0
 is not a miss). Critical degradation is `mixed_p95 > isolated_p95 * 1.20`, evaluated by exact
-rational comparison, so exactly 20% is not degradation and more than 20% is; this is the bounded
+rational comparison of the observable decimal evidence (each p95 is rationalized from its
+shortest round-trip decimal text, not from its binary float approximation; for example
+`100.1 -> 120.12` is exactly the boundary), so exactly 20% is not degradation and more than 20% is;
+this is the bounded
 proof form of the hosting direction's >=20% review trigger.
 
 Resource triggers on otherwise valid evidence: memory `>= 85%`, any `swap_used_kib > 0`, or a swap

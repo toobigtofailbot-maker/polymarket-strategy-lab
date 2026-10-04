@@ -1321,8 +1321,9 @@ def evaluate_execution_host_coexistence(
     isolated_p95 = nearest_rank_p95(isolated[1])
     mixed_p95 = nearest_rank_p95(mixed[1])
     deadline_miss = any(value > CRITICAL_DEADLINE_MS for value in isolated[1] + mixed[1])
-    # Exact rational comparison: strictly more than 20% degradation (boundary is not a trigger).
-    degraded = Fraction(mixed_p95) > Fraction(isolated_p95) * CRITICAL_DEGRADATION_RATIO
+    # Exact rational comparison of the observable decimal evidence (shortest round-trip text, not
+    # the binary float approximation): strictly more than 20% degradation; the boundary is not a trigger.
+    degraded = Fraction(str(mixed_p95)) > Fraction(str(isolated_p95)) * CRITICAL_DEGRADATION_RATIO
     first = telemetry[0]
     memory = (
         any(row["memory_utilization_percent"] >= 85 for row in telemetry)
