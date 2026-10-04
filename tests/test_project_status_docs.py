@@ -5702,7 +5702,7 @@ def test_s10_exec_feas_status_gate_c_explore_next() -> None:
     assert spec["scope"]["max_changed_files"] == 17 and spec["identity"]["package_size_class"] == "L"
 
 
-def test_s10_gate_c_explore_status_deploy_exec_next() -> None:
+def test_status_docs() -> None:
     """EXEC-FEAS merged / GATE-C-EXPLORE current protected review target / DEPLOY-EXEC next (R044)."""
     lines = _read().splitlines()
     current = next(line for line in lines if line.startswith("# S10-GATE-C-EXPLORE-01 current protected implementation target"))

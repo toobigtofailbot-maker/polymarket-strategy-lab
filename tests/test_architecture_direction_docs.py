@@ -389,7 +389,7 @@ def _gate_c_adr() -> str:
     return " ".join(adr.split("## V2.1 Exploratory Gate C Policy Permit Core (S10-GATE-C-EXPLORE-01)", 1)[1].split())
 
 
-def test_gate_c_explore_known_candidate_path_deploy_exec_next():
+def test_direction_docs():
     section = _gate_c_adr()
     path = ("lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes strategy manager (S10-HERMES-STRAT-01: MERGED) -> "
             "execution feasibility (S10-EXEC-FEAS-01: MERGED) -> exploratory Gate C (S10-GATE-C-EXPLORE-01: "

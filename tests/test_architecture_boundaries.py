@@ -655,7 +655,7 @@ def test_execution_feasibility_is_exact_new_source_family() -> None:
             assert forbidden not in source, (path.name, forbidden)
 
 
-def test_exploratory_gate_c_is_exact_new_source_family() -> None:
+def test_architecture_boundary_family_approval() -> None:
     """S10-GATE-C-EXPLORE-01 approves exactly src/exploratory_gate_c: the credential-free
     exploratory Gate-C policy-permit core. It is the only new executable src family, reads
     canonical stores only through verified loaders and holds no network, credential,
