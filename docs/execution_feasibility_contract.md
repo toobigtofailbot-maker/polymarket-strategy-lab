@@ -109,7 +109,11 @@ schedule) or UNKNOWN. Taker fees are computed per fill level and summed exactly:
 VWAP alone. The venue rounds fee amounts to five decimals without a frozen rounding mode here, so
 the package reports the exact theoretical value plus a five-decimal ceiling upper bound and never
 claims the server-rounded fee. A missing, malformed, unsupported or non-taker-only enabled
-schedule is UNKNOWN (INCONCLUSIVE for the affected style). The rebate rate is informational;
+schedule is UNKNOWN (INCONCLUSIVE for the affected style). For an aggressive taker the fee
+dimension is PASS only when a fee was actually calculated: if the book is unavailable, invalid
+or stale there is no usable fill path, so the fee dimension and exactness are UNKNOWN with null
+amounts (no fee is invented from the limit, best price or notional). A usable book with zero
+visible fill deterministically records a zero executed fee. The rebate rate is informational;
 `expected_maker_rebate_usd` is always null.
 
 ## 8. Unknowns and non-claims
@@ -128,7 +132,11 @@ One explicit foreground acquisition performs at most two HTTPS GETs to exactly
 `gamma-api.polymarket.com` and `clob.polymarket.com` on the default port: no redirects (rejected),
 no retries, no backoff, no cookies, no authorization or credential headers, no proxy discovery,
 5 s timeout, body caps 1,048,576 (Gamma) and 4,194,304 (CLOB) bytes read as cap + 1 with
-Content-Length pre-rejection. No other endpoint (orders, auth, balances, allowances, positions,
+Content-Length pre-rejection. The low-level transport itself fails closed before any request unless the URL is exactly
+`https://gamma-api.polymarket.com/markets/<1..32 digits>` (no query or fragment) or
+`https://clob.polymarket.com/book?token_id=<1..100 digits>` (exactly that single parameter, no
+fragment), with optional explicit port 443 and no userinfo; any other path, query or fragment is
+NETWORK_HOST_FORBIDDEN. No other endpoint (orders, auth, balances, allowances, positions,
 private trades, open orders, wallet, geoblock, RPC, WebSocket, Data API) is used. Importing the
 package performs no network, file write, database open, thread, process, sleep or environment
 read. There is no persistence. Records are bounded: 262,144 canonical bytes, depth 12, 20,000

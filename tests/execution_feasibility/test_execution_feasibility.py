@@ -1119,3 +1119,58 @@ def test_r060_no_wp172_semantics_reused_or_weakened() -> None:
         assert name not in {f.lower() for f in ExecutionFeasibilityAssessment.__dataclass_fields__}
     assert set(M.EXECUTION_FEASIBILITY_STATUSES) == {"FEASIBLE", "LIMITED", "INCONCLUSIVE",
                                                      "NOT_FEASIBLE"}
+
+
+# ---------------------------------------------------------------------------
+# Final Contract Micro-Closure 01 (Side15): B1 endpoint shapes, B2 fee truthfulness.
+# ---------------------------------------------------------------------------
+
+
+def test_r069_only_two_exact_endpoint_shapes_pass_transport_guard() -> None:
+    gamma = "https://gamma-api.polymarket.com"
+    clob = "https://clob.polymarket.com"
+    forbidden = (
+        f"{clob}/order", f"{clob}/auth/api-key", f"{clob}/book", f"{clob}/book?",
+        f"{clob}/book?token_id={TOKEN}&extra=1", f"{clob}/book?token_id={TOKEN}&token_id=1",
+        f"{clob}/book?extra=1&token_id={TOKEN}", f"{clob}/book?token_id=", f"{clob}/book?token_id=+1",
+        f"{clob}/book?token_id=%31", f"{clob}/book?token_id=abc", f"{clob}/book?token_id={'1' * 101}",
+        f"{clob}/book/?token_id={TOKEN}", f"{clob}/book?token_id={TOKEN}#frag",
+        f"{clob}/markets/{GAMMA_ID}", f"{gamma}/markets", f"{gamma}/markets/",
+        f"{gamma}/markets/{GAMMA_ID}?extra=1", f"{gamma}/markets/{GAMMA_ID}?",
+        f"{gamma}/markets/{GAMMA_ID}#frag", f"{gamma}/markets/{GAMMA_ID}/x", f"{gamma}/markets/abc",
+        f"{gamma}/markets/-1", f"{gamma}/markets/{'1' * 33}", f"{gamma}/anything",
+        f"{gamma}/book?token_id={TOKEN}", f"https://GAMMA-API.polymarket.com/markets/{GAMMA_ID}",
+        f"https://gamma-api.polymarket.com:8443/markets/{GAMMA_ID}",
+        f"https://u:p@clob.polymarket.com/book?token_id={TOKEN}",
+    )
+    opener = FakeOpener()
+    for url in forbidden:
+        assert code_of(P.public_get, url, max_bytes=10, opener=opener) == "NETWORK_HOST_FORBIDDEN", url
+    assert opener.requests == []
+    for url in (P.gamma_market_url(GAMMA_ID), P.clob_book_url(TOKEN),
+                f"https://gamma-api.polymarket.com:443/markets/{GAMMA_ID}",
+                f"https://clob.polymarket.com:443/book?token_id={TOKEN}"):
+        ok = FakeOpener(FakeResponse(payload=b"{}"))
+        assert P.public_get(url, max_bytes=10, opener=ok).outcome == "BODY", url
+        assert len(ok.requests) == 1
+    assert fetch(ok_opener()).clob_source_state == "AVAILABLE"
+
+
+def test_r070_taker_fee_unknown_without_usable_fills() -> None:
+    for snapshot in (snap(clob=UNAVAILABLE), snap(clob=body(book_doc(asks=[("0.5", "1")])))):
+        result = assess(s=snapshot)
+        assert (result.fee_dimension, result.fee_exactness) == ("UNKNOWN", "UNKNOWN")
+        assert result.theoretical_fee_unrounded_usd is None and result.fee_upper_bound_usd is None
+        assert result.status == "INCONCLUSIVE"
+    stale = assess(i=intent(max_public_data_age_ns=999_999_999))
+    assert stale.freshness_dimension == "UNKNOWN" and stale.fee_dimension == "UNKNOWN"
+    assert stale.fee_upper_bound_usd is None
+    usable = assess()
+    assert usable.fee_dimension == "PASS" and usable.fee_upper_bound_usd == "0.20755"
+    no_fees = assess(s=snap(gamma=body(gamma_doc(feesEnabled=False, feeSchedule=_DROP)), clob=UNAVAILABLE))
+    assert (no_fees.fee_dimension, no_fees.fee_exactness, no_fees.fee_upper_bound_usd) == (
+        "PASS", "EXACT_ZERO_NO_FEES", "0")
+    # A known usable book with zero visible fill keeps a deterministic zero executed fee.
+    zero_fill = assess(i=intent(price_limit="0.51", order_type="FAK"))
+    assert zero_fill.status == "NOT_FEASIBLE" and zero_fill.fee_dimension == "PASS"
+    assert zero_fill.theoretical_fee_unrounded_usd == "0" and zero_fill.fee_upper_bound_usd == "0"

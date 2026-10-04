@@ -50,6 +50,8 @@ _UNAVAILABLE = "UNAVAILABLE"
 _OVERSIZE = "OVERSIZE"
 _PLAIN_DECIMAL_RE = re.compile(r"-?[0-9]+(?:\.[0-9]+)?")
 _DIGITS_RE = re.compile(r"[0-9]{1,19}")
+_GAMMA_PATH_RE = re.compile(r"/markets/[0-9]{1,32}")
+_CLOB_QUERY_RE = re.compile(r"token_id=[0-9]{1,100}")
 
 
 @dataclass(frozen=True)
@@ -95,17 +97,26 @@ def clob_book_url(token_id: str) -> str:
 
 
 def _check_request(url: str, method: str) -> None:
+    """Fail closed unless the request is exactly one of the two authorized endpoint shapes.
+
+    Gamma: GET https://gamma-api.polymarket.com/markets/<digits>, no query or fragment.
+    CLOB:  GET https://clob.polymarket.com/book?token_id=<digits>, exactly that one parameter.
+    Path, query, fragment, userinfo or port deviations are NETWORK_HOST_FORBIDDEN (endpoint).
+    """
+
     if method != "GET":
         raise ExecutionFeasibilityError("NETWORK_METHOD_FORBIDDEN")
     parts = urllib.parse.urlsplit(url)
     if parts.scheme != "https":
         raise ExecutionFeasibilityError("NETWORK_SCHEME_FORBIDDEN")
-    try:
-        port = parts.port
-    except ValueError:
-        raise ExecutionFeasibilityError("NETWORK_HOST_FORBIDDEN") from None
-    if (parts.hostname not in ALLOWED_HOSTS or parts.netloc != parts.hostname
-            or port not in (None, 443) or parts.username or parts.password):
+    host = parts.hostname
+    if host not in ALLOWED_HOSTS or parts.netloc not in (host, f"{host}:443") or "#" in url:
+        raise ExecutionFeasibilityError("NETWORK_HOST_FORBIDDEN")
+    if host == GAMMA_HOST:
+        allowed = "?" not in url and _GAMMA_PATH_RE.fullmatch(parts.path) is not None
+    else:
+        allowed = parts.path == "/book" and _CLOB_QUERY_RE.fullmatch(parts.query) is not None
+    if not allowed:
         raise ExecutionFeasibilityError("NETWORK_HOST_FORBIDDEN")
 
 

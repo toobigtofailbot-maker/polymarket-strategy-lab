@@ -183,7 +183,8 @@ def _fee(
         diags.add("FEE_EXPONENT_UNSUPPORTED")
         return "UNKNOWN", "UNKNOWN", None, None
     if fills is None:
-        return "PASS", "UNKNOWN", None, None
+        # No usable current fill path: the taker fee cannot be calculated, so it is not PASS.
+        return "UNKNOWN", "UNKNOWN", None, None
     unrounded = _taker_fee(fills, rate, int(exponent))
     bound = unrounded.quantize(FEE_QUANTUM, rounding=ROUND_CEILING)
     return "PASS", "CONSERVATIVE_5DP_UPPER_BOUND", unrounded, bound

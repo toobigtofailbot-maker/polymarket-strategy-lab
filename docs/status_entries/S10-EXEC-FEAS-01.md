@@ -13,6 +13,9 @@
 - Merge commit: not merged
 - Merge authorized: NO
 - Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED; live fields belong in the PR body
+- Final Contract Micro-Closure 01 (Side15, same PR, same 17 paths, authority expansion NONE):
+  B1 exact two-endpoint-shape transport guard; B2 aggressive-taker fee dimension UNKNOWN
+  without a usable fill path
 
 ## Authority / Non-Authority Posture
 

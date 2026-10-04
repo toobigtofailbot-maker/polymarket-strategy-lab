@@ -3515,6 +3515,17 @@ S10-GATE-C-EXPLORE-01 separately draftable; nothing starts automatically.
 
 Report back to the current Side15 chat in exactly the Section 77 format; do not merge.
 
+## Final Contract Micro-Closure 01 (Side15)
+
+Same branch, same PR #212, same 17 paths, no scope amendment, authority expansion NONE. B1: the
+low-level transport guard accepts only the two authorized endpoint shapes
+(https://gamma-api.polymarket.com/markets/<1..32 digits> with no query; https://clob.polymarket.com/book
+with exactly one token_id=<1..100 digits> parameter; no fragment, no userinfo, port 443/default)
+and rejects everything else with NETWORK_HOST_FORBIDDEN before any request (R069, NR047). B2: for
+an aggressive taker on a fee-enabled market without a usable fill path (book unavailable, invalid
+or stale) the fee dimension and fee exactness are UNKNOWN with null amounts; no fee is invented
+(R070, NR048). Evidence R069-R070 and rules NR047-NR048 are added; no requirement is removed.
+
 BEGIN_NORMATIVE_RULE_MATRIX_V1
 RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
 NR001|binding|strategy_version|tampered_or_wrong_type|FORBID|strategy_version_invalid|exec_feas.strategy_binding|R005
@@ -3563,4 +3574,6 @@ NR043|scope|changed_files|eighteenth_path|FORBID|amendment_required|scope.exact|
 NR044|scope|src_family|new_source_family|REQUIRE|exact_single_family_approval|scope.exact|R061
 NR045|docs|known_candidate_path|after_merge|REQUIRE|gate_c_explore_next_not_started|docs.v21_truth|R063
 NR046|docs|exec_feas_vs_wp172|any_doc|REQUIRE|distinct_concepts|docs.v21_truth|R062
+NR047|acquisition|endpoint_shape|path_query_fragment_or_id_deviation|FORBID|network_host_forbidden_before_request|exec_feas.acquisition|R069
+NR048|fees|taker_fee|no_usable_fill_path|REQUIRE|fee_dimension_unknown_no_amount|exec_feas.fees|R070
 END_NORMATIVE_RULE_MATRIX_V1

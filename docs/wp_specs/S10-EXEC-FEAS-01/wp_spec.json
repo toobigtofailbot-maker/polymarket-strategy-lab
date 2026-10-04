@@ -251,11 +251,11 @@
         "path": "exec_feas.acquisition",
         "source": "CONSTANT",
         "type": "closed_rule",
-        "required_rule": "At most two HTTPS GETs per acquisition (Gamma market then CLOB book) to exactly two fixed hosts, default port, no redirects, no retries, no sleep, no cookies or credential headers, no proxy discovery, 5 s timeout, capped reads (cap+1 sentinel, Content-Length pre-rejection)",
+        "required_rule": "At most two HTTPS GETs per acquisition (Gamma market then CLOB book) to exactly two fixed endpoint shapes (/markets/<digits>; /book?token_id=<digits> only), port 443/default, no redirects, no retries, no sleep, no cookies or credential headers, no proxy discovery, 5 s timeout, capped reads (cap+1 sentinel, Content-Length pre-rejection)",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "R016-R021",
+        "validation_rule": "R016-R021, R069",
         "failure_category": "AUTHORITY_CONTRADICTION",
         "safe_output": "NETWORK_SCHEME_FORBIDDEN, NETWORK_HOST_FORBIDDEN or NETWORK_METHOD_FORBIDDEN",
         "derivation_rule_id": null
@@ -381,11 +381,11 @@
         "path": "exec_feas.fees",
         "source": "CONSTANT",
         "type": "closed_rule",
-        "required_rule": "Fees disabled -> EXACT_ZERO_NO_FEES; passive + takerOnly -> EXACT_ZERO_MAKER; aggressive taker -> per-level exact sum of shares*rate*(p(1-p))**e for integer e in 0..8 with five-decimal ceiling CONSERVATIVE_5DP_UPPER_BOUND; otherwise UNKNOWN; expected maker rebate always null",
+        "required_rule": "Fees disabled -> EXACT_ZERO_NO_FEES; passive + takerOnly -> EXACT_ZERO_MAKER; aggressive taker with usable fills -> per-level exact sum of shares*rate*(p(1-p))**e for integer e in 0..8 with five-decimal ceiling CONSERVATIVE_5DP_UPPER_BOUND; no usable fill path or incomplete schedule -> UNKNOWN; expected maker rebate always null",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "R044-R047",
+        "validation_rule": "R044-R047, R070",
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "FEE_CONFIG_UNKNOWN or FEE_EXPONENT_UNSUPPORTED",
         "derivation_rule_id": null
@@ -990,7 +990,7 @@
   },
   "evidence_plan": {
     "applicable": true,
-    "reason": "R001-R060 are the focused EXEC-FEAS matrix (families A-Q); R061 architecture boundary; R062-R065 repo truth; R066-R068 bounded repository guards and the full suite.",
+    "reason": "R001-R060 are the focused EXEC-FEAS matrix (families A-Q) and R069-R070 the Final Contract Micro-Closure 01 evidence; R061 architecture boundary; R062-R065 repo truth; R066-R068 bounded repository guards and the full suite.",
     "items": [
       {
         "requirement_id": "R001",
@@ -1404,6 +1404,20 @@
         "test": "test_r059_scope_is_exact_and_excludes_forbidden_surfaces",
         "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
         "expected_result": "the spec scope is exactly 17 paths outside STRAT-LIFE, execution, paper, data-layer, tools, workflow, local data and dependency surfaces with the frozen authority booleans"
+      },
+      {
+        "requirement_id": "R069",
+        "source": "pytest",
+        "test": "test_r069_only_two_exact_endpoint_shapes_pass_transport_guard",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "the low-level transport rejects every path, query, fragment, userinfo, port and id-shape deviation from the two authorized endpoints before any request while both exact URLs (and explicit :443) pass"
+      },
+      {
+        "requirement_id": "R070",
+        "source": "pytest",
+        "test": "test_r070_taker_fee_unknown_without_usable_fills",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "an enabled taker fee with an unavailable, invalid or stale book is fee UNKNOWN with null amounts; usable fills keep PASS with the conservative bound; disabled fees stay exact zero; a usable zero fill records a zero fee"
       },
       {
         "requirement_id": "R060",
