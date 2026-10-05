@@ -37,6 +37,53 @@ stage_current_for_verify() {
 }
 # END_FIRST_DEPLOY_VERIFY_STAGING
 
+# BEGIN_RELEASE_ACTIVATION_INSTALL
+# S10-DEPLOY-EXEC-01 repair (real Phase-B defects RELEASE_FILE_SET_MISMATCH and
+# RUNTIME_VENV_NOT_EXECUTABLE): the immutable target release is never the pip build workspace.
+# The package is installed from a disposable copy of the already-verified pristine incoming
+# release, which is removed on PASS and (via the EXIT trap) on every FAIL. The installed release
+# is then normalized root-owned and runtime-readable/executable but never runtime-writable, and
+# the runtime user must execute the venv interpreter and resolve the project before activation.
+install_source_dir=""
+
+cleanup_install_source() {
+  if [[ -n $install_source_dir ]]; then
+    if [[ $install_source_dir == /tmp/polymarket-install-source.* && -d $install_source_dir ]]; then
+      rm -rf -- "$install_source_dir"
+    fi
+    install_source_dir=""
+  fi
+}
+
+install_package_from_disposable_source() {
+  local pristine=$1
+  local target=$2
+  install_source_dir=$(mktemp -d /tmp/polymarket-install-source.XXXXXXXX 2>/dev/null) || fail HOST_SETUP_FAILED
+  cp -a --no-preserve=ownership "$pristine/." "$install_source_dir/" >/dev/null 2>&1 || fail HOST_SETUP_FAILED
+  [[ ! -e $install_source_dir/.git ]] || fail RELEASE_DIR_INVALID
+  "$target/.venv/bin/python" -m pip install --disable-pip-version-check "$install_source_dir" \
+    >/dev/null 2>&1 || fail PACKAGE_INSTALL_FAILED
+  cleanup_install_source
+}
+
+normalize_runtime_permissions() {
+  local target=$1
+  chmod -R go+rX,go-w "$target" >/dev/null 2>&1 || fail HOST_SETUP_FAILED
+}
+
+verify_runtime_user_exec() {
+  local target=$1
+  (cd / && runuser -u polymarket -- "$target/.venv/bin/python" -I -c \
+    'import importlib.metadata as metadata; metadata.version("polymarket-strategy-lab")') \
+    >/dev/null 2>&1 || fail RUNTIME_VENV_NOT_EXECUTABLE
+}
+
+cleanup_on_exit() {
+  cleanup_staged_current
+  cleanup_install_source
+}
+# END_RELEASE_ACTIVATION_INSTALL
+
 run_or_fail() {
   local error_code=$1
   shift
@@ -51,7 +98,7 @@ run_capture_or_fail() {
 }
 
 trap 'fail UNEXPECTED_OPERATION_FAILED' ERR
-trap cleanup_staged_current EXIT
+trap cleanup_on_exit EXIT
 
 release_dir=""
 expected_sha=""
@@ -97,7 +144,7 @@ opt_disk_kib=$(df -Pk /opt 2>/dev/null | awk 'NR==2 {print $2}') || fail HOST_SE
 state_disk_kib=$(df -Pk /var 2>/dev/null | awk 'NR==2 {print $2}') || fail HOST_SETUP_FAILED
 ((opt_disk_kib >= 73400320 && state_disk_kib >= 73400320)) || fail DISK_FLOOR_NOT_MET
 
-for command_name in python3 systemctl systemd-analyze timedatectl ufw realpath; do
+for command_name in python3 systemctl systemd-analyze timedatectl ufw realpath runuser mktemp; do
   command -v "$command_name" >/dev/null || fail REQUIRED_COMMAND_UNAVAILABLE
 done
 ntp_state=$(timedatectl show --property=NTPSynchronized --value 2>/dev/null) || fail HOST_SETUP_FAILED
@@ -163,11 +210,15 @@ fi
 if ! "$target_release/.venv/bin/python" -c \
   'import importlib.metadata as metadata; metadata.version("polymarket-strategy-lab")' \
   >/dev/null 2>&1; then
-  run_or_fail PACKAGE_INSTALL_FAILED "$target_release/.venv/bin/python" -m pip install \
-    --disable-pip-version-check "$target_release"
+  install_package_from_disposable_source "$release_dir" "$target_release"
 fi
 run_or_fail PACKAGE_CHECK_FAILED "$target_release/.venv/bin/python" -m pip check
+normalize_runtime_permissions "$target_release"
+verify_runtime_user_exec "$target_release"
 run_or_fail HOST_SETUP_FAILED chmod -R a-w "$target_release"
+run_or_fail POST_INSTALL_RELEASE_VERIFY_FAILED python3 "$release_dir/tools/deployment/runtime_baseline.py" \
+  verify-release --release-dir "$target_release" --expected-sha "$expected_sha" \
+  --allow-activation-artifacts
 
 for unit in \
   polymarket-research.slice \

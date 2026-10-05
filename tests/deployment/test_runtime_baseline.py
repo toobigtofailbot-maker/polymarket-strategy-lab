@@ -9,6 +9,7 @@ import os
 import pathlib
 import shutil
 import sqlite3
+import stat
 import subprocess
 import tomllib
 
@@ -561,7 +562,8 @@ def test_firewall_success_requires_effective_exact_rule() -> None:
 
 def test_bootstrap_installs_base_project_without_cockpit_extra() -> None:
     text = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
-    assert '--disable-pip-version-check "$target_release"' in text
+    assert '--disable-pip-version-check "$install_source_dir"' in text
+    assert '--disable-pip-version-check "$target_release"' not in text
     assert "[cockpit]" not in text
     assert "fastapi" not in text.lower()
     assert "uvicorn" not in text.lower()
@@ -575,10 +577,12 @@ def test_bootstrap_repairs_partial_venv_without_reinstalling_complete_environmen
     text = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
     create_guard = "if [[ ! -x $target_release/.venv/bin/python ]]; then"
     metadata_probe = 'metadata.version("polymarket-strategy-lab")'
-    install_command = 'run_or_fail PACKAGE_INSTALL_FAILED "$target_release/.venv/bin/python" -m pip install'
+    install_command = 'install_package_from_disposable_source "$release_dir" "$target_release"'
     dependency_check = 'run_or_fail PACKAGE_CHECK_FAILED "$target_release/.venv/bin/python" -m pip check'
     assert create_guard in text
     assert metadata_probe in text
+    # The activation helper block also probes metadata (as the runtime user); order the main body.
+    text = text[text.index("# END_RELEASE_ACTIVATION_INSTALL") :]
     assert text.index(create_guard) < text.index("python3 -m venv") < text.index(metadata_probe)
     assert text.index(metadata_probe) < text.index(install_command) < text.index(dependency_check)
     metadata_block = text[text.index("if ! \"$target_release/.venv/bin/python\" -c") :]
@@ -1663,7 +1667,9 @@ def test_bootstrap_first_deploy_verify_stages_and_always_cleans_current(tmp_path
     assert text.index(stage) < text.index(verify) < text.index(cleanup) < text.index('ufw allow "${ssh_port}/tcp"')
     assert text.index(cleanup) < text.index(activate) < text.index("systemctl enable --now")
     assert text.count(stage) == 1 and text.index(stage) > text.index("for unit in")
-    assert "trap cleanup_staged_current EXIT" in text
+    assert "trap cleanup_on_exit EXIT" in text
+    on_exit = text[text.index("cleanup_on_exit() {") :]
+    assert on_exit.index("cleanup_staged_current") < on_exit.index("\n}\n")
     block = text[text.index("# BEGIN_FIRST_DEPLOY_VERIFY_STAGING") : text.index("# END_FIRST_DEPLOY_VERIFY_STAGING")]
     assert "current_link=/opt/polymarket/current" in block
     assert block.index("cleanup_staged_current\n  printf") > block.index("fail() {")
@@ -1683,3 +1689,240 @@ def test_bootstrap_first_deploy_verify_stages_and_always_cleans_current(tmp_path
     )
     assert result.returncode == 0, (result.returncode, result.stderr)
     assert result.stdout.strip() == "STAGING_HARNESS_OK"
+
+
+# --- S10-DEPLOY-EXEC-01 bootstrap activation repair (real Phase-B defects) -----------------------
+# Phase B on the real AlphaVPS host exposed RELEASE_FILE_SET_MISMATCH (pip built in-tree inside
+# the immutable target release, leaving build/ and *.egg-info) and RUNTIME_VENV_NOT_EXECUTABLE
+# (umask 027 left the root-created venv unreadable to User=polymarket -> 203/EXEC).
+
+_BOOTSTRAP = ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh"
+
+
+def _bootstrap_block(begin: str, end: str) -> str:
+    text = _BOOTSTRAP.read_text(encoding="utf-8")
+    return text[text.index(begin) : text.index(end)]
+
+
+def _activation_blocks() -> str:
+    staging = _bootstrap_block("# BEGIN_FIRST_DEPLOY_VERIFY_STAGING", "# END_FIRST_DEPLOY_VERIFY_STAGING")
+    activation = _bootstrap_block("# BEGIN_RELEASE_ACTIVATION_INSTALL", "# END_RELEASE_ACTIVATION_INSTALL")
+    return staging + "\n" + activation + "\n"
+
+
+def _posix_bash() -> str:
+    # The bootstrap targets Ubuntu 24.04 only; like the first-deploy staging proof, these real
+    # filesystem/permission execution proofs run on POSIX hosts (the Linux CI jobs), never Windows.
+    if os.name == "nt":
+        pytest.skip("the bootstrap activation execution proof runs only on POSIX hosts")
+    bash = shutil.which("bash")
+    assert bash is not None, "bash is required on POSIX hosts for the activation execution proof"
+    return bash
+
+
+def _built_release(tmp_path: pathlib.Path) -> tuple[pathlib.Path, str]:
+    repo, head = _repo(
+        tmp_path / "source",
+        {"pyproject.toml": "[project]\nname = 'fixture'\n", "src/fixture/__init__.py": "VALUE = 1\n"},
+    )
+    baseline.build_release(repo, head, tmp_path / "incoming")
+    return tmp_path / "incoming" / head, head
+
+
+def test_activated_release_verifier_allows_only_governed_activation_artifacts(tmp_path: pathlib.Path) -> None:
+    pristine, head = _built_release(tmp_path)
+    target = tmp_path / "releases" / head
+    shutil.copytree(pristine, target)
+    (target / ".venv" / "bin").mkdir(parents=True)
+    (target / ".venv" / "bin" / "python").write_bytes(b"#!/bin/sh\n")
+    (target / ".venv" / "lib" / "site-packages" / "fixture-0.dist-info").mkdir(parents=True)
+    (target / ".venv" / "lib" / "site-packages" / "fixture-0.dist-info" / "METADATA").write_bytes(b"x")
+    if os.name != "nt":
+        (target / "local_data").symlink_to("/var/lib/polymarket/local_data")
+    activated = baseline.verify_release(target, head, allow_activation_artifacts=True)
+    assert activated["status"] == "RELEASE_VERIFIED"
+    # Strict (pre-activation) verification still rejects the activation artifacts themselves.
+    strict_code = "RELEASE_FILE_SET_MISMATCH" if os.name == "nt" else "RELEASE_SYMLINK_REJECTED"
+    with pytest.raises(baseline.BaselineError, match=strict_code):
+        baseline.verify_release(target, head)
+    # Package-build debris in the immutable target stays rejected even with activation artifacts.
+    for debris in ("build/lib/fixture/__init__.py", "src/fixture.egg-info/PKG-INFO"):
+        path = target / debris
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"debris")
+        with pytest.raises(baseline.BaselineError, match="RELEASE_FILE_SET_MISMATCH"):
+            baseline.verify_release(target, head, allow_activation_artifacts=True)
+        shutil.rmtree(target / debris.split("/")[0] if debris.startswith("build/") else path.parent)
+    assert baseline.verify_release(target, head, allow_activation_artifacts=True) == activated
+
+
+_FAKE_PIP_PYTHON = """#!/bin/sh
+# Simulates real pip/setuptools: an in-tree build writes build/ and *.egg-info into the SOURCE.
+if [ "$1" = "-m" ] && [ "$2" = "pip" ] && [ "$3" = "install" ]; then
+  source_dir=$5
+  printf '%s\\n' "$source_dir" >> "$FAKE_PIP_LOG"
+  mkdir -p "$source_dir/build/lib/fixture" "$source_dir/src/fixture.egg-info"
+  : > "$source_dir/build/lib/fixture/__init__.py"
+  : > "$source_dir/src/fixture.egg-info/PKG-INFO"
+  [ -z "${FAKE_PIP_FAIL:-}" ] || exit 1
+fi
+exit 0
+"""
+
+_INSTALL_HARNESS = r"""
+set -Eeuo pipefail
+umask 027
+source "$1"
+pristine=$2
+target=$3
+export FAKE_PIP_LOG=$4
+# 1. PASS: the build source is a disposable copy outside the target, removed after install.
+install_package_from_disposable_source "$pristine" "$target"
+[[ -z $install_source_dir ]] || exit 11
+source_used=$(tail -n 1 "$FAKE_PIP_LOG")
+[[ $source_used == /tmp/polymarket-install-source.* ]] || exit 12
+[[ $source_used != "$target"* && $source_used != "$pristine"* ]] || exit 13
+[[ ! -e $source_used ]] || exit 14
+[[ ! -e $target/build && ! -e $target/src/fixture.egg-info ]] || exit 15
+[[ ! -e $pristine/build && ! -e $pristine/src/fixture.egg-info ]] || exit 16
+# 2. FAIL: closed PACKAGE_INSTALL_FAILED and the EXIT trap still removes the disposable source.
+set +e
+( trap cleanup_on_exit EXIT; FAKE_PIP_FAIL=1 install_package_from_disposable_source "$pristine" "$target" ) \
+  > "$4.fail.out"
+status=$?
+set -e
+[[ $status -eq 1 ]] || exit 21
+grep -q '"error_code":"PACKAGE_INSTALL_FAILED"' "$4.fail.out" || exit 22
+failed_source=$(tail -n 1 "$FAKE_PIP_LOG")
+[[ $failed_source != "$source_used" && $failed_source == /tmp/polymarket-install-source.* ]] || exit 23
+[[ ! -e $failed_source ]] || exit 24
+[[ ! -e $target/build && ! -e $target/src/fixture.egg-info ]] || exit 25
+# 3. The cleanup guard never deletes a path outside the disposable-source namespace.
+install_source_dir=$target
+cleanup_install_source
+[[ -d $target && -z $install_source_dir ]] || exit 31
+echo INSTALL_HARNESS_OK
+"""
+
+
+def test_bootstrap_installs_package_from_disposable_source_not_immutable_release(tmp_path: pathlib.Path) -> None:
+    bash = _posix_bash()
+    pristine, head = _built_release(tmp_path)
+    target = tmp_path / "releases" / head
+    shutil.copytree(pristine, target)
+    (target / ".venv" / "bin").mkdir(parents=True)
+    python = target / ".venv" / "bin" / "python"
+    python.write_text(_FAKE_PIP_PYTHON, encoding="utf-8", newline="\n")
+    python.chmod(0o755)
+    (tmp_path / "blocks.sh").write_text(_activation_blocks(), encoding="utf-8", newline="\n")
+    (tmp_path / "harness.sh").write_text(_INSTALL_HARNESS, encoding="utf-8", newline="\n")
+    result = subprocess.run(
+        [bash, str(tmp_path / "harness.sh"), str(tmp_path / "blocks.sh"), str(pristine), str(target),
+         str(tmp_path / "pip.log")],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, (result.returncode, result.stdout, result.stderr)
+    assert result.stdout.strip() == "INSTALL_HARNESS_OK"
+    # Debris really was produced in each disposable source, but never reached the target release.
+    assert len((tmp_path / "pip.log").read_text(encoding="utf-8").splitlines()) == 2
+    verified = baseline.verify_release(target, head, allow_activation_artifacts=True)
+    assert verified["status"] == "RELEASE_VERIFIED"
+    assert baseline.verify_release(pristine, head)["status"] == "RELEASE_VERIFIED"
+
+
+_PERMISSION_HARNESS = r"""
+set -Eeuo pipefail
+umask 027
+source "$1"
+target=$2
+calls=$3
+# Root-created venv under the bootstrap umask: unreadable to group/other, as on the real host.
+mkdir -p "$target/.venv/bin" "$target/.venv/lib/site-packages/fixture-0.dist-info" "$target/tools"
+printf '#!/bin/sh\nexit 0\n' > "$target/.venv/bin/python"
+chmod 0750 "$target/.venv/bin/python"
+: > "$target/.venv/lib/site-packages/fixture-0.dist-info/METADATA"
+: > "$target/tools/runtime_baseline.py"
+chmod -R g+w "$target/tools"
+normalize_runtime_permissions "$target"
+# The runtime-user guard runs the venv python as polymarket from / in isolated mode.
+runuser() { printf '%s\n' "$*" >> "$calls"; shift 3; "$@"; }
+verify_runtime_user_exec "$target"
+chmod -R a-w "$target"
+# A runtime-user execution failure fails closed with the closed code.
+set +e
+( runuser() { return 1; }; verify_runtime_user_exec "$target" ) > "$calls.fail.out"
+status=$?
+set -e
+[[ $status -eq 1 ]] || exit 41
+grep -q '"error_code":"RUNTIME_VENV_NOT_EXECUTABLE"' "$calls.fail.out" || exit 42
+echo PERMISSION_HARNESS_OK
+"""
+
+
+def test_bootstrap_runtime_venv_is_runtime_executable_and_never_runtime_writable(tmp_path: pathlib.Path) -> None:
+    bash = _posix_bash()
+    target = tmp_path / "releases" / ("a" * 40)
+    (tmp_path / "blocks.sh").write_text(_activation_blocks(), encoding="utf-8", newline="\n")
+    (tmp_path / "harness.sh").write_text(_PERMISSION_HARNESS, encoding="utf-8", newline="\n")
+    calls = tmp_path / "runuser.calls"
+    result = subprocess.run(
+        [bash, str(tmp_path / "harness.sh"), str(tmp_path / "blocks.sh"), str(target), str(calls)],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, (result.returncode, result.stdout, result.stderr)
+    assert result.stdout.strip() == "PERMISSION_HARNESS_OK"
+    recorded = calls.read_text(encoding="utf-8").splitlines()
+    assert recorded == [
+        f"-u polymarket -- {target}/.venv/bin/python -I -c "
+        'import importlib.metadata as metadata; metadata.version("polymarket-strategy-lab")'
+    ]
+    checked = 0
+    for path in [target, *target.rglob("*")]:
+        mode = stat.S_IMODE(path.lstat().st_mode)
+        assert mode & (stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH) == 0, (path, oct(mode))
+        assert mode & stat.S_IROTH and mode & stat.S_IRGRP, (path, oct(mode))
+        if path.is_dir():
+            assert mode & stat.S_IXOTH and mode & stat.S_IXGRP, (path, oct(mode))
+        checked += 1
+    python_mode = stat.S_IMODE((target / ".venv/bin/python").stat().st_mode)
+    assert python_mode & stat.S_IXOTH and python_mode & stat.S_IXGRP
+    metadata_mode = stat.S_IMODE((target / ".venv/lib/site-packages/fixture-0.dist-info/METADATA").stat().st_mode)
+    assert metadata_mode & stat.S_IXOTH == 0  # X only adds execute where execute already existed
+    assert checked >= 8
+    for path in [target, *target.rglob("*")]:
+        if path.is_dir() and not path.is_symlink():
+            path.chmod(0o755)  # let pytest remove the read-only tmp tree
+
+
+def test_bootstrap_activation_ordering_fails_closed_before_current_switch() -> None:
+    text = _BOOTSTRAP.read_text(encoding="utf-8")
+    order = [
+        'run_capture_or_fail RELEASE_VERIFY_FAILED /tmp/polymarket-release-verify.json',
+        'install_package_from_disposable_source "$release_dir" "$target_release"',
+        'run_or_fail PACKAGE_CHECK_FAILED "$target_release/.venv/bin/python" -m pip check',
+        'normalize_runtime_permissions "$target_release"',
+        'verify_runtime_user_exec "$target_release"',
+        'run_or_fail HOST_SETUP_FAILED chmod -R a-w "$target_release"',
+        "run_or_fail POST_INSTALL_RELEASE_VERIFY_FAILED",
+        'stage_current_for_verify "$target_release"',
+        "run_or_fail SYSTEMD_VERIFY_FAILED systemd-analyze verify",
+        'run_or_fail FIREWALL_APPLY_FAILED ufw allow "${ssh_port}/tcp"',
+        "mv -Tf /opt/polymarket/.current-new /opt/polymarket/current",
+        "systemctl enable --now",
+        "BOOTSTRAP_COMPLETE",
+    ]
+    positions = [text.index(item, text.index("# END_RELEASE_ACTIVATION_INSTALL")) for item in order]
+    assert positions == sorted(positions)
+    post_install = text[text.index("run_or_fail POST_INSTALL_RELEASE_VERIFY_FAILED") :]
+    post_install = post_install[: post_install.index("\n\n")]
+    assert '--release-dir "$target_release"' in post_install and "--allow-activation-artifacts" in post_install
+    required = next(line for line in text.splitlines() if line.startswith("for command_name in"))
+    assert " runuser" in required and " mktemp" in required
+    assert "trap cleanup_on_exit EXIT" in text and "trap cleanup_staged_current EXIT" not in text
+    block = _bootstrap_block("# BEGIN_RELEASE_ACTIVATION_INSTALL", "# END_RELEASE_ACTIVATION_INSTALL")
+    assert "go-w" in block and "runuser -u polymarket --" in block
+    assert "RUNTIME_VENV_NOT_EXECUTABLE" in block
+    # The target release is never the pip install argument and is never made runtime-writable.
+    assert '-m pip install --disable-pip-version-check "$install_source_dir"' in block
+    assert "chown" not in block and "polymarket:polymarket" not in block
+    assert "o+w" not in text and "g+w" not in text and "a+w" not in text
