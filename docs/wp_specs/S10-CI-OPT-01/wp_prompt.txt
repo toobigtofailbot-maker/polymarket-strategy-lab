@@ -1,0 +1,410 @@
+SIDE16 / KARL — S10-CI-OPT-01
+LOCAL-FIRST CI COST OPTIMIZATION
+SMALL EXPLICIT WORKFLOW-GOVERNANCE WORK PACKAGE
+
+Package Identity:
+  WP ID: S10-CI-OPT-01
+  Title: Local-First CI Cost Optimization
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base / current main SHA: 7dc323df2aa5820621cc2e6cf89a1d91827ed122
+  Required predecessor: PR #219 / S10-LIVE-ORCH-01
+  Required predecessor head: 30a5d70aaf385450cd8a9644773e6ecd25a10b9a
+  Required predecessor merge/base: 7dc323df2aa5820621cc2e6cf89a1d91827ed122
+  Suggested branch: claude/s10-ci-opt-01-local-first-final-ci
+  Package class: WORKFLOW_GOVERNANCE_CI_COST_OPTIMIZATION
+  Package size class: M
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: NO_PRODUCT_RUNTIME_CHANGE
+  Product impact: DEVELOPMENT_WORKFLOW_COST_REDUCTION_ONLY
+  Network impact: NO_PRODUCT_NETWORK_CHANGE
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: FAST
+  Risk level: 2
+  Capital at risk: USD 0
+  Merge authority: NO — Karl only
+  Successor: S10-LIVE-CANARY-01, separately gated
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: true
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: true
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: normal strong coding/reasoning mode
+  Reason: narrow workflow trigger/governance change with no product/runtime authority
+  Escalate or STOP if: implementation would weaken the final hosted matrix, touch product source,
+    dependencies, credentials, execution/live authority, or require scope beyond the exact nine paths
+
+===============================================================================
+0. AUTHORIZATION / EXECUTION STATE
+===============================================================================
+
+Karl explicitly authorized this workflow-governance change once PR #219 was merged.
+That condition is now satisfied: main == 7dc323df2aa5820621cc2e6cf89a1d91827ed122.
+
+This is a FAST package. No independent draftability certificate is required.
+
+Before editing:
+1. verify exact current main and predecessor truth;
+2. place these exact wp_prompt.txt / wp_spec.json bytes under docs/wp_specs/S10-CI-OPT-01/;
+3. run deterministic FAST readiness;
+4. require IMPLEMENTATION_READY, governance track FAST, deterministic readiness basis,
+   certificate_required false.
+
+Because Karl's implementation authorization is already explicit and its merge condition is met,
+Claude Code may proceed immediately after readiness PASS without another user round trip.
+
+Merge is NOT authorized.
+
+===============================================================================
+1. OBJECTIVE
+===============================================================================
+
+Reduce high-volume GitHub Actions usage without weakening final exact-head evidence.
+
+Normal future execution becomes:
+
+  local focused/adjacent checks while editing
+  -> one local authoritative broad/full suite once candidate is stable
+  -> keep PR DRAFT while implementation changes are being pushed
+  -> mark PR Ready for review only after stable local validation
+  -> one full hosted compatibility/audit matrix on that exact non-draft head
+  -> Side review
+  -> Karl merge
+
+If the final source head changes after hosted CI, fresh exact-head hosted CI remains required.
+
+Do not reduce final test coverage. Reduce hosted RUN FREQUENCY, not final matrix strength.
+
+===============================================================================
+2. CURRENT PROBLEM / CURRENT CI TRUTH
+===============================================================================
+
+Current .github/workflows/ci.yml:
+- triggers on every pull_request activity;
+- also runs again on push to main;
+- has five top-level jobs producing nine hosted jobs through matrices;
+- runs full compatibility/full-suite work even while a PR is still a draft and changing;
+- therefore repeatedly spends hosted CI on intermediate heads;
+- Windows hosted runners can also queue/cancel, making repeated matrix launches especially wasteful.
+
+PR #219 demonstrated the cost: the exact final matrix eventually passed, but repeated Windows
+runner allocation failures required job-specific reruns. The desired future behavior is to avoid
+launching the expensive matrix on draft implementation pushes in the first place.
+
+===============================================================================
+3. FROZEN IMPLEMENTATION DESIGN
+===============================================================================
+
+Modify .github/workflows/ci.yml only in scheduling/governance semantics.
+
+A. Pull-request trigger
+Use pull_request events sufficient to cover:
+- opened
+- synchronize
+- reopened
+- ready_for_review
+
+Do not use pull_request_target.
+
+B. Draft suppression
+Every current top-level CI job must have a job-level condition equivalent to:
+
+  github.event.pull_request.draft == false
+
+Result:
+- a draft PR may be opened and pushed repeatedly with hosted jobs skipped;
+- marking it Ready for review launches the full hosted matrix;
+- a later commit pushed while non-draft launches fresh exact-head CI.
+
+C. Remove duplicate post-merge full matrix
+Remove the current push-to-main trigger.
+
+This workflow's authoritative expensive evidence is the final non-draft PR head.
+Do not launch the same full matrix again merely because that already-green PR merges to main.
+
+D. Same-PR concurrency
+Add workflow concurrency equivalent to:
+  group: ci-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+This prevents stale same-PR hosted runs from continuing if a newer eligible head appears.
+
+E. Preserve final coverage
+Do NOT:
+- remove or rename any current top-level CI job;
+- remove any OS/Python matrix member;
+- remove dependency audits;
+- remove cockpit frontend checks;
+- remove NDFD GRIB checks;
+- remove strict DuckDB behavior;
+- remove focused tests;
+- remove the full pytest step;
+- weaken exact dependency assertions;
+- add path filters that can skip parts of the final matrix;
+- change dependency pins.
+
+Expected final hosted job coverage remains nine jobs:
+- compatibility: ubuntu py3.12 / py3.14 + windows py3.12 / py3.14
+- dependency-audit ubuntu py3.12
+- ndfd-grib-compat ubuntu/windows py3.12
+- ndfd-grib-dependency-audit ubuntu py3.12
+- cockpit-frontend node 24.18.0
+
+===============================================================================
+4. FUTURE LOCAL-FIRST GOVERNANCE
+===============================================================================
+
+Update canonical workflow guidance so future WPs follow this default:
+
+WHILE EDITING
+- run focused/adjacent/static checks locally in Claude Code;
+- batch same-scope corrections before pushing;
+- do not use GitHub Actions as the iterative development test loop.
+
+STABLE CANDIDATE
+- run readiness --check-diff;
+- run artifact/diff/security checks;
+- run one authoritative broad/full suite locally;
+- use the existing authorized ephemeral Linux Docker pattern when local native modules are blocked;
+- run platform-specific local checks where technically practical.
+
+PR PUBLICATION
+- create/update one DRAFT PR;
+- keep it draft while source is changing;
+- only after local stable-candidate PASS, mark Ready once and obtain full exact-head hosted CI.
+
+AFTER A REAL HOSTED TEST FAILURE
+- convert back to draft before iterative repairs where practical;
+- fix/batch locally;
+- rerun local validation;
+- mark ready again only when stable.
+
+HOSTED INFRASTRUCTURE FAILURE ON UNCHANGED HEAD
+- rerun only the affected cancelled/failed-to-start job where GitHub supports it;
+- do not rerun already-green jobs;
+- a cancellation before runner/test execution is infrastructure evidence, not a code PASS or FAIL.
+
+EXACT-HEAD RULE
+- any source/workflow change after hosted PASS invalidates that exact-head hosted evidence;
+- fresh hosted CI is then mandatory.
+
+===============================================================================
+5. EXACT SCOPE — 9 PATHS
+===============================================================================
+
+required_changed_files == allowed_changed_files == exactly:
+
+1. .github/workflows/ci.yml
+2. docs/ai/codex/VALIDATION_MATRIX.md
+3. docs/ai/codex/WP_DRAFTING_STANDARD.md
+4. tests/test_codex_workflow_docs.py
+5. docs/project_status.md
+6. docs/repo_truth_index.md
+7. docs/status_entries/S10-CI-OPT-01.md
+8. docs/wp_specs/S10-CI-OPT-01/wp_prompt.txt
+9. docs/wp_specs/S10-CI-OPT-01/wp_spec.json
+
+No tenth path.
+
+If a tenth path is mechanically required:
+  STOP S10_CI_OPT_01_SCOPE_AMENDMENT_REQUIRED:<reason>
+
+===============================================================================
+6. AUTHORITY / NON-AUTHORITY
+===============================================================================
+
+Authorized:
+- exact nine-path FAST workflow-governance implementation;
+- .github/workflows/ci.yml trigger/condition/concurrency changes defined above;
+- canonical validation/drafting guidance;
+- focused workflow-governance tests;
+- status/repo-truth registration;
+- normal git/PR publication;
+- one final exact-head GitHub CI run after local stable validation.
+
+Not authorized:
+- product src/** changes;
+- tools/** changes;
+- dependency/lock changes;
+- new third-party Actions or dependencies;
+- credentials/secrets;
+- product network/API behavior;
+- scheduler/Hermes runtime;
+- strategy/paper/execution/live behavior;
+- capital/orders;
+- weakening/removing any final CI job or matrix dimension;
+- merge.
+
+===============================================================================
+7. FOCUSED TEST REQUIREMENTS
+===============================================================================
+
+Extend tests/test_codex_workflow_docs.py with deterministic text-based regression coverage.
+
+At minimum prove:
+T01 current CI has no push-to-main trigger.
+T02 pull_request declares opened, synchronize, reopened, ready_for_review.
+T03 all five top-level jobs are draft-suppressed.
+T04 same-PR concurrency exists with cancel-in-progress true.
+T05 all five top-level job identities remain present.
+T06 compatibility matrix still contains ubuntu-24.04 and windows-2022.
+T07 compatibility matrix still contains Python 3.12 and 3.14.
+T08 NDFD matrix still contains ubuntu-24.04 and windows-2022.
+T09 full-suite step remains present.
+T10 strict DuckDB environment/behavior remains present.
+T11 no pull_request_target trigger.
+T12 no path filter is introduced to suppress final coverage.
+T13 VALIDATION_MATRIX documents local-first / draft-until-stable / one final hosted run.
+T14 WP_DRAFTING_STANDARD requires future WPs to plan hosted CI as final exact-head verification,
+    not iterative testing.
+T15 status/repo truth record this governance change while preserving S10-LIVE-CANARY-01 as the
+    separately gated live successor.
+
+Do not add a YAML parser dependency.
+
+===============================================================================
+8. NEGATIVE TEST MATRIX
+===============================================================================
+
+N01 Draft PR synchronize => expensive jobs are skipped.
+N02 Ready-for-review event on final draft head => full matrix is eligible.
+N03 Non-draft synchronize after source change => fresh full exact-head matrix is eligible.
+N04 push to main => this expensive workflow does not launch a duplicate full matrix.
+N05 Any attempt to delete a current job => focused governance test fails.
+N06 Any attempt to drop Windows, Ubuntu, py3.12, py3.14 or NDFD OS coverage => test fails.
+N07 Any attempt to add path filters that can reduce final matrix => test fails.
+N08 Any attempt to replace local final validation with hosted-only iterative testing contradicts docs.
+N09 Hosted PASS on an older head cannot justify Ready YES for a changed head.
+N10 Infrastructure cancellation may be rerun job-only; already-green jobs are not required to rerun.
+
+===============================================================================
+9. REQUIREMENT-TO-EVIDENCE PLAN
+===============================================================================
+
+R001 CI scheduling policy: focused tests T01-T04.
+R002 final hosted matrix preservation: focused tests T05-T12.
+R003 local-first governance: focused tests T13-T14.
+R004 status/repo truth: focused test T15.
+R005 deterministic FAST readiness and exact nine-path --check-diff.
+R006 diff/artifact/security hygiene.
+R007 one authoritative local full suite on the stable candidate.
+R008 one final exact-head hosted CI matrix after the PR is marked Ready.
+R009 final PR evidence guard / re-fetch and Side review handoff.
+
+===============================================================================
+10. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|validation|iterative_checks|candidate_changing|REQUIRE|local_first_validation|validation.local_first|R003
+NR002|ci|draft_pr|draft_true|FORBID|expensive_jobs_run|ci.draft_suppression|R001
+NR003|ci|final_pr_head|draft_false|REQUIRE|full_hosted_matrix_eligible|validation.hosted_final|R002
+NR004|ci|head_change|after_hosted_pass|REQUIRE|fresh_exact_head_ci|validation.hosted_final|R008
+NR005|ci|main_merge|push_main|FORBID|duplicate_full_matrix|ci.trigger_policy|R001
+NR006|ci|final_coverage|all_final_runs|REQUIRE|existing_nine_job_coverage_preserved|ci.final_matrix_preservation|R002
+NR007|ci|infra_rerun|unchanged_head|REQUIRE|rerun_affected_job_only_when_supported|ci.infrastructure_rerun|R003
+NR008|authority|product_runtime|this_wp|FORBID|product_authority_expansion|governance.product_authority|R004
+END_NORMATIVE_RULE_MATRIX_V1
+
+===============================================================================
+11. IMPLEMENTATION / VALIDATION ORDER
+===============================================================================
+
+1. Refresh main and require exact base 7dc323df2aa5820621cc2e6cf89a1d91827ed122.
+   If main legitimately moved, STOP and report drift rather than silently rebasing this frozen package.
+
+2. Create dedicated branch/worktree:
+   claude/s10-ci-opt-01-local-first-final-ci
+
+3. Place exact package files and run:
+   python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CI-OPT-01/wp_prompt.txt --spec docs/wp_specs/S10-CI-OPT-01/wp_spec.json --repo-root .
+
+Require IMPLEMENTATION_READY / FAST / deterministic / no certificate.
+
+4. Implement only the exact nine paths.
+
+5. Focused:
+   python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py
+
+6. Adjacent docs truth:
+   python -m pytest -q -p no:cacheprovider tests/test_project_status_docs.py tests/test_repo_truth_docs.py
+
+7. Stable-candidate exact scope:
+   python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CI-OPT-01/wp_prompt.txt --spec docs/wp_specs/S10-CI-OPT-01/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD
+
+8. Hygiene:
+   git diff --check
+   python tools/git/preflight_generated_artifact_guard.py
+   python tools/security/run_available_security_checks.py
+Report unavailable optional tools truthfully.
+
+9. One authoritative LOCAL full suite on stable candidate:
+   python -m pytest -q -p no:cacheprovider
+
+Use the established ephemeral Linux Docker validation approach if workstation native-module policy
+prevents the suite.
+
+10. Push branch and create/update ONE DRAFT PR. Do not mark Ready before local stable PASS.
+
+11. Mark Ready exactly once for the final candidate.
+Confirm the new workflow starts the complete nine-job hosted matrix on that exact head.
+Require all jobs PASS. On unchanged-head runner infrastructure failure, rerun only the affected job.
+
+12. Final PR evidence: exact head, exact nine paths, local focused/full results, exact-head hosted
+matrix, workflow trigger behavior, zero product authority, Ready YES, merge NO. Run the PR evidence
+consistency guard on the exact posted body.
+
+Report back:
+  READY_FOR_SIDE16_CI_OPT_PR_REVIEW
+
+Do not merge.
+
+===============================================================================
+12. HARD STOPS
+===============================================================================
+
+STOP if final hosted coverage would lose any current job, OS, Python version, audit, strict mode,
+focused test, or full-suite step — this WP optimizes frequency, not coverage.
+
+STOP if pull_request_target, secrets, write permissions, credentials, or product-network authority
+would be introduced.
+
+STOP if a dependency or lock file must change.
+
+STOP if product source or tools must change.
+
+STOP if a tenth path is required.
+
+STOP if deterministic FAST readiness does not return IMPLEMENTATION_READY.
+
+STOP if exact final hosted CI cannot be tied to the exact final head.
+
+===============================================================================
+13. SUCCESSOR BOUNDARY
+===============================================================================
+
+After this workflow-governance PR is reviewed and Karl merges it, return to:
+  S10-LIVE-CANARY-01 — First Restricted Live Canary Activation
+
+This WP does NOT authorize deployment, credentials/account access, a real order/cancel, capital,
+Gate-C/live activation, or any canary.

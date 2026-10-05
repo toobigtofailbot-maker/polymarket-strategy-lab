@@ -1,0 +1,487 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CI-OPT-01",
+    "title": "Local-First CI Cost Optimization",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "WORKFLOW_GOVERNANCE_CI_COST_OPTIMIZATION",
+    "package_size_class": "M",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 219,
+      "head_sha": "30a5d70aaf385450cd8a9644773e6ecd25a10b9a",
+      "merge_sha": "7dc323df2aa5820621cc2e6cf89a1d91827ed122"
+    },
+    "suggested_branch": "claude/s10-ci-opt-01-local-first-final-ci",
+    "objective": "Reduce hosted GitHub Actions frequency by suppressing the existing expensive CI matrix while pull requests are draft, requiring local-first validation and a stable candidate before Ready-for-review, preserving the complete final hosted compatibility/audit matrix on the exact non-draft head, removing the duplicate push-to-main full matrix, and retaining fresh exact-head CI after any later source change.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      ".github/workflows/ci.yml",
+      "docs/ai/codex/VALIDATION_MATRIX.md",
+      "docs/ai/codex/WP_DRAFTING_STANDARD.md",
+      "tests/test_codex_workflow_docs.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CI-OPT-01.md",
+      "docs/wp_specs/S10-CI-OPT-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-OPT-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      ".github/workflows/ci.yml",
+      "docs/ai/codex/VALIDATION_MATRIX.md",
+      "docs/ai/codex/WP_DRAFTING_STANDARD.md",
+      "tests/test_codex_workflow_docs.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CI-OPT-01.md",
+      "docs/wp_specs/S10-CI-OPT-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-OPT-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      "src/",
+      "tools/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "config/"
+    ],
+    "max_changed_files": 9,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_codex_workflow_docs.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "rollback_surface": "Revert S10-CI-OPT-01. The prior ci.yml pull-request and push-to-main trigger frequency plus prior validation/drafting guidance return. No product source, dependency, credential, runtime, execution, live, capital, or persistent product state is changed or migrated.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": true
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": true
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": true,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": true,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "This WP changes only GitHub Actions scheduling semantics and canonical development-workflow guidance; product/runtime APIs remain unchanged.",
+    "items": [
+      {
+        "surface": ".github/workflows/ci.yml scheduling",
+        "before": "The full hosted matrix is eligible on every pull_request activity and runs again after merge through push to main.",
+        "after": "Draft pull requests suppress all expensive jobs; the unchanged full matrix is eligible on final non-draft pull-request heads, with fresh exact-head CI after later non-draft source changes; push-to-main duplication is removed.",
+        "change_authorized": true,
+        "compatibility_requirement": "Final exact-head coverage remains the same nine hosted jobs and every current job body/matrix/test/audit requirement is preserved.",
+        "authority": "WORKFLOW_GOVERNANCE_ONLY"
+      },
+      {
+        "surface": "Claude Code validation workflow",
+        "before": "Hosted CI may be triggered repeatedly while implementation is still changing.",
+        "after": "Focused and broad/full validation is local-first; the PR remains draft while changing and hosted CI is reserved for the stable exact final candidate under normal operation.",
+        "change_authorized": true,
+        "compatibility_requirement": "Any source change after a hosted PASS requires fresh exact-head hosted CI before Ready YES.",
+        "authority": "WORKFLOW_GOVERNANCE_ONLY"
+      },
+      {
+        "surface": "Python product/runtime public API",
+        "before": "Merged S10-LIVE-ORCH-01 runtime at main",
+        "after": "UNCHANGED",
+        "change_authorized": false,
+        "compatibility_requirement": "No src, dependency, credential, scheduler, strategy, paper, execution, live, or product-network behavior changes.",
+        "authority": "NONE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The CI trigger, draft suppression, concurrency, local-first validation, final hosted evidence, matrix preservation, infrastructure rerun, and product-authority boundaries are deterministic governance semantics.",
+    "items": [
+      {
+        "path": "ci.trigger_policy",
+        "source": "CONSTANT",
+        "type": "workflow_event_policy",
+        "required_rule": "pull_request final-head evidence only; duplicate push-to-main full matrix removed",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "pull_request covers opened synchronize reopened ready_for_review and the workflow contains no push-to-main trigger",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "event names only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.draft_suppression",
+        "source": "CONSTANT",
+        "type": "job_condition_policy",
+        "required_rule": "all current top-level expensive jobs are ineligible while pull_request.draft is true",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "each current top-level job has an equivalent draft-false condition",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "boolean eligibility semantics only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.concurrency_policy",
+        "source": "CONSTANT",
+        "type": "same_pr_latest_head_policy",
+        "required_rule": "same-PR stale workflow runs are cancelled when a newer eligible head appears",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "concurrency groups by pull-request identity and cancel-in-progress is true",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "concurrency policy only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.local_first",
+        "source": "CONSTANT",
+        "type": "validation_policy",
+        "required_rule": "focused and iterative validation is local; one authoritative local broad/full suite runs on the stable candidate before Ready-for-review",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "canonical drafting and validation docs state local-first draft-until-stable behavior",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "validation stage names only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.hosted_final",
+        "source": "CONSTANT",
+        "type": "exact_head_evidence_policy",
+        "required_rule": "normal path uses one complete hosted matrix on the stable non-draft final head; any later source change invalidates old hosted evidence",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "ready_for_review and non-draft synchronize remain eligible and docs require fresh exact-head CI after changes",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "exact-head requirement only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.final_matrix_preservation",
+        "source": "CONSTANT",
+        "type": "coverage_invariant",
+        "required_rule": "the existing five top-level jobs and nine expanded hosted jobs retain current OS Python audit frontend NDFD strict and full-suite coverage",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "focused workflow test asserts required job names matrix literals strict DuckDB and full pytest remain",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "job and matrix identities only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.infrastructure_rerun",
+        "source": "CONSTANT",
+        "type": "rerun_policy",
+        "required_rule": "on unchanged-head hosted infrastructure cancellation rerun only affected jobs where supported rather than restarting green jobs",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "canonical validation guidance records affected-job-only rerun policy and distinguishes pre-run cancellation from code failure",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "rerun policy only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "governance.product_authority",
+        "source": "CONSTANT",
+        "type": "closed_authority",
+        "required_rule": "no product source runtime dependency credential scheduler strategy paper execution live or capital authority",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "exact scope contains only workflow governance docs tests status and package artifacts and all product authority booleans remain false",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "NONE",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "This workflow-governance package adds no product identity or content-addressed runtime record.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "The canonical governed-WP authorization lifecycle applies; Karl's implementation authorization is already explicit and conditional on the now-satisfied PR #219 merge plus deterministic FAST readiness.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "deterministic FAST prompt/spec/readiness checks pass with no unresolved decisions and no certificate required",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's explicit prior authorization becomes effective because PR #219 is merged and deterministic readiness is IMPLEMENTATION_READY",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Claude Code changes only the exact nine paths and completes local-first stable-candidate validation",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Schema-1.0.0 fixed package-guard failure precedence is unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Workflow event cases are covered by focused deterministic tests rather than machine-spec examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R009 prove scheduling reduction, final matrix preservation, local-first governance, repo truth, deterministic readiness, hygiene, one local full suite, one final hosted exact-head matrix, and final evidence publication.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_ci_workflow_final_head_trigger_policy",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "no push-to-main trigger, required pull-request events, draft suppression on all five jobs, and same-PR cancel-in-progress concurrency are enforced"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_ci_workflow_preserves_full_final_matrix",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "all five top-level jobs and the existing nine-job OS/Python/audit/frontend/NDFD/strict/full-suite final coverage remain present with no path-filter weakening"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_ci_governance_docs_require_local_first_final_hosted_once",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "canonical validation and drafting guidance require local-first iteration, draft-until-stable execution, one normal final hosted matrix, fresh exact-head CI after changes, and affected-job-only infrastructure reruns"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_ci_optimization_status_and_repo_truth_are_recorded",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "project status and repo truth register S10-CI-OPT-01 while preserving S10-LIVE-CANARY-01 as the separately gated live successor"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "validation",
+        "test": "deterministic FAST readiness exact scope",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CI-OPT-01/wp_prompt.txt --spec docs/wp_specs/S10-CI-OPT-01/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY on FAST deterministic readiness with exact nine-path diff and no certificate required"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "validation",
+        "test": "diff artifact and available security hygiene",
+        "command": "git diff --check && python tools/git/preflight_generated_artifact_guard.py && python tools/security/run_available_security_checks.py",
+        "expected_result": "diff/artifact checks pass and available security tools run truthfully with unavailable tools reported as unavailable"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "stable candidate authoritative local full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "one authoritative local full repository suite passes on the stable candidate before the PR is marked ready"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "hosted_ci",
+        "test": "final exact-head hosted matrix",
+        "command": "gh pr checks --watch",
+        "expected_result": "after local stable PASS and Ready-for-review transition, the exact final head receives one complete hosted matrix with all nine jobs successful; source changes after PASS require fresh exact-head CI"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pr_evidence",
+        "test": "final posted PR evidence consistency",
+        "command": "python tools/git/pr_evidence_consistency_guard.py --pr-body /tmp/s10-ci-opt-01-pr-body.md --expected-head \"$(git rev-parse HEAD)\" --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
+        "expected_result": "the exact posted final PR body truthfully binds final head, local validation, single final hosted matrix, workflow authority, zero product authority, and merge not performed"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-LIVE-CANARY-01",
+    "next_title": "First Restricted Live Canary Activation",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-LIVE-CANARY-01",
+    "forbidden_in_this_wp": [
+      "LIVE-ORCH deployment or activation",
+      "real credentials or authenticated account access",
+      "real Polymarket order or cancel",
+      "capital use",
+      "Gate-C or live authorization",
+      "first restricted live canary",
+      "product source changes",
+      "dependency or lock-file changes",
+      "CI final-matrix coverage reduction",
+      "merge"
+    ]
+  }
+}

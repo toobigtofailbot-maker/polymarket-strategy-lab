@@ -203,6 +203,19 @@ The validation matrix is in `docs/ai/codex/VALIDATION_MATRIX.md`.
 
 Do not infer validation requirements. State them explicitly in the WP and confirm each after implementation.
 
+### Hosted CI planning (S10-CI-OPT-01)
+
+Every future WP must plan hosted CI as final exact-head verification, not iterative
+testing. The WP's validation order must be local-first: focused and adjacent checks
+locally while editing, one authoritative local broad/full suite on the stable
+candidate, the PR kept DRAFT while source is changing, and a single Ready-for-review
+transition that triggers one full hosted matrix on that exact non-draft head. A WP
+must not plan hosted CI as its development test loop, must not propose path filters
+or matrix reductions to save hosted cost, and must state that any source change
+after a hosted PASS requires fresh exact-head hosted CI. Unchanged-head runner
+infrastructure failures are rerun affected-job-only where supported. See
+"Local-First Validation And Final Hosted CI" in `docs/ai/codex/VALIDATION_MATRIX.md`.
+
 ## 8. Requirement-to-Evidence Traceability
 
 Every nontrivial WP PR body must include a traceability table:

@@ -9,11 +9,19 @@ name: Analytical Research + Offline Kernel + Market Truth + Experiment OS CI
 # run on developer machines where the native module is blocked (Windows Smart App
 # Control) or where an over-long local path trips the Windows MAX_PATH limit.
 
+# S10-CI-OPT-01 local-first scheduling: hosted CI is final exact-head verification,
+# not the iterative development loop. Every job is skipped while the pull request is a
+# draft; marking it Ready for review (or pushing a new head while non-draft) launches the
+# complete unchanged matrix on that exact head. The duplicate post-merge push-to-main run
+# is removed because the final non-draft PR head carries the authoritative evidence.
 on:
   pull_request:
-  push:
-    branches:
-      - main
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Same-PR concurrency: a newer eligible head cancels a stale in-progress run.
+concurrency:
+  group: ci-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -40,6 +48,7 @@ env:
 jobs:
   compatibility:
     name: compat (${{ matrix.os }} / py${{ matrix.python }})
+    if: github.event.pull_request.draft == false
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -155,6 +164,7 @@ jobs:
 
   dependency-audit:
     name: dependency-audit (ubuntu-24.04 / py3.12)
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -182,6 +192,7 @@ jobs:
     # binary wheels only for the ecCodes family (no source build), and decodes the committed
     # official NDFD PoP12 fixture. No NDFD download, no secrets, no product API, no trading.
     name: ndfd-grib-compat (${{ matrix.os }} / py3.12)
+    if: github.event.pull_request.draft == false
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -234,6 +245,7 @@ jobs:
 
   ndfd-grib-dependency-audit:
     name: ndfd-grib-dependency-audit (ubuntu-24.04 / py3.12)
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -258,6 +270,7 @@ jobs:
 
   cockpit-frontend:
     name: cockpit-frontend (node 24.18.0)
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
