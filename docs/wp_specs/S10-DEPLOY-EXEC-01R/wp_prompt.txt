@@ -1,0 +1,200 @@
+SIDE16 — S10-DEPLOY-EXEC-01R
+BOUNDED PHASE-A REPAIR ENVELOPE UNDER PARENT S10-DEPLOY-EXEC-01
+BOOTSTRAP ACTIVATION INVARIANT REPAIR
+
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Authority owner: Karl / Side16
+Draft status: AUTHORIZED BY SIDE16 FOLLOW-UP 04 (repair) AND FOLLOW-UP 05 (governance envelope)
+This package authorizes only the repository repair below. It does NOT authorize merge, any VPS
+mutation, any Phase-B step, or any successor.
+
+===============================================================================
+0. PACKAGE IDENTITY
+===============================================================================
+
+WP ID: S10-DEPLOY-EXEC-01R
+Parent WP: S10-DEPLOY-EXEC-01 (repair envelope, not a new roadmap capability or architecture)
+Title: Bootstrap Activation Invariant Repair
+Package class: BOOTSTRAP_ACTIVATION_DEFECT_REPAIR
+Package size class: S
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Base branch: main
+Frozen base / required current main: fe4e2f1557dec5667d32fa1479f0bfc7ead1c940
+Required predecessor: PR #214 / S10-DEPLOY-EXEC-01, head 9871dddf98565b16194209f032cf8279bfbd34f1,
+merge fe4e2f1557dec5667d32fa1479f0bfc7ead1c940 (MERGED)
+Suggested branch: claude/s10-deploy-exec-01-bootstrap-activation-repair
+Exact changed-file budget: 5
+Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+
+Governance track expected: RUNTIME
+Risk level: 3
+Capital at risk: USD 0
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+The pull request is created Ready for Review (isDraft=false). Karl merges; the executor never does.
+
+===============================================================================
+1. TRIGGER / OBJECTIVE
+===============================================================================
+
+Trigger: the real Phase-B run of the merged parent on the AlphaVPS C8G host stopped with
+STOP BOOTSTRAP_ACTIVATION_DEFECT after the governed bootstrap reported BOOTSTRAP_COMPLETE:
+
+- RELEASE_FILE_SET_MISMATCH: `pip install "$target_release"` built in-tree inside the immutable
+  release, leaving build/ and src/polymarket_strategy_lab.egg-info, so verify-release
+  --allow-activation-artifacts (and therefore execution-host-bind / currentness) failed;
+- RUNTIME_VENV_NOT_EXECUTABLE: under umask 027 the root-created venv was 0550 root:root, so
+  User=polymarket could not execute it (telemetry 203/EXEC; the critical probe would fail alike).
+
+Objective: repair the governed Ubuntu bootstrap so that
+1. package installation cannot contaminate the immutable release;
+2. the polymarket runtime user can execute the installed venv (and never write it);
+3. bootstrap fails closed before activation if either invariant is false.
+
+Required successful order: verify pristine incoming release -> copy target release -> create venv
+-> install from a disposable copy of the pristine release -> pip check -> chmod -R go+rX,go-w ->
+runuser -u polymarket executes the venv python and resolves project metadata -> chmod -R a-w ->
+post-install verify-release --allow-activation-artifacts -> systemd unit verification -> UFW gates
+-> atomic current switch -> service activation. The disposable source is removed on PASS and via
+the EXIT trap on every FAIL; first-deploy staged-current cleanup is unchanged.
+
+===============================================================================
+2. STARTUP / STATE GATE
+===============================================================================
+
+1. git fetch origin main; require origin/main == fe4e2f1557dec5667d32fa1479f0bfc7ead1c940, else
+   STOP_REPAIR_BASE_MOVED (no rebase);
+2. require PR #214 MERGED at that SHA, a clean tree and no unrelated open PR dependency;
+3. VPS remains frozen: telemetry timer and critical probe disabled/inactive, no binding, current
+   still the forensic fe4e2f1 release; no further VPS change is authorized by this package.
+
+===============================================================================
+3. EXACT CHANGED-FILE SCOPE — 5 PATHS
+===============================================================================
+
+- docs/status_entries/S10-DEPLOY-EXEC-01R.md
+- docs/wp_specs/S10-DEPLOY-EXEC-01R/wp_prompt.txt
+- docs/wp_specs/S10-DEPLOY-EXEC-01R/wp_spec.json
+- tests/deployment/test_runtime_baseline.py
+- tools/deployment/bootstrap_ubuntu_24_04.sh
+
+required_changed_files == allowed_changed_files == exactly these five; max_changed_files 5.
+No historical compatibility edits. The parent S10-DEPLOY-EXEC-01 status/spec, project status,
+repo-truth index and the six historical scope-guard tests are not edited.
+
+===============================================================================
+4. AUTHORITY / NON-AUTHORITY
+===============================================================================
+
+Authority: edit the governed bootstrap install/permission/verification sequence and add
+deployment regressions, plus the three repair governance artifacts above. Protected boundary
+groups per docs/ai/codex/PROTECTED_PATHS.md (Centralized Boundary Group Reference) are not crossed.
+
+Non-authority: no runtime_baseline.py, release-verifier, systemd unit or slice change; no src/,
+workflow or dependency change; no host hand patch or VPS mutation; no credentials, authenticated
+account access, signing, order create/post/cancel/amend, GateCLivePermit, GateCSession arm, A3,
+capital or live. Workflow network only: git fetch/push, PR publication and hosted-CI observation.
+
+===============================================================================
+5. HARD STOPS
+===============================================================================
+
+Stop and report (do not widen) if: origin/main moved; a sixth path is required (including a
+draftability certificate); the six historical scope guards cannot recognize this package; the
+verifier would have to accept build debris; the runtime user would need write access; any VPS or
+Phase-B action would be required; exact-head hosted CI is not green.
+
+===============================================================================
+6. NEGATIVE-TEST MATRIX
+===============================================================================
+
+The release verifier is not modified (no new validator). Negative evidence is still required for
+the repaired guards: simulated in-tree build debris must never reach the target release; debris
+placed in the target stays RELEASE_FILE_SET_MISMATCH; a failing install yields
+PACKAGE_INSTALL_FAILED and still removes the disposable source; the cleanup guard refuses paths
+outside /tmp/polymarket-install-source.*; a failing runtime-user execution yields
+RUNTIME_VENV_NOT_EXECUTABLE; the old fe4e2f1 install mechanism, run as a negative control in the
+real-pip end-to-end proof, reproduces both host defects.
+
+===============================================================================
+7. VALIDATION PLAN
+===============================================================================
+
+- the six previously failing historical scope-guard nodes (6 passed, unedited);
+- readiness gate with --check-diff on the committed head; exact five-path diff;
+- bash -n; tests/deployment on Windows and on Linux (POSIX regressions not skipped);
+- the real-pip root Linux end-to-end proof and negative control (rerun only if the bootstrap
+  repair changes after 89b3ff3);
+- git diff --check and gitleaks; one authoritative full suite on the final committed candidate;
+- exact-head hosted CI green.
+
+===============================================================================
+8. REPORT-BACK TO SIDE16
+===============================================================================
+
+Report back: branch, exact tested head, PR URL (OPEN, isDraft=false, headRefOid == tested head),
+guard/focused/full-suite counts, readiness and exact-scope results, hosted CI for the exact head,
+VPS frozen state, Phase B SUSPENDED, Merge authorized: NO. Return
+READY_FOR_SIDE16_REPAIR_PR_REVIEW only when every condition holds, else
+STOP_REPAIR_INCOMPLETE:<reason>.
+
+===============================================================================
+9. SUCCESSOR BOUNDARY
+===============================================================================
+
+After Karl merges this repair, Side16 captures the NEW merge SHA and may issue a fresh Phase-B
+authorization for the parent S10-DEPLOY-EXEC-01 bound to that SHA; the repaired release is deployed
+alongside the forensic fe4e2f1 release, which is never successful evidence or a rollback target.
+S10-LIVE-ORCH-01 remains the parent's separately gated successor. Nothing here authorizes either.
+
+===============================================================================
+10. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|bootstrap|install_source|package_install|REQUIRE|disposable_copy_of_pristine_release|bootstrap.install_source|R001
+NR002|bootstrap|install_source|any_exit|REQUIRE|disposable_source_removed_on_pass_and_fail|bootstrap.install_source|R001
+NR003|bootstrap|target_release|package_install|FORBID|no_build_debris_in_immutable_release|bootstrap.install_source|R006
+NR004|verifier|activation_artifacts|build_debris_present|REJECT|release_file_set_mismatch|verifier.activation_artifacts|R003
+NR005|verifier|release_verifier|always|PRESERVE_EXACT|verifier_unchanged|verifier.activation_artifacts|R008
+NR006|bootstrap|release_activation|before_current_switch|REQUIRE|post_install_release_verified|bootstrap.post_install_verify|R004
+NR007|bootstrap|runtime_permissions|after_pip_check|REQUIRE|runtime_readable_executable_never_writable|bootstrap.runtime_permissions|R002
+NR008|bootstrap|runtime_user_exec|before_activation|REQUIRE|polymarket_executes_venv_and_resolves_metadata|bootstrap.runtime_user_exec|R002
+NR009|bootstrap|runtime_user_exec|guard_fails|REJECT|runtime_venv_not_executable|bootstrap.runtime_user_exec|R002
+NR010|authority|host|always|FORBID|no_host_hand_patch_or_phase_b_step|authority.no_new_authority|R008
+NR011|authority|live|always|FORBID|no_credentials_account_orders_capital_or_live|authority.no_new_authority|R008
+NR012|scope|historical_guards|always|PRESERVE_EXACT|six_guards_unedited_and_passing|NONE|R007
+NR013|publication|ci|exact_head|REQUIRE|all_hosted_jobs_green_on_tested_head|NONE|R010
+END_NORMATIVE_RULE_MATRIX_V1
+
+Evidence Plan (requirement mapping):
+R001 -> disposable-source install regression (POSIX behavioral harness);
+R002 -> runtime-user permission and guard regression (POSIX behavioral harness);
+R003 -> activated-release verifier boundary regression;
+R004 -> fail-closed activation ordering regression;
+R005 -> bash -n and Linux execution of the POSIX regressions;
+R006 -> real-pip root Linux end-to-end proof and old-mechanism negative control;
+R007 -> six historical scope guards pass unedited;
+R008 -> readiness, exact five-path scope, diff and secret hygiene;
+R009 -> one authoritative full suite;
+R010 -> exact-head Ready-for-Review publication plus hosted CI.

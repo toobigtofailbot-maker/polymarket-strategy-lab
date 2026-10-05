@@ -1,0 +1,439 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-DEPLOY-EXEC-01R",
+    "title": "Bootstrap Activation Invariant Repair",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "BOOTSTRAP_ACTIVATION_DEFECT_REPAIR",
+    "package_size_class": "S",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 214,
+      "head_sha": "9871dddf98565b16194209f032cf8279bfbd34f1",
+      "merge_sha": "fe4e2f1557dec5667d32fa1479f0bfc7ead1c940"
+    },
+    "suggested_branch": "claude/s10-deploy-exec-01-bootstrap-activation-repair",
+    "objective": "Repair the governed Ubuntu bootstrap of the merged parent S10-DEPLOY-EXEC-01 (PR #214) after the real Phase-B STOP BOOTSTRAP_ACTIVATION_DEFECT so that (1) package installation cannot contaminate the immutable release (RELEASE_FILE_SET_MISMATCH: pip built in-tree, leaving build/ and *.egg-info), (2) the polymarket runtime user can execute the installed venv (RUNTIME_VENV_NOT_EXECUTABLE: umask 027 left the root-created venv unreadable, 203/EXEC) while never being able to write it, and (3) the bootstrap fails closed before activation if either invariant is false. No verifier weakening, no host hand patch, no new authority; Phase B stays suspended until merge and fresh authorization.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/status_entries/S10-DEPLOY-EXEC-01R.md",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01R/wp_prompt.txt",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01R/wp_spec.json",
+      "tests/deployment/test_runtime_baseline.py",
+      "tools/deployment/bootstrap_ubuntu_24_04.sh"
+    ],
+    "allowed_changed_files": [
+      "docs/status_entries/S10-DEPLOY-EXEC-01R.md",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01R/wp_prompt.txt",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01R/wp_spec.json",
+      "tests/deployment/test_runtime_baseline.py",
+      "tools/deployment/bootstrap_ubuntu_24_04.sh"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/",
+      "tools/advisory/",
+      "tools/agent/",
+      "tools/git/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/security/",
+      "tools/wp/"
+    ],
+    "max_changed_files": 5,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert S10-DEPLOY-EXEC-01R. The bootstrap returns to the merged parent install mechanism (known defective on a real host) and the repair status/spec artifacts disappear. runtime_baseline.py, the release verifier, systemd units, slices, dependencies and workflows are untouched; no host, store, order or capital state is touched by this repository repair.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "Bootstrap shell repair only; no runtime_baseline.py subcommand, verifier or product API changes.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These rules close the two repaired activation invariants, their fail-closed ordering and the unchanged verifier and authority posture.",
+    "items": [
+      {
+        "path": "bootstrap.install_source",
+        "source": "CONSTANT",
+        "type": "bootstrap_activation_rule",
+        "required_rule": "pip installs the project into the target release venv only from a disposable mktemp copy (/tmp/polymarket-install-source.*) of the already-verified pristine incoming release, never from the immutable target release; the copy is removed on PASS and via the EXIT trap on every FAIL.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Behavioral POSIX harness with simulated in-tree build debris proves the target and pristine trees stay debris-free and every disposable source is removed on PASS and FAIL.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed bootstrap JSON status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "bootstrap.post_install_verify",
+        "source": "CONSTANT",
+        "type": "bootstrap_activation_rule",
+        "required_rule": "After the read-only lock and before unit verification, firewall gates and the atomic current switch, verify-release --allow-activation-artifacts on the target release must return RELEASE_VERIFIED, otherwise POST_INSTALL_RELEASE_VERIFY_FAILED.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Ordering regression plus activated-release verifier regression.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed bootstrap JSON status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "verifier.activation_artifacts",
+        "source": "CONSTANT",
+        "type": "bootstrap_activation_rule",
+        "required_rule": "The release verifier is unchanged: only the governed .venv and the exact local_data symlink are activation artifacts; build/ and *.egg-info in the target release remain RELEASE_FILE_SET_MISMATCH.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "runtime_baseline.py is outside the exact scope; regression asserts debris stays rejected.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed bootstrap JSON status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "bootstrap.runtime_permissions",
+        "source": "CONSTANT",
+        "type": "bootstrap_activation_rule",
+        "required_rule": "After pip check the target release is normalized chmod -R go+rX,go-w (root-owned, runtime readable/traversable/executable, never runtime-writable) and then locked chmod -R a-w.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Behavioral POSIX harness asserts read/traverse/execute bits and zero write bits on every entry.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed bootstrap JSON status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "bootstrap.runtime_user_exec",
+        "source": "CONSTANT",
+        "type": "bootstrap_activation_rule",
+        "required_rule": "Before activation runuser -u polymarket must execute the target venv python in isolated mode and resolve polymarket-strategy-lab metadata, otherwise RUNTIME_VENV_NOT_EXECUTABLE; runuser and mktemp are in the required-command gate.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Harness proves the exact guard invocation and the closed fail-closed code.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed bootstrap JSON status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.no_new_authority",
+        "source": "CONSTANT",
+        "type": "bootstrap_activation_rule",
+        "required_rule": "No host hand patch, credential, account, signing, order, capital, live, workflow, dependency, src/ or runtime_baseline.py change; Phase B stays suspended until merge and fresh authorization.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exact five-path diff; authority mirror; status entry.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed bootstrap JSON status or closed error_code",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No content-addressed identity is introduced or changed.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Side16/Karl follow-up authorization permits only this bounded repair; merge and Phase-B re-authorization remain separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 5-file scope, rule matrix and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Side16/Karl follow-up 04/05 authorize this exact S10-DEPLOY-EXEC-01R repair envelope",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside the exact 5-path scope and the focused, guard, readiness and full-suite validation pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "The named deployment regressions plus the real-pip root Linux end-to-end proof are the executable oracle.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R010 cover both repaired defects, the verifier boundary, fail-closed ordering, Linux behavioral and real-pip proofs, the six historical scope guards, readiness/exact scope, one full suite and exact-head PR CI.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_bootstrap_installs_package_from_disposable_source_not_immutable_release",
+        "command": "python -m pytest -q tests/deployment/test_runtime_baseline.py",
+        "expected_result": "on POSIX the disposable source is used, removed on PASS and FAIL (PACKAGE_INSTALL_FAILED), simulated build/ and *.egg-info never reach the target, and the target passes verify_release with activation artifacts"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_bootstrap_runtime_venv_is_runtime_executable_and_never_runtime_writable",
+        "command": "python -m pytest -q tests/deployment/test_runtime_baseline.py",
+        "expected_result": "on POSIX every target entry is group/other readable, directories traversable, python executable, zero write bits after the lock, the exact runuser guard is invoked and a failing guard yields RUNTIME_VENV_NOT_EXECUTABLE"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_activated_release_verifier_allows_only_governed_activation_artifacts",
+        "command": "python -m pytest -q tests/deployment/test_runtime_baseline.py",
+        "expected_result": "verify_release allows only .venv and the exact local_data symlink and still rejects build/ and *.egg-info with RELEASE_FILE_SET_MISMATCH"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_bootstrap_activation_ordering_fails_closed_before_current_switch",
+        "command": "python -m pytest -q tests/deployment/test_runtime_baseline.py",
+        "expected_result": "install, pip check, permission normalization, runtime-user guard, read-only lock and post-install verify precede unit verification, firewall apply, the atomic current switch and BOOTSTRAP_COMPLETE"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "validation",
+        "test": "Linux behavioral proof and shell syntax",
+        "command": "bash -n tools/deployment/bootstrap_ubuntu_24_04.sh; python -m pytest -q tests/deployment (Linux container, non-root and hosted Linux CI)",
+        "expected_result": "bash syntax valid and the POSIX-only regressions execute (not skipped) and pass on Linux"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "validation",
+        "test": "real-pip root end-to-end and negative control",
+        "command": "throwaway root Linux container: build-release, umask 027, real venv/pip, real polymarket user and runuser, then the old fe4e2f1 install mechanism",
+        "expected_result": "repaired path RELEASE_VERIFIED with disposable source removed, runtime-user metadata resolved and runtime write denied; old mechanism reproduces RELEASE_FILE_SET_MISMATCH and runtime exec DENIED"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "validation",
+        "test": "six historical scope guards",
+        "command": "python -m pytest -q the six previously failing historical scope-guard nodes",
+        "expected_result": "6 passed without editing any historical guard test"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "validation",
+        "test": "readiness, exact scope and hygiene",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-DEPLOY-EXEC-01R/wp_prompt.txt --spec docs/wp_specs/S10-DEPLOY-EXEC-01R/wp_spec.json --repo-root . --check-diff --base fe4e2f1557dec5667d32fa1479f0bfc7ead1c940 --head HEAD; git diff --check fe4e2f1557dec5667d32fa1479f0bfc7ead1c940 HEAD --; gitleaks git",
+        "expected_result": "IMPLEMENTATION_READY on the committed head; exactly the 5 required paths changed; diff and secret scan clean"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "validation",
+        "test": "one authoritative full suite",
+        "command": "python -m pytest -q",
+        "expected_result": "one full suite on the final committed candidate with zero failures"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "github",
+        "test": "Ready-for-Review publication and exact-head hosted CI",
+        "command": "gh pr view --json isDraft,state,headRefOid; gh pr checks --watch",
+        "expected_result": "one OPEN non-draft PR whose head equals the tested head and all hosted CI jobs green on that exact head; merge not performed"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-DEPLOY-EXEC-01",
+    "next_title": "Resume the parent S10-DEPLOY-EXEC-01 Phase B on the NEW merge SHA only after Karl merges this repair and Side16 issues a fresh Phase-B authorization; S10-LIVE-ORCH-01 remains the parent's separately gated successor",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-DEPLOY-EXEC-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "any VPS mutation, host hand patch, binding, currentness, coexistence, backup/restore or reboot proof",
+      "weakening the release verifier or allowing build/ or *.egg-info as activation artifacts",
+      "making the release or venv writable by the polymarket runtime user",
+      "changing runtime_baseline.py, systemd units, slice values, dependencies or workflows",
+      "editing the six historical scope-guard tests or the parent S10-DEPLOY-EXEC-01 status/spec",
+      "credentials, authenticated account access, signing, orders, capital, GateCLivePermit, GateCSession, A3 or live",
+      "S10-LIVE-ORCH-01 work"
+    ]
+  }
+}
