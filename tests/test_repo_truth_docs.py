@@ -1119,8 +1119,9 @@ def test_s10_deploy_plan_01_repo_truth() -> None:
     for claim in ("Gate C is AUTHORIZED", "live ready: YES", "DATA-03 is moved to the VPS"):
         assert claim not in section, claim
     assert index.index("## S10-DEPLOY-PLAN-01 ") < index.index("## S10-QUAL-DATA-03 ") < index.index("## S10-QUAL-PLAN-01 ")
-    assert index.index("## S10-DEPLOY-EXEC-01 ") == index.index("\n## ") + 1
-    assert index.index("## S10-DEPLOY-EXEC-01 ") < index.index("## S10-GATE-C-EXPLORE-01 ")
+    # S10-LIVE-ORCH-01 now leads; DEPLOY-EXEC (PR #214) is the immediate merged predecessor.
+    assert index.index("## S10-LIVE-ORCH-01 ") == index.index("\n## ") + 1
+    assert index.index("## S10-LIVE-ORCH-01 ") < index.index("## S10-DEPLOY-EXEC-01 ") < index.index("## S10-GATE-C-EXPLORE-01 ")
     assert index.index("## S10-GATE-C-EXPLORE-01 ") < index.index("## S10-EXEC-FEAS-01 ") < index.index("## S10-HERMES-STRAT-01 ") < index.index("## S10-STRAT-LIFE-01 ") < index.index("## S10-DEPLOY-01 ")
     assert index.index("## S10-DEPLOY-01 ") < index.index("## S10-PAPER-RESEARCH-01 ") < index.index("## S10-DEPLOY-PLAN-01 ")
     assert "## S10-DEPLOY-01 Research Platform Runtime Baseline (merged historical predecessor: PR #209)" in index
@@ -1128,7 +1129,8 @@ def test_s10_deploy_plan_01_repo_truth() -> None:
     assert "Earlier merged predecessor: S10-STRAT-LIFE-01 Strategy Lifecycle + Global" in roadmap
     assert "Earlier merged predecessor: S10-HERMES-STRAT-01 Hermes Strategy Manager Core (PR #211" in roadmap
     assert "Earlier merged predecessor: S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (PR #212" in roadmap
-    assert "Immediate merged predecessor: S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core" in roadmap
+    assert "Earlier merged predecessor: S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core" in roadmap
+    assert "Immediate merged predecessor: S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate &" in roadmap
     assert "## S10-DEPLOY-01 Research Platform Runtime Baseline (merged implementation; host activation separately gated)" in roadmap
     rows = {line.split(" | ")[0][2:]: line for line in deferred.splitlines() if line.startswith("| S10-DEPLOY-PLAN-01-D")}
     assert sorted(rows) == [f"S10-DEPLOY-PLAN-01-D00{n}" for n in range(1, 6)]
@@ -1314,7 +1316,10 @@ def test_s10_deploy_exec_repo_truth_authority_separation() -> None:
     index = (ROOT / "docs/repo_truth_index.md").read_text(encoding="utf-8")
     start = index.index("## S10-DEPLOY-EXEC-01 ")
     section = " ".join(index[start : index.index("\n## ", start + 1)].split())
-    assert "(current bounded implementation target)" in section
+    # S10-LIVE-ORCH-01: PR #214 merged it; the implementation-time text is retained as history.
+    assert "(merged historical predecessor: PR #214)" in section
+    assert "(current bounded implementation target)" not in section
+    assert "PR #214 merged: YES at `fe4e2f1557dec5667d32fa1479f0bfc7ead1c940` (head `9871dddf98565b16194209f032cf8279bfbd34f1`)" in section
     for text in (
         "docs/execution_host_runtime_contract.md", "`runtime_baseline.py`", "`bootstrap_ubuntu_24_04.sh`",
         "tools/deployment/systemd/polymarket-execution-critical-probe.service",
@@ -1331,4 +1336,28 @@ def test_s10_deploy_exec_repo_truth_authority_separation() -> None:
         assert text in section, text
     for claim in ("S10-DEPLOY-EXEC-01: MERGED", "Phase B is PERFORMED", "live ENABLED", "S10-LIVE-ORCH-01: STARTED",
                   "credentials: YES"):
+        assert claim not in section, claim
+
+def test_s10_live_orch_repo_truth_authority_separation() -> None:
+    """Repo truth records the 27-path PROTECTED package, dormant capability and separate canary (R008)."""
+    index = (ROOT / "docs/repo_truth_index.md").read_text(encoding="utf-8")
+    start = index.index("## S10-LIVE-ORCH-01 ")
+    assert start == index.index("\n## ") + 1
+    section = " ".join(index[start : index.index("\n## ", start + 1)].split())
+    assert "(current protected implementation target)" in section
+    for text in (
+        "docs/live_orchestration_contract.md", "`src/execution_gateway/live_orch.py`",
+        "tests/execution_gateway/test_live_orch.py", "docs/wp_specs/S10-LIVE-ORCH-01/",
+        "docs/status_entries/S10-LIVE-ORCH-01.md", "3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe",
+        "b1779f5bc6e945eedfa1ba0692a9e1baca779973", "PROTECTED, risk 4, exact 27-path XL scope, independent certificate.",
+        "S10-DEPLOY-EXEC-01: MERGED (PR #214; repairs PR #215, #217 and #218).",
+        "persists a durable LIVE_ORCH_ADMISSION before CREATE_STARTED, transmits at most one BUY CREATE",
+        "SIDE_UNSUPPORTED_FIRST_CANARY", "Unknown CREATE responses are AMBIGUOUS",
+        "two independent dimensions (Gamma USDC notional, CLOB shares)",
+        "merge does not activate live trading", "S10-LIVE-CANARY-01 needs a separate exact-merge Karl authorization",
+        "live DISABLED", "capital/orders USD 0 / 0", "merge NOT AUTHORIZED",
+    ):
+        assert text in section, text
+    for claim in ("S10-LIVE-ORCH-01: MERGED", "live ENABLED", "Gate C is AUTHORIZED", "credentials: YES",
+                  "S10-LIVE-CANARY-01: AUTHORIZED"):
         assert claim not in section, claim

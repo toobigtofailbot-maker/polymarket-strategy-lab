@@ -110,19 +110,29 @@ def _tick_dimension(
 
 
 def _minimum_order(
-    notional: Decimal, snapshot: PublicExecutionVenueSnapshot, diags: set[str]
+    notional: Decimal,
+    requested_shares: Decimal,
+    snapshot: PublicExecutionVenueSnapshot,
+    diags: set[str],
 ) -> tuple[str, Decimal | None]:
+    """Two independent hard dimensions (S10-LIVE-ORCH-01 repair).
+
+    Gamma ``orderMinSize`` is a minimum USDC notional compared with
+    requested_shares x price_limit; CLOB ``min_order_size`` is a minimum share count
+    compared with requested_shares. The two values are never required to be equal.
+    """
     gamma_min = _d(snapshot.gamma_min_order_notional_usd)
     book_min = _d(snapshot.book_min_order_size_raw)
     if gamma_min is None or book_min is None:
         return "UNKNOWN", None
-    if gamma_min != book_min:
-        diags.add("MIN_ORDER_SOURCE_CONFLICT")
-        return "UNKNOWN", None
+    failed = False
     if notional < gamma_min:
         diags.add("MINIMUM_ORDER_NOTIONAL_NOT_MET")
-        return "FAIL", gamma_min
-    return "PASS", gamma_min
+        failed = True
+    if requested_shares < book_min:
+        diags.add("MINIMUM_ORDER_SHARES_NOT_MET")
+        failed = True
+    return ("FAIL" if failed else "PASS"), gamma_min
 
 
 def _sweep(
@@ -225,7 +235,7 @@ def assess_execution_feasibility(
         "freshness_dimension": _freshness_dimension(intent, snapshot, diags),
         "tick_dimension": _tick_dimension(price_limit, snapshot, diags),
     }
-    dims["minimum_order_dimension"], minimum = _minimum_order(notional, snapshot, diags)
+    dims["minimum_order_dimension"], minimum = _minimum_order(notional, requested, snapshot, diags)
     book_usable = dims["freshness_dimension"] == "PASS"
     dims["book_dimension"] = "PASS" if book_usable else "UNKNOWN"
 

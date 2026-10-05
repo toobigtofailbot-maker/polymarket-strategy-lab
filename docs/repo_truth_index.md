@@ -1,6 +1,38 @@
 # Repo Truth Index
 
-## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (current bounded implementation target)
+## S10-LIVE-ORCH-01 Restricted Live Orchestration + First-Live Canary Core (current protected implementation target)
+
+The contract is `docs/live_orchestration_contract.md`; the single new module is
+`src/execution_gateway/live_orch.py` over the existing `gate_b.py`, `gate_c.py`, `gateway.py` and
+`store.py` boundaries; the EXEC-FEAS repair touches `src/execution_feasibility/models.py`,
+`src/execution_feasibility/evaluator.py` and `docs/execution_feasibility_contract.md`; the focused
+tests are `tests/execution_gateway/test_live_orch.py` plus `test_gate_b.py`, `test_gate_c.py`,
+`test_gateway.py`, `test_store_recovery.py` and
+`tests/execution_feasibility/test_execution_feasibility.py`; the certified package is
+`docs/wp_specs/S10-LIVE-ORCH-01/` (prompt, spec and independent draftability certificate); and the
+stable record is `docs/status_entries/S10-LIVE-ORCH-01.md`. Frozen base
+`3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe` (PR #218 / S10-DEPLOY-EXEC-01R3 merged: YES, head
+`b1779f5bc6e945eedfa1ba0692a9e1baca779973`). PROTECTED, risk 4, exact 27-path XL scope, independent certificate.
+S10-DEPLOY-EXEC-01: MERGED (PR #214; repairs PR #215, #217 and #218). One manual foreground
+orchestrator (`preflight` / `canary` / `reconcile`) consumes one exact current
+ExploratoryGateCPermit read-only, requires strict execution-host currentness, a fresh geoblock pass,
+exact Deposit Wallet identity, fresh bounded account truth (100-item bound), a fresh compatible
+public venue snapshot and the frozen USD 100 / 5 / 30 / 70 envelope, persists a durable
+LIVE_ORCH_ADMISSION before CREATE_STARTED, transmits at most one BUY CREATE (SELL rejected
+SIDE_UNSUPPORTED_FIRST_CANARY) and reconciles partial fills, settlement statuses, cancel ambiguity
+(new attempt identity per round, at most three rounds) and restart into a restart-safe
+multi-episode ledger inside the existing gateway journal. Unknown CREATE responses are AMBIGUOUS;
+the EXEC-FEAS minimum order is two independent dimensions (Gamma USDC notional, CLOB shares).
+Dormant capability only: implementation/CI real product network, credentials, account access,
+orders and capital are 0; merge does not activate live trading; the first real canary
+S10-LIVE-CANARY-01 needs a separate exact-merge Karl authorization. WP175 remains the historical
+manual canary path; ALPHA-03 and DATA-03 remain separate and non-blocking; the Control Center
+remains separate and non-canonical; live DISABLED; capital/orders USD 0 / 0; merge NOT AUTHORIZED.
+
+## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (merged historical predecessor: PR #214)
+
+PR #214 merged: YES at `fe4e2f1557dec5667d32fa1479f0bfc7ead1c940` (head `9871dddf98565b16194209f032cf8279bfbd34f1`); repairs PR #215, #217 and #218 merged. The text below is the
+implementation-time record.
 
 The contract is `docs/execution_host_runtime_contract.md`; the implementation extends the merged
 S10-DEPLOY-01 `tools/deployment/` baseline in place (`runtime_baseline.py`,

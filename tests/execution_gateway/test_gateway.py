@@ -928,3 +928,166 @@ def test_gate_c_checkpoint_is_persisted_but_generic_a3_transition_is_closed(
     with pytest.raises(GatewayError, match="AUTHORITY_STATE_INVALID"):
         gateway.set_authority("A3_RESTRICTED_LIVE", actor="operator", event_time_ns=3)
     gateway.close()
+
+
+# ---------------------------------------------------------------------------
+# S10-LIVE-ORCH-01 (R004): multi-episode restart-safe ledger in the same journal
+# ---------------------------------------------------------------------------
+
+
+def _lo_episode(n: int, *, state: str = "ADMITTED", permit: str | None = None) -> dict:
+    from src.execution_gateway.gateway import live_orch_episode_id
+
+    binding = {
+        "exploratory_permit_id": permit or "exploratorygatecpermit:sha256:" + format(n, "064x"),
+        "execution_intent_id": "executionintent:sha256:" + format(n, "064x"),
+        "strategy_version_id": "strategyversion:sha256:" + "3" * 64,
+        "execution_rule_sha256": "executionrule:sha256:" + "4" * 64,
+        "gamma_market_id": "516710", "condition_id": "0x" + "ab" * 32,
+        "token_id": "71321045679252212594626385532706912750332728571942532289631379312455583992563",
+        "side": "BUY", "execution_style": "AGGRESSIVE_TAKER", "order_type": "FOK",
+        "requested_shares": "8", "price_limit": "0.55", "post_only": False,
+        "gtd_expiration_unix_s": None, "authorized_order_notional_usd": "4.4",
+        "release_sha": "c" * 40, "public_signer": "0x" + "a" * 40, "public_wallet": "0x" + "b" * 40,
+    }
+    admission = {
+        "admission_id": "liveorchadmission:sha256:" + format(n, "064x"), "decision": "ADMITTED",
+        "venue_snapshot_id": "executionsnapshot:sha256:" + "6" * 64,
+        "execution_feasibility_assessment_id": "executionfeasibility:sha256:" + "7" * 64,
+        "feasibility_status": "FEASIBLE", "host_currentness_id": "hostcurrentness:sha256:" + "8" * 64,
+        "geoblock_proof_id": "geoblockproof:sha256:" + "9" * 64, "geoblock_observed_time_ns": 1,
+        "account_truth_id": "liveorchaccount:sha256:" + "a" * 64, "collateral_before_usd": "100",
+        "current_committed_usd": "0", "principal_notional_usd": "4.4",
+        "worst_case_fee_reserve_usd": "0.0666", "worst_case_commitment_usd": "4.4666",
+        "projected_free_collateral_usd": "95.5334", "observed_realized_pnl_loss_usd": "0",
+        "observed_position_pnl_drawdown_usd": "0", "observed_cumulative_canary_loss_usd": "0",
+        "signed_order_id": "liveorchsignedorder:sha256:" + "b" * 64,
+        "signed_maker_amount": 4_400_000, "signed_taker_amount": 8_000_000, "admitted_time_ns": 5,
+    }
+    return {
+        "episode_id": live_orch_episode_id(binding, admission["admission_id"]), "state": state,
+        "binding": binding, "admission": admission, "create": None, "cancel_attempts": [],
+        "reconciliation": {"order_live": None, "open_remainder_shares": "0", "trades": [],
+                           "fee_state": "RESERVED", "actual_fee_usd": None,
+                           "block_reason": None, "last_reconciled_time_ns": None},
+    }
+
+
+def _lo_record(gateway, event_type, episodes, *, restart=False, t=10):
+    from src.execution_gateway.gateway import (
+        LIVE_ORCH_CHECKPOINT_SCHEMA, _LIVE_ORCH_EVENT_ISSUER,
+    )
+
+    gateway.record_live_orch_event(
+        event_type,
+        {"schema_version": LIVE_ORCH_CHECKPOINT_SCHEMA, "episodes": episodes,
+         "restart_reconciliation_required": restart},
+        issuer=_LIVE_ORCH_EVENT_ISSUER, event_time_ns=t,
+    )
+
+
+def _lo_started(episode: dict, *, outcome=None, state="CREATE_STARTED", venue=None) -> dict:
+    value = json.loads(json.dumps(episode))
+    value["state"] = state
+    value["create"] = {"attempt_id": "liveorchcreate:sha256:" + "c" * 64, "started_time_ns": 6,
+                       "outcome": outcome, "response_status": None if outcome is None else "x",
+                       "venue_order_id": venue, "trade_ids": [], "making_amount": None,
+                       "taking_amount": None}
+    return value
+
+
+def test_live_orch_multi_episode_ledger_survives_restart_without_authority(tmp_path: Path) -> None:
+    path = tmp_path / "liveorch.sqlite3"
+    gateway = ProtectedExecutionGateway.create(path, created_time_ns=1)
+    first = _lo_episode(1)
+    _lo_record(gateway, "LIVE_ORCH_ADMITTED", [first], t=10)
+    started = _lo_started(first)
+    _lo_record(gateway, "LIVE_ORCH_CREATE_STARTED", [started], t=11)
+    rejected = _lo_started(first, outcome="DEFINITIVE_REJECTED", state="CREATE_REJECTED")
+    _lo_record(gateway, "LIVE_ORCH_CREATE_OUTCOME", [rejected], t=12)
+    second = _lo_episode(2)
+    _lo_record(gateway, "LIVE_ORCH_ADMITTED", [rejected, second], t=13)
+    gateway.close()
+    with ProtectedExecutionGateway.open(path, opened_time_ns=20) as reopened:
+        ledger = reopened.live_orch_checkpoint()
+        assert [e["state"] for e in ledger["episodes"]] == ["CREATE_REJECTED", "ADMITTED"]
+        assert ledger["restart_reconciliation_required"] is True
+        assert reopened.state.authority_state == "A0_DISABLED"
+        # No admission until an authoritative reconcile clears the restart flag.
+        with pytest.raises(GatewayError, match="LIVE_ORCH_TRANSITION_INVALID"):
+            _lo_record(reopened, "LIVE_ORCH_ADMITTED", ledger["episodes"] + [_lo_episode(3)], restart=True, t=21)
+        closed = json.loads(json.dumps(ledger["episodes"]))
+        closed[1]["state"] = "TERMINAL_NO_POSITION"
+        closed[1]["reconciliation"].update(fee_state="RECONCILED", actual_fee_usd="0")
+        _lo_record(reopened, "LIVE_ORCH_RECONCILED", closed, restart=False, t=22)
+        _lo_record(reopened, "LIVE_ORCH_ADMITTED", closed + [_lo_episode(3)], t=23)
+        assert len(reopened.live_orch_checkpoint()["episodes"]) == 3
+
+
+def test_live_orch_transition_table_rejects_illegal_or_tampered_changes(tmp_path: Path) -> None:
+    gateway = ProtectedExecutionGateway.create(tmp_path / "liveorch.sqlite3", created_time_ns=1)
+    try:
+        first = _lo_episode(1)
+        with pytest.raises(GatewayError, match="LIVE_ORCH_REQUIRED"):
+            gateway.record_live_orch_event("LIVE_ORCH_ADMITTED", {}, event_time_ns=5)
+        with pytest.raises(GatewayError, match="LIVE_ORCH_TRANSITION_INVALID"):
+            _lo_record(gateway, "LIVE_ORCH_CREATE_STARTED", [_lo_started(first)])
+        _lo_record(gateway, "LIVE_ORCH_ADMITTED", [first])
+        illegal = [
+            ("LIVE_ORCH_CREATE_OUTCOME", [_lo_started(first, outcome="DEFINITIVE_ACCEPTED",
+                                                      state="CREATE_ACCEPTED", venue="0x" + "1" * 64)]),
+            ("LIVE_ORCH_RECONCILED", [_lo_started(first, outcome="AMBIGUOUS", state="CREATE_AMBIGUOUS")]),
+            ("LIVE_ORCH_ADMITTED", [first, _lo_episode(2, permit=first["binding"]["exploratory_permit_id"])]),
+            ("LIVE_ORCH_ADMITTED", [first, first]),
+        ]
+        for event_type, episodes in illegal:
+            with pytest.raises(GatewayError):
+                _lo_record(gateway, event_type, episodes)
+        mutated = json.loads(json.dumps(first))
+        mutated["binding"]["requested_shares"] = "9"
+        with pytest.raises(GatewayError):
+            _lo_record(gateway, "LIVE_ORCH_RECONCILED", [mutated])
+        _lo_record(gateway, "LIVE_ORCH_CREATE_STARTED", [_lo_started(first)])
+        # Possibly transmitted without a durable outcome: only ambiguity is legal.
+        clean = _lo_started(first)
+        clean["state"] = "TERMINAL_NO_POSITION"
+        with pytest.raises(GatewayError):
+            _lo_record(gateway, "LIVE_ORCH_RECONCILED", [clean])
+        _lo_record(gateway, "LIVE_ORCH_RECONCILED",
+                   [_lo_started(first, outcome="AMBIGUOUS", state="CREATE_AMBIGUOUS")])
+        assert gateway.live_orch_checkpoint()["episodes"][0]["state"] == "CREATE_AMBIGUOUS"
+        assert gateway.state.authority_state == "A0_DISABLED"
+    finally:
+        gateway.close()
+
+
+def test_live_orch_confirmed_trade_evidence_is_final(tmp_path: Path) -> None:
+    gateway = ProtectedExecutionGateway.create(tmp_path / "liveorch.sqlite3", created_time_ns=1)
+    try:
+        first = _lo_episode(1)
+        _lo_record(gateway, "LIVE_ORCH_ADMITTED", [first])
+        _lo_record(gateway, "LIVE_ORCH_CREATE_STARTED", [_lo_started(first)])
+        venue = "0x" + "e" * 64
+        accepted = _lo_started(first, outcome="DEFINITIVE_ACCEPTED", state="CREATE_ACCEPTED", venue=venue)
+        _lo_record(gateway, "LIVE_ORCH_CREATE_OUTCOME", [accepted])
+        known = json.loads(json.dumps(accepted))
+        known["state"] = "TERMINAL_KNOWN_POSITION"
+        known["reconciliation"].update(order_live=False, fee_state="RECONCILED", actual_fee_usd="0.05",
+                                       trades=[{"trade_id": "trade-1", "status": "CONFIRMED",
+                                                "shares": "8", "principal_usd": "4.16"}])
+        _lo_record(gateway, "LIVE_ORCH_RECONCILED", [known])
+        rewritten = json.loads(json.dumps(known))
+        rewritten["reconciliation"]["trades"][0]["status"] = "FAILED"
+        with pytest.raises(GatewayError, match="LIVE_ORCH_TRANSITION_INVALID"):
+            _lo_record(gateway, "LIVE_ORCH_RECONCILED", [rewritten])
+        refee = json.loads(json.dumps(known))
+        refee["reconciliation"]["actual_fee_usd"] = "0"
+        with pytest.raises(GatewayError, match="LIVE_ORCH_TRANSITION_INVALID"):
+            _lo_record(gateway, "LIVE_ORCH_RECONCILED", [refee])
+        nonterminal = json.loads(json.dumps(known))
+        nonterminal["reconciliation"]["trades"].append(
+            {"trade_id": "trade-2", "status": "MATCHED", "shares": "0", "principal_usd": "0"})
+        with pytest.raises(GatewayError):
+            _lo_record(gateway, "LIVE_ORCH_RECONCILED", [nonterminal])
+    finally:
+        gateway.close()

@@ -607,10 +607,12 @@ def test_r027_tick_source_conflict_inconclusive() -> None:
 
 
 def test_r028_min_order_source_conflict_inconclusive() -> None:
+    # S10-LIVE-ORCH-01 repair: unequal Gamma-notional and CLOB-share minima are no longer a
+    # source conflict; they are two independent dimensions that may both pass.
     result = assess(s=snap(clob=body(book_doc(min_order_size="15"))))
-    assert result.minimum_order_dimension == "UNKNOWN" and result.status == "INCONCLUSIVE"
-    assert "MIN_ORDER_SOURCE_CONFLICT" in result.diagnostic_codes
-    assert result.minimum_order_notional_usd is None
+    assert result.minimum_order_dimension == "PASS" and result.status == "FEASIBLE"
+    assert "MIN_ORDER_SOURCE_CONFLICT" not in result.diagnostic_codes
+    assert result.minimum_order_notional_usd == "5"
 
 
 def test_r029_neg_risk_source_conflict_inconclusive() -> None:
@@ -760,6 +762,70 @@ def test_r039_minimum_order_notional() -> None:
     missing = assess(s=snap(gamma=body(gamma_doc(orderMinSize=_DROP))))
     assert missing.minimum_order_dimension == "UNKNOWN" and missing.status == "INCONCLUSIVE"
     assert snap(gamma=body(gamma_doc(orderMinSize=_DROP))).book_min_order_size_raw == "5"
+
+
+# ---------------------------------------------------------------------------
+# S10-LIVE-ORCH-01 R001/NR013: independent Gamma-notional / CLOB-share minimum dimensions.
+# ---------------------------------------------------------------------------
+
+_MIN_DIAGS = ("MINIMUM_ORDER_NOTIONAL_NOT_MET", "MINIMUM_ORDER_SHARES_NOT_MET",
+              "MIN_ORDER_SOURCE_CONFLICT")
+
+
+def _min_case(*, shares: str, price: str, gamma_min, book_min):
+    gamma = gamma_doc(orderMinSize=gamma_min)
+    book = book_doc(min_order_size=book_min)
+    result = assess(i=intent(requested_shares=shares, price_limit=price, order_type="FAK"),
+                    s=snap(gamma=body(gamma), clob=body(book)))
+    return result, tuple(code for code in result.diagnostic_codes if code in _MIN_DIAGS)
+
+
+def test_live_orch_minimum_order_dimensions_are_independent() -> None:
+    """R001: Gamma minimum is USDC notional and CLOB minimum is shares, never equated."""
+    assert "MINIMUM_ORDER_SHARES_NOT_MET" in M.DIAGNOSTIC_CODES
+    assert M.DIAGNOSTIC_CODES.index("MINIMUM_ORDER_NOTIONAL_NOT_MET") + 1 == \
+        M.DIAGNOSTIC_CODES.index("MINIMUM_ORDER_SHARES_NOT_MET")
+    # Unequal values (USD 1 notional vs 5 shares) both pass: 8 shares x 0.55 = 4.4 USD.
+    both, diags = _min_case(shares="8", price="0.55", gamma_min=1, book_min="5")
+    assert both.minimum_order_dimension == "PASS" and diags == ()
+    assert both.minimum_order_notional_usd == "1"
+    # Exactly at both boundaries passes.
+    edge, diags = _min_case(shares="10", price="0.5", gamma_min=5, book_min="10")
+    assert edge.minimum_order_dimension == "PASS" and diags == ()
+
+
+def test_live_orch_minimum_order_each_failure_is_exact() -> None:
+    """Below each constraint fails with exactly the corresponding closed diagnostic."""
+    notional, diags = _min_case(shares="8", price="0.55", gamma_min=5, book_min="5")
+    assert notional.minimum_order_dimension == "FAIL" and notional.status == "NOT_FEASIBLE"
+    assert diags == ("MINIMUM_ORDER_NOTIONAL_NOT_MET",)
+    shares, diags = _min_case(shares="8", price="0.55", gamma_min=1, book_min="10")
+    assert shares.minimum_order_dimension == "FAIL" and shares.status == "NOT_FEASIBLE"
+    assert diags == ("MINIMUM_ORDER_SHARES_NOT_MET",)
+    both, diags = _min_case(shares="4", price="0.55", gamma_min=5, book_min="5")
+    assert both.minimum_order_dimension == "FAIL"
+    assert diags == ("MINIMUM_ORDER_NOTIONAL_NOT_MET", "MINIMUM_ORDER_SHARES_NOT_MET")
+
+
+def test_live_orch_minimum_order_missing_source_unknown() -> None:
+    """A missing Gamma or CLOB minimum leaves the dimension UNKNOWN, never PASS or FAIL."""
+    for gamma_min, book_min in ((_DROP, "5"), (5, _DROP)):
+        result, diags = _min_case(shares="8", price="0.55", gamma_min=gamma_min, book_min=book_min)
+        assert result.minimum_order_dimension == "UNKNOWN" and result.status == "INCONCLUSIVE"
+        assert diags == () and result.minimum_order_notional_usd is None
+
+
+def test_live_orch_frozen_base_minimum_order_defect_negative_control() -> None:
+    """R009: the frozen base 3f4d9ed contained the dimension-conflating equality branch."""
+    base = "3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe"
+    old = subprocess.run(["git", "show", f"{base}:src/execution_feasibility/evaluator.py"],
+                         cwd=ROOT, capture_output=True, text=True, timeout=60)
+    if old.returncode != 0:
+        pytest.skip("frozen base object unavailable in this checkout")
+    assert "if gamma_min != book_min:" in old.stdout
+    current = (ROOT / "src" / "execution_feasibility" / "evaluator.py").read_text(encoding="utf-8")
+    assert "if gamma_min != book_min:" not in current
+    assert "requested_shares < book_min" in current
 
 
 # ---------------------------------------------------------------------------

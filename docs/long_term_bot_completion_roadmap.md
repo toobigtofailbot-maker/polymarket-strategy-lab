@@ -2,8 +2,22 @@
 
 ## A. Status
 
-- Current bounded implementation package: S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate &
-  Coexistence Proof on frozen base `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2` after PR #213 / S10-GATE-C-EXPLORE-01
+- Current protected implementation package: S10-LIVE-ORCH-01 Restricted Live Orchestration +
+  First-Live Canary Core on frozen base `3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe` after PR #218 /
+  S10-DEPLOY-EXEC-01R3 (merged: YES; head `b1779f5bc6e945eedfa1ba0692a9e1baca779973`). PROTECTED, risk 4, exact
+  27-path XL scope, independent certificate (`docs/live_orchestration_contract.md`): one manual
+  foreground orchestrator (`src/execution_gateway/live_orch.py`) consuming one exact current
+  ExploratoryGateCPermit with strict host currentness, fresh geoblock, exact Deposit Wallet
+  identity, bounded account truth, fresh venue drift checks and the frozen USD 100 / 5 / 30 / 70
+  envelope; durable admission before at most one BUY CREATE; restart-safe multi-episode
+  reconciliation; plus the EXEC-FEAS minimum-order dimension repair. Dormant capability only:
+  implementation/CI real network, credentials, account access, orders and capital are 0; live
+  DISABLED; the first real canary (S10-LIVE-CANARY-01) is separately gated.
+
+- Immediate merged predecessor: S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate &
+  Coexistence Proof (PR #214 merged at `fe4e2f1557dec5667d32fa1479f0bfc7ead1c940`; head
+  `9871dddf98565b16194209f032cf8279bfbd34f1`; repairs PR #215, #217 and #218 merged; formerly the
+  current bounded implementation package) on frozen base `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2` after PR #213 / S10-GATE-C-EXPLORE-01
   (merged: YES; head `342dfeb24652eccb1b6bdf237039b268115b1fb7`). RUNTIME, risk 3, exact 18-path scope. It extends the merged
   S10-DEPLOY-01 `tools/deployment/` baseline (`docs/execution_host_runtime_contract.md`): a
   sanitized execution-host binding/currentness contract, a non-economic critical-probe service in
@@ -11,15 +25,16 @@
   research-versus-critical coexistence evaluator and closed terminal Phase-B evidence semantics.
   Execution-capable host substrate only: no `src/` change, credential, account, Gate-C permit
   consumption, signing, order, OMS, reconciliation, capital or live authority.
-  Status: S10-GATE-C-EXPLORE-01: MERGED (PR #213); S10-DEPLOY-EXEC-01: current implemented review
-  target (repository mechanism; real AlphaVPS host proof is a separately authorized Phase B after
+  Status at DEPLOY-EXEC implementation time: S10-GATE-C-EXPLORE-01: MERGED (PR #213);
+  S10-DEPLOY-EXEC-01: then the current implemented review target (now MERGED in PR #214)
+  (repository mechanism; real AlphaVPS host proof is a separately authorized Phase B after
   merge, NOT PERFORMED); S10-LIVE-ORCH-01: next core successor after execution-host substrate proof,
   NOT STARTED. AlphaVPS purchased/provisioned per Karl (operator-reported; not repository-observed);
   project deployment on it NOT PERFORMED. No automatic upgrade or second host. ALPHA-03 and DATA-03
   separate/non-blocking; Control Center separate and non-canonical. Live DISABLED; capital/orders
   USD 0 / 0.
 
-- Immediate merged predecessor: S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core
+- Earlier merged predecessor: S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core
   (PR #213 merged at `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2`; head `342dfeb24652eccb1b6bdf237039b268115b1fb7`; formerly the current protected
   implementation package) on frozen base `35db4f05347b8b27f7bd0296cf9b1b0627e58d12` after PR #212 / S10-EXEC-FEAS-01 (merged: YES;
   head `99f3c3c8acc09ae3b5646f785446d69a7b8b2290`). PROTECTED, risk 4, exact 18-path scope, independent certificate.
@@ -910,7 +925,10 @@ PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
   parallel feeder and is not a prerequisite; DATA-03 unchanged and non-blocking; S10-DEPLOY-01
   host activation separate; live DISABLED; capital/orders USD 0 / 0.
 
-## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (current)
+## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (merged)
+
+Status: MERGED (PR #214; repairs PR #215, #217 and #218). The bullets below are the
+implementation-time record; see the S10-LIVE-ORCH-01 section for the current package.
 
 PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
 
@@ -930,3 +948,22 @@ PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
   second VPS remains a separate material architecture decision.
 - ALPHA-03 and DATA-03 remain separate, non-blocking lanes; the Control Center remains separate and
   non-canonical; live DISABLED; capital/orders USD 0 / 0.
+
+## S10-LIVE-ORCH-01 Restricted Live Orchestration + First-Live Canary Core (current)
+
+PLANNING_GUIDANCE_ONLY for successors; it authorizes no successor start.
+
+- S10-DEPLOY-EXEC-01: MERGED (PR #214; repairs PR #215, #217 and #218). S10-LIVE-ORCH-01: current
+  protected implemented review target (`docs/live_orchestration_contract.md`), dormant capability
+  only; merge does not activate live trading.
+- Known-candidate path capability status: lifecycle (MERGED) -> Hermes strategy manager (MERGED)
+  -> execution feasibility (MERGED) -> exploratory Gate C (MERGED) -> execution host (MERGED) ->
+  live orchestrator (S10-LIVE-ORCH-01: implemented dormant capability, current protected review
+  target) -> first restricted live canary (S10-LIVE-CANARY-01: separately gated, requires a
+  separate exact-merge Karl authorization).
+- First-live CREATE is BUY only under the frozen USD 100 / 5 / 30 / 70 envelope with no auto
+  scaling; SELL, Session Keys, Builder credentials, SDK upgrade, heartbeat daemon, WebSocket
+  recovery authority, automatic CREATE retry, neg-risk / delayed markets, redemption,
+  wallet deployment / approval automation and multi-strategy scheduling stay deferred.
+- ALPHA-03 and DATA-03 remain separate, non-blocking lanes; the Control Center remains separate and
+  non-canonical; live DISABLED; implementation capital/orders USD 0 / 0.

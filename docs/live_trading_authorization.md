@@ -38,6 +38,16 @@ sufficient for live execution: S10-LIVE-ORCH-01 must still revalidate the exact 
 permit, account, access and reconciliation under separate protected authority. Capital/orders
 remain USD 0 / 0.
 
+S10-LIVE-ORCH-01 (restricted live orchestration + first-live canary core) merges dormant
+protected capability only and grants no live authority. Its single foreground orchestrator consumes
+one exact current exploratory permit and, only after strict execution-host currentness, a fresh
+geoblock pass, exact Deposit Wallet identity, fresh bounded account truth, fresh venue revalidation,
+the frozen USD 100 account / USD 5 order / USD 30 aggregate commitment / USD 70 free-collateral
+envelope and a durable admission, may transmit at most one BUY CREATE. Implementation and CI used
+no real credential, account access, order or capital. Merge does not activate live trading; the
+first real canary (S10-LIVE-CANARY-01) requires a separate exact-merge Karl authorization naming the
+merge SHA, permit ID, intent ID and public canary wallet. Capital/orders remain USD 0 / 0.
+
 No live trading code exists in WP1. No strategy is live-authorized. No wallet or API credentials are configured. No external repo code is authorized for live execution.
 
 Live mode requires a future WP, explicit human approval, active risk gateway, kill-switch tests, dashboard visibility, and an updated authorization table.
@@ -58,3 +68,4 @@ Live mode requires a future WP, explicit human approval, active risk gateway, ki
 | Execution gateway | No | N/A | N/A | N/A | N/A |
 | AI/Hermes monitoring/reporting assistant | No | N/A | N/A | N/A | N/A |
 | WP175 restricted live canary | Pending separate exact-head Gate-C decision | 0 during implementation | N/A | 2026-09-16 package authority only | One strategy/market, LIMIT-only, one attempt; qualification prerequisite unavailable |
+| S10-LIVE-ORCH-01 first restricted live canary | No (dormant; separate exact-merge activation required) | 0 during implementation; frozen envelope USD 100 / 5 / 30 / 70 | N/A | N/A | BUY only, one CREATE per exact fresh permit, foreground only, no auto scaling |

@@ -32,6 +32,20 @@ _SENSITIVE_KEYS = frozenset(
     }
 )
 _RAW_HEX = re.compile(r"(?:0x)?[0-9a-fA-F]{64,}")
+# Public venue identifiers that are 0x-prefixed 32-byte hex values.  Polymarket
+# order IDs have this shape; S10-LIVE-ORCH-01 persists them (never secrets) only
+# under these exact field names so restart recovery can query and cancel them.
+_PUBLIC_HEX64_FIELDS = frozenset(
+    {
+        "condition_id",
+        "market_id",
+        "venue_order_id",
+        "venue_open_order_ids",
+        "trade_id",
+        "trade_ids",
+    }
+)
+_PUBLIC_RELEASE_SHA_FIELDS = frozenset({"release_sha"})
 _BASE64_LIKE = re.compile(r"[A-Za-z0-9+/]{40,}={0,2}")
 
 
@@ -70,8 +84,12 @@ def _assert_sanitized(value: object, *, field: str | None = None) -> None:
             _assert_sanitized(item, field=field)
     elif isinstance(value, str):
         public_identifier = (
-            field in {"condition_id", "market_id"}
+            field in _PUBLIC_HEX64_FIELDS
             and re.fullmatch(r"0x[0-9a-fA-F]{64}", value) is not None
+        ) or (
+            # S10-LIVE-ORCH-01: an exact deployed release is a public 40-hex Git SHA.
+            field in _PUBLIC_RELEASE_SHA_FIELDS
+            and re.fullmatch(r"[0-9a-f]{40}", value) is not None
         ) or (
             field in {"asset_id", "token_id"}
             and value.isascii()
@@ -116,7 +134,10 @@ def _safe_state_projection(state: Mapping[str, object]) -> dict[str, object]:
         "gate_c_checkpoint",
         "last_event_time_ns",
     }
-    if set(state) not in (expected, expected - {"gate_c_checkpoint"}):
+    # Optional checkpoints are materialized only once their owner writes evidence:
+    # Gate-C (WP175) and the S10-LIVE-ORCH-01 episode ledger.
+    optional = {"gate_c_checkpoint", "live_orch_checkpoint"}
+    if not (expected - optional) <= set(state) <= expected | optional:
         raise GatewayStoreError("STORE_STATE_INVALID")
     state = dict(state)
     state.setdefault("gate_c_checkpoint", None)

@@ -78,8 +78,15 @@ FAIL / UNKNOWN / NOT_APPLICABLE: market (active, not closed, accepting orders, o
 `restricted` is recorded only), identity (both sources available, negRisk agreement), freshness
 (book timestamp not in the future and age <= max_public_data_age_ns; HTTP duration is never used),
 tick (Gamma and CLOB tick must both exist and agree; exact Decimal `price_limit % tick == 0`),
-minimum order (Gamma USDC notional and CLOB `min_order_size` must both exist and agree; intent
-notional = requested_shares x price_limit), book, fill, fee and delay. Book-derived dimensions are
+minimum order (two independent hard dimensions, both required to exist: Gamma `orderMinSize` is a
+minimum USDC notional compared with intent notional = requested_shares x price_limit
+(`MINIMUM_ORDER_NOTIONAL_NOT_MET`), and CLOB `min_order_size` is a minimum share count compared
+with requested_shares (`MINIMUM_ORDER_SHARES_NOT_MET`); the two values are never required to be
+equal, a missing source is UNKNOWN, any failed inequality is FAIL with its exact diagnostic and
+both passing is PASS — corrected by S10-LIVE-ORCH-01, which removed the frozen-base
+`gamma_min != book_min` source-conflict branch that conflated notional with shares;
+`MIN_ORDER_SOURCE_CONFLICT` stays in the closed vocabulary but is no longer emitted), book, fill,
+fee and delay. Book-derived dimensions are
 UNKNOWN unless the book is available and fresh.
 
 Aggressive takers sweep visible opposing levels within the price bound (BUY asks ascending with

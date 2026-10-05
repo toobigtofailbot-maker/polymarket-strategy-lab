@@ -1271,6 +1271,583 @@ def _validate_mutation_attempt(
         raise GatewayError("STATE_INVALID")
 
 
+# ---------------------------------------------------------------------------
+# S10-LIVE-ORCH-01 restart-safe multi-episode ledger (closed schema)
+# ---------------------------------------------------------------------------
+#
+# LIVE-ORCH episodes live in one sanitized checkpoint inside this same journal.
+# They never touch the WP175 A0-A3 authority state: restart replay can never
+# restore mutation authority, and every new CREATE still needs a fresh permit,
+# fresh runtime revalidation and a durable admission written here first.
+
+LIVE_ORCH_CHECKPOINT_SCHEMA = "s10-live-orch-checkpoint/1.0.0"
+LIVE_ORCH_EPISODE_STATES = (
+    "ADMISSION_PENDING",
+    "ADMITTED",
+    "CREATE_STARTED",
+    "CREATE_REJECTED",
+    "CREATE_ACCEPTED",
+    "CREATE_AMBIGUOUS",
+    "RESTING",
+    "CANCEL_STARTED",
+    "RECONCILING",
+    "SETTLEMENT_PENDING",
+    "TERMINAL_NO_POSITION",
+    "TERMINAL_KNOWN_POSITION",
+    "RECONCILIATION_BLOCKED",
+)
+# ADMISSION_PENDING is the in-memory pre-durable state; it is never persisted.
+LIVE_ORCH_PERSISTED_STATES = LIVE_ORCH_EPISODE_STATES[1:]
+LIVE_ORCH_CLEAN_TERMINAL_STATES = ("CREATE_REJECTED", "TERMINAL_NO_POSITION")
+LIVE_ORCH_EVENTS = (
+    "LIVE_ORCH_ADMITTED",
+    "LIVE_ORCH_CREATE_STARTED",
+    "LIVE_ORCH_CREATE_OUTCOME",
+    "LIVE_ORCH_CANCEL_STARTED",
+    "LIVE_ORCH_CANCEL_OUTCOME",
+    "LIVE_ORCH_RECONCILED",
+)
+LIVE_ORCH_TRADE_STATUSES = (
+    "MATCHED",
+    "MATCHED_NOT_BROADCASTED",
+    "MINED",
+    "RETRYING",
+    "CONFIRMED",
+    "FAILED",
+)
+LIVE_ORCH_FEE_STATES = ("NOT_REQUIRED", "RESERVED", "RECONCILED", "AMBIGUOUS")
+MAX_LIVE_ORCH_EPISODES = 200
+_LIVE_ORCH_EVENT_ISSUER = object()
+_RECONCILED_TARGETS = (
+    "RESTING",
+    "CANCEL_STARTED",
+    "RECONCILING",
+    "SETTLEMENT_PENDING",
+    "TERMINAL_NO_POSITION",
+    "TERMINAL_KNOWN_POSITION",
+    "RECONCILIATION_BLOCKED",
+)
+_LIVE_ORCH_TRANSITIONS: dict[str, dict[str, tuple[str, ...]]] = {
+    "LIVE_ORCH_CREATE_STARTED": {"ADMITTED": ("CREATE_STARTED",)},
+    "LIVE_ORCH_CREATE_OUTCOME": {
+        "CREATE_STARTED": ("CREATE_REJECTED", "CREATE_ACCEPTED", "CREATE_AMBIGUOUS")
+    },
+    "LIVE_ORCH_CANCEL_STARTED": {
+        state: ("CANCEL_STARTED",)
+        for state in (
+            "CREATE_ACCEPTED",
+            "CREATE_AMBIGUOUS",
+            "RESTING",
+            "RECONCILING",
+            "SETTLEMENT_PENDING",
+            "RECONCILIATION_BLOCKED",
+        )
+    },
+    "LIVE_ORCH_CANCEL_OUTCOME": {"CANCEL_STARTED": ("RECONCILING",)},
+    "LIVE_ORCH_RECONCILED": {
+        # An admitted-but-never-started episode provably transmitted nothing.
+        "ADMITTED": ("TERMINAL_NO_POSITION",),
+        # A durable CREATE_STARTED without a durable outcome is possibly
+        # transmitted: it may only become ambiguous, never clean.
+        "CREATE_STARTED": ("CREATE_AMBIGUOUS",),
+        "CREATE_ACCEPTED": _RECONCILED_TARGETS,
+        "CREATE_AMBIGUOUS": _RECONCILED_TARGETS,
+        "RESTING": _RECONCILED_TARGETS,
+        "CANCEL_STARTED": ("RECONCILING", "RECONCILIATION_BLOCKED"),
+        "RECONCILING": _RECONCILED_TARGETS,
+        "SETTLEMENT_PENDING": _RECONCILED_TARGETS,
+        "RECONCILIATION_BLOCKED": _RECONCILED_TARGETS,
+        "TERMINAL_KNOWN_POSITION": ("TERMINAL_KNOWN_POSITION", "TERMINAL_NO_POSITION"),
+    },
+}
+_LIVE_ORCH_BINDING_KEYS = frozenset(
+    {
+        "exploratory_permit_id",
+        "execution_intent_id",
+        "strategy_version_id",
+        "execution_rule_sha256",
+        "gamma_market_id",
+        "condition_id",
+        "token_id",
+        "side",
+        "execution_style",
+        "order_type",
+        "requested_shares",
+        "price_limit",
+        "post_only",
+        "gtd_expiration_unix_s",
+        "authorized_order_notional_usd",
+        "release_sha",
+        "public_signer",
+        "public_wallet",
+    }
+)
+_LIVE_ORCH_ADMISSION_KEYS = frozenset(
+    {
+        "admission_id",
+        "decision",
+        "venue_snapshot_id",
+        "execution_feasibility_assessment_id",
+        "feasibility_status",
+        "host_currentness_id",
+        "geoblock_proof_id",
+        "geoblock_observed_time_ns",
+        "account_truth_id",
+        "collateral_before_usd",
+        "current_committed_usd",
+        "principal_notional_usd",
+        "worst_case_fee_reserve_usd",
+        "worst_case_commitment_usd",
+        "projected_free_collateral_usd",
+        "observed_realized_pnl_loss_usd",
+        "observed_position_pnl_drawdown_usd",
+        "observed_cumulative_canary_loss_usd",
+        "signed_order_id",
+        "signed_maker_amount",
+        "signed_taker_amount",
+        "admitted_time_ns",
+    }
+)
+_LIVE_ORCH_DECIMAL_ADMISSION_KEYS = (
+    "collateral_before_usd",
+    "current_committed_usd",
+    "principal_notional_usd",
+    "worst_case_fee_reserve_usd",
+    "worst_case_commitment_usd",
+    "projected_free_collateral_usd",
+    "observed_realized_pnl_loss_usd",
+    "observed_position_pnl_drawdown_usd",
+    "observed_cumulative_canary_loss_usd",
+)
+_LIVE_ORCH_CREATE_KEYS = frozenset(
+    {
+        "attempt_id",
+        "started_time_ns",
+        "outcome",
+        "response_status",
+        "venue_order_id",
+        "trade_ids",
+        "making_amount",
+        "taking_amount",
+    }
+)
+_LIVE_ORCH_CANCEL_KEYS = frozenset(
+    {"cancel_attempt_id", "sequence", "started_time_ns", "result"}
+)
+_LIVE_ORCH_RECON_KEYS = frozenset(
+    {
+        "order_live",
+        "open_remainder_shares",
+        "trades",
+        "fee_state",
+        "actual_fee_usd",
+        "block_reason",
+        "last_reconciled_time_ns",
+    }
+)
+_LIVE_ORCH_TRADE_KEYS = frozenset({"trade_id", "status", "shares", "principal_usd"})
+_LIVE_ORCH_EPISODE_KEYS = frozenset(
+    {
+        "episode_id",
+        "state",
+        "binding",
+        "admission",
+        "create",
+        "cancel_attempts",
+        "reconciliation",
+    }
+)
+
+
+def _nonneg_text(value: object) -> Decimal:
+    parsed = _decimal(value)
+    if parsed < 0 or _canonical_decimal(parsed) != value:
+        raise GatewayError("STATE_INVALID")
+    return parsed
+
+
+def _optional_id(value: object) -> None:
+    if value is not None and (
+        not isinstance(value, str) or _ID_RE.fullmatch(value) is None
+    ):
+        raise GatewayError("STATE_INVALID")
+
+
+def live_orch_episode_id(binding: Mapping[str, object], admission_id: str) -> str:
+    """Deterministic episode identity: exact binding plus admission identity."""
+    return _sha(
+        "liveorchepisode:sha256:",
+        {"binding": dict(binding), "admission_id": admission_id},
+    )
+
+
+def _validate_live_orch_episode(episode: object) -> Mapping[str, object]:
+    if not isinstance(episode, Mapping) or set(episode) != _LIVE_ORCH_EPISODE_KEYS:
+        raise GatewayError("STATE_INVALID")
+    binding = episode["binding"]
+    admission = episode["admission"]
+    if (
+        episode["state"] not in LIVE_ORCH_PERSISTED_STATES
+        or not isinstance(binding, Mapping)
+        or set(binding) != _LIVE_ORCH_BINDING_KEYS
+        or not isinstance(admission, Mapping)
+        or set(admission) != _LIVE_ORCH_ADMISSION_KEYS
+        or admission["decision"] != "ADMITTED"
+        or binding["side"] != "BUY"
+        or binding["execution_style"] not in ("AGGRESSIVE_TAKER", "PASSIVE_MAKER")
+        or binding["order_type"] not in ("FOK", "FAK", "GTC", "GTD")
+        or type(binding["post_only"]) is not bool
+    ):
+        raise GatewayError("STATE_INVALID")
+    for key in (
+        "exploratory_permit_id",
+        "execution_intent_id",
+        "strategy_version_id",
+        "execution_rule_sha256",
+    ):
+        _optional_id(binding[key])
+    for key in (
+        "admission_id",
+        "venue_snapshot_id",
+        "execution_feasibility_assessment_id",
+        "host_currentness_id",
+        "geoblock_proof_id",
+        "account_truth_id",
+        "signed_order_id",
+    ):
+        if admission[key] is None:
+            raise GatewayError("STATE_INVALID")
+        _optional_id(admission[key])
+    for key in ("public_signer", "public_wallet"):
+        if not isinstance(binding[key], str) or _ADDRESS_RE.fullmatch(binding[key]) is None:
+            raise GatewayError("STATE_INVALID")
+    for key in ("gamma_market_id", "condition_id", "token_id"):
+        _label(binding[key])
+    if (
+        not isinstance(binding["release_sha"], str)
+        or re.fullmatch(r"[0-9a-f]{40}", binding["release_sha"]) is None
+    ):
+        raise GatewayError("STATE_INVALID")
+    if binding["gtd_expiration_unix_s"] is not None:
+        _time(binding["gtd_expiration_unix_s"])
+    for key in ("requested_shares", "price_limit", "authorized_order_notional_usd"):
+        _nonneg_text(binding[key])
+    for key in _LIVE_ORCH_DECIMAL_ADMISSION_KEYS:
+        _nonneg_text(admission[key])
+    for key in ("signed_maker_amount", "signed_taker_amount"):
+        if type(admission[key]) is not int or admission[key] <= 0:
+            raise GatewayError("STATE_INVALID")
+    _time(admission["geoblock_observed_time_ns"])
+    _time(admission["admitted_time_ns"])
+    if episode["episode_id"] != live_orch_episode_id(binding, str(admission["admission_id"])):
+        raise GatewayError("STATE_INVALID")
+    create = episode["create"]
+    state = episode["state"]
+    if state == "ADMITTED":
+        if create is not None:
+            raise GatewayError("STATE_INVALID")
+    elif create is None:
+        # Only an admitted episode that never reached CREATE_STARTED (so nothing
+        # was transmitted) may close without a create record.
+        if state != "TERMINAL_NO_POSITION" or episode["cancel_attempts"]:
+            raise GatewayError("STATE_INVALID")
+    else:
+        if not isinstance(create, Mapping) or set(create) != _LIVE_ORCH_CREATE_KEYS:
+            raise GatewayError("STATE_INVALID")
+        _optional_id(create["attempt_id"])
+        _time(create["started_time_ns"])
+        outcome = create["outcome"]
+        if (state == "CREATE_STARTED") != (outcome is None):
+            raise GatewayError("STATE_INVALID")
+        if outcome is not None and outcome not in (
+            "DEFINITIVE_ACCEPTED",
+            "DEFINITIVE_REJECTED",
+            "AMBIGUOUS",
+        ):
+            raise GatewayError("STATE_INVALID")
+        if create["venue_order_id"] is not None:
+            _label(create["venue_order_id"])
+        if outcome == "DEFINITIVE_ACCEPTED" and create["venue_order_id"] is None:
+            raise GatewayError("STATE_INVALID")
+        if outcome == "DEFINITIVE_REJECTED" and (
+            create["venue_order_id"] is not None or state != "CREATE_REJECTED"
+        ):
+            raise GatewayError("STATE_INVALID")
+        if state == "CREATE_REJECTED" and outcome != "DEFINITIVE_REJECTED":
+            raise GatewayError("STATE_INVALID")
+        if create["response_status"] is not None:
+            _label(create["response_status"])
+        trade_ids = create["trade_ids"]
+        if not isinstance(trade_ids, (list, tuple)) or len(trade_ids) > 100:
+            raise GatewayError("STATE_INVALID")
+        for trade_id in trade_ids:
+            _label(trade_id)
+        if len(set(trade_ids)) != len(trade_ids):
+            raise GatewayError("STATE_INVALID")
+        for key in ("making_amount", "taking_amount"):
+            if create[key] is not None:
+                _nonneg_text(create[key])
+    attempts = episode["cancel_attempts"]
+    if not isinstance(attempts, (list, tuple)) or len(attempts) > 100:
+        raise GatewayError("STATE_INVALID")
+    seen: set[str] = set()
+    for index, attempt in enumerate(attempts, 1):
+        if (
+            not isinstance(attempt, Mapping)
+            or set(attempt) != _LIVE_ORCH_CANCEL_KEYS
+            or attempt["sequence"] != index
+            or attempt["result"]
+            not in (None, "DEFINITIVE_ACCEPTED", "DEFINITIVE_REJECTED", "AMBIGUOUS")
+            or attempt["cancel_attempt_id"] in seen
+        ):
+            raise GatewayError("STATE_INVALID")
+        _optional_id(attempt["cancel_attempt_id"])
+        _time(attempt["started_time_ns"])
+        seen.add(str(attempt["cancel_attempt_id"]))
+        if attempt["result"] is None and (
+            index != len(attempts) or state != "CANCEL_STARTED"
+        ):
+            raise GatewayError("STATE_INVALID")
+    if state == "CANCEL_STARTED" and (not attempts or attempts[-1]["result"] is not None):
+        raise GatewayError("STATE_INVALID")
+    if attempts and (create is None or create.get("venue_order_id") is None):
+        raise GatewayError("STATE_INVALID")
+    recon = episode["reconciliation"]
+    if not isinstance(recon, Mapping) or set(recon) != _LIVE_ORCH_RECON_KEYS:
+        raise GatewayError("STATE_INVALID")
+    if recon["order_live"] not in (None, True, False):
+        raise GatewayError("STATE_INVALID")
+    _nonneg_text(recon["open_remainder_shares"])
+    if recon["fee_state"] not in LIVE_ORCH_FEE_STATES:
+        raise GatewayError("STATE_INVALID")
+    if recon["actual_fee_usd"] is not None:
+        _nonneg_text(recon["actual_fee_usd"])
+    if (recon["fee_state"] == "RECONCILED") != (recon["actual_fee_usd"] is not None):
+        raise GatewayError("STATE_INVALID")
+    if recon["block_reason"] is not None:
+        _label(recon["block_reason"])
+    if (state == "RECONCILIATION_BLOCKED") != (recon["block_reason"] is not None):
+        raise GatewayError("STATE_INVALID")
+    if recon["last_reconciled_time_ns"] is not None:
+        _time(recon["last_reconciled_time_ns"])
+    trades = recon["trades"]
+    if not isinstance(trades, (list, tuple)) or len(trades) > 100:
+        raise GatewayError("STATE_INVALID")
+    trade_seen: set[str] = set()
+    for trade in trades:
+        if (
+            not isinstance(trade, Mapping)
+            or set(trade) != _LIVE_ORCH_TRADE_KEYS
+            or trade["status"] not in LIVE_ORCH_TRADE_STATUSES
+            or trade["trade_id"] in trade_seen
+        ):
+            raise GatewayError("STATE_INVALID")
+        _label(trade["trade_id"])
+        trade_seen.add(str(trade["trade_id"]))
+        _nonneg_text(trade["shares"])
+        _nonneg_text(trade["principal_usd"])
+    if state in ("TERMINAL_NO_POSITION", "TERMINAL_KNOWN_POSITION") and (
+        recon["order_live"] is True
+        or any(
+            trade["status"] not in ("CONFIRMED", "FAILED") for trade in trades
+        )
+    ):
+        raise GatewayError("STATE_INVALID")
+    return episode
+
+
+def validate_live_orch_checkpoint(checkpoint: object) -> Mapping[str, object]:
+    """Closed structural validation of the sanitized LIVE-ORCH episode ledger."""
+    try:
+        return _validate_live_orch_checkpoint(checkpoint)
+    except GatewayError:
+        raise GatewayError("STATE_INVALID") from None
+    except (KeyError, TypeError, ValueError, AttributeError):
+        raise GatewayError("STATE_INVALID") from None
+
+
+def _validate_live_orch_checkpoint(checkpoint: object) -> Mapping[str, object]:
+    if (
+        not isinstance(checkpoint, Mapping)
+        or set(checkpoint)
+        != {"schema_version", "episodes", "restart_reconciliation_required"}
+        or checkpoint["schema_version"] != LIVE_ORCH_CHECKPOINT_SCHEMA
+        or type(checkpoint["restart_reconciliation_required"]) is not bool
+        or not isinstance(checkpoint["episodes"], (list, tuple))
+        or len(checkpoint["episodes"]) > MAX_LIVE_ORCH_EPISODES
+    ):
+        raise GatewayError("STATE_INVALID")
+    episode_ids: set[str] = set()
+    permit_ids: set[str] = set()
+    for episode in checkpoint["episodes"]:
+        _validate_live_orch_episode(episode)
+        episode_id = str(episode["episode_id"])
+        permit_id = str(episode["binding"]["exploratory_permit_id"])
+        # One permit may appear in at most one episode, so it can never reach a
+        # second CREATE_STARTED.
+        if episode_id in episode_ids or permit_id in permit_ids:
+            raise GatewayError("STATE_INVALID")
+        episode_ids.add(episode_id)
+        permit_ids.add(permit_id)
+    return checkpoint
+
+
+def empty_live_orch_checkpoint() -> dict[str, object]:
+    return {
+        "schema_version": LIVE_ORCH_CHECKPOINT_SCHEMA,
+        "episodes": [],
+        "restart_reconciliation_required": False,
+    }
+
+
+def _plain_json(value: object) -> object:
+    return json.loads(canonical_json(value))
+
+
+def _validate_live_orch_transition(
+    event_type: str,
+    previous: Mapping[str, object] | None,
+    current: Mapping[str, object] | None,
+) -> bool:
+    """Replay-verify one LIVE-ORCH event against the exact closed transition table."""
+    if current is None:
+        return False
+    try:
+        validate_live_orch_checkpoint(current)
+        prior = (
+            empty_live_orch_checkpoint()
+            if previous is None
+            else _plain_json(validate_live_orch_checkpoint(previous))
+        )
+    except GatewayError:
+        return False
+    after = _plain_json(current)
+    before_episodes = list(prior["episodes"])
+    after_episodes = list(after["episodes"])
+    if event_type == "LIVE_ORCH_ADMITTED":
+        return (
+            after["restart_reconciliation_required"] is False
+            and prior["restart_reconciliation_required"] is False
+            and after_episodes[:-1] == before_episodes
+            and len(after_episodes) == len(before_episodes) + 1
+            and after_episodes[-1]["state"] == "ADMITTED"
+            and after_episodes[-1]["cancel_attempts"] == []
+            and after_episodes[-1]["reconciliation"]["trades"] == []
+            and after_episodes[-1]["reconciliation"]["order_live"] is None
+        )
+    if len(after_episodes) != len(before_episodes):
+        return False
+    if (
+        event_type != "LIVE_ORCH_RECONCILED"
+        and after["restart_reconciliation_required"]
+        != prior["restart_reconciliation_required"]
+    ):
+        return False
+    if (
+        event_type == "LIVE_ORCH_RECONCILED"
+        and after["restart_reconciliation_required"]
+        and not prior["restart_reconciliation_required"]
+    ):
+        return False
+    allowed = _LIVE_ORCH_TRANSITIONS.get(event_type)
+    if allowed is None:
+        return False
+    changed = 0
+    for old, new in zip(before_episodes, after_episodes):
+        if old == new:
+            continue
+        changed += 1
+        if (
+            old["episode_id"] != new["episode_id"]
+            or old["binding"] != new["binding"]
+            or old["admission"] != new["admission"]
+        ):
+            return False
+        # Same-state updates are legal only where the table lists the state as
+        # its own successor (e.g. RESTING -> RESTING after a poll).
+        if new["state"] not in allowed.get(old["state"], ()):
+            return False
+        old_create, new_create = old["create"], new["create"]
+        if old_create is not None:
+            if new_create is None:
+                return False
+            for key in ("attempt_id", "started_time_ns"):
+                if old_create[key] != new_create[key]:
+                    return False
+            if old_create["outcome"] is not None and (
+                old_create["outcome"] != new_create["outcome"]
+                or old_create["response_status"] != new_create["response_status"]
+            ):
+                return False
+            if old_create["venue_order_id"] is not None and (
+                old_create["venue_order_id"] != new_create["venue_order_id"]
+            ):
+                return False
+            if not set(old_create["trade_ids"]) <= set(new_create["trade_ids"]):
+                return False
+        elif event_type != "LIVE_ORCH_CREATE_STARTED":
+            # Only CREATE_STARTED may introduce the create record.
+            if new_create is not None:
+                return False
+        old_attempts, new_attempts = old["cancel_attempts"], new["cancel_attempts"]
+        if event_type == "LIVE_ORCH_CANCEL_STARTED":
+            if new_attempts[:-1] != old_attempts or len(new_attempts) != len(old_attempts) + 1:
+                return False
+        else:
+            if len(new_attempts) != len(old_attempts):
+                return False
+            for before, after_attempt in zip(old_attempts, new_attempts):
+                if before["result"] is not None and before != after_attempt:
+                    return False
+                if before["result"] is None and (
+                    {k: v for k, v in before.items() if k != "result"}
+                    != {k: v for k, v in after_attempt.items() if k != "result"}
+                ):
+                    return False
+        if event_type == "LIVE_ORCH_CANCEL_OUTCOME" and (
+            not new_attempts or new_attempts[-1]["result"] is None
+        ):
+            return False
+        if event_type == "LIVE_ORCH_CREATE_OUTCOME" and new_create["outcome"] is None:
+            return False
+        # Confirmed or failed trade evidence is final; it can never be rewritten.
+        old_trades = {trade["trade_id"]: trade for trade in old["reconciliation"]["trades"]}
+        new_trades = {trade["trade_id"]: trade for trade in new["reconciliation"]["trades"]}
+        if not set(old_trades) <= set(new_trades):
+            return False
+        for trade_id, trade in old_trades.items():
+            if trade["status"] in ("CONFIRMED", "FAILED") and new_trades[trade_id] != trade:
+                return False
+        if old["reconciliation"]["fee_state"] == "RECONCILED" and (
+            new["reconciliation"]["fee_state"] != "RECONCILED"
+            or new["reconciliation"]["actual_fee_usd"]
+            != old["reconciliation"]["actual_fee_usd"]
+        ):
+            return False
+    if event_type == "LIVE_ORCH_RECONCILED":
+        return changed >= 1 or (
+            prior["restart_reconciliation_required"]
+            and not after["restart_reconciliation_required"]
+        )
+    return changed == 1
+
+
+def _validate_live_orch_restart(
+    previous: Mapping[str, object] | None, current: Mapping[str, object] | None
+) -> bool:
+    if previous is None:
+        return current is None
+    if current is None:
+        return False
+    try:
+        validate_live_orch_checkpoint(current)
+    except GatewayError:
+        return False
+    expected = dict(_plain_json(previous))
+    expected["restart_reconciliation_required"] = True
+    return _plain_json(current) == expected
+
+
 @dataclass(frozen=True)
 class GatewayState:
     authority_state: str = "A0_DISABLED"
@@ -1295,6 +1872,9 @@ class GatewayState:
     # mapping rather than executable state so restart replay can never restore
     # live authority; ``open`` always overwrites authority with A0.
     gate_c_checkpoint: Mapping[str, object] | None = None
+    # S10-LIVE-ORCH-01 sanitized multi-episode ledger; materialized only once
+    # LIVE-ORCH writes evidence so earlier journals replay byte-identically.
+    live_orch_checkpoint: Mapping[str, object] | None = None
     last_event_time_ns: int = 0
 
     def to_mapping(self) -> dict[str, object]:
@@ -1303,6 +1883,8 @@ class GatewayState:
         # Gate-C checkpoint is materialized only once Gate-C writes evidence.
         if self.gate_c_checkpoint is None:
             value.pop("gate_c_checkpoint", None)
+        if self.live_orch_checkpoint is None:
+            value.pop("live_orch_checkpoint", None)
         value["prepared_orders"] = [asdict(item) for item in self.prepared_orders]
         attempts = []
         for item in self.mutation_attempts:
@@ -1353,6 +1935,7 @@ class GatewayState:
                 balances_hash=value["balances_hash"],
                 positions_hash=value["positions_hash"],
                 gate_c_checkpoint=value.get("gate_c_checkpoint"),
+                live_orch_checkpoint=value.get("live_orch_checkpoint"),
                 last_event_time_ns=value["last_event_time_ns"],
             )
         except (KeyError, TypeError, ValueError):
@@ -1402,6 +1985,8 @@ class GatewayState:
                     value, (str, int, bool, type(None), list, tuple, dict)
                 ):
                     raise GatewayError("STATE_INVALID")
+        if self.live_orch_checkpoint is not None:
+            validate_live_orch_checkpoint(self.live_orch_checkpoint)
         for item in self.prepared_orders:
             _validate_prepared_order(item)
         owner_by_venue_id: dict[str, str] = {}
@@ -1615,6 +2200,19 @@ def _validate_event_semantics(
                 current.gate_c_checkpoint is None
                 or current.gate_c_checkpoint.get("armed") is not True
             )
+                    and _validate_live_orch_restart(
+                previous.live_orch_checkpoint, current.live_orch_checkpoint
+            )
+        )
+    elif event.event_type in LIVE_ORCH_EVENTS:
+        valid = (
+            set(data) == {"checkpoint"}
+            and isinstance(data["checkpoint"], Mapping)
+            and _plain_json(data["checkpoint"])
+            == _plain_json(current.live_orch_checkpoint or {})
+            and _validate_live_orch_transition(
+                event.event_type, previous.live_orch_checkpoint, current.live_orch_checkpoint
+            )
         )
     elif event.event_type == "AUTHORITY_CHANGED":
         valid = set(data) == {"actor", "authority_state"} and (
@@ -1748,6 +2346,7 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
         "GATE_C_RECONCILED",
         "GATE_C_HALTED",
         "GATE_C_DISABLED",
+        *LIVE_ORCH_EVENTS,
     }
     allowed_changes = {
         "CREDENTIAL_REFERENCE_CONFIGURED": {
@@ -1763,6 +2362,7 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
             "heartbeat_state",
             "user_stream_state",
             "gate_c_checkpoint",
+            "live_orch_checkpoint",
             "last_event_time_ns",
         },
         "AUTHORITY_CHANGED": {
@@ -1853,6 +2453,10 @@ def _validate_replay(events: Sequence[GatewayJournalEvent]) -> GatewayState:
             )
         },
         **{event_type: {"last_event_time_ns"} for event_type in GATE_B_AUDIT_EVENTS},
+        **{
+            event_type: {"live_orch_checkpoint", "last_event_time_ns"}
+            for event_type in LIVE_ORCH_EVENTS
+        },
     }
     previous: GatewayState | None = None
     current: GatewayState | None = None
@@ -1980,6 +2584,16 @@ class ProtectedExecutionGateway:
                         "last_event_time_ns": opened_time_ns,
                     }
                     if isinstance(state.gate_c_checkpoint, Mapping)
+                    else None
+                ),
+                # Restart begins in no-new-exposure: LIVE-ORCH admission requires an
+                # authoritative REST reconciliation to clear this flag first.
+                live_orch_checkpoint=(
+                    {
+                        **dict(state.live_orch_checkpoint),
+                        "restart_reconciliation_required": True,
+                    }
+                    if isinstance(state.live_orch_checkpoint, Mapping)
                     else None
                 ),
                 last_event_time_ns=opened_time_ns,
@@ -2145,6 +2759,47 @@ class ProtectedExecutionGateway:
             {"checkpoint": checkpoint_value},
             new,
         )
+
+    def live_orch_checkpoint(self) -> dict[str, object]:
+        """Verified current LIVE-ORCH ledger (an empty ledger before first use)."""
+        mapping, head, events = self._store.load()
+        if mapping != self.state.to_mapping() or head != self._head:
+            raise GatewayError("STATE_REPLAY_INVALID")
+        replayed = _validate_replay(events)
+        if replayed.to_mapping() != dict(mapping):
+            raise GatewayError("STATE_REPLAY_INVALID")
+        if self.state.live_orch_checkpoint is None:
+            return empty_live_orch_checkpoint()
+        return dict(_plain_json(self.state.live_orch_checkpoint))
+
+    def record_live_orch_event(
+        self,
+        event_type: str,
+        checkpoint: Mapping[str, object],
+        *,
+        issuer: object | None = None,
+        event_time_ns: int,
+    ) -> None:
+        """Commit one LIVE-ORCH ledger transition (issuer-gated, replay-validated).
+
+        The transition is checked against the closed table before the durable
+        append, so an illegal or tampered transition is never written.
+        """
+        if issuer is not _LIVE_ORCH_EVENT_ISSUER:
+            raise GatewayError("LIVE_ORCH_REQUIRED")
+        if event_type not in LIVE_ORCH_EVENTS or not isinstance(checkpoint, Mapping):
+            raise GatewayError("INVALID_AUDIT_DATA")
+        _time(event_time_ns)
+        value = dict(_plain_json(checkpoint))
+        if not _validate_live_orch_transition(
+            event_type, self.state.live_orch_checkpoint, value
+        ):
+            raise GatewayError("LIVE_ORCH_TRANSITION_INVALID")
+        event_time_ns = max(event_time_ns, self.state.last_event_time_ns + 1)
+        new = replace(
+            self.state, live_orch_checkpoint=value, last_event_time_ns=event_time_ns
+        )
+        self._commit(event_type, event_time_ns, {"checkpoint": value}, new)
 
     def configure_credentials(
         self,

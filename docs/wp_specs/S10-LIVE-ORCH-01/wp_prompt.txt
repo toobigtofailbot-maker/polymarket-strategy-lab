@@ -1,0 +1,994 @@
+SIDE16 / KARL — S10-LIVE-ORCH-01
+RESTRICTED LIVE ORCHESTRATION + FIRST-LIVE CANARY CORE
+CANONICAL PROTECTED V4 WORK PACKAGE
+
+Package Identity:
+  WP ID: S10-LIVE-ORCH-01
+  Title: Restricted Live Orchestration + First-Live Canary Core
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base / main SHA: 3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe
+  Required predecessor: PR #218 / S10-DEPLOY-EXEC-01R3 final merge
+  Required predecessor head: b1779f5bc6e945eedfa1ba0692a9e1baca779973
+  Required predecessor merge/base: 3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe
+  Suggested branch: claude/s10-live-orch-01-restricted-live-orchestration
+  Package class: PROTECTED_RESTRICTED_LIVE_ORCHESTRATION
+  Package size class: XL
+  Exact changed-file scope: 27
+  XL explicit authorization: true
+  XL authorization basis: Karl explicitly authorized Side16 to draft S10-LIVE-ORCH-01 after the
+    independent pre-draft research/audit and requested predictable blockers be incorporated into a
+    clean one-shot WP. Deterministic pre-freeze compatibility discovery requires exactly these 27
+    paths to close the reviewed live-path defects, the EXEC-FEAS predecessor semantic defect, and
+    the mechanically implicated doc-truth guards. No 28th path is authorized.
+  Governance track expected: PROTECTED
+  Risk level: 4
+  Capital at risk during implementation/PR: USD 0
+  Orders during implementation/PR: 0
+  Real credentials during implementation/PR: NO
+  Live activation during implementation/PR: NO
+  Dependency change: NONE
+  Workflow change: NONE
+  Merge authority: NO — Karl only
+  First real live activation: SEPARATE POST-MERGE KARL AUTHORIZATION REQUIRED
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 4
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: true
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: true
+live: true
+END_GOVERNANCE_AUTHORITY_V1
+
+Successor:
+  S10-LIVE-CANARY-01 — First Restricted Live Canary Activation, separately gated
+Merge authority:
+  NO
+
+===============================================================================
+0. PACKAGE STATE / PROTECTED GATE
+===============================================================================
+
+This file and its matching wp_spec.json are the exact canonical package bytes for independent
+protected review. They are not implementation authority.
+
+Implementation may start only after:
+1. a genuinely independent reviewer creates
+   docs/wp_specs/S10-LIVE-ORCH-01/draftability_certificate.json for the exact prompt/spec hashes;
+2. the canonical readiness gate returns IMPLEMENTATION_READY on those exact certified bytes;
+3. Karl explicitly authorizes implementation of the certified package.
+
+The implementation executor must not create, edit, self-certify, replace or claim PASS for the
+draftability certificate.
+
+Any semantic prompt/spec edit after certification invalidates the certificate.
+
+Implementation uses a NEW Claude Code/Codex implementation session and returns an unmerged PR to
+Side16. Merge does not activate live trading.
+
+Implementation/CI truth remains:
+  real network product calls = 0
+  real credentials = 0
+  authenticated account access = 0
+  real economic CREATE/CANCEL = 0
+  capital = USD 0
+  live = DISABLED
+
+A real canary is a separate post-merge activation phase.
+
+===============================================================================
+1. OBJECTIVE
+===============================================================================
+
+Implement the minimum complete protected foreground runtime that consumes one exact current
+ExploratoryGateCPermit, revalidates every runtime fact the permit intentionally leaves unresolved,
+admits at most one bounded BUY CREATE attempt, durably records the exact fresh admission evidence,
+executes at most one economic transmit, reconciles authoritative order/trade/account consequences
+across partial fills, cancellation races and process restart, and returns to no-new-exposure state.
+
+This is the first restricted-live orchestration core, not mature unattended trading.
+
+Required authority chain:
+
+  exact current ExploratoryGateCPermit
+  + exact ExecutionIntent
+  + strict execution-host currentness / NTP PASS
+  + fresh geoblock PASS
+  + exact authenticated signer / Deposit Wallet identity
+  + fresh complete bounded account truth
+  + fresh compatible public venue snapshot and feasibility
+  + hard Karl risk envelope
+  + healthy canonical LIVE-ORCH ledger
+      -> durable LIVE_ORCH_ADMISSION
+      -> durable CREATE_STARTED
+      -> exactly one economic transmit maximum
+      -> authoritative reconciliation
+      -> terminal / settlement-pending / blocked
+      -> no-new-exposure
+
+===============================================================================
+2. HUMAN CAPITAL ENVELOPE — FROZEN
+===============================================================================
+
+Hard constants:
+
+  AUTHORIZED_ACCOUNT_CAPITAL_USD       = 100
+  TYPICAL_INITIAL_ORDER_USD            = 3–5  (operator target only)
+  SINGLE_ORDER_WORST_CASE_MAX_USD      = 5
+  MAX_TOTAL_EARLY_COMMITMENT_USD       = 30
+  MIN_FREE_COLLATERAL_RESERVE_USD      = 70
+  AUTO_SCALING                          = FALSE
+
+No account profit, strategy/Hermes state, venue response, configuration or environment value may
+increase these limits.
+
+The first-live economic CREATE side is BUY ONLY.
+
+  BUY permit  -> may continue if every other gate passes
+  SELL permit -> LIVE_ORCH_ADMISSION_REJECTED / SIDE_UNSUPPORTED_FIRST_CANARY
+
+This BUY-only decision is deliberate minimum scope. It avoids outcome-token balance/allowance,
+short-sale and SELL fee/cash semantics in the first canary. Exposure-reducing cancellation remains
+allowed.
+
+Retain only truthful conservative observed-PnL guards:
+
+  MAX_OBSERVED_REALIZED_PNL_LOSS_USD       = 5
+  MAX_OBSERVED_POSITION_PNL_DRAWDOWN_USD   = 7.5
+  MAX_OBSERVED_CUMULATIVE_CANARY_LOSS_USD  = 10
+
+These are conservative observed account/position/canary guard values. They are NOT described as a
+UTC-day realized-loss ledger or an account-equity high-water drawdown. Unknown guard inputs block
+new exposure.
+
+===============================================================================
+3. PRE-FREEZE INTERFACE COMPILATION — COMPLETE / FROZEN ASSUMPTIONS
+===============================================================================
+
+The final package was compiled against current repo truth at
+3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe and the exact pinned
+polymarket-client==0.10.0 release.
+
+Repo interfaces verified:
+- src.exploratory_gate_c.validate_exploratory_gate_c_permit(permit)
+- src.execution_feasibility.validate_execution_intent(intent, strategy_version=...)
+- src.execution_feasibility.fetch_public_venue_snapshot(*, gamma_market_id, condition_id, token_id,
+  opener=None, clock_ns=None)
+- src.execution_feasibility.assess_execution_feasibility(intent, venue_snapshot,
+  *, evaluated_at_ns=...)
+- GateBSession authenticated account_snapshot / protected account-read boundary
+- GateCSession.cancel_resting_order(...)
+- existing Gate-B private SDK client / mutation boundary
+- tools/deployment/runtime_baseline.py execution-host-currentness:
+    --binding-file <path>
+    --active-release <path>
+    --expected-sha <40-hex>
+    --unit-dir <path>
+    --strict --ssh-port <port>
+  read-only, returning polymarket-execution-host-currentness@1.0.0.
+
+Pinned polymarket-client==0.10.0 interfaces verified from the exact release tag:
+- SecureClient.create_limit_order(... price, size, side, post_only, expiration ...) -> SignedOrder,
+  local sign only.
+- SecureClient.create_market_order(BUY, amount, max_spend=None, max_price=None,
+  order_type="FAK"|"FOK", ...) -> SignedOrder, local sign only.
+- SecureClient.post_order(signed_order) -> OrderResponse and performs the direct economic order POST;
+  unlike place_limit_order/place_market_order it does not perform allowance-recovery repost logic.
+- SecureClient.get_balance_allowance(...)
+- SecureClient list_open_orders / get_order / list_account_trades / list_positions
+- cancel_order and the existing Gate-B cancel wrapper.
+
+No SDK upgrade or dependency change is required.
+
+Pinned 0.10.0 is authoritative for this WP, but it is NOT assumed to encode every aggressive BUY
+permit without rounding sensitivity. Later 0.11.x fixes are known to improve protected BUY cap
+preservation / market-BUY share rounding. Therefore:
+- local aggressive BUY construction is accepted only after post-construction inspection proves
+  exact permit price/share/principal caps are preserved;
+- any rounding-sensitive case that cannot preserve the exact permit authority fails closed with
+  ORDER_ENCODING_UNSUPPORTED;
+- no dependency upgrade is authorized here;
+- offline tests MUST include at least one 0.10.0 rounding-sensitive BUY regression proving
+  fail-closed behavior rather than silent widening.
+
+If implementation discovers any frozen assumption above is false at the exact pinned release or
+frozen base:
+  STOP S10_LIVE_ORCH_INTERFACE_MISMATCH
+
+===============================================================================
+4. FINAL EXACT SCOPE — 27 PATHS
+===============================================================================
+
+Pre-freeze deterministic blast-radius / historical changed-set compatibility discovery is complete.
+
+required_changed_files == allowed_changed_files == exactly:
+
+1. docs/architecture_decision_record.md
+2. docs/long_term_bot_completion_roadmap.md
+3. docs/live_trading_authorization.md
+4. docs/project_status.md
+5. docs/repo_truth_index.md
+6. docs/live_orchestration_contract.md
+7. docs/execution_feasibility_contract.md
+8. docs/status_entries/S10-LIVE-ORCH-01.md
+9. docs/wp_specs/S10-LIVE-ORCH-01/wp_prompt.txt
+10. docs/wp_specs/S10-LIVE-ORCH-01/wp_spec.json
+11. docs/wp_specs/S10-LIVE-ORCH-01/draftability_certificate.json
+12. src/execution_feasibility/models.py
+13. src/execution_feasibility/evaluator.py
+14. src/execution_gateway/gate_b.py
+15. src/execution_gateway/gate_c.py
+16. src/execution_gateway/gateway.py
+17. src/execution_gateway/store.py
+18. src/execution_gateway/live_orch.py
+19. tests/execution_feasibility/test_execution_feasibility.py
+20. tests/execution_gateway/test_gate_b.py
+21. tests/execution_gateway/test_gate_c.py
+22. tests/execution_gateway/test_gateway.py
+23. tests/execution_gateway/test_store_recovery.py
+24. tests/execution_gateway/test_live_orch.py
+25. tests/test_architecture_direction_docs.py
+26. tests/test_project_status_docs.py
+27. tests/test_repo_truth_docs.py
+
+No scope widening is permitted after certification.
+
+Compatibility guards mechanically inspected and expected to remain byte-unchanged but MUST be run:
+- tests/test_architecture_boundaries.py
+- tests/test_no_live_mode_by_default.py
+- tests/test_official_client_dependency_boundary.py
+- tests/test_official_client_sandbox_boundary.py
+- tests/test_generated_artifact_guard.py
+
+The existing approved source scopes already contain src/execution_gateway and
+src/execution_feasibility, so tests/test_architecture_boundaries.py needs no edit.
+
+live_orch.py must orchestrate existing Gate-B/Gate-C boundaries and must not add a direct SDK
+mutation boundary that would require widening global exemptions.
+
+If a 28th changed path is mechanically required:
+  STOP S10_LIVE_ORCH_01_SCOPE_AMENDMENT_REQUIRED:<reason>
+
+===============================================================================
+5. AUTHORITY / NON-AUTHORITY
+===============================================================================
+
+
+Authorized by the certified implementation package:
+- exact 27-path dormant protected LIVE-ORCH implementation;
+- offline/fake validation;
+- source-level protected network/credential/execution/live capability needed for the later
+  separately authorized canary;
+- no real product activity during implementation/CI.
+
+Not authorized by this package:
+- merge;
+- real credentials or authenticated real account access during implementation/CI;
+- any real CREATE/CANCEL, capital use or live activation during implementation/CI;
+- any post-merge canary without a separate exact-merge Karl authorization;
+- any capability outside the exact scope below.
+
+Do not modify:
+  .github/**
+  tools/**
+  agent_memory/**
+  agent_runtime/**
+  credentials/**
+  secrets/**
+  local_data/**
+  dependency/lock files
+  src/exploratory_gate_c/**
+  src/strategy_lifecycle/**
+  src/research_runtime/**
+  src/paper_trading/**
+  src/data_layer/**
+  src/monitoring/**
+  src/operator_cockpit.py
+  src/operator_cockpit_frontend/**
+
+No upstream SDK source copying.
+No Session Keys.
+No Builder credential integration.
+No SDK 0.11 migration.
+No service/scheduler/daemon.
+No second VPS or C8G upgrade.
+
+===============================================================================
+6. KNOWN DEFECTS THIS WP MUST CLOSE
+===============================================================================
+
+A. Historical WP175 canary state becomes permanently unarmable after restart, including a clean
+   completed canary. New LIVE-ORCH must support separate future episodes with fresh permits.
+
+B. A known reconciled residual position must not be a permanent dead end. It is carried as account
+   commitment and may coexist with a later fresh BUY episode if every hard aggregate guard passes.
+   Unknown/unreconciled position remains blocking.
+
+C. Ambiguous cancel must have a bounded recovery exit: authoritative reconcile; if still definitely
+   live, a NEW cancel attempt identity may be sent. Never resend one attempt identity.
+
+D. ExploratoryGateCPermit must be the new upstream economic-intent authority. Historical
+   GateCStrategyQualification / paper PreparedOrder is not required for the new path.
+
+E. gamma_market_id, condition_id and token_id remain distinct. Never substitute condition ID for
+   Gamma market ID.
+
+F. Unknown/unrecognized SDK CREATE response is AMBIGUOUS, never definitive rejection.
+
+G. Persist trade IDs and settlement status. FAILED is not a fill; MATCHED/MINED/RETRYING are not
+   final.
+
+H. Current committed_exposure_pusd="0" behavior cannot establish risk truth and must be replaced for
+   the LIVE-ORCH path.
+
+I. Current fee-enabled-market rejection cannot remain the LIVE-ORCH rule.
+
+J. Current EXEC-FEAS minimum-order logic incorrectly compares Gamma minimum notional and CLOB
+   minimum shares as the same dimension. Repair the predecessor semantic in the same WP.
+
+===============================================================================
+7. EXEC-FEAS MINIMUM-ORDER REPAIR
+===============================================================================
+
+Add closed diagnostic MINIMUM_ORDER_SHARES_NOT_MET to the existing diagnostic vocabulary in
+src/execution_feasibility/models.py.
+
+Change evaluator semantics:
+
+  Gamma:
+    intent_notional = requested_shares * price_limit
+    require intent_notional >= gamma_min_order_notional_usd
+
+  CLOB:
+    require requested_shares >= book_min_order_size_raw
+
+Do NOT require the two minimum values to be numerically equal.
+
+If either source is missing -> dimension UNKNOWN.
+If one inequality fails -> FAIL with exact corresponding diagnostic.
+If both pass -> PASS.
+
+Update docs/execution_feasibility_contract.md.
+Preserve every other EXEC-FEAS behavior.
+
+LIVE-ORCH independently rechecks both from the fresh runtime snapshot immediately before admission.
+
+===============================================================================
+8. EXPLORATORY PERMIT / INTENT AUTHORITY
+===============================================================================
+
+Strictly validate the exact ExploratoryGateCPermit and ExecutionIntent with existing validators.
+
+Require:
+- valid and unexpired permit;
+- exact_intent_only true;
+- lifecycle head / active policy / allocation still current;
+- latest target Hermes assessment equals permit-bound assessment;
+- exact strategy version, intent ID and execution-rule lineage;
+- exact authorized order notional;
+- side == BUY.
+
+Permit no-credential/no-order/no-live flags remain truthful; LIVE-ORCH is the separately protected
+successor performing mandatory runtime revalidations before issuing process-local one-use mutation
+authority.
+
+Never regenerate, widen or substitute a permit.
+
+SELL -> SIDE_UNSUPPORTED_FIRST_CANARY before durable admission/signing/transmit.
+
+===============================================================================
+9. FRESH VENUE REVALIDATION / DRIFT CONTRACT
+===============================================================================
+
+Immediately before admission, acquire a NEW public venue snapshot and evaluate the exact intent.
+
+Expected/allowed to change:
+- snapshot ID / acquisition times;
+- bids/asks, depth, best prices, spread;
+- current fill/fee/slippage metrics.
+
+Must remain compatible or reject:
+- exact gamma_market_id / condition_id / token_id;
+- BUY side;
+- exact execution style / order type / requested_shares / price_limit;
+- market active, open, accepting orders, order book enabled;
+- neg_risk false;
+- seconds_delay == 0;
+- tick compatible;
+- both minimum-order constraints PASS;
+- fee configuration known;
+- fresh assessment FEASIBLE or LIMITED;
+- all current account/risk checks PASS.
+
+Do NOT require fresh snapshot/assessment IDs to equal historical IDs.
+Persist fresh IDs in admission evidence.
+
+===============================================================================
+10. HOST / ACCESS / IDENTITY
+===============================================================================
+
+Before protected authentication and again immediately before CREATE admission:
+- require strict execution-host-currentness for the exact expected deployed merge SHA;
+- require NTP synchronized and exact host/release/firewall/persistent-state contract;
+- no fixed sleep substitutes for currentness PASS.
+
+Fresh host-side official geoblock must prove blocked=false.
+Persist only sanitized pass/time identity; never IP/country/region.
+
+Credential model:
+- interactive no-echo owner key;
+- exact public signer + expected Deposit Wallet;
+- production / chain 137;
+- ephemeral secret only;
+- no argv/file/env/pipe secret;
+- no persisted API credentials/private key/signature.
+
+Session Keys remain out.
+
+===============================================================================
+11. ACCOUNT COMPLETENESS
+===============================================================================
+
+Assume one dedicated bounded canary Deposit Wallet.
+
+REST authenticated reads through Gate-B are recovery truth.
+
+Before new exposure require:
+- exact wallet identity;
+- bounded complete open-order/trade/position reads;
+- no unknown open order/position;
+- no unresolved prior mutation;
+- healthy canonical LIVE-ORCH store.
+
+Existing 100-item bound remains. If relevant data exceeds it:
+  ACCOUNT_HISTORY_LIMIT_EXCEEDED
+  new exposure forbidden.
+
+Do not implement arbitrary busy-account history migration.
+User WebSocket is not recovery authority.
+
+===============================================================================
+12. CAPITAL-COMMITMENT ACCOUNTING
+===============================================================================
+
+The $30 ceiling is capital commitment, not mark-to-market.
+
+TOTAL_EARLY_CAPITAL_COMMITTED =
+    unresolved known BUY position entry commitment
+  + open BUY unfilled remainder commitment
+  + nonterminal matched-trade commitment
+  + ambiguous CREATE reserve
+  + fee commitment not yet reflected
+
+Use deterministic identity-based dedupe.
+
+Each episode persists:
+- principal_notional;
+- worst_case_fee_reserve;
+- worst_case_commitment.
+
+Before authoritative reconciliation proves otherwise, reserve full worst-case amount.
+
+Partial fill principal partitions into:
+- open remainder;
+- nonterminal matched portion;
+- terminal residual-position entry commitment.
+
+Never double-count one quantity and never let principal partitions exceed original principal.
+
+Mark-to-market current_value never reduces the $30 budget.
+
+Unknown position entry commitment:
+  ACCOUNT_POSITION_COMMITMENT_UNKNOWN
+  no new exposure.
+
+===============================================================================
+13. HARD PRE-CREATE RISK CHECKS
+===============================================================================
+
+Require independently:
+
+  proposed_worst_case_commitment <= 5
+  current_total_commitment + proposed_worst_case_commitment <= 30
+  projected_free_collateral_after_worst_case >= 70
+  fixed human capital basis <= 100
+  conservative observed-PnL guards PASS
+  allowance sufficient
+  account/reconciliation healthy
+
+Account profit cannot widen limits.
+Unknown input fails closed.
+
+===============================================================================
+14. TRUTHFUL OBSERVED-PNL GUARDS
+===============================================================================
+
+Do not claim true UTC-day realized-loss or high-water equity drawdown semantics.
+
+Retain conservative observed inputs under truthful names:
+- observed realized-PnL loss guard <= 5;
+- observed position-PnL drawdown guard <= 7.5;
+- observed cumulative canary economic-loss guard <= 10.
+
+docs/live_orchestration_contract.md must state exact source fields/derivation.
+Unknown required input blocks.
+
+True daily/high-water accounting is deferred.
+
+===============================================================================
+15. FEE HANDLING
+===============================================================================
+
+Standard binary fee-enabled markets are allowed.
+
+Pretrade:
+- fee disabled -> zero reserve;
+- passive maker with known taker-only schedule -> zero platform fee reserve;
+- aggressive BUY -> fresh EXEC-FEAS conservative five-decimal fee upper bound;
+- unknown/unsupported fee configuration -> reject.
+
+proposed_worst_case_commitment = principal + worst_case_fee_reserve <= 5.
+
+Do not invent an exact per-trade fee field absent from pinned SDK account-trade data.
+
+After resting/settlement ends, derive an actual fee delta only when mathematically attributable from
+dedicated-account pre/post collateral, confirmed principal/position delta, and absence of concurrent
+mutation.
+
+If ambiguous:
+  FEE_RECONCILIATION_AMBIGUOUS
+  retain conservative reserve
+  block new exposure.
+
+===============================================================================
+16. BUY-ONLY ORDER CONSTRUCTION
+===============================================================================
+
+PASSIVE_MAKER BUY:
+- GTC/GTD only;
+- SecureClient.create_limit_order;
+- exact token, price_limit, requested_shares;
+- post_only=true;
+- GTD compatible exact expiration/deadline;
+- signed public economics must not widen permit.
+
+AGGRESSIVE_TAKER BUY:
+- FOK/FAK only;
+- SecureClient.create_market_order;
+- amount = requested_shares * price_limit principal;
+- max_price = price_limit;
+- max_spend = proposed_worst_case_commitment;
+- order_type exact FOK/FAK.
+
+After local construction and before admission:
+- exact token, BUY side, order type, funder/signer;
+- encoded price never exceeds price_limit;
+- encoded principal never exceeds permit principal;
+- encoded taker shares never exceed requested_shares;
+- FOK target quantity must equal requested_shares at supported venue precision.
+
+Any widening/unsupported rounding:
+  ORDER_ENCODING_UNSUPPORTED
+
+This is an expected supported outcome on pinned 0.10.0 for a rounding-sensitive aggressive BUY;
+it is not permission to upgrade the SDK or loosen the permit.
+
+Never use place_limit_order/place_market_order.
+Missing allowance -> ALLOWANCE_INSUFFICIENT, no auto-approval.
+
+===============================================================================
+17. DURABLE ADMISSION — BEFORE CREATE_STARTED
+===============================================================================
+
+Persist sanitized LIVE_ORCH_ADMISSION before CREATE_STARTED, binding at minimum:
+- exploratory_permit_id;
+- execution_intent_id;
+- fresh venue_snapshot_id;
+- fresh execution_feasibility_assessment_id;
+- repository/release/currentness identity;
+- geoblock proof identity / observed time;
+- public wallet identity;
+- account snapshot/reconciliation identity;
+- current committed capital;
+- proposed principal;
+- worst-case fee reserve;
+- proposed worst-case commitment;
+- projected free collateral;
+- observed PnL/loss guard values;
+- exact market/condition/token/side/style/type;
+- decision ADMITTED.
+
+Sequence:
+  durable ADMISSION
+  -> durable CREATE_STARTED
+  -> one economic transmit maximum.
+
+Admission persistence failure => zero transmit.
+
+===============================================================================
+18. CREATE IDEMPOTENCY / RESPONSE CLASSIFICATION
+===============================================================================
+
+One permit -> at most one CREATE_STARTED and one post_order transmit.
+
+CREATE_STARTED consumes permit economic use regardless of venue outcome.
+No automatic CREATE retry for timeout/425/429/5xx/restart/transport ambiguity.
+
+Classify:
+- recognized accepted + stable identity -> DEFINITIVE_ACCEPTED;
+- recognized venue rejection proving non-acceptance -> DEFINITIVE_REJECTED;
+- otherwise -> AMBIGUOUS.
+
+"unknown" -> AMBIGUOUS.
+
+AMBIGUOUS reserves full worst-case commitment and blocks new exposure until authoritative
+reconciliation converges.
+
+===============================================================================
+19. PASSIVE OBSERVATION / NO UNATTENDED RESTING ORDER
+===============================================================================
+
+Accepted/resting passive order:
+- foreground observation <=60 seconds;
+- REST-authoritative polling interval >=1 second;
+- no reprice/cancel-replace/style change/second CREATE.
+
+If still resting at deadline -> cancel remainder and reconcile.
+
+Normal operator exit may not intentionally leave a known resting order.
+
+Crash recovery:
+  restart -> no-new-exposure -> discover -> cancel/reconcile.
+
+No heartbeat daemon/service.
+
+===============================================================================
+20. TRADE SETTLEMENT / PARTIAL FILLS
+===============================================================================
+
+Persist order-associated trade IDs.
+
+  MATCHED  -> nonterminal committed
+  MINED    -> nonterminal committed
+  RETRYING -> nonterminal committed
+  CONFIRMED -> terminal success
+  FAILED    -> terminal failure
+
+FAILED is not an active fill.
+MATCHED/MINED/RETRYING are not finality.
+
+Cancel only removes remaining live quantity; matched fills remain.
+
+Reconcile order + bounded open orders + trades + positions + collateral/allowance + episode state.
+
+No new CREATE while economically relevant settlement is nonterminal.
+Automatic resolved-market redemption is out of scope.
+
+===============================================================================
+21. CANCEL AMBIGUITY RECOVERY
+===============================================================================
+
+Persist CANCEL_STARTED before each cancel transmit.
+Never resend same cancel attempt identity.
+
+If ambiguous:
+- authoritative reconcile;
+- if no longer live, reconcile fills/residual;
+- if definitively still live, a NEW cancel attempt identity may be used.
+
+Max three cancel/reconcile rounds per foreground invocation.
+
+Still unresolved -> RECONCILIATION_BLOCKED.
+
+Later foreground reconcile may continue risk-reducing recovery with fresh cancel attempt IDs.
+No CREATE while blocked.
+
+===============================================================================
+22. MULTI-EPISODE RESTART-SAFE STORE
+===============================================================================
+
+Extend existing execution-gateway persistence, not a second subsystem.
+
+Episode binds permit, intent, strategy version, market/condition/token, BUY side, order type/style,
+authorized economics, release identity and public wallet identity.
+
+One permit can never appear in a second CREATE-started episode.
+
+Closed states equivalent to:
+  ADMISSION_PENDING
+  ADMITTED
+  CREATE_STARTED
+  CREATE_REJECTED
+  CREATE_ACCEPTED
+  CREATE_AMBIGUOUS
+  RESTING
+  CANCEL_STARTED
+  RECONCILING
+  SETTLEMENT_PENDING
+  TERMINAL_NO_POSITION
+  TERMINAL_KNOWN_POSITION
+  RECONCILIATION_BLOCKED
+
+Clean terminal prior episode does not block fresh permit after restart.
+
+Known reconciled residual BUY position survives restart and remains in aggregate commitment.
+
+Unknown/corrupt/replay-mismatched state blocks.
+
+===============================================================================
+23. FOREGROUND LIVE-ORCH SURFACE
+===============================================================================
+
+Create src/execution_gateway/live_orch.py as the single new foreground orchestrator.
+
+May expose bounded commands equivalent to:
+  preflight
+  canary
+  reconcile
+
+No daemon/scheduler/service.
+preflight cannot mutate.
+reconcile cannot create new exposure.
+canary has one CREATE maximum.
+
+It orchestrates existing Gate-B/Gate-C boundaries and never creates a new raw SDK client.
+
+No cockpit mutation UI.
+
+===============================================================================
+24. NEGATIVE-TEST MATRIX / OFFLINE TEST MATRIX
+===============================================================================
+
+EXEC-FEAS:
+- independent Gamma notional / CLOB shares;
+- below each constraint exact failure;
+- unequal values may both pass;
+- missing source unknown;
+- existing behavior unchanged.
+
+Gate-B/Gate-C:
+- local limit/market build does not post;
+- post_order one transmit;
+- no wallet deployment/approval/relayer mutation;
+- unknown response ambiguous;
+- exact accepted/rejected classification;
+- market/condition/token separation;
+- trade IDs/status retained;
+- >100 account items fail closed;
+- fee-enabled standard metadata usable;
+- raw secrets/errors sanitized.
+
+LIVE-ORCH:
+- BUY-only; SELL permit rejected before admission;
+- currentness/NTP/geoblock/permit gates;
+- exact allowed/forbidden fresh drift;
+- durable admission before CREATE_STARTED;
+- $5/$30/$70/$100 guards;
+- observed PnL guard truth;
+- mark-to-market decline does not free commitment;
+- partial-fill dedupe;
+- ambiguous CREATE full reserve;
+- passive observation/cancel;
+- aggressive FOK/FAK no-widening;
+- pinned 0.10.0 rounding-sensitive aggressive BUY fails ORDER_ENCODING_UNSUPPORTED rather than
+  widening price/share/principal authority;
+- crash at each mutation boundary;
+- clean terminal permits later fresh permit;
+- known residual position counted;
+- unknown position blocks;
+- cancel ambiguity uses fresh attempts;
+- settlement statuses;
+- fee ambiguity blocks;
+- no unattended live order;
+- no auto scaling.
+
+Mandatory frozen-base negative control:
+- demonstrate the pre-existing EXEC-FEAS minimum-order defect directly from frozen base
+  3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe by proving evaluator.py contains the old
+  `if gamma_min != book_min:` source-conflict branch;
+- candidate tests then prove the corrected independent notional/share semantics.
+
+An additional pre-existing Gate-C negative control may be included only if mechanically simple.
+Do NOT backport the new LIVE-ORCH test suite into the old base merely to manufacture negative
+evidence.
+
+No real network or credentials.
+
+===============================================================================
+25. COMPATIBILITY / VALIDATION
+===============================================================================
+
+Focused:
+  python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py
+  python -m pytest -q -p no:cacheprovider tests/execution_gateway
+  python -m pytest -q -p no:cacheprovider tests/test_architecture_boundaries.py tests/test_no_live_mode_by_default.py
+  python -m pytest -q -p no:cacheprovider tests/test_official_client_dependency_boundary.py tests/test_official_client_sandbox_boundary.py
+  python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py
+
+Also:
+- exact scope/readiness;
+- git diff --check;
+- generated-artifact guard;
+- gitleaks/security hygiene;
+- zero real network/credentials/account/orders/capital.
+
+Then once stable:
+  python -m pytest -q -p no:cacheprovider
+
+Full suite once.
+
+
+===============================================================================
+25A. EVIDENCE PLAN (REQUIREMENT MAPPING)
+===============================================================================
+
+R001  EXEC-FEAS independent Gamma-notional / CLOB-share minimum semantics.
+R002  Gate-B bounded account truth, local BUY construction, no deploy/approval/retry leakage.
+R003  Gate-C one-transmit classification, trade-status retention and cancel recovery.
+R004  Gateway/store multi-episode restart and residual-commitment recovery.
+R005  LIVE-ORCH offline matrix: BUY-only admission, drift, capital, fee, rounding, fills, recovery.
+R006  Architecture + live-default compatibility guards.
+R007  Official-client dependency/sandbox compatibility without dependency changes.
+R008  Architecture/status/repo-truth documentation consistency.
+R009  Frozen-base negative control for the existing EXEC-FEAS minimum-order dimension defect.
+R010  Exact protected readiness using the independent certificate.
+R011  Diff/generated-artifact/security validation with command/claim parity.
+R012  Full repository suite once on stable candidate.
+R013  Exact-final-head hosted CI.
+R014  Final PR-body evidence consistency guard on exact final head.
+
+===============================================================================
+26. DOCS / STATUS / PR
+===============================================================================
+
+Create docs/live_orchestration_contract.md with closed authority/risk/account/permit/drift/admission/
+idempotency/settlement/restart/activation semantics.
+
+Update execution_feasibility_contract.md for correct minimum dimensions.
+
+Update architecture/roadmap/live-authorization/project-status/repo-truth consistently.
+
+Merged implementation still states:
+  LIVE TRADING STATUS: DISABLED
+
+PR only after local green.
+Require exact-head hosted CI and posted-body evidence consistency.
+
+For R014 use the repository post-WP91 body-only consistency guard against the FINAL PR-body text
+copied to `/tmp/s10-live-orch-01-pr-body.md` and the exact final head. Because this WP adds dormant
+protected runtime network/account/order capability, DO NOT use `--require-standard-network-wording`:
+its stock sentence says the WP adds no runtime network behavior and would be false here. The PR body
+must instead state truthfully that implementation/CI performed zero real product network, credential,
+account or order activity while the dormant protected runtime code itself has separately gated
+network/credential/execution/live authority.
+
+Return:
+  READY_FOR_SIDE16_LIVE_ORCH_PR_REVIEW
+
+Do not merge.
+
+===============================================================================
+27. SUCCESSOR BOUNDARY — SEPARATE FIRST-LIVE ACTIVATION
+===============================================================================
+
+After Karl merge, Side16 verifies actual merge SHA and creates a standalone activation artifact
+before any context/merge artifact becomes unavailable.
+
+Future activation binds:
+- actual merge/deployed SHA;
+- exact permit ID;
+- exact intent ID;
+- public canary-wallet identity;
+- one CREATE maximum;
+- $100/$5/$30/$70 envelope;
+- operator confirmation.
+
+This WP never authorizes the real order.
+
+
+===============================================================================
+27A. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|risk|capital_envelope|before_create|REQUIRE|hard_100_5_30_70_limits|live_orch.capital_envelope|R005
+NR002|authority|economic_side|first_canary_create|REQUIRE|buy_only_sell_rejected|live_orch.side_policy|R005
+NR003|risk|observed_pnl|before_create|REQUIRE|truthful_conservative_guards|live_orch.observed_pnl_guards|R005
+NR004|venue|fresh_drift|runtime_revalidation|REQUIRE|fresh_ids_allowed_identity_caps_fixed|live_orch.fresh_market_drift|R005
+NR005|evidence|admission|before_create_started|REQUIRE|durable_admission_precedes_mutation|live_orch.admission|R005
+NR006|risk|capital_commitment|every_admission|REQUIRE|deduplicated_worst_case_commitment|live_orch.commitment|R005
+NR007|execution|create_idempotency|after_create_started|FORBID|no_second_transmit_or_auto_retry|live_orch.create_idempotency|R003
+NR008|fees|fee_commitment|pre_and_post_trade|REQUIRE|reserve_unknown_and_block_ambiguity|live_orch.fee_commitment|R005
+NR009|settlement|trade_status|after_order_activity|REQUIRE|nonterminal_trade_blocks_new_exposure|live_orch.trade_settlement|R003
+NR010|recovery|cancel_ambiguity|cancel_unknown|REQUIRE|fresh_cancel_identity_only_if_still_live|live_orch.cancel_recovery|R003
+NR011|recovery|restart|process_restart|REQUIRE|no_new_exposure_until_authoritative_convergence|live_orch.restart_recovery|R004
+NR012|execution|order_encoding|pinned_0_10_rounding_sensitive|REJECT|order_encoding_unsupported_no_widening|live_orch.order_encoding|R005
+NR013|feasibility|min_order|gamma_and_clob_minima|REQUIRE|independent_notional_and_share_checks|exec_feas.minimum_order|R001
+NR014|governance|activation|implementation_or_merge|FORBID|real_live_requires_separate_exact_merge_authorization|live_orch.activation_separation|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+===============================================================================
+28. DEFERRED
+===============================================================================
+
+Out:
+  economic SELL CREATE
+  Session Keys / Builder keys
+  SDK upgrade
+  heartbeat daemon
+  user-WebSocket recovery authority
+  automatic CREATE retry
+  auto scaling
+  neg-risk / delayed sports markets
+  redemption
+  funding/withdrawal/bridge
+  wallet deployment / approval automation
+  arbitrary busy-account migration
+  Control Center mutation UI
+  multi-strategy unattended scheduling
+  second VPS / VPS upgrade
+
+===============================================================================
+29. HARD STOPS
+===============================================================================
+
+STOP if:
+- main drifts before authorized implementation;
+- certificate/readiness fails exact bytes;
+- 28th path required;
+- dependency/workflow change required;
+- pinned interface mismatch;
+- wallet deploy/approval cannot remain unreachable;
+- commitment cannot be conservative/deterministic;
+- secret persistence required;
+- real product action needed for implementation proof;
+- real activation proposed before merge.
+
+===============================================================================
+30. REPORT-BACK / RETURN / ROUTING
+===============================================================================
+
+READY_FOR_SIDE16_LIVE_ORCH_PR_REVIEW only if:
+- independent certificate PASS;
+- readiness IMPLEMENTATION_READY;
+- exact 27 paths;
+- all reviewed defects closed;
+- BUY-only rule;
+- $100/$5/$30/$70 and observed-PnL guards;
+- durable fresh admission;
+- drift contract;
+- one-permit/one-CREATE;
+- partial-fill/cancel/restart recovery;
+- min-order repair;
+- full suite PASS;
+- exact-head CI PASS;
+- posted evidence PASS;
+- real product activity zero;
+- merge not performed.
+
+Routing:
+  canonical prompt/spec
+  -> independent 12-lens review
+  -> independent certificate
+  -> readiness
+  -> Karl implementation authorization
+  -> new implementation session
+  -> PR/CI
+  -> Side16 review
+  -> Karl merge
+  -> standalone exact-merge activation authorization
+  -> Karl activation approval
+  -> bounded first canary.

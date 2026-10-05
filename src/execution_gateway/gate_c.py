@@ -35,6 +35,7 @@ from src.research_runtime.executable_edge import (
 )
 
 from .gate_b import (
+    CancelAttempt,
     GateBSession,
     GateCLivePermit,
     _GATE_C_ISSUER,
@@ -47,6 +48,7 @@ from .gateway import (
     VenueConstraints,
     GatewayError,
     _GATE_C_EVENT_ISSUER,
+    _LIVE_ORCH_EVENT_ISSUER,
     _ADDRESS_RE,
     _canonical_decimal,
     _decimal,
@@ -1342,7 +1344,7 @@ class GateCSession:
             if str(response.code) not in {
                 "unmatched", "market_not_ready", "not_enough_balance", "invalid_nonce",
                 "invalid_expiration", "post_only_would_cross", "post_only_mode",
-                "fok_not_filled", "fak_not_filled", "unknown",
+                "fok_not_filled", "fak_not_filled",
             }:
                 return "AMBIGUOUS", "unknown", None
             return "DEFINITIVE_REJECTED", "rejected", None
@@ -1666,3 +1668,451 @@ ArmReceipt = GateCArmReceipt
 CanaryReceipt = GateCCanaryReceipt
 GeoblockProof = GateCGeoblockProof
 RestrictedLiveCanary = GateCSession
+
+
+# ---------------------------------------------------------------------------
+# S10-LIVE-ORCH-01 one-use BUY mutation boundary
+# ---------------------------------------------------------------------------
+#
+# The LIVE-ORCH foreground orchestrator performs every runtime revalidation and
+# then hands this boundary one exact BUY order specification plus a fully
+# built ADMITTED episode.  This boundary alone (1) builds and inspects the
+# local signed order through the private Gate-B handle, (2) durably writes the
+# admission and then CREATE_STARTED, (3) transmits at most once, and
+# (4) records the closed outcome.  It never retries a CREATE.
+
+LIVE_ORCH_DEFINITIVE_REJECT_CODES = frozenset(
+    {
+        "unmatched",
+        "market_not_ready",
+        "not_enough_balance",
+        "invalid_nonce",
+        "invalid_expiration",
+        "post_only_would_cross",
+        "post_only_mode",
+        "fok_not_filled",
+        "fak_not_filled",
+    }
+)
+_USDC_UNITS = Decimal(1_000_000)
+
+
+@dataclass(frozen=True)
+class LiveOrchOrderSpec:
+    """Exact permit-bound BUY economics; nothing here may widen the permit."""
+
+    token_id: str
+    execution_style: str
+    order_type: str
+    requested_shares: str
+    price_limit: str
+    gtd_expiration_unix_s: int | None
+    principal_notional_usd: str
+    worst_case_commitment_usd: str
+    tick_size: str
+
+    def validate(self) -> None:
+        _nonempty_label(self.token_id, "ORDER_ENCODING_UNSUPPORTED")
+        style_types = {"PASSIVE_MAKER": ("GTC", "GTD"), "AGGRESSIVE_TAKER": ("FOK", "FAK")}
+        if self.order_type not in style_types.get(self.execution_style, ()):
+            raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+        if (self.gtd_expiration_unix_s is not None) != (self.order_type == "GTD"):
+            raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+        shares = _decimal(self.requested_shares, positive=True)
+        price = _decimal(self.price_limit, positive=True)
+        principal = _decimal(self.principal_notional_usd, positive=True)
+        commitment = _decimal(self.worst_case_commitment_usd, positive=True)
+        if price >= 1 or principal != shares * price or commitment < principal:
+            raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+        if (shares * _USDC_UNITS) % 1 != 0 or (principal * _USDC_UNITS) % 1 != 0:
+            raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+        if _decimal(self.tick_size, positive=True) not in _SDK_ROUNDING_BY_TICK:
+            raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+
+
+@dataclass(frozen=True)
+class LiveOrchSignedEconomics:
+    signed_order_id: str
+    maker_amount: int
+    taker_amount: int
+    order_type: str
+    expiration: int
+    post_only: bool
+
+
+def inspect_live_orch_signed_buy(
+    signed: object, spec: LiveOrchOrderSpec, *, public_wallet: str
+) -> LiveOrchSignedEconomics:
+    """Post-construction inspection: accept only orders that preserve the permit.
+
+    For the Deposit Wallet (signature type 3) the pinned SDK signs with
+    ``maker == signer == wallet``.  Encoded price, principal and taker shares
+    may never exceed the permit; FOK and passive orders must target exactly the
+    requested shares.  Any widening or rounding-sensitive drift fails closed
+    with ``ORDER_ENCODING_UNSUPPORTED``.
+    """
+    spec.validate()
+    if type(signed) is not SignedOrder:
+        raise GatewayError("SIGNING_FAILED")
+    try:
+        maker = str(signed.maker).lower()
+        signer = str(signed.signer).lower()
+        builder = int(str(signed.builder), 16)
+        maker_amount = int(signed.maker_amount)
+        taker_amount = int(signed.taker_amount)
+        expiration = int(signed.expiration)
+        values = {
+            "token_id": str(signed.token_id),
+            "side": str(signed.side),
+            "order_type": str(signed.order_type),
+            "signature_type": int(signed.signature_type),
+            "post_only": bool(signed.post_only),
+        }
+    except (AttributeError, TypeError, ValueError, OverflowError):
+        raise GatewayError("SIGNING_FAILED") from None
+    if (
+        values["token_id"] != spec.token_id
+        or values["side"] != "BUY"
+        or maker != public_wallet
+        or signer != public_wallet
+        or values["signature_type"] != 3
+        or builder != 0
+        or maker_amount <= 0
+        or taker_amount <= 0
+    ):
+        raise GatewayError("SIGNED_ORDER_IDENTITY_MISMATCH")
+    passive = spec.execution_style == "PASSIVE_MAKER"
+    expected_expiration = spec.gtd_expiration_unix_s if spec.order_type == "GTD" else 0
+    if (
+        values["order_type"] != spec.order_type
+        or values["post_only"] is not passive
+        or expiration != expected_expiration
+    ):
+        raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+    shares_units = int(Decimal(spec.requested_shares) * _USDC_UNITS)
+    principal_units = int(Decimal(spec.principal_notional_usd) * _USDC_UNITS)
+    price = Decimal(spec.price_limit)
+    if (
+        maker_amount > principal_units
+        or taker_amount > shares_units
+        # Encoded price maker/taker never exceeds the permit price limit.
+        or Decimal(maker_amount) > Decimal(taker_amount) * price
+    ):
+        raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+    if spec.order_type == "FOK" and taker_amount != shares_units:
+        raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+    if passive:
+        expected = _expected_signed_amounts(
+            price=price,
+            size=Decimal(spec.requested_shares),
+            side="BUY",
+            tick=Decimal(spec.tick_size),
+        )
+        if (maker_amount, taker_amount) != expected or taker_amount != shares_units:
+            raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+    economics = {
+        "maker_amount": maker_amount,
+        "taker_amount": taker_amount,
+        "order_type": values["order_type"],
+        "expiration": expiration,
+        "post_only": values["post_only"],
+        "token_id": spec.token_id,
+        "public_wallet": public_wallet,
+    }
+    return LiveOrchSignedEconomics(
+        _id("liveorchsignedorder:sha256:", economics),
+        maker_amount,
+        taker_amount,
+        values["order_type"],
+        expiration,
+        values["post_only"],
+    )
+
+
+def classify_live_orch_create_response(
+    response: object,
+) -> dict[str, object]:
+    """Closed CREATE classification; anything unrecognized is AMBIGUOUS."""
+    ambiguous: dict[str, object] = {
+        "outcome": "AMBIGUOUS",
+        "response_status": "unknown",
+        "venue_order_id": None,
+        "trade_ids": [],
+        "making_amount": None,
+        "taking_amount": None,
+    }
+    if type(response) is AcceptedOrder:
+        try:
+            order_id = _label(str(response.order_id))
+            trade_ids = sorted({_label(str(item)) for item in response.trade_ids})
+            making = _canonical_decimal(_safe_decimal(response.making_amount, "CREATE_RESPONSE_INVALID"))
+            taking = _canonical_decimal(_safe_decimal(response.taking_amount, "CREATE_RESPONSE_INVALID"))
+        except GatewayError:
+            return ambiguous
+        status = str(response.status)
+        accepted = status in ("live", "matched")
+        return {
+            "outcome": "DEFINITIVE_ACCEPTED" if accepted else "AMBIGUOUS",
+            "response_status": status if accepted else "delayed",
+            "venue_order_id": order_id,
+            "trade_ids": trade_ids,
+            "making_amount": making,
+            "taking_amount": taking,
+        }
+    if type(response) is RejectedOrder and str(response.code) in LIVE_ORCH_DEFINITIVE_REJECT_CODES:
+        return {
+            "outcome": "DEFINITIVE_REJECTED",
+            "response_status": "rejected",
+            "venue_order_id": None,
+            "trade_ids": [],
+            "making_amount": None,
+            "taking_amount": None,
+        }
+    return ambiguous
+
+
+class PreparedLiveOrchCreate:
+    """Process-local, single-use signed BUY; never serialized or persisted."""
+
+    __slots__ = ("_spec", "_economics", "_permit", "_handle", "_signed", "_attempt", "_used")
+
+    def __init__(self, spec, economics, permit, handle, signed, attempt) -> None:
+        self._spec = spec
+        self._economics = economics
+        self._permit = permit
+        self._handle = handle
+        self._signed = signed
+        self._attempt = attempt
+        self._used = False
+
+    @property
+    def economics(self) -> LiveOrchSignedEconomics:
+        return self._economics
+
+    @property
+    def attempt_id(self) -> str:
+        return self._attempt
+
+    def __reduce__(self):
+        raise GatewayError("SIGNED_ORDER_NOT_SERIALIZABLE")
+
+
+def _episode_index(checkpoint: Mapping[str, object], episode_id: str) -> int:
+    episodes = list(checkpoint["episodes"])
+    for index, episode in enumerate(episodes):
+        if episode["episode_id"] == episode_id:
+            return index
+    raise GatewayError("LIVE_ORCH_EPISODE_UNKNOWN")
+
+
+class LiveOrchMutationBoundary:
+    """The only LIVE-ORCH CREATE/CANCEL transmit surface."""
+
+    def __init__(
+        self,
+        gateway: ProtectedExecutionGateway,
+        gate_b_session: GateBSession,
+        *,
+        issuer: object,
+    ) -> None:
+        if issuer is not _LIVE_ORCH_EVENT_ISSUER:
+            raise GatewayError("LIVE_ORCH_REQUIRED")
+        if type(gateway) is not ProtectedExecutionGateway or type(gate_b_session) is not GateBSession:
+            raise GatewayError("GATE_C_SESSION_INVALID")
+        if getattr(gate_b_session, "_gateway", None) is not gateway:
+            raise GatewayError("GATE_B_STORE_REQUIRED")
+        lock = getattr(gate_b_session, "_wallet_lock", None)
+        if lock is None or not lock.active:
+            raise GatewayError("GATE_B_OWNERSHIP_REQUIRED")
+        self._gateway = gateway
+        self._gate_b = gate_b_session
+
+    def prepare(self, spec: LiveOrchOrderSpec, *, attempt_seed: str) -> PreparedLiveOrchCreate:
+        """Locally build and inspect one signed BUY; nothing is transmitted."""
+        if type(spec) is not LiveOrchOrderSpec:
+            raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+        spec.validate()
+        _nonempty_label(attempt_seed)
+        attempt_id = _id("liveorchcreate:sha256:", {"seed": attempt_seed, "spec": asdict(spec)})
+        permit = GateCLivePermit._issue(_GATE_C_ISSUER, attempt_id)
+        handle = self._gate_b.gate_c_transport(permit)
+        price = Decimal(spec.price_limit)
+        if spec.execution_style == "PASSIVE_MAKER":
+            signed = handle.build(
+                asset_id=spec.token_id,
+                price=price,
+                size=Decimal(spec.requested_shares),
+                side="BUY",
+                post_only=True,
+                expiration=spec.gtd_expiration_unix_s,
+            )
+        else:
+            signed = handle.build_aggressive_buy(
+                asset_id=spec.token_id,
+                amount=Decimal(spec.principal_notional_usd),
+                max_spend=Decimal(spec.worst_case_commitment_usd),
+                max_price=price,
+                order_type=spec.order_type,
+            )
+        economics = inspect_live_orch_signed_buy(
+            signed, spec, public_wallet=self._gate_b.public_wallet
+        )
+        return PreparedLiveOrchCreate(spec, economics, permit, handle, signed, attempt_id)
+
+    def admit_and_transmit(
+        self,
+        prepared: PreparedLiveOrchCreate,
+        episode: Mapping[str, object],
+        *,
+        now_ns: int,
+    ) -> dict[str, object]:
+        """Durable ADMISSION -> durable CREATE_STARTED -> at most one transmit."""
+        _time(now_ns)
+        if type(prepared) is not PreparedLiveOrchCreate or prepared._used:
+            raise GatewayError("GATE_C_REQUIRED")
+        admission = episode.get("admission") if isinstance(episode, Mapping) else None
+        if (
+            not isinstance(admission, Mapping)
+            or episode.get("state") != "ADMITTED"
+            or admission.get("signed_order_id") != prepared.economics.signed_order_id
+            or admission.get("signed_maker_amount") != prepared.economics.maker_amount
+            or admission.get("signed_taker_amount") != prepared.economics.taker_amount
+        ):
+            raise GatewayError("LIVE_ORCH_ADMISSION_INVALID")
+        prepared._used = True
+        checkpoint = self._gateway.live_orch_checkpoint()
+        admitted = dict(checkpoint)
+        admitted["episodes"] = list(checkpoint["episodes"]) + [dict(episode)]
+        try:
+            self._gateway.record_live_orch_event(
+                "LIVE_ORCH_ADMITTED", admitted,
+                issuer=_LIVE_ORCH_EVENT_ISSUER, event_time_ns=now_ns,
+            )
+        except GatewayError:
+            # Admission persistence failure => zero economic transmit.
+            raise GatewayError("LIVE_ORCH_ADMISSION_PERSISTENCE_FAILED") from None
+        episode_id = str(episode["episode_id"])
+        started = self._gateway.live_orch_checkpoint()
+        index = _episode_index(started, episode_id)
+        record = dict(started["episodes"][index])
+        record["state"] = "CREATE_STARTED"
+        record["create"] = {
+            "attempt_id": prepared.attempt_id,
+            "started_time_ns": now_ns,
+            "outcome": None,
+            "response_status": None,
+            "venue_order_id": None,
+            "trade_ids": [],
+            "making_amount": None,
+            "taking_amount": None,
+        }
+        started["episodes"] = list(started["episodes"])
+        started["episodes"][index] = record
+        try:
+            self._gateway.record_live_orch_event(
+                "LIVE_ORCH_CREATE_STARTED", started,
+                issuer=_LIVE_ORCH_EVENT_ISSUER, event_time_ns=now_ns,
+            )
+        except GatewayError:
+            raise GatewayError("LIVE_ORCH_CREATE_STARTED_PERSISTENCE_FAILED") from None
+        # The durable CREATE_STARTED consumes the permit's economic use.
+        prepared._permit._consume(prepared.attempt_id)
+        signed = prepared._signed
+        prepared._signed = None
+        try:
+            response = prepared._handle.transmit(signed)
+        except GatewayError:
+            response = None
+        result = classify_live_orch_create_response(response)
+        outcome_state = {
+            "DEFINITIVE_ACCEPTED": "CREATE_ACCEPTED",
+            "DEFINITIVE_REJECTED": "CREATE_REJECTED",
+            "AMBIGUOUS": "CREATE_AMBIGUOUS",
+        }[str(result["outcome"])]
+        final = self._gateway.live_orch_checkpoint()
+        index = _episode_index(final, episode_id)
+        record = dict(final["episodes"][index])
+        record["state"] = outcome_state
+        record["create"] = {**dict(record["create"]), **result}
+        final["episodes"] = list(final["episodes"])
+        final["episodes"][index] = record
+        try:
+            self._gateway.record_live_orch_event(
+                "LIVE_ORCH_CREATE_OUTCOME", final,
+                issuer=_LIVE_ORCH_EVENT_ISSUER,
+                event_time_ns=max(now_ns, self._gateway.state.last_event_time_ns + 1),
+            )
+        except GatewayError:
+            # The ledger stays CREATE_STARTED: restart recovery treats it as
+            # possibly transmitted (AMBIGUOUS) and reserves the full commitment.
+            raise GatewayError("LIVE_ORCH_OUTCOME_PERSISTENCE_FAILED") from None
+        return {"episode_id": episode_id, "state": outcome_state, **result}
+
+    def cancel(self, episode_id: str, *, now_ns: int) -> str:
+        """Durable CANCEL_STARTED -> one cancel transmit under a NEW attempt identity."""
+        _time(now_ns)
+        checkpoint = self._gateway.live_orch_checkpoint()
+        index = _episode_index(checkpoint, episode_id)
+        record = dict(checkpoint["episodes"][index])
+        create = record.get("create")
+        venue_order_id = None if not isinstance(create, Mapping) else create.get("venue_order_id")
+        if not isinstance(venue_order_id, str) or record["state"] not in (
+            "CREATE_ACCEPTED", "CREATE_AMBIGUOUS", "RESTING", "RECONCILING",
+            "SETTLEMENT_PENDING", "RECONCILIATION_BLOCKED",
+        ):
+            raise GatewayError("LIVE_ORCH_CANCEL_NOT_ALLOWED")
+        attempts = list(record["cancel_attempts"])
+        attempt = CancelAttempt(
+            operation="CANCEL_ONE",
+            request_target_ids=(venue_order_id,),
+            request_target_bindings=((venue_order_id, episode_id),),
+            request_market_id=None,
+            attempt_sequence=len(attempts) + 1,
+            prior_reconciliation_state="HEALTHY",
+        )
+        identity = attempt.identity
+        prior_ids = [
+            str(item["cancel_attempt_id"])
+            for episode in checkpoint["episodes"]
+            for item in episode["cancel_attempts"]
+        ]
+        if identity in prior_ids:
+            raise GatewayError("MUTATION_ALREADY_TRANSMITTED")
+        attempts.append({
+            "cancel_attempt_id": identity,
+            "sequence": len(attempts) + 1,
+            "started_time_ns": now_ns,
+            "result": None,
+        })
+        record["cancel_attempts"] = attempts
+        record["state"] = "CANCEL_STARTED"
+        record["reconciliation"] = {**dict(record["reconciliation"]), "block_reason": None}
+        checkpoint["episodes"] = list(checkpoint["episodes"])
+        checkpoint["episodes"][index] = record
+        self._gateway.record_live_orch_event(
+            "LIVE_ORCH_CANCEL_STARTED", checkpoint,
+            issuer=_LIVE_ORCH_EVENT_ISSUER, event_time_ns=now_ns,
+        )
+        try:
+            result, _summary = self._gate_b.live_orch_cancel(
+                _GATE_C_ISSUER, attempt, prior_attempt_ids=prior_ids,
+            )
+        except GatewayError:
+            result = "AMBIGUOUS"
+        if result not in ("DEFINITIVE_ACCEPTED", "DEFINITIVE_REJECTED"):
+            result = "AMBIGUOUS"
+        after = self._gateway.live_orch_checkpoint()
+        index = _episode_index(after, episode_id)
+        record = dict(after["episodes"][index])
+        attempts = [dict(item) for item in record["cancel_attempts"]]
+        attempts[-1]["result"] = result
+        record["cancel_attempts"] = attempts
+        record["state"] = "RECONCILING"
+        after["episodes"] = list(after["episodes"])
+        after["episodes"][index] = record
+        self._gateway.record_live_orch_event(
+            "LIVE_ORCH_CANCEL_OUTCOME", after,
+            issuer=_LIVE_ORCH_EVENT_ISSUER,
+            event_time_ns=max(now_ns, self._gateway.state.last_event_time_ns + 1),
+        )
+        return result
