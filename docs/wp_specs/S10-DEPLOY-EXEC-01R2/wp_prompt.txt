@@ -1,0 +1,201 @@
+SIDE16 — S10-DEPLOY-EXEC-01R2
+BOUNDED PUBLIC RPC TRANSPORT REPAIR UNDER PARENT S10-DEPLOY-EXEC-01
+POLYGON RPC TRANSPORT COMPATIBILITY + FAILURE-CLASSIFICATION REPAIR
+
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Authority owner: Karl / Side16
+Draft status: AUTHORIZED BY SIDE16 FOLLOW-UP 13
+This package authorizes only the repository repair below. It does NOT authorize merge, any VPS
+mutation, any Phase-B step, any network diagnostic, or any successor.
+
+===============================================================================
+0. PACKAGE IDENTITY
+===============================================================================
+
+WP ID: S10-DEPLOY-EXEC-01R2
+Parent WP: S10-DEPLOY-EXEC-01 (repair envelope, not a new roadmap capability or architecture)
+Triggered by: S10-DEPLOY-EXEC-01 Phase B follow-ups 11 / 12 / 12A on the AlphaVPS C8G host
+Title: Polygon RPC Transport Compatibility + Failure-Classification Repair
+Package class: PUBLIC_RPC_TRANSPORT_REPAIR
+Package size class: S
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Base branch: main
+Frozen base / required current main: cb82114ce13a300b728df049b1db9a24639fdbaf
+Suggested branch: claude/s10-deploy-exec-01r2-polygon-rpc-transport-repair
+Exact changed-file budget: 5
+Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+
+Governance track expected: RUNTIME
+Risk level: 3
+Capital at risk: USD 0
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+network: true records that public read-only network transport behavior is changed; it does not
+authorize any real network call during implementation or testing.
+
+The pull request is created Ready for Review (isDraft=false). Karl merges; the executor never does.
+
+===============================================================================
+1. TRIGGER / OBJECTIVE
+===============================================================================
+
+Trigger (real Phase B, deployed cb82114 release): one direct curl eth_chainId request from the same
+host to https://polygon.drpc.org returned HTTP 200 / 0x89 in 0.109 s, while the canonical urllib
+public smoke failed twice (about 22 minutes apart) with an immediate NETWORK_TIMEOUT after about
+1.1 s and zero Polygon raw rows; Gamma/CLOB/Data HTTP and the WebSocket were healthy. The mixed
+window was therefore invalid and coexistence was EXECUTION_HOST_INCONCLUSIVE. Not a capacity failure.
+
+Defect (src/data_layer/polymarket/market_truth_onchain.py _default_rpc_transport): no explicit
+User-Agent although WP169 requires fixed Accept/Content-Type/User-Agent production values, and every
+urllib exception including HTTPError collapses to NETWORK_TIMEOUT.
+
+Objective: repair the WP169 Polygon public RPC production transport so it uses the already-certified
+fixed User-Agent and preserves HTTP responses for existing non-2xx handling instead of collapsing
+HTTPError into NETWORK_TIMEOUT, without changing provider authority, RPC methods, credentials,
+trading authority, or live/economic behavior.
+
+Required behavior:
+- headers exactly Content-Type: application/json, Accept: application/json,
+  User-Agent: wp169-public-market-truth/1.0; no caller/environment/credential headers;
+- urllib HTTPError -> (status, headers, body) -> existing _rpc_call non-2xx rule -> RESPONSE_INVALID;
+- DNS/connect/TLS/socket timeout/other transport exception -> NETWORK_TIMEOUT;
+- no retry, redirect or fallback logic added; provider allowlist drpc only; method allowlist,
+  byte bounds, JSON parsing, chain check, source ids/cursors, checkpoint/reorg semantics and
+  public signatures unchanged; no new dependency.
+
+===============================================================================
+2. STARTUP / STATE GATE
+===============================================================================
+
+git fetch origin main; require origin/main == cb82114ce13a300b728df049b1db9a24639fdbaf, else
+STOP_REPAIR_BASE_MOVED (no rebase). VPS stays frozen: current cb82114 with its binding, telemetry
+and research baseline as is, critical probe disabled/inactive, FU11 forensic and FU12 failed smoke
+DBs preserved, formal reboot 0; no diagnostic, smoke, mixed window, backup, restore or reboot.
+
+===============================================================================
+3. EXACT CHANGED-FILE SCOPE — 5 PATHS
+===============================================================================
+
+- docs/status_entries/S10-DEPLOY-EXEC-01R2.md
+- docs/wp_specs/S10-DEPLOY-EXEC-01R2/wp_prompt.txt
+- docs/wp_specs/S10-DEPLOY-EXEC-01R2/wp_spec.json
+- src/data_layer/polymarket/market_truth_onchain.py
+- tests/data_layer/polymarket/test_market_truth_onchain.py
+
+required_changed_files == allowed_changed_files == exactly these five; max_changed_files 5.
+
+===============================================================================
+4. AUTHORITY / NON-AUTHORITY
+===============================================================================
+
+Authority: change only the Polygon default RPC transport, add offline behavioral regressions for
+the real default transport, and the three repair governance artifacts. Protected boundary groups
+per docs/ai/codex/PROTECTED_PATHS.md (Centralized Boundary Group Reference) are not crossed.
+
+Non-authority: no change to market_truth_store.py, market_truth_runtime.py,
+market_truth_data_api.py, tools/polymarket/run_public_market_truth.py, deployment tooling,
+bootstrap, systemd units, dependencies, workflows, the original WP169 / S10-DEPLOY-01 /
+S10-DEPLOY-EXEC-01 prompts/specs, the provider list or the RPC method list; no retry, redirect or
+provider fallback; no real network call in tests; no VPS mutation; no credentials, authenticated
+account access, signing, orders, capital or live. Workflow network only: git fetch/push, PR
+publication and hosted-CI observation.
+
+===============================================================================
+5. HARD STOPS
+===============================================================================
+
+Stop and report (do not widen) if: origin/main moved; a sixth path is required (including a
+draftability certificate); a historical guard would need editing; existing WP169 tests would need
+to change; any VPS or Phase-B action would be required; exact-head hosted CI is not green.
+
+===============================================================================
+6. NEGATIVE-TEST MATRIX
+===============================================================================
+
+All cases call the real _default_rpc_transport with urllib.request.urlopen intercepted and a
+socket guard that fails on any real connection:
+- HTTP 403 -> status 403, then RESPONSE_INVALID, not NETWORK_TIMEOUT;
+- HTTP 429 -> status 429, then RESPONSE_INVALID, not NETWORK_TIMEOUT;
+- HTTP 500/503 -> status preserved, then RESPONSE_INVALID;
+- non-2xx body carrying a valid 0x89 result -> not accepted (RESPONSE_INVALID);
+- HTTPError with an unreadable body -> status kept, empty body;
+- URLError / TimeoutError / socket.timeout / ssl.SSLError / OSError -> NETWORK_TIMEOUT;
+- timeout while reading a 2xx body -> NETWORK_TIMEOUT;
+- invalid JSON 2xx -> RESPONSE_INVALID;
+- wrong chain id through the collection path -> CHAIN_ID_MISMATCH (unchanged);
+- provider other than drpc -> RPC_PROVIDER_FORBIDDEN;
+- unauthorized RPC method -> RPC_PROVIDER_FORBIDDEN with no transport call;
+- caller credentials/headers -> impossible (transport signature is url, body, timeout_seconds).
+Positive: 200 / 0x89 returned unchanged; exact three fixed headers on the real Request.
+A negative control against the unrepaired base source must fail the header and HTTPError cases.
+
+===============================================================================
+7. VALIDATION PLAN
+===============================================================================
+
+Readiness with --check-diff; exact five-path diff; the new transport tests and the complete
+test_market_truth_onchain.py; tests/data_layer/polymarket (WP169 runtime/store); the S10-DEPLOY-01R
+smoke-path regression in tests/deployment; historical scope guards; git diff --check;
+generated-artifact guard; gitleaks; one full suite; exact-head hosted CI. No real network call.
+
+===============================================================================
+8. REPORT-BACK TO SIDE16
+===============================================================================
+
+Return READY_FOR_SIDE16_RPC_TRANSPORT_REPAIR_PR_REVIEW only when every condition holds, else
+STOP_REPAIR_INCOMPLETE:<reason>. Merge authorized: NO.
+
+===============================================================================
+9. SUCCESSOR BOUNDARY
+===============================================================================
+
+After Karl merges, Side16 captures the NEW merge SHA and may issue a fresh S10-DEPLOY-EXEC-01
+Phase-B authorization bound to it (new release, bootstrap, binding, restart, isolated and mixed
+windows with exactly one fresh canonical smoke DB, backup/restore, one reboot); cb82114 evidence is
+diagnostic history only. S10-LIVE-ORCH-01 remains separately gated.
+
+===============================================================================
+10. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|transport|request_headers|every_rpc_request|REQUIRE|fixed_wp169_user_agent_and_json_headers_only|transport.request_headers|R001
+NR002|transport|caller_headers|always|FORBID|no_caller_environment_or_credential_headers|transport.request_headers|R001
+NR003|transport|http_error|non_2xx_response|REQUIRE|status_preserved_then_response_invalid|transport.http_error|R002
+NR004|transport|error_label|http_error_exception|FORBID|network_timeout_relabel|transport.http_error|R002
+NR005|transport|transport_failure|dns_connect_tls_timeout|REQUIRE|network_timeout|transport.transport_failure|R003
+NR006|transport|retry|always|FORBID|no_retry_redirect_or_fallback|transport.transport_failure|R003
+NR007|transport|provider_method|always|PRESERVE_EXACT|drpc_only_and_four_methods|transport.provider_method_boundary|R004
+NR008|authority|host|always|FORBID|no_vps_mutation_or_phase_b_step|authority.no_new_authority|R005
+NR009|authority|live|always|FORBID|no_credentials_account_orders_capital_or_live|authority.no_new_authority|R005
+NR010|publication|ci|exact_head|REQUIRE|all_hosted_jobs_green_on_tested_head|NONE|R007
+END_NORMATIVE_RULE_MATRIX_V1
+
+Evidence Plan (requirement mapping):
+R001 -> fixed-header behavioral test on the real default transport;
+R002 -> HTTPError status preservation, non-2xx rejection and collection-path classification;
+R003 -> genuine transport failures remain NETWORK_TIMEOUT;
+R004 -> success, invalid-JSON, chain-id, provider and method paths unchanged; WP169 tests unedited;
+R005 -> readiness, exact five-path scope, historical guards, diff and secret hygiene;
+R006 -> one authoritative full suite;
+R007 -> exact-head Ready-for-Review publication plus hosted CI.

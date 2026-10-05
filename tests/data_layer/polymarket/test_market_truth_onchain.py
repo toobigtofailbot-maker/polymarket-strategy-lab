@@ -564,3 +564,192 @@ def test_accepted_order_filled_identity_is_stable_across_batching(tmp_path) -> N
     assert distinct_ids == 1  # a single normalized identity (not re-promoted)
     assert occurrences == 2   # both occurrences archived (multiplicity)
     assert raw_rows == 2      # both raw batches archived as evidence
+
+
+# ---------------------------------------------------------------------------
+# S10-DEPLOY-EXEC-01R2: the real default Polygon RPC transport (urlopen intercepted;
+# a socket guard proves no test reaches the network).
+# ---------------------------------------------------------------------------
+
+import inspect
+import io
+import socket
+import ssl
+import urllib.error
+import urllib.request
+
+_DRPC_URL = "https://polygon.drpc.org"
+_CHAIN_OK = json.dumps({"jsonrpc": "2.0", "id": 1, "result": "0x89"}).encode()
+
+
+class _FakeResponse:
+    def __init__(self, status: int, body: bytes, read_error: BaseException | None = None):
+        self.status = status
+        self.headers = {"Content-Type": "application/json"}
+        self._body = body
+        self._read_error = read_error
+
+    def read(self) -> bytes:
+        if self._read_error is not None:
+            raise self._read_error
+        return self._body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+@pytest.fixture
+def no_network(monkeypatch):
+    def refuse(*args, **kwargs):
+        raise AssertionError("real network attempted")
+
+    monkeypatch.setattr(socket.socket, "connect", refuse)
+    monkeypatch.setattr(socket, "create_connection", refuse)
+    monkeypatch.setattr(socket, "getaddrinfo", refuse)
+
+
+def _install_urlopen(monkeypatch, outcome):
+    calls: list[tuple[urllib.request.Request, object]] = []
+
+    def fake_urlopen(request, timeout=None):
+        calls.append((request, timeout))
+        if isinstance(outcome, BaseException):
+            raise outcome
+        return outcome
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    return calls
+
+
+def _http_error(code: int, body: bytes = b'{"error":"denied"}') -> urllib.error.HTTPError:
+    return urllib.error.HTTPError(
+        _DRPC_URL, code, "error", {"Content-Type": "application/json"}, io.BytesIO(body)
+    )
+
+
+def test_default_rpc_transport_sends_only_fixed_wp169_headers(monkeypatch, no_network) -> None:
+    calls = _install_urlopen(monkeypatch, _FakeResponse(200, _CHAIN_OK))
+    body = b'{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}'
+    status, _headers, response = oc._default_rpc_transport(_DRPC_URL, body, 7)
+    assert (status, response) == (200, _CHAIN_OK)
+    assert len(calls) == 1
+    request, timeout = calls[0]
+    assert timeout == 7
+    assert request.get_method() == "POST"
+    assert request.full_url == _DRPC_URL and request.data == body
+    headers = {name.lower(): value for name, value in request.header_items()}
+    assert headers == {
+        "content-type": "application/json",
+        "accept": "application/json",
+        "user-agent": "wp169-public-market-truth/1.0",
+    }
+    assert "authorization" not in headers and "cookie" not in headers
+    # No caller header/credential input surface exists on the transport.
+    assert list(inspect.signature(oc._default_rpc_transport).parameters) == [
+        "url", "body", "timeout_seconds",
+    ]
+
+
+@pytest.mark.parametrize("code", [403, 429, 500, 503])
+def test_default_rpc_transport_preserves_http_error_status(monkeypatch, no_network, code) -> None:
+    _install_urlopen(monkeypatch, _http_error(code))
+    status, headers, response = oc._default_rpc_transport(_DRPC_URL, b"{}", 5)
+    assert status == code
+    assert response == b'{"error":"denied"}'
+    assert headers.get("Content-Type") == "application/json"
+    # The existing _rpc_call non-2xx rule classifies it: RESPONSE_INVALID, never NETWORK_TIMEOUT.
+    _install_urlopen(monkeypatch, _http_error(code))
+    with pytest.raises(mt.MarketTruthError) as excinfo:
+        oc._rpc_call(oc._default_rpc_transport, _DRPC_URL, "eth_chainId", [], 5)
+    assert excinfo.value.code == "RESPONSE_INVALID"
+
+
+def test_http_error_with_unreadable_body_keeps_status(monkeypatch, no_network) -> None:
+    error = _http_error(403)
+
+    def broken_read(*args):
+        raise ConnectionResetError()
+
+    monkeypatch.setattr(error, "read", broken_read)
+    _install_urlopen(monkeypatch, error)
+    status, _headers, response = oc._default_rpc_transport(_DRPC_URL, b"{}", 5)
+    assert (status, response) == (403, b"")
+
+
+def test_non_2xx_body_is_never_accepted_as_jsonrpc_success(monkeypatch, no_network) -> None:
+    # Even a well-formed 0x89 result body is rejected when the HTTP status is non-2xx.
+    _install_urlopen(monkeypatch, _http_error(403, _CHAIN_OK))
+    with pytest.raises(mt.MarketTruthError) as excinfo:
+        oc._rpc_call(oc._default_rpc_transport, _DRPC_URL, "eth_chainId", [], 5)
+    assert excinfo.value.code == "RESPONSE_INVALID"
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        urllib.error.URLError("name resolution failed"),
+        urllib.error.URLError(ConnectionRefusedError()),
+        TimeoutError("timed out"),
+        socket.timeout("timed out"),
+        ssl.SSLError("handshake failure"),
+        OSError("network unreachable"),
+    ],
+)
+def test_genuine_transport_failure_remains_network_timeout(monkeypatch, no_network, failure) -> None:
+    _install_urlopen(monkeypatch, failure)
+    with pytest.raises(mt.MarketTruthError) as excinfo:
+        oc._default_rpc_transport(_DRPC_URL, b"{}", 5)
+    assert excinfo.value.code == "NETWORK_TIMEOUT"
+
+
+def test_timeout_while_reading_2xx_body_remains_network_timeout(monkeypatch, no_network) -> None:
+    _install_urlopen(monkeypatch, _FakeResponse(200, b"", read_error=TimeoutError()))
+    with pytest.raises(mt.MarketTruthError) as excinfo:
+        oc._default_rpc_transport(_DRPC_URL, b"{}", 5)
+    assert excinfo.value.code == "NETWORK_TIMEOUT"
+
+
+def test_default_transport_success_and_invalid_json_paths_unchanged(monkeypatch, no_network) -> None:
+    _install_urlopen(monkeypatch, _FakeResponse(200, _CHAIN_OK))
+    result, raw = oc._rpc_call(oc._default_rpc_transport, _DRPC_URL, "eth_chainId", [], 5)
+    assert result == "0x89" and raw == _CHAIN_OK
+    _install_urlopen(monkeypatch, _FakeResponse(200, b"not-json"))
+    with pytest.raises(mt.MarketTruthError) as excinfo:
+        oc._rpc_call(oc._default_rpc_transport, _DRPC_URL, "eth_chainId", [], 5)
+    assert excinfo.value.code == "RESPONSE_INVALID"
+
+
+def test_collect_with_default_transport_classifies_outcomes(monkeypatch, no_network, tmp_path) -> None:
+    # transport=None selects the real default transport inside the collection path.
+    wrong_chain = json.dumps({"jsonrpc": "2.0", "id": 1, "result": "0x1"}).encode()
+    cases = [
+        (_http_error(403), ("RESPONSE_INVALID",)),
+        (_http_error(429), ("RESPONSE_INVALID",)),
+        (urllib.error.URLError("connect failed"), ("NETWORK_TIMEOUT",)),
+        (_FakeResponse(200, wrong_chain), ("CHAIN_ID_MISMATCH",)),
+    ]
+    for index, (outcome, expected) in enumerate(cases):
+        _install_urlopen(monkeypatch, outcome)
+        with MarketTruthStore(tmp_path / f"r2_{index}.sqlite3") as store:
+            receipt = oc._collect_order_filled_logs("drpc", store, 100, 100, latest_block=200)
+        assert receipt.status == "FAILED" and receipt.error_codes == expected, (index, receipt)
+
+
+def test_provider_and_method_allowlists_unchanged(monkeypatch, no_network) -> None:
+    calls = _install_urlopen(monkeypatch, _FakeResponse(200, _CHAIN_OK))
+    assert oc._RPC_PROVIDERS == {"drpc": _DRPC_URL}
+    assert oc._ALLOWED_METHODS == frozenset(
+        {"eth_chainId", "eth_blockNumber", "eth_getLogs", "eth_getBlockByNumber"}
+    )
+    for provider in ("alchemy", "infura", "https://polygon-rpc.com", "", None):
+        with pytest.raises(mt.MarketTruthError) as excinfo:
+            oc.validate_public_rpc_url(provider)
+        assert excinfo.value.code == "RPC_PROVIDER_FORBIDDEN"
+    for method in ("eth_sendRawTransaction", "eth_sendTransaction", "eth_sign", "personal_sign"):
+        with pytest.raises(mt.MarketTruthError) as excinfo:
+            oc._rpc_call(oc._default_rpc_transport, _DRPC_URL, method, [], 5)
+        assert excinfo.value.code == "RPC_PROVIDER_FORBIDDEN"
+    assert calls == []  # forbidden methods never reach the transport

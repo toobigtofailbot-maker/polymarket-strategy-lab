@@ -651,15 +651,29 @@ def _default_clock() -> str:  # pragma: no cover - wall clock
 
 def _default_rpc_transport(
     url: str, body: bytes, timeout_seconds: int
-) -> tuple[int, Mapping[str, str], bytes]:  # pragma: no cover - network
+) -> tuple[int, Mapping[str, str], bytes]:
+    # Fixed WP169 production headers only (no caller headers). An HTTP error response is
+    # returned as (status, headers, body) so _rpc_call's non-2xx rule classifies it; only a
+    # genuine transport failure (DNS/connect/TLS/socket timeout) is NETWORK_TIMEOUT.
+    import urllib.error
     import urllib.request
 
     request = urllib.request.Request(
         url, data=body, method="POST",
-        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "wp169-public-market-truth/1.0",
+        },
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
             return int(response.status), dict(response.headers), response.read()
+    except urllib.error.HTTPError as error:
+        try:
+            error_body = error.read() or b""
+        except Exception:
+            error_body = b""
+        return int(error.code), dict(error.headers or {}), error_body
     except Exception:
         raise MarketTruthError("NETWORK_TIMEOUT")

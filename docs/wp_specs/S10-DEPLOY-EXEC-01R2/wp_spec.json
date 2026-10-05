@@ -1,0 +1,406 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-DEPLOY-EXEC-01R2",
+    "title": "Polygon RPC Transport Compatibility + Failure-Classification Repair",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PUBLIC_RPC_TRANSPORT_REPAIR",
+    "package_size_class": "S",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 216,
+      "head_sha": "65762fa5e77d5700340dfc60372c77a364521e55",
+      "merge_sha": "cb82114ce13a300b728df049b1db9a24639fdbaf"
+    },
+    "suggested_branch": "claude/s10-deploy-exec-01r2-polygon-rpc-transport-repair",
+    "objective": "Repair the WP169 Polygon public RPC production transport so it uses the already-certified fixed User-Agent and preserves HTTP responses for existing non-2xx handling instead of collapsing HTTPError into NETWORK_TIMEOUT, without changing provider authority, RPC methods, credentials, trading authority, or live/economic behavior. Triggered by S10-DEPLOY-EXEC-01 Phase B on the deployed cb82114 release: a direct eth_chainId request from the same host returned HTTP 200 / 0x89, while the canonical urllib smoke failed twice with an immediate NETWORK_TIMEOUT and zero Polygon raw rows; the other public HTTP and WebSocket surfaces were healthy. Phase B stays suspended.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/status_entries/S10-DEPLOY-EXEC-01R2.md",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01R2/wp_prompt.txt",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01R2/wp_spec.json",
+      "src/data_layer/polymarket/market_truth_onchain.py",
+      "tests/data_layer/polymarket/test_market_truth_onchain.py"
+    ],
+    "allowed_changed_files": [
+      "docs/status_entries/S10-DEPLOY-EXEC-01R2.md",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01R2/wp_prompt.txt",
+      "docs/wp_specs/S10-DEPLOY-EXEC-01R2/wp_spec.json",
+      "src/data_layer/polymarket/market_truth_onchain.py",
+      "tests/data_layer/polymarket/test_market_truth_onchain.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "tools/advisory/",
+      "tools/agent/",
+      "tools/deployment/",
+      "tools/git/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/security/",
+      "tools/wp/"
+    ],
+    "max_changed_files": 5,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert S10-DEPLOY-EXEC-01R2. The Polygon default RPC transport returns to sending no explicit User-Agent and mapping every urllib exception (including HTTPError) to NETWORK_TIMEOUT; the regression tests and repair status/spec artifacts disappear. The provider allowlist, RPC method allowlist, store, runtime, runner, deployment tooling, dependencies and workflows are untouched; no host, store, order or capital state is touched.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "Private default transport behavior only; no public function signature, CLI, store or receipt field changes.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These rules close the repaired Polygon default RPC transport headers, its HTTP-versus-transport failure classification and the unchanged provider/method/authority posture.",
+    "items": [
+      {
+        "path": "transport.request_headers",
+        "source": "CONSTANT",
+        "type": "rpc_transport_rule",
+        "required_rule": "The default Polygon RPC transport sends POST with exactly Content-Type: application/json, Accept: application/json and User-Agent: wp169-public-market-truth/1.0; no caller-supplied, environment-derived, credential, cookie or authorization header; the body is exactly the caller JSON-RPC body.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Behavioral test intercepts urllib.request.urlopen and inspects the real Request object and the transport signature.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed acquisition receipt status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "transport.http_error",
+        "source": "CONSTANT",
+        "type": "rpc_transport_rule",
+        "required_rule": "urllib HTTPError is returned as (status, headers, body) so the existing _rpc_call non-2xx rule yields RESPONSE_INVALID; HTTP 403/429/5xx are never NETWORK_TIMEOUT and a non-2xx body is never accepted as JSON-RPC success.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Behavioral tests with real urllib.error.HTTPError objects through the transport, _rpc_call and the collection path.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed acquisition receipt status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "transport.transport_failure",
+        "source": "CONSTANT",
+        "type": "rpc_transport_rule",
+        "required_rule": "Genuine non-HTTP transport failures (DNS, connect, TLS, socket timeout, other urlopen exception) remain NETWORK_TIMEOUT; no retry, redirect or fallback logic is added.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Behavioral tests with URLError, TimeoutError, socket.timeout, ssl.SSLError and OSError.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed acquisition receipt status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "transport.provider_method_boundary",
+        "source": "CONSTANT",
+        "type": "rpc_transport_rule",
+        "required_rule": "The provider allowlist stays drpc -> https://polygon.drpc.org only and the JSON-RPC method allowlist stays eth_chainId, eth_blockNumber, eth_getLogs, eth_getBlockByNumber; any other provider or method is RPC_PROVIDER_FORBIDDEN before any transport call.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Behavioral test of validate_public_rpc_url and _rpc_call with a transport-call counter.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed acquisition receipt status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.no_new_authority",
+        "source": "CONSTANT",
+        "type": "rpc_transport_rule",
+        "required_rule": "No VPS mutation, diagnostic, smoke, mixed window, backup, restore or reboot; no credential, account, signing, order, capital, live, workflow, dependency, store, runtime, runner or deployment-tooling change; no real network call in tests; Phase B stays suspended until merge and fresh authorization.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exact five-path diff; authority mirror; socket guard in tests; status entry.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed acquisition receipt status or closed error_code",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No content-addressed identity is introduced or changed.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Side16/Karl follow-up 13 authorizes only this bounded repair; merge and Phase-B re-authorization remain separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 5-file scope, rule matrix and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Side16/Karl follow-up 13 authorizes this exact S10-DEPLOY-EXEC-01R2 repair envelope",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside the exact 5-path scope and the focused, guard, readiness and full-suite validation pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "The named offline behavioral regressions against the real default transport are the executable oracle.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R007 cover the fixed headers, HTTPError preservation, genuine transport failures, unchanged success/provider/method paths, readiness/exact scope/hygiene, one full suite and exact-head PR CI.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_default_rpc_transport_sends_only_fixed_wp169_headers",
+        "command": "python -m pytest -q tests/data_layer/polymarket/test_market_truth_onchain.py",
+        "expected_result": "POST to the committed drpc URL with exactly the three fixed headers including User-Agent wp169-public-market-truth/1.0, no authorization/cookie header, exact body, no caller header parameter"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_default_rpc_transport_preserves_http_error_status; test_non_2xx_body_is_never_accepted_as_jsonrpc_success; test_collect_with_default_transport_classifies_outcomes",
+        "command": "python -m pytest -q tests/data_layer/polymarket/test_market_truth_onchain.py",
+        "expected_result": "HTTP 403/429/500/503 return the actual status; _rpc_call and the collection path yield RESPONSE_INVALID, never NETWORK_TIMEOUT; a non-2xx 0x89 body is rejected"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_genuine_transport_failure_remains_network_timeout; test_timeout_while_reading_2xx_body_remains_network_timeout",
+        "command": "python -m pytest -q tests/data_layer/polymarket/test_market_truth_onchain.py",
+        "expected_result": "URLError, TimeoutError, socket.timeout, ssl.SSLError and OSError raise MarketTruthError NETWORK_TIMEOUT"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_default_transport_success_and_invalid_json_paths_unchanged; test_provider_and_method_allowlists_unchanged; existing WP169 onchain/runtime/store tests",
+        "command": "python -m pytest -q tests/data_layer/polymarket",
+        "expected_result": "200 / 0x89 returned unchanged; invalid 2xx JSON RESPONSE_INVALID; wrong chain CHAIN_ID_MISMATCH; other providers and methods RPC_PROVIDER_FORBIDDEN without a transport call; existing WP169 tests pass unedited"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "validation",
+        "test": "readiness, exact scope, historical guards and hygiene",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-DEPLOY-EXEC-01R2/wp_prompt.txt --spec docs/wp_specs/S10-DEPLOY-EXEC-01R2/wp_spec.json --repo-root . --check-diff --base cb82114ce13a300b728df049b1db9a24639fdbaf --head HEAD; git diff --check cb82114ce13a300b728df049b1db9a24639fdbaf HEAD --; gitleaks git",
+        "expected_result": "IMPLEMENTATION_READY on the committed head; exactly the 5 required paths changed; diff and secret scan clean"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "validation",
+        "test": "one authoritative full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "one full suite on the final committed candidate with zero failures"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "github",
+        "test": "Ready-for-Review publication and exact-head hosted CI",
+        "command": "gh pr view --json isDraft,state,headRefOid; gh pr checks --watch",
+        "expected_result": "one OPEN non-draft PR whose head equals the tested head and all hosted CI jobs green on that exact head; merge not performed"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-DEPLOY-EXEC-01",
+    "next_title": "Resume S10-DEPLOY-EXEC-01 Phase B on the NEW merge SHA only after Karl merges this repair and Side16 issues a fresh Phase-B authorization; S10-LIVE-ORCH-01 remains separately gated",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-DEPLOY-EXEC-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "any VPS mutation, diagnostic, smoke, mixed window, binding rewrite, backup/restore or reboot",
+      "widening the RPC provider or method allowlist, retries, redirects or provider fallback",
+      "editing market_truth_store.py, market_truth_runtime.py, market_truth_data_api.py or run_public_market_truth.py",
+      "changing deployment tooling, systemd units, dependencies or workflows",
+      "editing the original WP169, S10-DEPLOY-01 or S10-DEPLOY-EXEC-01 prompt/spec",
+      "real network calls in tests",
+      "credentials, authenticated account access, signing, orders, capital, GateCLivePermit, GateCSession, A3 or live",
+      "S10-LIVE-ORCH-01 work"
+    ]
+  }
+}
