@@ -1022,14 +1022,58 @@ def test_crash_after_cancel_started_resumes_with_new_identity(harness, world, mo
     assert all(a["result"] is not None for a in attempts) and len(harness.venue.posts) == 1
 
 
-def test_unbound_ambiguous_create_converges_only_after_minimum_age(harness, world) -> None:
+def test_unbound_ambiguous_create_is_never_released_by_time_alone(harness, world) -> None:
+    """Transport ambiguity without positive authoritative evidence stays unresolved forever."""
+    assert not hasattr(L, "AMBIGUOUS_CREATE_CONVERGENCE_MIN_AGE_NS")
     permit, intent = make_permit(world)
     harness.venue.on_post = lambda venue, signed: (_ for _ in ()).throw(TimeoutError("timeout"))
+    first = harness.orchestrator().canary(permit, intent)
+    assert first.create_transmits == 1
+    worst = Decimal(harness.ledger()["episodes"][0]["admission"]["worst_case_commitment_usd"])
+    for jump in (121, 3_600, 7 * 86_400):  # far beyond any fixed age, incl. 120 seconds
+        harness.now += jump * 1_000_000_000
+        result = harness.orchestrator().reconcile()
+        assert (result.status, result.code) == ("BLOCKED", "UNRESOLVED_PRIOR_MUTATION")
+        episode = harness.ledger()["episodes"][0]
+        assert episode["state"] == "CREATE_AMBIGUOUS" and episode["create"]["venue_order_id"] is None
+        evaluation = L.evaluate_account(_truth(harness), harness.ledger() | {
+            "restart_reconciliation_required": False})
+        assert "UNRESOLVED_PRIOR_MUTATION" in evaluation.blocking_codes
+        assert evaluation.total_commitment == worst == evaluation.undebited_commitment
+    second, second_intent = make_permit(world, requested_shares="7")
+    harness.now = X.AT + 2_000_000  # back inside the fresh permit window (fake clock only)
+    blocked = harness.orchestrator().canary(second, second_intent)
+    assert blocked.code == "UNRESOLVED_PRIOR_MUTATION" and blocked.create_transmits == 0
+    assert len(harness.venue.posts) == 1 and len(harness.ledger()["episodes"]) == 1
+
+
+def test_unbound_ambiguous_create_resolves_only_on_positive_evidence(harness, world) -> None:
+    permit, intent = make_permit(world, **PASSIVE)
+
+    def lost_response(venue, signed):
+        venue.rest(signed, price="0.51", size="8")  # accepted at the venue ...
+        raise TimeoutError("timeout")  # ... but the response never arrived
+
+    harness.venue.on_post = lost_response
     harness.orchestrator().canary(permit, intent)
-    assert harness.ledger()["episodes"][0]["state"] in ("CREATE_AMBIGUOUS", "RECONCILING")
-    assert harness.orchestrator().reconcile().code == "UNRESOLVED_PRIOR_MUTATION"
-    harness.now += L.AMBIGUOUS_CREATE_CONVERGENCE_MIN_AGE_NS
-    assert harness.orchestrator().reconcile().details["episode_states"] == ["TERMINAL_NO_POSITION"]
+    # The single attributable order is bound, cancelled and reconciled (positive evidence).
+    episode = harness.ledger()["episodes"][0]
+    assert episode["create"]["venue_order_id"] == oid(1)
+    assert episode["state"] == "TERMINAL_NO_POSITION" and len(harness.venue.cancels) == 1
+    # Two plausible candidates block instead of guessing.
+    second, second_intent = make_permit(world, requested_shares="7", **PASSIVE)
+
+    def two_orders(venue, signed):
+        venue.rest(signed, price="0.51", size="7")
+        venue.rest(signed, price="0.5", size="7")
+        raise TimeoutError("timeout")
+
+    harness.venue.on_post = two_orders
+    harness.now = X.AT + 2_000_000  # back inside the fresh permit window (fake clock only)
+    result = harness.orchestrator().canary(second, second_intent)
+    episode = harness.ledger()["episodes"][1]
+    assert episode["state"] == "RECONCILIATION_BLOCKED" and result.create_transmits == 1
+    assert episode["reconciliation"]["block_reason"] == "AMBIGUOUS_CREATE_UNATTRIBUTABLE"
 
 
 def test_preflight_cannot_mutate_and_reconcile_cannot_create(harness, world) -> None:

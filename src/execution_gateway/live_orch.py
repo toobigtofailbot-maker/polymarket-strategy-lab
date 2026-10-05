@@ -99,7 +99,6 @@ MAX_CREATE_PER_CANARY = 1
 PASSIVE_OBSERVATION_MAX_SECONDS = 60
 PASSIVE_POLL_INTERVAL_SECONDS = 1
 MAX_CANCEL_RECONCILE_ROUNDS = 3
-AMBIGUOUS_CREATE_CONVERGENCE_MIN_AGE_NS = 120_000_000_000
 LIVE_ORCH_CONFIRMATION_PHRASE = "CONFIRM-LIVE-ORCH-ONE-BUY-CANARY"
 HOST_CURRENTNESS_SCHEMA_ID = "polymarket-execution-host-currentness"
 HOST_CURRENTNESS_SCHEMA_VERSION = "1.0.0"
@@ -601,22 +600,18 @@ def reconcile_episode_step(
         return new
     create = new["create"]
     venue_order_id = create["venue_order_id"]
-    recon["block_reason"] = None
     if venue_order_id is None:
         candidates = _discover_unattributed_orders(new, truth, attributed_order_ids)
         if len(candidates) > 1:
             return _blocked(new, "AMBIGUOUS_CREATE_UNATTRIBUTABLE")
         if not candidates:
-            if now_ns - int(create["started_time_ns"]) >= AMBIGUOUS_CREATE_CONVERGENCE_MIN_AGE_NS:
-                new["state"] = "TERMINAL_NO_POSITION"
-                recon["order_live"] = False
-                recon["open_remainder_shares"] = "0"
-                _fee_reconciliation(new, truth, confirmed_principal=Decimal(0), concurrent=concurrent)
-            elif state == "RECONCILIATION_BLOCKED":
-                new["state"] = "RECONCILING"
+            # Absence from the current REST snapshot, however long it lasts, is not
+            # positive proof that the possibly transmitted CREATE was never accepted.
+            # The episode stays unresolved with its full worst-case reserve.
             return new
         venue_order_id = candidates.pop()
         create["venue_order_id"] = venue_order_id
+    recon["block_reason"] = None
     order = next(
         (item for item in truth.open_orders if item.venue_order_id == venue_order_id), None
     )

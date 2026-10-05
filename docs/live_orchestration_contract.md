@@ -194,9 +194,11 @@ with a stable order id -> DEFINITIVE_ACCEPTED; recognized venue rejection codes 
 non-acceptance -> DEFINITIVE_REJECTED; everything else, including the venue code `unknown`, a
 `delayed` status or a transport error -> AMBIGUOUS, which reserves the full worst-case commitment
 and blocks new exposure until authoritative reconciliation converges. An unbound ambiguous CREATE
-converges by binding exactly one unattributed order/trade on the episode token, or to
-TERMINAL_NO_POSITION only when none appears for at least 120 seconds after CREATE_STARTED; more than
-one candidate is RECONCILIATION_BLOCKED.
+converges only on positive authoritative evidence: exactly one unattributable order/trade on the
+episode token is bound and reconciled; more than one candidate is RECONCILIATION_BLOCKED. Absence
+alone never releases an unbound ambiguous CREATE: no elapsed time and no empty REST snapshot
+converts it to TERMINAL_NO_POSITION, so it keeps the full worst-case reserve and forbids any new
+CREATE.
 
 ## 13. Passive observation, settlement and cancel recovery
 
