@@ -1926,3 +1926,78 @@ def test_bootstrap_activation_ordering_fails_closed_before_current_switch() -> N
     assert '-m pip install --disable-pip-version-check "$install_source_dir"' in block
     assert "chown" not in block and "polymarket:polymarket" not in block
     assert "o+w" not in text and "g+w" not in text and "a+w" not in text
+
+
+# -- S10-DEPLOY-01R: canonical public-smoke persistent-path repair --
+
+CANONICAL_SMOKE_DB = "/var/lib/polymarket/local_data/polymarket/deploy_smoke.sqlite3"
+
+
+def _canonical_smoke_command() -> str:
+    contract = (ROOT / "docs/research_platform_runtime_baseline_contract.md").read_text(encoding="utf-8")
+    section = contract.split("## Public Smoke And Capacity", 1)[1].split("\n## ", 1)[0]
+    return section.split("```bash", 1)[1].split("```", 1)[0]
+
+
+def test_canonical_smoke_path_bypasses_release_local_data_symlink_under_unchanged_wp169_store(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from src.data_layer.polymarket import market_truth as mt
+    from src.data_layer.polymarket.market_truth_store import MarketTruthStore
+    from tools.polymarket import run_public_market_truth as smoke
+
+    # Governed layout: the bootstrap links the release's local_data to real persistent state.
+    bootstrap = (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text(encoding="utf-8")
+    assert 'ln -s /var/lib/polymarket/local_data "$target_release/local_data"' in bootstrap
+    persistent = tmp_path / "var" / "lib" / "polymarket" / "local_data"
+    (persistent / "polymarket").mkdir(parents=True)
+    release = tmp_path / "opt" / "polymarket" / "releases" / ("a" * 40)
+    release.mkdir(parents=True)
+    try:
+        (release / "local_data").symlink_to(persistent, target_is_directory=True)
+    except OSError:
+        pytest.skip("native symlinks unavailable; proven on Linux and hosted CI")
+    assert (release / "local_data").is_symlink() and not persistent.is_symlink()
+    assert (release / "local_data" / "polymarket").resolve() == (persistent / "polymarket").resolve()
+
+    # The historical release-relative path is rejected by the real, unchanged WP169 store.
+    old = release / "local_data" / "polymarket" / "deploy_smoke.sqlite3"
+    with pytest.raises(mt.MarketTruthError) as excinfo:
+        MarketTruthStore(old)
+    assert excinfo.value.code == "STORE_CONFLICT"
+    assert not old.exists()
+
+    # The direct persistent path under a real parent passes the runner gate and the store.
+    new = persistent / "polymarket" / "deploy_smoke.sqlite3"
+    monkeypatch.setattr(smoke, "_REPO_ROOT", release)
+    monkeypatch.setattr(smoke, "_OUTPUT_ROOT", release / "local_data" / "polymarket")
+    assert smoke._resolve_output(str(new)) == new
+    with MarketTruthStore(new) as store:
+        assert store is not None
+    assert new.is_file() and not new.is_symlink()
+
+    # A symlinked database file is still rejected (store policy unchanged).
+    linked_db = persistent / "polymarket" / "linked_smoke.sqlite3"
+    linked_db.symlink_to(new)
+    with pytest.raises(mt.MarketTruthError) as excinfo:
+        MarketTruthStore(linked_db)
+    assert excinfo.value.code == "STORE_CONFLICT"
+
+
+def test_canonical_contract_uses_direct_persistent_smoke_path() -> None:
+    command = _canonical_smoke_command()
+    tokens = command.replace("\\n", " ").split()
+    assert tokens[:2] == ["python", "tools/polymarket/run_public_market_truth.py"]
+    assert tokens[tokens.index("--output-db") + 1] == CANONICAL_SMOKE_DB
+    for flag, value in (("--duration-seconds", "60"), ("--max-pages", "1")):
+        assert tokens[tokens.index(flag) + 1] == value
+    assert "--allow-network" in tokens and "--discover-active" in tokens
+    assert not any(token in tokens for token in ("--wallet", "--asset-id", "--condition-id"))
+    contract = " ".join(
+        (ROOT / "docs/research_platform_runtime_baseline_contract.md").read_text(encoding="utf-8").split()
+    )
+    assert "--output-db local_data/" not in contract
+    assert "S10-DEPLOY-01R" in contract and "superseded for every future host activation" in contract
+    assert "real directory (not a symlink)" in contract and "store security policy is unchanged" in contract
+    assert "exactly one bounded foreground public smoke" in contract
+    assert "grants no generic output-path authority" in contract

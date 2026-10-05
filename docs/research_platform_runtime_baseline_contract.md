@@ -125,8 +125,21 @@ python tools/polymarket/run_public_market_truth.py \
   --discover-active \
   --duration-seconds 60 \
   --max-pages 1 \
-  --output-db local_data/polymarket/deploy_smoke.sqlite3
+  --output-db /var/lib/polymarket/local_data/polymarket/deploy_smoke.sqlite3
 ```
+
+S10-DEPLOY-01R repairs the output path. The release's `local_data` is a symlink to
+persistent state, and the WP169 market-truth store rejects a symlink at the database
+file or any existing parent, so the historical release-relative invocation
+(`--output-db` under the release's `local_data`) fails closed with `STORE_CONFLICT`
+before network access on a correctly deployed host. That historical invocation is
+superseded for every future host activation; the store security policy is unchanged.
+Before the one smoke, the separately authorized operator must create or verify
+`/var/lib/polymarket/local_data/polymarket` as a real directory (not a symlink) owned
+by and writable by the `polymarket` user with bounded permissions (for example
+`install -d -o polymarket -g polymarket -m 0750`), and the smoke database path itself
+must not be a symlink. This is the only canonical smoke output path; it grants no
+generic output-path authority.
 
 It is unauthenticated, read-only, finite, and not a service. A smoke passes only
 when its actual WP169 receipt is `STOPPED` for `DURATION_EXPIRED`, has an empty
