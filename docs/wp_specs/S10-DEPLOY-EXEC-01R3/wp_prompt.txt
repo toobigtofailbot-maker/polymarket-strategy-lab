@@ -1,0 +1,221 @@
+SIDE16 — S10-DEPLOY-EXEC-01R3
+BOUNDED PUBLIC RPC RESPONSE-BOUND REPAIR UNDER PARENT S10-DEPLOY-EXEC-01
+ADAPTIVE POLYGON eth_getLogs RESPONSE-BOUND CHUNKING REPAIR
+
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Authority owner: Karl / Side16
+Draft status: AUTHORIZED BY SIDE16 FOLLOW-UP 16
+This package authorizes only the repository repair below. It does NOT authorize merge, any VPS
+mutation, any Phase-B step, any network diagnostic, or any successor.
+
+===============================================================================
+0. PACKAGE IDENTITY
+===============================================================================
+
+WP ID: S10-DEPLOY-EXEC-01R3
+Parent WP: S10-DEPLOY-EXEC-01 (repair envelope, not a new roadmap capability or architecture)
+Triggered by: S10-DEPLOY-EXEC-01 Phase B follow-up 15 on the AlphaVPS C8G host
+Title: Adaptive Polygon eth_getLogs Response-Bound Chunking Repair
+Package class: PUBLIC_RPC_RESPONSE_BOUND_REPAIR
+Package size class: S
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Base branch: main
+Frozen base / required current main: b815eedb2ca47b2ab89351e90aaa50d03335149e
+Suggested branch: claude/s10-deploy-exec-01r3-adaptive-polygon-log-chunking
+Exact changed-file budget: 5
+Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+
+Governance track expected: RUNTIME
+Risk level: 3
+Capital at risk: USD 0
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+network: true records that existing public read-only RPC collection behavior is changed; it does
+not authorize any real network call during implementation or testing.
+
+The pull request is created Ready for Review (isDraft=false). Karl merges; the executor never does.
+
+===============================================================================
+1. TRIGGER / OBJECTIVE
+===============================================================================
+
+Trigger (real Phase B, deployed b815eed release): bootstrap, binding, strict currentness, SIGKILL
+restart and the isolated window passed (240 samples, p95 250.084 ms), then the one canonical public
+smoke failed after about 1 s with RESPONSE_TOO_LARGE (raw 9, normalized 110, store_bytes 726660,
+zero Polygon raw rows). Gamma/CLOB/Data HTTP and the WebSocket stored rows normally. The mixed
+window was invalid and coexistence was EXECUTION_HOST_INCONCLUSIVE. Not a C8G capacity failure. The
+R2 transport repair worked: the provider now answers; the next deterministic failure is the
+certified 4 MiB response bound on the 100-block eth_getLogs range.
+
+Defect (src/data_layer/polymarket/market_truth_onchain.py _collect_log_chunk): an eth_getLogs
+response that _rpc_call rejects as RESPONSE_TOO_LARGE becomes a terminal failed receipt; there is
+no subdivision of an oversized range.
+
+Objective: preserve the certified 4 MiB Polygon RPC response cap and 100-block runtime lookback
+while allowing an oversized multi-block eth_getLogs range to complete through deterministic
+left-first bisection into smaller bounded ranges, with single-block oversize remaining terminal and
+no provider, credential, trading, live, dependency or workflow authority change.
+
+Required behavior:
+- eth_getLogs [A, B] RESPONSE_TOO_LARGE with A < B -> mid = floor((A + B) / 2); collect [A, mid]
+  completely, then [mid + 1, B]; recurse only when a child is itself RESPONSE_TOO_LARGE;
+- A == B oversized -> terminal FAILED RESPONSE_TOO_LARGE; the same range is never re-requested;
+- no random, time-dependent or estimated sizing; no probing outside the collection flow; no
+  overlap and no skipped block;
+- every child uses the same rpc closure (rate limiter and shared max_network_calls budget), store,
+  latest_block, limits, parent received_at and shared seen_log_ids; raw cursors encode the actual
+  child range; budget exhaustion keeps the existing STOPPED / NETWORK_CALL_LIMIT;
+- every other error is terminal and never subdivided; no retry of an identical request; no provider
+  fallback;
+- unchanged: max_response_bytes 4,194,304; onchain_lookback_blocks 100; max_block_span 2,000;
+  confirmation depth; chain id 137; drpc only; four-method allowlist; R2 headers and HTTPError /
+  transport-error classification; checkpoint resume, pending-tail replay, reorg invalidation and
+  healing, block hash/timestamp verification, append-only raw evidence, observation identity,
+  PENDING/CONFIRMED finality, receipt/error vocabulary and public signatures;
+- a child failure after earlier children succeeded keeps their append-only evidence and returns the
+  truthful terminal failure; the chain checkpoint is written only after the whole requested range
+  completes, as before.
+
+===============================================================================
+2. STARTUP / STATE GATE
+===============================================================================
+
+git fetch origin main; require origin/main == b815eedb2ca47b2ab89351e90aaa50d03335149e, else
+STOP_REPAIR_BASE_MOVED (no rebase). VPS stays frozen: current b815eed with its binding, telemetry
+and research baseline as is, critical probe disabled/inactive, FU11 forensic and FU12 archived DBs
+and the FU15 failed canonical DB preserved, formal reboot 0; no diagnostic, smoke, mixed window,
+backup, restore or reboot.
+
+===============================================================================
+3. EXACT CHANGED-FILE SCOPE — 5 PATHS
+===============================================================================
+
+- docs/status_entries/S10-DEPLOY-EXEC-01R3.md
+- docs/wp_specs/S10-DEPLOY-EXEC-01R3/wp_prompt.txt
+- docs/wp_specs/S10-DEPLOY-EXEC-01R3/wp_spec.json
+- src/data_layer/polymarket/market_truth_onchain.py
+- tests/data_layer/polymarket/test_market_truth_onchain.py
+
+required_changed_files == allowed_changed_files == exactly these five; max_changed_files 5.
+A sixth required path -> STOP_REPAIR_INCOMPLETE:SIXTH_PATH_REQUIRED.
+
+===============================================================================
+4. AUTHORITY / NON-AUTHORITY
+===============================================================================
+
+Authority: change only the Polygon eth_getLogs chunk collection in market_truth_onchain.py, add
+offline behavioral regressions, and the three repair governance artifacts. Protected boundary
+groups per docs/ai/codex/PROTECTED_PATHS.md (Centralized Boundary Group Reference) are not crossed.
+
+Non-authority: no change to market_truth.py, market_truth_store.py, market_truth_runtime.py,
+market_truth_data_api.py, tools/polymarket/run_public_market_truth.py, deployment tooling,
+bootstrap, systemd units, dependencies, workflows, the original WP169 / S10-DEPLOY-01 /
+S10-DEPLOY-EXEC-01 prompts/specs, the provider list, the RPC method list, the response cap, the
+lookback default or the max block span; no retry of an identical request and no provider fallback;
+no real network call in tests; no VPS mutation; no credentials, authenticated account access,
+signing, orders, capital or live. Workflow network only: git fetch/push, PR publication and
+hosted-CI observation.
+
+===============================================================================
+5. HARD STOPS
+===============================================================================
+
+Stop and report (do not widen) if: origin/main moved; a sixth path is required (including a
+draftability certificate); a historical guard would need editing; existing WP169 tests would need
+to change; any VPS or Phase-B action would be required; exact-head hosted CI is not green.
+
+===============================================================================
+6. NEGATIVE-TEST MATRIX
+===============================================================================
+
+All cases use an injected offline transport and a socket guard that fails on any real connection,
+with AcquisitionLimits(max_response_bytes=4000):
+- parent 100-103 oversized -> 100-101 then 102-103; OK; cursors name the child ranges;
+- 100-107 and 100-103 oversized -> 100-107, 100-103, 100-101, 102-103, 104-107 exactly;
+- response of exactly max_response_bytes -> unsplit normal path;
+- response of max_response_bytes + 1 -> split;
+- 100-100 oversized -> FAILED RESPONSE_TOO_LARGE, one request only;
+- 100-101 oversized then 100-100 oversized -> FAILED, right child never requested;
+- NETWORK_TIMEOUT, HTTP 500/429 (RESPONSE_INVALID) and invalid JSON -> terminal, never split;
+- wrong chain id -> CHAIN_ID_MISMATCH with no eth_getLogs request;
+- provider other than drpc or an unauthorized method -> RPC_PROVIDER_FORBIDDEN, no transport call;
+- all children share the rpc closure, store, limits, latest_block, received_at and seen_log_ids; a
+  duplicated accepted log is promoted once;
+- parent oversized, left OK, right HTTP 500 -> FAILED; checkpoint unchanged; left raw evidence kept;
+- every child call is acquired by the rate limiter; a shared budget of 5 calls through the runtime
+  RPC pass stops before the right child with STOPPED / NETWORK_CALL_LIMIT and no checkpoint;
+- frozen bounds: 4 MiB cap, 2,000 max span, 100-block lookback (runtime config and CLI default).
+A negative control against the unrepaired base source must fail the split-specific cases while the
+preserved-behavior cases keep passing.
+
+===============================================================================
+7. VALIDATION PLAN
+===============================================================================
+
+Readiness with --check-diff; exact five-path diff; the complete test_market_truth_onchain.py;
+tests/data_layer/polymarket (WP169 runtime/store); tests/deployment including the smoke-path
+regression; historical scope guards; git diff --check; generated-artifact guard; gitleaks; one full
+suite; exact-head hosted CI. No real network call.
+
+===============================================================================
+8. REPORT-BACK TO SIDE16
+===============================================================================
+
+Return READY_FOR_SIDE16_ADAPTIVE_RPC_CHUNKING_REPAIR_PR_REVIEW only when every condition holds,
+else STOP_REPAIR_INCOMPLETE:<reason>. Merge authorized: NO.
+
+===============================================================================
+9. SUCCESSOR BOUNDARY
+===============================================================================
+
+After Karl merges, Side16 captures the NEW merge SHA and may issue a fresh S10-DEPLOY-EXEC-01
+Phase-B authorization bound to it (new release, bootstrap, FU15 DB archival with hash preservation,
+binding, restart, isolated and mixed windows with exactly one fresh canonical smoke DB,
+backup/restore, one reboot); b815eed evidence is diagnostic history only. S10-LIVE-ORCH-01 remains
+separately gated.
+
+===============================================================================
+10. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|chunking|oversized_range|multi_block_response_too_large|REQUIRE|deterministic_left_first_bisection|chunking.oversized_split|R001
+NR002|chunking|single_block|one_block_response_too_large|REQUIRE|terminal_response_too_large|chunking.single_block_terminal|R002
+NR003|chunking|other_errors|non_size_error|FORBID|range_subdivision_or_identical_retry|chunking.non_size_errors|R002
+NR004|chunking|shared_state|every_child_range|REQUIRE|same_rpc_budget_store_received_at_and_seen_log_ids|chunking.shared_state|R003
+NR005|chunking|checkpoint|child_failure|FORBID|checkpoint_advance_beyond_completed_range|chunking.shared_state|R003
+NR006|bounds|frozen_limits|always|PRESERVE_EXACT|cap_4mib_lookback_100_span_2000|bounds.frozen_limits|R004
+NR007|bounds|provider_method|always|PRESERVE_EXACT|drpc_only_and_four_methods|bounds.frozen_limits|R004
+NR008|authority|host|always|FORBID|no_vps_mutation_or_phase_b_step|authority.no_new_authority|R005
+NR009|authority|live|always|FORBID|no_credentials_account_orders_capital_or_live|authority.no_new_authority|R005
+NR010|publication|ci|exact_head|REQUIRE|all_hosted_jobs_green_on_tested_head|NONE|R007
+END_NORMATIVE_RULE_MATRIX_V1
+
+Evidence Plan (requirement mapping):
+R001 -> one split, nested split and cap+1 split behavioral tests;
+R002 -> exact-cap unsplit, single-block terminal and non-size errors unsplit;
+R003 -> shared state / dedupe, child-failure checkpoint and rate-limiter / budget tests;
+R004 -> frozen bounds, provider and method authority; WP169 tests unedited;
+R005 -> readiness, exact five-path scope, historical guards, diff and secret hygiene;
+R006 -> one authoritative full suite;
+R007 -> exact-head Ready-for-Review publication plus hosted CI.

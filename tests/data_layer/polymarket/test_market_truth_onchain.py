@@ -753,3 +753,343 @@ def test_provider_and_method_allowlists_unchanged(monkeypatch, no_network) -> No
             oc._rpc_call(oc._default_rpc_transport, _DRPC_URL, method, [], 5)
         assert excinfo.value.code == "RPC_PROVIDER_FORBIDDEN"
     assert calls == []  # forbidden methods never reach the transport
+
+
+# ---------------------------------------------------------------------------
+# S10-DEPLOY-EXEC-01R3: an oversized multi-block eth_getLogs range is deterministically
+# bisected left-first under the unchanged response cap (offline injected transport only).
+# ---------------------------------------------------------------------------
+
+import pathlib
+
+from src.data_layer.polymarket.market_truth_data_api import RateLimiter
+from src.data_layer.polymarket.market_truth_runtime import _rpc_pass
+
+_R3_CAP = 4000
+_R3_LATEST = 300
+_R3_FILTER = ((oc.CTF_EXCHANGE_V2, oc.NEGRISK_CTF_EXCHANGE_V2), (oc.ORDER_FILLED_V2_TOPIC,))
+
+
+def _r3_body(result, length: int | None = None) -> bytes:
+    document = {"jsonrpc": "2.0", "id": 1, "result": result}
+    if length is None:
+        return json.dumps(document).encode()
+    document["pad"] = ""
+    pad = length - len(json.dumps(document).encode())
+    assert pad >= 0
+    document["pad"] = "x" * pad
+    body = json.dumps(document).encode()
+    assert len(body) == length
+    return body
+
+
+def _r3_log(block: int, tx: str) -> dict:
+    log = _log(block=hex(block), bhash="0x" + "a" * 64)
+    log["transactionHash"] = "0x" + tx * 64
+    return log
+
+
+class _SplitRpc:
+    """eth_getLogs answers are keyed by the exact inclusive range: a response padded to an
+    exact byte length, a failure (an exception or a non-2xx status), or the logs in range."""
+
+    def __init__(self, logs_by_block=None, sized=None, failures=None, chain="0x89"):
+        self.logs_by_block = logs_by_block or {}
+        self.sized = sized or {}
+        self.failures = failures or {}
+        self.chain = chain
+        self.ranges: list[tuple[int, int]] = []
+        self.getlogs_filters: list[tuple[tuple[str, ...], tuple[str, ...]]] = []
+        self.methods: list[str] = []
+
+    def __call__(self, url, body, timeout):
+        assert url == _DRPC_URL
+        req = json.loads(body)
+        method = req["method"]
+        self.methods.append(method)
+        if method == "eth_chainId":
+            return (200, {}, _r3_body(self.chain))
+        if method == "eth_blockNumber":
+            return (200, {}, _r3_body(hex(_R3_LATEST)))
+        if method == "eth_getLogs":
+            params = req["params"][0]
+            span = (int(params["fromBlock"], 16), int(params["toBlock"], 16))
+            self.ranges.append(span)
+            self.getlogs_filters.append((tuple(params["address"]), tuple(params["topics"])))
+            if span in self.failures:
+                failure = self.failures[span]
+                if isinstance(failure, BaseException):
+                    raise failure
+                if failure == "invalid-json":
+                    return (200, {}, b"{not json")
+                return (failure, {}, b'{"error":"denied"}')
+            logs = [
+                log for block in range(span[0], span[1] + 1)
+                for log in self.logs_by_block.get(block, [])
+            ]
+            return (200, {}, _r3_body(logs, self.sized.get(span)))
+        if method == "eth_getBlockByNumber":
+            bn = int(req["params"][0], 16)
+            return (200, {}, _r3_body(
+                {"number": hex(bn), "hash": "0x" + "a" * 64, "timestamp": hex(1720000000)}
+            ))
+        raise AssertionError(method)
+
+
+def _r3_limits(**overrides) -> mt.AcquisitionLimits:
+    return mt.AcquisitionLimits(max_response_bytes=_R3_CAP, **overrides)
+
+
+def _r3_collect(store, rpc, from_block=100, to_block=103, **kwargs):
+    limits = kwargs.pop("limits", _r3_limits())
+    return oc._collect_order_filled_logs(
+        "drpc", store, from_block, to_block, latest_block=_R3_LATEST,
+        transport=rpc, clock=lambda: RECEIVED, limits=limits, **kwargs,
+    )
+
+
+def _r3_cursors(store) -> list[str]:
+    return [row[0] for row in store._require().execute(
+        "SELECT source_cursor FROM raw_occurrences WHERE source_kind='POLYGON'"
+        " ORDER BY archive_sequence"
+    )]
+
+
+def _r3_accepted(store) -> tuple[int, int]:
+    conn = store._require()
+    rows = conn.execute(
+        "SELECT COUNT(*), COUNT(DISTINCT observation_id) FROM normalized_occurrences"
+        " WHERE source_kind='POLYGON' AND status='ACCEPTED'"
+    ).fetchone()
+    return rows[0], rows[1]
+
+
+def _r3_cursor(lo: int, hi: int) -> str:
+    return f"rpc:eth_getLogs:blocks:{lo}-{hi}:attempt:0"
+
+
+def test_r3_frozen_bounds_unchanged() -> None:
+    from tools.polymarket import run_public_market_truth as smoke
+
+    limits = mt.AcquisitionLimits()
+    assert limits.max_response_bytes == 4_194_304
+    assert oc._LIMIT_DEFAULT_MAX_RESPONSE_BYTES == 4_194_304
+    assert limits.max_block_span == 2_000
+    assert limits.confirmation_depth == 64
+    assert limits.max_network_calls == 1_000
+    assert mt.MarketTruthRuntimeConfig(output_db=pathlib.Path("x")).onchain_lookback_blocks == 100
+    assert smoke._build_parser().parse_args(["--output-db", "x"]).onchain_lookback_blocks == 100
+    assert oc._RPC_PROVIDERS == {"drpc": _DRPC_URL}
+    assert oc._ALLOWED_METHODS == frozenset(
+        {"eth_chainId", "eth_blockNumber", "eth_getLogs", "eth_getBlockByNumber"}
+    )
+
+
+def test_r3_one_oversized_split_collects_left_then_right(tmp_path, no_network) -> None:
+    rpc = _SplitRpc(
+        logs_by_block={100: [_r3_log(100, "b")], 102: [_r3_log(102, "c")]},
+        sized={(100, 103): _R3_CAP + 1},
+    )
+    with MarketTruthStore(tmp_path / "r3_one.sqlite3", _r3_limits()) as store:
+        receipt = _r3_collect(store, rpc)
+        cursors = _r3_cursors(store)
+        accepted = _r3_accepted(store)
+        checkpoint = json.loads(store.load_checkpoint(oc.CHAIN_CHECKPOINT_KEY).value_json)
+    assert receipt.status == "OK" and receipt.error_codes == (), receipt
+    assert rpc.ranges == [(100, 103), (100, 101), (102, 103)]
+    assert rpc.methods[:3] == ["eth_chainId", "eth_getLogs", "eth_getLogs"]
+    covered = [block for lo, hi in rpc.ranges[1:] for block in range(lo, hi + 1)]
+    assert covered == list(range(100, 104))  # no gap, no overlap
+    assert cursors == [_r3_cursor(100, 101), _r3_cursor(102, 103)]
+    assert accepted == (2, 2)
+    assert checkpoint["last_verified_block"] == 103
+    # Same provider, method, exchange addresses and OrderFilled topic for every child.
+    assert set(rpc.getlogs_filters) == {_R3_FILTER}
+
+
+def test_r3_nested_split_is_deterministic_left_first(tmp_path, no_network) -> None:
+    rpc = _SplitRpc(
+        logs_by_block={101: [_r3_log(101, "b")], 106: [_r3_log(106, "c")]},
+        sized={(100, 107): _R3_CAP + 1, (100, 103): _R3_CAP + 1},
+    )
+    with MarketTruthStore(tmp_path / "r3_nested.sqlite3", _r3_limits()) as store:
+        receipt = _r3_collect(store, rpc, 100, 107)
+        cursors = _r3_cursors(store)
+        accepted = _r3_accepted(store)
+    assert receipt.status == "OK", receipt
+    assert rpc.ranges == [(100, 107), (100, 103), (100, 101), (102, 103), (104, 107)]
+    assert cursors == [_r3_cursor(100, 101), _r3_cursor(102, 103), _r3_cursor(104, 107)]
+    assert accepted == (2, 2)
+
+
+@pytest.mark.parametrize(
+    ("length", "expected_ranges", "expected_cursors"),
+    [
+        (_R3_CAP, [(100, 103)], [_r3_cursor(100, 103)]),
+        (_R3_CAP + 1, [(100, 103), (100, 101), (102, 103)], [_r3_cursor(100, 101), _r3_cursor(102, 103)]),
+    ],
+)
+def test_r3_exact_cap_stays_unsplit_and_cap_plus_one_splits(
+    tmp_path, no_network, length, expected_ranges, expected_cursors
+) -> None:
+    rpc = _SplitRpc(logs_by_block={100: [_r3_log(100, "b")]}, sized={(100, 103): length})
+    with MarketTruthStore(tmp_path / f"r3_bound_{length}.sqlite3", _r3_limits()) as store:
+        receipt = _r3_collect(store, rpc)
+        cursors = _r3_cursors(store)
+        accepted = _r3_accepted(store)
+    assert receipt.status == "OK", receipt
+    assert rpc.ranges == expected_ranges
+    assert cursors == expected_cursors
+    assert accepted == (1, 1)
+
+
+def test_r3_single_block_oversize_is_terminal(tmp_path, no_network) -> None:
+    rpc = _SplitRpc(sized={(100, 100): _R3_CAP + 1})
+    with MarketTruthStore(tmp_path / "r3_single.sqlite3", _r3_limits()) as store:
+        receipt = _r3_collect(store, rpc, 100, 100)
+        cursors = _r3_cursors(store)
+        checkpoint = store.load_checkpoint(oc.CHAIN_CHECKPOINT_KEY)
+    assert receipt.status == "FAILED" and receipt.error_codes == ("RESPONSE_TOO_LARGE",)
+    assert rpc.ranges == [(100, 100)]  # the same range is never requested again
+    assert cursors == [] and checkpoint is None
+
+
+def test_r3_single_block_oversize_inside_split_stops_before_right(tmp_path, no_network) -> None:
+    rpc = _SplitRpc(sized={(100, 101): _R3_CAP + 1, (100, 100): _R3_CAP + 1})
+    with MarketTruthStore(tmp_path / "r3_single_child.sqlite3", _r3_limits()) as store:
+        receipt = _r3_collect(store, rpc, 100, 101)
+        checkpoint = store.load_checkpoint(oc.CHAIN_CHECKPOINT_KEY)
+    assert receipt.status == "FAILED" and receipt.error_codes == ("RESPONSE_TOO_LARGE",)
+    assert rpc.ranges == [(100, 101), (100, 100)]
+    assert checkpoint is None
+
+
+@pytest.mark.parametrize(
+    ("failure", "expected"),
+    [
+        (mt.MarketTruthError("NETWORK_TIMEOUT"), ("NETWORK_TIMEOUT",)),
+        (500, ("RESPONSE_INVALID",)),
+        (429, ("RESPONSE_INVALID",)),
+        ("invalid-json", ("RESPONSE_INVALID",)),
+    ],
+    ids=["network-timeout", "http-500", "http-429", "invalid-json"],
+)
+def test_r3_non_size_errors_are_not_subdivided(tmp_path, no_network, failure, expected) -> None:
+    rpc = _SplitRpc(failures={(100, 103): failure})
+    with MarketTruthStore(tmp_path / "r3_error.sqlite3", _r3_limits()) as store:
+        receipt = _r3_collect(store, rpc)
+        checkpoint = store.load_checkpoint(oc.CHAIN_CHECKPOINT_KEY)
+    assert receipt.status == "FAILED" and receipt.error_codes == expected
+    assert rpc.ranges == [(100, 103)]
+    assert checkpoint is None
+
+
+def test_r3_chain_id_mismatch_issues_no_log_request(tmp_path, no_network) -> None:
+    rpc = _SplitRpc(chain="0x1", sized={(100, 103): _R3_CAP + 1})
+    with MarketTruthStore(tmp_path / "r3_chain.sqlite3", _r3_limits()) as store:
+        receipt = _r3_collect(store, rpc)
+    assert receipt.status == "FAILED" and receipt.error_codes == ("CHAIN_ID_MISMATCH",)
+    assert rpc.ranges == []
+
+
+def test_r3_provider_and_method_authority_unchanged(tmp_path, no_network) -> None:
+    rpc = _SplitRpc(sized={(100, 103): _R3_CAP + 1})
+    with MarketTruthStore(tmp_path / "r3_provider.sqlite3", _r3_limits()) as store:
+        for provider in ("alchemy", "infura", "https://polygon-rpc.com"):
+            with pytest.raises(mt.MarketTruthError) as excinfo:
+                oc._collect_order_filled_logs(
+                    provider, store, 100, 103, latest_block=_R3_LATEST, transport=rpc,
+                    limits=_r3_limits(),
+                )
+            assert excinfo.value.code == "RPC_PROVIDER_FORBIDDEN"
+    for method in ("eth_sendRawTransaction", "eth_call", "eth_getTransactionReceipt"):
+        with pytest.raises(mt.MarketTruthError) as excinfo:
+            oc._rpc_call(rpc, _DRPC_URL, method, [], 5, _R3_CAP)
+        assert excinfo.value.code == "RPC_PROVIDER_FORBIDDEN"
+    assert rpc.methods == []  # nothing reached the transport
+
+
+def test_r3_subdivision_shares_rpc_store_received_at_and_seen_log_ids(
+    tmp_path, no_network, monkeypatch
+) -> None:
+    calls = []
+    original = oc._collect_log_chunk
+
+    def spy(rpc, store, chunk_from, chunk_to, latest_block, active, received_at, seen_log_ids):
+        calls.append((rpc, store, chunk_from, chunk_to, latest_block, active, received_at, seen_log_ids))
+        return original(rpc, store, chunk_from, chunk_to, latest_block, active, received_at, seen_log_ids)
+
+    monkeypatch.setattr(oc, "_collect_log_chunk", spy)
+    duplicate = _r3_log(100, "b")
+    # The same accepted log (same source_log_id) is returned inside both child responses.
+    rpc = _SplitRpc(
+        logs_by_block={100: [duplicate], 102: [duplicate]}, sized={(100, 103): _R3_CAP + 1},
+    )
+    with MarketTruthStore(tmp_path / "r3_shared.sqlite3", _r3_limits()) as store:
+        receipt = _r3_collect(store, rpc)
+        cursors = _r3_cursors(store)
+        accepted = _r3_accepted(store)
+    assert receipt.status == "OK", receipt
+    assert [(call[2], call[3]) for call in calls] == [(100, 103), (100, 101), (102, 103)]
+    first = calls[0]
+    for call in calls[1:]:
+        assert call[0] is first[0]  # the same rate-limited rpc closure
+        assert call[1] is first[1] and call[5] is first[5]
+        assert call[4] == first[4] == _R3_LATEST and call[6] == first[6] == RECEIVED
+        assert call[7] is first[7]  # one shared seen_log_ids set
+    assert len(first[7]) == 1
+    assert cursors == [_r3_cursor(100, 101), _r3_cursor(102, 103)]  # both raws archived
+    assert accepted == (1, 1)  # the duplicate is not promoted twice
+
+
+def test_r3_child_failure_does_not_advance_checkpoint(tmp_path, no_network) -> None:
+    with MarketTruthStore(tmp_path / "r3_ckpt.sqlite3", _r3_limits()) as store:
+        assert _r3_collect(store, _SplitRpc(), 90, 99).status == "OK"
+        before = json.loads(store.load_checkpoint(oc.CHAIN_CHECKPOINT_KEY).value_json)
+        rpc = _SplitRpc(
+            logs_by_block={100: [_r3_log(100, "b")]},
+            sized={(100, 103): _R3_CAP + 1},
+            failures={(102, 103): 500},
+        )
+        receipt = _r3_collect(store, rpc, 100, 103)
+        after = json.loads(store.load_checkpoint(oc.CHAIN_CHECKPOINT_KEY).value_json)
+        cursors = _r3_cursors(store)
+        accepted = _r3_accepted(store)
+    assert receipt.status == "FAILED" and receipt.error_codes == ("RESPONSE_INVALID",)
+    assert rpc.ranges == [(100, 103), (100, 101), (102, 103)]
+    assert before["last_verified_block"] == 99
+    assert after == before  # the parent range is not claimed as verified
+    assert cursors[-1] == _r3_cursor(100, 101)  # left evidence stays append-only
+    assert accepted == (1, 1)
+
+
+def _r3_limiter(limits: mt.AcquisitionLimits) -> RateLimiter:
+    ticks = iter(range(0, 1_000_000, 10))
+    return RateLimiter(limits, monotonic=lambda: float(next(ticks)), sleeper=lambda delay: None)
+
+
+def test_r3_subdivision_uses_rate_limited_rpc_and_shared_budget(tmp_path, no_network) -> None:
+    limits = _r3_limits()
+    limiter = _r3_limiter(limits)
+    rpc = _SplitRpc(sized={(100, 103): _R3_CAP + 1})
+    with MarketTruthStore(tmp_path / "r3_limiter.sqlite3", limits) as store:
+        receipt = _r3_collect(store, rpc, rate_limiter=limiter, limits=limits)
+    assert receipt.status == "OK", receipt
+    assert rpc.ranges == [(100, 103), (100, 101), (102, 103)]
+    assert limiter.network_calls == len(rpc.methods)  # every child call was acquired
+
+    # Runtime seam: chainId, blockNumber, chainId, parent getLogs and left getLogs use the
+    # whole shared budget of 5; the right child is refused -> frozen STOPPED/NETWORK_CALL_LIMIT.
+    budget = _r3_limits(max_network_calls=5)
+    limiter = _r3_limiter(budget)
+    rpc = _SplitRpc(sized={(100, 103): _R3_CAP + 1})
+    config = mt.MarketTruthRuntimeConfig(
+        output_db=tmp_path / "r3_budget.sqlite3", from_block=100, to_block=103,
+    )
+    with MarketTruthStore(tmp_path / "r3_budget.sqlite3", budget) as store:
+        receipt = _rpc_pass(store, config, budget, rpc, lambda: RECEIVED, limiter)
+        checkpoint = store.load_checkpoint(oc.CHAIN_CHECKPOINT_KEY)
+    assert receipt.status == "STOPPED" and receipt.stop_reason == "NETWORK_CALL_LIMIT", receipt
+    assert rpc.ranges == [(100, 103), (100, 101)]
+    assert limiter.network_calls == 5
+    assert checkpoint is None
