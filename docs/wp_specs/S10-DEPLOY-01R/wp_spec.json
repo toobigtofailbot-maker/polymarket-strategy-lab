@@ -1,0 +1,393 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-DEPLOY-01R",
+    "title": "Canonical Public-Smoke Persistent-Path Repair",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "RESEARCH_SMOKE_PATH_CONTRACT_REPAIR",
+    "package_size_class": "S",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 215,
+      "head_sha": "35c0295cc99bf101acabd77c97423d4ffb6bf3b5",
+      "merge_sha": "cbdff8ccdce36d1fc51eda45d4f8140c80932931"
+    },
+    "suggested_branch": "claude/s10-deploy-01r-public-smoke-path-repair",
+    "objective": "Repair only the canonical post-merge DEPLOY-01 public-smoke output path so the smoke writes directly to governed persistent state without traversing the release local_data symlink, while preserving WP169 symlink rejection and every existing network/authority/capacity boundary. Triggered by S10-DEPLOY-EXEC-01 Phase B on the deployed cbdff8c release, where the canonical relative --output-db local_data/polymarket/deploy_smoke.sqlite3 returned FAILED [STORE_CONFLICT] before any network fetch. Canonical output-db becomes /var/lib/polymarket/local_data/polymarket/deploy_smoke.sqlite3 under a real non-symlink polymarket-owned parent. No store, source-runtime or tool change; Phase B stays suspended.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/research_platform_runtime_baseline_contract.md",
+      "docs/status_entries/S10-DEPLOY-01R.md",
+      "docs/wp_specs/S10-DEPLOY-01R/wp_prompt.txt",
+      "docs/wp_specs/S10-DEPLOY-01R/wp_spec.json",
+      "tests/deployment/test_runtime_baseline.py"
+    ],
+    "allowed_changed_files": [
+      "docs/research_platform_runtime_baseline_contract.md",
+      "docs/status_entries/S10-DEPLOY-01R.md",
+      "docs/wp_specs/S10-DEPLOY-01R/wp_prompt.txt",
+      "docs/wp_specs/S10-DEPLOY-01R/wp_spec.json",
+      "tests/deployment/test_runtime_baseline.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/",
+      "tools/advisory/",
+      "tools/agent/",
+      "tools/deployment/",
+      "tools/git/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/security/",
+      "tools/wp/"
+    ],
+    "max_changed_files": 5,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert S10-DEPLOY-01R. The DEPLOY-01 contract returns to the release-relative smoke output path (known to fail closed with STORE_CONFLICT on a governed host) and the regression and repair status/spec artifacts disappear. src/, tools/, the WP169 store, bootstrap, systemd units, dependencies and workflows are untouched; no host, store, order or capital state is touched.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "Canonical contract and regression only; no CLI, store, runner or product API changes.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "These rules close the repaired canonical smoke path, its real-parent precondition and the unchanged WP169 store and authority posture.",
+    "items": [
+      {
+        "path": "contract.smoke_output_db",
+        "source": "CONSTANT",
+        "type": "smoke_path_contract_rule",
+        "required_rule": "The canonical smoke --output-db is exactly /var/lib/polymarket/local_data/polymarket/deploy_smoke.sqlite3; the historical release-relative invocation is superseded for future host activation; exactly one public unauthenticated finite foreground 60-second max-pages-1 smoke per separately authorized activation attempt in the research slice; no generic output-path authority.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Contract command regression parses the bash block and asserts the exact output-db value and preserved bounds.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed smoke receipt status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "contract.smoke_parent",
+        "source": "CONSTANT",
+        "type": "smoke_path_contract_rule",
+        "required_rule": "Before the smoke /var/lib/polymarket/local_data/polymarket exists as a real directory (not a symlink) owned and writable by the polymarket user with bounded permissions, and the smoke database path is not a symlink.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Contract regression asserts the precondition text; behavioral regression uses a real non-symlink parent.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed smoke receipt status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "store.symlink_policy",
+        "source": "CONSTANT",
+        "type": "smoke_path_contract_rule",
+        "required_rule": "The WP169 MarketTruthStore keeps rejecting a symlink at the database file or any existing parent with STORE_CONFLICT; src/ and tools/polymarket/ are unchanged.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Behavioral regression with the real store: release-relative path via the local_data symlink and a symlinked DB file are rejected; existing WP169 store tests pass unedited.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed smoke receipt status or closed error_code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.no_new_authority",
+        "source": "CONSTANT",
+        "type": "smoke_path_contract_rule",
+        "required_rule": "No VPS mutation, smoke, mixed window, backup, restore or reboot; no credential, account, signing, order, capital, live, workflow, dependency, src/ or tools/ change; Phase B stays suspended until merge and fresh authorization.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exact five-path diff; authority mirror; status entry.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed smoke receipt status or closed error_code",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No content-addressed identity is introduced or changed.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Side16/Karl follow-up 09 authorizes only this bounded repair; merge and Phase-B re-authorization remain separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact prompt/spec authority mirror, 5-file scope, rule matrix and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Side16/Karl follow-up 09 authorizes this exact S10-DEPLOY-01R repair envelope",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays inside the exact 5-path scope and the focused, guard, readiness and full-suite validation pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "The named deployment regressions with the real WP169 store are the executable oracle.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R007 cover old-path rejection and new-path acceptance with the real store, the canonical contract command, the unchanged WP169 store tests, Linux execution, readiness/exact scope/hygiene, one full suite and exact-head PR CI.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_canonical_smoke_path_bypasses_release_local_data_symlink_under_unchanged_wp169_store",
+        "command": "python -m pytest -q tests/deployment/test_runtime_baseline.py",
+        "expected_result": "release local_data is a symlink to real persistent state; the release-relative DB path is STORE_CONFLICT and creates no file; the direct persistent path passes the runner output gate and initializes the store; a symlinked DB file stays STORE_CONFLICT; no network"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_canonical_contract_uses_direct_persistent_smoke_path",
+        "command": "python -m pytest -q tests/deployment/test_runtime_baseline.py",
+        "expected_result": "the contract bash command uses the exact absolute output-db with 60 s and max-pages 1, no release-relative --output-db remains, and the supersession, real-parent and no-generic-authority text is present"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "existing WP169 store tests",
+        "command": "python -m pytest -q tests/data_layer/polymarket/test_market_truth_models_store.py tests/data_layer/polymarket/test_market_truth_runtime.py",
+        "expected_result": "all pass with no edit to WP169 store code or tests"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "validation",
+        "test": "Linux execution of the symlink regression",
+        "command": "python -m pytest -q tests/deployment (Linux container and hosted CI)",
+        "expected_result": "the symlink regression executes (not skipped) and passes on Linux"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "validation",
+        "test": "readiness, exact scope, historical guards and hygiene",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-DEPLOY-01R/wp_prompt.txt --spec docs/wp_specs/S10-DEPLOY-01R/wp_spec.json --repo-root . --check-diff --base cbdff8ccdce36d1fc51eda45d4f8140c80932931 --head HEAD; git diff --check cbdff8ccdce36d1fc51eda45d4f8140c80932931 HEAD --; gitleaks git",
+        "expected_result": "IMPLEMENTATION_READY on the committed head; exactly the 5 required paths changed; diff and secret scan clean"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "validation",
+        "test": "one authoritative full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "one full suite on the final committed candidate with zero failures"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "github",
+        "test": "Ready-for-Review publication and exact-head hosted CI",
+        "command": "gh pr view --json isDraft,state,headRefOid; gh pr checks --watch",
+        "expected_result": "one OPEN non-draft PR whose head equals the tested head and all hosted CI jobs green on that exact head; merge not performed"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-DEPLOY-EXEC-01",
+    "next_title": "Resume S10-DEPLOY-EXEC-01 Phase B on the NEW merge SHA only after Karl merges this repair and Side16 issues a fresh Phase-B authorization; S10-LIVE-ORCH-01 remains separately gated",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-DEPLOY-EXEC-01",
+    "forbidden_in_this_wp": [
+      "merge",
+      "any VPS mutation, smoke, mixed window, binding rewrite, backup/restore or reboot",
+      "weakening WP169 symlink rejection or editing src/ or tools/polymarket/",
+      "changing runtime_baseline.py, bootstrap, systemd units, dependencies or workflows",
+      "editing the original S10-DEPLOY-01 or S10-DEPLOY-EXEC-01 prompt/spec",
+      "generic arbitrary output-path authority",
+      "credentials, authenticated account access, signing, orders, capital, GateCLivePermit, GateCSession, A3 or live",
+      "S10-LIVE-ORCH-01 work"
+    ]
+  }
+}

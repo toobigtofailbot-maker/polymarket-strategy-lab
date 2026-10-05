@@ -1,0 +1,179 @@
+SIDE16 — S10-DEPLOY-01R
+BOUNDED CANONICAL-CONTRACT REPAIR UNDER PARENT S10-DEPLOY-01
+CANONICAL PUBLIC-SMOKE PERSISTENT-PATH REPAIR
+
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Authority owner: Karl / Side16
+Draft status: AUTHORIZED BY SIDE16 FOLLOW-UP 09
+This package authorizes only the repository repair below. It does NOT authorize merge, any VPS
+mutation, any Phase-B step, or any successor.
+
+===============================================================================
+0. PACKAGE IDENTITY
+===============================================================================
+
+WP ID: S10-DEPLOY-01R
+Parent WP: S10-DEPLOY-01 (repair envelope, not a new roadmap capability or architecture)
+Triggered by: S10-DEPLOY-EXEC-01 Phase B on the AlphaVPS C8G host
+Title: Canonical Public-Smoke Persistent-Path Repair
+Package class: RESEARCH_SMOKE_PATH_CONTRACT_REPAIR
+Package size class: S
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Base branch: main
+Frozen base / required current main: cbdff8ccdce36d1fc51eda45d4f8140c80932931
+Suggested branch: claude/s10-deploy-01r-public-smoke-path-repair
+Exact changed-file budget: 5
+Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+
+Governance track expected: RUNTIME
+Risk level: 3
+Capital at risk: USD 0
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+The pull request is created Ready for Review (isDraft=false). Karl merges; the executor never does.
+
+===============================================================================
+1. TRIGGER / OBJECTIVE
+===============================================================================
+
+Trigger (real Phase B, deployed cbdff8c release): the one authorized canonical smoke
+`--output-db local_data/polymarket/deploy_smoke.sqlite3` resolved through the governed release
+`local_data -> /var/lib/polymarket/local_data` symlink; the WP169 MarketTruthStore correctly rejects a
+symlink at the file or any existing parent, so it returned FAILED [STORE_CONFLICT] with zero actual
+counts before any network fetch, and the coexistence evaluator returned EXECUTION_HOST_INCONCLUSIVE
+(RESEARCH_SMOKE_NOT_PASSED). Not a capacity, network, provider or bootstrap failure.
+
+Objective: repair only the canonical post-merge DEPLOY-01 public-smoke output path so the smoke
+writes directly to governed persistent state without traversing the release local_data symlink,
+while preserving WP169 symlink rejection and every existing network/authority/capacity boundary.
+
+Canonical output-db: /var/lib/polymarket/local_data/polymarket/deploy_smoke.sqlite3
+Precondition: /var/lib/polymarket/local_data/polymarket is a real directory (not a symlink) owned
+and writable by the polymarket user with bounded permissions; the DB path is not a symlink. No
+generic output-path authority. The historical release-relative invocation is superseded for future
+host activation; the historical S10-DEPLOY-01 prompt/spec are not edited. Exactly one smoke per
+separately authorized activation attempt; public, unauthenticated, finite, foreground, research
+slice, 60 seconds, max-pages 1; truthful actual-count and inconclusive semantics unchanged.
+
+===============================================================================
+2. STARTUP / STATE GATE
+===============================================================================
+
+git fetch origin main; require origin/main == cbdff8ccdce36d1fc51eda45d4f8140c80932931, else
+STOP_REPAIR_BASE_MOVED (no rebase). VPS stays frozen; no smoke, mixed window, backup, restore,
+reboot, binding rewrite or release change during this package.
+
+===============================================================================
+3. EXACT CHANGED-FILE SCOPE — 5 PATHS
+===============================================================================
+
+- docs/research_platform_runtime_baseline_contract.md
+- docs/status_entries/S10-DEPLOY-01R.md
+- docs/wp_specs/S10-DEPLOY-01R/wp_prompt.txt
+- docs/wp_specs/S10-DEPLOY-01R/wp_spec.json
+- tests/deployment/test_runtime_baseline.py
+
+required_changed_files == allowed_changed_files == exactly these five; max_changed_files 5.
+
+===============================================================================
+4. AUTHORITY / NON-AUTHORITY
+===============================================================================
+
+Authority: edit the canonical smoke procedure in the DEPLOY-01 contract, add an offline behavioral
+regression, and the three repair governance artifacts. Protected boundary groups per
+docs/ai/codex/PROTECTED_PATHS.md (Centralized Boundary Group Reference) are not crossed.
+
+Non-authority: no change to src/** (including market_truth_store.py), tools/polymarket/**,
+tools/deployment/runtime_baseline.py, bootstrap, systemd units, dependencies, workflows, the
+original S10-DEPLOY-01 or S10-DEPLOY-EXEC-01 specs, the execution-host evaluator, or Gate C /
+strategy / Hermes / execution / live code; no weakening of symlink rejection; no network call
+during repair validation; no VPS mutation; no credentials, authenticated account access, signing,
+orders, capital or live. Workflow network only: git fetch/push, PR publication and hosted-CI
+observation.
+
+===============================================================================
+5. HARD STOPS
+===============================================================================
+
+Stop and report (do not widen) if: origin/main moved; a sixth path is required (including a
+draftability certificate); WP169 store code or its tests would need to change; any VPS or Phase-B
+action would be required; exact-head hosted CI is not green.
+
+===============================================================================
+6. NEGATIVE-TEST MATRIX
+===============================================================================
+
+No validator is added or modified. Negative evidence uses the real unchanged WP169 store: the
+release-relative path through the local_data symlink is REJECTED with STORE_CONFLICT and creates no
+file; a symlinked database file is REJECTED with STORE_CONFLICT; the contract no longer contains a
+release-relative `--output-db local_data/` command. Positive evidence: the direct persistent path
+under a real parent passes the smoke runner output gate and initializes the store.
+
+===============================================================================
+7. VALIDATION PLAN
+===============================================================================
+
+Readiness with --check-diff; exact five-path diff; the new regression on Windows (symlink branch
+skipped when native symlinks are unavailable) and on Linux (executed, not skipped); existing WP169
+store tests; tests/deployment; historical scope guards; git diff --check; generated-artifact guard;
+gitleaks; one full suite; exact-head hosted CI. No real public network smoke.
+
+===============================================================================
+8. REPORT-BACK TO SIDE16
+===============================================================================
+
+Return READY_FOR_SIDE16_SMOKE_PATH_REPAIR_PR_REVIEW only when every condition holds, else
+STOP_REPAIR_INCOMPLETE:<reason>. Merge authorized: NO.
+
+===============================================================================
+9. SUCCESSOR BOUNDARY
+===============================================================================
+
+After Karl merges, Side16 captures the NEW merge SHA and may issue a fresh S10-DEPLOY-EXEC-01
+Phase-B authorization bound to it (new release, fresh binding/restart/coexistence/backup/reboot
+proofs; cbdff8c evidence is diagnostic history only). S10-LIVE-ORCH-01 remains separately gated.
+
+===============================================================================
+10. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|contract|smoke_output_db|canonical_smoke|REQUIRE|direct_persistent_state_path|contract.smoke_output_db|R002
+NR002|contract|smoke_output_db|release_relative_path|FORBID|historical_relative_invocation_superseded|contract.smoke_output_db|R002
+NR003|store|symlink_parent|release_local_data_symlink|REJECT|store_conflict|store.symlink_policy|R001
+NR004|store|symlink_policy|always|PRESERVE_EXACT|wp169_store_code_unchanged|store.symlink_policy|R003
+NR005|contract|smoke_parent|before_smoke|REQUIRE|real_non_symlink_polymarket_owned_directory|contract.smoke_parent|R002
+NR006|contract|smoke_bounds|always|PRESERVE_EXACT|one_public_finite_60s_max_pages_1_smoke|contract.smoke_output_db|R002
+NR007|authority|host|always|FORBID|no_vps_mutation_or_phase_b_step|authority.no_new_authority|R005
+NR008|authority|live|always|FORBID|no_credentials_account_orders_capital_or_live|authority.no_new_authority|R005
+NR009|publication|ci|exact_head|REQUIRE|all_hosted_jobs_green_on_tested_head|NONE|R007
+END_NORMATIVE_RULE_MATRIX_V1
+
+Evidence Plan (requirement mapping):
+R001 -> old path rejected / new path accepted behavioral regression (real WP169 store);
+R002 -> canonical contract command regression;
+R003 -> existing WP169 store tests unchanged and passing;
+R004 -> tests/deployment on Windows and Linux (symlink regression executed on Linux);
+R005 -> readiness, exact five-path scope, historical guards, diff and secret hygiene;
+R006 -> one authoritative full suite;
+R007 -> exact-head Ready-for-Review publication plus hosted CI.
