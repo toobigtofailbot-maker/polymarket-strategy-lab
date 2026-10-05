@@ -376,7 +376,13 @@ def _collect_log_chunk(
 ) -> AcquisitionReceipt | None:
     """Collect one inclusive [chunk_from, chunk_to] eth_getLogs partition (<= max_block_span
     blocks): archive the raw response, decode/dedupe accepted logs, append children, and
-    record finality. Returns a terminal FAILED receipt on error, else None."""
+    record finality. Returns a terminal FAILED receipt on error, else None.
+
+    S10-DEPLOY-EXEC-01R3: a multi-block range whose eth_getLogs response exceeds the frozen
+    max_response_bytes is deterministically bisected into inclusive [from, mid] and
+    [mid + 1, to] (mid = floor((from + to) / 2)), collected left-first through the same rate-
+    limited rpc closure, received_at and seen_log_ids. A single-block oversize stays terminal
+    RESPONSE_TOO_LARGE; every other error is terminal and never subdivided."""
     params = [{
         "fromBlock": hex(chunk_from), "toBlock": hex(chunk_to),
         "address": [CTF_EXCHANGE_V2, NEGRISK_CTF_EXCHANGE_V2],
@@ -385,6 +391,16 @@ def _collect_log_chunk(
     try:
         logs_result, response = rpc("eth_getLogs", params)
     except MarketTruthError as error:
+        if error.error_codes == ("RESPONSE_TOO_LARGE",) and chunk_from < chunk_to:
+            midpoint = (chunk_from + chunk_to) // 2
+            left_error = _collect_log_chunk(
+                rpc, store, chunk_from, midpoint, latest_block, active, received_at, seen_log_ids,
+            )
+            if left_error is not None:
+                return left_error
+            return _collect_log_chunk(
+                rpc, store, midpoint + 1, chunk_to, latest_block, active, received_at, seen_log_ids,
+            )
         return store.receipt("FAILED", error.error_codes, "NONE")
     if len(response) > active.max_response_bytes:
         return store.receipt("FAILED", ("RESPONSE_TOO_LARGE",), "NONE")
