@@ -43,7 +43,7 @@ SIGNER = "0x" + "a" * 40
 WALLET = "0x" + "b" * 40
 EXCHANGE = "0xe111180000d2663c0091e4f400237545b87b996b"
 RELEASE = "c" * 40
-SECRET = "0xfeedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedfacefeedface"
+SECRET = "synthetic-owner-sentinel-NOT-A-KEY-must-never-be-persisted"
 ZERO32 = "0x" + "0" * 64
 TOKEN, COND = X.TOKEN, X.COND
 
