@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import hashlib
+import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -1729,3 +1732,253 @@ def test_wp171g_governance_docs_define_tracks_and_validation() -> None:
     assert "contract compilation" in lower
     assert "smoke-test" in lower
     assert "3–6 kb" in lower and "5–10 kb" in lower
+
+
+
+# --- S10-CI-OPT-01 local-first CI cost optimization (text-based, no YAML dependency) ---
+
+CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
+CI_TOP_LEVEL_JOBS = (
+    "compatibility",
+    "dependency-audit",
+    "ndfd-grib-compat",
+    "ndfd-grib-dependency-audit",
+    "cockpit-frontend",
+)
+CI_DRAFT_CONDITION = "if: github.event.pull_request.draft == false"
+CI_EVENT_TYPES_LINE = "    types: [opened, synchronize, reopened, ready_for_review]\n"
+CI_OS_MATRIX = "os: [ubuntu-24.04, windows-2022]"
+
+
+def _ci_trigger_block(text: str) -> str:
+    lines = text.splitlines()
+    start = lines.index("on:")
+    block = []
+    for line in lines[start + 1:]:
+        if line and not line.startswith((" ", "#")):
+            break
+        block.append(line)
+    return "\n".join(block)
+
+
+def _ci_jobs(text: str) -> dict[str, str]:
+    lines = text.splitlines()
+    start = lines.index("jobs:")
+    jobs: dict[str, list[str]] = {}
+    current: str | None = None
+    for line in lines[start + 1:]:
+        match = re.match(r"^  ([A-Za-z0-9_-]+):\s*$", line)
+        if match:
+            current = match.group(1)
+            jobs[current] = []
+        elif line and not line.startswith((" ", "#")):
+            break
+        elif current is not None:
+            jobs[current].append(line)
+    return {name: "\n".join(body) for name, body in jobs.items()}
+
+
+def _ci_policy_violations(text: str) -> list[str]:
+    violations: list[str] = []
+    trigger = _ci_trigger_block(text)
+    if re.search(r"(?m)^\s*push\s*:", trigger):
+        violations.append("T01 push trigger present")
+    types_match = re.search(r"(?m)^\s*types:\s*\[([^\]]*)\]", trigger)
+    types = {item.strip() for item in types_match.group(1).split(",")} if types_match else set()
+    required_types = {"opened", "synchronize", "reopened", "ready_for_review"}
+    if not re.search(r"(?m)^  pull_request:\s*$", trigger) or not required_types <= types:
+        violations.append("T02 pull_request event types incomplete")
+    if "pull_request_target" in text:
+        violations.append("T11 pull_request_target present")
+    if re.search(r"(?m)^\s*(paths|paths-ignore|branches|branches-ignore)\s*:", trigger):
+        violations.append("T12 trigger filter present")
+    if not re.search(
+        r"(?m)^concurrency:\n  group: ci-pr-\$\{\{ github\.event\.pull_request\.number \}\}\n"
+        r"  cancel-in-progress: true$",
+        text,
+    ):
+        violations.append("T04 same-PR concurrency missing")
+    jobs = _ci_jobs(text)
+    for job in CI_TOP_LEVEL_JOBS:
+        if job not in jobs:
+            violations.append(f"T05 job missing: {job}")
+        elif f"    {CI_DRAFT_CONDITION}" not in jobs[job].splitlines():
+            violations.append(f"T03 draft suppression missing: {job}")
+    for job, body in jobs.items():
+        if job not in CI_TOP_LEVEL_JOBS:
+            violations.append(f"T05 unexpected job: {job}")
+        job_conditions = [line for line in body.splitlines() if line.startswith("    if:")]
+        if job_conditions and job_conditions != [f"    {CI_DRAFT_CONDITION}"]:
+            violations.append(f"T03 non-equivalent job condition: {job}")
+    compat = jobs.get("compatibility", "")
+    if CI_OS_MATRIX not in compat:
+        violations.append("T06 compatibility OS matrix changed")
+    if 'python: ["3.12", "3.14"]' not in compat:
+        violations.append("T07 compatibility Python matrix changed")
+    if CI_OS_MATRIX not in jobs.get("ndfd-grib-compat", ""):
+        violations.append("T08 NDFD OS matrix changed")
+    if not re.search(r"(?m)^      - name: Full test suite\n        run: python -m pytest -q$", compat):
+        violations.append("T09 full-suite step missing")
+    if 'WP167_STRICT_DUCKDB: "1"' not in text or "Focused WP167 tests (DuckDB strict, no skips permitted)" not in compat:
+        violations.append("T10 strict DuckDB missing")
+    for audit_job in ("dependency-audit", "ndfd-grib-dependency-audit"):
+        if "run: python -m pip_audit" not in jobs.get(audit_job, ""):
+            violations.append(f"audit step missing: {audit_job}")
+    frontend = jobs.get("cockpit-frontend", "")
+    for step in ("npm ci", "npm run typecheck", "npm run build", "npm audit --audit-level=high",
+                 'node-version: "24.18.0"'):
+        if step not in frontend:
+            violations.append(f"cockpit-frontend step missing: {step}")
+    if 'NDFD_GRIB_STRICT: "1"' not in jobs.get("ndfd-grib-compat", ""):
+        violations.append("NDFD strict missing")
+    return violations
+
+
+def test_ci_workflow_final_head_trigger_policy() -> None:
+    """R001 / T01-T04, T11: final-head pull_request events, draft suppression, same-PR concurrency."""
+    text = _read(CI_WORKFLOW)
+    violations = _ci_policy_violations(text)
+    assert not violations, violations
+    trigger = _ci_trigger_block(text)
+    assert "push:" not in trigger and "main" not in trigger
+    assert CI_EVENT_TYPES_LINE.strip() in trigger
+    assert "pull_request_target" not in text
+    jobs = _ci_jobs(text)
+    for job in CI_TOP_LEVEL_JOBS:
+        assert [line.strip() for line in jobs[job].splitlines() if line.startswith("    if:")] == [CI_DRAFT_CONDITION], job
+    assert "permissions:\n  contents: read\n" in text
+    assert "secrets." not in text
+
+
+def test_ci_workflow_preserves_full_final_matrix() -> None:
+    """R002 / T05-T12: the five jobs and nine expanded hosted jobs keep their coverage."""
+    text = _read(CI_WORKFLOW)
+    jobs = _ci_jobs(text)
+    assert tuple(jobs) == CI_TOP_LEVEL_JOBS
+    compat_os = re.search(r"os: \[([^\]]*)\]", jobs["compatibility"]).group(1).split(",")
+    compat_py = re.search(r"python: \[([^\]]*)\]", jobs["compatibility"]).group(1).split(",")
+    ndfd_os = re.search(r"os: \[([^\]]*)\]", jobs["ndfd-grib-compat"]).group(1).split(",")
+    # compat 2x2 + dependency-audit + ndfd-grib-compat x2 + ndfd-grib-dependency-audit + cockpit-frontend
+    assert len(compat_os) * len(compat_py) + 1 + len(ndfd_os) + 1 + 1 == 9
+    for focused in ("Focused WP168", "Focused WP167", "Focused WP169", "Focused WP170", "Focused WP171",
+                    "Generated artifact guard", "pip check",
+                    "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py"):
+        assert focused in jobs["compatibility"], focused
+    assert "Focused NDFD GRIB dependency tests (strict, no skips permitted)" in jobs["ndfd-grib-compat"]
+    assert not _ci_policy_violations(text)
+
+
+def test_ci_policy_negative_matrix() -> None:
+    """N01-N07: mutated workflow text is rejected by the focused governance checker."""
+    text = _read(CI_WORKFLOW)
+    assert not _ci_policy_violations(text)
+    last_os = text.rindex(CI_OS_MATRIX)
+    mutations = {
+        # N01 / N02: draft suppression removed from a job or replaced by a non-equivalent condition.
+        "draft condition removed": text.replace(f"    {CI_DRAFT_CONDITION}\n", "", 1),
+        "non-equivalent condition": text.replace(CI_DRAFT_CONDITION, "if: always()", 1),
+        # N02 / N03: ready_for_review or synchronize dropped from the event types.
+        "ready_for_review dropped": text.replace(CI_EVENT_TYPES_LINE, "    types: [opened, synchronize, reopened]\n"),
+        "synchronize dropped": text.replace(CI_EVENT_TYPES_LINE, "    types: [opened, reopened, ready_for_review]\n"),
+        # N04: push-to-main reintroduced; pull_request_target or no concurrency cancellation.
+        "push to main": text.replace(CI_EVENT_TYPES_LINE, CI_EVENT_TYPES_LINE + "  push:\n    branches:\n      - main\n"),
+        "pull_request_target": text.replace("  pull_request:\n", "  pull_request_target:\n", 1),
+        "concurrency not cancelling": text.replace("  cancel-in-progress: true\n", "  cancel-in-progress: false\n"),
+        # N05: a current job deleted or renamed.
+        "job renamed": text.replace("\n  dependency-audit:\n", "\n  dep-audit:\n"),
+        "job deleted": text[: text.index("\n  cockpit-frontend:\n") + 1],
+        # N06: OS / Python / suite / strict / audit coverage dropped.
+        "compat windows dropped": text.replace(CI_OS_MATRIX, "os: [ubuntu-24.04]", 1),
+        "compat ubuntu dropped": text.replace(CI_OS_MATRIX, "os: [windows-2022]", 1),
+        "ndfd windows dropped": text[:last_os] + "os: [ubuntu-24.04]" + text[last_os + len(CI_OS_MATRIX):],
+        "py3.14 dropped": text.replace('python: ["3.12", "3.14"]', 'python: ["3.12"]'),
+        "py3.12 dropped": text.replace('python: ["3.12", "3.14"]', 'python: ["3.14"]'),
+        "full suite removed": text.replace("      - name: Full test suite\n        run: python -m pytest -q\n", ""),
+        "strict duckdb removed": text.replace('WP167_STRICT_DUCKDB: "1"', 'WP167_STRICT_DUCKDB: "0"'),
+        "audit removed": text.replace("run: python -m pip_audit\n", "run: echo skipped\n", 1),
+        "frontend audit removed": text.replace("npm audit --audit-level=high", "true"),
+        # N07: path or branch filters that could skip parts of the final matrix.
+        "paths filter": text.replace(CI_EVENT_TYPES_LINE, CI_EVENT_TYPES_LINE + "    paths:\n      - 'src/**'\n"),
+        "paths-ignore filter": text.replace(CI_EVENT_TYPES_LINE, CI_EVENT_TYPES_LINE + "    paths-ignore:\n      - 'docs/**'\n"),
+        "branches filter": text.replace(CI_EVENT_TYPES_LINE, CI_EVENT_TYPES_LINE + "    branches:\n      - main\n"),
+    }
+    for name, mutated in mutations.items():
+        assert mutated != text, name
+        assert _ci_policy_violations(mutated), name
+
+
+def test_ci_governance_docs_require_local_first_final_hosted_once() -> None:
+    """R003 / T13-T14, N08-N10: canonical guidance is local-first with one final exact-head hosted run."""
+    matrix = " ".join(_read(ROOT / "docs" / "ai" / "codex" / "VALIDATION_MATRIX.md").split())
+    for phrase in (
+        "## Local-First Validation And Final Hosted CI (S10-CI-OPT-01)",
+        "Hosted GitHub Actions CI is final exact-head verification, not the iterative development test loop.",
+        "Do not use hosted CI as the iterative test loop.",
+        "one authoritative local broad/full suite",
+        "Create or update one DRAFT PR and keep it draft while source is changing.",
+        "mark it Ready for review once; that transition launches the one full exact-head hosted matrix.",
+        "Convert back to draft before iterative repairs where practical",
+        "Rerun only the affected cancelled or failed-to-start job where GitHub supports it; "
+        "do not rerun already-green jobs.",
+        "A cancellation before runner/test execution is infrastructure evidence, not a code PASS or FAIL.",
+        "fresh exact-head hosted CI is then mandatory",
+        "A hosted PASS on an older head never justifies Ready for review: YES for a changed head.",
+        "no path filter may skip any part of it",
+    ):
+        assert phrase in matrix, phrase
+    drafting = " ".join(_read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md").split())
+    for phrase in (
+        "### Hosted CI planning (S10-CI-OPT-01)",
+        "Every future WP must plan hosted CI as final exact-head verification, not iterative testing.",
+        "the PR kept DRAFT while source is changing",
+        "one full hosted matrix on that exact non-draft head",
+        "must not plan hosted CI as its development test loop",
+        "any source change after a hosted PASS requires fresh exact-head hosted CI",
+        "rerun affected-job-only where supported",
+    ):
+        assert phrase in drafting, phrase
+    for doc in (matrix.lower(), drafting.lower()):
+        assert "hosted-only iterative" not in doc
+        assert "may use equivalent exact-head hosted ci;" not in doc
+
+
+def test_ci_optimization_status_and_repo_truth_are_recorded() -> None:
+    """R004 / T15: status and repo truth register S10-CI-OPT-01; S10-LIVE-CANARY-01 stays separately gated."""
+    status_lines = _read(ROOT / "docs" / "project_status.md").splitlines()
+    record = next(line for line in status_lines if line.startswith(
+        "# S10-CI-OPT-01 workflow-governance review target: Local-First CI Cost Optimization"))
+    for text in (
+        "Governance track: FAST", "Risk level: 2", "Exact changed-file scope: 9",
+        "Frozen base: 7dc323df2aa5820621cc2e6cf89a1d91827ed122", "PR #219 merged: YES",
+        "PR #219 head: 30a5d70aaf385450cd8a9644773e6ecd25a10b9a",
+        "first real canary: S10-LIVE-CANARY-01, separately gated live successor (NOT AUTHORIZED)",
+        "live: DISABLED", "S10-CI-OPT-01 capital/orders: USD 0 / 0", "Merge authorized: NO",
+    ):
+        assert text in record, text
+    for claim in ("S10-LIVE-CANARY-01: AUTHORIZED", "live: ENABLED", "Merge authorized: YES"):
+        assert claim not in record, claim
+    index = _read(ROOT / "docs" / "repo_truth_index.md")
+    assert "## S10-CI-OPT-01 Local-First CI Cost Optimization (workflow-governance review target)" in index
+    section = " ".join(index.split("## S10-CI-OPT-01 ", 1)[1].split("\n## ", 1)[0].split())
+    assert "S10-LIVE-CANARY-01 remains the separately gated live successor (NOT AUTHORIZED)" in section
+    fragment = _read(ROOT / "docs" / "status_entries" / "S10-CI-OPT-01.md")
+    for text in ("Merge authorized: NO", "Exact implementation scope: 9 paths", "Governance track: FAST",
+                 "PR and current live head: see GitHub metadata and the PR body",
+                 "Next: S10-LIVE-CANARY-01 First Restricted Live Canary Activation, separately gated"):
+        assert text in fragment, text
+    package = ROOT / "docs" / "wp_specs" / "S10-CI-OPT-01"
+    spec = json.loads(_read(package / "wp_spec.json"))
+    assert spec["identity"]["required_predecessor"] == {
+        "pr_number": 219,
+        "head_sha": "30a5d70aaf385450cd8a9644773e6ecd25a10b9a",
+        "merge_sha": "7dc323df2aa5820621cc2e6cf89a1d91827ed122",
+    }
+    assert spec["successor_boundary"]["next_wp"] == "S10-LIVE-CANARY-01"
+    assert spec["successor_boundary"]["separately_gated"] is True
+    assert len(spec["scope"]["allowed_changed_files"]) == spec["scope"]["max_changed_files"] == 9
+    for key in ("source_runtime", "dependencies", "network", "credentials", "execution", "live"):
+        assert spec["authority"][key] is False, key
+    assert hashlib.sha256((package / "wp_spec.json").read_bytes()).hexdigest() == (
+        "bef6863aa291a85538b2d094f879adcfc856cfe847b5813ad3f4a35ed6774090")
+    assert hashlib.sha256((package / "wp_prompt.txt").read_bytes()).hexdigest() == (
+        "ebd6ab082e3f191cb7ad3226a43e3a8b13cd56532c45eda4824baee2ec0ac4f7")

@@ -29,6 +29,23 @@ S10-LIVE-CANARY-01 needs a separate exact-merge Karl authorization. WP175 remain
 manual canary path; ALPHA-03 and DATA-03 remain separate and non-blocking; the Control Center
 remains separate and non-canonical; live DISABLED; capital/orders USD 0 / 0; merge NOT AUTHORIZED.
 
+## S10-CI-OPT-01 Local-First CI Cost Optimization (workflow-governance review target)
+
+FAST, risk 2, exact 9-path scope, deterministic readiness, no certificate. Frozen base
+`7dc323df2aa5820621cc2e6cf89a1d91827ed122` (PR #219 / S10-LIVE-ORCH-01 merged: YES, head
+`30a5d70aaf385450cd8a9644773e6ecd25a10b9a`). `.github/workflows/ci.yml` now runs only on
+`pull_request` opened / synchronize / reopened / ready_for_review, skips every top-level job while
+the pull request is a draft, no longer re-runs the full matrix on push to main, and cancels stale
+same-PR runs through `ci-pr-<number>` concurrency. The final hosted matrix is unchanged: the same
+nine jobs, OS/Python matrices, audits, strict DuckDB, NDFD strict, focused tests and full pytest.
+Canonical local-first guidance lives in `docs/ai/codex/VALIDATION_MATRIX.md` ("Local-First
+Validation And Final Hosted CI") and `docs/ai/codex/WP_DRAFTING_STANDARD.md` ("Hosted CI
+planning"); focused regression tests are in `tests/test_codex_workflow_docs.py`; the package is
+`docs/wp_specs/S10-CI-OPT-01/` and the stable record is `docs/status_entries/S10-CI-OPT-01.md`.
+No product source, `tools/`, dependency, credential, product-network, scheduler, strategy, paper,
+execution or live authority. S10-LIVE-CANARY-01 remains the separately gated live successor (NOT
+AUTHORIZED); live DISABLED; capital/orders USD 0 / 0; merge NOT AUTHORIZED.
+
 ## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (merged historical predecessor: PR #214)
 
 PR #214 merged: YES at `fe4e2f1557dec5667d32fa1479f0bfc7ead1c940` (head `9871dddf98565b16194209f032cf8279bfbd34f1`); repairs PR #215, #217 and #218 merged. The text below is the

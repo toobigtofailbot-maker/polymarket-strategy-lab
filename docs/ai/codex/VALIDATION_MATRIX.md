@@ -149,7 +149,11 @@ All Risk Level 1 WPs must also confirm:
 - Forbidden-path preservation.
 - Generated-artifact guard after final commit.
 - One authoritative broad/full suite on the stable candidate as required by the
-  governance-track table. FAST/RUNTIME may use equivalent exact-head hosted CI;
+  governance-track table. Under S10-CI-OPT-01 the normal path for every track is a
+  local authoritative full suite on the stable candidate followed by exactly one
+  final exact-head hosted CI matrix (see "Local-First Validation And Final Hosted CI").
+  FAST/RUNTIME may rely on equivalent exact-head hosted CI only when the local
+  environment genuinely cannot run the suite and that limitation is reported;
   PROTECTED retains local full-suite plus exact-head hosted CI requirements.
 - `docs/project_status.md` current-WP wording check.
 - Dependency and lock-file preservation unless explicitly scoped.
@@ -160,6 +164,30 @@ All Risk Level 1 WPs must also confirm:
   ```
   If a final comment is also posted (optional after WP91), add `--final-comment <CURRENT_FINAL_EVIDENCE_COMMENT_TEXT> --require-current-final-marker` to the invocation.
   If the guard fails, Ready for review must be NO. Report exact guard invocation and result in the PR body (and in the optional final comment if posted). See `docs/ai/codex/PR_EVIDENCE_CONSISTENCY_GUARD.md`.
+
+## Local-First Validation And Final Hosted CI (S10-CI-OPT-01)
+
+Hosted GitHub Actions CI is final exact-head verification, not the iterative
+development test loop. `.github/workflows/ci.yml` therefore runs only on
+`pull_request` events of type `opened`, `synchronize`, `reopened` and
+`ready_for_review`; every top-level job is skipped while the pull request is a draft
+(`github.event.pull_request.draft == false`); there is no push-to-main run, so a
+green PR head is not re-run merely because it merged; and same-PR concurrency
+(`ci-pr-<number>`, `cancel-in-progress: true`) cancels a stale run when a newer
+eligible head appears. This changes hosted run frequency only: the final hosted
+matrix keeps the same nine jobs (compat ubuntu-24.04/windows-2022 x py3.12/py3.14,
+dependency-audit, ndfd-grib-compat ubuntu-24.04/windows-2022, ndfd-grib-dependency-audit,
+cockpit-frontend) with every audit, strict DuckDB mode, focused test and full pytest
+step unchanged, and no path filter may skip any part of it.
+
+| Stage | Required behavior |
+|---|---|
+| While editing | Run focused, adjacent and static checks locally. Batch same-scope corrections before pushing. Do not use hosted CI as the iterative test loop. |
+| Stable candidate | Run readiness `--check-diff`, diff/artifact/security hygiene, and one authoritative local broad/full suite. Use the authorized ephemeral network-isolated Linux Docker pattern when workstation native-module policy blocks the suite; run platform-specific local checks where technically practical. |
+| PR publication | Create or update one DRAFT PR and keep it draft while source is changing. Only after the local stable-candidate PASS, mark it Ready for review once; that transition launches the one full exact-head hosted matrix. |
+| After a real hosted test failure | Convert back to draft before iterative repairs where practical, fix and batch locally, rerun local validation, and mark Ready again only when stable. |
+| Hosted infrastructure failure on an unchanged head | Rerun only the affected cancelled or failed-to-start job where GitHub supports it; do not rerun already-green jobs. A cancellation before runner/test execution is infrastructure evidence, not a code PASS or FAIL. |
+| Exact-head rule | Any source or workflow change after a hosted PASS invalidates that exact-head hosted evidence; fresh exact-head hosted CI is then mandatory before Ready for review: YES. A hosted PASS on an older head never justifies Ready for review: YES for a changed head. |
 
 ## github-aware-readonly-workflow-helper WP
 
