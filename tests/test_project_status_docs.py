@@ -5608,7 +5608,7 @@ def test_s10_strat_life_status_records_deploy_merge_and_separate_activation() ->
     current = next(line for line in lines if line.startswith("# S10-STRAT-LIFE-01 merged historical predecessor (PR #210 merged: YES"))
     # S10-DEPLOY-EXEC-01 (line 2), the merged S10-GATE-C-EXPLORE-01 record (line 4), the merged
     # S10-EXEC-FEAS-01 record (line 6) and the merged S10-HERMES-STRAT-01 record (line 8) precede it.
-    assert lines.index(current) == 10
+    assert lines.index(current) == 12  # S10-LIVE-ORCH-01 (line 2) now leads; earlier records shift by 2.
     assert not any(line.startswith("# S10-STRAT-LIFE-01 current bounded implementation target") for line in lines)
     for text in (
         "PR #209 merged: YES",
@@ -5649,7 +5649,7 @@ def test_s10_hermes_strat_status_merged_exec_feas_current() -> None:
     merged = next(line for line in lines if line.startswith(
         "# S10-HERMES-STRAT-01 merged historical predecessor (PR #211 merged: YES at "
         "4519aab3d7f8424fc74c59104cc4e7afe0ff11b8 with head 9439283768b78b7302290ba6b8611e3477aa3c6a"))
-    assert lines.index(merged) == 8  # S10-DEPLOY-EXEC-01, merged GATE-C-EXPLORE and merged EXEC-FEAS precede it.
+    assert lines.index(merged) == 10  # LIVE-ORCH, merged DEPLOY-EXEC, GATE-C-EXPLORE and EXEC-FEAS precede it.
     for text in ("PR #210 merged: YES", "Exact changed-file scope: 22", "XL_FOR_SCOPE_ONLY",
                  "direct STRAT-LIFE mutation: NO", "real provider/model calls: 0"):
         assert text in merged, text
@@ -5667,7 +5667,7 @@ def test_s10_exec_feas_status_gate_c_explore_next() -> None:
     current = next(line for line in lines if line.startswith(
         "# S10-EXEC-FEAS-01 merged historical predecessor (PR #212 merged: YES at "
         "35db4f05347b8b27f7bd0296cf9b1b0627e58d12 with head 99f3c3c8acc09ae3b5646f785446d69a7b8b2290; formerly the current bounded implementation target)"))
-    assert lines.index(current) == 6  # S10-DEPLOY-EXEC-01 and the merged GATE-C-EXPLORE record precede it.
+    assert lines.index(current) == 8  # LIVE-ORCH, merged DEPLOY-EXEC and merged GATE-C-EXPLORE precede it.
     for text in (
         "Package class: CURRENT_PUBLIC_EXECUTION_FEASIBILITY_CORE",
         "Exact changed-file scope: 17",
@@ -5710,7 +5710,7 @@ def test_status_docs() -> None:
         "# S10-GATE-C-EXPLORE-01 merged historical predecessor (PR #213 merged: YES at "
         "0392c2d2080a656d8ffd69f42abf8ad91d1f90e2 with head 342dfeb24652eccb1b6bdf237039b268115b1fb7; "
         "formerly the current protected implementation target)"))
-    assert lines.index(current) == 4
+    assert lines.index(current) == 6  # LIVE-ORCH and merged DEPLOY-EXEC precede it.
     for text in (
         "Package class: EXPLORATORY_GATE_C_POLICY_PERMIT_CORE", "Governance track: PROTECTED", "Risk level: 4",
         "Exact changed-file scope: 18", "Frozen base: 35db4f05347b8b27f7bd0296cf9b1b0627e58d12",
@@ -5750,10 +5750,14 @@ def test_status_docs() -> None:
 
 
 def test_s10_deploy_exec_status_current_and_gate_c_merged() -> None:
-    """GATE-C-EXPLORE merged / DEPLOY-EXEC current RUNTIME review target / LIVE-ORCH next (R028)."""
+    """DEPLOY-EXEC record retained as merged history (R028); PR #214 merged it (S10-LIVE-ORCH-01)."""
     lines = _read().splitlines()
-    current = next(line for line in lines if line.startswith("# S10-DEPLOY-EXEC-01 current bounded implementation target"))
-    assert lines.index(current) == 2
+    assert not any(line.startswith("# S10-DEPLOY-EXEC-01 current bounded implementation target") for line in lines)
+    current = next(line for line in lines if line.startswith(
+        "# S10-DEPLOY-EXEC-01 merged historical predecessor (PR #214 merged: YES at "
+        "fe4e2f1557dec5667d32fa1479f0bfc7ead1c940 with head 9871dddf98565b16194209f032cf8279bfbd34f1; repairs PR #215, "
+        "#217 and #218 merged; formerly the current bounded implementation target)"))
+    assert lines.index(current) == 4
     for text in (
         "Package class: EXECUTION_HOST_RUNTIME_SUBSTRATE", "Governance track: RUNTIME", "Risk level: 3",
         "Exact changed-file scope: 18", "Frozen base: 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2",
@@ -5785,12 +5789,58 @@ def test_s10_deploy_exec_status_current_and_gate_c_merged() -> None:
         assert text in fragment, text
     assert re.search(r"(?i)current live PR head:\s*`?[0-9a-f]{40}", fragment) is None
     index = (REPO_ROOT / "docs/repo_truth_index.md").read_text(encoding="utf-8")
-    assert index.index("## S10-DEPLOY-EXEC-01 ") == index.index("\n## ") + 1
+    assert index.index("## S10-LIVE-ORCH-01 ") == index.index("\n## ") + 1
+    assert "## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (merged historical predecessor: PR #214)" in index
     assert "## S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (merged historical predecessor: PR #213)" in index
     roadmap = " ".join((REPO_ROOT / "docs/long_term_bot_completion_roadmap.md").read_text(encoding="utf-8").split())
-    assert "Current bounded implementation package: S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate &" in roadmap
+    assert "Immediate merged predecessor: S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate &" in roadmap
     spec = json.loads((REPO_ROOT / "docs/wp_specs/S10-DEPLOY-EXEC-01/wp_spec.json").read_text(encoding="utf-8"))
     assert spec["identity"]["required_predecessor"] == {"pr_number": 213, "head_sha": "342dfeb24652eccb1b6bdf237039b268115b1fb7", "merge_sha": "0392c2d2080a656d8ffd69f42abf8ad91d1f90e2"}
     assert spec["successor_boundary"]["next_wp"] == "S10-LIVE-ORCH-01"
     assert spec["scope"]["max_changed_files"] == 18 and spec["identity"]["package_size_class"] == "L"
     assert not (REPO_ROOT / "docs/wp_specs/S10-DEPLOY-EXEC-01/draftability_certificate.json").exists()
+
+def test_s10_live_orch_status_current_protected_target_and_dormant_capability() -> None:
+    """DEPLOY-EXEC merged / LIVE-ORCH current protected review target / canary separately gated (R008)."""
+    lines = _read().splitlines()
+    current = next(line for line in lines if line.startswith(
+        "# S10-LIVE-ORCH-01 current protected implementation target"))
+    assert lines.index(current) == 2
+    for text in (
+        "Package class: PROTECTED_RESTRICTED_LIVE_ORCHESTRATION", "Governance track: PROTECTED", "Risk level: 4",
+        "Exact changed-file scope: 27", "Frozen base: 3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe",
+        "PR #218 merged: YES", "PR #218 head: b1779f5bc6e945eedfa1ba0692a9e1baca779973",
+        "PR #218 merge: 3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe", "S10-GATE-C-EXPLORE-01: MERGED",
+        "S10-DEPLOY-EXEC-01: MERGED (PR #214; repairs PR #215, #217, #218)",
+        "current protected implementation target: S10-LIVE-ORCH-01 (implemented review target)",
+        "readiness: IMPLEMENTATION_READY (PROTECTED, INDEPENDENT_CERTIFICATE, certificate hash-bound)",
+        "contract: docs/live_orchestration_contract.md",
+        "first-live CREATE side: BUY only (SELL -> SIDE_UNSUPPORTED_FIRST_CANARY)",
+        "USD 100 account / USD 5 order / USD 30 aggregate commitment / USD 70 free collateral, auto scaling: NO",
+        "implementation/CI real product network calls: 0", "real credentials: 0",
+        "authenticated account access: 0", "real CREATE/CANCEL: 0",
+        "first real canary: S10-LIVE-CANARY-01, separately gated (NOT AUTHORIZED)",
+        "live: DISABLED", "S10-LIVE-ORCH-01 capital/orders: USD 0 / 0", "Merge authorized: NO",
+    ):
+        assert text in current, text
+    for claim in ("S10-LIVE-ORCH-01: MERGED", "live: ENABLED", "Merge authorized: YES",
+                  "S10-LIVE-CANARY-01: AUTHORIZED", "auto scaling: YES"):
+        assert claim not in current, claim
+    fragment = (REPO_ROOT / "docs/status_entries/S10-LIVE-ORCH-01.md").read_text(encoding="utf-8")
+    for text in ("Merge commit: not merged", "Merge authorized: NO", "Exact implementation scope: 27 paths",
+                 "Governance track: PROTECTED", "PR and current live head: see GitHub metadata and the PR body",
+                 "Implementation/CI real product network calls: 0", "S10-DEPLOY-EXEC-01: MERGED (PR #214",
+                 "Next: S10-LIVE-CANARY-01 First Restricted Live Canary Activation, separately gated",
+                 "This package never authorizes a real order"):
+        assert text in fragment, text
+    assert re.search(r"(?i)current live PR head:\s*`?[0-9a-f]{40}", fragment) is None
+    package = REPO_ROOT / "docs/wp_specs/S10-LIVE-ORCH-01"
+    spec = json.loads((package / "wp_spec.json").read_text(encoding="utf-8"))
+    assert spec["identity"]["required_predecessor"] == {"pr_number": 218, "head_sha": "b1779f5bc6e945eedfa1ba0692a9e1baca779973", "merge_sha": "3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe"}
+    assert spec["successor_boundary"]["next_wp"] == "S10-LIVE-CANARY-01"
+    assert spec["scope"]["max_changed_files"] == 27 and spec["identity"]["package_size_class"] == "XL"
+    certificate = json.loads((package / "draftability_certificate.json").read_text(encoding="utf-8"))
+    for name, key in (("wp_prompt.txt", "wp_text_sha256"), ("wp_spec.json", "wp_spec_sha256")):
+        assert hashlib.sha256((package / name).read_bytes()).hexdigest() == certificate[key], name
+    assert certificate["result"] == "PASS" and certificate["reviewed_base_merge_sha"] == "3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe"
+    assert certificate["wp_text_sha256"] == "41d35b5b1bc78ef54d15fbb1395dda4687e8845db7c88186ab84f3330f8e9393"

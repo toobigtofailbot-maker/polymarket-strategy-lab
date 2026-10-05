@@ -282,3 +282,73 @@ def test_rate_limit_event_deadline_mismatch_is_rejected(tmp_path: Path) -> None:
         )
     with pytest.raises(GatewayError, match="STATE_REPLAY_INVALID"):
         ProtectedExecutionGateway.open(path, opened_time_ns=3)
+
+
+# ---------------------------------------------------------------------------
+# S10-LIVE-ORCH-01 (R004): ledger persistence, sanitization and tamper rejection
+# ---------------------------------------------------------------------------
+
+
+def test_public_venue_order_ids_and_release_sha_persist_only_under_exact_fields(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "gateway.sqlite3"
+    store = GatewayStore(path, create=True)
+    try:
+        order_id = "0x" + "c" * 64
+        head = None
+        for key, value in (
+            ("venue_order_id", order_id), ("venue_open_order_ids", [order_id]),
+            ("trade_ids", [order_id]), ("release_sha", "d" * 40),
+        ):
+            event = store.append("FIXTURE", 1 + len(key), {key: value}, {"k": key},
+                                 expected_head=head)
+            head = event.event_hash
+        for key, value in (("note", order_id), ("release_note", "d" * 40),
+                           ("release_sha", "D" * 40), ("venue_order_id", "0x" + "c" * 65)):
+            with pytest.raises(GatewayStoreError, match="SENSITIVE_DATA_FORBIDDEN"):
+                store.append("FIXTURE", 99, {key: value}, {"k": key}, expected_head=head)
+    finally:
+        store.close()
+
+
+def test_live_orch_checkpoint_projection_and_restart_flag(tmp_path: Path) -> None:
+    from tests.execution_gateway.test_gateway import _lo_episode, _lo_record
+
+    path = tmp_path / "gateway.sqlite3"
+    gateway = ProtectedExecutionGateway.create(path, created_time_ns=1)
+    _lo_record(gateway, "LIVE_ORCH_ADMITTED", [_lo_episode(1)], t=5)
+    gateway.close()
+    projection = read_gateway_projection(path, limit=10)
+    assert projection["state"]["authority_state"] == "A0_DISABLED"
+    assert projection["audit"][0]["event_type"] == "LIVE_ORCH_ADMITTED"
+    with ProtectedExecutionGateway.open(path, opened_time_ns=6) as reopened:
+        assert reopened.live_orch_checkpoint()["restart_reconciliation_required"] is True
+    projection = read_gateway_projection(path, limit=10)
+    assert projection["audit"][0]["event_type"] == "RESTARTED"
+
+
+def test_rehashed_semantically_invalid_live_orch_journal_is_rejected(tmp_path: Path) -> None:
+    from tests.execution_gateway.test_gateway import _lo_episode, _lo_record
+
+    path = tmp_path / "gateway.sqlite3"
+    gateway = ProtectedExecutionGateway.create(path, created_time_ns=1)
+    _lo_record(gateway, "LIVE_ORCH_ADMITTED", [_lo_episode(1)], t=5)
+    state = gateway.state.to_mapping()
+    head = gateway.head
+    gateway.close()
+    # A hash-valid append that jumps ADMITTED -> TERMINAL_KNOWN_POSITION (forged
+    # reconciled fill) bypasses the gateway API; replay must still reject it.
+    forged = json.loads(json.dumps(state))
+    episode = forged["live_orch_checkpoint"]["episodes"][0]
+    episode["state"] = "CREATE_ACCEPTED"
+    store = GatewayStore(path)
+    try:
+        store.append("LIVE_ORCH_RECONCILED", 9, {"checkpoint": forged["live_orch_checkpoint"]},
+                     {**forged, "last_event_time_ns": 9}, expected_head=head)
+    finally:
+        store.close()
+    with pytest.raises(GatewayError):
+        ProtectedExecutionGateway.open(path, opened_time_ns=10)
+    with pytest.raises((GatewayError, GatewayStoreError)):
+        read_gateway_projection(path, limit=10)

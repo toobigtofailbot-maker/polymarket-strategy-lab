@@ -1,0 +1,715 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-LIVE-ORCH-01",
+    "title": "Restricted Live Orchestration + First-Live Canary Core",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PROTECTED_RESTRICTED_LIVE_ORCHESTRATION",
+    "package_size_class": "XL",
+    "risk_level": 4,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 218,
+      "head_sha": "b1779f5bc6e945eedfa1ba0692a9e1baca779973",
+      "merge_sha": "3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe"
+    },
+    "suggested_branch": "claude/s10-live-orch-01-restricted-live-orchestration",
+    "objective": "Implement the protected manual foreground successor that consumes one exact current ExploratoryGateCPermit, requires strict host/access/account/venue/risk revalidation, persists the exact fresh admission basis, permits at most one bounded BUY economic CREATE transmit, and reconciles partial fills, cancellation ambiguity, settlement and restart state under Karl's fixed USD 100 account, USD 5 order, USD 30 aggregate commitment and USD 70 free-collateral envelope; implementation/CI remains zero-real-product-activity and first real activation is separately gated.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Karl explicitly authorized Side16 to draft S10-LIVE-ORCH-01 after Side16's independent pre-draft audit and requested predictable implementation blockers be incorporated into a one-shot WP. Deterministic pre-freeze compatibility discovery requires exactly 27 paths: protected gateway/orchestrator/store/tests, the directly implicated EXEC-FEAS vocabulary/evaluator/contract repair, canonical package/status/docs and three mechanically implicated doc-truth guards. Authorization is for exactly this XL scope and does not authorize a 28th path, merge, real credentials, account access, orders, capital or live activation."
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/live_trading_authorization.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/live_orchestration_contract.md",
+      "docs/execution_feasibility_contract.md",
+      "docs/status_entries/S10-LIVE-ORCH-01.md",
+      "docs/wp_specs/S10-LIVE-ORCH-01/wp_prompt.txt",
+      "docs/wp_specs/S10-LIVE-ORCH-01/wp_spec.json",
+      "docs/wp_specs/S10-LIVE-ORCH-01/draftability_certificate.json",
+      "src/execution_feasibility/models.py",
+      "src/execution_feasibility/evaluator.py",
+      "src/execution_gateway/gate_b.py",
+      "src/execution_gateway/gate_c.py",
+      "src/execution_gateway/gateway.py",
+      "src/execution_gateway/store.py",
+      "src/execution_gateway/live_orch.py",
+      "tests/execution_feasibility/test_execution_feasibility.py",
+      "tests/execution_gateway/test_gate_b.py",
+      "tests/execution_gateway/test_gate_c.py",
+      "tests/execution_gateway/test_gateway.py",
+      "tests/execution_gateway/test_store_recovery.py",
+      "tests/execution_gateway/test_live_orch.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/live_trading_authorization.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/live_orchestration_contract.md",
+      "docs/execution_feasibility_contract.md",
+      "docs/status_entries/S10-LIVE-ORCH-01.md",
+      "docs/wp_specs/S10-LIVE-ORCH-01/wp_prompt.txt",
+      "docs/wp_specs/S10-LIVE-ORCH-01/wp_spec.json",
+      "docs/wp_specs/S10-LIVE-ORCH-01/draftability_certificate.json",
+      "src/execution_feasibility/models.py",
+      "src/execution_feasibility/evaluator.py",
+      "src/execution_gateway/gate_b.py",
+      "src/execution_gateway/gate_c.py",
+      "src/execution_gateway/gateway.py",
+      "src/execution_gateway/store.py",
+      "src/execution_gateway/live_orch.py",
+      "tests/execution_feasibility/test_execution_feasibility.py",
+      "tests/execution_gateway/test_gate_b.py",
+      "tests/execution_gateway/test_gate_c.py",
+      "tests/execution_gateway/test_gateway.py",
+      "tests/execution_gateway/test_store_recovery.py",
+      "tests/execution_gateway/test_live_orch.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "tools/hermes/",
+      "src/data_layer/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/strategy_lifecycle/",
+      "src/exploratory_gate_c/",
+      "src/operator_cockpit_frontend/"
+    ],
+    "max_changed_files": 27,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/architecture_decision_record.md",
+      "docs/long_term_bot_completion_roadmap.md",
+      "docs/live_trading_authorization.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/execution_feasibility_contract.md",
+      "src/execution_feasibility/models.py",
+      "src/execution_feasibility/evaluator.py",
+      "src/execution_gateway/gate_b.py",
+      "src/execution_gateway/gate_c.py",
+      "src/execution_gateway/gateway.py",
+      "src/execution_gateway/store.py",
+      "tests/execution_feasibility/test_execution_feasibility.py",
+      "tests/execution_gateway/test_gate_b.py",
+      "tests/execution_gateway/test_gate_c.py",
+      "tests/execution_gateway/test_gateway.py",
+      "tests/execution_gateway/test_store_recovery.py",
+      "tests/test_architecture_direction_docs.py",
+      "tests/test_project_status_docs.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert the exact 27-path S10-LIVE-ORCH-01 diff. The dormant LIVE-ORCH orchestrator and episode persistence, BUY-only admission/risk/recovery changes, EXEC-FEAS minimum-order semantic correction, contract/status/docs and tests disappear; merged exploratory-permit, historical WP175 Gate-B/Gate-C substrate and proven execution-host release remain. No real credential, account, venue, order, capital or live state exists from implementation/CI to roll back.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": true
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": true
+      },
+      {
+        "boundary": "live",
+        "crossed": true
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": true,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": true,
+    "live": true
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "The WP changes protected execution-gateway runtime, adds one foreground orchestrator, corrects one directly blocking public-feasibility semantic and otherwise consumes predecessor interfaces read-only.",
+    "items": [
+      {
+        "surface": "src.execution_feasibility minimum-order evaluation",
+        "before": "Gamma minimum USDC notional and CLOB minimum shares are incorrectly required to be numerically equal and evaluated as one notional dimension",
+        "after": "Gamma notional and CLOB share minima are independent hard dimensions with a new closed share-minimum diagnostic",
+        "change_authorized": true,
+        "compatibility_requirement": "All non-minimum-order EXEC-FEAS semantics remain unchanged",
+        "authority": "PUBLIC_READ_ONLY_FEASIBILITY_ONLY"
+      },
+      {
+        "surface": "src.execution_gateway.GateBSession account and order construction boundary",
+        "before": "Committed exposure is zeroed and historical market metadata rejects fee-enabled live use",
+        "after": "Provides bounded exact account/order/trade/position facts and local BUY limit/market construction required by LIVE-ORCH while preserving the non-deploying wallet and single-post boundaries",
+        "change_authorized": true,
+        "compatibility_requirement": "No wallet deployment approval recovery relayer mutation secret persistence dependency change or automatic economic retry",
+        "authority": "PROTECTED_AUTHENTICATED_READ_LOCAL_SIGNING"
+      },
+      {
+        "surface": "src.execution_gateway.GateCSession mutation and reconciliation boundary",
+        "before": "Historical WP175 paper-qualification one-shot canary with unknown-response and trade-status gaps",
+        "after": "Supports LIVE-ORCH one-use mutation admission, exact response classification, trade-status preservation and bounded cancel recovery",
+        "change_authorized": true,
+        "compatibility_requirement": "Historical safety invariants stay fail-closed and one economic transmit remains maximum per CREATE attempt",
+        "authority": "PROTECTED_ONE_CREATE_MUTATION_BOUNDARY"
+      },
+      {
+        "surface": "src.execution_gateway gateway/store persistence",
+        "before": "Historical canary state is effectively one-shot forever and known residual positions or cancel ambiguity can dead-end future sessions",
+        "after": "Adds restart-safe separate LIVE-ORCH episodes with durable admission, mutation, reconciliation and known residual commitment state",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing tamper/replay checks remain and unknown or corrupt state always blocks new exposure",
+        "authority": "CANONICAL_LIVE_ORCH_EVIDENCE_ONLY"
+      },
+      {
+        "surface": "src.execution_gateway.live_orch",
+        "before": "Absent",
+        "after": "Adds bounded foreground preflight canary and reconcile orchestration over existing protected boundaries",
+        "change_authorized": true,
+        "compatibility_requirement": "No raw SDK client daemon scheduler unattended resting-order mode WebSocket recovery or browser mutation control",
+        "authority": "MANUAL_FOREGROUND_RESTRICTED_LIVE_ORCHESTRATION"
+      },
+      {
+        "surface": "src.exploratory_gate_c public permit API",
+        "before": "Credential-free exact-intent policy permit with mandatory runtime revalidation and no live authority",
+        "after": "Unchanged; LIVE-ORCH strictly validates and consumes it read-only as upstream intent authority",
+        "change_authorized": false,
+        "compatibility_requirement": "No exploratory permit schema/source change and no silent regeneration or widening",
+        "authority": "READ_ONLY_UPSTREAM_POLICY_PERMIT"
+      },
+      {
+        "surface": "tools.deployment.runtime_baseline execution-host-currentness",
+        "before": "Read-only strict exact-release host NTP UFW and persistent-state currentness evaluator",
+        "after": "Unchanged; LIVE-ORCH consumes it read-only before protected authentication and admission",
+        "change_authorized": false,
+        "compatibility_requirement": "No deployment tooling edit and no fixed sleep substitutes for currentness PASS",
+        "authority": "READ_ONLY_HOST_AUTHORITY_EVIDENCE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Protected live admission depends on closed capital, identity, venue-drift, mutation, reconciliation and activation semantics.",
+    "items": [
+      {
+        "path": "live_orch.capital_envelope",
+        "source": "CONSTANT",
+        "type": "fixed_decimal_limits",
+        "required_rule": "account capital basis 100; one BUY worst-case commitment 5; aggregate commitment 30; free collateral reserve 70; auto scaling false",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "all four constraints are checked independently before every CREATE and no runtime input may widen them",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "closed pass/fail codes and bounded totals",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.side_policy",
+        "source": "CONSTANT",
+        "type": "closed_rule",
+        "required_rule": "economic CREATE supports BUY only in the first canary; SELL permit rejects SIDE_UNSUPPORTED_FIRST_CANARY",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "rejection occurs before durable admission and before signing/transmit; exposure-reducing cancellation remains allowed",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "SIDE_UNSUPPORTED_FIRST_CANARY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.observed_pnl_guards",
+        "source": "DERIVED",
+        "type": "truthful_conservative_snapshot_guards",
+        "required_rule": "observed realized-PnL loss 5, observed position-PnL drawdown 7.5 and observed cumulative canary loss 10; no UTC-day or high-water claim",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "document exact source fields; unknown required input blocks new exposure",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded observed guard values",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.fresh_market_drift",
+        "source": "DERIVED",
+        "type": "closed_compatibility_rule",
+        "required_rule": "fresh snapshot/book metrics may change but exact market condition token BUY intent style type size price and structural eligibility must remain compatible",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "fresh snapshot and assessment IDs need not equal historical permit IDs; current assessment remains FEASIBLE or LIMITED and every runtime risk check passes",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "fresh snapshot and assessment ids plus admission result",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.admission",
+        "source": "DERIVED",
+        "type": "durable_pre_mutation_record",
+        "required_rule": "durable admission binds permit intent fresh venue/assessment host currentness access wallet/account capital fee and observed-PnL evidence before CREATE_STARTED",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "admission persistence succeeds before CREATE_STARTED; persistence failure causes zero economic transmit",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "sanitized admission evidence and bounded totals",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.commitment",
+        "source": "DERIVED",
+        "type": "deduplicated_capital_commitment",
+        "required_rule": "position entry commitment plus open BUY remainder plus nonterminal trade plus ambiguous CREATE plus unreflected fee; never mark-to-market-only",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "one episode principal partitions without double counting and ambiguous or unknown state is conservatively reserved",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "total committed capital and closed provenance counts",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.create_idempotency",
+        "source": "DERIVED",
+        "type": "single_transmit_rule",
+        "required_rule": "one permit may have one durable CREATE_STARTED and one economic post maximum; no automatic CREATE retry",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "CREATE_STARTED precedes transmit and any possibly transmitted unknown response becomes AMBIGUOUS",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "attempt digest and closed outcome",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.fee_commitment",
+        "source": "DERIVED",
+        "type": "bounded_fee_rule",
+        "required_rule": "passive known maker fee zero; aggressive known fee uses fresh conservative five-decimal upper bound; unknown fee blocks; actual fee is claimed only when attributable",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "principal plus fee reserve is at most 5 and ambiguous actual fee remains reserved",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "fee reserve and attributable delta or FEE_RECONCILIATION_AMBIGUOUS",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.trade_settlement",
+        "source": "DERIVED",
+        "type": "closed_status_rule",
+        "required_rule": "MATCHED MINED RETRYING are nonterminal committed; CONFIRMED is terminal success; FAILED is terminal failure",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "nonterminal trade blocks new exposure and FAILED is never counted as an active fill",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "trade id digests and closed status counts",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.cancel_recovery",
+        "source": "DERIVED",
+        "type": "bounded_recovery_rule",
+        "required_rule": "same cancel attempt identity never retries; authoritative still-live order may receive a new cancel attempt identity; at most three rounds per invocation",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "unconverged recovery becomes RECONCILIATION_BLOCKED and never authorizes CREATE",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "cancel attempt identities and closed recovery state",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.restart_recovery",
+        "source": "DERIVED",
+        "type": "fail_closed_replay_rule",
+        "required_rule": "restart begins no-new-exposure; clean prior terminal episode allows a fresh permit; known residual positions remain committed; unknown state blocks",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "canonical store replay plus authoritative REST reconciliation converges before new admission",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed recovery state",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exec_feas.minimum_order",
+        "source": "DERIVED",
+        "type": "two_dimension_rule",
+        "required_rule": "Gamma minimum is USDC notional and CLOB minimum is shares with no equality requirement",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "notional and shares are independently compared and missing facts remain UNKNOWN",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "minimum-order dimension and closed diagnostics",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.activation_separation",
+        "source": "CONSTANT",
+        "type": "separate_human_gate",
+        "required_rule": "merged dormant capability never activates real credentials account orders or capital; first real canary requires separate exact-merge Karl authorization",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "implementation and CI use zero real product network credentials account access orders and capital",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "LIVE TRADING STATUS: DISABLED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.order_encoding",
+        "source": "DERIVED",
+        "type": "pinned_sdk_no_widening_rule",
+        "required_rule": "pinned polymarket-client 0.10.0 is authoritative; aggressive BUY construction is accepted only if post-construction inspection preserves the exact permit price share and principal caps; rounding-sensitive cases that cannot preserve authority fail ORDER_ENCODING_UNSUPPORTED and do not authorize a dependency upgrade",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "offline regression includes at least one rounding-sensitive 0.10.0 BUY case; no encoded order may exceed the exact permit price requested shares principal or worst-case commitment",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "ORDER_ENCODING_UNSUPPORTED or sanitized verified order economics",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "live_orch.episode_lifecycle",
+        "source": "DERIVED",
+        "type": "closed_runtime_episode_lifecycle",
+        "required_rule": "product runtime states remain ADMISSION_PENDING ADMITTED CREATE_STARTED CREATE_REJECTED CREATE_ACCEPTED CREATE_AMBIGUOUS RESTING CANCEL_STARTED RECONCILING SETTLEMENT_PENDING TERMINAL_NO_POSITION TERMINAL_KNOWN_POSITION RECONCILIATION_BLOCKED with the prompt-defined fail-closed transitions",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "clean terminal episodes may yield to a later fresh permit; known residual commitment persists; any unknown corrupt replay-mismatched or unresolved state blocks new exposure",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed episode state only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new standalone content-addressed product-record schema is introduced; durable admission and episode identities use the existing execution-gateway tamper-evident persistence conventions and are behaviorally specified/tested.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Canonical governed WP authorization lifecycle required by the merged readiness gate; the product LIVE-ORCH runtime episode lifecycle remains normative in prompt/tests and semantic_fields.live_orch.episode_lifecycle.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "independent PASS certificate binds exact prompt/spec bytes and readiness package semantics",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly authorizes implementation of the exact certified bytes after readiness PASS",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "exact 27-path implementation completes required focused and full validation without semantic prompt/spec edits",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed polymarket-work-package-spec 1.0.0 guard precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new work-package identity derivation is specified; product behavior examples are represented by explicit offline tests and evidence-plan entries.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Material protected behavior maps to offline focused tests, compatibility guards, exact-scope readiness, full suite and exact-head hosted/PR evidence.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "independent minimum-order dimensions",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "Gamma notional and CLOB share minima are independent with closed diagnostics and all unrelated EXEC-FEAS behavior stays green"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "Gate-B protected SDK boundary",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_gateway/test_gate_b.py",
+        "expected_result": "bounded account truth and local BUY signing pass with no deployment approval retry or secret leakage"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "Gate-C mutation classification and trade status",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_gateway/test_gate_c.py",
+        "expected_result": "single transmit unknown-as-ambiguous identity separation trade status and cancel recovery pass"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "gateway and store restart recovery",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_gateway/test_gateway.py tests/execution_gateway/test_store_recovery.py",
+        "expected_result": "multi-episode restart known residual commitment ambiguous mutation recovery and store fail-closed behavior pass"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "LIVE-ORCH end-to-end offline matrix",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_orch.py",
+        "expected_result": "BUY-only admission durable evidence drift contract capital fee partial-fill settlement cancel and restart cases pass"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "global live and architecture compatibility guards",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_boundaries.py tests/test_no_live_mode_by_default.py",
+        "expected_result": "orchestrator remains inside approved scopes and adds no unapproved live surface"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "official-client compatibility guards",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_official_client_dependency_boundary.py tests/test_official_client_sandbox_boundary.py",
+        "expected_result": "pinned dependency and protected direct-SDK boundaries remain unchanged"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "architecture status and repo-truth docs",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_direction_docs.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
+        "expected_result": "docs record dormant LIVE-ORCH capability disabled live status and separately gated canary"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "negative_control",
+        "test": "frozen-base EXEC-FEAS minimum-order dimension defect",
+        "command": "git show 3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe:src/execution_feasibility/evaluator.py | grep -F 'if gamma_min != book_min:'",
+        "expected_result": "demonstrates the old frozen-base source-conflict branch that incorrectly equates Gamma minimum notional with CLOB minimum shares; R001 candidate tests prove the repair"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "validation",
+        "test": "exact protected readiness",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-LIVE-ORCH-01/wp_prompt.txt --spec docs/wp_specs/S10-LIVE-ORCH-01/wp_spec.json --certificate docs/wp_specs/S10-LIVE-ORCH-01/draftability_certificate.json --repo-root . --check-diff --base origin/main --head HEAD",
+        "expected_result": "exact independent certificate plus prompt/spec passes the PROTECTED readiness gate as IMPLEMENTATION_READY with exact 27-path scope"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "validation",
+        "test": "diff and artifact hygiene",
+        "command": "git diff --check && python tools/git/preflight_generated_artifact_guard.py && python tools/security/run_available_security_checks.py",
+        "expected_result": "diff check and generated-artifact guard pass; available security checks run truthfully and any unavailable optional tool is reported unavailable rather than PASS"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "full repository suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "full suite passes once on stable exact head with zero real product activity"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "hosted_ci",
+        "test": "exact-head hosted CI",
+        "command": "gh pr checks --watch",
+        "expected_result": "all required hosted jobs pass on exact final implementation head"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pr_evidence",
+        "test": "final PR-body evidence consistency on exact final head",
+        "command": "python tools/git/pr_evidence_consistency_guard.py --pr-body /tmp/s10-live-orch-01-pr-body.md --expected-head \"$(git rev-parse HEAD)\" --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note",
+        "expected_result": "PASS on the final PR-body text copied to the stated temporary file and exact final head; do not use --require-standard-network-wording because this WP truthfully adds dormant protected runtime network capability while implementation and CI still perform zero real product activity"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-LIVE-CANARY-01",
+    "next_title": "First Restricted Live Canary Activation",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-LIVE-CANARY-01",
+    "forbidden_in_this_wp": [
+      "real private-key use during implementation or CI",
+      "authenticated real account access during implementation or CI",
+      "real economic CREATE or CANCEL during implementation or CI",
+      "capital deployment or live activation",
+      "economic SELL CREATE",
+      "automatic scaling",
+      "automatic CREATE retry",
+      "Session Keys or Builder credentials",
+      "SDK dependency migration",
+      "wallet deployment or approval automation",
+      "funding withdrawal bridge or redemption",
+      "neg-risk or seconds-delay live execution",
+      "persistent unattended resting orders or heartbeat daemon",
+      "authenticated user WebSocket as recovery authority",
+      "multi-strategy unattended scheduling",
+      "Control Center mutation UI",
+      "second VPS or provider upgrade",
+      "merge"
+    ]
+  }
+}

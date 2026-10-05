@@ -436,7 +436,8 @@ def test_direction_docs():
                  "exploratory Gate C (S10-GATE-C-EXPLORE-01: implemented capability, MERGED in PR #213) -> execution "
                  "host (S10-DEPLOY-EXEC-01: see the current section below)",
                  "Earlier merged predecessor: S10-EXEC-FEAS-01 Current Public Execution Feasibility Core (PR #212",
-                 "Immediate merged predecessor: S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (PR #213"):
+                 # S10-LIVE-ORCH-01: DEPLOY-EXEC (PR #214) is now the immediate merged predecessor.
+                 "Earlier merged predecessor: S10-GATE-C-EXPLORE-01 Exploratory Gate C Policy Permit Core (PR #213"):
         assert text in roadmap, text
 
 
@@ -473,7 +474,9 @@ def _deploy_exec_adr() -> str:
 
 def _deploy_exec_roadmap() -> str:
     roadmap = ROADMAP.read_text(encoding="utf-8")
-    section = roadmap.split("## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (current)", 1)[1]
+    # S10-LIVE-ORCH-01: DEPLOY-EXEC merged (PR #214); its roadmap section is retained as merged history.
+    section = roadmap.split("## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (merged)", 1)[1]
+    section = section.split("\n## ", 1)[0]
     return " ".join(section.split())
 
 
@@ -530,4 +533,65 @@ def test_execution_host_successor_boundary_live_orch_remains_separate():
     for claim in ("S10-LIVE-ORCH-01: STARTED", "S10-LIVE-ORCH-01: MERGED", "Phase B: PERFORMED", "EXECUTION_HOST_PROVEN_C8G: ACHIEVED",
                   "live: ENABLED", "LIVE TRADING STATUS: ENABLED"):
         for doc in CANONICAL + (EXEC_HOST_CONTRACT, LIVE_AUTH, HOSTING):
+            assert claim not in _flat(doc), (doc.name, claim)
+
+# -- S10-LIVE-ORCH-01: restricted live orchestration + first-live canary core (R008) --
+
+LIVE_ORCH_CONTRACT = ROOT / "docs" / "live_orchestration_contract.md"
+
+
+def _live_orch_adr() -> str:
+    adr = ADR.read_text(encoding="utf-8")
+    return " ".join(adr.split(
+        "## V2.1 Restricted Live Orchestration + First-Live Canary Core (S10-LIVE-ORCH-01)", 1)[1].split())
+
+
+def test_live_orch_direction_docs_record_dormant_capability_and_separate_canary():
+    section = _live_orch_adr()
+    path = ("lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes strategy manager (S10-HERMES-STRAT-01: MERGED) -> "
+            "execution feasibility (S10-EXEC-FEAS-01: MERGED) -> exploratory Gate C (S10-GATE-C-EXPLORE-01: MERGED) "
+            "-> execution host (S10-DEPLOY-EXEC-01: MERGED) -> live orchestrator (S10-LIVE-ORCH-01: implemented "
+            "dormant capability, current protected review target) -> first restricted live canary "
+            "(S10-LIVE-CANARY-01: separately gated, NOT AUTHORIZED)")
+    assert path in section
+    for text in ("Governance track PROTECTED", "exact 27-path XL scope", "independent certificate",
+                 "S10-DEPLOY-EXEC-01: MERGED (PR #214 merged at `fe4e2f1557dec5667d32fa1479f0bfc7ead1c940`",
+                 "constructs no raw SDK client and adds no direct mutation boundary",
+                 "The first-live CREATE side is BUY only",
+                 "Merge does not activate live trading",
+                 "WP175 remains the historical/manual restricted-live canary path"):
+        assert text in section, text
+    assert "Status: MERGED (PR #214 merged at `fe4e2f1557dec5667d32fa1479f0bfc7ead1c940`" in _deploy_exec_adr()
+    contract = _flat(LIVE_ORCH_CONTRACT)
+    for text in ("`LIVE TRADING STATUS: DISABLED`", "SIDE_UNSUPPORTED_FIRST_CANARY",
+                 "durable ADMISSION -> durable CREATE_STARTED -> one economic transmit maximum",
+                 "Admission persistence failure means zero transmit",
+                 "including the venue code `unknown`", "FAILED is terminal failure and never an active fill",
+                 "At most three cancel/reconcile rounds per foreground invocation",
+                 "`current_value` is never read, so a mark-to-market decline never frees budget",
+                 "No UTC-day realized-loss ledger or account-equity high-water drawdown is claimed",
+                 "`fetch_public_venue_snapshot(*, gamma_market_id, condition_id, token_id, opener=None, clock_ns=None)`",
+                 "ORDER_ENCODING_UNSUPPORTED", "This contract never authorizes a real order"):
+        assert text in contract, text
+    for constant, value in (("AUTHORIZED_ACCOUNT_CAPITAL_USD", "100"), ("SINGLE_ORDER_WORST_CASE_MAX_USD", "5"),
+                            ("MAX_TOTAL_EARLY_COMMITMENT_USD", "30"), ("MIN_FREE_COLLATERAL_RESERVE_USD", "70")):
+        assert f"| `{constant}` | {value} |" in LIVE_ORCH_CONTRACT.read_text(encoding="utf-8")
+    roadmap = ROADMAP.read_text(encoding="utf-8")
+    assert "## S10-LIVE-ORCH-01 Restricted Live Orchestration + First-Live Canary Core (current)" in roadmap
+    assert "## S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate & Coexistence Proof (merged)" in roadmap
+    flat_roadmap = _flat(ROADMAP)
+    for text in ("Current protected implementation package: S10-LIVE-ORCH-01 Restricted Live Orchestration +",
+                 "Immediate merged predecessor: S10-DEPLOY-EXEC-01 Execution-Host Runtime Substrate &"):
+        assert text in flat_roadmap, text
+    live_text = LIVE_AUTH.read_text(encoding="utf-8")
+    assert live_text.splitlines()[2] == "LIVE TRADING STATUS: DISABLED"
+    live = " ".join(live_text.split())
+    for text in ("S10-LIVE-ORCH-01 (restricted live orchestration + first-live canary core) merges dormant "
+                 "protected capability only and grants no live authority.",
+                 "may transmit at most one BUY CREATE", "Merge does not activate live trading",
+                 "| S10-LIVE-ORCH-01 first restricted live canary | No (dormant; separate exact-merge activation required) |"):
+        assert text in live, text
+    for claim in ("S10-LIVE-ORCH-01: MERGED", "S10-LIVE-CANARY-01: STARTED", "S10-LIVE-CANARY-01: AUTHORIZED",
+                  "LIVE TRADING STATUS: ENABLED", "live: ENABLED", "AUTO_SCALING` | TRUE", "SELL CREATE: SUPPORTED"):
+        for doc in CANONICAL + (LIVE_ORCH_CONTRACT, LIVE_AUTH):
             assert claim not in _flat(doc), (doc.name, claim)

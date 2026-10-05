@@ -768,3 +768,212 @@ def test_foreground_operator_reconciles_restart_before_arm() -> None:
         now_ns=100,
     )
     assert gateway.adapter == "official-adapter"
+
+
+# ---------------------------------------------------------------------------
+# S10-LIVE-ORCH-01 (R003): one-transmit classification, trade status, cancel recovery
+# ---------------------------------------------------------------------------
+
+
+def test_unknown_create_rejection_is_ambiguous_in_historical_and_live_orch_paths() -> None:
+    """Defect F: RejectedOrder code "unknown" never proves non-acceptance."""
+    from src.execution_gateway.gate_c import classify_live_orch_create_response
+
+    session = object.__new__(GateCSession)
+    unknown = RejectedOrder(code="unknown", message="unrecognized venue error")
+    assert session._classify(unknown) == ("AMBIGUOUS", "unknown", None)
+    assert classify_live_orch_create_response(unknown)["outcome"] == "AMBIGUOUS"
+    for code in ("unmatched", "market_not_ready", "not_enough_balance", "invalid_nonce",
+                 "invalid_expiration", "post_only_would_cross", "post_only_mode",
+                 "fok_not_filled", "fak_not_filled"):
+        result = classify_live_orch_create_response(RejectedOrder(code=code, message="x"))
+        assert result["outcome"] == "DEFINITIVE_REJECTED", code
+    accepted = classify_live_orch_create_response(AcceptedOrder(
+        order_id="0x" + "1" * 64, status="matched", making_amount=Decimal("4.16"),
+        taking_amount=Decimal("8"), trade_ids=("trade-2", "trade-1"), transactions_hashes=()))
+    assert (accepted["outcome"], accepted["response_status"]) == ("DEFINITIVE_ACCEPTED", "matched")
+    assert accepted["trade_ids"] == ["trade-1", "trade-2"]
+    assert accepted["making_amount"] == "4.16" and accepted["taking_amount"] == "8"
+    garbled = AcceptedOrder(order_id="bad id with spaces", status="live", making_amount=Decimal("0"),
+                            taking_amount=Decimal("0"), trade_ids=(), transactions_hashes=())
+    assert classify_live_orch_create_response(garbled)["outcome"] == "AMBIGUOUS"
+
+
+def _live_orch_boundary(tmp_path: Path, client):
+    from src.execution_gateway.gate_b import GateBIdentityPolicy, GateBSecretLease, WalletSessionLock
+    from src.execution_gateway.gate_c import LiveOrchMutationBoundary
+    from src.execution_gateway.gateway import _LIVE_ORCH_EVENT_ISSUER
+
+    gateway = ProtectedExecutionGateway.create(tmp_path / "liveorch.sqlite3", created_time_ns=1)
+    lock = WalletSessionLock(tmp_path, client.wallet).acquire()
+
+    class _Provider:
+        def acquire(self):
+            return GateBSecretLease("synthetic-test-key-material")
+
+    session = gate_b_mod.GateBSession.authenticate(
+        _Provider(),
+        GateBIdentityPolicy(expected_signer=client.signer, expected_wallet=client.wallet),
+        client_factory=lambda key, wallet: client, gateway=gateway, wallet_lock=lock,
+    )
+    with pytest.raises(GatewayError, match="LIVE_ORCH_REQUIRED"):
+        LiveOrchMutationBoundary(gateway, session, issuer=object())
+    return gateway, lock, session, LiveOrchMutationBoundary(gateway, session, issuer=_LIVE_ORCH_EVENT_ISSUER)
+
+
+def _episode_for(prepared, *, token_id):
+    from src.execution_gateway.gateway import live_orch_episode_id
+
+    binding = {
+        "exploratory_permit_id": "exploratorygatecpermit:sha256:" + "1" * 64,
+        "execution_intent_id": "executionintent:sha256:" + "2" * 64,
+        "strategy_version_id": "strategyversion:sha256:" + "3" * 64,
+        "execution_rule_sha256": "executionrule:sha256:" + "4" * 64,
+        "gamma_market_id": "516710", "condition_id": "0x" + "ab" * 32, "token_id": token_id,
+        "side": "BUY", "execution_style": "PASSIVE_MAKER", "order_type": "GTC",
+        "requested_shares": "8", "price_limit": "0.51", "post_only": True,
+        "gtd_expiration_unix_s": None, "authorized_order_notional_usd": "4.08",
+        "release_sha": "c" * 40, "public_signer": "0x" + "a" * 40, "public_wallet": "0x" + "b" * 40,
+    }
+    admission = {
+        "admission_id": "liveorchadmission:sha256:" + "5" * 64, "decision": "ADMITTED",
+        "venue_snapshot_id": "executionsnapshot:sha256:" + "6" * 64,
+        "execution_feasibility_assessment_id": "executionfeasibility:sha256:" + "7" * 64,
+        "feasibility_status": "FEASIBLE", "host_currentness_id": "hostcurrentness:sha256:" + "8" * 64,
+        "geoblock_proof_id": "geoblockproof:sha256:" + "9" * 64, "geoblock_observed_time_ns": 1,
+        "account_truth_id": "liveorchaccount:sha256:" + "a" * 64, "collateral_before_usd": "100",
+        "current_committed_usd": "0", "principal_notional_usd": "4.08",
+        "worst_case_fee_reserve_usd": "0", "worst_case_commitment_usd": "4.08",
+        "projected_free_collateral_usd": "95.92", "observed_realized_pnl_loss_usd": "0",
+        "observed_position_pnl_drawdown_usd": "0", "observed_cumulative_canary_loss_usd": "0",
+        "signed_order_id": prepared.economics.signed_order_id,
+        "signed_maker_amount": prepared.economics.maker_amount,
+        "signed_taker_amount": prepared.economics.taker_amount, "admitted_time_ns": 5,
+    }
+    return {
+        "episode_id": live_orch_episode_id(binding, admission["admission_id"]), "state": "ADMITTED",
+        "binding": binding, "admission": admission, "create": None, "cancel_attempts": [],
+        "reconciliation": {"order_live": None, "open_remainder_shares": "0", "trades": [],
+                           "fee_state": "NOT_REQUIRED", "actual_fee_usd": None,
+                           "block_reason": None, "last_reconciled_time_ns": None},
+    }
+
+
+class _LiveOrchFakeClient:
+    signer, wallet, wallet_type = "0x" + "a" * 40, "0x" + "b" * 40, "DEPOSIT_WALLET"
+
+    def __init__(self, response, cancel=None):
+        self.environment = SimpleNamespace(name="production")
+        self._ctx = SimpleNamespace(signer_type="OWNER", environment_config=SimpleNamespace(chain_id=137))
+        self.response = response
+        self.cancel = cancel
+        self.posts = []
+        self.cancels = []
+
+    def create_limit_order(self, *, asset_id=None, token_id=None, price, size, side,
+                           post_only=False, expiration=None, builder_code=None):
+        return SignedOrder(
+            builder="0x" + "0" * 64, expiration=0, maker=self.wallet, maker_amount=4_080_000,
+            metadata="0x" + "0" * 64, order_type="GTC", salt=1, side="BUY", signature="0xsig",
+            signature_type=3, signer=self.wallet, taker_amount=8_000_000,
+            timestamp=1, token_id=asset_id or token_id, post_only=post_only,
+        )
+
+    def post_order(self, signed):
+        self.posts.append(signed)
+        if isinstance(self.response, BaseException):
+            raise self.response
+        return self.response
+
+    def cancel_order(self, *, order_id):
+        self.cancels.append(order_id)
+        if self.cancel is None:
+            raise TimeoutError("lost")
+        return self.cancel
+
+
+def _passive_spec(token_id):
+    from src.execution_gateway.gate_c import LiveOrchOrderSpec
+
+    return LiveOrchOrderSpec(
+        token_id=token_id, execution_style="PASSIVE_MAKER", order_type="GTC", requested_shares="8",
+        price_limit="0.51", gtd_expiration_unix_s=None, principal_notional_usd="4.08",
+        worst_case_commitment_usd="4.08", tick_size="0.01",
+    )
+
+
+def test_live_orch_boundary_single_transmit_and_trade_ids_retained(tmp_path: Path) -> None:
+    token = "71321045679252212594626385532706912750332728571942532289631379312455583992563"
+    response = AcceptedOrder(order_id="0x" + "c" * 64, status="matched",
+                             making_amount=Decimal("4.08"), taking_amount=Decimal("8"),
+                             trade_ids=("trade-x",), transactions_hashes=())
+    client = _LiveOrchFakeClient(response)
+    gateway, lock, session, boundary = _live_orch_boundary(tmp_path, client)
+    try:
+        prepared = boundary.prepare(_passive_spec(token), attempt_seed="permit-anchor")
+        assert client.posts == []  # local construction never posts
+        episode = _episode_for(prepared, token_id=token)
+        with pytest.raises(GatewayError, match="LIVE_ORCH_ADMISSION_INVALID"):
+            boundary.admit_and_transmit(prepared, {**episode, "state": "CREATE_STARTED"}, now_ns=10)
+        outcome = boundary.admit_and_transmit(prepared, episode, now_ns=10)
+        assert outcome["state"] == "CREATE_ACCEPTED" and len(client.posts) == 1
+        record = gateway.live_orch_checkpoint()["episodes"][0]
+        assert record["create"]["trade_ids"] == ["trade-x"]
+        assert record["create"]["venue_order_id"] == "0x" + "c" * 64
+        with pytest.raises(GatewayError, match="GATE_C_REQUIRED"):
+            boundary.admit_and_transmit(prepared, episode, now_ns=11)
+        assert len(client.posts) == 1
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
+
+
+def test_live_orch_boundary_transport_failure_is_ambiguous_never_retried(tmp_path: Path) -> None:
+    token = "71321045679252212594626385532706912750332728571942532289631379312455583992563"
+    client = _LiveOrchFakeClient(ConnectionResetError("reset by peer"))
+    gateway, lock, session, boundary = _live_orch_boundary(tmp_path, client)
+    try:
+        prepared = boundary.prepare(_passive_spec(token), attempt_seed="permit-anchor")
+        outcome = boundary.admit_and_transmit(prepared, _episode_for(prepared, token_id=token), now_ns=10)
+        assert outcome["state"] == "CREATE_AMBIGUOUS" and outcome["venue_order_id"] is None
+        assert len(client.posts) == 1
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
+
+
+def test_live_orch_cancel_recovery_uses_new_identity_each_round(tmp_path: Path) -> None:
+    token = "71321045679252212594626385532706912750332728571942532289631379312455583992563"
+    response = AcceptedOrder(order_id="0x" + "d" * 64, status="live", making_amount=Decimal("0"),
+                             taking_amount=Decimal("0"), trade_ids=(), transactions_hashes=())
+    client = _LiveOrchFakeClient(response)
+    gateway, lock, session, boundary = _live_orch_boundary(tmp_path, client)
+    try:
+        prepared = boundary.prepare(_passive_spec(token), attempt_seed="permit-anchor")
+        episode = _episode_for(prepared, token_id=token)
+        boundary.admit_and_transmit(prepared, episode, now_ns=10)
+        assert boundary.cancel(episode["episode_id"], now_ns=20) == "AMBIGUOUS"
+        client.cancel = SimpleNamespace(canceled=("0x" + "d" * 64,), not_canceled={})
+        assert boundary.cancel(episode["episode_id"], now_ns=30) == "DEFINITIVE_ACCEPTED"
+        attempts = gateway.live_orch_checkpoint()["episodes"][0]["cancel_attempts"]
+        assert [a["sequence"] for a in attempts] == [1, 2]
+        assert attempts[0]["cancel_attempt_id"] != attempts[1]["cancel_attempt_id"]
+        assert [a["result"] for a in attempts] == ["AMBIGUOUS", "DEFINITIVE_ACCEPTED"]
+        assert client.cancels == ["0x" + "d" * 64] * 2
+        events = [e.event_type for e in gateway._store.load()[2] if e.event_type.startswith("LIVE_ORCH_")]
+        assert events == ["LIVE_ORCH_ADMITTED", "LIVE_ORCH_CREATE_STARTED", "LIVE_ORCH_CREATE_OUTCOME",
+                          "LIVE_ORCH_CANCEL_STARTED", "LIVE_ORCH_CANCEL_OUTCOME",
+                          "LIVE_ORCH_CANCEL_STARTED", "LIVE_ORCH_CANCEL_OUTCOME"]
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
+
+
+def test_live_orch_gate_c_keeps_market_condition_and_token_distinct() -> None:
+    source = inspect.getsource(gate_c_mod.LiveOrchMutationBoundary)
+    assert "condition_id" not in source  # the boundary never substitutes market identity
+    spec_fields = set(gate_c_mod.LiveOrchOrderSpec.__dataclass_fields__)
+    assert "token_id" in spec_fields and "market_id" not in spec_fields

@@ -1570,3 +1570,203 @@ def test_undeployed_wallet_fails_closed_and_client_closed(monkeypatch):
     # (5) no deployment method invoked; (6) credential client closed on failure
     assert holder["client"].deployed_called is False
     assert holder["client"].closed is True
+
+
+# --------------------------------------------------------------------------- S10-LIVE-ORCH-01 (R002)
+
+LIVE_ORCH_EXCHANGE = "0xe111180000d2663c0091e4f400237545b87b996b"
+
+
+class _LiveOrchClient(FakeClient):
+    """FakeClient plus the bounded LIVE-ORCH read surface; no mutation is reachable."""
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self._ctx.environment_config.standard_exchange = LIVE_ORCH_EXCHANGE
+        self._ctx.environment_config.neg_risk_exchange = "0x" + "e" * 40
+        self.calls: list[str] = []
+        self.market_builds: list[dict] = []
+
+    def get_balance_allowance(self, *, asset_type):
+        self.calls.append("balance")
+        return SimpleNamespace(balance=97_500_000, allowances={LIVE_ORCH_EXCHANGE: 50_000_000})
+
+    def get_closed_only_mode(self):
+        self.calls.append("closed_only")
+        return False
+
+    def get_order(self, *, order_id):
+        self.calls.append("get_order")
+        return _open_order(order_id, status="CANCELED")
+
+    def create_market_order(self, **kwargs):
+        self.market_builds.append(dict(kwargs))
+        return _SignedOrder()
+
+    def __getattr__(self, name):
+        # Any wallet deployment / approval / relayer / redemption surface is absent.
+        raise AttributeError(name)
+
+
+def _open_order(order_id, *, status="LIVE", matched="0"):
+    return SimpleNamespace(
+        id=order_id, asset_id=TOKEN, condition_id="0x" + "ab" * 32, side="BUY", price="0.51",
+        original_size="8", size_matched=matched, status=status, order_type="GTC",
+    )
+
+
+def _trade(trade_id, *, status, taker="0x" + "1" * 64):
+    return SimpleNamespace(
+        id=trade_id, status=status, asset_id=TOKEN, side="BUY", taker_order_id=taker,
+        trader_side="TAKER", price="0.52", size="8",
+        maker_orders=(SimpleNamespace(order_id="0x" + "9" * 64, price="0.52", matched_amount="8"),),
+    )
+
+
+def _position(**changes):
+    values = dict(
+        asset_id=TOKEN, condition_id="0x" + "ab" * 32, current_size="8", entry_cost_usdc="4.16",
+        entry_fees_usdc="0.06", total_cost_usdc="4.22", realized_pnl="-0.5", total_pnl="-1",
+        status=SimpleNamespace(value="OPEN"), current_value="0.01",
+    )
+    values.update(changes)
+    return SimpleNamespace(**values)
+
+
+def test_live_orch_account_truth_is_bounded_exact_and_sanitized():
+    client = _LiveOrchClient(
+        open_orders=[_open_order("0x" + "2" * 64)],
+        trades=[_trade("trade-a", status="TRADE_STATUS_MINED"),
+                _trade("trade-b", status="CONFIRMED"), _trade("trade-c", status="FAILED")],
+        positions=[_position()],
+    )
+    session = _session(client)
+    with pytest.raises(GatewayError, match="LIVE_ORCH_REQUIRED"):
+        session.live_orch_account_truth(object(), observed_time_ns=5)
+    truth = session.live_orch_account_truth(gate_b_mod._LIVE_ORCH_ISSUER, observed_time_ns=5)
+    assert truth.collateral_balance == "97.5"
+    assert dict(truth.allowance_by_exchange) == {"exchange": "50"}
+    assert [(t.trade_id, t.status) for t in truth.trades] == [
+        ("trade-a", "MINED"), ("trade-b", "CONFIRMED"), ("trade-c", "FAILED")]
+    assert truth.trades[0].maker_fills[0].matched_amount == "8"
+    assert truth.open_orders[0].venue_order_id == "0x" + "2" * 64
+    position = truth.positions[0]
+    assert (position.total_cost_usdc, position.realized_pnl, position.total_pnl) == ("4.22", "-0.5", "-1")
+    assert not hasattr(position, "current_value")
+    assert truth.truth_id.startswith("liveorchaccount:sha256:")
+    assert SECRET_SENTINEL not in repr(truth)
+    # Reads only: no post, cancel, deploy, approval or relayer call.
+    assert client.place_calls == 0 and client.cancel_one_calls == [] and client.cancel_all_calls == 0
+    assert set(client.calls) == {"balance", "closed_only"}
+    order = session.live_orch_order(gate_b_mod._LIVE_ORCH_ISSUER, "0x" + "3" * 64)
+    assert order.status == "CANCELED"
+
+
+@pytest.mark.parametrize("kind", ["open_orders", "trades", "positions"])
+def test_live_orch_account_history_over_100_items_fails_closed(kind):
+    items = {
+        "open_orders": [_open_order("0x" + format(n, "064x")) for n in range(101)],
+        "trades": [_trade(f"t-{n}", status="CONFIRMED") for n in range(101)],
+        "positions": [_position(asset_id=str(10**40 + n)) for n in range(101)],
+    }[kind]
+    session = _session(_LiveOrchClient(**{kind: items}))
+    with pytest.raises(GatewayError, match="ACCOUNT_HISTORY_LIMIT_EXCEEDED"):
+        session.live_orch_account_truth(gate_b_mod._LIVE_ORCH_ISSUER, observed_time_ns=5)
+
+
+def test_live_orch_read_errors_and_malformed_models_are_sanitized():
+    client = _LiveOrchClient(trades=[_trade("t", status="CONFIRMED")])
+
+    def boom(**_kw):
+        raise RuntimeError(f"upstream failure leaking {SECRET_SENTINEL}")
+
+    client.list_account_trades = boom
+    session = _session(client)
+    with pytest.raises(GatewayError) as excinfo:
+        session.live_orch_account_truth(gate_b_mod._LIVE_ORCH_ISSUER, observed_time_ns=5)
+    assert excinfo.value.code == "AUTHENTICATED_READ_FAILED"
+    assert SECRET_SENTINEL not in str(excinfo.value)
+    bad = _session(_LiveOrchClient(positions=[_position(total_cost_usdc="-1")]))
+    with pytest.raises(GatewayError, match="ACCOUNT_TRUTH_INVALID"):
+        bad.live_orch_account_truth(gate_b_mod._LIVE_ORCH_ISSUER, observed_time_ns=5)
+
+
+def test_local_limit_and_aggressive_buy_construction_never_posts():
+    client = _LiveOrchClient()
+    session = _session(client)
+    permit = GateCLivePermit._issue(gate_b_mod._GATE_C_ISSUER, "liveorchcreate:sha256:" + "1" * 64)
+    handle = session.gate_c_transport(permit)
+    handle.build(asset_id=TOKEN, price=0.51, size=8, side="BUY", post_only=True)
+    from decimal import Decimal
+
+    handle.build_aggressive_buy(asset_id=TOKEN, amount=Decimal("4.4"), max_spend=Decimal("4.4666"),
+                                max_price=Decimal("0.55"), order_type="FOK")
+    assert client.market_builds == [{"token_id": TOKEN, "side": "BUY", "amount": Decimal("4.4"),
+                                     "max_spend": Decimal("4.4666"), "max_price": Decimal("0.55"),
+                                     "order_type": "FOK"}]
+    with pytest.raises(GatewayError, match="ORDER_ENCODING_UNSUPPORTED"):
+        handle.build_aggressive_buy(asset_id=TOKEN, amount=Decimal("1"), max_spend=Decimal("1"),
+                                    max_price=Decimal("0.5"), order_type="GTC")
+    # Building never posts; transmit stays locked until Gate-C consumes the permit.
+    assert client.place_calls == 0
+    with pytest.raises(GatewayError, match="GATE_C_REQUIRED"):
+        handle.transmit(object())
+
+
+def test_live_orch_cancel_requires_gate_c_and_never_resends_an_identity(tmp_path):
+    client = _LiveOrchClient(cancel_response=_CancelResponse(canceled=("0x" + "4" * 64,)))
+    _store, gateway, lock, session = _durable_session(tmp_path, client)
+    try:
+        attempt = CancelAttempt(
+            operation="CANCEL_ONE", request_target_ids=("0x" + "4" * 64,),
+            request_target_bindings=(("0x" + "4" * 64, "liveorchepisode:sha256:" + "5" * 64),),
+            request_market_id=None, attempt_sequence=1, prior_reconciliation_state="HEALTHY",
+        )
+        with pytest.raises(GatewayError, match="LIVE_ORCH_REQUIRED"):
+            session.live_orch_cancel(object(), attempt, prior_attempt_ids=())
+        seeded = CancelAttempt(
+            operation="CANCEL_ONE", request_target_ids=attempt.request_target_ids,
+            request_target_bindings=attempt.request_target_bindings, request_market_id=None,
+            attempt_sequence=2, prior_reconciliation_state="HEALTHY",
+        )
+        with pytest.raises(GatewayError, match="MUTATION_ALREADY_TRANSMITTED"):
+            session.live_orch_cancel(gate_b_mod._GATE_C_ISSUER, seeded,
+                                     prior_attempt_ids=(seeded.identity,))
+        assert client.cancel_one_calls == [] and seeded.identity != attempt.identity
+        result, _summary = session.live_orch_cancel(gate_b_mod._GATE_C_ISSUER, attempt, prior_attempt_ids=())
+        assert result == "DEFINITIVE_ACCEPTED" and client.cancel_one_calls == ["0x" + "4" * 64]
+        with pytest.raises(GatewayError, match="MUTATION_ALREADY_TRANSMITTED"):
+            session.live_orch_cancel(gate_b_mod._GATE_C_ISSUER, attempt, prior_attempt_ids=())
+    finally:
+        session.close()
+        lock.close()
+        gateway.close()
+
+
+def test_fee_enabled_standard_market_metadata_usable_for_live_orch():
+    client = FakeClient()
+    client.get_market = lambda *, id: SimpleNamespace(
+        id=id, condition_id="condition-a",
+        state=SimpleNamespace(active=True, closed=False, accepting_orders=True,
+                              enable_order_book=True, neg_risk=False),
+        trading=SimpleNamespace(seconds_delay=0, fees_enabled=True,
+                                fee_schedule=SimpleNamespace(rate="0.0333", taker_only=True)),
+        outcomes=SimpleNamespace(yes=SimpleNamespace(token_id=TOKEN),
+                                 no=SimpleNamespace(token_id="other-token")),
+    )
+    client.get_order_book = lambda *, token_id: SimpleNamespace(
+        asset_id=token_id, condition_id="condition-a", neg_risk=False,
+        tick_size="0.01", min_order_size="5",
+    )
+    session = _session(client)
+    with pytest.raises(GatewayError, match="MARKET_METADATA_INVALID"):
+        session.gate_c_market_metadata(gate_b_mod._GATE_C_ISSUER, market_id="516710",
+                                       token_id=TOKEN, observed_time_ns=100)
+    metadata = session.gate_c_market_metadata(
+        gate_b_mod._GATE_C_ISSUER, market_id="516710", token_id=TOKEN, observed_time_ns=100,
+        fees_enabled_allowed=True,
+    )
+    assert metadata.fee_rate_bps == "333"
+    # Gamma market id, condition id and token id stay distinct.
+    assert (metadata.market_id, metadata.condition_id, metadata.token_id) == (
+        "516710", "condition-a", TOKEN)

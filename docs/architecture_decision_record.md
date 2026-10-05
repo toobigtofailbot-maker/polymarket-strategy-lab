@@ -378,7 +378,8 @@ capital/orders USD 0 / 0.
 
 ## V2.1 Execution-Host Runtime Substrate (S10-DEPLOY-EXEC-01)
 
-Status: current bounded implementation target / implemented review target (base
+Status: MERGED (PR #214 merged at `fe4e2f1557dec5667d32fa1479f0bfc7ead1c940`, head `9871dddf98565b16194209f032cf8279bfbd34f1`; formerly the current bounded implementation target; repairs S10-DEPLOY-EXEC-01R (PR #215 merged at `cbdff8ccdce36d1fc51eda45d4f8140c80932931`), S10-DEPLOY-EXEC-01R2 (PR #217 merged at `b815eedb2ca47b2ab89351e90aaa50d03335149e`) and S10-DEPLOY-EXEC-01R3 (PR #218 merged at `3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe`, head `b1779f5bc6e945eedfa1ba0692a9e1baca779973`)).
+Implementation-time record (base
 `0392c2d2080a656d8ffd69f42abf8ad91d1f90e2`, after PR #213 / S10-GATE-C-EXPLORE-01 merged). Governance track RUNTIME,
 risk 3, exact 18-path scope. Contract: `docs/execution_host_runtime_contract.md`.
 
@@ -399,7 +400,7 @@ backup/restore, 60-second coexistence windows) is a separately authorized Phase 
 Coexistence and terminal outcomes are review triggers: nothing is auto-purchased or auto-upgraded,
 Karl decides, and a second VPS remains a separate material architecture decision.
 
-Known-candidate path capability status (current): lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes
+Known-candidate path capability status (at DEPLOY-EXEC implementation time): lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes
 strategy manager (S10-HERMES-STRAT-01: MERGED) -> execution feasibility (S10-EXEC-FEAS-01: MERGED)
 -> exploratory Gate C (S10-GATE-C-EXPLORE-01: MERGED) -> execution host (S10-DEPLOY-EXEC-01:
 implemented repository mechanism, current review target; real host proof separately gated as
@@ -408,3 +409,35 @@ exploratory live. Gate-C eligibility and DEPLOY-EXEC host proof are each necessa
 sufficient for live execution. ALPHA-03 and DATA-03 remain separate, non-blocking lanes; the
 Control Center remains separate and non-canonical; live trading remains DISABLED; capital/orders
 USD 0 / 0.
+
+## V2.1 Restricted Live Orchestration + First-Live Canary Core (S10-LIVE-ORCH-01)
+
+Status: current protected implementation target / implemented review target (frozen base
+`3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe`, after PR #218 / S10-DEPLOY-EXEC-01R3 merged). Governance
+track PROTECTED, risk 4, exact 27-path XL scope, independent certificate. Contract:
+`docs/live_orchestration_contract.md`.
+
+S10-DEPLOY-EXEC-01: MERGED (PR #214 merged at `fe4e2f1557dec5667d32fa1479f0bfc7ead1c940`, head `9871dddf98565b16194209f032cf8279bfbd34f1`; repairs S10-DEPLOY-EXEC-01R (PR #215 merged at `cbdff8ccdce36d1fc51eda45d4f8140c80932931`), S10-DEPLOY-EXEC-01R2 (PR #217 merged at `b815eedb2ca47b2ab89351e90aaa50d03335149e`) and S10-DEPLOY-EXEC-01R3 (PR #218 merged at `3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe`, head `b1779f5bc6e945eedfa1ba0692a9e1baca779973`)). S10-LIVE-ORCH-01 adds the minimum protected
+foreground runtime that consumes one exact current ExploratoryGateCPermit, revalidates every runtime
+fact the permit leaves open (strict execution-host currentness, fresh geoblock, exact Deposit Wallet
+identity, fresh bounded account truth, fresh compatible public venue, the hard capital envelope and
+a healthy canonical ledger), durably records the admission, transmits at most one BUY CREATE and
+reconciles partial fills, cancellation ambiguity, settlement and restart back to no-new-exposure.
+The single new module `src/execution_gateway/live_orch.py` orchestrates the existing Gate-B, Gate-C
+and gateway/store boundaries; it constructs no raw SDK client and adds no direct mutation boundary.
+
+This is dormant protected capability, not live activation. The first-live CREATE side is BUY only
+under the frozen USD 100 account / USD 5 per order / USD 30 aggregate commitment / USD 70 free
+collateral envelope with no auto scaling. The predecessor EXEC-FEAS minimum-order semantic is
+repaired in the same package (Gamma USDC notional and CLOB shares are independent dimensions). Merge
+does not activate live trading: the first real canary is the separately gated S10-LIVE-CANARY-01 and
+requires a separate exact-merge Karl authorization.
+
+Known-candidate path capability status (current): lifecycle (S10-STRAT-LIFE-01: MERGED) -> Hermes
+strategy manager (S10-HERMES-STRAT-01: MERGED) -> execution feasibility (S10-EXEC-FEAS-01: MERGED)
+-> exploratory Gate C (S10-GATE-C-EXPLORE-01: MERGED) -> execution host (S10-DEPLOY-EXEC-01: MERGED)
+-> live orchestrator (S10-LIVE-ORCH-01: implemented dormant capability, current protected review
+target) -> first restricted live canary (S10-LIVE-CANARY-01: separately gated, NOT AUTHORIZED).
+WP175 remains the historical/manual restricted-live canary path. ALPHA-03 and DATA-03 remain
+separate, non-blocking lanes; the Control Center remains separate and non-canonical; live trading
+remains DISABLED; implementation capital/orders USD 0 / 0.

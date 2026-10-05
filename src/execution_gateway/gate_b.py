@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping as RuntimeMapping
 from collections.abc import Sequence as RuntimeSequence
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from decimal import Decimal
 import getpass
 import hashlib
@@ -389,7 +389,13 @@ class _ProductionSdkMutationTransport:
         client = self._client
 
         class _Handle:
-            __slots__ = ("_build", "_transmit", "_asset_keyword", "_transmitted")
+            __slots__ = (
+                "_build",
+                "_build_market",
+                "_transmit",
+                "_asset_keyword",
+                "_transmitted",
+            )
 
             def __init__(self) -> None:
                 self._transmitted = False
@@ -405,6 +411,9 @@ class _ProductionSdkMutationTransport:
                 self._build = lambda **kwargs: getattr(
                     client, "create_" + "limit_order"
                 )(**kwargs)
+                self._build_market = lambda **kwargs: getattr(
+                    client, "create_" + "market_order"
+                )(**kwargs)
                 self._transmit = lambda signed: getattr(
                     client, "post_" + "order"
                 )(signed)
@@ -415,6 +424,39 @@ class _ProductionSdkMutationTransport:
                     if self._asset_keyword == "token_id":
                         build_kwargs["token_id"] = build_kwargs.pop("asset_id")
                     return self._build(**build_kwargs)
+                except GatewayError:
+                    raise
+                except Exception:
+                    raise GatewayError("SIGNING_FAILED") from None
+
+            def build_aggressive_buy(
+                self,
+                *,
+                asset_id: str,
+                amount: Decimal,
+                max_spend: Decimal,
+                max_price: Decimal,
+                order_type: str,
+            ) -> object:
+                """S10-LIVE-ORCH-01: local BUY FOK/FAK signing only, never a post.
+
+                Uses the pinned SDK market-order constructor with an explicit
+                ``max_price`` (protected price) and ``max_spend``; the caller must
+                inspect the signed economics before any admission.
+                """
+                if order_type not in ("FOK", "FAK"):
+                    raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+                try:
+                    return self._build_market(
+                        **{
+                            self._asset_keyword: asset_id,
+                            "side": "BUY",
+                            "amount": amount,
+                            "max_spend": max_spend,
+                            "max_price": max_price,
+                            "order_type": order_type,
+                        }
+                    )
                 except GatewayError:
                     raise
                 except Exception:
@@ -663,6 +705,163 @@ def create_deposit_wallet_client(
 
 
 # ---------------------------------------------------------------------------
+# S10-LIVE-ORCH-01 bounded exact account truth (sanitized public facts only)
+# ---------------------------------------------------------------------------
+
+
+# Process-local capability token: only the LIVE-ORCH foreground orchestrator
+# may request the exact bounded account truth below.
+_LIVE_ORCH_ISSUER = object()
+LIVE_ORCH_ACCOUNT_ITEM_LIMIT = 100
+
+
+@dataclass(frozen=True)
+class LiveOrchOpenOrder:
+    venue_order_id: str
+    token_id: str
+    condition_id: str
+    side: str
+    price: str
+    original_size: str
+    size_matched: str
+    status: str
+    order_type: str
+
+
+@dataclass(frozen=True)
+class LiveOrchMakerFill:
+    venue_order_id: str
+    price: str
+    matched_amount: str
+
+
+@dataclass(frozen=True)
+class LiveOrchTrade:
+    trade_id: str
+    status: str
+    token_id: str
+    side: str
+    taker_order_id: str
+    trader_side: str
+    price: str
+    size: str
+    maker_fills: tuple[LiveOrchMakerFill, ...]
+
+
+@dataclass(frozen=True)
+class LiveOrchPosition:
+    token_id: str
+    condition_id: str
+    current_size: str
+    entry_cost_usdc: str
+    entry_fees_usdc: str
+    total_cost_usdc: str
+    realized_pnl: str
+    total_pnl: str
+    status: str
+
+
+@dataclass(frozen=True)
+class LiveOrchAccountTruth:
+    """One bounded, complete REST read of the dedicated canary wallet."""
+
+    public_signer: str
+    public_wallet: str
+    observed_time_ns: int
+    collateral_balance: str
+    allowance_by_exchange: tuple[tuple[str, str], ...]
+    closed_only: bool
+    open_orders: tuple[LiveOrchOpenOrder, ...]
+    trades: tuple[LiveOrchTrade, ...]
+    positions: tuple[LiveOrchPosition, ...]
+
+    @property
+    def truth_id(self) -> str:
+        return _sha("liveorchaccount:sha256:", asdict(self))
+
+
+def _signed_text(value: object) -> str:
+    parsed = _as_decimal(value)
+    if not parsed.is_finite():
+        raise GatewayError("ACCOUNT_TRUTH_INVALID")
+    return _canonical_decimal(parsed)
+
+
+def _nonneg_text(value: object) -> str:
+    parsed = _as_decimal(value)
+    if not parsed.is_finite() or parsed < 0:
+        raise GatewayError("ACCOUNT_TRUTH_INVALID")
+    return _canonical_decimal(parsed)
+
+
+def _status_label(value: object) -> str:
+    text = str(value).upper()
+    for prefix in ("TRADE_STATUS_", "ORDER_STATUS_"):
+        if text.startswith(prefix):
+            text = text[len(prefix):]
+    return _label(text)
+
+
+def _normalize_open_order(item: object) -> LiveOrchOpenOrder:
+    side = str(item.side).upper()
+    if side not in ("BUY", "SELL"):
+        raise GatewayError("ACCOUNT_TRUTH_INVALID")
+    return LiveOrchOpenOrder(
+        _label(str(item.id)),
+        _label(str(item.asset_id)),
+        _label(str(item.condition_id)),
+        side,
+        _nonneg_text(item.price),
+        _nonneg_text(item.original_size),
+        _nonneg_text(item.size_matched),
+        _status_label(item.status),
+        _label(str(item.order_type).upper()),
+    )
+
+
+def _normalize_trade(item: object) -> LiveOrchTrade:
+    side = str(item.side).upper()
+    trader_side = str(item.trader_side).upper()
+    if side not in ("BUY", "SELL") or trader_side not in ("TAKER", "MAKER"):
+        raise GatewayError("ACCOUNT_TRUTH_INVALID")
+    makers = tuple(
+        LiveOrchMakerFill(
+            _label(str(maker.order_id)),
+            _nonneg_text(maker.price),
+            _nonneg_text(maker.matched_amount),
+        )
+        for maker in item.maker_orders
+    )
+    if len(makers) > LIVE_ORCH_ACCOUNT_ITEM_LIMIT:
+        raise GatewayError("ACCOUNT_HISTORY_LIMIT_EXCEEDED")
+    return LiveOrchTrade(
+        _label(str(item.id)),
+        _status_label(item.status),
+        _label(str(item.asset_id)),
+        side,
+        _label(str(item.taker_order_id)),
+        trader_side,
+        _nonneg_text(item.price),
+        _nonneg_text(item.size),
+        makers,
+    )
+
+
+def _normalize_position(item: object) -> LiveOrchPosition:
+    return LiveOrchPosition(
+        _label(str(item.asset_id)),
+        _label(str(item.condition_id)),
+        _nonneg_text(item.current_size),
+        _nonneg_text(item.entry_cost_usdc),
+        _nonneg_text(item.entry_fees_usdc),
+        _nonneg_text(item.total_cost_usdc),
+        _signed_text(item.realized_pnl),
+        _signed_text(item.total_pnl),
+        _status_label(getattr(item.status, "value", item.status)),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Gate-B session
 # ---------------------------------------------------------------------------
 
@@ -874,6 +1073,7 @@ class GateBSession:
         market_id: str,
         token_id: str,
         observed_time_ns: int,
+        fees_enabled_allowed: bool = False,
     ) -> object:
         """Read the selected market through the authenticated official client.
 
@@ -912,9 +1112,19 @@ class GateBSession:
                     book.neg_risk,
                 ))
                 or bool(state.neg_risk) != bool(book.neg_risk)
-                or bool(trading.fees_enabled)
+                or bool(trading.fees_enabled) and fees_enabled_allowed is not True
             ):
                 raise GatewayError("MARKET_METADATA_INVALID")
+            # S10-LIVE-ORCH-01: a standard binary fee-enabled market is usable when
+            # its fee configuration is exactly known (taker-only schedule).
+            fee_rate_bps = "0"
+            if bool(trading.fees_enabled):
+                schedule = trading.fee_schedule
+                if schedule is None or schedule.taker_only is not True:
+                    raise GatewayError("MARKET_METADATA_INVALID")
+                fee_rate_bps = _canonical_decimal(
+                    _as_decimal(schedule.rate) * Decimal(10_000)
+                )
             from .gate_c import GateCMarketMetadata
 
             metadata = GateCMarketMetadata(
@@ -931,7 +1141,7 @@ class GateBSession:
                 minimum_order_size=_canonical_decimal(
                     _as_decimal(book.min_order_size)
                 ),
-                fee_rate_bps="0",
+                fee_rate_bps=fee_rate_bps,
                 observed_time_ns=observed_time_ns,
                 valid_until_ns=observed_time_ns + MAX_ACCOUNT_SNAPSHOT_AGE_NS,
             )
@@ -1432,6 +1642,134 @@ class GateBSession:
         )
         return receipt
 
+    # -- S10-LIVE-ORCH-01 bounded account truth and cancel transport ---------
+
+    def _require_session(self, issuer: object, expected: object) -> None:
+        if issuer is not expected or self._state not in (
+            "B2_AUTHENTICATED",
+            "B3_SIGNING_VERIFIED",
+            "B4_CANCEL_TRANSPORT_VERIFIED",
+        ):
+            raise GatewayError("LIVE_ORCH_REQUIRED")
+
+    def live_orch_account_truth(
+        self, issuer: object, *, observed_time_ns: int
+    ) -> LiveOrchAccountTruth:
+        """Complete bounded REST truth; more than 100 items fails closed."""
+        self._require_session(issuer, _LIVE_ORCH_ISSUER)
+        _time(observed_time_ns)
+        limit_code = "ACCOUNT_HISTORY_LIMIT_EXCEEDED"
+        try:
+            balance = self._client.get_balance_allowance(asset_type="COLLATERAL")
+            open_items = _bounded_items(
+                self._client.list_open_orders(),
+                limit=LIVE_ORCH_ACCOUNT_ITEM_LIMIT,
+                code=limit_code,
+            )
+            trade_items = _bounded_items(
+                self._client.list_account_trades(),
+                limit=LIVE_ORCH_ACCOUNT_ITEM_LIMIT,
+                code=limit_code,
+            )
+            position_items = _bounded_items(
+                self._client.list_positions(user=self.public_wallet, page_size=100),
+                limit=LIVE_ORCH_ACCOUNT_ITEM_LIMIT,
+                code=limit_code,
+            )
+            closed_only = self._client.get_closed_only_mode()
+        except GatewayError:
+            raise
+        except Exception:
+            raise GatewayError("AUTHENTICATED_READ_FAILED") from None
+        try:
+            if type(closed_only) is not bool:
+                raise GatewayError("ACCOUNT_TRUTH_INVALID")
+            collateral = _nonneg_text(
+                _as_decimal(getattr(balance, "balance")) / Decimal(1_000_000)
+            )
+            allowances = getattr(balance, "allowances")
+            if not isinstance(allowances, Mapping):
+                raise GatewayError("ACCOUNT_TRUTH_INVALID")
+            config = self._client._ctx.environment_config
+            labels = {
+                str(getattr(config, "standard_exchange", "")).lower(): "exchange",
+                str(getattr(config, "neg_risk_exchange", "")).lower(): "neg-risk-exchange",
+            }
+            allowance_by_exchange = tuple(
+                sorted(
+                    (
+                        labels[str(key).lower()],
+                        _nonneg_text(_as_decimal(value) / Decimal(1_000_000)),
+                    )
+                    for key, value in allowances.items()
+                    if str(key).lower() in labels
+                )
+            )
+            truth = LiveOrchAccountTruth(
+                self.public_signer,
+                self.public_wallet,
+                observed_time_ns,
+                collateral,
+                allowance_by_exchange,
+                closed_only,
+                tuple(_normalize_open_order(item) for item in open_items),
+                tuple(_normalize_trade(item) for item in trade_items),
+                tuple(_normalize_position(item) for item in position_items),
+            )
+        except GatewayError as exc:
+            if exc.code == limit_code:
+                raise
+            raise GatewayError("ACCOUNT_TRUTH_INVALID") from None
+        except Exception:
+            raise GatewayError("ACCOUNT_TRUTH_INVALID") from None
+        for values in (
+            [item.venue_order_id for item in truth.open_orders],
+            [item.trade_id for item in truth.trades],
+            [item.token_id for item in truth.positions],
+        ):
+            if len(set(values)) != len(values):
+                raise GatewayError("ACCOUNT_TRUTH_INVALID")
+        return truth
+
+    def live_orch_order(self, issuer: object, venue_order_id: str) -> LiveOrchOpenOrder:
+        """Authoritative single-order read by exact public venue order ID."""
+        self._require_session(issuer, _LIVE_ORCH_ISSUER)
+        _label(venue_order_id)
+        try:
+            item = self._client.get_order(order_id=venue_order_id)
+        except Exception:
+            raise GatewayError("AUTHENTICATED_READ_FAILED") from None
+        try:
+            order = _normalize_open_order(item)
+        except Exception:
+            raise GatewayError("ACCOUNT_TRUTH_INVALID") from None
+        if order.venue_order_id != venue_order_id:
+            raise GatewayError("ACCOUNT_TRUTH_INVALID")
+        return order
+
+    def live_orch_cancel(
+        self,
+        issuer: object,
+        attempt: CancelAttempt,
+        *,
+        prior_attempt_ids: Sequence[str],
+    ) -> tuple[str, Mapping[str, object]]:
+        """One exposure-reducing cancel transmit for a LIVE-ORCH episode.
+
+        Reached only through Gate-C after a durable CANCEL_STARTED.  Every
+        previously started LIVE-ORCH attempt identity is seeded first, so the
+        same attempt identity can never be resent; a new identity is required.
+        """
+        self._require_session(issuer, _GATE_C_ISSUER)
+        if self._gateway is None:
+            raise GatewayError("GATE_B_STORE_REQUIRED")
+        if self._wallet_lock is None or not self._wallet_lock.active:
+            raise GatewayError("GATE_B_OWNERSHIP_REQUIRED")
+        if attempt.operation != "CANCEL_ONE":
+            raise GatewayError("MUTATION_REQUEST_INVALID")
+        self._transport._transmitted.update(str(value) for value in prior_attempt_ids)
+        return self._transport.cancel(attempt)
+
     def close(self) -> None:
         _safe_close(self._client)
         self._client = None
@@ -1450,13 +1788,15 @@ def _count_page(page: object, *, limit: int) -> int:
     return len(_bounded_items(page, limit=limit))
 
 
-def _bounded_items(page: object, *, limit: int) -> tuple[object, ...]:
+def _bounded_items(
+    page: object, *, limit: int, code: str = "AUTHENTICATED_READ_FAILED"
+) -> tuple[object, ...]:
     items = page.iter_items() if hasattr(page, "iter_items") else page
     values: list[object] = []
     for item in items:
         values.append(item)
         if len(values) > limit:
-            raise GatewayError("AUTHENTICATED_READ_FAILED")
+            raise GatewayError(code)
     return tuple(values)
 
 
