@@ -382,6 +382,10 @@ def test_exact_routes_limits_errors_and_no_mutation_routes(
         "/api/paper/audit": {"GET"},
         "/api/gateway/status": {"GET"},
         "/api/gateway/audit": {"GET"},
+        "/api/strategies": {"GET"},
+        "/api/strategies/{strategy_version_id}": {"GET"},
+        "/api/hermes/assessments": {"GET"},
+        "/api/hermes/assessments/{assessment_id}": {"GET"},
     }
     assert _get(app, "/api/market-truth/recent")[1]["limit"] == 50
     for accepted in ("1", "100"):

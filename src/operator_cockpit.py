@@ -1,4 +1,4 @@
-"""WP171/WP173/WP175 local read-only cockpit over evidence."""
+"""WP171/WP173/WP175/S10-CC-RESEARCH-01 local read-only cockpit over evidence."""
 
 from __future__ import annotations
 
@@ -38,6 +38,7 @@ from src.paper_trading.models import (
 from src.paper_trading.store import JournalEvent, PaperStore
 from src.execution_gateway.store import GatewayStoreError, read_gateway_projection
 from src.execution_gateway.gateway import GatewayError, read_gate_b_evidence
+from src import operator_cockpit_research as research
 
 
 MARKET_APPLICATION_ID = 1_347_242_297
@@ -116,6 +117,8 @@ class CockpitConfig:
     experiment_registry_path: Path | None
     paper_store_path: Path | None = None
     gateway_store_path: Path | None = None
+    strategy_lifecycle_path: Path | None = None
+    hermes_strategy_manager_path: Path | None = None
 
     def __post_init__(self) -> None:
         for value in (
@@ -123,6 +126,8 @@ class CockpitConfig:
             self.experiment_registry_path,
             self.paper_store_path,
             self.gateway_store_path,
+            self.strategy_lifecycle_path,
+            self.hermes_strategy_manager_path,
         ):
             if value is not None and not isinstance(value, Path):
                 raise TypeError("cockpit paths must be pathlib.Path or None")
@@ -849,6 +854,12 @@ def create_app(config: CockpitConfig) -> FastAPI:
     ) -> JSONResponse:
         return _error_response(exc.code)
 
+    @app.exception_handler(research.ResearchProjectionError)
+    async def research_error_handler(
+        _request: Request, exc: research.ResearchProjectionError
+    ) -> JSONResponse:
+        return _error_response(exc.code)
+
     @app.exception_handler(Exception)
     async def internal_error_handler(
         _request: Request, _exc: Exception
@@ -984,6 +995,46 @@ def create_app(config: CockpitConfig) -> FastAPI:
         items = _gateway_audit(config.gateway_store_path, limit)
         return {"items": items, "count": len(items), "limit": limit}
 
+    # S10-CC-RESEARCH-01: verified StrategyLifecycle + Hermes soft-assessment
+    # projections. GET only; no Hermes invocation and no lifecycle mutation.
+    @app.get("/api/strategies")
+    async def strategies(request: Request) -> dict[str, Any]:
+        limit = _request_limit(request)
+        items = research.strategy_list(
+            config.strategy_lifecycle_path, config.hermes_strategy_manager_path, limit
+        )
+        return {"items": items, "count": len(items), "limit": limit}
+
+    @app.get("/api/strategies/{strategy_version_id}")
+    async def strategy_detail(strategy_version_id: str) -> dict[str, Any]:
+        if not research.STRATEGY_VERSION_ID_RE.fullmatch(strategy_version_id):
+            raise CockpitError("INVALID_INPUT")
+        item = research.strategy_detail(
+            config.strategy_lifecycle_path,
+            config.hermes_strategy_manager_path,
+            strategy_version_id,
+        )
+        return {"item": item}
+
+    @app.get("/api/hermes/assessments")
+    async def hermes_assessments(request: Request) -> dict[str, Any]:
+        limit = _request_limit(request)
+        items = research.assessment_list(
+            config.strategy_lifecycle_path, config.hermes_strategy_manager_path, limit
+        )
+        return {"items": items, "count": len(items), "limit": limit}
+
+    @app.get("/api/hermes/assessments/{assessment_id}")
+    async def hermes_assessment_detail(assessment_id: str) -> dict[str, Any]:
+        if not research.ASSESSMENT_ID_RE.fullmatch(assessment_id):
+            raise CockpitError("INVALID_INPUT")
+        item = research.assessment_detail(
+            config.strategy_lifecycle_path,
+            config.hermes_strategy_manager_path,
+            assessment_id,
+        )
+        return {"item": item}
+
     return app
 
 
@@ -995,6 +1046,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--experiment-registry", required=True, type=Path)
     parser.add_argument("--paper-store", type=Path)
     parser.add_argument("--gateway-store", type=Path)
+    parser.add_argument("--strategy-lifecycle-store", type=Path)
+    parser.add_argument("--hermes-strategy-manager-store", type=Path)
     parser.add_argument("--port", default=8000, type=int)
     args = parser.parse_args(argv)
     if args.port < 1 or args.port > 65_535:
@@ -1008,6 +1061,8 @@ def main(argv: list[str] | None = None) -> int:
                 args.experiment_registry,
                 args.paper_store,
                 args.gateway_store,
+                args.strategy_lifecycle_store,
+                args.hermes_strategy_manager_store,
             )
         ),
         host="127.0.0.1",

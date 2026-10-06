@@ -133,6 +133,140 @@ export type PaperRisk = {
   latest_decision: { result: string; reason_codes: string[] } | null;
 };
 
+// S10-CC-RESEARCH-01 read models. StrategyLifecycle state, Hermes soft judgments and any
+// portfolio / execution / Gate-C / live authority are separate concepts and stay separate here.
+export type ContextStatus = "CURRENT" | "STALE_CONTEXT" | "TARGET_MISSING";
+export type LifecycleAllocation = {
+  allocation_id: string;
+  policy_id: string;
+  risk_band: string;
+  active_budget_usd: string;
+  allocation_basis: string;
+  valid_from_ns: number;
+  valid_until_ns: number | null;
+};
+export type LatestHermesAssessment = {
+  assessment_id: string;
+  information_cutoff: string;
+  confidence_label: string;
+  lifecycle_action: string;
+  recommended_health_state: string;
+  risk_direction: string;
+  target_risk_band: string | null;
+  context_status: ContextStatus;
+};
+export type StrategySummary = {
+  strategy_version_id: string;
+  strategy_family_id: string;
+  parent_strategy_version_id: string | null;
+  strategy_label: string;
+  evidence_posture: string;
+  adaptation_class: string;
+  created_time_ns: number;
+  current_health_state: string | null;
+  current_allocation: LifecycleAllocation | null;
+  active_restriction_count: number;
+  evidence_ref_count: number;
+  latest_hermes_assessment: LatestHermesAssessment | null;
+};
+export type ActiveRestriction = {
+  restriction_receipt_id: string;
+  restriction_key: string;
+  restriction_kind: string;
+  max_active_budget_usd: string | null;
+  created_time_ns: number;
+};
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+export type StrategyDetail = {
+  strategy_version_id: string;
+  strategy_family_id: string;
+  parent_strategy_version_id: string | null;
+  strategy_label: string;
+  evidence_posture: string;
+  adaptation_class: string;
+  strategy_code_identity: string;
+  created_time_ns: number;
+  creation_provenance: string;
+  evidence_refs: string[];
+  family: { strategy_family_id: string; family_key: string; family_label: string };
+  lineage_strategy_version_ids: string[];
+  strategy_definition: {
+    thesis: JsonValue;
+    universe: JsonValue;
+    entry_rule: JsonValue;
+    exit_rule: JsonValue;
+    execution_rule: JsonValue;
+    parameters: JsonValue;
+  };
+  adaptive_bounds: { [parameter: string]: JsonValue };
+  current_state: {
+    health_state: string | null;
+    active_policy_id: string | null;
+    allocation: LifecycleAllocation | null;
+    active_restrictions: ActiveRestriction[];
+    strategy_lifecycle_context_sha256: string;
+  };
+  latest_hermes_assessment: LatestHermesAssessment | null;
+};
+export type HermesAssessmentItem = {
+  assessment_id: string;
+  strategy_version_id: string;
+  strategy_family_id: string;
+  predecessor_assessment_id: string | null;
+  information_cutoff: string;
+  decision_time_ns: number;
+  trigger: string;
+  confidence_label: string;
+  assessment_summary: string;
+  lifecycle_action: string;
+  recommended_health_state: string;
+  risk_direction: string;
+  target_risk_band: string | null;
+  context_status: ContextStatus;
+  canonical_soft_strategy_decision: true;
+};
+export type HermesNonAuthority = {
+  canonical_soft_strategy_decision: true;
+  no_credential_authority: true;
+  no_portfolio_policy_authority: true;
+  no_hard_risk_override: true;
+  no_paper_execution_authority: true;
+  no_order_authority: true;
+  no_execution_authority: true;
+  no_live_authority: true;
+};
+export type HermesAssessmentDetail = HermesAssessmentItem & {
+  run_record_id: string;
+  runtime_request_id: string;
+  runtime_receipt_id: string;
+  subject_refs: string[];
+  input_evidence_refs: string[];
+  evidence_for: string[];
+  evidence_against: string[];
+  uncertainties: string[];
+  known_missing_data: string[];
+  falsification_checks_performed: string[];
+  limitations: string[];
+  what_would_change_the_conclusion: string[];
+  suggested_next_research_steps: string[];
+  adaptation_recommendation: { kind: string; summary: string; parameter_updates: { [key: string]: JsonValue } } | null;
+  strategy_lifecycle_context_sha256: string;
+  lifecycle_store_head_entry_hash: string | null;
+  active_policy_id: string | null;
+  run: {
+    provider_label: string;
+    model_label: string;
+    hermes_version: string;
+    terminal_status: string;
+    start_utc: string;
+    end_utc: string;
+    estimated_cost_usd: string | null;
+    cost_status: string | null;
+    cost_source: string | null;
+  };
+  non_authority: HermesNonAuthority;
+};
+
 // Closed error vocabulary: the four backend codes plus two frontend transport codes. Nothing
 // else (URL, path, body, stack, exception text) is ever surfaced to the operator.
 const BACKEND_ERROR_CODES = ["INVALID_INPUT", "NOT_FOUND", "SOURCE_UNAVAILABLE", "INTERNAL_ERROR"] as const;
@@ -188,7 +322,7 @@ async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
 }
 
 // Query keys are grouped by route family so a manual refresh can target exactly one page.
-export type QueryFamily = "overview" | "market" | "experiments" | "paper" | "audit";
+export type QueryFamily = "overview" | "market" | "experiments" | "strategies" | "hermes" | "paper" | "audit";
 
 export const familyKey = (family: QueryFamily) => ["cc", family] as const;
 
@@ -209,6 +343,27 @@ export const experimentDetailQuery = (experimentId: string) =>
     queryKey: [...familyKey("experiments"), "detail", experimentId],
     queryFn: async ({ signal }) =>
       (await getJson<{ item: ExperimentDetail }>("/experiments/" + encodeURIComponent(experimentId), signal)).item,
+  });
+export const strategiesQuery = queryOptions({
+  queryKey: ["cc", "strategies", "list"] as const,
+  queryFn: ({ signal }) => getJson<ListResponse<StrategySummary>>("/strategies", signal),
+});
+export const strategyDetailQuery = (strategyVersionId: string) =>
+  queryOptions({
+    queryKey: ["cc", "strategies", "detail", strategyVersionId] as const,
+    queryFn: async ({ signal }) =>
+      (await getJson<{ item: StrategyDetail }>("/strategies/" + encodeURIComponent(strategyVersionId), signal)).item,
+  });
+export const hermesAssessmentsQuery = queryOptions({
+  queryKey: ["cc", "hermes", "list"] as const,
+  queryFn: ({ signal }) => getJson<ListResponse<HermesAssessmentItem>>("/hermes/assessments", signal),
+});
+export const hermesAssessmentDetailQuery = (assessmentId: string) =>
+  queryOptions({
+    queryKey: ["cc", "hermes", "detail", assessmentId] as const,
+    queryFn: async ({ signal }) =>
+      (await getJson<{ item: HermesAssessmentDetail }>("/hermes/assessments/" + encodeURIComponent(assessmentId), signal))
+        .item,
   });
 export const paperSummaryQuery = queryOptions({
   queryKey: [...familyKey("paper"), "summary"],

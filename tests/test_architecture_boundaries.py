@@ -165,6 +165,11 @@ APPROVED_SRC_SCOPES = (
     # WP171 approves one local, read-only cockpit and its browser source. It reads
     # caller-selected WP169/WP170 SQLite evidence and has no trading authority.
     "src/operator_cockpit.py",
+    # S10-CC-RESEARCH-01 approves exactly the read-only Control Center research projection
+    # module. It reads StrategyLifecycle and Hermes strategy-manager state only through their
+    # verified loaders and has no mutation, Hermes-runtime, network, credential, paper,
+    # execution or live authority. It is not a src/operator_cockpit* wildcard approval.
+    "src/operator_cockpit_research.py",
     "src/operator_cockpit_frontend",
     # S10-STRAT-LIFE-01 approves exactly the stdlib-only src/strategy_lifecycle family:
     # local/offline strategy lifecycle and global portfolio-policy state only. It has no
@@ -261,6 +266,9 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     execution-feasibility evaluator only (no credential/order/execution/live authority).
     S10-GATE-C-EXPLORE-01 permits src/exploratory_gate_c/ for the credential-free exploratory
     Gate-C policy-permit core only (no network/credential/order/A3/live authority).
+    S10-CC-RESEARCH-01 permits src/operator_cockpit_research.py for the read-only Control
+    Center StrategyLifecycle + Hermes projection only (verified loaders; no mutation,
+    Hermes-runtime, network, credential, execution or live authority).
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"
