@@ -29,7 +29,7 @@ S10-LIVE-CANARY-01 needs a separate exact-merge Karl authorization. WP175 remain
 manual canary path; ALPHA-03 and DATA-03 remain separate and non-blocking; the Control Center
 remains separate and non-canonical; live DISABLED; capital/orders USD 0 / 0; merge NOT AUTHORIZED.
 
-## S10-CC-FOUND-01 Control Center Frontend Foundation (current Control Center implementation target, open branch)
+## S10-CC-FOUND-01 Control Center Frontend Foundation (merged historical predecessor: PR #223)
 
 FAST, risk 2, exact 20-path L scope (REV A), deterministic readiness, no certificate. Frozen base
 `71a83bf1d989b5e0bb8a4feab72132756d1eef15` (PR #221 / S10-LIVE-CANARY-UA-01 merged: YES, head
@@ -53,6 +53,29 @@ protected command, deployment, credential, account, product network, execution o
 live DISABLED; capital/orders USD 0 / 0. Package: `docs/wp_specs/S10-CC-FOUND-01/`; stable record:
 `docs/status_entries/S10-CC-FOUND-01.md`. Successor S10-CC-RESEARCH-01 is separately gated; merge
 NOT AUTHORIZED (Karl only).
+
+## S10-CC-RESEARCH-01 Control Center StrategyLifecycle + Hermes Research Vertical (current Control Center implementation target, open branch)
+
+FAST, risk 2, exact 15-path L scope (13 issued paths plus Side17-approved amendments A
+`tests/test_architecture_boundaries.py` and A2 `tests/test_operator_cockpit.py`), deterministic
+readiness, no certificate. Frozen base `780bf84144439ebc6b1b53f468f257d70707014c` (PR #223 /
+S10-CC-FOUND-01 merged: YES, head `786d060089c71cc7f26e1b3d543c65011b950b58`). Read-only research
+vertical: `src/operator_cockpit_research.py` projects canonical state read only through
+`load_strategy_lifecycle_store` and `load_hermes_strategy_manager_store` (no `sqlite3`, open, append,
+init, second validator or second context hash); `src/operator_cockpit.py` appends two optional config
+fields / CLI flags and exactly four GET routes (`/api/strategies`, `/api/strategies/{strategy_version_id}`,
+`/api/hermes/assessments`, `/api/hermes/assessments/{assessment_id}`) beside the unchanged fourteen.
+Context status `CURRENT` / `STALE_CONTEXT` / `TARGET_MISSING` is derived only with
+`strategy_lifecycle_context_fingerprint` and is display only; the latest assessment comes only from the
+verified manager mapping; lineage is exact root-to-target parents; strategy routes stay usable with a
+null latest assessment when Hermes is unavailable. The frontend adds `/strategies` and `/hermes`
+workspaces with Storybook/MSW states and unchanged conservative Query defaults. Hermes assessments are
+soft research judgments, never approval, portfolio, Gate-C, execution or live authority. No Alpha read
+model or inferred Alpha linkage (S10-CC-RESEARCH-02 separately gated). Hermes invocations 0; provider
+calls 0; strategy/paper mutations 0; dependency/workflow change 0; no credential, account, product
+network, execution or live authority; live DISABLED; capital/orders USD 0 / 0. Contract:
+`docs/control_center_strategy_hermes_research_contract.md`; package: `docs/wp_specs/S10-CC-RESEARCH-01/`;
+stable record: `docs/status_entries/S10-CC-RESEARCH-01.md`. Merge NOT AUTHORIZED (Karl only).
 
 ## S10-CI-SEC-01 Dependency-Security CI Closure (current bounded security closure, open branch)
 

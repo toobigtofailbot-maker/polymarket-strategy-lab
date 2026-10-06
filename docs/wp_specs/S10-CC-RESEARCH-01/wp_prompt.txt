@@ -1,0 +1,161 @@
+# S10-CC-RESEARCH-01 — Control Center StrategyLifecycle + Hermes Read-Only Research Vertical
+
+## 0. Package Identity
+
+- WP ID: S10-CC-RESEARCH-01
+- Repository: toobigtofailbot-maker/polymarket-strategy-lab
+- Package class: CONTROL_CENTER_STRATEGY_HERMES_RESEARCH_READ_MODEL
+- Package size class: L (exact 15 / 20 paths)
+- Risk level: 2; capital at risk: USD 0; evidence mode: PRIVATE_REPO_MANUAL_VERIFIED
+- Base branch: main; frozen base: 780bf84144439ebc6b1b53f468f257d70707014c
+- Required predecessor: PR #223 / S10-CC-FOUND-01, head 786d060089c71cc7f26e1b3d543c65011b950b58, merge 780bf84144439ebc6b1b53f468f257d70707014c
+- Suggested branch: claude/s10-cc-research-01-strategy-hermes-read-model
+- Review owner: Side17; merge authority: Karl only
+- Scope amendments (Side17-approved, pre-implementation): A adds tests/test_architecture_boundaries.py (approved-source allowlist entry for src/operator_cockpit_research.py only); A2 adds tests/test_operator_cockpit.py (exact route-set assertion extended by the four new GET routes only)
+
+Governance track expected: FAST
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+## 1. Objective
+
+Extend the merged Control Center foundation with the first V2.1 research vertical: verified
+StrategyLifecycle store + verified Hermes strategy-manager store -> repo-owned bounded read-model
+projection (src/operator_cockpit_research.py) -> four GET-only FastAPI routes -> typed Control Center
+API / TanStack Query -> Strategies and Hermes workspaces. StrategyLifecycle state != Hermes soft
+judgment != portfolio authority != EXEC-FEAS != Gate-C eligibility != LIVE-ORCH admission != order
+authority. The UI explains these distinctions and never collapses them.
+
+## 2. Authority / Non-Authority
+
+Authorized: the exact 15 paths; a pure read projection over load_strategy_lifecycle_store and
+load_hermes_strategy_manager_store; four GET routes; two optional CockpitConfig fields and CLI flags;
+/strategies and /hermes frontend routes; Storybook/MSW states; one allowlist entry in
+tests/test_architecture_boundaries.py; one route-set extension in tests/test_operator_cockpit.py.
+Not authorized: Hermes invocation, provider/model calls, StrategyLifecycle append/init/mutation, direct
+SQLite access, second validator or context hash, Alpha read model or inferred Alpha linkage, polling,
+SSE/WebSocket, mutation routes or command controls, dependency/lockfile/workflow change, credentials,
+account reads, product network, paper mutation, Gate-C, LIVE-ORCH, signing, orders, live, capital,
+deployment, merge. Reading verified stores grants no strategy or hermes_runtime authority.
+
+## 3. Exact changed-file scope (15)
+
+src/operator_cockpit.py; src/operator_cockpit_research.py; tests/test_operator_cockpit_research.py;
+src/operator_cockpit_frontend/src/{api.ts, app.tsx, styles.css, foundation.stories.tsx};
+docs/control_center_strategy_hermes_research_contract.md; docs/project_status.md;
+docs/repo_truth_index.md; docs/status_entries/S10-CC-RESEARCH-01.md;
+docs/wp_specs/S10-CC-RESEARCH-01/{wp_prompt.txt, wp_spec.json}; tests/test_architecture_boundaries.py;
+tests/test_operator_cockpit.py. A 16th path is a hard stop.
+
+## 4. Contracts
+
+- Sources: load_strategy_lifecycle_store(path) with a valid non-null snapshot; load_hermes_strategy_manager_store(path).
+  Any loader/path/schema/tamper/internal failure or unconfigured required source -> 503
+  {"error":{"code":"SOURCE_UNAVAILABLE"}} only. Strategy definition and adaptive bounds decode only via
+  existing lifecycle parse_strategy_spec / parse_adaptive_bounds.
+- Routes: GET /api/strategies, /api/strategies/{strategy_version_id}, /api/hermes/assessments,
+  /api/hermes/assessments/{assessment_id}. Lists: limit default 50, 1..100, duplicate/unknown keys 400.
+- IDs: ^strategyversion:sha256:[0-9a-f]{64}$ and ^hermesstrategyassessment:sha256:[0-9a-f]{64}$;
+  malformed 400 INVALID_INPUT, absent 404 NOT_FOUND, raw id never echoed.
+- Ordering: strategies created_time_ns DESC, strategy_version_id ASC; assessments decision_time_ns DESC,
+  assessment_id ASC; limit after sort; count = returned items.
+- Context status: CURRENT iff version exists and stored strategy_lifecycle_context_sha256 ==
+  strategy_lifecycle_context_fingerprint(snapshot, id); STALE_CONTEXT iff exists and differs;
+  TARGET_MISSING iff absent. Display only; never approval, eligibility or authority.
+- Latest assessment: only the manager snapshot latest_assessment_by_strategy_version mapping. Hermes
+  unconfigured/unavailable -> strategy routes still 200 with latest_hermes_assessment null.
+- Lineage: exact parent ids root -> target, same family, bounded cycle/length guard, fail closed.
+- Hermes DTOs: no raw model output, prompt, hidden reasoning; non_authority flags exposed; run metadata
+  resolved by exact run_record_id from the same snapshot.
+- Alpha: no Alpha Factory import, mapping or inference; Alpha/Evidence is S10-CC-RESEARCH-02.
+- Frontend: routes /overview /markets /experiments /strategies /hermes /paper /audit; query keys
+  ["cc","strategies","list"], ["cc","strategies","detail",id], ["cc","hermes","list"],
+  ["cc","hermes","detail",id]; retry false, no focus/reconnect refetch, staleTime Infinity, no polling;
+  Refresh invalidates only the active family; selection component-local; no action controls.
+
+## 5. Validation / evidence plan
+
+Requirement mapping R001-R016 is in wp_spec.json evidence_plan: readiness + exact scope; focused
+tests/test_operator_cockpit_research.py (R01-R17 tests); tests/test_operator_cockpit.py;
+StrategyLifecycle and Hermes strategy-manager regressions; tests/test_architecture_boundaries.py; npm
+ci, typecheck, build, build-storybook, npm audit --audit-level=high; diff check, artifact guard,
+available security checks; one local full suite; one exact-head hosted matrix; posted PR evidence
+guard. The canonical readiness state chain ends at IMPLEMENTED_LOCAL; posted GitHub verification is
+the evidence-mode step recorded in the PR body.
+
+## 6. Negative-test matrix
+
+N01 malformed strategy id -> 400; N02 malformed assessment id -> 400; N03 absent valid ids -> 404;
+N04 duplicate/unknown/out-of-range list query -> 400; N05 POST/PUT/PATCH/DELETE -> 405; N06 tampered,
+wrong-schema, wrong-suffix, missing and unconfigured stores -> 503 SOURCE_UNAVAILABLE only; N07 Hermes
+tampered -> strategies still 200 with null latest; N08 no path/secret/raw output in any body; N09 no
+sqlite3/network/paper/execution/Gate-C/Alpha/append/init/Hermes-invocation reference in the
+projection module; N10 store bytes unchanged after reads; N11 no approved/eligible/tradeable field;
+N12 no setInterval/refetchInterval/EventSource/WebSocket or mutation method in frontend source. Any
+violation: FAIL.
+
+## 7. Hard stops
+
+Main moved; 16th path needed; canonical StrategyLifecycle/Hermes source change; dependency/workflow
+change; direct SQLite access or second validator needed; Alpha linkage requires inference; Hermes
+invocation/provider/network proposed; credential/account data required; raw Hermes output/path would
+be exposed; currentness cannot use the existing fingerprint; stale assessment shown as current
+authority; mutation control required; Gate C / EXEC-FEAS / live state inferred; final validation
+cannot bind the exact final head.
+
+## 8. Successor boundary
+
+Next: S10-CC-RESEARCH-02 (Control Center Alpha Factory + Evidence / Research Lineage), separately
+gated; then S10-CC-OPS-01 -> S10-CC-STREAM-01 -> S10-CC-CMD-01 -> S10-CC-PROD-01. The live/network
+lane remains independently governed.
+
+## 9. Report-back
+
+Success: READY_FOR_SIDE17_CC_RESEARCH_01_REVIEW with frozen base, branch/PR/head, 15 paths,
+readiness, four APIs, loader/read-only proof, Strategy/Hermes semantics, frontend/story coverage,
+no-Alpha-inference proof, tests, scope/hygiene/security, hosted run/jobs, evidence guard, authority
+attestation, Ready for review: YES, Merge authorized: NO. On a hard stop: the exact
+S10_CC_RESEARCH_01_* stop code.
+
+## 10. Normative rule matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|scope|changed_files|final|REQUIRE|exact_fifteen_paths|scope.exact_paths|R001
+NR002|source|lifecycle|read|REQUIRE|load_strategy_lifecycle_store_only|source.verified_loaders|R002
+NR003|source|hermes|read|REQUIRE|load_hermes_strategy_manager_store_only|source.verified_loaders|R002
+NR004|authority|canonical_store|all|FORBID|append_init_mutation_direct_sqlite|source.verified_loaders|R010
+NR005|api|routes|final|REQUIRE|exact_four_new_get_routes|api.route_set|R004
+NR006|api|mutation|all|FORBID|command_or_mutation_endpoint|api.route_set|R004
+NR007|api|errors|source_failure|REQUIRE|source_unavailable_only|api.closed_errors|R003
+NR008|strategy|lineage|detail|REQUIRE|exact_parent_ids_root_to_target|strategy.lineage|R006
+NR009|hermes|latest|strategy_projection|REQUIRE|verified_manager_latest_mapping|hermes.latest_assessment|R007
+NR010|hermes|context_status|projection|REQUIRE|existing_lifecycle_fingerprint_only|hermes.context_status|R008
+NR011|hermes|authority|all|FORBID|soft_judgment_as_hard_authority|governance.authority_closure|R011
+NR012|source|independence|hermes_unavailable|REQUIRE|lifecycle_routes_usable_null_latest|source.independence|R009
+NR013|alpha|binding|this_wp|FORBID|inferred_alpha_strategy_join|alpha.no_inference|R010
+NR014|frontend|routes|final|REQUIRE|add_strategies_and_hermes_only|frontend.research_routes|R012
+NR015|ui|existing_cockpit|final|PRESERVE_EXACT|existing_routes_and_views|api.route_set|R013
+NR016|validation|local_first|stable|REQUIRE|focused_adjacent_and_one_full_suite|validation.local_first_hosted_final|R015
+NR017|evidence|posted_pr|final_review|REQUIRE|exact_head_hosted_and_guard_pass|validation.local_first_hosted_final|R016
+NR018|validation|canonical_sources|stable|REQUIRE|lifecycle_hermes_architecture_regressions|validation.local_first_hosted_final|R014
+NR019|api|ordering|list|REQUIRE|deterministic_sort_then_limit|api.ordering|R005
+END_NORMATIVE_RULE_MATRIX_V1

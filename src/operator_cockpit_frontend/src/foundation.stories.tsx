@@ -8,9 +8,13 @@ import {
   familyKey,
   overviewQuery,
   type AuditItem,
+  type ContextStatus,
   type Experiment,
   type ExperimentDetail,
   type Health,
+  type HermesAssessmentDetail,
+  type HermesAssessmentItem,
+  type LatestHermesAssessment,
   type ListResponse,
   type MarketItem,
   type Overview,
@@ -19,6 +23,8 @@ import {
   type PaperPosition,
   type PaperRisk,
   type PaperSummary,
+  type StrategyDetail,
+  type StrategySummary,
 } from "./api";
 import { ControlCenter } from "./app";
 
@@ -331,4 +337,252 @@ export const GenericSafeBackendError = meta.story({
     http.get("/api/health", () => closedError("INTERNAL_ERROR", 500)),
     http.get("/api/audit/recent", () => HttpResponse.error()),
   ),
+});
+
+// ---------------------------------------------------------------------------
+// S10-CC-RESEARCH-01: Strategies + Hermes reference states. Every /api/strategies* and
+// /api/hermes* request below is intercepted by MSW; fixtures mirror the backend DTOs.
+// ---------------------------------------------------------------------------
+
+const hex = (character: string) => character.repeat(64);
+const familyId = "strategyfamily:sha256:" + hex("1");
+const rootId = "strategyversion:sha256:" + hex("a");
+const childId = "strategyversion:sha256:" + hex("b");
+const policyId = "portfolioauthoritypolicy:sha256:" + hex("2");
+const currentAssessmentId = "hermesstrategyassessment:sha256:" + hex("c");
+const staleAssessmentId = "hermesstrategyassessment:sha256:" + hex("d");
+const missingAssessmentId = "hermesstrategyassessment:sha256:" + hex("e");
+
+const latestCurrent: LatestHermesAssessment = {
+  assessment_id: currentAssessmentId,
+  information_cutoff: "2026-10-01T00:00:00Z",
+  confidence_label: "moderate",
+  lifecycle_action: "CONTINUE",
+  recommended_health_state: "HEALTHY",
+  risk_direction: "UNCHANGED",
+  target_risk_band: null,
+  context_status: "CURRENT",
+};
+
+const childSummary: StrategySummary = {
+  strategy_version_id: childId,
+  strategy_family_id: familyId,
+  parent_strategy_version_id: rootId,
+  strategy_label: "weather-edge child",
+  evidence_posture: "REPEATABLE_STATISTICAL",
+  adaptation_class: "BOUNDED_ADAPTATION",
+  created_time_ns: 3,
+  current_health_state: "HEALTHY",
+  current_allocation: {
+    allocation_id: "strategyriskallocation:sha256:" + hex("3"),
+    policy_id: policyId,
+    risk_band: "EXPLORATORY_LIVE",
+    active_budget_usd: "50",
+    allocation_basis: "DIRECT_DECISION",
+    valid_from_ns: 100,
+    valid_until_ns: null,
+  },
+  active_restriction_count: 1,
+  evidence_ref_count: 2,
+  latest_hermes_assessment: latestCurrent,
+};
+const rootSummary: StrategySummary = {
+  strategy_version_id: rootId,
+  strategy_family_id: familyId,
+  parent_strategy_version_id: null,
+  strategy_label: "weather-edge root",
+  evidence_posture: "REPEATABLE_STATISTICAL",
+  adaptation_class: "ROOT",
+  created_time_ns: 2,
+  current_health_state: "NEW",
+  current_allocation: null,
+  active_restriction_count: 0,
+  evidence_ref_count: 0,
+  latest_hermes_assessment: null,
+};
+
+const childDetail: StrategyDetail = {
+  strategy_version_id: childId,
+  strategy_family_id: familyId,
+  parent_strategy_version_id: rootId,
+  strategy_label: childSummary.strategy_label,
+  evidence_posture: childSummary.evidence_posture,
+  adaptation_class: childSummary.adaptation_class,
+  strategy_code_identity: "strategy_code:weather-edge-v2",
+  created_time_ns: 3,
+  creation_provenance: "fixture:storybook",
+  evidence_refs: ["evidence:forecast-skill-study", "experiment:sha256:" + hex("4")],
+  family: { strategy_family_id: familyId, family_key: "weather.edge", family_label: "Weather edge" },
+  lineage_strategy_version_ids: [rootId, childId],
+  strategy_definition: {
+    thesis: { claim: "Forecast skill is underpriced near resolution" },
+    universe: { category: "weather" },
+    entry_rule: { signal: "forecast_gap" },
+    exit_rule: { horizon: "resolution" },
+    execution_rule: { style: "AGGRESSIVE_TAKER", max_slippage: "0.02" },
+    parameters: { lookback: 6 },
+  },
+  adaptive_bounds: { lookback: { kind: "INTEGER_RANGE", min: 0, max: 10 } },
+  current_state: {
+    health_state: "HEALTHY",
+    active_policy_id: policyId,
+    allocation: childSummary.current_allocation,
+    active_restrictions: [
+      {
+        restriction_receipt_id: "strategyrestriction:sha256:" + hex("5"),
+        restriction_key: "pause.review",
+        restriction_kind: "PAUSE_NEW_EXPOSURE",
+        max_active_budget_usd: null,
+        created_time_ns: 60,
+      },
+    ],
+    strategy_lifecycle_context_sha256: hex("6"),
+  },
+  latest_hermes_assessment: latestCurrent,
+};
+
+const assessmentItem = (
+  assessmentId: string,
+  contextStatus: ContextStatus,
+  decisionTimeNs: number,
+): HermesAssessmentItem => ({
+  assessment_id: assessmentId,
+  strategy_version_id: contextStatus === "TARGET_MISSING" ? "strategyversion:sha256:" + hex("f") : childId,
+  strategy_family_id: familyId,
+  predecessor_assessment_id: null,
+  information_cutoff: "2026-10-01T00:00:00Z",
+  decision_time_ns: decisionTimeNs,
+  trigger: "INITIAL_ASSESSMENT",
+  confidence_label: "moderate",
+  assessment_summary: "Balanced public evidence; the edge looks intact but thin.",
+  lifecycle_action: "CONTINUE",
+  recommended_health_state: "HEALTHY",
+  risk_direction: "UNCHANGED",
+  target_risk_band: null,
+  context_status: contextStatus,
+  canonical_soft_strategy_decision: true,
+});
+
+const currentAssessment = assessmentItem(currentAssessmentId, "CURRENT", 3000);
+const assessmentDetail: HermesAssessmentDetail = {
+  ...currentAssessment,
+  run_record_id: "hermesstrategyrun:sha256:" + hex("7"),
+  runtime_request_id: "hermesresearchrequest:sha256:" + hex("8"),
+  runtime_receipt_id: "hermesresearchreceipt:sha256:" + hex("9"),
+  subject_refs: [familyId, childId],
+  input_evidence_refs: ["contextevidence:sha256:" + hex("0")],
+  evidence_for: ["Forecast skill persists across two seasons"],
+  evidence_against: ["Book depth is thin near resolution"],
+  uncertainties: ["Seasonality of forecast error"],
+  known_missing_data: ["No fill history yet"],
+  falsification_checks_performed: ["Searched for contrary forecast-skill studies"],
+  limitations: ["Public web evidence only"],
+  what_would_change_the_conclusion: ["Forecast skill collapse in the next season"],
+  suggested_next_research_steps: ["Collect simulated fill evidence"],
+  adaptation_recommendation: null,
+  strategy_lifecycle_context_sha256: hex("6"),
+  lifecycle_store_head_entry_hash: hex("a"),
+  active_policy_id: policyId,
+  run: {
+    provider_label: "example-provider",
+    model_label: "example-model",
+    hermes_version: "0.21.3",
+    terminal_status: "COMPLETED",
+    start_utc: "2026-10-01T12:00:00Z",
+    end_utc: "2026-10-01T12:00:00Z",
+    estimated_cost_usd: "0.04",
+    cost_status: "ESTIMATED",
+    cost_source: "OFFICIAL_DOCS_SNAPSHOT",
+  },
+  non_authority: {
+    canonical_soft_strategy_decision: true,
+    no_credential_authority: true,
+    no_portfolio_policy_authority: true,
+    no_hard_risk_override: true,
+    no_paper_execution_authority: true,
+    no_order_authority: true,
+    no_execution_authority: true,
+    no_live_authority: true,
+  },
+};
+
+const decodedParam = (value: unknown) => decodeURIComponent(String(value));
+
+const researchHandlers = {
+  strategies: http.get("/api/strategies", () => HttpResponse.json(list([childSummary, rootSummary]))),
+  strategiesNoHermes: http.get("/api/strategies", () =>
+    HttpResponse.json(list([{ ...childSummary, latest_hermes_assessment: null }, rootSummary])),
+  ),
+  strategyDetail: http.get("/api/strategies/:strategyVersionId", ({ params }) =>
+    decodedParam(params.strategyVersionId) === childId
+      ? HttpResponse.json({ item: childDetail })
+      : closedError("NOT_FOUND", 404),
+  ),
+  strategiesUnavailable: [
+    http.get("/api/strategies", () => closedError("SOURCE_UNAVAILABLE", 503)),
+    http.get("/api/strategies/*", () => closedError("SOURCE_UNAVAILABLE", 503)),
+  ],
+  hermes: http.get("/api/hermes/assessments", () => HttpResponse.json(list([currentAssessment]))),
+  hermesStale: http.get("/api/hermes/assessments", () =>
+    HttpResponse.json(
+      list([
+        assessmentItem(staleAssessmentId, "STALE_CONTEXT", 2000),
+        assessmentItem(missingAssessmentId, "TARGET_MISSING", 1000),
+      ]),
+    ),
+  ),
+  hermesDetail: http.get("/api/hermes/assessments/:assessmentId", ({ params }) =>
+    decodedParam(params.assessmentId) === currentAssessmentId
+      ? HttpResponse.json({ item: assessmentDetail })
+      : closedError("NOT_FOUND", 404),
+  ),
+  hermesUnavailable: http.get("/api/hermes/*", () => closedError("SOURCE_UNAVAILABLE", 503)),
+};
+
+export const StrategiesPopulatedCurrentHermes = meta.story({
+  args: { path: "/strategies" },
+  beforeEach: mock(researchHandlers.strategies, researchHandlers.strategyDetail),
+});
+
+export const StrategiesSelectedDetail = meta.story({
+  args: { path: "/strategies" },
+  beforeEach: mock(researchHandlers.strategies, researchHandlers.strategyDetail),
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(await canvas.findByRole("button", { name: childSummary.strategy_label }));
+    await canvas.findByText("Lineage · root → this version");
+  },
+});
+
+export const StrategiesNoHermesAssessment = meta.story({
+  args: { path: "/strategies" },
+  beforeEach: mock(researchHandlers.strategiesNoHermes, researchHandlers.strategyDetail),
+});
+
+export const StrategiesSourceUnavailable = meta.story({
+  args: { path: "/strategies" },
+  beforeEach: mock(researchHandlers.strategiesUnavailable),
+});
+
+export const HermesPopulatedCurrent = meta.story({
+  args: { path: "/hermes" },
+  beforeEach: mock(researchHandlers.hermes, researchHandlers.hermesDetail),
+});
+
+export const HermesStaleContext = meta.story({
+  args: { path: "/hermes" },
+  beforeEach: mock(researchHandlers.hermesStale, researchHandlers.hermesDetail),
+});
+
+export const HermesSelectedDetail = meta.story({
+  args: { path: "/hermes" },
+  beforeEach: mock(researchHandlers.hermes, researchHandlers.hermesDetail),
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(await canvas.findByRole("button", { name: currentAssessmentId }));
+    await canvas.findByText("Non-authority");
+  },
+});
+
+export const HermesSourceUnavailable = meta.story({
+  args: { path: "/hermes" },
+  beforeEach: mock(researchHandlers.hermesUnavailable),
 });

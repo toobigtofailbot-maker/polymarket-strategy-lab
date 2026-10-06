@@ -7,6 +7,8 @@ import {
   experimentsQuery,
   familyKey,
   healthQuery,
+  hermesAssessmentDetailQuery,
+  hermesAssessmentsQuery,
   marketRecentQuery,
   overviewQuery,
   paperFillsQuery,
@@ -14,7 +16,14 @@ import {
   paperPositionsQuery,
   paperRiskQuery,
   paperSummaryQuery,
+  strategiesQuery,
+  strategyDetailQuery,
   toSafeErrorCode,
+  type ContextStatus,
+  type HermesNonAuthority,
+  type JsonValue,
+  type LatestHermesAssessment,
+  type LifecycleAllocation,
   type ListResponse,
   type QueryFamily,
 } from "./api";
@@ -443,6 +452,458 @@ function AuditView() {
 }
 
 // ---------------------------------------------------------------------------
+// S10-CC-RESEARCH-01 research views: StrategyLifecycle state + Hermes soft judgments.
+// Read only. Lifecycle state, Hermes judgments and portfolio/execution/Gate-C/live
+// authority stay visibly separate; no control here changes any of them.
+// ---------------------------------------------------------------------------
+
+const CONTEXT_TONE: Record<ContextStatus, Tone> = {
+  CURRENT: "success",
+  STALE_CONTEXT: "warning",
+  TARGET_MISSING: "danger",
+};
+
+function ContextPill({ status }: { status: ContextStatus }) {
+  return <StatusPill tone={CONTEXT_TONE[status]}>{status}</StatusPill>;
+}
+
+function Notice({ children }: { children: ReactNode }) {
+  return (
+    <aside className="notice" role="note">
+      {children}
+    </aside>
+  );
+}
+
+function DetailList({ items }: { items: [string, ReactNode][] }) {
+  return (
+    <dl className="detail-grid">
+      {items.map(([key, value]) => (
+        <div key={key}>
+          <dt>{key}</dt>
+          <dd>{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function JsonBlock({ value }: { value: JsonValue }) {
+  return <pre className="json-block">{JSON.stringify(value, null, 2)}</pre>;
+}
+
+function TextList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <section className="evidence-section">
+      <h3>{title}</h3>
+      {items.length === 0 ? (
+        <p className="muted">None recorded.</p>
+      ) : (
+        <ul>
+          {items.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function RefList({ title, refs }: { title: string; refs: string[] }) {
+  return (
+    <section className="evidence-section">
+      <h3>{title}</h3>
+      {refs.length === 0 ? (
+        <p className="muted">None recorded.</p>
+      ) : (
+        <ul className="ref-list">
+          {refs.map((ref) => (
+            <li key={ref}>
+              <Token>{ref}</Token>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function AllocationText({ allocation }: { allocation: LifecycleAllocation | null }) {
+  if (!allocation) return <>No lifecycle allocation</>;
+  return (
+    <>
+      {allocation.risk_band} · {allocation.active_budget_usd} USD reserved
+    </>
+  );
+}
+
+function LatestAssessment({ latest }: { latest: LatestHermesAssessment | null }) {
+  if (!latest) {
+    return (
+      <p className="muted">
+        No Hermes soft assessment available (none recorded for this version, or the Hermes source is unavailable).
+      </p>
+    );
+  }
+  return (
+    <DetailList
+      items={[
+        ["Assessment", <Token>{latest.assessment_id}</Token>],
+        ["Context", <ContextPill status={latest.context_status} />],
+        ["Information cutoff", <span className="mono">{latest.information_cutoff}</span>],
+        ["Confidence", latest.confidence_label],
+        ["Lifecycle action (soft)", latest.lifecycle_action],
+        ["Recommended health (soft)", latest.recommended_health_state],
+        ["Risk direction (soft)", latest.risk_direction],
+        ["Target risk band (soft)", latest.target_risk_band ?? "—"],
+      ]}
+    />
+  );
+}
+
+function StrategyDetailPanel({ strategyVersionId, onClose }: { strategyVersionId: string; onClose: () => void }) {
+  const detail = useQuery(strategyDetailQuery(strategyVersionId));
+  return (
+    <Panel title="Strategy version · lifecycle state">
+      <div className="panel-actions">
+        <Button variant="secondary" onClick={onClose}>
+          Close detail
+        </Button>
+      </div>
+      <QueryState query={detail} label="strategy detail">
+        {(item) => (
+          <div className="detail-stack">
+            <DetailList
+              items={[
+                ["Strategy version", <Token>{item.strategy_version_id}</Token>],
+                ["Label", item.strategy_label],
+                [
+                  "Family",
+                  <>
+                    {item.family.family_label} · <Token>{item.family.family_key}</Token>
+                  </>,
+                ],
+                ["Family ID", <Token>{item.family.strategy_family_id}</Token>],
+                ["Parent version", <Token>{item.parent_strategy_version_id ?? "Root (no parent)"}</Token>],
+                ["Evidence posture", item.evidence_posture],
+                ["Adaptation class", item.adaptation_class],
+                ["Code identity", <Token>{item.strategy_code_identity}</Token>],
+                ["Created (ns)", <span className="mono">{item.created_time_ns}</span>],
+                ["Creation provenance", <Token>{item.creation_provenance}</Token>],
+              ]}
+            />
+            <section className="evidence-section">
+              <h3>Lineage · root → this version</h3>
+              <ol className="lineage">
+                {item.lineage_strategy_version_ids.map((id) => (
+                  <li key={id} className={id === item.strategy_version_id ? "lineage-current" : undefined}>
+                    <Token>{id}</Token>
+                  </li>
+                ))}
+              </ol>
+            </section>
+            <section className="evidence-section">
+              <h3>Current lifecycle state</h3>
+              <DetailList
+                items={[
+                  ["Health", <StatusPill>{item.current_state.health_state ?? "Unknown"}</StatusPill>],
+                  ["Active portfolio policy", <Token>{item.current_state.active_policy_id ?? "None active"}</Token>],
+                  ["Lifecycle allocation", <AllocationText allocation={item.current_state.allocation} />],
+                  ["Lifecycle context sha256", <Token>{item.current_state.strategy_lifecycle_context_sha256}</Token>],
+                ]}
+              />
+              <p className="muted">Allocation is a lifecycle budget reservation, not actual exposure, positions or orders.</p>
+              <h3>Active restrictions</h3>
+              {item.current_state.active_restrictions.length === 0 ? (
+                <p className="muted">No active restrictions.</p>
+              ) : (
+                <ul className="ref-list">
+                  {item.current_state.active_restrictions.map((restriction) => (
+                    <li key={restriction.restriction_receipt_id}>
+                      <StatusPill tone="warning">{restriction.restriction_kind}</StatusPill>{" "}
+                      <Token>{restriction.restriction_key}</Token>
+                      {restriction.max_active_budget_usd !== null && <> · cap {restriction.max_active_budget_usd} USD</>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+            <section className="evidence-section">
+              <h3>Strategy definition</h3>
+              {Object.entries(item.strategy_definition).map(([key, value]) => (
+                <div key={key} className="definition-entry">
+                  <h4>{key}</h4>
+                  <JsonBlock value={value} />
+                </div>
+              ))}
+              <h4>adaptive_bounds</h4>
+              <JsonBlock value={item.adaptive_bounds} />
+            </section>
+            <RefList title="Evidence references" refs={item.evidence_refs} />
+            <section className="evidence-section">
+              <h3>Latest Hermes soft assessment</h3>
+              <LatestAssessment latest={item.latest_hermes_assessment} />
+            </section>
+          </div>
+        )}
+      </QueryState>
+    </Panel>
+  );
+}
+
+function StrategiesView() {
+  const strategies = useQuery(strategiesQuery);
+  const [selected, setSelected] = useState<string | null>(null);
+  return (
+    <>
+      <Notice>
+        <strong>Lifecycle state, not trading authority.</strong> Allocation is a lifecycle budget reservation, not actual
+        exposure. Hermes columns show soft advisory judgments with their context status (CURRENT, STALE_CONTEXT or
+        TARGET_MISSING). Nothing here is approval to trade, Gate-C eligibility, execution readiness or live permission.
+      </Notice>
+      <div className={selected ? "split" : undefined}>
+        <QueryState query={strategies} label="strategy versions" isEmpty={isEmptyList}>
+          {(data) => (
+            <Panel title="Strategy versions">
+              <DataTable
+                label="Strategy versions"
+                headers={["Strategy", "Health", "Lifecycle allocation", "Restrictions", "Hermes soft context"]}
+              >
+                {data.items.map((item) => (
+                  <tr key={item.strategy_version_id} className={item.strategy_version_id === selected ? "selected" : undefined}>
+                    <td>
+                      <Button variant="link" onClick={() => setSelected(item.strategy_version_id)}>
+                        {item.strategy_label}
+                      </Button>
+                      <br />
+                      <Token>{item.strategy_version_id}</Token>
+                      <br />
+                      <span className="muted">
+                        {item.evidence_posture} · {item.adaptation_class} · {item.evidence_ref_count} evidence refs
+                      </span>
+                    </td>
+                    <td>
+                      <StatusPill>{item.current_health_state ?? "Unknown"}</StatusPill>
+                    </td>
+                    <td>
+                      <AllocationText allocation={item.current_allocation} />
+                    </td>
+                    <td className="num">{item.active_restriction_count}</td>
+                    <td>
+                      {item.latest_hermes_assessment ? (
+                        <>
+                          <ContextPill status={item.latest_hermes_assessment.context_status} />
+                          <br />
+                          {item.latest_hermes_assessment.lifecycle_action} · {item.latest_hermes_assessment.confidence_label}
+                        </>
+                      ) : (
+                        <span className="muted">No Hermes assessment</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </DataTable>
+            </Panel>
+          )}
+        </QueryState>
+        {selected && <StrategyDetailPanel strategyVersionId={selected} onClose={() => setSelected(null)} />}
+      </div>
+    </>
+  );
+}
+
+const NON_AUTHORITY_LABELS: [keyof HermesNonAuthority, string][] = [
+  ["canonical_soft_strategy_decision", "Canonical soft strategy decision"],
+  ["no_credential_authority", "No credential authority"],
+  ["no_portfolio_policy_authority", "No portfolio policy authority"],
+  ["no_hard_risk_override", "No hard risk override"],
+  ["no_paper_execution_authority", "No paper execution authority"],
+  ["no_order_authority", "No order authority"],
+  ["no_execution_authority", "No execution authority"],
+  ["no_live_authority", "No live authority"],
+];
+
+function HermesDetailPanel({ assessmentId, onClose }: { assessmentId: string; onClose: () => void }) {
+  const detail = useQuery(hermesAssessmentDetailQuery(assessmentId));
+  return (
+    <Panel title="Hermes soft assessment · research judgment only">
+      <div className="panel-actions">
+        <Button variant="secondary" onClick={onClose}>
+          Close detail
+        </Button>
+      </div>
+      <QueryState query={detail} label="assessment detail">
+        {(item) => (
+          <div className="detail-stack">
+            <p className="summary">{item.assessment_summary}</p>
+            <DetailList
+              items={[
+                ["Assessment", <Token>{item.assessment_id}</Token>],
+                ["Strategy version", <Token>{item.strategy_version_id}</Token>],
+                ["Strategy family", <Token>{item.strategy_family_id}</Token>],
+                ["Predecessor", <Token>{item.predecessor_assessment_id ?? "None (first assessment)"}</Token>],
+                ["Context", <ContextPill status={item.context_status} />],
+                ["Information cutoff", <span className="mono">{item.information_cutoff}</span>],
+                ["Decision time (ns)", <span className="mono">{item.decision_time_ns}</span>],
+                ["Trigger", item.trigger],
+                ["Confidence", item.confidence_label],
+              ]}
+            />
+            <section className="evidence-section">
+              <h3>Soft lifecycle / risk recommendation</h3>
+              <DetailList
+                items={[
+                  ["Lifecycle action", item.lifecycle_action],
+                  ["Recommended health", item.recommended_health_state],
+                  ["Risk direction", item.risk_direction],
+                  ["Target risk band", item.target_risk_band ?? "—"],
+                  [
+                    "Adaptation recommendation",
+                    item.adaptation_recommendation ? (
+                      <>
+                        {item.adaptation_recommendation.kind} · {item.adaptation_recommendation.summary}
+                        <JsonBlock value={item.adaptation_recommendation.parameter_updates} />
+                      </>
+                    ) : (
+                      "None"
+                    ),
+                  ],
+                ]}
+              />
+              <p className="muted">A recommendation is advisory. It changes no lifecycle state, allocation, policy or order.</p>
+            </section>
+            <div className="evidence-columns">
+              <TextList title="Evidence for" items={item.evidence_for} />
+              <TextList title="Evidence against" items={item.evidence_against} />
+              <TextList title="Uncertainties" items={item.uncertainties} />
+              <TextList title="Known missing data" items={item.known_missing_data} />
+              <TextList title="Falsification checks performed" items={item.falsification_checks_performed} />
+              <TextList title="Limitations" items={item.limitations} />
+              <TextList title="What would change the conclusion" items={item.what_would_change_the_conclusion} />
+              <TextList title="Suggested next research steps" items={item.suggested_next_research_steps} />
+            </div>
+            <RefList title="Subject references" refs={item.subject_refs} />
+            <RefList title="Input evidence references" refs={item.input_evidence_refs} />
+            <section className="evidence-section">
+              <h3>Context binding</h3>
+              <DetailList
+                items={[
+                  ["Assessed context sha256", <Token>{item.strategy_lifecycle_context_sha256}</Token>],
+                  ["Lifecycle store head at assessment", <Token>{item.lifecycle_store_head_entry_hash ?? "—"}</Token>],
+                  ["Active policy at assessment", <Token>{item.active_policy_id ?? "None active"}</Token>],
+                ]}
+              />
+            </section>
+            <section className="evidence-section">
+              <h3>Run metadata</h3>
+              <DetailList
+                items={[
+                  [
+                    "Provider / model",
+                    <>
+                      {item.run.provider_label} · {item.run.model_label}
+                    </>,
+                  ],
+                  ["Hermes version", item.run.hermes_version],
+                  ["Terminal status", item.run.terminal_status],
+                  [
+                    "Run window (UTC)",
+                    <span className="mono">
+                      {item.run.start_utc} → {item.run.end_utc}
+                    </span>,
+                  ],
+                  [
+                    "Estimated cost",
+                    <>
+                      {item.run.estimated_cost_usd ?? "—"} USD · {item.run.cost_status ?? "—"} · {item.run.cost_source ?? "—"}
+                    </>,
+                  ],
+                  ["Run record", <Token>{item.run_record_id}</Token>],
+                  [
+                    "Runtime request / receipt",
+                    <>
+                      <Token>{item.runtime_request_id}</Token>
+                      <br />
+                      <Token>{item.runtime_receipt_id}</Token>
+                    </>,
+                  ],
+                ]}
+              />
+            </section>
+            <section className="evidence-section">
+              <h3>Non-authority</h3>
+              <ul className="flag-list">
+                {NON_AUTHORITY_LABELS.map(([flag, label]) => (
+                  <li key={flag}>
+                    <StatusPill tone={item.non_authority[flag] ? "neutral" : "danger"}>
+                      {item.non_authority[flag] ? "TRUE" : "FALSE"}
+                    </StatusPill>{" "}
+                    {label}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+        )}
+      </QueryState>
+    </Panel>
+  );
+}
+
+function HermesView() {
+  const assessments = useQuery(hermesAssessmentsQuery);
+  const [selected, setSelected] = useState<string | null>(null);
+  return (
+    <>
+      <Notice>
+        <strong>Hermes assessments are soft research judgments.</strong> They do not grant portfolio, execution, Gate-C
+        or live authority. Context status compares each assessment with the current lifecycle context: CURRENT,
+        STALE_CONTEXT (lifecycle changed since the assessment) or TARGET_MISSING.
+      </Notice>
+      <div className={selected ? "split" : undefined}>
+        <QueryState query={assessments} label="Hermes assessments" isEmpty={isEmptyList}>
+          {(data) => (
+            <Panel title="Hermes soft assessments">
+              <DataTable label="Hermes soft assessments" headers={["Assessment", "Strategy", "Soft recommendation", "Confidence", "Context"]}>
+                {data.items.map((item) => (
+                  <tr key={item.assessment_id} className={item.assessment_id === selected ? "selected" : undefined}>
+                    <td>
+                      <Button variant="link" onClick={() => setSelected(item.assessment_id)}>
+                        <span className="token">{item.assessment_id}</span>
+                      </Button>
+                      <br />
+                      <span className="mono muted">
+                        {item.information_cutoff} · {item.decision_time_ns}
+                      </span>
+                    </td>
+                    <td>
+                      <Token>{item.strategy_version_id}</Token>
+                    </td>
+                    <td>
+                      {item.lifecycle_action} · {item.recommended_health_state}
+                      <br />
+                      <span className="muted">
+                        Risk {item.risk_direction}
+                        {item.target_risk_band ? " → " + item.target_risk_band : ""}
+                      </span>
+                    </td>
+                    <td>{item.confidence_label}</td>
+                    <td>
+                      <ContextPill status={item.context_status} />
+                    </td>
+                  </tr>
+                ))}
+              </DataTable>
+            </Panel>
+          )}
+        </QueryState>
+        {selected && <HermesDetailPanel assessmentId={selected} onClose={() => setSelected(null)} />}
+      </div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Shell and routes
 // ---------------------------------------------------------------------------
 
@@ -452,6 +913,8 @@ export const VIEWS: readonly ViewDefinition[] = [
   { path: "/overview", label: "Overview", family: "overview", element: <OverviewView /> },
   { path: "/markets", label: "Market Truth", family: "market", element: <MarketView /> },
   { path: "/experiments", label: "Experiments", family: "experiments", element: <ExperimentsView /> },
+  { path: "/strategies", label: "Strategies", family: "strategies", element: <StrategiesView /> },
+  { path: "/hermes", label: "Hermes", family: "hermes", element: <HermesView /> },
   { path: "/paper", label: "Paper Operations", family: "paper", element: <PaperView /> },
   { path: "/audit", label: "Audit / Health", family: "audit", element: <AuditView /> },
 ];
@@ -485,6 +948,7 @@ export function ControlCenter() {
         <div className="posture" aria-label="Authority posture">
           <strong>READ ONLY CONTROL CENTER</strong>
           <span>Simulated paper only</span>
+          <span>Hermes: soft judgments only</span>
           <span>No execution or live authority</span>
         </div>
       </aside>
