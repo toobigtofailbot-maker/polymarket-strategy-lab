@@ -1,0 +1,510 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CI-SEC-01",
+    "title": "Dependency-Security CI Closure",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "SECURITY_TOOLING_DEPENDENCY_CI_CLOSURE",
+    "package_size_class": "M",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 220,
+      "head_sha": "d6899e205f0652c7314216016d95cd17e6f01f46",
+      "merge_sha": "f9a0bae6a69d008862e6466f1fe532bc9416de5d"
+    },
+    "suggested_branch": "claude/s10-ci-sec-01-dependency-security-ci-closure",
+    "objective": "Restore truthful green dependency-security CI without product or trading change: patch the transitive frontend development dependency source-map-js from 1.2.1 to 1.2.2 through a lock-only update, and make pip-audit ignore exactly CVE-2026-104851 in exactly the two existing Python audit jobs while stable nautilus_trader==1.231.0 exact-pins the vulnerable fsspec==2026.2.0, with an explicit removal trigger; every other finding still fails CI.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      ".github/workflows/ci.yml",
+      "src/operator_cockpit_frontend/package-lock.json",
+      "tests/test_codex_workflow_docs.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CI-SEC-01.md",
+      "docs/wp_specs/S10-CI-SEC-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-SEC-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      ".github/workflows/ci.yml",
+      "src/operator_cockpit_frontend/package-lock.json",
+      "tests/test_codex_workflow_docs.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CI-SEC-01.md",
+      "docs/wp_specs/S10-CI-SEC-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-SEC-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      "tools/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "config/",
+      "src/execution_gateway/",
+      "src/execution_feasibility/",
+      "src/strategy_lifecycle/",
+      "src/research_runtime/",
+      "src/data_layer/",
+      "src/exploratory_gate_c/",
+      "src/paper_trading/"
+    ],
+    "max_changed_files": 8,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_codex_workflow_docs.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "rollback_surface": "Revert S10-CI-SEC-01. The cockpit lock returns to source-map-js 1.2.1 and both Python audit jobs return to plain pip_audit, which restores the two current audit failures. No product source, Python pin, credential, runtime, execution, live, capital or persistent product state is changed or migrated.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": true
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": true
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": true
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": true,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": true,
+    "dependencies": true,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Only CI audit invocation semantics and one transitive frontend development lock entry change; product/runtime APIs are unchanged.",
+    "items": [
+      {
+        "surface": "src/operator_cockpit_frontend/package-lock.json source-map-js",
+        "before": "node_modules/source-map-js resolves 1.2.1 (GHSA-68fv-2mgg-jv7q, high)",
+        "after": "node_modules/source-map-js resolves 1.2.2 with matching resolved/integrity; no other node changes",
+        "change_authorized": true,
+        "compatibility_requirement": "package.json byte-unchanged; parent range ^1.2.1 unchanged; npm ci, typecheck, build and npm audit --audit-level=high pass",
+        "authority": "DEVELOPMENT_DEPENDENCY_LOCK_PATCH_ONLY"
+      },
+      {
+        "surface": ".github/workflows/ci.yml Python audit steps",
+        "before": "dependency-audit and ndfd-grib-dependency-audit run python -m pip_audit",
+        "after": "both run exactly python -m pip_audit --ignore-vuln CVE-2026-104851",
+        "change_authorized": true,
+        "compatibility_requirement": "exactly two occurrences; no other ignore id, job, masking, skip, --no-deps or pin change; pip check unchanged",
+        "authority": "WORKFLOW_GOVERNANCE_ONLY"
+      },
+      {
+        "surface": "Python product/runtime public API and pins",
+        "before": "merged main f9a0bae runtime; nautilus_trader==1.231.0",
+        "after": "UNCHANGED",
+        "change_authorized": false,
+        "compatibility_requirement": "no src runtime logic or other src path, pyproject, credential, network, scheduler, strategy, paper, execution or live change",
+        "authority": "NONE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The frontend lock patch, the single selective Python audit exception, audit integrity, pin freeze, removal trigger, exact scope, local validation, final hosted evidence and closed product authority are deterministic package semantics.",
+    "items": [
+      {
+        "path": "dependency.frontend_lock",
+        "source": "CONSTANT",
+        "type": "exact_transitive_lock_patch",
+        "required_rule": "node_modules/source-map-js resolves exactly 1.2.2 via npm update source-map-js --package-lock-only --ignore-scripts on Node 24.18.0 / npm 11.16.0; package.json and every other lock node unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "lock diff touches only source-map-js version/resolved/integrity; focused test asserts 1.2.2 and no direct package.json entry; npm ci and npm audit --audit-level=high pass",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "package name and version only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.python_audit_exception",
+        "source": "CONSTANT",
+        "type": "exact_selective_audit_exception",
+        "required_rule": "dependency-audit and ndfd-grib-dependency-audit each run exactly python -m pip_audit --ignore-vuln CVE-2026-104851 and no other job carries an ignore",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "focused test asserts both jobs, exactly two workflow occurrences and CVE-2026-104851 as the only ignored id",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "job names and CVE id only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.audit_integrity",
+        "source": "CONSTANT",
+        "type": "audit_masking_prohibition",
+        "required_rule": "no blanket or wildcard suppression, no || true, no continue-on-error, no audit step removal, no --no-deps; every other finding still fails",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "focused negative matrix rejects masking, extra ids, removed steps and removed pip check",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "violation labels only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "dependency.python_pins",
+        "source": "CONSTANT",
+        "type": "python_pin_freeze",
+        "required_rule": "pyproject.toml unchanged; nautilus_trader==1.231.0 remains; no direct or forced fsspec install; no prerelease Nautilus migration",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "focused test asserts the nautilus pin and absence of a direct fsspec pin; readiness exact scope excludes pyproject.toml",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "pin text only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "governance.exception_removal",
+        "source": "CONSTANT",
+        "type": "removal_trigger_record",
+        "required_rule": "status entry and repo truth record that CVE-2026-104851 is ignored only because stable nautilus_trader==1.231.0 resolves fsspec==2026.2.0, removable when a separately authorized stable compatible Nautilus upgrade resolves fsspec at or above 2026.6.0 and passes compatibility, pip check, audit and full validation; a prerelease alone is not a removal path",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "focused test asserts the reason and removal trigger phrases in both documents",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "trigger wording only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope.exact_paths",
+        "source": "CONSTANT",
+        "type": "exact_scope",
+        "required_rule": "exactly the eight package paths change; no ninth path",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "readiness --check-diff against the frozen base reports exact eight-path equality",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "paths only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.stable_candidate",
+        "source": "CONSTANT",
+        "type": "local_first_validation",
+        "required_rule": "focused workflow, adjacent NDFD dependency contract, status/repo-truth docs, frontend gate, hygiene, available security tools and one authoritative local full suite pass before Ready",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "local command results recorded in the PR body; unavailable tools reported as unavailable",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "command results only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.hosted_final",
+        "source": "CONSTANT",
+        "type": "exact_head_hosted_evidence",
+        "required_rule": "one complete hosted matrix with all nine expanded jobs passing on the exact non-draft final head; any later change requires fresh exact-head CI",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "PR body binds run id, head SHA and all nine job conclusions; evidence guard passes on the posted body",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "run id, head and job conclusions",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "governance.product_authority",
+        "source": "CONSTANT",
+        "type": "closed_authority",
+        "required_rule": "source_runtime is true solely because the exact-scope frontend lockfile src/operator_cockpit_frontend/package-lock.json is under src/; no product/runtime source logic, Hermes, strategy, deployment, account, credential, execution, order, live or capital authority; PR #221 untouched",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "exact scope contains only workflow, the single src frontend lockfile, focused test, status and package artifacts; no other src path; network, credentials, scheduler, hermes_runtime, strategy, paper, execution and live remain false",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "NONE",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "This security/tooling package adds no product identity or content-addressed runtime record.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "The canonical governed-WP lifecycle applies; Karl explicitly authorized implementation of this exact WP on 2026-10-06 subject to deterministic FAST readiness.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "deterministic FAST prompt/spec/readiness checks pass with no unresolved decisions and no certificate required",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's explicit 2026-10-06 implementation authorization of this exact WP becomes effective once deterministic readiness is IMPLEMENTATION_READY",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Claude Code changes only the exact eight paths and completes local-first stable-candidate validation",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Schema-1.0.0 fixed package-guard failure precedence is unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Workflow and lockfile cases are covered by focused deterministic tests rather than machine-spec examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R010 mirror Section 13 of the prompt.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "exact base predecessor and PR 221 separation",
+        "command": "git rev-parse origin/main && gh pr view 220 && gh pr view 221 && git diff --name-only origin/main HEAD",
+        "expected_result": "base equals f9a0bae6a69d008862e6466f1fe532bc9416de5d, PR 220 merged at head d6899e2, PR 221 head f7c2ff1 unchanged and none of its paths in this diff"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_ci_sec_01_frontend_lock_patches_source_map_js_only",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "lock resolves node_modules/source-map-js exactly to 1.2.2 with the 1.2.2 tarball and package.json declares no direct source-map-js dependency"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_ci_sec_01_python_audit_exception_is_exact",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "both Python audit jobs run exactly python -m pip_audit --ignore-vuln CVE-2026-104851, exactly two occurrences exist and no other id is ignored"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_ci_sec_01_audit_exception_negative_matrix",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "mutations adding ids, masking, removing steps, removing pip check or spreading the exception are all rejected"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_ci_sec_01_no_python_pin_or_fsspec_change",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "pyproject keeps nautilus_trader==1.231.0 and introduces no direct fsspec pin; pip check steps remain"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_ci_sec_01_status_and_repo_truth_record_removal_trigger",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "status entry, project status and repo truth record the open-branch security closure, the exception reason and the removal trigger"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "validation",
+        "test": "deterministic FAST readiness exact scope",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CI-SEC-01/wp_prompt.txt --spec docs/wp_specs/S10-CI-SEC-01/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY on FAST deterministic readiness with exact eight-path diff and no certificate required"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "stable candidate focused adjacent hygiene and full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "focused, adjacent NDFD, status docs, frontend gate, git diff --check, artifact guard and one authoritative local full suite pass on the stable candidate"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "hosted_ci",
+        "test": "final exact-head hosted matrix",
+        "command": "gh pr checks --watch",
+        "expected_result": "after local stable PASS and one Ready transition, the exact final head receives one complete hosted matrix with all nine jobs successful including both Python audits and cockpit-frontend"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pr_evidence",
+        "test": "final posted PR evidence and independent review",
+        "command": "python tools/git/pr_evidence_consistency_guard.py --pr-body /tmp/s10-ci-sec-01-pr-body.md --expected-head \"$(git rev-parse HEAD)\" --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-guard-result",
+        "expected_result": "the exact posted final PR body binds head, scope, lock result, exception, local and hosted evidence, removal trigger, zero product authority and merge not performed, ready for Side17 review"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-LIVE-CANARY-UA-01",
+    "next_title": "Public Polymarket User-Agent Transport Repair (PR #221 update to new main and fresh exact-head CI)",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-LIVE-CANARY-UA-01",
+    "forbidden_in_this_wp": [
+      "PR 221 modification",
+      "product or runtime source change",
+      "Python pin change or pyproject edit",
+      "forced fsspec install",
+      "stable or prerelease Nautilus migration",
+      "broad frontend dependency refresh or npm audit fix",
+      "credentials or authenticated account access",
+      "deployment Hermes strategy execution order live or capital action",
+      "merge"
+    ]
+  }
+}
