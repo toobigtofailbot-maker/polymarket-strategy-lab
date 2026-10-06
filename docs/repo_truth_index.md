@@ -29,6 +29,31 @@ S10-LIVE-CANARY-01 needs a separate exact-merge Karl authorization. WP175 remain
 manual canary path; ALPHA-03 and DATA-03 remain separate and non-blocking; the Control Center
 remains separate and non-canonical; live DISABLED; capital/orders USD 0 / 0; merge NOT AUTHORIZED.
 
+## S10-CC-FOUND-01 Control Center Frontend Foundation (current Control Center implementation target, open branch)
+
+FAST, risk 2, exact 20-path L scope (REV A), deterministic readiness, no certificate. Frozen base
+`71a83bf1d989b5e0bb8a4feab72132756d1eef15` (PR #221 / S10-LIVE-CANARY-UA-01 merged: YES, head
+`c76b6eeb9157ab578c2655701ab9950d1bd474bd`). Foundation only: the five existing read-only cockpit views
+in `src/operator_cockpit_frontend/` move onto a Control Center frontend foundation with unchanged
+domain semantics: `src/api.ts` (typed DTOs, same-origin `/api`, GET only, closed safe error codes,
+`["cc", family]` query keys, one conservative QueryClient with no retry, focus/reconnect refetch or
+polling), `src/app.tsx` (shell, React Router declarative routes `/overview`, `/markets`,
+`/experiments`, `/paper`, `/audit`, five views, source-owned primitives, active-family manual
+refresh), `src/main.tsx`, `src/styles.css` (semantic tokens), `vite.config.ts` (loopback-only `/api`
+dev proxy) and Storybook/MSW deterministic reference states (`.storybook/`,
+`public/mockServiceWorker.js`, `src/foundation.stories.tsx`). Exact new pins: react-router 8.4.0,
+@tanstack/react-query 5.104.0, storybook 10.6.1, @storybook/react-vite 10.6.1, msw 2.15.0 (addon v3
+peer requires msw 2.x), msw-storybook-addon 3.0.3. The `cockpit-frontend` CI job adds only
+`npm run build-storybook`. `src/operator_cockpit.py` and its 14 GET-only routes are unchanged; the
+REV A slot `tests/test_operator_cockpit.py` carries only the two historical frontend-guard updates
+(exact dependency dictionaries; `"Overview"` label location). The Control Center remains
+presentation only and non-canonical; it is parallel to the live-network lane, which stays separately
+blocked on execution-network / geoblock resolution. No realtime, Strategy/Hermes/OPS read model,
+protected command, deployment, credential, account, product network, execution or live authority;
+live DISABLED; capital/orders USD 0 / 0. Package: `docs/wp_specs/S10-CC-FOUND-01/`; stable record:
+`docs/status_entries/S10-CC-FOUND-01.md`. Successor S10-CC-RESEARCH-01 is separately gated; merge
+NOT AUTHORIZED (Karl only).
+
 ## S10-CI-SEC-01 Dependency-Security CI Closure (current bounded security closure, open branch)
 
 FAST, risk 2, exact 8-path scope, deterministic readiness, no certificate. Frozen base

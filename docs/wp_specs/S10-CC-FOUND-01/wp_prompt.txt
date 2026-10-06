@@ -1,0 +1,138 @@
+# S10-CC-FOUND-01 — Control Center Frontend Foundation + Existing Cockpit Compatibility Migration (REV A)
+
+## 0. Package Identity
+
+- WP ID: S10-CC-FOUND-01
+- Repository: toobigtofailbot-maker/polymarket-strategy-lab
+- Package class: CONTROL_CENTER_FRONTEND_FOUNDATION
+- Package size class: L (exact 20 / 20 paths)
+- Risk level: 2; capital at risk: USD 0; evidence mode: PRIVATE_REPO_MANUAL_VERIFIED
+- Base branch: main; frozen base: 71a83bf1d989b5e0bb8a4feab72132756d1eef15
+- Required predecessor: PR #221 / S10-LIVE-CANARY-UA-01, head c76b6eeb9157ab578c2655701ab9950d1bd474bd, merge 71a83bf1d989b5e0bb8a4feab72132756d1eef15
+- Suggested branch: claude/s10-cc-found-01-control-center-foundation
+- Review owner: Side17; merge authority: Karl only
+- Revision: REV A (ui.tsx slot reassigned to tests/test_operator_cockpit.py after the pre-implementation scope-compatibility stop)
+
+Governance track expected: FAST
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: true
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: true
+dependencies: true
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+## 1. Objective
+
+Migrate the existing read-only five-view cockpit (Overview, Market Truth, Experiments, Paper
+Operations, Audit / Health) into a maintainable Control Center frontend foundation: typed
+same-origin `/api` client, TanStack Query server state with conservative defaults, React Router
+declarative URL routing, semantic source-owned primitives and CSS tokens, and deterministic
+Storybook/MSW reference states. The 14-route GET-only backend (`src/operator_cockpit.py`) is
+byte-unchanged. Control Center is presentation only; it is never trading/risk/strategy/execution
+authority.
+
+## 2. Authority / Non-Authority
+
+Authorized: the exact 20 paths; six exact new frontend packages; one Storybook build step in the
+existing `cockpit-frontend` job; two narrow historical frontend-guard updates in
+`tests/test_operator_cockpit.py` (T01 exact dependency dictionaries, T02 `"Overview"` location moves
+to `src/app.tsx`); status/repo-truth registration.
+Not authorized: backend/API change, new route or DTO, polling, SSE/WebSocket, Strategy/Hermes/OPS
+read models, commands, deployment, Tailscale/VPS/firewall, credentials, account reads, product
+network, Gate-C/LIVE-ORCH, orders, signing, live, capital, merge.
+
+## 3. Exact changed-file scope (20)
+
+.github/workflows/ci.yml; src/operator_cockpit_frontend/{package.json, package-lock.json,
+index.html, tsconfig.json, vite.config.ts, src/main.tsx, src/app.tsx, src/api.ts, src/styles.css,
+src/foundation.stories.tsx, .storybook/main.ts, .storybook/preview.ts, public/mockServiceWorker.js};
+tests/test_operator_cockpit.py; docs/project_status.md; docs/repo_truth_index.md;
+docs/status_entries/S10-CC-FOUND-01.md; docs/wp_specs/S10-CC-FOUND-01/{wp_prompt.txt, wp_spec.json}.
+
+## 4. Contracts
+
+- Dependencies (exact): react-router 8.4.0, @tanstack/react-query 5.104.0; dev: storybook 10.6.1,
+  @storybook/react-vite 10.6.1, msw 2.15.0 (msw-storybook-addon v3 peer requires msw 2.x),
+  msw-storybook-addon 3.0.3. Existing react/react-dom/@types/typescript/vite pins unchanged.
+- Routes: / and * redirect to /overview; /overview, /markets, /experiments, /paper, /audit. No
+  loader/action/fetcher/Data/Framework mode.
+- Query: one QueryClient; retry false, refetchOnWindowFocus false, refetchOnReconnect false,
+  staleTime Infinity, no refetchInterval. Keys ["cc", family, ...]. Refresh invalidates only the
+  active route family. Cache staleness is never shown as domain freshness.
+- API: base `/api`; GET only; visible errors are closed safe codes only. Vite dev proxy `/api` to
+  http://127.0.0.1:8000 only, loopback dev host.
+- Storybook: CSF Next, definePreview + msw-storybook-addon v3; unhandled `/api/**` errors, never
+  reaches a backend; static build output under ignored dist/storybook.
+- Workflow: cockpit-frontend keeps npm ci, typecheck, build, npm audit --audit-level=high and adds
+  npm run build-storybook; nothing else changes.
+
+## 5. Validation / evidence plan
+
+Requirement mapping R001-R012 is in wp_spec.json evidence_plan: readiness + exact scope; npm ci, npm
+ls exact pins, typecheck, build, build-storybook, Storybook smoke, npm audit; negative-test static
+checks N01-N10; tests/test_operator_cockpit.py and tests/test_codex_workflow_docs.py; diff check,
+artifact guard, available security checks; one local full suite; one exact-head hosted matrix;
+posted PR evidence guard. The canonical readiness state chain ends at IMPLEMENTED_LOCAL; posted
+GitHub verification is the evidence-mode step recorded in the PR body.
+
+## 6. Negative-test matrix
+
+N01 no absolute loopback API in app source; N02 no setInterval/refetchInterval; N03 no
+EventSource/WebSocket; N04 no POST/PUT/PATCH/DELETE; N05 only the approved direct packages; N06 no raw
+Error.message rendering; N07 no unignored storybook-static/dist/node_modules; N08
+src/operator_cockpit.py byte-unchanged and the test diff limited to T01/T02; N09 exact five routes;
+N10 every story's /api traffic is MSW-handled. Any violation: FAIL.
+
+## 7. Hard stops
+
+Main moved; 21st path needed; src/operator_cockpit.py change; any test change beyond T01/T02 or
+backend/read-only test weakening; out-of-scope workflow test change; new high advisory; frozen
+package peer/API incompatibility; product network; protected/credential/execution/live need;
+polling/realtime need; missing backend field; semantic view redesign; final validation not
+rerunnable; posted evidence not re-fetchable.
+
+## 8. Successor boundary
+
+Next: S10-CC-RESEARCH-01, separately gated. Deferred: Strategy/Hermes/Alpha read models,
+portfolio/risk/ops read models, SSE/WebSocket, protected commands, private production deployment,
+Tailscale, live/economic authority. The live/network geoblock lane is parallel and unchanged.
+
+## 9. Report-back
+
+Success: READY_FOR_SIDE17_CC_FOUND_01_REVIEW with head, 20 paths, pins, validation, hosted run and
+jobs, evidence guard, authority attestation, Ready for review: YES, Merge authorized: NO.
+On a hard stop: the exact S10_CC_FOUND_01_* stop code.
+
+## 10. Normative rule matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|scope|changed_files|final|REQUIRE|exact_twenty_paths|scope.exact_paths|R001
+NR002|dependency|direct_pins|final|REQUIRE|exact_six_new_packages_only|dependency.exact_pins|R002
+NR003|routing|routes|final|REQUIRE|five_routes_declarative_mode|routing.route_map|R003
+NR004|api|base|application|REQUIRE|same_origin_api_get_only|api.same_origin_base|R004
+NR005|query|automatic_refetch|always|FORBID|no_retry_focus_reconnect_polling|query.conservative_defaults|R005
+NR006|query|manual_refresh|operator_click|REQUIRE|active_route_family_only|query.active_family_refresh|R005
+NR007|ui|current_views|final|PRESERVE_EXACT|five_existing_capabilities|ui.five_view_compatibility|R006
+NR008|api|errors|visible_panel|REQUIRE|closed_safe_codes_only|api.safe_error_codes|R004
+NR009|storybook|product_network|all_stories|FORBID|unhandled_api_request_reaches_backend|storybook.no_real_network|R008
+NR010|storybook|output|build|REQUIRE|ignored_dist_storybook|storybook.build_output|R008
+NR011|workflow|cockpit_job|final|PRESERVE_EXACT|existing_gates_plus_storybook_build|workflow.cockpit_job|R009
+NR012|authority|backend_and_economic|this_wp|FORBID|backend_credential_execution_live_capital_change|governance.authority_closure|R010
+NR013|validation|local_first|stable_candidate|REQUIRE|focused_adjacent_and_one_full_suite|validation.local_first_hosted_final|R011
+NR014|evidence|posted_pr_body|final_review|REQUIRE|exact_head_hosted_and_guard_pass|validation.local_first_hosted_final|R012
+END_NORMATIVE_RULE_MATRIX_V1
