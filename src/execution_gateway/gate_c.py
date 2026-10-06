@@ -282,7 +282,14 @@ def query_geoblock(*, url: str = _GEOBLOCK_URL, now_ns: int | None = None) -> Ga
     if url != _GEOBLOCK_URL:
         raise GatewayError("ACCESS_PROOF_INVALID")
     try:
-        request = Request(url, method="GET", headers={"Accept": "application/json"})
+        request = Request(
+            url,
+            method="GET",
+            headers={
+                "Accept": "application/json",
+                "User-Agent": "wp169-public-market-truth/1.0",
+            },
+        )
         with urlopen(request, timeout=5) as response:  # noqa: S310 - fixed official GET
             if getattr(response, "status", 200) != 200:
                 raise GatewayError("ACCESS_PROOF_UNAVAILABLE")

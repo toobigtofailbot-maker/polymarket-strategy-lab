@@ -1,0 +1,456 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-LIVE-CANARY-UA-01",
+    "title": "Public Polymarket User-Agent Transport Repair",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PUBLIC_POLYMARKET_TRANSPORT_COMPATIBILITY_REPAIR",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 220,
+      "head_sha": "d6899e205f0652c7314216016d95cd17e6f01f46",
+      "merge_sha": "f9a0bae6a69d008862e6466f1fe532bc9416de5d"
+    },
+    "suggested_branch": "claude/s10-live-canary-ua-01-public-user-agent",
+    "objective": "Add the established fixed wp169 User-Agent to the merged public Gamma/CLOB and geoblock urllib GET requests while preserving all endpoint, redirect, timeout, body-size, failure, retry, credential, execution and live-authority boundaries.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/status_entries/S10-LIVE-CANARY-UA-01.md",
+      "docs/wp_specs/S10-LIVE-CANARY-UA-01/wp_prompt.txt",
+      "docs/wp_specs/S10-LIVE-CANARY-UA-01/wp_spec.json",
+      "src/execution_feasibility/public_market.py",
+      "src/execution_gateway/gate_c.py",
+      "tests/execution_feasibility/test_execution_feasibility.py",
+      "tests/execution_gateway/test_gate_c.py"
+    ],
+    "allowed_changed_files": [
+      "docs/status_entries/S10-LIVE-CANARY-UA-01.md",
+      "docs/wp_specs/S10-LIVE-CANARY-UA-01/wp_prompt.txt",
+      "docs/wp_specs/S10-LIVE-CANARY-UA-01/wp_spec.json",
+      "src/execution_feasibility/public_market.py",
+      "src/execution_gateway/gate_c.py",
+      "tests/execution_feasibility/test_execution_feasibility.py",
+      "tests/execution_gateway/test_gate_c.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "tools/advisory/",
+      "tools/agent/",
+      "tools/deployment/",
+      "tools/git/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/security/",
+      "tools/wp/"
+    ],
+    "max_changed_files": 7,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert S10-LIVE-CANARY-UA-01. The two public urllib request paths return to relying on Python's implicit User-Agent; all other transport and live/economic state remains unchanged.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": false,
+    "reason": "Private fixed-header transport behavior only; no public signature, CLI, store or record change.",
+    "items": []
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Freeze the exact public request headers, preserve existing guards, and add no live/economic authority.",
+    "items": [
+      {
+        "path": "transport.public_venue_headers",
+        "source": "CONSTANT",
+        "type": "repair_rule",
+        "required_rule": "Every Gamma/CLOB Request created by public_get sends Accept: application/json and User-Agent: wp169-public-market-truth/1.0 from the fixed implementation path. No caller/environment/config header override is introduced.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Offline FakeOpener regression inspects actual urllib Request objects for Gamma and CLOB, method/URL/timeout and exact headers.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized repair evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "transport.geoblock_headers",
+        "source": "CONSTANT",
+        "type": "repair_rule",
+        "required_rule": "The fixed official geoblock GET sends Accept: application/json and User-Agent: wp169-public-market-truth/1.0 with no Authorization, Cookie, credential or caller-derived header.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Offline monkeypatched urlopen inspects the actual Request, timeout and capped read while a valid blocked=false body still builds GateCGeoblockProof.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized repair evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "transport.header_boundary",
+        "source": "CONSTANT",
+        "type": "repair_rule",
+        "required_rule": "The repair removes reliance on implicit Python-urllib User-Agent and adds no API for caller-supplied, environment-derived, cookie, authorization or credential headers.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Negative-control tests assert the outgoing UA is the fixed project value, not Python-urllib, and sensitive headers are absent.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized repair evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "transport.guard_preservation",
+        "source": "CONSTANT",
+        "type": "repair_rule",
+        "required_rule": "Endpoint/host/scheme/method, environment-proxy suppression, redirect behavior, timeouts, request count, body caps, parsing, error/source-state mapping, geoblock proof semantics and retry/fallback behavior remain unchanged except for the explicit fixed User-Agent header.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Existing focused regression suites remain green and diff review is limited to request-header construction plus tests/docs.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized repair evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.no_live_action",
+        "source": "CONSTANT",
+        "type": "repair_rule",
+        "required_rule": "This repair authorizes source/tests/docs and offline validation only. It does not authorize Hermes, deployment, authenticated account access, credentials, signing, order mutation, capital use, canary rebind, live activation or merge.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exact scope and report-back confirm zero runtime/economic action and Karl-only merge.",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "sanitized repair evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope.exact_paths",
+        "source": "CONSTANT",
+        "type": "repair_rule",
+        "required_rule": "Changed files are exactly the two source files, two focused test files, prompt, spec and status fragment named by the WP; no eighth path.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "RUNTIME readiness --check-diff and git diff name-only match exactly seven paths.",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "sanitized repair evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.local_full_suite",
+        "source": "DERIVED",
+        "type": "repair_rule",
+        "required_rule": "After focused/guard/readiness checks, one authoritative local full pytest suite passes on the stable candidate without any real-network test or runtime canary action.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "python -m pytest -q -p no:cacheprovider",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized repair evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.final_ci",
+        "source": "DERIVED",
+        "type": "repair_rule",
+        "required_rule": "Keep PR draft while changing; when stable, mark Ready and obtain one final exact-head hosted CI matrix plus PR evidence consistency guard PASS before Side16 merge review.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Hosted run head SHA equals final PR head; required jobs green; PR evidence guard passes.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized repair evidence only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No product identity is introduced or changed.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Ordinary Risk-3 RUNTIME repair lifecycle; merge remains Karl-only.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "prompt/spec authority mirror, seven-path scope and RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly authorizes the exact S10-LIVE-CANARY-UA-01 repair envelope",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "exact seven-path implementation and focused, guard, readiness and local full-suite validation pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed schema 1.0.0 precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Offline Request-object regressions are the executable oracle.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R008 cover headers, negative controls, preserved guards, focused regressions, readiness, full suite and final exact-head CI.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "Gamma/CLOB Request fixed headers",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py",
+        "expected_result": "Gamma and CLOB Request objects use GET and exact Accept plus wp169 User-Agent; URL/timeout unchanged; no Authorization/Cookie"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "geoblock Request fixed headers",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_gateway/test_gate_c.py",
+        "expected_result": "fixed geoblock Request uses GET, exact endpoint, timeout 5, fixed Accept/User-Agent, no sensitive headers, capped read and unchanged proof semantics"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "negative UA/header controls",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py tests/execution_gateway/test_gate_c.py",
+        "expected_result": "outgoing UA is not Python-urllib and no caller/environment/sensitive header injection surface exists"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "existing transport guards unchanged",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py tests/execution_gateway/test_gate_c.py",
+        "expected_result": "existing endpoint/host/method/redirect/timeout/size/source-state/geoblock fail-closed tests remain green"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "live-orch regression",
+        "command": "python -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_orch.py",
+        "expected_result": "LIVE-ORCH regressions pass with no orchestration/account/order semantic change"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "validation",
+        "test": "exact-scope readiness/hygiene",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-LIVE-CANARY-UA-01/wp_prompt.txt --spec docs/wp_specs/S10-LIVE-CANARY-UA-01/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD",
+        "expected_result": "RUNTIME IMPLEMENTATION_READY with exact seven paths; diff/generated/security guards pass"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "local full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "authoritative local full suite passes without real network/runtime canary action"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pr_evidence",
+        "test": "final exact-head CI",
+        "command": "FINAL_EXACT_HEAD_HOSTED_CI_AND_PR_EVIDENCE_GUARD",
+        "expected_result": "stable Ready PR gets one final exact-head hosted CI matrix and PR evidence guard PASS; no merge"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-LIVE-CANARY-REBASE-01",
+    "next_title": "First Live Canary SHA Rebind After Public User-Agent Repair",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-LIVE-CANARY-REBASE-01",
+    "forbidden_in_this_wp": [
+      "canary package rebinding",
+      "execution-host deployment/runtime smoke",
+      "Hermes research/assessment",
+      "STRAT-LIFE materialization",
+      "JIT intent/permit",
+      "authenticated Polymarket account access",
+      "owner key/signing/order/capital",
+      "workflow/dependency/tool changes",
+      "merge"
+    ]
+  }
+}

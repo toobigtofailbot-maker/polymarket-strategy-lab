@@ -1,0 +1,336 @@
+SIDE16 / KARL — S10-LIVE-CANARY-UA-01
+PUBLIC POLYMARKET USER-AGENT TRANSPORT REPAIR
+
+Package Identity:
+  WP ID: S10-LIVE-CANARY-UA-01
+  Title: Public Polymarket User-Agent Transport Repair
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Frozen base: f9a0bae6a69d008862e6466f1fe532bc9416de5d
+  Required predecessor: PR #220, head d6899e205f0652c7314216016d95cd17e6f01f46, merge f9a0bae6a69d008862e6466f1fe532bc9416de5d
+  Suggested branch: claude/s10-live-canary-ua-01-public-user-agent
+  Package class: PUBLIC_POLYMARKET_TRANSPORT_COMPATIBILITY_REPAIR
+  Package size class: M
+  Governance track expected: RUNTIME
+  Risk level: 3
+  Capital at risk: USD 0
+  Merge authority: Karl only
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+===============================================================================
+1. OBJECTIVE
+===============================================================================
+
+Repair one verified compatibility defect in the merged public Polymarket HTTP transports:
+
+Python urllib requests currently send no explicit User-Agent, so the default
+`Python-urllib/3.x` User-Agent is used and Polymarket returns HTTP 403 for:
+
+1. Gamma/CLOB public venue acquisition in
+   `src/execution_feasibility/public_market.py`;
+2. the fixed official geoblock GET in
+   `src/execution_gateway/gate_c.py`.
+
+Add the already-established fixed project User-Agent:
+
+`wp169-public-market-truth/1.0`
+
+to those exact requests only.
+
+Do not change any endpoint, host allowlist, scheme/method guard, query/path shape, proxy behavior,
+redirect behavior, timeout, body-size cap, parsing, source-state/error classification, retry count,
+fallback behavior, credentials, execution authority, live authority, or economics.
+
+===============================================================================
+2. VERIFIED TRIGGER / REPRODUCTION
+===============================================================================
+
+S10-LIVE-CANARY-AUTH-01 continuation on 2026-10-06 verified from both Windows and the execution host:
+
+- merged `fetch_public_venue_snapshot(..., opener=None)` produces Gamma/CLOB source state UNAVAILABLE;
+- Gamma `/markets/<id>` returns HTTP 403 with the merged no-explicit-UA urllib request and HTTP 200
+  when the same request has an explicit User-Agent;
+- CLOB `/book?token_id=<id>` returns HTTP 403 with the merged no-explicit-UA urllib request and is
+  reachable with an explicit User-Agent;
+- `https://polymarket.com/api/geoblock` also returns HTTP 403 through the merged request;
+- exact release `f9a0bae6a69d008862e6466f1fe532bc9416de5d` is already deployed/bound and strict `EXECUTION_HOST_CURRENT`;
+- directional Hermes research and strategy-assessment invocations were deliberately NOT consumed;
+- no stores, intent, permit, authenticated Polymarket account read, signature or order was created;
+- capital remained USD 0 and global live remained DISABLED.
+
+This is the same compatibility class as S10-DEPLOY-EXEC-01R2 / PR #217, whose frozen request header
+is `User-Agent: wp169-public-market-truth/1.0`.
+
+===============================================================================
+3. EXACT CHANGED-FILE SCOPE
+===============================================================================
+
+Exactly seven paths:
+
+1. docs/status_entries/S10-LIVE-CANARY-UA-01.md
+2. docs/wp_specs/S10-LIVE-CANARY-UA-01/wp_prompt.txt
+3. docs/wp_specs/S10-LIVE-CANARY-UA-01/wp_spec.json
+4. src/execution_feasibility/public_market.py
+5. src/execution_gateway/gate_c.py
+6. tests/execution_feasibility/test_execution_feasibility.py
+7. tests/execution_gateway/test_gate_c.py
+
+No eighth path.
+
+Forbidden:
+- `.github/**`
+- dependencies / lockfiles
+- deployment tooling
+- Hermes/runtime strategy code
+- live_orch.py
+- credentials/secrets/config
+- account/admission/risk logic
+- canary package edits or SHA rebinding in this WP.
+
+If another tracked path is required:
+`STOP S10_LIVE_CANARY_UA_01_SCOPE_AMENDMENT_REQUIRED:<reason>`
+
+===============================================================================
+4. SOURCE REPAIR — PUBLIC EXECUTION FEASIBILITY
+===============================================================================
+
+Change only the Request headers to include:
+
+```python
+headers={
+    "Accept": "application/json",
+    "User-Agent": "wp169-public-market-truth/1.0",
+}
+```
+
+The exact runtime UA value is immutable:
+`wp169-public-market-truth/1.0`
+
+Do not add any caller header argument or environment/config override.
+
+Preserve unchanged:
+- GET only;
+- HTTPS only;
+- exact Gamma/CLOB hosts and endpoint-shape validation;
+- empty ProxyHandler / environment proxy suppression;
+- redirect rejection;
+- 5-second timeout;
+- Gamma/CLOB byte caps;
+- exactly two public requests per acquisition;
+- non-200 -> existing UNAVAILABLE behavior;
+- decode/identity/fee/book/minimum/tick semantics;
+- no retry/backoff/fallback/session/cookie/auth headers.
+
+===============================================================================
+5. SOURCE REPAIR — GEOBLOCK
+===============================================================================
+
+Change only the fixed Request headers to include:
+
+```python
+headers={
+    "Accept": "application/json",
+    "User-Agent": "wp169-public-market-truth/1.0",
+}
+```
+
+Preserve unchanged:
+- only `_GEOBLOCK_URL = "https://polymarket.com/api/geoblock"`;
+- no caller endpoint widening;
+- GET only;
+- timeout = 5;
+- body read cap = 64 KiB;
+- existing JSON/proof validation;
+- blocked=true behavior;
+- existing sanitized `ACCESS_PROOF_UNAVAILABLE` failure behavior;
+- no retry/fallback;
+- no credentials/cookies/authorization header.
+
+Do NOT otherwise redesign the legacy geoblock transport in this repair.
+
+===============================================================================
+6. OFFLINE REGRESSION TESTS
+===============================================================================
+
+All new tests are offline. No real network access.
+
+A. `tests/execution_feasibility/test_execution_feasibility.py`
+
+Add a regression that intercepts the real `Request` passed through the fake opener and proves both
+Gamma and CLOB requests contain exactly:
+- `Accept: application/json`
+- `User-Agent: wp169-public-market-truth/1.0`
+
+Also prove unchanged method/URL/timeout semantics and absence of Authorization/Cookie.
+
+Negative control:
+- explicitly assert the User-Agent is NOT `Python-urllib/...`;
+- prove no caller/environment header injection surface exists.
+
+Existing redirect/host/method/size/failure tests remain unchanged.
+
+B. `tests/execution_gateway/test_gate_c.py`
+
+Monkeypatch/intercept `urlopen` and inspect the actual `Request`.
+
+Require:
+- exact fixed URL;
+- method GET;
+- Accept application/json;
+- User-Agent wp169-public-market-truth/1.0;
+- no Authorization/Cookie;
+- timeout 5;
+- response body remains capped by production `read(64 * 1024)`;
+- valid blocked=false payload still yields a valid `GateCGeoblockProof`.
+
+Negative control:
+- outgoing header is not Python's implicit `Python-urllib/...`;
+- no caller header argument/override exists.
+
+===============================================================================
+7. AUTHORITY / NON-AUTHORITY AND HARD STOPS
+===============================================================================
+
+This WP does NOT run Hermes, deploy, authenticate the Polymarket account, load an owner key,
+sign/post/cancel an order, use capital, change account/risk limits, change geoblock policy, add
+retries/fallbacks, change dependencies, rebind the canary package, or merge the PR.
+
+Karl alone merges.
+
+Hard stop: any scope, header, transport-guard, authority, validation, or changed-file deviation from this WP is a hard stop. Do not widen or improvise around it.
+
+===============================================================================
+8. VALIDATION
+===============================================================================
+
+Focused:
+`python -m pytest -q -p no:cacheprovider tests/execution_feasibility/test_execution_feasibility.py`
+`python -m pytest -q -p no:cacheprovider tests/execution_gateway/test_gate_c.py`
+`python -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_orch.py`
+
+Then:
+- `git diff --check`
+- generated-artifact guard
+- available security checks
+- RUNTIME readiness with `--check-diff` and exact seven paths
+- one authoritative local full pytest suite.
+
+Keep PR DRAFT while changing. When stable, mark Ready and obtain one final exact-head hosted CI
+matrix under S10-CI-OPT-01, then run the PR evidence consistency guard.
+
+No post-CI source edit without revalidation.
+
+===============================================================================
+9. STATUS FRAGMENT
+===============================================================================
+
+Create `docs/status_entries/S10-LIVE-CANARY-UA-01.md` recording:
+- verified 403 trigger without explicit UA;
+- frozen base `f9a0bae6a69d008862e6466f1fe532bc9416de5d`;
+- fixed UA `wp169-public-market-truth/1.0`;
+- exact source surfaces changed;
+- unchanged endpoint/redirect/timeout/size/error/retry behavior;
+- offline regression evidence;
+- focused/full/hosted validation truth;
+- PR/head when available;
+- `MERGE AUTHORITY: KARL ONLY`;
+- canary remains suspended;
+- both Hermes invocations remain unconsumed;
+- capital/orders remain zero;
+- post-merge requirement: rebind canary packages to repair merge SHA and redeploy before JIT resumes.
+
+Do not claim runtime Polymarket success until post-merge deployment/runtime verification.
+
+===============================================================================
+10. NEGATIVE-TEST MATRIX
+===============================================================================
+
+N01 UA missing on Gamma/CLOB -> FAIL.
+N02 UA missing on geoblock -> FAIL.
+N03 UA differs from fixed wp169 value -> FAIL.
+N04 implicit Python-urllib UA observed -> FAIL.
+N05 Authorization/Cookie appears -> FAIL.
+N06 caller/environment can override/add headers -> FAIL.
+N07 endpoint/host/method guard changes -> FAIL.
+N08 redirect behavior changes -> FAIL.
+N09 timeout/body-size cap changes -> FAIL.
+N10 retry/backoff/fallback added -> FAIL.
+N11 live/account/order/capital logic changes -> authority violation.
+N12 changed-file scope != exact seven -> readiness failure.
+N13 source changes after final exact-head CI without revalidation -> not merge-ready.
+
+===============================================================================
+11. EVIDENCE PLAN
+===============================================================================
+
+R001 — Gamma/CLOB Requests carry exact fixed Accept + User-Agent headers.
+R002 — geoblock Request carries exact fixed Accept + User-Agent headers.
+R003 — negative controls prove no implicit Python-urllib or header override/sensitive headers.
+R004 — existing transport guards/fail-closed tests remain green.
+R005 — focused execution-feasibility + gate-c + live-orch regressions pass.
+R006 — RUNTIME readiness + exact 7-path scope + hygiene/security guards pass.
+R007 — one authoritative local full suite passes.
+R008 — exact stable PR head gets one final hosted CI matrix + PR evidence guard PASS.
+
+===============================================================================
+12. REPORT-BACK
+===============================================================================
+
+Return:
+`S10_LIVE_CANARY_UA_01_READY_FOR_SIDE16_REVIEW`
+
+Include branch, final head SHA, exact seven paths, header behavior, focused tests, live-orch
+regression, readiness, local full suite, hosted CI/run, PR number, evidence guard, and confirmations:
+no real network test; no deploy/Hermes/account/sign/order/capital; canary still suspended; no merge.
+
+STOP before merge.
+
+===============================================================================
+13. NORMATIVE RULE MATRIX
+===============================================================================
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|transport|public_venue_headers|every_gamma_clob_request|REQUIRE|fixed_accept_and_wp169_user_agent|transport.public_venue_headers|R001
+NR002|transport|geoblock_headers|every_geoblock_request|REQUIRE|fixed_accept_and_wp169_user_agent|transport.geoblock_headers|R002
+NR003|transport|header_override|always|FORBID|caller_environment_or_sensitive_headers|transport.header_boundary|R003
+NR004|transport|existing_guards|repair|PRESERVE_EXACT|endpoint_redirect_timeout_size_and_failure_semantics|transport.guard_preservation|R004
+NR005|authority|economic_or_runtime_activation|this_wp|FORBID|hermes_account_order_capital_or_deploy_action|authority.no_live_action|R005
+NR006|scope|changed_files|final_candidate|REQUIRE|exact_seven_paths|scope.exact_paths|R006
+NR007|validation|local_suite|stable_candidate|REQUIRE|full_suite_pass|validation.local_full_suite|R007
+NR008|validation|hosted_ci|ready_pr_exact_head|REQUIRE|single_final_exact_head_ci_and_guard|validation.final_ci|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+===============================================================================
+14. SUCCESSOR BOUNDARY
+===============================================================================
+
+After Karl merges this repair:
+
+1. record the new merge SHA;
+2. do NOT resume canary packages still bound to `f9a0bae6a69d008862e6466f1fe532bc9416de5d`;
+3. Side16 creates a SHA-only canary rebind/continuation package;
+4. deploy/bind the new exact release and require strict `EXECUTION_HOST_CURRENT`;
+5. perform fresh public Gamma/CLOB + geoblock runtime smoke on the execution host;
+6. only then resume the unused directional-Hermes -> lifecycle/Hermes-assessment -> JIT Gate-C ->
+   parent-preflight flow.
+
+No live BUY occurs in this repair WP.

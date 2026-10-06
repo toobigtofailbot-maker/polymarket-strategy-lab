@@ -124,7 +124,14 @@ def public_get(url: str, *, max_bytes: int, opener=None, method: str = "GET") ->
     """One capped GET; transport failures map to UNAVAILABLE, oversize bodies to OVERSIZE."""
 
     _check_request(url, method)
-    request = urllib.request.Request(url, method="GET", headers={"Accept": "application/json"})
+    request = urllib.request.Request(
+        url,
+        method="GET",
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "wp169-public-market-truth/1.0",
+        },
+    )
     active_opener = _default_opener() if opener is None else opener
     try:
         response = active_opener.open(request, timeout=REQUEST_TIMEOUT_S)

@@ -448,7 +448,7 @@ def test_r016_two_fixed_host_get_requests_only() -> None:
         assert request.get_method() == "GET" and request.data is None
         assert timeout == 5
         headers = {k.lower() for k in (*request.headers, *request.unredirected_hdrs)}
-        assert headers == {"accept"}
+        assert headers == {"accept", "user-agent"}  # S10-LIVE-CANARY-UA-01 fixed UA
     assert snapshot.acquisition_started_ns == T0 - 10_000_000
     assert snapshot.acquisition_completed_ns == T0
 
@@ -1240,3 +1240,68 @@ def test_r070_taker_fee_unknown_without_usable_fills() -> None:
     zero_fill = assess(i=intent(price_limit="0.51", order_type="FAK"))
     assert zero_fill.status == "NOT_FEASIBLE" and zero_fill.fee_dimension == "PASS"
     assert zero_fill.theoretical_fee_unrounded_usd == "0" and zero_fill.fee_upper_bound_usd == "0"
+
+
+# ---------------------------------------------------------------------------
+# S10-LIVE-CANARY-UA-01: fixed public User-Agent on both venue requests.
+# ---------------------------------------------------------------------------
+
+_UA_01_USER_AGENT = "wp169-public-market-truth/1.0"
+
+
+def _ua_01_effective_headers(request) -> dict[str, str]:
+    """Headers urllib would actually send after its default-header pass (offline)."""
+    import urllib.request
+
+    handler = urllib.request.HTTPSHandler()
+    handler.parent = urllib.request.build_opener()  # carries the implicit Python-urllib UA
+    prepared = handler.do_request_(request)
+    items = (*prepared.headers.items(), *prepared.unredirected_hdrs.items())
+    return {key.lower(): value for key, value in items}
+
+
+def test_s10_live_canary_ua_01_public_venue_requests_send_fixed_user_agent() -> None:
+    opener = ok_opener()
+    snapshot = fetch(opener)
+    assert snapshot.gamma_source_state == snapshot.clob_source_state == "AVAILABLE"
+    assert len(opener.requests) == 2
+    (gamma_request, _), (clob_request, _) = opener.requests
+    assert gamma_request.full_url == f"https://gamma-api.polymarket.com/markets/{GAMMA_ID}"
+    assert clob_request.full_url == f"https://clob.polymarket.com/book?token_id={TOKEN}"
+    for request, timeout in opener.requests:
+        assert request.get_method() == "GET" and request.data is None and timeout == 5
+        assert dict(request.header_items()) == {
+            "Accept": "application/json",
+            "User-agent": _UA_01_USER_AGENT,
+        }
+        assert request.unredirected_hdrs == {}
+        sent = _ua_01_effective_headers(request)
+        assert sent["accept"] == "application/json"
+        assert sent["user-agent"] == _UA_01_USER_AGENT
+        assert "authorization" not in sent and "cookie" not in sent
+
+
+def test_s10_live_canary_ua_01_no_implicit_or_overridable_headers(monkeypatch) -> None:
+    import inspect
+    import urllib.request
+
+    # Negative control: a request without the fix would carry Python's implicit UA.
+    bare = urllib.request.Request(P.gamma_market_url(GAMMA_ID), method="GET",
+                                  headers={"Accept": "application/json"})
+    assert _ua_01_effective_headers(bare)["user-agent"].startswith("Python-urllib/")
+    # No caller header surface exists on either public transport entry point.
+    for function in (P.public_get, fetch_public_venue_snapshot):
+        params = set(inspect.signature(function).parameters)
+        assert not params & {"headers", "user_agent", "extra_headers"}, function
+    # The environment cannot inject or override headers.
+    for name in ("HTTP_USER_AGENT", "USER_AGENT", "PYTHON_URLLIB_USER_AGENT", "HTTP_COOKIE"):
+        monkeypatch.setenv(name, "injected-value")
+    opener = ok_opener()
+    fetch(opener)
+    assert len(opener.requests) == 2
+    for request, _ in opener.requests:
+        sent = _ua_01_effective_headers(request)
+        assert sent["user-agent"] == _UA_01_USER_AGENT
+        assert not sent["user-agent"].startswith("Python-urllib/")
+        assert "injected-value" not in sent.values()
+        assert "authorization" not in sent and "cookie" not in sent

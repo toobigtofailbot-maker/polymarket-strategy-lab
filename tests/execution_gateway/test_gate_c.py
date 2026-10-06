@@ -977,3 +977,99 @@ def test_live_orch_gate_c_keeps_market_condition_and_token_distinct() -> None:
     assert "condition_id" not in source  # the boundary never substitutes market identity
     spec_fields = set(gate_c_mod.LiveOrchOrderSpec.__dataclass_fields__)
     assert "token_id" in spec_fields and "market_id" not in spec_fields
+
+
+# ---------------------------------------------------------------------------
+# S10-LIVE-CANARY-UA-01: fixed public User-Agent on the official geoblock GET.
+# ---------------------------------------------------------------------------
+
+_UA_01_USER_AGENT = "wp169-public-market-truth/1.0"
+
+
+class _UA01Response:
+    def __init__(self, payload: bytes) -> None:
+        self.status = 200
+        self.payload = payload
+        self.read_sizes: list[int] = []
+
+    def read(self, size: int) -> bytes:
+        self.read_sizes.append(size)
+        return self.payload[:size]
+
+    def __enter__(self) -> "_UA01Response":
+        return self
+
+    def __exit__(self, *_exc: object) -> None:
+        return None
+
+
+def _ua_01_effective_headers(request) -> dict[str, str]:
+    """Headers urllib would actually send after its default-header pass (offline)."""
+    import urllib.request
+
+    handler = urllib.request.HTTPSHandler()
+    handler.parent = urllib.request.build_opener()  # carries the implicit Python-urllib UA
+    prepared = handler.do_request_(request)
+    items = (*prepared.headers.items(), *prepared.unredirected_hdrs.items())
+    return {key.lower(): value for key, value in items}
+
+
+def test_s10_live_canary_ua_01_geoblock_request_sends_fixed_user_agent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list = []
+    response = _UA01Response(json.dumps({"blocked": False, "country": "XX"}).encode())
+
+    def fake_urlopen(request, timeout):
+        calls.append((request, timeout))
+        return response
+
+    monkeypatch.setattr(gate_c_mod, "urlopen", fake_urlopen)
+    proof = gate_c_mod.query_geoblock(now_ns=1_000)
+    assert type(proof) is GateCGeoblockProof and proof.blocked is False
+    proof.validate(now_ns=1_000, require_pass=True)
+    assert len(calls) == 1
+    request, timeout = calls[0]
+    assert request.full_url == gate_c_mod._GEOBLOCK_URL == "https://polymarket.com/api/geoblock"
+    assert request.get_method() == "GET" and request.data is None and timeout == 5
+    assert dict(request.header_items()) == {
+        "Accept": "application/json",
+        "User-agent": _UA_01_USER_AGENT,
+    }
+    assert response.read_sizes == [64 * 1024]
+    sent = _ua_01_effective_headers(request)
+    assert sent["user-agent"] == _UA_01_USER_AGENT
+    assert "authorization" not in sent and "cookie" not in sent
+
+
+def test_s10_live_canary_ua_01_geoblock_has_no_implicit_or_overridable_headers(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import urllib.request
+
+    # Negative control: the pre-repair request shape would carry Python's implicit UA.
+    bare = urllib.request.Request(gate_c_mod._GEOBLOCK_URL, method="GET",
+                                  headers={"Accept": "application/json"})
+    assert _ua_01_effective_headers(bare)["user-agent"].startswith("Python-urllib/")
+    # No caller header surface; the endpoint stays fixed.
+    assert set(inspect.signature(gate_c_mod.query_geoblock).parameters) == {"url", "now_ns"}
+    with pytest.raises(GatewayError) as excinfo:
+        gate_c_mod.query_geoblock(url="https://evil.test/api/geoblock", now_ns=1)
+    assert excinfo.value.code == "ACCESS_PROOF_INVALID"
+    # The environment cannot inject or override headers.
+    for name in ("HTTP_USER_AGENT", "USER_AGENT", "HTTP_COOKIE"):
+        monkeypatch.setenv(name, "injected-value")
+    calls: list = []
+
+    def fake_urlopen(request, timeout):
+        calls.append(request)
+        return _UA01Response(b'{"blocked": true}')
+
+    monkeypatch.setattr(gate_c_mod, "urlopen", fake_urlopen)
+    blocked = gate_c_mod.query_geoblock(now_ns=1_000)
+    assert blocked.blocked is True and len(calls) == 1
+    sent = _ua_01_effective_headers(calls[0])
+    assert sent["user-agent"] == _UA_01_USER_AGENT
+    assert not sent["user-agent"].startswith("Python-urllib/")
+    assert "injected-value" not in sent.values()
+    assert "authorization" not in sent and "cookie" not in sent
