@@ -301,6 +301,10 @@ jobs:
         working-directory: src/operator_cockpit_frontend
         run: npm run build
 
+      - name: Storybook static build
+        working-directory: src/operator_cockpit_frontend
+        run: npm run build-storybook
+
       - name: High-severity dependency audit
         working-directory: src/operator_cockpit_frontend
         run: npm audit --audit-level=high

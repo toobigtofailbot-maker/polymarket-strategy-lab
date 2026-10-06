@@ -862,10 +862,19 @@ def test_dependency_pins_security_and_historical_guards() -> None:
         )
     )
     assert package["engines"]["node"] == "24.18.0"
-    assert package["dependencies"] == {"react": "19.3.0", "react-dom": "19.3.0"}
+    assert package["dependencies"] == {
+        "@tanstack/react-query": "5.104.0",
+        "react": "19.3.0",
+        "react-dom": "19.3.0",
+        "react-router": "8.4.0",
+    }
     assert package["devDependencies"] == {
+        "@storybook/react-vite": "10.6.1",
         "@types/react": "19.3.0",
         "@types/react-dom": "19.3.0",
+        "msw": "2.15.0",
+        "msw-storybook-addon": "3.0.3",
+        "storybook": "10.6.1",
         "typescript": "7.0.2",
         "vite": "8.3.0",
     }
@@ -886,7 +895,7 @@ def test_contract_status_and_repo_truth_are_consistent() -> None:
     status = (ROOT / "docs/project_status.md").read_text(encoding="utf-8")
     index = (ROOT / "docs/repo_truth_index.md").read_text(encoding="utf-8")
     deferred = (ROOT / "docs/deferred_items_log.md").read_text(encoding="utf-8")
-    frontend = (ROOT / "src/operator_cockpit_frontend/src/main.tsx").read_text(
+    frontend = (ROOT / "src/operator_cockpit_frontend/src/app.tsx").read_text(
         encoding="utf-8"
     )
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
