@@ -1,0 +1,178 @@
+# S10-CC-RESEARCH-02 — Control Center Alpha Factory + Evidence / Research Lineage
+
+## 0. Package Identity
+
+- WP ID: S10-CC-RESEARCH-02
+- Repository: toobigtofailbot-maker/polymarket-strategy-lab
+- Package class: CONTROL_CENTER_ALPHA_RESEARCH_MEMORY_DISCOVERY_READ_MODEL
+- Package size class: L (exact 15 / 20 paths)
+- Risk level: 2; capital at risk: USD 0; evidence mode: PRIVATE_REPO_MANUAL_VERIFIED
+- Base branch: main; frozen base: e8fbba6436020d543816e1be3fd45ad9c74dffd7
+- Required predecessor: PR #224 / S10-CC-RESEARCH-01, head 4dd11f1b35bf49cb14d3e03d257f775926ddf116, merge e8fbba6436020d543816e1be3fd45ad9c74dffd7
+- Suggested branch: claude/s10-cc-research-02-alpha-evidence-lineage
+- Review owner: Side17; merge authority: Karl only
+
+Governance track expected: FAST
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+## 1. Objective
+
+Complete the Control Center Research phase: verified Alpha Factory registry (research memory:
+source -> candidate -> hypothesis family -> research episode) + verified Alpha Discovery registry
+(policy -> universe -> material change -> triage -> research queue) -> the existing repo-owned
+src/operator_cockpit_research.py projection -> six GET-only FastAPI routes -> typed TanStack Query
+-> one /alpha workspace (Research Memory + Discovery Queue). Alpha research memory != discovery
+priority != qualification != StrategyLifecycle identity != Hermes soft judgment != experiment/OOS
+evidence != EXEC-FEAS != Gate-C != paper/live authority.
+
+## 2. Authority / Non-Authority
+
+Authorized: the exact 15 paths; pure read projections over load_and_verify_alpha_factory_registry
+and load_and_verify_alpha_discovery_registry only; two appended optional CockpitConfig fields
+(alpha_factory_registry_path, alpha_discovery_registry_path) and CLI flags --alpha-factory-registry /
+--alpha-discovery-registry; six GET routes; /alpha frontend route and alpha query family;
+Storybook/MSW states. Not authorized: Alpha Factory or Discovery append/init/repair, direct SQLite,
+second validator, default/env/scan store discovery, qualification packet or gate, AF1 evidence
+parser, Strategy/Hermes<->Alpha inferred join, Hermes invocation, provider/model calls, source_locator
+fetch, polling/SSE/WebSocket, mutation routes or controls, dependency/lock/workflow change,
+credentials, account reads, product network, strategy/paper mutation, EXEC-FEAS, Gate-C, LIVE-ORCH,
+signing, orders, live, capital, deployment, merge.
+
+## 3. Exact changed-file scope (15)
+
+src/operator_cockpit.py; src/operator_cockpit_research.py; tests/test_operator_cockpit_research.py;
+tests/test_operator_cockpit.py; tests/test_architecture_boundaries.py;
+src/operator_cockpit_frontend/src/{api.ts, app.tsx, styles.css, foundation.stories.tsx};
+docs/control_center_alpha_research_contract.md; docs/project_status.md; docs/repo_truth_index.md;
+docs/status_entries/S10-CC-RESEARCH-02.md; docs/wp_specs/S10-CC-RESEARCH-02/{wp_prompt.txt,
+wp_spec.json}. Historical compatibility edits: tests/test_operator_cockpit.py (exact route set +6
+GET routes only) and tests/test_architecture_boundaries.py (explanatory wording only; the existing
+exact src/operator_cockpit_research.py entry is reused, no new entry or wildcard). The old RESEARCH-01
+R16 Alpha exclusion is replaced by a narrower verified-read-only Alpha boundary test. A 16th path is
+a hard stop.
+
+## 4. Contracts
+
+- Sources: result.is_valid and an AlphaFactoryRegistrySnapshot / AlphaDiscoveryRegistrySnapshot are
+  required; any unconfigured/missing/wrong-suffix/tampered/wrong-schema/internal failure -> 503
+  SOURCE_UNAVAILABLE only. Sources are independent.
+- Routes: GET /api/alpha/memory, /api/alpha/candidates, /api/alpha/candidates/{candidate_id},
+  /api/alpha/episodes/{research_episode_id}, /api/alpha/discovery/queue,
+  /api/alpha/discovery/triage/{market_triage_decision_id}; total /api routes 24.
+- IDs: ^alphacandidate:sha256:[0-9a-f]{64}$, ^alphaepisode:sha256:[0-9a-f]{64}$,
+  ^alphatriage:sha256:[0-9a-f]{64}$; malformed 400 before source access; valid absent 404; never echoed.
+- Memory summary: head_entry_hash, total_rows, total_payload_bytes, four record counts, no-authority
+  flags; empty valid registry -> 200 with null head and zero counts.
+- Candidates: registry sequence DESC, candidate_id ASC; limit default 50, 1..100, duplicate/unknown
+  keys 400; is_multi_lane = len(evidence_lanes) >= 2 (never COMPOSITE).
+- Lineage: same-candidate episodes; families referenced by them (sequence ASC); an episode is a
+  research leaf unless another episode of the same (candidate, family) names it as predecessor or
+  reopened; multiple leaves allowed; never labelled qualified/approved/tradeable.
+- Episode detail: full canonical evidence text; source refs resolved only from the same snapshot
+  (unresolvable -> SOURCE_UNAVAILABLE); deterministic_evidence_refs opaque; source_locator is text only.
+- RESEARCH_SUPPORTIVE != QUAL_PASS / qualified / OOS positive / executable edge / profitable / paper,
+  live or Gate-C ready. Negative states are exact-scope records, never global blacklists.
+- Discovery queue: latest recorded queue = greatest Discovery registry sequence (no wall clock); none
+  -> 404. Policy, universe and triage resolved from the same snapshot; lanes core / exploration /
+  audit / deferred / skipped_ineligible / skipped_capacity in canonical array order;
+  coverage_scope BOUNDED_OBSERVED_UNIVERSE, external_universe_completeness UNPROVEN; audit_seed omitted.
+- Triage detail: triage, bounded universe market, optional material change, alpha_memory_resolution
+  with status NOT_BOUND (triage head null) / UNAVAILABLE (Alpha unconfigured or unverifiable) /
+  HEAD_MISMATCH (verified head != bound head; nothing resolved) / RESOLVED (exact head match; only
+  matched_* ids; a missing matched id -> SOURCE_UNAVAILABLE). No fuzzy or textual join.
+- Frontend: routes /overview /markets /experiments /strategies /hermes /alpha /paper /audit; keys
+  ["cc","alpha","memory"], ["cc","alpha","candidates","list"], ["cc","alpha","candidates","detail",id],
+  ["cc","alpha","episodes","detail",id], ["cc","alpha","discovery","queue"],
+  ["cc","alpha","discovery","triage",id]; retry false, no focus/reconnect refetch, staleTime Infinity,
+  no polling; Refresh invalidates only alpha; component-local tabs; wording "latest recorded
+  discovery queue", never live/current/real-time.
+
+## 5. Validation / evidence plan
+
+R001-R032 in wp_spec.json evidence_plan: readiness + exact scope; focused
+tests/test_operator_cockpit_research.py A01-A39; tests/test_operator_cockpit.py;
+tests/test_architecture_boundaries.py; Alpha Factory, Alpha Discovery, StrategyLifecycle and Hermes
+strategy-manager regressions; npm ci, typecheck, build, build-storybook, audit; diff check, artifact
+guard, available security checks; one local full suite; one exact-head hosted matrix; posted PR
+evidence guard. The canonical readiness chain ends at IMPLEMENTED_LOCAL.
+
+## 6. Negative-test matrix
+
+N01 malformed candidate / episode / triage id -> 400 before source read; N02 valid absent ids -> 404;
+N03 duplicate/unknown/out-of-range list query -> 400; N04 POST/PUT/PATCH/DELETE -> 405; N05
+unconfigured, missing, wrong-suffix, garbage, tampered and wrong-schema Alpha/Discovery stores -> 503
+SOURCE_UNAVAILABLE only; N06 Discovery-only and Alpha-only configurations stay independently usable;
+N07 head mismatch resolves nothing; N08 matched head with missing matched id -> 503; N09 no path,
+exception or internal code in any body; N10 store bytes unchanged after reads; N11 no
+qualified/approved/tradeable/live field; N12 no sqlite3, network, append/init, qualification, AF1,
+experiment, paper, execution, Gate-C or Hermes-invocation reference in the projection module; N13 no
+setInterval/refetchInterval/EventSource/WebSocket/useMutation in frontend source. Any violation: FAIL.
+
+## 7. Hard stops
+
+Main moved; 16th path needed; canonical Alpha source change; direct SQLite or second validator
+needed; dependency/lock/workflow change; new architecture wildcard; lineage or queue not derivable
+from one verified snapshot; fuzzy Alpha join; head-mismatch resolution; Strategy/Hermes linkage
+without canonical binding; qualification/AF1 parser; Hermes/provider/network execution;
+credentials; source_locator fetch; mutation control; polling/SSE/WebSocket; Gate-C/EXEC-FEAS/
+paper/live inference; path/exception leak; final validation cannot bind the exact final head.
+
+## 8. Successor boundary
+
+After Side17 review and Karl merge the Control Center Research phase is complete. Next, separately
+gated: S10-CC-OPS-01 (Portfolio / Risk / Runtime Operations Read Model), then S10-CC-STREAM-01,
+S10-CC-CMD-01, S10-CC-PROD-01. The live/network lane remains independently governed.
+
+## 9. Report-back
+
+Success: READY_FOR_SIDE17_CC_RESEARCH_02_REVIEW with frozen base, predecessor, branch/PR/head, 15
+paths, readiness, verified-loader proofs, six routes / 24 total, memory/candidate/episode and
+Discovery semantics, head-binding and source-independence proofs, frontend/story coverage, tests,
+scope/hygiene/security, full suite, hosted run/jobs, evidence guard, evidence mode, authority
+attestation, Ready for review: YES, Merge authorized: NO. On a hard stop: the exact
+S10_CC_RESEARCH_02_* stop code.
+
+## 10. Normative rule matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|scope|changed_files|final|REQUIRE|exact_fifteen_paths|scope.exact_paths|R002
+NR002|source|alpha_factory|read|REQUIRE|load_and_verify_alpha_factory_registry_only|source.alpha_factory_verified_loader|R003
+NR003|source|alpha_discovery|read|REQUIRE|load_and_verify_alpha_discovery_registry_only|source.alpha_discovery_verified_loader|R004
+NR004|source|alpha_store|all|FORBID|direct_sqlite_open_init_append_repair|source.alpha_factory_verified_loader|R005
+NR005|api|routes|final|REQUIRE|exact_six_new_get_routes_total_24|api.route_set|R006
+NR006|api|errors|failure|REQUIRE|closed_invalid_not_found_source_unavailable|api.closed_errors|R007
+NR007|alpha|candidate_order|list|REQUIRE|sequence_desc_then_id_asc|alpha.candidate_ordering|R009
+NR008|alpha|leaf|candidate_detail|REQUIRE|nonleaf_iff_same_lineage_predecessor_or_reopen_ref|alpha.research_leaf_derivation|R011
+NR009|alpha|source_ref|episode|REQUIRE|same_verified_snapshot_only|alpha.source_reference_resolution|R012
+NR010|alpha|research_supportive|all|FORBID|qualification_or_trading_promotion|alpha.result_state_non_authority|R014
+NR011|discovery|latest_queue|queue|REQUIRE|max_discovery_registry_sequence|discovery.latest_queue_selection|R015
+NR012|discovery|universe_truth|all|REQUIRE|external_completeness_unproven|discovery.external_completeness|R016
+NR013|discovery|alpha_join|detail|REQUIRE|matched_ids_only|discovery.matched_alpha_refs_only|R019
+NR014|discovery|alpha_head|resolve|REQUIRE|exact_bound_head_equality|discovery.alpha_resolution_exact_head|R020
+NR015|source|independence|one_unavailable|REQUIRE|other_source_routes_usable|source.independence|R021
+NR016|cross_domain|strategy_hermes|this_wp|FORBID|inferred_alpha_join|cross_domain.no_strategy_hermes_inference|R022
+NR017|cross_domain|qualification_af1|this_wp|FORBID|qualification_or_af1_synthesis|cross_domain.no_qualification_inference|R023
+NR018|frontend|route|final|REQUIRE|add_alpha_only_manual_refresh|frontend.alpha_route|R024
+NR019|validation|local_first|stable|REQUIRE|focused_adjacent_and_one_full_suite|validation.local_first_hosted_final|R030
+NR020|evidence|posted_pr|final_review|REQUIRE|exact_head_hosted_and_guard_pass|validation.local_first_hosted_final|R032
+END_NORMATIVE_RULE_MATRIX_V1

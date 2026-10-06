@@ -54,7 +54,7 @@ live DISABLED; capital/orders USD 0 / 0. Package: `docs/wp_specs/S10-CC-FOUND-01
 `docs/status_entries/S10-CC-FOUND-01.md`. Successor S10-CC-RESEARCH-01 is separately gated; merge
 NOT AUTHORIZED (Karl only).
 
-## S10-CC-RESEARCH-01 Control Center StrategyLifecycle + Hermes Research Vertical (current Control Center implementation target, open branch)
+## S10-CC-RESEARCH-01 Control Center StrategyLifecycle + Hermes Research Vertical (merged historical predecessor: PR #224)
 
 FAST, risk 2, exact 15-path L scope (13 issued paths plus Side17-approved amendments A
 `tests/test_architecture_boundaries.py` and A2 `tests/test_operator_cockpit.py`), deterministic
@@ -75,7 +75,36 @@ model or inferred Alpha linkage (S10-CC-RESEARCH-02 separately gated). Hermes in
 calls 0; strategy/paper mutations 0; dependency/workflow change 0; no credential, account, product
 network, execution or live authority; live DISABLED; capital/orders USD 0 / 0. Contract:
 `docs/control_center_strategy_hermes_research_contract.md`; package: `docs/wp_specs/S10-CC-RESEARCH-01/`;
-stable record: `docs/status_entries/S10-CC-RESEARCH-01.md`. Merge NOT AUTHORIZED (Karl only).
+stable record: `docs/status_entries/S10-CC-RESEARCH-01.md`. Merged via PR #224 (head
+`4dd11f1b35bf49cb14d3e03d257f775926ddf116`, merge `e8fbba6436020d543816e1be3fd45ad9c74dffd7`); its
+Alpha exclusion is superseded by S10-CC-RESEARCH-02's verified read-only Alpha projections.
+
+## S10-CC-RESEARCH-02 Control Center Alpha Factory + Evidence / Research Lineage (current Control Center implementation target, open branch)
+
+FAST, risk 2, exact 15-path L scope, deterministic readiness, no certificate. Frozen base
+`e8fbba6436020d543816e1be3fd45ad9c74dffd7` (PR #224 / S10-CC-RESEARCH-01 merged: YES, head
+`4dd11f1b35bf49cb14d3e03d257f775926ddf116`). Read-only Alpha research projection: the existing
+`src/operator_cockpit_research.py` reads Alpha Factory memory only through
+`load_and_verify_alpha_factory_registry` and Alpha Discovery evidence only through
+`load_and_verify_alpha_discovery_registry` (no `sqlite3`, open, append, init, repair, second validator
+or path discovery); `src/operator_cockpit.py` appends two optional config fields / CLI flags and exactly
+six GET routes (`/api/alpha/memory`, `/api/alpha/candidates`, `/api/alpha/candidates/{candidate_id}`,
+`/api/alpha/episodes/{research_episode_id}`, `/api/alpha/discovery/queue`,
+`/api/alpha/discovery/triage/{market_triage_decision_id}`), 24 `/api` routes in total. Candidates follow
+registry sequence; lineage, source references and research leaves (several allowed) come from one
+verified snapshot; deterministic evidence refs stay opaque. The latest recorded discovery queue is the
+greatest registry sequence; the observed universe stays bounded with external completeness `UNPROVEN`;
+triage Alpha resolution uses only stored `matched_*` ids under an exact bound-head match (`NOT_BOUND` /
+`UNAVAILABLE` / `HEAD_MISMATCH` / `RESOLVED`); the two sources are independent. The frontend adds one
+`/alpha` workspace (Research Memory + Discovery Queue) with the `alpha` query family, manual refresh and
+Storybook/MSW states. `RESEARCH_SUPPORTIVE` is never qualification, executable edge, profitability or
+trading authority; discovery priority is research allocation, never strategy selection or trade priority.
+No new persistence, Strategy/Hermes inferred Alpha join, qualification/AF1 history synthesis, Alpha
+mutation, Hermes invocation, product network, credential, dependency/workflow change, execution or live
+authority; live DISABLED; capital/orders USD 0 / 0. Contract:
+`docs/control_center_alpha_research_contract.md`; package: `docs/wp_specs/S10-CC-RESEARCH-02/`; stable
+record: `docs/status_entries/S10-CC-RESEARCH-02.md`. Successor S10-CC-OPS-01 is separately gated; merge
+NOT AUTHORIZED (Karl only).
 
 ## S10-CI-SEC-01 Dependency-Security CI Closure (current bounded security closure, open branch)
 

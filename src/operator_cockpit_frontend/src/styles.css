@@ -558,6 +558,85 @@ td.num {
   overflow-wrap: anywhere;
 }
 
+/* Alpha research workspace (S10-CC-RESEARCH-02): tabs, lineage, evidence, long ids */
+.detail-stack > * {
+  min-width: 0;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cc-space-2);
+  margin-top: var(--cc-space-4);
+  border-bottom: 1px solid var(--cc-border);
+}
+
+.tab {
+  padding: var(--cc-space-2) var(--cc-space-3);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--cc-text-muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--cc-text-primary);
+}
+
+.tab[aria-selected="true"] {
+  border-bottom-color: var(--cc-accent);
+  color: var(--cc-text-primary);
+}
+
+.tag-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cc-space-1) var(--cc-space-2);
+}
+
+.locator {
+  display: inline-block;
+  max-width: 100%;
+  font-family: var(--cc-font-mono);
+  font-size: var(--cc-text-xs);
+  overflow-wrap: anywhere;
+}
+
+.source-list li {
+  padding: var(--cc-space-2) 0;
+  border-bottom: 1px solid var(--cc-border);
+}
+
+.family-block + .family-block {
+  margin-top: var(--cc-space-4);
+}
+
+.family-block p {
+  margin: 0 0 var(--cc-space-1);
+}
+
+.coverage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--cc-space-1) var(--cc-space-3);
+  margin: 0;
+  font-size: var(--cc-text-sm);
+}
+
+.coverage-grid dt {
+  color: var(--cc-text-subtle);
+  font-family: var(--cc-font-mono);
+  font-size: var(--cc-text-xs);
+  overflow-wrap: anywhere;
+}
+
+.coverage-grid dd {
+  margin: 0;
+}
+
 @media (max-width: 1100px) {
   .split {
     grid-template-columns: minmax(0, 1fr);
