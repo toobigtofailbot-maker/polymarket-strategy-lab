@@ -1,0 +1,808 @@
+# S10-CI-SEC-01 — Dependency-Security CI Closure
+
+**Status:** FINAL DRAFT FOR SIDE/KARL ASSESSMENT
+**Implementation authorization:** NO — do not implement until Karl explicitly authorizes execution after assessment
+**Merge authority:** NO — Karl only
+**Repository:** `toobigtofailbot-maker/polymarket-strategy-lab`
+
+---
+
+## 0. Package Identity
+
+| Field | Frozen value |
+|---|---|
+| WP ID | `S10-CI-SEC-01` |
+| Title | Dependency-Security CI Closure |
+| Base branch | `main` |
+| Frozen base / current main SHA | `f9a0bae6a69d008862e6466f1fe532bc9416de5d` |
+| Required predecessor | PR #220 / `S10-CI-OPT-01` |
+| Required predecessor head | `d6899e205f0652c7314216016d95cd17e6f01f46` |
+| Required predecessor merge SHA | `f9a0bae6a69d008862e6466f1fe532bc9416de5d` |
+| Suggested branch | `claude/s10-ci-sec-01-dependency-security-ci-closure` |
+| Package class | `SECURITY_TOOLING_DEPENDENCY_CI_CLOSURE` |
+| Package size class | `M` |
+| Risk level | `2` |
+| Governance track expected | `FAST` |
+| Evidence mode expected | `PRIVATE_REPO_MANUAL_VERIFIED` |
+| Runtime impact | `NO_PRODUCT_RUNTIME_CHANGE` |
+| Product impact | `SECURITY_CI_CLOSURE_ONLY` |
+| Product network impact | `NONE` |
+| Credential impact | `NONE` |
+| Dependency impact | `FRONTEND_TRANSITIVE_DEV_LOCK_PATCH_ONLY; NO_PYTHON_PIN_CHANGE` |
+| Trading impact | `NONE` |
+| Capital at risk | `USD 0` |
+| Exact changed-file count | `8` |
+
+### Governance authority mirror
+
+```text
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: true
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: true
+dependencies: true
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+```
+
+This is a Risk-2 `security/tooling` package under the merged validation matrix. Because it grants no product-network, scheduler, Hermes-runtime, paper, credential, execution or live authority, the minimum governance track is `FAST`. No independent pre-implementation draftability certificate is required.
+
+---
+
+## 1. Objective
+
+Restore truthful green dependency-security CI without changing product/trading behavior.
+
+The package has exactly two repairs inside one security capability:
+
+1. genuinely update the vulnerable transitive frontend development dependency `source-map-js` from `1.2.1` to patched `1.2.2`, with no unrelated dependency movement; and
+2. because the current stable production NautilusTrader line still exactly resolves vulnerable `fsspec==2026.2.0`, make `pip-audit` ignore exactly `CVE-2026-104851` in exactly the two existing Python audit jobs until a separately authorized stable Nautilus upgrade removes the vulnerable transitive pin.
+
+Every other vulnerability must continue to fail CI normally.
+
+This WP does **not** modify PR #221.
+
+---
+
+## 2. Frozen Live / Tool Truth
+
+Pre-draft refresh completed on 2026-10-06.
+
+### Repository / PR
+
+- `main` is exactly `f9a0bae6a69d008862e6466f1fe532bc9416de5d`.
+- PR #221 is the only open PR.
+- PR #221 head is exactly `f7c2ff1be6d8d87a151cda47eb4a85b27ebf8eda`.
+- PR #221 is open, unmerged and still says `Ready for review: NO` / `Merge authorized: NO`.
+- PR #221 remains a frozen seven-path User-Agent repair and is outside this WP.
+
+### Exact current security findings
+
+Current #221 exact-head hosted run `37415989950` shows:
+
+**Python audit jobs — both fail on the same single finding**
+
+```text
+nautilus_trader==1.231.0
+  -> fsspec==2026.2.0
+
+pip-audit: 2.10.1
+finding: CVE-2026-104851
+reported fixed fsspec version: 2026.6.0
+```
+
+`pip check` passes in both audited environments.
+
+**Frontend audit**
+
+```text
+source-map-js: 1.2.1
+affected range: 1.0.0 - 1.2.1
+severity: high
+advisory: GHSA-68fv-2mgg-jv7q
+patched version: 1.2.2
+```
+
+Frontend `npm ci`, typecheck and production build already pass; only the high-severity audit fails.
+
+### Upstream/tool contract
+
+- Current stable NautilusTrader production line remains `1.231.0`.
+- The current 2.x line is prerelease; do not migrate production to a release candidate to silence CI.
+- The live resolver proves `nautilus_trader==1.231.0` exactly requires `fsspec==2026.2.0`.
+- Do not force-install a newer incompatible `fsspec`.
+- `pip-audit` supports the exact selective form:
+
+```bash
+python -m pip_audit --ignore-vuln CVE-2026-104851
+```
+
+- `source-map-js==1.2.2` is patched.
+- Current lockfile parent constraint is already `source-map-js: ^1.2.1`, so `1.2.2` is admissible without changing `package.json`.
+
+If any of these implementation-changing facts differs at execution time, STOP under Section 11 rather than silently broadening the package.
+
+---
+
+## 3. Hard Base / Session Gate
+
+Before any implementation edit, run:
+
+```bash
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+```
+
+Require all of the following:
+
+1. `HEAD == f9a0bae6a69d008862e6466f1fe532bc9416de5d`.
+2. PR #220 is merged with predecessor head `d6899e205f0652c7314216016d95cd17e6f01f46`.
+3. PR #221 remains unmerged and its functional branch is not modified by this WP.
+4. No `S10-CI-SEC-01` branch or PR already exists unless Karl explicitly directs reuse.
+5. Worktree is clean.
+6. The current audit/tool facts in Section 2 have not materially changed.
+
+If main has legitimately moved, do not silently rebase this frozen package. STOP:
+
+```text
+S10_CI_SEC_01_BASE_DRIFT:<observed_main>
+```
+
+---
+
+## 4. Exact Scope — 8 Paths
+
+`required_changed_files == allowed_changed_files ==` exactly:
+
+1. `.github/workflows/ci.yml`
+2. `src/operator_cockpit_frontend/package-lock.json`
+3. `tests/test_codex_workflow_docs.py`
+4. `docs/project_status.md`
+5. `docs/repo_truth_index.md`
+6. `docs/status_entries/S10-CI-SEC-01.md`
+7. `docs/wp_specs/S10-CI-SEC-01/wp_prompt.txt`
+8. `docs/wp_specs/S10-CI-SEC-01/wp_spec.json`
+
+No ninth path.
+
+### Explicitly unchanged
+
+- `pyproject.toml`
+- `src/operator_cockpit_frontend/package.json`
+- `tests/test_ndfd_grib_decoder_dependency_contract_docs.py` — run as adjacent regression only
+- `docs/security_tooling_status.md` — historical status evidence; no edit needed
+- all PR #221 paths
+- all `src/**` runtime/product source
+- all `tools/**`
+- all credentials/config/live/deployment/Hermes/strategy surfaces
+
+If a ninth path is mechanically required:
+
+```text
+S10_CI_SEC_01_SCOPE_AMENDMENT_REQUIRED:<path>:<reason>
+```
+
+Do not edit it.
+
+---
+
+## 5. Frozen Implementation Design
+
+### A. Frontend — real patch, no waiver
+
+The only authorized frontend dependency change is the transitive lock resolution:
+
+```text
+source-map-js 1.2.1 -> 1.2.2
+```
+
+Do not change `package.json`, Vite, PostCSS, React, TypeScript or any other dependency.
+
+Use the hosted frontend toolchain for the lock mutation:
+
+```text
+Node v24.18.0
+npm 11.16.0
+```
+
+From `src/operator_cockpit_frontend/`, perform the narrow normal lock-only update:
+
+```bash
+npm update source-map-js --package-lock-only --ignore-scripts
+```
+
+Immediately inspect the lockfile diff.
+
+Required postconditions:
+
+- `package.json` is byte-unchanged;
+- `node_modules/source-map-js.version == 1.2.2`;
+- its resolved URL/integrity move to the corresponding `1.2.2` values;
+- the existing parent requirement `source-map-js: ^1.2.1` remains unchanged;
+- no other `node_modules/*` package entry changes;
+- no root dependency/dependency-range changes;
+- no second lock/dependency file changes.
+
+If the command selects anything other than exactly `1.2.2`, or produces unrelated lock churn, revert the lockfile and STOP:
+
+```text
+S10_CI_SEC_01_LOCK_DRIFT:<summary>
+```
+
+Do not use broad `npm audit fix`, broad `npm update`, or a Vite/PostCSS refresh as the repair.
+
+### B. Python audits — one exact temporary exception
+
+In `.github/workflows/ci.yml`, change exactly the audit command in both:
+
+- `dependency-audit`
+- `ndfd-grib-dependency-audit`
+
+from:
+
+```bash
+python -m pip_audit
+```
+
+to exactly:
+
+```bash
+python -m pip_audit --ignore-vuln CVE-2026-104851
+```
+
+Required invariants:
+
+- exactly one `--ignore-vuln` appears in each intended Python audit job;
+- the only ignored ID is `CVE-2026-104851`;
+- no other job receives the exception;
+- no `|| true`;
+- no `continue-on-error` success masking;
+- no wildcard or blanket suppression;
+- no audit step removal/disable;
+- no `--no-deps`;
+- no direct or forced `fsspec` install;
+- no Python dependency pin change;
+- `pip check` remains unchanged and required;
+- all other `pip-audit` findings remain normal failures.
+
+Add only concise nearby workflow commentary if needed to make the temporary nature and removal trigger auditable.
+
+### C. Explicit removal trigger
+
+The temporary Python exception must be documented in the status/repo-truth evidence as follows in substance:
+
+> `CVE-2026-104851` is ignored only because the repository's current stable production pin `nautilus_trader==1.231.0` resolves `fsspec==2026.2.0`. Remove the exception when a separately authorized, stable, project-compatible NautilusTrader upgrade resolves a non-vulnerable `fsspec` version (at least the advisory's fixed line) and that upgraded closure passes compatibility, `pip check`, dependency audit and the required full validation. A Nautilus prerelease alone is not a removal path for production.
+
+This WP does not authorize that future Nautilus migration.
+
+### D. Regression owner
+
+Modify only `tests/test_codex_workflow_docs.py`.
+
+Add focused deterministic coverage proving at minimum:
+
+1. both intended Python audit jobs exist;
+2. each uses exactly `python -m pip_audit --ignore-vuln CVE-2026-104851`;
+3. exactly two workflow occurrences of that exact exception exist;
+4. no additional `--ignore-vuln` ID exists;
+5. neither audit job has `|| true` or `continue-on-error` masking;
+6. existing `pip check` steps remain;
+7. current `nautilus_trader==1.231.0` project pin remains unchanged;
+8. no direct `fsspec` project pin is introduced;
+9. frontend lock resolves `node_modules/source-map-js` exactly to `1.2.2`;
+10. `package.json` still does not directly add `source-map-js`;
+11. status/repo-truth evidence records the exception reason and removal trigger.
+
+Do not add a generic vulnerability-management framework or new test file.
+
+### E. Adjacent NDFD guard
+
+Run unchanged:
+
+```bash
+python -m pytest -q -p no:cacheprovider tests/test_ndfd_grib_decoder_dependency_contract_docs.py
+```
+
+Its existing contract must still pass, including the presence of the dedicated NDFD audit job and `pip_audit`.
+
+If it needs a semantic source change rather than merely passing the new command substring, STOP for scope reassessment; do not add it silently.
+
+### F. Mandatory governed/status artifacts
+
+The exact four non-product truth artifacts required for this package are:
+
+- `docs/wp_specs/S10-CI-SEC-01/wp_prompt.txt`
+- `docs/wp_specs/S10-CI-SEC-01/wp_spec.json`
+- `docs/status_entries/S10-CI-SEC-01.md`
+- `docs/project_status.md`
+
+Additionally, because this WP changes durable CI-security truth, register the bounded closure and removal trigger in:
+
+- `docs/repo_truth_index.md`
+
+No FAST/RUNTIME draftability certificate is required.
+
+`docs/project_status.md` must use open-branch wording while the PR is open, must not add this WP to the merged-WP list before merge, and must identify the current security status truthfully.
+
+---
+
+## 6. Authority / Non-Authority
+
+### Authorized after Karl separately authorizes implementation
+
+- exact eight-path implementation;
+- one transitive frontend **development lock** patch to `source-map-js==1.2.2`;
+- exact workflow exception for `CVE-2026-104851` in the two Python audit jobs;
+- focused workflow/security regression tests;
+- package/status/repo-truth registration;
+- normal local validation and Git/PR publication;
+- final exact-head hosted CI.
+
+### Not authorized
+
+- PR #221 modification;
+- any `src/**` product/runtime source change;
+- Python dependency-pin changes;
+- stable or prerelease Nautilus migration;
+- forced `fsspec` upgrade;
+- broad frontend dependency refresh;
+- `npm audit fix`;
+- new external library/tool dependency;
+- credential or authenticated account access;
+- product/venue network behavior;
+- deployment or execution-host changes;
+- Hermes/provider calls;
+- strategy/research changes;
+- scheduler/bot loop;
+- paper trading;
+- Gate C or LIVE-ORCH activation;
+- order/create/cancel/signing;
+- live trading;
+- capital;
+- merge.
+
+**This WP grants zero Hermes, strategy, deployment, account, credential, execution, order, live or capital authority.**
+
+---
+
+## 7. Vertical Trace / Acceptance Contract
+
+The implementation must preserve this exact causal chain:
+
+```text
+frontend package constraint
+→ package-lock resolution
+→ npm ci
+→ source-map-js 1.2.2 installed
+→ npm audit --audit-level=high passes
+→ cockpit-frontend hosted job passes
+
+stable Nautilus 1.231.0
+→ resolver selects fsspec 2026.2.0
+→ pip check passes
+→ pip-audit runs with exactly one selective ignore
+→ CVE-2026-104851 is excepted
+→ any different vulnerability remains unignored/non-zero
+→ both Python audit hosted jobs pass only if no additional finding exists
+
+all required jobs green on one exact final head
+→ security WP eligible for independent Side review
+→ Karl merge decision
+```
+
+No layer may be skipped by replacing a failed audit with a generic success exit.
+
+---
+
+## 8. Canonical Package / Readiness Requirement
+
+After Karl explicitly authorizes execution and before changing implementation surfaces:
+
+1. create the dedicated branch/worktree;
+2. materialize the canonical package artifacts for this exact WP:
+   - `docs/wp_specs/S10-CI-SEC-01/wp_prompt.txt`
+   - `docs/wp_specs/S10-CI-SEC-01/wp_spec.json`
+3. encode exactly:
+   - identity/base/predecessor above;
+   - Risk 2 / FAST / size M;
+   - exact eight paths;
+   - exact authority mirror above;
+   - dependency/workflow/status/test evidence plan;
+   - successor boundary below;
+4. run:
+
+```bash
+python tools/wp/wp_readiness_gate.py \
+  --wp docs/wp_specs/S10-CI-SEC-01/wp_prompt.txt \
+  --spec docs/wp_specs/S10-CI-SEC-01/wp_spec.json \
+  --repo-root .
+```
+
+Require:
+
+```text
+IMPLEMENTATION_READY
+governance track = FAST
+certificate_required = false
+no unresolved decisions
+```
+
+If readiness requires authority/scope beyond this WP, STOP rather than broadening it.
+
+---
+
+## 9. Minimum-Sufficient Validation
+
+Use local-first validation. Do not use hosted CI as the iterative editing loop.
+
+### While editing
+
+Run focused/adjacent checks as needed:
+
+```bash
+python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py
+python -m pytest -q -p no:cacheprovider tests/test_ndfd_grib_decoder_dependency_contract_docs.py
+python -m pytest -q -p no:cacheprovider tests/test_project_status_docs.py tests/test_repo_truth_docs.py
+```
+
+Frontend, from `src/operator_cockpit_frontend/`:
+
+```bash
+npm ci
+npm run typecheck
+npm run build
+npm audit --audit-level=high
+```
+
+Require the frontend audit to pass with `source-map-js==1.2.2`.
+
+### Stable candidate
+
+Run exact-scope readiness:
+
+```bash
+python tools/wp/wp_readiness_gate.py \
+  --wp docs/wp_specs/S10-CI-SEC-01/wp_prompt.txt \
+  --spec docs/wp_specs/S10-CI-SEC-01/wp_spec.json \
+  --repo-root . \
+  --check-diff \
+  --base origin/main \
+  --head HEAD
+```
+
+Require exact eight-path equality.
+
+Then:
+
+```bash
+git diff --check origin/main HEAD
+python tools/git/preflight_generated_artifact_guard.py
+python tools/security/run_available_security_checks.py
+```
+
+Unavailable optional tools must be reported as unavailable, never PASS.
+
+Run **one** authoritative local broad/full suite on the stable candidate:
+
+```bash
+python -m pytest -q -p no:cacheprovider
+```
+
+Use the established ephemeral/network-isolated Linux validation pattern if workstation native-module policy prevents the authoritative local suite. Do not weaken OS security policy.
+
+### Final hosted evidence
+
+- Keep the PR DRAFT while source is changing.
+- Do not trigger hosted CI repeatedly as the development loop.
+- After stable local PASS, mark Ready once.
+- Obtain the complete existing hosted matrix on that exact non-draft head.
+- Require all nine expanded hosted jobs PASS, including:
+  - `dependency-audit`;
+  - `ndfd-grib-dependency-audit`;
+  - `cockpit-frontend`;
+  - all compatibility/NDFD jobs.
+- Any source/workflow change after hosted PASS invalidates that hosted evidence and requires fresh exact-head CI.
+- Unchanged-head runner infrastructure failures may rerun only the affected job where supported.
+
+No merge.
+
+---
+
+## 10. Deliberately Excluded Tests / Work
+
+Do **not** add or run as WP-specific acceptance:
+
+- LIVE-ORCH tests;
+- Gate-C economic activation tests;
+- Gamma/CLOB/geoblock smoke;
+- authenticated Polymarket account checks;
+- Hermes/provider tests;
+- wallet intelligence tests;
+- Alpha/research campaigns;
+- DATA/weather work;
+- execution-host deployment/currentness;
+- real order/cancel tests;
+- generic synthetic vulnerability-platform development;
+- broad dependency-upgrade experiments;
+- repeated repository full suites after every edit.
+
+The final existing hosted matrix still runs its normal unchanged coverage. These exclusions prevent adding new package-specific scope, not removal of existing CI.
+
+---
+
+## 11. Same-Run Corrections vs Hard Stops
+
+### Same run
+
+Fix and continue inside the same implementation run if:
+
+- a focused assertion is initially wrong but the frozen capability/scope is unchanged;
+- status wording is inconsistent;
+- the exact audit command has a typo;
+- the lock-only command needs a same-scope retry after restoring the frozen lockfile;
+- a normal test/evidence defect exists within the exact eight paths.
+
+Do not create a follow-up WP for ordinary defects inside this capability.
+
+### Hard stop
+
+STOP if:
+
+1. `main` differs from the frozen base before implementation starts.
+2. stable production Nautilus truth has materially changed such that a clean stable fix is now available.
+3. the live Python advisory ID differs from `CVE-2026-104851`.
+4. `pip-audit` no longer supports exact selective `--ignore-vuln ID`.
+5. `source-map-js==1.2.2` is no longer the correct patched target.
+6. the lock-only operation changes any package node other than `source-map-js`.
+7. any Python pin / `pyproject.toml` change is required.
+8. a direct/forced `fsspec` change is required.
+9. the remediation requires a Nautilus production migration.
+10. a ninth changed file is required.
+11. a new real high-severity advisory appears during the stable-candidate/final hosted audit.
+12. any credential, product network, deployment, Hermes, strategy, execution, live or capital boundary would move.
+13. deterministic FAST readiness is not `IMPLEMENTATION_READY`.
+14. final hosted evidence cannot be tied to the exact final head.
+
+A second real advisory is **not** something to add to the existing ignore list. Stop and reassess the frozen capability.
+
+---
+
+## 12. Status / Repo-Truth Requirements
+
+### `docs/status_entries/S10-CI-SEC-01.md`
+
+Record at minimum:
+
+- frozen base and predecessor;
+- Risk 2 / FAST / M;
+- exact eight-file scope;
+- frontend advisory and exact `1.2.2` repair;
+- Python `fsspec` finding and exact one-CVE exception;
+- why forced `fsspec` / prerelease Nautilus are rejected;
+- explicit exception removal trigger;
+- zero product/runtime/live authority;
+- validation/evidence state;
+- `Ready for review: NO` until all final evidence passes;
+- `Merge authorized: NO`.
+
+### `docs/project_status.md`
+
+While the PR is open:
+
+- identify `S10-CI-SEC-01` as the current bounded security closure;
+- keep S10-CI-SEC-01 out of the merged list;
+- state security findings/remediation truthfully;
+- state PR #221 is separately paused pending this closure;
+- preserve live trading disabled / orders 0 / capital USD 0.
+
+### `docs/repo_truth_index.md`
+
+Add one bounded entry registering:
+
+- this package as security/tooling CI closure;
+- `source-map-js 1.2.2` lock repair;
+- exact selective `CVE-2026-104851` audit exception in two Python jobs;
+- explicit removal trigger;
+- no Python pin/runtime/product authority;
+- successor back to #221.
+
+Do not rewrite unrelated historical entries.
+
+---
+
+## 13. Requirement-to-Evidence Plan
+
+| ID | Requirement | Minimum evidence |
+|---|---|---|
+| R001 | exact base/predecessor and frozen #221 separation | startup discovery + exact scope |
+| R002 | `source-map-js` genuinely patched only to `1.2.2` | lock diff + focused assertion + `npm ci`/audit |
+| R003 | exact Python exception in exactly two jobs | central workflow regression |
+| R004 | every other vulnerability remains unsuppressed | exact-one-ignore/no-mask regression + native `pip-audit` semantics + final hosted audits |
+| R005 | no Python pin/forced fsspec/Nautilus migration | diff + test assertion + `pip check` |
+| R006 | status/removal trigger/repo truth | focused status/repo-truth assertions |
+| R007 | FAST package exact eight-path readiness | readiness `--check-diff` |
+| R008 | stable-candidate integrity | focused + adjacent + hygiene + one local full suite |
+| R009 | final security closure | one exact-head complete hosted matrix PASS |
+| R010 | independent disposition | Side17 exact-head review before Karl merge |
+
+For a changed final head, R009 must be regenerated.
+
+---
+
+## 14. Final Evidence / Review Handoff
+
+Before `Ready for review: YES`, the PR body must truthfully include:
+
+- exact final head SHA;
+- exact 8/8 changed-file set;
+- exact lockfile result;
+- exact two-job audit-exception result;
+- focused/adjacent results;
+- readiness `--check-diff` PASS;
+- hygiene/security-tool availability truth;
+- one local broad/full-suite result;
+- exact hosted run ID and all hosted job conclusions;
+- explicit confirmation that #221 was untouched;
+- zero protected/economic authority;
+- exception removal trigger;
+- evidence mode;
+- `Merge authorized: NO`.
+
+Run the repository's PR evidence consistency guard on the exact final PR body as required by current governance.
+
+Then report:
+
+```text
+READY_FOR_SIDE17_DEPENDENCY_SECURITY_PR_REVIEW
+```
+
+Do not merge.
+
+---
+
+## 15. Successor Boundary
+
+This WP ends after exact-head implementation review and Karl's merge decision.
+
+The required successor sequence is exactly:
+
+```text
+security repair merge
+→ update #221 to new main
+→ fresh exact-head #221 CI
+→ Side review
+→ Karl merge
+→ new release SHA rebind/deploy/currentness
+→ public Gamma/CLOB/geoblock smoke
+→ resume first-canary flow
+```
+
+This WP does not authorize any successor step merely by completing.
+
+---
+
+## 16. Final Non-Authority Statement
+
+`S10-CI-SEC-01` is a dependency-security CI closure only.
+
+It grants **zero**:
+
+- Hermes authority;
+- research/strategy authority;
+- deployment authority;
+- authenticated account authority;
+- credential authority;
+- execution/signing authority;
+- order/create/cancel authority;
+- live authority;
+- capital authority.
+
+Live trading remains separately gated and disabled.
+
+---
+
+## 17. Authorization Record (canonical package materialization)
+
+Karl explicitly authorized implementation of this exact WP on 2026-10-06 after assessment, through
+base/session gate, canonical package materialization, FAST readiness, implementation, local
+validation, draft PR, stable-candidate validation, one final exact-head hosted CI matrix and
+evidence closure. The header line "Implementation authorization: NO" above records the pre-assessment
+draft state; this section records the later explicit authorization. Merge authority remains Karl
+only. PR #221 is not modified.
+
+Governance track expected: FAST
+
+Sections 0-16 above are the attached WP text, unchanged except for the single Side 17-authorized
+authority-mirror correction below. Sections 17-19 add only the canonical package elements required
+by deterministic readiness (authorization record, plain governance-track line, negative-test
+matrix, report-back and normative rule matrix); they introduce no new scope, authority or
+capability.
+
+### Side 17 pre-implementation package correction (2026-10-06)
+
+Side 17 assessed the first readiness stop and authorized exactly these package corrections:
+
+- A. `source_runtime: true` in the Section 0 authority mirror, the machine-spec authority object and
+  the `source_runtime` mode-boundary entry. `source_runtime: true` exists solely because the
+  governed exact-scope frontend lockfile is located under `src/`. Product/runtime source logic
+  remains outside scope. The only authorized `src/**` path is
+  `src/operator_cockpit_frontend/package-lock.json`.
+- B. The plain line `Governance track expected: FAST` above. Risk stays 2, track stays FAST and no
+  certificate is required.
+- C. `pyproject.toml` is not listed in `scope.forbidden_prefixes`; it remains forbidden in practice
+  because exact scope is required and it is not one of the eight paths.
+- D. The negative-test matrix, report-back and normative rule matrix in Sections 18-19 restate the
+  already-authorized capability only.
+
+The package remains exact-scope 8/8; no other `src/**` file may change.
+
+---
+
+## 18. Negative-Test Matrix and Report-Back
+
+### Negative-test matrix
+
+Every row must be rejected by the focused regression in `tests/test_codex_workflow_docs.py` or by an
+existing gate:
+
+| ID | Mutation / condition | Required result |
+|---|---|---|
+| N01 | a Python audit job loses `--ignore-vuln CVE-2026-104851` | FAIL |
+| N02 | a second `--ignore-vuln` ID is added | FAIL |
+| N03 | the exception appears in a third job or a non-audit step | FAIL |
+| N04 | `|| true` or `continue-on-error` masks an audit job | FAIL |
+| N05 | the pip-audit step is removed or replaced | FAIL |
+| N06 | `pip check` is removed from an audit job | FAIL |
+| N07 | `nautilus_trader==1.231.0` pin changes or a direct `fsspec` pin is added | FAIL |
+| N08 | lock resolves `source-map-js` to anything other than `1.2.2` | FAIL |
+| N09 | `package.json` adds `source-map-js` directly | FAIL |
+| N10 | status / repo truth omit the exception reason or removal trigger | FAIL |
+| N11 | changed-file scope differs from the exact eight paths | readiness FAIL |
+| N12 | any product/runtime/credential/live/capital boundary moves | authority violation |
+
+### Report-back
+
+When the stable candidate, single final exact-head hosted matrix and PR evidence guard all pass,
+report back exactly:
+
+`READY_FOR_SIDE17_DEPENDENCY_SECURITY_PR_REVIEW`
+
+with the final head SHA, the exact 8/8 changed-file set, the lockfile result, the two-job exception
+result, focused/adjacent/full-suite results, readiness `--check-diff`, hygiene and security-tool
+availability truth, the hosted run ID and all job conclusions, confirmation that PR #221 was
+untouched, zero protected/economic authority, the removal trigger and `Merge authorized: NO`.
+
+On a hard stop, report the exact Section 11 stop code instead and do not continue.
+
+---
+
+## 19. Normative Rule Matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|dependency|frontend_lock|implementation|REQUIRE|source_map_js_exactly_1_2_2_only|dependency.frontend_lock|R002
+NR002|ci|python_audit_exception|both_python_audit_jobs|REQUIRE|exact_single_cve_2026_104851_ignore|ci.python_audit_exception|R003
+NR003|ci|audit_masking|all_audit_jobs|FORBID|blanket_suppression_or_success_masking|ci.audit_integrity|R004
+NR004|dependency|python_pins|this_wp|FORBID|pin_change_forced_fsspec_or_nautilus_migration|dependency.python_pins|R005
+NR005|governance|exception_removal|status_and_repo_truth|REQUIRE|explicit_removal_trigger_recorded|governance.exception_removal|R006
+NR006|scope|changed_files|stable_candidate|REQUIRE|exact_eight_paths|scope.exact_paths|R007
+NR007|validation|stable_candidate|before_ready|REQUIRE|focused_adjacent_hygiene_and_one_local_full_suite|validation.stable_candidate|R008
+NR008|validation|hosted_ci|ready_exact_head|REQUIRE|one_complete_nine_job_matrix_pass|validation.hosted_final|R009
+NR009|authority|product_runtime|this_wp|FORBID|product_credential_execution_live_or_capital_authority|governance.product_authority|R001
+END_NORMATIVE_RULE_MATRIX_V1

@@ -1895,7 +1895,9 @@ def test_ci_policy_negative_matrix() -> None:
         "py3.12 dropped": text.replace('python: ["3.12", "3.14"]', 'python: ["3.14"]'),
         "full suite removed": text.replace("      - name: Full test suite\n        run: python -m pytest -q\n", ""),
         "strict duckdb removed": text.replace('WP167_STRICT_DUCKDB: "1"', 'WP167_STRICT_DUCKDB: "0"'),
-        "audit removed": text.replace("run: python -m pip_audit\n", "run: echo skipped\n", 1),
+        # S10-CI-SEC-01: the audit step now carries the exact selective CVE-2026-104851 exception.
+        "audit removed": text.replace(
+            "run: python -m pip_audit --ignore-vuln CVE-2026-104851\n", "run: echo skipped\n", 1),
         "frontend audit removed": text.replace("npm audit --audit-level=high", "true"),
         # N07: path or branch filters that could skip parts of the final matrix.
         "paths filter": text.replace(CI_EVENT_TYPES_LINE, CI_EVENT_TYPES_LINE + "    paths:\n      - 'src/**'\n"),
@@ -1982,3 +1984,151 @@ def test_ci_optimization_status_and_repo_truth_are_recorded() -> None:
         "bef6863aa291a85538b2d094f879adcfc856cfe847b5813ad3f4a35ed6774090")
     assert hashlib.sha256((package / "wp_prompt.txt").read_bytes()).hexdigest() == (
         "ebd6ab082e3f191cb7ad3226a43e3a8b13cd56532c45eda4824baee2ec0ac4f7")
+
+
+# ---------------------------------------------------------------------------
+# S10-CI-SEC-01 Dependency-Security CI Closure
+# ---------------------------------------------------------------------------
+
+CI_SEC_01_EXCEPTION = "run: python -m pip_audit --ignore-vuln CVE-2026-104851"
+CI_SEC_01_AUDIT_JOBS = ("dependency-audit", "ndfd-grib-dependency-audit")
+CI_SEC_01_FRONTEND = ROOT / "src" / "operator_cockpit_frontend"
+
+
+def _ci_sec_01_violations(text: str) -> list[str]:
+    violations: list[str] = []
+    jobs = _ci_jobs(text)
+    ignored = re.findall(r"--ignore-vuln[ =](\S+)", text)
+    if ignored != ["CVE-2026-104851", "CVE-2026-104851"]:
+        violations.append(f"ignored ids not exactly two CVE-2026-104851: {ignored}")
+    if text.count(CI_SEC_01_EXCEPTION) != 2:
+        violations.append("exact exception command count != 2")
+    for job in CI_SEC_01_AUDIT_JOBS:
+        body = jobs.get(job, "")
+        audit_runs = [line.strip() for line in body.splitlines() if "pip_audit" in line and "run:" in line]
+        if audit_runs != [CI_SEC_01_EXCEPTION]:
+            violations.append(f"audit step not exact: {job}")
+        if "run: python -m pip check" not in body:
+            violations.append(f"pip check missing: {job}")
+        for mask in ("|| true", "continue-on-error", "--no-deps", "fsspec=="):
+            if mask in body:
+                violations.append(f"masking or forced install in {job}: {mask}")
+    for job, body in jobs.items():
+        if job not in CI_SEC_01_AUDIT_JOBS and "--ignore-vuln" in body:
+            violations.append(f"exception outside the Python audit jobs: {job}")
+    if "continue-on-error" in text:
+        violations.append("continue-on-error present")
+    return violations
+
+
+def test_ci_sec_01_python_audit_exception_is_exact() -> None:
+    """R003: both Python audit jobs run exactly one selective ignore for CVE-2026-104851."""
+    text = _read(CI_WORKFLOW)
+    jobs = _ci_jobs(text)
+    for job in CI_SEC_01_AUDIT_JOBS:
+        assert job in jobs, job
+        assert f"        {CI_SEC_01_EXCEPTION}" in jobs[job].splitlines(), job
+    assert text.count(CI_SEC_01_EXCEPTION) == 2
+    assert re.findall(r"--ignore-vuln[ =](\S+)", text) == ["CVE-2026-104851", "CVE-2026-104851"]
+    assert not _ci_sec_01_violations(text), _ci_sec_01_violations(text)
+    assert not _ci_policy_violations(text)
+
+
+def test_ci_sec_01_audit_exception_negative_matrix() -> None:
+    """R004 / N01-N06: widened, masked, spread or removed exceptions are rejected."""
+    text = _read(CI_WORKFLOW)
+    assert not _ci_sec_01_violations(text)
+    exception_line = f"        {CI_SEC_01_EXCEPTION}\n"
+    mutations = {
+        "N01 exception dropped from one job": text.replace(
+            exception_line, "        run: python -m pip_audit\n", 1),
+        "N02 second ignored id": text.replace(
+            exception_line, exception_line.rstrip("\n") + " --ignore-vuln GHSA-0000-0000-0000\n", 1),
+        "N02 different ignored id": text.replace("CVE-2026-104851\n", "CVE-2026-999999\n", 1),
+        "N03 exception spread to compat": text.replace(
+            "        run: python -m pytest -q\n",
+            "        run: python -m pytest -q\n      - name: extra\n        run: python -m pip_audit --ignore-vuln CVE-2026-104851\n", 1),
+        "N04 or-true masking": text.replace(exception_line, exception_line.rstrip("\n") + " || true\n", 1),
+        "N04 continue-on-error": text.replace(
+            exception_line, exception_line + "        continue-on-error: true\n", 1),
+        "N05 audit step removed": text.replace(exception_line, "        run: echo skipped\n", 1),
+        "N06 pip check removed": text.replace("        run: python -m pip check\n", "        run: echo skipped\n", 2),
+        "forced fsspec install": text.replace(
+            "pytest>=8.0\" pip-audit\n", "pytest>=8.0\" pip-audit fsspec==2026.6.0 --no-deps\n", 1),
+    }
+    for name, mutated in mutations.items():
+        assert mutated != text, name
+        assert _ci_sec_01_violations(mutated), name
+
+
+def test_ci_sec_01_no_python_pin_or_fsspec_change() -> None:
+    """R005: the stable Nautilus pin stays and no direct fsspec pin or forced install exists."""
+    pyproject = _read(ROOT / "pyproject.toml")
+    assert '"nautilus_trader==1.231.0"' in pyproject
+    assert "fsspec" not in pyproject.lower()
+    workflow = _read(CI_WORKFLOW)
+    assert 'WP168_DEP: "nautilus_trader==1.231.0"' in workflow
+    assert "fsspec==" not in workflow and "--no-deps" not in workflow
+    jobs = _ci_jobs(workflow)
+    for job in CI_SEC_01_AUDIT_JOBS:
+        assert "      - name: pip check\n        run: python -m pip check" in jobs[job], job
+
+
+def test_ci_sec_01_frontend_lock_patches_source_map_js_only() -> None:
+    """R002 / N08-N09: the lock resolves source-map-js 1.2.2 transitively; package.json is untouched."""
+    lock = json.loads(_read(CI_SEC_01_FRONTEND / "package-lock.json"))
+    node = lock["packages"]["node_modules/source-map-js"]
+    assert node["version"] == "1.2.2"
+    assert node["resolved"] == "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.2.tgz"
+    assert node["integrity"] == (
+        "sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==")
+    assert node["dev"] is True
+    assert lock["packages"]["node_modules/postcss"]["dependencies"]["source-map-js"] == "^1.2.1"
+    package = json.loads(_read(CI_SEC_01_FRONTEND / "package.json"))
+    for section in ("dependencies", "devDependencies", "optionalDependencies", "overrides"):
+        assert "source-map-js" not in package.get(section, {}), section
+    for name in ("", *lock["packages"]):
+        assert "source-map-js" not in lock["packages"].get(name, {}).get("devDependencies", {}), name
+
+
+def test_ci_sec_01_status_and_repo_truth_record_removal_trigger() -> None:
+    """R006 / N10: status, project status and repo truth record the exception reason and removal trigger."""
+    fragment = " ".join(_read(ROOT / "docs" / "status_entries" / "S10-CI-SEC-01.md").split())
+    for phrase in (
+        "Governance track: FAST", "Merge authorized: NO", "PR and current live head: see GitHub metadata and the PR body",
+        "`CVE-2026-104851` is ignored only because the repository's current stable production pin "
+        "`nautilus_trader==1.231.0` resolves `fsspec==2026.2.0`.",
+        "A Nautilus prerelease alone is not a removal path for production.",
+        "source-map-js` 1.2.1, GHSA-68fv-2mgg-jv7q",
+        "PR #221: untouched",
+    ):
+        assert phrase in fragment, phrase
+    status_lines = _read(ROOT / "docs" / "project_status.md").splitlines()
+    record = next(line for line in status_lines if line.startswith(
+        "# S10-CI-SEC-01 current bounded security closure (open branch"))
+    for text in (
+        "Governance track: FAST", "Risk level: 2", "Exact changed-file scope: 8",
+        "Frozen base: f9a0bae6a69d008862e6466f1fe532bc9416de5d", "python -m pip_audit --ignore-vuln CVE-2026-104851",
+        "exception removal trigger:", "PR #221 / S10-LIVE-CANARY-UA-01: separately paused pending this closure",
+        "live: DISABLED", "S10-CI-SEC-01 capital/orders: USD 0 / 0", "Merge authorized: NO",
+    ):
+        assert text in record, text
+    for claim in ("merged: YES at", "live: ENABLED", "Merge authorized: YES"):
+        assert claim not in record.split("Immediate predecessor")[0], claim
+    index = _read(ROOT / "docs" / "repo_truth_index.md")
+    heading = "## S10-CI-SEC-01 Dependency-Security CI Closure (current bounded security closure, open branch)"
+    assert index.count(heading) == 1
+    section = " ".join(index.split(heading, 1)[1].split("\n## ", 1)[0].split())
+    for phrase in (
+        "Removal trigger:", "a Nautilus prerelease alone is not a removal path",
+        "exactly `dependency-audit` and `ndfd-grib-dependency-audit` run `python -m pip_audit --ignore-vuln CVE-2026-104851`",
+        "Successor: PR #221 / S10-LIVE-CANARY-UA-01",
+    ):
+        assert phrase in section, phrase
+    spec = json.loads(_read(ROOT / "docs" / "wp_specs" / "S10-CI-SEC-01" / "wp_spec.json"))
+    assert spec["scope"]["required_changed_files"] == spec["scope"]["allowed_changed_files"]
+    assert len(spec["scope"]["allowed_changed_files"]) == spec["scope"]["max_changed_files"] == 8
+    src_paths = [p for p in spec["scope"]["allowed_changed_files"] if p.startswith("src/")]
+    assert src_paths == ["src/operator_cockpit_frontend/package-lock.json"]
+    for key in ("network", "credentials", "scheduler", "hermes_runtime", "strategy", "paper", "execution", "live"):
+        assert spec["authority"][key] is False, key

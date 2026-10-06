@@ -183,8 +183,11 @@ jobs:
       - name: pip check
         run: python -m pip check
 
+      # S10-CI-SEC-01: temporary exception for exactly CVE-2026-104851 (fsspec 2026.2.0, exact-pinned by
+      # stable nautilus_trader==1.231.0). Remove it when a separately authorized stable Nautilus upgrade
+      # resolves fsspec >= 2026.6.0; see docs/status_entries/S10-CI-SEC-01.md. All other findings fail.
       - name: pip-audit resolved environment
-        run: python -m pip_audit
+        run: python -m pip_audit --ignore-vuln CVE-2026-104851
 
   ndfd-grib-compat:
     # S10-NDFD-GRIB-01 optional NDFD GRIB2 decoder capability proof. Installs the base
@@ -265,8 +268,11 @@ jobs:
       - name: pip check
         run: python -m pip check
 
+      # S10-CI-SEC-01: temporary exception for exactly CVE-2026-104851 (fsspec 2026.2.0, exact-pinned by
+      # stable nautilus_trader==1.231.0). Remove it when a separately authorized stable Nautilus upgrade
+      # resolves fsspec >= 2026.6.0; see docs/status_entries/S10-CI-SEC-01.md. All other findings fail.
       - name: pip-audit resolved ndfd-grib environment
-        run: python -m pip_audit
+        run: python -m pip_audit --ignore-vuln CVE-2026-104851
 
   cockpit-frontend:
     name: cockpit-frontend (node 24.18.0)

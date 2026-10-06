@@ -29,6 +29,27 @@ S10-LIVE-CANARY-01 needs a separate exact-merge Karl authorization. WP175 remain
 manual canary path; ALPHA-03 and DATA-03 remain separate and non-blocking; the Control Center
 remains separate and non-canonical; live DISABLED; capital/orders USD 0 / 0; merge NOT AUTHORIZED.
 
+## S10-CI-SEC-01 Dependency-Security CI Closure (current bounded security closure, open branch)
+
+FAST, risk 2, exact 8-path scope, deterministic readiness, no certificate. Frozen base
+`f9a0bae6a69d008862e6466f1fe532bc9416de5d` (PR #220 / S10-CI-OPT-01 merged: YES, head
+`d6899e205f0652c7314216016d95cd17e6f01f46`). Security/tooling CI closure only. The cockpit lock
+`src/operator_cockpit_frontend/package-lock.json` is patched from `source-map-js` 1.2.1
+(GHSA-68fv-2mgg-jv7q) to 1.2.2 with no other lock movement and `package.json` unchanged; that
+lockfile is the only `src/**` path and the sole reason for `source_runtime` authority. In
+`.github/workflows/ci.yml` exactly `dependency-audit` and `ndfd-grib-dependency-audit` run
+`python -m pip_audit --ignore-vuln CVE-2026-104851`; every other finding still fails. The exception
+exists only because stable `nautilus_trader==1.231.0` exact-pins `fsspec==2026.2.0`. Removal trigger:
+remove the exception when a separately authorized, stable, project-compatible NautilusTrader upgrade
+resolves a non-vulnerable `fsspec` (at least 2026.6.0) and that closure passes compatibility,
+`pip check`, dependency audit and full validation; a Nautilus prerelease alone is not a removal path.
+No Python pin, `pyproject.toml`, forced `fsspec`, runtime/product, credential, network, scheduler,
+strategy, paper, execution, live or capital authority. Focused regressions are in
+`tests/test_codex_workflow_docs.py`; the package is `docs/wp_specs/S10-CI-SEC-01/` and the stable
+record is `docs/status_entries/S10-CI-SEC-01.md`. Successor: PR #221 / S10-LIVE-CANARY-UA-01 is
+updated to the new main and gets fresh exact-head CI (separately gated); live DISABLED;
+capital/orders USD 0 / 0; merge NOT AUTHORIZED.
+
 ## S10-CI-OPT-01 Local-First CI Cost Optimization (workflow-governance review target)
 
 FAST, risk 2, exact 9-path scope, deterministic readiness, no certificate. Frozen base
